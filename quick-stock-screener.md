@@ -1,7 +1,7 @@
-# Quick stock screener
+# Quick stock screener framework
 Key metrics to analyze stocks to generate an investment thesis.
 
-## A. Revenue and Revenue Growth Analysis
+## A. Revenue and Growth Analysis
 
 ### Key Measures
 #### 1. Revenue Growth % Past
@@ -22,7 +22,7 @@ check yahoo finance revenue estimates  e.g. http://finance.yahoo.com/quote/NVDA/
     * Is the company's revenue growth trajectory (stable, accelerating, irregular)?
 * How does it compare to others in the industry?
 
-## B. Profitability Analysis
+## B. Operating Profitability Analysis
 
 ### Key Measures
 #### 1. Operating Margin
@@ -42,14 +42,12 @@ Operating Margin is a key profitability ratio that indicates how much profit a c
 * Is the company earning more profits from each dollar of revenue?
 * Which company is most efficient in the industry?
 
-## C. Profitability Analysis
+## C. Cash Flow Profitability Analysis
 
 ### Key measures
 
 #### 1. Free Cash Flow (FCF) Growth Rate
 Free Cash Flow (FCF) represents the cash a company generates after accounting for cash outflows to support its operations and maintain its capital assets. It's a crucial indicator of a company's financial health and its ability to generate cash for debt reduction, dividends, share buybacks, or future investments. Analyzing the growth rate of FCF provides insight into the company's expanding capacity to generate this valuable cash.
-
-\*NOTE: Reporting earnings are sometimes manipulated higher with accounting gimmicks; cash flow shows the performance of the business through its cash flow operations.
 
 ```formula
 **FCF (Free Cash Flow)** = Operating Cash Flow - CAPEX (Capital Expenditures)
@@ -57,11 +55,11 @@ Free Cash Flow (FCF) represents the cash a company generates after accounting fo
 ```
 
 ### Key questions
-* Is the company getting more (or less) efficient at turning sales into profits?
-* Is the company earning more profits from each dollar of revenue?
-* Which company is most efficient in the industry?
+* Is the company generating more cash relative to its size over time?
+* How efficiently does the company convert earnings to cash?
+* Is free cash flow growth consistent and sustainable?
 
-## D. Profitability Analysis
+## D. Capital Efficiency Analysis
 
 ### Key Measures
 
@@ -128,8 +126,74 @@ The Price to Earnings Growth (PEG) ratio is a widely used valuation metric that 
 * how much are investors paying per dollar worth of sales for companies in the industry?
 * are some companies worth a premium valuation based on other fundamentals like growth?
 
+## F. Balance Sheet Analysis
+### Key Measures
+#### 1. Debt-to-Equity Ratio
+```formula
+Debt-to-Equity = Total Debt / Shareholders' Equity
+```
+#### 2. Interest Coverage Ratio
+```formula
+Interest Coverage Ratio = EBIT / Interest Expense
+```
 
-## Analyze companies for competitive advantage
+### Key questions
+* How leveraged is the company compared to peers?
+* Can the company comfortably service its debt?
 
-## Credits:
-* Joseph Hogue, CFA of Let's Talk Money! Borrowed much of this from him as a starting point. 
+## G. Competitive Advantage Analysis
+
+### Key Measures
+#### 1. Competitive Moat Assessment
+- Brand strength
+- Network effects
+- Switching costs
+- Cost advantages
+- Intangible assets (patents, licenses)
+
+#### 2. Management Quality
+- Track record of execution
+- Capital allocation history
+- Insider ownership trends
+
+### Key Questions:
+* What protects this business from competition?
+* How sustainable are the company's advantages?
+
+## H. Historical Trend Analysis
+
+### Key Measures
+#### 1. Five-Year Trends
+- Revenue CAGR
+- Margin expansion/contraction
+- ROIC trajectory
+
+#### 2. Cyclicality Assessment
+- Business cycle sensitivity
+- Revenue volatility through economic cycles
+
+### Key Questions:
+* Is performance improving, stable, or deteriorating over time?
+* How has the company performed during previous economic downturns?
+
+## Quick Reference Summary
+
+| Metric                | Strong Buy (General Guideline) | Consider (General Guideline) | Avoid (General Guideline) | How to Contextualize for Your Stocks |
+|-----------------------|--------------------------------|------------------------------|---------------------------|--------------------------------------|
+| Revenue Growth        | >15-20%                        | 5-15%                        | <5% (or declining)        | Compare to 3-5 year industry average & closest competitors (e.g., semiconductor growth vs. utility growth). |
+| Operating Margin      | >20%                           | 10-20%                       | <10% (or negative)        | Compare to industry median and top performers in your sector. Software often has higher margins than hardware. |
+| FCF Growth            | >15%                           | 0-15%                        | Negative/Inconsistent     | Look for consistent growth relative to industry peers; negative FCF can be normal for high-growth, reinvesting companies. |
+| ROIC                  | >15%                           | 8-15%                        | <8%                       | Aim for ROIC > WACC. Compare to industry and competitors. Capital-intensive industries may have lower ROIC. |
+| PEG Ratio             | <1.0                           | 1.0-1.5                      | >1.5 (or very high)       | Best used for growth stocks. Compare to peers with similar growth profiles. Lower is generally better. |
+| Debt-to-Equity        | <0.5                           | 0.5-1.5  
+
+*Note: These thresholds should be adjusted based on industry averages*
+
+## Data Sources Reference
+
+- SEC Filings (10-K, 10-Q): https://www.sec.gov/edgar/searchedgar/companysearch
+- Yahoo Finance: https://finance.yahoo.com
+- Finviz: https://finviz.com
+- Seeking Alpha: https://seekingalpha.com
+- Morningstar: https://www.morningstar.com
+
