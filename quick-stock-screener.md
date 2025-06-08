@@ -180,12 +180,15 @@ Interest Coverage Ratio = EBIT / Interest Expense
 
 | Metric                | Strong Buy (General Guideline) | Consider (General Guideline) | Avoid (General Guideline) | How to Contextualize for Your Stocks |
 |-----------------------|--------------------------------|------------------------------|---------------------------|--------------------------------------|
-| Revenue Growth        | >15-20%                        | 5-15%                        | <5% (or declining)        | Compare to 3-5 year industry average & closest competitors (e.g., semiconductor growth vs. utility growth). |
-| Operating Margin      | >20%                           | 10-20%                       | <10% (or negative)        | Compare to industry median and top performers in your sector. Software often has higher margins than hardware. |
+| Revenue Growth (Past) | >15-20%                        | 5-15%                        | <5% (or declining)        | Compare to 3-5 year industry average & closest competitors. |
+| Revenue Growth (Future)| >15-20%                        | 5-15%                        | <5% (or declining)        | Crucial for growth valuation; compare to analyst consensus and peer forecasts. |
+| Operating Margin      | >20%                           | 10-20%                       | <10% (or negative)        | Compare to industry median and top performers. Margins vary greatly by sector. |
 | FCF Growth            | >15%                           | 0-15%                        | Negative/Inconsistent     | Look for consistent growth relative to industry peers; negative FCF can be normal for high-growth, reinvesting companies. |
 | ROIC                  | >15%                           | 8-15%                        | <8%                       | Aim for ROIC > WACC. Compare to industry and competitors. Capital-intensive industries may have lower ROIC. |
+| Price/Sales Ratio     | <2-3x                          | 3-6x                         | >6x                       | Highly industry-dependent. Compare to historical averages and peer multiples for similar growth profiles. |
 | PEG Ratio             | <1.0                           | 1.0-1.5                      | >1.5 (or very high)       | Best used for growth stocks. Compare to peers with similar growth profiles. Lower is generally better. |
-| Debt-to-Equity        | <0.5                           | 0.5-1.5  
+| Debt-to-Equity        | <0.5                           | 0.5-1.5                      | >1.5                      | Varies greatly by industry. Capital-intensive industries (e.g., utilities) can have higher healthy D/E. Compare to peers. |
+| Interest Coverage     | >5x                            | 2-5x   
 
 *Note: These thresholds should be adjusted based on industry averages*
 
