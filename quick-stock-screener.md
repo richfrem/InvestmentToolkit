@@ -103,8 +103,14 @@ Can look if it's cheaper relative to other periods etc.
 ### Key Measures
 
 #### 1. Price/Sales
-#### 2. Price to Earnings Growth (PEG)
 
+
+#### 2. Price to Earnings Growth (PEG)
+The Price to Earnings Growth (PEG) ratio is a widely used valuation metric that refines the traditional Price-to-Earnings (P/E) ratio by taking into account a company's earnings growth rate. It helps investors determine if a stock is overvalued or undervalued relative to its expected future earnings growth. A PEG ratio of 1 or less is generally considered fair value.
+
+```formula
+**PEG Ratio** = (Price/Earnings per Share) / Earnings Growth Rate (as a whole number, e.g., 20 for 20%)
+```
 
 ###  Key Questions:
 * how much are investors paying per dollar worth of sales for companies in the industry?
