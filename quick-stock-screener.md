@@ -26,9 +26,10 @@ check yahoo finance revenue estimates  e.g. http://finance.yahoo.com/quote/NVDA/
 
 ### Key Measures
 #### 1. Operating Margin
+Operating Margin is a key profitability ratio that indicates how much profit a company makes from its operations before accounting for interest and taxes. It reflects the efficiency of a company's core business in generating profit from its revenue.
 
-``` formula
-**Operating Margin** = Operating Income / Revenue from the income statement.
+```formula
+**Operating Margin** = Operating Income / Revenue (from the income statement)
 **Operating Margin** = Operating Income / Total Revenue.
 ```
 
@@ -46,9 +47,11 @@ check yahoo finance revenue estimates  e.g. http://finance.yahoo.com/quote/NVDA/
 ### Key measures
 
 #### 1. Free Cash Flow (FCF) Growth Rate
-reporting earnings are sometimes manipulated higher with accounting gimmicks, cash flow shows the performance of the business through its cash flow operations.
+Free Cash Flow (FCF) represents the cash a company generates after accounting for cash outflows to support its operations and maintain its capital assets. It's a crucial indicator of a company's financial health and its ability to generate cash for debt reduction, dividends, share buybacks, or future investments. Analyzing the growth rate of FCF provides insight into the company's expanding capacity to generate this valuable cash.
 
-``` formulas
+\*NOTE: Reporting earnings are sometimes manipulated higher with accounting gimmicks; cash flow shows the performance of the business through its cash flow operations.
+
+```formula
 **FCF (Free Cash Flow)** = Operating Cash Flow - CAPEX (Capital Expenditures)
 **FCF Growth Rate ** = (Current FCF - Previous FCF) / Previous FCF
 ```
@@ -63,18 +66,21 @@ reporting earnings are sometimes manipulated higher with accounting gimmicks, ca
 ### Key Measures
 
 #### 1. Return on Invested Capital (ROIC) profitability efficiency analysis
-Measure of how efficiently a company generates cash 
+Return on Invested Capital (ROIC) is a crucial profitability and efficiency metric that measures how effectively a company is using its invested capital to generate profits. It shows the percentage return that the company gains from the capital that has been invested by both bondholders and shareholders. A higher ROIC generally indicates a more efficient and well-managed company.
+
+\*NOTE: Measure of how efficiently a company generates cash 
 
 **Definitions**: 
-NOPAT = Net Operating Profit After Tax 
-ROIC = Return on Invested Capital
+**NOPAT** = Net Operating Profit After Tax 
+ Represents a company's potential cash earnings if its capitalization were entirely equity-financed.
+**ROIC** = Return on Invested Capital
 
 ``` formula
+**ROIC** = NOPAT / Invested Capital
 **NOPAT** = Operating Income \* (1 - Tax Rate)
 **NOPAT** = pretax income - tax provision
 **Invested Capital **= Net Working Capital + Net Operating Assets
 **Invested Capital** = Current Assets - Current Liabilities + Property, Plant & Equipment + Intangible Assets
-**ROIC **= NOPAT / Invested Capital
 ```
 
 e.g. 
