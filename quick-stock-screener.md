@@ -65,22 +65,25 @@ Free Cash Flow (FCF) represents the cash a company generates after accounting fo
 
 ### Key Measures
 
-#### 1. Return on Invested Capital (ROIC) profitability efficiency analysis
-Return on Invested Capital (ROIC) is a crucial profitability and efficiency metric that measures how effectively a company is using its invested capital to generate profits. It shows the percentage return that the company gains from the capital that has been invested by both bondholders and shareholders. A higher ROIC generally indicates a more efficient and well-managed company.
+#### 1. Return on Invested Capital (ROIC)
+Return on Invested Capital (ROIC) is a crucial profitability and efficiency metric that measures how effectively a company is using its invested capital to generate profits. It shows the percentage return that the company gains from the capital that has been invested by both bondholders and shareholders, indicating how efficiently a company generates cash. A higher ROIC generally suggests a more efficient and well-managed company.
 
-\*NOTE: Measure of how efficiently a company generates cash 
+**NOPAT (Net Operating Profit After Tax)** represents a company's potential cash earnings if its capitalization were entirely equity-financed.
 
-**Definitions**: 
-**NOPAT** = Net Operating Profit After Tax 
- Represents a company's potential cash earnings if its capitalization were entirely equity-financed.
-**ROIC** = Return on Invested Capital
-
-``` formula
+```formula
 **ROIC** = NOPAT / Invested Capital
-**NOPAT** = Operating Income \* (1 - Tax Rate)
+
+**NOPAT** = Operating Income * (1 - Tax Rate)
+# OR
 **NOPAT** = pretax income - tax provision
-**Invested Capital **= Net Working Capital + Net Operating Assets
+
+**Invested Capital** = Net Working Capital + Net Operating Assets
+# OR
 **Invested Capital** = Current Assets - Current Liabilities + Property, Plant & Equipment + Intangible Assets
+# OR (from balance sheet perspective)
+**Invested Capital** = Total Assets - Non-Operating Assets
+# OR (from financing perspective)
+**Invested Capital** = Total Debt + Total Equity - Non-Operating Assets
 ```
 
 e.g. 
