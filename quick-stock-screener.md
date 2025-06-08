@@ -28,8 +28,8 @@ check yahoo finance revenue estimates  e.g. http://finance.yahoo.com/quote/NVDA/
 #### 1. Operating Margin
 
 ``` formula
-Operating Margin = Operating Income / Revenue from the income statement.
-Operating Margin = Operating Income / Total Revenue.
+**Operating Margin** = Operating Income / Revenue from the income statement.
+**Operating Margin** = Operating Income / Total Revenue.
 ```
 
 ##### Analysis:
@@ -50,8 +50,8 @@ Operating Margin = Operating Income / Total Revenue.
 reporting earnings are sometimes manipulated higher with accounting gimmicks, cash flow shows the performance of the business through its cash flow operations.
 
 ``` formulas
-FCF (Free Cash Flow) = Operating Cash Flow - CAPEX (Capital Expenditures)
-FCF Growth Rate  = (Current FCF - Previous FCF) / Previous FCF
+**FCF (Free Cash Flow)** = Operating Cash Flow - CAPEX (Capital Expenditures)
+**FCF Growth Rate ** = (Current FCF - Previous FCF) / Previous FCF
 ```
 
 ### Key questions
@@ -59,56 +59,56 @@ FCF Growth Rate  = (Current FCF - Previous FCF) / Previous FCF
 * Is the company earning more profits from each dollar of revenue?
 * Which company is most efficient in the industry?
 
-## D. Return on Invested Capital (ROIC) profitability efficiency analysis
+## D. Profitability Analysis
 
-### ROIC (Return on Invested Capital) = NOPAT / Invested Capital
+### Key Measures
 
-### NOPAT = Net Operating Profit After Tax (NOPAT) / Invested Capital
+#### 1. Return on Invested Capital (ROIC) profitability efficiency analysis
+Measure of how efficiently a company generates cash 
 
-### NOPAT = Operating Income \* (1 - Tax Rate)
+**Definitions**: 
+NOPAT = Net Operating Profit After Tax 
+ROIC = Return on Invested Capital
 
-### Invested Capital = Net Working Capital + Net Operating Assets
+``` formula
+**NOPAT** = Operating Income \* (1 - Tax Rate)
+**NOPAT** = pretax income - tax provision
+**Invested Capital **= Net Working Capital + Net Operating Assets
+**Invested Capital** = Current Assets - Current Liabilities + Property, Plant & Equipment + Intangible Assets
+**ROIC **= NOPAT / Invested Capital
+```
 
-### Invested Capital = Current Assets - Current Liabilities + Property, Plant & Equipment + Intangible Assets
-
-### Yahoo shows Operating Income and Tax Provides
-### NOPAT from high tax rate (usually 25%) table.
-
-| Measure of how efficiently a company generates cash | | |
+e.g. 
+| | | |
 |---|---|---|
-| `ROIC = NOPAT / Invested Capital` | | |
-| `NOPAT = Operating Income * (1-Tax Rate)` | | |
-| `NOPAT = Operating Income * (1-Tax Rate) (from Yahoo Finance)` | | |
-| `Invested Capital = Total assets - Non operating assets` | | |
-| `Invested Capital = Total debt + Total equity - Non operating assets` | | |
-| `Net working capital = Current assets - Current liabilities excluding cash and cash equivalents` | | |
+| pretax income | $ | 88,657,000 |
+| tax provision | $ | 11,883,000 |
+| **NOPAT** | **$** | **76,774,000** |
+| Total Debt | $ | 8,463,000 |
+| shareholders equity | $ | 79,327,000 |
+| non operating assets | $ | 43,210,000 |
+| **Invested Capital** | **$** | **44,580,000** |
+| | | |
+| ROIC | | 172% |
 
-| Assets | | |
-|---|---|---|
-| Inputs | From Yahoo Finance | |
-| Property, Plant & Equipment | $11,887,000 | |
-| Tax Provision | $11,887,000 | |
-| NOPAT | $9,461,625,000 | |
-| Total Debt | $4,846,000 | |
-| Shareholders Equity | $1,250,000 | |
-| Non-operating assets | $13,210,000 | Cash, Cash Equivalents |
-| Invested Capital | $4,588,000 | |
-| ROIC | 172% | |
-
-### ROIC key questions:
+###  Key Questions:
 * Which company is best at turning every dollar of capital into profit? (i.e. which company is getting the highest return on invested capital?)
 * Which company is growing ROIC most efficiently?
 
-## E. Customers (key questions)
 
-### Key questions
-* Can you find out who has enough market share? Maybe NVIDIA, Intel.
-* Are customers getting cheaper?
-* If it's cheaper, relative to other persons etc.
+## E. Valuation Analysis
+you can't just look at AMD having a much lower number than NVDA.  Need  to consider all the other measures. 
+Can look if it's cheaper relative to other periods etc.
 
-### Valuation key questions:
-* How do you compare to similar companies (e.g., Tesla vs Ford)?
-* Are cash flows predictable?
+### Key Measures
+
+#### Price/Sales
+
+
+###  Key Questions:
+* how much are investors paying per dollar worth of sales for companies in the industry?
+* are some companies worth a premium valuation based on other fundamentals like growth?
+
 
 ## Analyze companies for competitive advantage
 
