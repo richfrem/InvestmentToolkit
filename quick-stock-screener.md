@@ -4,14 +4,14 @@ Key metrics to analyze stocks to generate an investment thesis.
 ## A. Revenue and Revenue Growth Analysis
 
 ### Key Measures
-#### 1. Revenue Growth %
+#### 1. Revenue Growth % Past
 What has happened in the past?
 
 ``` formula
 Revenue Growth % = (Current revenue - Past period revenue ) / Past period revenue
 ```
 
-#### 2. Revenue Growth %
+#### 2. Revenue Growth % Future
 
 What is the future outlook? what is the revenue growth projected by analysts?
 check yahoo finance revenue estimates  e.g. http://finance.yahoo.com/quote/NVDA/analysis/
@@ -102,7 +102,8 @@ Can look if it's cheaper relative to other periods etc.
 
 ### Key Measures
 
-#### Price/Sales
+#### 1. Price/Sales
+#### 2. Price to Earnings Growth (PEG)
 
 
 ###  Key Questions:
