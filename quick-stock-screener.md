@@ -41,7 +41,6 @@ check yahoo finance revenue estimates  e.g. http://finance.yahoo.com/quote/NVDA/
 * Is the company earning more profits from each dollar of revenue?
 * Which company is most efficient in the industry?
 
-
 ## C. Profitability Analysis
 
 ### Key measures
@@ -103,7 +102,11 @@ Can look if it's cheaper relative to other periods etc.
 ### Key Measures
 
 #### 1. Price/Sales
+The Price/Sales (P/S) ratio is a valuation multiple that compares a company's stock price to its revenue. It indicates how much investors are willing to pay for each dollar of a company's sales. This ratio is particularly useful for valuing companies that are not yet profitable or have inconsistent earnings, as it relies on the top-line revenue rather than net income.
 
+```formula
+**Price/Sales Ratio** = Current Stock Price / Revenue per Share
+```
 
 #### 2. Price to Earnings Growth (PEG)
 The Price to Earnings Growth (PEG) ratio is a widely used valuation metric that refines the traditional Price-to-Earnings (P/E) ratio by taking into account a company's earnings growth rate. It helps investors determine if a stock is overvalued or undervalued relative to its expected future earnings growth. A PEG ratio of 1 or less is generally considered fair value.
