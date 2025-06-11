@@ -1,9 +1,9 @@
-import argparse
+import tkinter as tk
+from tkinter import ttk, messagebox
 import matplotlib.pyplot as plt
 import numpy as np
 import yfinance as yf
 import finnhub
-import questionary
 
 FINNHUB_API_KEY = "d1451m1r01qrqeas456gd1451m1r01qrqeas4570"
 finnhub_client = finnhub.Client(api_key=FINNHUB_API_KEY)
@@ -131,36 +131,57 @@ def fetch_peer_metrics(tickers):
     return roic, ps_ratio, debt_to_equity
 
 def fetch_metric_for_peers(tickers, metric):
-    # Only fetch the selected metric for each peer
     values = []
     for t in tickers:
         val = None
-        # Try Finnhub first
         try:
             info = finnhub_client.company_basic_financials(t, 'all').get('metric', {})
-            if metric == 'P/S Ratio':
+            if metric == 'Revenue Growth % (Past)':
+                # Not available directly, fallback to Yahoo
+                ticker_obj = yf.Ticker(t)
+                hist = ticker_obj.history(period='5y')
+                if len(hist) > 1:
+                    revs = hist['Close']
+                    val = ((revs[-1] - revs[0]) / revs[0]) * 100 if revs[0] else None
+            elif metric == 'Operating Margin':
+                # Not available directly, fallback to Yahoo
+                ticker_obj = yf.Ticker(t)
+                try:
+                    fin = ticker_obj.financials
+                    op_income = fin.loc['Operating Income']
+                    rev = fin.loc['Total Revenue']
+                    val = (float(op_income[-1]) / float(rev[-1])) * 100 if rev[-1] else None
+                except Exception:
+                    val = None
+            elif metric == 'P/S Ratio':
                 ps = info.get('priceToSalesAnnual', None)
                 val = round(float(ps), 2) if ps else None
-            elif metric == 'Debt-to-Equity':
+            elif metric == 'Debt-to-Equity Ratio':
                 de = info.get('debtEquity', None)
                 val = round(float(de), 2) if de else None
-            # ROIC not available in free Finnhub
+            elif metric == 'ROIC':
+                val = None  # Not available in free APIs
+            elif metric == 'FCF Yield':
+                val = None  # Not available in free APIs
+            elif metric == 'PEG Ratio':
+                val = info.get('pegRatio', None)
+                val = round(float(val), 2) if val else None
+            elif metric == 'Forward P/E':
+                val = info.get('peForward', None)
+                val = round(float(val), 2) if val else None
+            elif metric == 'Interest Coverage Ratio':
+                val = None  # Not available in free APIs
+            elif metric == 'Current Ratio':
+                val = info.get('currentRatioAnnual', None)
+                val = round(float(val), 2) if val else None
+            elif metric == 'Net Debt':
+                val = None  # Not available in free APIs
+            elif metric == 'Revenue Growth % (Future)':
+                val = None  # Not available in free APIs
+            elif metric == 'Free Cash Flow (FCF) Growth Rate':
+                val = None  # Not available in free APIs
         except Exception:
             pass
-        # Fallback to Yahoo
-        if val is None:
-            try:
-                ticker_obj = yf.Ticker(t)
-                info = ticker_obj.info
-                if metric == 'P/S Ratio':
-                    ps = info.get('priceToSalesTrailing12Months', None)
-                    val = round(ps, 2) if ps else None
-                elif metric == 'Debt-to-Equity':
-                    de = info.get('debtToEquity', None)
-                    val = round(de, 2) if de else None
-                # ROIC not available
-            except Exception:
-                pass
         values.append(val)
     return values
 
@@ -181,42 +202,159 @@ def plot_peer_metric_bar(companies, values, metric):
     plt.tight_layout()
     plt.show()
 
-def main():
-    parser = argparse.ArgumentParser(description="Stock chart visualizer for screener framework.")
-    parser.add_argument('--ticker', type=str, help='Main company ticker (e.g., PLTR)')
-    parser.add_argument('--peers', nargs='+', type=str, default=[], help='Peer company tickers (e.g., SNOW CRWD INDUSTRYMEDIAN)')
-    parser.add_argument('--metric', type=str, help='Metric to compare (e.g., ROIC, P/S Ratio, Debt-to-Equity)')
-    args = parser.parse_args()
+def fetch_all_metrics_for_ticker(ticker):
+    """
+    Fetch all supported metrics for a single ticker. Returns a dict of {metric: value}.
+    Metrics not available via free APIs will be set to None.
+    """
+    info = {}
+    try:
+        finnhub_metrics = finnhub_client.company_basic_financials(ticker, 'all').get('metric', {})
+    except Exception:
+        finnhub_metrics = {}
+    try:
+        ticker_obj = yf.Ticker(ticker)
+        yahoo_info = ticker_obj.info
+        yahoo_fin = ticker_obj.financials if hasattr(ticker_obj, 'financials') else None
+    except Exception:
+        yahoo_info = {}
+        yahoo_fin = None
+    # Revenue Growth % (Past)
+    try:
+        hist = ticker_obj.history(period='5y')
+        if len(hist) > 1:
+            revs = hist['Close']
+            info['Revenue Growth % (Past)'] = ((revs[-1] - revs[0]) / revs[0]) * 100 if revs[0] else None
+        else:
+            info['Revenue Growth % (Past)'] = None
+    except Exception:
+        info['Revenue Growth % (Past)'] = None
+    # Revenue Growth % (Future) - Not available via free APIs
+    info['Revenue Growth % (Future)'] = None
+    # Operating Margin
+    try:
+        if yahoo_fin is not None:
+            op_income = yahoo_fin.loc['Operating Income']
+            rev = yahoo_fin.loc['Total Revenue']
+            info['Operating Margin'] = (float(op_income[-1]) / float(rev[-1])) * 100 if rev[-1] else None
+        else:
+            info['Operating Margin'] = None
+    except Exception:
+        info['Operating Margin'] = None
+    # Free Cash Flow (FCF) Growth Rate - Not available via free APIs
+    info['Free Cash Flow (FCF) Growth Rate'] = None
+    # FCF Yield - Not available via free APIs
+    info['FCF Yield'] = None
+    # Return on Invested Capital (ROIC) - Not available via free APIs
+    info['Return on Invested Capital (ROIC)'] = None
+    # Price/Sales (P/S) Ratio
+    ps = finnhub_metrics.get('priceToSalesAnnual', None)
+    if ps is None:
+        ps = yahoo_info.get('priceToSalesTrailing12Months', None)
+    info['Price/Sales (P/S) Ratio'] = round(float(ps), 2) if ps else None
+    # Price to Earnings Growth (PEG) Ratio
+    peg = finnhub_metrics.get('pegRatio', None)
+    info['Price to Earnings Growth (PEG) Ratio'] = round(float(peg), 2) if peg else None
+    # Forward P/E
+    pef = finnhub_metrics.get('peForward', None)
+    info['Forward P/E'] = round(float(pef), 2) if pef else None
+    # Debt-to-Equity Ratio
+    de = finnhub_metrics.get('debtEquity', None)
+    if de is None:
+        de = yahoo_info.get('debtToEquity', None)
+    info['Debt-to-Equity Ratio'] = round(float(de), 2) if de else None
+    # Interest Coverage Ratio - Not available via free APIs
+    info['Interest Coverage Ratio'] = None
+    # Current Ratio
+    cr = finnhub_metrics.get('currentRatioAnnual', None)
+    info['Current Ratio'] = round(float(cr), 2) if cr else None
+    # Net Debt - Not available via free APIs
+    info['Net Debt'] = None
+    return info
 
-    # Interactive prompts if not provided
-    if not args.ticker:
-        args.ticker = questionary.text("Enter main company ticker (e.g., PLTR):").ask()
-    if not args.peers:
-        peers_str = questionary.text("Enter peer tickers separated by space (e.g., SNOW CRWD):").ask()
-        args.peers = peers_str.strip().split()
-    metric_choices = ['ROIC', 'P/S Ratio', 'Debt-to-Equity']
-    if not args.metric:
-        args.metric = questionary.select(
-            "Select metric for peer comparison:",
-            choices=metric_choices
-        ).ask()
+class StockScreenerApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Quick Stock Screener - Peer Comparison")
+        self.metric_choices = [
+            'Revenue Growth % (Past)',
+            'Revenue Growth % (Future)',
+            'Operating Margin',
+            'Free Cash Flow (FCF) Growth Rate',
+            'FCF Yield',
+            'Return on Invested Capital (ROIC)',
+            'Price/Sales (P/S) Ratio',
+            'Price to Earnings Growth (PEG) Ratio',
+            'Forward P/E',
+            'Debt-to-Equity Ratio',
+            'Interest Coverage Ratio',
+            'Current Ratio',
+            'Net Debt'
+        ]
+        self.all_metrics = {}
+        self.create_widgets()
 
-    # Fetch main company data
-    years, revenue, op_margin = fetch_financials(args.ticker)
-    if not years or not revenue or not op_margin:
-        print(f"Could not fetch financials for {args.ticker}")
-        return
-    companies = [args.ticker.upper()] + [p.upper() for p in args.peers]
-    peer_tickers = [args.ticker] + args.peers
+    def create_widgets(self):
+        frm = ttk.Frame(self.root, padding=10)
+        frm.grid(row=0, column=0, sticky="nsew")
+        self.root.columnconfigure(0, weight=1)
+        self.root.rowconfigure(0, weight=1)
 
-    plot_revenue_and_margin(years, revenue, op_margin, company_name=args.ticker.upper())
+        ttk.Label(frm, text="Main Ticker:").grid(row=0, column=0, sticky="e")
+        self.ticker_entry = ttk.Entry(frm, width=10)
+        self.ticker_entry.grid(row=0, column=1, sticky="w")
+        self.ticker_entry.insert(0, "PLTR")
 
-    if args.metric == 'ROIC':
-        print("ROIC is not available via free APIs and will show as N/A.")
-        values = [None for _ in peer_tickers]
-    else:
-        values = fetch_metric_for_peers(peer_tickers, args.metric)
-    plot_peer_metric_bar(companies, values, args.metric)
+        ttk.Label(frm, text="Peers (space-separated):").grid(row=0, column=2, sticky="e")
+        self.peers_entry = ttk.Entry(frm, width=30)
+        self.peers_entry.grid(row=0, column=3, sticky="w")
+        self.peers_entry.insert(0, "SNOW CRWD")
+
+        self.fetch_btn = ttk.Button(frm, text="Fetch Data", command=self.fetch_data)
+        self.fetch_btn.grid(row=0, column=4, padx=10)
+
+        ttk.Label(frm, text="Metric:").grid(row=1, column=0, sticky="e")
+        self.metric_var = tk.StringVar()
+        self.metric_dropdown = ttk.Combobox(frm, textvariable=self.metric_var, values=self.metric_choices, state="readonly", width=35)
+        self.metric_dropdown.grid(row=1, column=1, columnspan=2, sticky="w")
+        self.metric_dropdown.bind("<<ComboboxSelected>>", self.on_metric_selected)
+        self.metric_dropdown.set(self.metric_choices[0])
+        self.metric_dropdown.config(state="disabled")
+
+        self.status_var = tk.StringVar()
+        self.status_label = ttk.Label(frm, textvariable=self.status_var, foreground="blue")
+        self.status_label.grid(row=2, column=0, columnspan=5, sticky="w")
+
+    def fetch_data(self):
+        ticker = self.ticker_entry.get().strip().upper()
+        peers = self.peers_entry.get().strip().upper().split()
+        if not ticker:
+            messagebox.showerror("Input Error", "Please enter a main ticker.")
+            return
+        self.status_var.set("Fetching all metrics for all companies. Please wait...")
+        self.fetch_btn.config(state="disabled")
+        self.metric_dropdown.config(state="disabled")
+        self.root.update()
+        companies = [ticker] + peers
+        self.all_metrics = {}
+        for t in companies:
+            self.all_metrics[t] = fetch_all_metrics_for_ticker(t)
+        self.status_var.set(f"Fetched data for: {', '.join(companies)}")
+        self.metric_dropdown.config(state="readonly")
+        self.fetch_btn.config(state="normal")
+        self.on_metric_selected()
+
+    def on_metric_selected(self, event=None):
+        metric = self.metric_var.get()
+        if not metric or not self.all_metrics:
+            return
+        companies = list(self.all_metrics.keys())
+        values = [self.all_metrics[s].get(metric, None) for s in companies]
+        if all(v is None for v in values):
+            messagebox.showinfo("Metric Not Available", f"{metric} is not available via free APIs and will show as N/A.")
+        plot_peer_metric_bar(companies, values, metric)
 
 if __name__ == "__main__":
-    main()
+    root = tk.Tk()
+    app = StockScreenerApp(root)
+    root.mainloop()
