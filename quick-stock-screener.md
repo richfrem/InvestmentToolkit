@@ -283,6 +283,92 @@ A comprehensive framework for analyzing stocks and generating an investment thes
   plt.show()
   ```
 
+## M. Short Float Analysis
+### Explanation
+**Short Float** (also known as short interest as a percentage of float) measures the percentage of a company’s publicly tradable shares (float) that have been sold short but not yet covered. It reflects bearish sentiment among investors betting that the stock price will decline. A high short float indicates pessimism, while a low short float suggests bullish sentiment or limited short-selling activity. High short float can signal potential for a **short squeeze**, where a rising stock price forces short sellers to buy back shares, driving the price higher. Conversely, low short float may indicate stability or potential for upward momentum with fewer short sellers to counteract price movements.
+
+- **High Short Float (>20%)**: Indicates strong bearish sentiment. Investors expect the stock price to fall, often due to perceived overvaluation or operational challenges. However, it increases the risk of a short squeeze if positive news or catalysts emerge, as short sellers rush to cover. Stocks with >50% short float are rare and highly volatile, often prone to dramatic price swings (e.g., GameStop 2021).
+- **Low Short Float (<10%)**: Suggests bullish or neutral sentiment with fewer investors betting against the stock. These stocks are less volatile but may still rally on positive catalysts. Low short float can be a quality filter for long-term investors seeking stable stocks.
+
+### Key Measures
+- **Short Float (%)**:
+  - Formula: Short Float (%) = (Number of Shares Sold Short / Float) × 100
+  - Float is the number of shares available for public trading, excluding insider-owned or restricted shares.
+- **Days to Cover (Short Interest Ratio)**:
+  - Formula: Days to Cover = Number of Shares Sold Short / Average Daily Trading Volume
+  - Measures how many days it would take for short sellers to cover their positions based on average trading volume. Higher values (>5 days) indicate greater difficulty covering, increasing short squeeze potential.
+- **Sources**: Short interest data from FINRA, NASDAQ, or financial platforms like Fintel.io, Finviz.com, updated bi-monthly.
+
+### Analysis
+- Compare short float to industry peers (e.g., Finviz, Morningstar) to assess relative bearish sentiment.
+- Evaluate days to cover against historical trends (1–3 months) to gauge covering difficulty.
+- Check for catalysts (e.g., earnings, product launches) that could trigger a short squeeze in high short float stocks.
+- Monitor short borrow fee rates (via Fintel.io) to assess short-selling costs. High fees indicate scarcity of shares to borrow, increasing squeeze potential.
+
+### Key Questions
+- Is the short float high (>20%) or low (<10%) compared to industry peers?
+- Does a high days-to-cover ratio (>5 days) suggest potential for a short squeeze?
+- Are there upcoming catalysts (e.g., earnings, news) that could pressure short sellers?
+- Do high short borrow fees indicate limited share availability, increasing squeeze risk?
+
+### Scoring
+- **Short Float**: >20%: 80 (high squeeze potential, volatile); 10–20%: 50 (moderate risk); <10%: 20 (low risk, stable).
+- **Days to Cover**: >10 days: 80 (high squeeze risk); 5–10 days: 50 (moderate); <5 days: 20 (low).
+
+## N. Calls and Puts Open Interest Analysis
+### Explanation
+**Open Interest** represents the total number of outstanding (open) options contracts (calls or puts) for a stock that have not been exercised, closed, or expired. It reflects investor interest and sentiment in the options market. **Calls** give the holder the right to buy the stock at a specified price, indicating bullish sentiment, while **puts** give the right to sell, indicating bearish sentiment. The **percentage of open interest in calls vs. puts** (call/put ratio) provides insight into whether investors are betting on price increases or decreases.
+
+- **High Call Open Interest or High Call/Put Ratio (>1.5)**: Suggests bullish sentiment, as more investors are betting on price increases. A high call/put ratio can indicate optimism or hedging against short positions, potentially amplifying upward price moves during a short squeeze.
+- **High Put Open Interest or Low Call/Put Ratio (<0.7)**: Indicates bearish sentiment, with more investors expecting price declines. This aligns with high short float and can reinforce downward pressure unless a catalyst reverses sentiment.
+- **Balanced Call/Put Ratio (0.7–1.5)**: Suggests neutral sentiment, with no strong directional bias. This can indicate market uncertainty or balanced hedging activity.
+
+### Key Measures
+- **Call Open Interest**: Total number of outstanding call option contracts.
+- **Put Open Interest**: Total number of outstanding put option contracts.
+- **Call/Put Ratio**:
+  - Formula: Call/Put Ratio = Call Open Interest / Put Open Interest
+- **Percentage in Calls**:
+  - Formula: % in Calls = (Call Open Interest / (Call Open Interest + Put Open Interest)) × 100
+- **Sources**: Options data from CBOE, Yahoo Finance, or platforms like Barchart.com, updated daily.
+
+### Analysis
+- Compare call/put ratio to historical trends (1–3 months) to identify shifts in sentiment.
+- Assess open interest volume relative to average daily trading volume to gauge significance (e.g., high open interest > 10% of daily volume indicates strong options activity).
+- Check for unusual options activity (e.g., spikes in call or put volume) via platforms like Barchart.com or MarketChameleon.com.
+- Correlate with short float: High call open interest with high short float may signal short squeeze potential.
+
+### Key Questions
+- Is the call/put ratio high (>1.5) or low (<0.7), indicating bullish or bearish sentiment?
+- Does high call open interest align with low short float, suggesting bullish momentum?
+- Is options activity significant relative to stock trading volume?
+- Are there spikes in call or put open interest signaling potential catalysts (e.g., earnings, news)?
+
+### Scoring
+- **Call/Put Ratio**: >1.5: 80 (bullish, potential for upside); 0.7–1.5: 50 (neutral); <0.7: 20 (bearish).
+- **% in Calls**: >60%: 80 (bullish); 40–60%: 50 (neutral); <40%: 20 (bearish).
+
+## Integration with Scoring System
+Update the existing scoring system to include short float and options analysis:
+- **Revised Scoring Formula**:
+  ```
+  Score = (0.20 × Revenue Growth Score) + (0.15 × ROIC Score) + (0.15 × Valuation Score) + (0.15 × Margin Score) + (0.15 × FCF Score) + (0.10 × Balance Sheet Score) + (0.05 × News Impact Score) + (0.05 × Investor Call Sentiment Score) + (0.05 × Short Float Score) + (0.05 × Options Sentiment Score)
+  ```
+- **Weighting**: Short Float and Options Sentiment each receive 5% weight, reducing Revenue Growth and ROIC weights slightly to maintain a total of 100%.
+- **Scoring Guidelines**:
+  - Strong Buy: >80
+  - Consider: 50–80
+  - Avoid: <50
+
+## Visualization
+### Suggested Charts
+- **Line Chart**: Short float (%) and days to cover over 1–3 months to track bearish sentiment trends.
+- **Bar Chart**: Call open interest, put open interest, and call/put ratio vs. peers to compare options sentiment.
+- **Example Code** (using Python and matplotlib):
+```python
+import matplotlib.pyplot as plt
+months = ["
+
 ## Quick Reference Summary
 
 | Metric                  | Strong Buy       | Consider         | Avoid           | Notes                                                                 |
