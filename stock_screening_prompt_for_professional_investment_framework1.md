@@ -1,4 +1,4 @@
-# Reusable Stock Screening Prompt for Definitive Professional Investment Framework (v3.0)
+# Stock Screening Prompt for Definitive Professional Investment Framework (v3.0)
 
 ## Purpose
 This prompt is designed to apply the **Definitive Professional Investment Framework (v3.0)** (provided separately) to screen and rank companies listed on NASDAQ and Dow Jones in the AI, robotics, cybersecurity, chips/GPUs, data centers, power (e.g., nuclear energy), and sectors leveraging AI to transform business like RXRX and ISRG sectors. Secondary premise is companies very transformational and huge growth potential like Cathy Woods ARKK criteria.  It follows a systematic process to identify eligible companies, filter them based on the investment thesis, collect data, score and rank them, and synthesize investment theses, producing an ordered list of all qualifying companies with scores, variant perceptions, and thesis breakers.
