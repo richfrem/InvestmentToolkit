@@ -7,11 +7,13 @@ A toolkit for professional stock analysis, screening, and portfolio review using
 
 ## Table of Contents
 
-- [quick-stock-screener.md](#quick-stock-screenermd): The main investment analysis framework.
-- [stock_analyst_AI_prompt.md](#stock_analyst_ai_promptmd): Unified analyst prompt for screening, comparison, and portfolio review.
+- [defininitive_professional_investment_framework.md](#defininitive_professional_investment_frameworkmd): The main investment analysis framework.
+- [unified_stock_analyst_prompt.md](#unified_stock_analyst_promptmd): Unified, guided prompt for screening, comparison, and portfolio review (recommended).
 - [lyra.md](#lyramd): AI prompt optimization specialist instructions.
-- [stock_screening_prompt_for_professional_investment_framework1.md](#stock_screening_prompt_for_professional_investment_framework1md): Prompt and instructions for screening and ranking stocks.
-- [Portfolio_Review_Prompt.md](#portfolio_review_promptmd): Prompt and instructions for reviewing and challenging your portfolio.
+- **Archived prompts:**
+  - [stock_analyst_AI_prompt.md](Archive/stock_analyst_AI_prompt.md)
+  - [stock_screening_prompt_for_professional_investment_framework1.md](Archive/stock_screening_prompt_for_professional_investment_framework1.md)
+  - [Portfolio_Review_Prompt.md](Archive/Portfolio_Review_Prompt.md)
 
 ---
 
@@ -27,11 +29,10 @@ This project provides:
 
 ## Usage
 
-1. Use `quick-stock-screener.md` as your reference for all analysis and scoring.
-2. For unified analyst workflows (screening, comparison, portfolio review), use `stock analyst prompt.md`.
+1. Use `defininitive_professional_investment_framework.md` as your reference for all analysis, scoring, and methodology.
+2. For all analyst workflows (screening, comparison, portfolio review), use the unified prompt in `unified_stock_analyst_prompt.md` (recommended).
 3. For prompt optimization, use `lyra.md`.
-4. For screening new stocks, follow the steps in `Stock_Screening_Prompt.md`.
-5. For reviewing your portfolio, use `Portfolio_Review_Prompt.md` and fill in your holdings table.
+4. Legacy prompts for screening and portfolio review are available in the `Archive/` folder for reference only.
 
 ---
 
