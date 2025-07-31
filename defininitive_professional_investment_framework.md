@@ -1,4 +1,4 @@
-# The Definitive Professional Investment Framework (v3)
+# The Definitive Professional Investment Framework (v3.1)
 
 ## Guiding Philosophy: From Screener to Thesis
 This framework is a systematic process for moving from a broad quantitative screen to a high-conviction investment thesis. It is built on three pillars of professional analysis:
@@ -62,7 +62,7 @@ This framework is a systematic process for moving from a broad quantitative scre
 ### B. Rule of 40 Analysis
 *Pro-Level Lens*: Analyze the trend of Rule of 40 components to assess the balance between growth and profitability. Two methods are used to evaluate this metric, capturing different aspects of performance: **Method A** (forward-looking, cash flow-focused) and **Method B** (historical growth with EBITDA profitability). Improving trends in either method (e.g., from 25% to 38%) signal operational strength, while declining trends (e.g., 55% to 45%) raise concerns.
 
-- **Overview**: The Rule of 40 measures a company’s ability to balance revenue growth with profitability, ensuring sustainable growth. Method A uses forward-looking or TTM revenue growth and free cash flow (FCF) margin, ideal for assessing cash generation in high-growth sectors. Method B uses historical 3-year revenue growth and TTM EBITDA margin, emphasizing long-term growth and accounting profitability. Both methods are compared to sector-specific thresholds to gauge performance against peers.
+- **Overview**: The Rule of 40 measures a company’s ability to balance revenue growth with profitability, ensuring sustainable growth. Method A uses forward-looking or TTM revenue growth and free cash flow (FCF) margin, ideal for assessing cash generation in high-growth sectors. Method B uses historical 3-year revenue growth and TTM EBITDA margin, emphasizing long-term growth and accounting profitability. Both methods are compared to sector-specific thresholds to gauge performance against peers. Method A is the industry standard (common in SaaS/tech investing for its cash focus), while Method B is a variation for historical validation (less common but useful for capex-heavy firms). Use Method A for cash sustainability, Method B for trend insights; average or prioritize based on sector (e.g., Method A for SaaS/Cyber, Method B for Chips/AI).
 
 - **Key Measures**:
   1. **Method A: Revenue Growth % (TTM or Forward) + FCF Margin %**
