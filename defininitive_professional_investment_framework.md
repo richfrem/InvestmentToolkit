@@ -1,4 +1,4 @@
-# The Definitive Professional Investment Framework (v3.0)
+# The Definitive Professional Investment Framework (v3)
 
 ## Guiding Philosophy: From Screener to Thesis
 This framework is a systematic process for moving from a broad quantitative screen to a high-conviction investment thesis. It is built on three pillars of professional analysis:
@@ -60,19 +60,30 @@ This framework is a systematic process for moving from a broad quantitative scre
   - Are analyst estimates consistent and aligned with >20% CAGR?
 
 ### B. Rule of 40 Analysis
-*Pro-Level Lens*: Analyze the trend of Rule of 40 components. Improving from 25% to 38% is better than dropping from 55% to 45%. Is FCF margin improving?
+*Pro-Level Lens*: Analyze the trend of Rule of 40 components to assess the balance between growth and profitability. Two methods are used to evaluate this metric, capturing different aspects of performance: **Method A** (forward-looking, cash flow-focused) and **Method B** (historical growth with EBITDA profitability). Improving trends in either method (e.g., from 25% to 38%) signal operational strength, while declining trends (e.g., 55% to 45%) raise concerns.
+
+- **Overview**: The Rule of 40 measures a company’s ability to balance revenue growth with profitability, ensuring sustainable growth. Method A uses forward-looking or TTM revenue growth and free cash flow (FCF) margin, ideal for assessing cash generation in high-growth sectors. Method B uses historical 3-year revenue growth and TTM EBITDA margin, emphasizing long-term growth and accounting profitability. Both methods are compared to sector-specific thresholds to gauge performance against peers.
 
 - **Key Measures**:
-  ```formula
-  Rule of 40 Score = Revenue Growth % (TTM or Fwd) + FCF Margin %
-  FCF Margin % = Free Cash Flow / Total Revenue
-  ```
-  - **Thresholds**: >40% (SaaS/Cyber), >30% (Chips/AI), >20% (Energy/Infra).
-  - **Sources**: Financial statements, SEC filings (10-K, 10-Q), analyst reports.
+  1. **Method A: Revenue Growth % (TTM or Forward) + FCF Margin %**
+     ```formula
+     Rule of 40 Score (Method A) = Revenue Growth % (TTM or Fwd) + FCF Margin %
+     FCF Margin % = Free Cash Flow / Total Revenue
+     ```
+     - **Sources**: Financial statements, SEC filings (10-K, 10-Q), analyst reports.
+  2. **Method B: Annualized 3-Year Revenue Growth % + TTM EBITDA Margin %**
+     ```formula
+     Rule of 40 Score (Method B) = Annualized 3-Year Revenue Growth % + TTM EBITDA Margin %
+     Annualized 3-Year Revenue Growth % = [(TTM Revenue / Revenue 3 Years Ago)^(1/3) - 1] × 100
+     TTM EBITDA Margin % = (TTM EBITDA / TTM Revenue) × 100
+     ```
+     - **Sources**: Yahoo Finance financials, SEC filings (10-K, 10-Q), company reports.
+  - **Thresholds**: >40% (SaaS/Cybersecurity), >30% (Chips/AI, Robotics/Data Centers), >20% (Energy/Infra).
 - **Key Questions**:
-  - Does the company achieve a Rule of 40 score above sector-specific thresholds?
-  - Is the balance between revenue growth and FCF margin sustainable or improving?
-  - How does the Rule of 40 score and trend compare to industry peers?
+  - Does the company achieve a Rule of 40 score above sector-specific thresholds in either Method A or Method B?
+  - Is the balance between revenue growth and profitability (FCF margin for Method A, EBITDA margin for Method B) sustainable or improving?
+  - How do the Rule of 40 scores and trends compare to industry peers?
+  - Are there significant differences between Method A and Method B results, and what do they imply about short-term vs. long-term performance?
 
 ### C. Operating Profitability Analysis
 *Pro-Level Lens*: Focus on **margin trajectory**. Expanding margins signal operating leverage and pricing power.
@@ -266,7 +277,7 @@ Score = (0.25 × Revenue Growth Score) + (0.20 × Rule of 40 Score) + (0.15 × O
   - Avoid: <50
 - **Metric Scoring**:
   - Revenue Growth: >20% = 90, 5–20% = 60, <5% = 30
-  - Rule of 40: >40% (SaaS/Cyber) or >30% (Chips/AI) or >20% (Energy/Infra) = 90, 30–40% (SaaS/Cyber) or 20–30% (Chips/AI) or 10–20% (Energy/Infra) = 60, <30% (SaaS/Cyber) or <20% (Chips/AI) or <10% (Energy/Infra) = 30
+  - Rule of 40 (Method A or B): >40% (SaaS/Cyber) or >30% (Chips/AI) or >20% (Energy/Infra) = 90, 30–40% (SaaS/Cyber) or 20–30% (Chips/AI) or 10–20% (Energy/Infra) = 60, <30% (SaaS/Cyber) or <20% (Chips/AI) or <10% (Energy/Infra) = 30
   - Operating Margin: >20% = 90, 10–20% = 60, <10% = 30
   - ROIC: >15% = 90, 8–15% = 60, <8% = 30
   - EV/Sales: <10x (SaaS/Cyber) or <8x (Chips/AI) or <3x (Energy/Infra) = 90, 10–15x (SaaS/Cyber) or 8–12x (Chips/AI) or 3–5x (Energy/Infra) = 60, >15x (SaaS/Cyber) or >12x (Chips/AI) or >5x (Energy/Infra) = 30
@@ -292,7 +303,7 @@ Score = (0.25 × Revenue Growth Score) + (0.20 × Rule of 40 Score) + (0.15 × O
   - **Red Flags**: Declining NDR, rising DSOs, management turnover, aggressive revenue recognition, large insider selling, declining gross margin, rising dilution.
   - **Green Flags**: Accelerating NDR, insider buying, new product launches, multi-year customer contracts, improving Rule of 40, margin expansion.
 
-# Appendix B: Abbreviations
+## Appendix B: Abbreviations
 - **ARR**: Annual Recurring Revenue – Revenue from recurring subscriptions.
 - **Book-to-Bill**: Ratio of orders received to revenue billed in a period.
 - **CAGR**: Compound Annual Growth Rate.
