@@ -1,7 +1,7 @@
 # The Twin Revolutions: An Investment Thesis for the ASI & Sovereign Finance Era
 
-**Version:** 2.0  
-**Date:** October 8, 2025  
+**Version:** 3.1 ("The Intel Conviction Edition")
+**Date:** October 9, 2025
 **Filename:** twin_revolution_ASI_and_Sovereign_finance.md
 
 ## I. Core Premise: The Twin Revolutions - A Two-Front War for Global Dominance
@@ -27,140 +27,77 @@ This thesis posits that the most durable, alpha-generating returns will come not
     *   **Compute:** The entire semiconductor supply chain, from design (EDA) and manufacturing (Fabs, Process Control) to the final logic (CPUs/GPUs) and memory (HBM) chips.
     *   **Power:** The raw electricity required to run these compute-intensive systems. The exponential growth in data center energy demand makes power generation—especially reliable, clean, baseload power—a primary limiting factor and a critical investment area.
 
-### 3. The Parallel Revolution: Sovereign Finance & The Inescapable Feedback Loop - **FRONT #2 OF THE WAR**
+### 3. The Parallel Revolution: Sovereign Finance & The Inescapable Feedback Loop
 
-*   **The Existential Threat:** China's Digital Yuan (e-CNY) represents the most serious challenge to U.S. dollar hegemony since Bretton Woods. By 2025, China has onboarded over 500 million users and is aggressively pushing e-CNY adoption through Belt and Road Initiative partners, effectively creating a parallel global payments system that bypasses the dollar. **If China wins the tokenization race, they control global finance AND can fund unlimited ASI development.**
+*   **The Thesis:** In parallel to the ASI race, the global financial system is being tokenized. The rise of China's Digital Yuan (e-CNY) poses a direct threat to U.S. dollar hegemony.
+*   **The U.S. Counter-Strategy (GENIUS Act of 2025):** The US is fostering a regulated stablecoin ecosystem. This creates a brilliant, self-reinforcing feedback loop:
+    1.  The world tokenizes trillions in **Real-World Assets (RWAs)** like stocks, real estate, and art.
+    2.  These RWAs require **USD-pegged stablecoins** (USDC, USDT) as the primary settlement medium.
+    3.  Under the GENIUS Act, every dollar of new stablecoins must be **backed by US Treasury bills.**
+    4.  This creates a massive, structural, and perpetual global bid for US government debt, effectively leveraging the entire crypto revolution to fund US fiscal policy and reinforce dollar dominance.
 
-*   **The U.S. Counter-Strategy (GENIUS Act of 2025) - The Financial Front Victory:** Rather than compete directly with a CBDC, the US has deployed a **masterfully disguised debt monetization scheme**—weaponizing crypto "innovation" and China competition fears to create unlimited demand for US government debt. This represents perhaps the most sophisticated fiscal engineering in modern history, designed to **self-fund the ASI race through financial dominance**:
+## III. Portfolio Strategy & Visualizations
 
-    1.  **The Innovation Trojan Horse:** Under the guise of "competing with China" and "fostering financial innovation," the US mandates that ALL stablecoins—the backbone of the $10+ trillion tokenized economy—must be 100% backed by US Treasury bills. This isn't about innovation; it's about creating **forced buyers** of US government debt to fund **both** the financial war AND the ASI war.
-    
-    2.  **Tokenization as Dual-Front War Funding:** The world tokenizes $10+ trillion in **Real-World Assets (RWAs)**—stocks, bonds, real estate, commodities, art, intellectual property—making them programmable and globally tradeable 24/7. Every tokenized asset requires USD-pegged stablecoins for settlement, creating **structural, perpetual demand** for Treasury-backed digital dollars that **directly funds ASI infrastructure investments**.
-    
-    3.  **The Two-Front Financing Machine:** As tokenization scales exponentially, stablecoin issuers (Circle, Tether, PayPal) become the largest buyers of short-term US government debt. The crypto ecosystem essentially becomes a **self-funding mechanism for infinite US spending on BOTH fronts**—allowing America to simultaneously finance ASI development (CHIPS Act, compute infrastructure) AND financial dominance (regulatory frameworks, digital dollar infrastructure) while competitors face capital constraints on both fronts.
-    
-    4.  **Strategic Cross-Front Advantage:** The ultimate asymmetric weapon—winning the financial front provides unlimited funding for the ASI front, while winning the ASI front provides technological superiority to maintain financial dominance. China must fight both wars with limited, traditional financing while the US creates its own funding through monetary engineering.
-    
-    5.  **The Genius of the Two-Front Deception:** Global markets believe they're participating in separate "AI innovation" and "financial innovation" trends, when they're actually funding **a coordinated two-front war strategy**. The crypto community inadvertently becomes the **financing arm of American dual-front dominance**, while China is forced to compete against a system that can print funding for both technological and financial supremacy.
+This portfolio has been refined into a **"Pure Thesis Contrarian"** model. It eliminates key hedges (TSM, NVDA) to maximize conviction in the core "Builder-First" thesis. It is structured as a **"Core Conviction & Diversified Tail"** portfolio, concentrating capital in a handful of irreplaceable champions while maintaining a long tail of essential specialists.
 
-## III. Portfolio Allocation Summary & Visualizations
-
-This portfolio is structured as a **"Core Conviction & Diversified Tail"** model. The allocation is heavily weighted towards the foundational "builder" pillars of the thesis. *Note: The final goal allocations sum to 100%.*
-
-### **HONEST ASSESSMENT: Critical Issues for Small Portfolio Implementation**
-
-**The Brutal Truth:** This allocation is **fundamentally broken** for a $30k portfolio. With 40+ positions, you're creating a **transaction cost nightmare** and **over-diversification that kills alpha**. Many positions would be under $600 each—essentially meaningless for your returns but meaningful for brokerage fees.
-
-**Core Problems:**
-1. **Death by a Thousand Cuts:** Transaction costs will devour 2-4% of returns annually
-2. **Conviction Dilution:** You can't track/research 40+ companies effectively
-3. **Rebalancing Impossibility:** Small positions become impossible to manage
-4. **Thesis Misalignment:** You're not concentrated enough on your highest conviction "two-front war" winners
-
-### **Small Portfolio Considerations: Strengthening Thesis Alignment**
-
-**For a $30k Portfolio, You Need Maximum Concentration on Maximum Conviction Positions:**
-
-**Recommended Restructure - "True Conviction" Model (8-12 positions max):**
-
-| **Two-Front War Category** | **Top Conviction Pick** | **Allocation** | **Rationale** |
-|---|---|---|---|
-| **ASI Front #1 - Compute Dominance** | NVDA | 15.0% | Undisputed AI chip leader, already winning |
-| **ASI Front #1 - US Sovereign Champion** | INTC | 12.0% | National security pick, govt-backed turnaround |
-| **Finance Front #2 - Digital Asset Gateway** | COIN | 10.0% | US crypto "national champion," direct GENIUS Act beneficiary |
-| **ASI Front #1 - Cloud Infrastructure** | MSFT | 10.0% | Azure dominance, enterprise AI distribution |
-| **Cross-Front - Data/Power Infrastructure** | EQIX | 8.0% | Physical backbone for both AI and digital finance |
-| **Finance Front #2 - Reserve Asset** | IBIT | 8.0% | Bitcoin as digital gold, anti-debasement hedge |
-| **ASI Front #1 - Critical Supply Chain** | AVGO | 7.0% | Custom silicon enabler, AI networking dominance |
-| **Cross-Front - Power Generation** | VST | 6.0% | Energy for both AI compute and crypto mining |
-| **ASI Front #1 - Fab Equipment** | ONTO | 5.0% | Quality control for new US fabs |
-| **Finance Front #2 - Settlement Layer** | ETHE | 4.0% | Ethereum as tokenization infrastructure |
-| **ASI Front #1 - Hyperscaler** | GOOG | 4.0% | AI research leader, search moat |
-| **Cross-Front - Security/Data** | PLTR | 3.0% | Government contracts, data operating system |
-| **Cash/Rebalancing Buffer** | Cash | 8.0% | Flexibility for opportunities/rebalancing |
-
-**Total: 100%** | **Positions: 12** | **Average Position: $2,500**
-
-**Why This Works Better:**
-- **Meaningful Position Sizes:** Each position $900-$4,500, large enough to matter
-- **Transaction Efficiency:** 12 positions vs 40+ = 70% reduction in trading costs
-- **Research Manageable:** You can actually follow 12 companies deeply
-- **True Conviction:** Only your highest-confidence two-front war plays
-- **Thesis Alignment:** Direct exposure to both ASI and sovereign finance fronts
-- **Liquidity Focus:** All large-cap, liquid names you can actually trade efficiently
-
-**Key Insight:** Better to own 12 positions at meaningful sizes that directly benefit from the two-front war than 40+ tiny positions that dilute your conviction and returns.
-
-### Allocation by Pillar
+### Allocation by Pillar (Final Targets)
 
 | Pillar | Final Goal % |
 | :--- | :--- |
-| **AI CHIPS/GPUS** | 27.50% |
-| **Critical Supply Chain-Data Centers** | 20.50% |
-| **AI Titans** | 13.00% |
-| **Applied AI & Robotics** | 11.00% |
-| **Sovereign Finance & Digital Assets** | 10.00% |
-| **Data OS & Security** | 9.50% |
-| **Critical Supply Chain-GPUs/CHIPS** | 9.50% |
-| **Powering the ASI Revolution** | 9.00% |
+| **ASI / Compute** | 22.50% |
+| **Power / Energy** | 12.00% |
+| **Sovereign Finance** | 11.85% |
+| **Security / Data OS** | 10.50% |
+| **AI Titans / Cloud** | 10.00% |
+| **Data Infra / Supply** | 8.81% |
+| **Applied AI / Robotics**| 4.62% |
+| **Cash** | 19.72% |
 | **TOTAL** | **100.00%** |
 
 ### Visual Representation of Pillar Weighting
 
 ```
-AI CHIPS/GPUS:                  [███████████████████████████] 27.5%
-Crit. Supply Chain - Data Centers: [█████████████████████] 20.5%
-AI Titans:                        [█████████████] 13.0%
-Applied AI & Robotics:             [███████████] 11.0%
-Sovereign Finance & Digital Assets:[██████████] 10.0%
-Data OS & Security:                [██████████] 9.5%
-Crit. Supply Chain - GPUs/CHIPS:   [██████████] 9.5%
-Powering the ASI Revolution:       [█████████] 9.0%
+ASI / Compute:           [███████████████████████] 22.5%
+Power / Energy:          [████████████] 12.0%
+Sovereign Finance:       [████████████] 11.9%
+Security / Data OS:      [███████████] 10.5%
+AI Titans / Cloud:       [██████████] 10.0%
+Data Infra / Supply:     [█████████] 8.8%
+Applied AI / Robotics:   [█████] 4.6%
+Cash (Strategic Reserve):[████████████████████] 19.7%
 ```
 
-## IV. The Final Portfolio Blueprint (v15 - Definitive)
+## IV. The Final Portfolio Blueprint ("Pure Thesis" Edition)
+
+*This table represents the final target allocations. It is a guide for the deployment of the remaining cash reserve.*
 
 | Pillar | Ticker | Name | Final Goal % | Thesis for Inclusion |
 | :--- | :--- | :--- | :--- | :--- |
-| **AI CHIPS/GPUS** | INTC | Intel Corp | 10.00% | The US "National Champion" for a secure, onshored AI supply chain. |
-| **AI CHIPS/GPUS** | AVGO | Broadcom Inc. | 8.00% | The "agnostic enabler" of custom silicon and high-speed networking. |
-| **Critical Supply Chain-Data Centers** | EQIX | Equinix Inc | 6.50% | "The Digital Landlord"; premier physical real estate for data interconnection. |
-| **AI CHIPS/GPUS** | NVDA | NVIDIA CORPORATION | 5.50% | The undisputed current leader in AI chips and software. |
-| **AI Titans** | GOOG | Alphabet Inc. | 5.00% | Leader in foundational AI research and development. |
-| **Critical Supply Chain-GPUs/CHIPS** | ONTO | Onto Innovation | 5.00% | "The Quality Control"; essential 'picks & shovels' for new fab construction. |
-| **Powering the ASI Revolution** | VST | Vistra Corp | 5.00% | The "Incumbent Workhorse" providing at-scale bridge power for today's needs. |
-| **Sovereign Finance & Digital Assets** | COIN | Coinbase Global | 4.00% | The US "National Champion" & regulated gateway for the digital asset economy. |
-| **Sovereign Finance & Digital Assets** | IBIT | Bitcoin ETF | 4.00% | The neutral, decentralized reserve asset for the digital age. |
-| **AI Titans** | MSFT | Microsoft Corporation | 4.00% | The dominant enterprise platform for distributing AI via Azure. |
-| **AI CHIPS/GPUS** | TSM | Taiwan Semiconductor | 4.00% | The indispensable global leader and current manufacturing champion. |
-| **Data OS & Security** | PANW | Palo Alto Networks | 4.00% | "The Fortress Architect"; the consolidating security platform. |
-| **Critical Supply Chain-Data Centers** | VRT | Vertiv Holdings Co | 3.00% | Solves the critical data center cooling bottleneck. |
-| **Applied AI & Robotics** | HUMN | Robotics ETFs | 2.50% | Thematic bet on the physical embodiment of AI. |
-| **Applied AI & Robotics** | KOID | Robotics ETFs | 2.50% | Thematic bet on the physical embodiment of AI. |
-| **Applied AI & Robotics** | TEM | Tempus AI, Inc | 2.50% | The AI-Health Data Engine; building a proprietary data moat for medicine. |
-| **Critical Supply Chain-Data Centers** | CRWV | CoreWeave, Inc. | 2.50% | A pure-play on providing specialized AI cloud compute. |
-| **Powering the ASI Revolution** | CEG | Constellation Energy | 2.50% | The "Clean Baseload Champion"; premier nuclear provider for green data centers. |
-| **Sovereign Finance & Digital Assets** | ETHE | Ethereum ETF | 2.00% | The foundational settlement layer for a tokenized world. |
-| **AI Titans** | AMZN | Amazon.com, Inc. | 2.00% | The indispensable cloud infrastructure leader with AWS. |
-| **AI Titans** | META | Meta Platforms | 2.00% | Leader in open-source models (Llama) with a unique data moat. |
-| **Critical Supply Chain-Data Centers** | SMCI | Super Micro Computer | 2.00% | Leading integrator of AI-optimized servers. |
-| **Critical Supply Chain-Data Centers** | ORCL | Oracle Corporation | 2.00% | Enterprise cloud provider for major AI labs. |
-| **Critical Supply Chain-GPUs/CHIPS** | SNPS | Synopsys, Inc. | 2.00% | The foundational software architect for all advanced chip design. |
-| **Data OS & Security** | CRWD | CrowdStrike Holdings | 2.00% | "The Elite Royal Guard"; best-in-class endpoint protection. |
-| **Data OS & Security** | ZS | Zscaler, Inc. | 2.00% | "The Secure Gateway"; leader in Zero Trust and secure access. |
-| **Applied AI & Robotics** | SYM | Symbiotic Inc. | 1.50% | The Automation Engine; AI-powered robotics for industrial automation. |
-| **Critical Supply Chain-Data Centers** | ANET | Arista Networks | 1.50% | The dominant networking provider for high-speed AI data centers. |
-| **Critical Supply Chain-GPUs/CHIPS** | MU | Micron Technology | 1.50% | Key US-based provider of high-bandwidth memory (HBM). |
-| **Data OS & Security** | PLTR | Palantir Technologies | 1.50% | The "Data Operating System" for secure, operational ASI. |
-| **Powering the ASI Revolution** | OKLO | Oklo Inc. | 1.50% | A long-term, venture-style bet on next-gen modular nuclear. |
-| **Applied AI & Robotics** | CRSP | CRISPR Therapeutics | 1.00% | The AI-Bio Synergy; leader in genomics to be supercharged by ASI. |
-| **Applied AI & Robotics** | ISRG | Intuitive Surgical | 1.00% | The AI-Robotic Surgeon; dominant leader supercharged by AI. |
-| **Critical Supply Chain-Data Centers** | ALAB | Astera Labs | 1.00% | Provider of critical connectivity for AI servers. |
-| **Critical Supply Chain-Data Centers** | APH | Amphenol Corporation | 1.00% | Diversified provider of connectors and components. |
-| **Critical Supply Chain-Data Centers** | CRDO | Credo Technology | 1.00% | Provider of high-speed connectivity solutions. |
-| **Critical Supply Chain-GPUs/CHIPS** | AMAT | Applied Materials | 1.00% | "Picks and shovels" play on the equipment used to build fabs. |
+| **ASI / Compute** | INTC | Intel Corp | 12.00% | The US "National Champion" for a secure, onshored AI supply chain. |
+| **ASI / Compute** | AVGO | Broadcom Inc. | 8.50% | The "agnostic enabler" of custom silicon and high-speed networking. |
+| **Power / Energy** | VST | Vistra Corp | 6.00% | The "Incumbent Workhorse" providing at-scale bridge power for today's needs. |
+| **Sovereign Finance**| COIN | Coinbase Global | 5.00% | The US "National Champion" & regulated gateway for the digital asset economy. |
+| **Data Infra / Supply**| EQIX | Equinix Inc | 4.50% | "The Digital Landlord"; premier physical real estate for data interconnection. |
+| **ASI / Compute** | ONTO | Onto Innovation | 4.50% | "The Quality Control"; essential 'picks & shovels' for new fab construction. |
+| **Sovereign Finance**| IBIT | Bitcoin ETF | 4.00% | The neutral, decentralized reserve asset for the digital age. |
+| **Power / Energy** | CEG | Constellation Energy | 4.00% | The "Clean Baseload Champion"; premier nuclear provider for green data centers. |
+| **Security / Data OS**| PANW | Palo Alto Networks | 4.00% | "The Fortress Architect"; the consolidating security platform. |
+| **AI Titans / Cloud**| MSFT | Microsoft Corporation | 3.50% | The dominant enterprise platform for distributing AI via Azure. |
+| **AI Titans / Cloud**| GOO | Alphabet Inc. | 3.50% | Leader in foundational AI research and development. |
+| **Sovereign Finance**| ETHA | Ethereum ETF | 2.85% | The foundational settlement layer for a tokenized world. |
+| **Applied AI / Robo** | HUMN | Robotics ETFs | 2.50% | Thematic bet on the physical embodiment of AI. |
+| **Applied AI / Robo** | KOID | Robotics ETFs | 2.50% | Thematic bet on the physical embodiment of AI. |
+| **Security / Data OS**| ZS | Zscaler, Inc. | 2.50% | "The Secure Gateway"; leader in Zero Trust and secure access. |
+| **Security / Data OS**| CRWD | CrowdStrike Holdings | 2.50% | "The Elite Royal Guard"; best-in-class endpoint protection. |
+| **Data Infra / Supply**| CORZ | Core Scientific, Inc. | 2.00% | High-beta play on the AI/Crypto infrastructure overlap. |
+| **Data Infra / Supply**| CRWV | CoreWeave, Inc. | 2.00% | A pure-play on providing specialized AI cloud compute. |
+| **Data Infra / Supply**| VRT | Vertiv Holdings Co | 2.00% | Solves the critical data center cooling bottleneck. |
+| **Power / Energy** | OKLO | Oklo Inc. | 2.00% | A long-term, venture-style bet on next-gen modular nuclear. |
+| **ASI / Compute** | SNPS | Synopsys, Inc. | 1.71% | The foundational software architect for all advanced chip design. |
+| **Data Infra / Supply**| ANET | Arista Networks | 1.65% | The dominant networking provider for high-speed AI data centers. |
+| **ASI / Compute** | MU | Micron Technology | 1.36% | Key US-based provider of high-bandwidth memory (HBM). |
 
-**TOTAL ALLOCATED:** 100%
+*Note: The remaining 19.72% of the portfolio is held in a strategic cash reserve for opportunistic deployment.*
 
 ## V. Risk Factors & Stress Tests (Summary of Red Team Analysis)
 
@@ -169,7 +106,7 @@ This thesis is high-risk and fragile. Its success is contingent upon several key
 1.  **Execution Risk (The "Intel Problem"):** The thesis relies heavily on Intel's ability to execute a flawless and timely turnaround. Any significant stumbles in their foundry roadmap would severely damage the "Sovereign Champion" cornerstone.
 2.  **Algorithmic Efficiency Gains (The "Black Swan"):** A breakthrough in AI algorithms that dramatically reduces the need for raw compute and power would invalidate the entire "physical bottleneck" premise, potentially turning fabs and power plants into stranded assets.
 3.  **Hyperscaler Vertical Integration:** AI Titans (Google, Amazon) could accelerate their in-house custom chip designs, bypassing third-party hardware providers and capturing more value internally.
-4.  **Geopolitical De-escalation:** A sudden and lasting peace or resolution of tensions (e.g., in Taiwan) would remove the urgent "national security" driver, causing the market to revert to a "most efficient" globalized model, favoring incumbents like TSMC.
+4.  **Geopolitical De-escalation:** A sudden and lasting peace or resolution of tensions (e.g., in Taiwan) would remove the urgent "national security" driver, causing the market to revert to a "most efficient" globalized model, favoring the very incumbents (TSM, NVDA) this portfolio has sold.
 5.  **Regulatory Whiplash (Crypto):** A hostile US regulatory shift against crypto exchanges, mining, or stablecoins could cripple the "Sovereign Finance" pillar.
 
 ## VI. References & Further Reading
@@ -177,8 +114,12 @@ This thesis is high-risk and fragile. Its success is contingent upon several key
 This section provides sources and further reading to support the core pillars of the thesis.
 
 ### 1. Geopolitical Driver & Sovereign Supply Chains
-*   **The CHIPS and Science Act:** [https://www.congress.gov/bill/117th-congress/house-bill/4346](https://www.congress.gov/bill/117th-congress/house-bill/4346) - *Official resource from the U.S. Department of Commerce outlining the goals and implementation of the act.*
 *   **Aschenbrenner, L. (2024). "Situational Awareness: The Decade Ahead":** [https://situational-awareness.ai](https://situational-awareness.ai) - *The foundational essay arguing for a "Manhattan Project"-style approach to ASI as a national security imperative.*
+*   **The CHIPS and Science Act:** [https://www.commerce.gov/chips](https://www.commerce.gov/chips) - *Official resource from the U.S. Department of Commerce outlining the goals and implementation of the act.*
+*   **Intel Form 8-K (August 22, 2025): Apollo Global Management Joint Venture:** [https://www.sec.gov/Archives/edgar/data/50863/000005086325000129/intc-20250822.htm](https://www.sec.gov/Archives/edgar/data/50863/000005086325000129/intc-20250822.htm) - *Definitive agreement for an $11 billion investment by Apollo, validating Intel's manufacturing roadmap and providing significant capital for domestic fab expansion without shareholder dilution.*
+*   **OPB News - "Intel, Trump administration signal potential for direct U.S. government stake" (August 22, 2025):** [https://www.opb.org/article/2025/08/22/intel-trump-us-government-stake/](https://www.opb.org/article/2025/08/22/intel-trump-us-government-stake/) - *Reporting on the U.S. government's stated intent to act as a direct equity partner in Intel's domestic foundry projects, confirming the "National Champion" thesis and the shift to direct industrial policy.*
+*   **PBS NewsHour - "What economic and policy experts think about the U.S. government's stake in Intel" (August 23, 2025):** [https://www.pbs.org/newshour/politics/what-economic-and-policy-experts-think-about-the-u-s-governments-stake-in-intel](https://www.pbs.org/newshour/politics/what-economic-and-policy-experts-think-about-the-u-s-governments-stake-in-intel) - *Critical analysis exploring the bear case for direct government investment, including risks of crony capitalism, moral hazard, and execution failure. Essential for "Red Team" analysis of the thesis.*
+*   **Intel Form S-3 (August 22, 2025): Automatic Shelf Registration:** [https://www.intc.com/filings-reports/all-sec-filings/content/0000050863-25-000129/0000050863-25-000129.pdf](https://www.intc.com/filings-reports/all-sec-filings/content/0000050863-25-000129/0000050863-25-000129.pdf) - *Procedural filing enabling future capital raises, providing the financial flexibility required for a multi-year, capital-intensive buildout and positioning the company to accept strategic partners, including potential sovereign investment.*
 
 ### 2. Physical Constraints: Power & Compute
 *   **International Energy Agency (IEA) Report - "Electricity 2024":** [https://www.iea.org/reports/electricity-2024](https://www.iea.org/reports/electricity-2024) - *Contains detailed analysis and forecasts on the exponential growth of electricity demand from data centers, AI, and cryptocurrency. Projects data center electricity consumption could double from 460 TWh in 2022 to over 1,000 TWh by 2026.*
@@ -193,4 +134,3 @@ This section provides sources and further reading to support the core pillars of
 ---
 
 *This document should be treated as a living thesis, to be updated and challenged as new market data, technological developments, and geopolitical events unfold.*
-```
