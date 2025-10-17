@@ -67,3 +67,13 @@ build/
 # Temporary files
 *.tmp
 *.temp
+
+# Sensitive account and portfolio data (DO NOT COMMIT)
+TargetPortfolio/*.json
+TargetPortfolio/*.md
+TargetPortfolio/*.csv
+backend/src/data/accounts.ts
+backend/src/data/balances.ts
+backend/src/data/currentHoldings.ts
+backend/src/data/orders.ts
+backend/src/data/positions.ts
