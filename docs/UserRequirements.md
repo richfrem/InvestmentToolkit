@@ -78,4 +78,60 @@ Create a script in `scripts/` (e.g., `generate_portfolio_alignment_table.ts`) th
 	- Highlights gaps, overweights, underweights, and thesis breakers
 	- Outputs a markdown table to `TargetPortfolio/portfolio_thesis_alignment_report.md`
 The LLM prompt will analyze this table, provide recommendations, and update target values/gaps as needed.
-Document the workflow and usage in `UserRequirements.md` and `TaskTracker.md`.
+
+## LLM Prompt Usage for Portfolio-Thesis Alignment
+
+**Goal:** Enable an LLM to analyze current portfolio/account data, compare it against the investment thesis, and recommend improvements.
+
+**Requirements:**
+1. **Data Access**
+	- LLM must be able to read and process all relevant data files, including `exportedData.json` (latest portfolio snapshot), and any supporting markdown or code files.
+	- Data export scripts must ensure `exportedData.json` is always up-to-date and complete.
+
+2. **Thesis Integration**
+	- LLM must be able to access and parse the investment thesis (`InvestmentThesis/twin_revolution_ASI_and_Sovereign_finance.md`).
+	- Pillar definitions, target allocations, and sell discipline criteria must be extractable for analysis.
+
+3. **Prompt-Based Analysis**
+	- Provide a prompt template (e.g., `Prompts/portfolio_thesis_alignment_prompt.md`) that instructs the LLM to:
+	  - Summarize current portfolio allocations and holdings.
+	  - Compare actual allocations to thesis targets and pillar weightings.
+	  - Identify misalignments, over/underweights, and missing exposures.
+	  - Apply sell discipline and risk factor checks.
+	  - Recommend specific adjustments (e.g., rebalance, add/remove positions, adjust weights).
+
+4. **Recommendations Output**
+	- LLM should output a markdown report with:
+	  - Portfolio summary table.
+	  - Thesis alignment analysis.
+	  - Actionable recommendations for improvement.
+	  - Rationale for each recommendation (referencing thesis sections).
+
+5. **Workflow Documentation**
+	- Document the end-to-end workflow in `UserRequirements.md` and `TaskTracker.md`:
+	  - How to export data.
+	  - How to run the LLM analysis.
+	  - How to interpret and act on recommendations.
+
+## Additional Requirements
+
+**UR24:** Automated Backup & Version Control
+- All critical data files, documentation, and ADRs should be versioned using git or an automated backup workflow. This ensures restore points are available and prevents accidental data loss.
+
+**UR25:** Error Logging & Diagnostics
+- Implement comprehensive error logging for backend and frontend operations. Logs should be easily accessible for debugging and include timestamps, error codes, and actionable messages.
+
+**UR26:** Data Integrity Checks
+- Add validation routines to ensure exported data (JSON, CSV, markdown) matches expected schema and is free of corruption or missing fields before analysis or export.
+
+**UR27:** User-Driven Restore Workflow
+- Provide a simple UI or CLI tool for restoring previous versions of documentation, ADRs, and data files from backups or git history.
+
+**UR28:** Security Audit Trail
+- Maintain an audit trail of all file operations (create, edit, delete, move) for sensitive data and documentation, with user attribution and timestamps.
+
+**UR29:** Accessibility & Usability
+- Ensure the UI and exported reports are accessible (WCAG compliance), with clear navigation, readable tables, and support for screen readers.
+
+**UR30:** Modular Prompt Library
+- Maintain a library of prompt templates for LLM analysis, portfolio review, and thesis alignment, versioned and documented for easy reuse and improvement.

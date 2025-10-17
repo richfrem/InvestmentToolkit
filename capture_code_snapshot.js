@@ -24,6 +24,13 @@ const excludeDirNames = new Set([
 const excludeRelativePaths = [
     // No top-level paths need to be excluded by default in this project structure.
     // '.github' would be a good example if you had it.
+    // Exclude all sensitive data files and folders (matches .gitignore)
+    'TargetPortfolio',
+    'backend/src/data/accounts.ts',
+    'backend/src/data/balances.ts',
+    'backend/src/data/currentHoldings.ts',
+    'backend/src/data/orders.ts',
+    'backend/src/data/positions.ts',
 ];
 
 const alwaysExcludeFiles = new Set([

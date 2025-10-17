@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import PortfolioCharts from './PortfolioCharts';
+import HoldingsHistogram from './HoldingsHistogram';
+import PillarHistogram from './PillarHistogram';
 import { Button } from './ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { usePortfolio } from '../features/portfolio/hooks/usePortfolio';
@@ -19,7 +22,11 @@ const Dashboard = ({ onAuth }: DashboardProps) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
+  <HoldingsHistogram />
+  <PillarHistogram />
+      {/* Optionally keep pillar and pie charts below, or remove if too busy */}
+      {/* <PortfolioCharts /> */}
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Portfolio Holdings</h2>
         <Button onClick={handleFetch} disabled={loading}>
