@@ -1,49 +1,30 @@
+# Questrade Portfolio Viewer
 
-# InvestmentToolkit
+A secure app to view your Questrade holdings via API, display in a dashboard, and save to local spreadsheet.
 
+## Features
+- Fetch holdings from Questrade API.
+- Display in responsive table.
+- Manual OAuth authentication.
+- Local .ts storage (V1).
 
+## Setup
+1. Register for Questrade API, get client ID/secret.
+2. Copy `.env.example` to `.env`, fill in credentials.
+3. Install dependencies: `npm run install-all`.
+4. Setup DB: `cd backend && npx prisma migrate dev --name init`.
+5. Run: `./start.sh` to start both servers, or `./stop.sh` to stop them.
 
-A toolkit for professional stock analysis, screening, portfolio review, and advanced investment thesis development using a structured, repeatable investment framework.
+## Running the App
+- Use `./start.sh` to start backend (port 3001) and frontend (port 5173) servers.
+- Use `./stop.sh` to stop the servers.
+- Backend API: http://localhost:3001
+- Frontend: http://localhost:5173
 
----
+## Security
+- .env for secrets.
+- Husky pre-commit scans for secrets.
+- No password storage.
 
-## Table of Contents
-
-- [defininitive_professional_investment_framework.md](#defininitive_professional_investment_frameworkmd): The main investment analysis framework.
-- [unified_stock_analyst_prompt.md](#unified_stock_analyst_promptmd): Unified, guided prompt for screening, comparison, and portfolio review (recommended).
-- [twin_revolution_ASI_and_Sovereign_finance.md](#twin_revolution_asi_and_sovereign_financemd): Advanced investment thesis on the intersection of ASI and sovereign finance.
-- [Archive/lyra.md](Archive/lyra.md): AI prompt optimization specialist instructions.
-- **Archived prompts:**
-  - [Archive/stock_analyst_AI_prompt.md](Archive/stock_analyst_AI_prompt.md)
-  - [Archive/stock_screening_prompt_for_professional_investment_framework1.md](Archive/stock_screening_prompt_for_professional_investment_framework1.md)
-  - [Archive/Portfolio_Review_Prompt.md](Archive/Portfolio_Review_Prompt.md)
-
----
-
-## Overview
-
-
-This project provides:
-- A comprehensive framework for analyzing stocks (qualitative and quantitative).
-- A prompt for screening and ranking stocks in high-growth sectors.
-- A prompt for reviewing and challenging your current portfolio holdings.
-- An advanced thesis on the twin revolutions of Artificial Super Intelligence (ASI) and Sovereign Finance, with a model portfolio and risk framework.
-
----
-
-
-## Usage
-
-
-1. Use `defininitive_professional_investment_framework.md` as your reference for all analysis, scoring, and methodology.
-2. For all analyst workflows (screening, comparison, portfolio review), use the unified prompt in `unified_stock_analyst_prompt.md` (recommended).
-3. For advanced macro and thematic thesis work, see `twin_revolution_ASI_and_Sovereign_finance.md`.
-4. For prompt optimization, use `Archive/lyra.md`.
-5. Legacy prompts for screening and portfolio review are available in the `Archive/` folder for reference only.
-
----
-
-## License
-
-For educational and research purposes only.
-
+## Roadmap
+See `docs/Roadmap.md`.

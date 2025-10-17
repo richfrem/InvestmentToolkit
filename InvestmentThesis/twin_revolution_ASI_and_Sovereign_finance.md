@@ -1,7 +1,7 @@
 # The Twin Revolutions: An Investment Thesis for the ASI & Sovereign Finance Era
 
-**Version:** 5.0 ("The Institutionalized Thesis")
-**Date:** October 10, 2025
+**Version:** 6.0 ("The Fully Deployed Thesis")
+**Date:** October 15, 2025
 **Filename:** twin_revolution_ASI_and_Sovereign_finance.md
 
 ## I. Core Premise: The Twin Revolutions - A Two-Front War for Global Dominance
@@ -38,74 +38,73 @@ This thesis posits that the most durable, alpha-generating returns will come fro
 
 ## III. Portfolio Strategy & Visualizations
 
-This portfolio has completed its strategic evolution. It is now a **"Fortified Barbell"** strategy, stress-tested and optimized against an institutional-grade quantitative framework. The structure is a barbell:
+The portfolio has reached its target state, reflecting a **"Fortified Barbell"** strategy. The build-out phase, which capitalized on significant market volatility, is complete. The portfolio is now fully deployed. The strategy now shifts from initial construction to active management, monitoring, and opportunistic rebalancing.
+
+The structure is a barbell:
 *   **One End:** Hyper-stable, capital-efficient compounders and market leaders (e.g., AVGO, SNPS, NVDA).
 *   **The Other End:** High-risk, high-reward, thesis-driven special situations and turnarounds (e.g., INTC, CORZ, OKLO).
 
-The final allocation balances the high-conviction contrarian core with pragmatic hedges. The cash position has been optimized to the ~19% institutional "sweet spot," balancing the need for compounding with the strategic value of tactical optionality. This final version represents a resilient, efficient, and institutional-grade expression of the core thesis.
+The cash position is now at its optimized strategic level (~19%), providing a balance of compounding and tactical optionality for future market dislocations.
 
-### Allocation by Pillar (Final Targets - V5.0)
+### Allocation by Pillar (Final Targets - V6.0)
 
 | Pillar | Final Goal % |
 | :--- | :--- |
-| **ASI / Compute** | 30.83% |
-| **Cash** | 19.30% |
-| **Power / Energy** | 10.60% |
-| **AI Titans / Cloud** | 9.10% |
-| **Data Infra / Supply** | 9.01% |
-| **Sovereign Finance** | 8.02% |
-| **Security / Data OS** | 7.25% |
-| **Applied AI / Robotics**| 4.89% |
-| **TOTAL** | **99.00%** |
-
-*(Note: Total is slightly off 100% due to rounding in the source spreadsheet.)*
+| **ASI / Compute – Chips** | 32.00% |
+| **Cash** | 18.66% |
+| **Power / Energy** | 10.00% |
+| **Data Infra / Supply Chain** | 9.47% |
+| **AI Titans / Cloud** | 9.30% |
+| **Sovereign Finance / Digital Assets** | 7.91% |
+| **Security / Data OS** | 7.48% |
+| **Applied AI / Robotics** | 5.18% |
+| **TOTAL** | **100.00%** |
 
 ### Visual Representation of Pillar Weighting
 ```
-ASI / Compute:           [██████████████████████████████] 30.8%
-Cash (Strategic Reserve):[███████████████████] 19.3%
-Power / Energy:          [███████████] 10.6%
-AI Titans / Cloud:       [█████████] 9.1%
-Data Infra / Supply:     [█████████] 9.0%
-Sovereign Finance:       [████████] 8.0%
-Security / Data OS:      [███████] 7.3%
-Applied AI / Robotics:   [█████] 4.9%
+ASI / Compute – Chips:   [████████████████████████████████] 32.0%
+Cash (Strategic Reserve):[███████████████████] 18.7%
+Power / Energy:          [██████████] 10.0%
+Data Infra / Supply:     [█████████] 9.5%
+AI Titans / Cloud:       [█████████] 9.3%
+Sovereign Finance:       [████████] 7.9%
+Security / Data OS:      [███████] 7.5%
+Applied AI / Robotics:   [█████] 5.2%
 ```
 
-## IV. The Final Portfolio Blueprint ("Institutionalized Thesis" Edition)
+## IV. The Final Portfolio Blueprint ("Fully Deployed" Edition)
 
-*This table represents the final, optimized target allocations, ready for execution.*
+*This table represents the final, optimized target allocations for the portfolio.*
 
 | Pillar | Ticker | Name | Final Goal % | Thesis for Inclusion |
 | :--- | :--- | :--- | :--- | :--- |
-| **CASH** | PSU.U | Purpose US Cash Fund ETF | 12.34% | High-yield strategic reserve. |
-| **ASI / Compute** | INTC | Intel Corp | 10.10% | The core contrarian bet: US "National Champion" for a secure AI supply chain. |
-| **CASH** | MY USD | MY USD CASH | 6.96% | Optimized tactical cash reserve for deployment. |
+| **CASH** | PSU.U | Purpose US Cash Fund ETF | 12.41% | High-yield strategic reserve. |
+| **ASI / Compute** | INTC | Intel Corp | 11.50% | The core contrarian bet: US "National Champion" for a secure AI supply chain. |
 | **ASI / Compute** | AVGO | Broadcom Inc. | 7.00% | The high-quality compounder: "agnostic enabler" of custom silicon. |
+| **CASH** | MY USD | MY USD CASH | 6.25% | Optimized tactical cash reserve. |
 | **AI Titans / Cloud**| GOOG | Alphabet Inc. | 5.60% | The "Brains" hedge: leader in foundational AI research. |
-| **Power / Energy** | VST | Vistra Corp | 5.10% | The "Incumbent Workhorse" providing at-scale bridge power. |
+| **Power / Energy** | VST | Vistra Corp | 4.60% | The "Incumbent Workhorse" providing at-scale bridge power. |
 | **Power / Energy** | CEG | Constellation Energy | 4.00% | The "Clean Baseload Champion": premier nuclear provider. |
-| **AI Titans / Cloud**| MSFT | Microsoft Corporation | 3.50% | The dominant enterprise platform for distributing AI via Azure. |
-| **Security / Data OS**| PANW | Palo Alto Networks | 3.25% | "The Fortress Architect"; the consolidating security platform. |
+| **AI Titans / Cloud**| MSFT | Microsoft Corporation | 3.70% | The dominant enterprise platform for distributing AI via Azure. |
+| **ASI / Compute** | ONTO | Onto Innovation | 3.00% | High-beta bet on the "Tool-In" phase of the fab buildout. |
 | **ASI / Compute** | NVDA | NVIDIA Corporation | 3.00% | **The Apex Predator Hedge.** Hedges against Intel execution failure. |
-| **ASI / Compute** | ONTO | Onto Innovation | 2.88% | "The Quality Control"; essential 'picks & shovels' for new fab construction. |
-| **Data Infra / Supply**| EQIX | Equinix Inc | 2.84% | "The Digital Landlord"; premier physical real estate for data interconnection. |
-| **Sovereign Finance**| COIN | Coinbase Global | 2.72% | The regulated gateway for the digital asset economy. |
-| **Sovereign Finance**| ETHA | Ethereum ETF | 2.65% | The foundational settlement layer for a tokenized world. |
-| **Sovereign Finance**| IBIT | Bitcoin ETF | 2.65% | The neutral, decentralized reserve asset for the digital age. |
-| **Applied AI / Robo** | HUMN | Robotics ETFs | 2.61% | Thematic bet on the physical embodiment of AI. |
-| **ASI / Compute** | SNPS | Synopsys, Inc. | 2.60% | **Fortified Foundation.** Part of the indispensable EDA duopoly. |
-| **Applied AI / Robo** | KOID | Robotics ETFs | 2.28% | Thematic bet on the physical embodiment of AI. |
-| **Security / Data OS**| CRWD | CrowdStrike Holdings | 2.25% | **Fortified Security.** "The Elite Royal Guard"; best-in-class endpoint protection. |
-| **ASI / Compute** | AMD | AMD, Inc. | 2.00% | **The Fabless Hedge.** A bet on US design leadership, agnostic of foundry winner. |
-| **Data Infra / Supply**| CRWV | CoreWeave, Inc. | 2.00% | A pure-play on providing specialized AI cloud compute. |
+| **Security / Data OS**| PANW | Palo Alto Networks | 3.00% | "The Fortress Architect"; the consolidating security platform. |
+| **ASI / Compute** | AMD | AMD, Inc. | 3.00% | **Fortified Hedge.** Bet on US design leadership, agnostic of foundry winner. |
+| **Sovereign Finance**| ETHA | Ethereum ETF | 2.92% | The foundational settlement layer for a tokenized world. |
+| **Data Infra / Supply**| EQIX | Equinix Inc | 2.90% | "The Digital Landlord"; premier physical real estate for data interconnection. |
+| **Applied AI / Robo** | HUMN | Robotics ETFs | 2.73% | Thematic bet on the physical embodiment of AI. |
+| **ASI / Compute** | SNPS | Synopsys, Inc. | 2.50% | **Fortified Foundation.** Part of the indispensable EDA duopoly. |
+| **Sovereign Finance**| IBIT | Bitcoin ETF | 2.50% | The neutral, decentralized reserve asset for the digital age. |
+| **Security / Data OS**| CRWD | CrowdStrike Holdings | 2.50% | **Fortified Security.** "The Elite Royal Guard"; best-in-class endpoint protection. |
+| **Sovereign Finance**| COIN | Coinbase Global | 2.49% | The regulated gateway for the digital asset economy. |
+| **Applied AI / Robo** | KOID | Robotics ETFs | 2.45% | Thematic bet on the physical embodiment of AI. |
 | **Data Infra / Supply**| VRT | Vertiv Holdings Co | 2.00% | Solves the critical data center cooling bottleneck. |
-| **Security / Data OS**| ZS | Zscaler, Inc. | 1.75% | "The Secure Gateway"; leader in Zero Trust and secure access. |
-| **ASI / Compute** | CDNS | Cadence Design Systems | 1.90% | **Fortified Foundation.** Part of the indispensable EDA duopoly. |
-| **Data Infra / Supply**| ANET | Arista Networks | 1.67% | The dominant networking provider for the open, Ethernet-based AI data center. |
-| **Data Infra / Supply**| CORZ | Core Scientific, Inc. | 1.50% | **Trimmed Speculation.** High-beta play on the AI/Crypto infrastructure overlap. |
-| **Power / Energy** | OKLO | Oklo Inc. | 1.50% | **Trimmed Speculation.** A venture-style bet on next-gen modular nuclear. |
-| **ASI / Compute** | MU | Micron Technology | 1.35% | Key US-based provider of high-bandwidth memory (HBM). |
+| **ASI / Compute** | CDNS | Cadence Design Systems | 2.00% | **Fortified Foundation.** Part of the indispensable EDA duopoly. |
+| **Security / Data OS**| ZS | Zscaler, Inc. | 1.98% | "The Secure Gateway"; leader in Zero Trust and secure access. |
+| **Data Infra / Supply**| CORZ | Core Scientific, Inc. | 1.60% | **Trimmed Speculation.** High-beta play on the AI/Crypto infrastructure overlap. |
+| **Data Infra / Supply**| ANET | Arista Networks | 1.53% | The dominant networking provider for the open, Ethernet-based AI data center. |
+| **Data Infra / Supply**| CRWV | CoreWeave, Inc. | 1.44% | A pure-play on providing specialized AI cloud compute. |
+| **Power / Energy** | OKLO | Oklo Inc. | 1.40% | **Trimmed Speculation.** A venture-style bet on next-gen modular nuclear. |
 | **TOTAL** | | | **100.00%** | |
 
 ## V. Risk Factors & Stress Tests (Summary of Red Team Analysis)
@@ -149,7 +148,7 @@ This section provides sources and further reading to support the core pillars of
 ### 2. Physical Constraints: Power, Compute & Execution
 *   **Intel Foundry - 18A Platform Brief (March 2025):** [https://www.intel.com/content/dam/www/central-libraries/us/en/documents/2025-03/foundry-18a-platform-brief.pdf](https://www.intel.com/content/dam/www/central-libraries/us/en/documents/2025-03/foundry-18a-platform-brief.pdf)
 *   **WCCFTech - "Intel 18A Node Achieves Record Low Defect Density":** [https://wccftech.com/intel-18a-node-achieves-record-low-defect-density/](https://wccftech.com/intel-18a-node-achieves-record-low-defect-density/)
-*   **TechSpot - "Intel unveils Clearwater Forest chips based on its 18A node":** [https://www.techspot.com/news/104869-intel-unveils-clearwater-forest-chips-based-18a-node.html](https://www.techspot.com/news/104869-intel-unveils-clearwater-forest-chips-based-18a-node.html)
+*   **TechSpot - "Intel unveils Clearwater Forest chips based on its 18A node":** [https://www.techspot.com/news/104869/intel-unveils-clearwater-forest-chips-based-18a-node.html](https://www.techspot.com/news/104869/intel-unveils-clearwater-forest-chips-based-18a-node.html)
 *   **PR Newswire - "Synopsys and Intel Foundry Propel Angstrom-scale Chip Designs on Intel 18A":** [https://www.prnewswire.com/news-releases/synopsys-and-intel-foundry-propel-angstrom-scale-chip-designs-on-intel-18a-and-intel-18a-p-technologies-302441517.html](https://www.prnewswire.com/news-releases/synopsys-and-intel-foundry-propel-angstrom-scale-chip-designs-on-intel-18a-and-intel-18a-p-technologies-302441517.html)
 *   **Cadence Press Release - "Cadence Expands Design IP Portfolio Optimized for Intel 18A":** [https://www.cadence.com/en_US/home/company/newsroom/press-releases/pr/2025/cadence-expands-design-ip-portfolio-optimized-for-intel-18a-and.html](https://www.cadence.com/en_US/home/company/newsroom/press-releases/pr/2025/cadence-expands-design-ip-portfolio-optimized-for-intel-18a-and.html)
 *   **WCCFTech - "Intel to Finally Switch to an Annual AI Product Cadence":** [https://wccftech.com/intel-to-finally-switch-to-an-annual-ai-product-cadence-after-years-of-delay/](https://wccftech.com/intel-to-finally-switch-to-an-annual-ai-product-cadence-after-years-of-delay/)

@@ -1,0 +1,35 @@
+{
+  "type": "module",
+  "name": "questrade-portfolio-app",
+  "version": "1.0.0",
+  "description": "Secure Questrade Portfolio Viewer app",
+  "scripts": {
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "build": "cd backend && npm run build && cd ../frontend && npm run build",
+    "portfolio:align": "ts-node --esm scripts/generate_portfolio_alignment_table.ts"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/supertest": "^6.0.3",
+    "concurrently": "^8.2.0",
+    "husky": "^8.0.0",
+    "prisma": "^6.17.1",
+    "supertest": "^7.1.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0",
+    "vitest": "^3.2.4"
+  },
+  "keywords": [
+    "questrade",
+    "portfolio",
+    "viewer"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.17.1",
+    "ajv": "^8.17.1",
+    "node": "^25.0.0"
+  }
+}

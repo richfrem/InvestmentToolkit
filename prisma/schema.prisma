@@ -1,0 +1,21 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Example model for future caching (e.g., holdings cache)
+model HoldingCache {
+  id        Int      @id @default(autoincrement())
+  symbol    String
+  quantity  Float
+  bookValue Float
+  marketValue Float
+  fetchedAt DateTime @default(now())
+}
