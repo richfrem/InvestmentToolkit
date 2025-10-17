@@ -1,11 +1,10 @@
 # All Markdown Files Snapshot (LLM-Distilled)
 
-Generated On: 2025-10-16T22:20:19.098Z
+Generated On: 2025-10-17T03:30:16.287Z
 
-# Mnemonic Weight (Token Count): ~47,728 tokens
+# Mnemonic Weight (Token Count): ~53,179 tokens
 
 # Directory Structure (relative to project root)
-  ./ADR_007_TestingApproach.md
   ./InvestmentFramework/
   ./InvestmentFramework/defininitive_professional_investment_framework.md
   ./InvestmentThesis/
@@ -20,10 +19,6 @@ Generated On: 2025-10-16T22:20:19.098Z
   ./Prompts/portfolio_thesis_alignment_prompt.md
   ./Prompts/unified_stock_analyst_prompt.md
   ./README.md
-  ./TargetPortfolio/
-  ./TargetPortfolio/portfolio_alignment_schema.json
-  ./TargetPortfolio/portfolio_alignment_table.md
-  ./TargetPortfolio/portfolio_thesis_alignment_report.json
   ./adrs/
   ./adrs/001-auth-method.md
   ./adrs/002-holdings-data-storage.md
@@ -34,19 +29,17 @@ Generated On: 2025-10-16T22:20:19.098Z
   ./adrs/007-data-export-approach.md
   ./adrs/008-portfolio-alignment-table-script.md
   ./adrs/009-module-format-standardization.md
+  ./adrs/010_TestingApproach.md
+  ./adrs/011-dynamic-react-app-architecture.md
   ./backend/
   ./backend/exportAllData.ts
   ./backend/exportedData.json
   ./backend/fetchAllAccountData.ts
   ./backend/fetchAndExportAllData.ts
+  ./backend/jest.config.cjs
   ./backend/package.json
   ./backend/src/
   ./backend/src/data/
-  ./backend/src/data/accounts.ts
-  ./backend/src/data/balances.ts
-  ./backend/src/data/currentHoldings.ts
-  ./backend/src/data/orders.ts
-  ./backend/src/data/positions.ts
   ./backend/src/index.ts
   ./backend/src/routes/
   ./backend/src/routes/questrade.ts
@@ -56,13 +49,12 @@ Generated On: 2025-10-16T22:20:19.098Z
   ./backend/src/types/index.ts
   ./backend/src/utils/
   ./backend/src/utils/spreadsheet.ts
-  ./backend/test_accounts.ts
-  ./backend/test_bearer.ts
   ./backend/tests/
   ./backend/tests/README.md
   ./backend/tests/routes/
   ./backend/tests/routes/questradeRoutes.test.ts
   ./backend/tests/services/
+  ./backend/tests/services/getAllAccountData.integration.test.ts
   ./backend/tests/services/questradeService.test.ts
   ./backend/tsconfig.json
   ./docs/
@@ -80,7 +72,10 @@ Generated On: 2025-10-16T22:20:19.098Z
   ./frontend/src/components/AuthModal.tsx
   ./frontend/src/components/Dashboard.tsx
   ./frontend/src/components/Header.tsx
+  ./frontend/src/components/HoldingsHistogram.tsx
   ./frontend/src/components/Navigation.tsx
+  ./frontend/src/components/PillarHistogram.tsx
+  ./frontend/src/components/PortfolioCharts.tsx
   ./frontend/src/components/ui/
   ./frontend/src/components/ui/button.tsx
   ./frontend/src/components/ui/table.tsx
@@ -107,49 +102,10 @@ Generated On: 2025-10-16T22:20:19.098Z
   ./prisma/migrations/migration_lock.toml
   ./scripts/
   ./scripts/generate_portfolio_alignment_table.ts
+  ./scripts/output_per_account_cash_balances.ts
   ./scripts/tsconfig.json
   ./start.sh
   ./stop.sh
-
---- START OF FILE ./ADR_007_TestingApproach.md ---
-
-# ADR 007: Backend Testing Approach
-
-## Status
-Accepted
-
-## Context
-To ensure reliability, maintainability, and correctness of the backend, a structured testing approach is required. The backend consists of Express API routes and modular service functions for Questrade integration and data export. Automated tests are needed for both integration (routes) and unit (services) levels.
-
-## Decision
-- **Test Structure:**
-  - All backend tests are located in `backend/tests/`.
-  - `routes/` contains integration tests for Express API endpoints using supertest.
-  - `services/` contains unit tests for service functions using Jest.
-- **Test Tools:**
-  - Jest is used as the test runner for all tests.
-  - Supertest is used for HTTP integration tests against the running Express server.
-- **Test Coverage:**
-  - All critical service functions and API routes must have automated tests.
-  - Tests should cover success, error, and edge cases.
-- **Test Data:**
-  - Use `.env.test` for test credentials and configuration if needed.
-  - Mock external dependencies (e.g., axios, fs) for unit tests.
-- **Execution:**
-  - All tests are run with `npx jest`.
-  - Route tests require the backend server to be running.
-- **Documentation:**
-  - Test conventions and structure are documented in `backend/tests/README.md`.
-
-## Consequences
-- Improved reliability and maintainability of backend code.
-- Fast feedback on code changes and refactoring.
-- Clear separation between integration and unit tests.
-- Easy onboarding for new contributors.
-
----
-
---- END OF FILE ---
 
 --- START OF FILE ./InvestmentFramework/defininitive_professional_investment_framework.md ---
 
@@ -1437,582 +1393,235 @@ A secure app to view your Questrade holdings via API, display in a dashboard, an
 See `docs/Roadmap.md`.
 --- END OF FILE ---
 
---- START OF FILE ./TargetPortfolio/portfolio_alignment_schema.json ---
-
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Portfolio Alignment Output Schema",
-  "type": "object",
-  "properties": {
-    "totalMarketValue": { "type": "number" },
-    "pillarTotals": {
-      "type": "object",
-      "additionalProperties": { "type": "number" }
-    },
-    "targetAllocations": {
-      "type": "object",
-      "additionalProperties": { "type": "number" }
-    },
-    "holdings": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "symbol": { "type": "string" },
-          "name": { "type": "string" },
-          "pillar": { "type": "string" },
-          "totalShares": { "type": "number" },
-          "totalBookValue": { "type": "number" },
-          "totalMarketValue": { "type": "number" },
-          "avgPrice": { "type": "number" },
-          "pctPortfolio": { "type": "number" },
-          "targetPct": { "type": "number" },
-          "gapPct": { "type": "number" },
-          "accounts": {
-            "type": "array",
-            "items": { "type": "string" }
-          }
-        },
-        "required": [
-          "symbol", "name", "pillar", "totalShares", "totalBookValue", "totalMarketValue", "avgPrice", "pctPortfolio", "targetPct", "gapPct", "accounts"
-        ]
-      }
-    }
-  },
-  "required": ["totalMarketValue", "pillarTotals", "targetAllocations", "holdings"]
-}
-
---- END OF FILE ---
-
---- START OF FILE ./TargetPortfolio/portfolio_alignment_table.md ---
-
-# Portfolio Alignment Table
-
-Generated from: exportedData.json
-
-Total Portfolio Market Value: $28338.03
-
-| Symbol | Name | Total Shares | Avg Value | % of Portfolio | Accounts |
-|--------|------|--------------|-----------|---------------|----------|
-| ZS |  | 1 | $300.27 | 1.06% |  |
-| VST |  | 6 | $213.25 | 4.52% |  |
-| ANET |  | 3 | $147.47 | 1.56% |  |
-| VRT |  | 2 | $179.13 | 1.26% |  |
-| MSFT |  | 2 | $511.56 | 3.61% |  |
-| IBIT |  | 15 | $61.75 | 3.27% |  |
-| KOID |  | 22 | $31.15 | 2.42% |  |
-| OKLO |  | 2 | $162.70 | 1.15% |  |
-| CDNS |  | 1 | $323.92 | 1.14% |  |
-| AMD |  | 2 | $239.26 | 1.69% |  |
-| GOOG |  | 6 | $253.48 | 5.37% |  |
-| NVDA |  | 4 | $182.15 | 2.57% |  |
-| AVGO |  | 5 | $354.61 | 6.26% |  |
-| COIN |  | 2 | $335.30 | 2.37% |  |
-| CRWD |  | 1 | $481.44 | 1.70% |  |
-| PANW |  | 4 | $206.72 | 2.92% |  |
-| ETHA |  | 37 | $29.86 | 3.90% |  |
-| INTC |  | 76 | $37.15 | 9.96% |  |
-| EQIX |  | 1 | $822.68 | 2.90% |  |
-| SNPS |  | 1.5 | $439.88 | 2.33% |  |
-| PSU.U.TO |  | 35 | $100.23 | 12.38% |  |
-| HUMN |  | 26 | $29.65 | 2.72% |  |
-| CEG |  | 3 | $400.33 | 4.24% |  |
-| CORZ |  | 45 | $19.87 | 3.16% |  |
-| CRWV |  | 3 | $147.73 | 1.56% |  |
-| USD_CASH | USD Cash (all accounts) | 3965.619441616745 | $1.00 | 13.99% |  |
-
---- END OF FILE ---
-
---- START OF FILE ./TargetPortfolio/portfolio_thesis_alignment_report.json ---
-
-{
-  "totalMarketValue": 28338.029441616745,
-  "pillarTotals": {
-    "Other": 19486.43,
-    "Power / Energy": 1279.5,
-    "ASI / Compute": 2501.66,
-    "Sovereign Finance": 1104.82,
-    "Cash": 3965.619441616745
-  },
-  "targetAllocations": {
-    "ASI / Compute": 32,
-    "Cash": 18.66,
-    "Power / Energy": 10,
-    "Data Infra / Supply Chain": 9.47,
-    "AI Titans / Cloud": 9.3,
-    "Sovereign Finance": 7.91,
-    "Security / Data OS": 7.48,
-    "Applied AI / Robotics": 5.18,
-    "Other": 0
-  },
-  "holdings": [
-    {
-      "symbol": "ZS",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 1,
-      "totalBookValue": 0,
-      "totalMarketValue": 300.27,
-      "avgPrice": 0,
-      "pctPortfolio": 1.0596008470477083,
-      "targetPct": 0,
-      "gapPct": 1.0596008470477083,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "VST",
-      "name": "",
-      "pillar": "Power / Energy",
-      "totalShares": 6,
-      "totalBookValue": 0,
-      "totalMarketValue": 1279.5,
-      "avgPrice": 0,
-      "pctPortfolio": 4.515133992065617,
-      "targetPct": 10,
-      "gapPct": -5.484866007934383,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "ANET",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 3,
-      "totalBookValue": 0,
-      "totalMarketValue": 442.41,
-      "avgPrice": 0,
-      "pctPortfolio": 1.5611882996715511,
-      "targetPct": 0,
-      "gapPct": 1.5611882996715511,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "VRT",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 2,
-      "totalBookValue": 0,
-      "totalMarketValue": 358.26,
-      "avgPrice": 0,
-      "pctPortfolio": 1.2642375177783727,
-      "targetPct": 0,
-      "gapPct": 1.2642375177783727,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "MSFT",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 2,
-      "totalBookValue": 0,
-      "totalMarketValue": 1023.12,
-      "avgPrice": 0,
-      "pctPortfolio": 3.610413356750429,
-      "targetPct": 0,
-      "gapPct": 3.610413356750429,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "IBIT",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 15,
-      "totalBookValue": 0,
-      "totalMarketValue": 926.25,
-      "avgPrice": 0,
-      "pctPortfolio": 3.2685758969525422,
-      "targetPct": 0,
-      "gapPct": 3.2685758969525422,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "KOID",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 22,
-      "totalBookValue": 0,
-      "totalMarketValue": 685.3,
-      "avgPrice": 0,
-      "pctPortfolio": 2.4183050603849683,
-      "targetPct": 0,
-      "gapPct": 2.4183050603849683,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "OKLO",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 2,
-      "totalBookValue": 0,
-      "totalMarketValue": 325.4,
-      "avgPrice": 0,
-      "pctPortfolio": 1.1482802665245422,
-      "targetPct": 0,
-      "gapPct": 1.1482802665245422,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "CDNS",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 1,
-      "totalBookValue": 0,
-      "totalMarketValue": 323.92,
-      "avgPrice": 0,
-      "pctPortfolio": 1.143057602743177,
-      "targetPct": 0,
-      "gapPct": 1.143057602743177,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "AMD",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 2,
-      "totalBookValue": 0,
-      "totalMarketValue": 478.52,
-      "avgPrice": 0,
-      "pctPortfolio": 1.6886142382831097,
-      "targetPct": 0,
-      "gapPct": 1.6886142382831097,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "GOOG",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 6,
-      "totalBookValue": 0,
-      "totalMarketValue": 1520.8799999999999,
-      "avgPrice": 0,
-      "pctPortfolio": 5.366922224191289,
-      "targetPct": 0,
-      "gapPct": 5.366922224191289,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "NVDA",
-      "name": "",
-      "pillar": "ASI / Compute",
-      "totalShares": 4,
-      "totalBookValue": 0,
-      "totalMarketValue": 728.61,
-      "avgPrice": 0,
-      "pctPortfolio": 2.5711385525274943,
-      "targetPct": 32,
-      "gapPct": -29.428861447472507,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "AVGO",
-      "name": "",
-      "pillar": "ASI / Compute",
-      "totalShares": 5,
-      "totalBookValue": 0,
-      "totalMarketValue": 1773.05,
-      "avgPrice": 0,
-      "pctPortfolio": 6.25678649834462,
-      "targetPct": 32,
-      "gapPct": -25.74321350165538,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "COIN",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 2,
-      "totalBookValue": 0,
-      "totalMarketValue": 670.6,
-      "avgPrice": 0,
-      "pctPortfolio": 2.366431305259244,
-      "targetPct": 0,
-      "gapPct": 2.366431305259244,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "CRWD",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 1,
-      "totalBookValue": 0,
-      "totalMarketValue": 481.44,
-      "avgPrice": 0,
-      "pctPortfolio": 1.6989184127706687,
-      "targetPct": 0,
-      "gapPct": 1.6989184127706687,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "PANW",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 4,
-      "totalBookValue": 0,
-      "totalMarketValue": 826.88,
-      "avgPrice": 0,
-      "pctPortfolio": 2.9179163699564024,
-      "targetPct": 0,
-      "gapPct": 2.9179163699564024,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "ETHA",
-      "name": "",
-      "pillar": "Sovereign Finance",
-      "totalShares": 37,
-      "totalBookValue": 0,
-      "totalMarketValue": 1104.82,
-      "avgPrice": 0,
-      "pctPortfolio": 3.8987185127893196,
-      "targetPct": 7.91,
-      "gapPct": -4.011281487210681,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "INTC",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 76,
-      "totalBookValue": 0,
-      "totalMarketValue": 2823.4,
-      "avgPrice": 0,
-      "pctPortfolio": 9.963289811018416,
-      "targetPct": 0,
-      "gapPct": 9.963289811018416,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "EQIX",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 1,
-      "totalBookValue": 0,
-      "totalMarketValue": 822.68,
-      "avgPrice": 0,
-      "pctPortfolio": 2.9030952970633384,
-      "targetPct": 0,
-      "gapPct": 2.9030952970633384,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "SNPS",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 1.5,
-      "totalBookValue": 0,
-      "totalMarketValue": 659.82,
-      "avgPrice": 0,
-      "pctPortfolio": 2.3283905515003793,
-      "targetPct": 0,
-      "gapPct": 2.3283905515003793,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "PSU.U.TO",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 35,
-      "totalBookValue": 0,
-      "totalMarketValue": 3508.05,
-      "avgPrice": 0,
-      "pctPortfolio": 12.379301133931838,
-      "targetPct": 0,
-      "gapPct": 12.379301133931838,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "HUMN",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 26,
-      "totalBookValue": 0,
-      "totalMarketValue": 770.9,
-      "avgPrice": 0,
-      "pctPortfolio": 2.7203726412531335,
-      "targetPct": 0,
-      "gapPct": 2.7203726412531335,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "CEG",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 3,
-      "totalBookValue": 0,
-      "totalMarketValue": 1200.99,
-      "avgPrice": 0,
-      "pctPortfolio": 4.238085793771696,
-      "targetPct": 0,
-      "gapPct": 4.238085793771696,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "CORZ",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 45,
-      "totalBookValue": 0,
-      "totalMarketValue": 894.15,
-      "avgPrice": 0,
-      "pctPortfolio": 3.1553005541269803,
-      "targetPct": 0,
-      "gapPct": 3.1553005541269803,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "CRWV",
-      "name": "",
-      "pillar": "Other",
-      "totalShares": 3,
-      "totalBookValue": 0,
-      "totalMarketValue": 443.19,
-      "avgPrice": 0,
-      "pctPortfolio": 1.5639407846374058,
-      "targetPct": 0,
-      "gapPct": 1.5639407846374058,
-      "accounts": [
-        ""
-      ]
-    },
-    {
-      "symbol": "USD_CASH",
-      "name": "USD Cash (all accounts)",
-      "pillar": "Cash",
-      "totalShares": 3965.619441616745,
-      "totalBookValue": 3965.619441616745,
-      "totalMarketValue": 3965.619441616745,
-      "avgPrice": 1,
-      "pctPortfolio": 13.993984478655753,
-      "targetPct": 18.66,
-      "gapPct": -4.666015521344248,
-      "accounts": []
-    }
-  ]
-}
---- END OF FILE ---
-
 --- START OF FILE ./adrs/001-auth-method.md ---
 
-# ADR 001: Auth Method
+# ADR 001: Authentication Method for Questrade API
 
-(Original content from adrs/001-auth-method.md)
+## Status
+Accepted
 
----
+## Context
+The application needs to securely access Questrade API to fetch portfolio holdings. Security is paramount: no storage of passwords, minimal exposure of sensitive data.
 
-Please refer to the original ADR for full details.
+## Decision
+Use Questrade's Manual Authorization Flow with OAuth2 refresh token management:
+- User generates a single-use refresh token in the API Centre.
+- App redeems the refresh token for an access (bearer) token and a new refresh token via API call.
+- After each successful token exchange, the app automatically updates the .env file with the new refresh token.
+- The Bearer [REDACTED] is used for authorized API calls.
+
+- **Pros:**
+  - No password storage in the app.
+  - Tokens managed securely in .env and updated automatically.
+  - Refresh token used to get access tokens and is rotated after each use.
+
+- **Cons:**
+  - Manual setup required for initial token.
+  - User must update .env if token is revoked or reset.
+
+## Alternatives Considered
+- OAuth browser flow: More complex for V1.
+
+## Consequences
+- /api/auth/start provides instructions.
+- Tokens in .env: only REFRESH_TOKEN is required; ACCESS_TOKEN and API_SERVER are fetched dynamically.
+- Automated refresh token management reduces manual intervention and improves security.
+
+[NOTE] Sensitive values were detected and redacted in this file.
 --- END OF FILE ---
 
 --- START OF FILE ./adrs/002-holdings-data-storage.md ---
 
-# ADR 002: Holdings Data Storage
+# ADR 002: Holdings Data Storage Strategy
 
-(Original content from adrs/002-holdings-data-storage.md)
+## Status
+Proposed
+
+## Context
+The application needs to reliably preserve and access the user's current holdings data (stocks, ETFs, cash) for each account. The solution must be secure, local-first, and support incremental feature development.
+
+## Decision
+- **V1:** Store holdings data in a local TypeScript file (`backend/src/data/currentHoldings.ts`). This approach is simple, fast, and reliable for quick access and local development.
+- **V2+:** Migrate holdings data to a local SQLite database for caching, persistence, and advanced queries. This enables more robust data management and future scalability.
+- No external database will be used in V1 to maintain simplicity and security.
+
+## Pros
+- Fast, local access to holdings data.
+- Easy to implement and maintain for initial versions.
+- Supports incremental migration to SQLite for future enhancements.
+- No external dependencies or cloud storage required.
+
+## Cons
+- TypeScript file storage is limited for advanced queries and large datasets.
+- Migration to SQLite will require refactoring in future versions.
+
+## Alternatives Considered
+- JSON file storage: Simpler but less type-safe and harder to integrate with TypeScript codebase.
+- External database (Postgres, MySQL): Adds complexity and security risks for V1.
+
+## Consequences
+- Holdings data is preserved locally and reliably in V1.
+- Migration to SQLite in V2+ will enable caching, persistence, and more advanced features.
+- No external DB or cloud storage is used, maintaining a secure, local-first approach.
 
 ---
 
-Please refer to the original ADR for full details.
+This ADR should be updated as the data storage strategy evolves with future versions.
+
 --- END OF FILE ---
 
 --- START OF FILE ./adrs/003-security-secrets-management.md ---
 
-# ADR 003: Security & Secrets Management
+# ADR 003: Security and Secrets Management
 
-(Original content from adrs/003-security-secrets-management.md)
+## Status
+Proposed
 
----
+## Context
+The application must ensure secure handling of sensitive data, including API tokens and user credentials, while minimizing exposure and risk.
 
-Please refer to the original ADR for full details.
+## Decision
+- No password storage in the app.
+- All secrets (refresh tokens, API keys) are stored in a local `.env` file, never hardcoded.
+- OAuth2 refresh token management is used for secure authentication, as documented in ADR 001.
+- Husky pre-commit hooks scan for secrets before code is committed.
+
+## Pros
+- Minimizes risk of credential leaks.
+- Follows best practices for secrets management.
+- Automated token rotation via OAuth2 reduces manual intervention.
+
+## Cons
+- Requires discipline in managing `.env` files and secret rotation.
+
+## Alternatives Considered
+- Cloud-based secrets managers (not needed for V1).
+
+## Consequences
+- Secure, local-first secrets management for V1.
+- Easy migration to more advanced solutions if needed in future versions.
+
 --- END OF FILE ---
 
 --- START OF FILE ./adrs/004-ui-ux-design.md ---
 
-# ADR 004: UI/UX Design
+# ADR 004: UI/UX Design Principles
 
-(Original content from adrs/004-ui-ux-design.md)
+## Status
+Proposed
 
----
+## Context
+The application must provide a modern, responsive, and user-friendly interface for managing investment data and workflows.
 
-Please refer to the original ADR for full details.
+## Decision
+- Use shadcn/ui and Tailwind CSS for modern, responsive UI components.
+- Prioritize clarity, accessibility, and ease of use in all screens and workflows.
+- Design for desktop-first, with future support for mobile responsiveness.
+
+## Pros
+- Consistent, attractive UI with rapid development.
+- Easy customization and theming.
+- Good accessibility and usability out of the box.
+
+## Cons
+- Requires learning curve for new UI libraries.
+
+## Alternatives Considered
+- Custom CSS or other UI frameworks (less efficient for V1).
+
+## Consequences
+- Fast, modern UI development for V1.
+- Foundation for future enhancements and mobile support.
+
 --- END OF FILE ---
 
 --- START OF FILE ./adrs/005-incremental-feature-rollout.md ---
 
-# ADR 005: Incremental Feature Rollout
+# ADR 005: Incremental Feature Rollout & Versioning
 
-(Original content from adrs/005-incremental-feature-rollout.md)
+## Status
+Proposed
 
----
+## Context
+The application will be developed and released in incremental versions, allowing for modular feature development, testing, and user feedback.
 
-Please refer to the original ADR for full details.
+## Decision
+- Features are built and released incrementally (V1, V2, V3, ...).
+- Each version adds new capabilities while maintaining stability and backward compatibility.
+- Clear versioning and documentation for each release.
+
+## Pros
+- Enables rapid iteration and user-driven development.
+- Reduces risk by limiting scope of each release.
+- Easier to test, maintain, and refactor.
+
+## Cons
+- Requires disciplined planning and documentation.
+
+## Alternatives Considered
+- Big-bang releases (higher risk, less flexibility).
+
+## Consequences
+- Modular, maintainable codebase.
+- Clear roadmap and changelog for users and developers.
+
 --- END OF FILE ---
 
 --- START OF FILE ./adrs/006-data-contracts-aligned-with-questrade.md ---
 
-# ADR 006: Data Contracts Aligned with Questrade
+# ADR 006: Data Contracts Aligned with Questrade API Schemas
 
-(Original content from adrs/006-data-contracts-aligned-with-questrade.md)
+## Status
+Accepted
 
----
+## Context
+To ensure consistency, reliability, and ease of integration, all internal data contracts for holdings, positions, and related entities will be aligned with the official Questrade API schemas. This applies to all backend and frontend TypeScript types, interfaces, and models.
 
-Please refer to the original ADR for full details.
+## Decision
+- All data contracts (TypeScript interfaces/types) for positions, holdings, and related entities will match the Questrade API response properties and types.
+- Any changes to Questrade API schemas will be reflected in our data contracts.
+- Documentation and code comments will reference the relevant Questrade API endpoints and schema details.
+- This ADR must be updated if the alignment approach changes.
+
+## Consequences
+- Simplifies API integration and reduces mapping errors.
+- Ensures future compatibility with Questrade updates.
+- Developers must reference Questrade API docs when updating or adding new data contracts.
+
+## Action Required
+- Update all relevant TypeScript types/interfaces to match Questrade schemas.
+- Add a note to `docs/DataContracts.md` referencing this ADR and the alignment requirement.
+
 --- END OF FILE ---
 
 --- START OF FILE ./adrs/007-data-export-approach.md ---
 
-# ADR 007: Data Export Approach
+# ADR 007: Data Export Approach for Prompt/AI Analysis
 
-(Original content from adrs/007-data-export-approach.md)
+## Status
+Accepted
 
----
+## Context
+Requirement UR21 specifies the need to export all in-memory account, holdings, positions, balances, and orders data for prompt/AI analysis, spreadsheet export, or external review. Several technical options were considered:
 
-Please refer to the original ADR for full details.
+- Export to JSON file
+- Export to CSV
+- Export to Markdown table
+- Provide API endpoint returning all data as JSON
+- Export to TypeScript file
+
+## Decision
+Exporting all in-memory data to a single JSON file is the chosen approach. JSON is flexible, widely supported, and compatible with LLMs, spreadsheets, and other analysis tools. It supports nested and complex data structures, is easy to implement, and can be extended for future needs.
+
+## Consequences
+- Enables easy integration with LLMs and external analysis tools
+- Simple implementation and maintenance
+- Can be extended to support other formats if needed
+
+## Action Required
+- Implement a script to export all in-memory account, holdings, positions, balances, and orders data to a single JSON file (e.g., `exportedData.json`).
+- Update documentation and TaskTracker to reflect this approach.
+
 --- END OF FILE ---
 
 --- START OF FILE ./adrs/008-portfolio-alignment-table-script.md ---
@@ -2087,6 +1696,83 @@ The InvestmentToolkit project contains scripts and modules written in both Commo
 
 --- END OF FILE ---
 
+--- START OF FILE ./adrs/010_TestingApproach.md ---
+
+# ADR 010: Backend Testing Approach
+
+## Status
+Accepted
+
+## Context
+To ensure reliability, maintainability, and correctness of the backend, a structured testing approach is required. The backend consists of Express API routes and modular service functions for Questrade integration and data export. Automated tests are needed for both integration (routes) and unit (services) levels.
+
+## Decision
+- **Test Structure:**
+  - All backend tests are located in `backend/tests/`.
+  - `routes/` contains integration tests for Express API endpoints using supertest.
+  - `services/` contains unit tests for service functions using Jest.
+- **Test Tools:**
+  - Jest is used as the test runner for all tests.
+  - Supertest is used for HTTP integration tests against the running Express server.
+- **Test Coverage:**
+  - All critical service functions and API routes must have automated tests.
+  - Tests should cover success, error, and edge cases.
+- **Test Data:**
+  - Use `.env.test` for test credentials and configuration if needed.
+  - Mock external dependencies (e.g., axios, fs) for unit tests.
+- **Execution:**
+  - All tests are run with `npx jest`.
+  - Route tests require the backend server to be running.
+- **Documentation:**
+  - Test conventions and structure are documented in `backend/tests/README.md`.
+
+## Consequences
+- Improved reliability and maintainability of backend code.
+- Fast feedback on code changes and refactoring.
+- Clear separation between integration and unit tests.
+- Easy onboarding for new contributors.
+
+---
+
+--- END OF FILE ---
+
+--- START OF FILE ./adrs/011-dynamic-react-app-architecture.md ---
+
+# ADR 011: Dynamic React App Architecture for Portfolio Analysis
+
+## Status
+Proposed
+
+## Context
+To support real-time portfolio analysis, continuous improvement of prompts, and interactive visualization, a dynamic React + Node.js architecture is required. This enables:
+- Direct integration with Questrade APIs for live data.
+- Aggregation and mapping of holdings to thesis pillars and target allocations.
+- Interactive dashboards with charts, tables, and feedback-driven prompt improvement.
+
+## Decision
+- The backend (Node.js/Express) will:
+  - Integrate with Questrade API (OAuth2, REST).
+  - Aggregate, store, and serve portfolio/account/holdings data via REST endpoints.
+  - Implement portfolio alignment logic and prompt improvement API.
+- The frontend (React) will:
+  - Display asset allocation, gaps, and thesis alignment with interactive charts and tables.
+  - Allow user feedback and prompt improvement directly in the UI.
+  - Continuously sync with backend for live data and analysis.
+- The workflow will support versioned prompt storage, user customization, and automated rebalancing alerts.
+
+## Consequences
+- Enables dynamic, real-time portfolio analysis and visualization.
+- Supports continuous improvement of analysis prompts and logic.
+- Provides a scalable foundation for future automation and LLM integration.
+
+---
+
+**Related Requirements:**
+- UR24: Dynamic React App for Portfolio Analysis
+- UR25: Continuous Prompt Improvement Workflow
+
+--- END OF FILE ---
+
 --- START OF FILE ./backend/exportAllData.ts ---
 
 
@@ -2151,12 +1837,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 20859904,
       "openQuantity": 1,
       "closedQuantity": 0,
-      "currentMarketValue": 300.27,
-      "currentPrice": 300.27,
+      "currentMarketValue": 299.4,
+      "currentPrice": 299.4,
       "averageEntryPrice": 276.0118,
-      "dayPnl": -2.08,
+      "dayPnl": -2.95,
       "closedPnl": 0,
-      "openPnl": 24.2582,
+      "openPnl": 23.3882,
       "totalCost": 276.0118,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2166,12 +1852,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 15605261,
       "openQuantity": 4,
       "closedQuantity": 0,
-      "currentMarketValue": 853,
-      "currentPrice": 213.25,
+      "currentMarketValue": 840.2,
+      "currentPrice": 210.05,
       "averageEntryPrice": 197.4723,
-      "dayPnl": 9.6,
+      "dayPnl": -3.2,
       "closedPnl": 0,
-      "openPnl": 63.1108,
+      "openPnl": 50.3108,
       "totalCost": 789.8892,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2181,12 +1867,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 58254093,
       "openQuantity": 3,
       "closedQuantity": 0,
-      "currentMarketValue": 442.41,
-      "currentPrice": 147.47,
+      "currentMarketValue": 437.97,
+      "currentPrice": 145.99,
       "averageEntryPrice": 142.185767,
-      "dayPnl": 12.27,
+      "dayPnl": 7.83,
       "closedPnl": 0,
-      "openPnl": 15.852699,
+      "openPnl": 11.412699,
       "totalCost": 426.557301,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2196,12 +1882,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 28926498,
       "openQuantity": 2,
       "closedQuantity": 0,
-      "currentMarketValue": 358.26,
-      "currentPrice": 179.13,
+      "currentMarketValue": 354,
+      "currentPrice": 177,
       "averageEntryPrice": 131.57005,
-      "dayPnl": -2.76,
+      "dayPnl": -7.02,
       "closedPnl": 0,
-      "openPnl": 95.1199,
+      "openPnl": 90.8599,
       "totalCost": 263.1401,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2211,12 +1897,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 27426,
       "openQuantity": 1,
       "closedQuantity": 0,
-      "currentMarketValue": 511.56,
-      "currentPrice": 511.56,
+      "currentMarketValue": 510.5,
+      "currentPrice": 510.5,
       "averageEntryPrice": 508.0442,
-      "dayPnl": -1.87,
+      "dayPnl": -2.93,
       "closedPnl": 0,
-      "openPnl": 3.5158,
+      "openPnl": 2.4558,
       "totalCost": 508.0442,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2226,12 +1912,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 52317225,
       "openQuantity": 10,
       "closedQuantity": 0,
-      "currentMarketValue": 617.5,
-      "currentPrice": 61.75,
+      "currentMarketValue": 612.5,
+      "currentPrice": 61.25,
       "averageEntryPrice": 68.56288,
-      "dayPnl": -12.8154,
+      "dayPnl": -17.8154,
       "closedPnl": 0,
-      "openPnl": -68.1288,
+      "openPnl": -73.1288,
       "totalCost": 685.6288,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2241,12 +1927,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 62633529,
       "openQuantity": 12,
       "closedQuantity": 0,
-      "currentMarketValue": 373.8,
-      "currentPrice": 31.15,
+      "currentMarketValue": 371.64,
+      "currentPrice": 30.97,
       "averageEntryPrice": 30.6004,
-      "dayPnl": -5.88,
+      "dayPnl": -8.04,
       "closedPnl": 0,
-      "openPnl": 6.5952,
+      "openPnl": 4.4352,
       "totalCost": 367.2048,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2256,12 +1942,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 36814656,
       "openQuantity": 2,
       "closedQuantity": 0,
-      "currentMarketValue": 325.4,
-      "currentPrice": 162.7,
+      "currentMarketValue": 324.68,
+      "currentPrice": 162.34,
       "averageEntryPrice": 109.95,
-      "dayPnl": -17.72,
+      "dayPnl": -18.44,
       "closedPnl": 0,
-      "openPnl": 105.5,
+      "openPnl": 104.78,
       "totalCost": 219.9,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2271,12 +1957,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 11621,
       "openQuantity": 1,
       "closedQuantity": 0,
-      "currentMarketValue": 323.92,
-      "currentPrice": 323.92,
+      "currentMarketValue": 323.39,
+      "currentPrice": 323.39,
       "averageEntryPrice": 344.15,
-      "dayPnl": -0.18,
+      "dayPnl": -0.71,
       "closedPnl": 0,
-      "openPnl": -20.23,
+      "openPnl": -20.76,
       "totalCost": 344.15,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2286,12 +1972,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 6770,
       "openQuantity": 1,
       "closedQuantity": 0,
-      "currentMarketValue": 239.26,
-      "currentPrice": 239.26,
+      "currentMarketValue": 233.02,
+      "currentPrice": 233.02,
       "averageEntryPrice": 227.737,
-      "dayPnl": 0.66,
+      "dayPnl": -5.58,
       "closedPnl": 0,
-      "openPnl": 11.523,
+      "openPnl": 5.283,
       "totalCost": 227.737,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2301,12 +1987,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 11419765,
       "openQuantity": 4,
       "closedQuantity": 0,
-      "currentMarketValue": 1013.92,
-      "currentPrice": 253.48,
+      "currentMarketValue": 1007.08,
+      "currentPrice": 251.77,
       "averageEntryPrice": 241.98285,
-      "dayPnl": 7.08,
+      "dayPnl": 0.24,
       "closedPnl": 0,
-      "openPnl": 45.9886,
+      "openPnl": 39.1486,
       "totalCost": 967.9314,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2316,12 +2002,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 29814,
       "openQuantity": 3,
       "closedQuantity": 0,
-      "currentMarketValue": 546.45,
-      "currentPrice": 182.15,
+      "currentMarketValue": 543.63,
+      "currentPrice": 181.21,
       "averageEntryPrice": 187.081933,
-      "dayPnl": 6.96,
+      "dayPnl": 4.14,
       "closedPnl": 0,
-      "openPnl": -14.795799,
+      "openPnl": -17.615799,
       "totalCost": 561.245799,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2331,12 +2017,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 21109371,
       "openQuantity": 3,
       "closedQuantity": 0,
-      "currentMarketValue": 1063.83,
-      "currentPrice": 354.61,
+      "currentMarketValue": 1056.75,
+      "currentPrice": 352.25,
       "averageEntryPrice": 344.20225,
-      "dayPnl": 9.84,
+      "dayPnl": 2.76,
       "closedPnl": 0,
-      "openPnl": 31.22325,
+      "openPnl": 24.14325,
       "totalCost": 1032.60675,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2346,12 +2032,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 35476350,
       "openQuantity": 2,
       "closedQuantity": 0,
-      "currentMarketValue": 670.6,
-      "currentPrice": 335.3,
+      "currentMarketValue": 659.32,
+      "currentPrice": 329.66,
       "averageEntryPrice": 384.408,
-      "dayPnl": -2,
+      "dayPnl": -13.28,
       "closedPnl": 0,
-      "openPnl": -98.216,
+      "openPnl": -109.496,
       "totalCost": 768.816,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2361,12 +2047,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 26070398,
       "openQuantity": 1,
       "closedQuantity": 0,
-      "currentMarketValue": 481.44,
-      "currentPrice": 481.44,
+      "currentMarketValue": 481.1,
+      "currentPrice": 481.1,
       "averageEntryPrice": 458.3133,
-      "dayPnl": -7.58,
+      "dayPnl": -7.92,
       "closedPnl": 0,
-      "openPnl": 23.1267,
+      "openPnl": 22.7867,
       "totalCost": 458.3133,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2376,12 +2062,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 2333066,
       "openQuantity": 3,
       "closedQuantity": 0,
-      "currentMarketValue": 620.16,
-      "currentPrice": 206.72,
+      "currentMarketValue": 614.25,
+      "currentPrice": 204.75,
       "averageEntryPrice": 204.228567,
-      "dayPnl": 0.06,
+      "dayPnl": -5.85,
       "closedPnl": 0,
-      "openPnl": 7.474299,
+      "openPnl": 1.564299,
       "totalCost": 612.685701,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2391,12 +2077,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 55755413,
       "openQuantity": 25,
       "closedQuantity": 0,
-      "currentMarketValue": 746.5,
-      "currentPrice": 29.86,
+      "currentMarketValue": 731.25,
+      "currentPrice": 29.25,
       "averageEntryPrice": 32.60242,
-      "dayPnl": -7.25,
+      "dayPnl": -22.5,
       "closedPnl": 0,
-      "openPnl": -68.5605,
+      "openPnl": -83.8105,
       "totalCost": 815.0605,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2406,12 +2092,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 23205,
       "openQuantity": 46,
       "closedQuantity": 0,
-      "currentMarketValue": 1708.9,
-      "currentPrice": 37.15,
+      "currentMarketValue": 1689.12,
+      "currentPrice": 36.72,
       "averageEntryPrice": 37.126019,
-      "dayPnl": 0,
+      "dayPnl": -19.78,
       "closedPnl": 0,
-      "openPnl": 1.103126,
+      "openPnl": -18.676874,
       "totalCost": 1707.796874,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2421,12 +2107,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 8809917,
       "openQuantity": 1,
       "closedQuantity": 0,
-      "currentMarketValue": 822.68,
-      "currentPrice": 822.68,
+      "currentMarketValue": 815,
+      "currentPrice": 815,
       "averageEntryPrice": 792.746,
-      "dayPnl": 0.44,
+      "dayPnl": -7.24,
       "closedPnl": 0,
-      "openPnl": 29.934,
+      "openPnl": 22.254,
       "totalCost": 792.746,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2436,12 +2122,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 37827,
       "openQuantity": 1.5,
       "closedQuantity": 1.5,
-      "currentMarketValue": 659.82,
-      "currentPrice": 439.88,
+      "currentMarketValue": 657.765,
+      "currentPrice": 438.51,
       "averageEntryPrice": 443.190672,
-      "dayPnl": 5.97,
+      "dayPnl": 3.915,
       "closedPnl": 53.075988,
-      "openPnl": -4.966008,
+      "openPnl": -7.021008,
       "totalCost": 664.786008,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2481,12 +2167,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 39995621,
       "openQuantity": 2,
       "closedQuantity": 0,
-      "currentMarketValue": 800.66,
-      "currentPrice": 400.33,
+      "currentMarketValue": 795.44,
+      "currentPrice": 397.72,
       "averageEntryPrice": 370.4984,
-      "dayPnl": -7.24,
+      "dayPnl": -12.46,
       "closedPnl": 0,
-      "openPnl": 59.6632,
+      "openPnl": 54.4432,
       "totalCost": 740.9968,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2496,12 +2182,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 52624871,
       "openQuantity": 45,
       "closedQuantity": 0,
-      "currentMarketValue": 894.15,
-      "currentPrice": 19.87,
+      "currentMarketValue": 877.05,
+      "currentPrice": 19.49,
       "averageEntryPrice": 18.77632,
-      "dayPnl": -3.15,
+      "dayPnl": -20.25,
       "closedPnl": 0,
-      "openPnl": 49.2156,
+      "openPnl": 32.1156,
       "totalCost": 844.9344,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2511,12 +2197,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 60839671,
       "openQuantity": 3,
       "closedQuantity": 1,
-      "currentMarketValue": 443.19,
-      "currentPrice": 147.73,
+      "currentMarketValue": 424.47,
+      "currentPrice": 141.49,
       "averageEntryPrice": 86.73695,
-      "dayPnl": 25.47,
+      "dayPnl": 6.75,
       "closedPnl": 48.88305,
-      "openPnl": 182.97915,
+      "openPnl": 164.25915,
       "totalCost": 260.21085,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2526,12 +2212,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 15605261,
       "openQuantity": 2,
       "closedQuantity": 0,
-      "currentMarketValue": 426.5,
-      "currentPrice": 213.25,
+      "currentMarketValue": 420.1,
+      "currentPrice": 210.05,
       "averageEntryPrice": 199.26,
-      "dayPnl": 4.8,
+      "dayPnl": -1.6,
       "closedPnl": 0,
-      "openPnl": 27.98,
+      "openPnl": 21.58,
       "totalCost": 398.52,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2541,12 +2227,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 27426,
       "openQuantity": 1,
       "closedQuantity": 0,
-      "currentMarketValue": 511.56,
-      "currentPrice": 511.56,
+      "currentMarketValue": 510.5,
+      "currentPrice": 510.5,
       "averageEntryPrice": 515.32456,
-      "dayPnl": -1.87,
+      "dayPnl": -2.93,
       "closedPnl": 0,
-      "openPnl": -3.76456,
+      "openPnl": -4.82456,
       "totalCost": 515.32456,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2556,12 +2242,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 52317225,
       "openQuantity": 5,
       "closedQuantity": 0,
-      "currentMarketValue": 308.75,
-      "currentPrice": 61.75,
+      "currentMarketValue": 306.25,
+      "currentPrice": 61.25,
       "averageEntryPrice": 67.00834,
-      "dayPnl": -5.8746,
+      "dayPnl": -8.3746,
       "closedPnl": 0,
-      "openPnl": -26.2917,
+      "openPnl": -28.7917,
       "totalCost": 335.0417,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2571,12 +2257,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 62633529,
       "openQuantity": 10,
       "closedQuantity": 0,
-      "currentMarketValue": 311.5,
-      "currentPrice": 31.15,
+      "currentMarketValue": 309.7,
+      "currentPrice": 30.97,
       "averageEntryPrice": 31.528,
-      "dayPnl": -4.9,
+      "dayPnl": -6.7,
       "closedPnl": 0,
-      "openPnl": -3.78,
+      "openPnl": -5.58,
       "totalCost": 315.28,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2586,12 +2272,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 6770,
       "openQuantity": 1,
       "closedQuantity": 0,
-      "currentMarketValue": 239.26,
-      "currentPrice": 239.26,
+      "currentMarketValue": 233.02,
+      "currentPrice": 233.02,
       "averageEntryPrice": 219.276,
-      "dayPnl": 0.66,
+      "dayPnl": -5.58,
       "closedPnl": 0,
-      "openPnl": 19.984,
+      "openPnl": 13.744,
       "totalCost": 219.276,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2601,12 +2287,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 11419765,
       "openQuantity": 2,
       "closedQuantity": 0,
-      "currentMarketValue": 506.96,
-      "currentPrice": 253.48,
+      "currentMarketValue": 503.54,
+      "currentPrice": 251.77,
       "averageEntryPrice": 245.79205,
-      "dayPnl": 3.54,
+      "dayPnl": 0.12,
       "closedPnl": 0,
-      "openPnl": 15.3759,
+      "openPnl": 11.9559,
       "totalCost": 491.5841,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2616,12 +2302,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 29814,
       "openQuantity": 1,
       "closedQuantity": 0,
-      "currentMarketValue": 182.16,
-      "currentPrice": 182.16,
+      "currentMarketValue": 181.21,
+      "currentPrice": 181.21,
       "averageEntryPrice": 182.5682,
-      "dayPnl": 2.33,
+      "dayPnl": 1.38,
       "closedPnl": 0,
-      "openPnl": -0.4082,
+      "openPnl": -1.3582,
       "totalCost": 182.5682,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2631,12 +2317,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 21109371,
       "openQuantity": 2,
       "closedQuantity": 0,
-      "currentMarketValue": 709.22,
-      "currentPrice": 354.61,
+      "currentMarketValue": 704.5,
+      "currentPrice": 352.25,
       "averageEntryPrice": 339.25155,
-      "dayPnl": 6.56,
+      "dayPnl": 1.84,
       "closedPnl": 0,
-      "openPnl": 30.7169,
+      "openPnl": 25.9969,
       "totalCost": 678.5031,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2646,12 +2332,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 2333066,
       "openQuantity": 1,
       "closedQuantity": 0,
-      "currentMarketValue": 206.72,
-      "currentPrice": 206.72,
+      "currentMarketValue": 204.75,
+      "currentPrice": 204.75,
       "averageEntryPrice": 216.635,
-      "dayPnl": 0.02,
+      "dayPnl": -1.95,
       "closedPnl": 0,
-      "openPnl": -9.915,
+      "openPnl": -11.885,
       "totalCost": 216.635,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2661,12 +2347,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 55755413,
       "openQuantity": 12,
       "closedQuantity": 0,
-      "currentMarketValue": 358.32,
-      "currentPrice": 29.86,
+      "currentMarketValue": 351,
+      "currentPrice": 29.25,
       "averageEntryPrice": 32.765,
-      "dayPnl": -3.48,
+      "dayPnl": -10.8,
       "closedPnl": 0,
-      "openPnl": -34.86,
+      "openPnl": -42.18,
       "totalCost": 393.18,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2676,12 +2362,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 23205,
       "openQuantity": 30,
       "closedQuantity": 0,
-      "currentMarketValue": 1114.5,
-      "currentPrice": 37.15,
+      "currentMarketValue": 1101.6,
+      "currentPrice": 36.72,
       "averageEntryPrice": 37.14049,
-      "dayPnl": 0,
+      "dayPnl": -12.9,
       "closedPnl": 0,
-      "openPnl": 0.2853,
+      "openPnl": -12.6147,
       "totalCost": 1114.2147,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2721,12 +2407,12 @@ console.log(`Exported all data to ${exportPath}`);
       "symbolId": 39995621,
       "openQuantity": 1,
       "closedQuantity": 0,
-      "currentMarketValue": 400.33,
-      "currentPrice": 400.33,
+      "currentMarketValue": 397.72,
+      "currentPrice": 397.72,
       "averageEntryPrice": 378.0292,
-      "dayPnl": -3.62,
+      "dayPnl": -6.23,
       "closedPnl": 0,
-      "openPnl": 22.3008,
+      "openPnl": 19.6908,
       "totalCost": 378.0292,
       "isRealTime": true,
       "isUnderReorg": false
@@ -2763,8 +2449,8 @@ console.log(`Exported all data to ${exportPath}`);
     {
       "currency": "USD",
       "cash": 3162.659793,
-      "marketValue": 17298.05,
-      "totalEquity": 20460.709793,
+      "marketValue": 17119.0426,
+      "totalEquity": 20281.702393,
       "buyingPower": 2588.049793,
       "maintenanceExcess": 2588.049793,
       "isRealTime": true
@@ -2781,8 +2467,8 @@ console.log(`Exported all data to ${exportPath}`);
     {
       "currency": "USD",
       "cash": 770.412741,
-      "marketValue": 7076.79,
-      "totalEquity": 7847.202741,
+      "marketValue": 7019.119,
+      "totalEquity": 7789.531741,
       "buyingPower": 770.412741,
       "maintenanceExcess": 770.412741,
       "isRealTime": true
@@ -2795,7 +2481,16 @@ console.log(`Exported all data to ${exportPath}`);
 
 --- START OF FILE ./backend/fetchAllAccountData.ts ---
 
-import { getAllAccountData } from './src/services/questradeService';
+/**
+ * Fetch all Questrade account, positions, and balances data
+ *
+ * How to run:
+ *   cd backend
+ *   npx ts-node --esm fetchAllAccountData.ts
+ *
+ * The server does NOT need to be running to use this script.
+ */
+import { getAllAccountData } from './src/services/questradeService.ts';
 
 (async () => {
   try {
@@ -2810,6 +2505,20 @@ import { getAllAccountData } from './src/services/questradeService';
 
 --- START OF FILE ./backend/fetchAndExportAllData.ts ---
 
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+/**
+ * Fetch and export all Questrade account, positions, balances, and orders data
+ *
+ * How to run:
+ *   cd backend
+ *   npx ts-node --esm fetchAndExportAllData.ts
+ *
+ * The server does NOT need to be running to use this script.
+ */
 
 /**
  * Script: fetchAndExportAllData.ts
@@ -2827,14 +2536,13 @@ import { getAllAccountData } from './src/services/questradeService';
  *   5. Logs completion and export path.
  */
 
-import { getAllAccountData } from './src/services/questradeService';
-import { getAccounts } from './src/data/accounts';
-import { getPositions } from './src/data/positions';
-import { getBalances } from './src/data/balances';
-import { getOrders } from './src/data/orders';
-import { getCurrentHoldings } from './src/data/currentHoldings';
+import { getAllAccountData } from './src/services/questradeService.ts';
+import { getAccounts } from './src/data/accounts.ts';
+import { getPositions } from './src/data/positions.ts';
+import { getBalances } from './src/data/balances.ts';
+import { getOrders } from './src/data/orders.ts';
+import { getCurrentHoldings } from './src/data/currentHoldings.ts';
 import * as fs from 'fs';
-import * as path from 'path';
 
 
 // Main execution: fetch, aggregate, and export all data
@@ -2861,6 +2569,29 @@ import * as path from 'path';
 
 --- END OF FILE ---
 
+--- START OF FILE ./backend/jest.config.cjs ---
+
+/** @type {import('ts-jest').JestConfigWithTsJest} */
+module.exports = {
+  preset: 'ts-jest/presets/js-with-ts-esm',
+  testEnvironment: 'node',
+  extensionsToTreatAsEsm: ['.ts'],
+  globals: {
+    'ts-jest': {
+      useESM: true,
+    },
+  },
+  moduleNameMapper: {
+    '^(\.{1,2}/.*)\.ts$': '$1',
+  },
+  transformIgnorePatterns: [
+    '/node_modules/(?!axios)/',
+  ],
+  runner: 'jest-runner',
+};
+
+--- END OF FILE ---
+
 --- START OF FILE ./backend/package.json ---
 
 {
@@ -2870,7 +2601,7 @@ import * as path from 'path';
   "description": "Express backend for Questrade Portfolio Viewer",
   "main": "dist/index.js",
   "scripts": {
-  "dev": "ts-node --esm src/index.ts",
+    "dev": "ts-node --esm src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
@@ -2888,94 +2619,14 @@ import * as path from 'path';
   "devDependencies": {
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.19.21",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.0.0"
   }
 }
-
---- END OF FILE ---
-
---- START OF FILE ./backend/src/data/accounts.ts ---
-
-import type { QuestradeAccount } from '../types/index.ts';
-
-export let accounts: QuestradeAccount[] = [];
-
-// Function to update accounts (called on fetch)
-export const updateAccounts = (newAccounts: QuestradeAccount[]) => {
-  accounts = newAccounts;
-};
-
-// Function to get current accounts
-export const getAccounts = (): QuestradeAccount[] => {
-  return accounts;
-};
-
---- END OF FILE ---
-
---- START OF FILE ./backend/src/data/balances.ts ---
-
-import type { QuestradeBalance } from '../types/index.ts';
-
-export let balances: QuestradeBalance[] = [];
-
-export const updateBalances = (newBalances: QuestradeBalance[]) => {
-  balances = newBalances;
-};
-
-export const getBalances = (): QuestradeBalance[] => {
-  return balances;
-};
-
---- END OF FILE ---
-
---- START OF FILE ./backend/src/data/currentHoldings.ts ---
-
-import type { Holding } from '../types/index.ts';
-
-export let currentHoldings: Holding[] = [];
-
-// Function to update holdings (called on fetch)
-export const updateCurrentHoldings = (holdings: Holding[]) => {
-  currentHoldings = holdings;
-};
-
-// Function to get current holdings
-export const getCurrentHoldings = (): Holding[] => {
-  return currentHoldings;
-};
---- END OF FILE ---
-
---- START OF FILE ./backend/src/data/orders.ts ---
-
-import type { QuestradeOrder } from '../types/index.ts';
-
-export let orders: QuestradeOrder[] = [];
-
-export const updateOrders = (newOrders: QuestradeOrder[]) => {
-  orders = newOrders;
-};
-
-export const getOrders = (): QuestradeOrder[] => {
-  return orders;
-};
-
---- END OF FILE ---
-
---- START OF FILE ./backend/src/data/positions.ts ---
-
-import type { QuestradePosition } from '../types/index.ts';
-
-export let positions: QuestradePosition[] = [];
-
-export const updatePositions = (newPositions: QuestradePosition[]) => {
-  positions = newPositions;
-};
-
-export const getPositions = (): QuestradePosition[] => {
-  return positions;
-};
 
 --- END OF FILE ---
 
@@ -3012,6 +2663,8 @@ app.use('/api', questradeRoutes);
 app.listen(PORT, () => {
   console.log(`Backend running on http://localhost:${PORT}`);
 });
+
+export default app;
 --- END OF FILE ---
 
 --- START OF FILE ./backend/src/routes/questrade.ts ---
@@ -3063,16 +2716,10 @@ router.get('/balances', async (req, res) => {
  * 4. Retrieves balances data (via /refresh, included in response).
  * 5. Provides a /refresh endpoint to update all local data from Questrade.
  */
-import express from 'express';
-import axios from 'axios';
 // ...existing code...
 
-
-import { getCurrentHoldings } from '../data/currentHoldings.ts';
-
-const router = express.Router();
-
 // Refresh all account, holdings, and balances data from Questrade
+router.get('/refresh', async (req, res) => {
   try {
     const result = await getAllAccountData();
     res.json({ success: true, ...result });
@@ -3086,11 +2733,12 @@ const router = express.Router();
 // Remove callback since manual
 // router.get('/auth/callback', ...
 
+router.get('/holdings', async (req, res) => {
   try {
     const holdings = await getHoldings();
     res.json(holdings);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch holdings' });
+    res.status(500).json({ error: 'Failed to get holdings' });
   }
 });
 
@@ -3482,100 +3130,6 @@ export const loadHoldingsFromXLSX = (filePath: string = 'portfolio.xlsx'): Holdi
 };
 --- END OF FILE ---
 
---- START OF FILE ./backend/test_accounts.ts ---
-
-import dotenv from 'dotenv';
-import path from 'path';
-import { getBearerToken, fetchAccounts } from './src/services/questradeService';
-
-// Load repo root .env
-dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
-
-const TEST_MODE = process.env.QUESTRADE_TEST_MODE || 'real';
-
-async function run() {
-  console.log('Test mode:', TEST_MODE);
-
-  if (TEST_MODE === 'mock') {
-    console.log('Running in mock mode. Simulating getBearerToken and accounts response.');
-    const mockTokens = { access_token: '<MOCK_ACCESS_TOKEN>', api_server: 'https://api01.iq.questrade.com/' };
-    console.log('Mock tokens (redacted):', { access_token: '<REDACTED>', api_server: mockTokens.api_server });
-    console.log('Mock accounts response:', { accounts: [{ number: 'MOCK-12345', type: 'TFSA' }] });
-    return;
-  }
-
-  try {
-    console.log('Attempting to redeem refresh token via getBearerToken()...');
-    const tokens = await getBearerToken();
-    const safe = { ...tokens } as any;
-    if (safe.refresh_token) safe.refresh_token = '<REDACTED>';
-    if (safe.access_token) safe.access_token = '<REDACTED>';
-    console.log('Redeemed tokens (redacted):', safe);
-
-    console.log('\nAttempting to fetch accounts using fetchAccounts()...');
-    const accounts = await fetchAccounts();
-    console.log('Accounts response:', accounts);
-  } catch (err: any) {
-    console.error('Error during test:', err && err.message ? err.message : err);
-    if (err.response) {
-      console.error('Response status:', err.response.status);
-      console.error('Response body:', err.response.data);
-    }
-    console.log('\nIf you want to validate the code path without a live Questrade token, run with mock mode:');
-    console.log('  QUESTRADE_TEST_MODE=mock npx ts-node test_accounts.ts');
-    process.exit(2);
-  }
-}
-
-run();
-
---- END OF FILE ---
-
---- START OF FILE ./backend/test_bearer.ts ---
-
-import axios from 'axios';
-import dotenv from 'dotenv';
-import path from 'path';
-
-// Ensure we load the repository root .env regardless of current working dir
-const repoEnv = path.resolve(__dirname, '..', '.env');
-dotenv.config({ path: repoEnv });
-
-const REFRESH_TOKEN = process.env.QUESTRADE_REFRESH_TOKEN;
-
-async function testBearer() {
-  if (!REFRESH_TOKEN) {
-    console.error('No QUESTRADE_REFRESH_TOKEN in .env');
-    process.exit(1);
-  }
-
-  const url = `https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token=${REFRESH_TOKEN}`;
-  try {
-    console.log('Requesting Bearer [REDACTED]');
-    const res = await axios.get(url);
-    console.log('Response status:', res.status);
-    console.log('Accessible keys:', Object.keys(res.data));
-    const safe = { ...res.data };
-    if (safe.refresh_token) safe.refresh_token = '<REDACTED>';
-    if (safe.access_token) safe.access_token = '<REDACTED>';
-    console.log('Body (redacted):', safe);
-  } catch (err: any) {
-    if (err.response) {
-      console.error('HTTP error status:', err.response.status);
-      console.error('Response body:', err.response.data);
-    } else {
-      console.error('Network/error:', err.message || err);
-    }
-    process.exit(2);
-  }
-}
-
-testBearer();
-
-
-[NOTE] Sensitive values were detected and redacted in this file.
---- END OF FILE ---
-
 --- START OF FILE ./backend/tests/README.md ---
 
 # Backend Test Structure
@@ -3620,21 +3174,82 @@ import request from 'supertest';
 // Adjust the import path to your Express app
 import app from '../../src/index';
 
+// Mock Questrade service functions to avoid real API calls
+jest.mock('../../src/services/questradeService.ts', () => ({
+  getBearerToken: jest.fn().mockResolvedValue({
+    access_token: 'mock_access_token',
+    api_server: 'https://mock.api/',
+    refresh_token: 'mock_refresh_token',
+  }),
+  getAccounts: jest.fn().mockResolvedValue([
+    {
+      type: 'Individual',
+      number: '123456',
+      status: 'Active',
+      isPrimary: true,
+      isBilling: false,
+      clientAccountType: 'Margin',
+      userId: 'user1',
+    },
+  ]),
+  getHoldings: jest.fn().mockResolvedValue([
+    {
+      symbol: 'AAPL',
+      quantity: 10,
+      bookValue: 1500,
+      marketValue: 1700,
+    },
+  ]),
+  getAllAccountData: jest.fn().mockResolvedValue({
+    accounts: [
+      {
+        type: 'Individual',
+        number: '123456',
+        status: 'Active',
+        isPrimary: true,
+        isBilling: false,
+        clientAccountType: 'Margin',
+        userId: 'user1',
+      },
+    ],
+    positions: [
+      {
+        symbol: 'AAPL',
+        openQuantity: 10,
+        averageEntryPrice: 150,
+        currentMarketValue: 1700,
+      },
+    ],
+    balances: [
+      {
+        currency: 'USD',
+        cash: 1000,
+      },
+    ],
+  }),
+  getBalances: jest.fn().mockResolvedValue([
+    {
+      currency: 'USD',
+      cash: 1000,
+    },
+  ]),
+}));
+
 describe('Questrade API Routes', () => {
-  it('GET /questrade/accounts should return accounts', async () => {
-    const res = await request(app).get('/questrade/accounts');
+  it('GET /questrade/accounts should get accounts', async () => {
+  const res = await request(app).get('/api/questrade/accounts');
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
 
-  it('GET /questrade/holdings should return holdings', async () => {
-    const res = await request(app).get('/questrade/holdings');
+  it('GET /questrade/holdings should get holdings', async () => {
+  const res = await request(app).get('/api/questrade/holdings');
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
   });
 
-  it('GET /questrade/refresh should refresh and return all data', async () => {
-    const res = await request(app).get('/questrade/refresh');
+  it('GET /questrade/refresh should get and return all data', async () => {
+  const res = await request(app).get('/api/questrade/refresh');
     expect(res.statusCode).toBe(200);
     expect(res.body).toHaveProperty('success', true);
     expect(res.body).toHaveProperty('accounts');
@@ -3647,66 +3262,35 @@ describe('Questrade API Routes', () => {
 
 --- END OF FILE ---
 
---- START OF FILE ./backend/tests/services/questradeService.test.ts ---
+--- START OF FILE ./backend/tests/services/getAllAccountData.integration.test.ts ---
 
-/**
- * Questrade Service Function Tests
- * --------------------------------
- * Tests each backend service function in isolation to confirm correct behavior.
- * Uses Jest for async testing and mocking external dependencies.
- */
-import { getBearerToken, getAccounts, getBalances, getPositions, getAllAccountData, getHoldings } from './questradeService';
-// Example test for getBearerToken
-// You should replace mock implementations with real API credentials for integration tests
+import { describe, it, expect } from 'vitest';
+import { getAllAccountData } from '../../src/services/questradeService.ts';
 
-describe('Questrade Service Functions', () => {
-  test('getBearerToken returns token object', async () => {
-// This file has been moved to backend/tests/services/questradeService.test.ts and can be deleted.
-    const token = await getBearerToken();
-    expect(token).toHaveProperty('access_token');
-    expect(token).toHaveProperty('api_server');
-  });
-
-  test('getAccounts returns array of accounts', async () => {
-    const accounts = await getAccounts();
-    expect(Array.isArray(accounts)).toBe(true);
-    if (accounts.length > 0) {
-      expect(accounts[0]).toHaveProperty('number');
-    }
-  });
-
-  test('getBalances returns array for valid account', async () => {
-    const accounts = await getAccounts();
-    if (accounts.length > 0) {
-      const token = await getBearerToken();
-      const balances = await getBalances(accounts[0].number, token.api_server, token.access_token);
-      expect(Array.isArray(balances)).toBe(true);
-    } else {
-      expect(true).toBe(true); // No accounts, skip
-    }
-  });
-
-  test('getPositions returns array for valid account', async () => {
-    const accounts = await getAccounts();
-    if (accounts.length > 0) {
-      const token = await getBearerToken();
-      const positions = await getPositions(accounts[0].number, token.api_server, token.access_token);
-      expect(Array.isArray(positions)).toBe(true);
-    } else {
-      expect(true).toBe(true); // No accounts, skip
-    }
-  });
-
-  test('getAllAccountData returns all data objects', async () => {
+describe('Integration: getAllAccountData', () => {
+  it('should fetch all account data from Questrade API', async () => {
     const result = await getAllAccountData();
     expect(result).toHaveProperty('accounts');
     expect(result).toHaveProperty('positions');
     expect(result).toHaveProperty('balances');
+    expect(Array.isArray(result.accounts)).toBe(true);
+    expect(Array.isArray(result.positions)).toBe(true);
+    expect(Array.isArray(result.balances)).toBe(true);
   });
+});
 
-  test('getHoldings returns array of holdings', async () => {
-    const holdings = await getHoldings();
-    expect(Array.isArray(holdings)).toBe(true);
+--- END OF FILE ---
+
+--- START OF FILE ./backend/tests/services/questradeService.test.ts ---
+
+import { describe, it, expect } from 'vitest';
+import { getBearerToken } from '../../src/services/questradeService.ts';
+
+describe('Questrade Service Functions', () => {
+  it('getBearerToken returns token object', async () => {
+    const token = await getBearerToken();
+    expect(token).toHaveProperty('access_token');
+    expect(token).toHaveProperty('api_server');
   });
 });
 
@@ -3737,68 +3321,321 @@ describe('Questrade Service Functions', () => {
 
 --- START OF FILE ./docs/DATABASE_SETUP.md ---
 
-# DATABASE_SETUP.md
+# Database Setup
 
-(Original content from docs/DATABASE_SETUP.md)
+## Overview
+Uses Prisma with SQLite for local persistence. Minimal setup for V1 (caching future).
 
----
+## Setup Commands
+```bash
+cd backend
+npm install
+npx prisma generate
+npx prisma migrate dev --name init
+```
 
-Please refer to the original doc for full details.
+## Schema
+See `prisma/schema.prisma` for HoldingCache model.
+
+## Usage
+- Run migrations on setup.
+- For V1, data stored in .ts file; DB for future features.
 --- END OF FILE ---
 
 --- START OF FILE ./docs/DataContracts.md ---
 
-# DataContracts.md
+# NOTE: All data contracts in this project are aligned with the official Questrade API schemas for consistency and reliability. See ADR 006 (adrs/006-data-contracts-aligned-with-questrade.md) for details and rationale. When updating or adding new contracts, always reference the Questrade API documentation and update ADR 006 if the approach changes.
+# Data Contracts
 
-(Original content from docs/DataContracts.md)
+## Holding Schema (Zod)
+```typescript
+import { z } from 'zod';
 
----
+export const HoldingSchema = z.object({
+  symbol: z.string(),
+  quantity: z.number(),
+  bookValue: z.number(),
+  marketValue: z.number(),
+});
 
-Please refer to the original doc for full details.
+export type Holding = z.infer<typeof HoldingSchema>;
+```
+
+## API Contracts
+- **GET /api/holdings:** Returns `Holding[]`.
+- **GET /api/current-holdings:** Returns current holdings from .ts file.
+- **GET /api/auth/start:** Initiates OAuth flow.
+- **GET /api/auth/callback:** Handles OAuth callback, logs refresh token.
 --- END OF FILE ---
 
 --- START OF FILE ./docs/Roadmap.md ---
 
-# Roadmap.md
+# Roadmap
 
-(Original content from docs/Roadmap.md)
+## V1: Manual Holdings Fetch to Local .ts
+- Manual OAuth2 auth with refresh token flow.
+- Fetch holdings on button click.
+- Display in table.
+- Store in backend/src/data/currentHoldings.ts.
+- Automated refresh token management: .env updated after each token exchange.
+- API error handling and user feedback for token issues.
 
----
+## V2: Spreadsheet Integration
+- Save holdings to portfolio.xlsx using xlsx library.
+- Add /api/update-spreadsheet endpoint.
+- UI for spreadsheet export and download.
 
-Please refer to the original doc for full details.
+## V3: Rebalancing Calculator
+- Add UI for rebalancing logic (no trades).
+- Integrate with holdings data.
+
+## V4: Charts and Advanced UI
+- Integrate charts for holdings visualization.
+- Dashboard for portfolio analytics.
+
+## V5: Token Management & Security Enhancements
+- UI for viewing and managing refresh token status.
+- Enhanced error handling and logging.
+- Option for secure secrets storage (beyond .env).
+
+## V6: Local Caching & Performance
+- Integrate SQLite for local caching of holdings and API responses.
+- Optimize data fetch and UI responsiveness.
 --- END OF FILE ---
 
 --- START OF FILE ./docs/TaskTracker.md ---
 
-# TaskTracker.md
+# Task Tracker
 
-(Original content from docs/TaskTracker.md)
+This file maps each user requirement (from `docs/UserRequirements.md`) to its implementation status. Use this tracker to monitor progress and ensure all requirements are actionable.
+
+**Note:** When adding a new requirement to `UserRequirements.md`, always update this Task Tracker to reflect the change.
+
+## Task List
+
+- [x] **UR1:** User can trigger holdings fetch from Questrade API via "Fetch Holdings" button.
+- [x] **UR2:** Holdings displayed in a simple table with columns: Symbol, Quantity, Book Value, Market Value.
+- [x] **UR3:** Data stored in local .ts file (V1) for quick access.
+- [ ] **UR4:** Manual OAuth authentication via browser popup/modal.
+- [x] **UR5:** Automated refresh token management: app updates .env with new refresh token after each successful token exchange.
+- [ ] **UR6:** User can view and manage refresh token status in the UI (future).
+- [x] **UR7:** API error handling and user feedback for token issues.
+- [ ] **UR8:** Support for spreadsheet export (V2).
+- [ ] **UR9:** Rebalancing calculator UI (V3).
+- [ ] **UR10:** Holdings visualization with charts (V4).
+- [x] **UR11:** Account-level inventory: For each account, display stocks, ETFs, and cash with book value, market value, number of shares, gain/loss $ and % on each holding.
+- [ ] **UR12:** Portfolio-thesis alignment: Compare actual holdings against investment thesis pillars and target allocations.
+- [ ] **UR13:** Map holdings to thesis pillars, highlight gaps, overweights, underweights, and thesis breakers.
+- [ ] **UR14:** Export inventory and alignment analysis to spreadsheet or PDF.
+- [x] **UR15:** Incremental, modular development—features can be built and refined step by step.
+- [x] **UR16:** Secure: No password storage, .env for secrets, Husky pre-commit scans, and OAuth2 refresh token management as documented in ADR 001.
+- [x] **UR17:** Responsive UI with modern design (shadcn/ui, Tailwind).
+- [x] **UR18:** Local-first: Holdings data is preserved in a local TypeScript file in V1 for quick access and reliability. SQLite will be used for local caching and persistence in future versions (V2+). No external DB in V1.
+- [x] **UR19:** Incremental feature rollout with clear versioning.
+- [x] **UR20:** All data contracts (TypeScript interfaces/types) for positions, holdings, and related entities must be aligned with the official Questrade API schemas for consistency and reliability. See ADR 006 (adrs/006-data-contracts-aligned-with-questrade.md) for details. When updating or adding new contracts, always reference the Questrade API documentation and update ADR 006 if the approach changes.
+- [x] **UR21:** Ability to export all in-memory account, holdings, positions, balances, and orders data to a file or string for prompt/AI analysis, spreadsheet export, or external review. This enables easy integration with LLMs and other analysis tools.
+- [ ] **UR22:** LLM-Driven Portfolio Analysis Workflow. Enable an LLM to analyze current portfolio/account data, compare it against the investment thesis, and recommend improvements. Includes data access, thesis integration, prompt-based analysis, recommendations output, and workflow documentation.
+- [ ] **UR23:** Portfolio Alignment Table Generation Script. Create a script in scripts/ (e.g., generate_portfolio_alignment_table.ts) that reads exportedData.json, aggregates holdings across all accounts, compares actual allocations to thesis targets, highlights gaps/overweights/underweights/thesis breakers, and outputs a markdown table to TargetPortfolio/portfolio_thesis_alignment_report.md for LLM analysis and recommendations. Document workflow and usage in UserRequirements.md and TaskTracker.md.
 
 ---
 
-Please refer to the original doc for full details.
+**Reminder:** Always update this file when adding, removing, or changing requirements in `UserRequirements.md`.
+
 --- END OF FILE ---
 
 --- START OF FILE ./docs/TokenFlow.md ---
 
-# TokenFlow.md
+# Questrade API Token Flow
 
-(Original content from docs/TokenFlow.md)
+This document explains how the refresh token and Bearer [REDACTED] process works in the Questrade integration, including a simple Mermaid sequence diagram.
+
+## Overview
+
+- The Questrade API uses OAuth2 tokens for authentication.
+- You start with a single-use refresh token, which you obtain from the Questrade Developer Portal.
+- The app uses this refresh token to request a bearer (access) token and a new refresh token.
+- After each successful token exchange, the app automatically updates the `.env` file with the new refresh token.
+- The Bearer [REDACTED] is used for authorized API calls (e.g., fetching accounts).
+- The process repeats: each API call uses the latest Bearer [REDACTED], and the refresh token is updated as needed.
+
+## Step-by-Step Process
+
+1. **Obtain a refresh token** from Questrade and place it in `.env` as `QUESTRADE_REFRESH_TOKEN`.
+2. **Run the app or script**. The code:
+    - Reads the refresh token from `.env`.
+    - Redeems it for a Bearer [REDACTED] and a new refresh token.
+    - Updates `.env` with the new refresh token.
+    - Uses the Bearer [REDACTED] for API calls.
+3. **Repeat**: Each time you run the app, it uses the latest refresh token and Bearer [REDACTED]
+
+## Mermaid Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant App
+    participant QuestradeAPI
+
+    User->>App: Add refresh token to .env
+    App->>QuestradeAPI: Redeem refresh token
+    QuestradeAPI-->>App: Return Bearer [REDACTED] & new refresh token
+    App->>App: Update .env with new refresh token
+    App->>QuestradeAPI: Make API call with Bearer [REDACTED]
+    QuestradeAPI-->>App: Return data (e.g., accounts)
+```
+
+## Notes
+- The refresh token is single-use: after redemption, only the new token is valid.
+- The `.env` file is automatically updated after each successful token exchange.
+- You only need to manually update `.env` if the token is revoked or you reset your app.
 
 ---
 
-Please refer to the original doc for full details.
+For troubleshooting or more details, see the code in `backend/src/services/questradeService.ts`.
+
+
+[NOTE] Sensitive values were detected and redacted in this file.
 --- END OF FILE ---
 
 --- START OF FILE ./docs/UserRequirements.md ---
 
-# UserRequirements.md
+# User Requirements
 
-(Original content from docs/UserRequirements.md)
+**NOTE:** Ensure all new requirements are captured in the `./TaskTracker.md`
 
----
+## Functional Requirements
+- **UR1:** User can trigger holdings fetch from Questrade API via "Fetch Holdings" button.
+- **UR2:** Holdings displayed in a simple table with columns: Symbol, Quantity, Book Value, Market Value.
+- **UR3:** Data stored in local .ts file (V1) for quick access.
+- **UR4:** Manual OAuth authentication via browser popup/modal.
+- **UR5:** Automated refresh token management: app updates .env with new refresh token after each successful token exchange.
+- **UR6:** User can view and manage refresh token status in the UI (future).
+- **UR7:** API error handling and user feedback for token issues.
+- **UR8:** Support for spreadsheet export (V2).
+- **UR9:** Rebalancing calculator UI (V3).
+- **UR10:** Holdings visualization with charts (V4).
+- **UR11:** Account-level inventory: For each account, display stocks, ETFs, and cash with book value, market value, number of shares, gain/loss $ and % on each holding.
+- **UR12:** Portfolio-thesis alignment: Compare actual holdings against investment thesis pillars and target allocations.
+- **UR13:** Map holdings to thesis pillars, highlight gaps, overweights, underweights, and thesis breakers.
+- **UR14:** Export inventory and alignment analysis to spreadsheet or PDF.
+- **UR15:** Incremental, modular development—features can be built and refined step by step.
 
-Please refer to the original doc for full details.
+## Non-Functional Requirements
+- **UR16:** Secure: No password storage, .env for secrets, Husky pre-commit scans, and OAuth2 refresh token management as documented in ADR 001.
+- **UR17:** Responsive UI with modern design (shadcn/ui, Tailwind).
+- **UR18:** Local-first: Holdings data is preserved in a local TypeScript file in V1 for quick access and reliability. SQLite will be used for local caching and persistence in future versions (V2+). No external DB in V1.
+- **UR19:** Incremental feature rollout with clear versioning.
+**UR20:** All data contracts (TypeScript interfaces/types) for positions, holdings, and related entities must be aligned with the official Questrade API schemas for consistency and reliability. See ADR 006 (adrs/006-data-contracts-aligned-with-questrade.md) for details. When updating or adding new contracts, always reference the Questrade API documentation and update ADR 006 if the approach changes.
+  
+**UR21:** Ability to export all in-memory account, holdings, positions, balances, and orders data to a file or string for prompt/AI analysis, spreadsheet export, or external review. This enables easy integration with LLMs and other analysis tools.
+  
+	Key Questrade API documentation for reference:
+	- [Accounts Balances](https://www.questrade.com/api/documentation/rest-operations/account-calls/accounts-id-balances)
+	- [Accounts](https://www.questrade.com/api/documentation/rest-operations/account-calls/accounts)
+	- [Accounts Positions](https://www.questrade.com/api/documentation/rest-operations/account-calls/accounts-id-positions)
+	- [Accounts Orders](https://www.questrade.com/api/documentation/rest-operations/account-calls/accounts-id-orders)
+	- ...and other relevant endpoints as needed.
+
+**UR22:** LLM-Driven Portfolio Analysis Workflow
+
+*Goal:* Enable an LLM to analyze current portfolio/account data, compare it against the investment thesis, and recommend improvements.
+
+*Requirements:*
+1. **Data Access**
+	- LLM must be able to read and process all relevant data files, including `exportedData.json` (latest portfolio snapshot), and any supporting markdown or code files.
+	- Data export scripts must ensure `exportedData.json` is always up-to-date and complete.
+
+2. **Thesis Integration**
+	- LLM must be able to access and parse the investment thesis (`InvestmentThesis/twin_revolution_ASI_and_Sovereign_finance.md`).
+	- Pillar definitions, target allocations, and sell discipline criteria must be extractable for analysis.
+
+3. **Prompt-Based Analysis**
+	- Provide a prompt template (e.g., `Prompts/portfolio_thesis_alignment_prompt.md`) that instructs the LLM to:
+	  - Summarize current portfolio allocations and holdings.
+	  - Compare actual allocations to thesis targets and pillar weightings.
+	  - Identify misalignments, over/underweights, and missing exposures.
+	  - Apply sell discipline and risk factor checks.
+	  - Recommend specific adjustments (e.g., rebalance, add/remove positions, adjust weights).
+
+4. **Recommendations Output**
+	- LLM should output a markdown report with:
+	  - Portfolio summary table.
+	  - Thesis alignment analysis.
+	  - Actionable recommendations for improvement.
+	  - Rationale for each recommendation (referencing thesis sections).
+
+5. **Workflow Documentation**
+	- Document the end-to-end workflow in `UserRequirements.md` and `TaskTracker.md`:
+	  - How to export data.
+	  - How to run the LLM analysis.
+	  - How to interpret and act on recommendations.
+
+**UR23:** Portfolio Alignment Table Generation Script
+
+Create a script in `scripts/` (e.g., `generate_portfolio_alignment_table.ts`) that:
+	- Reads `questrade-portfolio-app/backend/exportedData.json`
+	- Aggregates holdings across all accounts (grand total shares, average value, % of total portfolio value per ticker/pillar)
+	- Compares actual allocations to thesis target percentages
+	- Highlights gaps, overweights, underweights, and thesis breakers
+	- Outputs a markdown table to `TargetPortfolio/portfolio_thesis_alignment_report.md`
+The LLM prompt will analyze this table, provide recommendations, and update target values/gaps as needed.
+
+## LLM Prompt Usage for Portfolio-Thesis Alignment
+
+**Goal:** Enable an LLM to analyze current portfolio/account data, compare it against the investment thesis, and recommend improvements.
+
+**Requirements:**
+1. **Data Access**
+	- LLM must be able to read and process all relevant data files, including `exportedData.json` (latest portfolio snapshot), and any supporting markdown or code files.
+	- Data export scripts must ensure `exportedData.json` is always up-to-date and complete.
+
+2. **Thesis Integration**
+	- LLM must be able to access and parse the investment thesis (`InvestmentThesis/twin_revolution_ASI_and_Sovereign_finance.md`).
+	- Pillar definitions, target allocations, and sell discipline criteria must be extractable for analysis.
+
+3. **Prompt-Based Analysis**
+	- Provide a prompt template (e.g., `Prompts/portfolio_thesis_alignment_prompt.md`) that instructs the LLM to:
+	  - Summarize current portfolio allocations and holdings.
+	  - Compare actual allocations to thesis targets and pillar weightings.
+	  - Identify misalignments, over/underweights, and missing exposures.
+	  - Apply sell discipline and risk factor checks.
+	  - Recommend specific adjustments (e.g., rebalance, add/remove positions, adjust weights).
+
+4. **Recommendations Output**
+	- LLM should output a markdown report with:
+	  - Portfolio summary table.
+	  - Thesis alignment analysis.
+	  - Actionable recommendations for improvement.
+	  - Rationale for each recommendation (referencing thesis sections).
+
+5. **Workflow Documentation**
+	- Document the end-to-end workflow in `UserRequirements.md` and `TaskTracker.md`:
+	  - How to export data.
+	  - How to run the LLM analysis.
+	  - How to interpret and act on recommendations.
+
+## Additional Requirements
+
+**UR24:** Automated Backup & Version Control
+- All critical data files, documentation, and ADRs should be versioned using git or an automated backup workflow. This ensures restore points are available and prevents accidental data loss.
+
+**UR25:** Error Logging & Diagnostics
+- Implement comprehensive error logging for backend and frontend operations. Logs should be easily accessible for debugging and include timestamps, error codes, and actionable messages.
+
+**UR26:** Data Integrity Checks
+- Add validation routines to ensure exported data (JSON, CSV, markdown) matches expected schema and is free of corruption or missing fields before analysis or export.
+
+**UR27:** User-Driven Restore Workflow
+- Provide a simple UI or CLI tool for restoring previous versions of documentation, ADRs, and data files from backups or git history.
+
+**UR28:** Security Audit Trail
+- Maintain an audit trail of all file operations (create, edit, delete, move) for sensitive data and documentation, with user attribution and timestamps.
+
+**UR29:** Accessibility & Usability
+- Ensure the UI and exported reports are accessible (WCAG compliance), with clear navigation, readable tables, and support for screen readers.
+
+**UR30:** Modular Prompt Library
+- Maintain a library of prompt templates for LLM analysis, portfolio review, and thesis alignment, versioned and documented for easy reuse and improvement.
 --- END OF FILE ---
 
 --- START OF FILE ./frontend/package.json ---
@@ -3914,6 +3751,9 @@ export default AuthModal;
 --- START OF FILE ./frontend/src/components/Dashboard.tsx ---
 
 import { useState } from 'react';
+import PortfolioCharts from './PortfolioCharts';
+import HoldingsHistogram from './HoldingsHistogram';
+import PillarHistogram from './PillarHistogram';
 import { Button } from './ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { usePortfolio } from '../features/portfolio/hooks/usePortfolio';
@@ -3934,7 +3774,11 @@ const Dashboard = ({ onAuth }: DashboardProps) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
+  <HoldingsHistogram />
+  <PillarHistogram />
+      {/* Optionally keep pillar and pie charts below, or remove if too busy */}
+      {/* <PortfolioCharts /> */}
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Portfolio Holdings</h2>
         <Button onClick={handleFetch} disabled={loading}>
@@ -3989,6 +3833,147 @@ const Header = () => {
 export default Header;
 --- END OF FILE ---
 
+--- START OF FILE ./frontend/src/components/HoldingsHistogram.tsx ---
+
+import React from 'react';
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+// Holdings data from portfolio_thesis_alignment_report.json
+const symbolTargets: Record<string, number> = {
+  "USD_CASH": 0.0625,
+  "PSU.U": 0.1241,
+  "INTC": 0.1070,
+  "AVGO": 0.07,
+  "GOOG": 0.0571,
+  "VST": 0.046,
+  "CEG": 0.04,
+  "ETHA": 0.04,
+  "MSFT": 0.037,
+  "IBIT": 0.03,
+  "CORZ": 0.03,
+  "PANW": 0.03,
+  "EQIX": 0.029,
+  "HUMN": 0.0273,
+  "NVDA": 0.03,
+  "KOID": 0.0245,
+  "COIN": 0.03,
+  "SNPS": 0.025,
+  "CRWD": 0.026,
+  "AMD": 0.03,
+  "ANET": 0.0153,
+  "CRWV": 0.0144,
+  "VRT": 0.02,
+  "OKLO": 0.014,
+  "CDNS": 0.021,
+  "ZS": 0.0198
+};
+
+// Map PSU.U.TO to PSU.U for target lookup
+function getTargetPct(symbol: string) {
+  if (symbol === 'PSU.U.TO') return symbolTargets['PSU.U'] ? symbolTargets['PSU.U'] * 100 : 0;
+  return symbolTargets[symbol] ? symbolTargets[symbol] * 100 : 0;
+}
+
+const holdings = [
+  { symbol: 'USD_CASH', pctPortfolio: 14.10 },
+  { symbol: 'PSU.U.TO', pctPortfolio: 12.47 },
+  { symbol: 'INTC', pctPortfolio: 9.92 },
+  { symbol: 'AVGO', pctPortfolio: 6.26 },
+  { symbol: 'GOOG', pctPortfolio: 5.37 },
+  { symbol: 'VST', pctPortfolio: 4.48 },
+  { symbol: 'CEG', pctPortfolio: 4.24 },
+  { symbol: 'ETHA', pctPortfolio: 3.85 },
+  { symbol: 'IBIT', pctPortfolio: 3.27 },
+  { symbol: 'CORZ', pctPortfolio: 3.12 },
+  { symbol: 'MSFT', pctPortfolio: 3.63 },
+  { symbol: 'PANW', pctPortfolio: 2.91 },
+  { symbol: 'EQIX', pctPortfolio: 2.90 },
+  { symbol: 'HUMN', pctPortfolio: 2.74 },
+  { symbol: 'KOID', pctPortfolio: 2.42 },
+  { symbol: 'NVDA', pctPortfolio: 2.58 },
+  { symbol: 'SNPS', pctPortfolio: 2.34 },
+  { symbol: 'AMD', pctPortfolio: 1.66 },
+  { symbol: 'CRWD', pctPortfolio: 1.71 },
+  { symbol: 'ANET', pctPortfolio: 1.56 },
+  { symbol: 'CRWV', pctPortfolio: 1.51 },
+  { symbol: 'ZS', pctPortfolio: 1.06 },
+  { symbol: 'VRT', pctPortfolio: 1.26 },
+  { symbol: 'OKLO', pctPortfolio: 1.15 },
+  { symbol: 'CDNS', pctPortfolio: 1.15 },
+  { symbol: 'COIN', pctPortfolio: 2.34 }
+].map(h => ({ ...h, targetPct: getTargetPct(h.symbol) }));
+
+// Sort by actual % descending
+const sorted = [...holdings].sort((a, b) => b.pctPortfolio - a.pctPortfolio);
+
+const data = {
+  labels: sorted.map(h => h.symbol),
+  datasets: [
+    {
+      label: 'Actual %',
+      data: sorted.map(h => h.pctPortfolio),
+      backgroundColor: 'rgba(54, 162, 235, 0.7)',
+    },
+    {
+      label: 'Target %',
+      data: sorted.map(h => h.targetPct),
+      backgroundColor: 'rgba(255, 99, 132, 0.7)',
+    },
+  ],
+};
+
+const options = {
+  indexAxis: 'y' as const,
+  responsive: true,
+  plugins: {
+    legend: { position: 'top', labels: { font: { size: 10 }, padding: 8 } },
+    title: { display: true, text: 'All Holdings: Actual vs. Target Allocation', font: { size: 13 } },
+  },
+  layout: {
+    padding: { left: 0, right: 2, top: 0, bottom: 0 },
+  },
+  scales: {
+    x: {
+      max: Math.max(...sorted.map(h => h.pctPortfolio), ...sorted.map(h => h.targetPct)) + 2,
+      title: { display: false },
+      grid: { drawOnChartArea: false },
+      ticks: { padding: 1, font: { size: 10 } },
+    },
+    y: {
+      title: { display: false },
+      grid: { drawOnChartArea: false },
+      ticks: { padding: 1, font: { size: 10 } },
+    },
+  },
+  elements: {
+    bar: { borderRadius: 1, borderSkipped: false },
+  },
+  barThickness: 6,
+  categoryPercentage: 0.5,
+  barPercentage: 0.7,
+};
+
+export default function HoldingsHistogram() {
+  return (
+    <div className="bg-white rounded shadow p-1 mb-2">
+      <Bar data={data} options={options} height={Math.max(180, sorted.length * 7)} />
+    </div>
+  );
+}
+
+--- END OF FILE ---
+
 --- START OF FILE ./frontend/src/components/Navigation.tsx ---
 
 interface NavigationProps {
@@ -4011,6 +3996,257 @@ const Navigation = ({ onViewChange }: NavigationProps) => {
 };
 
 export default Navigation;
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/src/components/PillarHistogram.tsx ---
+
+import React from 'react';
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+// Import actual and target pillar allocations from JSON for accuracy
+// @ts-ignore
+import report from '../../../TargetPortfolio/portfolio_thesis_alignment_report.json';
+
+const pillarOrder = [
+  'ASI / Compute',
+  'Cash',
+  'Power / Energy',
+  'Data Infra / Supply Chain',
+  'AI Titans / Cloud',
+  'Sovereign Finance',
+  'Security / Data OS',
+  'Applied AI / Robotics',
+  'Other',
+];
+
+const actualPillars = pillarOrder.map(pillar => {
+  // Use the actual % from the report, calculated as (pillar total / totalMarketValue) * 100
+  const value = report.pillarTotals[pillar] || 0;
+  return { pillar, pct: (value / report.totalMarketValue) * 100 };
+});
+
+const targetPillars = pillarOrder.map(pillar => {
+  // Use the target % from the report
+  const value = report.targetAllocations[pillar] || 0;
+  return { pillar, pct: value };
+});
+
+const labels = pillarOrder;
+const data = {
+  labels,
+  datasets: [
+    {
+      label: 'Actual %',
+      data: actualPillars.map(p => p.pct),
+      backgroundColor: 'rgba(54, 162, 235, 0.7)',
+    },
+    {
+      label: 'Target %',
+      data: targetPillars.map(p => p.pct),
+      backgroundColor: 'rgba(255, 99, 132, 0.7)',
+    },
+  ],
+};
+
+const options = {
+  indexAxis: 'y' as const,
+  responsive: true,
+  plugins: {
+    legend: { position: 'top', labels: { font: { size: 11 }, padding: 8 } },
+    title: { display: true, text: 'Portfolio by Investment Pillar: Actual vs. Target', font: { size: 14 } },
+  },
+  layout: {
+    padding: { left: 0, right: 2, top: 0, bottom: 0 },
+  },
+  scales: {
+    x: {
+      max: Math.max(...actualPillars.map(p => p.pct), ...targetPillars.map(p => p.pct)) + 5,
+      title: { display: false },
+      grid: { drawOnChartArea: false },
+      ticks: { padding: 1, font: { size: 10 } },
+    },
+    y: {
+      title: { display: false },
+      grid: { drawOnChartArea: false },
+      ticks: { padding: 1, font: { size: 10 } },
+    },
+  },
+  elements: {
+    bar: { borderRadius: 2, borderSkipped: false },
+  },
+  barThickness: 12,
+  categoryPercentage: 0.7,
+  barPercentage: 0.8,
+};
+
+export default function PillarHistogram() {
+  return (
+    <div className="bg-white rounded shadow p-1 mb-4">
+      <Bar data={data} options={options} height={Math.max(120, labels.length * 18)} />
+    </div>
+  );
+}
+
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/src/components/PortfolioCharts.tsx ---
+
+import React from 'react';
+import { Bar, Pie } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+} from 'chart.js';
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
+
+const pillarLabels = [
+  'ASI / Compute', 'Cash', 'Power / Energy', 'Data Infra / Supply Chain',
+  'AI Titans / Cloud', 'Sovereign Finance', 'Security / Data OS', 'Applied AI / Robotics', 'Other'
+];
+const actualPillar = [23.9, 14.1, 9.9, 10.3, 9.0, 9.5, 5.7, 5.2, 12.5];
+const targetPillar = [32.0, 18.66, 10.0, 9.47, 9.3, 7.91, 7.48, 5.18, 0];
+
+const pillarData = {
+  labels: pillarLabels,
+  datasets: [
+    {
+      label: 'Actual %',
+      data: actualPillar,
+      backgroundColor: 'rgba(54, 162, 235, 0.7)',
+    },
+    {
+      label: 'Target %',
+      data: targetPillar,
+      backgroundColor: 'rgba(255, 99, 132, 0.7)',
+    },
+  ],
+};
+
+const pillarOptions = {
+  responsive: true,
+  plugins: {
+    legend: { position: 'top' },
+    title: { display: true, text: 'Portfolio Allocation by Pillar: Actual vs. Target', font: { size: 22 } },
+  },
+};
+
+const holdingsLabels = [
+  'PSU.U.TO', 'INTC', 'AVGO', 'GOOG', 'HUMN', 'EQIX', 'MSFT', 'ETHA', 'IBIT', 'PANW'
+];
+const holdingsActual = [12.47, 9.92, 6.26, 5.37, 2.74, 2.90, 3.63, 3.85, 3.27, 2.91];
+const holdingsTarget = [0, 32, 32, 9.3, 5.18, 9.47, 9.3, 7.91, 7.91, 7.48];
+
+const holdingsData = {
+  labels: holdingsLabels,
+  datasets: [
+    {
+      label: '% of Portfolio',
+      data: holdingsActual,
+      backgroundColor: 'rgba(75, 192, 192, 0.7)',
+    },
+    {
+      label: 'Target %',
+      data: holdingsTarget,
+      backgroundColor: 'rgba(255, 205, 86, 0.7)',
+    },
+  ],
+};
+
+const holdingsOptions = {
+  responsive: true,
+  plugins: {
+    legend: { position: 'top' },
+    title: { display: true, text: 'Top Holdings: Actual vs. Target Allocation', font: { size: 20 } },
+  },
+};
+
+const pieData = {
+  labels: pillarLabels,
+  datasets: [
+    {
+      data: actualPillar,
+      backgroundColor: [
+        '#36A2EB', '#FFCE56', '#FF6384', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF', '#FF6384', '#B2FF66'
+      ],
+    },
+  ],
+};
+
+export default function PortfolioCharts() {
+  return (
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+        <div className="bg-white rounded-xl shadow p-6">
+          <Bar data={pillarData} options={pillarOptions} height={350} />
+        </div>
+        <div className="bg-white rounded-xl shadow p-6">
+          <Pie data={pieData} />
+          <div className="text-center mt-4 font-medium text-gray-700">Current Portfolio Allocation</div>
+        </div>
+      </div>
+      <div className="bg-white rounded-xl shadow p-6 mb-10">
+        <Bar data={holdingsData} options={holdingsOptions} height={300} />
+      </div>
+      <div className="bg-white rounded-xl shadow p-6">
+        <h3 className="text-lg font-bold mb-4">Top 10 Holdings Table</h3>
+        <table className="min-w-full text-sm text-left border">
+          <thead className="bg-blue-100">
+            <tr>
+              <th className="px-3 py-2">Symbol</th>
+              <th className="px-3 py-2">Pillar</th>
+              <th className="px-3 py-2">Market Value</th>
+              <th className="px-3 py-2">% Portfolio</th>
+              <th className="px-3 py-2">Target %</th>
+              <th className="px-3 py-2">Gap %</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { symbol: 'PSU.U.TO', pillar: 'Other', value: 3508.05, pct: 12.47, target: 0, gap: 12.47 },
+              { symbol: 'INTC', pillar: 'ASI / Compute', value: 2790.72, pct: 9.92, target: 32, gap: -22.08 },
+              { symbol: 'AVGO', pillar: 'ASI / Compute', value: 1761.25, pct: 6.26, target: 32, gap: -25.74 },
+              { symbol: 'GOOG', pillar: 'AI Titans / Cloud', value: 1510.62, pct: 5.37, target: 9.3, gap: -3.93 },
+              { symbol: 'HUMN', pillar: 'Applied AI / Robotics', value: 770.9, pct: 2.74, target: 5.18, gap: -2.44 },
+              { symbol: 'EQIX', pillar: 'Data Infra / Supply Chain', value: 815, pct: 2.90, target: 9.47, gap: -6.57 },
+              { symbol: 'MSFT', pillar: 'AI Titans / Cloud', value: 1021, pct: 3.63, target: 9.3, gap: -5.67 },
+              { symbol: 'ETHA', pillar: 'Sovereign Finance', value: 1082.25, pct: 3.85, target: 7.91, gap: -4.06 },
+              { symbol: 'IBIT', pillar: 'Sovereign Finance', value: 918.75, pct: 3.27, target: 7.91, gap: -4.64 },
+              { symbol: 'PANW', pillar: 'Security / Data OS', value: 819, pct: 2.91, target: 7.48, gap: -4.57 },
+            ].map((row) => (
+              <tr key={row.symbol} className="border-b hover:bg-blue-50">
+                <td className="px-3 py-2 font-mono font-semibold">{row.symbol}</td>
+                <td className="px-3 py-2">{row.pillar}</td>
+                <td className="px-3 py-2">${row.value.toLocaleString()}</td>
+                <td className="px-3 py-2">{row.pct}%</td>
+                <td className="px-3 py-2">{row.target}%</td>
+                <td className={`px-3 py-2 font-bold ${row.gap < 0 ? 'text-red-600' : 'text-green-700'}`}>{row.gap > 0 ? '+' : ''}{row.gap}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 --- END OF FILE ---
 
 --- START OF FILE ./frontend/src/components/ui/button.tsx ---
@@ -4455,7 +4691,8 @@ export default defineConfig({
     "prisma": "^6.17.1",
     "supertest": "^7.1.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^3.2.4"
   },
   "keywords": [
     "questrade",
@@ -4467,7 +4704,9 @@ export default defineConfig({
   "dependencies": {
     "@prisma/client": "^6.17.1",
     "ajv": "^8.17.1",
-    "node": "^25.0.0"
+    "chart.js": "^4.5.1",
+    "node": "^25.0.0",
+    "react-chartjs-2": "^5.3.0"
   }
 }
 
@@ -4513,31 +4752,52 @@ const dataPath = path.resolve(__dirname, '../backend/exportedData.json');
 const jsonOutputPath = path.resolve(__dirname, '../TargetPortfolio/portfolio_thesis_alignment_report.json');
 
 
-// Helper: Read JSON data
+// Helper: Read JSON data from a file
 function readJson(filePath: string) {
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 }
 
-
-// Helper: Write markdown file
+// Helper: Write markdown content to a file, creating directories as needed
 function writeMarkdown(filePath: string, content: string) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, content, 'utf-8');
 }
 
-// Helper: Aggregate holdings across all accounts
-// Helper: Map symbol to thesis pillar (stub, extend as needed)
+/**
+ * Map a symbol to its thesis pillar using an external mapping file.
+ * Falls back to 'Other' if no mapping is found or matches.
+ */
 function getPillarForSymbol(symbol: string): string {
-  // TODO: Map symbols to pillars based on thesis
-  // Example stub mapping
-  const pillarMap: Record<string, string> = {
-    'NVDA': 'ASI / Compute',
-    'AVGO': 'ASI / Compute',
-    'VST': 'Power / Energy',
-    'ETHA': 'Sovereign Finance',
-    // ...add more mappings
-  };
-  return pillarMap[symbol] || 'Other';
+  const mappingPath = path.resolve(__dirname, '../TargetPortfolio/symbol_pillar_mappings.json');
+  let pillarMap: Record<string, string> = {};
+  try {
+    pillarMap = JSON.parse(fs.readFileSync(mappingPath, 'utf-8')).symbolToPillar;
+  } catch (err) {
+    // fallback to default
+    pillarMap = {};
+  }
+  // If mapping exists, use it; else fallback to 'Other'
+  const mapped = pillarMap[symbol];
+  // If mapped pillar matches a targetAllocations key, use it; else fallback to 'Other'
+  const targetCategories = [
+    'ASI / Compute',
+    'Cash',
+    'Power / Energy',
+    'Data Infra / Supply Chain',
+    'AI Titans / Cloud',
+    'Sovereign Finance',
+    'Security / Data OS',
+    'Applied AI / Robotics',
+    'Other'
+  ];
+  if (targetCategories.includes(mapped)) {
+    return mapped;
+  }
+  // If mapped pillar contains a target category as substring, use that
+  for (const cat of targetCategories) {
+    if (mapped && mapped.includes(cat)) return cat;
+  }
+  return 'Other';
 }
 
 interface Position {
@@ -4559,6 +4819,11 @@ interface Holding {
   accounts: string[];
 }
 
+/**
+ * Aggregate holdings across all accounts and positions.
+ * Sums up shares, market value, and book value for each symbol.
+ * Also aggregates all cash balances into a single USD_CASH holding.
+ */
 function aggregateHoldings(data: { positions?: Position[], accounts?: any[], balances?: any[] }): Holding[] {
   const holdingsMap: { [key: string]: Holding } = {};
   const positions: Position[] = data.positions || [];
@@ -4578,7 +4843,15 @@ function aggregateHoldings(data: { positions?: Position[], accounts?: any[], bal
     // Use openQuantity if quantity is not present
     const quantity = Number(pos.quantity ?? pos.openQuantity) || 0;
     const marketValue = Number(pos.currentMarketValue) || 0;
-    const bookValue = Number(pos.currentBookValue) || 0;
+    // Use currentBookValue if present, else averageEntryPrice * openQuantity, else totalCost
+    let bookValue = 0;
+    if (typeof pos.currentBookValue === 'number') {
+      bookValue = pos.currentBookValue;
+    } else if (typeof pos.averageEntryPrice === 'number' && typeof pos.openQuantity === 'number') {
+      bookValue = pos.averageEntryPrice * pos.openQuantity;
+    } else if (typeof pos.totalCost === 'number') {
+      bookValue = pos.totalCost;
+    }
     holdingsMap[key].totalShares += quantity;
     holdingsMap[key].totalMarketValue += marketValue;
     holdingsMap[key].totalBookValue += bookValue;
@@ -4622,27 +4895,56 @@ function aggregateHoldings(data: { positions?: Position[], accounts?: any[], bal
   }));
 }
 
-// Helper: Calculate portfolio totals
+/**
+ * Calculate total market value of the portfolio from holdings.
+ */
 function getPortfolioTotals(holdings: Holding[]): { totalMarketValue: number } {
   const totalMarketValue = holdings.reduce((sum, h) => sum + h.totalMarketValue, 0);
   return { totalMarketValue };
 }
 
-// Helper: Generate markdown table
-function generateMarkdownTable(holdings: Holding[], totalMarketValue: number): string {
-  let md = `| Symbol | Name | Total Shares | Avg Value | % of Portfolio | Accounts |
-|--------|------|--------------|-----------|---------------|----------|
-`;
+/**
+ * Generate a markdown table and CSV string from holdings.
+ * Each row summarizes all accounts for a symbol.
+ */
+function generateMarkdownTable(holdings: Holding[], totalMarketValue: number): { md: string; csv: string } {
+  // Load symbol-to-pillar mapping
+  const mappingPath = path.resolve(__dirname, '../TargetPortfolio/symbol_pillar_mappings.json');
+  let pillarMap: Record<string, string> = {};
+  try {
+    pillarMap = JSON.parse(fs.readFileSync(mappingPath, 'utf-8')).symbolToPillar;
+  } catch (err) {
+    pillarMap = {};
+  }
+  let md = `| SYMBOL | pillar | #Shares | Total Book | Average | % ACCT MARKET |\n|--------|------------------------------|---------|-----------|---------|---------------|\n`;
+  let csv = 'SYMBOL,pillar,#Shares,Total Book,Average,% ACCT MARKET\n';
   holdings.forEach(h => {
-    const avgValue = h.totalMarketValue / h.totalShares;
+    const avgValue = h.totalShares > 0 ? h.totalBookValue / h.totalShares : 0;
     const pctPortfolio = ((h.totalMarketValue / totalMarketValue) * 100).toFixed(2) + '%';
-    md += `| ${h.symbol} | ${h.name} | ${h.totalShares} | $${avgValue.toFixed(2)} | ${pctPortfolio} | ${[...new Set(h.accounts)].join(', ')} |
-`;
+    // Format currency values
+    const totalBookFmt = `$${h.totalBookValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    const avgFmt = `$${avgValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    // Use mapping for pillar, fallback to h.pillar
+    const pillar = pillarMap[h.symbol] || h.pillar;
+    md += `| ${h.symbol} | ${pillar} | ${h.totalShares} | ${totalBookFmt} | ${avgFmt} | ${pctPortfolio} |\n`;
+    csv += `${h.symbol},${pillar},${h.totalShares},${h.totalBookValue.toFixed(2)},${avgValue.toFixed(2)},${pctPortfolio}\n`;
   });
-  return md;
+  return { md, csv };
 }
 
-// Main script
+/**
+ * Write the exported markdown and CSV tables to disk.
+ */
+function writeExportedTable(md: string, csv: string) {
+  const mdPath = path.resolve(__dirname, '../TargetPortfolio/ExportedTable.md');
+  const csvPath = path.resolve(__dirname, '../TargetPortfolio/ExportedTable.csv');
+  writeMarkdown(mdPath, md);
+  fs.writeFileSync(csvPath, csv, 'utf-8');
+}
+
+/**
+ * Main script entry point. Loads data, aggregates holdings, validates output, and writes tables.
+ */
 function main(): void {
   if (!fs.existsSync(dataPath)) {
     console.error('Portfolio data not found:', dataPath);
@@ -4650,7 +4952,6 @@ function main(): void {
   }
   const data = readJson(dataPath);
   const holdings = aggregateHoldings(data);
-  // Defensive: ensure all required fields are numbers and set defaults
   const safeHoldings = holdings.map(h => ({
     ...h,
     totalShares: typeof h.totalShares === 'number' && isFinite(h.totalShares) ? h.totalShares : 0,
@@ -4659,7 +4960,6 @@ function main(): void {
   }));
   const { totalMarketValue } = getPortfolioTotals(safeHoldings);
 
-  // Example target allocations by pillar (extend as needed)
   const targetAllocations: { [pillar: string]: number } = {
     'ASI / Compute': 32.0,
     'Cash': 18.66,
@@ -4672,10 +4972,12 @@ function main(): void {
     'Other': 0.0
   };
 
-  // Aggregate by pillar
+  // Aggregate by pillar, ensure all targetAllocations keys are present
   const pillarTotals: { [pillar: string]: number } = {};
+  Object.keys(targetAllocations).forEach(pillar => {
+    pillarTotals[pillar] = 0;
+  });
   safeHoldings.forEach((h: Holding) => {
-    if (!pillarTotals[h.pillar]) pillarTotals[h.pillar] = 0;
     pillarTotals[h.pillar] += h.totalMarketValue;
   });
 
@@ -4685,14 +4987,12 @@ function main(): void {
     pillarTotals,
     targetAllocations,
     holdings: safeHoldings.map((h: Holding) => {
-      // Defensive: ensure all required fields are numbers and set defaults
       const totalShares = typeof h.totalShares === 'number' && isFinite(h.totalShares) ? h.totalShares : 0;
       const totalBookValue = typeof h.totalBookValue === 'number' && isFinite(h.totalBookValue) ? h.totalBookValue : 0;
       const totalMarketValueH = typeof h.totalMarketValue === 'number' && isFinite(h.totalMarketValue) ? h.totalMarketValue : 0;
       const pctPortfolio = totalMarketValue > 0 ? (totalMarketValueH / totalMarketValue) * 100 : 0;
       const targetPct = targetAllocations[h.pillar] || 0;
       const gapPct = pctPortfolio - targetPct;
-      // avgPrice = totalBookValue / totalShares (if totalShares > 0)
       const avgPrice = totalShares > 0 ? totalBookValue / totalShares : 0;
       return {
         symbol: h.symbol,
@@ -4722,18 +5022,50 @@ function main(): void {
   fs.mkdirSync(path.dirname(jsonOutputPath), { recursive: true });
   fs.writeFileSync(jsonOutputPath, JSON.stringify(jsonOutput, null, 2), 'utf-8');
 
-  // Markdown output (optional)
-  const table = generateMarkdownTable(holdings, totalMarketValue);
+  // Markdown and CSV output
+  const { md, csv } = generateMarkdownTable(safeHoldings, totalMarketValue);
   const header = `# Portfolio Alignment Table\n\nGenerated from: exportedData.json\n\nTotal Portfolio Market Value: $${totalMarketValue.toFixed(2)}\n\n`;
-  const output = header + table;
-  // Fix: declare outputPath for markdown output
-  const outputPath = path.resolve(__dirname, '../TargetPortfolio/portfolio_alignment_table.md');
-  writeMarkdown(outputPath, output);
-  console.log('Portfolio alignment table generated at:', outputPath);
+  // Write table directly after header, no code block
+  const outputMd = header + md;
+  // Write to ExportedTable.md and ExportedTable.csv
+  const exportedMdPath = path.resolve(__dirname, '../TargetPortfolio/ExportedTable.md');
+  const exportedCsvPath = path.resolve(__dirname, '../TargetPortfolio/ExportedTable.csv');
+  writeMarkdown(exportedMdPath, outputMd);
+  fs.writeFileSync(exportedCsvPath, csv, 'utf-8');
+  // Also write legacy markdown table for compatibility
+  const legacyMdPath = path.resolve(__dirname, '../TargetPortfolio/portfolio_alignment_table.md');
+  writeMarkdown(legacyMdPath, outputMd);
+  console.log('Portfolio alignment table generated at: ExportedTable.md, ExportedTable.csv');
   console.log('Portfolio alignment JSON generated at:', jsonOutputPath);
 }
 
 main();
+
+--- END OF FILE ---
+
+--- START OF FILE ./scripts/output_per_account_cash_balances.ts ---
+
+// This script outputs the cash balances for each account (CAD and USD) independently to a JSON file for debugging.
+import fs from 'fs';
+import path from 'path';
+
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const dataPath = path.resolve(__dirname, '../backend/exportedData.json');
+const outputPath = path.resolve(__dirname, '../TargetPortfolio/per_account_cash_balances.json');
+
+const data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
+const balances = data.balances || [];
+
+// Group balances by currency and index (since account mapping is not explicit in balances array)
+const cashBalances = balances.map((bal, idx) => ({
+  index: idx,
+  currency: bal.currency,
+  cash: bal.cash
+}));
+
+fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+fs.writeFileSync(outputPath, JSON.stringify(cashBalances, null, 2), 'utf-8');
+console.log('Per-account cash balances written to:', outputPath);
 
 --- END OF FILE ---
 
