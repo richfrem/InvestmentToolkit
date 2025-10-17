@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Scan for secrets (simple grep for Questrade patterns)
+echo "Scanning for secrets..."
+if grep -r "QUESTRADE_" --exclude-dir=.git --exclude-dir=node_modules .; then
+  echo "❌ Found potential secrets! Aborting commit."
+  exit 1
+fi
+
+echo "✅ No secrets found. Proceeding with commit."

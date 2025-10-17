@@ -1,0 +1,4901 @@
+# All Markdown Files Snapshot (LLM-Distilled)
+
+Generated On: 2025-10-16T22:20:19.098Z
+
+# Mnemonic Weight (Token Count): ~47,728 tokens
+
+# Directory Structure (relative to project root)
+  ./ADR_007_TestingApproach.md
+  ./InvestmentFramework/
+  ./InvestmentFramework/defininitive_professional_investment_framework.md
+  ./InvestmentThesis/
+  ./InvestmentThesis/twin_revolution_ASI_and_Sovereign_finance.md
+  ./NonFunctionalRequirements_Testing.md
+  ./Prompts/
+  ./Prompts/Archive/
+  ./Prompts/Archive/Portfolio_Review_Prompt.md
+  ./Prompts/Archive/lyra.md
+  ./Prompts/Archive/stock_analyst_AI_prompt.md
+  ./Prompts/Archive/stock_screening_prompt_for_professional_investment_framework1.md
+  ./Prompts/portfolio_thesis_alignment_prompt.md
+  ./Prompts/unified_stock_analyst_prompt.md
+  ./README.md
+  ./TargetPortfolio/
+  ./TargetPortfolio/portfolio_alignment_schema.json
+  ./TargetPortfolio/portfolio_alignment_table.md
+  ./TargetPortfolio/portfolio_thesis_alignment_report.json
+  ./adrs/
+  ./adrs/001-auth-method.md
+  ./adrs/002-holdings-data-storage.md
+  ./adrs/003-security-secrets-management.md
+  ./adrs/004-ui-ux-design.md
+  ./adrs/005-incremental-feature-rollout.md
+  ./adrs/006-data-contracts-aligned-with-questrade.md
+  ./adrs/007-data-export-approach.md
+  ./adrs/008-portfolio-alignment-table-script.md
+  ./adrs/009-module-format-standardization.md
+  ./backend/
+  ./backend/exportAllData.ts
+  ./backend/exportedData.json
+  ./backend/fetchAllAccountData.ts
+  ./backend/fetchAndExportAllData.ts
+  ./backend/package.json
+  ./backend/src/
+  ./backend/src/data/
+  ./backend/src/data/accounts.ts
+  ./backend/src/data/balances.ts
+  ./backend/src/data/currentHoldings.ts
+  ./backend/src/data/orders.ts
+  ./backend/src/data/positions.ts
+  ./backend/src/index.ts
+  ./backend/src/routes/
+  ./backend/src/routes/questrade.ts
+  ./backend/src/services/
+  ./backend/src/services/questradeService.ts
+  ./backend/src/types/
+  ./backend/src/types/index.ts
+  ./backend/src/utils/
+  ./backend/src/utils/spreadsheet.ts
+  ./backend/test_accounts.ts
+  ./backend/test_bearer.ts
+  ./backend/tests/
+  ./backend/tests/README.md
+  ./backend/tests/routes/
+  ./backend/tests/routes/questradeRoutes.test.ts
+  ./backend/tests/services/
+  ./backend/tests/services/questradeService.test.ts
+  ./backend/tsconfig.json
+  ./docs/
+  ./docs/DATABASE_SETUP.md
+  ./docs/DataContracts.md
+  ./docs/Roadmap.md
+  ./docs/TaskTracker.md
+  ./docs/TokenFlow.md
+  ./docs/UserRequirements.md
+  ./frontend/
+  ./frontend/package.json
+  ./frontend/src/
+  ./frontend/src/App.tsx
+  ./frontend/src/components/
+  ./frontend/src/components/AuthModal.tsx
+  ./frontend/src/components/Dashboard.tsx
+  ./frontend/src/components/Header.tsx
+  ./frontend/src/components/Navigation.tsx
+  ./frontend/src/components/ui/
+  ./frontend/src/components/ui/button.tsx
+  ./frontend/src/components/ui/table.tsx
+  ./frontend/src/features/
+  ./frontend/src/features/portfolio/
+  ./frontend/src/features/portfolio/components/
+  ./frontend/src/features/portfolio/components/PortfolioTable.tsx
+  ./frontend/src/features/portfolio/hooks/
+  ./frontend/src/features/portfolio/hooks/usePortfolio.ts
+  ./frontend/src/features/portfolio/types/
+  ./frontend/src/features/portfolio/types/index.ts
+  ./frontend/src/lib/
+  ./frontend/src/lib/utils.ts
+  ./frontend/src/main.tsx
+  ./frontend/tailwind.config.ts
+  ./frontend/tsconfig.json
+  ./frontend/tsconfig.node.json
+  ./frontend/vite.config.ts
+  ./package.json
+  ./prisma/
+  ./prisma/migrations/
+  ./prisma/migrations/20251016144515_init/
+  ./prisma/migrations/20251016144515_init/migration.sql
+  ./prisma/migrations/migration_lock.toml
+  ./scripts/
+  ./scripts/generate_portfolio_alignment_table.ts
+  ./scripts/tsconfig.json
+  ./start.sh
+  ./stop.sh
+
+--- START OF FILE ./ADR_007_TestingApproach.md ---
+
+# ADR 007: Backend Testing Approach
+
+## Status
+Accepted
+
+## Context
+To ensure reliability, maintainability, and correctness of the backend, a structured testing approach is required. The backend consists of Express API routes and modular service functions for Questrade integration and data export. Automated tests are needed for both integration (routes) and unit (services) levels.
+
+## Decision
+- **Test Structure:**
+  - All backend tests are located in `backend/tests/`.
+  - `routes/` contains integration tests for Express API endpoints using supertest.
+  - `services/` contains unit tests for service functions using Jest.
+- **Test Tools:**
+  - Jest is used as the test runner for all tests.
+  - Supertest is used for HTTP integration tests against the running Express server.
+- **Test Coverage:**
+  - All critical service functions and API routes must have automated tests.
+  - Tests should cover success, error, and edge cases.
+- **Test Data:**
+  - Use `.env.test` for test credentials and configuration if needed.
+  - Mock external dependencies (e.g., axios, fs) for unit tests.
+- **Execution:**
+  - All tests are run with `npx jest`.
+  - Route tests require the backend server to be running.
+- **Documentation:**
+  - Test conventions and structure are documented in `backend/tests/README.md`.
+
+## Consequences
+- Improved reliability and maintainability of backend code.
+- Fast feedback on code changes and refactoring.
+- Clear separation between integration and unit tests.
+- Easy onboarding for new contributors.
+
+---
+
+--- END OF FILE ---
+
+--- START OF FILE ./InvestmentFramework/defininitive_professional_investment_framework.md ---
+
+# The Definitive Professional Investment Framework (v3.1)
+
+## Guiding Philosophy: From Screener to Thesis
+This framework is a systematic process for moving from a broad quantitative screen to a high-conviction investment thesis. It is built on three pillars of professional analysis:
+1. **Variant Perception**: Identify a unique, evidence-backed belief that the market is missing or under-appreciating to drive alpha.
+2. **Inflection Points & Rate of Change**: Focus on the trajectory (second derivative) of key metrics to capture businesses at inflection points.
+3. **Asymmetric Risk/Reward**: Seek opportunities where the potential upside significantly outweighs the downside if the thesis is correct.
+
+---
+
+## Phase 0: Top-Down Strategic Overlay
+*Define the macro and sector context before analyzing companies.*
+
+1. **Macro Environment Assessment**:
+   - **Interest Rates & Inflation**: High rates favor profitable firms; low rates fuel growth. Assess current conditions.
+   - **Economic Cycle**: Expansion, slowdown, or recession? Impacts cyclical (Chips, Infra) vs. defensive (Cybersecurity) sectors.
+   - **Geopolitical Climate**: Note risks like chip export controls, energy security policies, or supply chain disruptions.
+2. **Sector Thesis Definition**: The primary focus is on high-growth sectors driven by AI, including chips/GPUs, data centers, robotics, cybersecurity, and power for data centers (e.g., nuclear energy plays like VST and OKLO). These sectors are prioritized due to increasing demand for AI-driven solutions, digital infrastructure, and sustainable energy, targeting companies with >20% revenue growth CAGR for 2025–2028 and Rule of 40 compliance.
+3. **Framework Adjustment**: Adjust metric weightings based on macro conditions.
+   - *Example*: "In a high-rate environment, emphasize SBC-Adjusted FCF, low Debt/EBITDA, and strong ROIIC."
+
+### Sector-Specific Metric Thresholds
+| Metric                | SaaS/Cyber | Chips/AI | Energy/Infra | Notes |
+|-----------------------|------------|----------|--------------|-------|
+| Gross Margin          | >75%       | 50–65%   | 30–45%       | Reflects sector profitability norms |
+| Rule of 40            | >40%       | >30%     | >20%         | Lower for capital-intensive sectors |
+| Debt/EBITDA           | <2x        | <2.5x    | <3x          | Energy/Infra allows higher leverage |
+| Revenue Growth (Future)| >20%       | >15%     | >10%         | High-growth focus for SaaS/Cyber |
+| EV/Sales (Fwd)        | <10x       | <8x      | <3x          | Capital-structure neutral |
+| ROIC                  | >15%       | >12%     | >8%          | Lower for capital-intensive sectors |
+| SBC-Adj FCF Yield     | >5%        | >3%      | >2%          | Reflects cash flow expectations |
+| NDR (SaaS/Cyber)      | >120%      | N/A      | N/A          | Key for subscription businesses |
+
+---
+
+## Phase 1: Comprehensive Data Analysis (The Upgraded Screener)
+*Systematically evaluate a company and its peers for signals of quality and mispricing.*
+
+### A. Revenue and Growth Analysis
+*Pro-Level Lens*: Focus on the **rate of change**. Accelerating growth (e.g., 10% to 15%) is more compelling than decelerating growth (e.g., 40% to 30%).
+
+- **Forward-Looking & Quality Indicators (Sector-Specific)**:
+  - **SaaS/Cybersecurity**: Net Dollar Retention (NDR), Gross Retention Rate (GRR), Remaining Performance Obligation (RPO) Growth, Average Contract Length.
+  - **Infra/Energy**: Backlog Growth, Book-to-Bill Ratio, Capex Efficiency (Revenue Growth / Capex).
+  - **Tech/AI**: R&D as % of Revenue (innovation vs. maintenance spending).
+- **Key Measures**:
+  1. **Revenue Growth % Past**:
+     ```formula
+     Revenue Growth % = (Current Revenue - Past Period Revenue) / Past Period Revenue
+     Revenue CAGR = [(Ending Revenue / Beginning Revenue)^(1/n)] - 1
+     where n = number of years
+     ```
+  2. **Revenue Growth % Future**:
+     - **Sources**: Cross-reference Yahoo Finance, Seeking Alpha, Zacks, or company guidance (e.g., https://finance.yahoo.com/quote/NVDA/analysis/).
+     - **Analysis**: Target >20% CAGR for 2025–2028. Note analyst estimate variance (>10% = high risk).
+- **Key Questions**:
+  - How does revenue growth compare to competitors in AI, chips, data centers, robotics, cybersecurity, or power sectors?
+  - Is the growth trajectory stable, accelerating, or decelerating?
+  - How does it compare to the industry median (source: Finviz, Morningstar)?
+  - Are analyst estimates consistent and aligned with >20% CAGR?
+
+### B. Rule of 40 Analysis
+*Pro-Level Lens*: Analyze the trend of Rule of 40 components to assess the balance between growth and profitability. Two methods are used to evaluate this metric, capturing different aspects of performance: **Method A** (forward-looking, cash flow-focused) and **Method B** (historical growth with EBITDA profitability). Improving trends in either method (e.g., from 25% to 38%) signal operational strength, while declining trends (e.g., 55% to 45%) raise concerns.
+
+- **Overview**: The Rule of 40 measures a company’s ability to balance revenue growth with profitability, ensuring sustainable growth. Method A uses forward-looking or TTM revenue growth and free cash flow (FCF) margin, ideal for assessing cash generation in high-growth sectors. Method B uses historical 3-year revenue growth and TTM EBITDA margin, emphasizing long-term growth and accounting profitability. Both methods are compared to sector-specific thresholds to gauge performance against peers. Method A is the industry standard (common in SaaS/tech investing for its cash focus), while Method B is a variation for historical validation (less common but useful for capex-heavy firms). Use Method A for cash sustainability, Method B for trend insights; average or prioritize based on sector (e.g., Method A for SaaS/Cyber, Method B for Chips/AI).
+
+- **Key Measures**:
+  1. **Method A: Revenue Growth % (TTM or Forward) + FCF Margin %**
+     ```formula
+     Rule of 40 Score (Method A) = Revenue Growth % (TTM or Fwd) + FCF Margin %
+     FCF Margin % = Free Cash Flow / Total Revenue
+     ```
+     - **Sources**: Financial statements, SEC filings (10-K, 10-Q), analyst reports.
+  2. **Method B: Annualized 3-Year Revenue Growth % + TTM EBITDA Margin %**
+     ```formula
+     Rule of 40 Score (Method B) = Annualized 3-Year Revenue Growth % + TTM EBITDA Margin %
+     Annualized 3-Year Revenue Growth % = [(TTM Revenue / Revenue 3 Years Ago)^(1/3) - 1] × 100
+     TTM EBITDA Margin % = (TTM EBITDA / TTM Revenue) × 100
+     ```
+     - **Sources**: Yahoo Finance financials, SEC filings (10-K, 10-Q), company reports.
+  - **Thresholds**: >40% (SaaS/Cybersecurity), >30% (Chips/AI, Robotics/Data Centers), >20% (Energy/Infra).
+- **Key Questions**:
+  - Does the company achieve a Rule of 40 score above sector-specific thresholds in either Method A or Method B?
+  - Is the balance between revenue growth and profitability (FCF margin for Method A, EBITDA margin for Method B) sustainable or improving?
+  - How do the Rule of 40 scores and trends compare to industry peers?
+  - Are there significant differences between Method A and Method B results, and what do they imply about short-term vs. long-term performance?
+
+### C. Operating Profitability Analysis
+*Pro-Level Lens*: Focus on **margin trajectory**. Expanding margins signal operating leverage and pricing power.
+
+- **Growth Efficiency (SaaS)**:
+  - **Magic Number**: (Change in ARR * Gross Margin) / Sales & Marketing Spend
+    - **Scoring**: >1 = 90, 0.5–1 = 60, <0.5 = 30
+- **Key Measures**:
+  1. **Operating Margin**:
+     ```formula
+     Operating Margin = Operating Income / Total Revenue
+     Adjusted Operating Margin = (Operating Income + Non-Recurring Expenses) / Revenue
+     ```
+     - **Analysis**: Compare past and current margins. Extract segment-level margins from 10-K for diversified firms.
+- **Key Questions**:
+  - Is the company improving efficiency in turning sales into profits (margin expansion)?
+  - Is it earning more profit per dollar of revenue compared to peers?
+  - Which company is the most efficient in its industry?
+
+### D. Cash Flow Profitability Analysis
+*Pro-Level Lens*: Use **SBC-Adjusted FCF** to account for dilution in tech-heavy sectors.
+
+- **Key Measures**:
+  1. **SBC-Adjusted Free Cash Flow**:
+     ```formula
+     SBC-Adjusted FCF = Operating Cash Flow - Capex - Stock-Based Compensation
+     ```
+  2. **SBC-Adjusted FCF Yield**:
+     ```formula
+     SBC-Adjusted FCF Yield = SBC-Adjusted FCF / Market Cap
+     ```
+- **Key Questions**:
+  - Is the company generating real cash (SBC-Adjusted FCF) relative to its size and peers?
+  - Is the trend of SBC-Adjusted FCF positive or approaching an inflection point?
+  - If FCF is negative, is it due to strategic investments (e.g., AI infrastructure, nuclear energy) with a clear path to positive FCF?
+
+### E. Capital Efficiency Analysis
+*Pro-Level Lens*: **ROIIC** predicts future value creation better than ROIC. Improving ROIIC signals effective capital allocation.
+
+- **Key Measures**:
+  1. **Return on Invested Capital (ROIC)**:
+     ```formula
+     ROIC = NOPAT / Invested Capital
+     NOPAT = Operating Income * (1 - Tax Rate)  # Default tax rate: 21%
+     Invested Capital = Total Debt + Shareholders’ Equity - Cash
+     ```
+  2. **Return on Incremental Invested Capital (ROIIC)**:
+     ```formula
+     ROIIC = (Change in NOPAT over 3–5 yrs) / (Total New Net Investment over 3–5 yrs)
+     Total New Net Investment = (Change in Total Debt + Change in Equity + Retained Earnings - Dividends)
+     ```
+     - **Analysis**: ROIC > WACC (8–12%) indicates value creation. ROIIC > ROIC signals improving capital efficiency.
+- **Key Questions**:
+  - Which company best turns capital into profit (highest ROIC)?
+  - Is ROIIC higher than ROIC, indicating improving capital allocation?
+
+### F. Valuation Analysis
+*Pro-Level Lens*: Use **EV multiples** (EV/Sales, EV/EBITDA) for capital-structure-neutral comparisons.
+
+- **Key Measures**:
+  1. **Enterprise Value**: Market Cap + Total Debt - Cash & Equivalents
+  2. **EV/Sales Ratio**: EV / Total Revenue
+  3. **EV/EBITDA Ratio**: EV / EBITDA
+  4. **PEG Ratio**: (P/E) / Earnings Growth Rate
+     - **Analysis**: Compare to industry medians and historical 3–5 year averages (source: Morningstar, Yahoo Finance).
+- **Key Questions**:
+  - How is the company valued on EV/Sales and EV/EBITDA compared to peers and historical ranges?
+  - Is a premium valuation justified by superior growth, Rule of 40, or ROIIC?
+  - What growth/profitability assumptions are baked into the current valuation?
+
+### G. Balance Sheet Analysis
+*Pro-Level Lens*: **Debt/EBITDA** is the key leverage metric, comparing debt to cash earnings.
+
+- **Key Measures**:
+  1. **Debt/EBITDA**: Total Debt / EBITDA
+  2. **Net Debt**: Total Debt - Cash & Equivalents
+  3. **Interest Coverage Ratio**: EBIT / Interest Expense
+  4. **Current Ratio**: Current Assets / Current Liabilities
+  5. **Debt-to-Equity**: Total Debt / Shareholders’ Equity
+- **Key Questions**:
+  - How leveraged is the company (Debt/EBITDA) compared to peers?
+  - Can it service its debt (Interest Coverage >5x)?
+  - Does a high cash balance mitigate debt concerns (Net Debt)?
+  - Is short-term liquidity sufficient (Current Ratio >1.5)?
+
+### H. Competitive Advantage & Management Quality Analysis
+*Pro-Level Lens*: Develop conviction in the business’s durability and management’s skill.
+
+- **Product/Platform Stickiness**:
+  - **Net Dollar Retention (NDR)**: Revenue retained from existing customers, including upsells.
+    ```formula
+    NDR = (Revenue from Existing Customers at Period End / Revenue from Same Customers at Period Start) × 100
+    ```
+    - **Scoring**: >120% = 90, 100–120% = 60, <100% = 30
+  - **Gross Retention Rate (GRR)**: Revenue retained excluding upsells.
+    ```formula
+    GRR = (Revenue from Existing Customers Excluding Upsells / Revenue from Same Customers at Period Start) × 100
+    ```
+    - **Scoring**: >90% = 90, 80–90% = 60, <80% = 30
+  - **Churn Rate**: Percentage of customers or revenue lost.
+    ```formula
+    Churn Rate = (Lost Revenue or Customers / Total Revenue or Customers at Period Start) × 100
+    ```
+    - **Scoring**: <5% = 90, 5–10% = 60, >10% = 30
+  - **Average Contract Length**: Duration of customer contracts.
+    - **Scoring**: >2 years = 90, 1–2 years = 60, <1 year = 30
+- **Competitive Moat Assessment**:
+  - Brand Strength, Network Effects, Switching Costs, Cost Advantages, Intangible Assets (source: USPTO.gov).
+  - **Key Question**: How is AI strengthening (e.g., data network effects) or threatening (e.g., automating services) the moat?
+  - **Scoring**: High (3+ factors) = 90, Medium (1–2) = 60, Low (0) = 30
+- **Management Quality**:
+  - **Track Record & Execution**: Delivery on past promises.
+  - **Capital Allocation**: High ROIIC, smart M&A, or buybacks.
+  - **Insider Ownership & Trading**: Check OpenInsider for cluster buying/selling.
+  - **ESG Rating**: Critical for Energy/Infra (source: MSCI, Sustainalytics).
+  - **Earnings Call Analysis**: Assess tone, confidence, and consistency.
+- **Key Questions**:
+  - What protects the business from competition in AI, robotics, or power sectors?
+  - How sustainable are its competitive advantages?
+  - Does management’s track record, insider trading, and ESG performance support long-term value creation?
+
+### I. Historical Trend & Cyclicality Analysis
+*Pro-Level Lens*: Use historical trends to predict future behavior.
+
+- **Key Measures**:
+  - Trends (3–5 Years): Revenue CAGR, margin trajectory, ROIC, Rule of 40.
+  - Cyclicality: Performance during downturns, sensitivity to interest rates or commodity prices.
+- **Key Questions**:
+  - Is performance improving, stable, or deteriorating?
+  - How has the company performed during economic downturns?
+  - How do macro trends (e.g., AI adoption, energy demand) affect cyclicality?
+
+### J. Risk Assessment
+*Pro-Level Lens*: Identify specific threats to your investment thesis.
+
+- **Key Measures**:
+  - **Beta**: Volatility relative to the market.
+  - **Customer Concentration**: >20% from a single customer (source: 10-K).
+  - **Dilution Risk**: Track shares outstanding.
+  - **Geopolitical/Regulatory Risk**: AI privacy laws, chip export controls.
+- **Key Questions**:
+  - What are the top 3–5 risks that could break the investment thesis?
+  - How exposed is the company to market swings (Beta)?
+  - Is revenue overly reliant on a few clients?
+  - Are there specific regulatory or geopolitical risks?
+
+---
+
+## Phase 2: Building the Thesis (Synthesis & Decision)
+
+### 1. Define the Variant Perception
+- **Market’s View (Consensus)**: Sentiment reflected in stock price and analyst reports.
+- **Variant Perception (Thesis)**: What the market is missing (e.g., margin expansion from AI platform).
+- **Key Catalysts / Why Now?**: Events in the next 6–18 months that will shift market perception.
+
+### 2. Peer Benchmarking
+*Visualize company standing with a “Trend/Rate of Change” column and Z-score/percentile.*
+
+```template
+| Metric                | [Company] | Trend/RoC | [Peer 1] | [Peer 2] | Peer Median |
+|-----------------------|-----------|-----------|----------|----------|-------------|
+| EV/Sales (Fwd)        |           |           |          |          |             |
+| Revenue Growth (Fwd)  |           |           |          |          |             |
+| SBC-Adj FCF Yield     |           |           |          |          |             |
+| ROIC / ROIIC          |           |           |          |          |             |
+| Debt/EBITDA           |           |           |          |          |             |
+| NDR (SaaS/Cyber)      |           |           |          |          |             |
+| Z-Score/Percentile    |           |           |          |          |             |
+```
+
+- **Step**: Source data from Finviz, Yahoo Finance, or Morningstar. Use Z-score (standard deviations from peer mean) or percentile rank for each metric.
+
+### 3. Scenario Analysis & Asymmetry
+- **Bull Case**: Price target if thesis plays out (e.g., +80% upside).
+- **Base Case**: Price if consensus is correct (e.g., +10% upside).
+- **Bear Case**: Price if risks materialize (e.g., -30% downside).
+- **Conclusion**: Calculate asymmetric risk/reward ratio (e.g., 80% / 30% = 2.7-to-1).
+
+### 4. Final Recommendation & Sell Discipline
+- **Decision**: Buy, Hold, or Avoid based on variant perception and asymmetry.
+- **Position Sizing**: Higher conviction and asymmetry = larger position.
+- **Thesis Breakers**: 3 specific, measurable events to trigger a sale (e.g., NDR <115% for two quarters).
+
+### 5. Scoring System (For Initial Screening)
+```formula
+Score = (0.25 × Revenue Growth Score) + (0.20 × Rule of 40 Score) + (0.15 × Operating Margin Score) + (0.10 × ROIC Score) + (0.10 × Valuation Score) + (0.10 × FCF Yield Score) + (0.05 × Balance Sheet Score) + (0.05 × Competitive Moat Score) + (0.05 × News Impact Score)
+```
+- **Scoring Guidelines**:
+  - Strong Buy: >80
+  - Consider: 50–80
+  - Avoid: <50
+- **Metric Scoring**:
+  - Revenue Growth: >20% = 90, 5–20% = 60, <5% = 30
+  - Rule of 40 (Method A or B): >40% (SaaS/Cyber) or >30% (Chips/AI) or >20% (Energy/Infra) = 90, 30–40% (SaaS/Cyber) or 20–30% (Chips/AI) or 10–20% (Energy/Infra) = 60, <30% (SaaS/Cyber) or <20% (Chips/AI) or <10% (Energy/Infra) = 30
+  - Operating Margin: >20% = 90, 10–20% = 60, <10% = 30
+  - ROIC: >15% = 90, 8–15% = 60, <8% = 30
+  - EV/Sales: <10x (SaaS/Cyber) or <8x (Chips/AI) or <3x (Energy/Infra) = 90, 10–15x (SaaS/Cyber) or 8–12x (Chips/AI) or 3–5x (Energy/Infra) = 60, >15x (SaaS/Cyber) or >12x (Chips/AI) or >5x (Energy/Infra) = 30
+  - PEG Ratio: <1.0 = 90, 1.0–2.0 = 60, >2.0 = 30
+  - SBC-Adj FCF Yield: >5% = 90, 2–5% = 60, <2% = 30
+  - Debt/EBITDA: <2x (SaaS/Cyber) or <2.5x (Chips/AI) or <3x (Energy/Infra) = 90, 2–4x (SaaS/Cyber) or 2.5–4x (Chips/AI) or 3–5x (Energy/Infra) = 60, >4x (SaaS/Cyber) or >4x (Chips/AI) or >5x (Energy/Infra) = 30
+  - Interest Coverage: >5x = 90, 2–5x = 60, <2x = 30
+  - Current Ratio: >1.5 = 90, 1–1.5 = 60, <1 = 30
+  - Competitive Moat: High = 90, Medium = 60, Low = 30
+  - News Impact: Positive = 90, Neutral = 60, Negative = 30
+  - NDR (SaaS/Cyber): >120% = 90, 100–120% = 60, <100% = 30
+  - GRR (SaaS/Cyber): >90% = 90, 80–90% = 60, <80% = 30
+  - Churn Rate: <5% = 90, 5–10% = 60, >10% = 30
+  - Average Contract Length: >2 years = 90, 1–2 years = 60, <1 year = 30
+- **Note**: Qualitative thesis (Phase 2) overrides quantitative score.
+
+---
+
+## Appendix A: Data Sources & Visualization
+- **Data Sources**: Yahoo Finance (daily), SEC Filings (quarterly), Company IR (quarterly), OpenInsider (daily), Finviz (weekly), Morningstar (weekly), Sustainalytics (quarterly), MSCI (quarterly).
+- **Visualization Enhancements**: Waterfall charts for FCF bridge, stacked bar for revenue by segment, bubble charts for growth vs. margin vs. valuation, Z-score/percentile for peer comparison.
+- **Red Flags / Green Flags**:
+  - **Red Flags**: Declining NDR, rising DSOs, management turnover, aggressive revenue recognition, large insider selling, declining gross margin, rising dilution.
+  - **Green Flags**: Accelerating NDR, insider buying, new product launches, multi-year customer contracts, improving Rule of 40, margin expansion.
+
+## Appendix B: Abbreviations
+- **ARR**: Annual Recurring Revenue – Revenue from recurring subscriptions.
+- **Book-to-Bill**: Ratio of orders received to revenue billed in a period.
+- **CAGR**: Compound Annual Growth Rate.
+- **Capex**: Capital Expenditures – Investments in fixed assets.
+- **Churn Rate**: Percentage of customers or revenue lost in a period.
+- **Current Ratio**: Current Assets divided by Current Liabilities.
+- **Debt/EBITDA**: Total Debt divided by EBITDA, a leverage metric.
+- **Debt-to-Equity**: Total Debt divided by Shareholders’ Equity.
+- **DSO/DSOs**: Days Sales Outstanding – Average time to collect receivables.
+- **EBITDA**: Earnings Before Interest, Taxes, Depreciation, and Amortization.
+- **EV**: Enterprise Value – Market cap plus debt minus cash.
+- **EV/Sales**: Enterprise Value divided by Total Revenue.
+- **FCF**: Free Cash Flow – Cash from operations minus capital expenditures.
+- **FCF Yield**: Free Cash Flow divided by Market Cap.
+- **GRR**: Gross Retention Rate – Revenue retained from existing customers, excluding upsells.
+- **Interest Coverage**: EBIT divided by Interest Expense.
+- **Magic Number**: SaaS growth efficiency metric: (Change in ARR * Gross Margin) / Sales & Marketing Spend.
+- **NDR**: Net Dollar Retention – Revenue retained from existing customers, including upsells.
+- **Net Debt**: Total Debt minus Cash & Equivalents.
+- **PEG**: Price/Earnings to Growth Ratio.
+- **RPO**: Remaining Performance Obligation – Contracted revenue yet to be recognized.
+- **ROIC**: Return on Invested Capital – Return on total invested capital.
+- **ROIIC**: Return on Incremental Invested Capital – Return on new capital investments.
+- **SBC**: Stock-Based Compensation – Non-cash compensation impacting FCF and dilution.
+- **TTM**: Trailing Twelve Months.
+- **WACC**: Weighted Average Cost of Capital – Average cost of equity and debt financing.
+- **YoY**: Year-over-Year (annual growth comparison).
+- **Z-score**: Standard deviations from the mean (used for peer comparison).
+--- END OF FILE ---
+
+--- START OF FILE ./InvestmentThesis/twin_revolution_ASI_and_Sovereign_finance.md ---
+
+# The Twin Revolutions: An Investment Thesis for the ASI & Sovereign Finance Era
+
+**Version:** 6.0 ("The Fully Deployed Thesis")
+**Date:** October 15, 2025
+**Filename:** twin_revolution_ASI_and_Sovereign_finance.md
+
+## I. Core Premise: The Twin Revolutions - A Two-Front War for Global Dominance
+
+This decade will be defined by an existential **two-front war** between the United States and its strategic adversaries, where losing either front means losing everything:
+
+1.  **Front #1 - The Race for Artificial Super Intelligence (ASI):** The control of the future of intelligence, decision-making, and technological supremacy.
+2.  **Front #2 - The Race for Sovereign Finance:** The control of the future of value, monetary systems, and debt monetization via digital assets.
+
+**The Strategic Imperative:** The US cannot afford to lose either front. Winning ASI without controlling global finance means funding constraints that handicap technological development. Winning finance without ASI means China could leapfrog American technological dominance. **Both fronts must be won simultaneously.**
+
+This thesis posits that the most durable, alpha-generating returns will come from owning the foundational, physically-constrained, and sovereign-critical **infrastructure** required for the U.S. to dominate both fronts of this civilizational competition. The thesis is **"Builder-First, Empire-Second."**
+
+## II. The Three Foundational Pillars
+
+### 1. The Geopolitical Driver: The National Security Imperative
+
+*   **The Thesis:** The ASI race is no longer a commercial competition; it is a national security priority analogous to the Manhattan Project. This forces a strategic shift from **"most efficient"** to **"most secure,"** mandating the onshoring of critical technology and the creation of resilient, sovereign supply chains (e.g., via the CHIPS Act). This provides a powerful, state-sponsored tailwind for designated domestic champions.
+
+### 2. The Physical Constraints: Compute & Power as The Great Bottlenecks
+
+*   **The Thesis:** ASI and large-scale digital asset systems are physical phenomena limited by two primary, real-world resources: **Compute** and **Power**. Owning the providers of these scarce resources is a durable, long-term investment strategy.
+    *   **Compute:** The entire semiconductor supply chain, from design (EDA) and manufacturing (Fabs, Process Control) to the final logic (CPUs/GPUs) and memory (HBM) chips.
+    *   **Power:** The raw electricity required to run these compute-intensive systems. The exponential growth in data center energy demand makes power generation—especially reliable, clean, baseload power—a primary limiting factor and a critical investment area.
+
+### 3. The Parallel Revolution: Sovereign Finance & The Inescapable Feedback Loop
+
+*   **The Thesis:** In parallel to the ASI race, the global financial system is being tokenized. The rise of China's Digital Yuan (e-CNY) poses a direct threat to U.S. dollar hegemony.
+*   **The U.S. Counter-Strategy (GENIUS Act of 2025):** The US is fostering a regulated stablecoin ecosystem. This creates a brilliant, self-reinforcing feedback loop:
+    1.  The world tokenizes trillions in **Real-World Assets (RWAs)** like stocks, real estate, and art.
+    2.  These RWAs require **USD-pegged stablecoins** as the primary settlement medium.
+    3.  Under the GENIUS Act, every dollar of new stablecoins must be **backed by US Treasury bills.**
+    4.  This creates a massive, structural, and perpetual global bid for US government debt, effectively leveraging the entire crypto revolution to fund US fiscal policy and reinforce dollar dominance.
+
+## III. Portfolio Strategy & Visualizations
+
+The portfolio has reached its target state, reflecting a **"Fortified Barbell"** strategy. The build-out phase, which capitalized on significant market volatility, is complete. The portfolio is now fully deployed. The strategy now shifts from initial construction to active management, monitoring, and opportunistic rebalancing.
+
+The structure is a barbell:
+*   **One End:** Hyper-stable, capital-efficient compounders and market leaders (e.g., AVGO, SNPS, NVDA).
+*   **The Other End:** High-risk, high-reward, thesis-driven special situations and turnarounds (e.g., INTC, CORZ, OKLO).
+
+The cash position is now at its optimized strategic level (~19%), providing a balance of compounding and tactical optionality for future market dislocations.
+
+### Allocation by Pillar (Final Targets - V6.0)
+
+| Pillar | Final Goal % |
+| :--- | :--- |
+| **ASI / Compute – Chips** | 32.00% |
+| **Cash** | 18.66% |
+| **Power / Energy** | 10.00% |
+| **Data Infra / Supply Chain** | 9.47% |
+| **AI Titans / Cloud** | 9.30% |
+| **Sovereign Finance / Digital Assets** | 7.91% |
+| **Security / Data OS** | 7.48% |
+| **Applied AI / Robotics** | 5.18% |
+| **TOTAL** | **100.00%** |
+
+### Visual Representation of Pillar Weighting
+```
+ASI / Compute – Chips:   [████████████████████████████████] 32.0%
+Cash (Strategic Reserve):[███████████████████] 18.7%
+Power / Energy:          [██████████] 10.0%
+Data Infra / Supply:     [█████████] 9.5%
+AI Titans / Cloud:       [█████████] 9.3%
+Sovereign Finance:       [████████] 7.9%
+Security / Data OS:      [███████] 7.5%
+Applied AI / Robotics:   [█████] 5.2%
+```
+
+## IV. The Final Portfolio Blueprint ("Fully Deployed" Edition)
+
+*This table represents the final, optimized target allocations for the portfolio.*
+
+| Pillar | Ticker | Name | Final Goal % | Thesis for Inclusion |
+| :--- | :--- | :--- | :--- | :--- |
+| **CASH** | PSU.U | Purpose US Cash Fund ETF | 12.41% | High-yield strategic reserve. |
+| **ASI / Compute** | INTC | Intel Corp | 11.50% | The core contrarian bet: US "National Champion" for a secure AI supply chain. |
+| **ASI / Compute** | AVGO | Broadcom Inc. | 7.00% | The high-quality compounder: "agnostic enabler" of custom silicon. |
+| **CASH** | MY USD | MY USD CASH | 6.25% | Optimized tactical cash reserve. |
+| **AI Titans / Cloud**| GOOG | Alphabet Inc. | 5.60% | The "Brains" hedge: leader in foundational AI research. |
+| **Power / Energy** | VST | Vistra Corp | 4.60% | The "Incumbent Workhorse" providing at-scale bridge power. |
+| **Power / Energy** | CEG | Constellation Energy | 4.00% | The "Clean Baseload Champion": premier nuclear provider. |
+| **AI Titans / Cloud**| MSFT | Microsoft Corporation | 3.70% | The dominant enterprise platform for distributing AI via Azure. |
+| **ASI / Compute** | ONTO | Onto Innovation | 3.00% | High-beta bet on the "Tool-In" phase of the fab buildout. |
+| **ASI / Compute** | NVDA | NVIDIA Corporation | 3.00% | **The Apex Predator Hedge.** Hedges against Intel execution failure. |
+| **Security / Data OS**| PANW | Palo Alto Networks | 3.00% | "The Fortress Architect"; the consolidating security platform. |
+| **ASI / Compute** | AMD | AMD, Inc. | 3.00% | **Fortified Hedge.** Bet on US design leadership, agnostic of foundry winner. |
+| **Sovereign Finance**| ETHA | Ethereum ETF | 2.92% | The foundational settlement layer for a tokenized world. |
+| **Data Infra / Supply**| EQIX | Equinix Inc | 2.90% | "The Digital Landlord"; premier physical real estate for data interconnection. |
+| **Applied AI / Robo** | HUMN | Robotics ETFs | 2.73% | Thematic bet on the physical embodiment of AI. |
+| **ASI / Compute** | SNPS | Synopsys, Inc. | 2.50% | **Fortified Foundation.** Part of the indispensable EDA duopoly. |
+| **Sovereign Finance**| IBIT | Bitcoin ETF | 2.50% | The neutral, decentralized reserve asset for the digital age. |
+| **Security / Data OS**| CRWD | CrowdStrike Holdings | 2.50% | **Fortified Security.** "The Elite Royal Guard"; best-in-class endpoint protection. |
+| **Sovereign Finance**| COIN | Coinbase Global | 2.49% | The regulated gateway for the digital asset economy. |
+| **Applied AI / Robo** | KOID | Robotics ETFs | 2.45% | Thematic bet on the physical embodiment of AI. |
+| **Data Infra / Supply**| VRT | Vertiv Holdings Co | 2.00% | Solves the critical data center cooling bottleneck. |
+| **ASI / Compute** | CDNS | Cadence Design Systems | 2.00% | **Fortified Foundation.** Part of the indispensable EDA duopoly. |
+| **Security / Data OS**| ZS | Zscaler, Inc. | 1.98% | "The Secure Gateway"; leader in Zero Trust and secure access. |
+| **Data Infra / Supply**| CORZ | Core Scientific, Inc. | 1.60% | **Trimmed Speculation.** High-beta play on the AI/Crypto infrastructure overlap. |
+| **Data Infra / Supply**| ANET | Arista Networks | 1.53% | The dominant networking provider for the open, Ethernet-based AI data center. |
+| **Data Infra / Supply**| CRWV | CoreWeave, Inc. | 1.44% | A pure-play on providing specialized AI cloud compute. |
+| **Power / Energy** | OKLO | Oklo Inc. | 1.40% | **Trimmed Speculation.** A venture-style bet on next-gen modular nuclear. |
+| **TOTAL** | | | **100.00%** | |
+
+## V. Risk Factors & Stress Tests (Summary of Red Team Analysis)
+
+This thesis is high-risk. Its success is contingent upon several key assumptions holding true. The optimized hedge structure and cash reserve are designed to mitigate these risks, but they remain critical to monitor.
+
+1.  **Execution Risk (The "Intel Problem"):** The thesis relies heavily on Intel's ability to execute a flawless and timely turnaround. *Hedge Mitigation: Owning NVDA and AMD provides a cushion if Intel's execution stumbles, capturing gains from the established leaders.*
+2.  **Algorithmic Efficiency Gains (The "Black Swan"):** A breakthrough in AI algorithms that dramatically reduces the need for raw compute. *Hedge Mitigation: Owning GOOG, a leader in AI research, provides exposure to the "brains" side of the revolution.*
+3.  **Incumbent Moat Risk:** NVIDIA's CUDA software ecosystem and TSMC's manufacturing expertise are formidable barriers. *Hedge Mitigation: Owning NVDA directly is the ultimate hedge against its own moat proving insurmountable.*
+4.  **Geopolitical De-escalation:** A sudden and lasting peace or resolution of tensions (e.g., in Taiwan) would remove the urgent "national security" driver, causing the market to revert to a "most efficient" globalized model.
+5.  **Regulatory Whiplash (Crypto):** A hostile US regulatory shift against crypto exchanges, mining, or stablecoins could cripple the "Sovereign Finance" pillar.
+
+## VI. Key Thesis Breakers & Sell Discipline
+
+*This section formalizes the conditions under which the core contrarian positions would be re-evaluated or sold to enforce discipline.*
+
+**A. For Intel (INTC):**
+1.  **Roadmap Failure:** A public delay of the 18A node's high-volume manufacturing readiness beyond Q4 2026.
+2.  **Customer Failure:** Failure to announce a significant design win for 18A from a top-5 fabless company (e.g., AMD, NVDA, QCOM) by the end of 2026.
+3.  **Leadership Change:** The departure of CEO Pat Gelsinger before the turnaround is substantially complete, without a credible successor who is committed to the foundry strategy.
+
+**B. For Coinbase (COIN):**
+1.  **Hostile US Regulation:** The passage of federal legislation that explicitly disadvantages regulated, onshore exchanges in favor of decentralized alternatives or bans stablecoins.
+2.  **Sustained Loss of Market Share:** A consistent, multi-quarter drop in trading volume market share to competitors that is not explained by general market conditions.
+
+**C. For Oklo (OKLO):**
+1.  **Regulatory Failure:** A definitive rejection of their core Aurora powerhouse design by the Nuclear Regulatory Commission (NRC) without a clear path to remediation.
+
+## VII. References & Further Reading
+
+This section provides sources and further reading to support the core pillars of the thesis.
+
+### 1. Geopolitical Driver & Sovereign Supply Chains
+*   **Aschenbrenner, L. (2024). "Situational Awareness: The Decade Ahead":** [https://situational-awareness.ai](https://situational-awareness.ai)
+*   **The CHIPS and Science Act:** [https://www.commerce.gov/chips](https://www.commerce.gov/chips)
+*   **Intel Form 8-K (August 22, 2025): Apollo Global Management Joint Venture:** [https://www.sec.gov/Archives/edgar/data/50863/000005086325000129/intc-20250822.htm](https://www.sec.gov/Archives/edgar/data/50863/000005086325000129/intc-20250822.htm)
+*   **OPB News - "Intel, Trump administration signal potential for direct U.S. government stake" (August 22, 2025):** [https://www.opb.org/article/2025/08/22/intel-trump-us-government-stake/](https://www.opb.org/article/2025/08/22/intel-trump-us-government-stake/)
+*   **PBS NewsHour - "What experts think about the U.S. government's stake in Intel" (August 23, 2025):** [https://www.pbs.org/newshour/politics/what-economic-and-policy-experts-think-about-the-u-s-governments-stake-in-intel](https://www.pbs.org/newshour/politics/what-economic-and-policy-experts-think-about-the-u-s-governments-stake-in-intel)
+*   **Intel Form S-3 (August 22, 2025): Automatic Shelf Registration:** [https://www.intc.com/filings-reports/all-sec-filings/content/0000050863-25-000129/0000050863-25-000129.pdf](https://www.intc.com/filings-reports/all-sec-filings/content/0000050863-25-000129/0000050863-25-000129.pdf)
+
+### 2. Physical Constraints: Power, Compute & Execution
+*   **Intel Foundry - 18A Platform Brief (March 2025):** [https://www.intel.com/content/dam/www/central-libraries/us/en/documents/2025-03/foundry-18a-platform-brief.pdf](https://www.intel.com/content/dam/www/central-libraries/us/en/documents/2025-03/foundry-18a-platform-brief.pdf)
+*   **WCCFTech - "Intel 18A Node Achieves Record Low Defect Density":** [https://wccftech.com/intel-18a-node-achieves-record-low-defect-density/](https://wccftech.com/intel-18a-node-achieves-record-low-defect-density/)
+*   **TechSpot - "Intel unveils Clearwater Forest chips based on its 18A node":** [https://www.techspot.com/news/104869/intel-unveils-clearwater-forest-chips-based-18a-node.html](https://www.techspot.com/news/104869/intel-unveils-clearwater-forest-chips-based-18a-node.html)
+*   **PR Newswire - "Synopsys and Intel Foundry Propel Angstrom-scale Chip Designs on Intel 18A":** [https://www.prnewswire.com/news-releases/synopsys-and-intel-foundry-propel-angstrom-scale-chip-designs-on-intel-18a-and-intel-18a-p-technologies-302441517.html](https://www.prnewswire.com/news-releases/synopsys-and-intel-foundry-propel-angstrom-scale-chip-designs-on-intel-18a-and-intel-18a-p-technologies-302441517.html)
+*   **Cadence Press Release - "Cadence Expands Design IP Portfolio Optimized for Intel 18A":** [https://www.cadence.com/en_US/home/company/newsroom/press-releases/pr/2025/cadence-expands-design-ip-portfolio-optimized-for-intel-18a-and.html](https://www.cadence.com/en_US/home/company/newsroom/press-releases/pr/2025/cadence-expands-design-ip-portfolio-optimized-for-intel-18a-and.html)
+*   **WCCFTech - "Intel to Finally Switch to an Annual AI Product Cadence":** [https://wccftech.com/intel-to-finally-switch-to-an-annual-ai-product-cadence-after-years-of-delay/](https://wccftech.com/intel-to-finally-switch-to-an-annual-ai-product-cadence-after-years-of-delay/)
+*   **Tom's Hardware - "AMD in Early Talks to Make Chips at Intel Foundry":** [https://www.tomshardware.com/pc-components/cpus/amd-in-early-talks-to-make-chips-at-intel-foundry-report-says](https://www.tomshardware.com/pc-components/cpus/amd-in-early-talks-to-make-chips-at-intel-foundry-report-says)
+*   **TechPowerUp - "NVIDIA, Intel Collaboration Evaluates Intel 18A and 14A Nodes":** [https://www.techpowerup.com/341148/nvidia-intel-collaboration-evaluates-intel-18a-and-14a-nodes-both-remain-tsmc-customers](https://www.techpowerup.com/341148/nvidia-intel-collaboration-evaluates-intel-18a-and-14a-nodes-both-remain-tsmc-customers)
+*   **International Energy Agency (IEA) Report - "Electricity 2024":** [https://www.iea.org/reports/electricity-2024](https://www.iea.org/reports/electricity-2024)
+
+### 3. Sovereign Finance & The GENIUS Act
+*   **The GENIUS Act (Hypothetical Text, H.R. 5150):** [https://www.congress.gov/bill/118/hr5150](https://www.congress.gov/bill/118/hr5150)
+*   **Bloomberg - "The Unseen Force: How Stablecoins Became a Top Buyer of US Debt":** [https://www.bloomberg.com/opinion/articles/2025-09-15/the-unseen-force-how-stablecoins-became-a-top-buyer-of-us-debt](https://www.bloomberg.com/opinion/articles/2025-09-15/the-unseen-force-how-stablecoins-became-a-top-buyer-of-us-debt)
+*   **Coinbase - "Real World Assets (RWAs) on Blockchain: The Tokenization Revolution":** [https://www.coinbase.com/learn/rwa-real-world-assets](https://www.coinbase.com/learn/rwa-real-world-assets)
+*   **Atlantic Council - "China's Digital Currency: Adding Financial Data to Digital Authoritarianism":** [https://www.atlanticcouncil.org/in-depth-research-reports/report/chinas-digital-currency/](https://www.atlanticcouncil.org/in-depth-research-reports/report/chinas-digital-currency/)
+
+---
+
+*This document should be treated as a living thesis, to be updated and challenged as new market data, technological developments, and geopolitical events unfold.*
+--- END OF FILE ---
+
+--- START OF FILE ./NonFunctionalRequirements_Testing.md ---
+
+# Non-Functional Requirements: Backend Testing
+
+## Reliability
+- All critical backend service functions and API routes must be covered by automated tests.
+- Tests must verify both success and failure/error scenarios.
+
+## Maintainability
+- Test code must be organized by type: integration (routes) and unit (services).
+- Tests must be easy to extend as new features/routes are added.
+- Test structure and conventions must be documented for onboarding.
+
+## Performance
+- Test suite must run in under 30 seconds for typical changes.
+- Tests should be parallelizable where possible.
+
+## Security
+- Sensitive credentials for tests must be stored in `.env.test` and never committed.
+- Mock external APIs for unit tests to avoid real data exposure.
+
+## Usability
+- Tests must be runnable with a single command: `npx jest`.
+- Test failures must provide clear, actionable error messages.
+
+## Portability
+- Tests must run on macOS, Linux, and CI environments without modification.
+
+## Traceability
+- All test cases must be traceable to requirements or user stories.
+- Test coverage reports should be generated periodically.
+
+---
+
+--- END OF FILE ---
+
+--- START OF FILE ./Prompts/Archive/Portfolio_Review_Prompt.md ---
+
+
+# Portfolio Review & Challenge Prompt (v1.0)
+
+## Purpose
+This prompt is designed to systematically review an **existing portfolio** of stocks against the **"Definitive Professional Investment Framework (v3.0)."** Its goal is not to discover new companies, but to challenge biases and validate the thesis for each current holding. It triggers a rigorous analysis that compares the user's intended action (`INCREASE`, `MAINTAIN`, `SELL`, etc.) with a data-driven recommendation from the framework, forcing a justification for any discrepancies.
+
+## Instructions for Use
+1.  **Prepare Your Input:** Before using this prompt, create a simple table of your current holdings and your intended action for each. The "action" should reflect your honest, current thinking.
+2.  **Provide All Three Files:** For the analysis, you will provide:
+    *   `quick-stock-screener.md` (The Framework)
+    *   This prompt (`Portfolio_Review_Prompt.md`)
+    *   Your prepared table of current holdings and actions.
+
+## 1. User Input: Portfolio Holdings & Actions
+*(This is the section you will edit each time you run a review)*
+
+| Stock | Ticker | Your Action |
+| :--- | :--- | :--- |
+| NVIDIA CORPORATION | NVDA | INCREASE |
+| CROWDSTRIKE HOLDINGS | CRWD | INCREASE |
+| TESLA, INC. | TSLA | MAINTAIN |
+| OKTA, INC. | OKTA | REDUCE |
+| ... | ... | ... |
+
+*(Note: The "Your Action" choices are: `INCREASE`, `INITIATE`, `MAINTAIN`, `REDUCE`, `SELL`, `MONITOR`)*
+
+## 2. AI Execution Steps
+*You will execute the following steps, using the user's table as the primary input.*
+
+### Step A: Ingest and Score
+For **every stock** listed in the user's table, apply the full scoring system from the "Definitive Professional Investment Framework (v3.0)." Calculate a final score based on all quantitative and qualitative factors. For recent IPOs or other un-scorable assets, note them as "N/A" for score.
+
+### Step B: Generate a Framework Recommendation
+Based on the final score and qualitative analysis (moat strength, trends, etc.), generate a `Framework Recommendation` for each stock.
+*   **Score > 80:** Strong `INCREASE` or `MAINTAIN` candidate.
+*   **Score 65-80:** `MAINTAIN` or `MONITOR`.
+*   **Score < 60:** Strong `REDUCE` or `SELL` candidate.
+*   **Qualitative Overrides:** Acknowledge where a powerful qualitative factor (e.g., a monopolistic moat for ASML, a binary catalyst for TSLA) justifies overriding the pure quantitative score.
+
+### Step C: Create the "Challenge Report"
+Produce a final output in a tiered markdown format. The core of the report will be a table that directly compares the user's action with the framework's recommendation.
+
+**For every single instance where `Your Action` does not match the `Framework Recommendation`, you must provide a detailed "Challenge Rationale."** This rationale must:
+1.  State the discrepancy clearly.
+2.  Explain *why* the framework arrived at its conclusion, citing specific metrics (e.g., "The framework recommends SELL because the company fails the Rule of 40, its NDR is declining, and its moat is assessed as 'Damaged'.").
+3.  Directly contrast the data-driven view with the likely narrative-driven bull case (e.g., "While the ARK Invest thesis points to a massive future TAM, the framework cannot ignore the current reality of deteriorating margins and negative FCF.").
+
+## 3. Desired Output Format
+
+```markdown
+# Portfolio Validation Report (Generated on [Current Date])
+
+## Tier 1: High-Conviction Core (Framework Score > 80)
+**Framework Verdict:** [e.g., FULLY VALIDATED.]
+
+| Ticker | Company | Score | Your Action | Framework Recommendation |
+| :--- | :--- | :--- | :--- | :--- |
+| NVDA   | NVIDIA  | 92    | INCREASE    | **VALIDATED - INCREASE** |
+| ...    | ...     | ...   | ...         | ...                      |
+
+---
+## Tier 2: Solid Holdings (Framework Score 65-80)
+**Framework Verdict:** [e.g., LARGELY ALIGNED.]
+
+| Ticker | Company | Score | Your Action | Framework Recommendation |
+| :--- | :--- | :--- | :--- | :--- |
+| ZS     | Zscaler | 77    | MAINTAIN    | **AGREE - MAINTAIN** |
+| ...    | ...     | ...   | ...         | ...                      |
+
+---
+## Tier 3: Speculative & Underperforming (Score < 60 or Un-scored)
+**Framework Verdict:** [e.g., SIGNIFICANT CHALLENGE.]
+
+| Ticker | Company | Score | Your Action | Framework Recommendation |
+| :--- | :--- | :--- | :--- | :--- |
+| OKTA   | Okta, Inc.| 55    | REDUCE      | **CHALLENGE - SELL** |
+| TEM    | Tempus AI | N/A   | REDUCE      | **CHALLENGE - SELL** |
+| ...    | ...     | ...   | ...         | ...                      |
+
+---
+## Challenge Rationale & Analysis
+
+### OKTA, Inc. (OKTA)
+*   **Your Action:** `REDUCE`
+*   **Framework Recommendation:** `SELL`
+*   **Rationale for Challenge:** The framework recommends a full `SELL` because the company's moat is assessed as 'Damaged' due to multiple security breaches. Furthermore, its declining Net Dollar Retention and slowing growth in the face of intense competition from Microsoft (Entra ID) and CrowdStrike (Raptor for Identity) are significant red flags that indicate a broken thesis...
+
+### Tempus AI, Inc. (TEM)
+*   **Your Action:** `REDUCE`
+*   **Framework Recommendation:** `SELL` (or Reduce)
+*   **Rationale for Challenge:** As a recent IPO, Tempus AI is un-scorable against the framework's historical data requirements (FCF trend, ROIC). Holding an un-scored asset violates the core discipline of the system. While reducing the position is good risk management, the purist framework view is to sell the position entirely and re-allocate capital to a high-scoring, validated company...
+
+*(...and so on for every discrepancy.)*
+
+--- END OF FILE ---
+
+--- START OF FILE ./Prompts/Archive/lyra.md ---
+
+# Lyra - AI Prompt Optimization Specialist
+
+You are Lyra, a master-level AI prompt optimization specialist. Your mission: transform any user input into precision-crafted prompts that unlock AI's full potential across all platforms.
+
+## THE 4-D METHODOLOGY
+
+### 1. DECONSTRUCT
+- Extract core intent, key entities, and context
+- Identify output requirements and constraints
+- Map what's provided vs. what's missing
+
+### 2. DIAGNOSE
+- Audit for clarity gaps and ambiguity
+- Check specificity and completeness
+- Assess structure and complexity needs
+
+### 3. DEVELOP
+Select optimal techniques based on request type:
+- **Creative** → Multi-perspective + tone emphasis
+- **Technical** → Constraint-based + precision focus
+- **Educational** → Few-shot examples + clear structure
+- **Complex** → Chain-of-thought + systematic frameworks
+- Assign appropriate AI role/expertise
+- Enhance context and implement logical structure
+
+### 4. DELIVER
+- Construct optimized prompt
+- Format based on complexity
+- Provide implementation guidance
+
+## OPTIMIZATION TECHNIQUES
+
+**Foundation:** Role assignment, context layering, output specs, task decomposition
+
+**Advanced:** Chain-of-thought, few-shot learning, multi-perspective analysis, constraint optimization
+
+**Platform Notes:**
+- **ChatGPT/GPT-4:** Structured sections, conversation starters
+- **Claude:** Longer context, reasoning frameworks
+- **Gemini:** Creative tasks, comparative analysis
+- **Others:** Apply universal best practices
+
+## OPERATING MODES
+
+**DETAIL MODE:**
+- Gather context with smart defaults
+- Ask 2-3 targeted clarifying questions
+- Provide comprehensive optimization
+
+**BASIC MODE:**
+- Quick fix primary issues
+- Apply core techniques only
+- Deliver ready-to-use prompt
+
+## RESPONSE FORMATS
+
+**Simple Requests:**
+```
+**Your Optimized Prompt:**
+[Improved prompt]
+
+**What Changed:**
+[Key improvements]
+```
+
+**Complex Requests:**
+```
+**Your Optimized Prompt:**
+[Improved prompt]
+
+**Key Improvements:**
+• [Primary changes and benefits]
+
+**Techniques Applied:**
+[Brief mention]
+
+**Pro Tip:**
+[Usage guidance]
+```
+
+## WELCOME MESSAGE (REQUIRED)
+
+When activated, display EXACTLY:
+
+> "Hello! I'm Lyra, your AI prompt optimizer. I transform vague requests into precise, effective prompts that deliver better results.
+>
+> **What I need to know:**
+> - **Target AI:** ChatGPT, Claude, Gemini, or Other
+> - **Prompt Style:** DETAIL (I'll ask clarifying questions first) or BASIC (quick optimization)
+>
+> **Examples:**
+> - "DETAIL using ChatGPT - Write me a marketing email"
+> - "BASIC using Claude - Help with my resume"
+>
+> Just share your rough prompt and I'll handle the optimization!"
+
+## PROCESSING FLOW
+
+1. Auto-detect complexity:
+   - Simple tasks → BASIC mode
+   - Complex/professional → DETAIL mode
+2. Inform user with override option
+3. Execute chosen mode protocol (see below)
+4. Deliver optimized prompt
+
+**Memory Note:** Do not save any information from optimization sessions to memory.
+--- END OF FILE ---
+
+--- START OF FILE ./Prompts/Archive/stock_analyst_AI_prompt.md ---
+
+# Stock Analyst AI Prompt
+
+## Role
+
+You are an **expert Stock Analyst AI**, specializing in high-growth sectors:
+- AI
+- Robotics
+- Cybersecurity
+- Chips/GPUs
+- Data Centers
+- Power (e.g., nuclear energy)
+
+Your analysis is grounded in the **Definitive Professional Investment Framework (v3.0)
+see: https://github.com/richfrem/QuickStockScreener/blob/main/defininitive_professional_investment_framework.md
+**, emphasizing:
+- Variant perception
+- Inflection points
+- Rate of change
+- Asymmetric risk/reward
+
+Focus on transformative companies from NASDAQ and Dow Jones listings with:
+- >20% revenue growth CAGR (sector-adjusted: >15% for Chips/AI, >10% for Energy/Infra)
+- Rule of 40 compliance (>40% for SaaS/Cyber, >30% for Chips/AI, >20% for Energy/Infra)
+- ARK Invest-style high-conviction criteria
+
+---
+
+## Core Framework Integration
+
+Incorporate the full **Definitive Professional Investment Framework (v3.0)**:
+- **Phase 0:** Top-Down Strategic Overlay (macro assessment, sector-specific thresholds)
+- **Phase 1:** Comprehensive Data Analysis (revenue/growth, Rule of 40, profitability, cash flow, capital efficiency, valuation, balance sheet, competitive advantage, trends, risks)
+- **Phase 2:** Thesis Building (variant perception, peer benchmarking, scenario analysis, scoring system)
+
+**Key Formulas & Thresholds:**
+```markdown
+| Formula/Threshold | Description |
+|-------------------|-------------|
+| SBC-Adjusted FCF = Operating Cash Flow - Capex - Stock-Based Compensation | Adjusts for dilution in tech sectors |
+| Debt/EBITDA <2x for SaaS/Cyber | Leverage limit; sector-adjusted (e.g., <3x for Energy/Infra) |
+| Total Score = (0.25 × Revenue Growth Score) + (0.20 × Rule of 40 Score) + (0.15 × Operating Margin Score) + (0.10 × ROIC Score) + (0.10 × Valuation Score) + (0.10 × FCF Yield Score) + (0.05 × Balance Sheet Score) + (0.05 × Competitive Moat Score) + (0.05 × News Impact Score) | Weighted scoring for ranking |
+```
+
+**Reference Data Sources:**
+- Yahoo Finance
+- SEC filings (10-K/10-Q)
+- OpenInsider
+- Finviz
+- Morningstar
+- Sustainalytics
+- Analyst reports (Seeking Alpha, Zacks)
+
+**Tool Usage (Platform-Specific):**
+- On Grok: Leverage built-in tools like web_search, browse_page, or x_keyword_search for real-time data fetching (e.g., query Yahoo Finance for latest metrics).
+- On Gemini: Use creative modes for variant perceptions; request "comparative analysis" in queries for enhanced outputs.
+
+---
+
+## Screening Process
+
+Follow the **Reusable Stock Screening Prompt** structure:
+1. Identify eligible companies from specified sectors/indices (e.g., Nasdaq CTA Artificial Intelligence & Robotics Index).
+2. Filter by investment thesis criteria (e.g., revenue growth and Rule of 40).
+3. Collect quantitative/qualitative data using specified sources.
+4. Score and rank based on the framework's system.
+5. Synthesize theses with variant perceptions, catalysts, and thesis breakers.
+
+---
+
+## Portfolio Evaluation Process
+
+Follow the **Portfolio Review & Challenge Prompt**:
+1. For user-provided holdings tables, score each stock using the framework.
+2. Generate framework recommendations (e.g., Score >80 = INCREASE/MAINTAIN; 65-80 = MAINTAIN/MONITOR; <60 = REDUCE/SELL).
+3. Compare to user's actions (INCREASE/INITIATE/MAINTAIN/REDUCE/SELL/MONITOR).
+4. Challenge discrepancies with detailed rationales, citing specific metrics and contrasting bull/bear narratives to address biases.
+
+---
+
+## Response Guidelines
+
+**Always think step-by-step using chain-of-thought:**
+1. **Deconstruct the user query:** Identify type (e.g., screen stocks in AI sector, compare NVDA vs. TSMC, evaluate portfolio) and key elements.
+2. **Apply relevant framework phases:** For comparisons, use peer benchmarking; for screening, full Phase 1-2.
+3. **Gather data:** Use tools for real-time info (e.g., web_search for "NVDA revenue growth 2025 estimates"); simulate with latest knowledge if tools unavailable.
+4. **Synthesize outputs:** Include tables, scenario analysis for asymmetry, and evidence-based recommendations.
+
+### For Screening Stocks
+Output a ranked Markdown table of qualifying companies:
+```markdown
+| Rank | Ticker | Sector | Score | Key Strengths | Variant Perception | Catalysts | Thesis Breakers |
+|------|--------|--------|-------|---------------|-------------------|-----------|-----------------|
+| 1    | NVDA   | AI     | 92    | High growth, strong moat | Market underestimates AI demand | Q3 earnings, new GPU launches | Revenue <15%, insider selling |
+| ...  | ...    | ...    | ...   | ...           | ...               | ...       | ...             |
+```
+- Include peer benchmarking table for top 5.
+- Add sections for notes on exclusions, assumptions, and red/green flags.
+
+### For Comparing Stocks
+Use a side-by-side table:
+```markdown
+| Metric              | Company A (NVDA) | Trend/RoC | Company B (AMD) | Peer Median |
+|---------------------|------------------|-----------|-----------------|-------------|
+| Revenue Growth (Fwd)| 25%              | Accelerating | 18%             | 20%         |
+| ...                 | ...              | ...       | ...             | ...         |
+```
+- Highlight differences in trajectories, moats, risks.
+- Conclude with a winner based on asymmetric risk/reward.
+
+### For Evaluating Portfolios
+Input: Holdings table (e.g., | Stock | Ticker | Your Action |).
+Output: Tiered sections (High-Conviction Core >80, Solid 65-80, Speculative <60), comparison table:
+```markdown
+| Ticker | Company | Score | Your Action | Framework Recommendation |
+|--------|---------|-------|-------------|--------------------------|
+| NVDA   | NVIDIA  | 92    | INCREASE    | VALIDATED - INCREASE     |
+| ...    | ...     | ...   | ...         | ...                      |
+```
+- Provide challenge rationales for mismatches in a dedicated section.
+
+---
+
+## Handle Macro Overlays
+
+Adjust thresholds dynamically for current conditions (e.g., in high-rate environments, prioritize SBC-Adjusted FCF >5% and low Debt/EBITDA; reference latest macro data via tools).
+
+---
+
+## Outputs
+
+- Use tables for comparisons, enumerations, and data presentation.
+- **Bold key insights** and use bullet points for clarity.
+- Include red flags (e.g., declining NDR) and green flags (e.g., insider buying).
+- Date outputs: "Generated on [Current Date]" (e.g., July 30, 2025).
+- Note data gaps or exclusions explicitly.
+
+---
+
+## Constraints
+
+- Focus exclusively on specified sectors; exclude non-qualifying (e.g., healthcare like Gilead Sciences).
+- Prioritize evidence-based claims; avoid unsubstantiated speculation.
+- Ensure outputs are politically neutral and substantiated by data.
+
+---
+
+## User Query
+
+Append your specific request at the end, e.g.:
+> Screen top 10 AI stocks  
+> Compare NVDA and AMD  
+> Evaluate this portfolio: | Stock | Ticker | Action | ... |
+
+---
+
+## Key Improvements (from Original)
+
+- **Conciseness:** Streamlined sections, used tables for formulas/thresholds to improve readability.
+- **Tool Integration:** Added explicit guidance for platform tools (e.g., web_search on Grok) to enable real-time data, enhancing accuracy.
+- **Enhanced Specificity:** Added examples in output templates, dynamic macro adjustments, and bias-challenging in evaluations.
+- **Consistency:** Standardized Markdown (e.g., tables, headers); ensured chain-of-thought covers tool usage.
+- **Completeness:** Incorporated multi-perspective analysis more explicitly (bull/bear contrasts) and added neutrality constraint.
+
+---
+
+## Techniques Applied
+
+- Role assignment (expert analyst)
+- Chain-of-thought for step-by-step analysis
+- Constraint-based (sector focus, data sources)
+- Multi-perspective (variant vs. consensus, bull/bear)
+- Systematic frameworks for decomposition
+
+---
+
+## Pro Tip
+
+Copy-paste this prompt into Grok or Gemini, then append your specific query at the end.  
+For Gemini, include "creative comparisons" in queries for innovative insights; on Grok, add "think harder" for deeper reasoning.  
+Use tools to refresh data (e.g., browse_page for SEC filings), and iterate by challenging outputs against personal biases for robust decisions.
+--- END OF FILE ---
+
+--- START OF FILE ./Prompts/Archive/stock_screening_prompt_for_professional_investment_framework1.md ---
+
+# Stock Screening Prompt for Definitive Professional Investment Framework (v3.0)
+
+## Purpose
+This prompt is designed to apply the **Definitive Professional Investment Framework (v3.0)** (provided separately) to screen and rank companies listed on NASDAQ and Dow Jones in the AI, robotics, cybersecurity, chips/GPUs, data centers, power (e.g., nuclear energy), and sectors leveraging AI to transform business like RXRX and ISRG sectors. Secondary premise is companies very transformational and huge growth potential like Cathy Woods ARKK criteria.  It follows a systematic process to identify eligible companies, filter them based on the investment thesis, collect data, score and rank them, and synthesize investment theses, producing an ordered list of all qualifying companies with scores, variant perceptions, and thesis breakers.
+
+## Instructions
+- **Input Files**: the two provided files:
+  1. **Definitive_Investment_Framework_v3.0.md**: The full investment framework with sector-specific thresholds, formulas, scoring system, and guidelines.
+  2. This prompt (**Stock_Screening_Prompt.md**).
+- **Output**: you will generate a Markdown file containing:
+  - A ranked list of all companies meeting the investment thesis criteria (>20% revenue growth CAGR for 2025–2028 for SaaS/Cyber, >15% for Chips/AI, >10% for Energy/Infra; Rule of 40: >40% for SaaS/Cyber, >30% for Chips/AI, >20% for Energy/Infra).
+  - Each company’s total score (per the framework’s scoring system), key strengths, variant perception, catalysts, and thesis breakers.
+  - A peer benchmarking table for the top 5 companies.
+  - No companies outside the specified sectors (e.g., healthcare like Gilead Sciences) or with insufficient data will be included.
+
+## Steps to Apply the Framework
+Follow these steps to execute the screening process, referencing the **Definitive Professional Investment Framework (v3.0)** for all metrics, thresholds, and scoring guidelines.
+
+### 1. Identify Eligible Companies
+- **Source**: Use NASDAQ and Dow Jones listings, focusing on companies in AI, robotics, cybersecurity, chips/GPUs, data centers, and power (e.g., nuclear energy like Vistra (VST), Oklo (OKLO)).
+- **Indices**: Leverage the Nasdaq CTA Artificial Intelligence & Robotics Index (NQROBO) for AI/robotics companies and screen for cybersecurity (e.g., Cloudflare, Palantir) and power (e.g., Vistra, Constellation Energy) firms.
+- **Example Companies**: Include, but are not limited to, NVIDIA, TSMC, Dell, Palantir, Cloudflare, Broadcom, Amazon, Alphabet, Tesla, Serve Robotics.
+- **Action**: Compile a comprehensive list of companies in these sectors from NASDAQ and Dow Jones, using sources like indexes.nasdaqomx.com, finance.yahoo.com, or kiplinger.com.
+
+### 2. Filter for Investment Thesis
+- **Criteria**:
+  - **Revenue Growth**: Target >20% CAGR for 2025–2028 (SaaS/Cyber), >15% (Chips/AI), >10% (Energy/Infra), per analyst projections or company guidance.
+  - **Rule of 40**: >40% (SaaS/Cyber), >30% (Chips/AI), >20% (Energy/Infra), calculated as Revenue Growth % + FCF Margin %.
+- **Exclusions**: Exclude companies:
+  - Outside the specified sectors (e.g., healthcare like Gilead Sciences).
+  - With insufficient data for revenue growth or Rule of 40 (e.g., missing analyst estimates or financials).
+- **Action**: Apply filters using data from Yahoo Finance, SEC filings, or analyst reports to create a shortlist of qualifying companies.
+
+### 3. Collect Data
+- **Quantitative Metrics**: Per the framework, collect:
+  - Revenue Growth (Past and Future), Rule of 40, SBC-Adjusted FCF, SBC-Adjusted FCF Yield, ROIC, ROIIC, EV/Sales, EV/EBITDA, PEG Ratio, Debt/EBITDA, Interest Coverage, Current Ratio, NDR (SaaS/Cyber), GRR, Churn Rate, Average Contract Length.
+  - Sources: Yahoo Finance, SEC filings (10-K, 10-Q), analyst reports (e.g., Seeking Alpha, Zacks).
+- **Qualitative Factors**: Assess:
+  - **Competitive Moat**: Brand Strength, Network Effects, Switching Costs, Cost Advantages, Intangible Assets (e.g., patents from USPTO.gov).
+  - **Management Quality**: Track record, insider ownership/trading (OpenInsider), ESG ratings (Sustainalytics, MSCI), earnings call tone (confidence, consistency).
+- **Action**: Gather data for each shortlisted company, ensuring alignment with sector-specific thresholds in the framework.
+
+### 4. Score and Rank
+- **Scoring System**: Apply the framework’s scoring formula:
+  ```formula
+  Score = (0.25 × Revenue Growth Score) + (0.20 × Rule of 40 Score) + (0.15 × Operating Margin Score) + (0.10 × ROIC Score) + (0.10 × Valuation Score) + (0.10 × FCF Yield Score) + (0.05 × Balance Sheet Score) + (0.05 × Competitive Moat Score) + (0.05 × News Impact Score)
+  ```
+- **Metric Scoring**: Use the framework’s thresholds (e.g., Revenue Growth: >20% = 90, 5–20% = 60, <5% = 30; Debt/EBITDA: <2x (SaaS/Cyber) = 90).
+- **Peer Benchmarking**: Calculate percentile ranks (0–100%) for each metric vs. 3–5 peers in the same sector.
+- **Action**: Score each company, rank them by total score, and prioritize those with scores >80 (Strong Buy).
+
+### 5. Synthesize Thesis
+- **Variant Perception**:
+  - **Market’s View**: Summarize consensus sentiment from stock price and analyst reports.
+  - **Your Thesis**: Identify what the market misses (e.g., underestimating margin expansion from AI-driven products).
+  - **Catalysts**: List 1–3 events (6–18 months) that could drive revaluation (e.g., earnings beats, new contracts).
+- **Scenario Analysis**:
+  - **Bull Case**: Price target if thesis is correct (e.g., +50% upside).
+  - **Base Case**: Price if consensus is correct (e.g., +10% upside).
+  - **Bear Case**: Price if risks materialize (e.g., -30% downside).
+  - **Asymmetric Risk/Reward**: Calculate upside/downside ratio.
+- **Thesis Breakers**: Define 3 specific, measurable events that would invalidate the thesis (e.g., “Revenue growth <10% for two quarters”).
+- **Action**: Develop a concise thesis for each company, focusing on top-ranked candidates.
+
+## Output Format
+Generate a Markdown file with the following structure:
+
+```markdown
+# Stock Screening Results (Generated on [Current Date])
+
+## Overview
+- **Date**: [Insert current date, e.g., July 18, 2025]
+- **Sectors**: AI, Robotics, Cybersecurity, Chips/GPUs, Data Centers, Power
+- **Criteria**: Revenue Growth (>20% CAGR for SaaS/Cyber, >15% for Chips/AI, >10% for Energy/Infra), Rule of 40 (>40% for SaaS/Cyber, >30% for Chips/AI, >20% for Energy/Infra)
+- **Source**: NASDAQ and Dow Jones listings, Nasdaq CTA Artificial Intelligence & Robotics Index (NQROBO), Yahoo Finance, SEC filings, OpenInsider, analyst reports
+
+## Ranked List of Qualifying Companies
+| Rank | Company | Ticker | Sector | Score | Key Strengths | Variant Perception | Catalysts | Thesis Breakers |
+|------|---------|--------|--------|-------|---------------|-------------------|-----------|-----------------|
+| 1    | [Company Name] | [Ticker] | [Sector] | [Score] | [e.g., High revenue growth, strong NDR] | [e.g., Market underestimates AI platform margins] | [e.g., Q3 earnings beat, new contracts] | [e.g., Revenue growth <10%, insider selling] |
+| ...  | ...     | ...    | ...    | ...   | ...           | ...               | ...       | ...             |
+
+## Peer Benchmarking (Top 5 Companies)
+| Metric | [Company 1] | Trend/RoC | [Peer 1] | [Peer 2] | [Peer 3] | Peer Median | [Company 1] Percentile |
+|--------|-------------|-----------|----------|----------|----------|-------------|-----------------------|
+| EV/Sales (Fwd) | ... | ... | ... | ... | ... | ... | ... |
+| Revenue Growth (Fwd) | ... | ... | ... | ... | ... | ... | ... |
+| SBC-Adj FCF Yield | ... | ... | ... | ... | ... | ... | ... |
+| ROIC / ROIIC | ... | ... | ... | ... | ... | ... | ... |
+| Debt/EBITDA | ... | ... | ... | ... | ... | ... | ... |
+| NDR (SaaS/Cyber) | ... | ... | ... | ... | ... | ... | ... |
+
+## Notes
+- **Data Gaps**: List any companies excluded due to insufficient data.
+- **Assumptions**: Note any assumptions (e.g., tax rate for ROIC, analyst estimate ranges).
+- **Sources**: Cite specific sources used (e.g., Yahoo Finance, SEC filings, OpenInsider).
+```
+
+## Notes
+- **Data Sources**: Use Yahoo Finance, SEC filings (10-K, 10-Q), OpenInsider, Finviz, Morningstar, Sustainalytics, MSCI, and analyst reports (e.g., Seeking Alpha, Zacks) for data collection.
+- **Automation**: If data volume is large, suggest using a Python script with pandas to automate scoring and ranking.
+- **Qualitative Analysis**: Listen to earnings calls for management tone and cross-check insider trading on OpenInsider for cluster buying/selling signals.
+- **Error Handling**: If data is unavailable (e.g., missing analyst estimates), exclude the company and note the reason in the output.
+--- END OF FILE ---
+
+--- START OF FILE ./Prompts/portfolio_thesis_alignment_prompt.md ---
+
+
+# Portfolio vs. Investment Thesis Assessment Prompt
+
+
+## Prework (Required Before Analysis)
+
+Before executing this prompt, ensure the following steps are completed:
+
+1. **Start all required servers** (backend, frontend, database, etc.)
+2. **Fetch and export the latest data from Questrade** (run the data export script, e.g., `fetchAndExportAllData.ts`)
+3. **Generate the portfolio alignment table and JSON** (run the script, e.g., `generate_portfolio_alignment_table.ts`)
+4. **Ensure the latest investment thesis file is available** at `InvestmentThesis/twin_revolution_ASI_and_Sovereign_finance.md`
+5. **Verify that `TargetPortfolio/portfolio_thesis_alignment_report.json` is up to date**
+
+Only proceed with the analysis after all prework steps are complete.
+
+---
+**Welcome to the Portfolio Thesis Alignment Analyst!**
+
+
+This prompt is designed to help you assess your actual portfolio holdings against your documented investment thesis, specifically the "Twin Revolutions: ASI & Sovereign Finance Era" thesis. The goal is to identify alignment, gaps, and actionable recommendations for optimizing your portfolio according to your strategic vision.
+
+## Role
+You are an **expert Portfolio Analyst AI**. Your mission is to:
+- Compare the user's current holdings (stocks, ETFs, cash) for each account against the thesis pillars and target allocations.
+- Identify areas of strong alignment and critical gaps.
+- Highlight thesis breakers, overweights/underweights, and actionable rebalancing ideas.
+- Deliver clear, evidence-based recommendations for portfolio optimization.
+
+
+
+## Guided Interaction
+
+**Step 1: Clarify User Intent**
+Ask the user:
+- Do you want a full portfolio-thesis alignment review, or focus on specific pillars/accounts?
+- Do you prefer DETAIL mode (deep analysis, clarifying questions) or BASIC mode (quick results)?
+
+**Step 2: Gather Context**
+
+The user's aggregated portfolio alignment data is available in JSON format at `TargetPortfolio/portfolio_thesis_alignment_report.json`.
+The latest investment thesis is located at `InvestmentThesis/twin_revolution_ASI_and_Sovereign_finance.md`.
+Use the JSON file for your analysis, mapping holdings to thesis pillars, calculating actual vs. target weights, and identifying gaps, overweights, underweights, and thesis breakers.
+At the end, produce a clear summary and actionable recommendations for the user.
+Ask for any specific questions or areas of concern (e.g., risk, concentration, missing exposures).
+
+## Analysis Framework
+- Map each holding to the thesis pillars and target allocations.
+- Calculate actual vs. target weights for each pillar and overall portfolio.
+- Identify thesis breakers, overweights, underweights, and missing exposures.
+- Score alignment and provide recommendations for rebalancing or further research.
+
+## Output Template
+
+```markdown
+| Pillar/Sector | Thesis Target % | Actual % | Holdings | Over/Underweight | Thesis Breakers | Recommendations |
+|--------------|-----------------|----------|----------|------------------|-----------------|-----------------|
+| ...          | ...             | ...      | ...      | ...              | ...             | ...             |
+```
+
+**Preservation of Output:**
+Save the completed analysis and recommendations in:
+`TargetPortfolio/portfolio_thesis_alignment_report.md` (for human-readable summary)
+and update `TargetPortfolio/portfolio_thesis_alignment_report.json` as needed for future LLM analysis and automation.
+This ensures all thesis alignment reports are versioned and accessible for review, automation, and decision tracking.
+
+## Example Query
+"Review my portfolio against the Twin Revolutions thesis. Here is my holdings table. Highlight any thesis breakers, overweights, underweights, and give recommendations for rebalancing."
+
+---
+
+**Pro Tip:**
+- Use DETAIL mode for deep analysis and clarifying questions.
+- Use BASIC mode for a quick alignment check.
+- Challenge outputs against your thesis for robust decisions.
+
+---
+
+**References:**
+
+- [Twin Revolutions: ASI & Sovereign Finance Era Thesis](../InvestmentThesis/twin_revolution_ASI_and_Sovereign_finance.md)
+- Portfolio Alignment Data (JSON): [portfolio_thesis_alignment_report.json](../TargetPortfolio/portfolio_thesis_alignment_report.json)
+
+--- END OF FILE ---
+
+--- START OF FILE ./Prompts/unified_stock_analyst_prompt.md ---
+
+# Unified Stock Analyst AI Prompt
+
+---
+**Welcome to the Stock Analyst AI!**
+
+I'm here to help you analyze individual stocks, compare peers, or review your portfolio using a professional investment framework. Just answer a few guided questions and I'll deliver actionable, evidence-based insights. For deep dives, choose DETAIL mode; for quick results, choose BASIC mode. Let's get started!
+
+
+## Role
+You are an **expert Wall Street Stock Analyst, Financial Analyst, and Stock Trader AI**. Your mission is to deliver precision-crafted, actionable investment analysis for:
+- Individual stocks (deep dives, inflection points, catalysts)
+- Portfolios of stocks (risk, allocation, thesis breakers)
+- Peer comparisons (trend, benchmarking, sector context)
+
+You combine institutional-grade quantitative rigor and qualitative insight, leveraging advanced frameworks and real-world best practices to guide professional investment decisions.
+
+Your analysis is grounded in the [Definitive Professional Investment Framework (v3.1)](https://github.com/richfrem/QuickStockScreener/blob/main/defininitive_professional_investment_framework.md), emphasizing:
+Your analysis combines institutional-grade quantitative rigor and qualitative insight, grounded in the [Definitive Professional Investment Framework (v3.1)](https://github.com/richfrem/QuickStockScreener/blob/main/defininitive_professional_investment_framework.md). You apply:
+- Dynamic macro and sector context
+- Advanced screening and scoring (Rule of 40, CAGR, ROIC, ROIIC, SBC-Adjusted FCF, competitive moat, valuation, risk)
+- Peer benchmarking with trend and percentile analysis
+- Scenario analysis (bull/base/bear cases, asymmetric risk/reward)
+- Thesis building with variant perception and catalyst identification
+- Clear recommendations and sell discipline (thesis breakers, position sizing)
+
+Your outputs are evidence-based, neutral, and actionable, designed for professional decision-making.
+
+## Guided Interaction
+
+**Step 1: Clarify User Intent**
+Ask the user:
+- Do you want to analyze a single stock, compare multiple stocks, or review a portfolio?
+- What is your target AI platform (ChatGPT, Claude, Gemini, Other)?
+- Do you prefer DETAIL mode (clarifying questions, deep analysis) or BASIC mode (quick results)?
+
+**Step 2: Gather Context**
+- For single stock: Request ticker, sector, and any specific questions.
+- For comparison: Request tickers, sector, and metrics of interest.
+- For portfolio: Request holdings table (| Stock | Ticker | Action | ... |).
+
+---
+
+## Analysis Framework
+
+Apply the full investment framework:
+- **Phase 0:** Macro & sector context, dynamic metric weighting
+- **Phase 1:** Data analysis (growth, Rule of 40, profitability, cash flow, capital efficiency, valuation, balance sheet, competitive advantage, trends, risks)
+- **Phase 2:** Thesis building (variant perception, peer benchmarking, scenario analysis, scoring, recommendation)
+
+---
+
+## Output Templates
+
+### For Screening Stocks
+```markdown
+| Rank | Ticker | Sector | Score | Key Strengths | Variant Perception | Catalysts | Thesis Breakers |
+|------|--------|--------|-------|---------------|-------------------|-----------|-----------------|
+| ...  | ...    | ...    | ...   | ...           | ...               | ...       | ...             |
+```
+
+### For Comparing Stocks
+```markdown
+| Metric              | Company A | Trend/RoC | Company B | Peer Median |
+|---------------------|-----------|-----------|-----------|-------------|
+| ...                 | ...       | ...       | ...       | ...         |
+```
+
+### For Portfolio Review
+```markdown
+| Ticker | Company | Score | Your Action | Framework Recommendation |
+|--------|---------|-------|-------------|--------------------------|
+| ...    | ...     | ...   | ...         | ...                      |
+```
+
+---
+
+## Lyra-Style Optimization
+- Auto-detect complexity: Simple tasks → BASIC mode; complex/professional → DETAIL mode
+- Inform user of mode and allow override
+- Apply 4-D methodology: Deconstruct, Diagnose, Develop, Deliver
+- Use chain-of-thought reasoning, clarify gaps, and format outputs for clarity
+
+---
+
+## Constraints & Best Practices
+- Focus only on specified sectors (AI, robotics, chips, data centers, cybersecurity, energy)
+- Exclude non-qualifying sectors (e.g., healthcare)
+- Prioritize evidence-based claims; avoid speculation
+- Ensure outputs are neutral, clear, and actionable
+- Use tables, bold insights, and date outputs
+- Note data gaps or exclusions
+
+---
+
+## Pro Tip
+Copy-paste this prompt into your chosen AI platform, then answer the guided questions. For best results, use DETAIL mode for deep analysis, or BASIC mode for quick answers. Challenge outputs against your biases for robust decisions.
+
+---
+
+## Example Queries
+
+**Single Stock Analysis**
+- "Analyze NVDA in the AI chips sector. What is the variant perception and key risks?"
+- "Give me a DETAIL mode breakdown of TSLA's inflection points and competitive advantage."
+
+**Peer Comparison**
+- "Compare AMD vs. INTC in the semiconductor sector. Focus on growth, profitability, and valuation."
+- "Show a table of cybersecurity stocks with Rule of 40 and capital efficiency metrics."
+
+**Portfolio Review**
+- "Review my portfolio: | Stock | Ticker | Action | Weight |. Highlight any thesis breakers."
+- "Screen top 5 AI stocks for asymmetric risk/reward and catalysts."
+
+**General**
+- "Switch to BASIC mode and quickly score these stocks: MSFT, GOOG, META."
+- "What macro trends should I consider for data center investments?"
+
+--- END OF FILE ---
+
+--- START OF FILE ./README.md ---
+
+# Questrade Portfolio Viewer
+
+A secure app to view your Questrade holdings via API, display in a dashboard, and save to local spreadsheet.
+
+## Features
+- Fetch holdings from Questrade API.
+- Display in responsive table.
+- Manual OAuth authentication.
+- Local .ts storage (V1).
+
+## Setup
+1. Register for Questrade API, get client ID/secret.
+2. Copy `.env.example` to `.env`, fill in credentials.
+3. Install dependencies: `npm run install-all`.
+4. Setup DB: `cd backend && npx prisma migrate dev --name init`.
+5. Run: `./start.sh` to start both servers, or `./stop.sh` to stop them.
+
+## Running the App
+- Use `./start.sh` to start backend (port 3001) and frontend (port 5173) servers.
+- Use `./stop.sh` to stop the servers.
+- Backend API: http://localhost:3001
+- Frontend: http://localhost:5173
+
+## Security
+- .env for secrets.
+- Husky pre-commit scans for secrets.
+- No password storage.
+
+## Roadmap
+See `docs/Roadmap.md`.
+--- END OF FILE ---
+
+--- START OF FILE ./TargetPortfolio/portfolio_alignment_schema.json ---
+
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Portfolio Alignment Output Schema",
+  "type": "object",
+  "properties": {
+    "totalMarketValue": { "type": "number" },
+    "pillarTotals": {
+      "type": "object",
+      "additionalProperties": { "type": "number" }
+    },
+    "targetAllocations": {
+      "type": "object",
+      "additionalProperties": { "type": "number" }
+    },
+    "holdings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "symbol": { "type": "string" },
+          "name": { "type": "string" },
+          "pillar": { "type": "string" },
+          "totalShares": { "type": "number" },
+          "totalBookValue": { "type": "number" },
+          "totalMarketValue": { "type": "number" },
+          "avgPrice": { "type": "number" },
+          "pctPortfolio": { "type": "number" },
+          "targetPct": { "type": "number" },
+          "gapPct": { "type": "number" },
+          "accounts": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": [
+          "symbol", "name", "pillar", "totalShares", "totalBookValue", "totalMarketValue", "avgPrice", "pctPortfolio", "targetPct", "gapPct", "accounts"
+        ]
+      }
+    }
+  },
+  "required": ["totalMarketValue", "pillarTotals", "targetAllocations", "holdings"]
+}
+
+--- END OF FILE ---
+
+--- START OF FILE ./TargetPortfolio/portfolio_alignment_table.md ---
+
+# Portfolio Alignment Table
+
+Generated from: exportedData.json
+
+Total Portfolio Market Value: $28338.03
+
+| Symbol | Name | Total Shares | Avg Value | % of Portfolio | Accounts |
+|--------|------|--------------|-----------|---------------|----------|
+| ZS |  | 1 | $300.27 | 1.06% |  |
+| VST |  | 6 | $213.25 | 4.52% |  |
+| ANET |  | 3 | $147.47 | 1.56% |  |
+| VRT |  | 2 | $179.13 | 1.26% |  |
+| MSFT |  | 2 | $511.56 | 3.61% |  |
+| IBIT |  | 15 | $61.75 | 3.27% |  |
+| KOID |  | 22 | $31.15 | 2.42% |  |
+| OKLO |  | 2 | $162.70 | 1.15% |  |
+| CDNS |  | 1 | $323.92 | 1.14% |  |
+| AMD |  | 2 | $239.26 | 1.69% |  |
+| GOOG |  | 6 | $253.48 | 5.37% |  |
+| NVDA |  | 4 | $182.15 | 2.57% |  |
+| AVGO |  | 5 | $354.61 | 6.26% |  |
+| COIN |  | 2 | $335.30 | 2.37% |  |
+| CRWD |  | 1 | $481.44 | 1.70% |  |
+| PANW |  | 4 | $206.72 | 2.92% |  |
+| ETHA |  | 37 | $29.86 | 3.90% |  |
+| INTC |  | 76 | $37.15 | 9.96% |  |
+| EQIX |  | 1 | $822.68 | 2.90% |  |
+| SNPS |  | 1.5 | $439.88 | 2.33% |  |
+| PSU.U.TO |  | 35 | $100.23 | 12.38% |  |
+| HUMN |  | 26 | $29.65 | 2.72% |  |
+| CEG |  | 3 | $400.33 | 4.24% |  |
+| CORZ |  | 45 | $19.87 | 3.16% |  |
+| CRWV |  | 3 | $147.73 | 1.56% |  |
+| USD_CASH | USD Cash (all accounts) | 3965.619441616745 | $1.00 | 13.99% |  |
+
+--- END OF FILE ---
+
+--- START OF FILE ./TargetPortfolio/portfolio_thesis_alignment_report.json ---
+
+{
+  "totalMarketValue": 28338.029441616745,
+  "pillarTotals": {
+    "Other": 19486.43,
+    "Power / Energy": 1279.5,
+    "ASI / Compute": 2501.66,
+    "Sovereign Finance": 1104.82,
+    "Cash": 3965.619441616745
+  },
+  "targetAllocations": {
+    "ASI / Compute": 32,
+    "Cash": 18.66,
+    "Power / Energy": 10,
+    "Data Infra / Supply Chain": 9.47,
+    "AI Titans / Cloud": 9.3,
+    "Sovereign Finance": 7.91,
+    "Security / Data OS": 7.48,
+    "Applied AI / Robotics": 5.18,
+    "Other": 0
+  },
+  "holdings": [
+    {
+      "symbol": "ZS",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 1,
+      "totalBookValue": 0,
+      "totalMarketValue": 300.27,
+      "avgPrice": 0,
+      "pctPortfolio": 1.0596008470477083,
+      "targetPct": 0,
+      "gapPct": 1.0596008470477083,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "VST",
+      "name": "",
+      "pillar": "Power / Energy",
+      "totalShares": 6,
+      "totalBookValue": 0,
+      "totalMarketValue": 1279.5,
+      "avgPrice": 0,
+      "pctPortfolio": 4.515133992065617,
+      "targetPct": 10,
+      "gapPct": -5.484866007934383,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "ANET",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 3,
+      "totalBookValue": 0,
+      "totalMarketValue": 442.41,
+      "avgPrice": 0,
+      "pctPortfolio": 1.5611882996715511,
+      "targetPct": 0,
+      "gapPct": 1.5611882996715511,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "VRT",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 2,
+      "totalBookValue": 0,
+      "totalMarketValue": 358.26,
+      "avgPrice": 0,
+      "pctPortfolio": 1.2642375177783727,
+      "targetPct": 0,
+      "gapPct": 1.2642375177783727,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "MSFT",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 2,
+      "totalBookValue": 0,
+      "totalMarketValue": 1023.12,
+      "avgPrice": 0,
+      "pctPortfolio": 3.610413356750429,
+      "targetPct": 0,
+      "gapPct": 3.610413356750429,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "IBIT",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 15,
+      "totalBookValue": 0,
+      "totalMarketValue": 926.25,
+      "avgPrice": 0,
+      "pctPortfolio": 3.2685758969525422,
+      "targetPct": 0,
+      "gapPct": 3.2685758969525422,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "KOID",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 22,
+      "totalBookValue": 0,
+      "totalMarketValue": 685.3,
+      "avgPrice": 0,
+      "pctPortfolio": 2.4183050603849683,
+      "targetPct": 0,
+      "gapPct": 2.4183050603849683,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "OKLO",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 2,
+      "totalBookValue": 0,
+      "totalMarketValue": 325.4,
+      "avgPrice": 0,
+      "pctPortfolio": 1.1482802665245422,
+      "targetPct": 0,
+      "gapPct": 1.1482802665245422,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "CDNS",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 1,
+      "totalBookValue": 0,
+      "totalMarketValue": 323.92,
+      "avgPrice": 0,
+      "pctPortfolio": 1.143057602743177,
+      "targetPct": 0,
+      "gapPct": 1.143057602743177,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "AMD",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 2,
+      "totalBookValue": 0,
+      "totalMarketValue": 478.52,
+      "avgPrice": 0,
+      "pctPortfolio": 1.6886142382831097,
+      "targetPct": 0,
+      "gapPct": 1.6886142382831097,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "GOOG",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 6,
+      "totalBookValue": 0,
+      "totalMarketValue": 1520.8799999999999,
+      "avgPrice": 0,
+      "pctPortfolio": 5.366922224191289,
+      "targetPct": 0,
+      "gapPct": 5.366922224191289,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "NVDA",
+      "name": "",
+      "pillar": "ASI / Compute",
+      "totalShares": 4,
+      "totalBookValue": 0,
+      "totalMarketValue": 728.61,
+      "avgPrice": 0,
+      "pctPortfolio": 2.5711385525274943,
+      "targetPct": 32,
+      "gapPct": -29.428861447472507,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "AVGO",
+      "name": "",
+      "pillar": "ASI / Compute",
+      "totalShares": 5,
+      "totalBookValue": 0,
+      "totalMarketValue": 1773.05,
+      "avgPrice": 0,
+      "pctPortfolio": 6.25678649834462,
+      "targetPct": 32,
+      "gapPct": -25.74321350165538,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "COIN",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 2,
+      "totalBookValue": 0,
+      "totalMarketValue": 670.6,
+      "avgPrice": 0,
+      "pctPortfolio": 2.366431305259244,
+      "targetPct": 0,
+      "gapPct": 2.366431305259244,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "CRWD",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 1,
+      "totalBookValue": 0,
+      "totalMarketValue": 481.44,
+      "avgPrice": 0,
+      "pctPortfolio": 1.6989184127706687,
+      "targetPct": 0,
+      "gapPct": 1.6989184127706687,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "PANW",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 4,
+      "totalBookValue": 0,
+      "totalMarketValue": 826.88,
+      "avgPrice": 0,
+      "pctPortfolio": 2.9179163699564024,
+      "targetPct": 0,
+      "gapPct": 2.9179163699564024,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "ETHA",
+      "name": "",
+      "pillar": "Sovereign Finance",
+      "totalShares": 37,
+      "totalBookValue": 0,
+      "totalMarketValue": 1104.82,
+      "avgPrice": 0,
+      "pctPortfolio": 3.8987185127893196,
+      "targetPct": 7.91,
+      "gapPct": -4.011281487210681,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "INTC",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 76,
+      "totalBookValue": 0,
+      "totalMarketValue": 2823.4,
+      "avgPrice": 0,
+      "pctPortfolio": 9.963289811018416,
+      "targetPct": 0,
+      "gapPct": 9.963289811018416,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "EQIX",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 1,
+      "totalBookValue": 0,
+      "totalMarketValue": 822.68,
+      "avgPrice": 0,
+      "pctPortfolio": 2.9030952970633384,
+      "targetPct": 0,
+      "gapPct": 2.9030952970633384,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "SNPS",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 1.5,
+      "totalBookValue": 0,
+      "totalMarketValue": 659.82,
+      "avgPrice": 0,
+      "pctPortfolio": 2.3283905515003793,
+      "targetPct": 0,
+      "gapPct": 2.3283905515003793,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "PSU.U.TO",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 35,
+      "totalBookValue": 0,
+      "totalMarketValue": 3508.05,
+      "avgPrice": 0,
+      "pctPortfolio": 12.379301133931838,
+      "targetPct": 0,
+      "gapPct": 12.379301133931838,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "HUMN",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 26,
+      "totalBookValue": 0,
+      "totalMarketValue": 770.9,
+      "avgPrice": 0,
+      "pctPortfolio": 2.7203726412531335,
+      "targetPct": 0,
+      "gapPct": 2.7203726412531335,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "CEG",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 3,
+      "totalBookValue": 0,
+      "totalMarketValue": 1200.99,
+      "avgPrice": 0,
+      "pctPortfolio": 4.238085793771696,
+      "targetPct": 0,
+      "gapPct": 4.238085793771696,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "CORZ",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 45,
+      "totalBookValue": 0,
+      "totalMarketValue": 894.15,
+      "avgPrice": 0,
+      "pctPortfolio": 3.1553005541269803,
+      "targetPct": 0,
+      "gapPct": 3.1553005541269803,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "CRWV",
+      "name": "",
+      "pillar": "Other",
+      "totalShares": 3,
+      "totalBookValue": 0,
+      "totalMarketValue": 443.19,
+      "avgPrice": 0,
+      "pctPortfolio": 1.5639407846374058,
+      "targetPct": 0,
+      "gapPct": 1.5639407846374058,
+      "accounts": [
+        ""
+      ]
+    },
+    {
+      "symbol": "USD_CASH",
+      "name": "USD Cash (all accounts)",
+      "pillar": "Cash",
+      "totalShares": 3965.619441616745,
+      "totalBookValue": 3965.619441616745,
+      "totalMarketValue": 3965.619441616745,
+      "avgPrice": 1,
+      "pctPortfolio": 13.993984478655753,
+      "targetPct": 18.66,
+      "gapPct": -4.666015521344248,
+      "accounts": []
+    }
+  ]
+}
+--- END OF FILE ---
+
+--- START OF FILE ./adrs/001-auth-method.md ---
+
+# ADR 001: Auth Method
+
+(Original content from adrs/001-auth-method.md)
+
+---
+
+Please refer to the original ADR for full details.
+--- END OF FILE ---
+
+--- START OF FILE ./adrs/002-holdings-data-storage.md ---
+
+# ADR 002: Holdings Data Storage
+
+(Original content from adrs/002-holdings-data-storage.md)
+
+---
+
+Please refer to the original ADR for full details.
+--- END OF FILE ---
+
+--- START OF FILE ./adrs/003-security-secrets-management.md ---
+
+# ADR 003: Security & Secrets Management
+
+(Original content from adrs/003-security-secrets-management.md)
+
+---
+
+Please refer to the original ADR for full details.
+--- END OF FILE ---
+
+--- START OF FILE ./adrs/004-ui-ux-design.md ---
+
+# ADR 004: UI/UX Design
+
+(Original content from adrs/004-ui-ux-design.md)
+
+---
+
+Please refer to the original ADR for full details.
+--- END OF FILE ---
+
+--- START OF FILE ./adrs/005-incremental-feature-rollout.md ---
+
+# ADR 005: Incremental Feature Rollout
+
+(Original content from adrs/005-incremental-feature-rollout.md)
+
+---
+
+Please refer to the original ADR for full details.
+--- END OF FILE ---
+
+--- START OF FILE ./adrs/006-data-contracts-aligned-with-questrade.md ---
+
+# ADR 006: Data Contracts Aligned with Questrade
+
+(Original content from adrs/006-data-contracts-aligned-with-questrade.md)
+
+---
+
+Please refer to the original ADR for full details.
+--- END OF FILE ---
+
+--- START OF FILE ./adrs/007-data-export-approach.md ---
+
+# ADR 007: Data Export Approach
+
+(Original content from adrs/007-data-export-approach.md)
+
+---
+
+Please refer to the original ADR for full details.
+--- END OF FILE ---
+
+--- START OF FILE ./adrs/008-portfolio-alignment-table-script.md ---
+
+# ADR 008: Portfolio Alignment Table Generation Script
+
+## Status
+Proposed
+
+## Context
+To enable robust, repeatable portfolio-thesis alignment analysis, we need a reliable way to aggregate holdings across all accounts, compare actual allocations to thesis targets, and output a standardized markdown table for LLM analysis and recommendations.
+
+## Decision
+- A new script will be created in `scripts/` (e.g., `generate_portfolio_alignment_table.ts`).
+- The script will:
+  - Read `backend/exportedData.json`.
+  - Aggregate holdings across all accounts (grand total shares, average value, % of total portfolio value per ticker/pillar).
+  - Compare actual allocations to thesis target percentages.
+  - Highlight gaps, overweights, underweights, and thesis breakers.
+  - Output a JSON file to `TargetPortfolio/portfolio_thesis_alignment_report.json` as the primary format for LLM analysis and automation.
+    - Optionally, output a markdown or CSV table for human review and reporting.
+- The LLM prompt will analyze the JSON output, provide recommendations, and update target values/gaps as needed. Markdown/CSV outputs may be used for human review and reporting.
+- This approach ensures reliability, versioning, and repeatability for all thesis alignment reports.
+- Ajv is used for runtime validation of the output JSON against the portfolio alignment schema, ensuring strict compliance and reliability for downstream LLM analysis and automation.
+
+## Consequences
+- Heavy data processing is handled by code, not the LLM, improving reliability and speed.
+- The workflow is documented and versioned for future review and decision tracking.
+- The LLM prompt focuses on analysis and recommendations, not raw data aggregation.
+
+---
+
+**Related Requirements:**
+- UR22: LLM-Driven Portfolio Analysis Workflow
+- UR23: Portfolio Alignment Table Generation Script
+
+--- END OF FILE ---
+
+--- START OF FILE ./adrs/009-module-format-standardization.md ---
+
+# ADR 009: JavaScript/TypeScript Module Format Standardization
+
+## Status
+Accepted
+
+## Context
+The InvestmentToolkit project contains scripts and modules written in both CommonJS and ES module formats. Inconsistent module usage can lead to runtime errors, tooling issues, and confusion for contributors. Modern Node.js and browser environments support ES modules natively, and TypeScript offers robust support for ES module syntax.
+
+## Decision
+- All new JavaScript/TypeScript code in this project will use **ES module syntax** (`import`/`export`).
+- The TypeScript compiler will be configured with `"module": "ESNext"` (or `"ES2020"` if required for compatibility).
+- The project `package.json` will include `"type": "module"` to ensure Node.js treats `.js` files as ES modules.
+- Legacy code or third-party dependencies may use CommonJS (`require`, `module.exports`), but should be migrated to ES modules when practical.
+- All contributors should use ES module syntax for new scripts, libraries, and refactors.
+
+## Consequences
+- Consistent module format across the codebase.
+- Improved compatibility with modern tooling, LLMs, and deployment environments.
+- Reduced risk of runtime errors due to module format mismatches.
+- Easier onboarding for new contributors familiar with ES modules.
+
+## Implementation Steps
+1. Update all `tsconfig.json` files to use `"module": "ESNext"`.
+2. Add `"type": "module"` to the root `package.json`.
+3. Refactor scripts and modules to use `import`/`export` syntax.
+4. Document this standard in onboarding and contribution guides.
+
+---
+
+**Author:** GitHub Copilot
+**Date:** 2025-10-16
+
+--- END OF FILE ---
+
+--- START OF FILE ./backend/exportAllData.ts ---
+
+
+
+import * as fs from 'fs';
+import * as path from 'path';
+import { getAccounts } from './src/data/accounts';
+import { getPositions } from './src/data/positions';
+import { getBalances } from './src/data/balances';
+import { getOrders } from './src/data/orders';
+import { getCurrentHoldings } from './src/data/currentHoldings';
+
+// __dirname workaround for ts-node
+const dirname = path.dirname(__filename);
+const exportPath = path.resolve(dirname, 'exportedData.json');
+
+const data = {
+  accounts: getAccounts(),
+  positions: getPositions(),
+  balances: getBalances(),
+  orders: getOrders(),
+  holdings: getCurrentHoldings(),
+};
+
+fs.writeFileSync(exportPath, JSON.stringify(data, null, 2), 'utf-8');
+console.log(`Exported all data to ${exportPath}`);
+
+--- END OF FILE ---
+
+--- START OF FILE ./backend/exportedData.json ---
+
+{
+  "accounts": [
+    {
+      "type": "Cash",
+      "number": "40049489",
+      "status": "Active",
+      "isPrimary": true,
+      "isBilling": true,
+      "clientAccountType": "Individual"
+    },
+    {
+      "type": "TFSA",
+      "number": "53408189",
+      "status": "Active",
+      "isPrimary": false,
+      "isBilling": false,
+      "clientAccountType": "Individual"
+    },
+    {
+      "type": "RRSP",
+      "number": "53408195",
+      "status": "Active",
+      "isPrimary": false,
+      "isBilling": false,
+      "clientAccountType": "Individual"
+    }
+  ],
+  "positions": [
+    {
+      "symbol": "ZS",
+      "symbolId": 20859904,
+      "openQuantity": 1,
+      "closedQuantity": 0,
+      "currentMarketValue": 300.27,
+      "currentPrice": 300.27,
+      "averageEntryPrice": 276.0118,
+      "dayPnl": -2.08,
+      "closedPnl": 0,
+      "openPnl": 24.2582,
+      "totalCost": 276.0118,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "VST",
+      "symbolId": 15605261,
+      "openQuantity": 4,
+      "closedQuantity": 0,
+      "currentMarketValue": 853,
+      "currentPrice": 213.25,
+      "averageEntryPrice": 197.4723,
+      "dayPnl": 9.6,
+      "closedPnl": 0,
+      "openPnl": 63.1108,
+      "totalCost": 789.8892,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "ANET",
+      "symbolId": 58254093,
+      "openQuantity": 3,
+      "closedQuantity": 0,
+      "currentMarketValue": 442.41,
+      "currentPrice": 147.47,
+      "averageEntryPrice": 142.185767,
+      "dayPnl": 12.27,
+      "closedPnl": 0,
+      "openPnl": 15.852699,
+      "totalCost": 426.557301,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "VRT",
+      "symbolId": 28926498,
+      "openQuantity": 2,
+      "closedQuantity": 0,
+      "currentMarketValue": 358.26,
+      "currentPrice": 179.13,
+      "averageEntryPrice": 131.57005,
+      "dayPnl": -2.76,
+      "closedPnl": 0,
+      "openPnl": 95.1199,
+      "totalCost": 263.1401,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "MSFT",
+      "symbolId": 27426,
+      "openQuantity": 1,
+      "closedQuantity": 0,
+      "currentMarketValue": 511.56,
+      "currentPrice": 511.56,
+      "averageEntryPrice": 508.0442,
+      "dayPnl": -1.87,
+      "closedPnl": 0,
+      "openPnl": 3.5158,
+      "totalCost": 508.0442,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "IBIT",
+      "symbolId": 52317225,
+      "openQuantity": 10,
+      "closedQuantity": 0,
+      "currentMarketValue": 617.5,
+      "currentPrice": 61.75,
+      "averageEntryPrice": 68.56288,
+      "dayPnl": -12.8154,
+      "closedPnl": 0,
+      "openPnl": -68.1288,
+      "totalCost": 685.6288,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "KOID",
+      "symbolId": 62633529,
+      "openQuantity": 12,
+      "closedQuantity": 0,
+      "currentMarketValue": 373.8,
+      "currentPrice": 31.15,
+      "averageEntryPrice": 30.6004,
+      "dayPnl": -5.88,
+      "closedPnl": 0,
+      "openPnl": 6.5952,
+      "totalCost": 367.2048,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "OKLO",
+      "symbolId": 36814656,
+      "openQuantity": 2,
+      "closedQuantity": 0,
+      "currentMarketValue": 325.4,
+      "currentPrice": 162.7,
+      "averageEntryPrice": 109.95,
+      "dayPnl": -17.72,
+      "closedPnl": 0,
+      "openPnl": 105.5,
+      "totalCost": 219.9,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "CDNS",
+      "symbolId": 11621,
+      "openQuantity": 1,
+      "closedQuantity": 0,
+      "currentMarketValue": 323.92,
+      "currentPrice": 323.92,
+      "averageEntryPrice": 344.15,
+      "dayPnl": -0.18,
+      "closedPnl": 0,
+      "openPnl": -20.23,
+      "totalCost": 344.15,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "AMD",
+      "symbolId": 6770,
+      "openQuantity": 1,
+      "closedQuantity": 0,
+      "currentMarketValue": 239.26,
+      "currentPrice": 239.26,
+      "averageEntryPrice": 227.737,
+      "dayPnl": 0.66,
+      "closedPnl": 0,
+      "openPnl": 11.523,
+      "totalCost": 227.737,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "GOOG",
+      "symbolId": 11419765,
+      "openQuantity": 4,
+      "closedQuantity": 0,
+      "currentMarketValue": 1013.92,
+      "currentPrice": 253.48,
+      "averageEntryPrice": 241.98285,
+      "dayPnl": 7.08,
+      "closedPnl": 0,
+      "openPnl": 45.9886,
+      "totalCost": 967.9314,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "NVDA",
+      "symbolId": 29814,
+      "openQuantity": 3,
+      "closedQuantity": 0,
+      "currentMarketValue": 546.45,
+      "currentPrice": 182.15,
+      "averageEntryPrice": 187.081933,
+      "dayPnl": 6.96,
+      "closedPnl": 0,
+      "openPnl": -14.795799,
+      "totalCost": 561.245799,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "AVGO",
+      "symbolId": 21109371,
+      "openQuantity": 3,
+      "closedQuantity": 0,
+      "currentMarketValue": 1063.83,
+      "currentPrice": 354.61,
+      "averageEntryPrice": 344.20225,
+      "dayPnl": 9.84,
+      "closedPnl": 0,
+      "openPnl": 31.22325,
+      "totalCost": 1032.60675,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "COIN",
+      "symbolId": 35476350,
+      "openQuantity": 2,
+      "closedQuantity": 0,
+      "currentMarketValue": 670.6,
+      "currentPrice": 335.3,
+      "averageEntryPrice": 384.408,
+      "dayPnl": -2,
+      "closedPnl": 0,
+      "openPnl": -98.216,
+      "totalCost": 768.816,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "CRWD",
+      "symbolId": 26070398,
+      "openQuantity": 1,
+      "closedQuantity": 0,
+      "currentMarketValue": 481.44,
+      "currentPrice": 481.44,
+      "averageEntryPrice": 458.3133,
+      "dayPnl": -7.58,
+      "closedPnl": 0,
+      "openPnl": 23.1267,
+      "totalCost": 458.3133,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "PANW",
+      "symbolId": 2333066,
+      "openQuantity": 3,
+      "closedQuantity": 0,
+      "currentMarketValue": 620.16,
+      "currentPrice": 206.72,
+      "averageEntryPrice": 204.228567,
+      "dayPnl": 0.06,
+      "closedPnl": 0,
+      "openPnl": 7.474299,
+      "totalCost": 612.685701,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "ETHA",
+      "symbolId": 55755413,
+      "openQuantity": 25,
+      "closedQuantity": 0,
+      "currentMarketValue": 746.5,
+      "currentPrice": 29.86,
+      "averageEntryPrice": 32.60242,
+      "dayPnl": -7.25,
+      "closedPnl": 0,
+      "openPnl": -68.5605,
+      "totalCost": 815.0605,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "INTC",
+      "symbolId": 23205,
+      "openQuantity": 46,
+      "closedQuantity": 0,
+      "currentMarketValue": 1708.9,
+      "currentPrice": 37.15,
+      "averageEntryPrice": 37.126019,
+      "dayPnl": 0,
+      "closedPnl": 0,
+      "openPnl": 1.103126,
+      "totalCost": 1707.796874,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "EQIX",
+      "symbolId": 8809917,
+      "openQuantity": 1,
+      "closedQuantity": 0,
+      "currentMarketValue": 822.68,
+      "currentPrice": 822.68,
+      "averageEntryPrice": 792.746,
+      "dayPnl": 0.44,
+      "closedPnl": 0,
+      "openPnl": 29.934,
+      "totalCost": 792.746,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "SNPS",
+      "symbolId": 37827,
+      "openQuantity": 1.5,
+      "closedQuantity": 1.5,
+      "currentMarketValue": 659.82,
+      "currentPrice": 439.88,
+      "averageEntryPrice": 443.190672,
+      "dayPnl": 5.97,
+      "closedPnl": 53.075988,
+      "openPnl": -4.966008,
+      "totalCost": 664.786008,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "PSU.U.TO",
+      "symbolId": 33093332,
+      "openQuantity": 20,
+      "closedQuantity": 40,
+      "currentMarketValue": 2004.6,
+      "currentPrice": 100.23,
+      "averageEntryPrice": 100.04,
+      "dayPnl": 0.214098,
+      "closedPnl": 3.6,
+      "openPnl": 3.8,
+      "totalCost": 2000.8,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "HUMN",
+      "symbolId": 63205341,
+      "openQuantity": 16,
+      "closedQuantity": 0,
+      "currentMarketValue": 474.4,
+      "currentPrice": 29.65,
+      "averageEntryPrice": 28.37,
+      "dayPnl": -2.08,
+      "closedPnl": 0,
+      "openPnl": 20.48,
+      "totalCost": 453.92,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "CEG",
+      "symbolId": 39995621,
+      "openQuantity": 2,
+      "closedQuantity": 0,
+      "currentMarketValue": 800.66,
+      "currentPrice": 400.33,
+      "averageEntryPrice": 370.4984,
+      "dayPnl": -7.24,
+      "closedPnl": 0,
+      "openPnl": 59.6632,
+      "totalCost": 740.9968,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "CORZ",
+      "symbolId": 52624871,
+      "openQuantity": 45,
+      "closedQuantity": 0,
+      "currentMarketValue": 894.15,
+      "currentPrice": 19.87,
+      "averageEntryPrice": 18.77632,
+      "dayPnl": -3.15,
+      "closedPnl": 0,
+      "openPnl": 49.2156,
+      "totalCost": 844.9344,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "CRWV",
+      "symbolId": 60839671,
+      "openQuantity": 3,
+      "closedQuantity": 1,
+      "currentMarketValue": 443.19,
+      "currentPrice": 147.73,
+      "averageEntryPrice": 86.73695,
+      "dayPnl": 25.47,
+      "closedPnl": 48.88305,
+      "openPnl": 182.97915,
+      "totalCost": 260.21085,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "VST",
+      "symbolId": 15605261,
+      "openQuantity": 2,
+      "closedQuantity": 0,
+      "currentMarketValue": 426.5,
+      "currentPrice": 213.25,
+      "averageEntryPrice": 199.26,
+      "dayPnl": 4.8,
+      "closedPnl": 0,
+      "openPnl": 27.98,
+      "totalCost": 398.52,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "MSFT",
+      "symbolId": 27426,
+      "openQuantity": 1,
+      "closedQuantity": 0,
+      "currentMarketValue": 511.56,
+      "currentPrice": 511.56,
+      "averageEntryPrice": 515.32456,
+      "dayPnl": -1.87,
+      "closedPnl": 0,
+      "openPnl": -3.76456,
+      "totalCost": 515.32456,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "IBIT",
+      "symbolId": 52317225,
+      "openQuantity": 5,
+      "closedQuantity": 0,
+      "currentMarketValue": 308.75,
+      "currentPrice": 61.75,
+      "averageEntryPrice": 67.00834,
+      "dayPnl": -5.8746,
+      "closedPnl": 0,
+      "openPnl": -26.2917,
+      "totalCost": 335.0417,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "KOID",
+      "symbolId": 62633529,
+      "openQuantity": 10,
+      "closedQuantity": 0,
+      "currentMarketValue": 311.5,
+      "currentPrice": 31.15,
+      "averageEntryPrice": 31.528,
+      "dayPnl": -4.9,
+      "closedPnl": 0,
+      "openPnl": -3.78,
+      "totalCost": 315.28,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "AMD",
+      "symbolId": 6770,
+      "openQuantity": 1,
+      "closedQuantity": 0,
+      "currentMarketValue": 239.26,
+      "currentPrice": 239.26,
+      "averageEntryPrice": 219.276,
+      "dayPnl": 0.66,
+      "closedPnl": 0,
+      "openPnl": 19.984,
+      "totalCost": 219.276,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "GOOG",
+      "symbolId": 11419765,
+      "openQuantity": 2,
+      "closedQuantity": 0,
+      "currentMarketValue": 506.96,
+      "currentPrice": 253.48,
+      "averageEntryPrice": 245.79205,
+      "dayPnl": 3.54,
+      "closedPnl": 0,
+      "openPnl": 15.3759,
+      "totalCost": 491.5841,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "NVDA",
+      "symbolId": 29814,
+      "openQuantity": 1,
+      "closedQuantity": 0,
+      "currentMarketValue": 182.16,
+      "currentPrice": 182.16,
+      "averageEntryPrice": 182.5682,
+      "dayPnl": 2.33,
+      "closedPnl": 0,
+      "openPnl": -0.4082,
+      "totalCost": 182.5682,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "AVGO",
+      "symbolId": 21109371,
+      "openQuantity": 2,
+      "closedQuantity": 0,
+      "currentMarketValue": 709.22,
+      "currentPrice": 354.61,
+      "averageEntryPrice": 339.25155,
+      "dayPnl": 6.56,
+      "closedPnl": 0,
+      "openPnl": 30.7169,
+      "totalCost": 678.5031,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "PANW",
+      "symbolId": 2333066,
+      "openQuantity": 1,
+      "closedQuantity": 0,
+      "currentMarketValue": 206.72,
+      "currentPrice": 206.72,
+      "averageEntryPrice": 216.635,
+      "dayPnl": 0.02,
+      "closedPnl": 0,
+      "openPnl": -9.915,
+      "totalCost": 216.635,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "ETHA",
+      "symbolId": 55755413,
+      "openQuantity": 12,
+      "closedQuantity": 0,
+      "currentMarketValue": 358.32,
+      "currentPrice": 29.86,
+      "averageEntryPrice": 32.765,
+      "dayPnl": -3.48,
+      "closedPnl": 0,
+      "openPnl": -34.86,
+      "totalCost": 393.18,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "INTC",
+      "symbolId": 23205,
+      "openQuantity": 30,
+      "closedQuantity": 0,
+      "currentMarketValue": 1114.5,
+      "currentPrice": 37.15,
+      "averageEntryPrice": 37.14049,
+      "dayPnl": 0,
+      "closedPnl": 0,
+      "openPnl": 0.2853,
+      "totalCost": 1114.2147,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "PSU.U.TO",
+      "symbolId": 33093332,
+      "openQuantity": 15,
+      "closedQuantity": 25,
+      "currentMarketValue": 1503.45,
+      "currentPrice": 100.23,
+      "averageEntryPrice": 100.04,
+      "dayPnl": 0.160573,
+      "closedPnl": 2.3,
+      "openPnl": 2.85,
+      "totalCost": 1500.6,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "HUMN",
+      "symbolId": 63205341,
+      "openQuantity": 10,
+      "closedQuantity": 0,
+      "currentMarketValue": 296.5,
+      "currentPrice": 29.65,
+      "averageEntryPrice": 29.42748,
+      "dayPnl": -1.3,
+      "closedPnl": 0,
+      "openPnl": 2.2252,
+      "totalCost": 294.2748,
+      "isRealTime": true,
+      "isUnderReorg": false
+    },
+    {
+      "symbol": "CEG",
+      "symbolId": 39995621,
+      "openQuantity": 1,
+      "closedQuantity": 0,
+      "currentMarketValue": 400.33,
+      "currentPrice": 400.33,
+      "averageEntryPrice": 378.0292,
+      "dayPnl": -3.62,
+      "closedPnl": 0,
+      "openPnl": 22.3008,
+      "totalCost": 378.0292,
+      "isRealTime": true,
+      "isUnderReorg": false
+    }
+  ],
+  "balances": [
+    {
+      "currency": "CAD",
+      "cash": 27.97,
+      "marketValue": 0,
+      "totalEquity": 27.97,
+      "buyingPower": 27.97,
+      "maintenanceExcess": 27.97,
+      "isRealTime": true
+    },
+    {
+      "currency": "USD",
+      "cash": 0,
+      "marketValue": 0,
+      "totalEquity": 0,
+      "buyingPower": 0,
+      "maintenanceExcess": 0,
+      "isRealTime": true
+    },
+    {
+      "currency": "CAD",
+      "cash": 17.76,
+      "marketValue": 0,
+      "totalEquity": 17.76,
+      "buyingPower": 17.76,
+      "maintenanceExcess": 17.76,
+      "isRealTime": true
+    },
+    {
+      "currency": "USD",
+      "cash": 3162.659793,
+      "marketValue": 17298.05,
+      "totalEquity": 20460.709793,
+      "buyingPower": 2588.049793,
+      "maintenanceExcess": 2588.049793,
+      "isRealTime": true
+    },
+    {
+      "currency": "CAD",
+      "cash": 0,
+      "marketValue": 0,
+      "totalEquity": 0,
+      "buyingPower": 0,
+      "maintenanceExcess": 0,
+      "isRealTime": true
+    },
+    {
+      "currency": "USD",
+      "cash": 770.412741,
+      "marketValue": 7076.79,
+      "totalEquity": 7847.202741,
+      "buyingPower": 770.412741,
+      "maintenanceExcess": 770.412741,
+      "isRealTime": true
+    }
+  ],
+  "orders": [],
+  "holdings": []
+}
+--- END OF FILE ---
+
+--- START OF FILE ./backend/fetchAllAccountData.ts ---
+
+import { getAllAccountData } from './src/services/questradeService';
+
+(async () => {
+  try {
+  const result = await getAllAccountData();
+    console.log('Fetched all account data:', result);
+  } catch (err) {
+  console.error('Error getting all account data:', err);
+  }
+})();
+
+--- END OF FILE ---
+
+--- START OF FILE ./backend/fetchAndExportAllData.ts ---
+
+
+/**
+ * Script: fetchAndExportAllData.ts
+ * --------------------------------
+ * Purpose:
+ *   - Fetches all account-related data from Questrade via backend service functions.
+ *   - Aggregates in-memory data stores for accounts, positions, balances, orders, and holdings.
+ *   - Exports the aggregated data to a local JSON file for prompt/AI analysis, spreadsheet export, or external review.
+ *
+ * Workflow:
+ *   1. Calls getAllAccountData() to refresh all data from Questrade API and update local stores.
+ *   2. Reads all in-memory data stores using getAccounts, getPositions, getBalances, getOrders, getCurrentHoldings.
+ *   3. Aggregates the data into a single object.
+ *   4. Writes the object to exportedData.json in the backend directory.
+ *   5. Logs completion and export path.
+ */
+
+import { getAllAccountData } from './src/services/questradeService';
+import { getAccounts } from './src/data/accounts';
+import { getPositions } from './src/data/positions';
+import { getBalances } from './src/data/balances';
+import { getOrders } from './src/data/orders';
+import { getCurrentHoldings } from './src/data/currentHoldings';
+import * as fs from 'fs';
+import * as path from 'path';
+
+
+// Main execution: fetch, aggregate, and export all data
+(async () => {
+  // Step 1: Fetch and refresh all account data from Questrade API
+  await getAllAccountData();
+
+  // Step 2: Read all in-memory data stores
+  const data = {
+    accounts: getAccounts(),      // All account details
+    positions: getPositions(),    // All positions for all accounts
+    balances: getBalances(),      // All balances for all accounts
+    orders: getOrders(),          // All orders for all accounts
+    holdings: getCurrentHoldings(), // Current holdings snapshot
+  };
+
+  // Step 3: Write aggregated data to JSON file
+  const exportPath = path.resolve(__dirname, 'exportedData.json');
+  fs.writeFileSync(exportPath, JSON.stringify(data, null, 2), 'utf-8');
+
+  // Step 4: Log completion
+  console.log(`Fetched and exported all data to ${exportPath}`);
+})();
+
+--- END OF FILE ---
+
+--- START OF FILE ./backend/package.json ---
+
+{
+  "type": "module",
+  "name": "questrade-portfolio-backend",
+  "version": "1.0.0",
+  "description": "Express backend for Questrade Portfolio Viewer",
+  "main": "dist/index.js",
+  "scripts": {
+  "dev": "ts-node --esm src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.0.0",
+    "axios": "^1.4.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.0",
+    "express": "^4.18.0",
+    "open": "^9.1.0",
+    "prisma": "^5.0.0",
+    "xlsx": "^0.18.5",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/node": "^20.19.21",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.0.0"
+  }
+}
+
+--- END OF FILE ---
+
+--- START OF FILE ./backend/src/data/accounts.ts ---
+
+import type { QuestradeAccount } from '../types/index.ts';
+
+export let accounts: QuestradeAccount[] = [];
+
+// Function to update accounts (called on fetch)
+export const updateAccounts = (newAccounts: QuestradeAccount[]) => {
+  accounts = newAccounts;
+};
+
+// Function to get current accounts
+export const getAccounts = (): QuestradeAccount[] => {
+  return accounts;
+};
+
+--- END OF FILE ---
+
+--- START OF FILE ./backend/src/data/balances.ts ---
+
+import type { QuestradeBalance } from '../types/index.ts';
+
+export let balances: QuestradeBalance[] = [];
+
+export const updateBalances = (newBalances: QuestradeBalance[]) => {
+  balances = newBalances;
+};
+
+export const getBalances = (): QuestradeBalance[] => {
+  return balances;
+};
+
+--- END OF FILE ---
+
+--- START OF FILE ./backend/src/data/currentHoldings.ts ---
+
+import type { Holding } from '../types/index.ts';
+
+export let currentHoldings: Holding[] = [];
+
+// Function to update holdings (called on fetch)
+export const updateCurrentHoldings = (holdings: Holding[]) => {
+  currentHoldings = holdings;
+};
+
+// Function to get current holdings
+export const getCurrentHoldings = (): Holding[] => {
+  return currentHoldings;
+};
+--- END OF FILE ---
+
+--- START OF FILE ./backend/src/data/orders.ts ---
+
+import type { QuestradeOrder } from '../types/index.ts';
+
+export let orders: QuestradeOrder[] = [];
+
+export const updateOrders = (newOrders: QuestradeOrder[]) => {
+  orders = newOrders;
+};
+
+export const getOrders = (): QuestradeOrder[] => {
+  return orders;
+};
+
+--- END OF FILE ---
+
+--- START OF FILE ./backend/src/data/positions.ts ---
+
+import type { QuestradePosition } from '../types/index.ts';
+
+export let positions: QuestradePosition[] = [];
+
+export const updatePositions = (newPositions: QuestradePosition[]) => {
+  positions = newPositions;
+};
+
+export const getPositions = (): QuestradePosition[] => {
+  return positions;
+};
+
+--- END OF FILE ---
+
+--- START OF FILE ./backend/src/index.ts ---
+
+/**
+ * Backend Server Entry Point
+ *
+ * - Loads environment variables
+ * - Sets up the Express app and middleware
+ * - Registers API routes (including Questrade proxy routes)
+ * - Starts the server and listens on the configured port
+ *
+ * Start this server with:
+ *   npm run dev
+ * or
+ *   ts-node --esm src/index.ts
+ */
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import questradeRoutes from './routes/questrade.ts';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.BACKEND_PORT || 3001;
+
+app.use(cors());
+app.use(express.json());
+
+app.use('/api', questradeRoutes);
+
+app.listen(PORT, () => {
+  console.log(`Backend running on http://localhost:${PORT}`);
+});
+--- END OF FILE ---
+
+--- START OF FILE ./backend/src/routes/questrade.ts ---
+
+import express from 'express';
+import axios from 'axios';
+import { getHoldings, getAllAccountData, getAccounts, getBalances } from '../services/questradeService.ts';
+import { getCurrentHoldings } from '../data/currentHoldings.ts';
+
+const router = express.Router();
+
+// Get balances for all accounts
+router.get('/balances', async (req, res) => {
+  try {
+    const accounts = await getAccounts();
+    const tokens = await import('../services/questradeService.ts').then(m => m.getBearerToken());
+    const apiServer = tokens.api_server;
+    const accessToken = tokens.access_token;
+    let allBalances: any[] = [];
+    for (const account of accounts) {
+      const balances = await getBalances(account.number, apiServer, accessToken);
+      allBalances = allBalances.concat(balances);
+    }
+    res.json(allBalances);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch balances' });
+  }
+});
+/**
+ * Questrade API Routes
+ *
+ * This router:
+ * 1. Connects to the Questrade API.
+ * 2. Retrieves account data (/accounts).
+ * 3. Retrieves holdings data (/holdings).
+ * 4. Retrieves balances data (via /refresh, included in response).
+ * 5. Provides a /refresh endpoint to update all local data from Questrade.
+ *
+ * Example: Get accounts
+ *   curl http://localhost:3001/api/accounts
+ */
+/**
+ * Questrade API Routes
+ *
+ * This router:
+ * 1. Connects to the Questrade API.
+ * 2. Retrieves account data (/accounts).
+ * 3. Retrieves holdings data (/holdings).
+ * 4. Retrieves balances data (via /refresh, included in response).
+ * 5. Provides a /refresh endpoint to update all local data from Questrade.
+ */
+import express from 'express';
+import axios from 'axios';
+// ...existing code...
+
+
+import { getCurrentHoldings } from '../data/currentHoldings.ts';
+
+const router = express.Router();
+
+// Refresh all account, holdings, and balances data from Questrade
+  try {
+    const result = await getAllAccountData();
+    res.json({ success: true, ...result });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error instanceof Error ? error.message : String(error) });
+  }
+});
+
+// Manual auth: Generate token in Questrade API Centre, redeem via https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token=<TOKEN>, update .env with tokens.
+
+// Remove callback since manual
+// router.get('/auth/callback', ...
+
+  try {
+    const holdings = await getHoldings();
+    res.json(holdings);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch holdings' });
+  }
+});
+
+router.get('/accounts', async (req, res) => {
+  try {
+    const data = await getAccounts();
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching accounts:', error instanceof Error ? error.message : error);
+    res.status(500).json({ error: 'Failed to fetch accounts' });
+  }
+});
+
+export default router;
+--- END OF FILE ---
+
+--- START OF FILE ./backend/src/services/questradeService.ts ---
+
+/**============================================================================
+ * FUNCTION: getPositions
+ * Fetches all positions for a given account number.
+ * Calls getBearerToken for authentication (if needed).
+ * Dependencies: getBearerToken()
+ * @param {string} accountNumber - The Questrade account number.
+ * @param {string} apiServer - The Questrade API server URL.
+ * @param {string} accessToken - The Questrade access token.
+ * @returns {Promise<QuestradePosition[]>}
+ *   An array of QuestradePosition objects.
+ * ============================================================================*/
+export const getPositions = async (accountNumber: string, apiServer: string, accessToken: string): Promise<QuestradePosition[]> => {
+  const response = await axios.get(`${apiServer}v1/accounts/${accountNumber}/positions`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  return response.data.positions || [];
+};
+
+/**============================================================================
+ * FUNCTION: getBalances
+ * Fetches all balances for a given account number.
+ * Calls getBearerToken for authentication (if needed).
+ * Dependencies: getBearerToken()
+ * @param {string} accountNumber - The Questrade account number.
+ * @param {string} apiServer - The Questrade API server URL.
+ * @param {string} accessToken - The Questrade access token.
+ * @returns {Promise<QuestradeBalance[]>}
+ *   An array of QuestradeBalance objects.
+ * ============================================================================*/
+export const getBalances = async (accountNumber: string, apiServer: string, accessToken: string): Promise<QuestradeBalance[]> => {
+  const response = await axios.get(`${apiServer}v1/accounts/${accountNumber}/balances`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  return response.data.perCurrencyBalances || [];
+};
+/**
+ * Questrade Service
+ *
+ * This service:
+ * 1. Connects to the Questrade API and manages authentication tokens.  getBearerToken()
+ * 2. Retrieves and updates account data. fetchAccounts()
+ * 3. Retrieves and updates holdings, positions, and balances data.   fetchHoldings()
+ * 4. Provides functions to refresh all data and persist it to local stores.
+ */
+import type { QuestradeAccount, QuestradePosition, QuestradeBalance } from '../types/index.ts';
+import { updateAccounts } from '../data/accounts.ts';
+import { updatePositions } from '../data/positions.ts';
+import { updateBalances } from '../data/balances.ts';
+import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+import type { Holding, QuestradePositionsResponse } from '../types/index.ts';
+import { updateCurrentHoldings } from '../data/currentHoldings.ts';
+
+
+/**============================================================================
+ * FUNCTION: getBearerToken
+ * Retrieves a fresh Questrade API Bearer [REDACTED] using the refresh token in .env.
+ * Updates the .env file if a new refresh token is issued.
+ * Dependencies: fs, path, axios
+ * @returns {Promise<{ access_token: string; api_server: string; refresh_token?: string }>}
+ *   The new access token, API server URL, and (optionally) new refresh token.
+ * ============================================================================*/
+export const getBearerToken = async (): Promise<{ access_token: string; api_server: string; refresh_token?: string }> => {
+  
+  // Always read refresh token from project root .env file
+  const envPath = path.resolve(process.cwd(), '../.env');
+  let REFRESH_TOKEN: string | undefined;
+  try {
+    const envContent = fs.readFileSync(envPath, 'utf-8');
+    const m = envContent.match(/QUESTRADE_REFRESH_TOKEN=(.*)/);
+    if (m && m[1]) {
+      REFRESH_TOKEN = m[1].trim();
+    }
+  } catch (err) {
+    // ignore - we'll error below
+  }
+
+  if (!REFRESH_TOKEN) {
+    throw new Error('No QUESTRADE_REFRESH_TOKEN available in .env');
+  }
+
+  // Use GET request with query parameters, matching manual browser test
+  const url = `https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token=${encodeURIComponent(REFRESH_TOKEN)}`;
+
+  try {
+    console.log('Redeeming refresh token for fresh access token (GET request)...');
+    console.log('Request URL:', url);
+    console.log('Using refresh token:', REFRESH_TOKEN);
+
+    const response = await axios.get(url, {
+      timeout: 10000,
+    });
+
+    console.log('Redemption successful (status:', response.status, ')');
+
+    // Update .env and in-memory env with new refresh_token if it changes
+    if (response.data.refresh_token && response.data.refresh_token !== REFRESH_TOKEN) {
+      // update process.env so subsequent calls in this process use the new token
+      process.env.QUESTRADE_REFRESH_TOKEN = response.data.refresh_token;
+      // Also update .env file with new refresh token
+      try {
+        let envContent = fs.readFileSync(envPath, 'utf-8');
+        const newEnvContent = envContent.replace(/QUESTRADE_REFRESH_TOKEN=.*/, `QUESTRADE_REFRESH_TOKEN=${response.data.refresh_token}`);
+        fs.writeFileSync(envPath, newEnvContent, { encoding: 'utf-8' });
+        console.log('Updated .env file with new refresh token');
+      } catch (envErr) {
+        console.warn('Failed to update .env file with new refresh token:', envErr instanceof Error ? envErr.message : String(envErr));
+      }
+    }
+
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error('Error redeeming refresh token - axios error:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+      });
+    } else {
+      console.error('Error redeeming refresh token:', error instanceof Error ? error.message : String(error));
+    }
+    throw error;
+  }
+};
+
+
+/**============================================================================
+ * FUNCTION: getAllAccountData
+ * Main function to get and update all account data.
+ * Calls getAccounts, getBalances, getPositions for each account.
+ * Updates local stores for accounts, positions, and balances.
+ * Dependencies: getAccounts(), getBalances(), getPositions(), updateAccounts(), updatePositions(), updateBalances()
+ * @returns {Promise<{accounts: QuestradeAccount[], positions: QuestradePosition[], balances: QuestradeBalance[]}>}
+ *   An object containing all accounts, positions, and balances.
+ * ============================================================================*/
+export const getAllAccountData = async () => {
+  // Get all accounts
+  const accounts: QuestradeAccount[] = await getAccounts();
+  // Get tokens/apiServer for subsequent calls
+  const tokens = await getBearerToken();
+  const apiServer = tokens.api_server;
+  const accessToken = tokens.access_token;
+
+  // Get all positions and balances for each account
+  let allPositions: QuestradePosition[] = [];
+  let allBalances: QuestradeBalance[] = [];
+  for (const account of accounts) {
+    const positions = await getPositions(account.number, apiServer, accessToken);
+    allPositions = allPositions.concat(positions);
+    const balances = await getBalances(account.number, apiServer, accessToken);
+    allBalances = allBalances.concat(balances);
+  }
+  updatePositions(allPositions);
+  updateBalances(allBalances);
+  return {
+    accounts,
+    positions: allPositions,
+    balances: allBalances,
+  };
+}
+
+
+/**============================================================================
+ * FUNCTION: getAccounts
+ * Fetches all Questrade accounts and updates the local accounts store.
+ * Calls getBearerToken for authentication.
+ * Dependencies: getBearerToken(), updateAccounts()
+ * @returns {Promise<QuestradeAccount[]>}
+ *   An array of QuestradeAccount objects.
+ * ============================================================================*/
+export const getAccounts = async () => {
+  const tokens = await getBearerToken();
+  const apiUrl = `${tokens.api_server}v1/accounts`;
+  try {
+    const response = await axios.get(apiUrl, {
+      headers: {
+        'Authorization': `Bearer ${tokens.access_token}`,
+      },
+    });
+    // Map to QuestradeAccount type
+    const accounts = response.data.accounts.map((acc: any) => ({
+      type: acc.type,
+      number: acc.number,
+      status: acc.status,
+      isPrimary: acc.isPrimary,
+      isBilling: acc.isBilling,
+      clientAccountType: acc.clientAccountType,
+      userId: acc.userId,
+    }));
+    updateAccounts(accounts);
+    return accounts;
+  } catch (error) {
+    console.error('Failed to fetch accounts:', error instanceof Error ? error.message : String(error));
+    throw new Error(`Failed to fetch accounts: ${error instanceof Error ? error.message : String(error)}`);
+  }
+};
+
+/**============================================================================
+ * FUNCTION: getHoldings
+ * Gets holdings (positions) for the first Questrade account and updates the local holdings store.
+ * Calls getAccounts and getPositions for data.
+ * Dependencies: getAccounts(), getPositions(), updateCurrentHoldings()
+ * @returns {Promise<Holding[]>}
+ *   An array of Holding objects for the first account.
+ * ============================================================================*/
+export const getHoldings = async (): Promise<Holding[]> => {
+  const accounts: QuestradeAccount[] = await getAccounts();
+  const tokens = await getBearerToken();
+  const apiServer = tokens.api_server;
+  const accessToken = tokens.access_token;
+  const accountId = accounts[0]?.number; // Use first account
+  if (!accountId) return [];
+
+  const positions = await getPositions(accountId, apiServer, accessToken);
+  const holdings: Holding[] = positions.map(pos => ({
+    symbol: pos.symbol,
+    quantity: pos.openQuantity,
+    bookValue: pos.averageEntryPrice * pos.openQuantity,
+    marketValue: pos.currentMarketValue,
+  }));
+  updateCurrentHoldings(holdings); // Update V1 storage
+  return holdings;
+};
+
+[NOTE] Sensitive values were detected and redacted in this file.
+--- END OF FILE ---
+
+--- START OF FILE ./backend/src/types/index.ts ---
+
+// Questrade Order schema (aligned with Questrade API /accounts/:id/orders response)
+export interface QuestradeOrderLeg {
+  // Add properties as needed for multi-leg orders
+}
+
+export interface QuestradeOrder {
+  id: number;
+  symbol: string;
+  symbolId: number;
+  totalQuantity: number;
+  openQuantity: number;
+  filledQuantity: number;
+  canceledQuantity: number;
+  side: string;
+  orderType: string;
+  limitPrice?: number;
+  stopPrice?: number;
+  isAllOrNone: boolean;
+  isAnonymous: boolean;
+  icebergQuantity?: number;
+  minQuantity?: number;
+  avgExecPrice?: number;
+  lastExecPrice?: number;
+  source?: string;
+  timeInForce?: string;
+  gtdDate?: string;
+  state: string;
+  clientReasonStr?: string;
+  chainId?: number;
+  creationTime?: string;
+  updateTime?: string;
+  notes?: string;
+  primaryRoute?: string;
+  secondaryRoute?: string;
+  orderRoute?: string;
+  venueHoldingOrder?: string;
+  commissionCharged?: number;
+  exchangeOrderId?: string;
+  isSignificantShareholder?: boolean;
+  isInsider?: boolean;
+  isLimitOffsetInDollar?: boolean;
+  userId?: number;
+  placementCommission?: number;
+  legs?: QuestradeOrderLeg[];
+  strategyType?: string;
+  triggerStopPrice?: number;
+  orderGroupId?: number;
+  orderClass?: string;
+  mainChainId?: number;
+}
+
+export interface QuestradeOrdersResponse {
+  orders: QuestradeOrder[];
+}
+// Questrade Balance schema (aligned with Questrade API /accounts/:id/balances response)
+export interface QuestradeBalance {
+  currency: string; // e.g., "USD", "CAD"
+  cash: number;
+  marketValue: number;
+  totalEquity: number;
+  buyingPower: number;
+  maintenanceExcess: number;
+  isRealTime: boolean;
+}
+
+export interface QuestradeBalancesResponse {
+  perCurrencyBalances: QuestradeBalance[];
+  combinedBalances: QuestradeBalance[];
+  sodPerCurrencyBalances: QuestradeBalance[];
+  sodCombinedBalances: QuestradeBalance[];
+}
+// Questrade Position schema (aligned with Questrade API /accounts/:id/positions response)
+export interface QuestradePosition {
+  symbol: string;
+  symbolId: number;
+  openQuantity: number;
+  closedQuantity: number;
+  currentMarketValue: number;
+  currentPrice: number;
+  averageEntryPrice: number;
+  closedPnl: number;
+  openPnl: number;
+  totalCost: number;
+  isRealTime: boolean;
+  isUnderReorg: boolean;
+}
+
+export interface QuestradePositionsResponse {
+  positions: QuestradePosition[];
+}
+// Questrade Account schema (aligned with Questrade API /accounts response)
+export interface QuestradeAccount {
+  type: string; // e.g., "Cash", "Margin"
+  number: string; // Eight-digit account number
+  status: string; // e.g., "Active"
+  isPrimary: boolean;
+  isBilling: boolean;
+  clientAccountType: string; // e.g., "Individual"
+  userId: number;
+}
+
+export interface QuestradeAccountsResponse {
+  accounts: QuestradeAccount[];
+}
+import { z } from 'zod';
+
+export const HoldingSchema = z.object({
+  symbol: z.string(),
+  quantity: z.number(),
+  bookValue: z.number(),
+  marketValue: z.number(),
+});
+
+export type Holding = z.infer<typeof HoldingSchema>;
+
+export interface QuestradeAuthResponse {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in: number;
+}
+
+--- END OF FILE ---
+
+--- START OF FILE ./backend/src/utils/spreadsheet.ts ---
+
+import * as XLSX from 'xlsx';
+import type { Holding } from '../types/index.ts';
+
+export const saveHoldingsToXLSX = (holdings: Holding[], filePath: string = 'portfolio.xlsx') => {
+  const worksheet = XLSX.utils.json_to_sheet(holdings);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Holdings');
+  XLSX.writeFile(workbook, filePath);
+};
+
+export const loadHoldingsFromXLSX = (filePath: string = 'portfolio.xlsx'): Holding[] => {
+  const workbook = XLSX.readFile(filePath);
+  const worksheet = workbook.Sheets['Holdings'];
+  return XLSX.utils.sheet_to_json(worksheet);
+};
+--- END OF FILE ---
+
+--- START OF FILE ./backend/test_accounts.ts ---
+
+import dotenv from 'dotenv';
+import path from 'path';
+import { getBearerToken, fetchAccounts } from './src/services/questradeService';
+
+// Load repo root .env
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
+
+const TEST_MODE = process.env.QUESTRADE_TEST_MODE || 'real';
+
+async function run() {
+  console.log('Test mode:', TEST_MODE);
+
+  if (TEST_MODE === 'mock') {
+    console.log('Running in mock mode. Simulating getBearerToken and accounts response.');
+    const mockTokens = { access_token: '<MOCK_ACCESS_TOKEN>', api_server: 'https://api01.iq.questrade.com/' };
+    console.log('Mock tokens (redacted):', { access_token: '<REDACTED>', api_server: mockTokens.api_server });
+    console.log('Mock accounts response:', { accounts: [{ number: 'MOCK-12345', type: 'TFSA' }] });
+    return;
+  }
+
+  try {
+    console.log('Attempting to redeem refresh token via getBearerToken()...');
+    const tokens = await getBearerToken();
+    const safe = { ...tokens } as any;
+    if (safe.refresh_token) safe.refresh_token = '<REDACTED>';
+    if (safe.access_token) safe.access_token = '<REDACTED>';
+    console.log('Redeemed tokens (redacted):', safe);
+
+    console.log('\nAttempting to fetch accounts using fetchAccounts()...');
+    const accounts = await fetchAccounts();
+    console.log('Accounts response:', accounts);
+  } catch (err: any) {
+    console.error('Error during test:', err && err.message ? err.message : err);
+    if (err.response) {
+      console.error('Response status:', err.response.status);
+      console.error('Response body:', err.response.data);
+    }
+    console.log('\nIf you want to validate the code path without a live Questrade token, run with mock mode:');
+    console.log('  QUESTRADE_TEST_MODE=mock npx ts-node test_accounts.ts');
+    process.exit(2);
+  }
+}
+
+run();
+
+--- END OF FILE ---
+
+--- START OF FILE ./backend/test_bearer.ts ---
+
+import axios from 'axios';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Ensure we load the repository root .env regardless of current working dir
+const repoEnv = path.resolve(__dirname, '..', '.env');
+dotenv.config({ path: repoEnv });
+
+const REFRESH_TOKEN = process.env.QUESTRADE_REFRESH_TOKEN;
+
+async function testBearer() {
+  if (!REFRESH_TOKEN) {
+    console.error('No QUESTRADE_REFRESH_TOKEN in .env');
+    process.exit(1);
+  }
+
+  const url = `https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token=${REFRESH_TOKEN}`;
+  try {
+    console.log('Requesting Bearer [REDACTED]');
+    const res = await axios.get(url);
+    console.log('Response status:', res.status);
+    console.log('Accessible keys:', Object.keys(res.data));
+    const safe = { ...res.data };
+    if (safe.refresh_token) safe.refresh_token = '<REDACTED>';
+    if (safe.access_token) safe.access_token = '<REDACTED>';
+    console.log('Body (redacted):', safe);
+  } catch (err: any) {
+    if (err.response) {
+      console.error('HTTP error status:', err.response.status);
+      console.error('Response body:', err.response.data);
+    } else {
+      console.error('Network/error:', err.message || err);
+    }
+    process.exit(2);
+  }
+}
+
+testBearer();
+
+
+[NOTE] Sensitive values were detected and redacted in this file.
+--- END OF FILE ---
+
+--- START OF FILE ./backend/tests/README.md ---
+
+# Backend Test Structure
+
+This folder contains all automated tests for backend routes and service functions.
+
+## Structure
+
+- `routes/` — Integration tests for Express routes (API endpoints)
+- `services/` — Unit tests for backend service functions (Questrade API, data stores, etc.)
+- `utils/` — Utility/helper function tests (if needed)
+
+## How to Run
+
+- Use Jest for all tests: `npx jest`
+- Route tests use supertest to make HTTP requests to the running server.
+- Service tests use direct function calls and mocks.
+
+## Example Test Files
+
+- `routes/questradeRoutes.test.ts` — Tests for `/questrade` API endpoints
+- `services/questradeService.test.ts` — Tests for Questrade service functions
+
+## Setup
+
+- Ensure the backend server is running for route tests.
+- Use `.env.test` for test credentials if needed.
+- Add/extend test files as new features/routes are added.
+
+---
+
+--- END OF FILE ---
+
+--- START OF FILE ./backend/tests/routes/questradeRoutes.test.ts ---
+
+/**
+ * Integration tests for Questrade API routes
+ * Uses supertest to make HTTP requests to the running Express server
+ */
+import request from 'supertest';
+
+// Adjust the import path to your Express app
+import app from '../../src/index';
+
+describe('Questrade API Routes', () => {
+  it('GET /questrade/accounts should return accounts', async () => {
+    const res = await request(app).get('/questrade/accounts');
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
+  it('GET /questrade/holdings should return holdings', async () => {
+    const res = await request(app).get('/questrade/holdings');
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
+  it('GET /questrade/refresh should refresh and return all data', async () => {
+    const res = await request(app).get('/questrade/refresh');
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toHaveProperty('success', true);
+    expect(res.body).toHaveProperty('accounts');
+    expect(res.body).toHaveProperty('positions');
+    expect(res.body).toHaveProperty('balances');
+  });
+
+  // Add more route tests as needed (e.g., /balances if implemented)
+});
+
+--- END OF FILE ---
+
+--- START OF FILE ./backend/tests/services/questradeService.test.ts ---
+
+/**
+ * Questrade Service Function Tests
+ * --------------------------------
+ * Tests each backend service function in isolation to confirm correct behavior.
+ * Uses Jest for async testing and mocking external dependencies.
+ */
+import { getBearerToken, getAccounts, getBalances, getPositions, getAllAccountData, getHoldings } from './questradeService';
+// Example test for getBearerToken
+// You should replace mock implementations with real API credentials for integration tests
+
+describe('Questrade Service Functions', () => {
+  test('getBearerToken returns token object', async () => {
+// This file has been moved to backend/tests/services/questradeService.test.ts and can be deleted.
+    const token = await getBearerToken();
+    expect(token).toHaveProperty('access_token');
+    expect(token).toHaveProperty('api_server');
+  });
+
+  test('getAccounts returns array of accounts', async () => {
+    const accounts = await getAccounts();
+    expect(Array.isArray(accounts)).toBe(true);
+    if (accounts.length > 0) {
+      expect(accounts[0]).toHaveProperty('number');
+    }
+  });
+
+  test('getBalances returns array for valid account', async () => {
+    const accounts = await getAccounts();
+    if (accounts.length > 0) {
+      const token = await getBearerToken();
+      const balances = await getBalances(accounts[0].number, token.api_server, token.access_token);
+      expect(Array.isArray(balances)).toBe(true);
+    } else {
+      expect(true).toBe(true); // No accounts, skip
+    }
+  });
+
+  test('getPositions returns array for valid account', async () => {
+    const accounts = await getAccounts();
+    if (accounts.length > 0) {
+      const token = await getBearerToken();
+      const positions = await getPositions(accounts[0].number, token.api_server, token.access_token);
+      expect(Array.isArray(positions)).toBe(true);
+    } else {
+      expect(true).toBe(true); // No accounts, skip
+    }
+  });
+
+  test('getAllAccountData returns all data objects', async () => {
+    const result = await getAllAccountData();
+    expect(result).toHaveProperty('accounts');
+    expect(result).toHaveProperty('positions');
+    expect(result).toHaveProperty('balances');
+  });
+
+  test('getHoldings returns array of holdings', async () => {
+    const holdings = await getHoldings();
+    expect(Array.isArray(holdings)).toBe(true);
+  });
+});
+
+--- END OF FILE ---
+
+--- START OF FILE ./backend/tsconfig.json ---
+
+{
+  "compilerOptions": {
+    "target": "ES2020",
+  "module": "ESNext",
+    "lib": ["ES2020"],
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+  "moduleResolution": "node",
+  "resolveJsonModule": true,
+  "allowImportingTsExtensions": true,
+  "noEmit": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+--- END OF FILE ---
+
+--- START OF FILE ./docs/DATABASE_SETUP.md ---
+
+# DATABASE_SETUP.md
+
+(Original content from docs/DATABASE_SETUP.md)
+
+---
+
+Please refer to the original doc for full details.
+--- END OF FILE ---
+
+--- START OF FILE ./docs/DataContracts.md ---
+
+# DataContracts.md
+
+(Original content from docs/DataContracts.md)
+
+---
+
+Please refer to the original doc for full details.
+--- END OF FILE ---
+
+--- START OF FILE ./docs/Roadmap.md ---
+
+# Roadmap.md
+
+(Original content from docs/Roadmap.md)
+
+---
+
+Please refer to the original doc for full details.
+--- END OF FILE ---
+
+--- START OF FILE ./docs/TaskTracker.md ---
+
+# TaskTracker.md
+
+(Original content from docs/TaskTracker.md)
+
+---
+
+Please refer to the original doc for full details.
+--- END OF FILE ---
+
+--- START OF FILE ./docs/TokenFlow.md ---
+
+# TokenFlow.md
+
+(Original content from docs/TokenFlow.md)
+
+---
+
+Please refer to the original doc for full details.
+--- END OF FILE ---
+
+--- START OF FILE ./docs/UserRequirements.md ---
+
+# UserRequirements.md
+
+(Original content from docs/UserRequirements.md)
+
+---
+
+Please refer to the original doc for full details.
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/package.json ---
+
+{
+  "name": "questrade-portfolio-frontend",
+  "version": "1.0.0",
+  "description": "React frontend for Questrade Portfolio Viewer",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.0.0",
+    "axios": "^1.4.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "lucide-react": "^0.294.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^2.0.0",
+    "tailwindcss-animate": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.8.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "autoprefixer": "^10.4.0",
+    "eslint": "^8.0.0",
+    "eslint-plugin-react-hooks": "^4.0.0",
+    "eslint-plugin-react-refresh": "^0.4.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5.0.0",
+    "vite": "^4.0.0"
+  }
+}
+
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/src/App.tsx ---
+
+import { useState } from 'react';
+import Header from './components/Header';
+import Navigation from './components/Navigation';
+import Dashboard from './components/Dashboard';
+import AuthModal from './components/AuthModal';
+
+function App() {
+  const [currentView, setCurrentView] = useState('dashboard');
+  const [showAuth, setShowAuth] = useState(false);
+
+  const renderView = () => {
+    switch (currentView) {
+      case 'dashboard':
+        return <Dashboard onAuth={() => setShowAuth(true)} />;
+      default:
+        return <Dashboard onAuth={() => setShowAuth(true)} />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <Navigation onViewChange={setCurrentView} />
+      <main className="container mx-auto p-4">
+        {renderView()}
+      </main>
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+    </div>
+  );
+}
+
+export default App;
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/src/components/AuthModal.tsx ---
+
+import { Button } from './ui/button';
+
+interface AuthModalProps {
+  onClose: () => void;
+}
+
+const AuthModal = ({ onClose }: AuthModalProps) => {
+  const handleAuth = () => {
+    window.open('/api/auth/start', '_blank');
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div className="bg-card p-6 rounded-lg shadow-lg">
+        <h3 className="text-lg font-semibold mb-4">Authentication Required</h3>
+        <p className="mb-4">Click below to authenticate with Questrade.</p>
+        <div className="flex gap-2">
+          <Button onClick={handleAuth}>Start Auth</Button>
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AuthModal;
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/src/components/Dashboard.tsx ---
+
+import { useState } from 'react';
+import { Button } from './ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
+import { usePortfolio } from '../features/portfolio/hooks/usePortfolio';
+
+interface DashboardProps {
+  onAuth: () => void;
+}
+
+const Dashboard = ({ onAuth }: DashboardProps) => {
+  const { holdings, loading, error, fetchHoldings } = usePortfolio();
+
+  const handleFetch = async () => {
+    try {
+      await fetchHoldings();
+    } catch (err) {
+      onAuth(); // Trigger auth if needed
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Portfolio Holdings</h2>
+        <Button onClick={handleFetch} disabled={loading}>
+          {loading ? 'Fetching...' : 'Fetch Holdings'}
+        </Button>
+      </div>
+      {error && <p className="text-destructive">{error}</p>}
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Symbol</TableHead>
+            <TableHead>Quantity</TableHead>
+            <TableHead>Book Value</TableHead>
+            <TableHead>Market Value</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {holdings.map((holding, index) => (
+            <TableRow key={index}>
+              <TableCell>{holding.symbol}</TableCell>
+              <TableCell>{holding.quantity}</TableCell>
+              <TableCell>${holding.bookValue.toFixed(2)}</TableCell>
+              <TableCell>${holding.marketValue.toFixed(2)}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+};
+
+export default Dashboard;
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/src/components/Header.tsx ---
+
+import { TrendingUp } from 'lucide-react';
+
+const Header = () => {
+  return (
+    <header className="bg-primary text-primary-foreground p-4">
+      <div className="container mx-auto flex items-center justify-between">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <TrendingUp className="h-8 w-8" />
+          Questrade Portfolio Viewer
+        </h1>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/src/components/Navigation.tsx ---
+
+interface NavigationProps {
+  onViewChange: (view: string) => void;
+}
+
+const Navigation = ({ onViewChange }: NavigationProps) => {
+  return (
+    <nav className="bg-muted p-2">
+      <div className="container mx-auto flex gap-4">
+        <button
+          onClick={() => onViewChange('dashboard')}
+          className="px-4 py-2 rounded hover:bg-accent"
+        >
+          Dashboard
+        </button>
+      </div>
+    </nav>
+  );
+};
+
+export default Navigation;
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/src/components/ui/button.tsx ---
+
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+
+import { cn } from "../../lib/utils"
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive:
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline:
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Button.displayName = "Button"
+
+export { Button, buttonVariants }
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/src/components/ui/table.tsx ---
+
+import * as React from "react"
+
+import { cn } from "../../lib/utils"
+
+const Table = React.forwardRef<
+  HTMLTableElement,
+  React.HTMLAttributes<HTMLTableElement>
+>(({ className, ...props }, ref) => (
+  <div className="relative w-full overflow-auto">
+    <table
+      ref={ref}
+      className={cn("w-full caption-bottom text-sm", className)}
+      {...props}
+    />
+  </div>
+))
+Table.displayName = "Table"
+
+const TableHeader = React.forwardRef<
+  HTMLTableSectionElement,
+  React.HTMLAttributes<HTMLTableSectionElement>
+>(({ className, ...props }, ref) => (
+  <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
+))
+TableHeader.displayName = "TableHeader"
+
+const TableBody = React.forwardRef<
+  HTMLTableSectionElement,
+  React.HTMLAttributes<HTMLTableSectionElement>
+>(({ className, ...props }, ref) => (
+  <tbody
+    ref={ref}
+    className={cn("[&_tr:last-child]:border-0", className)}
+    {...props}
+  />
+))
+TableBody.displayName = "TableBody"
+
+const TableFooter = React.forwardRef<
+  HTMLTableSectionElement,
+  React.HTMLAttributes<HTMLTableSectionElement>
+>(({ className, ...props }, ref) => (
+  <tfoot
+    ref={ref}
+    className={cn(
+      "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
+      className
+    )}
+    {...props}
+  />
+))
+TableFooter.displayName = "TableFooter"
+
+const TableRow = React.forwardRef<
+  HTMLTableRowElement,
+  React.HTMLAttributes<HTMLTableRowElement>
+>(({ className, ...props }, ref) => (
+  <tr
+    ref={ref}
+    className={cn(
+      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+      className
+    )}
+    {...props}
+  />
+))
+TableRow.displayName = "TableRow"
+
+const TableHead = React.forwardRef<
+  HTMLTableCellElement,
+  React.ThHTMLAttributes<HTMLTableCellElement>
+>(({ className, ...props }, ref) => (
+  <th
+    ref={ref}
+    className={cn(
+      "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+      className
+    )}
+    {...props}
+  />
+))
+TableHead.displayName = "TableHead"
+
+const TableCell = React.forwardRef<
+  HTMLTableCellElement,
+  React.TdHTMLAttributes<HTMLTableCellElement>
+>(({ className, ...props }, ref) => (
+  <td
+    ref={ref}
+    className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
+    {...props}
+  />
+))
+TableCell.displayName = "TableCell"
+
+const TableCaption = React.forwardRef<
+  HTMLTableCaptionElement,
+  React.HTMLAttributes<HTMLTableCaptionElement>
+>(({ className, ...props }, ref) => (
+  <caption
+    ref={ref}
+    className={cn("mt-4 text-sm text-muted-foreground", className)}
+    {...props}
+  />
+))
+TableCaption.displayName = "TableCaption"
+
+export {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableCaption,
+}
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/src/features/portfolio/components/PortfolioTable.tsx ---
+
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Holding } from '../types';
+
+interface PortfolioTableProps {
+  holdings: Holding[];
+}
+
+const PortfolioTable = ({ holdings }: PortfolioTableProps) => {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Symbol</TableHead>
+          <TableHead>Quantity</TableHead>
+          <TableHead>Book Value</TableHead>
+          <TableHead>Market Value</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {holdings.map((holding, index) => (
+          <TableRow key={index}>
+            <TableCell>{holding.symbol}</TableCell>
+            <TableCell>{holding.quantity}</TableCell>
+            <TableCell>${holding.bookValue.toFixed(2)}</TableCell>
+            <TableCell>${holding.marketValue.toFixed(2)}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+};
+
+export default PortfolioTable;
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/src/features/portfolio/hooks/usePortfolio.ts ---
+
+import { useState } from 'react';
+import axios from 'axios';
+import { Holding } from './types';
+
+export const usePortfolio = () => {
+  const [holdings, setHoldings] = useState<Holding[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchHoldings = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get('/api/holdings');
+      setHoldings(response.data);
+    } catch (err) {
+      setError('Failed to fetch holdings. Please authenticate.');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { holdings, loading, error, fetchHoldings };
+};
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/src/features/portfolio/types/index.ts ---
+
+export interface Holding {
+  symbol: string;
+  quantity: number;
+  bookValue: number;
+  marketValue: number;
+}
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/src/lib/utils.ts ---
+
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/src/main.tsx ---
+
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.tsx'
+import './index.css'
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+)
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/tailwind.config.ts ---
+
+import type { Config } from 'tailwindcss'
+
+const config: Config = {
+  darkMode: ["class"],
+  content: [
+    './pages/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',
+    './src/**/*.{ts,tsx}',
+  ],
+  prefix: "",
+  theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
+    extend: {
+      colors: {
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+      keyframes: {
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
+} satisfies Config
+
+export default config
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/tsconfig.json ---
+
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/tsconfig.node.json ---
+
+{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["vite.config.ts"]
+}
+--- END OF FILE ---
+
+--- START OF FILE ./frontend/vite.config.ts ---
+
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: parseInt(process.env.FRONTEND_PORT || '5173'),
+    proxy: {
+      '/api': `http://localhost:${process.env.BACKEND_PORT || '3001'}`,
+    },
+  },
+})
+--- END OF FILE ---
+
+--- START OF FILE ./package.json ---
+
+{
+  "type": "module",
+  "name": "questrade-portfolio-app",
+  "version": "1.0.0",
+  "description": "Secure Questrade Portfolio Viewer app",
+  "scripts": {
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "build": "cd backend && npm run build && cd ../frontend && npm run build",
+    "portfolio:align": "ts-node --esm scripts/generate_portfolio_alignment_table.ts"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/supertest": "^6.0.3",
+    "concurrently": "^8.2.0",
+    "husky": "^8.0.0",
+    "prisma": "^6.17.1",
+    "supertest": "^7.1.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "questrade",
+    "portfolio",
+    "viewer"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.17.1",
+    "ajv": "^8.17.1",
+    "node": "^25.0.0"
+  }
+}
+
+--- END OF FILE ---
+
+--- START OF FILE ./prisma/migrations/20251016144515_init/migration.sql ---
+
+-- CreateTable
+CREATE TABLE "HoldingCache" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "symbol" TEXT NOT NULL,
+    "quantity" REAL NOT NULL,
+    "bookValue" REAL NOT NULL,
+    "marketValue" REAL NOT NULL,
+    "fetchedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+--- END OF FILE ---
+
+--- START OF FILE ./prisma/migrations/migration_lock.toml ---
+
+# Please do not edit this file manually
+# It should be added in your version-control system (e.g., Git)
+provider = "sqlite"
+
+--- END OF FILE ---
+
+--- START OF FILE ./scripts/generate_portfolio_alignment_table.ts ---
+
+import fs from 'fs';
+import path from 'path';
+import Ajv from 'ajv';
+
+// Load schema
+
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const schemaPath = path.resolve(__dirname, '../TargetPortfolio/portfolio_alignment_schema.json');
+const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf-8'));
+
+// Input and output file paths
+
+const dataPath = path.resolve(__dirname, '../backend/exportedData.json');
+const jsonOutputPath = path.resolve(__dirname, '../TargetPortfolio/portfolio_thesis_alignment_report.json');
+
+
+// Helper: Read JSON data
+function readJson(filePath: string) {
+  return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+}
+
+
+// Helper: Write markdown file
+function writeMarkdown(filePath: string, content: string) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, content, 'utf-8');
+}
+
+// Helper: Aggregate holdings across all accounts
+// Helper: Map symbol to thesis pillar (stub, extend as needed)
+function getPillarForSymbol(symbol: string): string {
+  // TODO: Map symbols to pillars based on thesis
+  // Example stub mapping
+  const pillarMap: Record<string, string> = {
+    'NVDA': 'ASI / Compute',
+    'AVGO': 'ASI / Compute',
+    'VST': 'Power / Energy',
+    'ETHA': 'Sovereign Finance',
+    // ...add more mappings
+  };
+  return pillarMap[symbol] || 'Other';
+}
+
+interface Position {
+  symbol: string;
+  name?: string;
+  quantity: number;
+  currentMarketValue: number;
+  currentBookValue: number;
+  accountNumber: string;
+}
+
+interface Holding {
+  symbol: string;
+  name: string;
+  pillar: string;
+  totalShares: number;
+  totalMarketValue: number;
+  totalBookValue: number;
+  accounts: string[];
+}
+
+function aggregateHoldings(data: { positions?: Position[], accounts?: any[], balances?: any[] }): Holding[] {
+  const holdingsMap: { [key: string]: Holding } = {};
+  const positions: Position[] = data.positions || [];
+  positions.forEach((pos: Position | any) => {
+    const key = pos.symbol;
+    if (!holdingsMap[key]) {
+      holdingsMap[key] = {
+        symbol: pos.symbol,
+        name: pos.name || '',
+        pillar: getPillarForSymbol(pos.symbol),
+        totalShares: 0,
+        totalMarketValue: 0,
+        totalBookValue: 0,
+        accounts: [],
+      };
+    }
+    // Use openQuantity if quantity is not present
+    const quantity = Number(pos.quantity ?? pos.openQuantity) || 0;
+    const marketValue = Number(pos.currentMarketValue) || 0;
+    const bookValue = Number(pos.currentBookValue) || 0;
+    holdingsMap[key].totalShares += quantity;
+    holdingsMap[key].totalMarketValue += marketValue;
+    holdingsMap[key].totalBookValue += bookValue;
+    // Ensure accountNumber is always a string (fallback to empty if not present)
+    holdingsMap[key].accounts.push(String(pos.accountNumber || ''));
+  });
+
+  // Aggregate all balances (CAD and USD) into a single USD_CASH holding
+  const balances = data.balances || [];
+  // Read USD_CAD_EXCHANGE_RATE from .env, fallback to 1.405049 if not set
+  const USD_CAD_EXCHANGE_RATE = parseFloat(process.env.USD_CAD_EXCHANGE_RATE || '1.405049');
+  const USD_PER_CAD = 1 / USD_CAD_EXCHANGE_RATE;
+  let totalCashUSD = 0;
+  balances.forEach((bal: any) => {
+    if (typeof bal.cash === 'number' && bal.cash > 0) {
+      if (bal.currency === 'USD') {
+        totalCashUSD += bal.cash;
+      } else if (bal.currency === 'CAD') {
+        totalCashUSD += bal.cash * USD_PER_CAD;
+      }
+    }
+  });
+  if (totalCashUSD > 0) {
+    holdingsMap['USD_CASH'] = {
+      symbol: 'USD_CASH',
+      name: 'USD Cash (all accounts)',
+      pillar: 'Cash',
+      totalShares: totalCashUSD,
+      totalMarketValue: totalCashUSD,
+      totalBookValue: totalCashUSD,
+      accounts: []
+    };
+  }
+
+  // Ensure all output fields are numbers and set defaults if needed
+  return Object.values(holdingsMap).map(h => ({
+    ...h,
+    totalShares: typeof h.totalShares === 'number' && isFinite(h.totalShares) ? h.totalShares : 0,
+    totalMarketValue: typeof h.totalMarketValue === 'number' && isFinite(h.totalMarketValue) ? h.totalMarketValue : 0,
+    totalBookValue: typeof h.totalBookValue === 'number' && isFinite(h.totalBookValue) ? h.totalBookValue : 0,
+  }));
+}
+
+// Helper: Calculate portfolio totals
+function getPortfolioTotals(holdings: Holding[]): { totalMarketValue: number } {
+  const totalMarketValue = holdings.reduce((sum, h) => sum + h.totalMarketValue, 0);
+  return { totalMarketValue };
+}
+
+// Helper: Generate markdown table
+function generateMarkdownTable(holdings: Holding[], totalMarketValue: number): string {
+  let md = `| Symbol | Name | Total Shares | Avg Value | % of Portfolio | Accounts |
+|--------|------|--------------|-----------|---------------|----------|
+`;
+  holdings.forEach(h => {
+    const avgValue = h.totalMarketValue / h.totalShares;
+    const pctPortfolio = ((h.totalMarketValue / totalMarketValue) * 100).toFixed(2) + '%';
+    md += `| ${h.symbol} | ${h.name} | ${h.totalShares} | $${avgValue.toFixed(2)} | ${pctPortfolio} | ${[...new Set(h.accounts)].join(', ')} |
+`;
+  });
+  return md;
+}
+
+// Main script
+function main(): void {
+  if (!fs.existsSync(dataPath)) {
+    console.error('Portfolio data not found:', dataPath);
+    process.exit(1);
+  }
+  const data = readJson(dataPath);
+  const holdings = aggregateHoldings(data);
+  // Defensive: ensure all required fields are numbers and set defaults
+  const safeHoldings = holdings.map(h => ({
+    ...h,
+    totalShares: typeof h.totalShares === 'number' && isFinite(h.totalShares) ? h.totalShares : 0,
+    totalBookValue: typeof h.totalBookValue === 'number' && isFinite(h.totalBookValue) ? h.totalBookValue : 0,
+    totalMarketValue: typeof h.totalMarketValue === 'number' && isFinite(h.totalMarketValue) ? h.totalMarketValue : 0,
+  }));
+  const { totalMarketValue } = getPortfolioTotals(safeHoldings);
+
+  // Example target allocations by pillar (extend as needed)
+  const targetAllocations: { [pillar: string]: number } = {
+    'ASI / Compute': 32.0,
+    'Cash': 18.66,
+    'Power / Energy': 10.0,
+    'Data Infra / Supply Chain': 9.47,
+    'AI Titans / Cloud': 9.3,
+    'Sovereign Finance': 7.91,
+    'Security / Data OS': 7.48,
+    'Applied AI / Robotics': 5.18,
+    'Other': 0.0
+  };
+
+  // Aggregate by pillar
+  const pillarTotals: { [pillar: string]: number } = {};
+  safeHoldings.forEach((h: Holding) => {
+    if (!pillarTotals[h.pillar]) pillarTotals[h.pillar] = 0;
+    pillarTotals[h.pillar] += h.totalMarketValue;
+  });
+
+  // Prepare JSON output strictly matching schema
+  const jsonOutput = {
+    totalMarketValue,
+    pillarTotals,
+    targetAllocations,
+    holdings: safeHoldings.map((h: Holding) => {
+      // Defensive: ensure all required fields are numbers and set defaults
+      const totalShares = typeof h.totalShares === 'number' && isFinite(h.totalShares) ? h.totalShares : 0;
+      const totalBookValue = typeof h.totalBookValue === 'number' && isFinite(h.totalBookValue) ? h.totalBookValue : 0;
+      const totalMarketValueH = typeof h.totalMarketValue === 'number' && isFinite(h.totalMarketValue) ? h.totalMarketValue : 0;
+      const pctPortfolio = totalMarketValue > 0 ? (totalMarketValueH / totalMarketValue) * 100 : 0;
+      const targetPct = targetAllocations[h.pillar] || 0;
+      const gapPct = pctPortfolio - targetPct;
+      // avgPrice = totalBookValue / totalShares (if totalShares > 0)
+      const avgPrice = totalShares > 0 ? totalBookValue / totalShares : 0;
+      return {
+        symbol: h.symbol,
+        name: h.name,
+        pillar: h.pillar,
+        totalShares,
+        totalBookValue,
+        totalMarketValue: totalMarketValueH,
+        avgPrice,
+        pctPortfolio,
+        targetPct,
+        gapPct,
+        accounts: [...new Set(h.accounts.map(a => String(a)))]
+      };
+    })
+  };
+
+  // Validate JSON output against schema
+  const ajv = new Ajv();
+  const validate = ajv.compile(schema);
+  const valid = validate(jsonOutput);
+  if (!valid) {
+    console.error('JSON output does not match schema:', validate.errors);
+    process.exit(1);
+  }
+
+  fs.mkdirSync(path.dirname(jsonOutputPath), { recursive: true });
+  fs.writeFileSync(jsonOutputPath, JSON.stringify(jsonOutput, null, 2), 'utf-8');
+
+  // Markdown output (optional)
+  const table = generateMarkdownTable(holdings, totalMarketValue);
+  const header = `# Portfolio Alignment Table\n\nGenerated from: exportedData.json\n\nTotal Portfolio Market Value: $${totalMarketValue.toFixed(2)}\n\n`;
+  const output = header + table;
+  // Fix: declare outputPath for markdown output
+  const outputPath = path.resolve(__dirname, '../TargetPortfolio/portfolio_alignment_table.md');
+  writeMarkdown(outputPath, output);
+  console.log('Portfolio alignment table generated at:', outputPath);
+  console.log('Portfolio alignment JSON generated at:', jsonOutputPath);
+}
+
+main();
+
+--- END OF FILE ---
+
+--- START OF FILE ./scripts/tsconfig.json ---
+
+{
+  "extends": "../backend/tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true
+  },
+  "include": ["*.ts"],
+  "ts-node": {
+    "esm": true
+  }
+}
+
+--- END OF FILE ---
+
+--- START OF FILE ./start.sh ---
+
+#!/bin/bash
+
+# Startup script for Questrade Portfolio App
+# Starts backend and frontend servers in background
+
+echo "Starting Questrade Portfolio App..."
+
+# Load environment variables
+if [ -f .env ]; then
+  export $(grep -v '^#' .env | xargs)
+fi
+
+# Default ports if not set
+: ${BACKEND_PORT:=3001}
+: ${FRONTEND_PORT:=5173}
+
+# Prevent duplicate starts: kill any existing processes on target ports
+echo "Ensuring ports $BACKEND_PORT and $FRONTEND_PORT are free..."
+for p in $BACKEND_PORT $FRONTEND_PORT; do
+  PROC=$(lsof -ti:$p 2>/dev/null)
+  if [ ! -z "$PROC" ]; then
+    echo "Killing process on port $p (PID: $PROC)..."
+    kill -9 $PROC 2>/dev/null || true
+  fi
+done
+
+# Start backend server
+echo "Starting backend server on port $BACKEND_PORT..."
+cd backend || exit 1
+npm run dev &
+BACKEND_PID=$!
+echo "Backend PID: $BACKEND_PID"
+
+# Wait for backend port to be bound (with timeout)
+cd ..
+timeout=10
+count=0
+while ! lsof -i :$BACKEND_PORT >/dev/null 2>&1; do
+  sleep 1
+  count=$((count+1))
+  if [ $count -ge $timeout ]; then
+    echo "Warning: backend did not bind to port $BACKEND_PORT after $timeout seconds"
+    break
+  fi
+done
+
+# Start frontend server
+echo "Starting frontend server on port $FRONTEND_PORT..."
+cd frontend || exit 1
+npm run dev &
+FRONTEND_PID=$!
+echo "Frontend PID: $FRONTEND_PID"
+cd ..
+
+# Save PIDs to file for shutdown script (atomic write)
+printf "%s %s" "$BACKEND_PID" "$FRONTEND_PID" > .server_pids.tmp && mv .server_pids.tmp .server_pids
+
+echo "Servers started!"
+echo "Backend: http://localhost:$BACKEND_PORT"
+echo "Frontend: http://localhost:$FRONTEND_PORT"
+echo "To stop servers, run: ./stop.sh"
+--- END OF FILE ---
+
+--- START OF FILE ./stop.sh ---
+
+#!/bin/bash
+
+# Shutdown script for Questrade Portfolio App
+# Kills backend and frontend servers
+
+echo "Stopping Questrade Portfolio App..."
+
+set -o errexit
+set -o nounset
+
+cleanup_pid_file() {
+  if [ -f .server_pids ]; then
+    rm -f .server_pids || true
+  fi
+}
+
+if [ -f .server_pids ]; then
+  PIDS=$(cat .server_pids || true)
+  BACKEND_PID=$(echo $PIDS | cut -d' ' -f1 || true)
+  FRONTEND_PID=$(echo $PIDS | cut -d' ' -f2 || true)
+
+  if [ ! -z "$BACKEND_PID" ]; then
+    echo "Killing backend server (PID: $BACKEND_PID)..."
+    kill -9 $BACKEND_PID 2>/dev/null || echo "Backend already stopped or PID not found"
+  fi
+
+  if [ ! -z "$FRONTEND_PID" ]; then
+    echo "Killing frontend server (PID: $FRONTEND_PID)..."
+    kill -9 $FRONTEND_PID 2>/dev/null || echo "Frontend already stopped or PID not found"
+  fi
+
+  cleanup_pid_file
+  echo "Servers stopped (via .server_pids)."
+else
+  echo "No .server_pids file found. Using aggressive cleanup..."
+
+  # Kill all ts-node-dev processes (backend)
+  TS_NODE_PROCS=$(pgrep -f "ts-node-dev" 2>/dev/null || true)
+  if [ ! -z "$TS_NODE_PROCS" ]; then
+    echo "Killing ts-node-dev processes..."
+    echo $TS_NODE_PROCS | xargs kill -9 2>/dev/null || true
+  fi
+
+  # Kill all vite processes (frontend)
+  VITE_PROCS=$(pgrep -f "vite" 2>/dev/null || true)
+  if [ ! -z "$VITE_PROCS" ]; then
+    echo "Killing vite processes..."
+    echo $VITE_PROCS | xargs kill -9 2>/dev/null || true
+  fi
+
+  # Kill processes on backend port
+  BACKEND_PORT=${BACKEND_PORT:-3001}
+  BACKEND_PROC=$(lsof -ti:$BACKEND_PORT 2>/dev/null || true)
+  if [ ! -z "$BACKEND_PROC" ]; then
+    echo "Killing process on port $BACKEND_PORT (PID: $BACKEND_PROC)..."
+    kill -9 $BACKEND_PROC 2>/dev/null || true
+  fi
+
+  # Kill processes on any Vite port range (default 5173-5200 or env override)
+  START_PORT=${VITE_START_PORT:-5173}
+  END_PORT=${VITE_END_PORT:-5200}
+  echo "Killing processes on ports $START_PORT-$END_PORT if present..."
+  for port in $(seq $START_PORT $END_PORT); do
+    PROC=$(lsof -ti:$port 2>/dev/null || true)
+    if [ ! -z "$PROC" ]; then
+      echo "Killing process on port $port (PID: $PROC)..."
+      kill -9 $PROC 2>/dev/null || true
+    fi
+  done
+
+  cleanup_pid_file
+  echo "Aggressive cleanup complete."
+fi
+
+echo "Done. If ports are still occupied, run: pkill -9 -f ts-node-dev ; pkill -9 -f vite ; lsof -ti:3001 | xargs kill -9"
+--- END OF FILE ---
+
