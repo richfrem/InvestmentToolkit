@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Portfolio Alignment Output Schema",
+  "type": "object",
+  "properties": {
+    "totalMarketValue": { "type": "number" },
+    "pillarTotals": {
+      "type": "object",
+      "additionalProperties": { "type": "number" }
+    },
+    "targetAllocations": {
+      "type": "object",
+      "additionalProperties": { "type": "number" }
+    },
+    "holdings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "symbol": { "type": "string" },
+          "name": { "type": "string" },
+          "pillar": { "type": "string" },
+          "totalShares": { "type": "number" },
+          "totalBookValue": { "type": "number" },
+          "totalMarketValue": { "type": "number" },
+          "avgPrice": { "type": "number" },
+          "pctPortfolio": { "type": "number" },
+          "targetPct": { "type": "number" },
+          "gapPct": { "type": "number" },
+          "accounts": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "required": [
+          "symbol", "name", "pillar", "totalShares", "totalBookValue", "totalMarketValue", "avgPrice", "pctPortfolio", "targetPct", "gapPct", "accounts"
+        ]
+      }
+    }
+  },
+  "required": ["totalMarketValue", "pillarTotals", "targetAllocations", "holdings"]
+}
