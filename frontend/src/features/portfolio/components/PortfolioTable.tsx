@@ -1,4 +1,4 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/table';
 import { Holding } from '../types';
 
 interface PortfolioTableProps {
@@ -31,3 +31,6 @@ const PortfolioTable = ({ holdings }: PortfolioTableProps) => {
 };
 
 export default PortfolioTable;
+
+// Add to your dashboard or main portfolio page:
+// <SymbolPillarAllocationsTable />

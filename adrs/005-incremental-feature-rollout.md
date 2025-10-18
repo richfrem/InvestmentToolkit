@@ -25,3 +25,9 @@ The application will be developed and released in incremental versions, allowing
 ## Consequences
 - Modular, maintainable codebase.
 - Clear roadmap and changelog for users and developers.
+
+## AI Feature Rollout (addition)
+
+- AI-powered features (Strategy AI) must be rolled out incrementally: dev -> staging (integration testing) -> limited beta (small group of users) -> general availability.
+- Feature flags (for example `FEATURE_STRATEGY_AI`) should gate runtime access and provide a kill switch for rapid rollback.
+- Integration tests in staging must run against a paid test key or a mocked LLM to validate behavior and cost before any wider rollout.

@@ -51,6 +51,7 @@ import fs from 'fs';
 import path from 'path';
 import type { Holding, QuestradePositionsResponse } from '../types/index.ts';
 import { updateCurrentHoldings } from '../data/currentHoldings.ts';
+import { logger } from '../utils/logger.ts';
 
 
 /**============================================================================
@@ -62,7 +63,7 @@ import { updateCurrentHoldings } from '../data/currentHoldings.ts';
  *   The new access token, API server URL, and (optionally) new refresh token.
  * ============================================================================*/
 export const getBearerToken = async (): Promise<{ access_token: string; api_server: string; refresh_token?: string }> => {
-  
+
   // Always read refresh token from project root .env file
   const envPath = path.resolve(process.cwd(), '../.env');
   let REFRESH_TOKEN: string | undefined;
@@ -73,10 +74,11 @@ export const getBearerToken = async (): Promise<{ access_token: string; api_serv
       REFRESH_TOKEN = m[1].trim();
     }
   } catch (err) {
-    // ignore - we'll error below
+    logger.error('Failed to read .env file:', err);
   }
 
   if (!REFRESH_TOKEN) {
+    logger.error('No QUESTRADE_REFRESH_TOKEN available in .env');
     throw new Error('No QUESTRADE_REFRESH_TOKEN available in .env');
   }
 
@@ -84,15 +86,15 @@ export const getBearerToken = async (): Promise<{ access_token: string; api_serv
   const url = `https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token=${encodeURIComponent(REFRESH_TOKEN)}`;
 
   try {
-    console.log('Redeeming refresh token for fresh access token (GET request)...');
-    console.log('Request URL:', url);
-    console.log('Using refresh token:', REFRESH_TOKEN);
+    logger.questrade('Redeeming refresh token for fresh access token (GET request)...');
+    logger.debug('Request URL:', url);
+    logger.debug('Using refresh token:', REFRESH_TOKEN.substring(0, 10) + '...'); // Don't log full token
 
     const response = await axios.get(url, {
       timeout: 10000,
     });
 
-    console.log('Redemption successful (status:', response.status, ')');
+    logger.success(`Redemption successful (status: ${response.status})`);
 
     // Update .env and in-memory env with new refresh_token if it changes
     if (response.data.refresh_token && response.data.refresh_token !== REFRESH_TOKEN) {
@@ -103,22 +105,23 @@ export const getBearerToken = async (): Promise<{ access_token: string; api_serv
         let envContent = fs.readFileSync(envPath, 'utf-8');
         const newEnvContent = envContent.replace(/QUESTRADE_REFRESH_TOKEN=.*/, `QUESTRADE_REFRESH_TOKEN=${response.data.refresh_token}`);
         fs.writeFileSync(envPath, newEnvContent, { encoding: 'utf-8' });
-        console.log('Updated .env file with new refresh token');
+        logger.info('Updated .env file with new refresh token');
       } catch (envErr) {
-        console.warn('Failed to update .env file with new refresh token:', envErr instanceof Error ? envErr.message : String(envErr));
+        logger.warn('Failed to update .env file with new refresh token:', envErr instanceof Error ? envErr.message : String(envErr));
       }
     }
 
+    logger.debug('Bearer token retrieved successfully');
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.error('Error redeeming refresh token - axios error:', {
+      logger.error('Error redeeming refresh token - axios error:', {
         status: error.response?.status,
         data: error.response?.data,
         message: error.message,
       });
     } else {
-      console.error('Error redeeming refresh token:', error instanceof Error ? error.message : String(error));
+      logger.error('Error redeeming refresh token:', error instanceof Error ? error.message : String(error));
     }
     throw error;
   }
@@ -135,8 +138,12 @@ export const getBearerToken = async (): Promise<{ access_token: string; api_serv
  *   An object containing all accounts, positions, and balances.
  * ============================================================================*/
 export const getAllAccountData = async () => {
+  logger.info('🏦 Starting comprehensive account data fetch...');
+
   // Get all accounts
   const accounts: QuestradeAccount[] = await getAccounts();
+  logger.info(`📊 Found ${accounts.length} accounts`);
+
   // Get tokens/apiServer for subsequent calls
   const tokens = await getBearerToken();
   const apiServer = tokens.api_server;
@@ -146,13 +153,21 @@ export const getAllAccountData = async () => {
   let allPositions: QuestradePosition[] = [];
   let allBalances: QuestradeBalance[] = [];
   for (const account of accounts) {
+    logger.debug(`Processing account: ${account.number}`);
     const positions = await getPositions(account.number, apiServer, accessToken);
     allPositions = allPositions.concat(positions);
     const balances = await getBalances(account.number, apiServer, accessToken);
     allBalances = allBalances.concat(balances);
   }
+
+  logger.info(`📈 Total positions: ${allPositions.length}`);
+  logger.info(`💰 Total balances: ${allBalances.length}`);
+
   updatePositions(allPositions);
   updateBalances(allBalances);
+
+  logger.success('✅ All account data fetched and updated successfully');
+
   return {
     accounts,
     positions: allPositions,
@@ -170,14 +185,17 @@ export const getAllAccountData = async () => {
  *   An array of QuestradeAccount objects.
  * ============================================================================*/
 export const getAccounts = async () => {
+  logger.debug('Fetching accounts from Questrade API...');
   const tokens = await getBearerToken();
   const apiUrl = `${tokens.api_server}v1/accounts`;
+
   try {
     const response = await axios.get(apiUrl, {
       headers: {
         'Authorization': `Bearer ${tokens.access_token}`,
       },
     });
+
     // Map to QuestradeAccount type
     const accounts = response.data.accounts.map((acc: any) => ({
       type: acc.type,
@@ -188,10 +206,14 @@ export const getAccounts = async () => {
       clientAccountType: acc.clientAccountType,
       userId: acc.userId,
     }));
+
+    logger.info(`✅ Retrieved ${accounts.length} accounts`);
+    logger.debug('Account numbers:', accounts.map((a: any) => a.number));
+
     updateAccounts(accounts);
     return accounts;
   } catch (error) {
-    console.error('Failed to fetch accounts:', error instanceof Error ? error.message : String(error));
+    logger.error('Failed to fetch accounts:', error instanceof Error ? error.message : String(error));
     throw new Error(`Failed to fetch accounts: ${error instanceof Error ? error.message : String(error)}`);
   }
 };

@@ -26,3 +26,12 @@ The application must ensure secure handling of sensitive data, including API tok
 ## Consequences
 - Secure, local-first secrets management for V1.
 - Easy migration to more advanced solutions if needed in future versions.
+
+## AI keys policy (addition)
+
+- API keys used by server-side AI integrations (for example, `OPENAI_API_KEY`) MUST be stored in environment variables or a secured secrets manager (HashiCorp Vault, AWS Secrets Manager, Azure Key Vault) for non-local deployments.
+- `.env` files are permitted for local development only and MUST be listed in `.gitignore`. Any committed secrets must trigger immediate key rotation.
+- Client-side code must never expose secret keys. Only non-sensitive values (for example, model names) may be exposed to the client via `VITE_`-prefixed environment variables.
+- Access to AI keys should follow the principle of least privilege and be limited to operators or service accounts that require them.
+- Audit and rotation: keys should be rotated on a regular cadence (policy-defined), and usage audited for unexpected patterns.
+- Logging: do NOT log raw API keys or full prompts/responses in plaintext. If request/response capture is required for debugging, store them in a protected trace store with strict access control and automatic expiration.
