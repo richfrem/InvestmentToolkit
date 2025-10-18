@@ -35,27 +35,58 @@ import { getPositions } from './src/data/positions.ts';
 import { getBalances } from './src/data/balances.ts';
 import { getOrders } from './src/data/orders.ts';
 import { getCurrentHoldings } from './src/data/currentHoldings.ts';
+import { logger } from './src/utils/logger.ts';
 import * as fs from 'fs';
+
+// Function to fetch current data from Questrade API
+async function fetchCurrentData() {
+  logger.info('Fetching current data from Questrade API...');
+  logger.debug('Calling getAllAccountData() to refresh all data stores');
+
+  await getAllAccountData();
+
+  const data = {
+    accounts: getAccounts(),
+    positions: getPositions(),
+    balances: getBalances(),
+    orders: getOrders(),
+    holdings: getCurrentHoldings(),
+  };
+
+  logger.debug('Data fetched successfully', {
+    accounts: data.accounts.length,
+    positions: data.positions.length,
+    balances: data.balances.length,
+    orders: data.orders.length,
+    holdings: data.holdings.length
+  });
+
+  return data;
+}
 
 
 // Main execution: fetch, aggregate, and export all data
 (async () => {
-  // Step 1: Fetch and refresh all account data from Questrade API
-  await getAllAccountData();
+  try {
+    logger.info('Starting data export process...');
 
-  // Step 2: Read all in-memory data stores
-  const data = {
-    accounts: getAccounts(),      // All account details
-    positions: getPositions(),    // All positions for all accounts
-    balances: getBalances(),      // All balances for all accounts
-    orders: getOrders(),          // All orders for all accounts
-    holdings: getCurrentHoldings(), // Current holdings snapshot
-  };
+    // Step 1: Fetch and refresh all account data from Questrade API
+    const data = await fetchCurrentData();
 
-  // Step 3: Write aggregated data to JSON file
-  const exportPath = path.resolve(__dirname, 'exportedData.json');
-  fs.writeFileSync(exportPath, JSON.stringify(data, null, 2), 'utf-8');
+    // Step 2: Write aggregated data to JSON file
+    const exportPath = path.resolve(__dirname, 'exportedData.json');
+    fs.writeFileSync(exportPath, JSON.stringify(data, null, 2), 'utf-8');
 
-  // Step 4: Log completion
-  console.log(`Fetched and exported all data to ${exportPath}`);
+    // Step 3: Log completion
+    logger.success(`Successfully fetched and exported all data to ${exportPath}`);
+    logger.info(`📊 Accounts: ${data.accounts.length}`);
+    logger.info(`📈 Positions: ${data.positions.length}`);
+    logger.info(`💰 Balances: ${data.balances.length}`);
+    logger.info(`📋 Orders: ${data.orders.length}`);
+    logger.info(`🏦 Holdings: ${data.holdings.length}`);
+
+  } catch (error) {
+    logger.error('Error fetching and exporting data:', error);
+    process.exit(1);
+  }
 })();

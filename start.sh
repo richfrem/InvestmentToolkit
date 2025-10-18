@@ -7,7 +7,7 @@ echo "Starting Questrade Portfolio App..."
 
 # Load environment variables
 if [ -f .env ]; then
-  export $(grep -v '^#' .env | xargs)
+  export $(grep -v '^#' .env | sed 's/#.*//' | xargs)
 fi
 
 # Default ports if not set

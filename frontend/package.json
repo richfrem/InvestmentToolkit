@@ -9,13 +9,21 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@radix-ui/react-select": "^2.0.0",
     "@radix-ui/react-slot": "^1.0.0",
+    "@radix-ui/react-tabs": "^1.1.13",
+    "@tanstack/react-table": "^8.21.3",
     "axios": "^1.4.0",
+    "chart.js": "^4.4.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "lucide-react": "^0.294.0",
     "react": "^18.2.0",
+    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
+    "recharts": "^3.3.0",
+  "react-markdown": "^8.0.5",
+  "sonner": "^2.0.0",
     "tailwind-merge": "^2.0.0",
     "tailwindcss-animate": "^1.0.0"
   },

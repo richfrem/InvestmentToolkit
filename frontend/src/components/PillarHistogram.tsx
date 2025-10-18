@@ -1,4 +1,3 @@
-import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -9,89 +8,110 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
+import { LineElement, PointElement, LineController } from 'chart.js';
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getPillarColor } from '@/lib/colors';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, LineController, Title, Tooltip, Legend);
 
-// Import actual and target pillar allocations from JSON for accuracy
-// @ts-ignore
-import report from '../../../TargetPortfolio/portfolio_thesis_alignment_report.json';
+type PillarHistogramProps = {
+  selectedPillar?: string | null;
+  onPillarSelect?: (pillarName: string | null) => void;
+}
 
-const pillarOrder = [
-  'ASI / Compute',
-  'Cash',
-  'Power / Energy',
-  'Data Infra / Supply Chain',
-  'AI Titans / Cloud',
-  'Sovereign Finance',
-  'Security / Data OS',
-  'Applied AI / Robotics',
-  'Other',
-];
+export default function PillarHistogram({ onPillarSelect }: PillarHistogramProps) {
+  const [masterData, setMasterData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-const actualPillars = pillarOrder.map(pillar => {
-  // Use the actual % from the report, calculated as (pillar total / totalMarketValue) * 100
-  const value = report.pillarTotals[pillar] || 0;
-  return { pillar, pct: (value / report.totalMarketValue) * 100 };
-});
+  useEffect(() => {
+    fetch('/TargetPortfolio/portfolio_master_data.json')
+      .then(response => response.json())
+      .then(data => {
+        setMasterData(data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error loading master data:', error);
+        setLoading(false);
+      });
+  }, []);
 
-const targetPillars = pillarOrder.map(pillar => {
-  // Use the target % from the report
-  const value = report.targetAllocations[pillar] || 0;
-  return { pillar, pct: value };
-});
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[400px]">
+        <p className="text-muted-foreground">Loading chart...</p>
+      </div>
+    );
+  }
 
-const labels = pillarOrder;
-const data = {
-  labels,
-  datasets: [
-    {
-      label: 'Actual %',
-      data: actualPillars.map(p => p.pct),
-      backgroundColor: 'rgba(54, 162, 235, 0.7)',
+  if (!masterData) {
+    return (
+      <div className="flex items-center justify-center h-[400px]">
+        <p className="text-muted-foreground">Portfolio data not available. Please refresh the portfolio master data first.</p>
+      </div>
+    );
+  }
+
+  // --- DATA TRANSFORMATION FOR STACKED BARS ---
+  const chartData = (masterData?.pillars || []).map((pillar: any) => {
+    const actual = (pillar.currentAllocation || 0) * 100;
+    const target = (pillar.targetAllocation || 0) * 100;
+    const gap = actual - target;
+    return { name: pillar.name, code: pillar.code, actual, target, gap };
+  }).sort((a: any, b: any) => b.target - a.target);
+
+  const labels = chartData.map((p: any) => p.name);
+
+  const data = {
+    labels,
+    datasets: [
+      {
+        label: 'Actual (up to Target)',
+        data: chartData.map((p: any) => Math.min(p.actual, p.target)),
+        backgroundColor: chartData.map((p: any) => getPillarColor(p.code)),
+      },
+      {
+        label: 'Over Target',
+        data: chartData.map((p: any) => p.actual > p.target ? p.actual - p.target : 0),
+        backgroundColor: '#6ee7b7',
+      },
+      {
+        label: 'Under Target',
+        data: chartData.map((p: any) => p.actual < p.target ? p.target - p.actual : 0),
+        backgroundColor: '#fda4af',
+      }
+    ],
+  };
+
+  const options = {
+    indexAxis: 'y' as const,
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { stacked: true, grid: { display: false } },
+      y: { stacked: true, grid: { display: false } }
     },
-    {
-      label: 'Target %',
-      data: targetPillars.map(p => p.pct),
-      backgroundColor: 'rgba(255, 99, 132, 0.7)',
-    },
-  ],
-};
+    onClick: (_event: any, elements: any[]) => {
+      if (elements && elements.length > 0) {
+        const clickedIndex = elements[0].index;
+        const pillarCode = chartData[clickedIndex]?.code || chartData[clickedIndex]?.name;
+        if (onPillarSelect) onPillarSelect(pillarCode);
+      }
+    }
+  };
 
-const options = {
-  indexAxis: 'y' as const,
-  responsive: true,
-  plugins: {
-    legend: { position: 'top', labels: { font: { size: 11 }, padding: 8 } },
-    title: { display: true, text: 'Portfolio by Investment Pillar: Actual vs. Target', font: { size: 14 } },
-  },
-  layout: {
-    padding: { left: 0, right: 2, top: 0, bottom: 0 },
-  },
-  scales: {
-    x: {
-      max: Math.max(...actualPillars.map(p => p.pct), ...targetPillars.map(p => p.pct)) + 5,
-      title: { display: false },
-      grid: { drawOnChartArea: false },
-      ticks: { padding: 1, font: { size: 10 } },
-    },
-    y: {
-      title: { display: false },
-      grid: { drawOnChartArea: false },
-      ticks: { padding: 1, font: { size: 10 } },
-    },
-  },
-  elements: {
-    bar: { borderRadius: 2, borderSkipped: false },
-  },
-  barThickness: 12,
-  categoryPercentage: 0.7,
-  barPercentage: 0.8,
-};
-
-export default function PillarHistogram() {
   return (
-    <div className="bg-white rounded shadow p-1 mb-4">
-      <Bar data={data} options={options} height={Math.max(120, labels.length * 18)} />
-    </div>
+    <Card className="border-none shadow-sm">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold">Pillar Allocation</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="h-72">
+          <Bar data={data as any} options={options} />
+        </div>
+      </CardContent>
+    </Card>
   );
 }

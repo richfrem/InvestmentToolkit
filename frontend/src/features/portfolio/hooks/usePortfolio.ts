@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { Holding } from './types';
+
+export interface Holding {
+  symbol: string;
+  quantity: number;
+  bookValue: number;
+  marketValue: number;
+}
 
 export const usePortfolio = () => {
   const [holdings, setHoldings] = useState<Holding[]>([]);

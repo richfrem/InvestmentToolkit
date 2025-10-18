@@ -10,7 +10,7 @@ const data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
 const balances = data.balances || [];
 
 // Group balances by currency and index (since account mapping is not explicit in balances array)
-const cashBalances = balances.map((bal, idx) => ({
+const cashBalances = balances.map((bal: any, idx: number) => ({
   index: idx,
   currency: bal.currency,
   cash: bal.cash
