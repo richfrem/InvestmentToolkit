@@ -1,6 +1,6 @@
 # All Markdown Files Snapshot (LLM-Distilled)
 
-Generated On: 2025-11-03T16:11:27.838Z
+Generated On: 2025-11-03T16:12:14.150Z
 
 # Mnemonic Weight (Token Count, estimated): ~94,115 tokens
 
@@ -702,7 +702,7 @@ This thesis is high-risk. Its success is contingent upon several key assumptions
 
 ---
 
-## VII. References & Further Reading
+## VIII. References & Further Reading
 
 This section provides sources and further reading to support the core pillars of the thesis.
 
