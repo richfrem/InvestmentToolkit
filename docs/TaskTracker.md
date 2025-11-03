@@ -34,4 +34,30 @@ This file maps each user requirement (from `docs/UserRequirements.md`) to its im
 
 ---
 
+
+## End-of-day Tasks
+
+These are short, prioritized tasks to close the working day and prepare the workspace for tomorrow.
+
+- [~] Stop dev servers and confirm processes
+	- Gracefully stop backend and frontend dev servers, ensure no stray node/ts-node or Vite processes are listening on ports (3001, 5173/5174). Save open terminal logs to `logs/dev-server.log` for tomorrow's troubleshooting if needed.
+- [ ] Secure keys & .env verification
+	- Verify repository `.env` is listed in `.gitignore`, scan recent commits for accidental secrets (OPENAI_API_KEY, QUESTRADE_REFRESH_TOKEN). If any secrets were committed, rotate them immediately and record rotation steps in `docs/Security.md`.
+- [ ] Finalize portfolio alignment report (UR23)
+	- Run `scripts/generate_portfolio_alignment_table.ts` against `exportedData.json` and write a markdown report to `TargetPortfolio/portfolio_thesis_alignment_report.md`. Verify formatting and that the report contains pillar table, top holdings, and gaps/overweights. Commit & push the report file if approved.
+- [ ] Add CI smoke test for AI endpoint (mocked)
+	- Create a lightweight GitHub Actions workflow that runs `npm run build` and a single test hitting `/api/run-analysis` with a mocked `aiService` (no real OpenAI call). Store workflow at `.github/workflows/ci-smoke.yml` and ensure it returns HTTP 200 and expected JSON keys.
+- [ ] Add feature-flag / auth gating for Strategy AI endpoints
+	- Introduce a simple runtime feature flag (`FEATURE_STRATEGY_AI`) and require a header or basic auth (dev-mode) for `/api/save-thesis` and `/api/save-prompt` endpoints. Add docs to `adrs/005-incremental-feature-rollout.md` about gating and rollout plan.
+- [ ] Prepare changelog & draft release
+	- Add a short changelog entry to `docs/CHANGELOG.md` summarizing the AI feature, Strategy AI UI, and TaskTracker updates. Create a draft release tag `v0.3.0` locally (do not publish) and push the tag if you want it staged.
+- [ ] Create GitHub issues for follow-ups
+	- Open issues for remaining work: (a) finalize UR23 formatting; (b) integration tests for Questrade flows; (c) monitoring & token usage alerts; (d) production secrets plan; (e) CI test expansion. Add estimates and priority labels in GitHub.
+- [ ] Optional: capture final Strategy AI screenshot
+	- If you want a final screenshot for release notes: run the UI, navigate to Strategy AI, Run Analysis, and capture a full-page screenshot. Save to `docs/screenshots/strategy-ai-final.png` and attach to the draft release.
+- [ ] Workspace tidy & final push
+	- Ensure working tree is clean, run `git status`, commit any minor docs left, and push. Run `npm ci` in both `backend` and top-level if you want a reproducible install tomorrow.
+
+---
+
 **Reminder:** Always update this file when adding, removing, or changing requirements in `UserRequirements.md`.

@@ -27,5 +27,7 @@
   ],
   "author": "",
   "license": "ISC",
-  "dependencies": {}
+  "dependencies": {
+    "gpt-tokenizer": "^3.2.0"
+  }
 }
