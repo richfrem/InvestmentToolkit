@@ -220,7 +220,7 @@ This thesis is high-risk. Its success is contingent upon several key assumptions
 
 ---
 
-## VII. References & Further Reading
+## VIII. References & Further Reading
 
 This section provides sources and further reading to support the core pillars of the thesis.
 
