@@ -8,7 +8,15 @@
 
 import fs from 'fs';
 import path from 'path';
-import { encode } from 'gpt-tokenizer';
+// Lightweight token estimate replacement for 'gpt-tokenizer'
+// We avoid an external dependency by using a conservative character-based estimate.
+function estimateTokenCount(text) {
+    // Rough heuristic: ~4 characters per token on average for English text.
+    // Use ceiling to avoid undercounting. Add a small multiplier to be conservative.
+    if (!text) return 0;
+    const chars = text.length;
+    return Math.ceil(chars / 4.0 * 1.05);
+}
 
 const projectRoot = new URL('.', import.meta.url).pathname;
 const distilledOutputFile = path.join(projectRoot, 'all_markdown_and_code_snapshot_llm_distilled.txt');
@@ -178,8 +186,8 @@ try {
     // --- Forge the final output file ---
     let header = `# All Markdown Files Snapshot (LLM-Distilled)\n\nGenerated On: ${new Date().toISOString()}\n\n{TOKEN_COUNT_PLACEHOLDER}\n\n`;
     const finalContent = header + fileTreeContent + distilledContent;
-    const tokenCount = encode(finalContent).length;
-    const finalContentWithToken = finalContent.replace('{TOKEN_COUNT_PLACEHOLDER}', `# Mnemonic Weight (Token Count): ~${tokenCount.toLocaleString()} tokens`);
+    const tokenCount = estimateTokenCount(finalContent);
+    const finalContentWithToken = finalContent.replace('{TOKEN_COUNT_PLACEHOLDER}', `# Mnemonic Weight (Token Count, estimated): ~${tokenCount.toLocaleString()} tokens`);
 
     fs.writeFileSync(distilledOutputFile, finalContentWithToken, 'utf8');
 
