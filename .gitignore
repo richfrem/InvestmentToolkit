@@ -77,3 +77,5 @@ backend/src/data/balances.ts
 backend/src/data/currentHoldings.ts
 backend/src/data/orders.ts
 backend/src/data/positions.ts
+# Excluded via sparse-checkout
+kitty-specs/
