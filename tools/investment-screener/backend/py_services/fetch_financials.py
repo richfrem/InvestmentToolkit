@@ -147,7 +147,9 @@ def fetch_financial_data(ticker_symbol):
                 "pe_ratio": info.get('trailingPE', 0),
                 "forward_pe": info.get('forwardPE', 0),
                 "market_cap": info.get('marketCap', 0),
-                "beta": info.get('beta', 0)
+                "beta": info.get('beta', 0),
+                "revenue": current_revenue,
+                "shares_outstanding": shares
             },
             "expert_metrics": {
                 "rule_of_40": {

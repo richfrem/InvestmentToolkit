@@ -12,6 +12,8 @@ export interface StockData {
         forward_pe: number;
         market_cap: number;
         beta: number;
+        revenue: number;
+        shares_outstanding: number;
     };
     expert_metrics: {
         rule_of_40: {

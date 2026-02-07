@@ -5,6 +5,7 @@ import { useRecentTickers } from '../hooks/useRecentTickers';
 import MetricsGrid from '../components/MetricsGrid';
 import RuleOf40Chart from '../components/Charts/RuleOf40Chart';
 import FundamentalChart from '../components/Charts/FundamentalChart';
+import ValuationModeler from '../components/ValuationModeler';
 
 export default function Dashboard() {
     // const [currentTicker, setCurrentTicker] = useState<string>(''); // Removed unused state
@@ -20,9 +21,7 @@ export default function Dashboard() {
         setStockData(null);
 
         try {
-            console.log(`Searching for ${ticker}...`);
             const data = await fetchStockData(ticker);
-            console.log("Data received:", data);
             setStockData(data);
             addTicker(ticker); // T011 integration
         } catch (err: any) {
@@ -76,6 +75,9 @@ export default function Dashboard() {
                         <RuleOf40Chart stockData={stockData} />
                         <FundamentalChart stockData={stockData} />
                     </div>
+
+                    {/* Valuation Modeler */}
+                    <ValuationModeler stockData={stockData} />
                 </div>
             )}
 
