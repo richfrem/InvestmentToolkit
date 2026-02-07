@@ -1,9 +1,13 @@
 ---
-work_package_id: "WP01"
-title: "Foundation & Backend Core"
-lane: "planned"
-dependencies: [] 
-subtasks: ["T001", "T002", "T003", "T004", "T005", "T006"]
+work_package_id: WP01
+title: Foundation & Backend Core
+lane: "doing"
+dependencies: []
+base_branch: main
+base_commit: bfc8cd252bba1c40a49b5251c2c16fceed74cd32
+created_at: '2026-02-07T19:11:46.196437+00:00'
+subtasks: [T001, T002, T003, T004, T005, T006]
+shell_pid: "15842"
 ---
 
 # Work Package 01: Foundation & Backend Core
