@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { fetchStockData, type StockData } from '../services/api';
 import StockSearch from '../components/StockSearch';
 import { useRecentTickers } from '../hooks/useRecentTickers';
+import MetricsGrid from '../components/MetricsGrid';
+import RuleOf40Chart from '../components/Charts/RuleOf40Chart';
+import FundamentalChart from '../components/Charts/FundamentalChart';
 
 export default function Dashboard() {
     // const [currentTicker, setCurrentTicker] = useState<string>(''); // Removed unused state
@@ -31,7 +34,7 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="space-y-8 max-w-4xl mx-auto">
+        <div className="space-y-8 max-w-6xl mx-auto">
             <header className="text-center space-y-4 mb-12">
                 <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent inline-block">
                     Market Intelligence
@@ -50,43 +53,28 @@ export default function Dashboard() {
             )}
 
             {stockData && (
-                <div className="bg-surface rounded-xl p-8 border border-slate-800 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="flex justify-between items-start mb-6">
-                        <div>
-                            <h3 className="text-3xl font-bold text-text">{stockData.symbol}</h3>
-                            <p className="text-secondary">{stockData.currency} • Market Cap: ${(stockData.metrics.market_cap / 1e9).toFixed(2)}B</p>
-                        </div>
-                        <div className="text-right">
-                            <div className="text-2xl font-bold text-primary">${stockData.price.toFixed(2)}</div>
-                            <div className="text-sm text-secondary">Current Price</div>
+                <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-8">
+                    {/* Header Info */}
+                    <div className="bg-surface rounded-xl p-8 border border-slate-800">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h3 className="text-4xl font-bold text-text mb-2">{stockData.symbol}</h3>
+                                <p className="text-secondary text-lg">{stockData.profile.sector} • {stockData.currency}</p>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-3xl font-bold text-primary">${stockData.price.toFixed(2)}</div>
+                                <div className="text-secondary">Current Price</div>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-slate-950/50 p-6 rounded-lg border border-slate-800">
-                            <h4 className="text-sm font-medium text-secondary mb-4 uppercase tracking-wider">Expert Metrics</h4>
-                            <div className="space-y-4">
-                                <div className="flex justify-between">
-                                    <span>Rule of 40</span>
-                                    <span className={`font-mono font-bold ${stockData.expert_metrics.rule_of_40.score >= 40 ? 'text-green-400' : 'text-red-400'}`}>
-                                        {stockData.expert_metrics.rule_of_40.score.toFixed(2)}%
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>Piotroski F-Score</span>
-                                    <span className="font-mono font-bold text-primary">
-                                        {stockData.expert_metrics.piotroski_f_score.score} / 9
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                    {/* Expert Metrics Grid */}
+                    <MetricsGrid stockData={stockData} />
 
-                        <div className="bg-slate-950/50 p-6 rounded-lg border border-slate-800">
-                            <h4 className="text-sm font-medium text-secondary mb-4 uppercase tracking-wider">Raw Data (Debug)</h4>
-                            <pre className="text-xs text-slate-500 overflow-x-auto">
-                                {JSON.stringify(stockData.metrics, null, 2)}
-                            </pre>
-                        </div>
+                    {/* Charts Row */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <RuleOf40Chart stockData={stockData} />
+                        <FundamentalChart stockData={stockData} />
                     </div>
                 </div>
             )}
