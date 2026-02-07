@@ -35,3 +35,48 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-slate-600;
 }
+
+/* T020: UI Polish - Smooth Transitions */
+button,
+input,
+a,
+.card {
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Focus States */
+input:focus,
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px theme(--color-primary / 0.3);
+}
+
+/* Card Hover Effects */
+.card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Loading Skeleton */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, theme(--color-surface) 25%, theme(--color-slate-800) 50%, theme(--color-surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
