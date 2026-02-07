@@ -37,6 +37,17 @@ export interface StockData {
         historical_revenue: number[];
         historical_net_income: number[];
     };
+    analyst_estimates?: {
+        target_high_price: number;
+        target_low_price: number;
+        target_mean_price: number;
+        target_median_price: number;
+        recommendation: string;
+        number_of_analysts: number;
+        revenue_growth?: number;
+        profit_margin?: number;
+        forward_pe?: number;
+    };
     error?: string;
 }
 
