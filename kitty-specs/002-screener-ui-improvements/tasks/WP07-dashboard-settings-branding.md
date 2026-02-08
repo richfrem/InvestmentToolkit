@@ -1,10 +1,14 @@
 ---
 work_package_id: WP07
 title: Dashboard, Settings & App Branding
-lane: planned
+lane: "doing"
 dependencies:
 - WP05
+base_branch: main
+base_commit: f6201b1b9bf5896a9e1c0088f395657433909143
+created_at: '2026-02-08T19:26:07.166126+00:00'
 subtasks: [T035, T036, T037, T038, T039, T040, T041]
+shell_pid: "96124"
 ---
 
 # Work Package: Dashboard, Settings & App Branding
