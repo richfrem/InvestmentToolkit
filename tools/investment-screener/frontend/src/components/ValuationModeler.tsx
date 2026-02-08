@@ -134,9 +134,9 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
     // Reset current scenario to Yahoo analyst estimates
     const resetToYahoo = () => {
-        const yahooGrowth = Math.round(stockData.metrics.revenue_growth || estimates?.revenue_growth || 10);
-        const yahooMargin = Math.round(stockData.metrics.profit_margin || estimates?.profit_margin || 20);
-        const yahooPE = Math.round(stockData.metrics.forward_pe || estimates?.forward_pe || 25);
+        const yahooGrowth = Math.round(stockData.metrics.revenue_growth ?? estimates?.revenue_growth ?? 10);
+        const yahooMargin = Math.round(stockData.metrics.profit_margin ?? estimates?.profit_margin ?? 20);
+        const yahooPE = Math.round(stockData.metrics.forward_pe ?? estimates?.forward_pe ?? 25);
         // Default values for new sliders
         const defaultDiscountRate = 10;
         const defaultTimeHorizon = 5;
@@ -242,10 +242,17 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     const config = VALIDATION[field];
                     const value = scenarios[activeScenario][field];
                     // Yahoo reference values for hints
+                    // Helper to properly handle 0/negative values (avoiding || operator which treats them as falsy)
+                    const getYahooValue = (primary: number | undefined, secondary: number | undefined, suffix: string = ''): string => {
+                        if (primary !== undefined && primary !== null) return `${primary.toFixed(1)}${suffix}`;
+                        if (secondary !== undefined && secondary !== null) return `${secondary.toFixed(1)}${suffix}`;
+                        return `N/A${suffix}`;
+                    };
+
                     const yahooHints: Record<keyof ScenarioInputs, string> = {
-                        growthRate: `Yahoo: ${stockData.metrics.revenue_growth?.toFixed(1) || estimates?.revenue_growth?.toFixed(1) || 'N/A'}%`,
-                        netMargin: `Yahoo: ${stockData.metrics.profit_margin?.toFixed(1) || estimates?.profit_margin?.toFixed(1) || 'N/A'}%`,
-                        exitPE: `Yahoo Fwd: ${stockData.metrics.forward_pe?.toFixed(1) || estimates?.forward_pe?.toFixed(1) || 'N/A'}x`,
+                        growthRate: `Yahoo: ${getYahooValue(stockData.metrics.revenue_growth, estimates?.revenue_growth, '%')}`,
+                        netMargin: `Yahoo: ${getYahooValue(stockData.metrics.profit_margin, estimates?.profit_margin, '%')}`,
+                        exitPE: `Yahoo Fwd: ${getYahooValue(stockData.metrics.forward_pe, estimates?.forward_pe, 'x')}`,
                         shareChange: 'Your estimate',
                         discountRate: 'Typical: 8-12%',
                         timeHorizon: 'Default: 5 years',
