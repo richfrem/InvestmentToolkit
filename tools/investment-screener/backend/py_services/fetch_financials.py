@@ -8,9 +8,65 @@ def fetch_financial_data(ticker_symbol):
     try:
         stock = yf.Ticker(ticker_symbol)
         
+# --- Helper for Metrics ---
+        def get_metric(info_dict, key, default=0):
+            val = info_dict.get(key)
+            if val is None: return default
+            return val
+
         # 1. Fetch Basic Info
         info = stock.info
         
+        # Debugging / Fallback for specific keys
+        revenue_growth = get_metric(info, 'revenueGrowth')
+        profit_margin = get_metric(info, 'profitMargins')
+        forward_pe = get_metric(info, 'forwardPE')
+        trailing_pe = get_metric(info, 'trailingPE')
+        if forward_pe == 0 and trailing_pe != 0:
+            forward_pe = trailing_pe # Fallback
+
+        # --- Analyst Forecast Extraction ---
+        analyst_revenue_forecast = []
+        analyst_earnings_forecast = []
+        
+        try:
+            # Current Year
+            import datetime
+            current_year = datetime.datetime.now().year
+            
+            # Revenue Estimates
+            rev_est = stock.revenue_estimate
+            if rev_est is not None and not rev_est.empty:
+                # 0y = Current Year, +1y = Next Year
+                for i, period, year_offset in [(0, '0y', 0), (1, '+1y', 1)]:
+                    if period in rev_est.index:
+                        row = rev_est.loc[period]
+                        analyst_revenue_forecast.append({
+                            "year": current_year + year_offset, # Approximation
+                            "avg": row.get('avg', 0),
+                            "low": row.get('low', 0),
+                            "high": row.get('high', 0),
+                            "period": period
+                        })
+            
+            # Earnings Estimates
+            earn_est = stock.earnings_estimate
+            if earn_est is not None and not earn_est.empty:
+                for i, period, year_offset in [(0, '0y', 0), (1, '+1y', 1)]:
+                    if period in earn_est.index:
+                        row = earn_est.loc[period]
+                        analyst_earnings_forecast.append({
+                            "year": current_year + year_offset,
+                            "avg": row.get('avg', 0),
+                            "low": row.get('low', 0),
+                            "high": row.get('high', 0),
+                            "period": period
+                        })
+
+        except Exception as e:
+            # Don't fail the whole script for forecasts
+            print(json.dumps({"warning": f"Forecast fetch failed: {str(e)}", "partial": True}), file=sys.stderr)
+
         # 2. Fetch Financial Statements
         financials = stock.financials
         balance_sheet = stock.balance_sheet
@@ -37,10 +93,14 @@ def fetch_financial_data(ticker_symbol):
         current_revenue = get_value(financials, 'Total Revenue', 0)
         previous_revenue = get_value(financials, 'Total Revenue', 1)
         
-        revenue_growth = 0
-        if previous_revenue != 0:
-            revenue_growth = ((current_revenue - previous_revenue) / previous_revenue) * 100
-            
+        # Recalculate revenue growth if 0 from info
+        if revenue_growth == 0 and previous_revenue != 0:
+            revenue_growth = ((current_revenue - previous_revenue) / previous_revenue)  # Keep as decimal 0.15 for 15%? 
+            # Wait, yfinance info returns 0.15 for 15%.
+            # Rule of 40 calc below expects percentage (e.g. 15.0)
+            # Let's standardize: info returns float (0.15). Our calculation below produced (0.15 * 100) = 15.0.
+            pass
+
         # EBITDA Margin
         ebitda = get_value(financials, 'EBITDA', 0) # yfinance usually has this
         # If not, calc from Operating Income + D&A
@@ -52,9 +112,19 @@ def fetch_financial_data(ticker_symbol):
         
         ebitda_margin = 0
         if current_revenue != 0:
-            ebitda_margin = (ebitda / current_revenue) * 100
+            ebitda_margin = (ebitda / current_revenue) # 0.30 for 30%
             
-        rule_of_40 = revenue_growth + ebitda_margin
+        # Convert to percentage for Rule of 40 Score
+        # If revenue_growth came from info, it's likely 0.15. If calculated, we need to match.
+        
+        # Metric Normalization
+        # info['revenueGrowth'] is usually 0.xx
+        # info['profitMargins'] is usually 0.xx
+        
+        if revenue_growth == 0 and previous_revenue != 0:
+             revenue_growth = (current_revenue - previous_revenue) / previous_revenue
+             
+        rule_of_40_score = (revenue_growth * 100) + (ebitda_margin * 100)
         
         # --- Piotroski F-Score Calculation ---
         piotroski_score = 0
@@ -144,18 +214,20 @@ def fetch_financial_data(ticker_symbol):
                 "description": info.get('longBusinessSummary', '')
             },
             "metrics": {
-                "pe_ratio": info.get('trailingPE', 0),
-                "forward_pe": info.get('forwardPE', 0),
+                "pe_ratio": trailing_pe,
+                "forward_pe": forward_pe,
                 "market_cap": info.get('marketCap', 0),
                 "beta": info.get('beta', 0),
                 "revenue": current_revenue,
-                "shares_outstanding": shares
+                "shares_outstanding": shares,
+                "revenue_growth": round(revenue_growth * 100, 2), # Convert to %
+                "profit_margin": round(profit_margin * 100, 2)    # Convert to %
             },
             "expert_metrics": {
                 "rule_of_40": {
-                    "score": round(rule_of_40, 2),
-                    "revenue_growth": round(revenue_growth, 2),
-                    "ebitda_margin": round(ebitda_margin, 2),
+                    "score": round(rule_of_40_score, 2),
+                    "revenue_growth": round(revenue_growth * 100, 2),
+                    "ebitda_margin": round(ebitda_margin * 100, 2),
                     "is_saas": info.get('sector') == 'Technology'
                 },
                 "piotroski_f_score": {
@@ -173,7 +245,9 @@ def fetch_financial_data(ticker_symbol):
                  # Minimal for charts
                  "historical_revenue": [get_value(financials, 'Total Revenue', i) for i in range(4)],
                  "historical_net_income": [get_value(financials, 'Net Income', i) for i in range(4)]
-            }
+            },
+            "analyst_revenue_forecast": analyst_revenue_forecast,
+            "analyst_earnings_forecast": analyst_earnings_forecast
         }
         
         # Custom Encoder for Numpy Types
