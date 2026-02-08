@@ -218,16 +218,17 @@
 - [ ] T036 Create `DashboardHome.tsx` — landing page with recent tickers
 - [ ] T037 Implement "Smart Tooltips" — generic Piotroski breakdown on hover (showing which of the 9 criteria passed/failed)
 - [ ] T038 Add Logarithmic Scale Toggle to History Charts (Revenue/Net Income)
-- [ ] T039 Implement "Event Marker" framework for charts (UI to render vertical lines for dates; mock "Blackwell Ramp" for NVDA as demo, generic structure for others)
+- [ ] T039 Implement "Event Marker" framework (Optional/Manual config for specific analysis, e.g. NVDA Blackwell)
 - [ ] T040 Create generic "Sector Module" components:
     - `InventorySparkline` (Inventory/Sales ratio)
     - `SegmentBreakdown` (Donut chart for generic revenue segments)
 - [ ] T041 Add Valuation Sensitivity Heatmap (2D Matrix: PE vs Growth)
 - [ ] T042 Wire Sidebar links and update active state
+- [ ] T043 Add "What is this?" Help Modal triggers (clickable '?') to ALL key metric tiles (PE, FCF, Rule of 40, etc.) for contextual education
 
 ### Implementation Notes
-- **Generic Design**: Components must accept generic data props, not hardcoded NVDA values.
-- **Event Markers**: Create an interface `ChartEvent { date: string; label: string }`.
+- **Generic Design**: Components must accept generic data props.
+- **Event Markers**: Only render if explicitly provided in a separate config/API; do not attempt to auto-generate for all 5000+ stocks.
 - **Tooltips**: Use Shadcn/Radix tooltip or formatted sticky hover card.
 
 ### Parallel Opportunities
@@ -238,6 +239,7 @@
 
 ### Risks & Mitigations
 - Missing data for Segment Breakdown on generic stocks → Show "Data Unavailable" empty state.
+- Event Markers are high-effort data maintenance → Scope to "Demo Only" or "User Configurable" to avoid maintenance burden.
 
 ---
 
