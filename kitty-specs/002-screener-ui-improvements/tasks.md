@@ -182,12 +182,13 @@
 **Estimated Size**: ~400 lines, 6 subtasks
 
 ### Included Subtasks
-- [ ] T029 Create `ProjectionsPanel.tsx` component — modal/slide-out panel listing saved projections for current ticker
-- [ ] T030 Display projection entries: date saved, scenario values summary (growth, margin, PE), notes preview
-- [ ] T031 Implement "Load" action — populate sliders with saved scenario values
-- [ ] T032 Implement "Edit" action — open notes in edit mode, allow updating scenario values
-- [ ] T033 Implement "Delete" action with confirmation dialog
-- [ ] T034 Add "My Projections" button to ValuationModeler header, show count badge if projections exist
+### Included Subtasks
+- [x] T029 Create `ProjectionsPanel.tsx` component — modal/slide-out panel listing saved projections for current ticker
+- [x] T030 Display projection entries: date saved, scenario values summary (growth, margin, PE), notes preview
+- [x] T031 Implement "Load" action — populate sliders with saved scenario values
+- [x] T032 Implement "Edit" action — open notes in edit mode, allow updating scenario values
+- [x] T033 Implement "Delete" action with confirmation dialog
+- [x] T034 Add "My Projections" button to ValuationModeler header, show count badge if projections exist
 
 ### Implementation Notes
 - LocalStorage key pattern: `projection_{SYMBOL}` — currently stores single projection per ticker.
@@ -205,55 +206,51 @@
 
 ---
 
-## Work Package WP07: Dashboard, Settings & App Branding (Priority: P2)
+## Work Package WP07: Advanced Dashboard, Metrics & Branding (Priority: P2)
 
-**Goal**: Wire up the Dashboard and Settings sidebar links with functional views. Rename the app from "Spec Kitty / Investment Screener" to a proper product name.
-**Independent Test**: Clicking Dashboard/Settings sidebar links navigates to functional pages. App header/sidebar shows new branding.
-**Prompt**: `/tasks/WP07-dashboard-settings-branding.md`
-**Estimated Size**: ~400 lines, 7 subtasks
+**Goal**: Elevate the dashboard to "Terminal Quality" with advanced visualization (Log Scale, Heatmaps), transparency (Piotroski Breakdown), and sector-specific data (Inventory, Capex). Also finalize app branding.
+**Independent Test**: Dashboard handles generic stocks (not just NVDA) with robust error handling for missing advanced metrics.
+**Prompt**: `/tasks/WP07-advanced-dashboard.md`
+**Estimated Size**: ~600 lines, 8 subtasks
 
 ### Included Subtasks
-- [ ] T035 Rename app branding — replace "Spec Kitty / Investment Screener" in Sidebar.tsx header with new name (e.g., "Market Intelligence" or similar from the existing header text). Remove the Spec Kitty branding.
-- [ ] T036 Create `DashboardHome.tsx` — landing page showing recently analyzed tickers with quick stats (last price, % change), quick-launch links
-- [ ] T037 Wire Sidebar "Dashboard" link to navigate to DashboardHome view
-- [ ] T038 Create `SettingsPage.tsx` — settings page with: data cache settings, clear saved data option, about/version info
-- [ ] T039 Wire Sidebar "Settings" link to navigate to SettingsPage
-- [ ] T040 Update `App.tsx` routing to include new routes (`/dashboard`, `/settings`)
-- [ ] T041 [P] Update Sidebar.tsx to highlight active nav item based on current route
+- [ ] T035 Rename app branding — replace "Spec Kitty" with "Market Intelligence" in Sidebar
+- [ ] T036 Create `DashboardHome.tsx` — landing page with recent tickers
+- [ ] T037 Implement "Smart Tooltips" — generic Piotroski breakdown on hover (showing which of the 9 criteria passed/failed)
+- [ ] T038 Add Logarithmic Scale Toggle to History Charts (Revenue/Net Income)
+- [ ] T039 Implement "Event Marker" framework for charts (UI to render vertical lines for dates; mock "Blackwell Ramp" for NVDA as demo, generic structure for others)
+- [ ] T040 Create generic "Sector Module" components:
+    - `InventorySparkline` (Inventory/Sales ratio)
+    - `SegmentBreakdown` (Donut chart for generic revenue segments)
+- [ ] T041 Add Valuation Sensitivity Heatmap (2D Matrix: PE vs Growth)
+- [ ] T042 Wire Sidebar links and update active state
 
 ### Implementation Notes
-- The app already has "Market Intelligence" as the top header text — use this as the primary branding.
-- DashboardHome can reuse `useRecentTickers()` hook for recent history.
-- Settings page is minimal for now — theme toggle and cache clearing.
-- Consider making "/" route show DashboardHome, and stock analysis moves to "/analyze?ticker=NVDA".
+- **Generic Design**: Components must accept generic data props, not hardcoded NVDA values.
+- **Event Markers**: Create an interface `ChartEvent { date: string; label: string }`.
+- **Tooltips**: Use Shadcn/Radix tooltip or formatted sticky hover card.
 
 ### Parallel Opportunities
-- T036 (Dashboard) and T038 (Settings) can be built in parallel.
-- T041 (active nav) is independent.
+- T035/T036 (Branding/Home) independent of T037-T041 (Metrics).
 
 ### Dependencies
-- None (independent package).
+- None.
 
 ### Risks & Mitigations
-- Routing changes may break existing bookmarks (e.g., `/?ticker=NVDA`) → ensure backward compatibility or redirects.
+- Missing data for Segment Breakdown on generic stocks → Show "Data Unavailable" empty state.
 
 ---
 
 ## Dependency & Execution Summary
 
-- **Sequence**: WP01 → WP02 → WP03 (forecast depends on chart refactor) → WP04 (Rule of 40 tab)
-- **Parallel after WP01**: WP05 (valuation layout) can proceed in parallel with WP02-WP04
-- **Later packages**: WP06 depends on WP05. WP07 has no dependencies and can start anytime.
-- **MVP Scope**: WP01 + WP02 + WP05 (fix data, add chart modes, compact valuation)
+- **Sequence**: WP01 → WP02 → WP03 → WP04
+- **Parallel**: WP05/WP06
+- **Final**: WP07 (Advanced Polish)
 
 ```
-WP01 (Yahoo Fix) ──→ WP02 (Multi-Chart) ──→ WP03 (Forecast Overlay)
-       │                      │
-       │                      └──→ WP04 (Rule of 40 Tab)
+WP01 (Yahoo Fix) ──→ WP02 ──→ WP03 ──→ WP04
        │
-       └──→ WP05 (Valuation Layout) ──→ WP06 (Projections)
-
-WP07 (Dashboard/Settings/Branding) ── independent, do anytime
+       └──→ WP05 ──→ WP06 ──→ WP07 (Advanced Features)
 ```
 
 ---
@@ -298,8 +295,9 @@ WP07 (Dashboard/Settings/Branding) ── independent, do anytime
 | T034 | Add My Projections button | WP06 | P2 | Yes |
 | T035 | Rename app branding | WP07 | P2 | No |
 | T036 | Create DashboardHome page | WP07 | P2 | Yes |
-| T037 | Wire Dashboard sidebar link | WP07 | P2 | No |
-| T038 | Create SettingsPage | WP07 | P2 | Yes |
-| T039 | Wire Settings sidebar link | WP07 | P2 | No |
-| T040 | Update App.tsx routing | WP07 | P2 | No |
-| T041 | Highlight active nav item | WP07 | P2 | Yes |
+| T037 | Implement Smart Tooltips (Piotroski) | WP07 | P2 | No |
+| T038 | Add Log Scale Toggle | WP07 | P2 | No |
+| T039 | Implement Event Marker Framework | WP07 | P2 | No |
+| T040 | Create Sector Module Components | WP07 | P2 | Yes |
+| T041 | Add Valuation Sensitivity Heatmap | WP07 | P2 | No |
+| T042 | Wire Sidebar links | WP07 | P2 | Yes |
