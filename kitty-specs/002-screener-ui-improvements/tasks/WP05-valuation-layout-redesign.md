@@ -1,7 +1,7 @@
 ---
 work_package_id: WP05
 title: Valuation Layout Redesign
-lane: "doing"
+lane: "for_review"
 dependencies: [WP01]
 base_branch: main
 base_commit: 93c4968b8db3d252ec76388fe022d3e4957c8405
@@ -77,3 +77,7 @@ The current Valuation Modeler stacks everything vertically, wasting horizontal s
 
 ## Risks
 - "Compact" can mean "Unusable" on touch screens. Ensure slider thumb touch target remains 44px+ even if visual representation is smaller.
+
+## Activity Log
+
+- 2026-02-08T17:59:32Z – unknown – shell_pid=96124 – lane=for_review – Moved to for_review
