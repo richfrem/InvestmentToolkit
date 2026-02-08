@@ -120,11 +120,11 @@
 **Estimated Size**: ~300 lines, 5 subtasks
 
 ### Included Subtasks
-- [ ] T018 Create `RuleOf40Page.tsx` component — dedicated view with the Rule of 40 chart, score display, and educational context (what it means, SaaS/Tech warning)
-- [ ] T019 Update `Dashboard.tsx` tab navigation to add "Rule of 40" as 4th tab between Analysis and Valuation
-- [ ] T020 Remove RuleOf40Chart from the Analysis tab layout (Analysis now only shows financial charts from WP02)
-- [ ] T021 Add contextual content to RuleOf40Page: explanation text, score interpretation, sector applicability warning
-- [ ] T022 [P] Style the Rule of 40 page consistent with Luxury Dark theme — card layout, amber/green color coding
+- [x] T018 Create `RuleOf40Page.tsx` component — dedicated view with the Rule of 40 chart, score display, and educational context (what it means, SaaS/Tech warning)
+- [x] T019 Update `Dashboard.tsx` tab navigation to add "Rule of 40" as 4th tab between Analysis and Valuation
+- [x] T020 Remove RuleOf40Chart from the Analysis tab layout (Analysis now only shows financial charts from WP02)
+- [x] T021 Add contextual content to RuleOf40Page: explanation text, score interpretation, sector applicability warning
+- [x] T022 [P] Style the Rule of 40 page consistent with Luxury Dark theme — card layout, amber/green color coding
 
 ### Implementation Notes
 - The existing `RuleOf40Chart.tsx` component can be reused as-is inside the new page.
