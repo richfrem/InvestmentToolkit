@@ -96,7 +96,7 @@ kitty-specs/
 .kittify/.dashboard
 
 # temp folders for comparison
-#kittywindsurf
-#kittyclaude
-#kittycopilot
-#kittygemini
+kittywindsurf
+kittyclaude
+kittycopilot
+kittygemini
