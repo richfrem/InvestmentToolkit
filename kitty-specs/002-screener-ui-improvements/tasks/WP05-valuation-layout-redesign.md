@@ -1,186 +1,75 @@
 ---
 work_package_id: "WP05"
-subtasks:
-  - "T023"
-  - "T024"
-  - "T025"
-  - "T026"
-  - "T027"
-  - "T028"
 title: "Valuation Layout Redesign"
-phase: "Phase 2 - Core Features"
 lane: "planned"
 dependencies: ["WP01"]
-assignee: ""
-agent: ""
-shell_pid: ""
-review_status: ""
-reviewed_by: ""
-history:
-  - timestamp: "2026-02-08T02:11:51Z"
-    lane: "planned"
-    agent: "system"
-    shell_pid: ""
-    action: "Prompt generated via /spec-kitty.tasks"
+subtasks: ["T023", "T024", "T025", "T026", "T027", "T028"]
 ---
 
-# Work Package Prompt: WP05 – Valuation Layout Redesign
+# Work Package: Valuation Layout Redesign
+**Priority**: P1
+**Goal**: Implement a compact, side-by-side layout for the Valuation Modeler to eliminate vertical scrolling on standard displays.
 
-## ⚠️ IMPORTANT: Review Feedback Status
+## Context
+The current Valuation Modeler stacks everything vertically, wasting horizontal space. Users have to scroll up and down to tweak inputs and see results. We need a dense, dashboard-style layout.
 
-- **Has review feedback?**: Check the `review_status` field above.
+## Subtasks
 
----
+### T023: Implement Side-by-Side Grid
+**Objective**: Split the main container into two columns.
+**Files**: `tools/investment-screener/frontend/src/components/ValuationModeler.tsx`
+**Guidance**:
+- Use CSS Grid: `grid grid-cols-1 lg:grid-cols-12 gap-6`.
+- Left Panel (Inputs): `lg:col-span-7` or `lg:col-span-8`.
+- Right Panel (Results): `lg:col-span-5` or `lg:col-span-4`.
+- Ensure mobile falls back to single column.
 
-## Review Feedback
+### T024: Compact Slider Inputs
+**Objective**: Reduce vertical padding and font sizes for sliders.
+**Files**: `tools/investment-screener/frontend/src/components/ValuationModeler.tsx`
+**Guidance**:
+- Current: Likely `mb-6` or `py-4`. Reduce to `mb-3` or `py-2`.
+- Organize sliders into a grid within the Left Panel: `grid-cols-1 md:grid-cols-2`.
+- Makes 6 sliders fit in 3 rows (Growth/Margin, PE/ShareChange, Discount/Time).
 
-*[This section is empty initially.]*
+### T025: Redesign Scenario Cards
+**Objective**: Make the output cards (Bear/Base/Bull) compact.
+**Files**: `tools/investment-screener/frontend/src/components/ValuationModeler.tsx`
+**Guidance**:
+- Move to the Right Panel.
+- Instead of 3 large separate cards, use a single "Scenario Dashboard" card.
+- Layout: 3 columns within the card (Bear | Base | Bull).
+- Highlight "Base" as the primary connected outcome.
 
----
+### T026: Move Expert Analysis
+**Objective**: Place the qualitative analysis text in the Right Panel.
+**Files**: `tools/investment-screener/frontend/src/components/ValuationModeler.tsx`
+**Guidance**:
+- Below the Scenario Dashboard.
+- Use a condensed font style (smaller text, maybe scrollable if very long, but usually it's short).
 
-## Objectives & Success Criteria
+### T027: Add mini comparison chart
+**Objective**: Visual confirmation of the valuation spread.
+**Files**: `tools/investment-screener/frontend/src/components/ValuationModeler.tsx`
+**Guidance**:
+- Add a tiny Recharts BarChart in the Right Panel.
+- X-axis: Bear, Base, Bull, Current Price.
+- Visualizes the potential upside/downside immediately.
 
-- Valuation Modeler fits on a 1080p screen without scrolling.
-- Inputs (sliders) and outputs (scenario results) are visible simultaneously.
-- Layout uses side-by-side arrangement: left panel inputs, right panel results.
-- Bear/Base/Bull scenario cards are compact.
-- Responsive: stacks vertically on smaller screens.
+### T028: Header optimization
+**Objective**: Move search bar to top right to save vertical space.
+**Files**: `tools/investment-screener/frontend/src/components/ValuationModeler.tsx` (and `Dashboard.tsx` if lifted up)
+**Guidance**:
+- Verify if Search Bar is inside ValuationModeler or part of the main Dashboard header.
+- If in Modeler, move it to the main header row (beside the "Valuation Modeler" title).
+- Ensure "Reset to Yahoo" and "Save Projection" buttons are compact (icon-only on mobile, small buttons on desktop).
 
-## Context & Constraints
+## Validation
+- **Manual Test**: Open Valuation tab on 1080p screen (1920x1080).
+- **Success Criteria**:
+  - Entire modeler (Inputs + Results) visible without browser scrollbar.
+  - Sliders are usable (not too small).
+  - Responsive: resizing to mobile (<768px) stacks them vertically again.
 
-- **Current layout**: `ValuationModeler.tsx` (374 lines) — sliders in 2-column grid, scenario cards as 3-column row, all stacked vertically requiring significant scrolling.
-- **This is a layout-only refactor** — valuation calculation logic stays unchanged.
-- **Depends on WP01**: Layout should show real Yahoo data, not N/A values.
-- **Key Files**:
-  - `frontend/src/components/ValuationModeler.tsx` (374 lines) — main target
-
-## Implementation Command
-
-```bash
-spec-kitty implement WP05 --base WP01
-```
-
-## Subtasks & Detailed Guidance
-
-### Subtask T023 – Redesign ValuationModeler Side-by-Side Layout
-
-- **Purpose**: Create a 2-panel layout where inputs and results are visible simultaneously.
-- **Steps**:
-  1. Restructure ValuationModeler.tsx into a 2-column grid:
-     ```tsx
-     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-       {/* Left panel: 3 columns wide - Inputs */}
-       <div className="lg:col-span-3">
-         {/* Scenario tabs (bear/base/bull) */}
-         {/* Compact sliders */}
-         {/* Action buttons (Reset/Save) */}
-       </div>
-       {/* Right panel: 2 columns wide - Results */}
-       <div className="lg:col-span-2">
-         {/* Active scenario target price + % change */}
-         {/* Bear/Base/Bull summary cards */}
-         {/* Expert Analysis Summary */}
-         {/* Analyst Consensus bar */}
-       </div>
-     </div>
-     ```
-  2. On screens < `lg` breakpoint, stack to single column (inputs first, then results).
-  3. Keep header (title + active scenario price badge) above both columns.
-- **Files**: `frontend/src/components/ValuationModeler.tsx`
-
-### Subtask T024 – Compact Slider Inputs
-
-- **Purpose**: Reduce vertical space consumed by the 6 sliders.
-- **Steps**:
-  1. Change slider grid from 2 columns to 3 columns on wider screens:
-     ```tsx
-     <div className="grid grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-3">
-     ```
-  2. Reduce vertical gaps: `gap-y-3` instead of larger gaps.
-  3. Make slider labels + inputs more compact:
-     - Label + input on same row: `flex items-center justify-between`
-     - Smaller font for labels: `text-xs` instead of `text-sm`
-     - Smaller number input boxes: `w-16` instead of `w-20`
-  4. Yahoo reference text below slider: `text-[10px]` in muted color.
-  5. Reduce slider height/padding — tighter vertical rhythm.
-- **Files**: `frontend/src/components/ValuationModeler.tsx`
-
-### Subtask T025 – Redesign Scenario Cards
-
-- **Purpose**: Bear/Base/Bull cards take up less vertical space.
-- **Steps**:
-  1. Change from 3 separate cards to a compact horizontal bar or inline tabs:
-     ```tsx
-     <div className="flex gap-2">
-       {['bear', 'base', 'bull'].map(scenario => (
-         <button
-           key={scenario}
-           className={`flex-1 py-2 px-3 rounded-lg text-center text-sm ${
-             activeScenario === scenario ? 'bg-amber-500/20 border border-amber-500' : 'bg-slate-800'
-           }`}
-         >
-           <span className="block text-xs uppercase">{scenario}</span>
-           <span className="block text-lg font-bold">${targetPrice}</span>
-         </button>
-       ))}
-     </div>
-     ```
-  2. Each card shows: scenario name + target price. That's it — compact.
-  3. Active scenario has amber border/glow. Inactive cards are muted.
-- **Files**: `frontend/src/components/ValuationModeler.tsx`
-
-### Subtask T026 – Move Expert Analysis to Right Panel
-
-- **Purpose**: The expert analysis summary (Strong Value / Fairly Valued / Overvalued) should live in the results panel for at-a-glance assessment.
-- **Steps**:
-  1. In the right panel, below the scenario cards, add the Expert Analysis section:
-     - Valuation assessment badge: "Strong Value" (green), "Potential Value" (amber), "Fairly Valued" (blue), "Overvalued" (red)
-     - Required CAGR to justify current price
-     - Upside/downside percentage to base target
-  2. Use a colored card/badge for the assessment — visually prominent.
-  3. Show the calculation: "Current price implies X% growth vs your Y% assumption."
-- **Files**: `frontend/src/components/ValuationModeler.tsx`
-
-### Subtask T027 – Add Mini Scenario Comparison Chart
-
-- **Purpose**: Visual bar chart showing bear/base/bull targets relative to current price.
-- **Steps**:
-  1. In the right panel, add a small horizontal bar chart:
-     ```
-     Current ——|——————————— $50.59
-     Bear   ——|——— $16
-     Base   ——|—————————— $53
-     Bull   ——|————————————————————— $173
-     ```
-  2. Use Recharts `BarChart` (horizontal) or simple Tailwind divs with percentage widths.
-  3. Current price shown as a reference line/marker.
-  4. Color: bear=red, base=amber, bull=green, current=white.
-  5. This is optional enhancement — skip if space is tight.
-- **Files**: `frontend/src/components/ValuationModeler.tsx`
-- **Parallel?**: Yes — additive component, can be built independently.
-
-### Subtask T028 – Responsive Behavior
-
-- **Purpose**: Ensure the layout works on different screen sizes.
-- **Steps**:
-  1. Below `lg` breakpoint (1024px): single column, inputs stacked above results.
-  2. At `lg`: 2-panel side-by-side layout.
-  3. Slider columns: `grid-cols-2` at `md`, `grid-cols-3` at `xl`.
-  4. Test that sliders are usable (thumb not too small) on all breakpoints.
-  5. Ensure the right panel doesn't get too narrow on `lg` — minimum content width.
-- **Files**: `frontend/src/components/ValuationModeler.tsx`
-
-## Risks & Mitigations
-
-- 3-column slider layout may be too cramped → test on 1366px (common laptop) and fall back to 2 columns if needed.
-- Side-by-side layout requires enough content in right panel to not look empty → ensure scenario cards + analysis summary fill the space.
-
-## Review Guidance
-
-- Open the Valuation tab on a 1080p display — everything should be visible without scrolling.
-- Test slider usability: can you easily adjust sliders in the compact layout?
-- Resize browser window to test responsive breakpoints.
-
-## Activity Log
-
-- 2026-02-08T02:11:51Z – system – lane=planned – Prompt created.
+## Risks
+- "Compact" can mean "Unusable" on touch screens. Ensure slider thumb touch target remains 44px+ even if visual representation is smaller.
