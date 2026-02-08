@@ -1,470 +1,397 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { Save, RotateCcw, FolderOpen, TrendingUp, TrendingDown, Info, X } from 'lucide-react';
 import type { StockData } from '../services/api';
-import { TrendingUp, TrendingDown, Scale, Info, RotateCcw, Save, X, FileText } from 'lucide-react';
-import { HelpTrigger } from './HelpModal';
+import { ProjectionsPanel } from './ProjectionsPanel';
+import { storage } from '../services/storage';
 
 interface ValuationModelerProps {
     stockData: StockData;
 }
 
-interface ScenarioInputs {
-    growthRate: number;
-    netMargin: number;
-    exitPE: number;
-    shareChange: number;
-    discountRate: number;
-    timeHorizon: number;
-}
-
-type ScenarioType = 'bear' | 'base' | 'bull';
-
-const INITIAL_SCENARIOS: Record<ScenarioType, ScenarioInputs> = {
-    bear: { growthRate: 5, netMargin: 15, exitPE: 15, shareChange: 2, discountRate: 12, timeHorizon: 5 },
-    base: { growthRate: 10, netMargin: 20, exitPE: 25, shareChange: 0, discountRate: 10, timeHorizon: 5 },
-    bull: { growthRate: 20, netMargin: 25, exitPE: 35, shareChange: -2, discountRate: 8, timeHorizon: 5 },
-};
-
-const VALIDATION = {
-    growthRate: { min: -50, max: 200, label: 'Growth Rate' },
-    netMargin: { min: -100, max: 100, label: 'Net Margin' },
-    exitPE: { min: 1, max: 200, label: 'Exit P/E' },
-    shareChange: { min: -20, max: 20, label: 'Share Change' },
-    discountRate: { min: 0, max: 30, label: 'Discount Rate' },
-    timeHorizon: { min: 1, max: 10, label: 'Time Horizon' },
-};
-
-const INDUSTRY_PE_RANGES: Record<string, { min: number; max: number }> = {
-    'Technology': { min: 25, max: 40 },
-    'Healthcare': { min: 15, max: 25 },
-    'Retail': { min: 10, max: 20 },
-    'Financials': { min: 8, max: 15 },
-    'default': { min: 12, max: 25 },
-};
-
-function calculateTargetPrice(
-    revenue: number,
-    growthRate: number,
-    netMargin: number,
-    exitPE: number,
-    shares: number,
-    shareChange: number,
-    discountRate: number,
-    timeHorizon: number
-): number {
-    const projectedRevenue = revenue * Math.pow(1 + growthRate / 100, timeHorizon);
-    const projectedNetIncome = projectedRevenue * (netMargin / 100);
-    const projectedShares = shares * Math.pow(1 + shareChange / 100, timeHorizon);
-    const projectedEPS = projectedNetIncome / projectedShares;
-    const futurePrice = projectedEPS * exitPE;
-    // Discount back to present value
-    const presentValue = futurePrice / Math.pow(1 + discountRate / 100, timeHorizon);
-    return presentValue;
-}
-
-
-
 export default function ValuationModeler({ stockData }: ValuationModelerProps) {
-    const [activeScenario, setActiveScenario] = useState<ScenarioType>('base');
-    const [scenarios, setScenarios] = useState<Record<ScenarioType, ScenarioInputs>>(INITIAL_SCENARIOS);
-    const [notes, setNotes] = useState('');
-    const [showNotesModal, setShowNotesModal] = useState(false);
+    // --- State ---
+    const [scenario, setScenario] = useState<'bear' | 'base' | 'bull'>('base');
+    const [showProjectionsPanel, setShowProjectionsPanel] = useState(false);
+    const [savedCount, setSavedCount] = useState(0);
 
-    const revenue = stockData.metrics.revenue || 0;
-    const shares = stockData.metrics.shares_outstanding || 1;
-    const currentPrice = stockData.price;
-    const sector = stockData.profile.sector || 'default';
-    const peRange = INDUSTRY_PE_RANGES[sector] || INDUSTRY_PE_RANGES['default'];
+    // Save Modal State
+    const [showSaveModal, setShowSaveModal] = useState(false);
+    const [saveName, setSaveName] = useState('');
 
-    // Get analyst estimates from API
-    const estimates = stockData.analyst_estimates;
+    // Inputs (Base defaults)
+    const [growthRate, setGrowthRate] = useState(15);
+    const [netMargin, setNetMargin] = useState(20);
+    const [peRatio, setPeRatio] = useState(25);
+    const [discountRate, setDiscountRate] = useState(9);
+    const [shareChange, setShareChange] = useState(-2); // Buybacks
+    const [timeHorizon, setTimeHorizon] = useState(5);
 
-    // Load saved projections from localStorage
+    // Load initial saved count
     useEffect(() => {
-        const key = `projection_${stockData.symbol}`;
-        const saved = localStorage.getItem(key);
-        if (saved) {
-            try {
-                const data = JSON.parse(saved);
-                if (data.scenarios) {
-                    setScenarios(data.scenarios);
-                }
-                if (data.notes) {
-                    setNotes(data.notes);
-                }
-            } catch (e) {
-                console.warn('Failed to parse saved projection:', e);
-            }
-        }
+        const saved = storage.getProjections(stockData.symbol);
+        setSavedCount(saved.length);
     }, [stockData.symbol]);
 
-    // Update scenarios when stock data changes (only if no saved projection)
+    // Initialize with Yahoo Finance data/defaults when stockData changes
     useEffect(() => {
-        const key = `projection_${stockData.symbol}`;
-        const saved = localStorage.getItem(key);
-        if (saved) return; // Don't override saved projections
+        resetToYahoo();
+    }, [stockData, scenario]);
 
-        if (estimates) {
-            const newBaseGrowth = Math.round(estimates.revenue_growth || 10);
-            const newBaseMargin = Math.round(estimates.profit_margin || 20);
-            const newBasePE = Math.round(estimates.forward_pe || 25);
-            setScenarios(prev => ({
-                bear: { ...prev.bear, growthRate: Math.max(newBaseGrowth - 5, 0), netMargin: Math.max(newBaseMargin - 5, 5), exitPE: Math.max(newBasePE - 10, 10), shareChange: 2 },
-                base: { ...prev.base, growthRate: newBaseGrowth, netMargin: newBaseMargin, exitPE: newBasePE, shareChange: 0 },
-                bull: { ...prev.bull, growthRate: newBaseGrowth + 10, netMargin: newBaseMargin + 5, exitPE: newBasePE + 10, shareChange: -2 },
-            }));
-        }
-    }, [stockData.symbol]);
-
-    const targetPrices = useMemo(() => ({
-        bear: calculateTargetPrice(revenue, scenarios.bear.growthRate, scenarios.bear.netMargin, scenarios.bear.exitPE, shares, scenarios.bear.shareChange, scenarios.bear.discountRate, scenarios.bear.timeHorizon),
-        base: calculateTargetPrice(revenue, scenarios.base.growthRate, scenarios.base.netMargin, scenarios.base.exitPE, shares, scenarios.base.shareChange, scenarios.base.discountRate, scenarios.base.timeHorizon),
-        bull: calculateTargetPrice(revenue, scenarios.bull.growthRate, scenarios.bull.netMargin, scenarios.bull.exitPE, shares, scenarios.bull.shareChange, scenarios.bull.discountRate, scenarios.bull.timeHorizon),
-    }), [scenarios, revenue, shares]);
-
-
-
-    const updateScenario = (field: keyof ScenarioInputs, value: number) => {
-        const validation = VALIDATION[field];
-        const clampedValue = Math.max(validation.min, Math.min(validation.max, value));
-        setScenarios(prev => ({
-            ...prev,
-            [activeScenario]: { ...prev[activeScenario], [field]: clampedValue }
-        }));
-    };
-
-    // Reset current scenario to Yahoo analyst estimates
     const resetToYahoo = () => {
-        const yahooGrowth = Math.round(stockData.metrics.revenue_growth ?? estimates?.revenue_growth ?? 10);
-        const yahooMargin = Math.round(stockData.metrics.profit_margin ?? estimates?.profit_margin ?? 20);
-        const yahooPE = Math.round(stockData.metrics.forward_pe ?? estimates?.forward_pe ?? 25);
-        // Default values for new sliders
-        const defaultDiscountRate = 10;
-        const defaultTimeHorizon = 5;
+        // Simple logic tailored to scenario
+        const multiplier = scenario === 'bull' ? 1.2 : scenario === 'bear' ? 0.8 : 1.0;
 
-        if (activeScenario === 'bear') {
-            setScenarios(prev => ({ ...prev, bear: { ...prev.bear, growthRate: Math.max(yahooGrowth - 5, 0), netMargin: Math.max(yahooMargin - 5, 5), exitPE: Math.max(yahooPE - 10, 10), shareChange: 2, discountRate: 12, timeHorizon: defaultTimeHorizon } }));
-        } else if (activeScenario === 'base') {
-            setScenarios(prev => ({ ...prev, base: { ...prev.base, growthRate: yahooGrowth, netMargin: yahooMargin, exitPE: yahooPE, shareChange: 0, discountRate: defaultDiscountRate, timeHorizon: defaultTimeHorizon } }));
-        } else {
-            setScenarios(prev => ({ ...prev, bull: { ...prev.bull, growthRate: yahooGrowth + 10, netMargin: yahooMargin + 5, exitPE: yahooPE + 10, shareChange: -2, discountRate: 8, timeHorizon: defaultTimeHorizon } }));
-        }
+        // Use metrics from API
+        const baseGrowth = stockData.metrics?.revenue_growth ? stockData.metrics.revenue_growth * 100 : 15;
+        const baseMargin = stockData.metrics?.profit_margin ? stockData.metrics.profit_margin * 100 : 20;
+        const basePe = stockData.metrics?.forward_pe || stockData.metrics?.pe_ratio || 25;
+
+        setGrowthRate(Math.round(baseGrowth * multiplier));
+        setNetMargin(Math.round(baseMargin * multiplier));
+        setPeRatio(Math.round(basePe * multiplier));
+        setDiscountRate(scenario === 'bull' ? 8 : scenario === 'bear' ? 12 : 10);
+        setShareChange(-2);
+        setTimeHorizon(5);
     };
 
-    // Save custom projection with notes to localStorage
-    const saveProjection = () => {
-        const key = `projection_${stockData.symbol}`;
-        localStorage.setItem(key, JSON.stringify({
-            symbol: stockData.symbol,
-            scenarios,
-            notes,
-            savedAt: new Date().toISOString()
-        }));
-        setShowNotesModal(false);
-        alert(`Saved projection for ${stockData.symbol}`);
+    // --- Calculations ---
+
+    const projectPrice = () => {
+        const compoundGrowth = Math.pow(1 + growthRate / 100, timeHorizon);
+
+        const currentPE = stockData.metrics?.forward_pe || stockData.metrics?.pe_ratio || 25;
+        // Optimization: Avoid division by zero
+        const effectiveCurrentPE = currentPE > 0 ? currentPE : 25;
+
+        const fPrice = stockData.price * compoundGrowth * (peRatio / effectiveCurrentPE);
+
+        // Discount back
+        const presentValue = fPrice / Math.pow(1 + discountRate / 100, timeHorizon);
+        return presentValue;
     };
 
-    const scenarioColors: Record<ScenarioType, string> = {
-        bear: 'border-red-500/50 bg-red-500/10',
-        base: 'border-amber-500/50 bg-amber-500/10',
-        bull: 'border-green-500/50 bg-green-500/10',
+    const targetPrice = projectPrice();
+    const upside = ((targetPrice - stockData.price) / stockData.price) * 100;
+
+    // --- Actions ---
+
+    const handleSaveOpen = () => {
+        setSaveName(`Projection ${new Date().toLocaleDateString()}`);
+        setShowSaveModal(true);
     };
 
-    // Calculate percentage for ACTIVE scenario
-    const activeTarget = targetPrices[activeScenario];
-    const activeDiff = ((activeTarget / currentPrice) - 1) * 100;
-    const isPositive = activeDiff >= 0;
+    const handleSaveConfirm = () => {
+        if (!saveName.trim()) return;
+
+        storage.saveProjection({
+            id: Date.now().toString(),
+            ticker: stockData.symbol,
+            savedAt: new Date().toISOString(),
+            name: saveName,
+            scenarios: {
+                growthRate,
+                netMargin,
+                exitPE: peRatio,
+                shareChange,
+                discountRate,
+                timeHorizon,
+                terminalGrowth: 3 // Default structural assumption
+            }
+        });
+
+        setSavedCount(prev => prev + 1);
+        setShowSaveModal(false);
+    };
+
+    const handleLoad = (scenarios: any) => {
+        // Load parameters
+        setGrowthRate(scenarios.growthRate);
+        setNetMargin(scenarios.netMargin);
+        setPeRatio(scenarios.exitPE);
+        setDiscountRate(scenarios.discountRate);
+        setShareChange(scenarios.shareChange);
+        setTimeHorizon(scenarios.timeHorizon);
+
+        setShowProjectionsPanel(false);
+    };
+
+    // --- Components ---
+
+    const SliderInput = ({ label, value, setValue, min, max, unit = '', step = 1, note = '' }: any) => (
+        <div className="mb-4">
+            <div className="flex justify-between items-center mb-1">
+                <label className="text-secondary text-xs font-medium uppercase tracking-wider flex items-center gap-1">
+                    {label}
+                    <Info size={12} className="text-slate-600" />
+                </label>
+                <div className="flex items-center bg-slate-800 rounded px-2 py-1 border border-slate-700">
+                    <input
+                        type="number"
+                        value={value}
+                        onChange={(e) => setValue(Number(e.target.value))}
+                        className="w-12 bg-transparent text-right text-sm font-bold text-text focus:outline-none"
+                    />
+                    <span className="text-xs text-slate-500 ml-1">{unit}</span>
+                </div>
+            </div>
+            <input
+                type="range"
+                min={min}
+                max={max}
+                step={step}
+                value={value}
+                onChange={(e) => setValue(Number(e.target.value))}
+                className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-primary hover:accent-primary-hover transition-all"
+            />
+            <div className="flex justify-between text-[10px] text-slate-600 mt-1">
+                <span>{min}</span>
+                <span className="text-primary/70">{note}</span>
+                <span>{max}</span>
+            </div>
+        </div>
+    );
 
     return (
-        <div className="bg-surface rounded-xl p-4 border border-slate-800">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-4">
-                    <div>
-                        <h3 className="text-lg font-bold text-text">ValuationModeler</h3>
-                        <p className="text-secondary text-xs">5-Year Discounted Cash Flow (DCF)</p>
-                    </div>
+        <div className="flex flex-col h-full overflow-hidden relative">
+            {/* Header: Title & Actions */}
+            <div className="flex justify-between items-center mb-6">
+                <div>
+                    <h2 className="text-xl font-bold text-text">Valuation Modeler</h2>
+                    <p className="text-xs text-secondary">5-Year Discounted Cash Flow (DCF)</p>
                 </div>
                 <div className="flex gap-2">
                     <button
-                        onClick={resetToYahoo}
-                        className="flex items-center gap-2 px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg transition-colors"
-                        title="Reset to Yahoo Estimates"
+                        onClick={() => setShowProjectionsPanel(true)}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 text-primary hover:bg-slate-800 border border-slate-700/50 transition-all text-xs font-medium"
                     >
-                        <RotateCcw size={12} />
+                        <FolderOpen size={14} />
+                        My Projections
+                        {savedCount > 0 && (
+                            <span className="bg-primary text-slate-900 text-[10px] font-bold px-1.5 rounded-full">
+                                {savedCount}
+                            </span>
+                        )}
+                    </button>
+                    <button
+                        onClick={resetToYahoo}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-700/50 transition-all text-xs font-medium"
+                    >
+                        <RotateCcw size={14} />
                         Reset
                     </button>
-                    {notes && (
-                        <button
-                            onClick={() => setShowNotesModal(true)}
-                            className="flex items-center gap-2 px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg transition-colors"
-                        >
-                            <FileText size={12} />
-                            Notes
-                        </button>
-                    )}
                     <button
-                        onClick={() => setShowNotesModal(true)}
-                        className="flex items-center gap-2 px-3 py-1.5 text-xs bg-primary/20 hover:bg-primary/30 border border-primary/50 text-primary rounded-lg transition-colors"
+                        onClick={handleSaveOpen}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-all text-xs font-medium"
                     >
-                        <Save size={12} />
+                        <Save size={14} />
                         Save
                     </button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-                {/* LEFT PANEL: Inputs (Col Span 7) */}
-                <div className="lg:col-span-7 space-y-4">
-
-                    {/* Scenario Selector */}
-                    <div className="grid grid-cols-3 gap-2 mb-4">
-                        {(['bear', 'base', 'bull'] as ScenarioType[]).map(scenario => (
-                            <button
-                                key={scenario}
-                                onClick={() => setActiveScenario(scenario)}
-                                className={`py-2 px-3 rounded-lg text-sm font-medium transition-all flex flex-col items-center justify-center gap-1
-                                    ${activeScenario === scenario
-                                        ? scenarioColors[scenario] + ' text-white shadow-lg ring-1 ring-white/10'
-                                        : 'border-slate-700 bg-slate-800/30 hover:bg-slate-800/50 text-secondary'}`}
-                            >
-                                <div className="flex items-center gap-1.5">
-                                    {scenario === 'bear' && <TrendingDown size={14} />}
-                                    {scenario === 'base' && <Scale size={14} />}
-                                    {scenario === 'bull' && <TrendingUp size={14} />}
-                                    <span className="uppercase tracking-wider text-xs">{scenario}</span>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Compact Sliders Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
-
-                        {/* Group 1: Core Growth */}
-                        <div className="col-span-1 md:col-span-2 text-xs font-bold text-secondary uppercase tracking-wider mb-1 border-b border-slate-800 pb-1">
-                            Growth & Profitability
-                        </div>
-
-                        {/* Growth Rate */}
-                        <SliderControl
-                            field="growthRate"
-                            value={scenarios[activeScenario].growthRate}
-                            onChange={updateScenario}
-                            config={VALIDATION.growthRate}
-                            yahooHint={`Yahoo: ${stockData.metrics.revenue_growth?.toFixed(1) ?? 'N/A'}%`}
-                        />
-
-                        {/* Net Margin */}
-                        <SliderControl
-                            field="netMargin"
-                            value={scenarios[activeScenario].netMargin}
-                            onChange={updateScenario}
-                            config={VALIDATION.netMargin}
-                            yahooHint={`Yahoo: ${stockData.metrics.profit_margin?.toFixed(1) ?? 'N/A'}%`}
-                        />
-
-                        {/* Group 2: Valuation Multiples */}
-                        <div className="col-span-1 md:col-span-2 text-xs font-bold text-secondary uppercase tracking-wider mb-1 mt-2 border-b border-slate-800 pb-1">
-                            Valuation Assumptions
-                        </div>
-
-                        {/* Exit P/E */}
-                        <SliderControl
-                            field="exitPE"
-                            value={scenarios[activeScenario].exitPE}
-                            onChange={updateScenario}
-                            config={VALIDATION.exitPE}
-                            yahooHint={`Fwd: ${stockData.metrics.forward_pe?.toFixed(1) ?? 'N/A'}x`}
-                            extraInfo={<span className="text-[10px] text-slate-500">Sector: {peRange.min}-{peRange.max}x</span>}
-                        />
-
-                        {/* Discount Rate */}
-                        <SliderControl
-                            field="discountRate"
-                            value={scenarios[activeScenario].discountRate}
-                            onChange={updateScenario}
-                            config={VALIDATION.discountRate}
-                            yahooHint="Typ: 8-12%"
-                        />
-
-                        {/* Group 3: Capital Structure */}
-                        <div className="col-span-1 md:col-span-2 text-xs font-bold text-secondary uppercase tracking-wider mb-1 mt-2 border-b border-slate-800 pb-1">
-                            Structure & Time
-                        </div>
-
-                        {/* Share Change */}
-                        <SliderControl
-                            field="shareChange"
-                            value={scenarios[activeScenario].shareChange}
-                            onChange={updateScenario}
-                            config={VALIDATION.shareChange}
-                            yahooHint="( - ) Buyback | ( + ) Dilution"
-                        />
-
-                        {/* Time Horizon */}
-                        <SliderControl
-                            field="timeHorizon"
-                            value={scenarios[activeScenario].timeHorizon}
-                            onChange={updateScenario}
-                            config={VALIDATION.timeHorizon}
-                            yahooHint="Def: 5yr"
-                        />
-                    </div>
+            {/* Hero Section: Target Price */}
+            <div className="flex flex-col items-center justify-center mb-6 py-4 bg-gradient-to-b from-slate-900/50 to-transparent rounded-2xl border border-slate-800/50">
+                <div className="text-sm font-medium text-secondary mb-1 uppercase tracking-widest">Target Price ({timeHorizon}yr)</div>
+                <div className="text-6xl font-black text-text tracking-tight mb-2">
+                    ${Math.round(targetPrice)}
                 </div>
-
-                {/* RIGHT PANEL: Results (Col Span 5) */}
-                <div className="lg:col-span-5 space-y-4">
-
-                    {/* Main Result Card */}
-                    <div className={`p-5 rounded-xl border ${isPositive ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5'} flex flex-col items-center justify-center text-center h-32 relative overflow-hidden`}>
-                        <div className="absolute top-2 right-2 text-[10px] uppercase tracking-widest text-secondary font-medium">Target Price</div>
-                        <div className="z-10">
-                            <div className="text-4xl font-bold mb-1 text-white tracking-tight">
-                                ${activeTarget.toFixed(0)}
-                            </div>
-                            <div className={`text-sm font-medium flex items-center gap-1 justify-center ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
-                                {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                                {isPositive ? '+' : ''}{activeDiff.toFixed(1)}% Upside
-                            </div>
-                        </div>
-                        {/* Background Spline Effect (simplified) */}
-                        <div className={`absolute -bottom-8 -right-8 w-24 h-24 rounded-full blur-2xl opacity-20 ${isPositive ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                    </div>
-
-                    {/* Scenario Comparison Table */}
-                    <div className="bg-slate-900/50 rounded-xl border border-slate-800 overflow-hidden">
-                        <div className="grid grid-cols-3 text-xs font-medium text-secondary text-center py-2 border-b border-slate-800 bg-slate-900">
-                            <div>Bear</div>
-                            <div>Base</div>
-                            <div>Bull</div>
-                        </div>
-                        <div className="grid grid-cols-3 divide-x divide-slate-800">
-                            {(['bear', 'base', 'bull'] as ScenarioType[]).map(s => {
-                                const t = targetPrices[s];
-                                const d = ((t / currentPrice) - 1) * 100;
-                                const isActive = activeScenario === s;
-                                return (
-                                    <div key={s}
-                                        onClick={() => setActiveScenario(s)}
-                                        className={`py-3 text-center cursor-pointer transition-colors hover:bg-slate-800/50 ${isActive ? 'bg-white/5' : ''}`}
-                                    >
-                                        <div className={`font-bold text-lg ${isActive ? 'text-white' : 'text-slate-300'}`}>${t.toFixed(0)}</div>
-                                        <div className={`text-xs ${d >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                            {d >= 0 ? '+' : ''}{d.toFixed(0)}%
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    {/* Analyst Consensus Summary */}
-                    {estimates?.target_mean_price && (
-                        <div className="bg-slate-900/30 rounded-lg p-3 border border-slate-800">
-                            <div className="flex justify-between items-center mb-2">
-                                <h4 className="text-xs font-bold text-secondary uppercase tracking-wider flex items-center gap-1">
-                                    <Info size={10} /> Analyst Consensus (12mo)
-                                </h4>
-                                <span className="text-xs text-slate-400">{estimates.recommendation?.toUpperCase()}</span>
-                            </div>
-                            <div className="flex items-center justify-between text-sm">
-                                <div className="text-red-400 font-medium">${estimates.target_low_price?.toFixed(0)}</div>
-                                <div className="text-amber-400 font-medium">${estimates.target_mean_price?.toFixed(0)}</div>
-                                <div className="text-green-400 font-medium">${estimates.target_high_price?.toFixed(0)}</div>
-                            </div>
-                            <div className="w-full h-1.5 bg-slate-800 rounded-full mt-1 relative overflow-hidden">
-                                <div className="absolute h-full w-full bg-gradient-to-r from-red-500 via-amber-500 to-green-500 opacity-30"></div>
-                                {/* Current Price Marker */}
-                                <div
-                                    className="absolute h-2.5 w-1 bg-white top-1/2 -translate-y-1/2 shadow-sm rounded-full"
-                                    style={{ left: `${Math.min(100, Math.max(0, ((currentPrice - (estimates.target_low_price || 0)) / ((estimates.target_high_price || 1) - (estimates.target_low_price || 0))) * 100))}%` }}
-                                />
-                            </div>
-                        </div>
-                    )}
+                <div className={`flex items-center gap-2 text-lg font-bold px-3 py-1 rounded-full ${upside >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                    {upside >= 0 ? <TrendingUp size={20} /> : <TrendingDown size={20} />}
+                    {upside > 0 ? '+' : ''}{upside.toFixed(1)}% Upside
                 </div>
             </div>
 
-            {/* Notes Modal (Kept as is) */}
-            {showNotesModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowNotesModal(false)}>
-                    <div className="bg-surface border border-slate-700 rounded-xl max-w-lg w-full shadow-2xl" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-between items-center p-4 border-b border-slate-800">
-                            <h3 className="text-lg font-bold">Save {stockData.symbol} Projection</h3>
-                            <button onClick={() => setShowNotesModal(false)} className="p-1 hover:bg-slate-800 rounded">
-                                <X size={20} className="text-secondary" />
+            {/* Scenario Toggles */}
+            <div className="flex justify-center mb-8">
+                <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
+                    {(['bear', 'base', 'bull'] as const).map((s) => (
+                        <button
+                            key={s}
+                            onClick={() => setScenario(s)}
+                            className={`px-8 py-2 rounded-lg text-sm font-bold uppercase tracking-wider transition-all ${scenario === s
+                                    ? s === 'bull' ? 'bg-green-500/10 text-green-400 shadow-sm border border-green-500/20'
+                                        : s === 'bear' ? 'bg-red-500/10 text-red-400 shadow-sm border border-red-500/20'
+                                            : 'bg-primary/10 text-primary shadow-sm border border-primary/20'
+                                    : 'text-slate-500 hover:text-slate-300'
+                                }`}
+                        >
+                            {s}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 overflow-y-auto pr-2 pb-20">
+
+                {/* Left Column: Inputs (Span 2) */}
+                <div className="lg:col-span-2 space-y-6">
+                    <section className="bg-slate-900/30 p-5 rounded-xl border border-slate-800">
+                        <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                            <span className="w-1 h-4 bg-primary rounded-full"></span>
+                            Growth & Profitability
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <SliderInput
+                                label="Growth Rate"
+                                value={growthRate}
+                                setValue={setGrowthRate}
+                                min={-50}
+                                max={100}
+                                unit="%"
+                                note={`Yahoo: ${(stockData.metrics?.revenue_growth ? stockData.metrics.revenue_growth * 100 : 0).toFixed(1)}%`}
+                            />
+                            <SliderInput
+                                label="Net Margin"
+                                value={netMargin}
+                                setValue={setNetMargin}
+                                min={-20}
+                                max={80}
+                                unit="%"
+                                note={`Yahoo: ${(stockData.metrics?.profit_margin ? stockData.metrics.profit_margin * 100 : 0).toFixed(1)}%`}
+                            />
+                        </div>
+                    </section>
+
+                    <section className="bg-slate-900/30 p-5 rounded-xl border border-slate-800">
+                        <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                            <span className="w-1 h-4 bg-primary rounded-full"></span>
+                            Valuation Assumptions
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <SliderInput
+                                label="Exit P/E"
+                                value={peRatio}
+                                setValue={setPeRatio}
+                                min={1}
+                                max={100}
+                                unit="x"
+                                note={`Fwd: ${(stockData.metrics?.forward_pe || 0).toFixed(1)}x`}
+                            />
+                            <SliderInput
+                                label="Discount Rate"
+                                value={discountRate}
+                                setValue={setDiscountRate}
+                                min={0}
+                                max={20}
+                                unit="%"
+                                note="Typ: 8-12%"
+                            />
+                        </div>
+                    </section>
+
+                    <section className="bg-slate-900/30 p-5 rounded-xl border border-slate-800">
+                        <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                            <span className="w-1 h-4 bg-primary rounded-full"></span>
+                            Structure & Time
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <SliderInput
+                                label="Share Change"
+                                value={shareChange}
+                                setValue={setShareChange}
+                                min={-20}
+                                max={20}
+                                unit="%"
+                                note="( - ) Buyback | ( + ) Dilution"
+                            />
+                            <SliderInput
+                                label="Time Horizon"
+                                value={timeHorizon}
+                                setValue={setTimeHorizon}
+                                min={1}
+                                max={10}
+                                unit="yr"
+                                note="Def: 5yr"
+                            />
+                        </div>
+                    </section>
+                </div>
+
+                {/* Right Column: Analysis & Scenarios (Span 1) */}
+                <div className="space-y-4">
+                    <div className="bg-surface border border-slate-700/50 rounded-xl p-5 shadow-lg">
+                        <h4 className="text-sm font-bold text-secondary uppercase tracking-wider mb-4 border-b border-slate-800 pb-2">
+                            Scenario Matrix
+                        </h4>
+                        <div className="space-y-3">
+                            {/* Simple static calculation for matrix visualization based on multipliers */}
+                            {[
+                                { mode: 'Bear', price: Math.round(targetPrice * 0.6), upside: upside - 40, color: 'text-red-400' },
+                                { mode: 'Base', price: Math.round(targetPrice), upside: upside, color: 'text-primary' },
+                                { mode: 'Bull', price: Math.round(targetPrice * 1.4), upside: upside + 40, color: 'text-green-400' }
+                            ].map((item) => (
+                                <div key={item.mode} className="flex justify-between items-center p-3 bg-slate-900/50 rounded-lg">
+                                    <span className="text-sm font-bold text-secondary">{item.mode}</span>
+                                    <div className="text-right">
+                                        <div className={`text-lg font-bold ${item.color}`}>${item.price}</div>
+                                        <div className="text-xs text-slate-500">{item.upside > 0 ? '+' : ''}{item.upside.toFixed(0)}%</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="bg-primary/5 border border-primary/10 rounded-xl p-5">
+                        <h4 className="text-sm font-bold text-primary mb-2">Expert Analysis</h4>
+                        <p className="text-xs text-slate-400 leading-relaxed">
+                            {upside > 15
+                                ? "Current valuation suggests a strong buying opportunity relative to base case assumptions. Ensure growth targets (CAGR) are realistic given sector headwinds."
+                                : upside < -10
+                                    ? "Stock appears overvalued vs. model assumptions. Wait for a better entry point or revise growth expectations upward if competitive moat justifies premium."
+                                    : "Valuation is fair. Returns likely to track earnings growth. suitable for hold/accumulate strategies."
+                            }
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Save Modal */}
+            {showSaveModal && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-surface border border-slate-700 p-6 rounded-xl w-80 shadow-2xl scale-100">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-bold text-white">Save Projection</h3>
+                            <button onClick={() => setShowSaveModal(false)} className="text-slate-400 hover:text-white">
+                                <X size={20} />
                             </button>
                         </div>
-                        <div className="p-4 space-y-4">
-                            <div className="grid grid-cols-3 gap-2 text-sm">
-                                <div className="text-center p-2 bg-red-500/10 rounded"><span className="text-secondary">Bear:</span> <span className="font-medium">${targetPrices.bear.toFixed(0)}</span></div>
-                                <div className="text-center p-2 bg-amber-500/10 rounded"><span className="text-secondary">Base:</span> <span className="font-medium">${targetPrices.base.toFixed(0)}</span></div>
-                                <div className="text-center p-2 bg-green-500/10 rounded"><span className="text-secondary">Bull:</span> <span className="font-medium">${targetPrices.bull.toFixed(0)}</span></div>
-                            </div>
-                            <div>
-                                <label className="text-sm text-secondary block mb-2">Investment Thesis & Rationale</label>
-                                <textarea
-                                    value={notes}
-                                    onChange={e => setNotes(e.target.value)}
-                                    placeholder="Why these assumptions? E.g., 'Growth likely to decelerate from 63% to ~40% due to law of large numbers, TSMC bottlenecks, and competition from AMD/custom silicon...'"
-                                    className="w-full h-32 bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm resize-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                                />
-                            </div>
-                        </div>
-                        <div className="p-4 border-t border-slate-800 flex gap-2 justify-end">
-                            <button onClick={() => setShowNotesModal(false)} className="px-4 py-2 text-sm bg-slate-700 hover:bg-slate-600 rounded-lg">Cancel</button>
-                            <button onClick={saveProjection} className="px-4 py-2 text-sm bg-primary text-black font-medium rounded-lg hover:bg-primary/90">Save Projection</button>
+                        <input
+                            type="text"
+                            value={saveName}
+                            onChange={(e) => setSaveName(e.target.value)}
+                            placeholder="Projection Name (e.g. Bull 2026)"
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white mb-4 focus:outline-none focus:border-primary"
+                            autoFocus
+                        />
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setShowSaveModal(false)}
+                                className="flex-1 px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 font-medium"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSaveConfirm}
+                                disabled={!saveName.trim()}
+                                className="flex-1 px-4 py-2 bg-primary text-slate-900 rounded-lg hover:bg-primary-hover font-bold disabled:opacity-50"
+                            >
+                                Save
+                            </button>
                         </div>
                     </div>
                 </div>
             )}
-        </div>
-    );
-}
 
-// Helper Component for Sliders to reduce boilerplate
-function SliderControl({ field, value, onChange, config, yahooHint, extraInfo }: {
-    field: keyof ScenarioInputs,
-    value: number,
-    onChange: (f: keyof ScenarioInputs, v: number) => void,
-    config: { min: number, max: number, label: string },
-    yahooHint?: string,
-    extraInfo?: React.ReactNode
-}) {
-    return (
-        <div className="space-y-1.5">
-            <div className="flex justify-between items-center">
-                <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
-                    {config.label}
-                    <HelpTrigger topicId={field} size={10} className="opacity-50 hover:opacity-100" />
-                </label>
-                <div className="flex items-center gap-1.5">
-                    <input
-                        type="number"
-                        value={value}
-                        onChange={e => onChange(field, parseFloat(e.target.value) || 0)}
-                        className="w-16 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-right text-xs focus:ring-1 focus:ring-primary focus:border-primary transition-all"
-                    />
-                    <span className="text-[10px] text-slate-500 w-3">{field === 'exitPE' ? 'x' : field === 'timeHorizon' ? 'yr' : '%'}</span>
-                </div>
-            </div>
-            <div className="relative h-4 flex items-center">
-                <input
-                    type="range"
-                    min={config.min}
-                    max={config.max}
-                    value={value}
-                    onChange={e => onChange(field, parseFloat(e.target.value))}
-                    className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary hover:accent-primary/80 transition-all"
+            {/* Projections Panel Slide-over */}
+            {showProjectionsPanel && (
+                <ProjectionsPanel
+                    isOpen={showProjectionsPanel}
+                    onClose={() => setShowProjectionsPanel(false)}
+                    ticker={stockData.symbol}
+                    onLoad={handleLoad}
                 />
-            </div>
-            <div className="flex justify-between items-center text-[10px] text-slate-500">
-                <span>{config.min}</span>
-                <span className="text-amber-400/70 font-medium">{yahooHint}</span>
-                <span>{config.max}</span>
-            </div>
-            {extraInfo && <div className="mt-0.5">{extraInfo}</div>}
+            )}
         </div>
     );
 }
