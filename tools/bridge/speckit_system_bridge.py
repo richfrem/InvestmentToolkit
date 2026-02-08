@@ -42,24 +42,30 @@ CLAUDE_DIR = PROJECT_ROOT / ".claude"
 GEMINI_DIR = PROJECT_ROOT / ".gemini"
 GITHUB_DIR = PROJECT_ROOT / ".github"
 
+
 def setup_directories():
-    """Ensure all target directory structures exist."""
-    print(f"🔧 Initializing Target Directories...")
+    """Ensure all target directory structures exist and are clean (Idempotency)."""
+    print(f"🔧 Initializing & Cleaning Target Directories...")
     
+    # helper to clean
+    def clean_dir(path: Path):
+        if path.exists():
+            shutil.rmtree(path)
+        path.mkdir(parents=True, exist_ok=True)
+
     # 1. Antigravity
-    (AGENT_DIR / "rules").mkdir(parents=True, exist_ok=True)
-    (AGENT_DIR / "workflows").mkdir(parents=True, exist_ok=True)
+    (AGENT_DIR / "rules").mkdir(parents=True, exist_ok=True) # Rules might be partial, keep dir
+    clean_dir(AGENT_DIR / "workflows")
     
     # 2. Claude
-    # Note: Sample uses .claude/commands/, but standard is often .claude/prompts/.
-    # Following user's sample structure: .claude/commands/
-    (CLAUDE_DIR / "commands").mkdir(parents=True, exist_ok=True)
+    clean_dir(CLAUDE_DIR / "commands")
     
     # 3. Gemini
-    (GEMINI_DIR / "commands").mkdir(parents=True, exist_ok=True)
+    clean_dir(GEMINI_DIR / "commands")
     
     # 4. Copilot
-    (GITHUB_DIR / "prompts").mkdir(parents=True, exist_ok=True)
+    clean_dir(GITHUB_DIR / "prompts")
+
 
 def ingest_rules():
     """Read rules from .kittify/memory (Source of Truth)."""
@@ -102,16 +108,15 @@ def sync_antigravity(workflows, rules):
     print("\n🔵 Syncing Antigravity (.agent)...")
     
     # Rules (e.g., constitution.md)
+    # Note: We didn't clean rules dir above to avoid wiping constitution if manual?
+    # Actually, BYOA says .agent is an artifact. We should probably clean it too.
+    # But let's stick to overwriting for now.
     for name, content in rules.items():
         (AGENT_DIR / "rules" / f"{name}.md").write_text(content, encoding="utf-8")
         
-    # Workflows (Direct Copy, maybe ensure actor is consistent)
     for filename, content in workflows.items():
-        # Keep --actor "windsurf" or change to "antigravity"? 
-        # User said "antigravity was based on windsurf". Let's stick to 'antigravity' for clarity in .agent
-        # But if the CLI tool expects 'windsurf', this might break. 
-        # Safest bet: Replace "windsurf" with "antigravity" for the .agent folder.
         fixed_content = content.replace('--actor "windsurf"', '--actor "antigravity"')
+        fixed_content = fixed_content.replace('(Missing script command for sh)', 'spec-kitty')
         (AGENT_DIR / "workflows" / filename).write_text(fixed_content, encoding="utf-8")
         
     print(f"   ✅ Synced {len(rules)} rules and {len(workflows)} workflows.")
@@ -131,10 +136,10 @@ def sync_claude(workflows, rules):
     claude_md.write_text("".join(content), encoding="utf-8")
     
     # 2. Commands/Prompts (.claude/commands/*.md)
-    # Using 'commands' dir based on sample provided
     count = 0
     for filename, text in workflows.items():
         fixed_text = text.replace('--actor "windsurf"', '--actor "claude"')
+        fixed_text = fixed_text.replace('(Missing script command for sh)', 'spec-kitty')
         (CLAUDE_DIR / "commands" / filename).write_text(fixed_text, encoding="utf-8")
         count += 1
         
@@ -146,8 +151,6 @@ def sync_gemini(workflows, rules):
     
     # 1. Context (GEMINI.md)
     gemini_md = GEMINI_DIR / "GEMINI.md"
-    # Note: Gemini often looks for GEMINI.md in Project Root, not .gemini/GEMINI.md
-    # Current script logic put it in Project Root. Let's stick to that for compatibility.
     root_gemini_md = PROJECT_ROOT / "GEMINI.md"
     
     content = ["# Gemini CLI Instructions\n"]
@@ -161,9 +164,8 @@ def sync_gemini(workflows, rules):
     # 2. Commands (.gemini/commands/*.toml)
     count = 0
     for filename, text in workflows.items():
-        stem = filename.replace(".md", "") # remove .md
+        stem = filename.replace(".md", "") 
         
-        # Extract description
         description = f"Executes {stem}"
         if text.startswith("---"):
             end = text.find("---", 3)
@@ -174,11 +176,10 @@ def sync_gemini(workflows, rules):
                         description = line.split(":", 1)[1].strip().strip('"')
                         break
                         
-        # Formatting
         description = description.replace('"', '\\"')
         fixed_text = text.replace('--actor "windsurf"', '--actor "gemini"')
         fixed_text = fixed_text.replace('$ARGUMENTS', '{{args}}')
-        fixed_text = fixed_text.replace('(Missing script command for sh)', 'spec-kitty') # Attempt fix
+        fixed_text = fixed_text.replace('(Missing script command for sh)', 'spec-kitty')
         
         toml_content = f'description = "{description}"\n\nprompt = """\n{fixed_text}\n"""\n'
         
@@ -193,6 +194,7 @@ def sync_copilot(workflows, rules):
     
     # 1. Instructions (copilot-instructions.md)
     instr_file = GITHUB_DIR / "copilot-instructions.md"
+    
     content = ["# Copilot Instructions\n"]
     content.append("> Managed by Spec Kitty Bridge.\n\n")
     
@@ -212,15 +214,9 @@ def sync_copilot(workflows, rules):
     for filename, text in workflows.items():
         stem = filename.replace(".md", "")
         fixed_text = text.replace('--actor "windsurf"', '--actor "copilot"')
-        
-        # Wrap in comment? Or just raw? Sample showed raw content but with .prompt.md extension
-        # target_filename = f"{stem}.prompt.md"
-        # Actually sample was: spec-kitty.accept.prompt.md
-        # If input is spec-kitty.accept.md, then output is spec-kitty.accept.prompt.md
+        fixed_text = fixed_text.replace('(Missing script command for sh)', 'spec-kitty')
         
         target_file = GITHUB_DIR / "prompts" / f"{stem}.prompt.md"
-        
-        # Make sure to include the original frontmatter? Yes.
         target_file.write_text(fixed_text, encoding="utf-8")
         count += 1
         
