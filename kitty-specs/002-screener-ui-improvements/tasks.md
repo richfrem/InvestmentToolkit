@@ -27,12 +27,12 @@
 **Estimated Size**: ~400 lines, 6 subtasks
 
 ### Included Subtasks
-- [ ] T001 Debug `fetch_financials.py` to identify why `revenue_growth`, `profit_margin`, `forward_pe` return None/N/A for major tickers
-- [ ] T002 Fix yfinance field extraction — map correct `stock.info` keys to the expected output fields (revenue_growth, profit_margin, forward_pe, share change)
-- [ ] T003 Add analyst revenue/earnings forecast data extraction (high/low/avg estimates for current + next year) to `fetch_financials.py` output
-- [ ] T004 Update `backend/src/index.ts` response handling to pass through new forecast fields
-- [ ] T005 [P] Update `frontend/src/services/api.ts` StockData interface to include new forecast fields (analyst revenue estimates, earnings estimates)
-- [ ] T006 [P] Update `ValuationModeler.tsx` to correctly read and display Yahoo reference values below each slider; fix "Reset to Yahoo" button
+- [x] T001 Debug `fetch_financials.py` to identify why `revenue_growth`, `profit_margin`, `forward_pe` return None/N/A for major tickers
+- [x] T002 Fix yfinance field extraction — map correct `stock.info` keys to the expected output fields (revenue_growth, profit_margin, forward_pe, share change)
+- [x] T003 Add analyst revenue/earnings forecast data extraction (high/low/avg estimates for current + next year) to `fetch_financials.py` output
+- [x] T004 Update `backend/src/index.ts` response handling to pass through new forecast fields
+- [x] T005 [P] Update `frontend/src/services/api.ts` StockData interface to include new forecast fields (analyst revenue estimates, earnings estimates)
+- [x] T006 [P] Update `ValuationModeler.tsx` to correctly read and display Yahoo reference values below each slider; fix "Reset to Yahoo" button
 
 ### Implementation Notes
 - Start by running `python3 fetch_financials.py AAPL` locally and inspecting the raw output to identify which fields are missing.
