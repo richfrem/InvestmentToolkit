@@ -3,20 +3,20 @@
 speckit_system_bridge.py
 =====================================
 Purpose:
-    The "Dual Tri Bridge" Synchronization Engine.
-    Projects the Single Source of Truth (.agent/) into native configurations for:
-    1. Gemini CLI (.gemini/)
-    2. VS Code Copilot (.github/)
+    The "Universal Bridge" Synchronization Engine.
+    Reads Spec Kitty definitions (Windsurf + Memory) and projects them into native
+    configurations for:
+    1.  Antigravity (.agent/)
+    2.  Claude (.claude/)
+    3.  Gemini (.gemini/)
+    4.  GitHub Copilot (.github/)
 
-    This script ensures that all 3 personas (Antigravity, Gemini, Copilot) share
-    the exact same Rules and Workflows without manual duplication.
-
-Functions:
-    1. Mirrors .agent/rules/ -> .gemini/rules/
-    2. Generates .gemini/commands/*.toml from .agent/workflows/*.md
+    Philosophy:
+    "Bring Your Own Agent" (BYOA). Maintain a Single Source of Truth in Spec Kitty,
+    and auto-generate the necessary config files for any supported agent.
 
 Usage:
-    python tools/bridge/gemini_sync.py
+    python tools/bridge/speckit_system_bridge.py
 """
 import os
 import shutil
@@ -29,558 +29,223 @@ import toml
 try:
     sys.stdout.reconfigure(encoding='utf-8')
 except AttributeError:
-    pass  # Python < 3.7 or weird env
-
-# Platform Compatibility
+    pass
 
 # Configuration
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+WINDSURF_DIR = PROJECT_ROOT / ".windsurf"
+KITTIFY_DIR = PROJECT_ROOT / ".kittify"
+
+# Targets
 AGENT_DIR = PROJECT_ROOT / ".agent"
+CLAUDE_DIR = PROJECT_ROOT / ".claude"
 GEMINI_DIR = PROJECT_ROOT / ".gemini"
 GITHUB_DIR = PROJECT_ROOT / ".github"
 
 def setup_directories():
-    """Ensure target .gemini and .github structure exists."""
-    print(f"🔧 Initializing Gemini Bridge...")
+    """Ensure all target directory structures exist."""
+    print(f"🔧 Initializing Target Directories...")
     
-    # Create directories if missing
-    (GEMINI_DIR / "rules").mkdir(parents=True, exist_ok=True)
+    # 1. Antigravity
+    (AGENT_DIR / "rules").mkdir(parents=True, exist_ok=True)
+    (AGENT_DIR / "workflows").mkdir(parents=True, exist_ok=True)
+    
+    # 2. Claude
+    # Note: Sample uses .claude/commands/, but standard is often .claude/prompts/.
+    # Following user's sample structure: .claude/commands/
+    (CLAUDE_DIR / "commands").mkdir(parents=True, exist_ok=True)
+    
+    # 3. Gemini
     (GEMINI_DIR / "commands").mkdir(parents=True, exist_ok=True)
-    GITHUB_DIR.mkdir(parents=True, exist_ok=True)
+    
+    # 4. Copilot
     (GITHUB_DIR / "prompts").mkdir(parents=True, exist_ok=True)
 
-import stat
-def handle_remove_readonly(func, path, exc):
-    """Error handler for shutil.rmtree to clean read-only files (Windows fix)."""
-    excvalue = exc[1]
-    if func in (os.rmdir, os.remove, os.unlink) and excvalue.errno == 13: # EACCES
-        os.chmod(path, stat.S_IWRITE)
-        func(path)
-    else:
-        raise
-
-def normalize_paths(content: str, direction: str) -> str:
-    """
-    Rewrites relative links in Markdown content to match the target environment.
+def ingest_rules():
+    """Read rules from .kittify/memory (Source of Truth)."""
+    rules = {}
+    memory_dir = KITTIFY_DIR / "memory"
     
-    Args:
-        content: The raw markdown content.
-        direction: 'upstream_to_core' or 'core_to_downstream'
-    
-    Returns:
-        Content with fixed links.
-    """
-    if direction == 'upstream_to_core':
-        # Spec Kitty (.kittify) -> Antigravity (.agent)
-        # 1. /memory/ -> .agent/rules/
-        content = content.replace("/memory/", ".agent/rules/")
+    if not memory_dir.exists():
+        print("⚠️  No .kittify/memory directory found. Rules will be empty.")
+        return rules
         
-        # 2. .kittify/missions/ -> .agent/workflows/
-        content = content.replace(".kittify/missions/", ".agent/workflows/")
-        
-        # 3. .kittify/ -> .agent/
-        content = content.replace(".kittify/", ".agent/")
-        
-        # 4. Standardize /docs to docs/
-        content = content.replace("/docs/", "docs/")
-        
-        # 5. Handle relative parent traverse (../../memory)
-        content = content.replace("../memory/", ".agent/rules/")
-
-    elif direction == 'core_to_downstream':
-        # Antigravity (.agent) -> Gemini/Copilot
-        # For Gemini TOML, links usually stay relative to project root or use absolute anchors
-        # Here we mostly ensure .agent/ paths are preserved or simplified
-        pass
-
-    return content
-
-def sync_from_upstream():
-    """Ingest artifacts from upstream Spec Kitty repo (.windsurf)."""
-    print("🌊 Checking for Upstream Sources (Spec Kitty/Windsurf)...")
-    
-    # 1. Identify Source (.windsurf is created by `spec-kitty init`)
-    windsurf_dir = PROJECT_ROOT / ".windsurf"
-    kittify_dir = PROJECT_ROOT / ".kittify"
-    
-    if not windsurf_dir.exists():
-        print("   ⚠️  No .windsurf directory found. Run 'spec-kitty init . --ai windsurf' first.")
-        return
-    
-    print(f"   ✅ Found Upstream Source: {windsurf_dir}")
-
-    # 2. Sync Workflows (.windsurf/workflows/*.md -> .agent/workflows/)
-    # Spec Kitty creates symlinks here; we copy their content (resolves symlinks)
-    workflow_source = windsurf_dir / "workflows"
-    workflow_target = AGENT_DIR / "workflows"
-    workflow_target.mkdir(exist_ok=True, parents=True)
-
-    if workflow_source.exists():
-        count = 0
-        for item in workflow_source.glob("*.md"):
-            # Read content (resolves symlinks automatically)
-            try:
-                raw_content = item.read_text(encoding="utf-8")
-                fixed_content = normalize_paths(raw_content, 'upstream_to_core')
-                
-                # Write to .agent/workflows/ (preserve original name, e.g., spec-kitty.accept.md)
-                target_path = workflow_target / item.name
-                target_path.write_text(fixed_content, encoding="utf-8")
-                print(f"   📥 Ingested Workflow: {item.name}")
-                count += 1
-            except Exception as e:
-                print(f"   ⚠️  Failed to ingest {item.name}: {e}")
-        print(f"   ✅ Synced {count} workflows from .windsurf")
-    else:
-        print("   ⚠️  No .windsurf/workflows directory found.")
-
-
-
-    print("   ✅ Upstream Ingest Complete.")
-
-def sync_instructions():
-    """Sync Rules/Instructions to GEMINI.md (Context) and Copilot (Prompt)."""
-    print("📜 Syncing Instructions (Rules as Context)...")
-    source_rules = AGENT_DIR / "rules"
-    target_gemini_rules_link = GEMINI_DIR / "rules"
-    
-    # 1. Cleanup Legacy Symlink (Gemini 3 Policy Engine Confusion)
-    # in Gem3, .gemini/* is for TOML Policies. Our Rules are Markdown Instructions.
-    if target_gemini_rules_link.exists() or target_gemini_rules_link.is_symlink():
-        print("🧹 Removing legacy .gemini/rules symlink (Rules are now injected into GEMINI.md)")
+    for rule_file in sorted(memory_dir.rglob("*.md")):
         try:
-            if target_gemini_rules_link.is_symlink() or target_gemini_rules_link.is_file():
-                target_gemini_rules_link.unlink()
-            else:
-                shutil.rmtree(target_gemini_rules_link)
+            content = rule_file.read_text(encoding="utf-8")
+            rules[rule_file.stem] = content
         except Exception as e:
-             print(f"⚠️  Could not clean .gemini/rules: {e}")
+            print(f"⚠️  Failed to read rule {rule_file.name}: {e}")
+            
+    return rules
 
-    if not source_rules.exists():
-        print("⚠️  No .agent/rules directory found. Skipping generation.")
-        return
-
-    # 2. Update GEMINI.md (The Root Context for Gemini CLI)
-    gemini_md = PROJECT_ROOT / "GEMINI.md"
-    gemini_content = ["# Gemini CLI Instructions\n"]
-    gemini_content.append("Managed by Antigravity System Sync.\n")
-    gemini_content.append("Configuration Sources:\n")
-    gemini_content.append("*   **Rules:** Injected below (Source: `.agent/rules/`)\n")
-    gemini_content.append("*   **Workflows:** `.agent/workflows/`\n\n")
+def ingest_workflows():
+    """Read workflows from .windsurf/workflows (Source of Truth)."""
+    workflows = {}
+    source_dir = WINDSURF_DIR / "workflows"
     
-    gemini_content.append("# System Rules & Policies\n\n")
-    
-    # Ingest all rules
-    rule_files = sorted(source_rules.rglob("*.md"))
-    for rule in rule_files:
+    if not source_dir.exists():
+        print("⚠️  No .windsurf/workflows directory found. Workflows will be empty.")
+        return workflows
+        
+    for wf_file in sorted(source_dir.rglob("*.md")):
         try:
-            text = rule.read_text(encoding="utf-8")
-            gemini_content.append(f"## {rule.stem}\n\n{text}\n\n---\n\n")
+            content = wf_file.read_text(encoding="utf-8")
+            workflows[wf_file.name] = content # Key is full filename (spec-kitty.accept.md)
         except Exception as e:
-            print(f"⚠️ Failed to read rule {rule.name}: {e}")
+            print(f"⚠️  Failed to read workflow {wf_file.name}: {e}")
+            
+    return workflows
 
-    gemini_md.write_text("".join(gemini_content), encoding="utf-8")
-    print(f"✅ Injected {len(rule_files)} rules into GEMINI.md")
-
-    # 3. Update Copilot Context
-    generate_copilot_instructions(source_rules)
-    generate_copilot_prompts()
-    sync_project_memory()
-
-def generate_copilot_prompts():
-    """Generates .github/prompts/*.prompt.md for each workflow."""
-    print("🤖 Generating Copilot Modular Prompts...")
-    source_workflows = AGENT_DIR / "workflows"
-    target_prompts = GITHUB_DIR / "prompts"
+def sync_antigravity(workflows, rules):
+    """Sync to .agent/ (Antigravity)."""
+    print("\n🔵 Syncing Antigravity (.agent)...")
     
-    if not source_workflows.exists():
-        return
+    # Rules (e.g., constitution.md)
+    for name, content in rules.items():
+        (AGENT_DIR / "rules" / f"{name}.md").write_text(content, encoding="utf-8")
+        
+    # Workflows (Direct Copy, maybe ensure actor is consistent)
+    for filename, content in workflows.items():
+        # Keep --actor "windsurf" or change to "antigravity"? 
+        # User said "antigravity was based on windsurf". Let's stick to 'antigravity' for clarity in .agent
+        # But if the CLI tool expects 'windsurf', this might break. 
+        # Safest bet: Replace "windsurf" with "antigravity" for the .agent folder.
+        fixed_content = content.replace('--actor "windsurf"', '--actor "antigravity"')
+        (AGENT_DIR / "workflows" / filename).write_text(fixed_content, encoding="utf-8")
+        
+    print(f"   ✅ Synced {len(rules)} rules and {len(workflows)} workflows.")
 
+def sync_claude(workflows, rules):
+    """Sync to .claude/."""
+    print("\n🟠 Syncing Claude (.claude)...")
+    
+    # 1. Context (CLAUDE.md)
+    claude_md = CLAUDE_DIR / "CLAUDE.md"
+    content = ["# Claude Assistant Instructions\n"]
+    content.append("Managed by Spec Kitty Bridge.\n\n")
+    
+    for name, rule_text in rules.items():
+        content.append(f"## {name}\n\n{rule_text}\n\n---\n\n")
+        
+    claude_md.write_text("".join(content), encoding="utf-8")
+    
+    # 2. Commands/Prompts (.claude/commands/*.md)
+    # Using 'commands' dir based on sample provided
     count = 0
-    # RECURSIVE: Find workflows in subfolders too
-    for workflow_file in source_workflows.rglob("*.md"):
-        # Create a prompt file that Copilot can reference
-        target_file = target_prompts / f"{workflow_file.stem}.prompt.md"
+    for filename, text in workflows.items():
+        fixed_text = text.replace('--actor "windsurf"', '--actor "claude"')
+        (CLAUDE_DIR / "commands" / filename).write_text(fixed_text, encoding="utf-8")
+        count += 1
         
-        try:
-            content = workflow_file.read_text(encoding="utf-8")
-            prompt_content = f"""<!-- Auto-generated from .agent/workflows/{workflow_file.name} -->
-{content}
-"""
-            target_file.write_text(prompt_content, encoding="utf-8")
-            count += 1
-        except Exception as e:
-            print(f"❌ Failed to generate prompt for {workflow_file.name}: {e}")
-            
-    print(f"✅ Generated {count} Copilot prompt files.")
+    print(f"   ✅ Generated CLAUDE.md and {count} commands.")
 
-def generate_copilot_instructions(source_rules_dir):
-    """Concatenate all rules into .github/copilot-instructions.md for VS Code."""
-    print("🤖 Generating Copilot Instructions...")
+def sync_gemini(workflows, rules):
+    """Sync to .gemini/."""
+    print("\n✨ Syncing Gemini (.gemini)...")
     
-    copilot_file = GITHUB_DIR / "copilot-instructions.md"
+    # 1. Context (GEMINI.md)
+    gemini_md = GEMINI_DIR / "GEMINI.md"
+    # Note: Gemini often looks for GEMINI.md in Project Root, not .gemini/GEMINI.md
+    # Current script logic put it in Project Root. Let's stick to that for compatibility.
+    root_gemini_md = PROJECT_ROOT / "GEMINI.md"
     
-    content = ["# Oracle Forms Analysis - Copilot Instructions\n\n"]
-    content.append("> **Auto-Generated**: Do not edit. Update .agent/rules/ instead.\n\n")
+    content = ["# Gemini CLI Instructions\n"]
+    content.append("Managed by Spec Kitty Bridge.\n\n")
     
-    # RECURSIVE sort
-    for rule_file in sorted(source_rules_dir.rglob("*.md")):
-        # Skip Constitution (Mirrored as file to .kittify/memory/ instead of context injection)
-        if rule_file.name.lower() == "constitution.md":
-            continue
-
-        try:
-            rule_content = rule_file.read_text(encoding="utf-8")
-            content.append(f"## Rule: {rule_file.stem}\n\n")
-            content.append(rule_content)
-            content.append("\n\n---\n\n")
-        except Exception as e:
-            print(f"⚠️ Failed to read {rule_file.name}: {e}")
-            
-    copilot_file.write_text("".join(content), encoding="utf-8")
-    print(f"✅ Updated {copilot_file}")
-
-    # Index Workflows for Copilot
-    inventory_content = ["\n\n# Available Workflows (CLI Commands)\n\n"]
-    inventory_content.append("Use `gemini run <name>` or `/workflow-start <name>` to execute these:\n\n")
-    
-    workflows_dir = AGENT_DIR / "workflows"
-    if workflows_dir.exists():
-        for wf in sorted(workflows_dir.rglob("*.md")):
-            inventory_content.append(f"- **{wf.stem}**: (See .agent/workflows/{wf.name})\n")
-            
-    with open(copilot_file, "a", encoding="utf-8") as f:
-        f.write("".join(inventory_content))
-    print(f"✅ Indexed workflows in {copilot_file}")
-
-
-def create_gemini_root_doc():
-    """Create the master GEMINI.md instruction file."""
-    content = """# Gemini CLI Instructions
-Managed by Antigravity System Sync.
-Configuration Sources:
-*   **Rules:** `.agent/rules/`
-*   **Workflows:** `.agent/workflows/`
-"""
-    (PROJECT_ROOT / "GEMINI.md").write_text(content, encoding="utf-8")
-    print("📝 Updated GEMINI.md root instruction.")
-
-def sync_skills():
-    """Mirror skills from .agent/skills to .gemini/skills via Symlink."""
-    print("🧠 Syncing Skills...")
-    source_skills = AGENT_DIR / "skills"
-    target_skills = GEMINI_DIR / "skills"
-    
-    if not source_skills.exists():
-        print("⚠️  No .agent/skills directory found. Skipping.")
-        return
+    for name, rule_text in rules.items():
+        content.append(f"## {name}\n\n{rule_text}\n\n---\n\n")
         
-    if target_skills.exists() or target_skills.is_symlink():
-        try:
-            if target_skills.is_symlink() or target_skills.is_file():
-                target_skills.unlink()
-            else:
-                shutil.rmtree(target_skills, onerror=handle_remove_readonly)
-        except Exception as e:
-            print(f"⚠️  Could not clean .gemini/skills: {e}")
-
-    try:
-        shutil.copytree(source_skills, target_skills, dirs_exist_ok=True)
-        print(f"✅ Copied skills directory (Stability Mode).")
-    except Exception as e:
-        print(f"❌ Failed to copy skills: {e}")
-
-def sync_project_memory():
-    """Mirror .agent/rules/constitution.md to .kittify/memory/constitution.md (if it exists)."""
-    print("🧠 Syncing Project Memory...")
-    source_constitution = AGENT_DIR / "rules" / "constitution.md"
-    target_memory_dir = PROJECT_ROOT / ".kittify" / "memory"
+    root_gemini_md.write_text("".join(content), encoding="utf-8")
     
-    # Only sync if .kittify exists (Spec Kitty Project)
-    if target_memory_dir.exists() and source_constitution.exists():
-        target_file = target_memory_dir / "constitution.md"
-        try:
-            content = source_constitution.read_text(encoding="utf-8")
-            target_file.write_text(content, encoding="utf-8")
-            print(f"✅ Mirrored constitution to .kittify/memory/")
-        except Exception as e:
-            print(f"⚠️ Failed to mirror memory: {e}")
-
-def sync_policies():
-    """Mirror TOML policies from .agent/policies to USER_HOME/.gemini/policies."""
-    print("🛡️ Syncing Policies...")
-    source_policies = AGENT_DIR / "policies"
-    # Gemini 3 Security: Policies must live in User Home, not project dir
-    target_policies = Path.home() / ".gemini" / "policies"
-    
-    if not source_policies.exists():
-        print("⚠️  No .agent/policies directory found. Creating empty one.")
-        source_policies.mkdir(parents=True, exist_ok=True)
-        
-    # Clean target
-    if target_policies.exists() or target_policies.is_symlink():
-        try:
-            if target_policies.is_symlink() or target_policies.is_file():
-                target_policies.unlink()
-            else:
-                shutil.rmtree(target_policies, onerror=handle_remove_readonly)
-        except Exception as e:
-            print(f"⚠️  Could not clean .gemini/policies: {e}")
-
-    # Copy (Robust fallback for Windows/WSL symlink issues)
-    try:
-        shutil.copytree(source_policies, target_policies, dirs_exist_ok=True)
-        print(f"✅ Copied policies directory (Stability Mode).")
-    except Exception as e:
-        print(f"❌ Failed to copy policies: {e}")
-
-def generate_command_wrappers():
-    """Generate TOML wrappers for every workflow from .windsurf/workflows."""
-    print("🚀 Generating Command Wrappers...")
-    windsurf_dir = PROJECT_ROOT / ".windsurf"
-    source_workflows = windsurf_dir / "workflows"
-    target_commands = GEMINI_DIR / "commands"
-    
-    if not source_workflows.exists():
-        print("⚠️  No .windsurf/workflows directory found. Skipping.")
-        return
-
+    # 2. Commands (.gemini/commands/*.toml)
     count = 0
-    # RECURSIVE: Find workflows in subfolders
-    for workflow_file in source_workflows.rglob("*.md"):
-        slug = workflow_file.stem
+    for filename, text in workflows.items():
+        stem = filename.replace(".md", "") # remove .md
         
-        try:
-            workflow_content = workflow_file.read_text(encoding="utf-8")
-            
-            # Extract description from frontmatter if present
-            description_match = None
-            if workflow_content.startswith("---"):
-                frontmatter_end = workflow_content.find("---", 3)
-                if frontmatter_end != -1:
-                    frontmatter = workflow_content[3:frontmatter_end]
-                    for line in frontmatter.split("\n"):
-                        if line.startswith("description:"):
-                            description_match = line.split(":", 1)[1].strip().strip('"')
-                            break
-                    # Remove frontmatter from content
-                    workflow_content = workflow_content[frontmatter_end + 3:].lstrip()
-            
-            description = description_match or f"Executes Antigravity Workflow: {slug}"
-            # Escape double quotes for TOML string
-            description = description.replace('"', '\\"')
-            
-            # Agent-specific replacements for Gemini
-            workflow_content = workflow_content.replace('--actor "windsurf"', '--actor "gemini"')
-            workflow_content = workflow_content.replace('$ARGUMENTS', '{{args}}')
-            workflow_content = workflow_content.replace('(Missing script command for sh)', '(Missing script command for ps)')
-            
-            # Manually construct TOML with triple-quoted literal string for robustness (handles Windows paths)
-            target_file = target_commands / f"{slug}.toml"
-            target_file.parent.mkdir(parents=True, exist_ok=True)
-            
-            with open(target_file, "w", encoding="utf-8") as f:
-                f.write(f'description = "{description}"\n\n')
-                f.write("prompt = '''\n")
-                f.write(workflow_content)
-                f.write("\n'''\n")
-                
-            print(f"✅ Generated {target_file.name}")
-            count += 1
-        except Exception as e:
-            print(f"❌ Failed to generate wrapper for {slug}: {e}")
-            
-    print(f"✅ Generated {count} command wrappers.")
-
-def sync_copilot_workflows():
-    """Copy workflows from .windsurf/workflows to .github/prompts/ as .md files."""
-    print("🤖 Syncing Workflows to GitHub Copilot...")
-    windsurf_dir = PROJECT_ROOT / ".windsurf"
-    source_workflows = windsurf_dir / "workflows"
-    target_prompts = GITHUB_DIR / "prompts"
-    
-    if not source_workflows.exists():
-        print("⚠️  No .windsurf/workflows directory found. Skipping.")
-        return
-    
-    target_prompts.mkdir(parents=True, exist_ok=True)
-    count = 0
-    
-    for workflow_file in source_workflows.rglob("*.md"):
-        try:
-            # Read workflow content
-            workflow_content = workflow_file.read_text(encoding="utf-8")
-            
-            # Agent-specific replacements for Copilot
-            workflow_content = workflow_content.replace('--actor "windsurf"', '--actor "copilot"')
-            
-            # Flatten: Save directly to .github/prompts/ (VS Code limit)
-            target_file = target_prompts / f"{workflow_file.stem}.prompt.md"
-            
-            target_file.write_text(workflow_content, encoding="utf-8")
-            
-            print(f"✅ Copied {target_file.name}")
-            count += 1
-        except Exception as e:
-            print(f"❌ Failed to copy {workflow_file.name} to Copilot prompts: {e}")
-    
-    print(f"✅ Synced {count} workflows to GitHub Copilot.")
-
-def sync_custom_workflows_to_gemini():
-    """Sync custom (non-spec-kitty) workflows from .agent/workflows to .gemini/commands as TOML."""
-    print("🔧 Syncing Custom Workflows to Gemini...")
-    source_workflows = AGENT_DIR / "workflows"
-    target_commands = GEMINI_DIR / "commands"
-    
-    if not source_workflows.exists():
-        print("⚠️  No .agent/workflows directory found. Skipping.")
-        return
-    
-    count = 0
-    
-    # Recursively find all .md files in .agent/workflows and subdirectories
-    for workflow_file in source_workflows.rglob("*.md"):
-        # Filter: Skip spec-kitty workflows
-        if "spec-kitty" in workflow_file.stem.lower():
-            continue
+        # Extract description
+        description = f"Executes {stem}"
+        if text.startswith("---"):
+            end = text.find("---", 3)
+            if end != -1:
+                fm = text[3:end]
+                for line in fm.split("\n"):
+                    if line.startswith("description:"):
+                        description = line.split(":", 1)[1].strip().strip('"')
+                        break
+                        
+        # Formatting
+        description = description.replace('"', '\\"')
+        fixed_text = text.replace('--actor "windsurf"', '--actor "gemini"')
+        fixed_text = fixed_text.replace('$ARGUMENTS', '{{args}}')
+        fixed_text = fixed_text.replace('(Missing script command for sh)', 'spec-kitty') # Attempt fix
         
-        try:
-            workflow_content = workflow_file.read_text(encoding="utf-8")
-            
-            # Extract description from frontmatter if present
-            description_match = None
-            if workflow_content.startswith("---"):
-                frontmatter_end = workflow_content.find("---", 3)
-                if frontmatter_end != -1:
-                    frontmatter = workflow_content[3:frontmatter_end]
-                    for line in frontmatter.split("\n"):
-                        if line.startswith("description:"):
-                            description_match = line.split(":", 1)[1].strip().strip('"')
-                            break
-                    # Remove frontmatter from content
-                    workflow_content = workflow_content[frontmatter_end + 3:].lstrip()
-            
-            description = description_match or f"Executes Custom Workflow: {workflow_file.stem}"
-            # Escape double quotes for TOML string
-            description = description.replace('"', '\\"')
-            
-            # Agent-specific replacements for Gemini
-            workflow_content = workflow_content.replace('--actor "windsurf"', '--actor "gemini"')
-            workflow_content = workflow_content.replace('--actor "antigravity"', '--actor "gemini"')
-            workflow_content = workflow_content.replace('$ARGUMENTS', '{{args}}')
-            workflow_content = workflow_content.replace('(Missing script command for sh)', '(Missing script command for ps)')
-            
-            # Preserve subdirectory structure
-            rel_path = workflow_file.relative_to(source_workflows)
-            target_file = target_commands / rel_path.parent / f"{workflow_file.stem}.toml"
-            target_file.parent.mkdir(parents=True, exist_ok=True)
-            
-            # Write TOML with triple-quoted literal string
-            with open(target_file, "w", encoding="utf-8") as f:
-                f.write(f'description = "{description}"\n\n')
-                f.write("prompt = '''\n")
-                f.write(workflow_content)
-                f.write("\n'''\n")
-            
-            print(f"✅ Generated {rel_path.parent / target_file.name}")
-            count += 1
-        except Exception as e:
-            print(f"❌ Failed to generate wrapper for {workflow_file.name}: {e}")
-    
-    print(f"✅ Synced {count} custom workflows to Gemini.")
-
-def sync_custom_workflows_to_copilot():
-    """Sync custom (non-spec-kitty) workflows from .agent/workflows to .github/prompts as .md files."""
-    print("🤖 Syncing Custom Workflows to GitHub Copilot...")
-    source_workflows = AGENT_DIR / "workflows"
-    target_prompts = GITHUB_DIR / "prompts"
-    
-    if not source_workflows.exists():
-        print("⚠️  No .agent/workflows directory found. Skipping.")
-        return
-    
-    count = 0
-    
-    # Recursively find all .md files in .agent/workflows and subdirectories
-    for workflow_file in source_workflows.rglob("*.md"):
-        # Filter: Skip spec-kitty workflows
-        if "spec-kitty" in workflow_file.stem.lower():
-            continue
+        toml_content = f'description = "{description}"\n\nprompt = """\n{fixed_text}\n"""\n'
         
-        try:
-            workflow_content = workflow_file.read_text(encoding="utf-8")
-            
-            # Agent-specific replacements for Copilot
-            workflow_content = workflow_content.replace('--actor "windsurf"', '--actor "copilot"')
-            workflow_content = workflow_content.replace('--actor "antigravity"', '--actor "copilot"')
-            
-            # Flatten: Save directly to .github/prompts/ (VS Code limit)
-            target_file = target_prompts / f"{workflow_file.stem}.prompt.md"
-            
-            target_file.write_text(workflow_content, encoding="utf-8")
-            
-            print(f"✅ Copied {target_file.name}")
-            count += 1
-        except Exception as e:
-            print(f"❌ Failed to copy {workflow_file.name} to Copilot prompts: {e}")
-    
-    print(f"✅ Synced {count} custom workflows to GitHub Copilot.")
+        (GEMINI_DIR / "commands" / f"{stem}.toml").write_text(toml_content, encoding="utf-8")
+        count += 1
+        
+    print(f"   ✅ Generated GEMINI.md and {count} commands.")
 
+def sync_copilot(workflows, rules):
+    """Sync to .github/ (Copilot)."""
+    print("\n🤖 Syncing Copilot (.github)...")
+    
+    # 1. Instructions (copilot-instructions.md)
+    instr_file = GITHUB_DIR / "copilot-instructions.md"
+    content = ["# Copilot Instructions\n"]
+    content.append("> Managed by Spec Kitty Bridge.\n\n")
+    
+    for name, rule_text in rules.items():
+        content.append(f"## Rule: {name}\n\n{rule_text}\n\n---\n\n")
+        
+    # Index Workflows
+    content.append("\n# Available Workflows\n")
+    for filename in workflows.keys():
+        stem = filename.replace(".md", "")
+        content.append(f"- /prompts/{stem}.prompt.md\n")
+
+    instr_file.write_text("".join(content), encoding="utf-8")
+    
+    # 2. Prompts (.github/prompts/*.prompt.md)
+    count = 0
+    for filename, text in workflows.items():
+        stem = filename.replace(".md", "")
+        fixed_text = text.replace('--actor "windsurf"', '--actor "copilot"')
+        
+        # Wrap in comment? Or just raw? Sample showed raw content but with .prompt.md extension
+        # target_filename = f"{stem}.prompt.md"
+        # Actually sample was: spec-kitty.accept.prompt.md
+        # If input is spec-kitty.accept.md, then output is spec-kitty.accept.prompt.md
+        
+        target_file = GITHUB_DIR / "prompts" / f"{stem}.prompt.md"
+        
+        # Make sure to include the original frontmatter? Yes.
+        target_file.write_text(fixed_text, encoding="utf-8")
+        count += 1
+        
+    print(f"   ✅ Generated copilot-instructions.md and {count} prompts.")
 
 def main():
-    import argparse
-    parser = argparse.ArgumentParser(description="Dual-Tri Bridge Sync Engine")
-    parser.add_argument("--inbound", action="store_true", help="Run Phase 1: Upstream (.windsurf) -> Core (.agent)")
-    parser.add_argument("--outbound", action="store_true", help="Run Phase 2: Core (.agent) -> Downstream (.gemini/.github)")
-    args = parser.parse_args()
-
-    # Default: Run BOTH if no flags specified
-    run_inbound = args.inbound
-    run_outbound = args.outbound
-    if not run_inbound and not run_outbound:
-        run_inbound = True
-        run_outbound = True
-
-    if not AGENT_DIR.exists():
-        print(f"❌ Critical: .agent directory not found at {AGENT_DIR}")
-        return
-        
+    print("🚀 Starting Spec Kitty Bridge Sync...")
+    
     setup_directories()
+    
+    # 1. Ingest Source (Spec Kitty)
+    rules = ingest_rules()
+    workflows = ingest_workflows()
+    
+    if not workflows and not rules:
+        print("❌ No source data found in .windsurf or .kittify. Run 'spec-kitty init' first.")
+        return
 
-    # --- PHASE 2: STANDARD BRIDGE (Layer 1) ---
-    if run_inbound:
-        print("\n🔵 [PHASE 2] STANDARD BRIDGE (Layer 1): Upstream (.windsurf) -> All Agents")
-        try:
-            # 1. Ingest Standard Kit to Core
-            sync_from_upstream()
-            
-            # 2. Project Standard Kit to Gemini/Copilot (Immediate Availability)
-            print("   >> Propagating Standard Kit to Downstream Agents...")
-            generate_command_wrappers()  # Gemini TOML
-            sync_copilot_workflows()      # GitHub Copilot .md
-            
-        except Exception as e:
-            print(f"❌ Error in Phase 2: {e}")
-
-    # --- PHASE 3: CUSTOM BRIDGE (Layer 2) ---
-    if run_outbound:
-        print("\n🟣 [PHASE 3] CUSTOM BRIDGE (Layer 2): Project Custom Rules -> Downstream")
-        # In this implementation, 'sync_to_downstream' handles both Standard + Custom
-        # running it again here ensures any MANUALLY added custom rules in .agent are synced.
-        try:
-             # sync_instructions()
-             # sync_skills()
-             # sync_policies()
-             sync_custom_workflows_to_gemini()
-             sync_custom_workflows_to_copilot()
-        except Exception as e:
-            print(f"❌ Error in Phase 3: {e}")
-
-
-
-
-    print("\n🎉 Bridge Sync Complete.")
+    # 2. Project to All Agents
+    sync_antigravity(workflows, rules)
+    sync_claude(workflows, rules)
+    sync_gemini(workflows, rules)
+    sync_copilot(workflows, rules)
+    
+    print("\n🎉 Bridge Sync Complete. All agents are configured.")
 
 if __name__ == "__main__":
     main()
-

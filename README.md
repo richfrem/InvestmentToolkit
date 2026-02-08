@@ -1,30 +1,42 @@
-# Questrade Portfolio Viewer
+# InvestmentToolkit
 
-A secure app to view your Questrade holdings via API, display in a dashboard, and save to local spreadsheet.
+A premium, "Luxury Dark Mode" investment analysis suite built for sophisticated retail investors. This toolkit provides deep fundamental analysis, valuation modeling, and comparative screening without the need for expensive terminal subscriptions.
 
-## Features
-- Fetch holdings from Questrade API.
-- Display in responsive table.
-- Manual OAuth authentication.
-- Local .ts storage (V1).
+## 🌟 Core Components
 
-## Setup
-1. Register for Questrade API, get client ID/secret.
-2. Copy `.env.example` to `.env`, fill in credentials.
-3. Install dependencies: `npm run install-all`.
-4. Setup DB: `cd backend && npx prisma migrate dev --name init`.
-5. Run: `./start.sh` to start both servers, or `./stop.sh` to stop them.
+### 1. Investment Screener (`tools/investment-screener`)
+A web-based financial analysis dashboard featuring:
+-   **Luxury Dark Mode**: Professional Black/Gold aesthetic.
+-   **Expert Metrics**: Instant access to PEG Ratio, Piotroski F-Score, and Insider Ownership.
+-   **Valuation Modeler**: Interactive Bear/Base/Bull scenario modeling to project 5-year price targets.
+-   **Comparative Analysis**: Side-by-side ticker comparison.
 
-## Running the App
-- Use `./start.sh` to start backend (port 3001) and frontend (port 5173) servers.
-- Use `./stop.sh` to stop the servers.
-- Backend API: http://localhost:3001
-- Frontend: http://localhost:5173
+![Screener Dashboard](https://placeholder-image-url.com) *(Screenshot to be added)*
 
-## Security
-- .env for secrets.
-- Husky pre-commit scans for secrets.
-- No password storage.
+## 🛠️ Tech Stack
+-   **Frontend**: React 19, Vite, Tailwind CSS.
+-   **Backend**: Node.js (Express), Python 3.11 (Bridge to `yfinance`).
+-   **Data**: `yfinance` (Primary), Questrade API (Optional Real-time).
 
-## Roadmap
-See `docs/Roadmap.md`.
+## 🚀 Getting Started
+
+### Prerequisites
+-   Node.js 18+
+-   Python 3.11+
+-   Access to this repository
+
+### Quick Start
+The project includes a unified startup script for the web application:
+
+```bash
+cd tools/investment-screener
+chmod +x startup.sh
+./startup.sh
+```
+
+This will launch both the backend (API) and frontend (Dashboard).
+
+## 🤖 AI Development Framework
+This project utilizes the **Spec Kitty** framework to systematize AI agent workflows.
+-   **Specs**: Located in `kitty-specs/`.
+-   **Agents**: Supports Gemini, Copilot, and Claude via the `tools/bridge/speckit_system_bridge.py` sync tool.
