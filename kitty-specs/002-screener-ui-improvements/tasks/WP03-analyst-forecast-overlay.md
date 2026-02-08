@@ -1,10 +1,12 @@
 ---
 work_package_id: WP03
 title: Analyst Forecast Overlay
-lane: planned
+lane: "done"
 dependencies:
 - WP01
 subtasks: [T013, T014, T015, T016, T017]
+reviewed_by: "richfrem"
+review_status: "approved"
 ---
 
 # Work Package: Analyst Forecast Overlay
@@ -66,3 +68,7 @@ Users want to see where the street thinks the stock is going. We need to overlay
 
 ## Risks
 - Recharts x-axis categorization: mixing historical years (strings) with forecast years (numbers) might cause alignment issues. Convert all to strings ("2025", "2026E").
+
+## Activity Log
+
+- 2026-02-08T17:28:09Z – unknown – lane=done – Moved to done
