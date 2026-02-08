@@ -6,7 +6,7 @@ Synchronizes specific rule files from .agent/rules/ into the monolithic
 configuration files for other agents (Claude, Gemini, Copilot).
 
 Usage:
-    python3 tools/bridge/sync_rules.py --rule git_lifecycle.md
+    python3 tools/bridge/sync_rules.py --rule standard-workflow-rules.md
     python3 tools/bridge/sync_rules.py --all
 
 Target Files:
@@ -77,7 +77,7 @@ def update_file(target_name, target_path, new_content):
 
 def main():
     parser = argparse.ArgumentParser(description="Sync agent rules to monolithic files.")
-    parser.add_argument("--rule", help="Specific rule filename to sync (e.g., git_lifecycle.md)")
+    parser.add_argument("--rule", help="Specific rule filename to sync (e.g., standard-workflow-rules.md)")
     parser.add_argument("--all", action="store_true", help="Sync ALL rules from .agent/rules/")
     args = parser.parse_args()
 
