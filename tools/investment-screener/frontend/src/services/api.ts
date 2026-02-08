@@ -17,6 +17,15 @@ export interface StockData {
         revenue_growth?: number;
         profit_margin?: number;
     };
+    performance?: {
+        "1d": number;
+        "1w": number;
+        "1m": number;
+        "3m": number;
+        "ytd": number;
+        "1y": number;
+        "5y": number;
+    };
     expert_metrics: {
         rule_of_40: {
             score: number;
@@ -38,6 +47,11 @@ export interface StockData {
     financials: {
         historical_revenue: number[];
         historical_net_income: number[];
+        historical_fcf: number[];
+        historical_gross_margin: number[];
+        historical_operating_margin: number[];
+        historical_net_margin: number[];
+        historical_eps: number[];
     };
     analyst_revenue_forecast?: Array<{
         year: number;

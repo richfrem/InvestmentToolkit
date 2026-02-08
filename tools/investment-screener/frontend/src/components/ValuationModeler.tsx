@@ -177,9 +177,37 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     return (
         <div className="bg-surface rounded-xl p-4 border border-slate-800 space-y-3">
             <div className="flex justify-between items-center">
-                <div>
-                    <h3 className="text-lg font-bold text-text">ValuationModeler</h3>
-                    <p className="text-secondary text-xs">5-Year Target</p>
+                <div className="flex items-center gap-4">
+                    <div>
+                        <h3 className="text-lg font-bold text-text">ValuationModeler</h3>
+                        <p className="text-secondary text-xs">5-Year Target</p>
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={resetToYahoo}
+                            className="flex items-center gap-2 px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg transition-colors"
+                            title="Reset to Yahoo Estimates"
+                        >
+                            <RotateCcw size={12} />
+                            Reset
+                        </button>
+                        {notes && (
+                            <button
+                                onClick={() => setShowNotesModal(true)}
+                                className="flex items-center gap-2 px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg transition-colors"
+                            >
+                                <FileText size={12} />
+                                Notes
+                            </button>
+                        )}
+                        <button
+                            onClick={() => setShowNotesModal(true)}
+                            className="flex items-center gap-2 px-3 py-1.5 text-xs bg-primary/20 hover:bg-primary/30 border border-primary/50 text-primary rounded-lg transition-colors"
+                        >
+                            <Save size={12} />
+                            Save
+                        </button>
+                    </div>
                 </div>
                 <div className={`px-4 py-2 rounded-lg border ${isPositive ? 'border-green-500/40 bg-green-500/10' : 'border-red-500/40 bg-red-500/10'}`}>
                     <div className={`text-2xl font-bold ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
@@ -209,32 +237,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 ))}
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-2 justify-end">
-                <button
-                    onClick={resetToYahoo}
-                    className="flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg transition-colors"
-                >
-                    <RotateCcw size={14} />
-                    Reset to Yahoo
-                </button>
-                {notes && (
-                    <button
-                        onClick={() => setShowNotesModal(true)}
-                        className="flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg transition-colors"
-                    >
-                        <FileText size={14} />
-                        View Notes
-                    </button>
-                )}
-                <button
-                    onClick={() => setShowNotesModal(true)}
-                    className="flex items-center gap-2 px-3 py-1.5 text-sm bg-primary/20 hover:bg-primary/30 border border-primary/50 text-primary rounded-lg transition-colors"
-                >
-                    <Save size={14} />
-                    {notes ? 'Update' : 'Save Projection'}
-                </button>
-            </div>
+
 
             {/* Input Sliders with Yahoo Hints */}
             <div className="grid grid-cols-2 gap-4">
