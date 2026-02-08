@@ -182,12 +182,12 @@
 **Estimated Size**: ~400 lines, 6 subtasks
 
 ### Included Subtasks
-- [ ] T029 Create `ProjectionsPanel.tsx` component — modal/slide-out panel listing saved projections for current ticker
-- [ ] T030 Display projection entries: date saved, scenario values summary (growth, margin, PE), notes preview
-- [ ] T031 Implement "Load" action — populate sliders with saved scenario values
-- [ ] T032 Implement "Edit" action — open notes in edit mode, allow updating scenario values
-- [ ] T033 Implement "Delete" action with confirmation dialog
-- [ ] T034 Add "My Projections" button to ValuationModeler header, show count badge if projections exist
+- [x] T029 Create `ProjectionsPanel.tsx` component — modal/slide-out panel listing saved projections for current ticker
+- [x] T030 Display projection entries: date saved, scenario values summary (growth, margin, PE), notes preview
+- [x] T031 Implement "Load" action — populate sliders with saved scenario values
+- [x] T032 Implement "Edit" action — open notes in edit mode, allow updating scenario values
+- [x] T033 Implement "Delete" action with confirmation dialog
+- [x] T034 Add "My Projections" button to ValuationModeler header, show count badge if projections exist
 
 ### Implementation Notes
 - LocalStorage key pattern: `projection_{SYMBOL}` — currently stores single projection per ticker.
