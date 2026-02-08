@@ -175,178 +175,218 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const isPositive = activeDiff >= 0;
 
     return (
-        <div className="bg-surface rounded-xl p-4 border border-slate-800 space-y-3">
-            <div className="flex justify-between items-center">
+        <div className="bg-surface rounded-xl p-4 border border-slate-800">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-4">
                     <div>
                         <h3 className="text-lg font-bold text-text">ValuationModeler</h3>
-                        <p className="text-secondary text-xs">5-Year Target</p>
+                        <p className="text-secondary text-xs">5-Year Discounted Cash Flow (DCF)</p>
                     </div>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={resetToYahoo}
-                            className="flex items-center gap-2 px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg transition-colors"
-                            title="Reset to Yahoo Estimates"
-                        >
-                            <RotateCcw size={12} />
-                            Reset
-                        </button>
-                        {notes && (
-                            <button
-                                onClick={() => setShowNotesModal(true)}
-                                className="flex items-center gap-2 px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg transition-colors"
-                            >
-                                <FileText size={12} />
-                                Notes
-                            </button>
-                        )}
+                </div>
+                <div className="flex gap-2">
+                    <button
+                        onClick={resetToYahoo}
+                        className="flex items-center gap-2 px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg transition-colors"
+                        title="Reset to Yahoo Estimates"
+                    >
+                        <RotateCcw size={12} />
+                        Reset
+                    </button>
+                    {notes && (
                         <button
                             onClick={() => setShowNotesModal(true)}
-                            className="flex items-center gap-2 px-3 py-1.5 text-xs bg-primary/20 hover:bg-primary/30 border border-primary/50 text-primary rounded-lg transition-colors"
+                            className="flex items-center gap-2 px-3 py-1.5 text-xs bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg transition-colors"
                         >
-                            <Save size={12} />
-                            Save
+                            <FileText size={12} />
+                            Notes
                         </button>
-                    </div>
-                </div>
-                <div className={`px-4 py-2 rounded-lg border ${isPositive ? 'border-green-500/40 bg-green-500/10' : 'border-red-500/40 bg-red-500/10'}`}>
-                    <div className={`text-2xl font-bold ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
-                        {isPositive ? '+' : ''}{activeDiff.toFixed(0)}%
-                    </div>
-                    <div className="text-xs text-secondary capitalize">{activeScenario} → ${activeTarget.toFixed(0)}</div>
-                </div>
-            </div>
-
-            {/* Scenario Tabs */}
-            <div className="grid grid-cols-3 gap-2">
-                {(['bear', 'base', 'bull'] as ScenarioType[]).map(scenario => (
+                    )}
                     <button
-                        key={scenario}
-                        onClick={() => setActiveScenario(scenario)}
-                        className={`py-2 px-3 rounded-lg text-sm font-medium transition-all
-                            ${activeScenario === scenario
-                                ? scenarioColors[scenario] + ' text-white shadow-lg'
-                                : 'border-slate-700 bg-slate-800/50 hover:bg-slate-800'}`}
+                        onClick={() => setShowNotesModal(true)}
+                        className="flex items-center gap-2 px-3 py-1.5 text-xs bg-primary/20 hover:bg-primary/30 border border-primary/50 text-primary rounded-lg transition-colors"
                     >
-                        {scenario === 'bear' && <TrendingDown className="inline mr-1 h-3 w-3" />}
-                        {scenario === 'base' && <Scale className="inline mr-1 h-3 w-3" />}
-                        {scenario === 'bull' && <TrendingUp className="inline mr-1 h-3 w-3" />}
-                        {scenario}
-                        <span className="ml-2 text-xs text-secondary">${targetPrices[scenario].toFixed(0)}</span>
+                        <Save size={12} />
+                        Save
                     </button>
-                ))}
+                </div>
             </div>
 
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
+                {/* LEFT PANEL: Inputs (Col Span 7) */}
+                <div className="lg:col-span-7 space-y-4">
 
-            {/* Input Sliders with Yahoo Hints */}
-            <div className="grid grid-cols-2 gap-4">
-                {(Object.keys(VALIDATION) as Array<keyof ScenarioInputs>).map(field => {
-                    const config = VALIDATION[field];
-                    const value = scenarios[activeScenario][field];
-                    // Yahoo reference values for hints
-                    // Helper to properly handle 0/negative values (avoiding || operator which treats them as falsy)
-                    const getYahooValue = (primary: number | undefined, secondary: number | undefined, suffix: string = ''): string => {
-                        if (primary !== undefined && primary !== null) return `${primary.toFixed(1)}${suffix}`;
-                        if (secondary !== undefined && secondary !== null) return `${secondary.toFixed(1)}${suffix}`;
-                        return `N/A${suffix}`;
-                    };
-
-                    const yahooHints: Record<keyof ScenarioInputs, string> = {
-                        growthRate: `Yahoo: ${getYahooValue(stockData.metrics.revenue_growth, estimates?.revenue_growth, '%')}`,
-                        netMargin: `Yahoo: ${getYahooValue(stockData.metrics.profit_margin, estimates?.profit_margin, '%')}`,
-                        exitPE: `Yahoo Fwd: ${getYahooValue(stockData.metrics.forward_pe, estimates?.forward_pe, 'x')}`,
-                        shareChange: 'Your estimate',
-                        discountRate: 'Typical: 8-12%',
-                        timeHorizon: 'Default: 5 years',
-                    };
-                    return (
-                        <div key={field} className="space-y-1">
-                            <div className="flex justify-between items-center">
-                                <label className="text-sm text-secondary flex items-center gap-1">
-                                    {config.label}
-                                    <HelpTrigger topicId={field} size={12} />
-                                </label>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="number"
-                                        value={value}
-                                        onChange={e => updateScenario(field, parseFloat(e.target.value) || 0)}
-                                        className="w-20 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-right text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                                    />
-                                    <span className="text-xs text-secondary">{field === 'exitPE' ? 'x' : field === 'timeHorizon' ? 'yr' : '%'}</span>
+                    {/* Scenario Selector */}
+                    <div className="grid grid-cols-3 gap-2 mb-4">
+                        {(['bear', 'base', 'bull'] as ScenarioType[]).map(scenario => (
+                            <button
+                                key={scenario}
+                                onClick={() => setActiveScenario(scenario)}
+                                className={`py-2 px-3 rounded-lg text-sm font-medium transition-all flex flex-col items-center justify-center gap-1
+                                    ${activeScenario === scenario
+                                        ? scenarioColors[scenario] + ' text-white shadow-lg ring-1 ring-white/10'
+                                        : 'border-slate-700 bg-slate-800/30 hover:bg-slate-800/50 text-secondary'}`}
+                            >
+                                <div className="flex items-center gap-1.5">
+                                    {scenario === 'bear' && <TrendingDown size={14} />}
+                                    {scenario === 'base' && <Scale size={14} />}
+                                    {scenario === 'bull' && <TrendingUp size={14} />}
+                                    <span className="uppercase tracking-wider text-xs">{scenario}</span>
                                 </div>
-                            </div>
-                            <input
-                                type="range"
-                                min={config.min}
-                                max={config.max}
-                                value={value}
-                                onChange={e => updateScenario(field, parseFloat(e.target.value))}
-                                className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary"
-                            />
-                            <div className="flex justify-between text-xs text-slate-500">
-                                <span>{config.min}{field === 'exitPE' ? 'x' : field === 'timeHorizon' ? 'yr' : '%'}</span>
-                                <span className="text-amber-400/80">{yahooHints[field]}</span>
-                                <span>{config.max}{field === 'exitPE' ? 'x' : field === 'timeHorizon' ? 'yr' : '%'}</span>
-                            </div>
-                            {field === 'exitPE' && (
-                                <div className="flex items-center gap-1 text-xs text-secondary">
-                                    <Info size={12} />
-                                    <span>Typical {sector} range: {peRange.min}x - {peRange.max}x</span>
-                                </div>
-                            )}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Compact Sliders Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 bg-slate-900/30 p-4 rounded-xl border border-slate-800/50">
+
+                        {/* Group 1: Core Growth */}
+                        <div className="col-span-1 md:col-span-2 text-xs font-bold text-secondary uppercase tracking-wider mb-1 border-b border-slate-800 pb-1">
+                            Growth & Profitability
                         </div>
-                    );
-                })}
-            </div>
 
-            {/* Analyst Consensus Bar */}
-            {estimates?.target_low_price && (
-                <div className="flex items-center gap-2 text-xs pt-3 border-t border-slate-800">
-                    <Info size={12} className="text-amber-400" />
-                    <span className="text-secondary">Analysts ({estimates.number_of_analysts})</span>
-                    <span className="text-red-400 font-medium">${estimates.target_low_price.toFixed(0)}</span>
-                    <div className="flex-1 h-1 bg-slate-700 rounded-full relative mx-1">
-                        <div
-                            className="absolute h-full bg-gradient-to-r from-red-500 via-amber-500 to-green-500 rounded-full opacity-50"
-                            style={{
-                                left: '0%',
-                                right: '0%' // Simplified for now
-                            }}
+                        {/* Growth Rate */}
+                        <SliderControl
+                            field="growthRate"
+                            value={scenarios[activeScenario].growthRate}
+                            onChange={updateScenario}
+                            config={VALIDATION.growthRate}
+                            yahooHint={`Yahoo: ${stockData.metrics.revenue_growth?.toFixed(1) ?? 'N/A'}%`}
                         />
-                        {/* Current Price Marker */}
-                        <div
-                            className="absolute h-2 w-2 bg-white rounded-full top-1/2 -translate-y-1/2 shadow"
-                            style={{
-                                left: `${Math.max(0, Math.min(100, ((currentPrice - estimates.target_low_price) / (estimates.target_high_price - estimates.target_low_price)) * 100))}%`
-                            }}
+
+                        {/* Net Margin */}
+                        <SliderControl
+                            field="netMargin"
+                            value={scenarios[activeScenario].netMargin}
+                            onChange={updateScenario}
+                            config={VALIDATION.netMargin}
+                            yahooHint={`Yahoo: ${stockData.metrics.profit_margin?.toFixed(1) ?? 'N/A'}%`}
+                        />
+
+                        {/* Group 2: Valuation Multiples */}
+                        <div className="col-span-1 md:col-span-2 text-xs font-bold text-secondary uppercase tracking-wider mb-1 mt-2 border-b border-slate-800 pb-1">
+                            Valuation Assumptions
+                        </div>
+
+                        {/* Exit P/E */}
+                        <SliderControl
+                            field="exitPE"
+                            value={scenarios[activeScenario].exitPE}
+                            onChange={updateScenario}
+                            config={VALIDATION.exitPE}
+                            yahooHint={`Fwd: ${stockData.metrics.forward_pe?.toFixed(1) ?? 'N/A'}x`}
+                            extraInfo={<span className="text-[10px] text-slate-500">Sector: {peRange.min}-{peRange.max}x</span>}
+                        />
+
+                        {/* Discount Rate */}
+                        <SliderControl
+                            field="discountRate"
+                            value={scenarios[activeScenario].discountRate}
+                            onChange={updateScenario}
+                            config={VALIDATION.discountRate}
+                            yahooHint="Typ: 8-12%"
+                        />
+
+                        {/* Group 3: Capital Structure */}
+                        <div className="col-span-1 md:col-span-2 text-xs font-bold text-secondary uppercase tracking-wider mb-1 mt-2 border-b border-slate-800 pb-1">
+                            Structure & Time
+                        </div>
+
+                        {/* Share Change */}
+                        <SliderControl
+                            field="shareChange"
+                            value={scenarios[activeScenario].shareChange}
+                            onChange={updateScenario}
+                            config={VALIDATION.shareChange}
+                            yahooHint="( - ) Buyback | ( + ) Dilution"
+                        />
+
+                        {/* Time Horizon */}
+                        <SliderControl
+                            field="timeHorizon"
+                            value={scenarios[activeScenario].timeHorizon}
+                            onChange={updateScenario}
+                            config={VALIDATION.timeHorizon}
+                            yahooHint="Def: 5yr"
                         />
                     </div>
-                    <span className="text-green-400 font-medium">${estimates.target_high_price?.toFixed(0)}</span>
-                    <span className="text-amber-400 text-sm font-medium">Mean: ${estimates?.target_mean_price?.toFixed(0)}</span>
-                    <span className="text-xs text-secondary">{estimates?.recommendation?.toUpperCase()}</span>
                 </div>
-            )}
 
-            {/* Price Targets Summary - Compact Row */}
-            <div className="grid grid-cols-3 gap-3 pt-3 border-t border-slate-800">
-                {(['bear', 'base', 'bull'] as ScenarioType[]).map(scenario => {
-                    const target = targetPrices[scenario];
-                    const diff = ((target / currentPrice) - 1) * 100;
-                    return (
-                        <div key={scenario} className={`p-3 rounded-lg ${scenarioColors[scenario]} text-center`}>
-                            <div className="text-xs uppercase text-secondary">{scenario}</div>
-                            <div className="text-xl font-bold">${target.toFixed(0)}</div>
-                            <div className={`text-xs ${diff >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                {diff >= 0 ? '+' : ''}{diff.toFixed(0)}%
+                {/* RIGHT PANEL: Results (Col Span 5) */}
+                <div className="lg:col-span-5 space-y-4">
+
+                    {/* Main Result Card */}
+                    <div className={`p-5 rounded-xl border ${isPositive ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5'} flex flex-col items-center justify-center text-center h-32 relative overflow-hidden`}>
+                        <div className="absolute top-2 right-2 text-[10px] uppercase tracking-widest text-secondary font-medium">Target Price</div>
+                        <div className="z-10">
+                            <div className="text-4xl font-bold mb-1 text-white tracking-tight">
+                                ${activeTarget.toFixed(0)}
+                            </div>
+                            <div className={`text-sm font-medium flex items-center gap-1 justify-center ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+                                {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                                {isPositive ? '+' : ''}{activeDiff.toFixed(1)}% Upside
                             </div>
                         </div>
-                    );
-                })}
+                        {/* Background Spline Effect (simplified) */}
+                        <div className={`absolute -bottom-8 -right-8 w-24 h-24 rounded-full blur-2xl opacity-20 ${isPositive ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    </div>
+
+                    {/* Scenario Comparison Table */}
+                    <div className="bg-slate-900/50 rounded-xl border border-slate-800 overflow-hidden">
+                        <div className="grid grid-cols-3 text-xs font-medium text-secondary text-center py-2 border-b border-slate-800 bg-slate-900">
+                            <div>Bear</div>
+                            <div>Base</div>
+                            <div>Bull</div>
+                        </div>
+                        <div className="grid grid-cols-3 divide-x divide-slate-800">
+                            {(['bear', 'base', 'bull'] as ScenarioType[]).map(s => {
+                                const t = targetPrices[s];
+                                const d = ((t / currentPrice) - 1) * 100;
+                                const isActive = activeScenario === s;
+                                return (
+                                    <div key={s}
+                                        onClick={() => setActiveScenario(s)}
+                                        className={`py-3 text-center cursor-pointer transition-colors hover:bg-slate-800/50 ${isActive ? 'bg-white/5' : ''}`}
+                                    >
+                                        <div className={`font-bold text-lg ${isActive ? 'text-white' : 'text-slate-300'}`}>${t.toFixed(0)}</div>
+                                        <div className={`text-xs ${d >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                            {d >= 0 ? '+' : ''}{d.toFixed(0)}%
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Analyst Consensus Summary */}
+                    {estimates?.target_mean_price && (
+                        <div className="bg-slate-900/30 rounded-lg p-3 border border-slate-800">
+                            <div className="flex justify-between items-center mb-2">
+                                <h4 className="text-xs font-bold text-secondary uppercase tracking-wider flex items-center gap-1">
+                                    <Info size={10} /> Analyst Consensus (12mo)
+                                </h4>
+                                <span className="text-xs text-slate-400">{estimates.recommendation?.toUpperCase()}</span>
+                            </div>
+                            <div className="flex items-center justify-between text-sm">
+                                <div className="text-red-400 font-medium">${estimates.target_low_price?.toFixed(0)}</div>
+                                <div className="text-amber-400 font-medium">${estimates.target_mean_price?.toFixed(0)}</div>
+                                <div className="text-green-400 font-medium">${estimates.target_high_price?.toFixed(0)}</div>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-800 rounded-full mt-1 relative overflow-hidden">
+                                <div className="absolute h-full w-full bg-gradient-to-r from-red-500 via-amber-500 to-green-500 opacity-30"></div>
+                                {/* Current Price Marker */}
+                                <div
+                                    className="absolute h-2.5 w-1 bg-white top-1/2 -translate-y-1/2 shadow-sm rounded-full"
+                                    style={{ left: `${Math.min(100, Math.max(0, ((currentPrice - (estimates.target_low_price || 0)) / ((estimates.target_high_price || 1) - (estimates.target_low_price || 0))) * 100))}%` }}
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
 
-            {/* Notes Modal */}
+            {/* Notes Modal (Kept as is) */}
             {showNotesModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowNotesModal(false)}>
                     <div className="bg-surface border border-slate-700 rounded-xl max-w-lg w-full shadow-2xl" onClick={e => e.stopPropagation()}>
@@ -379,6 +419,52 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     </div>
                 </div>
             )}
+        </div>
+    );
+}
+
+// Helper Component for Sliders to reduce boilerplate
+function SliderControl({ field, value, onChange, config, yahooHint, extraInfo }: {
+    field: keyof ScenarioInputs,
+    value: number,
+    onChange: (f: keyof ScenarioInputs, v: number) => void,
+    config: { min: number, max: number, label: string },
+    yahooHint?: string,
+    extraInfo?: React.ReactNode
+}) {
+    return (
+        <div className="space-y-1.5">
+            <div className="flex justify-between items-center">
+                <label className="text-xs font-medium text-slate-300 flex items-center gap-1.5">
+                    {config.label}
+                    <HelpTrigger topicId={field} size={10} className="opacity-50 hover:opacity-100" />
+                </label>
+                <div className="flex items-center gap-1.5">
+                    <input
+                        type="number"
+                        value={value}
+                        onChange={e => onChange(field, parseFloat(e.target.value) || 0)}
+                        className="w-16 bg-slate-800 border border-slate-700 rounded px-1.5 py-0.5 text-right text-xs focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+                    />
+                    <span className="text-[10px] text-slate-500 w-3">{field === 'exitPE' ? 'x' : field === 'timeHorizon' ? 'yr' : '%'}</span>
+                </div>
+            </div>
+            <div className="relative h-4 flex items-center">
+                <input
+                    type="range"
+                    min={config.min}
+                    max={config.max}
+                    value={value}
+                    onChange={e => onChange(field, parseFloat(e.target.value))}
+                    className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary hover:accent-primary/80 transition-all"
+                />
+            </div>
+            <div className="flex justify-between items-center text-[10px] text-slate-500">
+                <span>{config.min}</span>
+                <span className="text-amber-400/70 font-medium">{yahooHint}</span>
+                <span>{config.max}</span>
+            </div>
+            {extraInfo && <div className="mt-0.5">{extraInfo}</div>}
         </div>
     );
 }
