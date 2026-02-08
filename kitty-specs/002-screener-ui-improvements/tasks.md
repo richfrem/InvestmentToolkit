@@ -149,12 +149,12 @@
 **Estimated Size**: ~450 lines, 6 subtasks
 
 ### Included Subtasks
-- [ ] T023 Redesign ValuationModeler layout: left panel (sliders) + right panel (scenario results, expert analysis)
-- [ ] T024 Compact the slider inputs — tighter vertical spacing, 3 sliders per row where possible, smaller input boxes
-- [ ] T025 Redesign Bear/Base/Bull scenario cards as a compact horizontal row or table format
-- [ ] T026 Move the "Expert Analysis Summary" (Strong Value / Potential Value / etc.) into the right panel alongside scenario results
-- [ ] T027 Add a mini scenario comparison chart (optional visual) — bar chart showing bear/base/bull targets vs current price
-- [ ] T028 Ensure responsive behavior — graceful stacking on smaller screens
+- [x] T023 Redesign ValuationModeler layout: left panel (sliders) + right panel (scenario results, expert analysis)
+- [x] T024 Compact the slider inputs — tighter vertical spacing, 3 sliders per row where possible, smaller input boxes
+- [x] T025 Redesign Bear/Base/Bull scenario cards as a compact horizontal row or table format
+- [x] T026 Move the "Expert Analysis Summary" (Strong Value / Potential Value / etc.) into the right panel alongside scenario results
+- [x] T027 Add a mini scenario comparison chart (optional visual) — bar chart showing bear/base/bull targets vs current price
+- [x] T028 Ensure responsive behavior — graceful stacking on smaller screens
 
 ### Implementation Notes
 - This is a major layout refactor of ValuationModeler.tsx (374 lines).
