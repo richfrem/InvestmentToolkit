@@ -1,9 +1,13 @@
 ---
-work_package_id: "WP05"
-title: "Valuation Layout Redesign"
-lane: "planned"
-dependencies: ["WP01"]
-subtasks: ["T023", "T024", "T025", "T026", "T027", "T028"]
+work_package_id: WP05
+title: Valuation Layout Redesign
+lane: "doing"
+dependencies: [WP01]
+base_branch: main
+base_commit: 93c4968b8db3d252ec76388fe022d3e4957c8405
+created_at: '2026-02-08T17:26:36.324693+00:00'
+subtasks: [T023, T024, T025, T026, T027, T028]
+shell_pid: "96124"
 ---
 
 # Work Package: Valuation Layout Redesign
