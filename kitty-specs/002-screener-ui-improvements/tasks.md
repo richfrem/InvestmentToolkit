@@ -90,11 +90,11 @@
 **Estimated Size**: ~350 lines, 5 subtasks
 
 ### Included Subtasks
-- [ ] T013 Ensure `fetch_financials.py` returns structured analyst revenue estimates: `{ year: 2026, high, low, avg }` and `{ year: 2027, high, low, avg }`
-- [ ] T014 Update `api.ts` StockData interface with `analyst_revenue_forecast` array
-- [ ] T015 Extend `FinancialChart.tsx` (Revenue & Earnings mode) to render forecast region — dashed lines for high/low/avg, shaded forecast zone
-- [ ] T016 Add forecast region annotation (label "Forecast" or shaded background to distinguish from historical)
-- [ ] T017 Handle missing forecast data gracefully — if no analyst estimates, show historical only with no forecast section
+- [x] T013 Ensure `fetch_financials.py` returns structured analyst revenue estimates: `{ year: 2026, high, low, avg }` and `{ year: 2027, high, low, avg }`
+- [x] T014 Update `api.ts` StockData interface with `analyst_revenue_forecast` array
+- [x] T015 Extend `FinancialChart.tsx` (Revenue & Earnings mode) to render forecast region — dashed lines for high/low/avg, shaded forecast zone
+- [x] T016 Add forecast region annotation (label "Forecast" or shaded background to distinguish from historical)
+- [x] T017 Handle missing forecast data gracefully — if no analyst estimates, show historical only with no forecast section
 
 ### Implementation Notes
 - Forecast lines should use Recharts `Line` with `strokeDasharray="5 5"` for dotted appearance.
