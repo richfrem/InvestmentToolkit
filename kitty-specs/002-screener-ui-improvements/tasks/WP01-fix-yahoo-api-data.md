@@ -1,9 +1,11 @@
 ---
 work_package_id: "WP01"
 title: "Fix Yahoo API Data & Backend Bridge"
-lane: "planned"
+lane: "doing"
 dependencies: []
 subtasks: ["T001", "T002", "T003", "T004", "T005", "T006"]
+agent: "Gemini"
+shell_pid: "96248"
 ---
 
 # Work Package: Fix Yahoo API Data & Backend Bridge
@@ -84,3 +86,7 @@ The current `fetch_financials.py` script is failing to retrieve key metrics beca
 ## Risks
 - Yahoo Finance HTML changes frequently; `yfinance` might need an upgrade (`pip install --upgrade yfinance`).
 - Some tickers genuinely lack data; ensure UI doesn't crash.
+
+## Activity Log
+
+- 2026-02-08T02:40:05Z – Gemini – shell_pid=96248 – lane=doing – Started implementation via workflow command
