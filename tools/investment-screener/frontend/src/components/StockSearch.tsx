@@ -17,7 +17,7 @@ export default function StockSearch({ onSearch, isLoading }: StockSearchProps) {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="relative w-full max-w-lg mx-auto">
+        <form onSubmit={handleSubmit} className="relative w-full">
             <div className="relative flex items-center">
                 <Search className="absolute left-4 text-slate-500" size={20} />
                 <input
