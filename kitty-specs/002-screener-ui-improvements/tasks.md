@@ -59,12 +59,12 @@
 **Estimated Size**: ~450 lines, 6 subtasks
 
 ### Included Subtasks
-- [ ] T007 Extend `fetch_financials.py` to return additional historical data: FCF, gross/operating/net margins, EPS (5-year arrays)
-- [ ] T008 Update `api.ts` StockData interface with new financial arrays (historical_fcf, historical_margins, historical_eps)
-- [ ] T009 Create `AnalysisChartToggle.tsx` component — button group for switching chart modes (Revenue & Earnings | FCF | Margins | EPS Growth)
-- [ ] T010 Refactor `FundamentalChart.tsx` into a generic `FinancialChart.tsx` that accepts different data series based on active mode
-- [ ] T011 [P] Build Margins chart variant (3 area lines: gross, operating, net margin %)
-- [ ] T012 Update `Dashboard.tsx` Analysis tab to use new AnalysisChartToggle + FinancialChart instead of old fixed layout
+- [x] T007 Extend `fetch_financials.py` to return additional historical data: FCF, gross/operating/net margins, EPS (5-year arrays)
+- [x] T008 Update `api.ts` StockData interface with new financial arrays (historical_fcf, historical_margins, historical_eps)
+- [x] T009 Create `AnalysisChartToggle.tsx` component — button group for switching chart modes (Revenue & Earnings | FCF | Margins | EPS Growth)
+- [x] T010 Refactor `FundamentalChart.tsx` into a generic `FinancialChart.tsx` that accepts different data series based on active mode
+- [x] T011 [P] Build Margins chart variant (3 area lines: gross, operating, net margin %)
+- [x] T012 Update `Dashboard.tsx` Analysis tab to use new AnalysisChartToggle + FinancialChart instead of old fixed layout
 
 ### Implementation Notes
 - Chart toggle state lives in the Analysis tab (Dashboard.tsx) — no new API calls when switching modes.

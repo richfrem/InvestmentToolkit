@@ -1,7 +1,7 @@
 ---
 work_package_id: "WP02"
 title: "Multi-Mode Analysis Chart"
-lane: "planned"
+lane: "doing"
 dependencies: ["WP01"]
 subtasks: ["T007", "T008", "T009", "T010", "T011", "T012"]
 ---
