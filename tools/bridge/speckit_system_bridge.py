@@ -24,6 +24,7 @@ from pathlib import Path
 import re
 import sys
 import toml
+import yaml
 
 # Force UTF-8 for Windows Consoles
 try:
@@ -191,16 +192,16 @@ def sync_gemini(workflows, rules):
 def sync_copilot(workflows, rules):
     """Sync to .github/ (Copilot)."""
     print("\n🤖 Syncing Copilot (.github)...")
-    
+
     # 1. Instructions (copilot-instructions.md)
     instr_file = GITHUB_DIR / "copilot-instructions.md"
-    
+
     content = ["# Copilot Instructions\n"]
     content.append("> Managed by Spec Kitty Bridge.\n\n")
-    
+
     for name, rule_text in rules.items():
         content.append(f"## Rule: {name}\n\n{rule_text}\n\n---\n\n")
-        
+
     # Index Workflows
     content.append("\n# Available Workflows\n")
     for filename in workflows.keys():
@@ -208,29 +209,84 @@ def sync_copilot(workflows, rules):
         content.append(f"- /prompts/{stem}.prompt.md\n")
 
     instr_file.write_text("".join(content), encoding="utf-8")
-    
+
     # 2. Prompts (.github/prompts/*.prompt.md)
     count = 0
     for filename, text in workflows.items():
         stem = filename.replace(".md", "")
         fixed_text = text.replace('--actor "windsurf"', '--actor "copilot"')
         fixed_text = fixed_text.replace('(Missing script command for sh)', 'spec-kitty')
-        
+
         target_file = GITHUB_DIR / "prompts" / f"{stem}.prompt.md"
         target_file.write_text(fixed_text, encoding="utf-8")
         count += 1
-        
+
     print(f"   ✅ Generated copilot-instructions.md and {count} prompts.")
+
+def update_kittify_config():
+    """Update .kittify/config.yaml to register all synced agents."""
+    print("\n⚙️  Updating .kittify/config.yaml...")
+
+    config_file = KITTIFY_DIR / "config.yaml"
+
+    # Define all agents that the bridge supports
+    all_agents = ["windsurf", "claude", "antigravity", "gemini", "copilot"]
+
+    try:
+        # Read existing config
+        if config_file.exists():
+            with open(config_file, 'r', encoding='utf-8') as f:
+                config = yaml.safe_load(f) or {}
+        else:
+            config = {}
+
+        # Ensure agents section exists
+        if 'agents' not in config:
+            config['agents'] = {}
+
+        # Update available agents list (preserve order, add new ones)
+        current_agents = config['agents'].get('available', [])
+        updated_agents = []
+
+        # Keep existing agents in their order
+        for agent in current_agents:
+            if agent in all_agents:
+                updated_agents.append(agent)
+
+        # Add any missing agents
+        for agent in all_agents:
+            if agent not in updated_agents:
+                updated_agents.append(agent)
+
+        config['agents']['available'] = updated_agents
+
+        # Ensure selection section exists with defaults if not present
+        if 'selection' not in config['agents']:
+            config['agents']['selection'] = {
+                'strategy': 'preferred',
+                'preferred_implementer': 'claude',
+                'preferred_reviewer': 'claude'
+            }
+
+        # Write back to file
+        with open(config_file, 'w', encoding='utf-8') as f:
+            yaml.dump(config, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
+
+        print(f"   ✅ Registered {len(updated_agents)} agents: {', '.join(updated_agents)}")
+
+    except Exception as e:
+        print(f"   ⚠️  Failed to update config.yaml: {e}")
+        print(f"   💡 You may need to manually add agents to .kittify/config.yaml")
 
 def main():
     print("🚀 Starting Spec Kitty Bridge Sync...")
-    
+
     setup_directories()
-    
+
     # 1. Ingest Source (Spec Kitty)
     rules = ingest_rules()
     workflows = ingest_workflows()
-    
+
     if not workflows and not rules:
         print("❌ No source data found in .windsurf or .kittify. Run 'spec-kitty init' first.")
         return
@@ -240,7 +296,10 @@ def main():
     sync_claude(workflows, rules)
     sync_gemini(workflows, rules)
     sync_copilot(workflows, rules)
-    
+
+    # 3. Update Kittify Config to Register All Agents
+    update_kittify_config()
+
     print("\n🎉 Bridge Sync Complete. All agents are configured.")
 
 if __name__ == "__main__":

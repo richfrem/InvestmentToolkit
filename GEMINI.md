@@ -30,6 +30,11 @@ This project uses **Spec Kitty** for workflow management, which relies heavily o
 4.  **Context Switching**:
     *   When switching tasks, verify your current working directory (`pwd`).
     *   Do not "cross the streams" by editing files in the main repo while thinking you are in a worktree, or vice versa.
+5.  **Destructive Command Safety (STOP)**:
+    > [!IMPORTANT]
+    > **No agent or developer shall ever run destructive commands (e.g., `git clean`, `rm -rf`, `git reset --hard`) or delete any tracked or untracked files/folders without explicit approval or a direct request from the USER.**
+    > - **STOP** and ask for confirmation before performing any action that results in permanent data loss or nukes untracked metadata (like `.windsurf`).
+    > - This rule is absolute and overrides speed or convenience.
 
 ## 2. Technical Standards
 
