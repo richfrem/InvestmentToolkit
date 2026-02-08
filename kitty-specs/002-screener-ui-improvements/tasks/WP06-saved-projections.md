@@ -1,7 +1,7 @@
 ---
 work_package_id: "WP06"
 title: "Saved Projections Management"
-lane: "planned"
+lane: "doing"
 dependencies: ["WP05"]
 subtasks: ["T029", "T030", "T031", "T032", "T033", "T034"]
 ---
@@ -75,3 +75,7 @@ Currently, "Save Projection" might just overwrite a single slot or do nothing vi
 
 ## Risks
 - LocalStorage limits (5MB) - unlikely to hit with text data, but good to keep in mind.
+
+## Activity Log
+
+- 2026-02-08T18:21:37Z – unknown – lane=doing – Moved to doing

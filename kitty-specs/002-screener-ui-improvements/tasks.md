@@ -182,7 +182,10 @@
 **Estimated Size**: ~400 lines, 6 subtasks
 
 ### Included Subtasks
+<<<<<<< HEAD
 ### Included Subtasks
+=======
+>>>>>>> 002-screener-ui-improvements-WP06
 - [x] T029 Create `ProjectionsPanel.tsx` component — modal/slide-out panel listing saved projections for current ticker
 - [x] T030 Display projection entries: date saved, scenario values summary (growth, margin, PE), notes preview
 - [x] T031 Implement "Load" action — populate sliders with saved scenario values
