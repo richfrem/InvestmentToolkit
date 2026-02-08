@@ -1,7 +1,7 @@
 ---
 work_package_id: "WP01"
 title: "Fix Yahoo API Data & Backend Bridge"
-lane: "doing"
+lane: "done"
 dependencies: []
 subtasks: ["T001", "T002", "T003", "T004", "T005", "T006"]
 agent: "Gemini"
