@@ -3,15 +3,17 @@ import { fetchStockData, type StockData } from '../services/api';
 import StockSearch from '../components/StockSearch';
 import { useRecentTickers } from '../hooks/useRecentTickers';
 import MetricsGrid from '../components/MetricsGrid';
-import RuleOf40Chart from '../components/Charts/RuleOf40Chart';
-import FundamentalChart from '../components/Charts/FundamentalChart';
+import FinancialChart from '../components/analysis/FinancialChart';
+import AnalysisChartToggle, { type ChartMode } from '../components/analysis/AnalysisChartToggle';
 import ValuationModeler from '../components/ValuationModeler';
 import { LayoutDashboard, BarChart3, Calculator } from 'lucide-react';
+import PerformanceMetrics from '../components/PerformanceMetrics';
 
 type Tab = 'overview' | 'analysis' | 'valuation';
 
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState<Tab>('overview');
+    const [chartMode, setChartMode] = useState<ChartMode>('revenue');
     const [stockData, setStockData] = useState<StockData | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -37,17 +39,13 @@ export default function Dashboard() {
     return (
         <div className="h-[calc(100vh-2rem)] flex flex-col space-y-4 max-w-7xl mx-auto overflow-hidden">
             {/* Header Section - Always Visible */}
-            <div className="flex-none space-y-4">
-                <header className="flex justify-between items-center">
-                    <div>
-                        <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent inline-block">
-                            Market Intelligence
-                        </h2>
-                        {!stockData && <p className="text-secondary text-sm">Real-time valuation modeling and expert metrics.</p>}
+            <div className="flex-none pt-4 space-y-4">
+                <header className="flex justify-between items-center gap-4">
+                    {/* Search Bar is now prominent, replacing the redundant title */}
+                    <div className="flex-1 max-w-2xl">
+                        <StockSearch onSearch={handleSearch} isLoading={loading} />
                     </div>
                 </header>
-
-                <StockSearch onSearch={handleSearch} isLoading={loading} />
 
                 {error && (
                     <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-center text-sm">
@@ -59,18 +57,31 @@ export default function Dashboard() {
             {/* Main Content Area */}
             {stockData ? (
                 <div className="flex-1 flex flex-col min-h-0 bg-surface/50 rounded-xl border border-slate-800/50 backdrop-blur-sm overflow-hidden">
+
                     {/* Ticker Header & Tabs */}
                     <div className="flex-none p-4 border-b border-slate-800 flex justify-between items-center bg-surface">
-                        <div className="flex items-center gap-4">
-                            <div>
-                                <h3 className="text-2xl font-bold text-text">{stockData.symbol}</h3>
-                                <span className="text-secondary text-sm">{stockData.profile.sector}</span>
+                        <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-4">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-text">{stockData.symbol}</h3>
+                                    <span className="text-secondary text-sm">{stockData.profile.sector}</span>
+                                </div>
+                                <div className="h-8 w-px bg-slate-800" />
+                                <div>
+                                    <div className="text-xl font-bold text-primary">${stockData.price.toFixed(2)}</div>
+                                    <div className="text-xs text-secondary">Current Price</div>
+                                </div>
                             </div>
-                            <div className="h-8 w-px bg-slate-800" />
-                            <div>
-                                <div className="text-xl font-bold text-primary">${stockData.price.toFixed(2)}</div>
-                                <div className="text-xs text-secondary">Current Price</div>
-                            </div>
+
+                            {/* Performance Strip */}
+                            {stockData.performance && (
+                                <>
+                                    <div className="h-8 w-px bg-slate-800" />
+                                    <div>
+                                        <PerformanceMetrics performance={stockData.performance} />
+                                    </div>
+                                </>
+                            )}
                         </div>
 
                         {/* Navigation Tabs */}
@@ -109,18 +120,19 @@ export default function Dashboard() {
                         )}
 
                         {activeTab === 'analysis' && (
-                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
-                                <div className="h-full min-h-[400px]">
-                                    <RuleOf40Chart stockData={stockData} />
+                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 h-full flex flex-col space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <h3 className="text-lg font-bold text-text">Historical Performance</h3>
+                                    <AnalysisChartToggle activeMode={chartMode} onModeChange={setChartMode} />
                                 </div>
-                                <div className="h-full min-h-[400px]">
-                                    <FundamentalChart stockData={stockData} />
+                                <div className="flex-1 min-h-[500px] bg-slate-900/30 rounded-xl border border-slate-800 p-4">
+                                    <FinancialChart stockData={stockData} mode={chartMode} />
                                 </div>
                             </div>
                         )}
 
                         {activeTab === 'valuation' && (
-                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-4xl mx-auto">
+                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 w-full">
                                 <ValuationModeler stockData={stockData} />
                             </div>
                         )}
