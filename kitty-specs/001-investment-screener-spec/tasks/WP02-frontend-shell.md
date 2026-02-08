@@ -1,9 +1,13 @@
 ---
-work_package_id: "WP02"
-title: "Frontend Shell & Dashboard"
-lane: "planned"
-dependencies: ["WP01"] 
-subtasks: ["T007", "T008", "T009", "T010", "T011"]
+work_package_id: WP02
+title: Frontend Shell & Dashboard
+lane: "doing"
+dependencies: [WP01]
+base_branch: main
+base_commit: f1742cd6775af61051fac282638f7ef4ca958154
+created_at: '2026-02-07T19:36:04.200950+00:00'
+subtasks: [T007, T008, T009, T010, T011]
+shell_pid: "15842"
 ---
 
 # Work Package 02: Frontend Shell & Dashboard

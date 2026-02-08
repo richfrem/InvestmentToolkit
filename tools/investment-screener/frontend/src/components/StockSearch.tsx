@@ -1,0 +1,41 @@
+import { Search } from 'lucide-react';
+import { useState } from 'react';
+
+interface StockSearchProps {
+    onSearch: (ticker: string) => void;
+    isLoading: boolean;
+}
+
+export default function StockSearch({ onSearch, isLoading }: StockSearchProps) {
+    const [ticker, setTicker] = useState('');
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (ticker.trim()) {
+            onSearch(ticker.trim().toUpperCase());
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="relative w-full max-w-lg mx-auto">
+            <div className="relative flex items-center">
+                <Search className="absolute left-4 text-slate-500" size={20} />
+                <input
+                    type="text"
+                    value={ticker}
+                    onChange={(e) => setTicker(e.target.value)}
+                    placeholder="Enter stock ticker (e.g. AAPL)..."
+                    disabled={isLoading}
+                    className="w-full bg-surface border border-slate-700 text-text pl-12 pr-4 py-4 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-lg placeholder:text-slate-600"
+                />
+                <button
+                    type="submit"
+                    disabled={isLoading || !ticker.trim()}
+                    className="absolute right-2 bg-primary/10 text-primary hover:bg-primary/20 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {isLoading ? 'Loading...' : 'Analyze'}
+                </button>
+            </div>
+        </form>
+    );
+}
