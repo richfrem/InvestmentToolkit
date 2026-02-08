@@ -134,9 +134,9 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
     // Reset current scenario to Yahoo analyst estimates
     const resetToYahoo = () => {
-        const yahooGrowth = Math.round(estimates?.revenue_growth || 10);
-        const yahooMargin = Math.round(estimates?.profit_margin || 20);
-        const yahooPE = Math.round(estimates?.forward_pe || 25);
+        const yahooGrowth = Math.round(stockData.metrics.revenue_growth ?? estimates?.revenue_growth ?? 10);
+        const yahooMargin = Math.round(stockData.metrics.profit_margin ?? estimates?.profit_margin ?? 20);
+        const yahooPE = Math.round(stockData.metrics.forward_pe ?? estimates?.forward_pe ?? 25);
         // Default values for new sliders
         const defaultDiscountRate = 10;
         const defaultTimeHorizon = 5;
@@ -178,7 +178,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         <div className="bg-surface rounded-xl p-4 border border-slate-800 space-y-3">
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-lg font-bold text-text">Valuation Modeler</h3>
+                    <h3 className="text-lg font-bold text-text">ValuationModeler</h3>
                     <p className="text-secondary text-xs">5-Year Target</p>
                 </div>
                 <div className={`px-4 py-2 rounded-lg border ${isPositive ? 'border-green-500/40 bg-green-500/10' : 'border-red-500/40 bg-red-500/10'}`}>
@@ -242,10 +242,17 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     const config = VALIDATION[field];
                     const value = scenarios[activeScenario][field];
                     // Yahoo reference values for hints
+                    // Helper to properly handle 0/negative values (avoiding || operator which treats them as falsy)
+                    const getYahooValue = (primary: number | undefined, secondary: number | undefined, suffix: string = ''): string => {
+                        if (primary !== undefined && primary !== null) return `${primary.toFixed(1)}${suffix}`;
+                        if (secondary !== undefined && secondary !== null) return `${secondary.toFixed(1)}${suffix}`;
+                        return `N/A${suffix}`;
+                    };
+
                     const yahooHints: Record<keyof ScenarioInputs, string> = {
-                        growthRate: `Yahoo: ${estimates?.revenue_growth?.toFixed(0) || 'N/A'}%`,
-                        netMargin: `Yahoo: ${estimates?.profit_margin?.toFixed(0) || 'N/A'}%`,
-                        exitPE: `Yahoo Fwd: ${estimates?.forward_pe?.toFixed(0) || 'N/A'}x`,
+                        growthRate: `Yahoo: ${getYahooValue(stockData.metrics.revenue_growth, estimates?.revenue_growth, '%')}`,
+                        netMargin: `Yahoo: ${getYahooValue(stockData.metrics.profit_margin, estimates?.profit_margin, '%')}`,
+                        exitPE: `Yahoo Fwd: ${getYahooValue(stockData.metrics.forward_pe, estimates?.forward_pe, 'x')}`,
                         shareChange: 'Your estimate',
                         discountRate: 'Typical: 8-12%',
                         timeHorizon: 'Default: 5 years',

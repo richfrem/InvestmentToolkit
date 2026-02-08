@@ -14,6 +14,8 @@ export interface StockData {
         beta: number;
         revenue: number;
         shares_outstanding: number;
+        revenue_growth?: number;
+        profit_margin?: number;
     };
     expert_metrics: {
         rule_of_40: {
@@ -37,6 +39,20 @@ export interface StockData {
         historical_revenue: number[];
         historical_net_income: number[];
     };
+    analyst_revenue_forecast?: Array<{
+        year: number;
+        avg: number;
+        low: number;
+        high: number;
+        period: string;
+    }>;
+    analyst_earnings_forecast?: Array<{
+        year: number;
+        avg: number;
+        low: number;
+        high: number;
+        period: string;
+    }>;
     analyst_estimates?: {
         target_high_price: number;
         target_low_price: number;
