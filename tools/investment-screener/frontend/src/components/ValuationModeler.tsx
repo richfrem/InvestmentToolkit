@@ -41,14 +41,16 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         // Simple logic tailored to scenario
         const multiplier = scenario === 'bull' ? 1.2 : scenario === 'bear' ? 0.8 : 1.0;
 
-        // Use metrics from API
+        // Use metrics from API (Prioritize Analyst Estimates if available)
         // Heuristic: If value > 1, assume it's already a percentage (e.g. 15.5). If < 1, assume decimal (e.g. 0.155)
-        const rawGrowth = stockData.metrics?.revenue_growth ?? 0.15;
-        const rawMargin = stockData.metrics?.profit_margin ?? 0.20;
+
+        const rawGrowth = stockData.analyst_estimates?.revenue_growth ?? stockData.metrics?.revenue_growth ?? 0.15;
+        const rawMargin = stockData.analyst_estimates?.profit_margin ?? stockData.metrics?.profit_margin ?? 0.20;
 
         const baseGrowth = Math.abs(rawGrowth) > 1 ? rawGrowth : rawGrowth * 100;
         const baseMargin = Math.abs(rawMargin) > 1 ? rawMargin : rawMargin * 100;
-        const basePe = stockData.metrics?.forward_pe || stockData.metrics?.pe_ratio || 25;
+
+        const basePe = stockData.analyst_estimates?.forward_pe || stockData.metrics?.forward_pe || stockData.metrics?.pe_ratio || 25;
 
         setGrowthRate(Math.round(baseGrowth * multiplier));
         setNetMargin(Math.round(baseMargin * multiplier));
@@ -258,7 +260,10 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             min={-50}
                             max={100}
                             unit="%"
-                            note={`Yahoo: ${(stockData.metrics?.revenue_growth ? (Math.abs(stockData.metrics.revenue_growth) > 1 ? stockData.metrics.revenue_growth : stockData.metrics.revenue_growth * 100) : 0).toFixed(1)}%`}
+                            note={`Yahoo: ${((() => {
+                                const val = stockData.analyst_estimates?.revenue_growth ?? stockData.metrics?.revenue_growth ?? 0;
+                                return (Math.abs(val) > 1 ? val : val * 100).toFixed(1);
+                            })())}%`}
                         />
                         <SliderInput
                             label="Net Margin"
@@ -267,7 +272,10 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             min={-20}
                             max={80}
                             unit="%"
-                            note={`Yahoo: ${(stockData.metrics?.profit_margin ? (Math.abs(stockData.metrics.profit_margin) > 1 ? stockData.metrics.profit_margin : stockData.metrics.profit_margin * 100) : 0).toFixed(1)}%`}
+                            note={`Yahoo: ${((() => {
+                                const val = stockData.analyst_estimates?.profit_margin ?? stockData.metrics?.profit_margin ?? 0;
+                                return (Math.abs(val) > 1 ? val : val * 100).toFixed(1);
+                            })())}%`}
                         />
                     </div>
                 </section>
@@ -285,7 +293,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             min={1}
                             max={100}
                             unit="x"
-                            note={`Fwd: ${(stockData.metrics?.forward_pe || 0).toFixed(1)}x`}
+                            note={`Fwd: ${(stockData.analyst_estimates?.forward_pe || stockData.metrics?.forward_pe || 0).toFixed(1)}x`}
                         />
                         <SliderInput
                             label="Discount Rate"
