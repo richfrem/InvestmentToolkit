@@ -205,50 +205,84 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     };
 
     const SensitivityMatrix = () => {
-        const peRange = [15, 20, 25, 30, 35, 40, 45];
-        const growthRange = [20, 30, 40, 50, 60, 70, 80];
+        // Dynamic Ranges centered on current inputs
+        // Round to nearest 5 to keep matrix clean, min 5
+        const currentPe = Math.max(5, Math.round(peRatio / 5) * 5);
+        const currentGrowth = Math.round(growthRate / 5) * 5;
+
+        // Generate ranges centered on current values
+        const peRange = [
+            currentPe - 15,
+            currentPe - 10,
+            currentPe - 5,
+            currentPe,
+            currentPe + 5,
+            currentPe + 10,
+            currentPe + 15
+        ].filter(p => p > 0);
+
+        const growthRange = [
+            currentGrowth - 15,
+            currentGrowth - 10,
+            currentGrowth - 5,
+            currentGrowth,
+            currentGrowth + 5,
+            currentGrowth + 10,
+            currentGrowth + 15
+        ];
 
         return (
-            <div className="bg-slate-900/20 p-4 rounded-xl border border-slate-800 overflow-x-auto mt-4">
-                <h3 className="text-xs font-bold text-white mb-3 flex items-center gap-2">
+            <div className="bg-slate-900/20 p-3 rounded-xl border border-slate-800 overflow-x-auto h-full flex flex-col">
+                <h3 className="text-xs font-bold text-white mb-2 flex items-center gap-2">
                     <span className="w-1 h-3 bg-purple-500 rounded-full"></span>
-                    Sensitivity Matrix: Target Price
+                    Sensitivity Matrix
                 </h3>
-                <table className="w-full text-[10px] border-collapse min-w-[500px]">
-                    <thead>
-                        <tr>
-                            <th className="p-2 text-slate-500 font-medium text-left border-b border-slate-800">Growth \ P/E</th>
-                            {peRange.map(pe => (
-                                <th key={pe} className="p-2 text-slate-400 border-b border-slate-800">{pe}x</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {growthRange.map(g => (
-                            <tr key={g} className="hover:bg-slate-800/30 transition-colors">
-                                <td className="p-2 text-slate-400 font-bold border-r border-slate-800/50">{g}%</td>
-                                {peRange.map(pe => {
-                                    const price = calculatePrice(g, pe);
-                                    const mxUpside = stockData.price > 0 ? ((price - stockData.price) / stockData.price) * 100 : 0;
-
-                                    // Color logic
-                                    let colorClass = 'bg-slate-800/20 text-slate-500';
-                                    if (mxUpside > 50) colorClass = 'bg-green-500/30 text-green-300 font-bold';
-                                    else if (mxUpside > 20) colorClass = 'bg-green-500/20 text-green-400';
-                                    else if (mxUpside > 0) colorClass = 'bg-green-500/10 text-green-500';
-                                    else if (mxUpside > -20) colorClass = 'bg-red-500/10 text-red-400';
-                                    else colorClass = 'bg-red-500/20 text-red-500 font-bold';
-
-                                    return (
-                                        <td key={pe} className={`p-2 text-right rounded-sm ${colorClass}`}>
-                                            ${Math.round(price)}
-                                        </td>
-                                    );
-                                })}
+                <div className="flex-1 overflow-auto">
+                    <table className="w-full text-[9px] border-collapse min-w-[300px]">
+                        <thead>
+                            <tr>
+                                <th className="p-1 text-slate-500 font-medium text-left border-b border-slate-800">G \ PE</th>
+                                {peRange.map(pe => (
+                                    <th key={pe} className={`p-1 border-b border-slate-800 ${pe === currentPe ? 'text-primary font-bold' : 'text-slate-500'}`}>
+                                        {pe}x
+                                    </th>
+                                ))}
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {growthRange.map(g => (
+                                <tr key={g} className="hover:bg-slate-800/30 transition-colors">
+                                    <td className={`p-1 font-bold border-r border-slate-800/50 ${g === currentGrowth ? 'text-primary' : 'text-slate-500'}`}>
+                                        {g}%
+                                    </td>
+                                    {peRange.map(pe => {
+                                        const price = calculatePrice(g, pe);
+                                        const mxUpside = stockData.price > 0 ? ((price - stockData.price) / stockData.price) * 100 : 0;
+
+                                        // Color logic
+                                        let colorClass = 'text-slate-600';
+                                        if (mxUpside > 50) colorClass = 'bg-green-500/20 text-green-400 font-bold';
+                                        else if (mxUpside > 20) colorClass = 'bg-green-500/10 text-green-500';
+                                        else if (mxUpside > 0) colorClass = 'text-green-600';
+                                        else if (mxUpside > -20) colorClass = 'text-red-400';
+                                        else colorClass = 'bg-red-500/10 text-red-500 font-bold';
+
+                                        // Highlight center cell area
+                                        if (g === currentGrowth && pe === currentPe) {
+                                            colorClass += ' ring-1 ring-primary relative z-10';
+                                        }
+
+                                        return (
+                                            <td key={pe} className={`p-1 text-right rounded-sm ${colorClass}`}>
+                                                ${Math.round(price)}
+                                            </td>
+                                        );
+                                    })}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         );
     };
@@ -256,9 +290,9 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     return (
         <div className="flex flex-col h-full overflow-hidden relative p-1">
             {/* Header: Title & Actions */}
-            <div className="flex justify-between items-center mb-4 flex-none">
+            <div className="flex justify-between items-center mb-1 flex-none">
                 <div>
-                    <h2 className="text-lg font-bold text-text">Valuation Modeler</h2>
+                    <h2 className="text-lg font-bold text-text">{stockData.symbol} Valuation Modeler</h2>
                     <p className="text-[10px] text-secondary">5-Year Discounted Cash Flow (DCF)</p>
                 </div>
                 <div className="flex gap-2">
@@ -300,7 +334,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             </div>
 
             {/* Top Row: Hero & Matrix */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4 flex-none h-40">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-2 flex-none min-h-32">
                 {/* Hero Section: Target Price (Span 2) */}
                 <div className="lg:col-span-2 flex flex-col items-center justify-center bg-gradient-to-r from-slate-900/80 to-slate-900/30 rounded-xl border border-slate-800/50 relative overflow-hidden">
                     <div className="absolute top-2 right-2 flex gap-1 bg-slate-950/50 p-1 rounded-lg border border-slate-800/50 backdrop-blur-sm z-10">
@@ -320,12 +354,12 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                         ))}
                     </div>
 
-                    <div className="text-[10px] font-medium text-secondary mb-1 uppercase tracking-widest mt-4">Target Price ({timeHorizon}yr)</div>
-                    <div className="text-5xl font-black text-text tracking-tight mb-1">
+                    <div className="text-[10px] font-medium text-secondary mb-0.5 uppercase tracking-widest mt-2">Target Price ({timeHorizon}yr)</div>
+                    <div className="text-4xl font-black text-text tracking-tight mb-0.5">
                         ${Math.round(targetPrice)}
                     </div>
-                    <div className={`flex items-center gap-1 text-sm font-bold px-2 py-0.5 rounded-full ${upside >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
-                        {upside >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                    <div className={`flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${upside >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                        {upside >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                         {upside > 0 ? '+' : ''}{upside.toFixed(1)}% Upside
                     </div>
                 </div>
@@ -420,7 +454,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 <section className="bg-slate-900/20 p-4 rounded-xl border border-slate-800">
                     <h3 className="text-xs font-bold text-white mb-3 flex items-center gap-2">
                         <span className="w-1 h-3 bg-primary rounded-full"></span>
-                        Valuation Assumptions
+                        Valuation & Structure
                     </h3>
                     <div className="space-y-4">
                         <SliderInput
@@ -444,15 +478,6 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             warningThreshold={4}
                             note="Typ: 8-12%"
                         />
-                    </div>
-                </section>
-
-                <section className="bg-slate-900/20 p-4 rounded-xl border border-slate-800 flex flex-col">
-                    <h3 className="text-xs font-bold text-white mb-3 flex items-center gap-2">
-                        <span className="w-1 h-3 bg-primary rounded-full"></span>
-                        Structure & Time
-                    </h3>
-                    <div className="space-y-4 flex-1">
                         <SliderInput
                             label="Share Change"
                             value={shareChange}
@@ -461,7 +486,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             max={20}
                             unit="%"
                             helpTopic="shareChange"
-                            note="( - ) Buyback | ( + ) Dilution"
+                            note="( - ) Buyback"
                         />
                         <SliderInput
                             label="Time Horizon"
@@ -475,12 +500,12 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                         />
                     </div>
                 </section>
-            </div>
 
-            {/* Sensitivity Matrix */}
-            <div className="flex-none mb-4">
+                {/* Sensitivity Matrix (Col 3) */}
                 <SensitivityMatrix />
             </div>
+
+
 
             {/* Red Team / Sanity Check Section */}
             {(discountRate < 4 || peRatio > 80 || growthRate > 50 || netMargin > 50) && (
