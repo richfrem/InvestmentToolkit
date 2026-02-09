@@ -1,0 +1,74 @@
+graph TD
+    %% Nodes
+    Start(("Start WP<br>(Cmd: /spec-kitty.implement)"))
+    WT["fa:fa-folder-plus Create Worktree & Branch<br>(Name MUST Match)"]
+    Code["fa:fa-code Coding & Testing<br>(Inside Worktree)"]
+    DecideDone{"fa:fa-question-circle Feature Complete?"}
+    
+    subgraph Phase 1: Backup
+        Commit["fa:fa-save Commit Worktree Changes<br>(git commit -am)"]
+        PushBackup["fa:fa-cloud-upload-alt Push Worktree to Origin<br>(git push origin WP-xx)"]
+        MoveTask["fa:fa-check-square Spec-Kitty: Move to Review<br>(Cmd: /spec-kitty.tasks move-task)<br>(Triggers: /spec-kitty.review)"]
+    end
+    
+    subgraph Phase 2: Merge
+        SwitchMain["fa:fa-exchange-alt Switch to Main<br>(cd Root)"]
+        MergeSquash["fa:fa-code-branch Squash Merge to LOCAL Main<br>(git merge --squash WP-xx)"]
+        CommitMain["fa:fa-check-circle Commit to LOCAL Main<br>(git commit)"]
+    end
+    
+    subgraph Phase 3: Verify
+        SmokeTest["fa:fa-flask Smoke Test<br>(npm run dev)"]
+        Verify{"Passes?"}
+    end
+    
+    subgraph Phase 4: Purge
+        RemoveWT["fa:fa-trash-alt Remove Worktree<br>(git worktree remove --force)"]
+        DeleteBranch["fa:fa-times Delete Local Branch<br>(git branch -D WP-xx)"]
+        Prune["fa:fa-broom Prune Worktrees<br>(git worktree prune)"]
+    end
+    
+    subgraph Phase 5: Handover
+        PR["fa:fa-github Open Pull Request<br>(GitHub Interface)"]
+        MergePR["fa:fa-code-branch Merge PR<br>(GitHub Interface)"]
+        PullMain["fa:fa-download Sync Local Main<br>(git pull origin main)"]
+        End(("Done"))
+    end
+
+    %% Flow
+    Start --> WT
+    WT -->|cd .worktrees/WP-xx| Code
+    Code --> DecideDone
+    DecideDone -->|Yes| Commit
+    DecideDone -->|No| Code
+    Commit --> PushBackup
+    PushBackup --> MoveTask
+    MoveTask --> SwitchMain
+    MoveTask -->|If Incomplete| Code
+    SwitchMain --> MergeSquash
+    MergeSquash --> CommitMain
+    CommitMain --> SmokeTest
+    SmokeTest --> Verify
+    
+    Verify -- Yes --> RemoveWT
+    Verify -- No --> Code
+    
+    RemoveWT --> DeleteBranch
+    DeleteBranch --> Prune
+    Prune --> PR
+    PR --> MergePR
+    MergePR --> PullMain
+    PullMain --> End
+
+    %% Styles
+    classDef phase1 fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef phase2 fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef phase3 fill:#fce4ec,stroke:#880e4f,stroke-width:2px;
+    classDef phase4 fill:#ffebee,stroke:#b71c1c,stroke-width:2px;
+    classDef phase5 fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    
+    class Commit,PushBackup phase1;
+    class SwitchMain,MergeSquash,CommitMain phase2;
+    class SmokeTest,Verify phase3;
+    class RemoveWT,DeleteBranch,Prune phase4;
+    class PR phase5;
