@@ -95,7 +95,7 @@ def start_servers(target='all', worktree_path='.'):
 
         print(f"   Starting {t} in {server_dir}...")
         
-        cmd = "npm run dev" if t == 'frontend' else "npm start"
+        cmd = "npm run dev"  # Both frontend and backend use npm run dev
         
         # Use simple Popen but direct output to log files or /dev/null to avoid cluttering current shell
         # We invoke via shell/nohup to let them persist if this script exits? 

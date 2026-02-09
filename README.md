@@ -11,7 +11,7 @@ A web-based financial analysis dashboard featuring:
 -   **Valuation Modeler**: Interactive Bear/Base/Bull scenario modeling to project 5-year price targets.
 -   **Comparative Analysis**: Side-by-side ticker comparison.
 
-![Screener Dashboard](https://placeholder-image-url.com) *(Screenshot to be added)*
+![Screener Dashboard](docs/images/dashboard-snapshot.png)
 
 ## 🛠️ Tech Stack
 -   **Frontend**: React 19, Vite, Tailwind CSS.
@@ -26,15 +26,13 @@ A web-based financial analysis dashboard featuring:
 -   Access to this repository
 
 ### Quick Start
-The project includes a unified startup script for the web application:
+The project includes a managed startup script for the entire suite:
 
 ```bash
-cd tools/investment-screener
-chmod +x startup.sh
-./startup.sh
+python3 tools/manage_servers.py
 ```
 
-This will launch both the backend (API) and frontend (Dashboard).
+This will automatically handle port conflicts, launch the backend API, and start the frontend dashboard.
 
 ## 🤖 AI Development Framework
 This project utilizes the **Spec Kitty** framework to systematize AI agent workflows.

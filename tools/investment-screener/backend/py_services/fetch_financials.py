@@ -60,8 +60,31 @@ def fetch_financial_data(ticker_symbol):
                             "period": period
                         })
 
+
         except Exception as e:
             print(json.dumps({"warning": f"Forecast fetch failed: {str(e)}", "partial": True}), file=sys.stderr)
+
+        # --- Growth Estimates Extraction ---
+        growth_estimates = None
+        try:
+            ge = stock.growth_estimates
+            if ge is not None and not ge.empty:
+                # yfinance growth_estimates: columns are ['stockTrend', 'indexTrend'], 
+                # index is ['0q', '+1q', '0y', '+1y', 'LTG']
+                stock_trend = {}
+                
+                if 'stockTrend' in ge.columns:
+                    # Keys are already in the right format: 0q, +1q, 0y, +1y
+                    for period in ['0q', '+1q', '0y', '+1y']:
+                        if period in ge.index:
+                            val = ge.loc[period, 'stockTrend']
+                            if pd.notna(val):
+                                stock_trend[period] = float(val)
+                    
+                    if stock_trend:
+                        growth_estimates = {"stockTrend": stock_trend}
+        except Exception as e:
+            print(f"Growth estimates fetch failed: {e}", file=sys.stderr)
 
         # --- Performance Metrics ---
         performance = {}
@@ -270,7 +293,8 @@ def fetch_financial_data(ticker_symbol):
                  "historical_eps": hist_eps
             },
             "analyst_revenue_forecast": analyst_revenue_forecast,
-            "analyst_earnings_forecast": analyst_earnings_forecast
+            "analyst_earnings_forecast": analyst_earnings_forecast,
+            "growth_estimates": growth_estimates
         }
 
         # Custom Encoder for Numpy Types
