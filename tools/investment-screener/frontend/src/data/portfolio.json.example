@@ -1,177 +1,226 @@
 [
   {
-    "symbol": "NVDA",
-    "shares": 10,
-    "price": 0,
-    "sector": "ASI / Compute",
-    "industry": "Chips"
-  },
-  {
-    "symbol": "AMD",
-    "shares": 20,
-    "price": 0,
-    "sector": "ASI / Compute",
-    "industry": "Chips"
-  },
-  {
-    "symbol": "TSM",
-    "shares": 15,
-    "price": 0,
-    "sector": "ASI / Compute",
-    "industry": "Chips"
-  },
-  {
-    "symbol": "AVGO",
-    "shares": 5,
-    "price": 0,
-    "sector": "ASI / Compute",
-    "industry": "Chips"
+    "symbol": "AAPL",
+    "shares": 50,
+    "sector": "Tech",
+    "industry": "Consumer Electronics",
+    "price": 190.50,
+    "last_updated": "2024-02-08T22:00:00Z"
   },
   {
     "symbol": "MSFT",
-    "shares": 10,
-    "price": 0,
-    "sector": "AI Titans",
-    "industry": "Cloud"
+    "shares": 30,
+    "sector": "Tech",
+    "industry": "Software - Infrastructure",
+    "price": 415.20,
+    "last_updated": "2024-02-08T22:00:00Z"
   },
   {
-    "symbol": "GOOG",
-    "shares": 10,
-    "price": 0,
-    "sector": "AI Titans",
-    "industry": "Cloud"
+    "symbol": "NVDA",
+    "shares": 100,
+    "sector": "Tech",
+    "industry": "Semiconductors",
+    "price": 720.10,
+    "last_updated": "2024-02-08T22:00:00Z"
   },
   {
-    "symbol": "META",
-    "shares": 10,
-    "price": 0,
-    "sector": "AI Titans",
-    "industry": "Cloud"
+    "symbol": "ADBE",
+    "shares": 15,
+    "sector": "Software",
+    "industry": "Software - Infrastructure",
+    "price": 605.40,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "CRM",
+    "shares": 25,
+    "sector": "Software",
+    "industry": "Software - Application",
+    "price": 285.30,
+    "last_updated": "2024-02-08T22:00:00Z"
   },
   {
     "symbol": "AMZN",
-    "shares": 10,
-    "price": 0,
-    "sector": "AI Titans",
-    "industry": "Cloud"
+    "shares": 40,
+    "sector": "Consumer Discretionary",
+    "industry": "Internet Retail",
+    "price": 170.10,
+    "last_updated": "2024-02-08T22:00:00Z"
   },
   {
-    "symbol": "PLTR",
-    "shares": 50,
-    "price": 0,
-    "sector": "Applied AI",
-    "industry": "Software"
+    "symbol": "MCD",
+    "shares": 20,
+    "sector": "Consumer Discretionary",
+    "industry": "Restaurants",
+    "price": 295.20,
+    "last_updated": "2024-02-08T22:00:00Z"
   },
   {
-    "symbol": "CRWD",
-    "shares": 15,
-    "price": 0,
-    "sector": "Security",
-    "industry": "Data OS"
-  },
-  {
-    "symbol": "PANW",
-    "shares": 15,
-    "price": 0,
-    "sector": "Security",
-    "industry": "Data OS"
-  },
-  {
-    "symbol": "ZS",
-    "shares": 10,
-    "price": 0,
-    "sector": "Security",
-    "industry": "Data OS"
-  },
-  {
-    "symbol": "VRT",
-    "shares": 25,
-    "price": 0,
-    "sector": "Data Infra",
-    "industry": "Supply Chain"
-  },
-  {
-    "symbol": "ANET",
-    "shares": 10,
-    "price": 0,
-    "sector": "Data Infra",
-    "industry": "Supply Chain"
-  },
-  {
-    "symbol": "VST",
-    "shares": 30,
-    "price": 0,
-    "sector": "Power",
-    "industry": "Energy"
-  },
-  {
-    "symbol": "CEG",
-    "shares": 15,
-    "price": 0,
-    "sector": "Power",
-    "industry": "Energy"
-  },
-  {
-    "symbol": "OKLO",
-    "shares": 50,
-    "price": 0,
-    "sector": "Power",
-    "industry": "Energy"
-  },
-  {
-    "symbol": "IBIT",
-    "shares": 100,
-    "price": 0,
-    "sector": "Sovereign Finance",
-    "industry": "Digital Assets"
-  },
-  {
-    "symbol": "ETHA",
-    "shares": 100,
-    "price": 0,
-    "sector": "Sovereign Finance",
-    "industry": "Digital Assets"
-  },
-  {
-    "symbol": "COIN",
-    "shares": 25,
-    "price": 0,
-    "sector": "Sovereign Finance",
-    "industry": "Digital Assets"
-  },
-  {
-    "symbol": "MSTR",
-    "shares": 5,
-    "price": 0,
-    "sector": "Sovereign Finance",
-    "industry": "Digital Assets"
-  },
-  {
-    "symbol": "HOOD",
-    "shares": 50,
-    "price": 0,
-    "sector": "Sovereign Finance",
-    "industry": "Fintech"
+    "symbol": "NKE",
+    "shares": 35,
+    "sector": "Consumer Discretionary",
+    "industry": "Footwear & Accessories",
+    "price": 105.40,
+    "last_updated": "2024-02-08T22:00:00Z"
   },
   {
     "symbol": "TSLA",
-    "shares": 10,
-    "price": 0,
-    "sector": "Applied AI",
-    "industry": "Robotics"
+    "shares": 50,
+    "sector": "Consumer Discretionary",
+    "industry": "Auto Manufacturers",
+    "price": 190.30,
+    "last_updated": "2024-02-08T22:00:00Z"
   },
   {
-    "symbol": "ARM",
+    "symbol": "UNH",
+    "shares": 10,
+    "sector": "Healthcare",
+    "industry": "Healthcare Plans",
+    "price": 520.60,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "JNJ",
+    "shares": 25,
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers",
+    "price": 158.40,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "LLY",
+    "shares": 12,
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers",
+    "price": 740.20,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "PFE",
+    "shares": 100,
+    "sector": "Healthcare",
+    "industry": "Drug Manufacturers",
+    "price": 28.50,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "CAT",
+    "shares": 15,
+    "sector": "Industrials",
+    "industry": "Construction Machinery",
+    "price": 320.40,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "HON",
     "shares": 20,
-    "price": 0,
-    "sector": "ASI / Compute",
-    "industry": "Chips"
+    "sector": "Industrials",
+    "industry": "Conglomerates",
+    "price": 205.10,
+    "last_updated": "2024-02-08T22:00:00Z"
   },
   {
-    "symbol": "SMCI",
+    "symbol": "GE",
+    "shares": 40,
+    "sector": "Industrials",
+    "industry": "Industrial Machinery",
+    "price": 145.30,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "BA",
     "shares": 10,
-    "price": 0,
-    "sector": "Data Infra",
-    "industry": "Hardware"
+    "sector": "Industrials",
+    "industry": "Aerospace & Defense",
+    "price": 210.20,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "UPS",
+    "shares": 25,
+    "sector": "Industrials",
+    "industry": "Freight & Logistics",
+    "price": 150.40,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "JPM",
+    "shares": 30,
+    "sector": "Financials",
+    "industry": "Banks - Diversified",
+    "price": 175.20,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "V",
+    "shares": 20,
+    "sector": "Financials",
+    "industry": "Credit Services",
+    "price": 278.40,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "MA",
+    "shares": 15,
+    "sector": "Financials",
+    "industry": "Credit Services",
+    "price": 460.10,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "XOM",
+    "shares": 50,
+    "sector": "Energy",
+    "industry": "Oil & Gas Integrated",
+    "price": 105.30,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "CVX",
+    "shares": 40,
+    "sector": "Energy",
+    "industry": "Oil & Gas Integrated",
+    "price": 155.20,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "WMT",
+    "shares": 60,
+    "sector": "Retail",
+    "industry": "Discount Stores",
+    "price": 170.40,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "COST",
+    "shares": 10,
+    "sector": "Retail",
+    "industry": "Discount Stores",
+    "price": 710.20,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "TGT",
+    "shares": 30,
+    "sector": "Retail",
+    "industry": "Discount Stores",
+    "price": 150.10,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "PLD",
+    "shares": 20,
+    "sector": "Real Estate",
+    "industry": "REIT - Industrial",
+    "price": 130.40,
+    "last_updated": "2024-02-08T22:00:00Z"
+  },
+  {
+    "symbol": "AMT",
+    "shares": 15,
+    "sector": "Real Estate",
+    "industry": "REIT - Specialty",
+    "price": 195.20,
+    "last_updated": "2024-02-08T22:00:00Z"
   }
 ]

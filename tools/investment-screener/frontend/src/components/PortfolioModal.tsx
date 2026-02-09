@@ -4,6 +4,7 @@ import portfolioData from '../data/portfolio.json';
 interface PortfolioItem {
     symbol: string;
     shares: number;
+    [key: string]: any; // Allow other fields like sector, industry
 }
 
 interface PortfolioModalProps {
