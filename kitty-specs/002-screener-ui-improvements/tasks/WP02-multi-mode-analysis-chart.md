@@ -1,9 +1,11 @@
 ---
 work_package_id: "WP02"
 title: "Multi-Mode Analysis Chart"
-lane: "doing"
+lane: "done"
 dependencies: ["WP01"]
 subtasks: ["T007", "T008", "T009", "T010", "T011", "T012"]
+reviewed_by: "richfrem"
+review_status: "approved"
 ---
 
 # Work Package: Multi-Mode Analysis Chart
@@ -79,3 +81,7 @@ The current Analysis tab is cluttered with fixed charts. Users want to toggle be
 
 ## Risks
 - Data gaps (e.g., missing FCF for banks) -> Component should render "Data Unavailable" or empty chart comfortably.
+
+## Activity Log
+
+- 2026-02-08T17:28:07Z – unknown – lane=done – Moved to done
