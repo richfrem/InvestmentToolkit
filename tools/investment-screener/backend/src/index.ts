@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
 import { spawnPythonScript } from './services/bridge';
 
 const app = express();
@@ -7,6 +9,8 @@ const port = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
+
+const PORTFOLIO_FILE = path.join(__dirname, '../../frontend/src/data/portfolio.json');
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -25,6 +29,83 @@ app.get('/api/stock/:ticker', async (req, res) => {
     } catch (error) {
         console.error(`[API] Error fetching ${ticker}:`, error);
         res.status(500).json({ error: 'Failed to fetch financial data' });
+    }
+});
+
+app.post('/api/portfolio-heatmap', async (req, res) => {
+    const { items } = req.body;
+    console.log(`[API] Fetching heatmap data for ${items?.length || 0} positions...`);
+    try {
+        if (!items || !Array.isArray(items)) {
+            res.status(400).json({ error: 'items array required' });
+            return;
+        }
+        const data = await spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(items)]);
+        if (data.error) {
+            res.status(400).json({ error: data.error });
+            return;
+        }
+        res.json(data);
+    } catch (error) {
+        console.error(`[API] Error fetching heatmap:`, error);
+        res.status(500).json({ error: 'Failed to fetch heatmap data' });
+    }
+});
+
+app.post('/api/portfolio', async (req, res) => {
+    const { items } = req.body;
+    console.log(`[API] Saving portfolio with ${items?.length || 0} positions...`);
+    try {
+        if (!items || !Array.isArray(items)) {
+            res.status(400).json({ error: 'items array required' });
+            return;
+        }
+        fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(items, null, 2));
+        res.json({ success: true, count: items.length });
+    } catch (error) {
+        console.error(`[API] Error saving portfolio:`, error);
+        res.status(500).json({ error: 'Failed to save portfolio' });
+    }
+});
+
+app.post('/api/portfolio/refresh-prices', async (req, res) => {
+    console.log(`[API] Refreshing portfolio prices from Yahoo...`);
+    try {
+        // Read current portfolio
+        const portfolioData = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+
+        // Fetch updated prices
+        const data = await spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(portfolioData)]);
+
+        if (data.error) {
+            res.status(400).json({ error: data.error });
+            return;
+        }
+
+        // Update portfolio with current prices
+        const updatedItems = portfolioData.map((item: any) => {
+            const stockData = data.stocks.find((s: any) => s.symbol === item.symbol);
+            if (stockData) {
+                return {
+                    ...item,
+                    price: stockData.price,
+                    last_updated: new Date().toISOString()
+                };
+            }
+            return item;
+        });
+
+        // Save updated portfolio
+        fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(updatedItems, null, 2));
+
+        res.json({
+            success: true,
+            updated: updatedItems.length,
+            heatmap: data
+        });
+    } catch (error) {
+        console.error(`[API] Error refreshing prices:`, error);
+        res.status(500).json({ error: 'Failed to refresh prices' });
     }
 });
 
