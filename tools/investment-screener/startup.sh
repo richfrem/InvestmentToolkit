@@ -28,6 +28,12 @@ if [ ! -f .env ] && [ -z "$QUESTRADE_REFRESH_TOKEN" ]; then
     # Not blocking for now as we use yfinance primarily
 fi
 
+# Portfolio Configuration Check
+if [ ! -f frontend/src/data/portfolio.json ]; then
+    echo -e "${YELLOW}Creating initial portfolio from example...${NC}"
+    cp frontend/src/data/portfolio.json.example frontend/src/data/portfolio.json
+fi
+
 # Setup Python Virtual Environment
 if [ ! -d "venv" ]; then
     echo -e "${GREEN}Creating Python virtual environment...${NC}"

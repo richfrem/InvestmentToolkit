@@ -1,0 +1,188 @@
+[
+  {
+    "symbol": "INTC",
+    "shares": 92,
+    "price": 50.59,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "CRWV",
+    "shares": 50,
+    "price": 89.95,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "GOOG",
+    "shares": 10,
+    "price": 323.1,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "PANW",
+    "shares": 20,
+    "price": 159.32,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "CORZ",
+    "shares": 200,
+    "price": 16.81,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "VST",
+    "shares": 50,
+    "price": 149.65,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "AMD",
+    "shares": 30,
+    "price": 208.44,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "ETHA",
+    "shares": 100,
+    "price": 15.51,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "META",
+    "shares": 15,
+    "price": 661.46,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "HUMN",
+    "shares": 500,
+    "price": 31.96,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "EQIX",
+    "shares": 5,
+    "price": 848.12,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "COIN",
+    "shares": 25,
+    "price": 165.12,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "MSFT",
+    "shares": 20,
+    "price": 401.14,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "CEG",
+    "shares": 15,
+    "price": 261.42,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "RGTI",
+    "shares": 300,
+    "price": 17.71,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "IBIT",
+    "shares": 100,
+    "price": 39.68,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "OKLO",
+    "shares": 50,
+    "price": 71.1,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "KOID",
+    "shares": 200,
+    "price": 34.45,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "CRCL",
+    "shares": 100,
+    "price": 57.04,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "ZS",
+    "shares": 10,
+    "price": 167.33,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "CRWD",
+    "shares": 15,
+    "price": 395.5,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "TEM",
+    "shares": 50,
+    "price": 54.91,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "ANET",
+    "shares": 10,
+    "price": 137.49,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "NBIS",
+    "shares": 100,
+    "price": 86.1,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "POET",
+    "shares": 500,
+    "price": 5.87,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "IREN",
+    "shares": 200,
+    "price": 41.83,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "SNPS",
+    "shares": 5,
+    "price": 426.88,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "VRT",
+    "shares": 25,
+    "price": 195.58,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "SOLZ",
+    "shares": 300,
+    "price": 8.81,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "AVGO",
+    "shares": 10,
+    "price": 332.495,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  },
+  {
+    "symbol": "CDNS",
+    "shares": 15,
+    "price": 283.52,
+    "last_updated": "2026-02-09T05:02:12.079Z"
+  }
+]
