@@ -1,188 +1,250 @@
 [
   {
     "symbol": "INTC",
-    "shares": 92,
+    "shares": 80.0,
+    "sector": "ASI",
+    "industry": "Compute & Chips",
     "price": 50.59,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "CRWV",
-    "shares": 50,
+    "shares": 20.0,
+    "sector": "Data Infra",
+    "industry": "Supply Chain",
     "price": 89.95,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "GOOG",
-    "shares": 10,
+    "shares": 5.0,
+    "sector": "AI Titans",
+    "industry": "Cloud",
     "price": 323.1,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "PANW",
-    "shares": 20,
+    "shares": 8.0,
+    "sector": "Security",
+    "industry": "Data OS",
     "price": 159.32,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "CORZ",
-    "shares": 200,
+    "shares": 70.0,
+    "sector": "Data Infra",
+    "industry": "Supply Chain",
     "price": 16.81,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "VST",
-    "shares": 50,
+    "shares": 7.0,
+    "sector": "Power",
+    "industry": "Energy",
     "price": 149.65,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "AMD",
-    "shares": 30,
+    "shares": 5.0,
+    "sector": "ASI",
+    "industry": "Compute & Chips",
     "price": 208.44,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "ETHA",
-    "shares": 100,
+    "shares": 67.0,
+    "sector": "Sovereign Finance",
+    "industry": "Digital Assets",
     "price": 15.51,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "META",
-    "shares": 15,
+    "shares": 1.5,
+    "sector": "AI Titans",
+    "industry": "Cloud",
     "price": 661.46,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "HUMN",
-    "shares": 500,
+    "shares": 26.0,
+    "sector": "Applied AI",
+    "industry": "Robotics",
     "price": 31.96,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "EQIX",
-    "shares": 5,
+    "shares": 1.0,
+    "sector": "Data Infra",
+    "industry": "Supply Chain",
     "price": 848.12,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "COIN",
-    "shares": 25,
+    "shares": 5.0,
+    "sector": "Sovereign Finance",
+    "industry": "Digital Assets",
     "price": 165.12,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "MSFT",
-    "shares": 20,
+    "shares": 2.0,
+    "sector": "AI Titans",
+    "industry": "Cloud",
     "price": 401.14,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "CEG",
-    "shares": 15,
+    "shares": 3.0,
+    "sector": "Power",
+    "industry": "Energy",
     "price": 261.42,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "RGTI",
-    "shares": 300,
+    "shares": 40.0,
+    "sector": "ASI",
+    "industry": "Compute & Chips",
     "price": 17.71,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "IBIT",
-    "shares": 100,
+    "shares": 18.0,
+    "sector": "Sovereign Finance",
+    "industry": "Digital Assets",
     "price": 39.68,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "OKLO",
-    "shares": 50,
+    "shares": 10.0,
+    "sector": "Power",
+    "industry": "Energy",
     "price": 71.1,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "KOID",
-    "shares": 200,
+    "shares": 22.0,
+    "sector": "Applied AI",
+    "industry": "Robotics",
     "price": 34.45,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "CRCL",
-    "shares": 100,
+    "shares": 12.0,
+    "sector": "Sovereign Finance",
+    "industry": "Digital Assets",
     "price": 57.04,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "ZS",
-    "shares": 10,
+    "shares": 4.0,
+    "sector": "Security",
+    "industry": "Data OS",
     "price": 167.33,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "CRWD",
-    "shares": 15,
+    "shares": 1.5,
+    "sector": "Security",
+    "industry": "Data OS",
     "price": 395.5,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "TEM",
-    "shares": 50,
+    "shares": 10.0,
+    "sector": "Applied AI",
+    "industry": "Robotics",
     "price": 54.91,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "ANET",
-    "shares": 10,
+    "shares": 4.0,
+    "sector": "Data Infra",
+    "industry": "Supply Chain",
     "price": 137.49,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "NBIS",
-    "shares": 100,
+    "shares": 6.0,
+    "sector": "ASI",
+    "industry": "Compute & Chips",
     "price": 86.1,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "POET",
-    "shares": 500,
+    "shares": 80.0,
+    "sector": "ASI",
+    "industry": "Compute & Chips",
     "price": 5.87,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "IREN",
-    "shares": 200,
+    "shares": 10.0,
+    "sector": "ASI",
+    "industry": "Compute & Chips",
     "price": 41.83,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.674Z"
   },
   {
     "symbol": "SNPS",
-    "shares": 5,
+    "shares": 1.5,
+    "sector": "ASI",
+    "industry": "Compute & Chips",
     "price": 426.88,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.675Z"
   },
   {
     "symbol": "VRT",
-    "shares": 25,
+    "shares": 2.0,
+    "sector": "Data Infra",
+    "industry": "Supply Chain",
     "price": 195.58,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.675Z"
   },
   {
     "symbol": "SOLZ",
-    "shares": 300,
+    "shares": 40.0,
+    "sector": "Sovereign Finance",
+    "industry": "Digital Assets",
     "price": 8.81,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.675Z"
   },
   {
     "symbol": "AVGO",
-    "shares": 10,
+    "shares": 1.0,
+    "sector": "ASI",
+    "industry": "Compute & Chips",
     "price": 332.495,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.675Z"
   },
   {
     "symbol": "CDNS",
-    "shares": 15,
+    "shares": 1.0,
+    "sector": "ASI",
+    "industry": "Compute & Chips",
     "price": 283.52,
-    "last_updated": "2026-02-09T05:20:29.808Z"
+    "last_updated": "2026-02-09T05:44:45.675Z"
   }
 ]
