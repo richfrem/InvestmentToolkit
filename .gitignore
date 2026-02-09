@@ -95,7 +95,7 @@ backend/src/data/positions.ts
 .github/copilot/
 .kittify/.dashboard
 
-# temp folders for comparison
+# folders to ignore
 kittywindsurf/
 kittyclaude/
 kittycopilot/
