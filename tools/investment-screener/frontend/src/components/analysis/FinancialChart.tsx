@@ -68,7 +68,7 @@ export default function FinancialChart({ stockData, mode }: FinancialChartProps)
                     <YAxis yAxisId="left" stroke="#94a3b8" tickFormatter={formatCurrency} tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                     <Tooltip
                         contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                        formatter={(value: number) => formatCurrency(value)}
+                        formatter={(value: any) => formatCurrency(value)}
                     />
                     <Legend wrapperStyle={{ paddingTop: '10px' }} />
                     <Bar yAxisId="left" dataKey="revenue" name="Total Revenue" fill="#0ea5e9" radius={[4, 4, 0, 0]} maxBarSize={50} />
@@ -87,7 +87,7 @@ export default function FinancialChart({ stockData, mode }: FinancialChartProps)
                     <YAxis stroke="#94a3b8" tickFormatter={formatPercentage} domain={['auto', 'auto']} tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                     <Tooltip
                         contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                        formatter={(value: number) => formatPercentage(value)}
+                        formatter={(value: any) => formatPercentage(value)}
                     />
                     <Legend wrapperStyle={{ paddingTop: '10px' }} />
                     <Line type="monotone" dataKey="grossMargin" name="Gross Margin" stroke="#a855f7" strokeWidth={3} dot={{ r: 4 }} />
@@ -107,7 +107,7 @@ export default function FinancialChart({ stockData, mode }: FinancialChartProps)
                     <YAxis stroke="#94a3b8" tickFormatter={formatCurrency} tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                     <Tooltip
                         contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                        formatter={(value: number) => formatCurrency(value)}
+                        formatter={(value: any) => formatCurrency(value)}
                     />
                     <Legend wrapperStyle={{ paddingTop: '10px' }} />
                     <Bar dataKey="fcf" name="Free Cash Flow" fill="#14b8a6" radius={[4, 4, 0, 0]} maxBarSize={50} />
@@ -131,7 +131,7 @@ export default function FinancialChart({ stockData, mode }: FinancialChartProps)
                     <YAxis stroke="#94a3b8" tickFormatter={formatNumber} tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                     <Tooltip
                         contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                        formatter={(value: number) => formatNumber(value)}
+                        formatter={(value: any) => formatNumber(value)}
                     />
                     <Legend wrapperStyle={{ paddingTop: '10px' }} />
                     <Area type="monotone" dataKey="eps" name="EPS ($)" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorEps)" strokeWidth={3} />

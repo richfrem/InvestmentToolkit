@@ -14,10 +14,24 @@ export default function Sidebar() {
     return (
         <aside className="w-64 h-screen bg-surface border-r border-slate-800 flex flex-col fixed left-0 top-0">
             <div className="p-6">
-                <h1 className="text-xl font-bold text-primary flex items-center gap-2">
+                <h1 className="text-xl font-bold text-primary flex items-center gap-2 mb-6">
                     <span className="text-2xl">⚡</span> Spec Kitty
                 </h1>
-                <p className="text-xs text-secondary mt-1">Investment Screener</p>
+
+                {/* Global Search - Integrated in Sidebar */}
+                <div className="mb-2">
+                    <input
+                        type="text"
+                        placeholder="Search ticker..."
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                const val = e.currentTarget.value.trim().toUpperCase();
+                                if (val) navigate(`/?ticker=${val}`);
+                            }
+                        }}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:border-primary focus:outline-none placeholder:text-slate-600"
+                    />
+                </div>
             </div>
 
             <nav className="flex-1 px-4 space-y-2">
