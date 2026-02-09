@@ -124,7 +124,7 @@ export default function MetricsGrid({ stockData }: MetricsGridProps) {
                     <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center gap-2">
                             <h3 className="text-secondary font-medium uppercase tracking-wider text-sm">Free Cash Flow</h3>
-                            <HelpTrigger topicId="discountRate" size={14} className="opacity-50 hover:opacity-100" />
+                            <HelpTrigger topicId="fcf" size={14} className="opacity-50 hover:opacity-100" />
                         </div>
                         <DollarSign size={16} className="text-slate-500" />
                     </div>
@@ -438,6 +438,7 @@ export default function MetricsGrid({ stockData }: MetricsGridProps) {
                     <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center gap-2">
                             <h3 className="text-secondary font-medium uppercase tracking-wider text-sm">Beta (Risk)</h3>
+                            <HelpTrigger topicId="beta" size={14} className="opacity-50 hover:opacity-100" />
                         </div>
                         <AlertTriangle size={16} className="text-slate-500" />
                     </div>
