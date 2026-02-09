@@ -17,7 +17,7 @@ This document outlines the **Correct** Spec-Kitty lifecycle. Unlike the "Increme
 For **EACH** Work Package (WP01, WP02, ...):
 
 1.  **Initialize:**
-    - Command: `spec-kitty implement WP-xx`
+    - Command: `spec-kitty implement WP-xx` (Use `--base main` if parent branch is missing)
     - *System Actions:* Creates isolated worktree (`.worktrees/WP-xx`) and branch (`WP-xx`).
     - *User Action:* **MUST** `cd .worktrees/WP-xx` immediately.
 
@@ -28,7 +28,11 @@ For **EACH** Work Package (WP01, WP02, ...):
 3.  **Commit (Local):**
     - `git add .`
     - `git commit -m "feat(WP-xx): ..."`
-    - *Constraint:* Must commit to local feature branch before moving task. No Push required.
+    - *Constraint:* Must commit to local feature branch before moving task.
+
+3b. **Backup (Recommended):**
+    - Command: `git push origin WP-xx`
+    - *Purpose:* Safely backs up work to remote without merging.
 
 4.  **Submit for Review:**
     - Command: `spec-kitty agent tasks move-task WP-xx --to for_review`
