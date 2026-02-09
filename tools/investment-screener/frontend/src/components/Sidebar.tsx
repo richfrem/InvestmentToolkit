@@ -16,7 +16,7 @@ export default function Sidebar() {
     ];
 
     return (
-        <aside className="w-64 h-screen bg-surface border-r border-slate-800 flex flex-col fixed left-0 top-0">
+        <aside className="w-64 h-screen bg-surface border-r border-slate-800 flex flex-col fixed left-0 top-0 z-[40]">
             {/* Header with Logo */}
             <div className="p-6 pb-4">
                 <h1 className="text-xl font-bold text-primary flex items-center gap-2">
