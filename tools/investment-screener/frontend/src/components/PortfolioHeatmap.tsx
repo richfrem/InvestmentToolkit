@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as d3 from 'd3';
-import portfolioData from '../data/portfolio.json';
 
 interface PortfolioItem {
     symbol: string;
@@ -78,7 +77,7 @@ export default function PortfolioHeatmap() {
         setError(null);
 
         try {
-            const response = await fetch('http://localhost:3001/api/portfolio/refresh-prices', {
+            const response = await fetch('/api/portfolio/refresh-prices', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });
@@ -99,9 +98,9 @@ export default function PortfolioHeatmap() {
     const fetchHeatmapData = async () => {
         try {
             const saved = localStorage.getItem('portfolio_items');
-            const items: PortfolioItem[] = saved ? JSON.parse(saved) : portfolioData;
+            const items: PortfolioItem[] = saved ? JSON.parse(saved) : [];
 
-            const response = await fetch('http://localhost:3001/api/portfolio-heatmap', {
+            const response = await fetch('/api/portfolio-heatmap', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ items })
