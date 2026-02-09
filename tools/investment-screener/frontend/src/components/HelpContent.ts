@@ -38,7 +38,9 @@ Most hypergrowth companies decelerate:
 **Scenario Guidelines:**
 - 🐻 Bear: 28-32% (faster maturation, competition)
 - ⚖️ Base: 38-42% (controlled deceleration)
-- 🐂 Bull: 48-55% (new TAMs, dominant position)`,
+- 🐂 Bull: 48-55% (new TAMs, dominant position)
+
+**✅ Quick Tip:** Higher is better. >20% is considered "High Growth". >40% is "Hypergrowth".`,
         formula: "CAGR = (Ending Revenue / Starting Revenue)^(1/Years) - 1",
         example: "NVDA: Bear 32%, Base 40%, Bull 50% accounts for inevitable slowdown from 63%",
         learnMoreUrl: "https://www.investopedia.com/terms/r/revenue-growth.asp"
@@ -51,7 +53,12 @@ Most hypergrowth companies decelerate:
 
 Higher margins indicate better efficiency and pricing power. Tech companies often have higher margins (30-50%) than retail (2-5%).
 
-In the valuation model, this converts projected revenue into projected earnings.`,
+In the valuation model, this converts projected revenue into projected earnings.
+
+**✅ Quick Tip:** Higher is better.
+- **Software/Tech:** Target >20%
+- **Hardware:** Target >10%
+- **Retail:** Target >5%`,
         formula: "Net Margin = Net Income / Revenue × 100",
         example: "If a company has $100B revenue and $55B net income, margin = 55B/100B × 100 = 55%",
         learnMoreUrl: "https://www.investopedia.com/terms/n/net_margin.asp"
@@ -68,7 +75,12 @@ In the valuation model, this converts projected revenue into projected earnings.
 - Tech companies often trade at 25-60x P/E
 - Value stocks trade at 10-20x P/E
 
-**"Exit" P/E** is your estimate of what P/E the market will assign in 5 years.`,
+**"Exit" P/E** is your estimate of what P/E the market will assign in 5 years.
+
+**✅ Quick Tip:** Accurate prediction is key.
+- **High Growth Tech:** 30x - 50x
+- **Mature Tech:** 20x - 30x
+- **Market Average:** ~21x`,
         formula: "Stock Price = EPS × P/E Multiple",
         example: "If future EPS is $7.71 and you expect 30x P/E: Target Price = $7.71 × 30 = $231",
         learnMoreUrl: "https://www.investopedia.com/terms/p/price-earningsratio.asp"
@@ -83,7 +95,11 @@ In the valuation model, this converts projected revenue into projected earnings.
 
 **Dilution (positive %):** New shares issued for acquisitions, employee compensation, or fundraising. This decreases EPS. Can be concerning if excessive.
 
-Apple and Microsoft do significant buybacks (~3-5% annually). High-growth companies often issue shares.`,
+Apple and Microsoft do significant buybacks (~3-5% annually). High-growth companies often issue shares.
+
+**✅ Quick Tip:** Lower (more negative) is better.
+- **Buybacks (-2% per year):** Shareholder friendly (Apple, Microsoft).
+- **Dilution (+3% per year):** Common in early start-ups (Beware!).`,
         formula: "Future Shares = Current Shares × (1 + Share Change %)^Years",
         example: "If 2% annual buyback: After 5 years, shares = 100 × (1 - 0.02)^5 = 90.4 shares",
         learnMoreUrl: "https://www.investopedia.com/terms/s/sharerepurchase.asp"
@@ -99,7 +115,12 @@ Apple and Microsoft do significant buybacks (~3-5% annually). High-growth compan
 - Lower Forward P/E than Trailing P/E = earnings expected to grow
 - Higher Forward P/E than Trailing P/E = earnings expected to decline
 
-**Yahoo's Forward P/E** typically uses the current fiscal year EPS estimate.`,
+**Yahoo's Forward P/E** typically uses the current fiscal year EPS estimate.
+
+**✅ Quick Tip:** Lower is usually "cheaper", but extremely low can mean trouble.
+- **Undefined/Negative:** Unprofitable.
+- **< 25x:** Reasonable for growth.
+- **> 50x:** Expensive (Pricey).`,
         formula: "Forward P/E = Current Price / Estimated Future EPS",
         example: "NVDA at $185 with 2026 EPS estimate of $4.69: Forward P/E = 185/4.69 = 39.4x",
         learnMoreUrl: "https://www.investopedia.com/terms/f/forwardpe.asp"
@@ -116,7 +137,9 @@ Apple and Microsoft do significant buybacks (~3-5% annually). High-growth compan
 - **High Estimate:** Most optimistic analyst
 - **Year Ago EPS:** What the company actually earned last year
 
-**Why it matters:** Companies that beat estimates often see stock price jumps. Missing estimates can cause drops.`,
+**Why it matters:** Companies that beat estimates often see stock price jumps. Missing estimates can cause drops.
+
+**✅ Quick Tip:** Trend is key. Look for estimates being revised *upward*.`,
         formula: "EPS = Net Income / Shares Outstanding",
         example: "2027 NVDA estimates: Low $6.17, Avg $7.71, High $9.68 per share",
         learnMoreUrl: "https://www.investopedia.com/terms/e/eps.asp"
@@ -135,7 +158,9 @@ Apple and Microsoft do significant buybacks (~3-5% annually). High-growth compan
 **Important caveats:**
 - These are opinions, not guarantees
 - Analysts often update targets after earnings
-- Targets cluster around current price (momentum bias)`,
+- Targets cluster around current price (momentum bias)
+
+**✅ Quick Tip:** Look for upside potential >15%.`,
         example: "NVDA targets: Low $140, Mean $254, High $352",
         learnMoreUrl: "https://www.investopedia.com/terms/p/price-target.asp"
     },
@@ -154,7 +179,12 @@ Apple and Microsoft do significant buybacks (~3-5% annually). High-growth compan
 - **20-40:** Average, room for improvement
 - **Below 20:** May need to choose: grow faster or become more profitable
 
-Originally created for SaaS companies but now widely used for tech.`,
+Originally created for SaaS companies but now widely used for tech.
+
+**✅ Quick Tip:** Higher is better.
+- **> 60:** Elite / Best-in-class.
+- **> 40:** Passing grade.
+- **< 40:** Failing grade.`,
         formula: "Rule of 40 Score = Revenue Growth % + EBITDA (or Net) Margin %",
         example: "50% revenue growth + 30% margin = 80 score (excellent)",
         learnMoreUrl: "https://www.investopedia.com/terms/r/rule-of-40.asp"
@@ -179,7 +209,9 @@ Originally created for SaaS companies but now widely used for tech.`,
 **Interpretation:**
 - **8-9:** Very strong fundamentals
 - **5-7:** Average
-- **0-4:** Weak, potential red flags`,
+- **0-4:** Weak, potential red flags
+
+**✅ Quick Tip:** Higher is better. 7-9 is ideal for long-term holds.`,
         learnMoreUrl: "https://www.investopedia.com/terms/p/piotroski-score.asp"
     },
 
@@ -194,7 +226,9 @@ Originally created for SaaS companies but now widely used for tech.`,
 - Shows actual demand for products/services
 - Growth companies are often valued on revenue (especially if not yet profitable)
 
-**Yahoo shows ranges:** Low, Average, and High estimates for current and next year.`,
+**Yahoo shows ranges:** Low, Average, and High estimates for current and next year.
+
+**✅ Quick Tip:** Consistency matters. Look for steady double-digit growth year-over-year.`,
         formula: "Revenue = Total Sales (top line of income statement)",
         example: "NVDA 2026 revenue estimates: Low $203B, Avg $213B, High $216B",
         learnMoreUrl: "https://www.investopedia.com/terms/r/revenue.asp"
@@ -215,7 +249,9 @@ $500 in 5 years is NOT worth $500 today. You could invest that money elsewhere a
 - **12%:** Conservative / Lower risk tolerance
 - **15%+:** Very high bar (Warren Buffett style)
 
-**Higher discount rate = Lower present value.** If you require higher returns, you'll pay less today for the same future payoff.`,
+**Higher discount rate = Lower present value.** If you require higher returns, you'll pay less today for the same future payoff.
+
+**✅ Quick Tip:** This is personal preference, but 10% is the standard baseline.`,
         formula: "Present Value = Future Price / (1 + Discount Rate)^Years",
         example: "$500 in 5yr at 10% = $500 / 1.10^5 = $310 today",
         learnMoreUrl: "https://www.investopedia.com/terms/d/discountrate.asp"
@@ -236,7 +272,9 @@ $500 in 5 years is NOT worth $500 today. You could invest that money elsewhere a
 - Longer horizon = more uncertainty in estimates (risky)
 - Longer horizon = more discounting (reduces present value)
 
-Most analysts use 5-year projections as a balance between growth potential and forecast reliability.`,
+Most analysts use 5-year projections as a balance between growth potential and forecast reliability.
+
+**✅ Quick Tip:** 5 Years is the industry standard for Discounted Cash Flow (DCF) models.`,
         formula: "Future Value = Present Value × (1 + Growth Rate)^Years",
         example: "$100B revenue growing 30%/yr: In 5yr = $100B × 1.30^5 = $371B",
         learnMoreUrl: "https://www.investopedia.com/terms/t/timehorizon.asp"
@@ -261,7 +299,9 @@ Most analysts use 5-year projections as a balance between growth potential and f
 **What to watch:**
 - Trend over 3-5 years (expanding = good, compressing = red flag)
 - Comparison to peers in same sector
-- Impact of pricing changes or input cost inflation`,
+- Impact of pricing changes or input cost inflation
+
+**✅ Quick Tip:** Higher is better. >50% is generally excellent for hardware, >70% for software.`,
         formula: "Gross Margin = (Revenue - COGS) / Revenue × 100",
         example: "NVDA with $130B revenue and $92B gross profit: 92/130 = 71% gross margin",
         learnMoreUrl: "https://www.investopedia.com/terms/g/grossmargin.asp"
@@ -283,7 +323,9 @@ Your framework emphasizes "rate of change" - a company improving margins from 10
 **What to watch:**
 - **Margin expansion:** Often signals operating leverage (fixed costs spread over more revenue)
 - **Margin compression:** Could mean increased competition or rising costs
-- **Comparison to gross margin:** Large gap = high operating expenses (R&D, S&M)`,
+- **Comparison to gross margin:** Large gap = high operating expenses (R&D, S&M)
+
+**✅ Quick Tip:** Higher is better. >25% indicates a strong, efficient moat.`,
         formula: "Operating Margin = Operating Income / Revenue × 100",
         example: "If operating income is $50B on $130B revenue: Operating Margin = 38.5%",
         learnMoreUrl: "https://www.investopedia.com/terms/o/operatingmargin.asp"
@@ -307,7 +349,12 @@ Your framework emphasizes "rate of change" - a company improving margins from 10
 **Red flags:**
 - Analyst estimate variance >10% = high uncertainty
 - Growth from M&A vs. organic (check for quality)
-- One-time revenue boosting numbers`,
+- One-time revenue boosting numbers
+
+**✅ Quick Tip:** Higher is better.
+- **>30%:** Hypergrowth.
+- **10-30%:** Steady Growth.
+- **<10%:** Mature/Slow.`,
         formula: "Revenue Growth = (Current Revenue - Prior Revenue) / Prior Revenue × 100",
         example: "Revenue grew from $60B to $130B = 116% YoY growth",
         learnMoreUrl: "https://www.investopedia.com/terms/r/revenue-growth.asp"
@@ -330,7 +377,12 @@ A stock with 40x P/E and 40% growth (PEG=1) may be "cheaper" than 15x P/E with 5
 - Assumes growth is sustainable (often isn't)
 - Negative earnings make it meaningless
 - Doesn't account for quality of growth or margins
-- Best used comparing similar companies in same sector`,
+- Best used comparing similar companies in same sector
+
+**✅ Quick Tip:** Lower is better (typically).
+- **< 1.0:** Undervalued.
+- **1.0 - 2.0:** Fair Range.
+- **> 2.0:** Expensive.`,
         formula: "PEG = P/E Ratio / Earnings Growth Rate (%)",
         example: "NVDA: P/E of 45x ÷ 60% EPS growth = PEG of 0.75 (attractive)",
         learnMoreUrl: "https://www.investopedia.com/terms/p/pegratio.asp"
@@ -350,12 +402,16 @@ A stock with 40x P/E and 40% growth (PEG=1) may be "cheaper" than 15x P/E with 5
 **Sector Thresholds (from your framework):**
 - **SaaS/Cyber:** <10x (premium accepted for recurring revenue)
 - **Chips/AI:** <8x (growth but capital needs)
-- **Energy/Infra:** <3x (lower growth, capital intensive)
+- **Energy/Infrastructure:** <3x (lower growth, capital intensive)
 
 **Best for:**
 - High-growth companies not yet profitable
 - Comparing across different capital structures
-- When earnings are volatile or negative`,
+- When earnings are volatile or negative
+
+**✅ Quick Tip:** Lower is cheaper.
+- **< 3x:** Value territory.
+- **> 15x:** Highly Speculative (needs massive growth).`,
         formula: "EV/Sales = Enterprise Value / Total Revenue\nEV = Market Cap + Total Debt - Cash",
         example: "EV of $1.2T on $130B revenue = 9.2x EV/Sales",
         learnMoreUrl: "https://www.investopedia.com/terms/e/ev-ebitda.asp"
@@ -384,10 +440,52 @@ Compare P/E to:
 **Limitations:**
 - Meaningless for unprofitable companies
 - Earnings can be manipulated (use FCF too)
-- Doesn't account for debt levels`,
+- Doesn't account for debt levels
+
+**✅ Quick Tip:** Lower is cheaper, but quality costs more.
+- **Average Market:** ~20-25x.
+- **High Growth:** 30-50x is common.`,
         formula: "P/E = Stock Price / Earnings Per Share (EPS)",
         example: "Stock at $185 with EPS of $4: P/E = 185/4 = 46.25x",
         learnMoreUrl: "https://www.investopedia.com/terms/p/price-earningsratio.asp"
     },
-};
+    beta: {
+        title: "Beta (Volatility Risk)",
+        summary: "Measures a stock's volatility in relation to the overall market.",
+        explanation: `Beta indicates how much a stock's price tends to move compared to the S&P 500.
 
+**Interpretation:**
+- **Beta = 1.0:** Moves exactly with the market.
+- **Beta > 1.0:** More volatile (riskier). Tech stocks often have Beta 1.2-2.0.
+- **Beta < 1.0:** Less volatile (safer). Utilities/Consumer Staples often have Beta 0.5-0.8.
+
+**Why it matters:**
+- **High Beta (>1.5):** greater potential for gains in a bull market, but bigger losses in a downturn.
+- **Low Beta (<0.8):** Defensive play. Helps preserve capital when the market falls.
+
+**✅ Quick Tip:** Lower is "Safer". Higher is "Riskier".`,
+        example: "NVDA Beta 2.31: If market goes up 1%, NVDA likely up 2.31%. If market down 1%, NVDA down 2.31%.",
+        learnMoreUrl: "https://www.investopedia.com/terms/b/beta.asp"
+    },
+    fcf: {
+        title: "Free Cash Flow (FCF)",
+        summary: "Cash remaining after paying for operating expenses and capital expenditures.",
+        explanation: `FCF is the "real" cash profit a company generates. It subtracts Capital Expenditures (CapEx) from Operating Cash Flow.
+
+**Why it's King:**
+- Harder to manipulate than Net Income (accounting tricks)
+- Used for dividends, buybacks, and acquisitions
+- A company can have positive Net Income but negative FCF (bad sign)
+
+**FCF Yield:**
+FCF divided by Market Cap. Similar to a dividend yield or interest rate.
+
+**✅ Quick Tip:** Higher is better.
+- **Positive FCF:** Essential for mature companies.
+- **Negative FCF:** Acceptable only for early-stage hypergrowth.
+- **FCF Yield > 4%:** Often signals good value.`,
+        formula: "FCF = Operating Cash Flow - Capital Expenditures",
+        example: "$10B Operating Cash Flow - $2B CapEx = $8B Free Cash Flow",
+        learnMoreUrl: "https://www.investopedia.com/terms/f/freecashflow.asp"
+    },
+};

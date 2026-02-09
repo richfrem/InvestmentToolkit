@@ -11,7 +11,20 @@ A web-based financial analysis dashboard featuring:
 -   **Valuation Modeler**: Interactive Bear/Base/Bull scenario modeling to project 5-year price targets.
 -   **Comparative Analysis**: Side-by-side ticker comparison.
 
-![Screener Dashboard](docs/images/dashboard-snapshot.png)
+### Stock Analysis & Metrics
+![Analysis Metrics](tools/investment-screener/assets/images/analysis_metrics.png)
+*(15+ Premium metrics including Rule of 40, Piotroski F-Score, and Analyst Targets)*
+
+### Historical Performance
+![Performance Charts](tools/investment-screener/assets/images/analysis_charts.png)
+
+### Valuation Modeler
+![Valuation Modeler](tools/investment-screener/assets/images/valuation_modeler.png)
+*(Interactive DCF modeling with sensitivity matrices)*
+
+### Market Heatmap
+![Market Heatmap](tools/investment-screener/assets/images/heatmap.png)
+*(Real-time sector performance visualization)*
 
 ## 🛠️ Tech Stack
 -   **Frontend**: React 19, Vite, Tailwind CSS.
