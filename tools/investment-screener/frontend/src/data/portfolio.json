@@ -1,0 +1,157 @@
+[
+  {
+    "symbol": "INTC",
+    "shares": 92,
+    "price": 50.59
+  },
+  {
+    "symbol": "CRWV",
+    "shares": 50,
+    "price": 89.95
+  },
+  {
+    "symbol": "GOOG",
+    "shares": 10,
+    "price": 323.1
+  },
+  {
+    "symbol": "PANW",
+    "shares": 20,
+    "price": 159.32
+  },
+  {
+    "symbol": "CORZ",
+    "shares": 200,
+    "price": 16.81
+  },
+  {
+    "symbol": "VST",
+    "shares": 50,
+    "price": 149.65
+  },
+  {
+    "symbol": "AMD",
+    "shares": 30,
+    "price": 208.44
+  },
+  {
+    "symbol": "ETHA",
+    "shares": 100,
+    "price": 15.51
+  },
+  {
+    "symbol": "META",
+    "shares": 15,
+    "price": 661.46
+  },
+  {
+    "symbol": "HUMN",
+    "shares": 500,
+    "price": 31.96
+  },
+  {
+    "symbol": "EQIX",
+    "shares": 5,
+    "price": 848.12
+  },
+  {
+    "symbol": "COIN",
+    "shares": 25,
+    "price": 165.12
+  },
+  {
+    "symbol": "MSFT",
+    "shares": 20,
+    "price": 401.14
+  },
+  {
+    "symbol": "CEG",
+    "shares": 15,
+    "price": 261.42
+  },
+  {
+    "symbol": "RGTI",
+    "shares": 300,
+    "price": 17.71
+  },
+  {
+    "symbol": "IBIT",
+    "shares": 100,
+    "price": 39.68
+  },
+  {
+    "symbol": "OKLO",
+    "shares": 50,
+    "price": 71.1
+  },
+  {
+    "symbol": "KOID",
+    "shares": 200,
+    "price": 34.45
+  },
+  {
+    "symbol": "CRCL",
+    "shares": 100,
+    "price": 57.04
+  },
+  {
+    "symbol": "ZS",
+    "shares": 10,
+    "price": 167.33
+  },
+  {
+    "symbol": "CRWD",
+    "shares": 15,
+    "price": 395.5
+  },
+  {
+    "symbol": "TEM",
+    "shares": 50,
+    "price": 54.91
+  },
+  {
+    "symbol": "ANET",
+    "shares": 10,
+    "price": 137.49
+  },
+  {
+    "symbol": "NBIS",
+    "shares": 100,
+    "price": 86.1
+  },
+  {
+    "symbol": "POET",
+    "shares": 500,
+    "price": 5.87
+  },
+  {
+    "symbol": "IREN",
+    "shares": 200,
+    "price": 41.83
+  },
+  {
+    "symbol": "SNPS",
+    "shares": 5,
+    "price": 426.88
+  },
+  {
+    "symbol": "VRT",
+    "shares": 25,
+    "price": 195.58
+  },
+  {
+    "symbol": "SOLZ",
+    "shares": 300,
+    "price": 8.81
+  },
+  {
+    "symbol": "AVGO",
+    "shares": 10,
+    "price": 332.495
+  },
+  {
+    "symbol": "CDNS",
+    "shares": 15,
+    "price": 283.52
+  }
+]

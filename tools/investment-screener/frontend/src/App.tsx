@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
+import Heatmap from './pages/Heatmap';
 
 import { HelpModalProvider } from './components/HelpModal';
 
@@ -11,7 +12,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<MainLayout />}>
-            <Route index element={<Dashboard />} />
+            <Route index element={<Heatmap />} />
+            <Route path="analysis" element={<Dashboard />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>
