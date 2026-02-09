@@ -11,11 +11,18 @@ app.use(cors());
 app.use(express.json());
 
 const PORTFOLIO_FILE = path.join(__dirname, '../../frontend/src/data/portfolio.json');
+const PORTFOLIO_EXAMPLE = PORTFOLIO_FILE + '.example';
+
+// On startup, seed portfolio.json from .example if it doesn't exist (clean clone)
+if (!fs.existsSync(PORTFOLIO_FILE) && fs.existsSync(PORTFOLIO_EXAMPLE)) {
+    fs.copyFileSync(PORTFOLIO_EXAMPLE, PORTFOLIO_FILE);
+    console.log('[Init] Created portfolio.json from .example');
+}
 
 // Validates ticker symbols: 1-10 uppercase alphanumeric chars, dots, hyphens (e.g. BRK-B, BTC-USD)
 const isValidTicker = (ticker: string): boolean => /^[A-Z0-9.\-]{1,10}$/.test(ticker);
 
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
@@ -97,7 +104,7 @@ app.post('/api/portfolio', async (req, res) => {
 app.post('/api/portfolio/refresh-prices', async (_req, res) => {
     console.log(`[API] Refreshing portfolio prices from Yahoo...`);
     try {
-        // Read current portfolio
+        // Read current portfolio from disk (gitignored local file)
         const portfolioData = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
 
         // Fetch updated prices
