@@ -11,13 +11,27 @@ app.use(cors());
 app.use(express.json());
 
 const PORTFOLIO_FILE = path.join(__dirname, '../../frontend/src/data/portfolio.json');
+const PORTFOLIO_EXAMPLE = PORTFOLIO_FILE + '.example';
 
-app.get('/health', (req, res) => {
+// On startup, seed portfolio.json from .example if it doesn't exist (clean clone)
+if (!fs.existsSync(PORTFOLIO_FILE) && fs.existsSync(PORTFOLIO_EXAMPLE)) {
+    fs.copyFileSync(PORTFOLIO_EXAMPLE, PORTFOLIO_FILE);
+    console.log('[Init] Created portfolio.json from .example');
+}
+
+// Validates ticker symbols: 1-10 uppercase alphanumeric chars, dots, hyphens (e.g. BRK-B, BTC-USD)
+const isValidTicker = (ticker: string): boolean => /^[A-Z0-9.\-]{1,10}$/.test(ticker);
+
+app.get('/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 app.get('/api/stock/:ticker', async (req, res) => {
     const { ticker } = req.params;
+    if (!isValidTicker(ticker)) {
+        res.status(400).json({ error: 'Invalid ticker symbol' });
+        return;
+    }
     console.log(`[API] Fetching data for ${ticker}...`);
     try {
         const data = await spawnPythonScript('fetch_financials.py', [ticker]);
@@ -40,6 +54,11 @@ app.post('/api/portfolio-heatmap', async (req, res) => {
             res.status(400).json({ error: 'items array required' });
             return;
         }
+        const invalidTickers = items.filter((item: any) => !isValidTicker(item.symbol));
+        if (invalidTickers.length > 0) {
+            res.status(400).json({ error: `Invalid ticker symbols: ${invalidTickers.map((i: any) => i.symbol).join(', ')}` });
+            return;
+        }
         const data = await spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(items)]);
         if (data.error) {
             res.status(400).json({ error: data.error });
@@ -49,6 +68,20 @@ app.post('/api/portfolio-heatmap', async (req, res) => {
     } catch (error) {
         console.error(`[API] Error fetching heatmap:`, error);
         res.status(500).json({ error: 'Failed to fetch heatmap data' });
+    }
+});
+
+app.get('/api/portfolio', async (_req, res) => {
+    try {
+        if (!fs.existsSync(PORTFOLIO_FILE)) {
+            res.json({ items: [] });
+            return;
+        }
+        const data = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+        res.json({ items: data });
+    } catch (error) {
+        console.error(`[API] Error reading portfolio:`, error);
+        res.status(500).json({ error: 'Failed to read portfolio' });
     }
 });
 
@@ -68,10 +101,10 @@ app.post('/api/portfolio', async (req, res) => {
     }
 });
 
-app.post('/api/portfolio/refresh-prices', async (req, res) => {
+app.post('/api/portfolio/refresh-prices', async (_req, res) => {
     console.log(`[API] Refreshing portfolio prices from Yahoo...`);
     try {
-        // Read current portfolio
+        // Read current portfolio from disk (gitignored local file)
         const portfolioData = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
 
         // Fetch updated prices

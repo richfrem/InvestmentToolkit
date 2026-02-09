@@ -41,6 +41,11 @@ export interface StockData {
                 cfo_positive: boolean;
                 roa_improving: boolean;
                 accruals_ok: boolean;
+                leverage_decreasing: boolean;
+                current_ratio_improving: boolean;
+                no_dilution: boolean;
+                gross_margin_improving: boolean;
+                asset_turnover_improving: boolean;
             };
         };
     };
