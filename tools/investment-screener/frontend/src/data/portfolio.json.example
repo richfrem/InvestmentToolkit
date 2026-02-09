@@ -1,0 +1,177 @@
+[
+  {
+    "symbol": "NVDA",
+    "shares": 10,
+    "price": 0,
+    "sector": "ASI / Compute",
+    "industry": "Chips"
+  },
+  {
+    "symbol": "AMD",
+    "shares": 20,
+    "price": 0,
+    "sector": "ASI / Compute",
+    "industry": "Chips"
+  },
+  {
+    "symbol": "TSM",
+    "shares": 15,
+    "price": 0,
+    "sector": "ASI / Compute",
+    "industry": "Chips"
+  },
+  {
+    "symbol": "AVGO",
+    "shares": 5,
+    "price": 0,
+    "sector": "ASI / Compute",
+    "industry": "Chips"
+  },
+  {
+    "symbol": "MSFT",
+    "shares": 10,
+    "price": 0,
+    "sector": "AI Titans",
+    "industry": "Cloud"
+  },
+  {
+    "symbol": "GOOG",
+    "shares": 10,
+    "price": 0,
+    "sector": "AI Titans",
+    "industry": "Cloud"
+  },
+  {
+    "symbol": "META",
+    "shares": 10,
+    "price": 0,
+    "sector": "AI Titans",
+    "industry": "Cloud"
+  },
+  {
+    "symbol": "AMZN",
+    "shares": 10,
+    "price": 0,
+    "sector": "AI Titans",
+    "industry": "Cloud"
+  },
+  {
+    "symbol": "PLTR",
+    "shares": 50,
+    "price": 0,
+    "sector": "Applied AI",
+    "industry": "Software"
+  },
+  {
+    "symbol": "CRWD",
+    "shares": 15,
+    "price": 0,
+    "sector": "Security",
+    "industry": "Data OS"
+  },
+  {
+    "symbol": "PANW",
+    "shares": 15,
+    "price": 0,
+    "sector": "Security",
+    "industry": "Data OS"
+  },
+  {
+    "symbol": "ZS",
+    "shares": 10,
+    "price": 0,
+    "sector": "Security",
+    "industry": "Data OS"
+  },
+  {
+    "symbol": "VRT",
+    "shares": 25,
+    "price": 0,
+    "sector": "Data Infra",
+    "industry": "Supply Chain"
+  },
+  {
+    "symbol": "ANET",
+    "shares": 10,
+    "price": 0,
+    "sector": "Data Infra",
+    "industry": "Supply Chain"
+  },
+  {
+    "symbol": "VST",
+    "shares": 30,
+    "price": 0,
+    "sector": "Power",
+    "industry": "Energy"
+  },
+  {
+    "symbol": "CEG",
+    "shares": 15,
+    "price": 0,
+    "sector": "Power",
+    "industry": "Energy"
+  },
+  {
+    "symbol": "OKLO",
+    "shares": 50,
+    "price": 0,
+    "sector": "Power",
+    "industry": "Energy"
+  },
+  {
+    "symbol": "IBIT",
+    "shares": 100,
+    "price": 0,
+    "sector": "Sovereign Finance",
+    "industry": "Digital Assets"
+  },
+  {
+    "symbol": "ETHA",
+    "shares": 100,
+    "price": 0,
+    "sector": "Sovereign Finance",
+    "industry": "Digital Assets"
+  },
+  {
+    "symbol": "COIN",
+    "shares": 25,
+    "price": 0,
+    "sector": "Sovereign Finance",
+    "industry": "Digital Assets"
+  },
+  {
+    "symbol": "MSTR",
+    "shares": 5,
+    "price": 0,
+    "sector": "Sovereign Finance",
+    "industry": "Digital Assets"
+  },
+  {
+    "symbol": "HOOD",
+    "shares": 50,
+    "price": 0,
+    "sector": "Sovereign Finance",
+    "industry": "Fintech"
+  },
+  {
+    "symbol": "TSLA",
+    "shares": 10,
+    "price": 0,
+    "sector": "Applied AI",
+    "industry": "Robotics"
+  },
+  {
+    "symbol": "ARM",
+    "shares": 20,
+    "price": 0,
+    "sector": "ASI / Compute",
+    "industry": "Chips"
+  },
+  {
+    "symbol": "SMCI",
+    "shares": 10,
+    "price": 0,
+    "sector": "Data Infra",
+    "industry": "Hardware"
+  }
+]

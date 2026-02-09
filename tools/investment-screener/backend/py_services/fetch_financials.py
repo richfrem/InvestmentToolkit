@@ -294,7 +294,19 @@ def fetch_financial_data(ticker_symbol):
             },
             "analyst_revenue_forecast": analyst_revenue_forecast,
             "analyst_earnings_forecast": analyst_earnings_forecast,
-            "growth_estimates": growth_estimates
+            "growth_estimates": growth_estimates,
+            # Analyst price targets and recommendations
+            "analyst_estimates": {
+                "target_high_price": get_metric(info, 'targetHighPrice', 0),
+                "target_low_price": get_metric(info, 'targetLowPrice', 0),
+                "target_mean_price": get_metric(info, 'targetMeanPrice', 0),
+                "target_median_price": get_metric(info, 'targetMedianPrice', 0),
+                "recommendation": info.get('recommendationKey', '').replace('_', ' ').title() if info.get('recommendationKey') else '',
+                "number_of_analysts": get_metric(info, 'numberOfAnalystOpinions', 0),
+                "revenue_growth": round(final_rev_growth * 100, 2),
+                "profit_margin": round(profit_margin * 100, 2),
+                "forward_pe": forward_pe
+            }
         }
 
         # Custom Encoder for Numpy Types

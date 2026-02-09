@@ -45,6 +45,23 @@ Interactive scenario analysis with Bear/Base/Bull projections:
 - **Rule of 40 Chart**: Historical growth vs margin trends
 - **Fundamental Chart**: Revenue and Net Income visualization
 
+## Screenshots
+
+### Stock Analysis & Metrics
+![Analysis Metrics](assets/images/analysis_metrics.png)
+*(15+ Premium metrics including Rule of 40, Piotroski F-Score, and Analyst Targets)*
+
+### Historical Performance
+![Performance Charts](assets/images/analysis_charts.png)
+
+### Valuation Modeler
+![Valuation Modeler](assets/images/valuation_modeler.png)
+*(Interactive DCF modeling with sensitivity matrices)*
+
+### Market Heatmap
+![Market Heatmap](assets/images/heatmap.png)
+*(Real-time sector performance visualization)*
+
 ## Tech Stack
 
 | Component | Technology |
