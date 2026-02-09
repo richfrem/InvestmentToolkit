@@ -46,35 +46,76 @@ export default function Dashboard() {
         }
     }, [searchParams]);
 
-    return (
-        <div className="h-[calc(100vh-2rem)] flex flex-col space-y-4 max-w-7xl mx-auto overflow-hidden">
-            {/* Header Section - Always Visible */}
-            <div className="flex-none pt-4 space-y-4">
-                {/* Search moved to Sidebar */}
-                {error && (
-                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-center text-sm">
-                        {error}
+    // If no stock selected, show welcome message with search
+    if (!stockData && !loading && !error) {
+        return (
+            <div className="flex items-center justify-center h-full">
+                <div className="text-center max-w-md">
+                    <div className="text-6xl mb-4">📊</div>
+                    <h2 className="text-2xl font-bold text-white mb-2">Stock Analysis</h2>
+                    <p className="text-slate-400 mb-6">
+                        Enter a stock symbol below or click on a stock in the Heatmap.
+                    </p>
+                    <div className="mb-4">
+                        <input
+                            type="text"
+                            placeholder="Enter ticker (e.g. NVDA)"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    const val = e.currentTarget.value.trim().toUpperCase();
+                                    if (val) handleSearch(val);
+                                }
+                            }}
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white text-center focus:border-primary focus:outline-none placeholder:text-slate-500"
+                            autoFocus
+                        />
                     </div>
-                )}
+                    <div className="text-xs text-slate-500">
+                        Examples: NVDA, AAPL, MSFT, GOOG, AMD
+                    </div>
+                </div>
             </div>
+        );
+    }
 
-            {/* Main Content Area */}
-            {stockData ? (
-                <div className="flex-1 flex flex-col min-h-0 bg-surface/50 rounded-xl border border-slate-800/50 backdrop-blur-sm overflow-hidden">
+    return (
+        <div className="flex flex-col h-full overflow-hidden">
+            {loading && (
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent"></div>
+                        <span className="text-slate-400">Loading stock data...</span>
+                    </div>
+                </div>
+            )}
 
-                    {/* Ticker Header & Tabs */}
-                    <div className="flex-none p-4 border-b border-slate-800 flex justify-between items-center bg-surface">
+            {error && (
+                <div className="flex-1 flex items-center justify-center">
+                    <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-6 rounded-xl text-center max-w-md">
+                        <div className="text-2xl mb-2">⚠️</div>
+                        <div className="font-semibold mb-2">Failed to load stock data</div>
+                        <div className="text-sm">{error}</div>
+                    </div>
+                </div>
+            )}
+
+            {stockData && (
+                <div className="flex flex-col h-full overflow-hidden">
+                    {/* Header Bar */}
+                    <div className="flex justify-between items-center px-6 py-4 border-b border-slate-800 flex-shrink-0">
                         <div className="flex items-center gap-6">
+                            {/* Ticker Info */}
                             <div className="flex items-center gap-4">
                                 <div>
-                                    <h3 className="text-2xl font-bold text-text">{stockData.symbol}</h3>
-                                    <span className="text-secondary text-sm">{stockData.profile.sector}</span>
+                                    <h2 className="text-2xl font-bold text-white">{stockData.symbol}</h2>
                                 </div>
-                                <div className="h-8 w-px bg-slate-800" />
-                                <div>
-                                    <div className="text-xl font-bold text-primary">${stockData.price.toFixed(2)}</div>
-                                    <div className="text-xs text-secondary">Current Price</div>
-                                </div>
+                            </div>
+
+                            {/* Price */}
+                            <div className="h-8 w-px bg-slate-800" />
+                            <div>
+                                <span className="text-2xl font-bold text-primary">${stockData.price?.toFixed(2)}</span>
+                                <span className="text-sm text-slate-500 ml-2">Current Price</span>
                             </div>
 
                             {/* Performance Strip */}
@@ -88,7 +129,7 @@ export default function Dashboard() {
                             )}
                         </div>
 
-                        {/* Navigation Tabs */}
+                        {/* Navigation Tabs - No more Heatmap tab */}
                         <div className="flex bg-slate-900/50 p-1 rounded-lg border border-slate-800">
                             <button
                                 onClick={() => setActiveTab('overview')}
@@ -114,7 +155,7 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* Tab Content - Scrollable if needed, but contained */}
+                    {/* Tab Content */}
                     <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
 
                         {activeTab === 'overview' && (
@@ -142,13 +183,6 @@ export default function Dashboard() {
                         )}
                     </div>
                 </div>
-            ) : (
-                !loading && (
-                    <div className="flex-1 flex flex-col items-center justify-center text-slate-600 opacity-50">
-                        <div className="text-6xl mb-4 grayscale">📈</div>
-                        <p>Enter a ticker above to begin analysis.</p>
-                    </div>
-                )
             )}
         </div>
     );

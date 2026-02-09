@@ -41,7 +41,7 @@ export function HelpModalProvider({ children }: { children: ReactNode }) {
             {isOpen && activeTopic && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeHelp}>
                     <div
-                        className="bg-surface border border-slate-700 rounded-xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200"
+                        className="bg-surface border border-slate-700 rounded-xl shadow-2xl max-w-2xl w-full overflow-hidden animate-in fade-in zoom-in duration-200"
                         onClick={e => e.stopPropagation()}
                     >
                         {/* Header */}

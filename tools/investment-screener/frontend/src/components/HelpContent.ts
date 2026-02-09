@@ -241,4 +241,153 @@ Most analysts use 5-year projections as a balance between growth potential and f
         example: "$100B revenue growing 30%/yr: In 5yr = $100B × 1.30^5 = $371B",
         learnMoreUrl: "https://www.investopedia.com/terms/t/timehorizon.asp"
     },
+
+    // Margin Metrics
+    grossMargin: {
+        title: "Gross Margin",
+        summary: "Percentage of revenue remaining after direct production costs.",
+        explanation: `Gross margin shows how efficiently a company produces its products or services. It's revenue minus Cost of Goods Sold (COGS), divided by revenue.
+
+**Why it matters:**
+- Higher margin = more pricing power and competitive moat
+- Shows the "quality" of revenue - premium products have higher margins
+- Declining margins often signal competitive pressure or rising input costs
+
+**Sector Benchmarks (from your framework):**
+- **SaaS/Cybersecurity:** >75% (software has minimal per-unit costs)
+- **Chips/AI:** 50-65% (manufacturing costs, R&D)
+- **Energy/Infrastructure:** 30-45% (capital-intensive)
+
+**What to watch:**
+- Trend over 3-5 years (expanding = good, compressing = red flag)
+- Comparison to peers in same sector
+- Impact of pricing changes or input cost inflation`,
+        formula: "Gross Margin = (Revenue - COGS) / Revenue × 100",
+        example: "NVDA with $130B revenue and $92B gross profit: 92/130 = 71% gross margin",
+        learnMoreUrl: "https://www.investopedia.com/terms/g/grossmargin.asp"
+    },
+
+    operatingMargin: {
+        title: "Operating Margin",
+        summary: "Percentage of revenue remaining after all operating expenses.",
+        explanation: `Operating margin shows how efficiently a company runs its core business. It subtracts operating expenses (R&D, sales, admin) from gross profit.
+
+**Why it matters:**
+- Measures management execution and cost control
+- Shows true operating leverage as revenue scales
+- Excludes non-operating items like interest and taxes
+
+**Key insight - Margin Trajectory:**
+Your framework emphasizes "rate of change" - a company improving margins from 10% to 15% is more compelling than one declining from 40% to 30%.
+
+**What to watch:**
+- **Margin expansion:** Often signals operating leverage (fixed costs spread over more revenue)
+- **Margin compression:** Could mean increased competition or rising costs
+- **Comparison to gross margin:** Large gap = high operating expenses (R&D, S&M)`,
+        formula: "Operating Margin = Operating Income / Revenue × 100",
+        example: "If operating income is $50B on $130B revenue: Operating Margin = 38.5%",
+        learnMoreUrl: "https://www.investopedia.com/terms/o/operatingmargin.asp"
+    },
+
+    revenueGrowthMetric: {
+        title: "Revenue Growth Rate",
+        summary: "Year-over-year percentage increase in total revenue.",
+        explanation: `Revenue growth shows how fast a company is expanding its business. This is the "top line" growth before any expenses.
+
+**Why it matters for your framework:**
+- Primary driver of value for growth companies
+- Your target: >20% CAGR for high-growth sectors
+- Watch for acceleration vs. deceleration (second derivative)
+
+**Interpreting growth patterns:**
+- **Accelerating:** 10% → 15% → 22% (bullish signal)
+- **Decelerating:** 40% → 30% → 20% (law of large numbers)
+- **Re-accelerating:** 30% → 20% → 25% (new product/market)
+
+**Red flags:**
+- Analyst estimate variance >10% = high uncertainty
+- Growth from M&A vs. organic (check for quality)
+- One-time revenue boosting numbers`,
+        formula: "Revenue Growth = (Current Revenue - Prior Revenue) / Prior Revenue × 100",
+        example: "Revenue grew from $60B to $130B = 116% YoY growth",
+        learnMoreUrl: "https://www.investopedia.com/terms/r/revenue-growth.asp"
+    },
+
+    pegRatio: {
+        title: "PEG Ratio",
+        summary: "P/E ratio adjusted for earnings growth rate.",
+        explanation: `PEG (Price/Earnings to Growth) helps compare valuations across companies with different growth rates.
+
+**How to interpret:**
+- **PEG < 1.0:** Potentially undervalued relative to growth
+- **PEG = 1.0:** Fair value (P/E equals growth rate)
+- **PEG > 2.0:** Potentially overvalued
+
+**Why it's useful:**
+A stock with 40x P/E and 40% growth (PEG=1) may be "cheaper" than 15x P/E with 5% growth (PEG=3).
+
+**Limitations:**
+- Assumes growth is sustainable (often isn't)
+- Negative earnings make it meaningless
+- Doesn't account for quality of growth or margins
+- Best used comparing similar companies in same sector`,
+        formula: "PEG = P/E Ratio / Earnings Growth Rate (%)",
+        example: "NVDA: P/E of 45x ÷ 60% EPS growth = PEG of 0.75 (attractive)",
+        learnMoreUrl: "https://www.investopedia.com/terms/p/pegratio.asp"
+    },
+
+    evSales: {
+        title: "EV/Sales (Enterprise Value to Sales)",
+        summary: "Capital-structure-neutral valuation metric comparing enterprise value to revenue.",
+        explanation: `EV/Sales is preferred over P/S (Price-to-Sales) because it accounts for debt and cash, making comparisons fairer.
+
+**Why EV is better than Market Cap:**
+- Two companies with same revenue and market cap
+- Company A: $0 debt, $10B cash
+- Company B: $20B debt, $0 cash
+- P/S is the same, but EV/S correctly shows B is "more expensive"
+
+**Sector Thresholds (from your framework):**
+- **SaaS/Cyber:** <10x (premium accepted for recurring revenue)
+- **Chips/AI:** <8x (growth but capital needs)
+- **Energy/Infra:** <3x (lower growth, capital intensive)
+
+**Best for:**
+- High-growth companies not yet profitable
+- Comparing across different capital structures
+- When earnings are volatile or negative`,
+        formula: "EV/Sales = Enterprise Value / Total Revenue\nEV = Market Cap + Total Debt - Cash",
+        example: "EV of $1.2T on $130B revenue = 9.2x EV/Sales",
+        learnMoreUrl: "https://www.investopedia.com/terms/e/ev-ebitda.asp"
+    },
+
+    peRatio: {
+        title: "P/E Ratio (Price-to-Earnings)",
+        summary: "Most common valuation metric showing price paid per dollar of earnings.",
+        explanation: `P/E ratio tells you how much investors pay for each dollar of current earnings.
+
+**Types of P/E:**
+- **Trailing P/E:** Uses last 12 months of actual earnings
+- **Forward P/E:** Uses next 12 months of estimated earnings
+
+**How to interpret:**
+- **High P/E (>40x):** Market expects high future growth (tech)
+- **Moderate P/E (15-25x):** Mature, stable companies
+- **Low P/E (<15x):** Value stocks, slow growth, or turnarounds
+
+**Context matters:**
+Compare P/E to:
+- Historical average for the same stock
+- Industry peers
+- Growth rate (see PEG ratio)
+
+**Limitations:**
+- Meaningless for unprofitable companies
+- Earnings can be manipulated (use FCF too)
+- Doesn't account for debt levels`,
+        formula: "P/E = Stock Price / Earnings Per Share (EPS)",
+        example: "Stock at $185 with EPS of $4: P/E = 185/4 = 46.25x",
+        learnMoreUrl: "https://www.investopedia.com/terms/p/price-earningsratio.asp"
+    },
 };
+
