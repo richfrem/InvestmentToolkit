@@ -15,7 +15,7 @@ export default function Sidebar() {
         <aside className="w-64 h-screen bg-surface border-r border-slate-800 flex flex-col fixed left-0 top-0">
             <div className="p-6">
                 <h1 className="text-xl font-bold text-primary flex items-center gap-2 mb-6">
-                    <span className="text-2xl">⚡</span> Spec Kitty
+                    <span className="text-2xl">⚡</span> Investment Toolkit
                 </h1>
 
                 {/* Global Search - Integrated in Sidebar */}
