@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { fetchStockData, type StockData } from '../services/api';
-import StockSearch from '../components/StockSearch';
 import { useRecentTickers } from '../hooks/useRecentTickers';
 import MetricsGrid from '../components/MetricsGrid';
 import FinancialChart from '../components/analysis/FinancialChart';
@@ -12,6 +12,7 @@ import PerformanceMetrics from '../components/PerformanceMetrics';
 type Tab = 'overview' | 'analysis' | 'valuation';
 
 export default function Dashboard() {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [activeTab, setActiveTab] = useState<Tab>('overview');
     const [chartMode, setChartMode] = useState<ChartMode>('revenue');
     const [stockData, setStockData] = useState<StockData | null>(null);
@@ -23,11 +24,12 @@ export default function Dashboard() {
         setLoading(true);
         setError(null);
         setStockData(null);
+        setSearchParams({ ticker }); // Update URL
 
         try {
             const data = await fetchStockData(ticker);
             setStockData(data);
-            addTicker(ticker); // T011 integration
+            addTicker(ticker);
         } catch (err: any) {
             console.error("Search failed:", err);
             setError(err.message || "Failed to fetch stock data");
@@ -36,17 +38,19 @@ export default function Dashboard() {
         }
     };
 
+    // Auto-load from URL
+    useEffect(() => {
+        const tickerParam = searchParams.get('ticker');
+        if (tickerParam && (!stockData || stockData.symbol !== tickerParam)) {
+            handleSearch(tickerParam);
+        }
+    }, [searchParams]);
+
     return (
         <div className="h-[calc(100vh-2rem)] flex flex-col space-y-4 max-w-7xl mx-auto overflow-hidden">
             {/* Header Section - Always Visible */}
             <div className="flex-none pt-4 space-y-4">
-                <header className="flex justify-between items-center gap-4">
-                    {/* Search Bar is now prominent, replacing the redundant title */}
-                    <div className="flex-1 max-w-2xl">
-                        <StockSearch onSearch={handleSearch} isLoading={loading} />
-                    </div>
-                </header>
-
+                {/* Search moved to Sidebar */}
                 {error && (
                     <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-lg text-center text-sm">
                         {error}
