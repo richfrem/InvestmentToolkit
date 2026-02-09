@@ -78,6 +78,15 @@ export interface StockData {
         profit_margin?: number;
         forward_pe?: number;
     };
+    growth_estimates?: {
+        stockTrend: {
+            "0q": number;
+            "+1q": number;
+            "0y": number;
+            "+1y": number;
+        };
+    };
+    quarterly_margin?: number;
     error?: string;
 }
 
