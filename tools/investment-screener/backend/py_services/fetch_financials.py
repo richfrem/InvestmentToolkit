@@ -140,9 +140,6 @@ def fetch_financial_data(ticker_symbol):
         if not cashflow.empty:
             cashflow = cashflow.reindex(sorted(cashflow.columns), axis=1)
 
-        # DEBUG: Print keys to stderr to diagnose missing margins/metrics
-        print(f"Financials Keys: {financials.index.tolist()[:20]}...", file=sys.stderr)
-        
         # Helper to safely get value for a year index (0 = oldest after sort)
         def get_value(df, key_aliases, index):
             try:
@@ -224,27 +221,77 @@ def fetch_financial_data(ticker_symbol):
         ebitda_margin = (ubiq_ebitda / current_revenue) if current_revenue != 0 else 0
         rule_of_40_score = (final_rev_growth * 100) + (ebitda_margin * 100)
 
-        # Piotroski F-Score
+        # Piotroski F-Score (Full 9-point methodology)
         piotroski_score = 0
-        
-        # Data Points (Latest Year)
-        net_inc = hist_net_income[latest_idx]
-        op_cash = get_value(cashflow, 'Operating Cash Flow', latest_idx)
-        avg_assets = (get_value(balance_sheet, 'Total Assets', latest_idx) + get_value(balance_sheet, 'Total Assets', prev_idx)) / 2
-        roa = net_inc / avg_assets if avg_assets else 0
-        
-        prev_net_inc = hist_net_income[prev_idx]
-        prev_assets = get_value(balance_sheet, 'Total Assets', prev_idx) # Approx
-        prev_roa = prev_net_inc / prev_assets if prev_assets else 0
+        piotroski_details = {}
 
-        if roa > 0: piotroski_score += 1 # 1. ROA > 0
-        if op_cash > 0: piotroski_score += 1 # 2. CFO > 0
-        if roa > prev_roa: piotroski_score += 1 # 3. ROA Improving
-        if op_cash > net_inc: piotroski_score += 1 # 4. Accruals (CFO > NI)
-        
-        # Leverage, Liquidity, Dilution... (Simplified for now to avoid huge complexity)
-        # ... (Keeping existing placeholders implicitly or skipping for stability)
-        piotroski_score += 2 # Fallback for uncalculated complex metrics to match previous range
+        # Data Points (Latest & Previous Year)
+        net_inc = hist_net_income[latest_idx]
+        prev_net_inc = hist_net_income[prev_idx]
+        op_cash = get_value(cashflow, ['Operating Cash Flow', 'Total Cash From Operating Activities'], latest_idx)
+
+        total_assets = get_value(balance_sheet, ['Total Assets', 'TotalAssets'], latest_idx)
+        prev_total_assets = get_value(balance_sheet, ['Total Assets', 'TotalAssets'], prev_idx)
+        avg_assets = (total_assets + prev_total_assets) / 2 if (total_assets and prev_total_assets) else total_assets
+
+        roa = net_inc / avg_assets if avg_assets else 0
+        prev_roa = prev_net_inc / prev_total_assets if prev_total_assets else 0
+
+        # --- Profitability (4 points) ---
+        # 1. ROA > 0
+        piotroski_details['roa_positive'] = roa > 0
+        if roa > 0: piotroski_score += 1
+
+        # 2. Operating Cash Flow > 0
+        piotroski_details['cfo_positive'] = op_cash > 0
+        if op_cash > 0: piotroski_score += 1
+
+        # 3. ROA improving (higher than previous year)
+        piotroski_details['roa_improving'] = roa > prev_roa
+        if roa > prev_roa: piotroski_score += 1
+
+        # 4. Accruals: Cash flow from operations > Net Income (quality of earnings)
+        piotroski_details['accruals_ok'] = op_cash > net_inc
+        if op_cash > net_inc: piotroski_score += 1
+
+        # --- Leverage/Liquidity (3 points) ---
+        # 5. Leverage decreasing (long-term debt / avg assets)
+        long_term_debt = get_value(balance_sheet, ['Long Term Debt', 'LongTermDebt'], latest_idx)
+        prev_long_term_debt = get_value(balance_sheet, ['Long Term Debt', 'LongTermDebt'], prev_idx)
+        leverage = long_term_debt / avg_assets if avg_assets else 0
+        prev_leverage = prev_long_term_debt / prev_total_assets if prev_total_assets else 0
+        piotroski_details['leverage_decreasing'] = leverage < prev_leverage
+        if leverage < prev_leverage: piotroski_score += 1
+
+        # 6. Current ratio improving
+        current_assets = get_value(balance_sheet, ['Current Assets', 'CurrentAssets'], latest_idx)
+        current_liabilities = get_value(balance_sheet, ['Current Liabilities', 'CurrentLiabilities'], latest_idx)
+        prev_current_assets = get_value(balance_sheet, ['Current Assets', 'CurrentAssets'], prev_idx)
+        prev_current_liabilities = get_value(balance_sheet, ['Current Liabilities', 'CurrentLiabilities'], prev_idx)
+        current_ratio = current_assets / current_liabilities if current_liabilities else 0
+        prev_current_ratio = prev_current_assets / prev_current_liabilities if prev_current_liabilities else 0
+        piotroski_details['current_ratio_improving'] = current_ratio > prev_current_ratio
+        if current_ratio > prev_current_ratio: piotroski_score += 1
+
+        # 7. No new shares issued (shares outstanding not increasing)
+        shares = get_metric(info, 'sharesOutstanding', 0)
+        prev_shares = get_value(balance_sheet, ['Share Issued', 'CommonStockSharesOutstanding', 'Ordinary Shares Number'], prev_idx)
+        no_dilution = shares <= prev_shares if (shares and prev_shares) else True
+        piotroski_details['no_dilution'] = no_dilution
+        if no_dilution: piotroski_score += 1
+
+        # --- Operating Efficiency (2 points) ---
+        # 8. Gross margin improving
+        gross_margin_improving = hist_gross_margin[latest_idx] > hist_gross_margin[prev_idx] if years_count > 1 else False
+        piotroski_details['gross_margin_improving'] = gross_margin_improving
+        if gross_margin_improving: piotroski_score += 1
+
+        # 9. Asset turnover improving (revenue / avg assets)
+        asset_turnover = current_revenue / avg_assets if avg_assets else 0
+        prev_avg_assets = prev_total_assets  # simplified for previous year
+        prev_asset_turnover = previous_revenue / prev_avg_assets if prev_avg_assets else 0
+        piotroski_details['asset_turnover_improving'] = asset_turnover > prev_asset_turnover
+        if asset_turnover > prev_asset_turnover: piotroski_score += 1
 
         # --- Construct Final Result ---
         result = {
@@ -277,10 +324,7 @@ def fetch_financial_data(ticker_symbol):
                 "piotroski_f_score": {
                     "score": piotroski_score,
                     "max": 9,
-                    "details": {
-                        "roa_positive": roa > 0,
-                        "cfo_positive": op_cash > 0
-                    }
+                    "details": piotroski_details
                 }
             },
             "financials": {

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import portfolioData from '../data/portfolio.json';
 
 interface PortfolioItem {
     symbol: string;
@@ -17,21 +16,37 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
     const [items, setItems] = useState<PortfolioItem[]>([]);
     const [newSymbol, setNewSymbol] = useState('');
     const [newShares, setNewShares] = useState('');
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
-        // Always load from the JSON file to ensure we get manual edits
-        setItems(portfolioData as PortfolioItem[]);
+        if (isOpen) {
+            // Load from localStorage (synced with backend on save)
+            const saved = localStorage.getItem('portfolio_items');
+            if (saved) {
+                setItems(JSON.parse(saved));
+            }
+        }
     }, [isOpen]);
 
-    const saveToBackend = async (updatedItems: PortfolioItem[]) => {
+    const savePortfolio = async (updatedItems: PortfolioItem[]) => {
+        setSaving(true);
         try {
-            await fetch('http://localhost:3001/api/portfolio', {
+            // Save to localStorage for frontend state
+            localStorage.setItem('portfolio_items', JSON.stringify(updatedItems));
+
+            // Persist to backend (writes portfolio.json)
+            const response = await fetch('/api/portfolio', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ items: updatedItems })
             });
+            if (!response.ok) {
+                console.error('Failed to save portfolio to backend');
+            }
         } catch (error) {
             console.error('Failed to save portfolio:', error);
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -41,7 +56,7 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
         if (sym && shares > 0 && !items.find(i => i.symbol === sym)) {
             const updated = [...items, { symbol: sym, shares }];
             setItems(updated);
-            saveToBackend(updated);
+            savePortfolio(updated);
             setNewSymbol('');
             setNewShares('');
         }
@@ -50,7 +65,7 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
     const handleRemove = (symbol: string) => {
         const updated = items.filter(i => i.symbol !== symbol);
         setItems(updated);
-        saveToBackend(updated);
+        savePortfolio(updated);
     };
 
     const handleUpdateShares = (symbol: string, shares: number) => {
@@ -58,13 +73,7 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
             i.symbol === symbol ? { ...i, shares } : i
         );
         setItems(updated);
-        saveToBackend(updated);
-    };
-
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            handleAdd();
-        }
+        savePortfolio(updated);
     };
 
     if (!isOpen) return null;
@@ -88,7 +97,7 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
                         type="text"
                         value={newSymbol}
                         onChange={(e) => setNewSymbol(e.target.value)}
-                        onKeyPress={handleKeyPress}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
                         placeholder="Ticker..."
                         className="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none"
                     />
@@ -97,7 +106,7 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
                         step="any"
                         value={newShares}
                         onChange={(e) => setNewShares(e.target.value)}
-                        onKeyPress={handleKeyPress}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
                         placeholder="Shares"
                         className="w-24 bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:border-amber-500 focus:outline-none"
                     />
@@ -111,7 +120,10 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
 
                 {/* Position list */}
                 <div className="flex-1 overflow-y-auto pr-2">
-                    <div className="text-sm text-gray-400 mb-2">{items.length} positions</div>
+                    <div className="text-sm text-gray-400 mb-2">
+                        {items.length} positions
+                        {saving && <span className="ml-2 text-amber-400">Saving...</span>}
+                    </div>
                     <div className="space-y-2">
                         {items.map((item) => (
                             <div
@@ -152,4 +164,3 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
         document.body
     );
 };
-
