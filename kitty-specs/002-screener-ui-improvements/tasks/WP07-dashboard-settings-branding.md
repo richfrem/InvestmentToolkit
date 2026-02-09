@@ -1,7 +1,7 @@
 ---
 work_package_id: WP07
 title: Dashboard, Settings & App Branding
-lane: "doing"
+lane: "for_review"
 dependencies:
 - WP05
 base_branch: main
@@ -86,3 +86,7 @@ The app is currently generic ("Spec Kitty / Investment Screener"). We need to re
 
 ## Risks
 - Bookmarking: Old URL structure might be `/?ticker=XYZ`. Ensure `DashboardHome` redirects to `/analyze?ticker=XYZ` if query param is present on root.
+
+## Activity Log
+
+- 2026-02-09T00:50:09Z – unknown – shell_pid=96124 – lane=for_review – Implementation complete: Dynamic sensitivity matrix, compact layout, branding
