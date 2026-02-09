@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import portfolioData from '../data/portfolio.json';
 
 interface PortfolioItem {
@@ -18,13 +19,8 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
     const [newShares, setNewShares] = useState('');
 
     useEffect(() => {
-        // Load from localStorage or fall back to JSON file
-        const saved = localStorage.getItem('portfolio_items');
-        if (saved) {
-            setItems(JSON.parse(saved));
-        } else {
-            setItems(portfolioData as PortfolioItem[]);
-        }
+        // Always load from the JSON file to ensure we get manual edits
+        setItems(portfolioData as PortfolioItem[]);
     }, [isOpen]);
 
     const saveToBackend = async (updatedItems: PortfolioItem[]) => {
@@ -41,11 +37,10 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
 
     const handleAdd = () => {
         const sym = newSymbol.trim().toUpperCase();
-        const shares = parseInt(newShares) || 0;
+        const shares = parseFloat(newShares) || 0;
         if (sym && shares > 0 && !items.find(i => i.symbol === sym)) {
             const updated = [...items, { symbol: sym, shares }];
             setItems(updated);
-            localStorage.setItem('portfolio_items', JSON.stringify(updated));
             saveToBackend(updated);
             setNewSymbol('');
             setNewShares('');
@@ -55,7 +50,6 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
     const handleRemove = (symbol: string) => {
         const updated = items.filter(i => i.symbol !== symbol);
         setItems(updated);
-        localStorage.setItem('portfolio_items', JSON.stringify(updated));
         saveToBackend(updated);
     };
 
@@ -64,7 +58,6 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
             i.symbol === symbol ? { ...i, shares } : i
         );
         setItems(updated);
-        localStorage.setItem('portfolio_items', JSON.stringify(updated));
         saveToBackend(updated);
     };
 
@@ -76,9 +69,9 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
 
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
-            <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
+    return createPortal(
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999]">
+            <div className="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col shadow-2xl">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-bold text-amber-400">Manage Portfolio</h2>
                     <button
@@ -101,6 +94,7 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
                     />
                     <input
                         type="number"
+                        step="any"
                         value={newShares}
                         onChange={(e) => setNewShares(e.target.value)}
                         onKeyPress={handleKeyPress}
@@ -116,7 +110,7 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
                 </div>
 
                 {/* Position list */}
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto pr-2">
                     <div className="text-sm text-gray-400 mb-2">{items.length} positions</div>
                     <div className="space-y-2">
                         {items.map((item) => (
@@ -127,8 +121,9 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
                                 <span className="text-white font-mono text-sm w-16">{item.symbol}</span>
                                 <input
                                     type="number"
+                                    step="any"
                                     value={item.shares}
-                                    onChange={(e) => handleUpdateShares(item.symbol, parseInt(e.target.value) || 0)}
+                                    onChange={(e) => handleUpdateShares(item.symbol, parseFloat(e.target.value) || 0)}
                                     className="w-20 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-white text-sm text-center"
                                 />
                                 <span className="text-gray-400 text-xs">shares</span>
@@ -153,6 +148,8 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
+
