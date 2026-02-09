@@ -217,7 +217,24 @@
 **Estimated Size**: ~600 lines, 8 subtasks
 
 ### Included Subtasks
-- [ ] T035 Rename app branding — replace "Spec Kitty" with "Market Intelligence" in Sidebar
+### Included Subtasks
+- [x] T035 Rename app branding — replace "Spec Kitty" with "Market Intelligence" in Sidebar
+- [x] T041 Add Valuation Sensitivity Heatmap (Dynamic Matrix & Sanity Checks)
+- [x] T042 Wire Sidebar links and update active state
+- [x] T043 Add "What is this?" Help Modal triggers (clickable '?') to ALL key metric tiles (PE, FCF, Rule of 40, etc.) for contextual education
+
+### Implementation Notes
+- **Branding**: Updated Sidebar and Header.
+- **Sensitivity**: Implemented dynamic matrix in ValuationModeler.
+
+---
+
+## Work Package WP08: Advanced Polish & Data Integrity (Priority: P3)
+
+**Goal**: Advanced charts, tooltips, and sector-specific modules.
+**Prompt**: `/tasks/WP08-advanced-polish.md`
+
+### Included Subtasks
 - [ ] T036 Create `DashboardHome.tsx` — landing page with recent tickers
 - [ ] T037 Implement "Smart Tooltips" — generic Piotroski breakdown on hover (showing which of the 9 criteria passed/failed)
 - [ ] T038 Add Logarithmic Scale Toggle to History Charts (Revenue/Net Income)
@@ -225,9 +242,6 @@
 - [ ] T040 Create generic "Sector Module" components:
     - `InventorySparkline` (Inventory/Sales ratio)
     - `SegmentBreakdown` (Donut chart for generic revenue segments)
-- [ ] T041 Add Valuation Sensitivity Heatmap (2D Matrix: PE vs Growth)
-- [ ] T042 Wire Sidebar links and update active state
-- [ ] T043 Add "What is this?" Help Modal triggers (clickable '?') to ALL key metric tiles (PE, FCF, Rule of 40, etc.) for contextual education
 
 ### Implementation Notes
 - **Generic Design**: Components must accept generic data props.

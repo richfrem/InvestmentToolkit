@@ -11,6 +11,8 @@ This project utilizes a **Spec-Work-Package (WP)** workflow powered by `spec-kit
 
 1.  **NEVER Merge Manually.** Spec-Kitty handles the merge.
 2.  **NEVER Delete Worktrees Manually.** Spec-Kitty handles the cleanup.
+    - **safe:** `git push origin WP-xx` (Backup feature branch)
+    - **unsafe:** `git push origin main` (Never push directly to main)
 3.  **NEVER Commit to Main directly.** Always working in a `.worktrees/WP-xx` folder.
 
 ## The Protocol
@@ -53,3 +55,4 @@ When **ALL** WPs in `tasks.md` are marked `[x]`:
 *   ❌ **Merging early:** Merging WP01 before WP02 is done. (Breaks the batch).
 *   ❌ **Deleting worktrees:** Removing `.worktrees/WP01` manually. (Breaks `spec-kitty merge`).
 *   ❌ **Drifting:** Editing files in `./` (Root) instead of `.worktrees/`. (Pollutes main).
+*   ❌ **Relative Paths:** Agents using relative paths often get lost. **ALWAYS use Absolute Paths** for `view_file` and edits.
