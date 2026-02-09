@@ -19,46 +19,128 @@ interface FinancialChartProps {
 }
 
 export default function FinancialChart({ stockData, mode }: FinancialChartProps) {
-    // Helper to generate simple year labels (assuming last 5 years)
-    // In a production app, we would pass exact dates from backend.
+    const { financials, analyst_revenue_forecast, analyst_earnings_forecast } = stockData;
     const currentYear = new Date().getFullYear();
-    const generateYears = (count: number) =>
-        Array.from({ length: count }, (_, i) => (currentYear - count + i + 1).toString());
 
-    const years = generateYears(5);
-    const financials = stockData.financials;
+    // 1. Prepare Historical Data
+    // We assume the backend returns 5 years ending in LAST FULL YEAR (usually currentYear - 1 or currentYear)
+    const histCount = financials.historical_revenue?.length || 0;
+    const historyStartYear = currentYear - histCount;
 
-    // 1. Prepare Data for Recharts
-    // Backend now returns [Oldest, ..., Newest]
-    const data = years.map((year, i) => {
-        // Safety check for array bounds
-        const safeGet = (arr: number[] | undefined, index: number) =>
-            arr && arr.length > index ? arr[index] : 0;
+    const safeGet = (arr: number[] | undefined, index: number) =>
+        arr && arr.length > index ? arr[index] : 0;
+
+    const historicalData = Array.from({ length: histCount }, (_, i) => {
+        const year = (historyStartYear + i).toString();
+
+        const rev = safeGet(financials.historical_revenue, i);
+        const ni = safeGet(financials.historical_net_income, i);
+        const eps = safeGet(financials.historical_eps, i);
+
+        const isLast = i === histCount - 1;
 
         return {
             year,
-            revenue: safeGet(financials.historical_revenue, i),
-            netIncome: safeGet(financials.historical_net_income, i),
+            type: 'history',
+            revenue: rev,
+            netIncome: ni,
             fcf: safeGet(financials.historical_fcf, i),
-            eps: safeGet(financials.historical_eps, i),
+            eps: eps,
             grossMargin: safeGet(financials.historical_gross_margin, i),
             operatingMargin: safeGet(financials.historical_operating_margin, i),
             netMargin: safeGet(financials.historical_net_margin, i),
+
+            // Forecast Anchors (Start from last history point)
+            revForecastRange: isLast ? [rev, rev] : null,
+            revForecastAvg: isLast ? rev : null,
+
+            epsForecastRange: isLast ? [eps, eps] : null,
+            epsForecastAvg: isLast ? eps : null,
+
+            netIncomeForecastAvg: isLast ? ni : null,
         };
     });
 
-    // 2. Formatters
-    const formatCurrency = (val: number | undefined) => { // Fixed type
-        if (val === undefined) return '';
+    // 2. Prepare Forecast Data
+    // We look for forecasts strictly AFTER the last historical year to avoid overlaps/drops
+    const lastHistYear = parseInt(historicalData[historicalData.length - 1]?.year || (currentYear - 1).toString());
+
+    const forecastMap = new Map<number, any>();
+
+    if (analyst_revenue_forecast) {
+        analyst_revenue_forecast.forEach((f) => {
+            if (f.year > lastHistYear) {
+                if (!forecastMap.has(f.year)) forecastMap.set(f.year, { year: f.year.toString(), type: 'forecast' });
+                const entry = forecastMap.get(f.year);
+                entry.revForecastAvg = f.avg;
+                // Recharts Area range: [min, max]
+                entry.revForecastRange = [f.low, f.high];
+            }
+        });
+    }
+
+    if (analyst_earnings_forecast) {
+        analyst_earnings_forecast.forEach((f) => {
+            if (f.year > lastHistYear) {
+                if (!forecastMap.has(f.year)) forecastMap.set(f.year, { year: f.year.toString(), type: 'forecast' });
+                const entry = forecastMap.get(f.year);
+
+                entry.epsForecastAvg = f.avg;
+                entry.epsForecastRange = [f.low, f.high];
+
+                // Net Income approx (using shares from metrics)
+                const shares = stockData.metrics.shares_outstanding || 0;
+                if (shares > 0) {
+                    entry.netIncomeForecastAvg = f.avg * shares;
+                }
+            }
+        });
+    }
+
+    const forecastData = Array.from(forecastMap.values()).sort((a, b) => parseInt(a.year) - parseInt(b.year));
+
+    // Combine
+    const data = [...historicalData, ...forecastData];
+
+    // 3. Formatters
+    const formatCurrency = (val: number | undefined) => {
+        if (val === undefined || val === null) return '';
+        if (typeof val !== 'number') return '';
         if (Math.abs(val) >= 1e9) return `$${(val / 1e9).toFixed(1)}B`;
         if (Math.abs(val) >= 1e6) return `$${(val / 1e6).toFixed(1)}M`;
         return `$${val.toFixed(0)}`;
     };
 
-    const formatPercentage = (val: number | undefined) => val !== undefined ? `${val.toFixed(1)}%` : '';
-    const formatNumber = (val: number | undefined) => val !== undefined ? val.toFixed(2) : '';
+    const formatPercentage = (val: number | undefined) => {
+        if (typeof val !== 'number') return '';
+        return `${val.toFixed(1)}%`;
+    };
 
-    // 3. Render Variants
+    const formatNumber = (val: number | undefined) => {
+        if (typeof val !== 'number') return '';
+        return val.toFixed(2);
+    };
+
+    // Tooltip custom label
+    const tooltipFormatter = (value: any, name: any) => {
+        if (Array.isArray(value)) {
+            // Range
+            return [`${formatCurrency(value[0])} - ${formatCurrency(value[1])}`, name];
+        }
+        if (String(name).includes("Forecast") || String(name).includes("Range")) {
+            return [formatCurrency(value), name.replace("revForecast", "Rev ").replace("netIncomeForecast", "NI ").replace("Range", " Range")];
+        }
+        return [formatCurrency(value), name];
+    };
+
+    const epsTooltipFormatter = (value: any, name: any) => {
+        if (Array.isArray(value)) {
+            return [`${formatNumber(value[0])} - ${formatNumber(value[1])}`, name];
+        }
+        return [formatNumber(value), name];
+    };
+
+    // 4. Render
     if (mode === 'revenue') {
         return (
             <ResponsiveContainer width="100%" height="100%">
@@ -68,11 +150,22 @@ export default function FinancialChart({ stockData, mode }: FinancialChartProps)
                     <YAxis yAxisId="left" stroke="#94a3b8" tickFormatter={formatCurrency} tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                     <Tooltip
                         contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                        formatter={(value: any) => formatCurrency(value)}
+                        formatter={tooltipFormatter}
                     />
                     <Legend wrapperStyle={{ paddingTop: '10px' }} />
-                    <Bar yAxisId="left" dataKey="revenue" name="Total Revenue" fill="#0ea5e9" radius={[4, 4, 0, 0]} maxBarSize={50} />
-                    <Line yAxisId="left" type="monotone" dataKey="netIncome" name="Net Income" stroke="#10b981" strokeWidth={3} dot={{ r: 4, fill: '#10b981' }} />
+
+                    {/* History */}
+                    <Line yAxisId="left" type="monotone" dataKey="revenue" name="Revenue (Top Line)" stroke="#0ea5e9" strokeWidth={4} dot={{ r: 4, fill: '#0ea5e9' }} activeDot={{ r: 8 }} />
+                    <Line yAxisId="left" type="monotone" dataKey="netIncome" name="Net Income (Bottom Line)" stroke="#10b981" strokeWidth={4} dot={{ r: 4, fill: '#10b981' }} activeDot={{ r: 8 }} />
+
+                    {/* Forecast Revenue Range (Cone) */}
+                    <Area yAxisId="left" type="monotone" dataKey="revForecastRange" name="Rev Range" stroke="none" fill="#38bdf8" fillOpacity={0.15} connectNulls />
+
+                    {/* Forecast Revenue Avg */}
+                    <Line yAxisId="left" type="monotone" dataKey="revForecastAvg" name="Rev Forecast" stroke="#38bdf8" strokeDasharray="5 5" strokeWidth={2} dot={{ r: 3 }} connectNulls />
+
+                    {/* Forecast Net Income (Simple Line) */}
+                    <Line yAxisId="left" type="monotone" dataKey="netIncomeForecastAvg" name="NI Forecast" stroke="#34d399" strokeDasharray="5 5" strokeWidth={2} dot={{ r: 3 }} connectNulls />
                 </ComposedChart>
             </ResponsiveContainer>
         );
@@ -87,7 +180,7 @@ export default function FinancialChart({ stockData, mode }: FinancialChartProps)
                     <YAxis stroke="#94a3b8" tickFormatter={formatPercentage} domain={['auto', 'auto']} tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                     <Tooltip
                         contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                        formatter={(value: any) => formatPercentage(value)}
+                        formatter={(val: any) => formatPercentage(val)}
                     />
                     <Legend wrapperStyle={{ paddingTop: '10px' }} />
                     <Line type="monotone" dataKey="grossMargin" name="Gross Margin" stroke="#a855f7" strokeWidth={3} dot={{ r: 4 }} />
@@ -107,7 +200,7 @@ export default function FinancialChart({ stockData, mode }: FinancialChartProps)
                     <YAxis stroke="#94a3b8" tickFormatter={formatCurrency} tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                     <Tooltip
                         contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                        formatter={(value: any) => formatCurrency(value)}
+                        formatter={(val: any) => formatCurrency(val)}
                     />
                     <Legend wrapperStyle={{ paddingTop: '10px' }} />
                     <Bar dataKey="fcf" name="Free Cash Flow" fill="#14b8a6" radius={[4, 4, 0, 0]} maxBarSize={50} />
@@ -131,10 +224,16 @@ export default function FinancialChart({ stockData, mode }: FinancialChartProps)
                     <YAxis stroke="#94a3b8" tickFormatter={formatNumber} tick={{ fontSize: 12 }} tickLine={false} axisLine={false} />
                     <Tooltip
                         contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                        formatter={(value: any) => formatNumber(value)}
+                        formatter={epsTooltipFormatter}
                     />
                     <Legend wrapperStyle={{ paddingTop: '10px' }} />
                     <Area type="monotone" dataKey="eps" name="EPS ($)" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorEps)" strokeWidth={3} />
+
+                    {/* EPS Forecast Range */}
+                    <Area type="monotone" dataKey="epsForecastRange" name="EPS Range" stroke="none" fill="#a78bfa" fillOpacity={0.15} connectNulls />
+
+                    {/* EPS Forecast Avg */}
+                    <Line type="monotone" dataKey="epsForecastAvg" name="EPS Forecast" stroke="#a78bfa" strokeDasharray="5 5" strokeWidth={2} dot={{ r: 3 }} connectNulls />
                 </ComposedChart>
             </ResponsiveContainer>
         );
