@@ -6,6 +6,7 @@ manage_servers.py
 Purpose:
     Provides centralized management for the InvestmentToolkit development servers.
     Handles starting, stopping, and restarting the Node.js backend and Vite frontend.
+    Also provides a CLI interface for Questrade token seeding and status checks.
 
 Layer: Tools / Infrastructure
 
@@ -13,16 +14,20 @@ Usage Examples:
     python tools/manage_servers.py start all
     python tools/manage_servers.py stop backend
     python tools/manage_servers.py restart frontend --path .worktrees/WP05
+    python tools/manage_servers.py seed --token <REFRESH_TOKEN>
+    python tools/manage_servers.py status
 
 CLI Arguments:
-    action        : Command to execute (start, stop, restart)
-    target        : Server to target (all, backend, frontend)
+    action        : Command to execute (start, stop, restart, seed, status)
+    target        : Server to target (all, backend, frontend) - Optional for start/stop/restart
     --path        : Optional worktree path (default: current directory)
+    --token       : Questrade refresh token (required for 'seed')
 
 Key Functions:
     - start_servers()  : Backgrounds dev servers and directs output to logs.
     - stop_servers()   : Safely terminates processes running on toolkit ports.
-    - find_pids()      : Resolves process IDs for specific ports.
+    - seed_token()     : Seeds a Questrade refresh token via the backend API.
+    - check_status()   : Verifies server health and portfolio sync status.
 
 Related:
     - cli.py
@@ -35,6 +40,7 @@ import subprocess
 import time
 import signal
 import argparse
+import json
 from pathlib import Path
 from typing import List, Optional
 
@@ -54,7 +60,6 @@ def find_pids(port: int) -> List[int]:
 
     Returns:
         List of integer PIDs.
-    }
     """
     try:
         # Using lsof -ti for silent, ID-only output
@@ -88,7 +93,7 @@ def stop_servers(target: str = 'all') -> None:
             for pid in pids:
                 try:
                     os.kill(pid, signal.SIGKILL)
-                except ProcessLookupError:
+                except (ProcessLookupError, PermissionError):
                     pass
         else:
             print(f"   No {t} server detected on port {port}")
@@ -143,13 +148,67 @@ def start_servers(target: str = 'all', worktree_path: str = '.') -> None:
             )
         print(f"   ✅ {t} active. Logs: {log_path.name}")
 
+    if target in ['all', 'frontend']:
+        print(f"\n✨ Toolkit Ready! Access UI at: http://localhost:5173")
+        print(f"👉 To link Questrade: Open UI -> Sidebar -> 'Link Account'")
+        print(f"💡 Or run: python tools/manage_servers.py seed --token <YOUR_TOKEN>")
+
+
+def seed_token(token: str) -> None:
+    """
+    Seeds a Questrade refresh token via the backend API using curl for zero-dependency reliability.
+    """
+    print(f"🔑 Seeding Questrade token...")
+    try:
+        url = f"http://localhost:{PORTS['backend']}/api/questrade/seed"
+        data = json.dumps({"refreshToken": token})
+        
+        # Using curl to ensure it works without extra Python libraries needing installation
+        cmd = ["curl", "-s", "-X", "POST", "-H", "Content-Type: application/json", "-d", data, url]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            resp = json.loads(result.stdout) if result.stdout else {}
+            if resp.get('success'):
+                print("   ✅ Token seeded successfully!")
+            else:
+                print(f"   ❌ Seed failed: {resp.get('error', 'Unknown error')}")
+        else:
+            print(f"   ❌ Network error (curl exit {result.returncode})")
+    except Exception as e:
+        print(f"   ❌ Error: {str(e)}")
+
+
+def check_status() -> None:
+    """Checks the health and sync status of the toolkit."""
+    print("🔍 Toolkit Health Check:")
+    for name, port in PORTS.items():
+        pids = find_pids(port)
+        status = f"✅ Running (PIDs: {pids})" if pids else "❌ Offline"
+        print(f"   - {name:8}: {status}")
+    
+    # Try to get info from backend if online
+    if find_pids(PORTS['backend']):
+        try:
+            url = f"http://localhost:{PORTS['backend']}/api/portfolio/status"
+            result = subprocess.run(["curl", "-s", url], capture_output=True, text=True)
+            res = json.loads(result.stdout) if result.stdout else {}
+            sync_time = res.get('lastSync') or "Never"
+            print(f"   - Questrade: {'🔗 Linked' if res.get('lastSync') else '⚠️  Not Linked'}")
+            print(f"   - Last Sync: {sync_time}")
+        except:
+            print("   - Questrade: ❓ Unknown (API error)")
+    else:
+        print("   - Questrade: ❓ Unknown (Backend offline)")
+
 
 def main():
     """CLI Entry point with structured argument parsing."""
     parser = argparse.ArgumentParser(description="Toolkit Server Manager")
-    parser.add_argument("action", choices=["start", "stop", "restart"], default="start", help="Operation to perform")
-    parser.add_argument("target", choices=["all", "backend", "frontend"], default="all", help="Target component")
+    parser.add_argument("action", choices=["start", "stop", "restart", "seed", "status"], default="start", help="Operation to perform")
+    parser.add_argument("target", nargs="?", choices=["all", "backend", "frontend"], default="all", help="Target component (for start/stop/restart)")
     parser.add_argument("--path", default=".", help="Root path of the project/worktree")
+    parser.add_argument("--token", help="Questrade refresh token (for 'seed' action)")
     
     args = parser.parse_args()
 
@@ -161,6 +220,18 @@ def main():
         start_servers(args.target, args.path)
     elif args.action == "start":
         start_servers(args.target, args.path)
+    elif args.action == "seed":
+        if not args.token:
+            print("❌ Error: --token <TOKEN> is required for 'seed' action.")
+            sys.exit(1)
+        # Ensure backend is running before seeding
+        if not find_pids(PORTS['backend']):
+            print("⚠️  Backend not running. Attempting to start...")
+            start_servers('backend', args.path)
+            time.sleep(2) # Wait for bootstrap
+        seed_token(args.token)
+    elif args.action == "status":
+        check_status()
 
 
 if __name__ == "__main__":
