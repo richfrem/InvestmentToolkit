@@ -29,8 +29,8 @@ The implementation is broken into 4 work packages focusing on security, data ret
 **Independent Test**: Script fetches positions from multiple accounts and produces a correctly aggregated `portfolio.json` structure.
 
 ### Included Subtasks
-- [ ] **T003**: Implement Questrade API client for account discovery and position fetching.
-- [ ] **T004**: Implement position aggregation and currency normalization logic.
+- [x] T003: Implement Questrade API client for account discovery and position fetching.
+- [x] T004: Implement position aggregation and currency normalization logic.
 
 ### Implementation Sketch
 1. Build the API client using `requests`.
@@ -45,8 +45,8 @@ The implementation is broken into 4 work packages focusing on security, data ret
 **Independent Test**: API endpoint returns successfully after triggering the Python child process.
 
 ### Included Subtasks
-- [ ] **T005**: Create `QuestradeSyncService.ts` to spawn the Python child process.
-- [ ] **T006**: Expose API endpoint for manual sync trigger.
+- [ ] T005: Create `QuestradeSyncService.ts` to spawn the Python child process.
+- [ ] T006: Expose API endpoint for manual sync trigger.
 
 ### Implementation Sketch
 1. Use `child_process.spawn` to call the Python script.
@@ -60,9 +60,9 @@ The implementation is broken into 4 work packages focusing on security, data ret
 **Independent Test**: User can enter a token in the modal and trigger a sync from the dashboard.
 
 ### Included Subtasks
-- [ ] **T007**: Implement `QuestradeSetupModal.tsx` for initial token seeding.
-- [ ] **T008**: Add "Sync Now" button and status indicators to the Portfolio dashboard.
-- [ ] **T009**: Connect UI to the sync API endpoint.
+- [ ] T007: Implement `QuestradeSetupModal.tsx` for initial token seeding.
+- [ ] T008: Add "Sync Now" button and status indicators to the Portfolio dashboard.
+- [ ] T009: Connect UI to the sync API endpoint.
 
 ### Implementation Sketch
 1. Build the guided setup modal with step-by-step instructions.
