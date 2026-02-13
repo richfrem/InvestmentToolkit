@@ -108,3 +108,35 @@ export const fetchStockData = async (ticker: string): Promise<StockData> => {
         throw error;
     }
 };
+
+export const syncQuestrade = async (): Promise<{ success: boolean; message: string }> => {
+    const response = await fetch('/api/portfolio/sync-questrade', {
+        method: 'POST',
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.details || data.error || 'Sync failed');
+    }
+    return data;
+};
+
+export const seedQuestradeToken = async (refreshToken: string): Promise<{ success: boolean; message: string }> => {
+    const response = await fetch('/api/questrade/seed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || 'Seeding failed');
+    }
+    return data;
+};
+
+export const fetchSyncStatus = async (): Promise<{ lastSync: string | null }> => {
+    const response = await fetch('/api/portfolio/status');
+    if (!response.ok) {
+        throw new Error('Failed to fetch sync status');
+    }
+    return await response.json();
+};
