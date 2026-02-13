@@ -28,9 +28,9 @@ sequenceDiagram
     
     rect rgb(200, 230, 255)
     Note right of PS: Phase 3: Atomic Storage (ADR 015)
-    PS->>CF: Write to .questrade_cache.tmp
+    PS->>CF: Write encrypted refresh token to .questrade_cache.tmp
     PS->>CF: os.replace(.tmp, .cache)
-    Note right of CF: Validated write complete
+    Note right of CF: Validated write complete (Persistence)
     end
     
     Note over CF: Only binary noise visible locally

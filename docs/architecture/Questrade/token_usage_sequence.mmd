@@ -1,0 +1,28 @@
+sequenceDiagram
+    autonumber
+    participant TM as Python Script (TokenManager)
+    participant CF as .questrade_cache
+    participant KC as macOS Keychain
+    participant Q as Questrade API
+
+    Note over TM, CF: Start Data Fetch Cycle
+    
+    TM->>CF: Read encrypted binary data
+    alt File Missing/Corrupt
+        CF-->>TM: Error/None
+        Note right of TM: Trigger UI Fallback (Relogin)
+    else Data Loaded
+        CF-->>TM: Ciphertext + Nonce
+    end
+
+    TM->>KC: keyring.get_password("InvestmentToolkit", "QuestradeMasterKey")
+    KC-->>TM: Return Master Key
+    
+    Note over TM: AES-256-GCM Decryption (Verified)
+    TM->>TM: Decrypt JSON Payload
+    
+    rect rgb(230, 255, 230)
+    Note right of TM: Success: Valid Token Available
+    TM->>Q: Authorize Request with access_token
+    Q-->>TM: Portfolio Metadata / Holdings
+    end

@@ -1,10 +1,12 @@
+```
 ---
 work_package_id: WP04
 title: UI Onboarding & Sync Trigger
-lane: "doing"
+lane: "done"
 dependencies: []
 subtasks: [T007, T008, T009]
 agent: "Antigravity"
+assignee: "Antigravity"
 shell_pid: "77854"
 ---
 

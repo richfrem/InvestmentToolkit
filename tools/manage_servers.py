@@ -82,6 +82,7 @@ def stop_servers(target: str = 'all') -> None:
     
     targets = ['backend', 'frontend'] if target == 'all' else [target]
     
+    # 1. Port-based termination (Direct)
     for t in targets:
         port = PORTS.get(t)
         if not port:
@@ -97,6 +98,24 @@ def stop_servers(target: str = 'all') -> None:
                     pass
         else:
             print(f"   No {t} server detected on port {port}")
+
+    # 2. Path-based "Ghost Hunting" (Robust)
+    # Check for any lingering node processes running from this workspace's toolkit folders
+    try:
+        # We look for processes containing 'investment-screener' in their path
+        search_cmd = "ps aux | grep 'investment-screener' | grep -E 'node|vite|ts-node-dev' | grep -v grep | awk '{print $2}'"
+        ghost_pids = subprocess.check_output(search_cmd, shell=True).decode().strip().split('\n')
+        ghost_pids = [int(p) for p in ghost_pids if p]
+        
+        if ghost_pids:
+            print(f"   👻 Found {len(ghost_pids)} ghost processes haunting the toolkit. Exorcising...")
+            for pid in ghost_pids:
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                except (ProcessLookupError, PermissionError):
+                    pass
+    except subprocess.CalledProcessError:
+        pass # No ghosts found
 
 
 def start_servers(target: str = 'all', worktree_path: str = '.') -> None:
