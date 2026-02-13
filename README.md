@@ -11,25 +11,17 @@ A web-based financial analysis dashboard featuring:
 -   **Valuation Modeler**: Interactive Bear/Base/Bull scenario modeling to project 5-year price targets.
 -   **Comparative Analysis**: Side-by-side ticker comparison.
 
-### Stock Analysis & Metrics
-![Analysis Metrics](tools/investment-screener/assets/images/analysis_metrics.png)
-*(15+ Premium metrics including Rule of 40, Piotroski F-Score, and Analyst Targets)*
-
-### Historical Performance
-![Performance Charts](tools/investment-screener/assets/images/analysis_charts.png)
-
-### Valuation Modeler
-![Valuation Modeler](tools/investment-screener/assets/images/valuation_modeler.png)
-*(Interactive DCF modeling with sensitivity matrices)*
-
-### Market Heatmap
-![Market Heatmap](tools/investment-screener/assets/images/heatmap.png)
-*(Real-time sector performance visualization)*
+### 2. Questrade Portfolio Integration
+A professional-grade brokerage sync engine featuring:
+-   **Dynamic Sync**: Real-time retrieval of account positions and balances.
+-   **Secure Token Bridge**: AES-256-GCM encryption with hardware-backed master keys (macOS Keychain).
+-   **Metadata Enrichment**: Intelligent fallback to `yfinance` for sector/industry categorization of broker holdings.
+-   **Onboarding Flow**: Guided UI for secure account linking and rotation management.
 
 ## 🛠️ Tech Stack
 -   **Frontend**: React 19, Vite, Tailwind CSS.
 -   **Backend**: Node.js (Express), Python 3.11 (Bridge to `yfinance`).
--   **Data**: `yfinance` (Primary), Questrade API (Optional Real-time).
+-   **Data**: `yfinance` & Questrade API (Dynamic Aggregation).
 
 ## 🚀 Getting Started
 
