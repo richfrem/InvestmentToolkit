@@ -238,6 +238,30 @@ def fetch_financial_data(ticker_symbol: str) -> None:
         res_rev_f, res_earn_f = fetch_forecasts(stock, current_year)
         perf = fetch_performance_metrics(stock, current_year)
 
+        # 2b. Analyst & Growth Estimates (ADR 018)
+        analyst_est = {
+            "target_high_price": info.get('targetHighPrice', 0),
+            "target_low_price": info.get('targetLowPrice', 0),
+            "target_mean_price": info.get('targetMeanPrice', 0),
+            "target_median_price": info.get('targetMedianPrice', 0),
+            "recommendation": info.get('recommendationKey', 'N/A'),
+            "number_of_analysts": info.get('numberOfAnalystOpinions', 0)
+        }
+
+        # Try to extract growth estimates from earnings_trend
+        growth_est = {"stockTrend": {"+1y": 0}}
+        try:
+            trend = stock.earnings_trend
+            if trend is not None and not trend.empty and '+1y' in trend.index:
+                growth = trend.loc['+1y'].get('growth', 0)
+                growth_est["stockTrend"]["+1y"] = float(growth * 100) if growth else 0
+        except Exception:
+            pass
+
+        # Fallback for growth estimates (ADR 018)
+        if growth_est["stockTrend"]["+1y"] == 0:
+            growth_est["stockTrend"]["+1y"] = info.get('earningsGrowth', 0) * 100
+
         # 3. Financial Statements
         financials = stock.financials.reindex(sorted(stock.financials.columns), axis=1)
         balance_sheet = stock.balance_sheet.reindex(sorted(stock.balance_sheet.columns), axis=1)
@@ -251,12 +275,35 @@ def fetch_financial_data(ticker_symbol: str) -> None:
         # Indices for newest vs previous available year
         idx = {'latest': years_count - 1, 'prev': max(0, years_count - 2)}
 
-        # 4. Expert Calculations
+        # 4. Historical Trends (ADR 018)
+        def get_series(df, keys):
+            if df.empty: return []
+            if isinstance(keys, str): keys = [keys]
+            for k in keys:
+                if k in df.index:
+                    return [float(v) if not pd.isna(v) else 0 for v in df.loc[k]]
+            return []
+
+        hist_rev = get_series(financials, ['Total Revenue', 'Revenue'])
+        hist_ni = get_series(financials, ['Net Income', 'NetIncome'])
+        hist_fcf = get_series(cashflow, ['Free Cash Flow', 'FreeCashFlow'])
+        hist_eps = get_series(financials, ['Basic EPS', 'BasicEPS'])
+
+        # Calculate Margins
+        hist_gp = get_series(financials, 'Gross Profit')
+        hist_ebitda = get_series(financials, 'EBITDA')
+        hist_op_inc = get_series(financials, ['Operating Income', 'OperatingIncome'])
+
+        hist_gm = [gp/rev if rev and rev != 0 else 0 for gp, rev in zip(hist_gp, hist_rev)]
+        hist_om = [op/rev if rev and rev != 0 else 0 for op, rev in zip(hist_op_inc, hist_rev)]
+        hist_nm = [ni/rev if rev and rev != 0 else 0 for ni, rev in zip(hist_ni, hist_rev)]
+
+        # 5. Expert Calculations
         piotroski = calculate_piotroski_score(financials, balance_sheet, cashflow, info, idx)
         
         # Rule of 40
-        latest_rev = financials.loc['Total Revenue'].iloc[idx['latest']] if 'Total Revenue' in financials.index else 0
-        ebitda = financials.loc['EBITDA'].iloc[idx['latest']] if 'EBITDA' in financials.index else 0
+        latest_rev = hist_rev[-1] if hist_rev else 0
+        ebitda = hist_ebitda[-1] if hist_ebitda else 0
         ebitda_margin = (ebitda / latest_rev) if latest_rev != 0 else 0
         rule_of_40 = round((rev_growth * 100) + (ebitda_margin * 100), 2)
 
@@ -274,14 +321,34 @@ def fetch_financial_data(ticker_symbol: str) -> None:
                 "pe_ratio": info.get('trailingPE', 0),
                 "forward_pe": forward_pe,
                 "market_cap": info.get('marketCap', 0),
+                "shares_outstanding": info.get('sharesOutstanding', 0),
+                "beta": info.get('beta', 0),
+                "revenue": info.get('totalRevenue', hist_rev[-1] if hist_rev else 0),
+                "peg_ratio": info.get('pegRatio'),
                 "revenue_growth": round(rev_growth * 100, 2),
                 "profit_margin": round(profit_margin * 100, 2)
             },
             "performance": perf,
             "expert_metrics": {
-                "rule_of_40": {"score": rule_of_40, "is_saas": info.get('sector') == 'Technology'},
+                "rule_of_40": {
+                    "score": rule_of_40, 
+                    "revenue_growth": round(rev_growth * 100, 2),
+                    "ebitda_margin": round(ebitda_margin * 100, 2),
+                    "is_saas": info.get('sector') == 'Technology'
+                },
                 "piotroski_f_score": piotroski
             },
+            "financials": {
+                "historical_revenue": hist_rev,
+                "historical_net_income": hist_ni,
+                "historical_fcf": hist_fcf,
+                "historical_gross_margin": hist_gm,
+                "historical_operating_margin": hist_om,
+                "historical_net_margin": hist_nm,
+                "historical_eps": hist_eps
+            },
+            "analyst_estimates": analyst_est,
+            "growth_estimates": growth_est,
             "analyst_revenue_forecast": res_rev_f,
             "analyst_earnings_forecast": res_earn_f
         }

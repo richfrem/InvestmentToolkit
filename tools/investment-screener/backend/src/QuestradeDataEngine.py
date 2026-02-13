@@ -29,6 +29,7 @@ sys.path.append(SCRIPT_DIR)
 from utils.QuestradeTokenManager import QuestradeTokenManager
 from utils.QuestradeAPIClient import QuestradeAPIClient
 from utils.PortfolioAggregator import PortfolioAggregator
+from utils.MetadataEnricher import MetadataEnricher
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -50,6 +51,7 @@ class QuestradeSyncEngine:
         self.token_manager = QuestradeTokenManager(cache_dir=cache_dir)
         self.api_client = QuestradeAPIClient(self.token_manager)
         self.aggregator = PortfolioAggregator(output_path=output_file)
+        self.enricher = MetadataEnricher()
 
     def run_sync(self) -> bool:
         """
@@ -73,7 +75,10 @@ class QuestradeSyncEngine:
             aggregated_holdings = self.aggregator.aggregate_positions(all_positions)
             logger.info(f"Aggregated into {len(aggregated_holdings)} unique tickers.")
             
-            # 3. Save
+            # 3. Enrich (ADR 018)
+            self.enricher.enrich_holdings(aggregated_holdings)
+            
+            # 4. Save
             self.aggregator.save_portfolio(aggregated_holdings)
             logger.info(f"Successfully updated portfolio: {self.aggregator.output_path}")
             
