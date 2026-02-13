@@ -1,9 +1,11 @@
 ---
 work_package_id: WP02
 title: Questrade Data Engine
-lane: planned
+lane: "doing"
 dependencies: []
 subtasks: [T003, T004]
+agent: "Antigravity"
+shell_pid: "34920"
 ---
 
 # WP02: Questrade Data Engine
@@ -35,3 +37,7 @@ Following the **Architecture Report**, the system must discover all sub-accounts
 - [ ] Data engine can fetch positions across multiple accounts.
 - [ ] Holdings are correctly aggregated by ticker.
 - [ ] `portfolio.json` is successfully updated with Questrade-sourced data.
+
+## Activity Log
+
+- 2026-02-13T18:45:14Z – Antigravity – shell_pid=34920 – lane=doing – Started implementation via workflow command
