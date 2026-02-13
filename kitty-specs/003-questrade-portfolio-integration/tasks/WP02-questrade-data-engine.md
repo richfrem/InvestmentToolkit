@@ -1,11 +1,13 @@
 ---
 work_package_id: WP02
 title: Questrade Data Engine
-lane: "for_review"
+lane: "done"
 dependencies: []
 subtasks: [T003, T004]
 agent: "Antigravity"
 shell_pid: "34920"
+reviewed_by: "richfrem"
+review_status: "approved"
 ---
 
 # WP02: Questrade Data Engine
@@ -42,3 +44,4 @@ Following the **Architecture Report**, the system must discover all sub-accounts
 
 - 2026-02-13T18:45:14Z – Antigravity – shell_pid=34920 – lane=doing – Started implementation via workflow command
 - 2026-02-13T18:50:24Z – Antigravity – shell_pid=34920 – lane=for_review – Core data engine and aggregation logic complete and verified with mock tests.
+- 2026-02-13T18:53:23Z – Antigravity – shell_pid=34920 – lane=done – Merged to main.
