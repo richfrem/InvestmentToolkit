@@ -7,6 +7,10 @@ pyyaml
 simple_term_menu
 pydantic
 
+# Questrade Integration Security (WP01)
+keyring
+cryptography>=46.0.3
+
 # Fix for langchain-core conflict
 packaging<26.0
 
