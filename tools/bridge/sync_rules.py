@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 """
 Sync Rules Bridge
@@ -38,17 +39,18 @@ def read_rule(rule_filename):
     if not rule_path.exists():
         print(f"Error: Rule file {rule_filename} not found in {RULES_DIR}")
         sys.exit(1)
-    return rule_path.read_text()
+    return rule_path.read_text(encoding="utf-8")
 
 def get_all_rules_content():
-    """Reads all markdown files in the rules directory."""
+    """Reads all markdown files in the rules directory (including subdirectories)."""
     content = []
     if not RULES_DIR.exists():
         return ""
-        
-    for rule_file in sorted(RULES_DIR.glob("*.md")):
-        content.append(f"\n\n--- RULE: {rule_file.name} ---\n\n")
-        content.append(rule_file.read_text())
+
+    for rule_file in sorted(RULES_DIR.rglob("*.md")):
+        rel_path = rule_file.relative_to(RULES_DIR)
+        content.append(f"\n\n--- RULE: {rel_path} ---\n\n")
+        content.append(rule_file.read_text(encoding="utf-8"))
     return "".join(content)
 
 def update_file(target_name, target_path, new_content):
@@ -57,7 +59,7 @@ def update_file(target_name, target_path, new_content):
         print(f"[{target_name}] File not found: {target_path}, skipping.")
         return
 
-    original_content = target_path.read_text()
+    original_content = target_path.read_text(encoding="utf-8")
     
     # Construct the block
     injection_block = f"{MARKER_START}\n# SHARED RULES FROM .agent/rules/\n{new_content}\n{MARKER_END}"
@@ -73,7 +75,7 @@ def update_file(target_name, target_path, new_content):
         updated_content = original_content + "\n\n" + injection_block
         print(f"[{target_name}] Appending new rules block.")
 
-    target_path.write_text(updated_content)
+    target_path.write_text(updated_content, encoding="utf-8")
 
 def main():
     parser = argparse.ArgumentParser(description="Sync agent rules to monolithic files.")
