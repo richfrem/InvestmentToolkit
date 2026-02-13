@@ -96,6 +96,7 @@ backend/src/data/positions.ts
 .kittify/.dashboard
 
 # folders to ignore
+temp/
 kittywindsurf/
 kittyclaude/
 kittycopilot/

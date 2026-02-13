@@ -56,18 +56,3 @@ When **ALL** WPs in `tasks.md` are marked `[x]`:
 *   ❌ **Deleting worktrees:** Removing `.worktrees/WP01` manually. (Breaks `spec-kitty merge`).
 *   ❌ **Drifting:** Editing files in `./` (Root) instead of `.worktrees/`. (Pollutes main).
 *   ❌ **Relative Paths:** Agents using relative paths often get lost. **ALWAYS use Absolute Paths** for `view_file` and edits.
-*   ❌ **Pushing to main:** `git push origin main` will fail with branch protection. Push feature branches only.
-*   ❌ **Forgetting cd:** After `spec-kitty implement`, you MUST `cd .worktrees/<WP>/` before any file operations.
-*   ❌ **Wrong branch commits:** Committing doc updates while in main repo instead of worktree.
-
-## Naming Convention Reference
-
-| Item | Pattern | Example |
-|------|---------|---------|
-| Worktree Dir | `.worktrees/<feature-num>-<slug>-<WP>` | `.worktrees/002-screener-ui-WP07` |
-| Branch Name | `<feature-num>-<slug>-<WP>` | `002-screener-ui-WP07` |
-| Remote Push | `git push origin <branch>` | `git push origin 002-screener-ui-WP07` |
-
-## Additional Resources
-
-- [Agent Worktree Reference](../docs/kittify/agent-worktree-reference.md) - Quick reference for common worktree operations
