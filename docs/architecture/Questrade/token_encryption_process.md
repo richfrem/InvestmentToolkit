@@ -9,7 +9,7 @@ The security lifecycle begins with a manual "Seed" provided by the user. This en
 1. **User Action**: The user generates a "Manual Refresh Token" in the Questrade API Centre.
 2. **Onboarding**: The user pastes this token into the InvestmentToolkit UI.
 3. **Encryption**: The `TokenManager` receives the token, fetches/generates the **macOS Keychain** master key, and encrypts the token using **AES-256-GCM**.
-4. **Persistence**: The encrypted blob is saved to `.questrade_cache` via an **Atomic Swap**.
+4. **Persistence**: The **encrypted refresh token** is safely persisted to `.questrade_cache` via an **Atomic Swap**.
 
 ## Architecture & Data Flow (Mermaid)
 
@@ -43,7 +43,8 @@ graph TD
     TM -- "4. Get/Create Master Key" --> KC
     KC -- "5. Return Key" --> TM
     TM -- "6. Encrypt JSON payload" --> AES
-    AES -- "7. Write Atomic Swap" --> CF
+    AES -- "7. Save encrypted refresh token" --> CF
+    CF -- "8. Atomic swap persistence" --> CF
 ```
 
 ## Key Verification Features
