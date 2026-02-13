@@ -1,9 +1,11 @@
 ---
 work_package_id: "WP01"
 title: "Security & Token Infrastructure"
-lane: "planned"
+lane: "doing"
 dependencies: []
 subtasks: ["T001", "T002"]
+agent: "Antigravity"
+shell_pid: "69517"
 ---
 
 # WP01: Security & Token Infrastructure
@@ -36,3 +38,7 @@ Following **ADR 015** (Stateful Token Rotation) and **ADR 019** (Hardware-Backed
 - [ ] No plaintext tokens are visible in the `.questrade_cache` file.
 - [ ] Atomic swap logic prevents file corruption during rotation.
 - [ ] Unit tests pass for encryption and file operations.
+
+## Activity Log
+
+- 2026-02-13T18:22:47Z – Antigravity – shell_pid=69517 – lane=doing – Started implementation via workflow command
