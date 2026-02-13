@@ -143,15 +143,27 @@ git commit -m "docs(specs): mark <WP-ID> complete"
 
 ## 4. Merge & Cleanup
 
-### Step 4a: Accept
+### Step 4a: Version Check (Prerequisite)
+Verify CLI and Project versions are aligned.
 ```bash
-spec-kitty accept
+spec-kitty upgrade --dry-run
 ```
+If a mismatch is detected, run `spec-kitty upgrade --force` before proceeding.
 
-### Step 4b: Merge
+### Step 4b: Accept
+Run from the **Main Repository Root**.
 ```bash
-spec-kitty merge
+cd <PROJECT_ROOT>
+spec-kitty accept --feature <FEATURE-SLUG> --mode local --actor "<AGENT-NAME>"
 ```
+**PROOF**: Paste JSON or text output showing `summary.ok: true`.
+
+### Step 4c: Merge
+Run from the **Main Repository Root** for workspace-per-WP features.
+```bash
+spec-kitty merge --feature <FEATURE-SLUG> --strategy squash --push
+```
+**TROUBLESHOOTING**: If merge fails with "nothing to commit" during squash, it means the WP is already partially/fully integrated. Audit with `git diff main <WP-BRANCH>` and merge manually if needed.
 If this fails, use the manual fallback:
 ```bash
 git merge <WP-BRANCH-NAME>
@@ -225,4 +237,5 @@ python3 .kittify/scripts/tasks/tasks_cli.py status --feature <FEATURE-SLUG>
   git checkout -b <WP-BRANCH-NAME>
   ```
 - **"Already on main"**: Merge commands must run from project root, not inside a worktree.
-- **Kanban not updating**: Verify you're using the CLI, not manually editing frontmatter.
+- **"Nothing to squash"**: Occurs if the WP branch contains no new changes relative to the target branch. Verify with `git log main..<WP-BRANCH>`. If empty, manually delete the branch/worktree and move to `done`.
+- **Kanban not updating**: Verify you're using the CLI, not manually editing frontmatter. Always run `/spec-kitty.status` as proof of the final state.
