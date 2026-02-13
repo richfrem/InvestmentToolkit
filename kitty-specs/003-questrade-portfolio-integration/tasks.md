@@ -1,7 +1,7 @@
 # Work Packages: Questrade Portfolio Integration
 
 **Feature**: [spec.md](spec.md) | **Plan**: [plan.md](plan.md)
-**Status**: Planned
+**Status**: Done
 
 ## Summary
 The implementation is broken into 4 work packages focusing on security, data retrieval, backend bridging, and user interface.
@@ -60,9 +60,9 @@ The implementation is broken into 4 work packages focusing on security, data ret
 **Independent Test**: User can enter a token in the modal and trigger a sync from the dashboard.
 
 ### Included Subtasks
-- [ ] T007: Implement `QuestradeSetupModal.tsx` for initial token seeding.
-- [ ] T008: Add "Sync Now" button and status indicators to the Portfolio dashboard.
-- [ ] T009: Connect UI to the sync API endpoint.
+- [x] T007: Implement `QuestradeSetupModal.tsx` for initial token seeding.
+- [x] T008: Add "Sync Now" button and status indicators to the Portfolio dashboard.
+- [x] T009: Connect UI to the sync API endpoint.
 
 ### Implementation Sketch
 1. Build the guided setup modal with step-by-step instructions.
