@@ -45,8 +45,8 @@ The implementation is broken into 4 work packages focusing on security, data ret
 **Independent Test**: API endpoint returns successfully after triggering the Python child process.
 
 ### Included Subtasks
-- [ ] T005: Create `QuestradeSyncService.ts` to spawn the Python child process.
-- [ ] T006: Expose API endpoint for manual sync trigger.
+- [x] T005: Create `QuestradeSyncService.ts` to spawn the Python child process.
+- [x] T006: Expose API endpoint for manual sync trigger.
 
 ### Implementation Sketch
 1. Use `child_process.spawn` to call the Python script.
