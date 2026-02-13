@@ -6,7 +6,7 @@ This report documents the design and implementation of the Questrade broker inte
 The integration provides a mechanism to fetch and export all account-related data (balances, positions, orders) from Questrade. It is a local-first, script-based approach that manages security through manual OAuth2 token rotation.
 
 ## 2. Authentication & Token Management
-The authentication follows a **Manual Authorization Flow** as defined in `ADR 001`.
+The authentication follows a **Manual Authorization Flow** as defined in legacy [ADR 001](../../adrs/001-auth-method.md) (now superseded by [ADR 015](../../adrs/015-stateful-token-rotation.md)).
 
 - **Initial Setup**: The user manually generates a refresh token in the Questrade API Centre.
 - **Token Rotation**: 
@@ -14,7 +14,7 @@ The authentication follows a **Manual Authorization Flow** as defined in `ADR 00
     - It sends a GET request to `https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token=...`.
     - Upon success, Questrade returns a new `access_token` and a **new** `refresh_token`.
     - The script automatically updates the local `.env` file with the new refresh token, ensuring the next run can succeed without manual intervention.
-- **Security**: No passwords are stored. Secrets are kept in `.env` (ignored by git) and a pre-commit hook (`Husky`) scans for leaks (`ADR 003`).
+- **Security**: No passwords are stored. Secrets are kept in `.env` (ignored by git) and a pre-commit hook (`Husky`) scans for leaks ([ADR 003](../../adrs/003-security-secrets-management.md)).
 
 ## 3. Data Retrieval Process
 The core logic resides in `backend/src/services/questradeService.ts`.
@@ -27,12 +27,12 @@ The core logic resides in `backend/src/services/questradeService.ts`.
 2. **`getBearerToken()`**: Ensures all subsequent API calls are authorized.
 
 ## 4. Data Storage & Persistence
-Following `ADR 002`, the system uses a tiered approach:
+Following [ADR 002](../../adrs/002-holdings-data-storage.md) (superseded by [ADR 018](../../adrs/018-local-json-data-persistence.md)), the system uses a tiered approach:
 - **V1 (Current)**: Data is stored in local TypeScript files (e.g., `backend/src/data/currentHoldings.ts`). These files act as simple in-memory stores that are updated whenever the fetch scripts are run.
 - **V2 (Planned)**: The ADR notes a planned migration to a local SQLite database for more complex queries.
 
 ## 5. Export Logic
-`ADR 007` defines the export strategy for AI analysis.
+[ADR 007](../../adrs/007-data-export-approach.md) defines the export strategy for AI analysis.
 - The script `fetchAndExportAllData.ts` aggregates all data from the local stores (accounts, positions, balances, orders).
 - It writes the entire dataset to a single `exportedData.json` file in the backend directory.
 - This JSON format is designed to be easily consumed by LLMs or spreadsheet software.
