@@ -1,3 +1,22 @@
+#!/usr/bin/env python3
+"""
+QuestradeTokenManager.py
+=====================================
+
+Purpose:
+    Manages Questrade OAuth2 tokens with hardware-backed encryption (keyring)
+    and atomic disk operations. Implements ADR 015 and ADR 019.
+
+Layer: Retrieve
+
+Usage:
+    Imported by QuestradeAPIClient.py and QuestradeDataEngine.py.
+
+Related:
+    - QuestradeAPIClient.py
+    - QuestradeDataEngine.py
+"""
+
 import os
 import json
 import keyring
@@ -15,11 +34,22 @@ class QuestradeTokenManager:
     CACHE_FILE = ".questrade_cache"
 
     def __init__(self, cache_dir: str = "."):
+        """
+        Initializes the token manager with a cache directory.
+
+        Args:
+            cache_dir: Directory where .questrade_cache will be stored.
+        """
         self.cache_path = os.path.join(cache_dir, self.CACHE_FILE)
         self._key: Optional[bytes] = None
 
     def _get_or_create_key(self) -> bytes:
-        """Retrieves or generates the AESGCM master key from the OS Keychain."""
+        """
+        Retrieves or generates the AESGCM master key from the OS Keychain.
+
+        Returns:
+            The 256-bit AESGCM master key as bytes.
+        """
         if self._key:
             return self._key
             
@@ -35,7 +65,15 @@ class QuestradeTokenManager:
         return self._key
 
     def _encrypt(self, data: str) -> bytes:
-        """Encrypts data using AES-GCM."""
+        """
+        Encrypts a string using AES-GCM.
+
+        Args:
+            data: The plaintext string to encrypt.
+
+        Returns:
+            Combined nonce and ciphertext as bytes.
+        """
         key = self._get_or_create_key()
         aesgcm = AESGCM(key)
         nonce = os.urandom(12)
@@ -43,7 +81,15 @@ class QuestradeTokenManager:
         return nonce + ciphertext
 
     def _decrypt(self, encrypted_data: bytes) -> str:
-        """Decrypts data using AES-GCM."""
+        """
+        Decrypts bytes using AES-GCM.
+
+        Args:
+            encrypted_data: The encrypted bytes (nonce + ciphertext).
+
+        Returns:
+            The decrypted plaintext string.
+        """
         key = self._get_or_create_key()
         aesgcm = AESGCM(key)
         nonce = encrypted_data[:12]
@@ -55,6 +101,12 @@ class QuestradeTokenManager:
         """
         Atomically saves encrypted tokens to disk.
         Pattern: Write temp -> Atomic rename (os.replace).
+
+        Args:
+            token_data: Dictionary containing token information.
+        
+        Raises:
+            RuntimeError: If the atomic save fails.
         """
         json_str = json.dumps(token_data)
         encrypted_bytes = self._encrypt(json_str)
@@ -73,7 +125,12 @@ class QuestradeTokenManager:
             raise RuntimeError(f"Failed to save tokens atomically: {e}")
 
     def load_tokens(self) -> Optional[Dict[str, Any]]:
-        """Loads and decrypts tokens from the cache file."""
+        """
+        Loads and decrypts tokens from the cache file.
+
+        Returns:
+            The decrypted token dictionary or None if loading fails.
+        """
         if not os.path.exists(self.cache_path):
             return None
             
