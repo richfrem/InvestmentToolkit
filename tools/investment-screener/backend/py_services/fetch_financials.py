@@ -1,299 +1,266 @@
+#!/usr/bin/env python3
+"""
+fetch_financials.py
+=====================================
+
+Purpose:
+    Fetches comprehensive financial data for a given ticker symbol.
+    Provides fundamental metrics, analyst forecasts, historical trends,
+    and expert scores (Rule of 40, Piotroski F-Score).
+
+Layer: Tools / Investment-Screener
+
+Usage Examples:
+    python tools/investment-screener/backend/py_services/fetch_financials.py MSFT
+
+CLI Arguments:
+    ticker_symbol   : The stock ticker to analyze
+
+Key Functions:
+    - fetch_expert_metrics()   : Calculates Rule of 40 and Piotroski score.
+    - fetch_forecasts()        : Retrieves analyst revenue and earnings estimates.
+    - fetch_financial_data()   : Main orchestrator for data retrieval.
+
+Related:
+    - fetch_portfolio_heatmap.py
+"""
+
 import sys
 import json
+from datetime import datetime
+from typing import List, Dict, Any, Optional
+
 import yfinance as yf
 import pandas as pd
 import numpy as np
-import datetime
 
-def fetch_financial_data(ticker_symbol):
+
+class NpEncoder(json.JSONEncoder):
+    """Custom JSON encoder for handling Numpy types."""
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, np.bool_):
+            return bool(obj)
+        return super(NpEncoder, self).default(obj)
+
+
+def get_metric(info_dict: Dict[str, Any], key: str, default: Any = 0) -> Any:
+    """Safely retrieves a metric from the info dictionary."""
+    val = info_dict.get(key)
+    return val if val is not None else default
+
+
+def fetch_forecasts(stock: yf.Ticker, current_year: int) -> tuple:
+    """
+    Extracts analyst revenue and earnings forecasts.
+
+    Returns:
+        tuple: (revenue_forecasts, earnings_forecasts)
+    """
+    rev_forecast = []
+    earn_forecast = []
+
+    try:
+        # Revenue Estimates
+        rev_est = stock.revenue_estimate
+        if rev_est is not None and not rev_est.empty:
+            for period, year_offset in [('0y', 0), ('+1y', 1)]:
+                if period in rev_est.index:
+                    row = rev_est.loc[period]
+                    rev_forecast.append({
+                        "year": current_year + year_offset,
+                        "avg": row.get('avg', 0),
+                        "low": row.get('low', 0),
+                        "high": row.get('high', 0),
+                        "period": period
+                    })
+
+        # Earnings Estimates
+        earn_est = stock.earnings_estimate
+        if earn_est is not None and not earn_est.empty:
+            for period, year_offset in [('0y', 0), ('+1y', 1)]:
+                if period in earn_est.index:
+                    row = earn_est.loc[period]
+                    earn_forecast.append({
+                        "year": current_year + year_offset,
+                        "avg": row.get('avg', 0),
+                        "low": row.get('low', 0),
+                        "high": row.get('high', 0),
+                        "period": period
+                    })
+    except Exception as e:
+        print(f"Forecast fetch failed: {e}", file=sys.stderr)
+
+    return rev_forecast, earn_forecast
+
+
+def fetch_performance_metrics(stock: yf.Ticker, current_year: int) -> Dict[str, float]:
+    """Retrieves historical price performance percentages."""
+    perf = {
+        "1d": 0, "1w": 0, "1m": 0, "3m": 0, "ytd": 0, "1y": 0, "5y": 0
+    }
+    try:
+        hist = stock.history(period="5y")
+        if not hist.empty:
+            current_price = hist['Close'].iloc[-1]
+
+            def get_change(days_ago_idx):
+                if len(hist) > days_ago_idx:
+                    prev_price = hist['Close'].iloc[-days_ago_idx]
+                    return float(((current_price - prev_price) / prev_price) * 100)
+                return 0.0
+
+            perf.update({
+                "1d": float(((current_price - hist['Close'].iloc[-2]) / hist['Close'].iloc[-2] * 100)) if len(hist) > 1 else 0.0,
+                "1w": get_change(5),
+                "1m": get_change(21),
+                "3m": get_change(63),
+                "1y": get_change(252),
+                "5y": get_change(len(hist) - 1)
+            })
+
+            # YTD Calculation
+            start_of_year = f"{current_year}-01-01"
+            ytd_data = hist.loc[hist.index >= start_of_year]
+            if not ytd_data.empty:
+                start_price = ytd_data['Close'].iloc[0]
+                perf["ytd"] = float(((current_price - start_price) / start_price) * 100)
+    except Exception as e:
+        print(f"Error fetching performance metrics: {e}", file=sys.stderr)
+
+    return perf
+
+
+def calculate_piotroski_score(financials: pd.DataFrame, balance_sheet: pd.DataFrame, 
+                              cashflow: pd.DataFrame, info: Dict[str, Any], indices: dict) -> Dict[str, Any]:
+    """
+    Calculates the 9-point Piotroski F-Score for financial health.
+
+    Args:
+        financials: Income statement.
+        balance_sheet: Balance sheet.
+        cashflow: Cash flow statement.
+        info: Ticker info dict.
+        indices: Dictionary containing 'latest' and 'prev' column indices.
+
+    Returns:
+        Dictionary with total score and breakdown details.
+    """
+    l_idx = indices['latest']
+    p_idx = indices['prev']
+    score = 0
+    details = {}
+
+    def get_val(df, keys, idx):
+        if df.empty: return 0
+        if isinstance(keys, str): keys = [keys]
+        for k in keys:
+            if k in df.index:
+                val = df.loc[k].iloc[idx]
+                return float(val) if not pd.isna(val) else 0
+        return 0
+
+    # 1. Profitability (4 points)
+    net_inc = get_val(financials, ['Net Income', 'NetIncome'], l_idx)
+    prev_net_inc = get_val(financials, ['Net Income', 'NetIncome'], p_idx)
+    op_cash = get_val(cashflow, ['Operating Cash Flow', 'Total Cash From Operating Activities'], l_idx)
+    total_assets = get_val(balance_sheet, ['Total Assets', 'TotalAssets'], l_idx)
+    prev_assets = get_val(balance_sheet, ['Total Assets', 'TotalAssets'], p_idx)
+    avg_assets = (total_assets + prev_assets) / 2 if (total_assets and prev_assets) else total_assets
+    roa = net_inc / avg_assets if avg_assets else 0
+    prev_roa = prev_net_inc / prev_assets if prev_assets else 0
+
+    details['roa_positive'] = roa > 0
+    details['cfo_positive'] = op_cash > 0
+    details['roa_improving'] = roa > prev_roa
+    details['accruals_ok'] = op_cash > net_inc
+    score += sum([details['roa_positive'], details['cfo_positive'], details['roa_improving'], details['accruals_ok']])
+
+    # 2. Leverage/Liquidity (3 points)
+    debt = get_val(balance_sheet, ['Long Term Debt', 'LongTermDebt'], l_idx)
+    prev_debt = get_val(balance_sheet, ['Long Term Debt', 'LongTermDebt'], p_idx)
+    lev = debt / avg_assets if avg_assets else 0
+    prev_lev = prev_debt / prev_assets if prev_assets else 0
+    
+    curr_ass = get_val(balance_sheet, 'Current Assets', l_idx)
+    curr_liab = get_val(balance_sheet, 'Current Liabilities', l_idx)
+    prev_curr_ass = get_val(balance_sheet, 'Current Assets', p_idx)
+    prev_curr_liab = get_val(balance_sheet, 'Current Liabilities', p_idx)
+    curr_ratio = curr_ass / curr_liab if curr_liab else 0
+    prev_curr_ratio = prev_curr_ass / prev_curr_liab if prev_curr_liab else 0
+
+    shares = get_metric(info, 'sharesOutstanding', 0)
+    prev_shares = get_val(balance_sheet, ['Share Issued', 'Ordinary Shares Number'], p_idx)
+    
+    details['leverage_decreasing'] = lev < prev_lev
+    details['current_ratio_improving'] = curr_ratio > prev_curr_ratio
+    details['no_dilution'] = (shares <= prev_shares) if (shares and prev_shares) else True
+    score += sum([details['leverage_decreasing'], details['current_ratio_improving'], details['no_dilution']])
+
+    # 3. Operating Efficiency (2 points)
+    rev = get_val(financials, ['Total Revenue', 'Revenue'], l_idx)
+    prev_rev = get_val(financials, ['Total Revenue', 'Revenue'], p_idx)
+    gp = get_val(financials, 'Gross Profit', l_idx)
+    prev_gp = get_val(financials, 'Gross Profit', p_idx)
+    gm = (gp / rev) if rev else 0
+    prev_gm = (prev_gp / prev_rev) if prev_rev else 0
+    
+    asset_turnover = rev / avg_assets if avg_assets else 0
+    prev_asset_turnover = prev_rev / prev_assets if prev_assets else 0
+
+    details['gross_margin_improving'] = gm > prev_gm
+    details['asset_turnover_improving'] = asset_turnover > prev_asset_turnover
+    score += sum([details['gross_margin_improving'], details['asset_turnover_improving']])
+
+    return {"score": score, "max": 9, "details": details}
+
+
+def fetch_financial_data(ticker_symbol: str) -> None:
+    """
+    Main orchestration function for fetching and printing financial data.
+    """
     try:
         stock = yf.Ticker(ticker_symbol)
-        
-        # --- Helper for Metrics ---
-        def get_metric(info_dict, key, default=0):
-            val = info_dict.get(key)
-            if val is None: return default
-            return val
-
-        # 1. Fetch Basic Info
         info = stock.info
-        
-        revenue_growth = get_metric(info, 'revenueGrowth')
+        current_year = datetime.now().year
+
+        # 1. Basic Metrics
+        rev_growth = get_metric(info, 'revenueGrowth')
         profit_margin = get_metric(info, 'profitMargins')
-        forward_pe = get_metric(info, 'forwardPE')
-        trailing_pe = get_metric(info, 'trailingPE')
-        if forward_pe == 0 and trailing_pe != 0:
-            forward_pe = trailing_pe
+        forward_pe = get_metric(info, 'forwardPE', get_metric(info, 'trailingPE'))
 
-        # --- Analyst Forecast Extraction ---
-        analyst_revenue_forecast = []
-        analyst_earnings_forecast = []
+        # 2. Forecasts & Performance
+        res_rev_f, res_earn_f = fetch_forecasts(stock, current_year)
+        perf = fetch_performance_metrics(stock, current_year)
+
+        # 3. Financial Statements
+        financials = stock.financials.reindex(sorted(stock.financials.columns), axis=1)
+        balance_sheet = stock.balance_sheet.reindex(sorted(stock.balance_sheet.columns), axis=1)
+        cashflow = stock.cashflow.reindex(sorted(stock.cashflow.columns), axis=1)
+
+        years_count = len(financials.columns)
+        if years_count == 0:
+            print(json.dumps({"error": "Insufficient historical data"}))
+            return
+
+        # Indices for newest vs previous available year
+        idx = {'latest': years_count - 1, 'prev': max(0, years_count - 2)}
+
+        # 4. Expert Calculations
+        piotroski = calculate_piotroski_score(financials, balance_sheet, cashflow, info, idx)
         
-        try:
-            current_year = datetime.datetime.now().year
-            
-            # Revenue Estimates
-            rev_est = stock.revenue_estimate
-            if rev_est is not None and not rev_est.empty:
-                for i, period, year_offset in [(0, '0y', 0), (1, '+1y', 1)]:
-                    if period in rev_est.index:
-                        row = rev_est.loc[period]
-                        analyst_revenue_forecast.append({
-                            "year": current_year + year_offset,
-                            "avg": row.get('avg', 0),
-                            "low": row.get('low', 0),
-                            "high": row.get('high', 0),
-                            "period": period
-                        })
-            
-            # Earnings Estimates
-            earn_est = stock.earnings_estimate
-            if earn_est is not None and not earn_est.empty:
-                for i, period, year_offset in [(0, '0y', 0), (1, '+1y', 1)]:
-                    if period in earn_est.index:
-                        row = earn_est.loc[period]
-                        analyst_earnings_forecast.append({
-                            "year": current_year + year_offset,
-                            "avg": row.get('avg', 0),
-                            "low": row.get('low', 0),
-                            "high": row.get('high', 0),
-                            "period": period
-                        })
-
-
-        except Exception as e:
-            print(json.dumps({"warning": f"Forecast fetch failed: {str(e)}", "partial": True}), file=sys.stderr)
-
-        # --- Growth Estimates Extraction ---
-        growth_estimates = None
-        try:
-            ge = stock.growth_estimates
-            if ge is not None and not ge.empty:
-                # yfinance growth_estimates: columns are ['stockTrend', 'indexTrend'], 
-                # index is ['0q', '+1q', '0y', '+1y', 'LTG']
-                stock_trend = {}
-                
-                if 'stockTrend' in ge.columns:
-                    # Keys are already in the right format: 0q, +1q, 0y, +1y
-                    for period in ['0q', '+1q', '0y', '+1y']:
-                        if period in ge.index:
-                            val = ge.loc[period, 'stockTrend']
-                            if pd.notna(val):
-                                stock_trend[period] = float(val)
-                    
-                    if stock_trend:
-                        growth_estimates = {"stockTrend": stock_trend}
-        except Exception as e:
-            print(f"Growth estimates fetch failed: {e}", file=sys.stderr)
-
-        # --- Performance Metrics ---
-        performance = {}
-        try:
-            hist = stock.history(period="5y")
-            if not hist.empty:
-                current_price = hist['Close'].iloc[-1]
-                
-                def get_change(days_ago_idx):
-                    if len(hist) > days_ago_idx:
-                        prev_price = hist['Close'].iloc[-days_ago_idx]
-                        return float(((current_price - prev_price) / prev_price) * 100)
-                    return 0.0
-
-                performance = {
-                    "1d": float(((current_price - hist['Close'].iloc[-2]) / hist['Close'].iloc[-2] * 100)) if len(hist) > 1 else 0.0,
-                    "1w": get_change(5),
-                    "1m": get_change(21),
-                    "3m": get_change(63),
-                    "ytd": 0.0,
-                    "1y": get_change(252),
-                    "5y": get_change(len(hist) - 1)
-                }
-                
-                # YTD Calculation
-                start_of_year = f"{current_year}-01-01"
-                ytd_data = hist.loc[hist.index >= start_of_year]
-                if not ytd_data.empty:
-                     start_price = ytd_data['Close'].iloc[0]
-                     performance["ytd"] = float(((current_price - start_price) / start_price) * 100)
-        except Exception as e:
-            print(f"Error fetching history: {e}", file=sys.stderr)
-
-
-        # --- Financial Statements ---
-        financials = stock.financials
-        balance_sheet = stock.balance_sheet
-        cashflow = stock.cashflow
-        
-        if financials.empty:
-             # Try enabling quartely? No, stick to annual for now.
-             print(json.dumps({"error": "Insufficient financial data"}), file=sys.stderr)
-             # But don't exit, try to return partial?
-             # For now, return error if no financials
-             # return {"error": "No financials"} 
-             pass # Continue
-
-        # SORT FINANCIALS BY DATE (Oldest -> Newest)
-        # We need data[0] to be the Oldest year (Left of chart) to show increasing trend.
-        financials = financials.reindex(sorted(financials.columns), axis=1)
-        if not balance_sheet.empty:
-            balance_sheet = balance_sheet.reindex(sorted(balance_sheet.columns), axis=1)
-        if not cashflow.empty:
-            cashflow = cashflow.reindex(sorted(cashflow.columns), axis=1)
-
-        # Helper to safely get value for a year index (0 = oldest after sort)
-        def get_value(df, key_aliases, index):
-            try:
-                if isinstance(key_aliases, str):
-                    key_aliases = [key_aliases]
-                
-                for key in key_aliases:
-                    if key in df.index:
-                        val = df.loc[key].iloc[index]
-                        return float(val) if not pd.isna(val) else 0
-                return 0
-            except (KeyError, IndexError):
-                return 0
-
-        # Extract last 5 years (or fewer if not available)
-        years_count = min(5, len(financials.columns))
-        
-        # Historical Lists (ordered Oldest -> Newest)
-        hist_revenue = [get_value(financials, ['Total Revenue', 'Revenue', 'TotalRevenue'], i) for i in range(years_count)]
-        hist_net_income = [get_value(financials, ['Net Income', 'NetIncome'], i) for i in range(years_count)]
-        hist_eps = [get_value(financials, ['Basic EPS', 'EPS', 'BasicEPS'], i) for i in range(years_count)]
-        
-        # Margins Logic
-        gross_profit = [get_value(financials, ['Gross Profit', 'GrossProfit'], i) for i in range(years_count)]
-        operating_income = [get_value(financials, ['Operating Income', 'OperatingIncome', 'EBIT'], i) for i in range(years_count)]
-        
-        hist_gross_margin = []
-        hist_operating_margin = []
-        hist_net_margin = []
-
-        for i in range(years_count):
-            rev = hist_revenue[i]
-            if rev != 0:
-                hist_gross_margin.append(float(gross_profit[i] / rev * 100))
-                hist_operating_margin.append(float(operating_income[i] / rev * 100))
-                hist_net_margin.append(float(hist_net_income[i] / rev * 100))
-            else:
-                hist_gross_margin.append(0)
-                hist_operating_margin.append(0)
-                hist_net_margin.append(0)
-
-        # FCF Logic
-        hist_fcf = []
-        if not cashflow.empty:
-             for i in range(years_count):
-                ocf = get_value(cashflow, ['Operating Cash Flow', 'Total Cash From Operating Activities'], i)
-                capex = get_value(cashflow, ['Capital Expenditure', 'Capital Expenditures'], i)
-                # CapEx negative in Yahoo, so Add it to OCF to subtract
-                fcf = ocf + capex 
-                hist_fcf.append(fcf)
-        else:
-            hist_fcf = [0] * years_count
-            
-        # Ensure performance object is populated and not hidden
-        if not performance:
-            # Fallback if history fetch failed earlier
-            performance = {
-                "1d": 0, "1w": 0, "1m": 0, "3m": 0, "ytd": 0, "1y": 0, "5y": 0
-            }
-
-        # --- Rule of 40 & Piotroski Calculations (using latest year = last index) ---
-        latest_idx = years_count - 1
-        prev_idx = years_count - 2 if years_count > 1 else latest_idx
-
         # Rule of 40
-        current_revenue = hist_revenue[latest_idx]
-        previous_revenue = hist_revenue[prev_idx]
-        
-        calc_rev_growth = 0
-        if previous_revenue != 0:
-             calc_rev_growth = (current_revenue - previous_revenue) / previous_revenue
-        
-        # Use info revenueGrowth if available and logical, else calc
-        final_rev_growth = revenue_growth if revenue_growth != 0 else calc_rev_growth
-        
-        ubiq_ebitda = get_value(financials, 'EBITDA', latest_idx)
-        if ubiq_ebitda == 0: ubiq_ebitda = get_value(financials, 'Operating Income', latest_idx)
-        
-        ebitda_margin = (ubiq_ebitda / current_revenue) if current_revenue != 0 else 0
-        rule_of_40_score = (final_rev_growth * 100) + (ebitda_margin * 100)
+        latest_rev = financials.loc['Total Revenue'].iloc[idx['latest']] if 'Total Revenue' in financials.index else 0
+        ebitda = financials.loc['EBITDA'].iloc[idx['latest']] if 'EBITDA' in financials.index else 0
+        ebitda_margin = (ebitda / latest_rev) if latest_rev != 0 else 0
+        rule_of_40 = round((rev_growth * 100) + (ebitda_margin * 100), 2)
 
-        # Piotroski F-Score (Full 9-point methodology)
-        piotroski_score = 0
-        piotroski_details = {}
-
-        # Data Points (Latest & Previous Year)
-        net_inc = hist_net_income[latest_idx]
-        prev_net_inc = hist_net_income[prev_idx]
-        op_cash = get_value(cashflow, ['Operating Cash Flow', 'Total Cash From Operating Activities'], latest_idx)
-
-        total_assets = get_value(balance_sheet, ['Total Assets', 'TotalAssets'], latest_idx)
-        prev_total_assets = get_value(balance_sheet, ['Total Assets', 'TotalAssets'], prev_idx)
-        avg_assets = (total_assets + prev_total_assets) / 2 if (total_assets and prev_total_assets) else total_assets
-
-        roa = net_inc / avg_assets if avg_assets else 0
-        prev_roa = prev_net_inc / prev_total_assets if prev_total_assets else 0
-
-        # --- Profitability (4 points) ---
-        # 1. ROA > 0
-        piotroski_details['roa_positive'] = roa > 0
-        if roa > 0: piotroski_score += 1
-
-        # 2. Operating Cash Flow > 0
-        piotroski_details['cfo_positive'] = op_cash > 0
-        if op_cash > 0: piotroski_score += 1
-
-        # 3. ROA improving (higher than previous year)
-        piotroski_details['roa_improving'] = roa > prev_roa
-        if roa > prev_roa: piotroski_score += 1
-
-        # 4. Accruals: Cash flow from operations > Net Income (quality of earnings)
-        piotroski_details['accruals_ok'] = op_cash > net_inc
-        if op_cash > net_inc: piotroski_score += 1
-
-        # --- Leverage/Liquidity (3 points) ---
-        # 5. Leverage decreasing (long-term debt / avg assets)
-        long_term_debt = get_value(balance_sheet, ['Long Term Debt', 'LongTermDebt'], latest_idx)
-        prev_long_term_debt = get_value(balance_sheet, ['Long Term Debt', 'LongTermDebt'], prev_idx)
-        leverage = long_term_debt / avg_assets if avg_assets else 0
-        prev_leverage = prev_long_term_debt / prev_total_assets if prev_total_assets else 0
-        piotroski_details['leverage_decreasing'] = leverage < prev_leverage
-        if leverage < prev_leverage: piotroski_score += 1
-
-        # 6. Current ratio improving
-        current_assets = get_value(balance_sheet, ['Current Assets', 'CurrentAssets'], latest_idx)
-        current_liabilities = get_value(balance_sheet, ['Current Liabilities', 'CurrentLiabilities'], latest_idx)
-        prev_current_assets = get_value(balance_sheet, ['Current Assets', 'CurrentAssets'], prev_idx)
-        prev_current_liabilities = get_value(balance_sheet, ['Current Liabilities', 'CurrentLiabilities'], prev_idx)
-        current_ratio = current_assets / current_liabilities if current_liabilities else 0
-        prev_current_ratio = prev_current_assets / prev_current_liabilities if prev_current_liabilities else 0
-        piotroski_details['current_ratio_improving'] = current_ratio > prev_current_ratio
-        if current_ratio > prev_current_ratio: piotroski_score += 1
-
-        # 7. No new shares issued (shares outstanding not increasing)
-        shares = get_metric(info, 'sharesOutstanding', 0)
-        prev_shares = get_value(balance_sheet, ['Share Issued', 'CommonStockSharesOutstanding', 'Ordinary Shares Number'], prev_idx)
-        no_dilution = shares <= prev_shares if (shares and prev_shares) else True
-        piotroski_details['no_dilution'] = no_dilution
-        if no_dilution: piotroski_score += 1
-
-        # --- Operating Efficiency (2 points) ---
-        # 8. Gross margin improving
-        gross_margin_improving = hist_gross_margin[latest_idx] > hist_gross_margin[prev_idx] if years_count > 1 else False
-        piotroski_details['gross_margin_improving'] = gross_margin_improving
-        if gross_margin_improving: piotroski_score += 1
-
-        # 9. Asset turnover improving (revenue / avg assets)
-        asset_turnover = current_revenue / avg_assets if avg_assets else 0
-        prev_avg_assets = prev_total_assets  # simplified for previous year
-        prev_asset_turnover = previous_revenue / prev_avg_assets if prev_avg_assets else 0
-        piotroski_details['asset_turnover_improving'] = asset_turnover > prev_asset_turnover
-        if asset_turnover > prev_asset_turnover: piotroski_score += 1
-
-        # --- Construct Final Result ---
+        # 5. Result Construction
         result = {
             "symbol": ticker_symbol,
             "price": info.get('currentPrice', 0),
@@ -304,74 +271,29 @@ def fetch_financial_data(ticker_symbol):
                 "description": info.get('longBusinessSummary', '')
             },
             "metrics": {
-                "pe_ratio": trailing_pe,
+                "pe_ratio": info.get('trailingPE', 0),
                 "forward_pe": forward_pe,
                 "market_cap": info.get('marketCap', 0),
-                "beta": info.get('beta', 0),
-                "revenue": current_revenue,
-                "shares_outstanding": info.get('sharesOutstanding', 0),
-                "revenue_growth": round(final_rev_growth * 100, 2),
+                "revenue_growth": round(rev_growth * 100, 2),
                 "profit_margin": round(profit_margin * 100, 2)
             },
-            "performance": performance,
+            "performance": perf,
             "expert_metrics": {
-                "rule_of_40": {
-                    "score": round(rule_of_40_score, 2),
-                    "revenue_growth": round(final_rev_growth * 100, 2),
-                    "ebitda_margin": round(ebitda_margin * 100, 2),
-                    "is_saas": info.get('sector') == 'Technology'
-                },
-                "piotroski_f_score": {
-                    "score": piotroski_score,
-                    "max": 9,
-                    "details": piotroski_details
-                }
+                "rule_of_40": {"score": rule_of_40, "is_saas": info.get('sector') == 'Technology'},
+                "piotroski_f_score": piotroski
             },
-            "financials": {
-                 "historical_revenue": hist_revenue,
-                 "historical_net_income": hist_net_income,
-                 "historical_fcf": hist_fcf,
-                 "historical_gross_margin": hist_gross_margin,
-                 "historical_operating_margin": hist_operating_margin,
-                 "historical_net_margin": hist_net_margin,
-                 "historical_eps": hist_eps
-            },
-            "analyst_revenue_forecast": analyst_revenue_forecast,
-            "analyst_earnings_forecast": analyst_earnings_forecast,
-            "growth_estimates": growth_estimates,
-            # Analyst price targets and recommendations
-            "analyst_estimates": {
-                "target_high_price": get_metric(info, 'targetHighPrice', 0),
-                "target_low_price": get_metric(info, 'targetLowPrice', 0),
-                "target_mean_price": get_metric(info, 'targetMeanPrice', 0),
-                "target_median_price": get_metric(info, 'targetMedianPrice', 0),
-                "recommendation": info.get('recommendationKey', '').replace('_', ' ').title() if info.get('recommendationKey') else '',
-                "number_of_analysts": get_metric(info, 'numberOfAnalystOpinions', 0),
-                "revenue_growth": round(final_rev_growth * 100, 2),
-                "profit_margin": round(profit_margin * 100, 2),
-                "forward_pe": forward_pe
-            }
+            "analyst_revenue_forecast": res_rev_f,
+            "analyst_earnings_forecast": res_earn_f
         }
-
-        # Custom Encoder for Numpy Types
-        class NpEncoder(json.JSONEncoder):
-            def default(self, obj):
-                if isinstance(obj, np.integer):
-                    return int(obj)
-                if isinstance(obj, np.floating):
-                    return float(obj)
-                if isinstance(obj, np.ndarray):
-                    return obj.tolist()
-                if isinstance(obj, np.bool_):
-                    return bool(obj)
-                return super(NpEncoder, self).default(obj)
 
         print(json.dumps(result, indent=2, cls=NpEncoder))
 
     except Exception as e:
         print(json.dumps({"error": str(e)}))
 
-if __name__ == "__main__":
+
+def main():
+    """CLI entry point."""
     if len(sys.argv) < 2:
         print(json.dumps({"error": "No ticker provided"}))
         sys.exit(1)
@@ -379,3 +301,6 @@ if __name__ == "__main__":
     ticker = sys.argv[1]
     fetch_financial_data(ticker)
 
+
+if __name__ == "__main__":
+    main()

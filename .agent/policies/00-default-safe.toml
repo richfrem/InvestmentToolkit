@@ -1,0 +1,16 @@
+# Default Policy: Safe Mode
+# Synced from .agent/policies/00-default-safe.toml
+
+# Example: Ask for confirmation before running any shell command
+[[rule]]
+toolName = "run_shell_command"
+decision = "ask_user"
+priority = 100
+
+# Example: Deny deletion of important directories
+[[rule]]
+toolName = "run_shell_command"
+commandRegex = '^rm -rf (.*\/)?(\.git|\.agent)(.*)?'
+decision = "deny"
+priority = 900
+deny_message = "Safety Block: Deleting configuration directories is forbidden by policy."

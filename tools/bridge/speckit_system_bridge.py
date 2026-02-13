@@ -48,31 +48,52 @@ def setup_directories():
     """Ensure all target directory structures exist and are clean (Idempotency)."""
     print(f"🔧 Initializing & Cleaning Target Directories...")
     
-    # helper to clean
-    def clean_dir(path: Path):
-        if path.exists():
-            shutil.rmtree(path)
-        path.mkdir(parents=True, exist_ok=True)
-
     # 1. Antigravity
-    (AGENT_DIR / "rules").mkdir(parents=True, exist_ok=True) # Rules might be partial, keep dir
-    clean_dir(AGENT_DIR / "workflows")
+    (AGENT_DIR / "rules").mkdir(parents=True, exist_ok=True)
+    (AGENT_DIR / "workflows").mkdir(parents=True, exist_ok=True)
     
     # 2. Claude
-    clean_dir(CLAUDE_DIR / "commands")
+    (CLAUDE_DIR / "commands").mkdir(parents=True, exist_ok=True)
     
     # 3. Gemini
-    clean_dir(GEMINI_DIR / "commands")
+    (GEMINI_DIR / "commands").mkdir(parents=True, exist_ok=True)
     
     # 4. Copilot
-    clean_dir(GITHUB_DIR / "prompts")
+    (GITHUB_DIR / "prompts").mkdir(parents=True, exist_ok=True)
 
 
 def ingest_rules():
-    """Read rules from .kittify/memory (Source of Truth)."""
+    """Read rules from .kittify/memory (Source of Truth via Symlink)."""
     rules = {}
     memory_dir = KITTIFY_DIR / "memory"
+    agent_rules_dir = AGENT_DIR / "rules"
     
+    # Ensure memory dir exists
+    memory_dir.mkdir(parents=True, exist_ok=True)
+
+    # SPECIAL HANDLING: constitution.md
+    # Source: .agent/rules/constitution.md
+    # Target: .kittify/memory/constitution.md (Symlink/Copy)
+    constitution_src = agent_rules_dir / "constitution.md"
+    constitution_tgt = memory_dir / "constitution.md"
+
+    if constitution_src.exists():
+        try:
+            # tailored logic: link if possible, copy if not (Windows fallback)
+            if constitution_tgt.exists():
+                if constitution_tgt.is_symlink() or constitution_tgt.stat().st_mtime != constitution_src.stat().st_mtime:
+                    constitution_tgt.unlink()
+            
+            try:
+                os.symlink(constitution_src, constitution_tgt)
+                print(f"🔗 Linked constitution.md: .agent -> .kittify")
+            except OSError:
+                # Windows restrictions often block symlinks
+                shutil.copy2(constitution_src, constitution_tgt)
+                print(f"📄 Copied constitution.md: .agent -> .kittify (Symlink fallback)")
+        except Exception as e:
+            print(f"⚠️  Failed to link/copy constitution.md: {e}")
+
     if not memory_dir.exists():
         print("⚠️  No .kittify/memory directory found. Rules will be empty.")
         return rules
@@ -109,10 +130,11 @@ def sync_antigravity(workflows, rules):
     print("\n🔵 Syncing Antigravity (.agent)...")
     
     # Rules (e.g., constitution.md)
-    # Note: We didn't clean rules dir above to avoid wiping constitution if manual?
-    # Actually, BYOA says .agent is an artifact. We should probably clean it too.
-    # But let's stick to overwriting for now.
+    # SPECIAL HANDLING: Do NOT overwrite constitution.md in .agent/rules/
+    # because it is now key Source of Truth.
     for name, content in rules.items():
+        if name == "constitution":
+            continue # SKIP overwriting the source
         (AGENT_DIR / "rules" / f"{name}.md").write_text(content, encoding="utf-8")
         
     for filename, content in workflows.items():
@@ -120,7 +142,7 @@ def sync_antigravity(workflows, rules):
         fixed_content = fixed_content.replace('(Missing script command for sh)', 'spec-kitty')
         (AGENT_DIR / "workflows" / filename).write_text(fixed_content, encoding="utf-8")
         
-    print(f"   ✅ Synced {len(rules)} rules and {len(workflows)} workflows.")
+    print(f"   ✅ Synced {len(rules)-1 if 'constitution' in rules else len(rules)} rules (skipped constitution) and {len(workflows)} workflows.")
 
 def sync_claude(workflows, rules):
     """Sync to .claude/."""
