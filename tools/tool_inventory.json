@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "last_updated": "2026-02-13T08:55:09.175021",
+    "last_updated": "2026-02-13T10:49:21.825999",
     "status": "Deduplicated"
   },
   "python": {
@@ -390,6 +390,14 @@
         }
       ],
       "investment-screener": [
+        {
+          "name": "QuestradeDataEngine.py",
+          "path": "tools/investment-screener/backend/src/QuestradeDataEngine.py",
+          "description": "Core sync engine that coordinates token management, API retrieval, and portfolio aggregation.",
+          "last_updated": "2026-02-13T10:49:21.825991",
+          "compliance_status": "needs_review",
+          "header_style": "basic"
+        },
         {
           "name": "eslint.config.js",
           "path": "tools/investment-screener/frontend/eslint.config.js",
