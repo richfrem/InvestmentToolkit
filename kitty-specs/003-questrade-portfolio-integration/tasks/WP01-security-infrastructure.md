@@ -1,11 +1,13 @@
 ---
 work_package_id: "WP01"
 title: "Security & Token Infrastructure"
-lane: "for_review"
+lane: "done"
 dependencies: []
 subtasks: ["T001", "T002"]
 agent: "Antigravity"
 shell_pid: "69517"
+reviewed_by: "richfrem"
+review_status: "approved"
 ---
 
 # WP01: Security & Token Infrastructure
@@ -43,3 +45,4 @@ Following **ADR 015** (Stateful Token Rotation) and **ADR 019** (Hardware-Backed
 
 - 2026-02-13T18:22:47Z – Antigravity – shell_pid=69517 – lane=doing – Started implementation via workflow command
 - 2026-02-13T18:33:17Z – Antigravity – shell_pid=69517 – lane=for_review – Implemented secure QuestradeTokenManager with AES-GCM and macOS Keychain integration. Subtask T002 verified with atomic swap test.
+- 2026-02-13T18:45:22Z – Antigravity – shell_pid=69517 – lane=done – Merged to main after user approval and verification.
