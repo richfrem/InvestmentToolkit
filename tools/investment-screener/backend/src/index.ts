@@ -169,31 +169,36 @@ app.post('/api/questrade/seed', async (req, res) => {
 
     console.log(`[API] Seeding Questrade refresh token...`);
     try {
-        // We use the Python TokenManager to save this. 
-        // For simplicity, we can spawn a small python command or use the existing sync service if it supports it.
-        // Actually, let's add a method to questradeSyncService for seeding.
         const { spawn } = require('child_process');
-        const scriptPath = path.resolve(__dirname, 'utils/QuestradeTokenManager.py');
-
-        // This is a bit hacky, but we can call the script directly if it has a CLI for seeding,
-        // or just write a small helper script.
-        // Let's assume we can just pass it to the engine as an argument for a "seed" command.
-        // Or better: Let's create a small bridge in QuestradeSyncService.ts
-
-        // For now, let's just use spawnPythonScript if we can modify it to handle this, 
-        // or make a new one.
-
-        // Wait, I already have QuestradeDataEngine.py. I should probably add a --seed flag to it.
         const enginePath = path.resolve(__dirname, 'QuestradeDataEngine.py');
         const args = ['--cache-dir', path.resolve(__dirname, '../'), '--seed', refreshToken];
 
+        console.log(`[API][Seed] Spawning: python3 ${enginePath} ${args.join(' ')}`);
         const pythonProcess = spawn('python3', [enginePath, ...args]);
+
+        let output = '';
+        let errorOutput = '';
+
+        pythonProcess.stdout.on('data', (data: any) => {
+            output += data.toString();
+            console.log(`[API][Seed][Python] ${data.toString().trim()}`);
+        });
+
+        pythonProcess.stderr.on('data', (data: any) => {
+            errorOutput += data.toString();
+            console.error(`[API][Seed][Error] ${data.toString().trim()}`);
+        });
 
         pythonProcess.on('close', (code: number) => {
             if (code === 0) {
+                console.log(`[API][Seed] Success.`);
                 res.json({ success: true, message: 'Refresh token seeded successfully.' });
             } else {
-                res.status(500).json({ error: `Seeding failed with code ${code}` });
+                console.error(`[API][Seed] Failed with code ${code}. Error: ${errorOutput}`);
+                res.status(500).json({
+                    error: `Seeding failed with code ${code}`,
+                    details: errorOutput || 'Unknown error'
+                });
             }
         });
     } catch (error: any) {

@@ -14,6 +14,7 @@ export interface StockData {
         beta: number;
         revenue: number;
         shares_outstanding: number;
+        peg_ratio?: number;
         revenue_growth?: number;
         profit_margin?: number;
     };
