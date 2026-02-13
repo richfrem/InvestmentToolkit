@@ -16,6 +16,14 @@ This directory contains the "Universal Bridge" tools for synchronizing Spec Kitt
 -   **Usage**: `python3 tools/bridge/verify_bridge_integrity.py`
 -   **Checks**: Existence of files, content integrity (e.g., correct `--actor` flags, valid arguments).
 
+### 3. [`sync_rules.py`](sync_rules.py) & [`sync_skills.py`](sync_skills.py)
+**Supplemental Syncs.**
+-   **Purpose**: Sync rules from `.agent/rules/` and skills from `.agent/skills/` to all agent configs.
+-   **Usage**: `python3 tools/bridge/sync_rules.py --all` and `python3 tools/bridge/sync_skills.py --all`
+
+> [!WARNING]
+> **Restart Required**: After running any sync scripts, you must **restart the IDE** for slash commands to appear in your AI agent.
+
 
 ## Post-Setup
 
