@@ -160,6 +160,70 @@ app.post('/api/portfolio/sync-questrade', async (_req, res) => {
     }
 });
 
+app.post('/api/questrade/seed', async (req, res) => {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+        res.status(400).json({ error: 'refreshToken is required' });
+        return;
+    }
+
+    console.log(`[API] Seeding Questrade refresh token...`);
+    try {
+        // We use the Python TokenManager to save this. 
+        // For simplicity, we can spawn a small python command or use the existing sync service if it supports it.
+        // Actually, let's add a method to questradeSyncService for seeding.
+        const { spawn } = require('child_process');
+        const scriptPath = path.resolve(__dirname, 'utils/QuestradeTokenManager.py');
+
+        // This is a bit hacky, but we can call the script directly if it has a CLI for seeding,
+        // or just write a small helper script.
+        // Let's assume we can just pass it to the engine as an argument for a "seed" command.
+        // Or better: Let's create a small bridge in QuestradeSyncService.ts
+
+        // For now, let's just use spawnPythonScript if we can modify it to handle this, 
+        // or make a new one.
+
+        // Wait, I already have QuestradeDataEngine.py. I should probably add a --seed flag to it.
+        const enginePath = path.resolve(__dirname, 'QuestradeDataEngine.py');
+        const args = ['--cache-dir', path.resolve(__dirname, '../'), '--seed', refreshToken];
+
+        const pythonProcess = spawn('python3', [enginePath, ...args]);
+
+        pythonProcess.on('close', (code: number) => {
+            if (code === 0) {
+                res.json({ success: true, message: 'Refresh token seeded successfully.' });
+            } else {
+                res.status(500).json({ error: `Seeding failed with code ${code}` });
+            }
+        });
+    } catch (error: any) {
+        console.error(`[API] Seeding Error:`, error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/portfolio/status', (req, res) => {
+    try {
+        if (!fs.existsSync(PORTFOLIO_FILE)) {
+            res.json({ lastSync: null });
+            return;
+        }
+        const data = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+        if (Array.isArray(data) && data.length > 0) {
+            // Find the most recent last_updated timestamp
+            const lastSync = data.reduce((latest: string, item: any) => {
+                if (!item.last_updated) return latest;
+                return !latest || new Date(item.last_updated) > new Date(latest) ? item.last_updated : latest;
+            }, '');
+            res.json({ lastSync: lastSync || null });
+        } else {
+            res.json({ lastSync: null });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to get status' });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Backend server running on http://localhost:${port}`);
 });

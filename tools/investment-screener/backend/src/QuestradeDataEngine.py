@@ -88,6 +88,7 @@ def main():
     parser = argparse.ArgumentParser(description="Questrade Portfolio Sync Engine")
     parser.add_argument("--cache-dir", default=".", help="Directory containing .questrade_cache")
     parser.add_argument("--output", default="../../frontend/src/data/portfolio.json", help="Path to portfolio.json")
+    parser.add_argument("--seed", help="Seed a new manual refresh token")
     
     args = parser.parse_args()
     
@@ -95,6 +96,15 @@ def main():
     base_dir = os.getcwd()
     abs_output = os.path.abspath(os.path.join(base_dir, args.output))
     
+    token_manager = QuestradeTokenManager(cache_dir=args.cache_dir)
+    
+    if args.seed:
+        logger.info("Seeding new manual refresh token...")
+        # Questrade requires at least a refresh_token to start rotation
+        token_manager.save_tokens({"refresh_token": args.seed})
+        logger.info("Token seeded successfully.")
+        sys.exit(0)
+        
     engine = QuestradeSyncEngine(cache_dir=args.cache_dir, output_file=abs_output)
     success = engine.run_sync()
     
