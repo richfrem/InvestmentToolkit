@@ -12,11 +12,11 @@ export default function MetricsGrid({ stockData }: MetricsGridProps) {
     // === DATA EXTRACTION ===
 
     // Margins - determine format (decimal 0.xx vs percentage xx.xx)
-    const latestGrossMargin = financials.historical_gross_margin?.[financials.historical_gross_margin.length - 1];
-    const latestOperatingMargin = financials.historical_operating_margin?.[financials.historical_operating_margin.length - 1];
-    const latestNetMargin = financials.historical_net_margin?.[financials.historical_net_margin.length - 1];
-    const prevGrossMargin = financials.historical_gross_margin?.[financials.historical_gross_margin.length - 2];
-    const prevOperatingMargin = financials.historical_operating_margin?.[financials.historical_operating_margin.length - 2];
+    const latestGrossMargin = financials?.historical_gross_margin?.[(financials?.historical_gross_margin?.length || 0) - 1];
+    const latestOperatingMargin = financials?.historical_operating_margin?.[(financials?.historical_operating_margin?.length || 0) - 1];
+    const latestNetMargin = financials?.historical_net_margin?.[(financials?.historical_net_margin?.length || 0) - 1];
+    const prevGrossMargin = financials?.historical_gross_margin?.[(financials?.historical_gross_margin?.length || 0) - 2];
+    const prevOperatingMargin = financials?.historical_operating_margin?.[(financials?.historical_operating_margin?.length || 0) - 2];
 
     const isDecimal = latestGrossMargin !== undefined && latestGrossMargin <= 1;
     const formatMargin = (margin: number | undefined) => {
@@ -37,16 +37,16 @@ export default function MetricsGrid({ stockData }: MetricsGridProps) {
         : 'flat';
 
     // FCF data
-    const latestFCF = financials.historical_fcf?.[financials.historical_fcf.length - 1];
-    const prevFCF = financials.historical_fcf?.[financials.historical_fcf.length - 2];
+    const latestFCF = financials?.historical_fcf?.[(financials?.historical_fcf?.length || 0) - 1];
+    const prevFCF = financials?.historical_fcf?.[(financials?.historical_fcf?.length || 0) - 2];
     const fcfTrend = latestFCF && prevFCF
         ? (latestFCF > prevFCF ? 'up' : latestFCF < prevFCF ? 'down' : 'flat')
         : 'flat';
     const fcfYield = latestFCF && metrics.market_cap ? (latestFCF / metrics.market_cap) * 100 : null;
 
     // EPS data
-    const latestEPS = financials.historical_eps?.[financials.historical_eps.length - 1];
-    const prevEPS = financials.historical_eps?.[financials.historical_eps.length - 2];
+    const latestEPS = financials?.historical_eps?.[(financials?.historical_eps?.length || 0) - 1];
+    const prevEPS = financials?.historical_eps?.[(financials?.historical_eps?.length || 0) - 2];
     const epsTrend = latestEPS && prevEPS
         ? (latestEPS > prevEPS ? 'up' : latestEPS < prevEPS ? 'down' : 'flat')
         : 'flat';
@@ -63,9 +63,9 @@ export default function MetricsGrid({ stockData }: MetricsGridProps) {
     // Growth & Valuation
     const revenueGrowth = metrics.revenue_growth || expert_metrics.rule_of_40.revenue_growth;
     const epsGrowthEst = stockData.growth_estimates?.stockTrend?.['+1y'];
-    const pegRatio = metrics.pe_ratio && epsGrowthEst && epsGrowthEst > 0
+    const pegRatio = metrics.peg_ratio || (metrics.pe_ratio && epsGrowthEst && epsGrowthEst > 0
         ? metrics.pe_ratio / epsGrowthEst
-        : null;
+        : null);
     const peCompression = metrics.pe_ratio && metrics.forward_pe
         ? ((metrics.forward_pe - metrics.pe_ratio) / metrics.pe_ratio) * 100
         : null;
@@ -100,13 +100,13 @@ export default function MetricsGrid({ stockData }: MetricsGridProps) {
                     </div>
                     <div className="flex items-baseline gap-2">
                         <span className={`text-3xl font-bold ${revenueGrowth && revenueGrowth >= 20 ? 'text-green-500' : revenueGrowth && revenueGrowth >= 10 ? 'text-amber-500' : 'text-red-500'}`}>
-                            {revenueGrowth ? `${revenueGrowth.toFixed(1)}%` : 'N/A'}
+                            {revenueGrowth !== undefined ? `${revenueGrowth.toFixed(1)}%` : 'N/A'}
                         </span>
                     </div>
                     <div className="mt-3 text-xs text-slate-400 space-y-1">
                         <div className="flex justify-between">
                             <span>TTM Revenue</span>
-                            <span className="text-text">${(metrics.revenue / 1e9).toFixed(1)}B</span>
+                            <span className="text-text">{metrics.revenue ? `$${(metrics.revenue / 1e9).toFixed(1)}B` : 'N/A'}</span>
                         </div>
                         <div className="flex justify-between">
                             <span>Target</span>
@@ -198,7 +198,7 @@ export default function MetricsGrid({ stockData }: MetricsGridProps) {
                         </div>
                         <div className="flex justify-between">
                             <span>Market Cap</span>
-                            <span className="text-text">${(metrics.market_cap / 1e9).toFixed(0)}B</span>
+                            <span className="text-text">{metrics.market_cap ? `$${(metrics.market_cap / 1e9).toFixed(0)}B` : 'N/A'}</span>
                         </div>
                     </div>
                     <p className="text-xs text-slate-500 mt-3">
@@ -250,7 +250,7 @@ export default function MetricsGrid({ stockData }: MetricsGridProps) {
                         <span className={`text-3xl font-bold ${upsidePct && upsidePct > 10 ? 'text-green-500' : upsidePct && upsidePct > 0 ? 'text-amber-500' : 'text-red-500'}`}>
                             ${analystTarget?.toFixed(0) || 'N/A'}
                         </span>
-                        {upsidePct && <span className={`text-sm ${upsidePct > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {upsidePct !== null && <span className={`text-sm ${upsidePct > 0 ? 'text-green-400' : 'text-red-400'}`}>
                             {upsidePct > 0 ? '+' : ''}{upsidePct.toFixed(0)}%
                         </span>}
                     </div>
@@ -331,16 +331,16 @@ export default function MetricsGrid({ stockData }: MetricsGridProps) {
                         {!isTech && <AlertTriangle size={16} className="text-amber-500" />}
                     </div>
                     <div className="flex items-baseline gap-2">
-                        <span className={`text-3xl font-bold ${r40Color}`}>{r40Score.toFixed(1)}%</span>
+                        <span className={`text-3xl font-bold ${r40Color}`}>{r40Score?.toFixed(1) || '0.0'}%</span>
                     </div>
                     <div className="mt-3 text-xs text-slate-400 space-y-1">
                         <div className="flex justify-between">
                             <span>Rev Growth</span>
-                            <span className="text-text">{expert_metrics.rule_of_40.revenue_growth.toFixed(1)}%</span>
+                            <span className="text-text">{expert_metrics.rule_of_40.revenue_growth?.toFixed(1) || '0.0'}%</span>
                         </div>
                         <div className="flex justify-between">
                             <span>EBITDA Margin</span>
-                            <span className="text-text">{expert_metrics.rule_of_40.ebitda_margin.toFixed(1)}%</span>
+                            <span className="text-text">{expert_metrics.rule_of_40.ebitda_margin?.toFixed(1) || '0.0'}%</span>
                         </div>
                     </div>
                     <p className="text-xs text-slate-500 mt-3">{r40Score >= 40 ? 'Passes Rule of 40' : 'Below target'}</p>
