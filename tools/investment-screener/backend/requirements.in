@@ -1,0 +1,7 @@
+# Inherit from core tools requirements
+-r ../../requirements.in
+
+# specialized dependencies for investment-screener backend services
+yfinance
+keyring
+cryptography>=46.0.3
