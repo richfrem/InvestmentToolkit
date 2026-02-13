@@ -215,6 +215,12 @@
     "summarized_at": "2026-02-13T08:48:23.924522",
     "summary": "{\n  \"purpose\": \"Fetches portfolio data for treemap visualization. Calculates sector and industry allocations based on shares and current prices.\",\n  \"layer\": \"Tools / Investment-Screener\",\n  \"supported_object_types\": [\"JSON string representing the portfolio items\"],\n  \"usage\": [\"python tools/investment-screener/backend/py_services/fetch_portfolio_heatmap.py '[{\\\"symbol\\\": \\\"AAPL\\\", \\\"shares\\\": 100}]'\"],\n  \"args\": [\n    {\n      \"name\": \"portfolio_json\",\n      \"description\": \"JSON string representing the portfolio items\"\n    }\n  ],\n  \"inputs\": [\"JSON string representing the portfolio items\"],\n  \"outputs\": \"Nested dictionary grouped by sector and industry\",\n  \"dependencies\": [\"yfinance\"],\n  \"consumed_by\": [],\n  \"key_functions\": [\n    \"get_position_metadata()\",\n    \"resolve_classification()\",\n    \"process_single_position()\",\n    \"fetch_portfolio_data()\"\n  ]\n}"
   },
+  "tools/investment-screener/backend/src/QuestradeDataEngine.py": {
+    "file_mtime": 1771008493.712746,
+    "hash": "83d42016dfff5f1f",
+    "summarized_at": "2026-02-13T10:49:21.790813",
+    "summary": "{\n  \"purpose\": \"Core sync engine that coordinates token management, API retrieval, and portfolio aggregation.\",\n  \"layer\": \"Retrieve\",\n  \"supported_object_types\": [\"Questrade accounts\", \"Portfolio holdings\"],\n  \"usage\": [\"python QuestradeDataEngine.py --cache-dir . --output portfolio.json\"],\n  \"args\": [\n    {\n      \"name\": \"--cache-dir\",\n      \"description\": \"Directory where the token cache is located.\",\n      \"default\": \".\"\n    },\n    {\n      \"name\": \"--output\",\n      \"description\": \"Target path for the aggregated portfolio JSON.\"\n    }\n  ],\n  \"inputs\": [\"Token cache\"],\n  \"outputs\": [\"portfolio.json\"],\n  \"dependencies\": [\n    \"QuestradeTokenManager.py\",\n    \"QuestradeAPIClient.py\",\n    \"PortfolioAggregator.py\"\n  ],\n  \"consumed_by\": [],\n  \"key_functions\": [\n    \"QuestradeSyncEngine.__init__\",\n    \"QuestradeSyncEngine.run_sync\"\n  ]\n}"
+  },
   "tools/investment-screener/frontend/eslint.config.js": {
     "file_mtime": 1770492860.622046,
     "hash": "4efe97b16d1200fa",
