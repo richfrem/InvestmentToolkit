@@ -1,0 +1,280 @@
+[
+  {
+    "symbol": "ZS",
+    "shares": 4.0,
+    "price": 177.88,
+    "sector": "Other",
+    "industry": "Other",
+    "last_updated": "2026-02-13T11:53:59.732384"
+  },
+  {
+    "symbol": "VST",
+    "shares": 7.0,
+    "price": 170.57,
+    "sector": "Utilities",
+    "industry": "Utilities - Independent Power Producers",
+    "last_updated": "2026-02-13T11:53:59.732506",
+    "name": "Vistra Corp."
+  },
+  {
+    "symbol": "ANET",
+    "shares": 4.0,
+    "price": 142.7,
+    "sector": "Technology",
+    "industry": "Computer Hardware",
+    "last_updated": "2026-02-13T11:53:59.732544",
+    "name": "Arista Networks, Inc."
+  },
+  {
+    "symbol": "SOLZ",
+    "shares": 40.0,
+    "price": 8.63,
+    "sector": "Cryptocurrency",
+    "industry": "Crypto Assets",
+    "last_updated": "2026-02-13T11:53:59.732553",
+    "name": "Solana ETF"
+  },
+  {
+    "symbol": "VRT",
+    "shares": 2.0,
+    "price": 235.58,
+    "sector": "Industrials",
+    "industry": "Electrical Equipment & Parts",
+    "last_updated": "2026-02-13T11:53:59.732557",
+    "name": "Vertiv Holdings, LLC"
+  },
+  {
+    "symbol": "MSFT",
+    "shares": 2.0,
+    "price": 401.96,
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "last_updated": "2026-02-13T11:53:59.732560",
+    "name": "Microsoft Corporation"
+  },
+  {
+    "symbol": "IBIT",
+    "shares": 18.0,
+    "price": 39.12,
+    "sector": "Cryptocurrency",
+    "industry": "Bitcoin ETF",
+    "last_updated": "2026-02-13T11:53:59.732564",
+    "name": "iShares Bitcoin Trust ETF"
+  },
+  {
+    "symbol": "KOID",
+    "shares": 22.0,
+    "price": 35.6,
+    "sector": "Technology",
+    "industry": "Software - Application",
+    "last_updated": "2026-02-13T11:53:59.732567",
+    "name": "KraneShares Global Humanoid and"
+  },
+  {
+    "symbol": "OKLO",
+    "shares": 10.0,
+    "price": 65.52,
+    "sector": "Utilities",
+    "industry": "Utilities - Independent Power Producers",
+    "last_updated": "2026-02-13T11:53:59.732607",
+    "name": "Oklo Inc."
+  },
+  {
+    "symbol": "IREN",
+    "shares": 10.0,
+    "price": 42.53,
+    "sector": "Financial Services",
+    "industry": "Capital Markets",
+    "last_updated": "2026-02-13T11:53:59.732622",
+    "name": "IREN LIMITED"
+  },
+  {
+    "symbol": "CDNS",
+    "shares": 1.0,
+    "price": 299.52,
+    "sector": "Technology",
+    "industry": "Software - Application",
+    "last_updated": "2026-02-13T11:53:59.732628",
+    "name": "Cadence Design Systems, Inc."
+  },
+  {
+    "symbol": "RGTI",
+    "shares": 40.0,
+    "price": 15.89,
+    "sector": "Technology",
+    "industry": "Computer Hardware",
+    "last_updated": "2026-02-13T11:53:59.732633",
+    "name": "Rigetti Computing, Inc."
+  },
+  {
+    "symbol": "AMD",
+    "shares": 5.0,
+    "price": 207.25,
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "last_updated": "2026-02-13T11:53:59.732638",
+    "name": "Advanced Micro Devices, Inc."
+  },
+  {
+    "symbol": "GOOG",
+    "shares": 5.0,
+    "price": 307.37,
+    "sector": "Communication Services",
+    "industry": "Internet Content & Information",
+    "last_updated": "2026-02-13T11:53:59.732642",
+    "name": "Alphabet Inc."
+  },
+  {
+    "symbol": "AVGO",
+    "shares": 1.0,
+    "price": 326.22,
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "last_updated": "2026-02-13T11:53:59.732645",
+    "name": "Broadcom Inc."
+  },
+  {
+    "symbol": "COIN",
+    "shares": 5.0,
+    "price": 166.7,
+    "sector": "Cryptocurrency",
+    "industry": "Crypto Exchange",
+    "last_updated": "2026-02-13T11:53:59.732649",
+    "name": "Coinbase Global, Inc. - 3"
+  },
+  {
+    "symbol": "CRWD",
+    "shares": 1.5,
+    "price": 430.46,
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "last_updated": "2026-02-13T11:53:59.732653",
+    "name": "CrowdStrike Holdings, Inc."
+  },
+  {
+    "symbol": "PANW",
+    "shares": 8.0,
+    "price": 167.05,
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "last_updated": "2026-02-13T11:53:59.732657",
+    "name": "Palo Alto Networks, Inc."
+  },
+  {
+    "symbol": "CRCL",
+    "shares": 12.0,
+    "price": 60.19,
+    "sector": "Cryptocurrency",
+    "industry": "Crypto Infrastructure",
+    "last_updated": "2026-02-13T11:53:59.732660",
+    "name": "Circle Internet Group, Inc."
+  },
+  {
+    "symbol": "ETHA",
+    "shares": 67.0,
+    "price": 15.55,
+    "sector": "Cryptocurrency",
+    "industry": "Ethereum ETF",
+    "last_updated": "2026-02-13T11:53:59.732664",
+    "name": "iShares Ethereum Trust ETF"
+  },
+  {
+    "symbol": "INTC",
+    "shares": 80.0,
+    "price": 46.95,
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "last_updated": "2026-02-13T11:53:59.732668",
+    "name": "Intel Corporation"
+  },
+  {
+    "symbol": "POET",
+    "shares": 80.0,
+    "price": 5.52,
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "last_updated": "2026-02-13T11:53:59.732671",
+    "name": "POET Technologies Inc."
+  },
+  {
+    "symbol": "META",
+    "shares": 1.5,
+    "price": 644.88,
+    "sector": "Communication Services",
+    "industry": "Internet Content & Information",
+    "last_updated": "2026-02-13T11:53:59.732693",
+    "name": "Meta Platforms, Inc."
+  },
+  {
+    "symbol": "EQIX",
+    "shares": 1.0,
+    "price": 952.28,
+    "sector": "Real Estate",
+    "industry": "REIT - Specialty",
+    "last_updated": "2026-02-13T11:53:59.732699",
+    "name": "Equinix, Inc."
+  },
+  {
+    "symbol": "SNPS",
+    "shares": 1.5,
+    "price": 436.11,
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "last_updated": "2026-02-13T11:53:59.732702",
+    "name": "Synopsys, Inc."
+  },
+  {
+    "symbol": "TEM",
+    "shares": 10.0,
+    "price": 51.67,
+    "sector": "Healthcare",
+    "industry": "Health Information Services",
+    "last_updated": "2026-02-13T11:53:59.732706",
+    "name": "Tempus AI, Inc."
+  },
+  {
+    "symbol": "HUMN",
+    "shares": 26.0,
+    "price": 33.06,
+    "sector": "Technology",
+    "industry": "Software - Application",
+    "last_updated": "2026-02-13T11:53:59.732709",
+    "name": "Roundhill Humanoid Robotics ETF"
+  },
+  {
+    "symbol": "CEG",
+    "shares": 3.0,
+    "price": 291.67,
+    "sector": "Utilities",
+    "industry": "Utilities - Independent Power Producers",
+    "last_updated": "2026-02-13T11:53:59.732712",
+    "name": "Constellation Energy Corporatio"
+  },
+  {
+    "symbol": "CORZ",
+    "shares": 70.0,
+    "price": 18.23,
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "last_updated": "2026-02-13T11:53:59.732715",
+    "name": "Core Scientific, Inc."
+  },
+  {
+    "symbol": "CRWV",
+    "shares": 20.0,
+    "price": 95.01,
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "last_updated": "2026-02-13T11:53:59.732718",
+    "name": "CoreWeave, Inc."
+  },
+  {
+    "symbol": "NBIS",
+    "shares": 4.0,
+    "price": 96.27,
+    "sector": "Communication Services",
+    "industry": "Internet Content & Information",
+    "last_updated": "2026-02-13T11:53:59.732727",
+    "name": "Nebius Group N.V."
+  }
+]
