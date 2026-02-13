@@ -1,108 +1,90 @@
-# Implementation Plan: [FEATURE]
-*Path: [templates/plan-template.md](templates/plan-template.md)*
+# Implementation Plan: Questrade Portfolio Integration
 
-
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/kitty-specs/[###-feature-name]/spec.md`
-
-**Note**: This template is filled in by the `/spec-kitty.plan` command. See `src/specify_cli/missions/software-dev/command-templates/plan.md` for the execution workflow.
-
-The planner will not begin until all planning questions have been answered—capture those answers in this document before progressing to later phases.
+**Branch**: `003-questrade-portfolio-integration` | **Date**: 2026-02-13 | **Spec**: [spec.md](spec.md)
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+This feature adds dynamic Questrade portfolio retrieval to the `investment-screener`, following the **Multi-Language Bridge Pattern** ([ADR 017](../../adrs/017-multi-language-bridge-pattern.md)). It uses a Python-based utility to fetch holdings across TFSA, RRSP, and Margin accounts, performing **Portfolio Data Aggregation** ([ADR 018](../../adrs/018-local-json-data-persistence.md)). Security is maintained through **Stateful Token Rotation** ([ADR 015](../../adrs/015-stateful-token-rotation.md)) and **Hardware-Backed Encryption** ([ADR 019](../../adrs/019-local-token-encryption.md)).
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
-
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [single/web/mobile - determines source structure]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: Python 3.x (Retrieval Engine), Node.js (Express) with TypeScript (Backend)  
+**Primary Dependencies**: `requests`, `cryptography`, `keyring` (Python); `child_process` (Node.js)  
+**Storage**: `tools/investment-screener/frontend/src/data/portfolio.json` (Public), `.questrade_cache` (Secure)  
+**Testing**: `pytest` for the Python manager; `Jest/Supertest` for the API bridge  
+**Target Platform**: macOS (primary), Linux/Windows support  
+**Project Type**: Web Application (Monorepo - [ADR 016](../../adrs/016-investment-screener-architecture.md))  
+**Performance Goals**: Sync completes in <10s for portfolios with <50 positions  
+**Constraints**: Single-use tokens require **Atomic Swap** rotation; hardware-backed encryption via `keyring`.
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+*GATE: Passed. Complies with Section 2 (Languages) and Section 3 (Quality).*
 
-[Gates determined based on constitution file]
+- **Rule 2.1**: Using Python for financial data fetching via Node `child_process`. [PASS]
+- **Rule 2.2**: Frontend uses Tailwind CSS for the luxury dark theme. [PASS]
+- **Rule 3.1**: Conventional commits and self-review required. [PASS]
+
+## Implementation Details (Deep Dive)
+
+### 1. Stateful Token Rotation ([ADR 015](../../adrs/015-stateful-token-rotation.md))
+Following the [Stateful Token Rotation Guide](../../docs/architecture/Questrade/stateful_token_rotation.md):
+- **Hybrid Initialization**: Uses `QUESTRADE_REFRESH_TOKEN` (Env) for seeding and `.questrade_cache` for ongoing operations.
+- **Atomic Swap Strategy**: New tokens are written to `.questrade_cache.tmp` before an `atomic rename` to prevent loss during crashes.
+- **Graceful Fallback**: Automatically reverts to the Setup Modal if all cached and environment tokens fail.
+
+### 2. Data Retrieval & Aggregation ([ADR 018](../../adrs/018-local-json-data-persistence.md))
+Based on the [Questrade Architecture Report](../../docs/architecture/Questrade/architecture_report.md):
+- **Account Discovery**: Calls `/v1/accounts` to find all sub-accounts.
+- **Position Fetching**: Iterates through accounts to fetch positions (`/v1/accounts/{id}/positions`) and balances.
+- **Authoritative Sync**: Questrade data overwrites manual entries in `portfolio.json` for shared symbols.
+
+### 3. Security & Encryption ([ADR 019](../../adrs/019-local-token-encryption.md))
+- **Key Management**: Uses the macOS Keychain via the Python `keyring` library to store the AES-256 master key.
+- **Git Hygiene**: `.questrade_cache` is strictly excluded from version control via `.gitignore`.
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```
-kitty-specs/[###-feature]/
-├── plan.md              # This file (/spec-kitty.plan command output)
-├── research.md          # Phase 0 output (/spec-kitty.plan command)
-├── data-model.md        # Phase 1 output (/spec-kitty.plan command)
-├── quickstart.md        # Phase 1 output (/spec-kitty.plan command)
-├── contracts/           # Phase 1 output (/spec-kitty.plan command)
-└── tasks.md             # Phase 2 output (/spec-kitty.tasks command - NOT created by /spec-kitty.plan)
+kitty-specs/003-questrade-portfolio-integration/
+├── spec.md              # Feature specification
+├── plan.md              # This file
+├── research.md          # Phase 0: Security & Token Recovery
+├── data-model.md        # Phase 1: Aggregated Holdings Model
+├── quickstart.md        # Phase 1: Setup & Initialization Guide
+└── checklists/
+    └── requirements.md  # Quality validation results
 ```
 
 ### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
 
 ```
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
+tools/investment-screener/
+├── backend/
+│   ├── src/
+│   │   ├── services/
+│   │   │   └── QuestradeSyncService.ts  # Node.js Bridge (calls child_process)
+│   │   └── utils/
+│   │       └── QuestradeManager.py      # Python Engine (handles auth/sync)
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   └── QuestradeSetupModal.tsx  # Setup UI
+│   │   └── data/
+│   │       └── portfolio.json           # Authoritative Holdings
 └── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+    ├── questrade_manager_test.py
+    └── questrade_sync_api.test.ts
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: Option 2: Web application (Monorepo - ADR 016).
 
 ## Complexity Tracking
 
-*Fill ONLY if Constitution Check has violations that must be justified*
-
 | Violation | Why Needed | Simpler Alternative Rejected Because |
 |-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+| Multi-Language Bridge | Python is superior for financial APIs | Direct Node.js implementation lacks robust library support for Questrade |
+| AES-256 Encryption | Security compliance (ADR 019) | Plaintext storage is a critical security risk |
+| Atomic Disk Swap | Resilience (ADR 015) | Standard file overwrite is susceptible to corruption on crash |
