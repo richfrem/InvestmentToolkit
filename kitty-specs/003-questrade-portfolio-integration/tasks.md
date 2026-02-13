@@ -13,8 +13,8 @@ The implementation is broken into 4 work packages focusing on security, data ret
 **Independent Test**: Python utility can encrypt/decrypt a test token via the macOS Keychain and perform an atomic overwrite of the cache file.
 
 ### Included Subtasks
-- [ ] **T001**: Implement `QuestradeTokenManager.py` core with AES-256 encryption via `keyring`.
-- [ ] **T002**: Implement Atomic Swap rotation logic for `.questrade_cache`.
+- [x] T001: Implement `QuestradeTokenManager.py` core with AES-256 encryption via `keyring`.
+- [x] T002: Implement Atomic Swap rotation logic for `.questrade_cache`.
 
 ### Implementation Sketch
 1. Set up the `keyring` integration for macOS Keychain.
