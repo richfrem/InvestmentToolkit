@@ -1,4 +1,3 @@
-```
 ---
 work_package_id: WP04
 title: UI Onboarding & Sync Trigger
