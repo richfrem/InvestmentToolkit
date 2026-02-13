@@ -16,7 +16,8 @@ graph TD
     %% Nodes - Feature Level (End)
     subgraph Completion["Feature Completion"]
         VersionCheck["fa:fa-code-branch Version Check<br>(Cmd: spec-kitty upgrade --dry-run)"]
-        Accept["fa:fa-check-double Accept Feature<br>(Cmd: spec-kitty accept --mode local)<br>(Verifies All WPs Done)"]
+        Accept["fa:fa-check-double Accept Feature<br>(Cmd: spec-kitty accept --mode local)<br>(Verifies All WPs Done & Worktrees Exist)"]
+        StateBackup["fa:fa-save State Preservation<br>(Manual: Backup untracked state/caches)"]
         Merge["fa:fa-magic Spec-Kitty Merge (Automated)<br>(Cmd: spec-kitty merge --strategy squash --push)<br>(Context: Main Repo Root)<br>• Auto-Merges WPs<br>• Cleanup: Auto-Removes Worktrees<br>• Conflict Check: Audit if 'nothing to squash'"]
         End(("Feature Done<br>(Clean Repo)"))
     end
@@ -38,7 +39,8 @@ graph TD
     
     %% Finalization
     Accept --> VersionCheck
-    VersionCheck --> Merge
+    VersionCheck --> StateBackup
+    StateBackup --> Merge
     Merge --> End
 
     %% Styles
@@ -48,4 +50,4 @@ graph TD
 
     class Specify,Plan feature;
     class Implement,Code,Commit,MoveReview,Review wp;
-    class Accept,Merge,End,VersionCheck done;
+    class Accept,Merge,End,VersionCheck,StateBackup done;

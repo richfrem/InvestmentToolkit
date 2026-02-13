@@ -21,6 +21,8 @@ Standard lifecycle for implementing features using Spec Kitty.
 3. **Kanban neglect**: Not updating task lanes, so dashboard shows stale state
 4. **Verification skip**: Marking a phase complete without running `verify_workflow_state.py`
 5. **Closure amnesia**: Finishing code but skipping review/merge/closure steps
+6. **Premature cleanup**: Manually deleting worktrees before running `spec-kitty merge` (breaks pre-flight)
+7. **Ignoring .gitignore**: Forgetting that untracked files (e.g., .env, .cache) in worktrees are deleted during merge
 
 ---
 
@@ -163,7 +165,12 @@ Run from the **Main Repository Root** for workspace-per-WP features.
 ```bash
 spec-kitty merge --feature <FEATURE-SLUG> --strategy squash --push
 ```
-**TROUBLESHOOTING**: If merge fails with "nothing to commit" during squash, it means the WP is already partially/fully integrated. Audit with `git diff main <WP-BRANCH>` and merge manually if needed.
+> [!CAUTION]
+> **State Preservation**: The merge tool deletes worktrees. If you have untracked state (like `.questrade_cache`) that needs to persist, manually COPY IT to the main repo root BEFORE merging.
+
+**TROUBLESHOOTING**: 
+- **Pre-flight Error: Missing Worktree**: The merge command requires all WP worktrees to exist for its check. If deleted, recreate them: `git worktree add .worktrees/<WP-FOLDER> <WP-BRANCH>`.
+- **Merge Error: Nothing to squash**: Occurs if the WP is already partially/fully integrated. Audit with `git diff main <WP-BRANCH>` and merge manually if needed.
 If this fails, use the manual fallback:
 ```bash
 git merge <WP-BRANCH-NAME>
