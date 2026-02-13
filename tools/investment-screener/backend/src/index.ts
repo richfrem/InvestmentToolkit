@@ -160,6 +160,75 @@ app.post('/api/portfolio/sync-questrade', async (_req, res) => {
     }
 });
 
+app.post('/api/questrade/seed', async (req, res) => {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+        res.status(400).json({ error: 'refreshToken is required' });
+        return;
+    }
+
+    console.log(`[API] Seeding Questrade refresh token...`);
+    try {
+        const { spawn } = require('child_process');
+        const enginePath = path.resolve(__dirname, 'QuestradeDataEngine.py');
+        const args = ['--cache-dir', path.resolve(__dirname, '../'), '--seed', refreshToken];
+
+        console.log(`[API][Seed] Spawning: python3 ${enginePath} ${args.join(' ')}`);
+        const pythonProcess = spawn('python3', [enginePath, ...args]);
+
+        let output = '';
+        let errorOutput = '';
+
+        pythonProcess.stdout.on('data', (data: any) => {
+            output += data.toString();
+            console.log(`[API][Seed][Python] ${data.toString().trim()}`);
+        });
+
+        pythonProcess.stderr.on('data', (data: any) => {
+            errorOutput += data.toString();
+            console.error(`[API][Seed][Error] ${data.toString().trim()}`);
+        });
+
+        pythonProcess.on('close', (code: number) => {
+            if (code === 0) {
+                console.log(`[API][Seed] Success.`);
+                res.json({ success: true, message: 'Refresh token seeded successfully.' });
+            } else {
+                console.error(`[API][Seed] Failed with code ${code}. Error: ${errorOutput}`);
+                res.status(500).json({
+                    error: `Seeding failed with code ${code}`,
+                    details: errorOutput || 'Unknown error'
+                });
+            }
+        });
+    } catch (error: any) {
+        console.error(`[API] Seeding Error:`, error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/portfolio/status', (req, res) => {
+    try {
+        if (!fs.existsSync(PORTFOLIO_FILE)) {
+            res.json({ lastSync: null });
+            return;
+        }
+        const data = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+        if (Array.isArray(data) && data.length > 0) {
+            // Find the most recent last_updated timestamp
+            const lastSync = data.reduce((latest: string, item: any) => {
+                if (!item.last_updated) return latest;
+                return !latest || new Date(item.last_updated) > new Date(latest) ? item.last_updated : latest;
+            }, '');
+            res.json({ lastSync: lastSync || null });
+        } else {
+            res.json({ lastSync: null });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to get status' });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Backend server running on http://localhost:${port}`);
 });

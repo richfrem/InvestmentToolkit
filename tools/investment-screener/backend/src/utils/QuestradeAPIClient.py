@@ -57,24 +57,39 @@ class QuestradeAPIClient:
             "Content-Type": "application/json"
         }
 
-    def _get_api_server(self) -> str:
+    def refresh_tokens(self) -> Dict[str, Any]:
         """
-        Retrieves the current API server URL from tokens.
+        Refreshes tokens using the current refresh token.
+        Implements ADR 015.
 
         Returns:
-            The API server base URL.
+            The new token dictionary.
 
         Raises:
-            RuntimeError: If server URL is missing.
+            RuntimeError: If refresh fails.
         """
         tokens = self.token_manager.load_tokens()
-        if not tokens or "api_server" not in tokens:
-            raise RuntimeError("API server URL missing from cache.")
-        return tokens["api_server"].rstrip('/')
+        if not tokens or "refresh_token" not in tokens:
+            raise RuntimeError("No refresh token available to rotate.")
+
+        refresh_token = tokens["refresh_token"]
+        url = f"https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token={refresh_token}"
+        
+        self.logger.info("Rotating Questrade tokens...")
+        response = requests.post(url)
+        
+        if not response.ok:
+            error_data = response.json() if response.content else {"error": response.reason}
+            raise RuntimeError(f"Token rotation failed: {error_data}")
+
+        new_tokens = response.json()
+        self.token_manager.save_tokens(new_tokens)
+        self.logger.info("Tokens rotated successfully.")
+        return new_tokens
 
     def _request(self, method: str, endpoint: str, **kwargs) -> Dict[str, Any]:
         """
-        Executes an authenticated API request with automatic token rotation on 401.
+        Executes an authenticated API request with automatic token rotation.
 
         Args:
             method: HTTP method (GET, POST, etc.)
@@ -87,15 +102,28 @@ class QuestradeAPIClient:
         Raises:
             HTTPError: If the request fails.
         """
-        url = f"{self._get_api_server()}/{endpoint.lstrip('/')}"
-        headers = self._get_headers()
+        # Ensure we have valid session data (ADR 015)
+        tokens = self.token_manager.load_tokens()
+        if not tokens or "access_token" not in tokens or "api_server" not in tokens:
+            self.logger.info("Session incomplete. Attempting initial rotation...")
+            tokens = self.refresh_tokens()
+
+        url = f"{tokens['api_server'].rstrip('/')}/{endpoint.lstrip('/')}"
+        headers = {
+            "Authorization": f"Bearer {tokens['access_token']}",
+            "Content-Type": "application/json"
+        }
         
         response = requests.request(method, url, headers=headers, **kwargs)
         
         if response.status_code == 401:
-            self.logger.info("Access token expired. Attempting rotation...")
-            # Note: Rotation logic is coordinated by the SyncEngine calling a refresh.
-            pass
+            self.logger.info("Access token expired (401). Attempting rotation...")
+            tokens = self.refresh_tokens()
+            
+            # Retry once with new tokens
+            url = f"{tokens['api_server'].rstrip('/')}/{endpoint.lstrip('/')}"
+            headers["Authorization"] = f"Bearer {tokens['access_token']}"
+            response = requests.request(method, url, headers=headers, **kwargs)
             
         response.raise_for_status()
         return response.json()

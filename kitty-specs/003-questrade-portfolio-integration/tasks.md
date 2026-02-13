@@ -1,7 +1,7 @@
 # Work Packages: Questrade Portfolio Integration
 
 **Feature**: [spec.md](spec.md) | **Plan**: [plan.md](plan.md)
-**Status**: Planned
+**Status**: Done
 
 ## Summary
 The implementation is broken into 4 work packages focusing on security, data retrieval, backend bridging, and user interface.
