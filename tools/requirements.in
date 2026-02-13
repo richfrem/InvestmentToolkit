@@ -1,0 +1,14 @@
+# Core Framework
+spec-kitty-cli
+
+# Orchestrator Dependencies
+rich
+pyyaml
+simple_term_menu
+pydantic
+
+# Fix for langchain-core conflict
+packaging<26.0
+
+# Pin pip to avoid pip-tools incompatibility (v26.0 breaks it)
+pip==25.3
