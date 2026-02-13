@@ -3,6 +3,7 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { spawnPythonScript } from './services/bridge';
+import { questradeSyncService } from './services/QuestradeSyncService';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -139,6 +140,23 @@ app.post('/api/portfolio/refresh-prices', async (_req, res) => {
     } catch (error) {
         console.error(`[API] Error refreshing prices:`, error);
         res.status(500).json({ error: 'Failed to refresh prices' });
+    }
+});
+
+app.post('/api/portfolio/sync-questrade', async (_req, res) => {
+    console.log(`[API] Triggering Questrade Portfolio Sync...`);
+    try {
+        await questradeSyncService.runSync();
+        res.json({
+            success: true,
+            message: 'Questrade portfolio sync completed successfully.'
+        });
+    } catch (error: any) {
+        console.error(`[API] Questrade Sync Error:`, error);
+        res.status(500).json({
+            error: 'Questrade sync failed',
+            details: error.message
+        });
     }
 });
 
