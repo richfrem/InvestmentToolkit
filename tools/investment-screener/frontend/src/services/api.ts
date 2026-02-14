@@ -134,6 +134,31 @@ export const seedQuestradeToken = async (refreshToken: string): Promise<{ succes
     return data;
 };
 
+export interface ValuationResult {
+    fair_value: number;
+    growth_assumption: number;
+    rationale: string;
+    action: "BUY" | "SELL" | "HOLD";
+    model_name: string;
+    suggested_growth?: number;
+    suggested_margin?: number;
+    exit_pe?: number;
+    quality_multiplier?: number;
+}
+
+export const runAIAnalysis = async (ticker: string, userMessage?: string): Promise<ValuationResult> => {
+    const response = await fetch('/api/analysis/valuation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticker, userMessage }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.details || data.error || 'AI Analysis failed');
+    }
+    return data;
+};
+
 export const fetchSyncStatus = async (): Promise<{ lastSync: string | null }> => {
     const response = await fetch('/api/portfolio/status');
     if (!response.ok) {

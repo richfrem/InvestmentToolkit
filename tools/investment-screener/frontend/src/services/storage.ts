@@ -10,10 +10,16 @@ export interface SavedProjection {
         growthRate: number;
         netMargin: number;
         exitPE: number;
+        qualityMultiplier: number;
         shareChange: number;
         discountRate: number;
         timeHorizon: number;
         terminalGrowth: number;
+        aiThesis?: {
+            rationale: string;
+            fairValue: number;
+            action: string;
+        };
     };
 }
 

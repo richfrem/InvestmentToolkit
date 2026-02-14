@@ -1,7 +1,12 @@
 import express from 'express';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Initialize environment variables from the project root .env
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
 import cors from 'cors';
 import fs from 'fs';
-import path from 'path';
 import { spawnPythonScript } from './services/bridge';
 import { questradeSyncService } from './services/QuestradeSyncService';
 
@@ -42,7 +47,7 @@ app.get('/api/stock/:ticker', async (req, res) => {
         }
         res.json(data);
     } catch (error) {
-        console.error(`[API] Error fetching ${ticker}:`, error);
+        console.error(`[API] Error fetching ${ticker}: `, error);
         res.status(500).json({ error: 'Failed to fetch financial data' });
     }
 });
@@ -57,7 +62,7 @@ app.post('/api/portfolio-heatmap', async (req, res) => {
         }
         const invalidTickers = items.filter((item: any) => !isValidTicker(item.symbol));
         if (invalidTickers.length > 0) {
-            res.status(400).json({ error: `Invalid ticker symbols: ${invalidTickers.map((i: any) => i.symbol).join(', ')}` });
+            res.status(400).json({ error: `Invalid ticker symbols: ${invalidTickers.map((i: any) => i.symbol).join(', ')} ` });
             return;
         }
         const data = await spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(items)]);
@@ -67,7 +72,7 @@ app.post('/api/portfolio-heatmap', async (req, res) => {
         }
         res.json(data);
     } catch (error) {
-        console.error(`[API] Error fetching heatmap:`, error);
+        console.error(`[API] Error fetching heatmap: `, error);
         res.status(500).json({ error: 'Failed to fetch heatmap data' });
     }
 });
@@ -81,7 +86,7 @@ app.get('/api/portfolio', async (_req, res) => {
         const data = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
         res.json({ items: data });
     } catch (error) {
-        console.error(`[API] Error reading portfolio:`, error);
+        console.error(`[API] Error reading portfolio: `, error);
         res.status(500).json({ error: 'Failed to read portfolio' });
     }
 });
@@ -97,7 +102,7 @@ app.post('/api/portfolio', async (req, res) => {
         fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(items, null, 2));
         res.json({ success: true, count: items.length });
     } catch (error) {
-        console.error(`[API] Error saving portfolio:`, error);
+        console.error(`[API] Error saving portfolio: `, error);
         res.status(500).json({ error: 'Failed to save portfolio' });
     }
 });
@@ -138,7 +143,7 @@ app.post('/api/portfolio/refresh-prices', async (_req, res) => {
             heatmap: data
         });
     } catch (error) {
-        console.error(`[API] Error refreshing prices:`, error);
+        console.error(`[API] Error refreshing prices: `, error);
         res.status(500).json({ error: 'Failed to refresh prices' });
     }
 });
@@ -152,7 +157,7 @@ app.post('/api/portfolio/sync-questrade', async (_req, res) => {
             message: 'Questrade portfolio sync completed successfully.'
         });
     } catch (error: any) {
-        console.error(`[API] Questrade Sync Error:`, error);
+        console.error(`[API] Questrade Sync Error: `, error);
         res.status(500).json({
             error: 'Questrade sync failed',
             details: error.message
@@ -173,7 +178,7 @@ app.post('/api/questrade/seed', async (req, res) => {
         const enginePath = path.resolve(__dirname, 'QuestradeDataEngine.py');
         const args = ['--cache-dir', path.resolve(__dirname, '../'), '--seed', refreshToken];
 
-        console.log(`[API][Seed] Spawning: python3 ${enginePath} ${args.join(' ')}`);
+        console.log(`[API][Seed] Spawning: python3 ${enginePath} ${args.join(' ')} `);
         const pythonProcess = spawn('python3', [enginePath, ...args]);
 
         let output = '';
@@ -181,12 +186,12 @@ app.post('/api/questrade/seed', async (req, res) => {
 
         pythonProcess.stdout.on('data', (data: any) => {
             output += data.toString();
-            console.log(`[API][Seed][Python] ${data.toString().trim()}`);
+            console.log(`[API][Seed][Python] ${data.toString().trim()} `);
         });
 
         pythonProcess.stderr.on('data', (data: any) => {
             errorOutput += data.toString();
-            console.error(`[API][Seed][Error] ${data.toString().trim()}`);
+            console.error(`[API][Seed][Error] ${data.toString().trim()} `);
         });
 
         pythonProcess.on('close', (code: number) => {
@@ -194,16 +199,43 @@ app.post('/api/questrade/seed', async (req, res) => {
                 console.log(`[API][Seed] Success.`);
                 res.json({ success: true, message: 'Refresh token seeded successfully.' });
             } else {
-                console.error(`[API][Seed] Failed with code ${code}. Error: ${errorOutput}`);
+                console.error(`[API][Seed] Failed with code ${code}.Error: ${errorOutput} `);
                 res.status(500).json({
-                    error: `Seeding failed with code ${code}`,
+                    error: `Seeding failed with code ${code} `,
                     details: errorOutput || 'Unknown error'
                 });
             }
         });
     } catch (error: any) {
-        console.error(`[API] Seeding Error:`, error);
+        console.error(`[API] Seeding Error: `, error);
         res.status(500).json({ error: error.message });
+    }
+});
+
+
+// --- AI Analyst Routes (Tool A) ---
+
+import { valuationService } from './services/ValuationService';
+
+app.post('/api/analysis/valuation', async (req, res) => {
+    const { ticker, userMessage } = req.body;
+    console.log(`[API] AI Valuation Request for ${ticker}...`);
+
+    try {
+        if (!ticker) {
+            res.status(400).json({ error: 'Ticker is required' });
+            return;
+        }
+
+        const result = await valuationService.analyzeStock(ticker, userMessage);
+        res.json(result);
+
+    } catch (error: any) {
+        console.error(`[API] Valuation Error: `, error);
+        res.status(500).json({
+            error: 'AI Analysis Failed',
+            details: error.message
+        });
     }
 });
 
