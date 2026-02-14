@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Save, RotateCcw, FolderOpen, TrendingUp, TrendingDown, Info, X } from 'lucide-react';
+import { Save, RotateCcw, FolderOpen, TrendingUp, TrendingDown, Info, X, AlertTriangle } from 'lucide-react';
 import type { StockData } from '../services/api';
 import { ProjectionsPanel } from './ProjectionsPanel';
 import { storage } from '../services/storage';
 import { HelpTrigger } from './HelpModal';
+import { runAIAnalysis, type ValuationResult } from '../services/api';
+import { Sparkles, BrainCircuit, Loader2 } from 'lucide-react';
 
 interface ValuationModelerProps {
     stockData: StockData;
@@ -15,6 +17,12 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const [showProjectionsPanel, setShowProjectionsPanel] = useState(false);
     const [savedCount, setSavedCount] = useState(0);
 
+    // AI State
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [aiResult, setAiResult] = useState<ValuationResult | null>(null);
+    const [aiError, setAiError] = useState<string | null>(null);
+    const [activeCoachMetric, setActiveCoachMetric] = useState<string | null>(null);
+
     // Save Modal State
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [saveName, setSaveName] = useState('');
@@ -24,6 +32,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const [netMargin, setNetMargin] = useState(20);
     const [peRatio, setPeRatio] = useState(25);
     const [discountRate, setDiscountRate] = useState(9);
+    const [qualityMultiplier, setQualityMultiplier] = useState(1.0);
     const [shareChange, setShareChange] = useState(-2); // Buybacks
     const [timeHorizon, setTimeHorizon] = useState(5);
 
@@ -53,7 +62,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         if (est) {
             // Default to Next Year (+1y) if user selected 'next', else Current (0y)
             const val = growthBasis === 'next' ? (est['+1y'] || est['0y']) : (est['0y'] || est['+1y']);
-            baseGrowth = val ? val * 100 : 15;
+            baseGrowth = val ? (Math.abs(val) > 1 ? val : val * 100) : 15;
         } else {
             // Fallback to historical
             const raw = stockData.analyst_estimates?.revenue_growth ?? stockData.metrics?.revenue_growth ?? 0.15;
@@ -75,6 +84,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         setNetMargin(Math.round(baseMargin * multiplier));
         setPeRatio(Math.round(basePe * multiplier));
         setDiscountRate(scenario === 'bull' ? 8 : scenario === 'bear' ? 12 : 10);
+        setQualityMultiplier(1.0);
         setShareChange(-2);
         setTimeHorizon(5);
     };
@@ -90,7 +100,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         const futureNetIncome = futureRevenue * (netMargin / 100);
 
         // 3. Future Market Cap (Valuation)
-        const futureMarketCap = futureNetIncome * pe;
+        const futureMarketCap = futureNetIncome * pe * qualityMultiplier;
 
         // 4. Future Share Count (Buybacks/Dilution)
         const currentShares = stockData.metrics.shares_outstanding || 1; // Avoid div/0
@@ -114,6 +124,41 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         resetToYahoo(); // Re-use preference logic
     };
 
+    const handleAIAnalysis = async (metric?: string) => {
+        setIsAnalyzing(true);
+        setAiError(null);
+        setActiveCoachMetric(metric || null);
+
+        let userMessage = "";
+        if (metric === "Growth Rate") {
+            userMessage = "Focus on recommending a realistic 5-year revenue growth rate based on historical trends and industry TAM.";
+        } else if (metric === "Net Margin") {
+            userMessage = "Focus on recommending a sustainable 5-year average net profit margin based on operational leverage and peer benchmarks.";
+        } else if (metric === "Exit PE") {
+            userMessage = "Focus on recommending a realistic Terminal Exit P/E multiple based on historical sector averages and growth profile.";
+        }
+
+        try {
+            const result = await runAIAnalysis(stockData.symbol, userMessage);
+            setAiResult(result);
+            if (result.growth_assumption && metric === "Growth Rate") {
+                setGrowthRate(Math.round(result.growth_assumption * 100));
+            }
+        } catch (err: any) {
+            setAiError(err.message || 'Failed to get AI Analysis');
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
+
+    const handleApplyAISuggestions = () => {
+        if (!aiResult) return;
+        if (aiResult.suggested_growth) setGrowthRate(Math.round(aiResult.suggested_growth * 100));
+        if (aiResult.suggested_margin) setNetMargin(Math.round(aiResult.suggested_margin * 100));
+        if (aiResult.exit_pe) setPeRatio(aiResult.exit_pe);
+        if (aiResult.quality_multiplier) setQualityMultiplier(aiResult.quality_multiplier);
+    };
+
     const handleSaveOpen = () => {
         setSaveName(`Projection ${new Date().toLocaleDateString()}`);
         setShowSaveModal(true);
@@ -131,6 +176,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 growthRate,
                 netMargin,
                 exitPE: peRatio,
+                qualityMultiplier,
                 shareChange,
                 discountRate,
                 timeHorizon,
@@ -146,6 +192,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         setGrowthRate(scenarios.growthRate);
         setNetMargin(scenarios.netMargin);
         setPeRatio(scenarios.exitPE);
+        setQualityMultiplier(scenarios.qualityMultiplier || 1.0);
         setDiscountRate(scenarios.discountRate);
         setShareChange(scenarios.shareChange);
         setTimeHorizon(scenarios.timeHorizon);
@@ -177,8 +224,9 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                         <input
                             type="number"
                             value={value}
+                            step={step}
                             onChange={(e) => setValue(Number(e.target.value))}
-                            className={`w-10 bg-transparent text-right text-xs font-bold focus:outline-none ${isWarning ? 'text-red-400' : 'text-text'}`}
+                            className={`w-14 bg-transparent text-right text-xs font-bold focus:outline-none ${isWarning ? 'text-red-400' : 'text-text'}`}
                         />
                         <span className="text-[10px] text-slate-500 ml-1">{unit}</span>
                     </div>
@@ -305,6 +353,18 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                         Sync Consensus
                     </button>
                     <button
+                        onClick={() => handleAIAnalysis()} // Call without specific metric for general analysis
+                        disabled={isAnalyzing}
+                        className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-all text-[10px] font-medium border ${isAnalyzing
+                            ? 'bg-purple-500/20 text-purple-300 border-purple-500/30 cursor-not-allowed'
+                            : 'bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border-indigo-500/20'
+                            }`}
+                        title="Get AI feedback from the 'Valuation Expert'"
+                    >
+                        {isAnalyzing ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+                        AI Analyst
+                    </button>
+                    <button
                         onClick={() => setShowProjectionsPanel(true)}
                         className="flex items-center gap-2 px-2 py-1 rounded-lg bg-slate-800/80 text-primary hover:bg-slate-800 border border-slate-700/50 transition-all text-[10px] font-medium"
                     >
@@ -384,6 +444,81 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 </div>
             </div>
 
+            {/* AI Thesis Section (Expanded when result exists) */}
+            {(aiResult || isAnalyzing || aiError) && (
+                <div className="mb-4 flex-none animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="bg-gradient-to-br from-indigo-900/40 via-slate-900/60 to-purple-900/30 border border-indigo-500/30 rounded-xl p-4 shadow-xl overflow-hidden relative group">
+                        {/* Glow effect */}
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 opacity-50"></div>
+                        <div className="absolute -right-10 -top-10 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full group-hover:bg-indigo-500/20 transition-all duration-1000"></div>
+
+                        <div className="flex justify-between items-start mb-3 relative z-10">
+                            <div className="flex items-center gap-2">
+                                <div className="p-1.5 bg-indigo-500/20 rounded-lg text-indigo-400">
+                                    <BrainCircuit size={18} />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                        {activeCoachMetric ? `AI Coach: ${activeCoachMetric}` : 'AI Expert Thesis'}
+                                        {aiResult?.action && (
+                                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-tighter border ${aiResult.action === 'BUY' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
+                                                aiResult.action === 'SELL' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                                                    'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                                                }`}>
+                                                {aiResult.action}
+                                            </span>
+                                        )}
+                                    </h3>
+                                    <p className="text-[10px] text-indigo-300 font-medium tracking-wide uppercase">{aiResult?.model_name || 'AI ANALYST'} ANALYSIS</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => { setAiResult(null); setAiError(null); setActiveCoachMetric(null); }}
+                                className="text-slate-500 hover:text-white transition-colors"
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+
+                        {isAnalyzing ? (
+                            <div className="py-6 flex flex-col items-center justify-center gap-3">
+                                <Loader2 size={24} className="text-indigo-400 animate-spin" />
+                                <div className="flex flex-col items-center">
+                                    <p className="text-sm text-indigo-200 animate-pulse">Analyzing financials & growth vectors...</p>
+                                    <p className="text-[10px] text-slate-500">Processing "Twin Revolutions" Framework</p>
+                                </div>
+                            </div>
+                        ) : aiError ? (
+                            <div className="py-4 text-center">
+                                <div className="text-red-400 font-bold mb-1 flex items-center justify-center gap-2">
+                                    <AlertTriangle size={16} /> Analysis Failed
+                                </div>
+                                <p className="text-xs text-slate-400">{aiError}</p>
+                            </div>
+                        ) : aiResult ? (
+                            <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div className="md:col-span-3">
+                                    <p className="text-xs text-slate-300 leading-relaxed font-medium italic">
+                                        "{aiResult.rationale}"
+                                    </p>
+                                </div>
+                                <div className="bg-black/20 rounded-lg p-3 border border-white/5 flex flex-col items-center justify-center text-center">
+                                    <div className="text-[10px] text-slate-500 uppercase font-bold mb-1">AI Fair Value</div>
+                                    <div className="text-2xl font-black text-indigo-400 leading-none">${aiResult.fair_value}</div>
+                                    <div className="text-[9px] text-indigo-300 mt-1">Rec. Growth: {Math.round((aiResult.suggested_growth || aiResult.growth_assumption) * 100)}%</div>
+                                    <button
+                                        onClick={handleApplyAISuggestions}
+                                        className="mt-2 w-full py-1 bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-200 text-[9px] font-bold rounded border border-indigo-500/30 transition-all uppercase tracking-tight"
+                                    >
+                                        Apply Suggestions
+                                    </button>
+                                </div>
+                            </div>
+                        ) : null}
+                    </div>
+                </div>
+            )}
+
             {/* Inputs Grid: 3 Columns, auto-fit */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0">
                 <section className="bg-slate-900/20 p-4 rounded-xl border border-slate-800">
@@ -398,13 +533,21 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                 onClick={() => { setGrowthBasis('current'); resetToYahoo(); }}
                                 className={`flex-1 py-0.5 text-[9px] rounded border transition-colors ${growthBasis === 'current' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
                             >
-                                Cur Yr: {stockData.growth_estimates?.stockTrend['0y'] ? (stockData.growth_estimates.stockTrend['0y'] * 100).toFixed(1) + '%' : 'N/A'}
+                                Cur Yr: {(() => {
+                                    const val = stockData.growth_estimates?.stockTrend['0y'];
+                                    if (val === undefined) return 'N/A';
+                                    return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
+                                })()}
                             </button>
                             <button
                                 onClick={() => { setGrowthBasis('next'); resetToYahoo(); }}
                                 className={`flex-1 py-0.5 text-[9px] rounded border transition-colors ${growthBasis === 'next' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
                             >
-                                Next Yr: {stockData.growth_estimates?.stockTrend['+1y'] ? (stockData.growth_estimates.stockTrend['+1y'] * 100).toFixed(1) + '%' : 'N/A'}
+                                Next Yr: {(() => {
+                                    const val = stockData.growth_estimates?.stockTrend['+1y'];
+                                    if (val === undefined) return 'N/A';
+                                    return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
+                                })()}
                             </button>
                         </div>
 
@@ -466,6 +609,17 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             unit="x"
                             helpTopic="exitPE"
                             note={`Fwd: ${(stockData.analyst_estimates?.forward_pe || stockData.metrics?.forward_pe || 0).toFixed(1)}x`}
+                        />
+                        <SliderInput
+                            label="Quality Mult."
+                            value={qualityMultiplier}
+                            setValue={setQualityMultiplier}
+                            min={0.5}
+                            max={2.0}
+                            step={0.05}
+                            unit="x"
+                            helpTopic="qualityMultiplier"
+                            note="Typ: 1.0x"
                         />
                         <SliderInput
                             label="Discount Rate"
