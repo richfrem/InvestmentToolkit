@@ -50,6 +50,7 @@ You are the expert analyst. Using the raw data, generate Bear, Base, and Bull sc
 4.  **Limits**:
     *   **Growth > 50%**: For large caps (> $50B revenue), growth > 50% requires explicit justification citing specific catalysts.
     *   `shareChange` limits: -5.0 (buyback) to +5.0 (dilution).
+    *   **Scores**: `moatScore` and `managementScore` must be integers 0-5.
 
 ### Analysis Prompt
 Use the instructions in `references/analysis_prompt.md` to guide your reasoning.
