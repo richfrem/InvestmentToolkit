@@ -7,7 +7,7 @@
     "version": 2,
     "savedAt": "2026-02-15T04:17:01.122170Z",
     "updatedAt": "2026-02-15T04:19:34.634Z",
-    "name": "AI Deep Dive — NVDA — 2026-02-15",
+    "name": "AI Deep Dive \u2014 NVDA \u2014 2026-02-15",
     "rationale": "NVIDIA is executing a near-perfect AI infrastructure monopoly with explosive growth (2021-2024 revenue CAGR of 96%, from $26.9B to $187.1B) and record net margins of 53%. The Blackwell/Rubin chip roadmap secures dominance through 2028, but the valuation (45x trailing P/E vs sector median of 25x) embeds aggressive assumptions. Analyst consensus projects 62.5% growth in Year 1, supported by enterprise AI adoption and sovereign AI buildouts. Our probability-weighted fair value of $374.36 offers 105% upside from the current $182.81 price, justifying a strong BUY rating despite premium valuation. The main risk is cyclical capex slowdown as enterprises digest existing capacity in 2026-2027.",
     "snapshot": {
       "price": 182.81,
@@ -54,7 +54,7 @@
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.5",
-      "rationale": "BEAR CALCULATION: Year5Rev = 187,142 × (1.20)^5 = 465,088 million. Year5NI = 465,088 × 0.42 = 195,337 million. Year5Shares = 24,305 × (1 - 0.015)^5 = 22,530 million. Year5EPS = 195,337 / 22,530 = $8.67. Year5Price = 8.67 × 18 × 0.90 = $140.45. PV = 140.45 / (1.10)^5 = $87.21. BASE CALCULATION: Year5Rev = 187,142 × (1.35)^5 = 850,920 million. Year5NI = 850,920 × 0.48 = 408,442 million. Year5Shares = 24,305 × (1 - 0.02)^5 = 22,002 million. Year5EPS = 408,442 / 22,002 = $18.56. Year5Price = 18.56 × 26 × 1.05 = $506.14. PV = 506.14 / (1.10)^5 = $314.33. BULL CALCULATION: Year5Rev = 187,142 × (1.50)^5 = 1,420,380 million. Year5NI = 1,420,380 × 0.52 = 738,598 million. Year5Shares = 24,305 × (1 - 0.025)^5 = 21,435 million. Year5EPS = 738,598 / 21,435 = $34.45. Year5Price = 34.45 × 35 × 1.20 = $1,446.90. PV = 1,446.90 / (1.10)^5 = $898.39. FAIR VALUE = (0.25 × 87.21) + (0.55 × 314.33) + (0.20 × 898.39) = 21.80 + 172.88 + 179.68 = $374.36.\n\nNVIDIA is executing a near-perfect AI infrastructure monopoly with explosive growth (2021-2024 revenue CAGR of 96%, from $26.9B to $187.1B) and record net margins of 53%. The Blackwell/Rubin chip roadmap secures dominance through 2028, but the valuation (45x trailing P/E vs sector median of 25x) embeds aggressive assumptions. Analyst consensus projects 62.5% growth in Year 1, supported by enterprise AI adoption and sovereign AI buildouts. Our probability-weighted fair value of $374.36 offers 105% upside from the current $182.81 price, justifying a strong BUY rating despite premium valuation. The main risk is cyclical capex slowdown as enterprises digest existing capacity in 2026-2027.",
+      "rationale": "BEAR CALCULATION: Year5Rev = 187,142 \u00d7 (1.20)^5 = 465,088 million. Year5NI = 465,088 \u00d7 0.42 = 195,337 million. Year5Shares = 24,305 \u00d7 (1 - 0.015)^5 = 22,530 million. Year5EPS = 195,337 / 22,530 = $8.67. Year5Price = 8.67 \u00d7 18 \u00d7 0.90 = $140.45. PV = 140.45 / (1.10)^5 = $87.21. BASE CALCULATION: Year5Rev = 187,142 \u00d7 (1.35)^5 = 850,920 million. Year5NI = 850,920 \u00d7 0.48 = 408,442 million. Year5Shares = 24,305 \u00d7 (1 - 0.02)^5 = 22,002 million. Year5EPS = 408,442 / 22,002 = $18.56. Year5Price = 18.56 \u00d7 26 \u00d7 1.05 = $506.14. PV = 506.14 / (1.10)^5 = $314.33. BULL CALCULATION: Year5Rev = 187,142 \u00d7 (1.50)^5 = 1,420,380 million. Year5NI = 1,420,380 \u00d7 0.52 = 738,598 million. Year5Shares = 24,305 \u00d7 (1 - 0.025)^5 = 21,435 million. Year5EPS = 738,598 / 21,435 = $34.45. Year5Price = 34.45 \u00d7 35 \u00d7 1.20 = $1,446.90. PV = 1,446.90 / (1.10)^5 = $898.39. FAIR VALUE = (0.25 \u00d7 87.21) + (0.55 \u00d7 314.33) + (0.20 \u00d7 898.39) = 21.80 + 172.88 + 179.68 = $374.36.\n\nNVIDIA is executing a near-perfect AI infrastructure monopoly with explosive growth (2021-2024 revenue CAGR of 96%, from $26.9B to $187.1B) and record net margins of 53%. The Blackwell/Rubin chip roadmap secures dominance through 2028, but the valuation (45x trailing P/E vs sector median of 25x) embeds aggressive assumptions. Analyst consensus projects 62.5% growth in Year 1, supported by enterprise AI adoption and sovereign AI buildouts. Our probability-weighted fair value of $374.36 offers 105% upside from the current $182.81 price, justifying a strong BUY rating despite premium valuation. The main risk is cyclical capex slowdown as enterprises digest existing capacity in 2026-2027.",
       "fairValue": 374.36,
       "action": "BUY",
       "analyzedAt": "2026-02-15T04:17:01.129552Z",
@@ -87,7 +87,8 @@
           "note": "AI infrastructure buyer, premium quality growth multiple"
         }
       ],
-      "confidenceScore": 0.78
+      "confidenceScore": 0.78,
+      "researchReport": null
     },
     "globalSettings": {
       "discountRate": 10,
@@ -102,8 +103,8 @@
     "version": 2,
     "savedAt": "2026-02-15T04:47:00.000Z",
     "updatedAt": "2026-02-15T04:50:54.669Z",
-    "name": "AI Deep Dive — NVDA — 2026-02-15",
-    "rationale": "NVIDIA dominates AI accelerator infrastructure with a 4-year revenue CAGR of 69% (FY22 $26.9B → FY25 $130.5B, TTM $187.1B) and best-in-class net margins of 53%. The CUDA ecosystem creates deep software lock-in, while the Blackwell/Rubin roadmap provides multi-year visibility. However, at $4.45T market cap, significant growth is priced in. Key risks include AI capex cycle deceleration, custom ASIC competition from hyperscalers, and China export restrictions. Our probability-weighted fair value of $286.31 implies 56.6% upside, driven by the base case of 25% revenue CAGR as AI infrastructure spending broadens beyond training into inference and agentic AI workloads.",
+    "name": "AI Deep Dive \u2014 NVDA \u2014 2026-02-15",
+    "rationale": "NVIDIA dominates AI accelerator infrastructure with a 4-year revenue CAGR of 69% (FY22 $26.9B \u2192 FY25 $130.5B, TTM $187.1B) and best-in-class net margins of 53%. The CUDA ecosystem creates deep software lock-in, while the Blackwell/Rubin roadmap provides multi-year visibility. However, at $4.45T market cap, significant growth is priced in. Key risks include AI capex cycle deceleration, custom ASIC competition from hyperscalers, and China export restrictions. Our probability-weighted fair value of $286.31 implies 56.6% upside, driven by the base case of 25% revenue CAGR as AI infrastructure spending broadens beyond training into inference and agentic AI workloads.",
     "snapshot": {
       "price": 182.81,
       "currency": "USD",
@@ -135,7 +136,7 @@
           "Custom ASICs (Google TPUv6, Amazon Trainium3, Microsoft Maia) erode GPU market share by 20-30%",
           "China export restrictions tighten further, eliminating ~10% of potential TAM"
         ],
-        "rationale": "Assumes AI infrastructure spending decelerates sharply as enterprise ROI underwhelms. Revenue CAGR of 15% reflects the massive base effect ($187B TTM) and competitive encroachment from custom silicon. Net margin compresses to 40% from 53% as pricing power erodes — still above historical average of 34%. Exit PE of 20x reflects de-rating to cyclical semiconductor valuations like Qualcomm (17x) and historical semi troughs. Quality multiplier of 0.90 acknowledges partial CUDA moat erosion as PyTorch/JAX portability improves and AMD ROCm gains enterprise traction."
+        "rationale": "Assumes AI infrastructure spending decelerates sharply as enterprise ROI underwhelms. Revenue CAGR of 15% reflects the massive base effect ($187B TTM) and competitive encroachment from custom silicon. Net margin compresses to 40% from 53% as pricing power erodes \u2014 still above historical average of 34%. Exit PE of 20x reflects de-rating to cyclical semiconductor valuations like Qualcomm (17x) and historical semi troughs. Quality multiplier of 0.90 acknowledges partial CUDA moat erosion as PyTorch/JAX portability improves and AMD ROCm gains enterprise traction."
       },
       "base": {
         "weight": 0.55,
@@ -152,7 +153,7 @@
           "Growth decelerates faster than modeled as data center refresh cycles normalize",
           "Margin compression from increased R&D spending on next-gen architectures and competitive pricing"
         ],
-        "rationale": "25% CAGR anchored to analyst consensus trajectory: FY26 $213B (+14% from TTM) and FY27 $326B (+53% from FY26). The deceleration to 25% over 5 years accounts for the law of large numbers at $570B+ terminal revenue. Net margin of 48% reflects modest compression from 53% peak as competition increases and NVIDIA invests heavily in software/services, still well above 4-year average of 39.5%. Exit PE of 30x reflects premium AI platform status — below current 45x but above sector median ~25x, comparable to Broadcom at 35x. Quality multiplier of 1.10 anchored by CUDA ecosystem lock-in (4M+ developers) and networking moat through Mellanox integration. 1.5% annual buyback consistent with growing FCF generation ($61B LTM)."
+        "rationale": "25% CAGR anchored to analyst consensus trajectory: FY26 $213B (+14% from TTM) and FY27 $326B (+53% from FY26). The deceleration to 25% over 5 years accounts for the law of large numbers at $570B+ terminal revenue. Net margin of 48% reflects modest compression from 53% peak as competition increases and NVIDIA invests heavily in software/services, still well above 4-year average of 39.5%. Exit PE of 30x reflects premium AI platform status \u2014 below current 45x but above sector median ~25x, comparable to Broadcom at 35x. Quality multiplier of 1.10 anchored by CUDA ecosystem lock-in (4M+ developers) and networking moat through Mellanox integration. 1.5% annual buyback consistent with growing FCF generation ($61B LTM)."
       },
       "bull": {
         "weight": 0.25,
@@ -169,15 +170,16 @@
           "Valuation re-rates sharply downward if any quarterly guidance disappoints elevated expectations",
           "Geopolitical escalation disrupts TSMC supply chain, constraining chip production"
         ],
-        "rationale": "Catalyst: Blackwell Ultra → Rubin GPU roadmap delivers 10x performance leaps, expanding NVIDIA's TAM from AI training into enterprise inference, agentic AI, and sovereign AI buildouts globally. 35% CAGR justified by AI capex still being early innings — hyperscaler spend projected to exceed $300B annually by 2027. Revenue reaching $839B requires NVIDIA capturing inference market leadership (currently underweight vs training), robotics/automotive scaling, and NIM microservices driving recurring software revenue. Net margin of 52% sustained near current levels through pricing power and scale effects. Exit PE of 38x reflects best-in-class AI platform company with software recurring revenue, comparable to premium tech multiples (MSFT: 34x). 2% annual buyback supported by FCF generation exceeding $150B by Year 5."
+        "rationale": "Catalyst: Blackwell Ultra \u2192 Rubin GPU roadmap delivers 10x performance leaps, expanding NVIDIA's TAM from AI training into enterprise inference, agentic AI, and sovereign AI buildouts globally. 35% CAGR justified by AI capex still being early innings \u2014 hyperscaler spend projected to exceed $300B annually by 2027. Revenue reaching $839B requires NVIDIA capturing inference market leadership (currently underweight vs training), robotics/automotive scaling, and NIM microservices driving recurring software revenue. Net margin of 52% sustained near current levels through pricing power and scale effects. Exit PE of 38x reflects best-in-class AI platform company with software recurring revenue, comparable to premium tech multiples (MSFT: 34x). 2% annual buyback supported by FCF generation exceeding $150B by Year 5."
       }
     },
     "aiThesis": {
       "model": "Claude Opus 4.6",
-      "rationale": "## NVIDIA (NVDA) — AI Infrastructure Monopolist at Inflection\n\n### Investment Thesis\nNVIDIA has executed one of the most extraordinary growth trajectories in corporate history, growing revenue from $26.9B to $187.1B in just 4 years (69% CAGR) while expanding net margins to 53%. The company's CUDA ecosystem has created a deep competitive moat with 4M+ developers locked into its platform, and the Blackwell/Rubin hardware roadmap provides visibility through 2028.\n\n### Bull Case\nAI infrastructure spending is still early innings, with hyperscaler capex expected to exceed $300B annually. NVIDIA is positioned to capture inference workloads (the larger long-term market), agentic AI compute, and sovereign AI buildouts. NIM microservices could transform NVIDIA into a recurring software revenue platform. We model 35% CAGR to $839B revenue and sustained 52% margins.\n\n### Bear Case\nThe AI capex cycle could peak sooner than expected if enterprise ROI disappoints. Custom ASICs from Google, Amazon, and Microsoft could erode 20-30% of NVIDIA's data center share. At $4.45T market cap, any growth deceleration will be punished severely. We model 15% CAGR, margin compression to 40%, and PE reversion to 20x.\n\n### Key Metrics\n- **Piotroski F-Score**: 8/9 (excellent financial health)\n- **Rule of 40**: 128.5 (exceptional; 62.5% growth + 66% EBITDA margin)\n- **Analyst Consensus**: Strong Buy with $254 mean target (56 analysts)\n- **4-Year Revenue CAGR**: 69%\n- **TTM Net Margin**: 53% (4-year avg: 39.5%)\n\n### Key Risks\n1. AI capex cycle timing — peak could come sooner than bulls expect\n2. Custom ASIC substitution by hyperscalers (TPU, Trainium, Maia)\n3. China export restrictions expanding (~10% TAM at risk)\n4. Concentration risk — top 4-5 hyperscalers represent majority of revenue\n5. TSMC single-source manufacturing dependency\n\n### Valuation\nProbability-weighted fair value of **$286.31** implies **56.6% upside** from $182.81. The base case (55% weight) alone yields $249.16/share. Even the bear case at $72.76 represents a floor supported by $187B in revenue and $61B in FCF. At current levels, the risk/reward is attractive for long-term holders willing to stomach semiconductor-level volatility (beta: 2.31).",
+      "rationale": "## NVIDIA (NVDA) \u2014 AI Infrastructure Monopolist at Inflection\n\n### Investment Thesis\nNVIDIA has executed one of the most extraordinary growth trajectories in corporate history, growing revenue from $26.9B to $187.1B in just 4 years (69% CAGR) while expanding net margins to 53%. The company's CUDA ecosystem has created a deep competitive moat with 4M+ developers locked into its platform, and the Blackwell/Rubin hardware roadmap provides visibility through 2028.\n\n### Bull Case\nAI infrastructure spending is still early innings, with hyperscaler capex expected to exceed $300B annually. NVIDIA is positioned to capture inference workloads (the larger long-term market), agentic AI compute, and sovereign AI buildouts. NIM microservices could transform NVIDIA into a recurring software revenue platform. We model 35% CAGR to $839B revenue and sustained 52% margins.\n\n### Bear Case\nThe AI capex cycle could peak sooner than expected if enterprise ROI disappoints. Custom ASICs from Google, Amazon, and Microsoft could erode 20-30% of NVIDIA's data center share. At $4.45T market cap, any growth deceleration will be punished severely. We model 15% CAGR, margin compression to 40%, and PE reversion to 20x.\n\n### Key Metrics\n- **Piotroski F-Score**: 8/9 (excellent financial health)\n- **Rule of 40**: 128.5 (exceptional; 62.5% growth + 66% EBITDA margin)\n- **Analyst Consensus**: Strong Buy with $254 mean target (56 analysts)\n- **4-Year Revenue CAGR**: 69%\n- **TTM Net Margin**: 53% (4-year avg: 39.5%)\n\n### Key Risks\n1. AI capex cycle timing \u2014 peak could come sooner than bulls expect\n2. Custom ASIC substitution by hyperscalers (TPU, Trainium, Maia)\n3. China export restrictions expanding (~10% TAM at risk)\n4. Concentration risk \u2014 top 4-5 hyperscalers represent majority of revenue\n5. TSMC single-source manufacturing dependency\n\n### Valuation\nProbability-weighted fair value of **$286.31** implies **56.6% upside** from $182.81. The base case (55% weight) alone yields $249.16/share. Even the bear case at $72.76 represents a floor supported by $187B in revenue and $61B in FCF. At current levels, the risk/reward is attractive for long-term holders willing to stomach semiconductor-level volatility (beta: 2.31).",
       "fairValue": 286.31,
       "action": "BUY",
-      "analyzedAt": "2026-02-15T04:47:00.000Z"
+      "analyzedAt": "2026-02-15T04:47:00.000Z",
+      "researchReport": null
     },
     "globalSettings": {
       "discountRate": 10,
@@ -192,7 +194,7 @@
     "version": 1,
     "savedAt": "2026-02-15T04:54:49.634724Z",
     "updatedAt": "2026-02-15T04:54:49.638566Z",
-    "name": "AI Deep Dive — NVDA — 2026-02-14",
+    "name": "AI Deep Dive \u2014 NVDA \u2014 2026-02-14",
     "rationale": "NVIDIA remains the undisputed king of the AI infrastructure buildout. While valuation appears steep at 45x trailing PE, the 60%+ growth rate justifies the premium. Our Base Case assumes a normalization of growth to 25% CAGR, yielding a fair value that suggests the stock is currently near fair value.",
     "snapshot": {
       "price": 182.81,
@@ -291,7 +293,8 @@
           "note": "Networking/Custom Silicon peer"
         }
       ],
-      "dataQualityFlags": []
+      "dataQualityFlags": [],
+      "researchReport": null
     },
     "globalSettings": {
       "discountRate": 10,

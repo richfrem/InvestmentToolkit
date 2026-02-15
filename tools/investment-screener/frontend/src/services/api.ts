@@ -176,7 +176,11 @@ export interface Scenario {
     exitPE: number;
     qualityMultiplier: number;
     shareChange: number; // % change (negative = buyback)
+    moatScore?: number; // 0-5
+    managementScore?: number; // 0-5
     rationale?: string;
+    scenarioPrice?: number;
+    risks?: string[];
 }
 
 export interface Snapshot {
@@ -199,6 +203,7 @@ export interface Projection {
     savedAt: string;
     updatedAt: string;
     name: string;
+    isDefault?: boolean; // If true, this loads automatically
     rationale?: string;
     snapshot: Snapshot;
     dataPreferences: {
@@ -216,6 +221,7 @@ export interface Projection {
         fairValue: number;
         action: 'BUY' | 'HOLD' | 'SELL';
         analyzedAt: string;
+        researchReport?: string; // Links to backend/data/research/{TICKER}_{DATE}.md
     };
     globalSettings: {
         discountRate: number;

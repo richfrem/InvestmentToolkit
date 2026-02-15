@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "last_updated": "2026-02-13T10:49:21.825999",
+    "last_updated": "2026-02-14T21:21:12.940760",
     "status": "Deduplicated"
   },
   "python": {
@@ -421,6 +421,14 @@
           "last_updated": "2026-02-13T08:48:23.948016",
           "compliance_status": "stub",
           "header_style": "minimal"
+        },
+        {
+          "name": "persist_projection.py",
+          "path": "tools/investment-screener/backend/py_services/persist_projection.py",
+          "description": "Directly persists a stock valuation projection JSON object to the backend's data store, bypassing the API server. Handles validation, file locking, atomic writes, and versioning.",
+          "last_updated": "2026-02-14T21:21:12.940603",
+          "compliance_status": "needs_review",
+          "header_style": "basic"
         },
         {
           "name": "postcss.config.js",
