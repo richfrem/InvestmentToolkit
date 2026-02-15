@@ -79,6 +79,12 @@ python3 tools/orchestrator/verify_workflow_state.py --feature <SLUG> --phase tas
 **PROOF**: Paste the verification output.
 **STOP**: Do NOT proceed to Implementation until verification passes.
 
+### Step 0d: Pre-Flight Strategy (The Strategist)
+**Before starting the work**, take a step back.
+1.  **Read the Plan**: Does `plan.md` actually make sense? Are we missing a migration?
+2.  **Check the Order**: Does `tasks.md` put the database schema *before* the API endpoint?
+3.  **Self-Correction**: If you see a flaw, use `/spec-kitty.clarify` or manually fix the plan *now*, before writing code.
+
 ---
 
 ## 1. Start a Work Package (WP)
