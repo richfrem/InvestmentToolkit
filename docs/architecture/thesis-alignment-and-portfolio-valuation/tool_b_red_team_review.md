@@ -42,7 +42,7 @@ The agent should be able to conduct a conversation like:
 >
 > **User:** "Good catches. On INTC — I still believe, but let's reduce target to 8% and add the 2.87% to NVDA. On CRWV, yes run Tool A. On PLTR, interesting — add it to the evaluation queue."
 >
-> **Agent:** *[Updates thesis JSON: INTC target 10.87→8.0, NVDA target 4.32→7.19, runs /perform-stock-valuation CRWV, queues PLTR for next session]*
+> **Agent:** *[Updates thesis JSON: INTC target 10.87→8.0, NVDA target 4.32→7.19, runs /evaluate-stock CRWV, queues PLTR for next session]*
 
 **This requires a fundamentally different architecture than "GET health → POST optimize → return trades."** It requires:
 
