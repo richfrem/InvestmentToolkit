@@ -747,15 +747,6 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                {(aiResult && !activeCoachMetric) && (
-                                    <button
-                                        onClick={handleApplyAISuggestions}
-                                        className="px-2 py-1 bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-200 text-[9px] font-bold rounded border border-indigo-500/30 transition-all uppercase tracking-tight flex items-center gap-1"
-                                    >
-                                        <Sparkles size={10} />
-                                        Apply Suggestions
-                                    </button>
-                                )}
                                 <button
                                     onClick={() => { setAiResult(null); setAiError(null); setActiveCoachMetric(null); }}
                                     className="text-slate-500 hover:text-white transition-colors"
