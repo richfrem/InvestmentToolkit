@@ -1,5 +1,6 @@
 import React from 'react';
-import { HelpTrigger } from './HelpModal';
+import { useHelpModal } from './HelpModal';
+import { HelpCircle } from 'lucide-react';
 
 // Dictionary of terms to link and their Help Modal ID
 const SMART_LINKS: { [key: string]: string } = {
@@ -29,6 +30,8 @@ interface SmartTextProps {
 }
 
 export const SmartText: React.FC<SmartTextProps> = ({ text, className = "" }) => {
+    const { openHelp } = useHelpModal();
+
     if (!text) return null;
 
     // Create a regex to match any key in SMART_LINKS via explicit keywords
@@ -47,13 +50,22 @@ export const SmartText: React.FC<SmartTextProps> = ({ text, className = "" }) =>
                 if (matchedKey) {
                     const topicId = SMART_LINKS[matchedKey];
                     return (
-                        <span key={i} className="inline-flex items-baseline gap-0.5 group cursor-help transition-colors text-indigo-300 hover:text-indigo-200 decoration-dotted decoration-indigo-500/50 underline underline-offset-2">
+                        <button
+                            key={i}
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                openHelp(topicId);
+                            }}
+                            className="inline-flex items-baseline gap-0.5 group cursor-help transition-colors text-indigo-300 hover:text-indigo-200 decoration-dotted decoration-indigo-500/50 underline underline-offset-2"
+                        >
                             {part}
-                            <HelpTrigger topicId={topicId} size={10} className="opacity-70 group-hover:opacity-100" />
-                        </span>
+                            <HelpCircle size={10} className="opacity-70 group-hover:opacity-100" />
+                        </button>
                     );
                 }
-                return part;
+                return <span key={i}>{part}</span>;
             })}
         </span>
     );
