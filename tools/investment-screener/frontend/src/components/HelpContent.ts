@@ -488,4 +488,32 @@ FCF divided by Market Cap. Similar to a dividend yield or interest rate.
         example: "$10B Operating Cash Flow - $2B CapEx = $8B Free Cash Flow",
         learnMoreUrl: "https://www.investopedia.com/terms/f/freecashflow.asp"
     },
+    moatAnalysis: {
+        title: "Economic Moat",
+        summary: "Sustainable competitive advantages that protect a company from competitors.",
+        explanation: `An economic moat is a structural advantage that allows a company to maintain high returns on capital over time. Coined by Warren Buffett, it's the "castle walls" protecting the business.
+
+**Types of Moats:**
+- **Network Effects:** Product becomes more valuable as more people use it (Facebook, Visa)
+- **Switching Costs:** Expensive/difficult to switch to competitor (Oracle databases, Adobe Creative Suite)
+- **Cost Advantages:** Can produce at lower cost than competitors (Walmart, Costco)
+- **Intangible Assets:** Patents, brands, regulatory licenses (Coca-Cola brand, pharma patents)
+- **Scale Economies:** Fixed costs spread over massive volume (AWS, chip fabs)
+
+**Why it matters:**
+Companies with wide moats can:
+- Charge premium prices
+- Resist competitive pressure
+- Maintain high margins over decades
+- Compound returns for shareholders
+
+**Moat Width Assessment:**
+- **Wide Moat:** Multiple moat sources, defensible for 20+ years (Apple, Microsoft, NVDA)
+- **Narrow Moat:** Some advantages, but vulnerable to disruption (5-10 years)
+- **No Moat:** Commodity business, price competition (most retailers, airlines)
+
+**✅ Quick Tip:** Wide moats justify higher valuations (P/E > 30x). No moat = avoid at any price.`,
+        example: "NVDA's moat: CUDA software ecosystem (switching costs) + manufacturing scale (TSMC partnership) + brand/talent (intangible assets)",
+        learnMoreUrl: "https://www.investopedia.com/terms/e/economicmoat.asp"
+    },
 };
