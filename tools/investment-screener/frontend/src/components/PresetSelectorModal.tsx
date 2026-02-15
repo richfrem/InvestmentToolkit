@@ -63,9 +63,9 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
                         timestamp: new Date(aiProjection.updatedAt || aiProjection.savedAt),
                         data: {
                             fairValue: aiProjection.aiThesis.fairValue,
-                            bearPrice: aiProjection.scenarios?.bear?.targetPrice,
-                            basePrice: aiProjection.scenarios?.base?.targetPrice,
-                            bullPrice: aiProjection.scenarios?.bull?.targetPrice
+                            bearPrice: aiProjection.scenarios?.bear?.scenarioPrice,
+                            basePrice: aiProjection.scenarios?.base?.scenarioPrice,
+                            bullPrice: aiProjection.scenarios?.bull?.scenarioPrice
                         } as any,
                         aiProjection: aiProjection // Store full projection for report viewing
                     });
