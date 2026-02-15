@@ -69,3 +69,4 @@ Review Task:
 - [x] Implement Batch/Replace Holdings API
 - [ ] Create ADR for Zod Validation Schema
 - [x] Build Strategic Review Layer (Service Method)
+- [ ] Create strategic_review_prompt.md
