@@ -17,7 +17,7 @@ has_tools: true
 Execute the backend script to fetch raw financial data from Yahoo Finance.
 
 ```bash
-python3 tools/investment-screener/backend/scripts/fetch_financials.py --ticker {TICKER} --output /tmp/{TICKER}_raw.json
+python3 tools/investment-screener/backend/py_services/fetch_financials.py --ticker {TICKER} --output /tmp/{TICKER}_raw.json
 ```
 **Expected Output**: A JSON object containing `metrics`, `financials`, `estimates`, and `profile`.
 **Action**: If this fails, STOP and report the error to the user.

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Save, RotateCcw, FolderOpen, TrendingUp, TrendingDown, Info, X, AlertTriangle } from 'lucide-react';
+import { Save, RotateCcw, TrendingUp, TrendingDown, Info, X, AlertTriangle } from 'lucide-react';
 import type { StockData } from '../services/api';
 import { ProjectionsPanel } from './ProjectionsPanel';
 import { storage } from '../services/storage';
 import { HelpTrigger } from './HelpModal';
 import { runAIAnalysis, type ValuationResult, type Projection, type Scenario, fetchProjections } from '../services/api';
-import { Sparkles, BrainCircuit, Loader2, FileText } from 'lucide-react';
+import { Sparkles, BrainCircuit, Loader2, FolderOpen } from 'lucide-react';
 import { AIAnalysisModal } from './AIAnalysisModal';
 import { PresetSelectorModal } from './PresetSelectorModal';
 import { saveUserPreset } from '../services/presets';
@@ -494,22 +494,6 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 </div>
                 <div className="flex gap-2">
                     <button
-                        onClick={handleSyncToConsensus}
-                        className="flex items-center gap-2 px-2 py-1 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 transition-all text-[10px] font-medium"
-                        title="Snap inputs to Analyst Consensus"
-                    >
-                        <TrendingUp size={12} />
-                        Sync Consensus
-                    </button>
-                    <button
-                        onClick={() => setShowAIModal(true)}
-                        className="flex items-center gap-2 px-2 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 transition-all text-[10px] font-medium"
-                        title="View Report from Autonomous AI Agent"
-                    >
-                        <FileText size={12} />
-                        View AI Report
-                    </button>
-                    <button
                         onClick={() => handleAIAnalysis()} // Call without specific metric for general analysis
                         disabled={isAnalyzing}
                         className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-all text-[10px] font-medium border ${isAnalyzing
@@ -928,6 +912,10 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 <PresetSelectorModal
                     symbol={stockData.symbol}
                     onLoad={handlePresetLoad}
+                    onViewReport={(aiProjection) => {
+                        setShowPresetModal(false);
+                        setAiResult(aiProjection.aiThesis);
+                    }}
                     onClose={() => setShowPresetModal(false)}
                 />
             )}

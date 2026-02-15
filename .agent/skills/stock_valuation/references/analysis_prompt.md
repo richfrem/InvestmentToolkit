@@ -86,6 +86,7 @@ Produce a strictly formatted JSON object. Output ONLY raw JSON — no markdown f
 | `dataQualityFlags` | array of strings | Note any data concerns (e.g., "Only 2 years of positive FCF", "Analyst coverage thin with only 5 estimates", "Revenue history shows accounting restatement in 2022"). Empty array if no concerns. |
 | `comparables` | array of objects | 2–3 comparable companies with their current P/E and brief justification for inclusion. Used to anchor `exitPE` choices. |
 | `scenarios` | object | Contains `bear`, `base`, `bull` scenario objects. |
+| `aiThesis` | object | Contains `model`, `fairValue`, `action`, and `rationale`. **CRITICAL**: Set `model` to your specific model identifier (e.g., "Claude Opus 3", "Gemini 1.5 Pro"). DO NOT use "Claude Sonnet" unless you are actually that model. |
 
 ### Scenario Fields (Bear, Base, Bull)
 
@@ -143,9 +144,14 @@ These are validation boundaries. Your POST will fail if any value falls outside 
 {
   "scratchpad": "BEAR: Year5Rev = 391035 × (1.02)^5 = 431,580. Year5NI = 431580 × 0.20 = 86,316. Year5Shares = 15400 × (1.00)^5 = 15,400. Year5EPS = 86316/15400 = 5.60. Year5Price = 5.60 × 16 × 0.95 = 85.12. PV = 85.12 / (1.10)^5 = 52.85. BASE: ... BULL: ...",
   "rationale": "AAPL shows a 4-year revenue CAGR of 2.3% with a stable net margin averaging 25.4%. Analyst consensus projects 8.5% growth in Year 1, supported by the services segment expansion. At a trailing P/E of 28.5 vs sector median of 22.0, the stock prices in above-average growth. Our probability-weighted fair value of $168.42 suggests limited upside from the current $185 price.",
-  "fairValue": 168.42,
   "action": "HOLD",
   "confidenceScore": 0.82,
+  "aiThesis": {
+    "model": "YOUR_MODEL_NAME_HERE",
+    "fairValue": 168.42,
+    "action": "HOLD",
+    "rationale": "..."
+  },
   "keyRisks": [
     "China regulatory and supply chain risk (30% of revenue exposed)",
     "Smartphone market saturation limiting hardware growth",
