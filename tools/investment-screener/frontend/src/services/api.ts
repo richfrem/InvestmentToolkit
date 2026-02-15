@@ -134,10 +134,133 @@ export const seedQuestradeToken = async (refreshToken: string): Promise<{ succes
     return data;
 };
 
+export interface ValuationResult {
+    fair_value: number;
+    growth_assumption: number;
+    rationale: string;
+    action: "BUY" | "SELL" | "HOLD";
+    model_name: string;
+    suggested_growth?: number;
+    suggested_margin?: number;
+    exit_pe?: number;
+    quality_multiplier?: number;
+}
+
+export const runAIAnalysis = async (ticker: string, userMessage?: string): Promise<ValuationResult> => {
+    const response = await fetch('/api/analysis/valuation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticker, userMessage }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.details || data.error || 'AI Analysis failed');
+    }
+    return data;
+};
+
 export const fetchSyncStatus = async (): Promise<{ lastSync: string | null }> => {
     const response = await fetch('/api/portfolio/status');
     if (!response.ok) {
         throw new Error('Failed to fetch sync status');
     }
     return await response.json();
+};
+
+// --- Valuation Persistence Interfaces & API ---
+
+export interface Scenario {
+    weight: number;
+    growthRate: number; // 0-100+
+    netMargin: number; // 0-100
+    exitPE: number;
+    qualityMultiplier: number;
+    shareChange: number; // % change (negative = buyback)
+    rationale?: string;
+}
+
+export interface Snapshot {
+    price: number;
+    currency: string;
+    shares: number;
+    revenue: number;
+    lastActualPS: number;
+    fiscalPeriod?: string;
+    analystGrowthEstimate?: number;
+    analystMarginEstimate?: number;
+}
+
+export interface Projection {
+    ticker: string;
+    id: string;
+    source: 'USER' | 'SYSTEM' | 'AI_AGENT'; // Added for V2
+    schemaVersion: '1.1';
+    version: number;
+    savedAt: string;
+    updatedAt: string;
+    name: string;
+    rationale?: string;
+    snapshot: Snapshot;
+    dataPreferences: {
+        growthBasis: 'ttm' | 'next' | 'current';
+        marginBasis: 'ttm' | 'next' | 'quarterly';
+    };
+    scenarios: {
+        bear: Scenario;
+        base: Scenario;
+        bull: Scenario;
+    };
+    aiThesis?: {
+        model: string;
+        rationale: string;
+        fairValue: number;
+        action: 'BUY' | 'HOLD' | 'SELL';
+        analyzedAt: string;
+    };
+    globalSettings: {
+        discountRate: number;
+        timeHorizon: number;
+    };
+}
+
+export const fetchProjections = async (ticker: string): Promise<Projection[] | null> => {
+    try {
+        const response = await fetch(`/api/projections/${ticker}`);
+        if (!response.ok) {
+            if (response.status === 404) return [];
+            const errorData = await response.json().catch(() => ({}));
+            console.warn("Fetch Projections Warning", errorData);
+            // Red Team C1 Fix: Return null on error so caller knows it's a failure, not just empty.
+            return null;
+        }
+        return await response.json();
+    } catch (e) {
+        console.error("Network error fetching projections", e);
+        // Red Team C1 Fix: Return null on network error.
+        return null;
+    }
+};
+
+export const saveProjection = async (projection: Projection): Promise<{ success: boolean; message: string }> => {
+    const response = await fetch('/api/projections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(projection),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || 'Failed to save projection');
+    }
+    return data;
+};
+
+export const deleteProjection = async (ticker: string, id: string): Promise<{ success: boolean; message: string }> => {
+    const response = await fetch(`/api/projections/${ticker}/${id}`, {
+        method: 'DELETE',
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete projection');
+    }
+    return data;
 };
