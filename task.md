@@ -85,3 +85,4 @@ Review Task:
 - [x] Update tools/bridge/README.md with setup sequence
 - [x] Update tools/bridge/tool_inventory.json with full bundle manifest
 - [x] Run bridge synchronization sequence
+- [x] Update documentation for renamed workflows
