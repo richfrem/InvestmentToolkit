@@ -9,30 +9,51 @@ Purpose:
 Layer: Curate / Bundler
 
 Usage Examples:
-    python tools/retrieve/bundler/manifest_manager.py --help
+    # 1. Initialize a custom manifest in a temp folder
+    python tools/retrieve/bundler/manifest_manager.py --manifest temp/my_manifest.json init --type generic --bundle-title "My Project"
+
+    # 2. Add files to that custom manifest
+    python tools/retrieve/bundler/manifest_manager.py --manifest temp/my_manifest.json add --path "docs/example.md" --note "Reference doc"
+
+    # 3. Bundle using that custom manifest
+    python tools/retrieve/bundler/manifest_manager.py --manifest temp/my_manifest.json bundle --output temp/my_bundle.md
+
+    # NOTE: Global flags like --manifest and --base MUST come BEFORE the subcommand (init, add, bundle, etc.)
 
 Supported Object Types:
     - Generic
 
 CLI Arguments:
-    --manifest      : Custom path to manifest file (optional)
-    --base          : Target a Base Manifest Type (e.g. form, lib)
-    --bundle-title  : Title for the bundle (e.g., 'FORM0000')
-    --type          : Artifact Type (e.g. form, lib)
-    --path          : Relative or absolute path
-    --note          : Note for the file
-    --path          : Path to remove
-    --path          : Path to update
-    --note          : New note
-    --new-path      : New path
-    pattern         : Search pattern
-    --output        : Output file path (optional)
+    Global Flags (Must come BEFORE subcommand):
+        --manifest          : Custom path to manifest JSON file (optional)
+        --base [type]       : Target a Base Manifest Template (e.g. form, lib)
+
+    Subcommands:
+        init                : Bootstrap a new manifest
+            --bundle-title  : Human-readable title for the bundle
+            --type [type]   : Artifact type template to use
+        add                 : Add file to manifest
+            --path [path]   : Path to the target file
+            --note [text]   : Contextual note about the file
+        remove              : Remove file by path
+            --path [path]   : Exact path to remove
+        update              : Modify an existing entry
+            --path [path]   : Target file path
+            --note [text]   : New note
+            --new-path [p]  : New path for relocation
+        search [pattern]    : Find files in the manifest
+        list                : Show all files in manifest
+        bundle              : Compile manifest into Markdown
+            --output [path] : Custom path for the resulting .md file
 
 Input Files:
-    - (See code)
+    - tools/standalone/context-bundler/base-manifests/*.json (Templates)
+    - tools/standalone/context-bundler/base-manifests-index.json (Template Registry)
+    - [Manifest JSON] (Input for bundling/listing)
 
 Output:
-    - (See code)
+    - temp/context-bundles/[title].md (Default Bundle Location)
+    - [Custom Manifest JSON] (On init/add/update)
 
 Key Functions:
     - add_file(): Adds a file entry to the manifest if it doesn't already exist.

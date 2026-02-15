@@ -1,0 +1,271 @@
+{
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Twin Revolutions v7.3",
+    "schemaVersion": "1.0",
+    "version": 1,
+    "createdAt": "2026-02-14T12:00:00Z",
+    "updatedAt": "2026-02-14T12:00:00Z",
+    "description": "The Twin Revolutions thesis: winning the two-front war for ASI supremacy and Sovereign Finance dominance. Builder-First, Empire-Second.",
+    "pillars": [
+        {
+            "id": "compute",
+            "name": "ASI / Compute – Chips",
+            "targetWeight": 27.65
+        },
+        {
+            "id": "cash",
+            "name": "Cash (Strategic Reserve)",
+            "targetWeight": 12.67
+        },
+        {
+            "id": "sovfin",
+            "name": "Sovereign Finance / Digital",
+            "targetWeight": 12.29
+        },
+        {
+            "id": "titans",
+            "name": "AI Titans / Cloud",
+            "targetWeight": 12.40
+        },
+        {
+            "id": "datainfra",
+            "name": "Data Infra / Supply Chain",
+            "targetWeight": 10.86
+        },
+        {
+            "id": "power",
+            "name": "Power / Energy",
+            "targetWeight": 9.97
+        },
+        {
+            "id": "security",
+            "name": "Security / Data OS",
+            "targetWeight": 8.27
+        },
+        {
+            "id": "applied",
+            "name": "Applied AI / Robotics",
+            "targetWeight": 5.89
+        }
+    ],
+    "holdings": [
+        {
+            "ticker": "PSU-U.TO",
+            "name": "Purpose US Cash Fund",
+            "pillarId": "cash",
+            "targetWeight": 12.67,
+            "role": "reserve"
+        },
+        {
+            "ticker": "INTC",
+            "name": "Intel Corp",
+            "pillarId": "compute",
+            "targetWeight": 10.87,
+            "role": "core",
+            "thesisForInclusion": "The Sovereign Foundry: designated US National Champion for onshored compute manufacturing. Core contrarian bet on 18A node.",
+            "thesisBreakers": [
+                "18A HVM delay beyond Q4 2026",
+                "No top-5 fabless design win by EOY 2026",
+                "CEO departure without committed IFS successor"
+            ]
+        },
+        {
+            "ticker": "AVGO",
+            "name": "Broadcom Inc.",
+            "pillarId": "compute",
+            "targetWeight": 6.35,
+            "role": "core"
+        },
+        {
+            "ticker": "NVDA",
+            "name": "NVIDIA Corporation",
+            "pillarId": "compute",
+            "targetWeight": 4.32,
+            "role": "hedge"
+        },
+        {
+            "ticker": "AMD",
+            "name": "AMD Inc.",
+            "pillarId": "compute",
+            "targetWeight": 2.67,
+            "role": "hedge"
+        },
+        {
+            "ticker": "SNPS",
+            "name": "Synopsys Inc.",
+            "pillarId": "compute",
+            "targetWeight": 1.72,
+            "role": "core"
+        },
+        {
+            "ticker": "CDNS",
+            "name": "Cadence Design",
+            "pillarId": "compute",
+            "targetWeight": 1.72,
+            "role": "core"
+        },
+        {
+            "ticker": "GOOG",
+            "name": "Alphabet Inc.",
+            "pillarId": "titans",
+            "targetWeight": 5.86,
+            "role": "hedge"
+        },
+        {
+            "ticker": "MSFT",
+            "name": "Microsoft Corp.",
+            "pillarId": "titans",
+            "targetWeight": 3.60,
+            "role": "core"
+        },
+        {
+            "ticker": "META",
+            "name": "Meta Platforms",
+            "pillarId": "titans",
+            "targetWeight": 2.94,
+            "role": "core"
+        },
+        {
+            "ticker": "ETHA",
+            "name": "Ethereum ETF",
+            "pillarId": "sovfin",
+            "targetWeight": 3.69,
+            "role": "core"
+        },
+        {
+            "ticker": "COIN",
+            "name": "Coinbase Global",
+            "pillarId": "sovfin",
+            "targetWeight": 3.41,
+            "role": "core",
+            "thesisBreakers": [
+                "SEC court victory classifying ETH as security",
+                "Base L2 fails top-3 by volume EOY 2026",
+                "Major hack or loss of customer funds"
+            ]
+        },
+        {
+            "ticker": "IBIT",
+            "name": "Bitcoin ETF",
+            "pillarId": "sovfin",
+            "targetWeight": 3.13,
+            "role": "core"
+        },
+        {
+            "ticker": "CRCL",
+            "name": "Circle Internet",
+            "pillarId": "sovfin",
+            "targetWeight": 2.06,
+            "role": "core",
+            "thesisBreakers": [
+                "Failure to secure GENIUS Act charter",
+                "USDC peg break below $0.98",
+                "Sustained loss of regulated stablecoin market share"
+            ]
+        },
+        {
+            "ticker": "VST",
+            "name": "Vistra Corp.",
+            "pillarId": "power",
+            "targetWeight": 4.34,
+            "role": "core"
+        },
+        {
+            "ticker": "CEG",
+            "name": "Constellation Energy",
+            "pillarId": "power",
+            "targetWeight": 4.33,
+            "role": "core"
+        },
+        {
+            "ticker": "OKLO",
+            "name": "Oklo Inc.",
+            "pillarId": "power",
+            "targetWeight": 1.32,
+            "role": "speculative"
+        },
+        {
+            "ticker": "PANW",
+            "name": "Palo Alto Networks",
+            "pillarId": "security",
+            "targetWeight": 3.77,
+            "role": "core"
+        },
+        {
+            "ticker": "CRWD",
+            "name": "CrowdStrike Holdings",
+            "pillarId": "security",
+            "targetWeight": 2.50,
+            "role": "core"
+        },
+        {
+            "ticker": "ZS",
+            "name": "Zscaler Inc.",
+            "pillarId": "security",
+            "targetWeight": 2.00,
+            "role": "core"
+        },
+        {
+            "ticker": "CORZ",
+            "name": "Core Scientific",
+            "pillarId": "datainfra",
+            "targetWeight": 3.25,
+            "role": "speculative"
+        },
+        {
+            "ticker": "EQIX",
+            "name": "Equinix Inc.",
+            "pillarId": "datainfra",
+            "targetWeight": 2.82,
+            "role": "core"
+        },
+        {
+            "ticker": "CRWV",
+            "name": "CoreWeave Inc.",
+            "pillarId": "datainfra",
+            "targetWeight": 1.77,
+            "role": "core"
+        },
+        {
+            "ticker": "ANET",
+            "name": "Arista Networks",
+            "pillarId": "datainfra",
+            "targetWeight": 1.63,
+            "role": "core"
+        },
+        {
+            "ticker": "VRT",
+            "name": "Vertiv Holdings",
+            "pillarId": "datainfra",
+            "targetWeight": 1.30,
+            "role": "core"
+        },
+        {
+            "ticker": "HUMN",
+            "name": "Robotics ETF (HUMN)",
+            "pillarId": "applied",
+            "targetWeight": 2.82,
+            "role": "core"
+        },
+        {
+            "ticker": "KOID",
+            "name": "Robotics ETF (KOID)",
+            "pillarId": "applied",
+            "targetWeight": 2.44,
+            "role": "core"
+        },
+        {
+            "ticker": "AIFF",
+            "name": "Firefly Neuroscience",
+            "pillarId": "applied",
+            "targetWeight": 0.63,
+            "role": "speculative"
+        }
+    ],
+    "globalSettings": {
+        "driftThresholdPct": 3.0,
+        "criticalDriftPct": 5.0,
+        "rebalanceFrequency": "quarterly",
+        "portfolioValueUSD": 150000
+    }
+}
