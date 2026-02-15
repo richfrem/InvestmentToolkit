@@ -9,12 +9,13 @@ import cors from 'cors';
 import fs from 'fs';
 import { spawnPythonScript } from './services/bridge';
 import { questradeSyncService } from './services/QuestradeSyncService';
+import { projectionService } from './services/ProjectionService';
 
 const app = express();
 const port = process.env.PORT || 3001;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50kb' }));
 
 const PORTFOLIO_FILE = path.join(__dirname, '../../frontend/src/data/portfolio.json');
 const PORTFOLIO_EXAMPLE = PORTFOLIO_FILE + '.example';
@@ -258,6 +259,183 @@ app.get('/api/portfolio/status', (req, res) => {
         }
     } catch (error) {
         res.status(500).json({ error: 'Failed to get status' });
+    }
+});
+
+// --- Valuation Persistence Routes ---
+
+app.get('/api/projections/:ticker', async (req, res) => {
+    const { ticker } = req.params;
+    if (!isValidTicker(ticker)) {
+        res.status(400).json({ error: 'Invalid ticker symbol' });
+        return;
+    }
+    try {
+        const projections = await projectionService.getProjections(ticker);
+        res.json(projections);
+    } catch (error: any) {
+        console.error(`[API] Error fetching projections for ${ticker}:`, error);
+        res.status(500).json({ error: 'Failed to fetch projections' });
+    }
+});
+
+app.post('/api/projections', async (req, res) => {
+    try {
+        const projection = req.body;
+        // Limit payload size check if needed, but express.json limit is global.
+        // We could check content-length header here but let's rely on global or add middleware if needed.
+        // Red Team mentioned adding payload limit. 
+        // We didn't change specific limit in `app.use(express.json())` yet.
+        await projectionService.saveProjection(projection);
+        res.json({ success: true, message: 'Projection saved successfully' });
+    } catch (error: any) {
+        console.error(`[API] Error saving projection:`, error);
+        if (error.message.includes('Validation Failed')) {
+            res.status(400).json({ error: error.message });
+        } else if (error.message.includes('Conflict')) {
+            res.status(409).json({ error: error.message });
+        } else {
+            res.status(500).json({ error: 'Failed to save projection' });
+        }
+    }
+});
+
+app.delete('/api/projections/:ticker/:id', async (req, res) => {
+    const { ticker, id } = req.params;
+    if (!isValidTicker(ticker)) {
+        res.status(400).json({ error: 'Invalid ticker symbol' });
+        return;
+    }
+    try {
+        const result = await projectionService.deleteProjection(ticker, id);
+        if (result) {
+            res.json({ success: true, message: 'Projection deleted' });
+        } else {
+            res.status(404).json({ error: 'Projection not found' });
+        }
+    } catch (error: any) {
+        console.error(`[API] Error deleting projection:`, error);
+        res.status(500).json({ error: 'Failed to delete projection' });
+    }
+});
+
+// --- Thesis Routes (Tool B) ---
+
+import { thesisService } from './services/ThesisService';
+
+app.get('/api/theses', async (_req, res) => {
+    const theses = await thesisService.listTheses();
+    res.json(theses);
+});
+
+app.get('/api/theses/:id', async (req, res) => {
+    const { id } = req.params;
+    const thesis = await thesisService.getThesis(id);
+    if (thesis) {
+        res.json(thesis);
+    } else {
+        res.status(404).json({ error: 'Thesis not found' });
+    }
+});
+
+app.get('/api/theses/:id/health', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const health = await thesisService.computeHealthCheck(id);
+        res.json(health);
+    } catch (error: any) {
+        console.error(`[API] Error computing health check for ${id}:`, error);
+        res.status(500).json({ error: error.message || 'Failed to compute health check' });
+    }
+});
+
+app.post('/api/theses/:id/optimize', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await thesisService.optimizePortfolio(id);
+        res.json(result);
+    } catch (error: any) {
+        console.error(`[API] Error optimizing thesis ${id}:`, error);
+        res.status(500).json({ error: error.message || 'Failed to optimize portfolio' });
+    }
+});
+
+app.post('/api/theses', async (req, res) => {
+    try {
+        const thesis = req.body;
+        await thesisService.saveThesis(thesis);
+        res.json({ success: true, message: 'Thesis saved successfully', id: thesis.id });
+    } catch (error: any) {
+        console.error(`[API] Error saving thesis:`, error);
+        if (error.message.includes('Validation Failed')) {
+            res.status(400).json({ error: error.message });
+        } else if (error.message.includes('Conflict')) {
+            res.status(409).json({ error: error.message });
+        } else {
+            res.status(500).json({ error: 'Failed to save thesis' });
+        }
+    }
+});
+
+app.patch('/api/theses/:id/holdings/:ticker', async (req, res) => {
+    const { id, ticker } = req.params;
+    const updates = req.body;
+    try {
+        const updatedThesis = await thesisService.updateHolding(id, ticker, updates);
+        res.json(updatedThesis);
+    } catch (error: any) {
+        console.error(`[API] Error updating holding ${ticker}:`, error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/theses/:id/holdings', async (req, res) => {
+    const { id } = req.params;
+    const holding = req.body;
+    try {
+        const updatedThesis = await thesisService.addHolding(id, holding);
+        res.json(updatedThesis);
+    } catch (error: any) {
+        console.error(`[API] Error adding holding to ${id}:`, error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.delete('/api/theses/:id/holdings/:ticker', async (req, res) => {
+    const { id, ticker } = req.params;
+    try {
+        const updatedThesis = await thesisService.removeHolding(id, ticker);
+        res.json(updatedThesis);
+    } catch (error: any) {
+        console.error(`[API] Error removing holding ${ticker} from ${id}:`, error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.put('/api/theses/:id/holdings', async (req, res) => {
+    const { id } = req.params;
+    const newHoldings = req.body;
+    try {
+        const updatedThesis = await thesisService.replaceHoldings(id, newHoldings);
+        res.json(updatedThesis);
+    } catch (error: any) {
+        console.error(`[API] Error replacing holdings for ${id}:`, error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.delete('/api/theses/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await thesisService.deleteThesis(id);
+        if (result) {
+            res.json({ success: true, message: 'Thesis deleted' });
+        } else {
+            res.status(404).json({ error: 'Thesis not found' });
+        }
+    } catch (error: any) {
+        console.error(`[API] Error deleting thesis:`, error);
+        res.status(500).json({ error: 'Failed to delete thesis' });
     }
 });
 

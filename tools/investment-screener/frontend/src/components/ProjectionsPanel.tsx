@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
 import { X, Save, Trash2, RotateCcw } from 'lucide-react';
-import { storage, type SavedProjection } from '../services/storage';
+import { storage } from '../services/storage';
+import type { Projection } from '../services/api';
 
 interface ProjectionsPanelProps {
     ticker: string;
     isOpen: boolean;
     onClose: () => void;
-    onLoad: (scenarios: SavedProjection['scenarios']) => void;
+    onLoad: (projection: Projection) => void;
 }
 
 export function ProjectionsPanel({ ticker, isOpen, onClose, onLoad }: ProjectionsPanelProps) {
-    const [projections, setProjections] = useState<SavedProjection[]>([]);
+    const [projections, setProjections] = useState<Projection[]>([]);
 
     // Reload projections when panel opens or ticker changes
     useEffect(() => {
@@ -95,22 +96,22 @@ export function ProjectionsPanel({ ticker, isOpen, onClose, onLoad }: Projection
 
                                     <div className="grid grid-cols-3 gap-2 mb-4">
                                         <div className="bg-slate-900/50 p-2 rounded-lg text-center">
-                                            <div className="text-xs text-slate-500 mb-1">Growth</div>
-                                            <div className="text-indigo-400 font-mono">{proj.scenarios.growthRate}%</div>
+                                            <div className="text-xs text-slate-500 mb-1">Growth (Base)</div>
+                                            <div className="text-indigo-400 font-mono">{proj.scenarios.base.growthRate}%</div>
                                         </div>
                                         <div className="bg-slate-900/50 p-2 rounded-lg text-center">
-                                            <div className="text-xs text-slate-500 mb-1">Margin</div>
-                                            <div className="text-emerald-400 font-mono">{proj.scenarios.netMargin}%</div>
+                                            <div className="text-xs text-slate-500 mb-1">Margin (Base)</div>
+                                            <div className="text-emerald-400 font-mono">{proj.scenarios.base.netMargin}%</div>
                                         </div>
                                         <div className="bg-slate-900/50 p-2 rounded-lg text-center">
-                                            <div className="text-xs text-slate-500 mb-1">Exit P/E</div>
-                                            <div className="text-amber-400 font-mono">{proj.scenarios.exitPE}x</div>
+                                            <div className="text-xs text-slate-500 mb-1">Exit P/E (Base)</div>
+                                            <div className="text-amber-400 font-mono">{proj.scenarios.base.exitPE}x</div>
                                         </div>
                                     </div>
 
                                     <button
                                         onClick={() => {
-                                            onLoad(proj.scenarios);
+                                            onLoad(proj);
                                             onClose();
                                         }}
                                         className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"

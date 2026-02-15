@@ -11,8 +11,27 @@ This skill centralizes the knowledge and workflows for creating "Context Bundles
 ## Key Tools
 - **Manifest Manager**: `tools/retrieve/bundler/manifest_manager.py` (Handles manifest creation and file management)
 - **Bundler Engine**: `tools/retrieve/bundler/bundle.py` (Performs the actual Markdown generation)
+- **Manifest Manager**: `tools/retrieve/bundler/manifest_manager.py` (Handles manifest creation and file management)
+- **Bundler Engine**: `tools/retrieve/bundler/bundle.py` (Performs the actual Markdown generation)
 
-## Core Workflow: Custom Temporary Bundles
+## 🎯 Agentic Workflow: The Curator
+**Before running any commands**, analyze the user's intent to ensure the bundle is high-quality.
+
+### Phase 1: Intent Analysis
+Ask yourself (or the user): **"What is the purpose of this bundle?"**
+
+| Intent | Recommended Artifacts |
+|:-------|:----------------------|
+| **Red Team / Security Audit** | `red_team_prompt.md`, `architecture/*.mmd`, `zod-schemas.ts`, Security Protocols |
+| **Code Review** | Implementation files (`Service.ts`), Unit Tests, `SKILL.md` (for logic) |
+| **New Feature Context** | `spec.md`, `plan.md`, `tasks.md`, Core Interfaces |
+| **Bug Report** | Logs, Error Screenshots, Relevant Code Snippets |
+
+### Phase 2: Proactive Suggestion
+If the user says "Bundle Tool B for Red Team", **do not just bundle the code.**
+**Suggest:** "For a Red Team review, should I also include the `thesis_alignment_sequence.mmd` and the `red_team_review_prompt.md`?"
+
+## 3. Core Workflow: Custom Temporary Bundles
 When you need to create a one-off bundle for a specific task (like a Red Team review):
 
 ### 1. Initialize a Temporary Manifest

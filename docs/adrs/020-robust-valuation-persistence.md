@@ -21,6 +21,7 @@ We will implement a hardened persistence layer with the following characteristic
 4. **Version-Based Conflict Detection**: Each projection includes a `version` number. The backend rejects POSTs with stale versions (HTTP 409) to handle concurrent multi-tab editing.
 5. **Zod Schema Validation**: All incoming data is strictly validated for types, numeric ranges, and business logic (e.g., scenario weights must sum to 1.0).
 6. **Enhanced Snapshots**: Capture fiscal periods and analyst estimates at save-time to ensure historical valuations are contextually complete.
+7. **Architecture Reference**: Detailed design is located in `docs/architecture/stock-valuation/valuation-persistence.md`.
 
 ## Consequences
 - **Pros**:
