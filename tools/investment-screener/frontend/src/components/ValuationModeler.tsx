@@ -233,7 +233,14 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const weightedPrice = (bearPrice * scenarios.bear.weight) + (basePrice * scenarios.base.weight) + (bullPrice * scenarios.bull.weight);
 
     // Target Price for Hero (Interactive)
+    // Reverted to Weighted Average per user request (with explanation)
     const targetPrice = weightedPrice;
+
+    // Active Scenario Helpers for UI (Dynamic secondary display)
+    const activePrice = activeScenario === 'bull' ? bullPrice : activeScenario === 'bear' ? bearPrice : basePrice;
+    // Calculate upside for active scenario
+    const activeUpside = stockData.price > 0 ? ((activePrice - stockData.price) / stockData.price) * 100 : 0;
+
     const upside = stockData.price > 0 ? ((targetPrice - stockData.price) / stockData.price) * 100 : 0;
 
     // --- Actions ---
@@ -670,13 +677,24 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                         ))}
                     </div>
 
-                    <div className="text-[10px] font-medium text-secondary mb-0.5 uppercase tracking-widest mt-2">Target Price ({timeHorizon}yr)</div>
-                    <div className="text-4xl font-black text-text tracking-tight mb-0.5">
+                    <div className="text-[10px] font-medium text-secondary mb-0.5 uppercase tracking-widest mt-2 flex items-center gap-2">
+                        Weighted Fair Value (5yr)
+                        <HelpTrigger topicId="fairValue" />
+                    </div>
+                    <div className="text-4xl font-black text-text tracking-tight mb-2">
                         ${Math.round(targetPrice)}
                     </div>
-                    <div className={`flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${upside >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
-                        {upside >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                        {upside > 0 ? '+' : ''}{upside.toFixed(1)}% Upside
+
+                    {/* Active Scenario Indicator (Dynamic) */}
+                    <div className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border transition-all ${activeScenario === 'bull' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
+                        activeScenario === 'bear' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
+                            'bg-primary/10 border-primary/20 text-primary'
+                        }`}>
+                        <span className="font-bold uppercase text-[9px] tracking-wider">{activeScenario} Case:</span>
+                        <span className="font-bold">${Math.round(activePrice)}</span>
+                        <span className="opacity-80 text-[10px]">
+                            ({activeUpside > 0 ? '+' : ''}{activeUpside.toFixed(0)}%)
+                        </span>
                     </div>
                 </div>
 
