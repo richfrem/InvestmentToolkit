@@ -4,7 +4,7 @@ import type { StockData } from '../services/api';
 import { ProjectionsPanel } from './ProjectionsPanel';
 import { storage } from '../services/storage';
 import { HelpTrigger } from './HelpModal';
-import { runAIAnalysis, type ValuationResult, type Projection, type Scenario, fetchProjections } from '../services/api';
+import { runAIAnalysis, type ValuationResult, type Projection, type Scenario } from '../services/api';
 import { Sparkles, BrainCircuit, Loader2, FolderOpen } from 'lucide-react';
 import { AIAnalysisModal } from './AIAnalysisModal';
 import { PresetSelectorModal } from './PresetSelectorModal';
@@ -30,7 +30,11 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [showAIModal, setShowAIModal] = useState(false);
     const [saveName, setSaveName] = useState('');
+    const [saveAsDefault, setSaveAsDefault] = useState(false);
     const [showPresetModal, setShowPresetModal] = useState(false);
+
+    const [viewingProjection, setViewingProjection] = useState<Projection | null>(null); // State for modal viewing
+    const [activeProjection, setActiveProjection] = useState<{ id: string, version: number } | null>(null); // Track loaded projection for updates
 
     // Global Settings
     const [discountRate, setDiscountRate] = useState(10);
@@ -42,9 +46,9 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         base: Scenario & { weight: number };
         bull: Scenario & { weight: number };
     }>({
-        bear: { growthRate: 5, netMargin: 10, exitPE: 15, qualityMultiplier: 0.9, shareChange: 0, weight: 0.2 },
-        base: { growthRate: 15, netMargin: 20, exitPE: 25, qualityMultiplier: 1.0, shareChange: -1, weight: 0.5 },
-        bull: { growthRate: 25, netMargin: 25, exitPE: 35, qualityMultiplier: 1.2, shareChange: -2, weight: 0.3 }
+        bear: { growthRate: 5, netMargin: 10, exitPE: 15, qualityMultiplier: 0.9, shareChange: 0, moatScore: 1, managementScore: 1, weight: 0.2 },
+        base: { growthRate: 15, netMargin: 20, exitPE: 25, qualityMultiplier: 1.0, shareChange: -1, moatScore: 2, managementScore: 2, weight: 0.5 },
+        bull: { growthRate: 25, netMargin: 25, exitPE: 35, qualityMultiplier: 1.2, shareChange: -2, moatScore: 3, managementScore: 3, weight: 0.3 }
     });
 
     // Helpers to get/set current scenario values
@@ -61,7 +65,10 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const netMargin = current.netMargin;
     const peRatio = current.exitPE;
     const qualityMultiplier = current.qualityMultiplier;
+
     const shareChange = current.shareChange;
+    const moatScore = current.moatScore ?? 0;
+    const managementScore = current.managementScore ?? 0;
 
     const totalWeight = scenarios.bear.weight + scenarios.base.weight + scenarios.bull.weight;
     const currentWeight = Math.round(current.weight * 100);
@@ -71,6 +78,8 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const setPeRatio = (v: number) => updateCurrent({ exitPE: v });
     const setQualityMultiplier = (v: number) => updateCurrent({ qualityMultiplier: v });
     const setShareChange = (v: number) => updateCurrent({ shareChange: v });
+    const setMoatScore = (v: number) => updateCurrent({ moatScore: v });
+    const setManagementScore = (v: number) => updateCurrent({ managementScore: v });
     const setWeight = (v: number) => updateCurrent({ weight: v / 100 });
 
     // Data preferences
@@ -79,19 +88,33 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const [growthBasis, setGrowthBasis] = useState<'current' | 'next'>('next');
     const [marginBasis, setMarginBasis] = useState<'ttm' | 'quarterly'>('quarterly');
 
-    // Load initial saved count
+    // Initialize: Try to load latest saved projection, otherwise default to Yahoo
     useEffect(() => {
         const init = async () => {
+            // 1. Sync & Fetch saved projections
             const saved = await storage.syncProjections(stockData.symbol);
             setSavedCount(saved.length);
+
+            // 2. Auto-load the default or most recent
+            if (saved.length > 0) {
+                // Priority: isDefault=true, then latest updatedAt
+                const defaults = saved.filter(p => p.isDefault);
+                let target;
+                if (defaults.length > 0) {
+                    target = defaults.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
+                    console.log(`[AutoLoad] Loading default projection: ${target.name}`);
+                } else {
+                    target = saved.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
+                    console.log(`[AutoLoad] Loading latest projection (no default set): ${target.name}`);
+                }
+                handleLoad(target);
+            } else {
+                // 3. Fallback to Yahoo defaults
+                resetToYahoo();
+            }
         };
         init();
-    }, [stockData.symbol]);
-
-    // Initialize with Yahoo Finance data/defaults when stockData changes
-    useEffect(() => {
-        resetToYahoo();
-    }, [stockData]); // Only re-run if stockData changes, not on scenario switch (state persists)
+    }, [stockData.symbol]); // Re-run when ticker changes
 
     const resetToYahoo = () => {
         // --- Base Logic ---
@@ -113,10 +136,18 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             baseMargin = Math.abs(raw) > 1 ? raw : raw * 100;
         }
 
+        // Fix for negative earners (Turnaround logic)
+        // If margin is negative, default to 5% to show a recovery scenario rather than bankruptcy
+        if (baseMargin < 0) {
+            baseMargin = 5.0;
+        }
+
         const basePe = stockData.analyst_estimates?.forward_pe || stockData.metrics?.forward_pe || stockData.metrics?.pe_ratio || 25;
 
         setDiscountRate(10);
         setTimeHorizon(5);
+
+        setActiveProjection(null); // Clear active projection tracking for clean slate
 
         setScenarios({
             bear: {
@@ -125,6 +156,8 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 exitPE: Math.round(basePe * 0.7),
                 qualityMultiplier: 0.9,
                 shareChange: 0,
+                moatScore: 1,
+                managementScore: 1,
                 weight: 0.2
             },
             base: {
@@ -133,6 +166,8 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 exitPE: Math.round(basePe),
                 qualityMultiplier: 1.0,
                 shareChange: -1,
+                moatScore: 2,
+                managementScore: 2,
                 weight: 0.5
             },
             bull: {
@@ -141,6 +176,8 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 exitPE: Math.round(basePe * 1.3),
                 qualityMultiplier: 1.2,
                 shareChange: -2,
+                moatScore: 3,
+                managementScore: 3,
                 weight: 0.3
             }
         });
@@ -165,9 +202,15 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         const futureShares = currentShares * Math.pow(1 + s.shareChange / 100, timeHorizon);
 
         // 5. Future Price
-        const futurePrice = futureShares > 0 ? futureMarketCap / futureShares : 0;
+        let futurePrice = futureShares > 0 ? futureMarketCap / futureShares : 0;
 
-        // 6. Discount to PV
+        // 6. Apply Moat & Management Premiums (0-5 score, each point = 5% premium)
+        // This reflects "Drivers" that expand the multiple or cash flow reliability
+        const moatPremium = (s.moatScore ?? 0) * 0.05;
+        const mgmtPremium = (s.managementScore ?? 0) * 0.05;
+        futurePrice = futurePrice * (1 + moatPremium + mgmtPremium);
+
+        // 7. Discount to PV
         return futurePrice / Math.pow(1 + discountRate / 100, timeHorizon);
     };
 
@@ -190,14 +233,19 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const weightedPrice = (bearPrice * scenarios.bear.weight) + (basePrice * scenarios.base.weight) + (bullPrice * scenarios.bull.weight);
 
     // Target Price for Hero (Interactive)
+    // Reverted to Weighted Average per user request (with explanation)
     const targetPrice = weightedPrice;
+
+    // Active Scenario Helpers for UI (Dynamic secondary display)
+    const activePrice = activeScenario === 'bull' ? bullPrice : activeScenario === 'bear' ? bearPrice : basePrice;
+    // Calculate upside for active scenario
+    const activeUpside = stockData.price > 0 ? ((activePrice - stockData.price) / stockData.price) * 100 : 0;
+
     const upside = stockData.price > 0 ? ((targetPrice - stockData.price) / stockData.price) * 100 : 0;
 
     // --- Actions ---
 
-    const handleSyncToConsensus = () => {
-        resetToYahoo(); // Re-use preference logic
-    };
+
 
     const handleAIAnalysis = async (metric?: string) => {
         setIsAnalyzing(true);
@@ -234,10 +282,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         if (aiResult.quality_multiplier) setQualityMultiplier(aiResult.quality_multiplier);
     };
 
-    const handleSaveOpen = () => {
-        setSaveName(`Projection ${new Date().toLocaleDateString()}`);
-        setShowSaveModal(true);
-    };
+
 
     const handleSaveConfirm = () => {
         if (!saveName.trim()) return;
@@ -255,22 +300,36 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         };
 
         const projection: Projection = {
-            id: Date.now().toString(), // Helper will be replaced by backend ID usually, but local first
+            id: activeProjection?.id || Date.now().toString(), // Use existing ID if updating
+            source: 'USER',
             ticker: stockData.symbol,
             schemaVersion: '1.1',
-            version: 1,
+            version: activeProjection ? activeProjection.version + 1 : 1, // Increment version if updating
             savedAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             name: saveName,
+            isDefault: saveAsDefault,
             snapshot,
             dataPreferences: { growthBasis, marginBasis },
             scenarios: scenarios, // Save all 3
-            globalSettings: { discountRate, timeHorizon }
+            globalSettings: { discountRate, timeHorizon },
+            // Preserve AI Thesis if available
+            aiThesis: aiResult ? {
+                model: aiResult.model_name,
+                rationale: aiResult.rationale,
+                fairValue: aiResult.fair_value,
+                action: (aiResult.action as any) || 'HOLD',
+                analyzedAt: new Date().toISOString(),
+                // If we have a report link, preserve it (though it might not be in aiResult unless we put it there)
+                researchReport: (aiResult as any).researchReport
+            } : undefined
         };
 
         storage.saveProjection(projection)
             .then(() => {
                 setSavedCount(prev => prev + 1);
+                // Update active projection state to match the newly saved one
+                setActiveProjection({ id: projection.id, version: projection.version });
                 setShowSaveModal(false);
             })
             .catch(err => alert("Failed to save: " + err.message));
@@ -280,25 +339,47 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         // We expect a full Projection object here, but older callers might pass just scenarios.
         // Actually storage.syncProjections returns Projection[]. 
         // ProjectionsPanel onLoad passes `p.scenarios` or `p`.
-        // Let's assume it passes the WHOLE projection settings usually, 
-        // but looking at ProjectionsPanel is safer.
-        // For now, let's assume it passes just the scenarios object + global settings if available.
 
-        // If it's a "Projecton" object
-        if (loadedProjection.scenarios) {
-            setScenarios(loadedProjection.scenarios);
-            if (loadedProjection.globalSettings) {
-                setDiscountRate(loadedProjection.globalSettings.discountRate);
-                setTimeHorizon(loadedProjection.globalSettings.timeHorizon);
+        let p = loadedProjection;
+        // If it's a full projection object (has id/ticker), use it. 
+        // If it's a full projection object (has id/ticker), use it. 
+        if (p.id && p.ticker) {
+            // CRITICAL fix: Only treat it as an "active" projection to update if it's a USER one.
+            // If it's an AI or System projection, treat it as a "Template" (Load values, but don't bind ID).
+            // This ensures saving creates a new USER entry instead of overwriting the AI/System one.
+            if (p.source === 'USER') {
+                setActiveProjection({ id: p.id, version: p.version });
+            } else {
+                setActiveProjection(null);
             }
-            setActiveScenario('base');
+
+            // Also take scenarios from it
+            if (p.scenarios) {
+                setScenarios(p.scenarios);
+            }
         } else {
-            console.warn("Legacy/Invalid load structure");
-            // Try to patch
-            if (loadedProjection.base) {
-                setScenarios(loadedProjection);
+            // Legacy or partial load - treat as new
+            setActiveProjection(null);
+            // Try to patch from legacy structure
+            if (p.scenarios) {
+                setScenarios(p.scenarios);
+            } else if (p.base && p.bull && p.bear) {
+                setScenarios(p);
             }
         }
+
+        if (p.globalSettings) {
+            setDiscountRate(p.globalSettings.discountRate);
+            setTimeHorizon(p.globalSettings.timeHorizon);
+        }
+
+        if (p.dataPreferences) {
+            setGrowthBasis(p.dataPreferences.growthBasis);
+            setMarginBasis(p.dataPreferences.marginBasis);
+        }
+
+        if (p.name) setSaveName(p.name);
+
         setShowProjectionsPanel(false);
     };
 
@@ -315,6 +396,28 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     setDiscountRate(aiProjection.globalSettings.discountRate);
                     setTimeHorizon(aiProjection.globalSettings.timeHorizon);
                 }
+
+                // Also load the thesis into the AI Result view
+                const thesis = aiProjection.aiThesis;
+                const base = aiProjection.scenarios.base;
+                if (thesis) {
+                    setAiResult({
+                        fair_value: thesis.fairValue,
+                        model_name: thesis.model,
+                        rationale: thesis.rationale,
+                        action: thesis.action,
+                        growth_assumption: base ? base.growthRate / 100 : 0,
+                        suggested_growth: base ? base.growthRate / 100 : undefined,
+                        suggested_margin: base ? base.netMargin / 100 : undefined,
+                        exit_pe: base ? base.exitPE : undefined,
+                        quality_multiplier: base ? base.qualityMultiplier : undefined
+                    });
+                }
+
+                // Open the modal with this projection
+                setViewingProjection(aiProjection);
+                setShowAIModal(true);
+
                 setActiveScenario('base');
             } else {
                 console.error('AI Preset missing projection data');
@@ -325,6 +428,29 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             setScenarios(preset.data.scenarios);
             setDiscountRate(preset.data.globalSettings.discountRate);
             setTimeHorizon(preset.data.globalSettings.timeHorizon);
+
+            // Also restore AI Analysis if saved with it (User Presets often inherit AI data)
+            const p = preset.data as any; // Cast to access optional aiThesis
+            if (p.aiThesis) {
+                const thesis = p.aiThesis;
+                const base = preset.data.scenarios.base;
+                setAiResult({
+                    fair_value: thesis.fairValue,
+                    model_name: thesis.model,
+                    rationale: thesis.rationale,
+                    action: thesis.action,
+                    growth_assumption: base ? base.growthRate / 100 : 0,
+                    suggested_growth: base ? base.growthRate / 100 : undefined,
+                    suggested_margin: base ? base.netMargin / 100 : undefined,
+                    exit_pe: base ? base.exitPE : undefined,
+                    quality_multiplier: base ? base.qualityMultiplier : undefined,
+                    researchReport: thesis.researchReport // Preserve report link
+                } as any);
+            } else {
+                // Clear AI result if loading a manual preset that has no AI data
+                setAiResult(null);
+            }
+
             setActiveScenario('base');
         }
         setShowPresetModal(false);
@@ -551,13 +677,24 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                         ))}
                     </div>
 
-                    <div className="text-[10px] font-medium text-secondary mb-0.5 uppercase tracking-widest mt-2">Target Price ({timeHorizon}yr)</div>
-                    <div className="text-4xl font-black text-text tracking-tight mb-0.5">
+                    <div className="text-[10px] font-medium text-secondary mb-0.5 uppercase tracking-widest mt-2 flex items-center gap-2">
+                        Weighted Fair Value (5yr)
+                        <HelpTrigger topicId="fairValue" />
+                    </div>
+                    <div className="text-4xl font-black text-text tracking-tight mb-2">
                         ${Math.round(targetPrice)}
                     </div>
-                    <div className={`flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${upside >= 0 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
-                        {upside >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                        {upside > 0 ? '+' : ''}{upside.toFixed(1)}% Upside
+
+                    {/* Active Scenario Indicator (Dynamic) */}
+                    <div className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border transition-all ${activeScenario === 'bull' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
+                        activeScenario === 'bear' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
+                            'bg-primary/10 border-primary/20 text-primary'
+                        }`}>
+                        <span className="font-bold uppercase text-[9px] tracking-wider">{activeScenario} Case:</span>
+                        <span className="font-bold">${Math.round(activePrice)}</span>
+                        <span className="opacity-80 text-[10px]">
+                            ({activeUpside > 0 ? '+' : ''}{activeUpside.toFixed(0)}%)
+                        </span>
                     </div>
                 </div>
 
@@ -741,7 +878,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             Total Prob: {Math.round(totalWeight * 100)}%
                         </div>
                     </h3>
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                         <SliderInput
                             label="Probability"
                             value={currentWeight}
@@ -804,6 +941,26 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             helpTopic="timeHorizon"
                             note="Def: 5yr"
                         />
+                        <SliderInput
+                            label="Strategic Moat"
+                            value={moatScore}
+                            setValue={setMoatScore}
+                            min={0}
+                            max={5}
+                            unit="/5"
+                            helpTopic="moatScore"
+                            note="+5% per pt"
+                        />
+                        <SliderInput
+                            label="Govt / Insider"
+                            value={managementScore}
+                            setValue={setManagementScore}
+                            min={0}
+                            max={5}
+                            unit="/5"
+                            helpTopic="managementScore"
+                            note="+5% per pt"
+                        />
                     </div>
                 </section>
 
@@ -852,8 +1009,9 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             {/* AI Analysis Modal */}
             <AIAnalysisModal
                 isOpen={showAIModal}
-                onClose={() => setShowAIModal(false)}
+                onClose={() => { setShowAIModal(false); setViewingProjection(null); }}
                 symbol={stockData.symbol}
+                initialProjection={viewingProjection}
             />
 
             {/* Save Modal */}
@@ -874,6 +1032,18 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white mb-4 focus:outline-none focus:border-primary"
                             autoFocus
                         />
+                        <div className="flex items-center gap-2 mb-4">
+                            <input
+                                type="checkbox"
+                                id="saveAsDefault"
+                                checked={saveAsDefault}
+                                onChange={(e) => setSaveAsDefault(e.target.checked)}
+                                className="rounded border-slate-700 bg-slate-900 text-primary focus:ring-primary"
+                            />
+                            <label htmlFor="saveAsDefault" className="text-xs text-slate-300 cursor-pointer select-none">
+                                Set as Default Load (Auto-load on refresh)
+                            </label>
+                        </div>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setShowSaveModal(false)}
@@ -910,7 +1080,25 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     onLoad={handlePresetLoad}
                     onViewReport={(aiProjection) => {
                         setShowPresetModal(false);
-                        setAiResult(aiProjection.aiThesis);
+                        setViewingProjection(aiProjection);
+                        setShowAIModal(true);
+                        // Map stored AIThesis (camelCase) to ValuationResult (snake_case)
+                        const thesis = aiProjection.aiThesis;
+                        const base = aiProjection.scenarios?.base;
+                        if (thesis) {
+                            setAiResult({
+                                fair_value: thesis.fairValue,
+                                model_name: thesis.model,
+                                rationale: thesis.rationale,
+                                action: thesis.action,
+                                // Map data from base scenario if available
+                                growth_assumption: base ? base.growthRate / 100 : 0,
+                                suggested_growth: base ? base.growthRate / 100 : undefined,
+                                suggested_margin: base ? base.netMargin / 100 : undefined,
+                                exit_pe: base ? base.exitPE : undefined,
+                                quality_multiplier: base ? base.qualityMultiplier : undefined
+                            });
+                        }
                     }}
                     onClose={() => setShowPresetModal(false)}
                 />

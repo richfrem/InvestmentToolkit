@@ -52,6 +52,7 @@ const migrateV1toV1_1 = (legacy: LegacyProjection): Projection => {
     return {
         ticker: legacy.ticker,
         id: legacy.id,
+        source: 'USER',
         schemaVersion: '1.1',
         version: 1,
         savedAt: legacy.savedAt,
@@ -139,12 +140,21 @@ export const storage = {
         }
 
         // 4. Standard Sync using Versioning
-        // For now, simpler strategy: Server wins. 
-        // We replace local cache with server data. 
-        // (In a full offline-first app, we'd merge, but Red Team advised "API First")
+        // Smart Merge: Trust Server, but preserve Local USER projections that might be missing on server (eventual consistency)
         if (serverProjections.length > 0) {
-            localStorage.setItem(key, JSON.stringify(serverProjections));
-            return serverProjections;
+            // Find local USER projections that are NOT in server list
+            const localUserOnly = localProjections.filter(lp =>
+                lp.source === 'USER' &&
+                !serverProjections.find(sp => sp.id === lp.id)
+            );
+
+            // Merge: Server + Missing Local
+            // Note: If server has the ID, server wins.
+            const merged = [...serverProjections, ...localUserOnly];
+
+            // Update cache
+            localStorage.setItem(key, JSON.stringify(merged));
+            return merged;
         }
 
         // 5. Fallback: If server empty, return local V1.1 cache?
@@ -182,15 +192,64 @@ export const storage = {
     saveProjection: async (projection: Projection): Promise<void> => {
         const ticker = projection.ticker;
         try {
+            // 0. Repair Projection (Ensure validity)
+            const repairProjection = (p: Projection): Projection => {
+                const scenarios = p.scenarios;
+                const totalWeight = (scenarios.bear.weight || 0) + (scenarios.base.weight || 0) + (scenarios.bull.weight || 0);
+
+                if (Math.abs(totalWeight - 1.0) > 0.001 && totalWeight > 0) {
+                    scenarios.bear.weight = Number((scenarios.bear.weight / totalWeight).toFixed(2));
+                    scenarios.base.weight = Number((scenarios.base.weight / totalWeight).toFixed(2));
+                    scenarios.bull.weight = Number((1.0 - scenarios.bear.weight - scenarios.base.weight).toFixed(2));
+                }
+
+                ['bear', 'base', 'bull'].forEach((sKey) => {
+                    const s = scenarios[sKey as keyof typeof scenarios];
+                    if (s.moatScore === undefined) s.moatScore = 1;
+                    if (s.managementScore === undefined) s.managementScore = 1;
+                });
+
+                // Ensure Source is set (Defaults to USER if missing)
+                if (!p.source) {
+                    p.source = 'USER';
+                }
+
+                // Fix AI Thesis Action Enum
+                if (p.aiThesis && p.aiThesis.action) {
+                    const action = p.aiThesis.action.toUpperCase();
+                    if (action === 'STRONG BUY') p.aiThesis.action = 'BUY';
+                    else if (action === 'STRONG SELL') p.aiThesis.action = 'SELL';
+                    else if (!['BUY', 'SELL', 'HOLD'].includes(action)) {
+                        p.aiThesis.action = 'HOLD'; // Default fallback
+                    }
+                }
+
+                // Ensure valid dates
+                try {
+                    if (!p.updatedAt || isNaN(Date.parse(p.updatedAt))) {
+                        p.updatedAt = new Date().toISOString();
+                    }
+                    if (!p.savedAt || isNaN(Date.parse(p.savedAt))) {
+                        p.savedAt = new Date().toISOString();
+                    }
+                } catch (e) {
+                    p.updatedAt = new Date().toISOString();
+                }
+
+                return p;
+            };
+
+            const cleanProjection = repairProjection({ ...projection });
+
             // 1. API Write (Strict First)
-            await apiSave(projection);
+            await apiSave(cleanProjection);
 
             // 2. Update Local Cache on Success
             const key = `${STORAGE_PREFIX}${ticker.toUpperCase()}`;
             const existing = storage.getProjections(ticker);
 
             // Remove old version if exists, add new to top
-            const updated = [projection, ...existing.filter(p => p.id !== projection.id)];
+            const updated = [cleanProjection, ...existing.filter(p => p.id !== cleanProjection.id)];
             localStorage.setItem(key, JSON.stringify(updated));
 
         } catch (e: any) {
@@ -212,6 +271,107 @@ export const storage = {
             localStorage.setItem(key, JSON.stringify(updated));
         } catch (e) {
             console.error('Failed to delete projection:', e);
+            throw e;
+        }
+    },
+
+    toggleDefaultProjection: async (projection: { id: string, ticker: string }): Promise<void> => {
+        const ticker = projection.ticker;
+        const targetId = projection.id;
+        const key = `${STORAGE_PREFIX}${ticker.toUpperCase()}`;
+
+        try {
+            // 1. Get all current projections
+            const all = storage.getProjections(ticker);
+
+            // 2. Helper to ensure validity (weights sum to 1, etc)
+            const repairProjection = (p: Projection): Projection => {
+                // Ensure weights sum to 1.0
+                const scenarios = p.scenarios;
+                const totalWeight = (scenarios.bear.weight || 0) + (scenarios.base.weight || 0) + (scenarios.bull.weight || 0);
+
+                if (Math.abs(totalWeight - 1.0) > 0.001 && totalWeight > 0) {
+                    // Normalize
+                    scenarios.bear.weight = Number((scenarios.bear.weight / totalWeight).toFixed(2));
+                    scenarios.base.weight = Number((scenarios.base.weight / totalWeight).toFixed(2));
+                    scenarios.bull.weight = Number((1.0 - scenarios.bear.weight - scenarios.base.weight).toFixed(2));
+                }
+
+                // Ensure required numeric fields exist (backfill defaults if missing)
+                ['bear', 'base', 'bull'].forEach((sKey) => {
+                    const s = scenarios[sKey as keyof typeof scenarios];
+                    if (s.moatScore === undefined) s.moatScore = 1;
+                    if (s.managementScore === undefined) s.managementScore = 1;
+                });
+
+                // Ensure Source is set (Defaults to USER if missing)
+                if (!p.source) {
+                    p.source = 'USER';
+                }
+
+                // Fix AI Thesis Action Enum
+                if (p.aiThesis && p.aiThesis.action) {
+                    const action = p.aiThesis.action.toUpperCase();
+                    if (action === 'STRONG BUY') p.aiThesis.action = 'BUY';
+                    else if (action === 'STRONG SELL') p.aiThesis.action = 'SELL';
+                    else if (!['BUY', 'SELL', 'HOLD'].includes(action)) {
+                        p.aiThesis.action = 'HOLD'; // Default fallback
+                    }
+                }
+
+                // Ensure valid dates
+                try {
+                    if (!p.updatedAt || isNaN(Date.parse(p.updatedAt))) {
+                        p.updatedAt = new Date().toISOString();
+                    }
+                    if (!p.savedAt || isNaN(Date.parse(p.savedAt))) {
+                        p.savedAt = new Date().toISOString();
+                    }
+                } catch (e) {
+                    p.updatedAt = new Date().toISOString();
+                }
+
+                return p;
+            };
+
+            // 3. Update default status & Repair
+            const updates = all.map(p => {
+                let updated = { ...p };
+
+                if (targetId === 'yahoo') {
+                    updated.isDefault = false;
+                } else {
+                    if (p.id === targetId) {
+                        updated.isDefault = true;
+                    } else {
+                        updated.isDefault = false;
+                    }
+                }
+
+                // Repair before potential save
+                return repairProjection(updated);
+            });
+
+            // 4. Save modified ones to API
+            for (const p of updates) {
+                // Only save if changed (or if we repaired it, we might want to save? 
+                // Let's safe if isDefault changed OR if we suspect repair happened. 
+                // For now, simpler: save if isDefault changed. 
+                // But if repair happened, we should save too? 
+                // The issue is repair might change fields that make it 'changed'.
+                // Let's save if isDefault changed. The repair is just to make the SAVE succeed.
+
+                const original = all.find(old => old.id === p.id);
+                if (original && p.isDefault !== original.isDefault) {
+                    await apiSave(p);
+                }
+            }
+
+            // 5. Update Local Cache
+            localStorage.setItem(key, JSON.stringify(updates));
+
+        } catch (e) {
+            console.error("Failed to toggle default:", e);
             throw e;
         }
     }

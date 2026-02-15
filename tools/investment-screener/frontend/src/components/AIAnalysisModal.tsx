@@ -8,18 +8,25 @@ interface AIAnalysisModalProps {
     symbol: string;
     onClose: () => void;
     isOpen: boolean;
+    initialProjection?: Projection | null; // Added prop
 }
 
-export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClose, isOpen }) => {
+export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClose, isOpen, initialProjection }) => {
     const [projection, setProjection] = useState<Projection | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (isOpen && symbol) {
-            loadAIProjection();
+        if (isOpen) {
+            if (initialProjection) {
+                setProjection(initialProjection);
+                setLoading(false);
+                setError(null);
+            } else if (symbol) {
+                loadAIProjection();
+            }
         }
-    }, [isOpen, symbol]);
+    }, [isOpen, symbol, initialProjection]);
 
     const loadAIProjection = async () => {
         setLoading(true);

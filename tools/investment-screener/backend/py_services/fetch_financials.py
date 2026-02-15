@@ -248,19 +248,29 @@ def fetch_financial_data(ticker_symbol: str) -> None:
             "number_of_analysts": info.get('numberOfAnalystOpinions', 0)
         }
 
-        # Try to extract growth estimates from earnings_trend
+        # 2c. Calculate Revenue Growth Estimate (Fix for VRT 200% outlier)
+        # Previously used earnings_trend (EPS growth), which caused massive overestimation for DCF revenue models.
+        # Now deriving from Analyst Revenue Forecasts: (+1y Avg - 0y Avg) / 0y Avg
+        
         growth_est = {"stockTrend": {"+1y": 0}}
-        try:
-            trend = stock.earnings_trend
-            if trend is not None and not trend.empty and '+1y' in trend.index:
-                growth = trend.loc['+1y'].get('growth', 0)
-                growth_est["stockTrend"]["+1y"] = float(growth * 100) if growth else 0
-        except Exception:
-            pass
-
-        # Fallback for growth estimates (ADR 018)
-        if growth_est["stockTrend"]["+1y"] == 0:
-            growth_est["stockTrend"]["+1y"] = info.get('earningsGrowth', 0) * 100
+        calculated_growth = 0.0
+        
+        rev_0y = next((x['avg'] for x in res_rev_f if x['period'] == '0y'), 0)
+        rev_1y = next((x['avg'] for x in res_rev_f if x['period'] == '+1y'), 0)
+        
+        if rev_0y and rev_1y and rev_0y > 0:
+            calculated_growth = ((rev_1y - rev_0y) / rev_0y) * 100
+        elif rev_0y and rev_0y > 0:
+            # Fallback: 0y vs TTM
+            ttm_rev = info.get('totalRevenue', hist_rev[-1] if hist_rev else 0)
+            if ttm_rev > 0:
+                calculated_growth = ((rev_0y - ttm_rev) / ttm_rev) * 100
+        
+        if calculated_growth != 0:
+             growth_est["stockTrend"]["+1y"] = round(calculated_growth, 2)
+        else:
+             # Fallback to info 'revenueGrowth' (Quarterly YoY) if no forecasts
+             growth_est["stockTrend"]["+1y"] = round(info.get('revenueGrowth', 0) * 100, 2)
 
         # 3. Financial Statements
         financials = stock.financials.reindex(sorted(stock.financials.columns), axis=1)

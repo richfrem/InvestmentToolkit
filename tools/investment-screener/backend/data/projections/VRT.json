@@ -1,0 +1,68 @@
+[
+  {
+    "ticker": "VRT",
+    "id": "e9820063-eebb-49f9-aa8b-47805167732d",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "name": "AI Deep Dive \u2014 VRT \u2014 2026-02-14",
+    "snapshot": {
+      "price": 234.53,
+      "currency": "USD",
+      "shares": 382553680,
+      "revenue": 10229900288,
+      "lastActualPS": 8.77,
+      "fiscalPeriod": "TTM"
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 12,
+        "netMargin": 10,
+        "exitPE": 20,
+        "qualityMultiplier": 1.0,
+        "shareChange": 0,
+        "scenarioPrice": 94.2,
+        "rationale": "AI data center buildout cools faster than expected. Competition from Schneider Electric and Eaton pressures margins. Valuation compresses to industrial mean."
+      },
+      "base": {
+        "weight": 0.55,
+        "growthRate": 22,
+        "netMargin": 15,
+        "exitPE": 30,
+        "qualityMultiplier": 1.1,
+        "shareChange": -1,
+        "scenarioPrice": 342.0,
+        "rationale": "Aligned with analyst consensus. Vertiv captures significant share of liquid cooling market for Blackwell/AI clusters. Margins expand on operating leverage."
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 30,
+        "netMargin": 18,
+        "exitPE": 40,
+        "qualityMultiplier": 1.2,
+        "shareChange": -2,
+        "scenarioPrice": 795.0,
+        "rationale": "Hypergrowth scenario. AI power density requirements force rapid retrofit of legacy datacenters, driving a 'supercycle' for thermal management. VRT becomes a de facto standard."
+      }
+    },
+    "aiThesis": {
+      "model": "Antigravity Agent",
+      "rationale": "Vertiv (VRT) is a critical infrastructure play for the AI boom. Our DCF analysis suggests the stock is Fairly Valued (Weighted Fair Value $230 vs Price $235). While growth is strong (22%+), the 69x PE prices in perfection. We recommend HOLD/BUY ON DIPS.",
+      "fairValue": 230.15,
+      "action": "HOLD",
+      "analyzedAt": "2026-02-14T21:35:00Z",
+      "researchReport": null
+    },
+    "version": 2,
+    "updatedAt": "2026-02-15T05:27:14.854806+00:00",
+    "savedAt": "2026-02-15T05:26:37.073532+00:00"
+  }
+]
