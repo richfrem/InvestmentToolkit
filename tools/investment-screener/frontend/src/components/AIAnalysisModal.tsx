@@ -166,6 +166,8 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
                                             <tr className="border-b border-slate-700 text-slate-400 text-xs uppercase tracking-wider">
                                                 <th className="px-5 py-3 font-medium">Scenario</th>
                                                 <th className="px-5 py-3 font-medium text-right">Probability</th>
+                                                <th className="px-5 py-3 font-medium text-right">Target Price</th>
+                                                <th className="px-5 py-3 font-medium text-right">Implied Upside</th>
                                                 <th className="px-5 py-3 font-medium text-right">Rev CAGR</th>
                                                 <th className="px-5 py-3 font-medium text-right">Net Margin</th>
                                                 <th className="px-5 py-3 font-medium text-right">Exit P/E</th>
@@ -177,21 +179,58 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
                                                 const s = projection.scenarios[type];
                                                 const isBear = type === 'bear';
                                                 const isBull = type === 'bull';
-                                                const rowClass = isBear ? 'bg-red-500/5 hover:bg-red-500/10' :
-                                                    isBull ? 'bg-green-500/5 hover:bg-green-500/10' :
-                                                        'hover:bg-slate-800/50';
-                                                const textClass = isBear ? 'text-red-400' : isBull ? 'text-green-400' : 'text-slate-300';
+                                                
+                                                // Calculate Price (Global Settings + Scenario Assumptions)
+                                                const qualityMultiplier = s.qualityMultiplier ?? 1.0;
+                                                const shareChange = s.shareChange ?? 0;
+                                                const timeHorizon = projection.globalSettings.timeHorizon;
+                                                const discountRate = projection.globalSettings.discountRate;
 
+                                                // 1. Future Revenue
+                                                const currentRevenue = projection.snapshot.revenue || 0;
+                                                const futureRevenue = currentRevenue * Math.pow(1 + s.growthRate / 100, timeHorizon);
+
+                                                // 2. Future Net Income
+                                                const futureNetIncome = futureRevenue * (s.netMargin / 100);
+
+                                                // 3. Future Market Cap
+                                                const futureMarketCap = futureNetIncome * s.exitPE * qualityMultiplier;
+
+                                                // 4. Future Share Count
+                                                const currentShares = projection.snapshot.shares || 1;
+                                                const futureShares = currentShares * Math.pow(1 + shareChange / 100, timeHorizon);
+
+                                                // 5. Future Price
+                                                const futurePrice = futureShares > 0 ? futureMarketCap / futureShares : 0;
+
+                                                // 6. Discount to PV
+                                                const targetPrice = futurePrice / Math.pow(1 + discountRate / 100, timeHorizon);
+                                                
+                                                // 7. Upside
+                                                const currentPrice = projection.snapshot.price || 0;
+                                                const upside = currentPrice > 0 ? ((targetPrice - currentPrice) / currentPrice) * 100 : 0;
+
+                                                const rowClass = isBear ? 'bg-red-500/5 hover:bg-red-500/10' : 
+                                                               isBull ? 'bg-green-500/5 hover:bg-green-500/10' : 
+                                                               'hover:bg-slate-800/50';
+                                                const textClass = isBear ? 'text-red-400' : isBull ? 'text-green-400' : 'text-slate-300';
+                                                
                                                 return (
                                                     <tr key={type} className={`transition-colors ${rowClass}`}>
                                                         <td className="px-5 py-4 font-bold capitalize text-white flex items-center gap-2">
                                                             {isBear && <TrendingDown size={14} className="text-red-400" />}
                                                             {isBull && <TrendingUp size={14} className="text-green-400" />}
-                                                            {!isBear && !isBull && <div className="w-3.5" />}
+                                                            {!isBear && !isBull && <div className="w-3.5" />} 
                                                             {type}
                                                         </td>
                                                         <td className="px-5 py-4 text-right font-medium text-slate-300">
                                                             {(s.weight * 100).toFixed(0)}%
+                                                        </td>
+                                                        <td className="px-5 py-4 text-right font-black text-white">
+                                                            ${targetPrice.toFixed(2)}
+                                                        </td>
+                                                        <td className={`px-5 py-4 text-right font-bold ${upside >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                            {upside > 0 ? '+' : ''}{upside.toFixed(1)}%
                                                         </td>
                                                         <td className={`px-5 py-4 text-right font-bold ${textClass}`}>
                                                             {s.growthRate}%
