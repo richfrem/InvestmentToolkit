@@ -59,7 +59,7 @@ Before saving, YOU must validate your own generated JSON:
 3.  **Ranges**: Clamp any values outside the schema limits (e.g., max P/E 1000).
 
 ## Step 5: Assemble Projection Object
-Construct the final JSON payload using this structure (Source = `AI_AGENT`):
+Construct the final JSON payload using this structure:
 
 ```json
 {
@@ -70,7 +70,7 @@ Construct the final JSON payload using this structure (Source = `AI_AGENT`):
   "version": 1,
   "savedAt": "<current ISO timestamp>",
   "updatedAt": "<current ISO timestamp>",
-  "name": "AI Deep Dive — {TICKER}",
+  "name": "AI Deep Dive — {TICKER} — <date>",
   "rationale": "<Your 3-5 sentence thesis>",
   "snapshot": { ... from Step 2 ... },
   "dataPreferences": { "growthBasis": "next", "marginBasis": "ttm" },
@@ -80,7 +80,7 @@ Construct the final JSON payload using this structure (Source = `AI_AGENT`):
     "bull": { ... }
   },
   "aiThesis": {
-    "model": "<your model name>",
+    "model": "<your human-readable model name>",
     "rationale": "<Full markdown analysis>",
     "fairValue": <calculated weighted value>,
     "action": "BUY/HOLD/SELL",
@@ -89,6 +89,15 @@ Construct the final JSON payload using this structure (Source = `AI_AGENT`):
   "globalSettings": { "discountRate": 10.0, "timeHorizon": 5 }
 }
 ```
+
+**IMPORTANT - Model Name Format:**
+Use human-readable model names in `aiThesis.model` for clear identification in the UI:
+- ✅ `"Claude Sonnet 4.5"` (not `"claude-sonnet-4.5"`)
+- ✅ `"Gemini 3 Flash Preview"` (not `"gemini-3-flash-preview"`)
+- ✅ `"Gemini 2.0 Flash"` (not `"gemini-2.0-flash-exp"`)
+- ✅ `"GPT-4.5 Turbo"` (not `"gpt-4.5-turbo"`)
+
+This ensures the My Projections modal displays: "AI Analysis (Claude Sonnet 4.5)" instead of "AI Analysis (claude-sonnet-4.5)".
 
 ## Step 6: Persist via API
 Save the projection to the backend using `curl`.
