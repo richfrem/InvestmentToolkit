@@ -585,9 +585,9 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 <div className="bg-surface border border-slate-800/50 rounded-xl p-3 flex flex-col justify-center">
                     <div className="space-y-2">
                         {[
-                            { mode: 'Bear', price: Math.round(targetPrice * 0.6), upside: upside - 40, color: 'text-red-400' },
-                            { mode: 'Base', price: Math.round(targetPrice), upside: upside, color: 'text-primary' },
-                            { mode: 'Bull', price: Math.round(targetPrice * 1.4), upside: upside + 40, color: 'text-green-400' }
+                            { mode: 'Bear', price: Math.round(bearPrice), upside: ((bearPrice - stockData.price) / stockData.price) * 100, color: 'text-red-400' },
+                            { mode: 'Base', price: Math.round(basePrice), upside: ((basePrice - stockData.price) / stockData.price) * 100, color: 'text-primary' },
+                            { mode: 'Bull', price: Math.round(bullPrice), upside: ((bullPrice - stockData.price) / stockData.price) * 100, color: 'text-green-400' }
                         ].map((item) => (
                             <div key={item.mode} className="flex justify-between items-center p-2 bg-slate-900/50 rounded-lg">
                                 <span className="text-xs font-bold text-secondary">{item.mode}</span>

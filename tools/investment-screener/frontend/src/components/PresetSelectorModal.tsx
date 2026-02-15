@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, TrendingUp, BrainCircuit, User, Trash2, Globe } from 'lucide-react';
+import { X, TrendingUp, BrainCircuit, User, Trash2, Globe, FileText } from 'lucide-react';
 import { fetchProjections } from '../services/api';
 import { loadUserPresets, deleteUserPreset, type UserPreset } from '../services/presets';
 
@@ -10,17 +10,20 @@ interface PresetOption {
     description: string;
     timestamp: Date;
     data?: UserPreset;
+    aiProjection?: any; // Full AI projection for report viewing
 }
 
 interface PresetSelectorModalProps {
     symbol: string;
     onLoad: (preset: PresetOption) => void;
+    onViewReport?: (aiProjection: any) => void; // New prop for viewing AI reports
     onClose: () => void;
 }
 
 export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
     symbol,
     onLoad,
+    onViewReport,
     onClose
 }) => {
     const [presets, setPresets] = useState<PresetOption[]>([]);
@@ -63,7 +66,8 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
                             bearPrice: aiProjection.scenarios?.bear?.targetPrice,
                             basePrice: aiProjection.scenarios?.base?.targetPrice,
                             bullPrice: aiProjection.scenarios?.bull?.targetPrice
-                        } as any
+                        } as any,
+                        aiProjection: aiProjection // Store full projection for report viewing
                     });
                 }
             });
@@ -154,8 +158,7 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
                                     {presets.filter(p => p.type === 'yahoo' || p.type === 'ai').map(preset => (
                                         <div
                                             key={preset.id}
-                                            className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 hover:border-indigo-500/50 transition-all cursor-pointer group"
-                                            onClick={() => handleLoad(preset)}
+                                            className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 hover:border-indigo-500/50 transition-all group"
                                         >
                                             <div className="flex items-start justify-between mb-3">
                                                 <div className="flex items-start gap-3 flex-1">
@@ -173,12 +176,30 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <button
-                                                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
-                                                    onClick={() => handleLoad(preset)}
-                                                >
-                                                    Load
-                                                </button>
+                                                <div className="flex items-center gap-2">
+                                                    {preset.type === 'ai' && onViewReport && preset.aiProjection && (
+                                                        <button
+                                                            className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                onViewReport(preset.aiProjection);
+                                                            }}
+                                                            title="View detailed AI report"
+                                                        >
+                                                            <FileText size={14} />
+                                                            Report
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleLoad(preset);
+                                                        }}
+                                                    >
+                                                        Load
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
