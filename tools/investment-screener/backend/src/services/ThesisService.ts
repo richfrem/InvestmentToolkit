@@ -482,6 +482,54 @@ export class ThesisService {
         }
     }
 
+    async performStrategicReview(thesisId: string): Promise<any> {
+        const health = await this.computeHealthCheck(thesisId);
+        const thesis = await this.getThesis(thesisId);
+        if (!thesis) throw new Error('Thesis not found');
+
+        // strategic_review_prompt.md path
+        const promptPath = path.resolve(__dirname, '../../../.agent/skills/thesis-balancer/references/strategic_review_prompt.md');
+        let promptTemplate = '';
+
+        if (fs.existsSync(promptPath)) {
+            promptTemplate = fs.readFileSync(promptPath, 'utf-8');
+        } else {
+            // Fallback prompt if file missing
+            promptTemplate = `
+You are a Strategic Investment Advisor. Review the portfolio health and thesis alignment.
+Identify any "Strategic Conflicts" where market data contradicts the thesis.
+Check if any holding's "Thesis Breakers" might be triggered based on available data.
+Provide a qualitative assessment before suggesting any trades.
+            `;
+        }
+
+        const prompt = `
+${promptTemplate}
+
+THESIS:
+${JSON.stringify({ name: thesis.name, pillars: thesis.pillars, globalSettings: thesis.globalSettings }, null, 2)}
+
+HOLDINGS & BREAKERS:
+${JSON.stringify(thesis.holdings.map(h => ({ ticker: h.ticker, role: h.role, breakers: h.thesisBreakers })), null, 2)}
+
+HEALTH CHECK DATA:
+${JSON.stringify(health, null, 2)}
+        `;
+
+        console.log(`[ThesisService] Asking Gemini for Strategic Review of ${thesisId}...`);
+
+        try {
+            const llmResponse = await geminiService.generateContent(prompt);
+            return {
+                timestamp: new Date().toISOString(),
+                analysis: llmResponse
+            };
+        } catch (error: any) {
+            console.error("[ThesisService] Strategic Review failed:", error);
+            throw new Error(`Strategic Review failed: ${error.message}`);
+        }
+    }
+
     async deleteThesis(id: string): Promise<boolean> {
         const filePath = this.getFilePath(id);
         if (!fs.existsSync(filePath)) return false;

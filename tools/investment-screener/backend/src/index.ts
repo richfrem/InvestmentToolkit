@@ -349,6 +349,17 @@ app.get('/api/theses/:id/health', async (req, res) => {
     }
 });
 
+app.post('/api/theses/:id/strategic-review', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await thesisService.performStrategicReview(id);
+        res.json(result);
+    } catch (error: any) {
+        console.error(`[API] Error performing strategic review for ${id}:`, error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.post('/api/theses/:id/optimize', async (req, res) => {
     const { id } = req.params;
     try {
