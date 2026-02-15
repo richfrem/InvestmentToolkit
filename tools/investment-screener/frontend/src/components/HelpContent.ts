@@ -488,4 +488,68 @@ FCF divided by Market Cap. Similar to a dividend yield or interest rate.
         example: "$10B Operating Cash Flow - $2B CapEx = $8B Free Cash Flow",
         learnMoreUrl: "https://www.investopedia.com/terms/f/freecashflow.asp"
     },
+    fairValue: {
+        title: "Fair Value (Probability-Weighted)",
+        summary: "The expected value of a stock based on multiple scenarios weighted by their likelihood.",
+        explanation: `Fair Value is NOT just picking one scenario—it's the mathematical average of all scenarios weighted by their probabilities.
+
+**Why Fair Value ≠ Any Single Scenario:**
+
+If you have three scenarios:
+- 🐻 **Bear ($145):** 20% probability
+- ⚖️ **Base ($241):** 60% probability  
+- 🐂 **Bull ($1,370):** 20% probability
+
+**Fair Value Calculation:**
+Fair Value = (0.20 × $145) + (0.60 × $241) + (0.20 × $1,370)
+Fair Value = $29 + $145 + $274 = **$448**
+
+**Key Insights:**
+- Fair Value will be **between** the scenarios, but closer to the highest-probability case (Base)
+- The Bull case "pulls" the average up even at 20% probability
+- This represents your **expected return** if you could invest in this scenario 1,000 times
+- It's the "rational" price to pay given uncertainty
+
+**Why This Matters:**
+- **Current Price < Fair Value:** Potential upside (good buy)
+- **Current Price > Fair Value:** Overvalued (risky)
+- **Gap size:** Shows margin of safety
+
+**Common Confusion:**
+"Why is Fair Value $241 when Bear is $145?"
+→ Because there's a 60% chance of Base ($241) and 20% chance of Bull ($1,370). The math accounts for ALL outcomes.
+
+**✅ Quick Tip:** Fair Value is your "best guess" price target. Individual scenarios show the range of possibilities.`,
+        formula: "Fair Value = Σ (Scenario Price × Probability)",
+        example: "NVDA: (20% × $145) + (60% × $241) + (20% × $1,370) = $448 Fair Value",
+        learnMoreUrl: "https://www.investopedia.com/terms/e/expected-value.asp"
+    },
+    moatAnalysis: {
+        title: "Economic Moat",
+        summary: "Sustainable competitive advantages that protect a company from competitors.",
+        explanation: `An economic moat is a structural advantage that allows a company to maintain high returns on capital over time. Coined by Warren Buffett, it's the "castle walls" protecting the business.
+
+**Types of Moats:**
+- **Network Effects:** Product becomes more valuable as more people use it (Facebook, Visa)
+- **Switching Costs:** Expensive/difficult to switch to competitor (Oracle databases, Adobe Creative Suite)
+- **Cost Advantages:** Can produce at lower cost than competitors (Walmart, Costco)
+- **Intangible Assets:** Patents, brands, regulatory licenses (Coca-Cola brand, pharma patents)
+- **Scale Economies:** Fixed costs spread over massive volume (AWS, chip fabs)
+
+**Why it matters:**
+Companies with wide moats can:
+- Charge premium prices
+- Resist competitive pressure
+- Maintain high margins over decades
+- Compound returns for shareholders
+
+**Moat Width Assessment:**
+- **Wide Moat:** Multiple moat sources, defensible for 20+ years (Apple, Microsoft, NVDA)
+- **Narrow Moat:** Some advantages, but vulnerable to disruption (5-10 years)
+- **No Moat:** Commodity business, price competition (most retailers, airlines)
+
+**✅ Quick Tip:** Wide moats justify higher valuations (P/E > 30x). No moat = avoid at any price.`,
+        example: "NVDA's moat: CUDA software ecosystem (switching costs) + manufacturing scale (TSMC partnership) + brand/talent (intangible assets)",
+        learnMoreUrl: "https://www.investopedia.com/terms/e/economicmoat.asp"
+    },
 };
