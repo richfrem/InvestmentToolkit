@@ -45,8 +45,9 @@ New powerful AI agents allow you to perform autonomous valuation and strategic p
 ### 1. Stock Valuation Analyst (Tool A)
 An autonomous agent that acts as a buy-side analyst. It fetches real-time financial data, performs cognitive analysis, and generates a 3-scenario valuation model (Bear/Base/Bull) with a final "Buy/Sell/Hold" recommendation.
 
--   **Trigger**: `/perform-stock-valuation {TICKER}`
--   **Example**: `/perform-stock-valuation NVDA`
+-   **Trigger**: `/evaluate-stock {TICKER}`
+-   **Workflow**: [evaluate-stock.md](.agent/workflows/stock-and-portfolio-evaluation/evaluate-stock.md)
+-   **Example**: `/evaluate-stock NVDA`
 -   **Capabilities**:
     -   Fetches live financials via `yfinance`.
     -   Projects 5-year revenue, margins, and PE ratios.
@@ -58,6 +59,7 @@ An autonomous agent that acts as a buy-side analyst. It fetches real-time financ
 A "Strategic Advisor" agent that monitors your portfolio's alignment with your core investment thesis. It detects drift, checks "Thesis Breakers" (e.g., price drops, news events), and recommends rebalancing trades.
 
 -   **Trigger**: `/review-portfolio`
+-   **Workflow**: [review-portfolio.md](.agent/workflows/stock-and-portfolio-evaluation/review-portfolio.md)
 -   **Capabilities**:
     -   **Drift Analysis**: Calculates deviation from target weights (Pillar & Holding level).
     -   **Strategic Review**: Qualitative analysis of "Deployment Conflicts" and "Thesis Breakers" using LLM intelligence.
