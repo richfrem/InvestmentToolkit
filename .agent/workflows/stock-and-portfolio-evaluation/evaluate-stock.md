@@ -27,7 +27,8 @@ When triggered with `/perform-stock-valuation {TICKER}`:
 ### Phase 2: Data Acquisition
 3.  **Fetch Financial Data**: Execute the backend script to get raw data (Skill Step 1).
     ```bash
-    python3 tools/investment-screener/backend/scripts/fetch_financials.py --ticker {TICKER} --output /tmp/{TICKER}_raw.json
+    # Script takes TICKER as a positional arg and outputs JSON to stdout
+    python3 tools/investment-screener/backend/py_services/fetch_financials.py {TICKER} > /tmp/{TICKER}_raw.json
     ```
     *   **IF FAIL**: Stop and report error. Do not hallucinate data.
 
@@ -45,26 +46,27 @@ When triggered with `/perform-stock-valuation {TICKER}`:
     *   [ ] Values are within Zod schema bounds (e.g., max P/E 1000).
 
 ### Phase 5: Persistence
-7.  **Persist**: (Skill Step 6). POST the valid JSON to the backend.
+8.  **Persist**: (Skill Step 6). POST the valid JSON to the backend.
+8.  **Persist**: (Skill Step 6). Persist the valid JSON to the backend using the CLI script.
     ```bash
-    curl -X POST http://localhost:3001/api/projections \
-      -H "Content-Type: application/json" \
-      -d @/tmp/{TICKER}_projection.json
+    cat /tmp/{TICKER}_projection.json | python3 tools/investment-screener/backend/py_services/persist_projection.py
     ```
-    *   **409 Conflict**: Fetch latest version (`GET /api/projections/{TICKER}`), increment version, and retry.
-    *   **400 Bad Request**: Read error, fix payload, retry ONCE.
+    *   **Success**: Script outputs "Success" or "Updated existing...".
+    *   **Error**: Script logs error to stderr and exits with non-zero code. Fix payload and retry ONCE.
 
 ### Phase 6: Reporting
-8.  **Report Findings**: Summarize the analysis to the user in this format:
+9.  **Report Findings**: Summarize the analysis to the user in this format:
 
-| Scenario | Weight | Growth | Exit PE |
-| :--- | :--- | :--- | :--- |
-| **Bear** | {w} | {g}% | {pe}x |
-| **Base** | {w} | {g}% | {pe}x |
-| **Bull** | {w} | {g}% | {pe}x |
+| Scenario | Weight | Growth | Net Margin | Exit PE | Fair Value |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Bear** | {w} | {g}% | {m}% | {pe}x | ${sv} |
+| **Base** | {w} | {g}% | {m}% | {pe}x | ${sv} |
+| **Bull** | {w} | {g}% | {m}% | {pe}x | ${sv} |
 
+*   **Current Price**: ${price}
 *   **Fair Value**: ${fv} ({upside/downside}%)
 *   **Action**: **{BUY/HOLD/SELL}**
+*   **Model**: {your model name, e.g. "Claude Opus 4.6"}
 *   **Thesis**: {1-2 sentence summary}
 
 ## Error Handling Matrix
@@ -74,8 +76,8 @@ When triggered with `/perform-stock-valuation {TICKER}`:
 | **Data Fetch Fail** | **STOP**. Report error. |
 | **Validation (400)** | Log error, fix payload constraints, retry once. |
 | **Conflict (409)** | Get latest version from API, increment `version`, retry. |
-| **Server Error (500)** | Report to user: "Backend service error". |
-| **Backend Offline** | User instruction: "Run `python3 tools/manage_servers.py`" |
+| **Server Error** | Check logs. If transient, retry. |
+| **Backend Offline** | Not an issue for persistence (CLI uses direct file IO). Fetching data still requires internet. |
 
 ## Reference Files
 
@@ -83,5 +85,5 @@ When triggered with `/perform-stock-valuation {TICKER}`:
 | :--- | :--- | :--- |
 | **Skill Definition** | `.agent/skills/stock_valuation/SKILL.md` | Read |
 | **Analysis Prompt** | `.agent/skills/stock_valuation/references/analysis_prompt.md` | Read |
-| **Fetch Script** | `tools/investment-screener/backend/scripts/fetch_financials.py` | Execute |
+| **Fetch Script** | `tools/investment-screener/backend/py_services/fetch_financials.py` | Execute |
 | **API Endpoint** | `http://localhost:3001/api/projections` | POST |

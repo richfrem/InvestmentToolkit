@@ -1,0 +1,61 @@
+[
+  {
+    "ticker": "TEST",
+    "id": "new-uuid-for-gemini",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "name": "Gemini Projection",
+    "snapshot": {
+      "price": 105,
+      "currency": "USD",
+      "shares": 1000,
+      "revenue": 10000,
+      "lastActualPS": 10,
+      "fiscalPeriod": "TTM"
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 5,
+        "netMargin": 10,
+        "exitPE": 15,
+        "qualityMultiplier": 1.0,
+        "shareChange": 0
+      },
+      "base": {
+        "weight": 0.6,
+        "growthRate": 10,
+        "netMargin": 15,
+        "exitPE": 20,
+        "qualityMultiplier": 1.1,
+        "shareChange": -2
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 15,
+        "netMargin": 20,
+        "exitPE": 25,
+        "qualityMultiplier": 1.2,
+        "shareChange": -5
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3.0 Pro",
+      "rationale": "High growth potential",
+      "fairValue": 150,
+      "action": "BUY",
+      "analyzedAt": "2026-02-15T12:00:00Z"
+    },
+    "version": 1,
+    "savedAt": "2026-02-15T05:24:46.439189+00:00",
+    "updatedAt": "2026-02-15T05:24:46.439189+00:00"
+  }
+]

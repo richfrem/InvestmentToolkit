@@ -215,6 +215,12 @@
     "summarized_at": "2026-02-13T08:48:23.924522",
     "summary": "{\n  \"purpose\": \"Fetches portfolio data for treemap visualization. Calculates sector and industry allocations based on shares and current prices.\",\n  \"layer\": \"Tools / Investment-Screener\",\n  \"supported_object_types\": [\"JSON string representing the portfolio items\"],\n  \"usage\": [\"python tools/investment-screener/backend/py_services/fetch_portfolio_heatmap.py '[{\\\"symbol\\\": \\\"AAPL\\\", \\\"shares\\\": 100}]'\"],\n  \"args\": [\n    {\n      \"name\": \"portfolio_json\",\n      \"description\": \"JSON string representing the portfolio items\"\n    }\n  ],\n  \"inputs\": [\"JSON string representing the portfolio items\"],\n  \"outputs\": \"Nested dictionary grouped by sector and industry\",\n  \"dependencies\": [\"yfinance\"],\n  \"consumed_by\": [],\n  \"key_functions\": [\n    \"get_position_metadata()\",\n    \"resolve_classification()\",\n    \"process_single_position()\",\n    \"fetch_portfolio_data()\"\n  ]\n}"
   },
+  "tools/investment-screener/backend/py_services/persist_projection.py": {
+    "file_mtime": 1771132621.6984549,
+    "hash": "ad69af543b0f1799",
+    "summarized_at": "2026-02-14T21:21:12.902009",
+    "summary": "{\n  \"purpose\": \"Directly persists a stock valuation projection JSON object to the backend's data store, bypassing the API server. Handles validation, file locking, atomic writes, and versioning.\",\n  \"layer\": \"Backend\",\n  \"supported_object_types\": [\"Projection\"],\n  \"usage\": [\"cat projection.json | python3 persist_projection.py\"],\n  \"args\": [],\n  \"inputs\": {\n    \"type\": \"STDIN\",\n    \"description\": \"JSON object via STDIN matching the Projection schema.\"\n  },\n  \"outputs\": {\n    \"type\": \"File\",\n    \"description\": \"Persisted projection JSON file in the data store.\"\n  },\n  \"dependencies\": [\"os\", \"json\", \"fcntl\", \"math\", \"uuid\"],\n  \"consumed_by\": [],\n  \"key_functions\": [\n    \"validate_projection\",\n    \"ensure_directory\",\n    \"get_file_path\",\n    \"atomic_write\",\n    \"persist_projection\"\n  ]\n}"
+  },
   "tools/investment-screener/backend/src/QuestradeDataEngine.py": {
     "file_mtime": 1771008493.712746,
     "hash": "83d42016dfff5f1f",
