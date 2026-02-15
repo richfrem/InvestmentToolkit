@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { X, TrendingUp, BrainCircuit, User, Trash2, Globe, FileText } from 'lucide-react';
 import { fetchProjections } from '../services/api';
 import { loadUserPresets, deleteUserPreset, type UserPreset } from '../services/presets';
+import { DeepDiveModal } from './DeepDiveModal';
 
 interface PresetOption {
     id: string;
@@ -28,6 +29,7 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
 }) => {
     const [presets, setPresets] = useState<PresetOption[]>([]);
     const [loading, setLoading] = useState(true);
+    const [deepDiveFile, setDeepDiveFile] = useState<string | null>(null);
 
     useEffect(() => {
         loadPresets();
@@ -178,17 +180,35 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
                                                 </div>
                                                 <div className="flex items-center gap-2">
                                                     {preset.type === 'ai' && onViewReport && preset.aiProjection && (
-                                                        <button
-                                                            className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                onViewReport(preset.aiProjection);
-                                                            }}
-                                                            title="View detailed AI report"
-                                                        >
-                                                            <FileText size={14} />
-                                                            Report
-                                                        </button>
+                                                        <>
+                                                            {/* Standard Report Button */}
+                                                            <button
+                                                                className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onViewReport(preset.aiProjection);
+                                                                }}
+                                                                title="View detailed AI report"
+                                                            >
+                                                                <FileText size={14} />
+                                                                Report
+                                                            </button>
+
+                                                            {/* Deep Dive Button (if available) */}
+                                                            {preset.aiProjection.aiThesis?.researchReport && (
+                                                                <button
+                                                                    className="px-3 py-2 bg-purple-900/30 hover:bg-purple-800/40 text-purple-300 border border-purple-500/30 hover:border-purple-400/50 text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setDeepDiveFile(preset.aiProjection.aiThesis.researchReport);
+                                                                    }}
+                                                                    title="Open Deep Dive Research Report"
+                                                                >
+                                                                    <span className="text-base">📖</span>
+                                                                    Deep Dive
+                                                                </button>
+                                                            )}
+                                                        </>
                                                     )}
                                                     <button
                                                         className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
@@ -268,6 +288,12 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
                     )}
                 </div>
             </div>
+            {/* Deep Dive Modal */}
+            <DeepDiveModal
+                isOpen={!!deepDiveFile}
+                onClose={() => setDeepDiveFile(null)}
+                filename={deepDiveFile}
+            />
         </div>
     );
 };

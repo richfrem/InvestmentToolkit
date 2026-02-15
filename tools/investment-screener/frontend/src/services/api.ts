@@ -218,6 +218,7 @@ export interface Projection {
         fairValue: number;
         action: 'BUY' | 'HOLD' | 'SELL';
         analyzedAt: string;
+        researchReport?: string; // Links to backend/data/research/{TICKER}_{DATE}.md
     };
     globalSettings: {
         discountRate: number;
