@@ -44,19 +44,6 @@ git add -A
 git commit -m "feat(WP##): <describe your implementation>"
 ```
 
-## Backup to Origin (Recommended)
-
-**Push your work to a remote feature branch for safety:**
-
-```bash
-git push origin <branch-name>
-# Example: git push origin 002-screener-ui-improvements-WP07
-```
-
-> ⚠️ **NEVER push to origin/main** - main has branch protection!
-> 
-> Always push to the feature branch. The merge to main happens via PR.
-
 **Then move to review:**
 ```bash
 spec-kitty agent tasks move-task WP## --to for_review --note "Ready for review: <summary>"
@@ -69,26 +56,6 @@ spec-kitty agent tasks move-task WP## --to for_review --note "Ready for review: 
 
 ---
 
-## Naming Conventions
-
-### Worktree Directory:
-```
-.worktrees/<feature-number>-<feature-slug>-<WP-ID>/
-```
-Example: `.worktrees/002-screener-ui-improvements-WP07/`
-
-### Branch Name:
-```
-<feature-number>-<feature-slug>-<WP-ID>
-```
-Example: `002-screener-ui-improvements-WP07`
-
----
-
 **The Python script handles all file updates automatically - no manual editing required!**
 
 **NOTE**: If `/spec-kitty.status` shows your WP in "doing" after you moved it to "for_review", don't panic - a reviewer may have moved it back (changes requested), or there's a sync delay. Focus on your WP.
-
-## Quick Reference
-
-See [Agent Worktree Reference](/Users/richardfremmerlid/Projects/InvestmentToolkit/.agent/docs/kittify/agent-worktree-reference.md) for common mistakes and troubleshooting.
