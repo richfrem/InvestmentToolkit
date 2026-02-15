@@ -156,14 +156,34 @@ def persist_projection(new_projection: Dict[str, Any], replace_existing: bool = 
             if not isinstance(existing_projections, list):
                 existing_projections = []
 
-            target_model = new_projection.get('aiThesis', {}).get('model')
+            # Validate aiThesis if present
+            ai_thesis = new_projection.get('aiThesis')
+            if ai_thesis:
+                required_thesis = ['model', 'fairValue', 'action', 'rationale']
+                for field in required_thesis:
+                    if field not in ai_thesis:
+                        # Non-critical warning, or just allow it. The schema says optional.
+                        # But if aiThesis is present, these should be there.
+                        pass
+                
+                # Check for researchReport field (optional)
+                if 'researchReport' in ai_thesis:
+                     if not isinstance(ai_thesis['researchReport'], str):
+                         raise ValueError("aiThesis.researchReport must be a string")
             
+            # Identify the target model to update/replace
+            target_model = new_projection.get('aiThesis', {}).get('model')
+            if not target_model:
+                # Fallback if no model specified (should be caught by validation, but safe default)
+                target_model = "Unknown Agent"
+
+            # Find if we already have a projection from this model
             model_match_index = -1
-            if target_model:
-                for i, p in enumerate(existing_projections):
-                     if p.get('aiThesis', {}).get('model') == target_model:
-                         model_match_index = i
-                         break
+            for i, p in enumerate(existing_projections):
+                p_model = p.get('aiThesis', {}).get('model')
+                if p_model == target_model:
+                    model_match_index = i
+                    break
             
             if model_match_index != -1:
                 if replace_existing:

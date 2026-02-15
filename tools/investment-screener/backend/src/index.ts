@@ -264,6 +264,64 @@ app.get('/api/portfolio/status', (req, res) => {
 
 // --- Valuation Persistence Routes ---
 
+const RESEARCH_DIR = path.join(__dirname, '..', 'data', 'research');
+
+// GET /api/research/:filename — returns markdown content for a research report
+app.get('/api/research/:filename', async (req, res) => {
+    try {
+        const { filename } = req.params;
+
+        // Sanitize: only allow TICKER_DATE.md pattern
+        if (!/^[A-Z0-9.-]{1,10}_\d{4}-\d{2}-\d{2}\.md$/.test(filename)) {
+            res.status(400).json({ error: 'Invalid filename format. Expected: TICKER_YYYY-MM-DD.md' });
+            return;
+        }
+
+        const filepath = path.join(RESEARCH_DIR, filename);
+        // Security check: ensure path resolves to RESEARCH_DIR
+        if (!path.resolve(filepath).startsWith(path.resolve(RESEARCH_DIR))) {
+            res.status(403).json({ error: 'Access denied' });
+            return;
+        }
+
+        const content = await fs.promises.readFile(filepath, 'utf-8');
+
+        res.json({
+            filename,
+            content,
+            ticker: filename.split('_')[0],
+            date: filename.split('_')[1].replace('.md', ''),
+        });
+    } catch (err: any) {
+        if (err.code === 'ENOENT') {
+            res.status(404).json({ error: 'Research report not found' });
+            return;
+        }
+        console.error(`[API] Error reading research report:`, err);
+        res.status(500).json({ error: 'Failed to read research report' });
+    }
+});
+
+// GET /api/research — list all available research reports
+app.get('/api/research', async (_req, res) => {
+    try {
+        await fs.promises.mkdir(RESEARCH_DIR, { recursive: true });
+        const files = await fs.promises.readdir(RESEARCH_DIR);
+        const reports = files
+            .filter(f => f.endsWith('.md'))
+            .map(f => ({
+                filename: f,
+                ticker: f.split('_')[0],
+                date: f.split('_')[1].replace('.md', ''),
+            }))
+            .sort((a, b) => b.date.localeCompare(a.date)); // newest first
+        res.json({ reports });
+    } catch (err: any) {
+        console.error(`[API] Error listing research reports:`, err);
+        res.json({ reports: [] });
+    }
+});
+
 app.get('/api/projections/:ticker', async (req, res) => {
     const { ticker } = req.params;
     if (!isValidTicker(ticker)) {
