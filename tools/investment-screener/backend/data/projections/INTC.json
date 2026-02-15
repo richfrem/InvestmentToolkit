@@ -1,182 +1,14 @@
 [
   {
     "ticker": "INTC",
-    "id": "c4d9e2b1-7a3f-4c8e-b5d2-9f1a3e6c8d0b",
-    "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
-    "savedAt": "2026-02-15T05:04:00.000Z",
-    "updatedAt": "2026-02-15T05:04:00.000Z",
-    "name": "AI Deep Dive \u2014 INTC \u2014 2026-02-15",
-    "rationale": "Intel is a deep turnaround play with 4-year revenue declining from $63.1B to $52.9B (-5.7% CAGR) and net margins collapsing from 12.7% to -0.5%. The stock has rallied 94% in the past year on turnaround hopes under CEO Lip-Bu Tan and CHIPS Act subsidies ($8.5B grant). However, at $46.79, the market is pricing in a successful turnaround that is far from assured. The 18A process node is the make-or-break milestone for Intel Foundry. Our probability-weighted fair value of $34.72 implies 25.8% downside, reflecting that the turnaround premium is overdone relative to the fundamental recovery path.",
-    "snapshot": {
-      "price": 46.79,
-      "currency": "USD",
-      "shares": 4995000000,
-      "revenue": 52852998144,
-      "lastActualPS": 4.42,
-      "fiscalPeriod": "TTM",
-      "analystGrowthEstimate": 0,
-      "analystMarginEstimate": -0.51
-    },
-    "dataPreferences": {
-      "growthBasis": "next",
-      "marginBasis": "ttm"
-    },
-    "scenarios": {
-      "bear": {
-        "weight": 0.25,
-        "growthRate": 2,
-        "netMargin": 12,
-        "exitPE": 15,
-        "qualityMultiplier": 0.9,
-        "shareChange": 1,
-        "year5Revenue": 58355,
-        "year5NetIncome": 7003,
-        "year5EPS": 1.334,
-        "scenarioPrice": 11.18,
-        "risks": [
-          "18A process node delays or yield issues doom Intel Foundry to perpetual losses",
-          "AMD and ARM-based chips continue eroding x86 data center and client share",
-          "Massive capex ($25B+/year) with no foundry customer traction creates sustained cash burn"
-        ],
-        "rationale": "Assumes turnaround produces only marginal results. Revenue grows at 2% CAGR \u2014 barely above inflation \u2014 as foundry remains internal-only and client/DCAI market share losses continue. Net margin of 12% reflects partial cost-cutting success, recovering to FY21 levels, but weighed down by foundry investment losses. Exit PE of 15x reflects mature, low-growth semiconductor (below TXN at 37x, near QCOM at 17x). Quality multiplier of 0.90 reflects eroding x86 moat as ARM and RISC-V gain traction in laptops and servers. 1% annual dilution from stock-based compensation necessary to fund talent retention."
-      },
-      "base": {
-        "weight": 0.5,
-        "growthRate": 5,
-        "netMargin": 18,
-        "exitPE": 20,
-        "qualityMultiplier": 1,
-        "shareChange": 0,
-        "year5Revenue": 67463,
-        "year5NetIncome": 12143,
-        "year5EPS": 2.431,
-        "scenarioPrice": 30.19,
-        "risks": [
-          "Foundry ramp is slower than expected, limiting margin recovery beyond 18%",
-          "AI accelerator market remains dominated by NVIDIA, Gaudi successor fails to gain traction"
-        ],
-        "rationale": "5% CAGR anchored to analyst consensus: FY26 $53.8B (+1.9%) and FY27 $58.0B (+7.7%), implying gradual acceleration. 18A process reaches production and wins 1-2 small external foundry customers, but not transformative. Net margin of 18% reflects meaningful cost restructuring under Lip-Bu Tan \u2014 above FY21's 12.7% as write-downs normalize but below Intel's 2019 peak of 29%. Exit PE of 20x reflects recovering but not yet premium semiconductor \u2014 discount to TXN (37x) and peers reflecting execution risk. Flat share count as buybacks remain suspended to fund foundry capex ($25B+/year). Quality multiplier of 1.00 reflects average quality \u2014 x86 is defensible in enterprise but not a growing moat."
-      },
-      "bull": {
-        "weight": 0.25,
-        "growthRate": 10,
-        "netMargin": 22,
-        "exitPE": 25,
-        "qualityMultiplier": 1.1,
-        "shareChange": -1,
-        "year5Revenue": 85122,
-        "year5NetIncome": 18727,
-        "year5EPS": 3.943,
-        "scenarioPrice": 67.33,
-        "risks": [
-          "Full turnaround priced in \u2014 any quarterly miss could cause 30%+ drawdown given high expectations",
-          "CHIPS Act political risk \u2014 subsidy conditions could change under new administration"
-        ],
-        "rationale": "Catalyst: 18A process node succeeds and Intel Foundry wins major external customers (Microsoft Azure, Qualcomm mobile SoCs), creating a Western foundry alternative to TSMC. 10% CAGR driven by AI PC upgrade cycle (client recovery), foundry revenue scaling from near-zero to $5B+, and DCAI stabilization with next-gen Xeon. Net margin of 22% approaches Intel's 2018-2020 healthy margins as restructuring and foundry scale economics take hold. Exit PE of 25x reflects re-rating as IDM 2.0 strategy validates \u2014 comparable to TXN's quality positioning. Quality multiplier of 1.10 reflects unique foundry-IDM dual moat if 18A delivers. 1% annual buyback resumes as FCF turns positive."
-      }
-    },
-    "aiThesis": {
-      "model": "Claude Opus 4.6",
-      "rationale": "## Intel (INTC) \u2014 High-Risk Turnaround with Downside at Current Prices\n\n### Investment Thesis\nIntel is the quintessential deep turnaround: a former semiconductor giant that lost its manufacturing edge, watched AMD seize market share, and posted negative net income in 2 of the last 3 fiscal years. Revenue has declined from $63.1B (FY21) to $52.9B (TTM), a -5.7% CAGR. The appointment of CEO Lip-Bu Tan and $8.5B in CHIPS Act grants signal a credible attempt at recovery, but the stock's 94% rally in the past year has priced in substantial turnaround success.\n\n### Bull Case\n18A process node succeeds, making Intel Foundry a viable Western alternative to TSMC. External foundry wins from Microsoft and Qualcomm, combined with an AI PC upgrade cycle and Xeon recovery, could drive 10% revenue CAGR and 22% net margins. At 25x PE with foundry optionality, this path yields $67.33/share. Key catalyst: 18A customer tape-outs and production yields in 2026-2027.\n\n### Bear Case\nTurnaround stalls \u2014 18A faces delays/yield issues, foundry remains internal-only money pit, and AMD/ARM continue taking share. Revenue barely grows at 2%, margins recover only to 12% (FY21 levels), and Intel is valued as a declining legacy chip company at 15x PE. This yields $11.18/share \u2014 a severe downside scenario representing ~76% loss from current levels.\n\n### Key Metrics\n- **Piotroski F-Score**: 5/9 (mixed \u2014 ROA negative, dilution present, but some improvements in margins and leverage)\n- **Rule of 40**: 23.1 (below threshold \u2014 -4.1% growth + 27.2% EBITDA margin)\n- **Analyst Consensus**: Hold with $47.12 mean target (41 analysts)\n- **4-Year Revenue CAGR**: -5.7% (declining)\n- **TTM Net Margin**: -0.5% (essentially breakeven)\n- **FCF**: Negative for 4 consecutive years ($-4.9B to $-15.7B)\n\n### Key Risks\n1. 18A process technology execution \u2014 Intel's entire future hinges on this milestone\n2. Intel Foundry may never achieve economic viability as an external fab\n3. AMD and ARM share gains in both client and data center are structural, not cyclical\n4. Massive capital requirements ($25B+/year capex) with negative FCF\n5. Management execution risk \u2014 Intel has disappointed on turnaround promises before (IDM 2.0 under Gelsinger)\n\n### Valuation\nProbability-weighted fair value of **$34.72** implies **25.8% downside** from $46.79. The stock has rallied sharply on turnaround optimism, but the fundamentals \u2014 declining revenue, negative margins, and massive capex \u2014 don't yet support the current valuation. Even the base case ($30.19) is below the current price. Intel is a high-conviction bull-or-bust trade: the bull case ($67.33) offers 44% upside, but requires multiple uncertain catalysts to materialize. At current prices, the risk/reward skews unfavorably.",
-      "fairValue": 34.72,
-      "action": "SELL",
-      "analyzedAt": "2026-02-15T05:04:00.000Z"
-    },
-    "globalSettings": {
-      "discountRate": 10,
-      "timeHorizon": 5
-    }
-  },
-  {
-    "ticker": "INTC",
-    "id": "INTC_ANTIGRAVITY_V1",
-    "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
-    "savedAt": "2026-02-15T05:39:30Z",
-    "updatedAt": "2026-02-15T05:39:30Z",
-    "name": "IDM 2.0 Turnaround Analysis",
-    "rationale": "Intel is in a critical transition phase (IDM 2.0). Current financials are weak (negative margins, revenue decline), but the valuation hinges on the success of the Foundry buildout and 18A process node leadership. Market pricing () implies a successful recovery. Our Base case assumes moderate stabilization (6% growth, 15% margins), suggesting the stock is currently fairly valued or slightly expensive unless the Bull case (Foundry success) materializes.",
-    "snapshot": {
-      "price": 46.79,
-      "currency": "USD",
-      "shares": 4995000000,
-      "revenue": 52852998144,
-      "lastActualPS": 4.42,
-      "fiscalPeriod": "TTM",
-      "analystGrowthEstimate": 7.66,
-      "analystMarginEstimate": 0.0
-    },
-    "dataPreferences": {
-      "growthBasis": "next",
-      "marginBasis": "quarterly"
-    },
-    "globalSettings": {
-      "discountRate": 10,
-      "timeHorizon": 5
-    },
-    "scenarios": {
-      "bear": {
-        "weight": 0.3,
-        "growthRate": 2.0,
-        "netMargin": 8.0,
-        "exitPE": 12.0,
-        "qualityMultiplier": 0.8,
-        "shareChange": 0.0,
-        "rationale": "Turnaround stalls. Foundry business struggles to compete with TSMC. Margins remain compressed due to high fixed costs. Valuation re-rates to commodity hardware levels.",
-        "risks": [
-          "18A node delays or yield issues",
-          "Loss of data center market share to AMD/Nvidia",
-          "Foundry customer adoption slower than expected"
-        ]
-      },
-      "base": {
-        "weight": 0.5,
-        "growthRate": 6.0,
-        "netMargin": 15.0,
-        "exitPE": 18.0,
-        "qualityMultiplier": 1.0,
-        "shareChange": 0.0,
-        "rationale": "Stabilization achieved. Revenue grows in line with semiconductor market (6%). Margins recover to 15% (mid-cycle) as efficiencies kick in. Exit PE of 18x reflects a mature but growing tech incumbent.",
-        "risks": [
-          "CapEx intensity remains high, limiting FCF",
-          "PC market cyclicality"
-        ]
-      },
-      "bull": {
-        "weight": 0.2,
-        "growthRate": 10.0,
-        "netMargin": 22.0,
-        "exitPE": 25.0,
-        "qualityMultiplier": 1.1,
-        "shareChange": -1.0,
-        "rationale": "IDM 2.0 Grand Slam. Intel regains process leadership. Foundry attracts major customers (e.g., Apple, Nvidia). AI PC cycle drives client revenue. Margins expand to 20%+ levels.",
-        "risks": [
-          "Geopolitical instability impacting supply chain",
-          "Execution risk on aggressive roadmap"
-        ]
-      }
-    },
-    "aiThesis": {
-      "model": "Antigravity Agent",
-      "rationale": "Intel is a high-beta turnaround play. The fundamentals (negative earnings, declining revenue) are ugly, but the strategic value of US-based manufacturing and the potential of the Foundry business provide significant optionality. The stock is fairly valued ONLY if you believe the turnaround is likely to succeed. Our Base case (.69) suggests significant downside risk if execution falters, while the Bull case (.30) offers decent upside. The weighted fair value (~) implies the market is currently optimistic.",
-      "fairValue": 31.6,
-      "action": "SELL",
-      "analyzedAt": "2026-02-15T05:39:30Z"
-    }
-  },
-  {
-    "ticker": "INTC",
     "id": "e3e842b5-5009-409e-83b9-247112358f1d",
     "source": "AI_AGENT",
     "schemaVersion": "1.1",
-    "version": 2,
-    "savedAt": "2026-02-14T22:45:00.000Z",
-    "updatedAt": "2026-02-15T06:39:14.888941+00:00",
-    "name": "AI Deep Dive \u2014 INTC \u2014 2026-02-14",
-    "rationale": "National Champion Thesis: US Govt equity stake (~10%) + Nvidia strategic partnership ($5B) + 14A process leadership creates asymmetric upside.",
+    "version": 6,
+    "savedAt": "2026-02-14T23:15:00.000Z",
+    "updatedAt": "2026-02-15T06:51:34.970923+00:00",
+    "name": "AI Deep Dive — INTC — 2026-02-14",
+    "rationale": "National Champion Thesis v6. Final synchronization. Bull case aligned to $143. Base to $64. Bear to $21.",
     "snapshot": {
       "price": 46.79,
       "currency": "USD",
@@ -194,53 +26,51 @@
     "scenarios": {
       "bear": {
         "weight": 0.2,
-        "growthRate": 3.0,
-        "netMargin": 12.0,
-        "exitPE": 15.0,
+        "growthRate": 5.0,
+        "netMargin": 15.0,
+        "exitPE": 18.0,
         "qualityMultiplier": 1.0,
         "shareChange": 1.0,
-        "rationale": "Govt stake provides a floor, but execution still lags TSMC.",
-        "scenarioPrice": 38.5,
+        "rationale": "Govt floor prevents collapse. Slow growth (5%) and modest margins (15%) with utility-like multiple (18x).",
+        "scenarioPrice": 21.54,
         "risks": [
-          "18A delays",
-          "Nvidia partnership scales down"
+          "Stagnation"
         ]
       },
       "base": {
         "weight": 0.45,
-        "growthRate": 8.5,
-        "netMargin": 20.0,
-        "exitPE": 20.0,
-        "qualityMultiplier": 1.1,
+        "growthRate": 10.0,
+        "netMargin": 22.0,
+        "exitPE": 24.0,
+        "qualityMultiplier": 1.15,
         "shareChange": 0.0,
-        "rationale": "Foundry wins with Nvidia/Govt backing stabilize revenue.",
-        "scenarioPrice": 62.15,
+        "rationale": "Foundry wins + Govt backing. 10% growth, healthy margins (22%), tech-staple multiple (24x).",
+        "scenarioPrice": 64.25,
         "risks": [
-          "Foundry margin dilution"
+          "Execution delay"
         ]
       },
       "bull": {
         "weight": 0.35,
-        "growthRate": 16.0,
-        "netMargin": 28.0,
-        "exitPE": 30.0,
-        "qualityMultiplier": 1.4,
+        "growthRate": 15.0,
+        "netMargin": 27.0,
+        "exitPE": 28.0,
+        "qualityMultiplier": 1.3,
         "shareChange": -2.0,
-        "rationale": "US National Champion. 14A leads industry. Nvidia/AI infrastructure boom.",
-        "scenarioPrice": 142.5,
+        "rationale": "14A AI Supercycle. 15% growth, premium margins (27%), AI-rated multiple (28x) + Strategic Premium.",
+        "scenarioPrice": 143.68,
         "catalysts": [
-          "Nvidia custom CPU launch",
-          "14A mass production",
-          "Situational Awareness LP flows"
+          "14A HVM",
+          "Hyperscaler Adoption"
         ]
       }
     },
     "aiThesis": {
-      "model": "Antigravity",
-      "rationale": "Thesis pivot: Intel is no longer just a turnaround; it is a state-backed AI infrastructure play.",
-      "fairValue": 85.54,
-      "action": "BUY",
-      "analyzedAt": "2026-02-14T22:45:00.000Z",
+      "model": "Antigravity-Gemini3Pro",
+      "rationale": "Synchronized. The 'Government Put' lifts the Bear case floor ($21.54), while the 'AI Champion' status drives the Bull case to ~$144. Weighted Fair Value ~$83.51 offers +78% upside.",
+      "fairValue": 83.51,
+      "action": "STRONG BUY",
+      "analyzedAt": "2026-02-14T23:15:00.000Z",
       "researchReport": "INTC_2026-02-14.md"
     },
     "globalSettings": {

@@ -97,6 +97,8 @@ Produce a strictly formatted JSON object. Output ONLY raw JSON — no markdown f
 | `netMargin` | number | Target Net Profit Margin % in Year 5. |
 | `exitPE` | number | Terminal P/E ratio in Year 5. |
 | `qualityMultiplier` | number | Premium/discount to P/E. 0.8 = structurally challenged business, 1.0 = average, 1.2+ = durable competitive moat with evidence. |
+| `moatScore` | number | 0-5 Score. 0 = No Moat, 5 = Wide Moat (Network effect, switch costs). Justify in rationale. |
+| `managementScore` | number | 0-5 Score. 0 = Poor capital allocation, 5 = Exemplary/Owner-Operator. Justify in rationale. |
 | `shareChange` | number | Annual % change in share count. Negative = buybacks, positive = dilution. |
 | `year5Revenue` | number | Calculated Year 5 Revenue (millions). |
 | `year5NetIncome` | number | Calculated Year 5 Net Income (millions). |
@@ -133,6 +135,8 @@ These are validation boundaries. Your POST will fail if any value falls outside 
 | `netMargin` | -100 | 100 |
 | `exitPE` | 0 | 1000 |
 | `qualityMultiplier` | 0.1 | 10.0 |
+| `moatScore` | 0 | 5 |
+| `managementScore` | 0 | 5 |
 | `shareChange` | -100 | 1000 |
 | `rationale` (each) | — | 2000 characters |
 | `weights` sum | 0.99 | 1.01 |
@@ -171,6 +175,8 @@ These are validation boundaries. Your POST will fail if any value falls outside 
       "netMargin": 20.0,
       "exitPE": 16.0,
       "qualityMultiplier": 0.95,
+      "moatScore": 1,
+      "managementScore": 2,
       "shareChange": 0.0,
       "year5Revenue": 431580,
       "year5NetIncome": 86316,
@@ -188,6 +194,8 @@ These are validation boundaries. Your POST will fail if any value falls outside 
       "netMargin": 25.0,
       "exitPE": 22.0,
       "qualityMultiplier": 1.10,
+      "moatScore": 3,
+      "managementScore": 4,
       "shareChange": -2.0,
       "year5Revenue": 561200,
       "year5NetIncome": 140300,
@@ -205,6 +213,8 @@ These are validation boundaries. Your POST will fail if any value falls outside 
       "netMargin": 28.0,
       "exitPE": 28.0,
       "qualityMultiplier": 1.20,
+      "moatScore": 4,
+      "managementScore": 5,
       "shareChange": -2.5,
       "year5Revenue": 720800,
       "year5NetIncome": 201824,

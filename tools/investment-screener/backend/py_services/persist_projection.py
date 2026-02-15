@@ -91,6 +91,10 @@ def validate_projection(data: Dict[str, Any]) -> None:
         if not isinstance(globals[field], (int, float)):
              raise ValueError(f"globalSettings field '{field}' must be a number")
 
+    # Validate isDefault (optional)
+    if 'isDefault' in data and not isinstance(data['isDefault'], bool):
+        raise ValueError("Field 'isDefault' must be a boolean")
+
     # Validate scenarios
     scenarios = data.get('scenarios', {})
     if not all(k in scenarios for k in ['bear', 'base', 'bull']):
@@ -103,12 +107,19 @@ def validate_projection(data: Dict[str, Any]) -> None:
 
     # Validate scenario required fields and types
     scenario_required = ['weight', 'growthRate', 'netMargin', 'exitPE', 'qualityMultiplier', 'shareChange']
+    scenario_optional_numeric = ['moatScore', 'managementScore']
+    
     for s_name, s_data in scenarios.items():
         for field in scenario_required:
             if field not in s_data:
                  raise ValueError(f"Scenario '{s_name}' missing required field: {field}")
             if not isinstance(s_data[field], (int, float)):
                  raise ValueError(f"Scenario '{s_name}' field '{field}' must be a number")
+        
+        # Validate optional numeric fields
+        for field in scenario_optional_numeric:
+            if field in s_data and not isinstance(s_data[field], (int, float)):
+                raise ValueError(f"Scenario '{s_name}' field '{field}' must be a number")
 
 def ensure_directory():
     """Ensures the projections directory exists."""
@@ -171,19 +182,31 @@ def persist_projection(new_projection: Dict[str, Any], replace_existing: bool = 
                      if not isinstance(ai_thesis['researchReport'], str):
                          raise ValueError("aiThesis.researchReport must be a string")
             
-            # Identify the target model to update/replace
-            target_model = new_projection.get('aiThesis', {}).get('model')
-            if not target_model:
-                # Fallback if no model specified (should be caught by validation, but safe default)
-                target_model = "Unknown Agent"
-
-            # Find if we already have a projection from this model
+            # Identify how to match existing entries
+            source = new_projection.get('source', 'UNKNOWN')
+            target_id = new_projection.get('id')
+            
+            # Find if we already have a matching projection
             model_match_index = -1
-            for i, p in enumerate(existing_projections):
-                p_model = p.get('aiThesis', {}).get('model')
-                if p_model == target_model:
-                    model_match_index = i
-                    break
+            
+            if source == 'USER':
+                # For Users, we match by ID (allow multiple projections)
+                for i, p in enumerate(existing_projections):
+                    if p.get('id') == target_id:
+                        model_match_index = i
+                        break
+            else:
+                # For Agents, we enforce one projection per Model identity
+                target_model = new_projection.get('aiThesis', {}).get('model')
+                if not target_model:
+                     target_model = "Unknown Agent"
+                     
+                for i, p in enumerate(existing_projections):
+                    # Check if model matches (primary key for agents)
+                    p_model = p.get('aiThesis', {}).get('model')
+                    if p_model == target_model:
+                        model_match_index = i
+                        break
             
             if model_match_index != -1:
                 if replace_existing:
