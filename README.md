@@ -52,7 +52,7 @@ An autonomous agent that acts as a buy-side analyst. It fetches real-time financ
     -   Projects 5-year revenue, margins, and PE ratios.
     -   Calculates fair value and upside/downside.
     -   Persists results to the Valuation Modeler.
--   **Architecture**: [Stock Valuation Implementation](docs/architecture/thesis-alignment-and-portfolio-valuation/tool_b_implementation_brief.md) *(Note: Tool A logic is often co-located or detailed in the Valuation Modeler docs)*
+-   **Architecture**: [Stock Valuation Architecture](docs/architecture/stock-valuation/valuation-persistence.md)
 
 ### 2. Strategic Thesis Balancer (Tool B)
 A "Strategic Advisor" agent that monitors your portfolio's alignment with your core investment thesis. It detects drift, checks "Thesis Breakers" (e.g., price drops, news events), and recommends rebalancing trades.
