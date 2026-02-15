@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { X, TrendingUp, BrainCircuit, User, Trash2, Globe, FileText } from 'lucide-react';
+import { X, TrendingUp, BrainCircuit, User, Trash2, Globe, FileText, Star } from 'lucide-react';
 import { fetchProjections } from '../services/api';
-import { loadUserPresets, deleteUserPreset, type UserPreset } from '../services/presets';
+import { deleteUserPreset, type UserPreset } from '../services/presets';
+import { storage } from '../services/storage';
 import { DeepDiveModal } from './DeepDiveModal';
 
 interface PresetOption {
@@ -12,6 +13,7 @@ interface PresetOption {
     timestamp: Date;
     data?: UserPreset;
     aiProjection?: any; // Full AI projection for report viewing
+    isDefault?: boolean;
 }
 
 interface PresetSelectorModalProps {
@@ -39,16 +41,30 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
         setLoading(true);
         const options: PresetOption[] = [];
 
+        // Fetch user projections first to determine default status
+        let userProjections: any[] = [];
+        try {
+            userProjections = await storage.syncProjections(symbol);
+        } catch (err) {
+            console.error("Failed to sync projections", err);
+        }
+
+        // Determine who is default
+        // If NO user projection is marked isDefault, then Yahoo is default.
+        const defaultProjection = userProjections.find(p => p.isDefault);
+        const isYahooDefault = !defaultProjection;
+
         // 1. Yahoo Consensus (always available)
         options.push({
             id: 'yahoo',
             type: 'yahoo',
             label: 'Yahoo Consensus',
             description: 'Latest analyst estimates from Yahoo Finance',
-            timestamp: new Date()
+            timestamp: new Date(),
+            isDefault: isYahooDefault
         });
 
-        // 2. AI Analysis (conditional - show ALL AI projections, grouped by model)
+        // 2. AI Analysis (conditional)
         try {
             const projections = await fetchProjections(symbol);
             const aiProjections = projections?.filter(p => p.source === 'AI_AGENT') || [];
@@ -57,19 +73,26 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
                 if (aiProjection.aiThesis) {
                     const modelName = aiProjection.aiThesis.model || 'Unknown Model';
 
+                    // Check if this AI projection is in our synced list (by ID) and is default
+                    // Or if it matches the defaultProjection found above?
+                    // AI projections might be in the userProjections list if they were synced local.
+                    // Let's check ID match against defaultProjection
+                    const isDef = defaultProjection && defaultProjection.id === aiProjection.id;
+
                     options.push({
-                        id: `ai-${index}`,
+                        id: aiProjection.id || `ai-${index}`, // Use real ID if available
                         type: 'ai',
                         label: `AI Analysis (${modelName})`,
                         description: `Fair Value: $${aiProjection.aiThesis.fairValue?.toFixed(2) || 'N/A'}`,
                         timestamp: new Date(aiProjection.updatedAt || aiProjection.savedAt),
+                        isDefault: !!isDef,
                         data: {
                             fairValue: aiProjection.aiThesis.fairValue,
                             bearPrice: aiProjection.scenarios?.bear?.scenarioPrice,
                             basePrice: aiProjection.scenarios?.base?.scenarioPrice,
                             bullPrice: aiProjection.scenarios?.bull?.scenarioPrice
                         } as any,
-                        aiProjection: aiProjection // Store full projection for report viewing
+                        aiProjection: aiProjection
                     });
                 }
             });
@@ -78,15 +101,30 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
         }
 
         // 3. User Saved Presets
-        const userPresets = loadUserPresets(symbol);
-        userPresets.forEach(preset => {
+        userProjections.filter(p => p.source === 'USER').forEach(p => {
             options.push({
-                id: preset.id,
+                id: p.id,
                 type: 'user',
-                label: preset.name,
-                description: preset.description || 'Custom scenario',
-                timestamp: new Date(preset.savedAt),
-                data: preset
+                label: p.name,
+                description: 'Custom Scenario',
+                timestamp: new Date(p.updatedAt),
+                isDefault: p.isDefault,
+                data: {
+                    id: p.id,
+                    name: p.name,
+                    symbol: p.ticker,
+                    scenarios: p.scenarios,
+                    globalSettings: p.globalSettings,
+                    savedAt: p.savedAt
+                },
+                // If the user projection has an AI Thesis attached, pass it as aiProjection so buttons appear
+                aiProjection: p.aiThesis ? {
+                    aiThesis: p.aiThesis,
+                    scenarios: p.scenarios, // Reuse user scenarios as the "projection"
+                    source: 'AI_AGENT', // Fake source for the report viewer if needed
+                    ticker: p.ticker,
+                    savedAt: p.savedAt
+                } : undefined
             });
         });
 
@@ -103,6 +141,24 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
         if (confirm('Delete this preset?')) {
             deleteUserPreset(presetId);
             loadPresets(); // Refresh list
+        }
+    };
+
+    const handleSetDefault = async (preset: PresetOption, e: React.MouseEvent) => {
+        e.stopPropagation();
+        // Allow setting default for ANY type (user, ai, yahoo)
+        // For Yahoo, we pass id='yahoo'. For others, their real ID.
+
+        try {
+            await storage.toggleDefaultProjection({
+                id: preset.id, // 'yahoo' or UUID
+                ticker: symbol
+            } as any);
+
+            loadPresets(); // Refresh UI
+        } catch (err) {
+            console.error(err);
+            alert("Failed to set default.");
         }
     };
 
@@ -124,6 +180,17 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
             minute: '2-digit'
         }).format(date);
     };
+
+    // Shared star button component to keep things DRY
+    const StarButton = ({ preset }: { preset: PresetOption }) => (
+        <button
+            onClick={(e) => handleSetDefault(preset, e)}
+            className={`p-1.5 rounded-md transition-colors ${preset.isDefault ? 'text-yellow-400 bg-yellow-400/10' : 'text-slate-500 hover:text-yellow-400 hover:bg-slate-700'}`}
+            title={preset.isDefault ? "Current Default" : "Set as Default"}
+        >
+            <Star size={14} fill={preset.isDefault ? "currentColor" : "none"} />
+        </button>
+    );
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
@@ -179,9 +246,13 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    {preset.type === 'ai' && onViewReport && preset.aiProjection && (
+                                                    {/* Star Button for System Presets */}
+                                                    <StarButton preset={preset} />
+
+                                                    <StarButton preset={preset} />
+
+                                                    {onViewReport && preset.aiProjection && (
                                                         <>
-                                                            {/* Standard Report Button */}
                                                             <button
                                                                 className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
                                                                 onClick={(e) => {
@@ -194,7 +265,6 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
                                                                 Report
                                                             </button>
 
-                                                            {/* Deep Dive Button (if available) */}
                                                             {preset.aiProjection.aiThesis?.researchReport && (
                                                                 <button
                                                                     className="px-3 py-2 bg-purple-900/30 hover:bg-purple-800/40 text-purple-300 border border-purple-500/30 hover:border-purple-400/50 text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
@@ -256,8 +326,10 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-2">
+                                                        <StarButton preset={preset} />
+
                                                         <button
-                                                            className="p-2 text-slate-400 hover:text-red-400 transition-colors"
+                                                            className="p-1.5 text-slate-400 hover:text-red-400 transition-colors hover:bg-red-500/20 rounded-md"
                                                             onClick={(e) => handleDelete(preset.id, e)}
                                                             title="Delete preset"
                                                         >
@@ -265,7 +337,10 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
                                                         </button>
                                                         <button
                                                             className="px-4 py-2 bg-green-600 hover:bg-green-500 text-white text-sm font-medium rounded-lg transition-colors"
-                                                            onClick={() => handleLoad(preset)}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                handleLoad(preset)
+                                                            }}
                                                         >
                                                             Load
                                                         </button>
