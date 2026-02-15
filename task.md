@@ -1,0 +1,87 @@
+Review Task:
+- [x] Update Valuation Persistence Architecture (v2.0)
+- [x] Create stock_valuation Skill
+- [x] Bundle for Round 2 Review
+- [ ] Wait for Opus 4.6 Review Feedback
+- [x] Update Zod Schemas (Add `source` field)
+- [x] Update Frontend Types (Add `source` field)
+- [x] Fix Version Conflict Logic (Server increments)
+- [x] Fix fetchProjections (Return null on error)
+- [x] Update storage.ts (Offline Fallback Logic)
+- [x] Synthesize Workflow (Gemini Router + Opus Operations)
+- [x] **CRITICAL**: Fix `saveProjection` duplicate write bug in `ProjectionService.ts`
+- [x] Fix invalid UUID in `example_NVDA.json`
+- [x] Add hard schema limits to `analysis_prompt.md`
+- [x] Resolve growth rate constraint conflict (Prompt vs Example)
+- [x] Resolve growth rate constraint conflict (SKILL.md)
+- [x] Fix `yaxis` typo in workflow
+- [x] Cleanup stale comments in `storage.ts`
+- [x] Update ADR 018 and ADR 020 paths
+- [x] Rename Tool B folder to include Portfolio Evaluation
+- [x] Create README for Stock Valuation Agent
+- [x] Ingest Tool B Implementation Brief
+- [x] Add Thesis schemas to `zod-schemas.ts`
+- [x] Implement `ThesisService.ts` (CRUD)
+- [x] Add Thesis routes to `index.ts`
+- [x] Create `example_twin_revolutions.json`
+- [x] Add Health Check schemas to `zod-schemas.ts`
+- [x] Implement `computeHealthCheck` in `ThesisService.ts`
+- [x] Fix `ThesisService.ts` syntax errors
+- [x] Add `GET /api/theses/:id/health` endpoint
+- [x] Create `fetch_portfolio_snapshot.py`
+- [x] Write `SKILL.md` (Thesis Balancer)
+- [x] Write `review-portfolio.md` workflow
+- [x] Create `references/rebalance_prompt.md`
+- [x] Implement `optimizePortfolio` in `ThesisService.ts`
+- [x] Fix `ThesisService.ts` structure again
+- [x] Implement `POST /api/theses/:id/optimize`
+- [x] Tool B Implementation Complete
+- [x] Create Walkthrough
+- [x] Update `SKILL.md` with Intelligence Layer
+- [x] Update `review-portfolio.md` with Strategic Check
+- [x] Document Intelligence Layer in Walkthrough
+- [x] Create Red Team Prompt (Tool B)
+- [x] Create Bundle Manifest (Tool B)
+- [x] Create Red Team Bundle (Tool B)
+- [ ] Skill System Review and Refinement
+    - [ ] Compare old skills vs new agentic patterns
+    - [ ] Plan upgrades for context-bundling, rlm-distill, etc.
+- [x] Create Skill Upgrade Plan
+- [x] Upgrade `context-bundling` (Intent Analysis)
+- [x] Upgrade `rlm-distill` (Quality Gate)
+- [x] Upgrade `dependency-management` (Troubleshooting)
+- [x] Upgrade `vector-db-launch` (Self-Healing)
+- [x] Skill Upgrades Complete
+- [x] Document Skill Upgrades in Walkthrough
+- [ ] Upgrade `tool_discovery` (Smart Querying)
+- [x] Upgrade `tool_discovery` (Smart Querying)
+- [x] Document Tool Discovery Upgrade in Walkthrough
+- [ ] Upgrade `spec_kitty_workflow` (Pre-Flight Strategy)
+- [x] Upgrade `spec_kitty_workflow` (Pre-Flight Strategy)
+- [x] Document Spec Kitty Upgrade in Walkthrough
+- [ ] Red Team Remediation (Tool B)
+    - [ ] Fix Critical Bugs (Race Condition, Batch Reads)
+    - [ ] Implement Thesis Mutation API
+    - [ ] Build Strategic Review Layer
+- [x] Fix Critical Bugs (Race Condition, Batch Reads, Normalization)
+- [x] Add Workflow Metadata (trigger/args)
+- [x] Implement Thesis Mutation API (Service Layer)
+- [x] Implement Batch/Replace Holdings API
+- [ ] Create ADR for Zod Validation Schema
+- [x] Build Strategic Review Layer (Service Method)
+- [ ] Create strategic_review_prompt.md
+- [x] Create strategic_review_prompt.md
+- [x] Verify Strategic Review Endpoint
+- [x] Update README with AI Capabilities
+- [ ] Create .agent/skills/spec-kitty-bridge
+- [x] Create .agent/skills/spec-kitty-bridge
+- [x] Create spec-kitty-bridge skill
+- [x] Update tools/bridge/standard-spec-kitty-workflow.mmd
+- [x] Update tools/bridge/standard-spec-kitty-workflow.mmd
+- [x] Update tools/bridge/bridge_process.mmd
+- [x] Create tools/bridge/tool_inventory.json
+- [x] Create .agent/workflows/utilities/spec-kitty-bridge.md
+- [x] Update tools/bridge/README.md
+- [x] Update tools/bridge/README.md with setup sequence
+- [x] Update tools/bridge/tool_inventory.json with full bundle manifest
+- [x] Run bridge synchronization sequence

@@ -9,7 +9,7 @@ The application needs to store portfolio holdings and user settings locally. To 
 ## Decision
 Use **Local JSON Files** for data persistence:
 1. `portfolio.json`: Stores all ticker symbols, share counts, and basic metadata.
-2. The file is stored in a shared location (`frontend/src/data/`) accessible to both backend (for updates) and frontend (for direct imports if needed, though usually proxied via API).
+2. The file is stored in a shared location (`backend/data/`) accessible to both backend (for updates) and frontend (via API).
 
 ## Consequences
 - **Pros**:

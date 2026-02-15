@@ -38,6 +38,32 @@ A professional-grade brokerage sync engine featuring:
 -   **Backend**: Node.js (Express), Python 3.11 (Bridge to `yfinance`).
 -   **Data**: `yfinance` & Questrade API (Dynamic Aggregation).
 
+## 🧠 AI Capabilities (Powered by Spec Kitty)
+
+New powerful AI agents allow you to perform autonomous valuation and strategic portfolio review.
+
+### 1. Stock Valuation Analyst (Tool A)
+An autonomous agent that acts as a buy-side analyst. It fetches real-time financial data, performs cognitive analysis, and generates a 3-scenario valuation model (Bear/Base/Bull) with a final "Buy/Sell/Hold" recommendation.
+
+-   **Trigger**: `/perform-stock-valuation {TICKER}`
+-   **Example**: `/perform-stock-valuation NVDA`
+-   **Capabilities**:
+    -   Fetches live financials via `yfinance`.
+    -   Projects 5-year revenue, margins, and PE ratios.
+    -   Calculates fair value and upside/downside.
+    -   Persists results to the Valuation Modeler.
+-   **Architecture**: [Stock Valuation Architecture](docs/architecture/stock-valuation/valuation-persistence.md)
+
+### 2. Strategic Thesis Balancer (Tool B)
+A "Strategic Advisor" agent that monitors your portfolio's alignment with your core investment thesis. It detects drift, checks "Thesis Breakers" (e.g., price drops, news events), and recommends rebalancing trades.
+
+-   **Trigger**: `/review-portfolio`
+-   **Capabilities**:
+    -   **Drift Analysis**: Calculates deviation from target weights (Pillar & Holding level).
+    -   **Strategic Review**: Qualitative analysis of "Deployment Conflicts" and "Thesis Breakers" using LLM intelligence.
+    -   **Auto-Rebalancing**: Generates atomic trade instructions to restore alignment.
+-   **Architecture**: [Thesis Alignment & Portfolio Valuation](docs/architecture/thesis-alignment-and-portfolio-valuation/tool_b_implementation_brief.md)
+
 ## 🚀 Getting Started
 
 ### Prerequisites
