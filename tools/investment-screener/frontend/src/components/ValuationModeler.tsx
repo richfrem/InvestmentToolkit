@@ -5,7 +5,8 @@ import { ProjectionsPanel } from './ProjectionsPanel';
 import { storage } from '../services/storage';
 import { HelpTrigger } from './HelpModal';
 import { runAIAnalysis, type ValuationResult, type Projection, type Scenario } from '../services/api';
-import { Sparkles, BrainCircuit, Loader2 } from 'lucide-react';
+import { Sparkles, BrainCircuit, Loader2, FileText } from 'lucide-react';
+import { AIAnalysisModal } from './AIAnalysisModal';
 
 interface ValuationModelerProps {
     stockData: StockData;
@@ -25,6 +26,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
     // Save Modal State
     const [showSaveModal, setShowSaveModal] = useState(false);
+    const [showAIModal, setShowAIModal] = useState(false);
     const [saveName, setSaveName] = useState('');
 
     // Global Settings
@@ -451,6 +453,14 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                         Sync Consensus
                     </button>
                     <button
+                        onClick={() => setShowAIModal(true)}
+                        className="flex items-center gap-2 px-2 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border border-indigo-500/20 transition-all text-[10px] font-medium"
+                        title="View Report from Autonomous AI Agent"
+                    >
+                        <FileText size={12} />
+                        View AI Report
+                    </button>
+                    <button
                         onClick={() => handleAIAnalysis()} // Call without specific metric for general analysis
                         disabled={isAnalyzing}
                         className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-all text-[10px] font-medium border ${isAnalyzing
@@ -809,6 +819,13 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     </ul>
                 </div>
             )}
+
+            {/* AI Analysis Modal */}
+            <AIAnalysisModal
+                isOpen={showAIModal}
+                onClose={() => setShowAIModal(false)}
+                symbol={stockData.symbol}
+            />
 
             {/* Save Modal */}
             {showSaveModal && (
