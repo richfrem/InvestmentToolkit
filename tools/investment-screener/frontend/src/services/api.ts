@@ -177,6 +177,8 @@ export interface Scenario {
     qualityMultiplier: number;
     shareChange: number; // % change (negative = buyback)
     rationale?: string;
+    scenarioPrice?: number;
+    risks?: string[];
 }
 
 export interface Snapshot {
