@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { X, BrainCircuit, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
 import { type Projection, fetchProjections } from '../services/api';
 import { SmartText } from './SmartText';
+import { HelpTrigger } from './HelpModal';
 
 interface AIAnalysisModalProps {
     symbol: string;
@@ -118,8 +119,12 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
                                     </span>
                                 </div>
 
+
                                 <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700 flex flex-col items-center justify-center text-center">
-                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Fair Value</span>
+                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                        Fair Value
+                                        <HelpTrigger topicId="fairValue" size={12} />
+                                    </span>
                                     <span className="text-3xl font-black text-white">
                                         ${projection.aiThesis?.fairValue?.toFixed(2) || '---'}
                                     </span>
@@ -179,7 +184,7 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
                                                 const s = projection.scenarios[type];
                                                 const isBear = type === 'bear';
                                                 const isBull = type === 'bull';
-                                                
+
                                                 // Calculate Price (Global Settings + Scenario Assumptions)
                                                 const qualityMultiplier = s.qualityMultiplier ?? 1.0;
                                                 const shareChange = s.shareChange ?? 0;
@@ -205,22 +210,22 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
 
                                                 // 6. Discount to PV
                                                 const targetPrice = futurePrice / Math.pow(1 + discountRate / 100, timeHorizon);
-                                                
+
                                                 // 7. Upside
                                                 const currentPrice = projection.snapshot.price || 0;
                                                 const upside = currentPrice > 0 ? ((targetPrice - currentPrice) / currentPrice) * 100 : 0;
 
-                                                const rowClass = isBear ? 'bg-red-500/5 hover:bg-red-500/10' : 
-                                                               isBull ? 'bg-green-500/5 hover:bg-green-500/10' : 
-                                                               'hover:bg-slate-800/50';
+                                                const rowClass = isBear ? 'bg-red-500/5 hover:bg-red-500/10' :
+                                                    isBull ? 'bg-green-500/5 hover:bg-green-500/10' :
+                                                        'hover:bg-slate-800/50';
                                                 const textClass = isBear ? 'text-red-400' : isBull ? 'text-green-400' : 'text-slate-300';
-                                                
+
                                                 return (
                                                     <tr key={type} className={`transition-colors ${rowClass}`}>
                                                         <td className="px-5 py-4 font-bold capitalize text-white flex items-center gap-2">
                                                             {isBear && <TrendingDown size={14} className="text-red-400" />}
                                                             {isBull && <TrendingUp size={14} className="text-green-400" />}
-                                                            {!isBear && !isBull && <div className="w-3.5" />} 
+                                                            {!isBear && !isBull && <div className="w-3.5" />}
                                                             {type}
                                                         </td>
                                                         <td className="px-5 py-4 text-right font-medium text-slate-300">
