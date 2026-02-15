@@ -422,7 +422,7 @@ and the user wants comprehensive analysis, invoke Tool A for each:
 
 \`\`\`
 For each holding where hasValuation == false AND role == "core":
-  → Run /perform-stock-valuation {TICKER}
+  → Run /evaluate-stock {TICKER}
 \`\`\`
 
 This ensures every core holding has a fresh AI projection before the
@@ -538,7 +538,7 @@ With `--optimize true`:
 6. Uses LLM to generate specific rebalancing trades
 
 With `--deep-dive true`:
-7. Runs /perform-stock-valuation for each core holding without a fresh AI projection
+7. Runs /evaluate-stock for each core holding without a fresh AI projection
 
 ## Prerequisites
 \`\`\`bash
@@ -589,7 +589,7 @@ When the health check finds core holdings with `hasValuation: false`, the agent 
 
 ```
 For each holding where hasValuation == false AND role != "reserve":
-  /perform-stock-valuation {TICKER}
+  /evaluate-stock {TICKER}
 ```
 
 This runs Tool A's full pipeline (fetch data → analyze → persist) for each missing holding, then re-runs the health check with the fresh data.
@@ -632,7 +632,7 @@ Follow this sequence. Each step builds on the previous.
 17. **Test**: Run with `--optimize true`, verify trade recommendations are sensible
 
 ### Phase 5: Deep Dive Integration
-18. Wire up the `--deep-dive` flag to invoke Tool A's `/perform-stock-valuation` for each missing holding
+18. Wire up the `--deep-dive` flag to invoke Tool A's `/evaluate-stock` for each missing holding
 19. **Test**: Run `/review-portfolio --deep-dive true` on a thesis where half the holdings have no projections
 
 ---

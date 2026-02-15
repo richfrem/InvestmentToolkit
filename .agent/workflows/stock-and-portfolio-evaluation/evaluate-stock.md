@@ -1,6 +1,6 @@
 ---
 description: Perform AI-driven stock valuation (Bear/Base/Bull) and persist the result as an AI_AGENT projection to the backend store. The executing agent operates as an autonomous analyst, fetching data, performing cognitive analysis, and saving via the HTTP API.
-trigger: /perform-stock-valuation
+trigger: /evaluate-stock
 args:
   - name: ticker
     required: true
@@ -11,7 +11,7 @@ args:
     description: "self" = executing agent performs analysis. Alternatively specify a model name for API delegation.
 ---
 
-# Perform Stock Valuation
+# Evaluate Stock
 
 ## Execution Workflow
 

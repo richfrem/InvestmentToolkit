@@ -53,4 +53,4 @@ Inspect `holdingHealth` for individual drift percentages.
 
 ## 4. Next Steps
 - If Status is `CRITICAL`: Run the optimization workflow (coming soon).
-- If Valuation Missing: Run Tool A on the specific ticker using the "Stock Valuation" workflow.
+- If Valuation Missing: Run Tool A on the specific ticker using the `/evaluate-stock` workflow.
