@@ -31,6 +31,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const [showAIModal, setShowAIModal] = useState(false);
     const [saveName, setSaveName] = useState('');
     const [showPresetModal, setShowPresetModal] = useState(false);
+    const [viewingProjection, setViewingProjection] = useState<Projection | null>(null); // State for modal viewing
 
     // Global Settings
     const [discountRate, setDiscountRate] = useState(10);
@@ -315,6 +316,28 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     setDiscountRate(aiProjection.globalSettings.discountRate);
                     setTimeHorizon(aiProjection.globalSettings.timeHorizon);
                 }
+
+                // Also load the thesis into the AI Result view
+                const thesis = aiProjection.aiThesis;
+                const base = aiProjection.scenarios.base;
+                if (thesis) {
+                    setAiResult({
+                        fair_value: thesis.fairValue,
+                        model_name: thesis.model,
+                        rationale: thesis.rationale,
+                        action: thesis.action,
+                        growth_assumption: base ? base.growthRate / 100 : 0,
+                        suggested_growth: base ? base.growthRate / 100 : undefined,
+                        suggested_margin: base ? base.netMargin / 100 : undefined,
+                        exit_pe: base ? base.exitPE : undefined,
+                        quality_multiplier: base ? base.qualityMultiplier : undefined
+                    });
+                }
+
+                // Open the modal with this projection
+                setViewingProjection(aiProjection);
+                setShowAIModal(true);
+
                 setActiveScenario('base');
             } else {
                 console.error('AI Preset missing projection data');
@@ -852,8 +875,9 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             {/* AI Analysis Modal */}
             <AIAnalysisModal
                 isOpen={showAIModal}
-                onClose={() => setShowAIModal(false)}
+                onClose={() => { setShowAIModal(false); setViewingProjection(null); }}
                 symbol={stockData.symbol}
+                initialProjection={viewingProjection}
             />
 
             {/* Save Modal */}
@@ -910,7 +934,25 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     onLoad={handlePresetLoad}
                     onViewReport={(aiProjection) => {
                         setShowPresetModal(false);
-                        setAiResult(aiProjection.aiThesis);
+                        setViewingProjection(aiProjection);
+                        setShowAIModal(true);
+                        // Map stored AIThesis (camelCase) to ValuationResult (snake_case)
+                        const thesis = aiProjection.aiThesis;
+                        const base = aiProjection.scenarios?.base;
+                        if (thesis) {
+                            setAiResult({
+                                fair_value: thesis.fairValue,
+                                model_name: thesis.model,
+                                rationale: thesis.rationale,
+                                action: thesis.action,
+                                // Map data from base scenario if available
+                                growth_assumption: base ? base.growthRate / 100 : 0,
+                                suggested_growth: base ? base.growthRate / 100 : undefined,
+                                suggested_margin: base ? base.netMargin / 100 : undefined,
+                                exit_pe: base ? base.exitPE : undefined,
+                                quality_multiplier: base ? base.qualityMultiplier : undefined
+                            });
+                        }
                     }}
                     onClose={() => setShowPresetModal(false)}
                 />
