@@ -73,3 +73,15 @@ Review Task:
 - [x] Create strategic_review_prompt.md
 - [x] Verify Strategic Review Endpoint
 - [x] Update README with AI Capabilities
+- [ ] Create .agent/skills/spec-kitty-bridge
+- [x] Create .agent/skills/spec-kitty-bridge
+- [x] Create spec-kitty-bridge skill
+- [x] Update tools/bridge/standard-spec-kitty-workflow.mmd
+- [x] Update tools/bridge/standard-spec-kitty-workflow.mmd
+- [x] Update tools/bridge/bridge_process.mmd
+- [x] Create tools/bridge/tool_inventory.json
+- [x] Create .agent/workflows/utilities/spec-kitty-bridge.md
+- [x] Update tools/bridge/README.md
+- [x] Update tools/bridge/README.md with setup sequence
+- [x] Update tools/bridge/tool_inventory.json with full bundle manifest
+- [x] Run bridge synchronization sequence
