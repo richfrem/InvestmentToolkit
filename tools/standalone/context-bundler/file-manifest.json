@@ -70,7 +70,7 @@
       "note": "Example Projection"
     },
     {
-      "path": ".agent/workflows/stock-valuation/perform-stock-valuation.md",
+      "path": ".agent/workflows/stock-and-portfolio-evaluation/evaluate-stock.md",
       "note": "Workflow Trigger"
     }
   ]

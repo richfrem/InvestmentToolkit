@@ -88,7 +88,7 @@ Result: `BRK-B` passes the route but fails Zod validation. Use one canonical reg
 
 ## 📋 §S — DEEP REVIEW: Agent Skill & Workflow System
 
-This is the core section addressing whether `/perform-stock-valuation NVDA` will actually work end-to-end for an agent (Gemini 3 in Antigravity, Claude, etc.) and produce a valid `NVDA.json` projection identical in structure to what the web app creates.
+This is the core section addressing whether `/evaluate-stock NVDA` will actually work end-to-end for an agent (Gemini 3 in Antigravity, Claude, etc.) and produce a valid `NVDA.json` projection identical in structure to what the web app creates.
 
 ### S1. The Skill Is a Narrative, Not an Executable Contract — Agent Will Fail
 
@@ -121,7 +121,7 @@ has_tools: true
 # Stock Valuation Skill
 
 ## Quick Reference
-- **Trigger**: /perform-stock-valuation {TICKER}
+- **Trigger**: /evaluate-stock {TICKER}
 - **Output**: A valid Projection object (source: AI_AGENT)
 - **Output Schema**: See references/projection_schema.json
 - **Example**: See references/example_NVDA.json
@@ -251,7 +251,7 @@ Confirm the AI_AGENT projection appears. Report to the user:
 
 **Severity: HIGH**
 
-The workflow (`perform-stock-valuation.md`) calls:
+The workflow (`evaluate-stock.md`) calls:
 ```bash
 python3 .agent/skills/stock_valuation/stock_valuation/scripts/run_valuation_agent.py \
   --ticker {ticker} --model gemini-1.5-pro
@@ -268,7 +268,7 @@ python3 .agent/skills/stock_valuation/stock_valuation/scripts/run_valuation_agen
 ```markdown
 ---
 description: Perform AI-driven stock valuation and persist results.
-trigger: /perform-stock-valuation
+trigger: /evaluate-stock
 args:
   - name: ticker
     required: true
@@ -283,7 +283,7 @@ args:
 # Perform Stock Valuation
 
 ## Execution
-When triggered with `/perform-stock-valuation {TICKER}`:
+When triggered with `/evaluate-stock {TICKER}`:
 
 1. Read and follow the skill at `.agent/skills/stock_valuation/SKILL.md`
 2. Execute each step sequentially using your tool-calling capabilities
@@ -406,7 +406,7 @@ Flag AI output if: growth > 200% for a company with revenue > $50B, or net margi
 | T13 | Frontend re-saves version 3 | Server accepts, increments to 4 (not 409) |
 | T14 | Migrated projection `price: 0` in UI | No divide-by-zero; shows "incomplete" banner |
 | T15 | Save projection for `BRK-B` | Passes both route and Zod validation |
-| T16 | `/perform-stock-valuation NVDA` end-to-end | Fetches data → generates scenarios → POSTs → appears in NVDA.json with source AI_AGENT |
+| T16 | `/evaluate-stock NVDA` end-to-end | Fetches data → generates scenarios → POSTs → appears in NVDA.json with source AI_AGENT |
 | T17 | Agent returns weights summing to 0.95 | Repair step normalizes; save succeeds |
 | T18 | Agent returns `growthRate: "65%"` (string) | Repair step coerces to 65; save succeeds |
 | T19 | Agent runs 20 times in 5 minutes | Rate limiter blocks after N |
