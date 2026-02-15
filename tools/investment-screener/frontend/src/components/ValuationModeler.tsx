@@ -4,9 +4,11 @@ import type { StockData } from '../services/api';
 import { ProjectionsPanel } from './ProjectionsPanel';
 import { storage } from '../services/storage';
 import { HelpTrigger } from './HelpModal';
-import { runAIAnalysis, type ValuationResult, type Projection, type Scenario } from '../services/api';
+import { runAIAnalysis, type ValuationResult, type Projection, type Scenario, fetchProjections } from '../services/api';
 import { Sparkles, BrainCircuit, Loader2, FileText } from 'lucide-react';
 import { AIAnalysisModal } from './AIAnalysisModal';
+import { PresetSelectorModal } from './PresetSelectorModal';
+import { saveUserPreset } from '../services/presets';
 
 interface ValuationModelerProps {
     stockData: StockData;
@@ -28,6 +30,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [showAIModal, setShowAIModal] = useState(false);
     const [saveName, setSaveName] = useState('');
+    const [showPresetModal, setShowPresetModal] = useState(false);
 
     // Global Settings
     const [discountRate, setDiscountRate] = useState(10);
@@ -299,6 +302,52 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         setShowProjectionsPanel(false);
     };
 
+    const handlePresetLoad = async (preset: any) => {
+        if (preset.type === 'yahoo') {
+            // Load Yahoo Consensus
+            resetToYahoo();
+        } else if (preset.type === 'ai') {
+            // Load AI Analysis
+            try {
+                const projections = await fetchProjections(stockData.symbol);
+                const aiProjection = projections?.find(p => p.source === 'AI_AGENT');
+
+                if (aiProjection && aiProjection.scenarios) {
+                    setScenarios(aiProjection.scenarios);
+                    if (aiProjection.globalSettings) {
+                        setDiscountRate(aiProjection.globalSettings.discountRate);
+                        setTimeHorizon(aiProjection.globalSettings.timeHorizon);
+                    }
+                    setActiveScenario('base');
+                }
+            } catch (error) {
+                console.error('Failed to load AI projection:', error);
+                alert('Failed to load AI Analysis');
+            }
+        } else if (preset.type === 'user' && preset.data) {
+            // Load User Preset
+            setScenarios(preset.data.scenarios);
+            setDiscountRate(preset.data.globalSettings.discountRate);
+            setTimeHorizon(preset.data.globalSettings.timeHorizon);
+            setActiveScenario('base');
+        }
+        setShowPresetModal(false);
+    };
+
+    const handleSaveAsPreset = () => {
+        const presetName = prompt('Name this preset:');
+        if (!presetName?.trim()) return;
+
+        saveUserPreset(
+            stockData.symbol,
+            presetName,
+            scenarios,
+            { discountRate, timeHorizon }
+        );
+
+        alert(`Saved preset: ${presetName}`);
+    };
+
     // --- Components ---
 
     const SliderInput = ({ label, value, setValue, min, max, unit = '', step = 1, note = '', helpTopic = '', warningThreshold = null }: any) => {
@@ -473,7 +522,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                         AI Analyst
                     </button>
                     <button
-                        onClick={() => setShowProjectionsPanel(true)}
+                        onClick={() => setShowPresetModal(true)}
                         className="flex items-center gap-2 px-2 py-1 rounded-lg bg-slate-800/80 text-primary hover:bg-slate-800 border border-slate-700/50 transition-all text-[10px] font-medium"
                     >
                         <FolderOpen size={12} />
@@ -492,7 +541,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                         Reset
                     </button>
                     <button
-                        onClick={handleSaveOpen}
+                        onClick={handleSaveAsPreset}
                         className="flex items-center gap-2 px-2 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-all text-[10px] font-medium"
                     >
                         <Save size={12} />
@@ -871,6 +920,15 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     onClose={() => setShowProjectionsPanel(false)}
                     ticker={stockData.symbol}
                     onLoad={handleLoad}
+                />
+            )}
+
+            {/* Preset Selector Modal */}
+            {showPresetModal && (
+                <PresetSelectorModal
+                    symbol={stockData.symbol}
+                    onLoad={handlePresetLoad}
+                    onClose={() => setShowPresetModal(false)}
                 />
             )}
         </div>
