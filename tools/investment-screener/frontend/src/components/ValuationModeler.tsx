@@ -746,12 +746,14 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                     <p className="text-[10px] text-indigo-300 font-medium tracking-wide uppercase">{aiResult?.model_name || 'AI ANALYST'} ANALYSIS</p>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => { setAiResult(null); setAiError(null); setActiveCoachMetric(null); }}
-                                className="text-slate-500 hover:text-white transition-colors"
-                            >
-                                <X size={16} />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => { setAiResult(null); setAiError(null); setActiveCoachMetric(null); }}
+                                    className="text-slate-500 hover:text-white transition-colors"
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
                         </div>
 
                         {isAnalyzing ? (
@@ -770,23 +772,10 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                 <p className="text-xs text-slate-400">{aiError}</p>
                             </div>
                         ) : aiResult ? (
-                            <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <div className="md:col-span-3">
-                                    <p className="text-xs text-slate-300 leading-relaxed font-medium italic">
-                                        "{aiResult.rationale}"
-                                    </p>
-                                </div>
-                                <div className="bg-black/20 rounded-lg p-3 border border-white/5 flex flex-col items-center justify-center text-center">
-                                    <div className="text-[10px] text-slate-500 uppercase font-bold mb-1">AI Fair Value</div>
-                                    <div className="text-2xl font-black text-indigo-400 leading-none">${aiResult.fair_value}</div>
-                                    <div className="text-[9px] text-indigo-300 mt-1">Rec. Growth: {Math.round((aiResult.suggested_growth || aiResult.growth_assumption) * 100)}%</div>
-                                    <button
-                                        onClick={handleApplyAISuggestions}
-                                        className="mt-2 w-full py-1 bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-200 text-[9px] font-bold rounded border border-indigo-500/30 transition-all uppercase tracking-tight"
-                                    >
-                                        Apply Suggestions
-                                    </button>
-                                </div>
+                            <div className="relative z-10">
+                                <p className="text-xs text-slate-300 leading-relaxed font-medium italic">
+                                    "{aiResult.rationale}"
+                                </p>
                             </div>
                         ) : null}
                     </div>
