@@ -307,22 +307,18 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             // Load Yahoo Consensus
             resetToYahoo();
         } else if (preset.type === 'ai') {
-            // Load AI Analysis
-            try {
-                const projections = await fetchProjections(stockData.symbol);
-                const aiProjection = projections?.find(p => p.source === 'AI_AGENT');
-
-                if (aiProjection && aiProjection.scenarios) {
-                    setScenarios(aiProjection.scenarios);
-                    if (aiProjection.globalSettings) {
-                        setDiscountRate(aiProjection.globalSettings.discountRate);
-                        setTimeHorizon(aiProjection.globalSettings.timeHorizon);
-                    }
-                    setActiveScenario('base');
+            // Load specific AI Analysis from the preset
+            const aiProjection = preset.aiProjection;
+            if (aiProjection && aiProjection.scenarios) {
+                setScenarios(aiProjection.scenarios);
+                if (aiProjection.globalSettings) {
+                    setDiscountRate(aiProjection.globalSettings.discountRate);
+                    setTimeHorizon(aiProjection.globalSettings.timeHorizon);
                 }
-            } catch (error) {
-                console.error('Failed to load AI projection:', error);
-                alert('Failed to load AI Analysis');
+                setActiveScenario('base');
+            } else {
+                console.error('AI Preset missing projection data');
+                alert('Failed to load this specific AI Analysis');
             }
         } else if (preset.type === 'user' && preset.data) {
             // Load User Preset
