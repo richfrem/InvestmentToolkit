@@ -70,3 +70,4 @@ Review Task:
 - [ ] Create ADR for Zod Validation Schema
 - [x] Build Strategic Review Layer (Service Method)
 - [ ] Create strategic_review_prompt.md
+- [x] Create strategic_review_prompt.md
