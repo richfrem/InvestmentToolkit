@@ -71,3 +71,5 @@ Review Task:
 - [x] Build Strategic Review Layer (Service Method)
 - [ ] Create strategic_review_prompt.md
 - [x] Create strategic_review_prompt.md
+- [x] Verify Strategic Review Endpoint
+- [x] Update README with AI Capabilities
