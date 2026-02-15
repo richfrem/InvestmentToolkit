@@ -186,6 +186,14 @@ def persist_projection(new_projection: Dict[str, Any], replace_existing: bool = 
             source = new_projection.get('source', 'UNKNOWN')
             target_id = new_projection.get('id')
             
+            # Common variable for logging
+            target_model = new_projection.get('aiThesis', {}).get('model')
+            if not target_model:
+                 if source == 'USER':
+                     target_model = f"User Save ({target_id})"
+                 else:
+                     target_model = "Unknown Agent"
+
             # Find if we already have a matching projection
             model_match_index = -1
             
@@ -197,13 +205,10 @@ def persist_projection(new_projection: Dict[str, Any], replace_existing: bool = 
                         break
             else:
                 # For Agents, we enforce one projection per Model identity
-                target_model = new_projection.get('aiThesis', {}).get('model')
-                if not target_model:
-                     target_model = "Unknown Agent"
-                     
                 for i, p in enumerate(existing_projections):
                     # Check if model matches (primary key for agents)
                     p_model = p.get('aiThesis', {}).get('model')
+                    # Robust check against stored agent models
                     if p_model == target_model:
                         model_match_index = i
                         break
