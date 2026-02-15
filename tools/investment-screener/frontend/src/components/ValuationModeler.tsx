@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Save, RotateCcw, FolderOpen, TrendingUp, TrendingDown, Info, X, AlertTriangle } from 'lucide-react';
+import { Save, RotateCcw, TrendingUp, TrendingDown, Info, X, AlertTriangle } from 'lucide-react';
 import type { StockData } from '../services/api';
 import { ProjectionsPanel } from './ProjectionsPanel';
 import { storage } from '../services/storage';
 import { HelpTrigger } from './HelpModal';
-import { runAIAnalysis, type ValuationResult, type Projection, type Scenario } from '../services/api';
-import { Sparkles, BrainCircuit, Loader2 } from 'lucide-react';
+import { runAIAnalysis, type ValuationResult, type Projection, type Scenario, fetchProjections } from '../services/api';
+import { Sparkles, BrainCircuit, Loader2, FolderOpen } from 'lucide-react';
+import { AIAnalysisModal } from './AIAnalysisModal';
+import { PresetSelectorModal } from './PresetSelectorModal';
+import { saveUserPreset } from '../services/presets';
 
 interface ValuationModelerProps {
     stockData: StockData;
@@ -25,7 +28,9 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
     // Save Modal State
     const [showSaveModal, setShowSaveModal] = useState(false);
+    const [showAIModal, setShowAIModal] = useState(false);
     const [saveName, setSaveName] = useState('');
+    const [showPresetModal, setShowPresetModal] = useState(false);
 
     // Global Settings
     const [discountRate, setDiscountRate] = useState(10);
@@ -297,6 +302,48 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         setShowProjectionsPanel(false);
     };
 
+    const handlePresetLoad = async (preset: any) => {
+        if (preset.type === 'yahoo') {
+            // Load Yahoo Consensus
+            resetToYahoo();
+        } else if (preset.type === 'ai') {
+            // Load specific AI Analysis from the preset
+            const aiProjection = preset.aiProjection;
+            if (aiProjection && aiProjection.scenarios) {
+                setScenarios(aiProjection.scenarios);
+                if (aiProjection.globalSettings) {
+                    setDiscountRate(aiProjection.globalSettings.discountRate);
+                    setTimeHorizon(aiProjection.globalSettings.timeHorizon);
+                }
+                setActiveScenario('base');
+            } else {
+                console.error('AI Preset missing projection data');
+                alert('Failed to load this specific AI Analysis');
+            }
+        } else if (preset.type === 'user' && preset.data) {
+            // Load User Preset
+            setScenarios(preset.data.scenarios);
+            setDiscountRate(preset.data.globalSettings.discountRate);
+            setTimeHorizon(preset.data.globalSettings.timeHorizon);
+            setActiveScenario('base');
+        }
+        setShowPresetModal(false);
+    };
+
+    const handleSaveAsPreset = () => {
+        const presetName = prompt('Name this preset:');
+        if (!presetName?.trim()) return;
+
+        saveUserPreset(
+            stockData.symbol,
+            presetName,
+            scenarios,
+            { discountRate, timeHorizon }
+        );
+
+        alert(`Saved preset: ${presetName}`);
+    };
+
     // --- Components ---
 
     const SliderInput = ({ label, value, setValue, min, max, unit = '', step = 1, note = '', helpTopic = '', warningThreshold = null }: any) => {
@@ -443,14 +490,6 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 </div>
                 <div className="flex gap-2">
                     <button
-                        onClick={handleSyncToConsensus}
-                        className="flex items-center gap-2 px-2 py-1 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 transition-all text-[10px] font-medium"
-                        title="Snap inputs to Analyst Consensus"
-                    >
-                        <TrendingUp size={12} />
-                        Sync Consensus
-                    </button>
-                    <button
                         onClick={() => handleAIAnalysis()} // Call without specific metric for general analysis
                         disabled={isAnalyzing}
                         className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-all text-[10px] font-medium border ${isAnalyzing
@@ -463,7 +502,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                         AI Analyst
                     </button>
                     <button
-                        onClick={() => setShowProjectionsPanel(true)}
+                        onClick={() => setShowPresetModal(true)}
                         className="flex items-center gap-2 px-2 py-1 rounded-lg bg-slate-800/80 text-primary hover:bg-slate-800 border border-slate-700/50 transition-all text-[10px] font-medium"
                     >
                         <FolderOpen size={12} />
@@ -482,7 +521,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                         Reset
                     </button>
                     <button
-                        onClick={handleSaveOpen}
+                        onClick={handleSaveAsPreset}
                         className="flex items-center gap-2 px-2 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 transition-all text-[10px] font-medium"
                     >
                         <Save size={12} />
@@ -526,9 +565,9 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 <div className="bg-surface border border-slate-800/50 rounded-xl p-3 flex flex-col justify-center">
                     <div className="space-y-2">
                         {[
-                            { mode: 'Bear', price: Math.round(targetPrice * 0.6), upside: upside - 40, color: 'text-red-400' },
-                            { mode: 'Base', price: Math.round(targetPrice), upside: upside, color: 'text-primary' },
-                            { mode: 'Bull', price: Math.round(targetPrice * 1.4), upside: upside + 40, color: 'text-green-400' }
+                            { mode: 'Bear', price: Math.round(bearPrice), upside: ((bearPrice - stockData.price) / stockData.price) * 100, color: 'text-red-400' },
+                            { mode: 'Base', price: Math.round(basePrice), upside: ((basePrice - stockData.price) / stockData.price) * 100, color: 'text-primary' },
+                            { mode: 'Bull', price: Math.round(bullPrice), upside: ((bullPrice - stockData.price) / stockData.price) * 100, color: 'text-green-400' }
                         ].map((item) => (
                             <div key={item.mode} className="flex justify-between items-center p-2 bg-slate-900/50 rounded-lg">
                                 <span className="text-xs font-bold text-secondary">{item.mode}</span>
@@ -810,6 +849,13 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 </div>
             )}
 
+            {/* AI Analysis Modal */}
+            <AIAnalysisModal
+                isOpen={showAIModal}
+                onClose={() => setShowAIModal(false)}
+                symbol={stockData.symbol}
+            />
+
             {/* Save Modal */}
             {showSaveModal && (
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
@@ -854,6 +900,19 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     onClose={() => setShowProjectionsPanel(false)}
                     ticker={stockData.symbol}
                     onLoad={handleLoad}
+                />
+            )}
+
+            {/* Preset Selector Modal */}
+            {showPresetModal && (
+                <PresetSelectorModal
+                    symbol={stockData.symbol}
+                    onLoad={handlePresetLoad}
+                    onViewReport={(aiProjection) => {
+                        setShowPresetModal(false);
+                        setAiResult(aiProjection.aiThesis);
+                    }}
+                    onClose={() => setShowPresetModal(false)}
                 />
             )}
         </div>
