@@ -89,6 +89,8 @@ The user asked: *"UI or Chat?"* -> **The answer is BOTH.**
 
 ## 4. Immediate Next Steps (RFC)
 
-1.  **Approve Strategy**: Does this "Hybrid" approach match your mental model?
-2.  **Select Pilot**: We should start with the **"Thesis Alignment"** feature first (easiest data lift, high strategic value).
-    *   *Goal*: A table showing "Actual vs Thesis" variances.
+**Approve Strategy**: Does this "Hybrid" approach match your mental model?
+**Select Pilot**: We are starting with **Stock Valuation** as the pilot implementation.
+    *   *Docs*: `docs/architecture/stock-valuation/`
+**Next Phase**: **Thesis Alignment & Portfolio Evaluation** will follow.
+    *   *Docs*: `docs/architecture/thesis-alignment-and-portfolio-valuation/`

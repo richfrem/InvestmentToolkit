@@ -4,7 +4,7 @@ import type { StockData } from '../services/api';
 import { ProjectionsPanel } from './ProjectionsPanel';
 import { storage } from '../services/storage';
 import { HelpTrigger } from './HelpModal';
-import { runAIAnalysis, type ValuationResult } from '../services/api';
+import { runAIAnalysis, type ValuationResult, type Projection, type Scenario } from '../services/api';
 import { Sparkles, BrainCircuit, Loader2 } from 'lucide-react';
 
 interface ValuationModelerProps {
@@ -13,7 +13,7 @@ interface ValuationModelerProps {
 
 export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     // --- State ---
-    const [scenario, setScenario] = useState<'bear' | 'base' | 'bull'>('base');
+    const [activeScenario, setActiveScenario] = useState<'bear' | 'base' | 'bull'>('base');
     const [showProjectionsPanel, setShowProjectionsPanel] = useState(false);
     const [savedCount, setSavedCount] = useState(0);
 
@@ -27,14 +27,48 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [saveName, setSaveName] = useState('');
 
-    // Inputs (Base defaults)
-    const [growthRate, setGrowthRate] = useState(15);
-    const [netMargin, setNetMargin] = useState(20);
-    const [peRatio, setPeRatio] = useState(25);
-    const [discountRate, setDiscountRate] = useState(9);
-    const [qualityMultiplier, setQualityMultiplier] = useState(1.0);
-    const [shareChange, setShareChange] = useState(-2); // Buybacks
+    // Global Settings
+    const [discountRate, setDiscountRate] = useState(10);
     const [timeHorizon, setTimeHorizon] = useState(5);
+
+    // Scenario Data (Bear, Base, Bull)
+    const [scenarios, setScenarios] = useState<{
+        bear: Scenario & { weight: number };
+        base: Scenario & { weight: number };
+        bull: Scenario & { weight: number };
+    }>({
+        bear: { growthRate: 5, netMargin: 10, exitPE: 15, qualityMultiplier: 0.9, shareChange: 0, weight: 0.2 },
+        base: { growthRate: 15, netMargin: 20, exitPE: 25, qualityMultiplier: 1.0, shareChange: -1, weight: 0.5 },
+        bull: { growthRate: 25, netMargin: 25, exitPE: 35, qualityMultiplier: 1.2, shareChange: -2, weight: 0.3 }
+    });
+
+    // Helpers to get/set current scenario values
+    const current = scenarios[activeScenario];
+    const updateCurrent = (updates: Partial<Scenario & { weight: number }>) => {
+        setScenarios(prev => ({
+            ...prev,
+            [activeScenario]: { ...prev[activeScenario], ...updates }
+        }));
+    };
+
+    // Derived State for UI Compatibility
+    const growthRate = current.growthRate;
+    const netMargin = current.netMargin;
+    const peRatio = current.exitPE;
+    const qualityMultiplier = current.qualityMultiplier;
+    const shareChange = current.shareChange;
+
+    const totalWeight = scenarios.bear.weight + scenarios.base.weight + scenarios.bull.weight;
+    const currentWeight = Math.round(current.weight * 100);
+
+    const setGrowthRate = (v: number) => updateCurrent({ growthRate: v });
+    const setNetMargin = (v: number) => updateCurrent({ netMargin: v });
+    const setPeRatio = (v: number) => updateCurrent({ exitPE: v });
+    const setQualityMultiplier = (v: number) => updateCurrent({ qualityMultiplier: v });
+    const setShareChange = (v: number) => updateCurrent({ shareChange: v });
+    const setWeight = (v: number) => updateCurrent({ weight: v / 100 });
+
+    // Data preferences
 
     // Data preferences
     const [growthBasis, setGrowthBasis] = useState<'current' | 'next'>('next');
@@ -42,34 +76,30 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
     // Load initial saved count
     useEffect(() => {
-        const saved = storage.getProjections(stockData.symbol);
-        setSavedCount(saved.length);
+        const init = async () => {
+            const saved = await storage.syncProjections(stockData.symbol);
+            setSavedCount(saved.length);
+        };
+        init();
     }, [stockData.symbol]);
 
     // Initialize with Yahoo Finance data/defaults when stockData changes
     useEffect(() => {
         resetToYahoo();
-    }, [stockData, scenario]);
+    }, [stockData]); // Only re-run if stockData changes, not on scenario switch (state persists)
 
     const resetToYahoo = () => {
-        // Simple logic tailored to scenario
-        const multiplier = scenario === 'bull' ? 1.2 : scenario === 'bear' ? 0.8 : 1.0;
-
-        // --- Growth Logic ---
+        // --- Base Logic ---
         let baseGrowth = 15;
         const est = stockData.growth_estimates?.stockTrend;
-
         if (est) {
-            // Default to Next Year (+1y) if user selected 'next', else Current (0y)
             const val = growthBasis === 'next' ? (est['+1y'] || est['0y']) : (est['0y'] || est['+1y']);
             baseGrowth = val ? (Math.abs(val) > 1 ? val : val * 100) : 15;
         } else {
-            // Fallback to historical
             const raw = stockData.analyst_estimates?.revenue_growth ?? stockData.metrics?.revenue_growth ?? 0.15;
             baseGrowth = Math.abs(raw) > 1 ? raw : raw * 100;
         }
 
-        // --- Margin Logic ---
         let baseMargin = 20;
         if (marginBasis === 'quarterly' && stockData.quarterly_margin) {
             baseMargin = stockData.quarterly_margin;
@@ -80,42 +110,82 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
         const basePe = stockData.analyst_estimates?.forward_pe || stockData.metrics?.forward_pe || stockData.metrics?.pe_ratio || 25;
 
-        setGrowthRate(Math.round(baseGrowth * multiplier));
-        setNetMargin(Math.round(baseMargin * multiplier));
-        setPeRatio(Math.round(basePe * multiplier));
-        setDiscountRate(scenario === 'bull' ? 8 : scenario === 'bear' ? 12 : 10);
-        setQualityMultiplier(1.0);
-        setShareChange(-2);
+        setDiscountRate(10);
         setTimeHorizon(5);
+
+        setScenarios({
+            bear: {
+                growthRate: Math.round(baseGrowth * 0.5),
+                netMargin: Math.round(baseMargin * 0.8),
+                exitPE: Math.round(basePe * 0.7),
+                qualityMultiplier: 0.9,
+                shareChange: 0,
+                weight: 0.2
+            },
+            base: {
+                growthRate: Math.round(baseGrowth),
+                netMargin: Math.round(baseMargin),
+                exitPE: Math.round(basePe),
+                qualityMultiplier: 1.0,
+                shareChange: -1,
+                weight: 0.5
+            },
+            bull: {
+                growthRate: Math.round(baseGrowth * 1.3),
+                netMargin: Math.round(baseMargin * 1.2),
+                exitPE: Math.round(basePe * 1.3),
+                qualityMultiplier: 1.2,
+                shareChange: -2,
+                weight: 0.3
+            }
+        });
     };
 
     // --- Calculations ---
 
-    const calculatePrice = (g: number, pe: number) => {
-        // 1. Future Revenue (Total)
+    // Helper to calculate price for a specific scenario object
+    const calculateScenarioPrice = (s: Scenario) => {
+        // 1. Future Revenue
         const currentRevenue = stockData.metrics.revenue || 0;
-        const futureRevenue = currentRevenue * Math.pow(1 + g / 100, timeHorizon);
+        const futureRevenue = currentRevenue * Math.pow(1 + s.growthRate / 100, timeHorizon);
 
         // 2. Future Net Income
-        const futureNetIncome = futureRevenue * (netMargin / 100);
+        const futureNetIncome = futureRevenue * (s.netMargin / 100);
 
-        // 3. Future Market Cap (Valuation)
-        const futureMarketCap = futureNetIncome * pe * qualityMultiplier;
+        // 3. Future Market Cap
+        const futureMarketCap = futureNetIncome * s.exitPE * s.qualityMultiplier;
 
-        // 4. Future Share Count (Buybacks/Dilution)
-        const currentShares = stockData.metrics.shares_outstanding || 1; // Avoid div/0
-        const futureShares = currentShares * Math.pow(1 + shareChange / 100, timeHorizon);
+        // 4. Future Share Count
+        const currentShares = stockData.metrics.shares_outstanding || 1;
+        const futureShares = currentShares * Math.pow(1 + s.shareChange / 100, timeHorizon);
 
-        // 5. Future Price per Share
+        // 5. Future Price
         const futurePrice = futureShares > 0 ? futureMarketCap / futureShares : 0;
 
-        // 6. Discount to Present Value
-        const presentValue = futurePrice / Math.pow(1 + discountRate / 100, timeHorizon);
-
-        return presentValue;
+        // 6. Discount to PV
+        return futurePrice / Math.pow(1 + discountRate / 100, timeHorizon);
     };
 
-    const targetPrice = calculatePrice(growthRate, peRatio);
+    // Used by Sensitivity Matrix (uses current scenario context but overrides g/pe)
+    const calculatePrice = (g: number, pe: number) => {
+        const tempScenario: Scenario = {
+            ...current,
+            growthRate: g,
+            exitPE: pe,
+        };
+        return calculateScenarioPrice(tempScenario);
+    };
+
+    // Derived Prices
+    const bearPrice = calculateScenarioPrice(scenarios.bear);
+    const basePrice = calculateScenarioPrice(scenarios.base);
+    const bullPrice = calculateScenarioPrice(scenarios.bull);
+
+    // Weighted Average
+    const weightedPrice = (bearPrice * scenarios.bear.weight) + (basePrice * scenarios.base.weight) + (bullPrice * scenarios.bull.weight);
+
+    // Target Price for Hero (Interactive)
+    const targetPrice = weightedPrice;
     const upside = stockData.price > 0 ? ((targetPrice - stockData.price) / stockData.price) * 100 : 0;
 
     // --- Actions ---
@@ -167,35 +237,63 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const handleSaveConfirm = () => {
         if (!saveName.trim()) return;
 
-        storage.saveProjection({
-            id: Date.now().toString(),
-            ticker: stockData.symbol,
-            savedAt: new Date().toISOString(),
-            name: saveName,
-            scenarios: {
-                growthRate,
-                netMargin,
-                exitPE: peRatio,
-                qualityMultiplier,
-                shareChange,
-                discountRate,
-                timeHorizon,
-                terminalGrowth: 3
-            }
-        });
+        // Current snapshot
+        const snapshot = {
+            price: stockData.price,
+            currency: stockData.currency,
+            shares: stockData.metrics.shares_outstanding || 0,
+            revenue: stockData.metrics.revenue || 0,
+            lastActualPS: stockData.metrics.market_cap / (stockData.metrics.revenue || 1),
+            analystGrowthEstimate: stockData.analyst_estimates?.revenue_growth,
+            analystMarginEstimate: stockData.analyst_estimates?.profit_margin,
+            fiscalPeriod: "TTM" // Simplified
+        };
 
-        setSavedCount(prev => prev + 1);
-        setShowSaveModal(false);
+        const projection: Projection = {
+            id: Date.now().toString(), // Helper will be replaced by backend ID usually, but local first
+            ticker: stockData.symbol,
+            schemaVersion: '1.1',
+            version: 1,
+            savedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            name: saveName,
+            snapshot,
+            dataPreferences: { growthBasis, marginBasis },
+            scenarios: scenarios, // Save all 3
+            globalSettings: { discountRate, timeHorizon }
+        };
+
+        storage.saveProjection(projection)
+            .then(() => {
+                setSavedCount(prev => prev + 1);
+                setShowSaveModal(false);
+            })
+            .catch(err => alert("Failed to save: " + err.message));
     };
 
-    const handleLoad = (scenarios: any) => {
-        setGrowthRate(scenarios.growthRate);
-        setNetMargin(scenarios.netMargin);
-        setPeRatio(scenarios.exitPE);
-        setQualityMultiplier(scenarios.qualityMultiplier || 1.0);
-        setDiscountRate(scenarios.discountRate);
-        setShareChange(scenarios.shareChange);
-        setTimeHorizon(scenarios.timeHorizon);
+    const handleLoad = (loadedProjection: any) => {
+        // We expect a full Projection object here, but older callers might pass just scenarios.
+        // Actually storage.syncProjections returns Projection[]. 
+        // ProjectionsPanel onLoad passes `p.scenarios` or `p`.
+        // Let's assume it passes the WHOLE projection settings usually, 
+        // but looking at ProjectionsPanel is safer.
+        // For now, let's assume it passes just the scenarios object + global settings if available.
+
+        // If it's a "Projecton" object
+        if (loadedProjection.scenarios) {
+            setScenarios(loadedProjection.scenarios);
+            if (loadedProjection.globalSettings) {
+                setDiscountRate(loadedProjection.globalSettings.discountRate);
+                setTimeHorizon(loadedProjection.globalSettings.timeHorizon);
+            }
+            setActiveScenario('base');
+        } else {
+            console.warn("Legacy/Invalid load structure");
+            // Try to patch
+            if (loadedProjection.base) {
+                setScenarios(loadedProjection);
+            }
+        }
         setShowProjectionsPanel(false);
     };
 
@@ -401,8 +499,8 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                         {(['bear', 'base', 'bull'] as const).map((s) => (
                             <button
                                 key={s}
-                                onClick={() => setScenario(s)}
-                                className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider transition-all ${scenario === s
+                                onClick={() => setActiveScenario(s)}
+                                className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider transition-all ${activeScenario === s
                                     ? s === 'bull' ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                                         : s === 'bear' ? 'bg-red-500/20 text-red-400 border border-red-500/30'
                                             : 'bg-primary/20 text-primary border border-primary/30'
@@ -595,11 +693,26 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 </section>
 
                 <section className="bg-slate-900/20 p-4 rounded-xl border border-slate-800">
-                    <h3 className="text-xs font-bold text-white mb-3 flex items-center gap-2">
-                        <span className="w-1 h-3 bg-primary rounded-full"></span>
-                        Valuation & Structure
+                    <h3 className="text-xs font-bold text-white mb-3 flex items-center gap-2 justify-between">
+                        <div className="flex items-center gap-2">
+                            <span className="w-1 h-3 bg-primary rounded-full"></span>
+                            Valuation & Structure
+                        </div>
+                        <div className={`text-[9px] px-1.5 py-0.5 rounded border ${Math.abs(totalWeight - 1.0) < 0.01 ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20 animate-pulse'}`}>
+                            Total Prob: {Math.round(totalWeight * 100)}%
+                        </div>
                     </h3>
                     <div className="space-y-4">
+                        <SliderInput
+                            label="Probability"
+                            value={currentWeight}
+                            setValue={setWeight}
+                            min={0}
+                            max={100}
+                            unit="%"
+                            helpTopic="probabilityWeight"
+                            note="Scen. Weight"
+                        />
                         <SliderInput
                             label="Exit P/E"
                             value={peRatio}
