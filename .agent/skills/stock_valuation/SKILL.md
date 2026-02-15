@@ -11,13 +11,14 @@ has_tools: true
 - **Output**: A valid Projection object (source: AI_AGENT)
 - **Output Schema**: See references/projection_schema.json
 - **Example**: See references/example_NVDA.json
-- **Persistence**: POST to `http://localhost:3001/api/projections`
+- **Persistence**: CLI script `persist_projection.py` (direct file IO)
 
 ## Step 1: Fetch Financial Data
 Execute the backend script to fetch raw financial data from Yahoo Finance.
 
 ```bash
-python3 tools/investment-screener/backend/py_services/fetch_financials.py --ticker {TICKER} --output /tmp/{TICKER}_raw.json
+# Script takes TICKER as a positional arg and outputs JSON to stdout
+python3 tools/investment-screener/backend/py_services/fetch_financials.py {TICKER} > /tmp/{TICKER}_raw.json
 ```
 **Expected Output**: A JSON object containing `metrics`, `financials`, `estimates`, and `profile`.
 **Action**: If this fails, STOP and report the error to the user.
@@ -99,23 +100,36 @@ Use human-readable model names in `aiThesis.model` for clear identification in t
 
 This ensures the My Projections modal displays: "AI Analysis (Claude Sonnet 4.5)" instead of "AI Analysis (claude-sonnet-4.5)".
 
-## Step 6: Persist via API
-Save the projection to the backend using `curl`.
+## Step 6: Persist Findings
+
+Choose one of the following methods to save your projection.
+
+### Option A: CLI (Fast Path) — Recommended
+Directly writes to the backend data store. Does not require the API server to be running.
 
 ```bash
 # Write payload to temp file first
-echo '<JSON_PAYLOAD>' > /tmp/{TICKER}_projection.json
+cat > /tmp/{TICKER}_projection.json << 'EOF'
+<JSON_PAYLOAD>
+EOF
 
-# POST to API
-curl -X POST http://localhost:3001/api/projections \
+# Pipe to persistence script
+# Use --replace to overwrite existing entry for this model
+cat /tmp/{TICKER}_projection.json | python3 tools/investment-screener/backend/py_services/persist_projection.py
+```
+
+### Option B: Web API (Slow Path)
+Requires the backend server to be running on localhost:3000.
+
+```bash
+curl -X POST http://localhost:3000/api/projections \
   -H "Content-Type: application/json" \
   -d @/tmp/{TICKER}_projection.json
 ```
 
 **Handling Responses**:
-*   **200 OK**: Success. Report findings to user.
-*   **400 Bad Request**: Validation error. Log it, fix the payload, and retry ONCE.
-*   **409 Conflict**: Version mismatch. In this workflow (creating new), this shouldn't happen, but if it does, generate a new ID and retry.
+*   **Success**: Script/API returns success message or 200 OK.
+*   **Error**: Script/API logs validation errors. Fix payload and retry.
 
 ## Step 7: Report Findings
 Summarize your analysis to the user:
