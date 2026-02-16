@@ -98,7 +98,7 @@ def scan_workflows():
     workflows = []
     # Only scan markdown files, ignore slash commands definition if using disparate system
     # Assuming all .md in .agent/workflows are valid
-    for f in sorted(WORKFLOWS_DIR.glob("*.md")):
+    for f in sorted(WORKFLOWS_DIR.rglob("*.md")):
         try:
             content = f.read_text(encoding='utf-8')
             meta = parse_frontmatter(content)

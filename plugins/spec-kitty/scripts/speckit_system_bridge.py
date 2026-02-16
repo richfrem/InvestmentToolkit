@@ -140,7 +140,9 @@ def sync_antigravity(workflows, rules):
     for filename, content in workflows.items():
         fixed_content = content.replace('--actor "windsurf"', '--actor "antigravity"')
         fixed_content = fixed_content.replace('(Missing script command for sh)', 'spec-kitty')
-        (AGENT_DIR / "workflows" / filename).write_text(fixed_content, encoding="utf-8")
+        target_subdir = AGENT_DIR / "workflows" / "spec-kitty"
+        target_subdir.mkdir(parents=True, exist_ok=True)
+        (target_subdir / filename).write_text(fixed_content, encoding="utf-8")
         
     print(f"   ✅ Synced {len(rules)-1 if 'constitution' in rules else len(rules)} rules (skipped constitution) and {len(workflows)} workflows.")
 

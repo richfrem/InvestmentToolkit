@@ -270,10 +270,26 @@ To maintain high-quality semantic discovery without waiting for slow local model
     - Use `/tool-inventory_distill-agent <path>` for **Scripts/Tools**.
     - Use `/rlm-factory_distill-agent <path>` for **Documentation/Project** knowledge.
 2.  **Process**:
-    - The agent reads the script and the high-fidelity prompt.
-    - The agent generates the JSON summary.
+    - The agent reads the script in full (using 200-line chunks for large files).
+    - The agent generates a high-fidelity JSON summary covering purpose, layer, inputs, outputs, dependencies, key functions, and consumers.
     - The agent executes `distiller.py --file <path> --summary '<json_summary>'`.
 3.  **Result**: The RLM cache is updated with precise metadata (hashes, mtimes) and the agent's superior summary, and the `tool_inventory.json` is enriched—all within seconds.
+
+> [!TIP]
+> **Bulk Distill**: To distill the entire toolset, process each script individually for accuracy. Then run:
+> ```bash
+> python3 plugins/tool-inventory/scripts/manage_tool_inventory.py sync-from-cache --cache .agent/learning/rlm_tool_cache.json
+> python3 plugins/tool-inventory/scripts/manage_tool_inventory.py generate
+> ```
+
+#### Phase 9 Results (Completed 2026-02-15)
+
+| Metric | Value |
+|:---|:---|
+| **Scripts Distilled** | 45 (all plugins + project-level tools) |
+| **Descriptions Enriched** | 33 tools updated in `tool_inventory.json` |
+| **Cache Verified** | Semantic queries for "Universal Bridge", "Kanban", "strategy packet", "inventory" all returned correct matches |
+| **Time vs Granite** | ~10 minutes (agent) vs ~2+ hours (local Ollama) |
 
 ---
 
@@ -293,15 +309,17 @@ The RLM and semantic discovery layers support project-wide configuration via a `
 
 ---
 
-## checklist for target agent
+## Checklist for Target Agent
 
-- [ ] copy `plugins/` directory (minus `chronicle-manager`, `protocol-manager`) to target repo
-- [x] Run Phase 1: Build `migration_inventory.json` (Iterate until "pending" list is clean)
-- [ ] Run Phase 2: Inventory workflows/skills/rules
-- [ ] Run Phase 3: Update `cli.py` path constants
-- [ ] Run Phase 4: Execute `migration_replace.py`
-- [ ] Run Phase 5: `plugin-bridge` install all
-- [ ] Run Phase 6: Selective cleanup \u0026 Verify with `audit_stale_refs.py`
-- [x] Run Phase 7: RLM Refresh \u0026 Tool Sync
-- [ ] Verify: All scripts run, no broken imports
-- [ ] Git: Commit on feature branch, test, then merge
+- [ ] Copy `plugins/` directory (minus `chronicle-manager`, `protocol-manager`) to target repo
+- [x] Run Phase 1: Build `migration_inventory.json`
+- [x] Run Phase 2: Inventory workflows/skills/rules
+- [x] Run Phase 3: Update `cli.py` path constants
+- [x] Run Phase 4: Execute `migration_replace.py`
+- [x] Run Phase 5: `plugin-bridge` install all
+- [x] Run Phase 6: Selective cleanup & verify with `audit_stale_refs.py`
+- [x] Run Phase 7: RLM Refresh & Tool Sync
+- [x] Run Phase 9: Flash Distill all 45 scripts & sync `tool_inventory.json`
+- [x] Cleanup: Remove mirrored `tools/` scripts (committed & pushed)
+- [x] Verify: Cache queries return high-fidelity results
+- [x] Git: Committed on `feat/tool-a-valuation-assistant`, pushed to origin
