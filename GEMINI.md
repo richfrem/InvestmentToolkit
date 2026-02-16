@@ -64,7 +64,7 @@ Any operation that:
 ## IV. Tool Discovery & Usage
 - **NEVER** use `grep` / `find` / `ls -R` for tool discovery.
 - **fallback IS PROHIBITED**: If `query_cache.py` fails, you MUST STOP and ask user to refresh cache.
-- **ALWAYS** use **Tool Discovery**: `python tools/retrieve/rlm/query_cache.py`. It's your `.agent/skills/SKILL.md`
+- **ALWAYS** use **Tool Discovery**: `python plugins/rlm-factory/scripts/query_cache.py`. It's your `.agent/skills/SKILL.md`
 - **ALWAYS** use defined **Slash Commands** (`/workflow-*`, `/spec-kitty.ty.*`) over raw scripts.
 - **ALWAYS** use underlying `.sh` scripts e.g. (`scripts/bash/sanctuary-start.sh`, `scripts/bash/sanctuary-learning-loop.sh`) and the `tools/cli.py` and `tools/orchestrator/workflow_manager.py`
 
@@ -164,10 +164,10 @@ trigger: always_on
 
 ### Non-Negotiables
 1. **No filesystem search for tools** — `grep`, `find`, `ls -R` are **forbidden** for tool discovery.
-2. **Always use `query_cache.py`** — `python tools/retrieve/rlm/query_cache.py --type tool "KEYWORD"`.
+2. **Always use `query_cache.py`** — `python plugins/rlm-factory/scripts/query_cache.py --type tool "KEYWORD"`.
 3. **Fallback prohibited** — if no results, run `python tools/codify/rlm/refresh_cache.py` and retry. Do **not** fall back to shell.
 4. **Late-bind** — after finding a tool, read its header (`view_file` first 200 lines) before executing.
-5. **Register new tools** — `python tools/curate/inventories/manage_tool_inventory.py add --path "tools/..."`.
+5. **Register new tools** — `python plugins/tool-inventory/scripts/manage_tool_inventory.py add --path "tools/..."`.
 6. **Stop-and-Fix** — if a tool is imperfect, fix it. Do not bypass with raw shell commands.
 
 --- RULE: 01_PROCESS/workflow_artifacts_integrity.md ---
@@ -271,7 +271,7 @@ All agent interactions MUST be mediated by **Slash Commands** (`.agent/workflows
 ## Registration (MANDATORY after creating/modifying workflows or tools)
 ```bash
 python tools/curate/documentation/workflow_inventory_manager.py --scan
-python tools/curate/inventories/manage_tool_inventory.py add --path <path>
+python plugins/tool-inventory/scripts/manage_tool_inventory.py add --path <path>
 ```
 
 ## Workflow File Standards
@@ -320,7 +320,7 @@ trigger: manual
 
 ## 📝 Coding Conventions (Summary)
 
-**Full standards → `.agent/skills/coding-conventions/SKILL.md`**
+**Full standards → `plugins/coding-conventions/skills/conventions-agent/SKILL.md`**
 
 ### Non-Negotiables
 1. **Dual-layer docs** — external comment above + internal docstring inside every non-trivial function/class.
@@ -339,7 +339,7 @@ trigger: manual
 
 ## 🐍 Python Dependency Rules (Summary)
 
-**Full workflow details → `.agent/skills/dependency-management/SKILL.md`**
+**Full workflow details → `plugins/dependency-management/skills/dependency-agent/SKILL.md`**
 
 ### Non-Negotiables
 1. **No manual `pip install`** — all changes go through `.in` → `pip-compile` → `.txt`.
@@ -411,7 +411,7 @@ Any operation that:
 ## IV. Tool Discovery & Usage
 - **NEVER** use `grep` / `find` / `ls -R` for tool discovery.
 - **fallback IS PROHIBITED**: If `query_cache.py` fails, you MUST STOP and ask user to refresh cache.
-- **ALWAYS** use **Tool Discovery**: `python tools/retrieve/rlm/query_cache.py`. It's your `.agent/skills/SKILL.md`
+- **ALWAYS** use **Tool Discovery**: `python plugins/rlm-factory/scripts/query_cache.py`. It's your `.agent/skills/SKILL.md`
 - **ALWAYS** use defined **Slash Commands** (`/workflow-*`, `/spec-kitty.ty.*`) over raw scripts.
 - **ALWAYS** use underlying `.sh` scripts e.g. (`scripts/bash/sanctuary-start.sh`, `scripts/bash/sanctuary-learning-loop.sh`) and the `tools/cli.py` and `tools/orchestrator/workflow_manager.py`
 
