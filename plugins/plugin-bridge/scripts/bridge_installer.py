@@ -90,10 +90,12 @@ def install_antigravity(plugin_path: Path, root: Path, metadata: dict):
     # 1. Workflows (Commands)
     commands_dir = plugin_path / "commands"
     if commands_dir.exists():
+        plugin_wf_dir = target_wf / plugin_name
+        plugin_wf_dir.mkdir(parents=True, exist_ok=True)
         for f in commands_dir.glob("*.md"):
             content = f.read_text()
             content = transform_content(content, "antigravity")
-            dest = target_wf / f"{plugin_name}_{f.name}" # Namespace conflict prevention
+            dest = plugin_wf_dir / f"{plugin_name}_{f.name}" # Namespace conflict prevention
             dest.write_text(content)
             print(f"    -> Workflow: {dest.relative_to(root)}")
 

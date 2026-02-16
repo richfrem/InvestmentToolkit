@@ -1,7 +1,7 @@
 # Antigravity Workflow Inventory
 
-> **Generated:** 2026-02-15 16:30
-> **Total Workflows:** 72
+> **Generated:** 2026-02-15 18:47
+> **Total Workflows:** 63
 
 
 ## Track: Factory
@@ -35,6 +35,7 @@
 | `/plugin-bridge_install` | - | "Install an Agent Plugin into the local environment(s)" | - |
 | `/rlm-factory_audit` | - | Audit RLM cache coverage — compare ledger against filesystem (offline) | - |
 | `/rlm-factory_cleanup` | - | Clean stale and orphan entries from the RLM cache (offline) | - |
+| `/rlm-factory_distill-agent` | - | High-speed RLM distillation of project documentation using agentic intelligence. | - |
 | `/rlm-factory_distill` | - | Distill repository files into semantic summaries using Ollama (requires Ollama running) | - |
 | `/rlm-factory_query` | - | Search the RLM cache for file summaries by keyword (offline — no Ollama needed) | - |
 | `/spec-kitty.accept` | - | Validate feature readiness and guide final acceptance steps. | - |
@@ -51,26 +52,16 @@
 | `/spec-kitty.specify` | - | Create or update the feature specification from a natural language feature description. | - |
 | `/spec-kitty.status` | - | Display kanban board status showing work package progress across lanes (planned/doing/for_review/done). | - |
 | `/spec-kitty.tasks` | - | Generate grouped work packages with actionable subtasks and matching prompt files for the feature in one pass. | - |
-| `/spec-kitty_accept` | - | Validate feature readiness — all WPs must be done | - |
-| `/spec-kitty_implement` | - | Create isolated worktree for a work package | - |
-| `/spec-kitty_merge` | - | Automated batch merge of all WP worktrees into main | - |
-| `/spec-kitty_plan` | - | Generate implementation plan from specification | - |
-| `/spec-kitty_review` | - | Submit work package for review and move to for_review lane | - |
-| `/spec-kitty_specify` | - | Create or update feature specification from natural language | - |
-| `/spec-kitty_status` | - | Show kanban board — work package progress across lanes | - |
-| `/spec-kitty_sync-rules` | - | Sync rules only — propagate .agent/rules to all agents | - |
-| `/spec-kitty_sync-skills` | - | Sync skills only — distribute agent skills to all agents | - |
-| `/spec-kitty_sync-workflows` | - | Sync workflows only — update workflow definitions for all agents | - |
-| `/spec-kitty_sync` | - | Run Universal Bridge sync — propagate rules, workflows, and skills to all AI agents | - |
-| `/spec-kitty_tasks` | - | Generate work packages (WPs) with subtasks and prompt files | - |
-| `/spec-kitty_verify` | - | Verify bridge integrity — check that agent configs match Source of Truth | - |
+| `/stock-valuation_evaluate-stock` | - | "Stock ticker symbol (e.g. NVDA, AAPL)" | - |
 | `/task-manager_board` | - | Show the kanban board overview | - |
 | `/task-manager_create` | - | Create a new task on the kanban board | - |
 | `/task-manager_list` | - | List tasks or filter by lane status | - |
 | `/task-manager_move` | - | Move a task between kanban lanes | - |
+| `/thesis-balancer_review-portfolio` | - | "Thesis UUID to evaluate against. If omitted, uses the active thesis." | - |
 | `/tool-inventory_add` | - | Register a new tool in the inventory (auto-extracts docstring, triggers ChromaDB upsert) | - |
 | `/tool-inventory_audit` | - | Audit inventory — find missing files, untracked scripts, and ChromaDB coverage gaps | - |
 | `/tool-inventory_discover` | - | Discover untracked scripts and auto-create stub entries | - |
+| `/tool-inventory_distill-agent` | - | High-speed high-fidelity RLM distillation of a tool script using agentic intelligence. | - |
 | `/tool-inventory_generate` | - | Generate TOOL_INVENTORY.md documentation from the JSON registry | - |
 | `/tool-inventory_list` | - | List all registered tools in the inventory | - |
 | `/tool-inventory_manage` | - | Full tool update workflow — register, distill, generate docs, audit, verify | - |
@@ -113,6 +104,7 @@
 | `/rlm-factory_audit` | Factory | Audit RLM cache coverage — compare ledger against filesystem (offline) |
 | `/rlm-factory_cleanup` | Factory | Clean stale and orphan entries from the RLM cache (offline) |
 | `/rlm-factory_distill` | Factory | Distill repository files into semantic summaries using Ollama (requires Ollama running) |
+| `/rlm-factory_distill-agent` | Factory | High-speed RLM distillation of project documentation using agentic intelligence. |
 | `/rlm-factory_query` | Factory | Search the RLM cache for file summaries by keyword (offline — no Ollama needed) |
 | `/spec-kitty.accept` | Factory | Validate feature readiness and guide final acceptance steps. |
 | `/spec-kitty.analyze` | Factory | Perform a non-destructive cross-artifact consistency and quality analysis across spec.md, plan.md, and tasks.md after task generation. |
@@ -128,26 +120,16 @@
 | `/spec-kitty.specify` | Factory | Create or update the feature specification from a natural language feature description. |
 | `/spec-kitty.status` | Factory | Display kanban board status showing work package progress across lanes (planned/doing/for_review/done). |
 | `/spec-kitty.tasks` | Factory | Generate grouped work packages with actionable subtasks and matching prompt files for the feature in one pass. |
-| `/spec-kitty_accept` | Factory | Validate feature readiness — all WPs must be done |
-| `/spec-kitty_implement` | Factory | Create isolated worktree for a work package |
-| `/spec-kitty_merge` | Factory | Automated batch merge of all WP worktrees into main |
-| `/spec-kitty_plan` | Factory | Generate implementation plan from specification |
-| `/spec-kitty_review` | Factory | Submit work package for review and move to for_review lane |
-| `/spec-kitty_specify` | Factory | Create or update feature specification from natural language |
-| `/spec-kitty_status` | Factory | Show kanban board — work package progress across lanes |
-| `/spec-kitty_sync` | Factory | Run Universal Bridge sync — propagate rules, workflows, and skills to all AI agents |
-| `/spec-kitty_sync-rules` | Factory | Sync rules only — propagate .agent/rules to all agents |
-| `/spec-kitty_sync-skills` | Factory | Sync skills only — distribute agent skills to all agents |
-| `/spec-kitty_sync-workflows` | Factory | Sync workflows only — update workflow definitions for all agents |
-| `/spec-kitty_tasks` | Factory | Generate work packages (WPs) with subtasks and prompt files |
-| `/spec-kitty_verify` | Factory | Verify bridge integrity — check that agent configs match Source of Truth |
+| `/stock-valuation_evaluate-stock` | Factory | "Stock ticker symbol (e.g. NVDA, AAPL)" |
 | `/task-manager_board` | Factory | Show the kanban board overview |
 | `/task-manager_create` | Factory | Create a new task on the kanban board |
 | `/task-manager_list` | Factory | List tasks or filter by lane status |
 | `/task-manager_move` | Factory | Move a task between kanban lanes |
+| `/thesis-balancer_review-portfolio` | Factory | "Thesis UUID to evaluate against. If omitted, uses the active thesis." |
 | `/tool-inventory_add` | Factory | Register a new tool in the inventory (auto-extracts docstring, triggers ChromaDB upsert) |
 | `/tool-inventory_audit` | Factory | Audit inventory — find missing files, untracked scripts, and ChromaDB coverage gaps |
 | `/tool-inventory_discover` | Factory | Discover untracked scripts and auto-create stub entries |
+| `/tool-inventory_distill-agent` | Factory | High-speed high-fidelity RLM distillation of a tool script using agentic intelligence. |
 | `/tool-inventory_generate` | Factory | Generate TOOL_INVENTORY.md documentation from the JSON registry |
 | `/tool-inventory_list` | Factory | List all registered tools in the inventory |
 | `/tool-inventory_manage` | Factory | Full tool update workflow — register, distill, generate docs, audit, verify |
