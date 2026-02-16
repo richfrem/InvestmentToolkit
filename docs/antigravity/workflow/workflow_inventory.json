@@ -1,7 +1,7 @@
 {
   "metadata": {
-    "generatedAt": "2026-02-15T18:47:16.474012",
-    "count": 63,
+    "generatedAt": "2026-02-15T18:52:52.876458",
+    "count": 68,
     "source": ".agent/workflows"
   },
   "workflows": [
@@ -440,6 +440,56 @@
       "filename": "spec-kitty.tasks.md",
       "path": ".agent/workflows/spec-kitty/spec-kitty.tasks.md",
       "description": "Generate grouped work packages with actionable subtasks and matching prompt files for the feature in one pass.",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_sync-rules",
+      "filename": "spec-kitty_sync-rules.md",
+      "path": ".agent/workflows/spec-kitty/spec-kitty_sync-rules.md",
+      "description": "Sync rules only \u2014 propagate .agent/rules to all agents",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_sync-skills",
+      "filename": "spec-kitty_sync-skills.md",
+      "path": ".agent/workflows/spec-kitty/spec-kitty_sync-skills.md",
+      "description": "Sync skills only \u2014 distribute agent skills to all agents",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_sync-workflows",
+      "filename": "spec-kitty_sync-workflows.md",
+      "path": ".agent/workflows/spec-kitty/spec-kitty_sync-workflows.md",
+      "description": "Sync workflows only \u2014 update workflow definitions for all agents",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_sync",
+      "filename": "spec-kitty_sync.md",
+      "path": ".agent/workflows/spec-kitty/spec-kitty_sync.md",
+      "description": "Run Universal Bridge sync \u2014 propagate rules, workflows, and skills to all AI agents",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_verify",
+      "filename": "spec-kitty_verify.md",
+      "path": ".agent/workflows/spec-kitty/spec-kitty_verify.md",
+      "description": "Verify bridge integrity \u2014 check that agent configs match Source of Truth",
       "inputs": [],
       "tier": null,
       "track": "Factory",

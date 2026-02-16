@@ -21,6 +21,8 @@
 | `tool-inventory` | Tool registries + embedded ChromaDB for semantic discovery | ✅ (7) | chromadb |
 | `vector-db` | Semantic search via ChromaDB + Super-RAG context injection | ✅ (4) | chromadb, sentence-transformers |
 | `workflow-inventory` | Registry of official agent workflows and slash commands | ✅ (1) | None |
+| `stock-valuation` | AI-driven stock valuation (Bear/Base/Bull) with research reports | ✅ (1) | yfinance |
+| `thesis-balancer` | Portfolio health monitoring, drift analysis, thesis alignment | ❌ | None |
 
 > **ADR-021: Direct Plugin Execution**  
 > We no longer mirror scripts to the `tools/` folder. All tools are executed directly from their canonical `plugins/` locations. The `tools/` directory is reserved for project-level routers (like `cli.py`) and application-specific logic.
@@ -45,6 +47,47 @@ plugins/<name>/
 ├── docs/                    # Architecture diagrams, etc.
 └── README.md
 ```
+
+---
+
+## Workflow Directory Organization
+
+Workflows in `.agent/workflows/` are organized into **subdirectories matching their plugin name**.
+
+```
+.agent/workflows/
+├── adr-manager/
+│   ├── adr-manager_create.md
+│   └── adr-manager_list.md
+├── spec-kitty/              ← Managed by speckit_system_bridge.py
+│   ├── spec-kitty.accept.md
+│   ├── spec-kitty.implement.md
+│   └── ...
+├── stock-valuation/
+│   └── stock-valuation_evaluate-stock.md
+├── thesis-balancer/
+│   └── thesis-balancer_review-portfolio.md
+└── tool-inventory/
+    ├── tool-inventory_add.md
+    └── ...
+```
+
+### How Workflows Get There
+
+| Source | Mechanism | Output Directory |
+|:---|:---|:---|
+| `plugins/*/commands/*.md` | `bridge_installer.py` | `.agent/workflows/{plugin-name}/` |
+| `.windsurf/workflows/` (Spec Kitty CLI) | `speckit_system_bridge.py` | `.agent/workflows/spec-kitty/` |
+| Custom sync | `sync_workflows.py` | `.agent/workflows/{plugin-name}/` (recursive, skips `spec-kitty/`) |
+
+### Key Scripts Updated for Subdirectory Support
+
+| Script | Change |
+|:---|:---|
+| `workflow_inventory_manager.py` | `glob("*.md")` → `rglob("*.md")` |
+| `speckit_system_bridge.py` | Output path → `workflows/spec-kitty/` |
+| `bridge_installer.py` | Output path → `workflows/{plugin_name}/` |
+| `sync_workflows.py` | Already recursive ✅ |
 
 ---
 
@@ -306,6 +349,43 @@ The RLM and semantic discovery layers support project-wide configuration via a `
 
 > [!TIP]
 > Use `.env` to switch between models (e.g., `qwen2.5:7b`) or to redirect cache files to temporary locations during massive refactors.
+
+---
+
+## Project-Specific Plugins
+
+When applying this architecture to a **new project repo**, the portable plugins (listed in the catalog above) cover agent infrastructure. However, every project will have **domain-specific workflows** that need their own plugins.
+
+### Identifying Project-Specific Plugins
+
+Ask these questions when onboarding a new repo:
+
+1. **What domain workflows exist?** Scan `.agent/workflows/` and `.agent/skills/` for commands that are NOT covered by the portable plugin catalog.
+2. **What architecture docs exist?** Check `docs/architecture/` for design documents that should live alongside a plugin.
+3. **What application-specific scripts exist?** Look in `tools/` for scripts tied to the project's business logic (not agent infrastructure).
+
+### Example: InvestmentToolkit
+
+This project identified two domain plugins:
+
+| Plugin | Origin | Contains |
+|:---|:---|:---|
+| `stock-valuation` | `/evaluate-stock` workflow + `stock_valuation` skill + `docs/architecture/stock-valuation/` | Commands, skill, architecture docs |
+| `thesis-balancer` | `/review-portfolio` workflow + `thesis-balancer` skill + `docs/architecture/thesis-alignment-and-portfolio-valuation/` | Commands, skill, architecture docs |
+
+### Template: Creating a Project Plugin
+
+```bash
+mkdir -p plugins/{name}/commands plugins/{name}/skills/{name} plugins/{name}/docs
+# 1. Move workflow → plugins/{name}/commands/
+# 2. Move skill → plugins/{name}/skills/{name}/
+# 3. Move relevant architecture docs → plugins/{name}/docs/
+# 4. Create README.md
+# 5. Run bridge_installer.py to install into .agent/workflows/{name}/
+```
+
+> [!IMPORTANT]
+> **Portable vs Project-Specific**: Plugins like `spec-kitty`, `rlm-factory`, `tool-inventory` are **portable** across repos. Plugins like `stock-valuation` are **project-specific** and should NOT be copied to unrelated repos.
 
 ---
 
