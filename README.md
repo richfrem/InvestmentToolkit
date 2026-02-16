@@ -38,33 +38,61 @@ A professional-grade brokerage sync engine featuring:
 -   **Backend**: Node.js (Express), Python 3.11 (Bridge to `yfinance`).
 -   **Data**: `yfinance` & Questrade API (Dynamic Aggregation).
 
-## 🧠 AI Capabilities (Powered by Spec Kitty)
+## 🧠 AI Capabilities
 
-New powerful AI agents allow you to perform autonomous valuation and strategic portfolio review.
+Autonomous AI agents perform valuation and portfolio analysis, powered by the Plugin Architecture and Spec Kitty framework.
 
-### 1. Stock Valuation Analyst (Tool A)
+### 1. Stock Valuation Analyst (`plugins/stock-valuation`)
 An autonomous agent that acts as a buy-side analyst. It fetches real-time financial data, performs cognitive analysis, and generates a 3-scenario valuation model (Bear/Base/Bull) with a final "Buy/Sell/Hold" recommendation.
 
--   **Trigger**: `/evaluate-stock {TICKER}`
--   **Workflow**: [evaluate-stock.md](.agent/workflows/stock-and-portfolio-evaluation/evaluate-stock.md)
--   **Example**: `/evaluate-stock NVDA`
+-   **Trigger**: `/stock-valuation_evaluate-stock {TICKER}`
+-   **Plugin**: [`plugins/stock-valuation/`](plugins/stock-valuation/README.md)
 -   **Capabilities**:
     -   Fetches live financials via `yfinance`.
     -   Projects 5-year revenue, margins, and PE ratios.
     -   Calculates fair value and upside/downside.
+    -   Generates deep-dive research reports.
     -   Persists results to the Valuation Modeler.
--   **Architecture**: [Stock Valuation Architecture](docs/architecture/stock-valuation/valuation-persistence.md)
+    -   Interactive Q&A for assumption challenges and sensitivity analysis.
 
-### 2. Strategic Thesis Balancer (Tool B)
-A "Strategic Advisor" agent that monitors your portfolio's alignment with your core investment thesis. It detects drift, checks "Thesis Breakers" (e.g., price drops, news events), and recommends rebalancing trades.
+### 2. Strategic Thesis Balancer (`plugins/thesis-balancer`)
+A "Strategic Guardian" agent that monitors your portfolio's alignment with your core investment thesis. It detects drift, checks "Thesis Breakers", and recommends rebalancing trades.
 
--   **Trigger**: `/review-portfolio`
--   **Workflow**: [review-portfolio.md](.agent/workflows/stock-and-portfolio-evaluation/review-portfolio.md)
+-   **Trigger**: `/thesis-balancer_review-portfolio`
+-   **Plugin**: [`plugins/thesis-balancer/`](plugins/thesis-balancer/README.md)
 -   **Capabilities**:
     -   **Drift Analysis**: Calculates deviation from target weights (Pillar & Holding level).
-    -   **Strategic Review**: Qualitative analysis of "Deployment Conflicts" and "Thesis Breakers" using LLM intelligence.
-    -   **Auto-Rebalancing**: Generates atomic trade instructions to restore alignment.
--   **Architecture**: [Thesis Alignment & Portfolio Valuation](docs/architecture/thesis-alignment-and-portfolio-valuation/tool_b_implementation_brief.md)
+    -   **Strategic Review**: Classifies drift as passive or active, confirms intent before optimizing.
+    -   **Conflict Detection**: Flags when Tool A (valuation) and thesis disagree on a holding.
+    -   **Thesis Evolution**: Supports updating thesis targets when conviction changes.
+
+## 🔌 Plugin Architecture
+
+All agent tooling is organized as portable plugins in `plugins/`. Each plugin contains commands, skills, scripts, and documentation.
+
+```
+plugins/
+├── adr-manager/          # Architecture Decision Records
+├── agent-orchestrator/   # Dual-loop agent delegation
+├── claude-cli/           # Persona-based analysis via Claude
+├── code-snapshot/        # Token-counted context packages
+├── coding-conventions/   # Code standards & headers
+├── context-bundler/      # LLM context bundling
+├── dependency-management/# pip-compile workflow
+├── link-checker/         # Documentation link validation
+├── mermaid-export/       # Diagram rendering
+├── plugin-bridge/        # Universal agent installer
+├── rlm-factory/          # Semantic RLM distillation
+├── spec-kitty/           # Spec-Driven Development + Bridge
+├── stock-valuation/      # AI stock valuation (project-specific)
+├── task-manager/         # Kanban board
+├── thesis-balancer/      # Portfolio drift analysis (project-specific)
+├── tool-inventory/       # Tool registry + ChromaDB search
+├── vector-db/            # Semantic search via ChromaDB
+└── workflow-inventory/   # Workflow registry
+```
+
+Workflows are installed into `.agent/workflows/` in **subdirectories matching plugin names**. See [`plugins/MIGRATION_GUIDE.md`](plugins/MIGRATION_GUIDE.md) for full details.
 
 ## 🚀 Getting Started
 
@@ -85,4 +113,6 @@ This will automatically handle port conflicts, launch the backend API, and start
 ## 🤖 AI Development Framework
 This project utilizes the **Spec Kitty** framework to systematize AI agent workflows.
 -   **Specs**: Located in `kitty-specs/`.
--   **Agents**: Supports Gemini, Copilot, and Claude via the `tools/bridge/speckit_system_bridge.py` sync tool.
+-   **Plugins**: Located in `plugins/` — each plugin provides commands, skills, and scripts.
+-   **Agents**: Supports Antigravity, Gemini, Copilot, Claude, and GitHub Copilot via the `plugins/spec-kitty/scripts/speckit_system_bridge.py` sync tool.
+-   **Migration Guide**: See [`plugins/MIGRATION_GUIDE.md`](plugins/MIGRATION_GUIDE.md) for onboarding new repos.

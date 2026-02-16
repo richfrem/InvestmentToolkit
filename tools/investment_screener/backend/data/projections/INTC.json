@@ -1,0 +1,146 @@
+[
+  {
+    "ticker": "INTC",
+    "id": "e3e842b5-5009-409e-83b9-247112358f1d",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 6,
+    "savedAt": "2026-02-14T23:15:00.000Z",
+    "updatedAt": "2026-02-15T06:51:34.970923+00:00",
+    "name": "AI Deep Dive — INTC — 2026-02-14",
+    "rationale": "National Champion Thesis v6. Final synchronization. Bull case aligned to $143. Base to $64. Bear to $21.",
+    "snapshot": {
+      "price": 46.79,
+      "currency": "USD",
+      "shares": 4995000000,
+      "revenue": 52852998144,
+      "lastActualPS": 4.42,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 7.66,
+      "analystMarginEstimate": -0.5
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 5,
+        "netMargin": 15,
+        "exitPE": 18,
+        "qualityMultiplier": 1,
+        "shareChange": 1,
+        "rationale": "Govt floor prevents collapse. Slow growth (5%) and modest margins (15%) with utility-like multiple (18x).",
+        "scenarioPrice": 21.54,
+        "risks": [
+          "Stagnation"
+        ]
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 10,
+        "netMargin": 22,
+        "exitPE": 24,
+        "qualityMultiplier": 1.15,
+        "shareChange": 0,
+        "rationale": "Foundry wins + Govt backing. 10% growth, healthy margins (22%), tech-staple multiple (24x).",
+        "scenarioPrice": 64.25,
+        "risks": [
+          "Execution delay"
+        ]
+      },
+      "bull": {
+        "weight": 0.35,
+        "growthRate": 15,
+        "netMargin": 27,
+        "exitPE": 28,
+        "qualityMultiplier": 1.3,
+        "shareChange": -2,
+        "rationale": "14A AI Supercycle. 15% growth, premium margins (27%), AI-rated multiple (28x) + Strategic Premium.",
+        "scenarioPrice": 143.68,
+        "catalysts": [
+          "14A HVM",
+          "Hyperscaler Adoption"
+        ]
+      }
+    },
+    "aiThesis": {
+      "model": "Antigravity-Gemini3Pro",
+      "rationale": "Synchronized. The 'Government Put' lifts the Bear case floor ($21.54), while the 'AI Champion' status drives the Bull case to ~$144. Weighted Fair Value ~$83.51 offers +78% upside.",
+      "fairValue": 83.51,
+      "action": "STRONG BUY",
+      "analyzedAt": "2026-02-14T23:15:00.000Z",
+      "researchReport": "INTC_2026-02-14.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  },
+  {
+    "ticker": "INTC",
+    "id": "dcba83cf-9e59-4991-9588-a3914f14951f",
+    "source": "USER",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-02-15T15:25:31.502Z",
+    "updatedAt": "2026-02-15T15:25:31.503Z",
+    "name": "Debug Save Test",
+    "snapshot": {
+      "price": 50,
+      "currency": "USD",
+      "shares": 4000000000,
+      "revenue": 60000000000,
+      "lastActualPS": 5
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 5,
+        "netMargin": 10,
+        "exitPE": 10,
+        "qualityMultiplier": 0.9,
+        "shareChange": 0,
+        "moatScore": 1,
+        "managementScore": 1
+      },
+      "base": {
+        "weight": 0.5,
+        "growthRate": 10,
+        "netMargin": 15,
+        "exitPE": 15,
+        "qualityMultiplier": 1,
+        "shareChange": -1,
+        "moatScore": 2,
+        "managementScore": 2
+      },
+      "bull": {
+        "weight": 0.3,
+        "growthRate": 15,
+        "netMargin": 20,
+        "exitPE": 20,
+        "qualityMultiplier": 1.1,
+        "shareChange": -2,
+        "moatScore": 3,
+        "managementScore": 3
+      }
+    },
+    "aiThesis": {
+      "model": "debug-model",
+      "rationale": "Testing save with new fields",
+      "fairValue": 75,
+      "action": "BUY",
+      "analyzedAt": "2026-02-15T15:25:31.503Z",
+      "researchReport": "INTC_DEBUG.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

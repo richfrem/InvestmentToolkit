@@ -28,20 +28,20 @@ Ask the user:
 If creating a new bundle:
 // turbo
 ```bash
-python3 tools/retrieve/bundler/manifest_manager.py init --type [TYPE] --bundle-title "[Title]"
+python3 plugins/context-bundler/scripts/manifest_manager.py init --type [TYPE] --bundle-title "[Title]"
 ```
 
 ## Step 3: Add Files to Manifest (optional)
 To add files to the manifest (uses `files` array by default):
 // turbo
 ```bash
-python3 tools/retrieve/bundler/manifest_manager.py add --path "[file.md]" --note "Description of file"
+python3 plugins/context-bundler/scripts/manifest_manager.py add --path "[file.md]" --note "Description of file"
 ```
 
 To remove files:
 // turbo
 ```bash
-python3 tools/retrieve/bundler/manifest_manager.py remove --path "[file.md]"
+python3 plugins/context-bundler/scripts/manifest_manager.py remove --path "[file.md]"
 ```
 
 ## Step 4: Validate Manifest (recommended)
@@ -53,13 +53,13 @@ python3 tools/retrieve/bundler/validate.py [ManifestPath]
 ## Step 5: Execute Bundle
 // turbo
 ```bash
-python3 tools/retrieve/bundler/manifest_manager.py bundle -o [OutputPath]
+python3 plugins/context-bundler/scripts/manifest_manager.py bundle -o [OutputPath]
 ```
 
 Or directly with bundle.py:
 // turbo
 ```bash
-python3 tools/retrieve/bundler/bundle.py [ManifestPath] -o [OutputPath]
+python3 plugins/context-bundler/scripts/bundle.py [ManifestPath] -o [OutputPath]
 ```
 
 ## Step 6: Verification
