@@ -1,0 +1,99 @@
+[
+  {
+    "ticker": "CRWV",
+    "id": "a7e3c5d1-9f8b-4e2a-b6d4-3c1f7e8a2b5d",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-02-16T02:55:00.000Z",
+    "updatedAt": "2026-02-16T02:55:00.000Z",
+    "name": "AI Deep Dive \u2014 CRWV \u2014 2026-02-15",
+    "rationale": "CoreWeave is a GPU-cloud infrastructure company riding the GenAI capex wave. Revenue surged from $229M (2023) to $1.9B (2024 fiscal) to an estimated $4.3B TTM, representing 133% YoY growth. Analyst consensus projects $5.1B in 2025 and $12.0B in 2026. Gross margins of 73.9% are exceptional for infrastructure, though the company carries $18.8B in debt financing its GPU fleet. Operating income turned positive at $324M in 2024. The weighted fair value of $137.28 suggests significant upside from the current $96.04, contingent on sustaining demand and managing the debt load.",
+    "snapshot": {
+      "price": 96.04,
+      "currency": "USD",
+      "shares": 409.337,
+      "revenue": 4306.526,
+      "lastActualPS": 11.63,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 134.95,
+      "analystMarginEstimate": null
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 25.0,
+        "netMargin": 5.0,
+        "exitPE": 20.0,
+        "qualityMultiplier": 0.85,
+        "moatScore": 2,
+        "managementScore": 2,
+        "shareChange": 3.0,
+        "year5Revenue": 13142,
+        "year5NetIncome": 657,
+        "year5EPS": 1.38,
+        "scenarioPrice": 14.62,
+        "risks": [
+          "AI capex cycle ends abruptly \u2014 hyperscalers build in-house GPU capacity",
+          "Debt service ($18.8B) becomes unsustainable if revenue growth decelerates",
+          "Customer concentration risk with limited enterprise diversification"
+        ],
+        "rationale": "Assumes AI infrastructure demand normalizes as hyperscalers (AWS, GCP, Azure) expand their own GPU fleets, commoditizing CoreWeave's core offering. Revenue CAGR of 25% reflects significant deceleration from 133% current pace. Net margin of only 5% as heavy interest expense ($360M/yr) and depreciation ($863M/yr) absorb operating profit. Exit PE of 20x with 0.85 quality multiplier reflects a commoditized infrastructure provider. 3% annual dilution from convertible debt and equity raises to fund capex."
+      },
+      "base": {
+        "weight": 0.5,
+        "growthRate": 45.0,
+        "netMargin": 12.0,
+        "exitPE": 30.0,
+        "qualityMultiplier": 1.0,
+        "moatScore": 3,
+        "managementScore": 3,
+        "shareChange": 2.0,
+        "year5Revenue": 27601,
+        "year5NetIncome": 3312,
+        "year5EPS": 7.33,
+        "scenarioPrice": 136.6,
+        "risks": [
+          "Competition from Lambda, Together AI, and hyperscaler GPU-as-a-service",
+          "Enterprise AI workloads shift from training to inference, reducing GPU demand per customer"
+        ],
+        "rationale": "Revenue CAGR of 45% is well below the analyst consensus of 83% for next year but accounts for multi-year deceleration as the business scales past $20B. Net margin of 12% reflects improving operating leverage as GPU fleet depreciation stabilizes relative to revenue. CoreWeave's direct GPU access model and Kubernetes-native platform maintain differentiation vs. generic cloud. Exit PE of 30x appropriate for a high-growth infrastructure company at maturity. 2% annual dilution from ongoing equity compensation and debt conversion."
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 65.0,
+        "netMargin": 18.0,
+        "exitPE": 40.0,
+        "qualityMultiplier": 1.1,
+        "moatScore": 4,
+        "managementScore": 4,
+        "shareChange": 1.0,
+        "year5Revenue": 52541,
+        "year5NetIncome": 9457,
+        "year5EPS": 21.99,
+        "scenarioPrice": 602.47,
+        "risks": [
+          "Valuation re-rates sharply if growth disappoints even slightly at these multiples",
+          "Geopolitical disruption to NVIDIA GPU supply chain"
+        ],
+        "rationale": "Catalyst: Enterprise AI adoption enters sustained multi-year buildout phase. CoreWeave becomes the 'fourth hyperscaler' for GPU workloads, signing long-term contracts with Fortune 500 companies. Revenue CAGR of 65% assumes CoreWeave captures outsized share of the GPU cloud market as training and inference demand compounds. Net margin of 18% achievable through operating leverage on fixed GPU infrastructure. Exit PE of 40x with 1.10 quality multiplier reflects a differentiated platform with switching costs (Kubernetes integrations, data gravity). Annual share dilution drops to 1% as debt is serviced from cash flow."
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 2.5 Pro",
+      "rationale": "CoreWeave is the defining GPU-cloud pure-play of the GenAI era. Revenue has exploded from $16M (2022) to an estimated $4.3B TTM \u2014 an extraordinary trajectory driven by insatiable demand for NVIDIA GPU compute from AI labs and enterprises. Gross margins of 73.9% demonstrate pricing power, and operating income turned positive in 2024 at $324M. However, this growth is fueled by $18.8B in debt financing a massive GPU fleet, creating significant financial risk if the AI capex cycle slows. Analyst consensus projects $12B+ revenue by 2026, but the path to sustained profitability depends on whether CoreWeave can transition from a 'GPU landlord' to a platform with sticky enterprise relationships. At $96/share, the market is pricing in strong growth but not the full bull case. Our weighted fair value of $137.28 suggests meaningful upside, but with a reduced confidence score (0.55) reflecting the binary nature of the thesis: CoreWeave either becomes the AWS of AI, or gets commoditized when hyperscalers catch up.",
+      "fairValue": 137.28,
+      "action": "BUY",
+      "analyzedAt": "2026-02-16T02:55:00.000Z",
+      "researchReport": "CRWV_2026-02-15.md"
+    },
+    "globalSettings": {
+      "discountRate": 10.0,
+      "timeHorizon": 5
+    }
+  }
+]
