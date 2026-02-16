@@ -9,8 +9,8 @@ Purpose:
     Useful for troubleshooting cache path conflicts.
 
 Usage Examples:
-    python tools/rlm_factory/query_cache.py --help
-    python tools/rlm_factory/query_cache.py "Project Sanctuary"
+    python plugins/rlm-factory/scripts/query_cache.py --help
+    python plugins/rlm-factory/scripts/query_cache.py "Project Sanctuary"
 
 Input Files:
     - plugins/rlm-factory/resources/manifest-index.json

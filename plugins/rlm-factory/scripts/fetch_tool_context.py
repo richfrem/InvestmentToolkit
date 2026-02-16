@@ -8,7 +8,7 @@ Purpose:
     and formats it into an Agent-readable "Manual Page".
 
 Usage Examples:
-    python tools/rlm-factory/fetch_tool_context.py --file tools/tool-inventory/rlm_config.py
+    python plugins/rlm-factory/scripts/fetch_tool_context.py --file plugins/tool-inventory/scripts/rlm_config.py
 
 Output:
     Markdown-formatted technical specification:
@@ -93,12 +93,13 @@ def format_as_manual(file_path: str, data: dict):
 
 def main():
     parser = argparse.ArgumentParser(description="Fetch Tool Context from RLM Cache")
+    parser.add_argument("--type", choices=["project", "tool"], default="project", help="RLM Type (loads manifest from factory)")
     parser.add_argument("--file", required=True, help="Path to the tool script (e.g., tools/cli.py)")
     args = parser.parse_args()
     
     # Initialize RLM in "Tool" mode
     try:
-        config = RLMConfig(run_type="tool")
+        config = RLMConfig(run_type=args.type)
     except Exception as e:
         print(f"❌ Failed to initialize RLM Config: {e}")
         sys.exit(1)

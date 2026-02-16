@@ -7,7 +7,7 @@ argument-hint: "<WP-ID>"
 
 ## Step 1: Verify clean state
 ```bash
-python3 tools/orchestrator/verify_workflow_state.py --wp <WP-ID> --phase review
+python3 plugins/spec-kitty/scripts/verify_workflow_state.py --wp <WP-ID> --phase review
 ```
 
 ## Step 2: Move to for_review

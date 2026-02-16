@@ -9,8 +9,8 @@ Purpose:
 Layer: Curate / Rlm
 
 Usage Examples:
-    python tools/rlm_factory/cleanup_cache.py --help
-    python tools/rlm_factory/cleanup_cache.py --apply --prune-orphans
+    python plugins/rlm-factory/scripts/cleanup_cache.py --help
+    python plugins/rlm-factory/scripts/cleanup_cache.py --apply --prune-orphans
 
 Supported Object Types:
     - Generic
@@ -59,7 +59,7 @@ except ImportError:
 
 def main():
     parser = argparse.ArgumentParser(description="Clean up RLM cache.")
-    parser.add_argument("--type", choices=["sanctuary", "tool"], default="sanctuary", help="RLM Type (loads manifest from factory)")
+    parser.add_argument("--type", choices=["project", "tool"], default="project", help="RLM Type (loads manifest from factory)")
     parser.add_argument("--apply", action="store_true", help="Perform the deletion")
     parser.add_argument("--prune-orphans", action="store_true", help="Remove entries not matching manifest")
     parser.add_argument("--prune-failed", action="store_true", help="Remove entries with [DISTILLATION FAILED]")
@@ -163,9 +163,9 @@ def main():
         print(f"Found {remove_count} entries to remove (Stale + Orphans).")
         print("To actually remove these entries, run:")
         if args.prune_orphans:
-            print(f"  python tools/rlm_factory/cleanup_cache.py --apply --prune-orphans")
+            print(f"  python plugins/rlm-factory/scripts/cleanup_cache.py --apply --prune-orphans")
         else:
-            print(f"  python tools/rlm_factory/cleanup_cache.py --apply")
+            print(f"  python plugins/rlm-factory/scripts/cleanup_cache.py --apply")
 
 def remove_entry(run_type: str, file_path: str) -> bool:
     """

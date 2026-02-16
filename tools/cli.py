@@ -134,6 +134,7 @@ def main():
     tools_subparsers.add_parser("list", help="List all tools")
     t_search = tools_subparsers.add_parser("search", help="Search for tools")
     t_search.add_argument("keyword")
+    t_search.add_argument("--v", action="store_true", help="Verbose output")
 
     wf_parser = subparsers.add_parser("workflow", help="Agent Workflow Orchestration")
     wf_subparsers = wf_parser.add_subparsers(dest="workflow_action")
@@ -201,6 +202,7 @@ def main():
         cmd = [sys.executable, script, args.tools_action]
         if args.tools_action == "search":
             cmd.append(args.keyword)
+            if hasattr(args, 'v') and args.v: cmd.append("--v")
         subprocess.run(cmd)
 
     elif args.command == "workflow":

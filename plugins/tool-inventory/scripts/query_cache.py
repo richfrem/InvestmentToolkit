@@ -9,8 +9,8 @@ Purpose:
 Layer: Curate / Rlm
 
 Usage Examples:
-    python tools/tool_inventory/query_cache.py --help
-    python tools/tool_inventory/query_cache.py "DB Integration"
+    python plugins/tool-inventory/scripts/query_cache.py --help
+    python plugins/tool-inventory/scripts/query_cache.py "DB Integration"
 
 Supported Object Types:
     - Generic
@@ -131,7 +131,7 @@ def list_cache(config: RLMConfig):
 def main():
     parser = argparse.ArgumentParser(description="Query RLM Cache")
     parser.add_argument("term", nargs="?", help="Search term (ID, filename, or content keyword)")
-    parser.add_argument("--type", choices=["legacy", "tool"], default="tool", help="RLM Type (loads manifest from factory)")
+    parser.add_argument("--type", choices=["project", "tool"], default="tool", help="RLM Type (loads manifest from factory)")
     parser.add_argument("--list", action="store_true", help="List all cached files")
     parser.add_argument("--no-summary", action="store_true", help="Hide summary text")
     parser.add_argument("--json", action="store_true", help="Output results as JSON")

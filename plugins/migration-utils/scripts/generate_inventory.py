@@ -44,7 +44,7 @@ KNOWN_MAPPINGS = {
     "tools/codify/diagrams/export_mmd_to_image.py": "plugins/mermaid-export/scripts/export_mmd_to_image.py",
 
     # Agent Orchestrator
-    "tools/orchestrator/agent_orchestrator.py": "plugins/agent-orchestrator/scripts/agent_orchestrator.py", # inferred
+    "plugins/spec-kitty/scripts/agent_orchestrator.py": "plugins/agent-orchestrator/scripts/agent_orchestrator.py", # inferred
     
     # ADR Manager
     "tools/investigate/utils/next_number.py": "plugins/adr-manager/scripts/next_number.py",
@@ -182,7 +182,7 @@ def generate_inventory():
         # Skip cli.py and orchestrator/workflow_manager.py as they persist
         if rel_path == "tools/cli.py":
             continue
-        if rel_path == "tools/orchestrator/workflow_manager.py":
+        if rel_path == "plugins/spec-kitty/scripts/workflow_manager.py":
             continue
 
         # Skip explicit exclusions

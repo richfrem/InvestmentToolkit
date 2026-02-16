@@ -10,7 +10,8 @@ Purpose:
 Layer: Curate / Rlm
 
 Usage Examples:
-    python tools/tool-inventory/inventory.py
+Usage Examples:
+    python plugins/tool-inventory/scripts/inventory.py
 
 Supported Object Types:
     - RLM Cache (Tool)
