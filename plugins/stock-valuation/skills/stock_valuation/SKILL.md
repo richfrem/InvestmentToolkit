@@ -19,7 +19,7 @@ Execute the backend script to fetch raw financial data from Yahoo Finance.
 
 ```bash
 # Script takes TICKER as a positional arg and outputs JSON to stdout
-python3 tools/investment-screener/backend/py_services/fetch_financials.py {TICKER} > /tmp/{TICKER}_raw.json
+python3 tools/investment_screener/backend/py_services/fetch_financials.py {TICKER} > /tmp/{TICKER}_raw.json
 ```
 **Expected Output**: A JSON object containing `metrics`, `financials`, `estimates`, and `profile`.
 **Action**: If this fails, STOP and report the error to the user.
@@ -112,7 +112,7 @@ EOF
 
 # Pipe to persistence script
 # Use --replace to overwrite existing entry for this model
-cat /tmp/{TICKER}_projection.json | python3 tools/investment-screener/backend/py_services/persist_projection.py
+cat /tmp/{TICKER}_projection.json | python3 tools/investment_screener/backend/py_services/persist_projection.py
 ```
 
 ## Step 7: Generate Deep-Dive Research Report
@@ -124,9 +124,9 @@ After persisting the JSON projection, generate a rich, narrative markdown resear
 
 ### Persistence Command
 ```bash
-mkdir -p tools/investment-screener/backend/data/research
+mkdir -p tools/investment_screener/backend/data/research
 
-cat > tools/investment-screener/backend/data/research/{TICKER}_{YYYY-MM-DD}.md << 'REPORT_EOF'
+cat > tools/investment_screener/backend/data/research/{TICKER}_{YYYY-MM-DD}.md << 'REPORT_EOF'
 <MARKDOWN_CONTENT>
 REPORT_EOF
 

@@ -1,7 +1,7 @@
 # Antigravity Workflow Inventory
 
-> **Generated:** 2026-02-15 18:47
-> **Total Workflows:** 63
+> **Generated:** 2026-02-15 18:52
+> **Total Workflows:** 68
 
 
 ## Track: Factory
@@ -52,6 +52,11 @@
 | `/spec-kitty.specify` | - | Create or update the feature specification from a natural language feature description. | - |
 | `/spec-kitty.status` | - | Display kanban board status showing work package progress across lanes (planned/doing/for_review/done). | - |
 | `/spec-kitty.tasks` | - | Generate grouped work packages with actionable subtasks and matching prompt files for the feature in one pass. | - |
+| `/spec-kitty_sync-rules` | - | Sync rules only — propagate .agent/rules to all agents | - |
+| `/spec-kitty_sync-skills` | - | Sync skills only — distribute agent skills to all agents | - |
+| `/spec-kitty_sync-workflows` | - | Sync workflows only — update workflow definitions for all agents | - |
+| `/spec-kitty_sync` | - | Run Universal Bridge sync — propagate rules, workflows, and skills to all AI agents | - |
+| `/spec-kitty_verify` | - | Verify bridge integrity — check that agent configs match Source of Truth | - |
 | `/stock-valuation_evaluate-stock` | - | "Stock ticker symbol (e.g. NVDA, AAPL)" | - |
 | `/task-manager_board` | - | Show the kanban board overview | - |
 | `/task-manager_create` | - | Create a new task on the kanban board | - |
@@ -120,6 +125,11 @@
 | `/spec-kitty.specify` | Factory | Create or update the feature specification from a natural language feature description. |
 | `/spec-kitty.status` | Factory | Display kanban board status showing work package progress across lanes (planned/doing/for_review/done). |
 | `/spec-kitty.tasks` | Factory | Generate grouped work packages with actionable subtasks and matching prompt files for the feature in one pass. |
+| `/spec-kitty_sync` | Factory | Run Universal Bridge sync — propagate rules, workflows, and skills to all AI agents |
+| `/spec-kitty_sync-rules` | Factory | Sync rules only — propagate .agent/rules to all agents |
+| `/spec-kitty_sync-skills` | Factory | Sync skills only — distribute agent skills to all agents |
+| `/spec-kitty_sync-workflows` | Factory | Sync workflows only — update workflow definitions for all agents |
+| `/spec-kitty_verify` | Factory | Verify bridge integrity — check that agent configs match Source of Truth |
 | `/stock-valuation_evaluate-stock` | Factory | "Stock ticker symbol (e.g. NVDA, AAPL)" |
 | `/task-manager_board` | Factory | Show the kanban board overview |
 | `/task-manager_create` | Factory | Create a new task on the kanban board |
