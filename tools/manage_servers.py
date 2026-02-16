@@ -31,7 +31,7 @@ Key Functions:
 
 Related:
     - cli.py
-    - investment-screener/
+    - investment_screener/
 """
 
 import sys
@@ -102,8 +102,8 @@ def stop_servers(target: str = 'all') -> None:
     # 2. Path-based "Ghost Hunting" (Robust)
     # Check for any lingering node processes running from this workspace's toolkit folders
     try:
-        # We look for processes containing 'investment-screener' in their path
-        search_cmd = "ps aux | grep 'investment-screener' | grep -E 'node|vite|ts-node-dev' | grep -v grep | awk '{print $2}'"
+        # We look for processes containing 'investment_screener' in their path
+        search_cmd = "ps aux | grep 'investment_screener' | grep -E 'node|vite|ts-node-dev' | grep -v grep | awk '{print $2}'"
         ghost_pids = subprocess.check_output(search_cmd, shell=True).decode().strip().split('\n')
         ghost_pids = [int(p) for p in ghost_pids if p]
         
@@ -130,9 +130,9 @@ def start_servers(target: str = 'all', worktree_path: str = '.') -> None:
     print(f"🚀 Starting {target} servers in {base_path}...")
     
     # Verify toolkit source exists
-    screener_path = base_path / 'tools' / 'investment-screener'
+    screener_path = base_path / 'tools' / 'investment_screener'
     if not screener_path.exists():
-        print(f"❌ Error: 'tools/investment-screener' not found in {base_path}")
+        print(f"❌ Error: 'tools/investment_screener' not found in {base_path}")
         return
 
     targets = ['backend', 'frontend'] if target == 'all' else [target]
