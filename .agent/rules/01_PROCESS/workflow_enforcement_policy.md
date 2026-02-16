@@ -30,7 +30,7 @@ All agent interactions MUST be mediated by **Slash Commands** (`.agent/workflows
 ## Registration (MANDATORY after creating/modifying workflows or tools)
 ```bash
 python tools/curate/documentation/workflow_inventory_manager.py --scan
-python tools/curate/inventories/manage_tool_inventory.py add --path <path>
+python plugins/tool-inventory/scripts/manage_tool_inventory.py add --path <path>
 ```
 
 ## Workflow File Standards

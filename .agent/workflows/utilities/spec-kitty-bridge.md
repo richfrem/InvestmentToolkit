@@ -16,13 +16,13 @@ This workflow manages the synchronization between the Spec Kitty Source of Truth
 
 ### 1. `sync` (Default)
 Runs the **Universal Bridge Script**.
-- **Command**: `python3 tools/bridge/speckit_system_bridge.py`
+- **Command**: `python3 plugins/spec-kitty/scripts/speckit_system_bridge.py`
 - **Effect**: Updates everything (Workflows, Rules, Configs) for all agents.
 - **Use When**: You've made any changes to the framework or content.
 
 ### 2. `verify`
 Audits the bridge integrity.
-- **Command**: `python3 tools/bridge/verify_bridge_integrity.py`
+- **Command**: `python3 plugins/spec-kitty/scripts/verify_bridge_integrity.py`
 - **Effect**: Reports any discrepancies between Source and Target.
 - **Use When**: Troubleshooting missing commands or weird behavior.
 
@@ -36,10 +36,10 @@ Targeted syncs for specific resource types.
 
 1.  **Analyze Request**: Determine the desired action from the argument.
 2.  **Execute Command**:
-    -   If `sync`: `python3 tools/bridge/speckit_system_bridge.py`
-    -   If `verify`: `python3 tools/bridge/verify_bridge_integrity.py`
-    -   If `rules`: `python3 tools/bridge/sync_rules.py --all`
-    -   If `skills`: `python3 tools/bridge/sync_skills.py --all`
-    -   If `workflows`: `python3 tools/bridge/sync_workflows.py --all`
+    -   If `sync`: `python3 plugins/spec-kitty/scripts/speckit_system_bridge.py`
+    -   If `verify`: `python3 plugins/spec-kitty/scripts/verify_bridge_integrity.py`
+    -   If `rules`: `python3 plugins/spec-kitty/scripts/sync_rules.py --all`
+    -   If `skills`: `python3 plugins/spec-kitty/scripts/sync_skills.py --all`
+    -   If `workflows`: `python3 plugins/spec-kitty/scripts/sync_workflows.py --all`
 3.  **Report**: Output the result of the operation.
 4.  **Reminder**: If `sync` was run, remind the user to **RESTART THEIR IDE**.

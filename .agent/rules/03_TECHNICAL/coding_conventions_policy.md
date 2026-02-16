@@ -4,7 +4,7 @@ trigger: manual
 
 ## 📝 Coding Conventions (Summary)
 
-**Full standards → `.agent/skills/coding-conventions/SKILL.md`**
+**Full standards → `plugins/coding-conventions/skills/conventions-agent/SKILL.md`**
 
 ### Non-Negotiables
 1. **Dual-layer docs** — external comment above + internal docstring inside every non-trivial function/class.

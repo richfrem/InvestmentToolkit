@@ -51,22 +51,33 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
 # Import path resolver
+# Import path resolver
+# Located in plugins/context-bundler/scripts/path_resolver.py
+# Add spec-kitty scripts to path for specify_cli import
+SPECKIT_DIR = PROJECT_ROOT / "plugins" / "spec-kitty" / "scripts"
+if str(SPECKIT_DIR) not in sys.path:
+    sys.path.append(str(SPECKIT_DIR))
+
+CONTEXT_BUNDLER_SCRIPTS = PROJECT_ROOT / "plugins" / "context-bundler" / "scripts"
+if str(CONTEXT_BUNDLER_SCRIPTS) not in sys.path:
+    sys.path.append(str(CONTEXT_BUNDLER_SCRIPTS))
+
 try:
-    from tools.investigate.utils.path_resolver import resolve_path
+    from path_resolver import resolve_path
 except ImportError:
-    sys.path.append(str(PROJECT_ROOT))
-    from tools.investigate.utils.path_resolver import resolve_path
+    print(f"CRITICAL: Could not import path_resolver from {CONTEXT_BUNDLER_SCRIPTS}")
+    sys.exit(1)
 
 # Resolve Directories
-SHARED_DIR = Path(resolve_path("tools/shared"))
-RETRIEVE_DIR = Path(resolve_path("tools/retrieve/bundler"))
-VECTOR_TOOLS_DIR = Path(resolve_path("tools/retrieve/vector"))
-INVENTORIES_DIR = Path(resolve_path("tools/curate/inventories"))
-RLM_DIR = Path(resolve_path("tools/retrieve/rlm"))
-ORCHESTRATOR_DIR = Path(resolve_path("tools/orchestrator"))
+# SHARED_DIR removed (migrated)
+RETRIEVE_DIR = Path(resolve_path("plugins/context-bundler/scripts"))
+VECTOR_TOOLS_DIR = Path(resolve_path("plugins/vector-db/scripts"))
+INVENTORIES_DIR = Path(resolve_path("plugins/tool-inventory/scripts"))
+RLM_DIR = Path(resolve_path("plugins/rlm-factory/scripts"))
+ORCHESTRATOR_DIR = Path(resolve_path("plugins/agent-orchestrator/scripts"))
 
 # Add directories to sys.path
-for d in [SHARED_DIR, RETRIEVE_DIR, INVENTORIES_DIR, RLM_DIR, ORCHESTRATOR_DIR]:
+for d in [RETRIEVE_DIR, INVENTORIES_DIR, RLM_DIR, ORCHESTRATOR_DIR]:
     if str(d) not in sys.path:
         sys.path.append(str(d))
 
@@ -146,7 +157,7 @@ def main():
         subprocess.run(cmd)
 
     elif args.command == "ingest":
-        script = str(Path(resolve_path("tools/codify/vector")) / "ingest.py")
+        script = str(VECTOR_TOOLS_DIR / "ingest.py")
         cmd = [sys.executable, script]
         if args.full: cmd.append("--full")
         if args.incremental: cmd.append("--incremental")
@@ -162,7 +173,7 @@ def main():
         subprocess.run([sys.executable, str(RLM_DIR / "query_cache.py"), args.text])
 
     elif args.command == "vector-cleanup":
-        script = str(Path(resolve_path("tools/curate/vector")) / "cleanup.py")
+        script = str(VECTOR_TOOLS_DIR / "cleanup.py")
         cmd = [sys.executable, script]
         if args.apply: cmd.append("--apply")
         if args.prune_orphans: cmd.append("--prune-orphans")
