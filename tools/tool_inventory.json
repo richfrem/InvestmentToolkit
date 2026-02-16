@@ -1,450 +1,340 @@
 {
   "metadata": {
-    "last_updated": "2026-02-14T21:21:12.940760",
+    "last_updated": "2026-02-15T18:30:35.965537",
     "status": "Deduplicated"
   },
   "python": {
     "tools": {
-      "codify": [
+      "tool-inventory": [
         {
-          "name": "capture-code-snapshot.js",
-          "path": "tools/codify/utils/capture-code-snapshot.js",
-          "description": "Generates a single text file snapshot of code files for LLM context sharing.",
-          "last_updated": "2026-02-13T08:19:59.481349",
+          "name": "cleanup_cache.py",
+          "path": "plugins/tool-inventory/scripts/cleanup_cache.py",
+          "description": "cleanup_cache.py (CLI)",
+          "last_updated": "2026-02-15T16:59:56.340045",
           "compliance_status": "stub",
-          "header_style": "none"
-        },
-        {
-          "name": "debug_rlm.py",
-          "path": "tools/codify/rlm/debug_rlm.py",
-          "description": "Debug utility to inspect the RLMConfiguration state. Verifies path resolution, manifest loading, and environment variable overrides. Useful for troubleshooting cache path conflicts.",
-          "last_updated": "2026-02-13T08:19:59.479318",
-          "compliance_status": "stub",
-          "header_style": "minimal"
+          "header_style": "extended"
         },
         {
           "name": "distiller.py",
-          "path": "tools/codify/rlm/distiller.py",
-          "description": "Recursive summarization of repo content using Ollama.",
-          "last_updated": "2026-02-13T08:19:59.479262",
+          "path": "plugins/tool-inventory/scripts/distiller.py",
+          "description": "RLM Engine for recursive summarization of repository content using Ollama to build a semantic knowledge base.",
+          "last_updated": "2026-02-15T16:59:56.341970",
           "compliance_status": "stub",
           "header_style": "extended"
-        },
-        {
-          "name": "export_mmd_to_image.py",
-          "path": "tools/codify/diagrams/export_mmd_to_image.py",
-          "description": "Renders all .mmd files in docs/architecture_diagrams/ to PNG images. Run this script whenever diagrams are updated to regenerate images.",
-          "last_updated": "2026-02-13T08:19:59.479095",
-          "compliance_status": "stub",
-          "header_style": "minimal"
-        },
-        {
-          "name": "generate_todo_list.py",
-          "path": "tools/codify/tracking/generate_todo_list.py",
-          "description": "Creates a prioritized TODO list of forms pending AI analysis. Bubbles up Critical and High priority items based on workflow usage.",
-          "last_updated": "2026-02-13T08:19:59.477185",
-          "compliance_status": "stub",
-          "header_style": "basic"
-        },
-        {
-          "name": "ingest.py",
-          "path": "tools/codify/vector/ingest.py",
-          "description": "Vector Ingestion: Chunks code/docs and generates embeddings via ChromaDB.",
-          "last_updated": "2026-02-13T08:19:59.479367",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "ingest_code_shim.py",
-          "path": "tools/codify/vector/ingest_code_shim.py",
-          "description": "Shim for ingesting code files into Vector DB.",
-          "last_updated": "2026-02-13T08:19:59.479458",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "rlm_config.py",
-          "path": "tools/codify/rlm/rlm_config.py",
-          "description": "Centralized configuration and utility logic for the RLM Toolchain. Implement the 'Manifest Factory' pattern to dynamically resolve manifests and cache files based on the Analysis Type (Legacy vs Tool). This module is the Single Source of Truth for RLM logic.",
-          "last_updated": "2026-02-13T08:19:59.479213",
-          "compliance_status": "stub",
-          "header_style": "minimal"
-        }
-      ],
-      "investigate": [
-        {
-          "name": "next_number.py",
-          "path": "tools/investigate/utils/next_number.py",
-          "description": "Next Number Generator\nReturns the next available number for any artifact type with sequential IDs.",
-          "last_updated": "2026-02-13T08:19:59.480695",
-          "compliance_status": "stub",
-          "header_style": "minimal"
-        },
-        {
-          "name": "path_resolver.py",
-          "path": "tools/investigate/utils/path_resolver.py",
-          "description": "Standardizes cross-platform path resolution and provides access to the Master Object Collection.",
-          "last_updated": "2026-02-13T08:19:59.480640",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "rlmConfigResolver.js",
-          "path": "tools/investigate/utils/rlmConfigResolver.js",
-          "description": "Resolve the RLM Cache Path for a given type ('legacy' or 'tool')",
-          "last_updated": "2026-02-13T08:33:52.147058",
-          "compliance_status": "stub",
-          "header_style": "none"
-        },
-        {
-          "name": "test_infrastructure.py",
-          "path": "tools/investigate/utils/test_infrastructure.py",
-          "description": "Verifies the Hybrid Discovery Tooling (Method A/B/C) on sample artifacts.",
-          "last_updated": "2026-02-13T08:19:59.477295",
-          "compliance_status": "stub",
-          "header_style": "minimal"
-        }
-      ],
-      "root": [
-        {
-          "name": "__init__.py",
-          "path": "tools/__init__.py",
-          "description": "TBD",
-          "last_updated": "2026-02-13T08:19:59.477555",
-          "compliance_status": "stub",
-          "header_style": "none"
-        },
-        {
-          "name": "cli.py",
-          "path": "tools/cli.py",
-          "description": "Main entry point for the Antigravity Command System. Provides unified access to all core operations including vector database management, context bundling, analysis, business rules, and workflow orchestration.",
-          "last_updated": "2026-02-13T08:19:59.477715",
-          "compliance_status": "stub",
-          "header_style": "basic"
-        },
-        {
-          "name": "extract_portfolio_symbols.py",
-          "path": "tools/extract_portfolio_symbols.py",
-          "description": "Extracts stock symbols from portfolio Excel file",
-          "last_updated": "2026-02-13T08:34:45.776222",
-          "compliance_status": "stub",
-          "header_style": "minimal"
-        },
-        {
-          "name": "manage_servers.py",
-          "path": "tools/manage_servers.py",
-          "description": "Smart server management for Spec Kitty worktrees. It allows starting, stopping and restarting servers running on specific ports.",
-          "last_updated": "2026-02-13T08:35:49.757621",
-          "compliance_status": "stub",
-          "header_style": "minimal"
-        }
-      ],
-      "bridge": [
-        {
-          "name": "speckit_system_bridge.py",
-          "path": "tools/bridge/speckit_system_bridge.py",
-          "description": "Bridges the Antigravity IDE configuration (.agent/) to the Gemini CLI (.gemini/). This script is the 'System Sync' mechanism that ensures the CLI always respects the project's Single Source of Truth.",
-          "last_updated": "2026-02-13T08:19:59.477959",
-          "compliance_status": "stub",
-          "header_style": "basic"
-        },
-        {
-          "name": "sync_rules.py",
-          "path": "tools/bridge/sync_rules.py",
-          "description": "Synchronizes specific rule files from .agent/rules/ into the monolithic configuration files for other agents (Claude, Gemini, Copilot).",
-          "last_updated": "2026-02-13T08:36:44.985738",
-          "compliance_status": "stub",
-          "header_style": "minimal"
-        },
-        {
-          "name": "sync_skills.py",
-          "path": "tools/bridge/sync_skills.py",
-          "description": "Synchronizes skill directories from .agent/skills/ to the native skill locations expected by each AI agent (Claude Code, Copilot, and Gemini). It adheres to the Agent Skills specification, ensuring that skills are not dumped into monolithic config files for better progressive disclosure and context management.",
-          "last_updated": "2026-02-13T08:37:40.954545",
-          "compliance_status": "stub",
-          "header_style": "minimal"
-        },
-        {
-          "name": "sync_workflows.py",
-          "path": "tools/bridge/sync_workflows.py",
-          "description": "Synchronizes custom workflow definitions from .agent/workflows/ to other agent configuration directories (Claude, Copilot).",
-          "last_updated": "2026-02-13T08:38:27.132851",
-          "compliance_status": "stub",
-          "header_style": "minimal"
-        },
-        {
-          "name": "verify_bridge_integrity.py",
-          "path": "tools/bridge/verify_bridge_integrity.py",
-          "description": "Audits the 'Dual Tri Bridge' synchronization. Verifies that every artifact in .agent/ is correctly represented in: 1. .gemini/ (CLI) and 2. .github/ (Copilot).",
-          "last_updated": "2026-02-13T08:19:59.478035",
-          "compliance_status": "stub",
-          "header_style": "basic"
-        }
-      ],
-      "utils": [
-        {
-          "name": "__init__.py",
-          "path": "tools/utils/__init__.py",
-          "description": "TBD",
-          "last_updated": "2026-02-13T08:19:59.478210",
-          "compliance_status": "stub",
-          "header_style": "none"
-        },
-        {
-          "name": "path_resolver.py",
-          "path": "tools/utils/path_resolver.py",
-          "description": "Standardizes cross-platform path resolution and provides access to the Master Object Collection.",
-          "last_updated": "2026-02-13T08:39:07.899942",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        }
-      ],
-      "orchestrator": [
-        {
-          "name": "proof_check.py",
-          "path": "tools/orchestrator/proof_check.py",
-          "description": "Scans spec.md, plan.md, and tasks.md for file references and verifies each referenced file has been modified compared to origin/main. This tool prevents 'checkbox fraud' where an LLM marks tasks complete without actually making changes. It provides deterministic verification that work was done.",
-          "last_updated": "2026-02-13T08:40:37.281554",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "workflow_manager.py",
-          "path": "tools/orchestrator/workflow_manager.py",
-          "description": "Core logic for the 'Python Orchestrator' architecture (ADR-0030 v2/v3). Handles Git State checks, Context Alignment, Branch Creation & Naming, and Context Manifest Initialization. Acts as the single source of truth for 'Start Workflow' logic.",
-          "last_updated": "2026-02-13T08:19:59.478350",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        }
-      ],
-      "retrieve": [
-        {
-          "name": "bundle.py",
-          "path": "tools/retrieve/bundler/bundle.py",
-          "description": "Bundles multiple source files into a single Markdown 'Context Bundle' based on a JSON manifest.",
-          "last_updated": "2026-02-13T08:19:59.478807",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "fetch_tool_context.py",
-          "path": "tools/retrieve/rlm/fetch_tool_context.py",
-          "description": "Retrieves the 'Gold Standard' tool definition from the RLM Tool Cache and formats it into an Agent-readable 'Manual Page'.",
-          "last_updated": "2026-02-13T08:41:27.157363",
-          "compliance_status": "stub",
-          "header_style": "basic"
         },
         {
           "name": "inventory.py",
-          "path": "tools/retrieve/rlm/inventory.py",
-          "description": "RLM Auditor: Reports coverage of the semantic ledger against the filesystem. Uses the Shared RLMConfig to dynamically switch between 'Legacy' (Documentation) and 'Tool' (CLI) audit modes.",
-          "last_updated": "2026-02-13T08:19:59.478642",
+          "path": "plugins/tool-inventory/scripts/inventory.py",
+          "description": "RLM Auditor that reports the synchronization coverage of the semantic tool ledger against the actual plugin scripts on disk.",
+          "last_updated": "2026-02-15T18:20:54.833456",
           "compliance_status": "stub",
           "header_style": "minimal"
         },
         {
-          "name": "manifest_manager.py",
-          "path": "tools/retrieve/bundler/manifest_manager.py",
-          "description": "Handles initialization and modification of the context-manager manifest. Acts as the primary CLI for the Context Bundler.",
-          "last_updated": "2026-02-13T08:19:59.478874",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "query.py",
-          "path": "tools/retrieve/vector/query.py",
-          "description": "Vector Search: Semantic search interface for the ChromaDB collection.",
-          "last_updated": "2026-02-13T08:19:59.478698",
+          "name": "manage_tool_inventory.py",
+          "path": "plugins/tool-inventory/scripts/manage_tool_inventory.py",
+          "description": "Comprehensive CLI manager for Tool Inventories. Orchestrates CRUD operations on tool_inventory.json, triggers RLM distillation for consistency, and generates markdown documentation.",
+          "last_updated": "2026-02-15T18:23:03.798740",
           "compliance_status": "stub",
           "header_style": "extended"
         },
         {
           "name": "query_cache.py",
-          "path": "tools/retrieve/rlm/query_cache.py",
-          "description": "RLM Search: Instant O(1) semantic search of the ledger.",
-          "last_updated": "2026-02-13T08:19:59.478517",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        }
-      ],
-      "curate": [
-        {
-          "name": "check_broken_paths.py",
-          "path": "tools/curate/link-checker/check_broken_paths.py",
-          "description": "Inspector: Recursively scans documentation files for broken relative links.",
-          "last_updated": "2026-02-13T08:19:59.479886",
+          "path": "plugins/tool-inventory/scripts/query_cache.py",
+          "description": "RLM Search utility providing instant semantic search of the ledger by matching terms against file paths, summaries, or content hashes.",
+          "last_updated": "2026-02-15T18:21:11.971175",
           "compliance_status": "stub",
           "header_style": "extended"
         },
         {
-          "name": "cleanup.py",
-          "path": "tools/curate/vector/cleanup.py",
-          "description": "Vector Cleanup: Consistency check to remove stale chunks from DB.",
-          "last_updated": "2026-02-13T08:19:59.480576",
+          "name": "rlm_config.py",
+          "path": "plugins/tool-inventory/scripts/rlm_config.py",
+          "description": "Centralized configuration and utility logic for the RLM Toolchain. Implement the 'Manifest Factory' pattern (ADR-0024) to dynamically resolve manifests and cache files based on the Analysis Type (Legacy vs Tool). This module is the Single Source of Truth for RLM logic.",
+          "last_updated": "2026-02-15T16:59:56.341332",
           "compliance_status": "stub",
-          "header_style": "extended"
+          "header_style": "minimal"
         },
         {
-          "name": "cleanup_cache.py",
-          "path": "tools/curate/rlm/cleanup_cache.py",
-          "description": "RLM Cleanup: Removes stale and orphan entries from the Recursive Language Model ledger.",
-          "last_updated": "2026-02-13T08:42:28.402508",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "config_manager.py",
-          "path": "tools/curate/utils/config_manager.py",
-          "description": "Manages shared configuration settings",
-          "last_updated": "2026-02-13T08:19:59.480085",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "enrich_links_v2.py",
-          "path": "tools/curate/link-checker/enrich_links_v2.py",
-          "description": "Enriches markdown links using master object collection.",
-          "last_updated": "2026-02-13T08:43:49.901847",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "find_json_duplicates.py",
-          "path": "tools/curate/hygiene/find_json_duplicates.py",
-          "description": "Finds duplicate entries across JSON inventory files.",
-          "last_updated": "2026-02-13T08:19:59.480318",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "find_source_links.py",
-          "path": "tools/curate/link-checker/find_source_links.py",
-          "description": "Finds source file references in documentation.",
-          "last_updated": "2026-02-13T08:44:41.348745",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "fix_analysis_links.py",
-          "path": "tools/curate/link-checker/fix_analysis_links.py",
-          "description": "Fixes legacy analysis path references.",
-          "last_updated": "2026-02-13T08:19:59.479678",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "fix_pdf_links.py",
-          "path": "tools/curate/link-checker/fix_pdf_links.py",
-          "description": "Scans markdown files and fixes broken PDF links by URL-encoding spaces.",
-          "last_updated": "2026-02-13T08:19:59.479995",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "manage_tool_inventory.py",
-          "path": "tools/curate/inventories/manage_tool_inventory.py",
-          "description": "Comprehensive manager for Tool Inventories. Supports list, add, update, remove, search, audit, and generate operations.",
-          "last_updated": "2026-02-13T08:19:59.480489",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "map_repository_files.py",
-          "path": "tools/curate/link-checker/map_repository_files.py",
-          "description": "Mapper: Indexes the entire repository to create a file inventory for link fixing.",
-          "last_updated": "2026-02-13T08:19:59.479796",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "organize_screenshots.py",
-          "path": "tools/curate/utils/organize_screenshots.py",
-          "description": "Organizes legacy Oracle screenshots into form-specific subdirectories.",
-          "last_updated": "2026-02-13T08:45:17.359029",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "smart_fix_links.py",
-          "path": "tools/curate/link-checker/smart_fix_links.py",
-          "description": "Fixer: Auto-corrects broken links using fuzzy matching against the file inventory.",
-          "last_updated": "2026-02-13T08:19:59.479744",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "standardize_manifests.py",
-          "path": "tools/curate/hygiene/standardize_manifests.py",
-          "description": "Ensures all base context-bundler manifests have a consistent structure by inserting the Context Bundler System Prompt as the first file entry. Iterates through base-*-file-manifest.json files and reorders entries as needed.",
-          "last_updated": "2026-02-13T08:19:59.480264",
-          "compliance_status": "stub",
-          "header_style": "extended"
-        },
-        {
-          "name": "workflow_inventory_manager.py",
-          "path": "tools/curate/documentation/workflow_inventory_manager.py",
-          "description": "Manages the workflow inventory for agent workflows (.agent/workflows/*.md). Provides search, scan, add, and update capabilities. Outputs are docs/antigravity/workflow/workflow_inventory.json and docs/antigravity/workflow/WORKFLOW_INVENTORY.md.",
-          "last_updated": "2026-02-13T08:19:59.479511",
+          "name": "tool_chroma.py",
+          "path": "plugins/tool-inventory/scripts/tool_chroma.py",
+          "description": "Embedded ChromaDB wrapper for the tool-inventory plugin, providing a dedicated vector store for semantic tool discovery.",
+          "last_updated": "2026-02-15T18:21:26.582256",
           "compliance_status": "stub",
           "header_style": "basic"
         }
       ],
       "investment-screener": [
         {
-          "name": "QuestradeDataEngine.py",
-          "path": "tools/investment-screener/backend/src/QuestradeDataEngine.py",
-          "description": "Core sync engine that coordinates token management, API retrieval, and portfolio aggregation.",
-          "last_updated": "2026-02-13T10:49:21.825991",
-          "compliance_status": "needs_review",
-          "header_style": "basic"
-        },
-        {
-          "name": "eslint.config.js",
-          "path": "tools/investment-screener/frontend/eslint.config.js",
-          "description": "This ESLint configuration file is used to define the rules and settings for linting TypeScript (TS) files in a project.",
-          "last_updated": "2026-02-13T08:46:00.897103",
-          "compliance_status": "stub",
-          "header_style": "none"
-        },
-        {
           "name": "fetch_financials.py",
           "path": "tools/investment-screener/backend/py_services/fetch_financials.py",
-          "description": "Fetches comprehensive financial data for a given ticker symbol. Provides fundamental metrics, analyst forecasts, historical trends, and expert scores (Rule of 40, Piotroski F-Score).",
-          "last_updated": "2026-02-13T08:47:27.522520",
+          "description": "fetch_financials.py",
+          "last_updated": "2026-02-15T16:59:56.340635",
           "compliance_status": "stub",
-          "header_style": "none"
+          "header_style": "extended"
         },
         {
           "name": "fetch_portfolio_heatmap.py",
           "path": "tools/investment-screener/backend/py_services/fetch_portfolio_heatmap.py",
-          "description": "Fetches portfolio data for treemap visualization. Calculates sector and industry allocations based on shares and current prices.",
-          "last_updated": "2026-02-13T08:48:23.948016",
+          "description": "fetch_portfolio_heatmap.py",
+          "last_updated": "2026-02-15T16:59:56.341627",
           "compliance_status": "stub",
-          "header_style": "minimal"
+          "header_style": "extended"
+        },
+        {
+          "name": "fetch_portfolio_snapshot.py",
+          "path": "tools/investment-screener/backend/py_services/fetch_portfolio_snapshot.py",
+          "description": "fetch_portfolio_snapshot.py",
+          "last_updated": "2026-02-15T16:59:56.341285",
+          "compliance_status": "stub",
+          "header_style": "basic"
         },
         {
           "name": "persist_projection.py",
           "path": "tools/investment-screener/backend/py_services/persist_projection.py",
-          "description": "Directly persists a stock valuation projection JSON object to the backend's data store, bypassing the API server. Handles validation, file locking, atomic writes, and versioning.",
-          "last_updated": "2026-02-14T21:21:12.940603",
-          "compliance_status": "needs_review",
+          "description": "persist_projection.py",
+          "last_updated": "2026-02-15T16:59:56.340163",
+          "compliance_status": "stub",
+          "header_style": "minimal"
+        }
+      ],
+      "context-bundler": [
+        {
+          "name": "bundle.py",
+          "path": "plugins/context-bundler/scripts/bundle.py",
+          "description": "Bundles multiple source files into a single Markdown Context Bundle based on a JSON manifest, supporting directory expansion and file tagging.",
+          "last_updated": "2026-02-15T18:21:57.662766",
+          "compliance_status": "stub",
+          "header_style": "extended"
+        },
+        {
+          "name": "manifest_manager.py",
+          "path": "plugins/context-bundler/scripts/manifest_manager.py",
+          "description": "Primary CLI for Context Bundler manifest management, handling initialization, adding/removing files, and invoking the bundling process.",
+          "last_updated": "2026-02-15T18:21:57.805386",
+          "compliance_status": "stub",
+          "header_style": "extended"
+        },
+        {
+          "name": "path_resolver.py",
+          "path": "plugins/context-bundler/scripts/path_resolver.py",
+          "description": "Standardizes path resolution across platforms and provides access to the Master Object Collection for artifact mapping.",
+          "last_updated": "2026-02-15T18:21:57.938938",
+          "compliance_status": "stub",
+          "header_style": "extended"
+        }
+      ],
+      "workflow-inventory": [
+        {
+          "name": "workflow_inventory_manager.py",
+          "path": "plugins/workflow-inventory/scripts/workflow_inventory_manager.py",
+          "description": "Inventory manager for agent workflows (.agent/workflows/*.md). Scans, parses frontmatter, and generates both a JSON registry and a human-readable WORKFLOW_INVENTORY.md.",
+          "last_updated": "2026-02-15T18:22:19.762865",
+          "compliance_status": "stub",
+          "header_style": "basic"
+        }
+      ],
+      "link-checker": [
+        {
+          "name": "check_broken_paths.py",
+          "path": "plugins/link-checker/scripts/check_broken_paths.py",
+          "description": "Recursively scans documentation files for broken relative links, ensuring documentation integrity and cross-referencing accuracy.",
+          "last_updated": "2026-02-15T18:21:58.068487",
+          "compliance_status": "stub",
+          "header_style": "extended"
+        },
+        {
+          "name": "map_repository_files.py",
+          "path": "plugins/link-checker/scripts/map_repository_files.py",
+          "description": "Mapper tool that indexes a directory structure to create a filename-to-path registry, enabling discovery and automated repair of relative documentation links.",
+          "last_updated": "2026-02-15T18:23:17.779373",
+          "compliance_status": "stub",
+          "header_style": "extended"
+        },
+        {
+          "name": "smart_fix_links.py",
+          "path": "plugins/link-checker/scripts/smart_fix_links.py",
+          "description": "Link Repair tool that auto-corrects broken documentation links using fuzzy matching against a pre-generated file inventory. Handles ambiguous matches and markups missing references.",
+          "last_updated": "2026-02-15T18:23:28.771012",
+          "compliance_status": "stub",
+          "header_style": "extended"
+        }
+      ],
+      "vector-db": [
+        {
+          "name": "cleanup.py",
+          "path": "plugins/vector-db/scripts/cleanup.py",
+          "description": "Vector Consistency tool that prunes stale chunks (missing files) and orphan chunks (excluded by manifest) from the ChromaDB collection.",
+          "last_updated": "2026-02-15T18:23:44.183622",
+          "compliance_status": "stub",
+          "header_style": "extended"
+        },
+        {
+          "name": "ingest.py",
+          "path": "plugins/vector-db/scripts/ingest.py",
+          "description": "Vector Ingestion engine that chunks code and documentation files, calculates embeddings via HuggingFace models, and persists them into ChromaDB. Supports Super-RAG context injection by prepending RLM summaries to document chunks.",
+          "last_updated": "2026-02-15T18:23:54.490978",
+          "compliance_status": "stub",
+          "header_style": "extended"
+        },
+        {
+          "name": "ingest_code_shim.py",
+          "path": "plugins/vector-db/scripts/ingest_code_shim.py",
+          "description": "Source Code Transformer that converts XML, SQL, JSON, Python, and JavaScript/TypeScript files into searchable Markdown. Specifically optimized for Oracle Forms XML and SQL definitions to enhance semantic search precision.",
+          "last_updated": "2026-02-15T18:24:02.517943",
+          "compliance_status": "stub",
+          "header_style": "extended"
+        },
+        {
+          "name": "query.py",
+          "path": "plugins/vector-db/scripts/query.py",
+          "description": "Vector Retrieval CLI providing a semantic search interface for the repository collection. Supports similarity-based document search, database statistics, and structured JSON output.",
+          "last_updated": "2026-02-15T18:24:02.654302",
+          "compliance_status": "stub",
+          "header_style": "extended"
+        }
+      ],
+      "rlm-factory": [
+        {
+          "name": "cleanup_cache.py",
+          "path": "plugins/rlm-factory/scripts/cleanup_cache.py",
+          "description": "RLM Cleanup utility to remove stale (missing files) and orphan (not in manifest) entries from the RLM ledger.",
+          "last_updated": "2026-02-15T18:18:13.777292",
+          "compliance_status": "stub",
+          "header_style": "extended"
+        },
+        {
+          "name": "distiller.py",
+          "path": "plugins/rlm-factory/scripts/distiller.py",
+          "description": "RLM Orchestration Engine that recursively summarizes repository contents using the Ollama API. Supports manifest-driven targeted distillation, incremental updates based on modification time, and agent-driven Flash Distill via summary injection.",
+          "last_updated": "2026-02-15T18:24:18.208908",
+          "compliance_status": "stub",
+          "header_style": "extended"
+        },
+        {
+          "name": "inventory.py",
+          "path": "plugins/rlm-factory/scripts/inventory.py",
+          "description": "RLM Audit utility that validates the coverage and consistency of the semantic ledger against the physical filesystem. Reports on missing files, stale cache entries, and overall coverage percentages.",
+          "last_updated": "2026-02-15T18:24:18.336841",
+          "compliance_status": "stub",
+          "header_style": "minimal"
+        },
+        {
+          "name": "query_cache.py",
+          "path": "plugins/rlm-factory/scripts/query_cache.py",
+          "description": "RLM Search Utility providing instant O(1) lookup of the semantic ledger. Enables keyword-based discovery across file paths, generated summaries, and content hashes for both project documentation and tool inventories.",
+          "last_updated": "2026-02-15T18:24:32.848820",
+          "compliance_status": "stub",
+          "header_style": "extended"
+        },
+        {
+          "name": "rlm_config.py",
+          "path": "plugins/rlm-factory/scripts/rlm_config.py",
+          "description": "Centralized configuration and utility logic for the RLM Toolchain. Implements the Manifest Factory pattern to resolve manifests and caches based on Analysis Type (Project vs. Tool).",
+          "last_updated": "2026-02-15T18:25:05.375982",
+          "compliance_status": "stub",
+          "header_style": "minimal"
+        }
+      ],
+      "code-snapshot": [
+        {
+          "name": "capture_code_snapshot.py",
+          "path": "plugins/code-snapshot/scripts/capture_code_snapshot.py",
+          "description": "A high-fidelity snapshotting engine that captures the \"Base Genome\" or specific project subfolders into consolidated Markdown documents for LLM ingestion. It generates role-specific \"Awakening Seeds\" to inoculate agents with strategic context.",
+          "last_updated": "2026-02-15T18:25:31.956284",
+          "compliance_status": "stub",
+          "header_style": "none"
+        },
+        {
+          "name": "logging_utils.py",
+          "path": "plugins/code-snapshot/scripts/logging_utils.py",
+          "description": "Shared logging utility designed for MCP servers and plugin scripts. It configures dual-output logging (Console + File) with environment-controlled persistence and standardized formatting.",
+          "last_updated": "2026-02-15T18:25:33.863554",
+          "compliance_status": "stub",
+          "header_style": "minimal"
+        },
+        {
+          "name": "snapshot_utils.py",
+          "path": "plugins/code-snapshot/scripts/snapshot_utils.py",
+          "description": "Core utility suite for the snapshot engine. Implements consolidated exclusion logic, token counting via tiktoken, GFM header generation, and the doctrinal prompt foundry for Awakening Seeds.",
+          "last_updated": "2026-02-15T18:25:33.997677",
+          "compliance_status": "stub",
+          "header_style": "minimal"
+        }
+      ],
+      "adr-manager": [
+        {
+          "name": "adr_manager.py",
+          "path": "plugins/adr-manager/scripts/adr_manager.py",
+          "description": "Create, list, search, and view Architecture Decision Records (ADRs) using a template and auto-incrementing IDs.",
+          "last_updated": "2026-02-15T18:20:38.674032",
+          "compliance_status": "stub",
           "header_style": "basic"
         },
         {
-          "name": "postcss.config.js",
-          "path": "tools/investment-screener/frontend/postcss.config.js",
-          "description": "This file is a PostCSS configuration file used to configure plugins for styling the frontend of an investment screener application.",
-          "last_updated": "2026-02-13T08:48:44.426956",
+          "name": "next_number.py",
+          "path": "plugins/adr-manager/scripts/next_number.py",
+          "description": "Sequential Identifier Generator that scans artifact directories (Specs, Tasks, ADRs) to find the next available ID, preventing collisions and allowing gap-filling.",
+          "last_updated": "2026-02-15T18:20:54.705057",
           "compliance_status": "stub",
-          "header_style": "none"
+          "header_style": "extended"
+        }
+      ],
+      "plugin-bridge": [
+        {
+          "name": "bridge_installer.py",
+          "path": "plugins/plugin-bridge/scripts/bridge_installer.py",
+          "description": "Universal Plugin Installer that deploys Agent Plugins (.claude-plugin structure) into target environments. It handles content transformation for platform-specific syntax (Antigravity, GitHub Copilot, Gemini) and manages namespacing to prevent command collisions.",
+          "last_updated": "2026-02-15T18:25:47.056739",
+          "compliance_status": "stub",
+          "header_style": "minimal"
+        }
+      ],
+      "mermaid-export": [
+        {
+          "name": "export_mmd_to_image.py",
+          "path": "plugins/mermaid-export/scripts/export_mmd_to_image.py",
+          "description": "A utility to render Mermaid (.mmd) diagrams into PNG or SVG images using mermaid-cli, supporting batch processing and timestamp-based obsolescence checks.",
+          "last_updated": "2026-02-15T18:19:45.325106",
+          "compliance_status": "stub",
+          "header_style": "minimal"
+        }
+      ],
+      "root": [
+        {
+          "name": "cli.py",
+          "path": "tools/cli.py",
+          "description": "Unified Command Router for the InvestmentToolkit system. Acts as the project-level entry point, coordinating vector database operations, context bundling, RLM searching, and agent workflow orchestration by dispatching commands to specialized plugin-resident scripts.",
+          "last_updated": "2026-02-15T18:26:45.304993",
+          "compliance_status": "stub",
+          "header_style": "basic"
         },
         {
-          "name": "tailwind.config.js",
-          "path": "tools/investment-screener/frontend/tailwind.config.js",
-          "description": "This file is a Tailwind CSS configuration for the investment-screener frontend project. It defines the content to be processed, extends the default theme with custom colors and fonts, and sets up plugins.",
-          "last_updated": "2026-02-13T08:49:18.276171",
+          "name": "manage_servers.py",
+          "path": "tools/manage_servers.py",
+          "description": "Infrastructure Management utility for the InvestmentToolkit development environment. Orchestrates the lifecycle of the Node.js backend and Vite frontend, manages process termination via port-affinity and ghost hunting, and provides CLI tools for Questrade token seeding and system status checks.",
+          "last_updated": "2026-02-15T18:26:58.104933",
           "compliance_status": "stub",
-          "header_style": "none"
+          "header_style": "extended"
+        }
+      ],
+      "task-manager": [
+        {
+          "name": "task_manager.py",
+          "path": "plugins/task-manager/scripts/task_manager.py",
+          "description": "Lightweight Kanban Task Manager that provides a JSON-backed board with lanes (backlog, todo, in-progress, done). It serves as a standalone, plugin-resident replacement for task tracking, featuring transition notes and rich metadata support.",
+          "last_updated": "2026-02-15T18:26:02.057557",
+          "compliance_status": "stub",
+          "header_style": "basic"
+        }
+      ],
+      "json-hygiene": [
+        {
+          "name": "find_json_duplicates.py",
+          "path": "plugins/json-hygiene/scripts/find_json_duplicates.py",
+          "description": "JSON Hygiene utility that detects duplicate keys in dictionary/map structures using a regex-based heuristic. Identifies potential data overwrites that standard JSON parsers would silently resolve by the \"last winner wins\" rule.",
+          "last_updated": "2026-02-15T18:26:12.509394",
+          "compliance_status": "stub",
+          "header_style": "basic"
         }
       ]
     }

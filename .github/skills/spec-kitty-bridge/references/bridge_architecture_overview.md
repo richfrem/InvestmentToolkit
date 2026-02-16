@@ -5,7 +5,7 @@
 -   **Upstream Source**: The `.kittify` and `.windsurf` directories (initialized by `spec-kitty`) provide the *framework* for agent coordination.
 -   **Role**: Spec Kitty provides the "operating system" for agents (Workflows, Missions, Memory), while the project code resides in `tools/investment-screener` and other directories.
 
-The **Bridge Script** (`tools/bridge/speckit_system_bridge.py`) acts as the "Universal Adapter," reading the framework's configuration and projecting it into the native formats required by specific AI tools (Antigravity, Gemini, Copilot, Claude).
+The **Bridge Script** (`plugins/spec-kitty/scripts/speckit_system_bridge.py`) acts as the "Universal Adapter," reading the framework's configuration and projecting it into the native formats required by specific AI tools (Antigravity, Gemini, Copilot, Claude).
 
 ## 2. Key Principles (from `AGENTS.md`)
 -   **Bring Your Own Agent (BYOA)**: Any developer can use their preferred assistant (Antigravity, Gemini, Copilot, Claude) and still access the same workflows and rules.
@@ -42,6 +42,6 @@ The script then generates the appropriate configuration for every supported agen
     *   **Instructions**: Rules concatenated into `.github/copilot-instructions.md`.
 
 ## 4. Automation & Workflows
-This bridge logic is encapsulated in the `tools/bridge/speckit_system_bridge.py` script.
--   **Usage**: Run `python3 tools/bridge/speckit_system_bridge.py` to sync all agents.
+This bridge logic is encapsulated in the `plugins/spec-kitty/scripts/speckit_system_bridge.py` script.
+-   **Usage**: Run `python3 plugins/spec-kitty/scripts/speckit_system_bridge.py` to sync all agents.
 -   **Visual**: See `tools/bridge/bridge_process.mmd` for a process diagram.

@@ -1,103 +1,115 @@
 # Tool Inventory
 
-> **Auto-generated:** 2026-02-13 08:21
+> **Auto-generated:** 2026-02-15 18:30
 > **Source:** [`tools/tool_inventory.json`](tools/tool_inventory.json)
 > **Regenerate:** `python tools/curate/inventories/manage_tool_inventory.py generate --inventory tools/tool_inventory.json`
 
 ---
 
-## 📁 Bridge
+## 📁 Adr-Manager
 
 | Script | Description |
 | :--- | :--- |
-| [`speckit_system_bridge.py`](tools/bridge/speckit_system_bridge.py) | Bridges the Antigravity IDE configuration (.agent/) to the Gemini CLI (.gemini/). This script is the 'System Sync' mechanism that ensures the CLI always respects the project's Single Source of Truth. |
-| [`sync_rules.py`](tools/bridge/sync_rules.py) | [DISTILLATION FAILED] |
-| [`sync_skills.py`](tools/bridge/sync_skills.py) | [DISTILLATION FAILED] |
-| [`sync_workflows.py`](tools/bridge/sync_workflows.py) | [DISTILLATION FAILED] |
-| [`verify_bridge_integrity.py`](tools/bridge/verify_bridge_integrity.py) | Audits the 'Dual Tri Bridge' synchronization. Verifies that every artifact in .agent/ is correctly represented in: 1. .gemini/ (CLI) and 2. .github/ (Copilot). |
+| [`adr_manager.py`](plugins/adr-manager/scripts/adr_manager.py) | Create, list, search, and view Architecture Decision Records (ADRs) using a template and auto-incrementing IDs. |
+| [`next_number.py`](plugins/adr-manager/scripts/next_number.py) | Sequential Identifier Generator that scans artifact directories (Specs, Tasks, ADRs) to find the next available ID, preventing collisions and allowing gap-filling. |
 
-## 📁 Codify
+## 📁 Code-Snapshot
 
 | Script | Description |
 | :--- | :--- |
-| [`capture-code-snapshot.js`](tools/codify/utils/capture-code-snapshot.js) | Generates a single text file snapshot of code files for LLM context sharing. |
-| [`debug_rlm.py`](tools/codify/rlm/debug_rlm.py) | Debug utility to inspect the RLMConfiguration state. Verifies path resolution, manifest loading, and environment variable overrides. Useful for troubleshooting cache path conflicts. |
-| [`distiller.py`](tools/codify/rlm/distiller.py) | Recursive summarization of repo content using Ollama. |
-| [`export_mmd_to_image.py`](tools/codify/diagrams/export_mmd_to_image.py) | Renders all .mmd files in docs/architecture_diagrams/ to PNG images. Run this script whenever diagrams are updated to regenerate images. |
-| [`generate_todo_list.py`](tools/codify/tracking/generate_todo_list.py) | Creates a prioritized TODO list of forms pending AI analysis. Bubbles up Critical and High priority items based on workflow usage. |
-| [`ingest.py`](tools/codify/vector/ingest.py) | Vector Ingestion: Chunks code/docs and generates embeddings via ChromaDB. |
-| [`ingest_code_shim.py`](tools/codify/vector/ingest_code_shim.py) | Shim for ingesting code files into Vector DB. |
-| [`rlm_config.py`](tools/codify/rlm/rlm_config.py) | Centralized configuration and utility logic for the RLM Toolchain. Implement the 'Manifest Factory' pattern to dynamically resolve manifests and cache files based on the Analysis Type (Legacy vs Tool). This module is the Single Source of Truth for RLM logic. |
+| [`capture_code_snapshot.py`](plugins/code-snapshot/scripts/capture_code_snapshot.py) | A high-fidelity snapshotting engine that captures the "Base Genome" or specific project subfolders into consolidated Markdown documents for LLM ingestion. It generates role-specific "Awakening Seeds" to inoculate agents with strategic context. |
+| [`logging_utils.py`](plugins/code-snapshot/scripts/logging_utils.py) | Shared logging utility designed for MCP servers and plugin scripts. It configures dual-output logging (Console + File) with environment-controlled persistence and standardized formatting. |
+| [`snapshot_utils.py`](plugins/code-snapshot/scripts/snapshot_utils.py) | Core utility suite for the snapshot engine. Implements consolidated exclusion logic, token counting via tiktoken, GFM header generation, and the doctrinal prompt foundry for Awakening Seeds. |
 
-## 📁 Curate
+## 📁 Context-Bundler
 
 | Script | Description |
 | :--- | :--- |
-| [`check_broken_paths.py`](tools/curate/link-checker/check_broken_paths.py) | Inspector: Recursively scans documentation files for broken relative links. |
-| [`cleanup.py`](tools/curate/vector/cleanup.py) | Vector Cleanup: Consistency check to remove stale chunks from DB. |
-| [`cleanup_cache.py`](tools/curate/rlm/cleanup_cache.py) | [DISTILLATION FAILED] |
-| [`config_manager.py`](tools/curate/utils/config_manager.py) | Manages shared configuration settings |
-| [`enrich_links_v2.py`](tools/curate/link-checker/enrich_links_v2.py) | [DISTILLATION FAILED] |
-| [`find_json_duplicates.py`](tools/curate/hygiene/find_json_duplicates.py) | Finds duplicate entries across JSON inventory files. |
-| [`find_source_links.py`](tools/curate/link-checker/find_source_links.py) | [DISTILLATION FAILED] |
-| [`fix_analysis_links.py`](tools/curate/link-checker/fix_analysis_links.py) | Fixes legacy analysis path references. |
-| [`fix_pdf_links.py`](tools/curate/link-checker/fix_pdf_links.py) | Scans markdown files and fixes broken PDF links by URL-encoding spaces. |
-| [`manage_tool_inventory.py`](tools/curate/inventories/manage_tool_inventory.py) | Comprehensive manager for Tool Inventories. Supports list, add, update, remove, search, audit, and generate operations. |
-| [`map_repository_files.py`](tools/curate/link-checker/map_repository_files.py) | Mapper: Indexes the entire repository to create a file inventory for link fixing. |
-| [`organize_screenshots.py`](tools/curate/utils/organize_screenshots.py) | [DISTILLATION FAILED] |
-| [`smart_fix_links.py`](tools/curate/link-checker/smart_fix_links.py) | Fixer: Auto-corrects broken links using fuzzy matching against the file inventory. |
-| [`standardize_manifests.py`](tools/curate/hygiene/standardize_manifests.py) | Ensures all base context-bundler manifests have a consistent structure by inserting the Context Bundler System Prompt as the first file entry. Iterates through base-*-file-manifest.json files and reorders entries as needed. |
-| [`workflow_inventory_manager.py`](tools/curate/documentation/workflow_inventory_manager.py) | Manages the workflow inventory for agent workflows (.agent/workflows/*.md). Provides search, scan, add, and update capabilities. Outputs are docs/antigravity/workflow/workflow_inventory.json and docs/antigravity/workflow/WORKFLOW_INVENTORY.md. |
-
-## 📁 Investigate
-
-| Script | Description |
-| :--- | :--- |
-| [`next_number.py`](tools/investigate/utils/next_number.py) | Next Number Generator Returns the next available number for any artifact type with sequential IDs. |
-| [`path_resolver.py`](tools/investigate/utils/path_resolver.py) | Standardizes cross-platform path resolution and provides access to the Master Object Collection. |
-| [`rlmConfigResolver.js`](tools/investigate/utils/rlmConfigResolver.js) | [DISTILLATION FAILED] |
-| [`test_infrastructure.py`](tools/investigate/utils/test_infrastructure.py) | Verifies the Hybrid Discovery Tooling (Method A/B/C) on sample artifacts. |
+| [`bundle.py`](plugins/context-bundler/scripts/bundle.py) | Bundles multiple source files into a single Markdown Context Bundle based on a JSON manifest, supporting directory expansion and file tagging. |
+| [`manifest_manager.py`](plugins/context-bundler/scripts/manifest_manager.py) | Primary CLI for Context Bundler manifest management, handling initialization, adding/removing files, and invoking the bundling process. |
+| [`path_resolver.py`](plugins/context-bundler/scripts/path_resolver.py) | Standardizes path resolution across platforms and provides access to the Master Object Collection for artifact mapping. |
 
 ## 📁 Investment-Screener
 
 | Script | Description |
 | :--- | :--- |
-| [`eslint.config.js`](tools/investment-screener/frontend/eslint.config.js) | [DISTILLATION FAILED] |
-| [`fetch_financials.py`](tools/investment-screener/backend/py_services/fetch_financials.py) | [DISTILLATION FAILED] |
-| [`fetch_portfolio_heatmap.py`](tools/investment-screener/backend/py_services/fetch_portfolio_heatmap.py) | [DISTILLATION FAILED] |
-| [`postcss.config.js`](tools/investment-screener/frontend/postcss.config.js) | [DISTILLATION FAILED] |
-| [`tailwind.config.js`](tools/investment-screener/frontend/tailwind.config.js) | [DISTILLATION FAILED] |
+| [`fetch_financials.py`](tools/investment-screener/backend/py_services/fetch_financials.py) | fetch_financials.py |
+| [`fetch_portfolio_heatmap.py`](tools/investment-screener/backend/py_services/fetch_portfolio_heatmap.py) | fetch_portfolio_heatmap.py |
+| [`fetch_portfolio_snapshot.py`](tools/investment-screener/backend/py_services/fetch_portfolio_snapshot.py) | fetch_portfolio_snapshot.py |
+| [`persist_projection.py`](tools/investment-screener/backend/py_services/persist_projection.py) | persist_projection.py |
 
-## 📁 Orchestrator
-
-| Script | Description |
-| :--- | :--- |
-| [`proof_check.py`](tools/orchestrator/proof_check.py) | [DISTILLATION FAILED] |
-| [`workflow_manager.py`](tools/orchestrator/workflow_manager.py) | Core logic for the 'Python Orchestrator' architecture (ADR-0030 v2/v3). Handles Git State checks, Context Alignment, Branch Creation & Naming, and Context Manifest Initialization. Acts as the single source of truth for 'Start Workflow' logic. |
-
-## 📁 Retrieve
+## 📁 Json-Hygiene
 
 | Script | Description |
 | :--- | :--- |
-| [`bundle.py`](tools/retrieve/bundler/bundle.py) | Bundles multiple source files into a single Markdown 'Context Bundle' based on a JSON manifest. |
-| [`fetch_tool_context.py`](tools/retrieve/rlm/fetch_tool_context.py) | [DISTILLATION FAILED] |
-| [`inventory.py`](tools/retrieve/rlm/inventory.py) | RLM Auditor: Reports coverage of the semantic ledger against the filesystem. Uses the Shared RLMConfig to dynamically switch between 'Legacy' (Documentation) and 'Tool' (CLI) audit modes. |
-| [`manifest_manager.py`](tools/retrieve/bundler/manifest_manager.py) | Handles initialization and modification of the context-manager manifest. Acts as the primary CLI for the Context Bundler. |
-| [`query.py`](tools/retrieve/vector/query.py) | Vector Search: Semantic search interface for the ChromaDB collection. |
-| [`query_cache.py`](tools/retrieve/rlm/query_cache.py) | RLM Search: Instant O(1) semantic search of the ledger. |
+| [`find_json_duplicates.py`](plugins/json-hygiene/scripts/find_json_duplicates.py) | JSON Hygiene utility that detects duplicate keys in dictionary/map structures using a regex-based heuristic. Identifies potential data overwrites that standard JSON parsers would silently resolve by the "last winner wins" rule. |
+
+## 🔗 Link-Checker
+
+| Script | Description |
+| :--- | :--- |
+| [`check_broken_paths.py`](plugins/link-checker/scripts/check_broken_paths.py) | Recursively scans documentation files for broken relative links, ensuring documentation integrity and cross-referencing accuracy. |
+| [`map_repository_files.py`](plugins/link-checker/scripts/map_repository_files.py) | Mapper tool that indexes a directory structure to create a filename-to-path registry, enabling discovery and automated repair of relative documentation links. |
+| [`smart_fix_links.py`](plugins/link-checker/scripts/smart_fix_links.py) | Link Repair tool that auto-corrects broken documentation links using fuzzy matching against a pre-generated file inventory. Handles ambiguous matches and markups missing references. |
+
+## 📁 Mermaid-Export
+
+| Script | Description |
+| :--- | :--- |
+| [`export_mmd_to_image.py`](plugins/mermaid-export/scripts/export_mmd_to_image.py) | A utility to render Mermaid (.mmd) diagrams into PNG or SVG images using mermaid-cli, supporting batch processing and timestamp-based obsolescence checks. |
+
+## 📁 Plugin-Bridge
+
+| Script | Description |
+| :--- | :--- |
+| [`bridge_installer.py`](plugins/plugin-bridge/scripts/bridge_installer.py) | Universal Plugin Installer that deploys Agent Plugins (.claude-plugin structure) into target environments. It handles content transformation for platform-specific syntax (Antigravity, GitHub Copilot, Gemini) and manages namespacing to prevent command collisions. |
+
+## 📁 Rlm-Factory
+
+| Script | Description |
+| :--- | :--- |
+| [`cleanup_cache.py`](plugins/rlm-factory/scripts/cleanup_cache.py) | RLM Cleanup utility to remove stale (missing files) and orphan (not in manifest) entries from the RLM ledger. |
+| [`distiller.py`](plugins/rlm-factory/scripts/distiller.py) | RLM Orchestration Engine that recursively summarizes repository contents using the Ollama API. Supports manifest-driven targeted distillation, incremental updates based on modification time, and agent-driven Flash Distill via summary injection. |
+| [`inventory.py`](plugins/rlm-factory/scripts/inventory.py) | RLM Audit utility that validates the coverage and consistency of the semantic ledger against the physical filesystem. Reports on missing files, stale cache entries, and overall coverage percentages. |
+| [`query_cache.py`](plugins/rlm-factory/scripts/query_cache.py) | RLM Search Utility providing instant O(1) lookup of the semantic ledger. Enables keyword-based discovery across file paths, generated summaries, and content hashes for both project documentation and tool inventories. |
+| [`rlm_config.py`](plugins/rlm-factory/scripts/rlm_config.py) | Centralized configuration and utility logic for the RLM Toolchain. Implements the Manifest Factory pattern to resolve manifests and caches based on Analysis Type (Project vs. Tool). |
 
 ## 🚀 Root
 
 | Script | Description |
 | :--- | :--- |
-| [`__init__.py`](tools/__init__.py) | TBD |
-| [`cli.py`](tools/cli.py) | Main entry point for the Antigravity Command System. Provides unified access to all core operations including vector database management, context bundling, analysis, business rules, and workflow orchestration. |
-| [`extract_portfolio_symbols.py`](tools/extract_portfolio_symbols.py) | [DISTILLATION FAILED] |
-| [`manage_servers.py`](tools/manage_servers.py) | [DISTILLATION FAILED] |
+| [`cli.py`](tools/cli.py) | Unified Command Router for the InvestmentToolkit system. Acts as the project-level entry point, coordinating vector database operations, context bundling, RLM searching, and agent workflow orchestration by dispatching commands to specialized plugin-resident scripts. |
+| [`manage_servers.py`](tools/manage_servers.py) | Infrastructure Management utility for the InvestmentToolkit development environment. Orchestrates the lifecycle of the Node.js backend and Vite frontend, manages process termination via port-affinity and ghost hunting, and provides CLI tools for Questrade token seeding and system status checks. |
 
-## 🛠️ Utils
+## 📁 Task-Manager
 
 | Script | Description |
 | :--- | :--- |
-| [`__init__.py`](tools/utils/__init__.py) | TBD |
-| [`path_resolver.py`](tools/utils/path_resolver.py) | [DISTILLATION FAILED] |
+| [`task_manager.py`](plugins/task-manager/scripts/task_manager.py) | Lightweight Kanban Task Manager that provides a JSON-backed board with lanes (backlog, todo, in-progress, done). It serves as a standalone, plugin-resident replacement for task tracking, featuring transition notes and rich metadata support. |
+
+## 📁 Tool-Inventory
+
+| Script | Description |
+| :--- | :--- |
+| [`cleanup_cache.py`](plugins/tool-inventory/scripts/cleanup_cache.py) | cleanup_cache.py (CLI) |
+| [`distiller.py`](plugins/tool-inventory/scripts/distiller.py) | RLM Engine for recursive summarization of repository content using Ollama to build a semantic knowledge base. |
+| [`inventory.py`](plugins/tool-inventory/scripts/inventory.py) | RLM Auditor that reports the synchronization coverage of the semantic tool ledger against the actual plugin scripts on disk. |
+| [`manage_tool_inventory.py`](plugins/tool-inventory/scripts/manage_tool_inventory.py) | Comprehensive CLI manager for Tool Inventories. Orchestrates CRUD operations on tool_inventory.json, triggers RLM distillation for consistency, and generates markdown documentation. |
+| [`query_cache.py`](plugins/tool-inventory/scripts/query_cache.py) | RLM Search utility providing instant semantic search of the ledger by matching terms against file paths, summaries, or content hashes. |
+| [`rlm_config.py`](plugins/tool-inventory/scripts/rlm_config.py) | Centralized configuration and utility logic for the RLM Toolchain. Implement the 'Manifest Factory' pattern (ADR-0024) to dynamically resolve manifests and cache files based on the Analysis Type (Legacy vs Tool). This module is the Single Source of Truth for RLM logic. |
+| [`tool_chroma.py`](plugins/tool-inventory/scripts/tool_chroma.py) | Embedded ChromaDB wrapper for the tool-inventory plugin, providing a dedicated vector store for semantic tool discovery. |
+
+## 📁 Vector-Db
+
+| Script | Description |
+| :--- | :--- |
+| [`cleanup.py`](plugins/vector-db/scripts/cleanup.py) | Vector Consistency tool that prunes stale chunks (missing files) and orphan chunks (excluded by manifest) from the ChromaDB collection. |
+| [`ingest.py`](plugins/vector-db/scripts/ingest.py) | Vector Ingestion engine that chunks code and documentation files, calculates embeddings via HuggingFace models, and persists them into ChromaDB. Supports Super-RAG context injection by prepending RLM summaries to document chunks. |
+| [`ingest_code_shim.py`](plugins/vector-db/scripts/ingest_code_shim.py) | Source Code Transformer that converts XML, SQL, JSON, Python, and JavaScript/TypeScript files into searchable Markdown. Specifically optimized for Oracle Forms XML and SQL definitions to enhance semantic search precision. |
+| [`query.py`](plugins/vector-db/scripts/query.py) | Vector Retrieval CLI providing a semantic search interface for the repository collection. Supports similarity-based document search, database statistics, and structured JSON output. |
+
+## 📁 Workflow-Inventory
+
+| Script | Description |
+| :--- | :--- |
+| [`workflow_inventory_manager.py`](plugins/workflow-inventory/scripts/workflow_inventory_manager.py) | Inventory manager for agent workflows (.agent/workflows/*.md). Scans, parses frontmatter, and generates both a JSON registry and a human-readable WORKFLOW_INVENTORY.md. |

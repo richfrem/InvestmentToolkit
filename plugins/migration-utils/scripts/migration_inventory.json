@@ -1,0 +1,194 @@
+{
+  "tools/__init__.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/bridge/speckit_system_bridge.py": {
+    "new_path": "plugins/spec-kitty/scripts/speckit_system_bridge.py",
+    "status": "pending"
+  },
+  "tools/bridge/sync_rules.py": {
+    "new_path": "plugins/spec-kitty/scripts/sync_rules.py",
+    "status": "pending"
+  },
+  "tools/bridge/sync_skills.py": {
+    "new_path": "plugins/spec-kitty/scripts/sync_skills.py",
+    "status": "pending"
+  },
+  "tools/bridge/sync_workflows.py": {
+    "new_path": "plugins/spec-kitty/scripts/sync_workflows.py",
+    "status": "pending"
+  },
+  "tools/bridge/verify_bridge_integrity.py": {
+    "new_path": "plugins/spec-kitty/scripts/verify_bridge_integrity.py",
+    "status": "pending"
+  },
+  "tools/codify/diagrams/export_mmd_to_image.py": {
+    "new_path": "plugins/mermaid-export/scripts/export_mmd_to_image.py",
+    "status": "pending"
+  },
+  "tools/codify/rlm/debug_rlm.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/codify/rlm/distiller.py": {
+    "new_path": "plugins/rlm-factory/scripts/distiller.py",
+    "status": "pending"
+  },
+  "tools/codify/rlm/rlm_config.py": {
+    "new_path": "plugins/tool-inventory/scripts/rlm_config.py",
+    "status": "pending"
+  },
+  "tools/codify/tracking/generate_todo_list.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/codify/vector/ingest.py": {
+    "new_path": "plugins/vector-db/scripts/ingest.py",
+    "status": "pending"
+  },
+  "tools/codify/vector/ingest_code_shim.py": {
+    "new_path": "plugins/vector-db/scripts/ingest_code_shim.py",
+    "status": "pending"
+  },
+  "tools/curate/documentation/workflow_inventory_manager.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/curate/hygiene/find_json_duplicates.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/curate/hygiene/standardize_manifests.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/curate/inventories/manage_tool_inventory.py": {
+    "new_path": "plugins/tool-inventory/scripts/manage_tool_inventory.py",
+    "status": "pending"
+  },
+  "tools/curate/link-checker/check_broken_paths.py": {
+    "new_path": "plugins/link-checker/scripts/check_broken_paths.py",
+    "status": "pending"
+  },
+  "tools/curate/link-checker/enrich_links_v2.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/curate/link-checker/find_source_links.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/curate/link-checker/fix_analysis_links.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/curate/link-checker/fix_pdf_links.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/curate/link-checker/map_repository_files.py": {
+    "new_path": "plugins/link-checker/scripts/map_repository_files.py",
+    "status": "pending"
+  },
+  "tools/curate/link-checker/smart_fix_links.py": {
+    "new_path": "plugins/link-checker/scripts/smart_fix_links.py",
+    "status": "pending"
+  },
+  "tools/curate/rlm/cleanup_cache.py": {
+    "new_path": "plugins/rlm-factory/scripts/cleanup_cache.py",
+    "status": "pending"
+  },
+  "tools/curate/utils/config_manager.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/curate/utils/organize_screenshots.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/curate/vector/cleanup.py": {
+    "new_path": "plugins/vector-db/scripts/cleanup.py",
+    "status": "pending"
+  },
+  "tools/extract_portfolio_symbols.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/investigate/utils/next_number.py": {
+    "new_path": "plugins/adr-manager/scripts/next_number.py",
+    "status": "pending"
+  },
+  "tools/investigate/utils/path_resolver.py": {
+    "new_path": "plugins/context-bundler/scripts/path_resolver.py",
+    "status": "pending"
+  },
+  "tools/investigate/utils/test_infrastructure.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/manage_servers.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/orchestrator/proof_check.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/retrieve/bundler/bundle.py": {
+    "new_path": "plugins/context-bundler/scripts/bundle.py",
+    "status": "pending"
+  },
+  "tools/retrieve/bundler/manifest_manager.py": {
+    "new_path": "plugins/context-bundler/scripts/manifest_manager.py",
+    "status": "pending"
+  },
+  "tools/retrieve/rlm/fetch_tool_context.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/retrieve/rlm/inventory.py": {
+    "new_path": "plugins/rlm-factory/scripts/inventory.py",
+    "status": "pending"
+  },
+  "tools/retrieve/rlm/query_cache.py": {
+    "new_path": "plugins/rlm-factory/scripts/query_cache.py",
+    "status": "pending"
+  },
+  "tools/retrieve/vector/query.py": {
+    "new_path": "plugins/vector-db/scripts/query.py",
+    "status": "pending"
+  },
+  "tools/utils/__init__.py": {
+    "new_path": null,
+    "status": "unmapped"
+  },
+  "tools/utils/path_resolver.py": {
+    "new_path": "plugins/context-bundler/scripts/path_resolver.py",
+    "status": "pending"
+  },
+  ".agent/skills/coding-conventions": {
+    "new_path": "plugins/coding-conventions/skills/conventions-agent",
+    "status": "pending"
+  },
+  ".agent/skills/coding-conventions/SKILL.md": {
+    "new_path": "plugins/coding-conventions/skills/conventions-agent/SKILL.md",
+    "status": "pending"
+  },
+  ".agent/skills/coding-conventions/references/header_templates.md": {
+    "new_path": "plugins/coding-conventions/skills/conventions-agent/references/header_templates.md",
+    "status": "pending"
+  },
+  ".agent/skills/dependency-management": {
+    "new_path": "plugins/dependency-management/skills/dependency-agent",
+    "status": "pending"
+  },
+  ".agent/skills/dependency-management/SKILL.md": {
+    "new_path": "plugins/dependency-management/skills/dependency-agent/SKILL.md",
+    "status": "pending"
+  },
+  ".agent/skills/dependency-management/references/policy_details.md": {
+    "new_path": "plugins/dependency-management/skills/dependency-agent/references/policy_details.md",
+    "status": "pending"
+  }
+}

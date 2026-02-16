@@ -14,7 +14,7 @@ Run this command to synchronize **everything** (Workflows, Rules, Configs) to al
 **When to use**: After editing `spec.md`, `tasks.md`, `constitution.md`, or creating new workflows.
 
 ```bash
-python3 tools/bridge/speckit_system_bridge.py
+python3 plugins/spec-kitty/scripts/speckit_system_bridge.py
 ```
 
 **What it does:**
@@ -27,7 +27,7 @@ Run this to check if the agent configurations match the Source of Truth.
 **When to use**: If an agent is behaving weirdly or missing a command.
 
 ```bash
-python3 tools/bridge/verify_bridge_integrity.py
+python3 plugins/spec-kitty/scripts/verify_bridge_integrity.py
 ```
 
 ### 3. Sync Supplemental Resources
@@ -35,29 +35,29 @@ Use these commands to sync specific resource types if you don't want a full brid
 
 **Sync Rules**:
 ```bash
-python3 tools/bridge/sync_rules.py --all
+python3 plugins/spec-kitty/scripts/sync_rules.py --all
 ```
 
 **Sync Skills**:
 ```bash
-python3 tools/bridge/sync_skills.py --all
+python3 plugins/spec-kitty/scripts/sync_skills.py --all
 ```
 
 **Sync Workflows**:
 ```bash
-python3 tools/bridge/sync_workflows.py --all
+python3 plugins/spec-kitty/scripts/sync_workflows.py --all
 ```
 
 ## Troubleshooting
 
 ### "Slash Command Missing"
 If a user says "I typed /foo but it does nothing":
-1.  Run `python3 tools/bridge/speckit_system_bridge.py` to regenerate the command files.
+1.  Run `python3 plugins/spec-kitty/scripts/speckit_system_bridge.py` to regenerate the command files.
 2.  **CRITICAL**: Tell the user to **RESTART THEIR IDE**. Slash commands are often loaded only at startup.
 
 ### "Agent Ignoring Rules"
 1.  Check `.kittify/memory/constitution.md` to ensure the rule exists in the Source of Truth.
-2.  Run `python3 tools/bridge/sync_rules.py --all`.
+2.  Run `python3 plugins/spec-kitty/scripts/sync_rules.py --all`.
 3.  Verify the output file for the specific agent (e.g., `GEMINI.md` or `.claude/CLAUDE.md`).
 
 ## Reference Architecture
