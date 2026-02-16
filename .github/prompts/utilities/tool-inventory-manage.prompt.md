@@ -21,7 +21,7 @@ inputs:
 ### Option A: CLI (Automated)
 // turbo
 ```bash
-python3 tools/curate/inventories/manage_tool_inventory.py add --path "[ToolPath]"
+python3 plugins/tool-inventory/scripts/manage_tool_inventory.py add --path "[ToolPath]"
 ```
 
 ### Option B: Manual Edit (For complex entries)
@@ -50,7 +50,7 @@ Edit `tools/tool_inventory.json` directly, adding an entry like:
 The inventory manager auto-triggers RLM distillation. To run manually:
 // turbo
 ```bash
-python3 tools/codify/rlm/distiller.py --file "[ToolPath]" --type tool
+python3 plugins/rlm-factory/scripts/distiller.py --file "[ToolPath]" --type tool
 ```
 
 ### Option B: Manual Edit (For precise control)
@@ -71,7 +71,7 @@ Edit `.agent/learning/rlm_tool_cache.json` directly, adding an entry like:
 Regenerate `tools/TOOL_INVENTORY.md` for human readability:
 // turbo
 ```bash
-python3 tools/curate/inventories/manage_tool_inventory.py generate --output tools/TOOL_INVENTORY.md
+python3 plugins/tool-inventory/scripts/manage_tool_inventory.py generate --output tools/TOOL_INVENTORY.md
 ```
 
 **Expected Output:** `✅ Generated Markdown: tools/TOOL_INVENTORY.md`
@@ -82,7 +82,7 @@ python3 tools/curate/inventories/manage_tool_inventory.py generate --output tool
 Verify no tools are missing from the inventory:
 // turbo
 ```bash
-python3 tools/curate/inventories/manage_tool_inventory.py audit
+python3 plugins/tool-inventory/scripts/manage_tool_inventory.py audit
 ```
 
 **Expected Output:** `✅ All tools registered` (or list of untracked tools to add)
@@ -93,7 +93,7 @@ python3 tools/curate/inventories/manage_tool_inventory.py audit
 Test that the tool is now discoverable via RLM:
 // turbo
 ```bash
-python3 tools/retrieve/rlm/query_cache.py --type tool "[keyword]"
+python3 plugins/rlm-factory/scripts/query_cache.py --type tool "[keyword]"
 ```
 
 **Expected Output:** Tool appears in search results
