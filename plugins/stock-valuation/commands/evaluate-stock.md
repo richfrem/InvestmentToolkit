@@ -22,7 +22,7 @@ args:
 ## Phase 2: Data Acquisition
 3.  **Fetch Financial Data**:
     ```bash
-    python3 tools/investment-screener/backend/py_services/fetch_financials.py {TICKER} > /tmp/{TICKER}_raw.json
+    python3 tools/investment_screener/backend/py_services/fetch_financials.py {TICKER} > /tmp/{TICKER}_raw.json
     ```
     *   **IF FAIL**: Stop and report error. Do not hallucinate data.
 
@@ -36,13 +36,13 @@ args:
 ## Phase 4: Persistence
 7.  **Save Projection JSON** (Skill Step 6):
     ```bash
-    cat /tmp/{TICKER}_projection.json | python3 tools/investment-screener/backend/py_services/persist_projection.py
+    cat /tmp/{TICKER}_projection.json | python3 tools/investment_screener/backend/py_services/persist_projection.py
     ```
 8.  **Generate Research Report** — rich narrative markdown (Skill Step 7):
     ```bash
-    mkdir -p tools/investment-screener/backend/data/research
+    mkdir -p tools/investment_screener/backend/data/research
     ```
-    Write to `tools/investment-screener/backend/data/research/{TICKER}_{YYYY-MM-DD}.md`.
+    Write to `tools/investment_screener/backend/data/research/{TICKER}_{YYYY-MM-DD}.md`.
     Set `aiThesis.researchReport` field to match the filename.
 
 ## Phase 5: Present & Discuss
@@ -81,7 +81,7 @@ args:
 | Skill Definition | `plugins/stock-valuation/skills/stock_valuation/SKILL.md` |
 | Analysis Prompt | `plugins/stock-valuation/skills/stock_valuation/references/analysis_prompt.md` |
 | Example Projection | `plugins/stock-valuation/skills/stock_valuation/references/example_NVDA.json` |
-| Fetch Script | `tools/investment-screener/backend/py_services/fetch_financials.py` |
-| Persist Script | `tools/investment-screener/backend/py_services/persist_projection.py` |
-| Projections Dir | `tools/investment-screener/backend/data/projections/` |
-| Research Dir | `tools/investment-screener/backend/data/research/` |
+| Fetch Script | `tools/investment_screener/backend/py_services/fetch_financials.py` |
+| Persist Script | `tools/investment_screener/backend/py_services/persist_projection.py` |
+| Projections Dir | `tools/investment_screener/backend/data/projections/` |
+| Research Dir | `tools/investment_screener/backend/data/research/` |

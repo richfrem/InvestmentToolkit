@@ -6,26 +6,34 @@
 
 | Command | Description |
 |:---|:---|
-| `/evaluate-stock {TICKER}` | Run full 7-phase autonomous valuation workflow |
+| `/stock-valuation_evaluate-stock {TICKER}` | Run full autonomous valuation workflow |
 
 ## Skill
 
 The `stock_valuation` skill provides the analysis framework, schema constraints, and reference prompts used by the agent during cognitive analysis.
 
+## External Dependencies (Web App Scripts)
+
+> **This plugin does NOT own these scripts.** They live inside the Investment Screener web app and are shared between the web app frontend/backend and this agent workflow. Do not move or duplicate them.
+
+| Script | Canonical Path | Purpose |
+|:---|:---|:---|
+| `fetch_financials.py` | `tools/investment_screener/backend/py_services/fetch_financials.py` | Fetches raw financial data from yfinance |
+| `persist_projection.py` | `tools/investment_screener/backend/py_services/persist_projection.py` | Saves projection JSON to the data directory |
+
+| Data Directory | Path |
+|:---|:---|
+| Projections | `tools/investment_screener/backend/data/projections/` |
+| Research Reports | `tools/investment_screener/backend/data/research/` |
+
 ## Architecture Docs
 
 | Document | Purpose |
 |:---|:---|
-| `README.md` | Valuation system overview |
-| `perform-stock-valuation-opus-version.md` | Original Opus-grade valuation prompt |
-| `valuation-persistence.md` | How projections are saved and versioned |
-| `red-team-valuation-persistence.md` | Red team review of persistence layer |
-| `red_team_review_feedback.md` | Round 1 red team findings |
-| `red_team_review_round_2.md` | Round 2 red team findings |
-| `red_team_review_round_2_1.md` | Round 2.1 follow-up review |
-| `stock_valuation_sequence.mmd` | Sequence diagram (Mermaid) |
-| `AI-augmented-stock-valuation-and-thesis-alignment.md` | High-level strategy |
+| `AI-augmented-stock-valuation-and-thesis-alignment.md` | High-level strategy overview |
 | `interaction_flow.md` | User interaction flow |
+| `valuation-persistence.md` | How projections are saved and versioned |
+| `stock_valuation_sequence.mmd` | Sequence diagram (Mermaid) |
 
 ## Dependencies
 
