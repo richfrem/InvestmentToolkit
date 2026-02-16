@@ -4,7 +4,7 @@ trigger: manual
 
 ## 🐍 Python Dependency Rules (Summary)
 
-**Full workflow details → `.agent/skills/dependency-management/SKILL.md`**
+**Full workflow details → `plugins/dependency-management/skills/dependency-agent/SKILL.md`**
 
 ### Non-Negotiables
 1. **No manual `pip install`** — all changes go through `.in` → `pip-compile` → `.txt`.

@@ -1,0 +1,729 @@
+{
+  "metadata": {
+    "generatedAt": "2026-02-15T16:30:12.585444",
+    "count": 72,
+    "source": ".agent/workflows"
+  },
+  "workflows": [
+    {
+      "name": "adr-manager_create",
+      "filename": "adr-manager_create.md",
+      "path": ".agent/workflows/adr-manager_create.md",
+      "description": "Create a new Architecture Decision Record from template",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "adr-manager_list",
+      "filename": "adr-manager_list.md",
+      "path": ".agent/workflows/adr-manager_list.md",
+      "description": "List, view, or search Architecture Decision Records",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "agent-orchestrator_delegate",
+      "filename": "agent-orchestrator_delegate.md",
+      "path": ".agent/workflows/agent-orchestrator_delegate.md",
+      "description": "\"Generate a strategy packet and hand off execution to the inner loop agent\"",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "agent-orchestrator_plan",
+      "filename": "agent-orchestrator_plan.md",
+      "path": ".agent/workflows/agent-orchestrator_plan.md",
+      "description": "\"Start the outer loop: specify, plan, and generate tasks via spec-kitty\"",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "agent-orchestrator_retro",
+      "filename": "agent-orchestrator_retro.md",
+      "path": ".agent/workflows/agent-orchestrator_retro.md",
+      "description": "\"Session retrospective: what worked, what failed, fix one thing now\"",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "agent-orchestrator_review",
+      "filename": "agent-orchestrator_review.md",
+      "path": ".agent/workflows/agent-orchestrator_review.md",
+      "description": "\"Bundle project context into a single markdown for red-team or human review\"",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "agent-orchestrator_verify",
+      "filename": "agent-orchestrator_verify.md",
+      "path": ".agent/workflows/agent-orchestrator_verify.md",
+      "description": "\"Inspect inner loop output against acceptance criteria. Pass or generate correction packet.\"",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "claude-cli_audit",
+      "filename": "claude-cli_audit.md",
+      "path": ".agent/workflows/claude-cli_audit.md",
+      "description": "Run a multi-persona audit loop (Red Team \u2192 Architect \u2192 QA)",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "claude-cli_list-personas",
+      "filename": "claude-cli_list-personas.md",
+      "path": ".agent/workflows/claude-cli_list-personas.md",
+      "description": "List all available sub-agent personas by category",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "claude-cli_run",
+      "filename": "claude-cli_run.md",
+      "path": ".agent/workflows/claude-cli_run.md",
+      "description": "Run a Claude CLI sub-agent with a persona prompt against a file or bundle",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "code-snapshot_capture",
+      "filename": "code-snapshot_capture.md",
+      "path": ".agent/workflows/code-snapshot_capture.md",
+      "description": "Capture a full or subfolder code snapshot into a token-counted markdown artifact",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "coding-conventions_apply",
+      "filename": "coding-conventions_apply.md",
+      "path": ".agent/workflows/coding-conventions_apply.md",
+      "description": "Apply the coding conventions \u2014 review code or generate compliant headers",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "context-bundler_add",
+      "filename": "context-bundler_add.md",
+      "path": ".agent/workflows/context-bundler_add.md",
+      "description": "Add a file to the current context bundle manifest",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "context-bundler_bundle",
+      "filename": "context-bundler_bundle.md",
+      "path": ".agent/workflows/context-bundler_bundle.md",
+      "description": "Bundle files from a manifest into a single Markdown context package",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "context-bundler_init",
+      "filename": "context-bundler_init.md",
+      "path": ".agent/workflows/context-bundler_init.md",
+      "description": "Initialize a new context bundle manifest from a base template",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "context-bundler_manage",
+      "filename": "context-bundler_manage.md",
+      "path": ".agent/workflows/context-bundler_manage.md",
+      "description": "Full bundle management workflow \u2014 init, curate, validate, and compile",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "dependency-management_audit",
+      "filename": "dependency-management_audit.md",
+      "path": ".agent/workflows/dependency-management_audit.md",
+      "description": "Audit the dependency tree for conflicts, stale pins, or security issues",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "dependency-management_manage",
+      "filename": "dependency-management_manage.md",
+      "path": ".agent/workflows/dependency-management_manage.md",
+      "description": "Add, upgrade, or patch a Python dependency using pip-compile workflow",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "link-checker_check",
+      "filename": "link-checker_check.md",
+      "path": ".agent/workflows/link-checker_check.md",
+      "description": "Scan documentation for broken relative links and generate a report",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "link-checker_fix",
+      "filename": "link-checker_fix.md",
+      "path": ".agent/workflows/link-checker_fix.md",
+      "description": "Auto-repair broken documentation links using fuzzy matching against the file inventory",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "link-checker_map",
+      "filename": "link-checker_map.md",
+      "path": ".agent/workflows/link-checker_map.md",
+      "description": "Index all repository files to create the link resolution inventory",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "link-checker_post-move",
+      "filename": "link-checker_post-move.md",
+      "path": ".agent/workflows/link-checker_post-move.md",
+      "description": "Run the full Map \u2192 Fix \u2192 Verify workflow after moving or renaming files",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "mermaid-export_check",
+      "filename": "mermaid-export_check.md",
+      "path": ".agent/workflows/mermaid-export_check.md",
+      "description": "Check which .mmd diagrams have outdated or missing images",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "mermaid-export_render",
+      "filename": "mermaid-export_render.md",
+      "path": ".agent/workflows/mermaid-export_render.md",
+      "description": "Render a single .mmd file or directory of diagrams to PNG/SVG",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "plugin-bridge_install",
+      "filename": "plugin-bridge_install.md",
+      "path": ".agent/workflows/plugin-bridge_install.md",
+      "description": "\"Install an Agent Plugin into the local environment(s)\"",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "rlm-factory_audit",
+      "filename": "rlm-factory_audit.md",
+      "path": ".agent/workflows/rlm-factory_audit.md",
+      "description": "Audit RLM cache coverage \u2014 compare ledger against filesystem (offline)",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "rlm-factory_cleanup",
+      "filename": "rlm-factory_cleanup.md",
+      "path": ".agent/workflows/rlm-factory_cleanup.md",
+      "description": "Clean stale and orphan entries from the RLM cache (offline)",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "rlm-factory_distill",
+      "filename": "rlm-factory_distill.md",
+      "path": ".agent/workflows/rlm-factory_distill.md",
+      "description": "Distill repository files into semantic summaries using Ollama (requires Ollama running)",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "rlm-factory_query",
+      "filename": "rlm-factory_query.md",
+      "path": ".agent/workflows/rlm-factory_query.md",
+      "description": "Search the RLM cache for file summaries by keyword (offline \u2014 no Ollama needed)",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty.accept",
+      "filename": "spec-kitty.accept.md",
+      "path": ".agent/workflows/spec-kitty.accept.md",
+      "description": "Validate feature readiness and guide final acceptance steps.",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty.analyze",
+      "filename": "spec-kitty.analyze.md",
+      "path": ".agent/workflows/spec-kitty.analyze.md",
+      "description": "Perform a non-destructive cross-artifact consistency and quality analysis across spec.md, plan.md, and tasks.md after task generation.",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty.checklist",
+      "filename": "spec-kitty.checklist.md",
+      "path": ".agent/workflows/spec-kitty.checklist.md",
+      "description": "Generate a custom checklist for the current feature based on user requirements.",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty.clarify",
+      "filename": "spec-kitty.clarify.md",
+      "path": ".agent/workflows/spec-kitty.clarify.md",
+      "description": "Identify underspecified areas in the current feature spec by asking up to 5 highly targeted clarification questions and encoding answers back into the spec.",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty.constitution",
+      "filename": "spec-kitty.constitution.md",
+      "path": ".agent/workflows/spec-kitty.constitution.md",
+      "description": "Create or update the project constitution through interactive phase-based discovery.",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty.dashboard",
+      "filename": "spec-kitty.dashboard.md",
+      "path": ".agent/workflows/spec-kitty.dashboard.md",
+      "description": "Open the Spec Kitty dashboard in your browser.",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty.implement",
+      "filename": "spec-kitty.implement.md",
+      "path": ".agent/workflows/spec-kitty.implement.md",
+      "description": "Create an isolated workspace (worktree) for implementing a specific work package.",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty.merge",
+      "filename": "spec-kitty.merge.md",
+      "path": ".agent/workflows/spec-kitty.merge.md",
+      "description": "Merge a completed feature into the main branch and clean up worktree",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty.plan",
+      "filename": "spec-kitty.plan.md",
+      "path": ".agent/workflows/spec-kitty.plan.md",
+      "description": "Execute the implementation planning workflow using the plan template to generate design artifacts.",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty.research",
+      "filename": "spec-kitty.research.md",
+      "path": ".agent/workflows/spec-kitty.research.md",
+      "description": "Run the Phase 0 research workflow to scaffold research artifacts before task planning.",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty.review",
+      "filename": "spec-kitty.review.md",
+      "path": ".agent/workflows/spec-kitty.review.md",
+      "description": "Perform structured code review and kanban transitions for completed task prompt files",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty.specify",
+      "filename": "spec-kitty.specify.md",
+      "path": ".agent/workflows/spec-kitty.specify.md",
+      "description": "Create or update the feature specification from a natural language feature description.",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty.status",
+      "filename": "spec-kitty.status.md",
+      "path": ".agent/workflows/spec-kitty.status.md",
+      "description": "Display kanban board status showing work package progress across lanes (planned/doing/for_review/done).",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty.tasks",
+      "filename": "spec-kitty.tasks.md",
+      "path": ".agent/workflows/spec-kitty.tasks.md",
+      "description": "Generate grouped work packages with actionable subtasks and matching prompt files for the feature in one pass.",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_accept",
+      "filename": "spec-kitty_accept.md",
+      "path": ".agent/workflows/spec-kitty_accept.md",
+      "description": "Validate feature readiness \u2014 all WPs must be done",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_implement",
+      "filename": "spec-kitty_implement.md",
+      "path": ".agent/workflows/spec-kitty_implement.md",
+      "description": "Create isolated worktree for a work package",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_merge",
+      "filename": "spec-kitty_merge.md",
+      "path": ".agent/workflows/spec-kitty_merge.md",
+      "description": "Automated batch merge of all WP worktrees into main",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_plan",
+      "filename": "spec-kitty_plan.md",
+      "path": ".agent/workflows/spec-kitty_plan.md",
+      "description": "Generate implementation plan from specification",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_review",
+      "filename": "spec-kitty_review.md",
+      "path": ".agent/workflows/spec-kitty_review.md",
+      "description": "Submit work package for review and move to for_review lane",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_specify",
+      "filename": "spec-kitty_specify.md",
+      "path": ".agent/workflows/spec-kitty_specify.md",
+      "description": "Create or update feature specification from natural language",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_status",
+      "filename": "spec-kitty_status.md",
+      "path": ".agent/workflows/spec-kitty_status.md",
+      "description": "Show kanban board \u2014 work package progress across lanes",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_sync-rules",
+      "filename": "spec-kitty_sync-rules.md",
+      "path": ".agent/workflows/spec-kitty_sync-rules.md",
+      "description": "Sync rules only \u2014 propagate .agent/rules to all agents",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_sync-skills",
+      "filename": "spec-kitty_sync-skills.md",
+      "path": ".agent/workflows/spec-kitty_sync-skills.md",
+      "description": "Sync skills only \u2014 distribute agent skills to all agents",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_sync-workflows",
+      "filename": "spec-kitty_sync-workflows.md",
+      "path": ".agent/workflows/spec-kitty_sync-workflows.md",
+      "description": "Sync workflows only \u2014 update workflow definitions for all agents",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_sync",
+      "filename": "spec-kitty_sync.md",
+      "path": ".agent/workflows/spec-kitty_sync.md",
+      "description": "Run Universal Bridge sync \u2014 propagate rules, workflows, and skills to all AI agents",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_tasks",
+      "filename": "spec-kitty_tasks.md",
+      "path": ".agent/workflows/spec-kitty_tasks.md",
+      "description": "Generate work packages (WPs) with subtasks and prompt files",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "spec-kitty_verify",
+      "filename": "spec-kitty_verify.md",
+      "path": ".agent/workflows/spec-kitty_verify.md",
+      "description": "Verify bridge integrity \u2014 check that agent configs match Source of Truth",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "task-manager_board",
+      "filename": "task-manager_board.md",
+      "path": ".agent/workflows/task-manager_board.md",
+      "description": "Show the kanban board overview",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "task-manager_create",
+      "filename": "task-manager_create.md",
+      "path": ".agent/workflows/task-manager_create.md",
+      "description": "Create a new task on the kanban board",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "task-manager_list",
+      "filename": "task-manager_list.md",
+      "path": ".agent/workflows/task-manager_list.md",
+      "description": "List tasks or filter by lane status",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "task-manager_move",
+      "filename": "task-manager_move.md",
+      "path": ".agent/workflows/task-manager_move.md",
+      "description": "Move a task between kanban lanes",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "tool-inventory_add",
+      "filename": "tool-inventory_add.md",
+      "path": ".agent/workflows/tool-inventory_add.md",
+      "description": "Register a new tool in the inventory (auto-extracts docstring, triggers ChromaDB upsert)",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "tool-inventory_audit",
+      "filename": "tool-inventory_audit.md",
+      "path": ".agent/workflows/tool-inventory_audit.md",
+      "description": "Audit inventory \u2014 find missing files, untracked scripts, and ChromaDB coverage gaps",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "tool-inventory_discover",
+      "filename": "tool-inventory_discover.md",
+      "path": ".agent/workflows/tool-inventory_discover.md",
+      "description": "Discover untracked scripts and auto-create stub entries",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "tool-inventory_generate",
+      "filename": "tool-inventory_generate.md",
+      "path": ".agent/workflows/tool-inventory_generate.md",
+      "description": "Generate TOOL_INVENTORY.md documentation from the JSON registry",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "tool-inventory_list",
+      "filename": "tool-inventory_list.md",
+      "path": ".agent/workflows/tool-inventory_list.md",
+      "description": "List all registered tools in the inventory",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "tool-inventory_manage",
+      "filename": "tool-inventory_manage.md",
+      "path": ".agent/workflows/tool-inventory_manage.md",
+      "description": "Full tool update workflow \u2014 register, distill, generate docs, audit, verify",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "tool-inventory_remove",
+      "filename": "tool-inventory_remove.md",
+      "path": ".agent/workflows/tool-inventory_remove.md",
+      "description": "Remove a tool from the inventory and ChromaDB",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "tool-inventory_search",
+      "filename": "tool-inventory_search.md",
+      "path": ".agent/workflows/tool-inventory_search.md",
+      "description": "Search tools by keyword (JSON) or semantic query (ChromaDB vector search)",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "tool-inventory_sync",
+      "filename": "tool-inventory_sync.md",
+      "path": ".agent/workflows/tool-inventory_sync.md",
+      "description": "Import tools from existing rlm_tool_cache.json into ChromaDB or sync inventory with cache",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "vector-db_cleanup",
+      "filename": "vector-db_cleanup.md",
+      "path": ".agent/workflows/vector-db_cleanup.md",
+      "description": "\"Remove stale chunks from deleted or renamed files in the vector database\"",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "vector-db_ingest",
+      "filename": "vector-db_ingest.md",
+      "path": ".agent/workflows/vector-db_ingest.md",
+      "description": "\"Ingest repository files into the local ChromaDB vector store for semantic search\"",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    },
+    {
+      "name": "vector-db_query",
+      "filename": "vector-db_query.md",
+      "path": ".agent/workflows/vector-db_query.md",
+      "description": "\"Search the vector database for semantically relevant code and documentation\"",
+      "inputs": [],
+      "tier": null,
+      "track": "Factory",
+      "called_by": []
+    }
+  ]
+}

@@ -85,4 +85,4 @@ This will automatically handle port conflicts, launch the backend API, and start
 ## 🤖 AI Development Framework
 This project utilizes the **Spec Kitty** framework to systematize AI agent workflows.
 -   **Specs**: Located in `kitty-specs/`.
--   **Agents**: Supports Gemini, Copilot, and Claude via the `tools/bridge/speckit_system_bridge.py` sync tool.
+-   **Agents**: Supports Gemini, Copilot, and Claude via the `plugins/spec-kitty/scripts/speckit_system_bridge.py` sync tool.
