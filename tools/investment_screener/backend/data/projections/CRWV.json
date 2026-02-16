@@ -84,7 +84,7 @@
       }
     },
     "aiThesis": {
-      "model": "Gemini 2.5 Pro",
+      "model": "Opus 4.6",
       "rationale": "CoreWeave is the defining GPU-cloud pure-play of the GenAI era. Revenue has exploded from $16M (2022) to an estimated $4.3B TTM \u2014 an extraordinary trajectory driven by insatiable demand for NVIDIA GPU compute from AI labs and enterprises. Gross margins of 73.9% demonstrate pricing power, and operating income turned positive in 2024 at $324M. However, this growth is fueled by $18.8B in debt financing a massive GPU fleet, creating significant financial risk if the AI capex cycle slows. Analyst consensus projects $12B+ revenue by 2026, but the path to sustained profitability depends on whether CoreWeave can transition from a 'GPU landlord' to a platform with sticky enterprise relationships. At $96/share, the market is pricing in strong growth but not the full bull case. Our weighted fair value of $137.28 suggests meaningful upside, but with a reduced confidence score (0.55) reflecting the binary nature of the thesis: CoreWeave either becomes the AWS of AI, or gets commoditized when hyperscalers catch up.",
       "fairValue": 137.28,
       "action": "BUY",
