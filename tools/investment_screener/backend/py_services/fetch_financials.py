@@ -161,7 +161,10 @@ def calculate_piotroski_score(financials: pd.DataFrame, balance_sheet: pd.DataFr
         if isinstance(keys, str): keys = [keys]
         for k in keys:
             if k in df.index:
-                val = df.loc[k].iloc[idx]
+                row = df.loc[k]
+                safe_idx = min(idx, len(row) - 1) if len(row) > 0 else 0
+                if safe_idx < 0: return 0
+                val = row.iloc[safe_idx]
                 return float(val) if not pd.isna(val) else 0
         return 0
 
