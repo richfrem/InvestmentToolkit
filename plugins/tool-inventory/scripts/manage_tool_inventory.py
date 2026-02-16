@@ -9,16 +9,16 @@ Purpose:
 Layer: Curate / Curate
 
 Usage Examples:
-    python tools/tool_inventory/manage_tool_inventory.py --help
-    python tools/tool_inventory/manage_tool_inventory.py list
-    python tools/tool_inventory/manage_tool_inventory.py search "keyword"
-    python tools/tool_inventory/manage_tool_inventory.py remove --path "path/to/tool.py"
-    python tools/tool_inventory/manage_tool_inventory.py update --path "tool.py" --desc "New description"
-    python tools/tool_inventory/manage_tool_inventory.py discover --auto-stub
-    python tools/tool_inventory/manage_tool_inventory.py summarize-missing
-    python tools/tool_inventory/manage_tool_inventory.py sync-from-cache
-    python tools/tool_inventory/manage_tool_inventory.py reset-from-cache
-    python tools/tool_inventory/manage_tool_inventory.py clear-inventory
+    python plugins/tool-inventory/scripts/manage_tool_inventory.py --help
+    python plugins/tool-inventory/scripts/manage_tool_inventory.py list
+    python plugins/tool-inventory/scripts/manage_tool_inventory.py search "keyword"
+    python plugins/tool-inventory/scripts/manage_tool_inventory.py remove --path "path/to/tool.py"
+    python plugins/tool-inventory/scripts/manage_tool_inventory.py update --path "tool.py" --desc "New description"
+    python plugins/tool-inventory/scripts/manage_tool_inventory.py discover --auto-stub
+    python plugins/tool-inventory/scripts/manage_tool_inventory.py summarize-missing
+    python plugins/tool-inventory/scripts/manage_tool_inventory.py sync-from-cache
+    python plugins/tool-inventory/scripts/manage_tool_inventory.py reset-from-cache
+    python plugins/tool-inventory/scripts/manage_tool_inventory.py clear-inventory
 
 Supported Object Types:
     - Generic
@@ -154,7 +154,7 @@ class InventoryManager:
         Triggers the RLM Distiller for a specific tool.
         This ensures the RLM Cache (rlm_tool_cache.json) is always in sync with the Inventory.
         """
-        distiller_script = self.root_dir / "tools/tool_inventory/distiller.py"
+        distiller_script = self.root_dir / "plugins/tool-inventory/scripts/distiller.py"
         if not distiller_script.exists():
             print(f"⚠️  Distiller not found at {distiller_script}. Skipping sync.")
             return

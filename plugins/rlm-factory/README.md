@@ -72,8 +72,40 @@ ollama serve  # in another terminal
 
 | Profile | Flag | Cache File | Use For |
 |:---|:---|:---|:---|
-| **Legacy** | `--type legacy` | `rlm_summary_cache.json` | Docs, protocols, ADRs |
+| **Project** | `--type project` | `rlm_summary_cache.json` | Project Docs, READMEs |
 | **Tool** | `--type tool` | `rlm_tool_cache.json` | Python scripts, CLI tools |
+
+---
+
+## Customizing Your Factory 🛠️
+
+The RLM Factory is now entirely manifest-driven and project-agnostic. You can customize the distillation behavior by editing the files in the `resources/` directory:
+
+### 1. `resources/manifest-index.json`
+This is the profile registry. You can add or rename profiles here:
+```json
+"project": {
+    "description": "Custom Docs Profile",
+    "manifest": "plugins/rlm-factory/resources/rlm_manifest.json",
+    "cache": ".agent/learning/custom_cache.json",
+    "parser": "directory_glob",
+    "prompt_path": "plugins/rlm-factory/resources/prompts/rlm/custom_prompt.md",
+    "env_prefix": "RLM_CUSTOM",
+    "allowed_suffixes": [".md", ".txt"],
+    "llm_model": "granite3.2:8b"
+}
+```
+
+### 2. `resources/rlm_manifest.json`
+Defines the **Source of Truth** for which files to process. Use this for structured data (like `core_files`).
+
+### 3. `resources/distiller_manifest.json`
+Defines the **Broad Scope** (include/exclude patterns) for recursive distillation.
+
+### 4. `resources/prompts/rlm/`
+Store your customized LLM summarization prompts here.
+
+---
 
 ### Commands Reference
 

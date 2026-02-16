@@ -14,7 +14,7 @@ spec-kitty specify
 
 ## Verification
 ```bash
-python3 tools/orchestrator/verify_workflow_state.py --feature <SLUG> --phase specify
+python3 plugins/spec-kitty/scripts/verify_workflow_state.py --feature <SLUG> --phase specify
 ```
 
 **STOP**: Do NOT proceed to Plan until verification passes.

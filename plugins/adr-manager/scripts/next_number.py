@@ -11,9 +11,9 @@ Purpose:
 Layer: Investigate / Utils
 
 Usage Examples:
-    python tools/investigate/utils/next_number.py --type spec
-    python tools/investigate/utils/next_number.py --type task
-    python tools/investigate/utils/next_number.py --type all
+    python plugins/adr-manager/scripts/next_number.py --type spec
+    python plugins/adr-manager/scripts/next_number.py --type task
+    python plugins/adr-manager/scripts/next_number.py --type all
 
 CLI Arguments:
     --type          : Artifact type (spec, task, adr, chronicle, all)

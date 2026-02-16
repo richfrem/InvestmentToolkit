@@ -12,8 +12,8 @@ Purpose:
     that work was done.
 
 Usage Examples:
-    python tools/orchestrator/proof_check.py --spec-dir specs/0005-human-gate-protocols
-    python tools/orchestrator/proof_check.py --spec-dir specs/0005-foo --json
+    python plugins/spec-kitty/scripts/proof_check.py --spec-dir specs/0005-human-gate-protocols
+    python plugins/spec-kitty/scripts/proof_check.py --spec-dir specs/0005-foo --json
 
 Layer: Orchestrator / Verification
 
