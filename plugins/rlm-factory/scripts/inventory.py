@@ -10,7 +10,7 @@ Purpose:
 Layer: Curate / Rlm
 
 Usage Examples:
-    python tools/rlm-factory/inventory.py
+    python plugins/rlm-factory/scripts/inventory.py
 
 Supported Object Types:
     - RLM Cache (Sanctuary)
@@ -26,7 +26,7 @@ Key Functions:
     - audit_inventory(): Logic to compare cache keys against collected file paths.
 
 Script Dependencies:
-    - plugins/rlm-factory/scripts/rlm_config.py
+    - plugins/rlm_factory/scripts/rlm_config.py
 """
 import os
 import sys
@@ -43,7 +43,7 @@ if str(PROJECT_ROOT) not in sys.path:
 try:
     from rlm_config import RLMConfig, load_cache, collect_files
 except ImportError:
-    from tools.rlm-factory.rlm_config import RLMConfig, load_cache, collect_files
+    from tools.rlm_factory.rlm_config import RLMConfig, load_cache, collect_files
 
 def audit_inventory(config: RLMConfig):
     """Compare RLM cache against actual file system."""
@@ -97,7 +97,7 @@ def audit_inventory(config: RLMConfig):
 
 def main():
     parser = argparse.ArgumentParser(description="Audit RLM Cache Coverage")
-    parser.add_argument("--type", choices=["sanctuary", "tool"], default="sanctuary", help="RLM Type (loads manifest from factory)")
+    parser.add_argument("--type", choices=["project", "tool"], default="project", help="RLM Type (loads manifest from factory)")
     
     args = parser.parse_args()
     

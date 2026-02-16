@@ -20,6 +20,10 @@
 | `task-manager` | JSON-backed kanban board (backlog/todo/in-progress/done) | ✅ (1) | None |
 | `tool-inventory` | Tool registries + embedded ChromaDB for semantic discovery | ✅ (7) | chromadb |
 | `vector-db` | Semantic search via ChromaDB + Super-RAG context injection | ✅ (4) | chromadb, sentence-transformers |
+| `workflow-inventory` | Registry of official agent workflows and slash commands | ✅ (1) | None |
+
+> **ADR-021: Direct Plugin Execution**  
+> We no longer mirror scripts to the `tools/` folder. All tools are executed directly from their canonical `plugins/` locations. The `tools/` directory is reserved for project-level routers (like `cli.py`) and application-specific logic.
 
 > **Excluded**: `chronicle-manager`, `protocol-manager` (project-specific, not portable).
 
@@ -143,7 +147,7 @@ if __name__ == "__main__":
 ```
 
 ### Phase 5: Install via Plugin Bridge
-After all references point to `plugins/`, run the bridge to populate agent-specific directories:
+After all references point to `plugins/`, run the bridge to populate agent-specific environments.
 
 ```bash
 # Install all plugins to all detected environments
@@ -157,6 +161,9 @@ This auto-populates:
 - `.claude/commands/` (Claude Desktop)
 - `.github/prompts/` (Copilot)
 - `.gemini/commands/` (Gemini)
+
+> [!IMPORTANT]
+> The bridge no longer mirrors scripts to `tools/`. It strictly manages agent-facing configurations (workflows, prompts, instructions).
 
 ### Phase 6: Selective Cleanup & Verification
 Once references are updated, verify and clean up:
@@ -231,37 +238,42 @@ The initial exact-match inventory script will miss many files. The recommended a
 
 ---
 
-### Phase 7: RLM Refresh \u0026 Tool Sync
-Finalize the migration by ensuring the semantic discovery layer is up-to-date and tools are correctly synchronized.
+### Phase 7: RLM Refresh & Inventory Update
+Finalize the migration by ensuring the semantic discovery layer is up-to-date.
 
-1.  **Synchronize Scripts**: Ensure the improved logic in `plugins/` is replicated to `tools/`.
+1.  **Verify Inventory**: Ensure `tools/tool_inventory.json` paths point to canonical `plugins/` locations.
+2.  **Verify RLM Config**: Ensure `rlm_config.py` uses robust root detection and points to its local `manifest-index.json`.
+3.  **Clear Stale Cache**: Remove old `tools/` paths from the RLM ledger.
     ```bash
-    cp plugins/tool-inventory/scripts/*.py tools/tool-inventory/
+    python3 plugins/tool-inventory/scripts/cleanup_cache.py --type tool --apply --prune-orphans
     ```
-2.  **Verify RLM Config**: Ensure `rlm_config.py` uses robust root detection and points to `plugins/rlm-factory/resources/manifest-index.json`.
-3.  **Clear Stale Cache**: Remove old tool paths from the RLM ledger.
+4.  **Distill Plugins**: Regenerate semantic summaries for the scripts in `plugins/`.
     ```bash
-    python3 tools/tool-inventory/cleanup_cache.py --type tool --apply --prune-orphans
-    ```
-4.  **Distill New Tools**: Regenerate semantic summaries for the installed tools.
-    ```bash
-    python3 tools/tool-inventory/distiller.py --type tool --cleanup
+    python3 plugins/tool-inventory/scripts/distiller.py --type tool --cleanup
     ```
 
 ---
 
 ## Development Workflow: Plugin-First
 
-To maintain strict separation of concerns and ensure version control integrity, always follow the **Plugin-First** rule:
+To maintain strict separation of concerns and ensure portability, always follow the **Plugin-First** rule:
 
-1.  **Modify in `plugins/`**: All logic changes, script updates, or configuration tweaks must be made in the `plugins/<name>/scripts/` directory first.
-2.  **Verify Source**: Run tests or verification steps against the plugin source if possible.
-3.  **Synchronize to `tools/`**: Replicate the changes to the installation directory.
-    ```bash
-    # Example: Sync RLM utility logic
-    cp plugins/tool-inventory/scripts/rlm_config.py tools/tool-inventory/rlm_config.py
-    ```
-4.  **Commit Plugins**: Never commit a fix only in `tools/`. If it's not in the plugin, it will be overwritten or lost in the next deployment.
+1.  **Modify in `plugins/`**: All logic changes, script updates, or configuration tweaks MUST be made in the `plugins/<name>/scripts/` directory.
+2.  **Verify Locally**: Run tests or verification steps against the plugin source.
+3.  **No Mirroring**: Do NOT copy scripts to the `tools/` directory. If a script is useful at the project level, add a router entry in `tools/cli.py`.
+4.  **Commit Plugins**: All authoritative code lives in `plugins/`.
+
+### Phase 9: Agent-Driven "Flash Distill"
+To maintain high-quality semantic discovery without waiting for slow local models, use the **Flash Distill** workflow:
+
+1.  **Invoke Workflow**: 
+    - Use `/tool-inventory_distill-agent <path>` for **Scripts/Tools**.
+    - Use `/rlm-factory_distill-agent <path>` for **Documentation/Project** knowledge.
+2.  **Process**:
+    - The agent reads the script and the high-fidelity prompt.
+    - The agent generates the JSON summary.
+    - The agent executes `distiller.py --file <path> --summary '<json_summary>'`.
+3.  **Result**: The RLM cache is updated with precise metadata (hashes, mtimes) and the agent's superior summary, and the `tool_inventory.json` is enriched—all within seconds.
 
 ---
 

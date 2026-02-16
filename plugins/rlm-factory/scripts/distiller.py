@@ -10,15 +10,15 @@ Layer: Curate / Rlm
 
 Usage Examples:
     # 1. Distill general documentation (Default)
-    python tools/rlm_factory/distiller.py --file docs/architecture/overview.md
-    python tools/rlm_factory/distiller.py --since 24
+    python plugins/rlm-factory/scripts/distiller.py --file docs/architecture/overview.md
+    python plugins/rlm-factory/scripts/distiller.py --since 24
 
     # 2. Force update
-    python tools/rlm_factory/distiller.py --target docs/ --force
+    python plugins/rlm-factory/scripts/distiller.py --target docs/ --force
 
     IMPORTANT: Check tools/standalone/rlm_factory/manifest-index.json for defined profiles.
-    - legacy: Documentation only (rlm_summary_cache.json)
-    - tool:   Code/Scripts (rlm_tool_cache.json)
+    - project: Documentation only (rlm_summary_cache.json)
+    - tool:    Code/Scripts (rlm_tool_cache.json)
 
 Supported Object Types:
     - Generic
@@ -154,7 +154,7 @@ def call_ollama(content: str, file_path: str, prompt_template: str, model_name: 
                     "temperature": 0.1
                 }
             },
-            timeout=120
+            timeout=300
         )
         
         if response.status_code == 200:
@@ -162,6 +162,14 @@ def call_ollama(content: str, file_path: str, prompt_template: str, model_name: 
             # Clean up common LLM artifacts
             if summary.startswith("Here is"):
                 summary = summary.split(":", 1)[-1].strip()
+            
+            # Remove markdown code blocks if the agent included them
+            if summary.startswith("```"):
+                lines = summary.splitlines()
+                if lines[0].startswith("```"): lines = lines[1:]
+                if lines and lines[-1].startswith("```"): lines = lines[:-1]
+                summary = "\n".join(lines).strip()
+                
             return summary
         else:
             print(f"⚠️  Ollama error {response.status_code}: {response.text[:100]}")
@@ -178,7 +186,7 @@ def call_ollama(content: str, file_path: str, prompt_template: str, model_name: 
         print(f"⚠️  Error: {e}")
         return None
 
-def distill(config: RLMConfig, target_files: List[Path] = None, force: bool = False):
+def distill(config: RLMConfig, target_files: List[Path] = None, force: bool = False, injected_summary: str = None):
     """Main distillation loop."""
     print(f"RLM Distiller [{config.type.upper()}] - {config.description}")
     print(f"   Manifest: {config.manifest_path.name}")
@@ -235,10 +243,12 @@ def distill(config: RLMConfig, target_files: List[Path] = None, force: bool = Fa
                      print(f"   [{i}/{total}] {rel_path} [CACHE HIT]")
                 continue
             
-            # Need to distill
-            print(f"[{i}/{total}] Processing {rel_path}...")
-           # 2. Distill (if needed)
-            summary = call_ollama(content, rel_path, config.prompt_template, config.llm_model)
+            # 2. Distill (if needed)
+            if injected_summary:
+                debug("Using injected summary (skipping Ollama)")
+                summary = injected_summary
+            else:
+                summary = call_ollama(content, rel_path, config.prompt_template, config.llm_model)
             
             if summary:
                 # 3. Update Ledger
@@ -360,7 +370,7 @@ if __name__ == "__main__":
     from datetime import datetime, timedelta
     
     parser = argparse.ArgumentParser(description="Recursive Learning Model (RLM) Distiller")
-    parser.add_argument("--type", choices=["sanctuary", "tool"], default="sanctuary", help="RLM Type (loads manifest from factory)")
+    parser.add_argument("--type", choices=["project", "tool"], default="project", help="RLM Type (loads manifest from factory)")
     parser.add_argument("--target", "-t", nargs="+", help="Override target directories to process")
     parser.add_argument("--file", "-f", help="Single file to process")
     parser.add_argument("--model", "-m", help="Ollama model to use")
@@ -369,6 +379,7 @@ if __name__ == "__main__":
     parser.add_argument("--no-cleanup", action="store_true", help="Skip auto-cleanup on incremental distills")
     parser.add_argument("--debug", action="store_true", help="Enable verbose debug logging for troubleshooting")
     parser.add_argument("--force", action="store_true", help="Force re-distillation of files (bypass cache)")
+    parser.add_argument("--summary", help="Inject a pre-generated JSON or Text summary (skips Ollama)")
     
     args = parser.parse_args()
     
@@ -425,4 +436,4 @@ if __name__ == "__main__":
                 sys.exit(1)
             target_files = [f_path]
             
-        distill(config, target_files=target_files, force=args.force)
+        distill(config, target_files=target_files, force=args.force, injected_summary=args.summary)
