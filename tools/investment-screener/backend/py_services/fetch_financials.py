@@ -1,11 +1,82 @@
+#!/usr/bin/env python3
+"""
+fetch_financials.py - Fetches detailed financial data for a stock using yfinance.
+
+Optimized with local filesystem caching (1 hour) to prevent rate limiting.
+"""
+
 import sys
 import json
+import os
+import time
+import hashlib
+import datetime
 import yfinance as yf
 import pandas as pd
 import numpy as np
-import datetime
+
+# --- Caching Configuration ---
+CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
+CACHE_DURATION = 3600  # 1 hour in seconds
+
+# --- Custom Encoder for Numpy Types (Global) ---
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        if isinstance(obj, np.floating):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        if isinstance(obj, np.bool_):
+            return bool(obj)
+        return super(NpEncoder, self).default(obj)
+
+# --- Caching Functions ---
+def get_cached_data(ticker):
+    """Retrieve cached data if valid."""
+    if not os.path.exists(CACHE_DIR):
+        return None
+    
+    # Simple sanitization for filename
+    safe_ticker = "".join([c for c in ticker if c.isalnum() or c in ('-','.')])
+    cache_file = os.path.join(CACHE_DIR, f"{safe_ticker}.json")
+    
+    if not os.path.exists(cache_file):
+        return None
+        
+    try:
+        # Check expiration
+        if time.time() - os.path.getmtime(cache_file) > CACHE_DURATION:
+            return None
+            
+        with open(cache_file, 'r') as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+def save_to_cache(ticker, data):
+    """Save data to cache."""
+    try:
+        if not os.path.exists(CACHE_DIR):
+            os.makedirs(CACHE_DIR)
+            
+        safe_ticker = "".join([c for c in ticker if c.isalnum() or c in ('-','.')])
+        cache_file = os.path.join(CACHE_DIR, f"{safe_ticker}.json")
+        
+        with open(cache_file, 'w') as f:
+            json.dump(data, f, cls=NpEncoder)
+    except Exception as e:
+        # Silently fail on cache write errors to avoid breaking the main output flow
+        pass
 
 def fetch_financial_data(ticker_symbol):
+    # 1. Try Cache First
+    cached = get_cached_data(ticker_symbol)
+    if cached:
+        print(json.dumps(cached, indent=2))
+        return
+
     try:
         stock = yf.Ticker(ticker_symbol)
         
@@ -15,7 +86,7 @@ def fetch_financial_data(ticker_symbol):
             if val is None: return default
             return val
 
-        # 1. Fetch Basic Info
+        # 2. Fetch Basic Info
         info = stock.info
         
         revenue_growth = get_metric(info, 'revenueGrowth')
@@ -69,12 +140,8 @@ def fetch_financial_data(ticker_symbol):
         try:
             ge = stock.growth_estimates
             if ge is not None and not ge.empty:
-                # yfinance growth_estimates: columns are ['stockTrend', 'indexTrend'], 
-                # index is ['0q', '+1q', '0y', '+1y', 'LTG']
                 stock_trend = {}
-                
                 if 'stockTrend' in ge.columns:
-                    # Keys are already in the right format: 0q, +1q, 0y, +1y
                     for period in ['0q', '+1q', '0y', '+1y']:
                         if period in ge.index:
                             val = ge.loc[period, 'stockTrend']
@@ -125,15 +192,10 @@ def fetch_financial_data(ticker_symbol):
         cashflow = stock.cashflow
         
         if financials.empty:
-             # Try enabling quartely? No, stick to annual for now.
              print(json.dumps({"error": "Insufficient financial data"}), file=sys.stderr)
-             # But don't exit, try to return partial?
-             # For now, return error if no financials
-             # return {"error": "No financials"} 
-             pass # Continue
+             pass 
 
         # SORT FINANCIALS BY DATE (Oldest -> Newest)
-        # We need data[0] to be the Oldest year (Left of chart) to show increasing trend.
         financials = financials.reindex(sorted(financials.columns), axis=1)
         if not balance_sheet.empty:
             balance_sheet = balance_sheet.reindex(sorted(balance_sheet.columns), axis=1)
@@ -193,14 +255,13 @@ def fetch_financial_data(ticker_symbol):
         else:
             hist_fcf = [0] * years_count
             
-        # Ensure performance object is populated and not hidden
+        # Ensure performance object is populated
         if not performance:
-            # Fallback if history fetch failed earlier
             performance = {
                 "1d": 0, "1w": 0, "1m": 0, "3m": 0, "ytd": 0, "1y": 0, "5y": 0
             }
 
-        # --- Rule of 40 & Piotroski Calculations (using latest year = last index) ---
+        # --- Rule of 40 & Piotroski Calculations (using latest year) ---
         latest_idx = years_count - 1
         prev_idx = years_count - 2 if years_count > 1 else latest_idx
 
@@ -212,7 +273,6 @@ def fetch_financial_data(ticker_symbol):
         if previous_revenue != 0:
              calc_rev_growth = (current_revenue - previous_revenue) / previous_revenue
         
-        # Use info revenueGrowth if available and logical, else calc
         final_rev_growth = revenue_growth if revenue_growth != 0 else calc_rev_growth
         
         ubiq_ebitda = get_value(financials, 'EBITDA', latest_idx)
@@ -246,16 +306,16 @@ def fetch_financial_data(ticker_symbol):
         piotroski_details['cfo_positive'] = op_cash > 0
         if op_cash > 0: piotroski_score += 1
 
-        # 3. ROA improving (higher than previous year)
+        # 3. ROA improving
         piotroski_details['roa_improving'] = roa > prev_roa
         if roa > prev_roa: piotroski_score += 1
 
-        # 4. Accruals: Cash flow from operations > Net Income (quality of earnings)
+        # 4. Accruals
         piotroski_details['accruals_ok'] = op_cash > net_inc
         if op_cash > net_inc: piotroski_score += 1
 
         # --- Leverage/Liquidity (3 points) ---
-        # 5. Leverage decreasing (long-term debt / avg assets)
+        # 5. Leverage decreasing
         long_term_debt = get_value(balance_sheet, ['Long Term Debt', 'LongTermDebt'], latest_idx)
         prev_long_term_debt = get_value(balance_sheet, ['Long Term Debt', 'LongTermDebt'], prev_idx)
         leverage = long_term_debt / avg_assets if avg_assets else 0
@@ -273,7 +333,7 @@ def fetch_financial_data(ticker_symbol):
         piotroski_details['current_ratio_improving'] = current_ratio > prev_current_ratio
         if current_ratio > prev_current_ratio: piotroski_score += 1
 
-        # 7. No new shares issued (shares outstanding not increasing)
+        # 7. No new shares issued
         shares = get_metric(info, 'sharesOutstanding', 0)
         prev_shares = get_value(balance_sheet, ['Share Issued', 'CommonStockSharesOutstanding', 'Ordinary Shares Number'], prev_idx)
         no_dilution = shares <= prev_shares if (shares and prev_shares) else True
@@ -286,9 +346,9 @@ def fetch_financial_data(ticker_symbol):
         piotroski_details['gross_margin_improving'] = gross_margin_improving
         if gross_margin_improving: piotroski_score += 1
 
-        # 9. Asset turnover improving (revenue / avg assets)
+        # 9. Asset turnover improving
         asset_turnover = current_revenue / avg_assets if avg_assets else 0
-        prev_avg_assets = prev_total_assets  # simplified for previous year
+        prev_avg_assets = prev_total_assets
         prev_asset_turnover = previous_revenue / prev_avg_assets if prev_avg_assets else 0
         piotroski_details['asset_turnover_improving'] = asset_turnover > prev_asset_turnover
         if asset_turnover > prev_asset_turnover: piotroski_score += 1
@@ -339,7 +399,6 @@ def fetch_financial_data(ticker_symbol):
             "analyst_revenue_forecast": analyst_revenue_forecast,
             "analyst_earnings_forecast": analyst_earnings_forecast,
             "growth_estimates": growth_estimates,
-            # Analyst price targets and recommendations
             "analyst_estimates": {
                 "target_high_price": get_metric(info, 'targetHighPrice', 0),
                 "target_low_price": get_metric(info, 'targetLowPrice', 0),
@@ -353,18 +412,8 @@ def fetch_financial_data(ticker_symbol):
             }
         }
 
-        # Custom Encoder for Numpy Types
-        class NpEncoder(json.JSONEncoder):
-            def default(self, obj):
-                if isinstance(obj, np.integer):
-                    return int(obj)
-                if isinstance(obj, np.floating):
-                    return float(obj)
-                if isinstance(obj, np.ndarray):
-                    return obj.tolist()
-                if isinstance(obj, np.bool_):
-                    return bool(obj)
-                return super(NpEncoder, self).default(obj)
+        # 3. Save to Cache
+        save_to_cache(ticker_symbol, result)
 
         print(json.dumps(result, indent=2, cls=NpEncoder))
 
@@ -378,4 +427,3 @@ if __name__ == "__main__":
         
     ticker = sys.argv[1]
     fetch_financial_data(ticker)
-
