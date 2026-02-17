@@ -20,11 +20,12 @@ export default function Dashboard() {
     const [error, setError] = useState<string | null>(null);
     const { addTicker } = useRecentTickers();
 
-    const handleSearch = async (ticker: string) => {
+    const performSearch = async (ticker: string) => {
+        if (!ticker) return;
+        
         setLoading(true);
         setError(null);
         setStockData(null);
-        setSearchParams({ ticker }); // Update URL
 
         try {
             const data = await fetchStockData(ticker);
@@ -41,10 +42,18 @@ export default function Dashboard() {
     // Auto-load from URL
     useEffect(() => {
         const tickerParam = searchParams.get('ticker');
-        if (tickerParam && (!stockData || stockData.symbol !== tickerParam)) {
-            handleSearch(tickerParam);
+        if (tickerParam) {
+            // Only fetch if it's a new ticker and we're not already displaying it
+            if (!stockData || stockData.symbol !== tickerParam) {
+                 performSearch(tickerParam);
+            }
         }
-    }, [searchParams]);
+    }, [searchParams]); // Dependency on searchParams is fine now as performSearch doesn't update it
+
+    const handleInputSubmit = (ticker: string) => {
+         // Just update the URL, the useEffect will handle the fetch
+        setSearchParams({ ticker });
+    };
 
     // If no stock selected, show welcome message with search
     if (!stockData && !loading && !error) {
@@ -63,7 +72,7 @@ export default function Dashboard() {
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     const val = e.currentTarget.value.trim().toUpperCase();
-                                    if (val) handleSearch(val);
+                                    if (val) handleInputSubmit(val);
                                 }
                             }}
                             className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-white text-center focus:border-primary focus:outline-none placeholder:text-slate-500"

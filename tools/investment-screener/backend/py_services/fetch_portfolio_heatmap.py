@@ -3,6 +3,7 @@
 fetch_portfolio_heatmap.py - Fetches portfolio data for treemap visualization.
 
 Now accepts items with shares to calculate actual portfolio values.
+Optimized with local filesystem caching (15 minutes) for Yahoo Finance data.
 
 Usage:
     python3 fetch_portfolio_heatmap.py '[{"symbol": "AAPL", "shares": 100}, ...]'
@@ -10,8 +11,49 @@ Usage:
 
 import sys
 import json
+import os
+import time
 import yfinance as yf
 
+# --- Caching Configuration ---
+CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
+CACHE_DURATION = 900  # 15 minutes in seconds
+
+def get_cached_info(ticker):
+    """Retrieve cached stock info if valid."""
+    if not os.path.exists(CACHE_DIR):
+        return None
+    
+    # Simple sanitization for filename
+    safe_ticker = "".join([c for c in ticker if c.isalnum() or c in ('-','.')])
+    cache_file = os.path.join(CACHE_DIR, f"{safe_ticker}_info.json") # Different suffix to avoid collision if schema differs
+    
+    if not os.path.exists(cache_file):
+        return None
+        
+    try:
+        # Check expiration
+        if time.time() - os.path.getmtime(cache_file) > CACHE_DURATION:
+            return None
+            
+        with open(cache_file, 'r') as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+def save_info_to_cache(ticker, data):
+    """Save stock info to cache."""
+    try:
+        if not os.path.exists(CACHE_DIR):
+            os.makedirs(CACHE_DIR)
+            
+        safe_ticker = "".join([c for c in ticker if c.isalnum() or c in ('-','.')])
+        cache_file = os.path.join(CACHE_DIR, f"{safe_ticker}_info.json")
+        
+        with open(cache_file, 'w') as f:
+            json.dump(data, f)
+    except Exception:
+        pass
 
 def fetch_portfolio_data(items: list) -> dict:
     """Fetch heatmap data for portfolio items with shares."""
@@ -49,8 +91,15 @@ def fetch_portfolio_data(items: list) -> dict:
             continue
             
         try:
-            stock = yf.Ticker(symbol)
-            info = stock.info
+            # TRY CACHE FIRST
+            info = get_cached_info(symbol)
+            
+            if not info:
+                # Fetch if not in cache
+                stock = yf.Ticker(symbol)
+                info = stock.info
+                # Save to cache
+                save_info_to_cache(symbol, info)
             
             # Get basic info with override support
             # Priority: 1) portfolio.json override, 2) SECTOR_OVERRIDES, 3) Yahoo data
