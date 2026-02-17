@@ -10,7 +10,7 @@ Use this workflow to bypass slow local Ollama models when summarizing **scripts*
 
 1.  **Identify the tool script** (e.g., `plugins/tool-inventory/scripts/manage_tool_inventory.py`).
 2.  **Read the source code** using `view_file`.
-3.  **Read the tool prompt** from [rlm_summarize_tool.md](file:///Users/richardfremmerlid/Projects/InvestmentToolkit/plugins/tool-inventory/resources/prompts/rlm/rlm_summarize_tool.md).
+3.  **Read the tool prompt** from [rlm_summarize_tool.md](plugins/tool-inventory/resources/prompts/rlm/rlm_summarize_tool.md).
 4.  **Generate a high-fidelity JSON summary** (Strict JSON object).
 5.  **Execute the distiller** for the **tool** type (Targets `rlm_tool_cache.json`):
 

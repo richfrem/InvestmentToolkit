@@ -99,12 +99,12 @@ Build a JSON manifest of every existing tool reference.
 ```bash
 # Agent should create: migration_inventory.json
 {
-  "tools/codify/vector/ingest.py": {
+  "plugins/vector-db/scripts/ingest.py": {
     "new_path": "plugins/vector-db/scripts/ingest.py",
     "references_found": 12,
     "status": "pending"
   },
-  "tools/retrieve/rlm/query_cache.py": {
+  "plugins/rlm-factory/scripts/query_cache.py": {
     "new_path": "plugins/rlm-factory/scripts/query_cache.py",
     "references_found": 8,
     "status": "pending"
@@ -112,11 +112,24 @@ Build a JSON manifest of every existing tool reference.
 }
 ```
 
+### Phase 1: Inventory Old Tools
+Build a JSON manifest of every existing tool reference.
+
+```bash
+# Agent should create: migration_inventory.json
+{
+  "plugins/vector-db/scripts/ingest.py": {
+    "new_path": "plugins/vector-db/scripts/ingest.py",
+    "references_found": 12,
+    "status": "pending"
+  }
+}
+```
+
 **How to build**:
-1. List all `.py` files under `tools/` (exclude `cli.py`).
-2. For each, use `grep -r` to count references across the repo.
-3. Map each to its new `plugins/` path using the table below.
-4. Save as `migration_inventory.json`.
+1. Run `python plugins/migration-utils/scripts/generate_inventory.py`.
+2. This script now uses `query_cache.py` to dynamically map old `tools/` filenames to their new `plugins/` locations using the RLM content ledger.
+3. It keeps `KNOWN_MAPPINGS` as overrides but prefers dynamic cache lookup for everything else, ensuring the inventory matches the actual on-disk state.
 
 ### Phase 2: Inventory Old Workflows/Skills/Rules
 Same approach for non-script artifacts:
@@ -194,9 +207,7 @@ After all references point to `plugins/`, run the bridge to populate agent-speci
 
 ```bash
 # Install all plugins to all detected environments
-for plugin in plugins/*/; do
-    python3 plugins/plugin-bridge/scripts/bridge_installer.py --plugin "$plugin"
-done
+python3 plugins/plugin-bridge/scripts/install_all_plugins.py
 ```
 
 This auto-populates:
@@ -235,12 +246,12 @@ Once references are updated, verify and clean up:
 During actual migration, several categories of files will effectively be orphaned or are better suited for deletion rather than migration:
 
 1.  **Standalone Tools (`tools/standalone/`)**: These are typically one-off bundles or previous export attempts. **Do not migrate**. Delete them in Phase 6.
-2.  **Test Infrastructure**: Files like `tools/investigate/utils/test_infrastructure.py` might not have a direct plugin equivalent yet. Move them to a `plugins/shared/` or `plugins/legacy-tests/` if essential, otherwise archive.
-3.  **Unmapped Scripts**: Scripts like `tools/codify/tracking/generate_todo_list.py` that do not map to an existing plugin. **Do NOT delete these**.
+2.  **Test Infrastructure**: Files like `plugins/legacy-system-oracle-forms/scripts/test_infrastructure.py` might not have a direct plugin equivalent yet. Move them to a `plugins/shared/` or `plugins/legacy-tests/` if essential, otherwise archive.
+3.  **Unmapped Scripts**: Scripts like `plugins/legacy-doc-gen/scripts/generate_todo_list.py` that do not map to an existing plugin. **Do NOT delete these**.
     *   **Action**: Analyze these scripts.
     *   **Decision**: If useful, **create a new plugin** (e.g., `plugins/productivity-tools/`) and migrate them there.
     *   **Fallback**: Leave them in `tools/` until a decision is made.
-4.  **Config Files**: Files like `tools/codify/rlm/rlm_config.py` should be moved to `plugins/tool-inventory/scripts/rlm_config.py` (or similar) to match the new architecture.
+4.  **Config Files**: Files like `plugins/tool-inventory/scripts/rlm_config.py` should be moved to `plugins/tool-inventory/scripts/rlm_config.py` (or similar) to match the new architecture.
 5.  **Investment Screener**: The `tools/investment-screener/` directory appears to be a full application/backend. **Do not migrate this as a standard plugin**. It should likely remain as a standalone app or be refactored into its own top-level directory (e.g., `apps/investment-screener`). For now, **exclude from migration** to avoid breakage.
 6.  **Migration Utilities**: A set of helper scripts has been created in `plugins/migration-utils/scripts/` to assist with the migration. these include `generate_inventory.py`, `migration_replace.py`, `cleanup_mapped_files.py`, and `audit_stale_refs.py`. These should be preserved for future use or reference.
 7.  **Path Resolution**: Scripts migrated from `tools/` to `plugins/` (especially those using `__file__` to find `PROJECT_ROOT`) need their path resolution logic updated. For example, moving from `tools/bridge` (depth 2) to `plugins/spec-kitty/scripts` (depth 3) requires adding an extra `.parent` call.
@@ -264,18 +275,18 @@ The initial exact-match inventory script will miss many files. The recommended a
 
 | Old Path | New Plugin Path |
 |:---|:---|
-| `tools/codify/vector/ingest.py` | `plugins/vector-db/scripts/ingest.py` |
-| `tools/retrieve/vector/query.py` | `plugins/vector-db/scripts/query.py` |
-| `tools/curate/vector/cleanup.py` | `plugins/vector-db/scripts/cleanup.py` |
-| `tools/codify/rlm/distiller.py` | `plugins/rlm-factory/scripts/distiller.py` |
-| `tools/retrieve/rlm/query_cache.py` | `plugins/rlm-factory/scripts/query_cache.py` |
-| `tools/curate/inventories/manage_tool_inventory.py` | `plugins/tool-inventory/scripts/manage_tool_inventory.py` |
-| `tools/codify/documentation/check_broken_paths.py` | `plugins/link-checker/scripts/check_broken_paths.py` |
-| `tools/codify/documentation/map_repository_files.py` | `plugins/link-checker/scripts/map_repository_files.py` |
-| `tools/retrieve/bundler/bundle.py` | `plugins/context-bundler/scripts/bundle.py` |
-| `tools/bridge/speckit_system_bridge.py` | `plugins/spec-kitty/scripts/speckit_system_bridge.py` |
-| `tools/bridge/sync_workflows.py` | `plugins/spec-kitty/scripts/sync_workflows.py` |
-| `tools/bridge/sync_rules.py` | `plugins/spec-kitty/scripts/sync_rules.py` |
+| `plugins/vector-db/scripts/ingest.py` | `plugins/vector-db/scripts/ingest.py` |
+| `plugins/vector-db/scripts/query.py` | `plugins/vector-db/scripts/query.py` |
+| `plugins/vector-db/scripts/cleanup.py` | `plugins/vector-db/scripts/cleanup.py` |
+| `plugins/rlm-factory/scripts/distiller.py` | `plugins/rlm-factory/scripts/distiller.py` |
+| `plugins/rlm-factory/scripts/query_cache.py` | `plugins/rlm-factory/scripts/query_cache.py` |
+| `plugins/tool-inventory/scripts/manage_tool_inventory.py` | `plugins/tool-inventory/scripts/manage_tool_inventory.py` |
+| `plugins/link-checker/scripts/check_broken_paths.py` | `plugins/link-checker/scripts/check_broken_paths.py` |
+| `plugins/link-checker/scripts/map_repository_files.py` | `plugins/link-checker/scripts/map_repository_files.py` |
+| `plugins/context-bundler/scripts/bundle.py` | `plugins/context-bundler/scripts/bundle.py` |
+| `plugins/spec-kitty/scripts/speckit_system_bridge.py` | `plugins/spec-kitty/scripts/speckit_system_bridge.py` |
+| `plugins/spec-kitty/scripts/sync_workflows.py` | `plugins/spec-kitty/scripts/sync_workflows.py` |
+| `plugins/spec-kitty/scripts/sync_rules.py` | `plugins/spec-kitty/scripts/sync_rules.py` |
 
 > This table is a starting point. The agent should build the complete inventory in Phase 1.
 
@@ -284,16 +295,25 @@ The initial exact-match inventory script will miss many files. The recommended a
 ### Phase 7: RLM Refresh & Inventory Update
 Finalize the migration by ensuring the semantic discovery layer is up-to-date.
 
-1.  **Verify Inventory**: Ensure `tools/tool_inventory.json` paths point to canonical `plugins/` locations.
-2.  **Verify RLM Config**: Ensure `rlm_config.py` uses robust root detection and points to its local `manifest-index.json`.
-3.  **Clear Stale Cache**: Remove old `tools/` paths from the RLM ledger.
+1.  **Run Audit Tool**: Validate inventory vs filesystem and RLM cache.
+    ```bash
+    python3 plugins/tool-inventory/scripts/audit_plugins.py
+    ```
+2.  **Verify Inventory**: Ensure `tools/tool_inventory.json` paths point to canonical `plugins/` locations.
+3.  **Verify RLM Config**: Ensure `rlm_config.py` uses robust root detection.
+4.  **Clear Stale Cache**: Remove old `tools/` paths from the RLM ledger.
     ```bash
     python3 plugins/tool-inventory/scripts/cleanup_cache.py --type tool --apply --prune-orphans
     ```
-4.  **Distill Plugins**: Regenerate semantic summaries for the scripts in `plugins/`.
+5.  **Distill Missing Plugins**: If audit reports "Missing from RLM Cache", run the distillation agent.
     ```bash
-    python3 plugins/tool-inventory/scripts/distiller.py --type tool --cleanup
+    # Option A: Agent-Driven (High Quality, see .agent/workflows/tool-inventory/tool-inventory_distill-agent.md)
+    # Option B: Manual CLI -> python3 plugins/tool-inventory/scripts/distiller.py --file <path>
     ```
+
+6.  **Legacy Cleanup (Optional)**:
+
+
 
 ---
 
@@ -307,17 +327,7 @@ To maintain strict separation of concerns and ensure portability, always follow 
 4.  **Commit Plugins**: All authoritative code lives in `plugins/`.
 
 ### Phase 9: Agent-Driven "Flash Distill"
-To maintain high-quality semantic discovery without waiting for slow local models, use the **Flash Distill** workflow:
-
-1.  **Invoke Workflow**: 
-    - Use `/tool-inventory_distill-agent <path>` for **Scripts/Tools**.
-    - Use `/rlm-factory_distill-agent <path>` for **Documentation/Project** knowledge.
-2.  **Process**:
-    - The agent reads the script in full (using 200-line chunks for large files).
-    - The agent generates a high-fidelity JSON summary covering purpose, layer, inputs, outputs, dependencies, key functions, and consumers.
-    - The agent executes `distiller.py --file <path> --summary '<json_summary>'`.
-3.  **Result**: The RLM cache is updated with precise metadata (hashes, mtimes) and the agent's superior summary, and the `tool_inventory.json` is enriched—all within seconds.
-
+...
 > [!TIP]
 > **Bulk Distill**: To distill the entire toolset, process each script individually for accuracy. Then run:
 > ```bash
@@ -364,7 +374,7 @@ Ask these questions when onboarding a new repo:
 2. **What architecture docs exist?** Check `docs/architecture/` for design documents that should live alongside a plugin.
 3. **What application-specific scripts exist?** Look in `tools/` for scripts tied to the project's business logic (not agent infrastructure).
 
-### Example: InvestmentToolkit
+### Example: MyProject
 
 This project identified two domain plugins:
 

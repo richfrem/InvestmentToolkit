@@ -51,8 +51,17 @@ When **ALL** WPs in `tasks.md` are marked `[x]`:
     - **System Action:** It automates the merge of ALL feature worktrees into `main` and cleans them up.
     - **Optional:** `spec-kitty merge --push` (if remote backup is required).
 
+## Pre-Write Assertions (Deterministic Workflows)
+Before writing any `-Overview.md` file, the agent MUST verify:
+- [ ] The upstream investigation skill has been invoked (e.g., `/investigate-form` produced `temp/context-bundles/[ID]_context.md`)
+- [ ] A worktree is active OR the user explicitly approved working on the current branch
+- [ ] The SDD lifecycle was followed (spec/plan/tasks exist, or orchestrator confirmed combined mode)
+
+**If ANY assertion fails:** STOP and invoke the missing upstream skill. Do NOT substitute manual work.
+
 ## Common Agent Failures (DO NOT DO THIS)
 *   ❌ **Merging early:** Merging WP01 before WP02 is done. (Breaks the batch).
 *   ❌ **Deleting worktrees:** Removing `.worktrees/WP01` manually. (Breaks `spec-kitty merge`).
 *   ❌ **Drifting:** Editing files in `./` (Root) instead of `.worktrees/`. (Pollutes main).
 *   ❌ **Relative Paths:** Agents using relative paths often get lost. **ALWAYS use Absolute Paths** for `view_file` and edits.
+*   ❌ **Workflow simulation:** Manually reading XML/source and writing overviews instead of invoking the prescribed `/investigate-*` and `/codify-*` skills. The skills produce standardized artifacts; manual substitution breaks traceability.
