@@ -14,16 +14,16 @@ Usage Examples:
     python plugins/tool-inventory/scripts/distiller.py --file plugins/tool-inventory/scripts/distiller.py --force
 
     # 2. Distill legacy system documentation (Default: --type legacy)
-    python tools/codify/rlm/distiller.py --file legacy-system/oracle-forms-overviews/forms/FORM0000-Overview.md
+    python plugins/rlm-factory/scripts/distiller.py --file legacy-system/oracle-forms-overviews/forms/FORM0000-Overview.md
 
     # 3. Incremental update (files changed in last 24 hours)
-    python tools/codify/rlm/distiller.py --since 24 --type legacy
+    python plugins/rlm-factory/scripts/distiller.py --since 24 --type legacy
 
     # 4. Process specific directory
-    python tools/codify/rlm/distiller.py --target legacy-system/business-rules --type legacy
+    python plugins/rlm-factory/scripts/distiller.py --target legacy-system/business-rules --type legacy
     
     # 5. Force update (regenerate summaries even if unchanged)
-    python tools/codify/rlm/distiller.py --target tools/investigate/miners --type tool --force
+    python plugins/rlm-factory/scripts/distiller.py --target tools/investigate/miners --type tool --force
 
     IMPORTANT: Check tools/standalone/rlm-factory/manifest-index.json for defined profiles.
     - project: Documentation only (rlm_summary_cache.json)
@@ -380,7 +380,7 @@ if __name__ == "__main__":
     from datetime import datetime, timedelta
     
     parser = argparse.ArgumentParser(description="Recursive Learning Model (RLM) Distiller")
-    parser.add_argument("--type", choices=["project", "tool"], default="tool", help="RLM Type (loads manifest from factory)")
+    # parser.add_argument("--type", choices=["project", "tool"], default="tool", help="RLM Type (loads manifest from factory)")
     parser.add_argument("--target", "-t", nargs="+", help="Override target directories to process")
     parser.add_argument("--file", "-f", help="Single file to process")
     parser.add_argument("--model", "-m", help="Ollama model to use")
@@ -397,11 +397,11 @@ if __name__ == "__main__":
         DEBUG_MODE = True
         print("[DEBUG] Debug mode enabled")
     
-    debug(f"Raw args.type: {args.type}")
+    # debug(f"Raw args.type: {args.type}")
         
     # Load Config based on Type
     try:
-        config = RLMConfig(run_type=args.type, override_targets=args.target)
+        config = RLMConfig(run_type="tool", override_targets=args.target)
         if args.model:
             config.llm_model = args.model  # Override model in config
             print(f"🤖 Using model override: {config.llm_model}")

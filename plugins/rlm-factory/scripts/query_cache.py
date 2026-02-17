@@ -131,7 +131,7 @@ def list_cache(config: RLMConfig):
 def main():
     parser = argparse.ArgumentParser(description="Query RLM Cache")
     parser.add_argument("term", nargs="?", help="Search term (ID, filename, or content keyword)")
-    parser.add_argument("--type", choices=["project", "tool"], default="project", help="RLM Type (loads manifest from factory)")
+    # parser.add_argument("--type", choices=["project", "tool"], default="project", help="RLM Type (loads manifest from factory)")
     parser.add_argument("--list", action="store_true", help="List all cached files")
     parser.add_argument("--no-summary", action="store_true", help="Hide summary text")
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
@@ -139,7 +139,7 @@ def main():
     args = parser.parse_args()
     
     # Load Config based on Type
-    config = RLMConfig(run_type=args.type)
+    config = RLMConfig(run_type="project")
     
     if args.list:
         list_cache(config)

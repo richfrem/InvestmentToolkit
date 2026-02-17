@@ -59,7 +59,7 @@ except ImportError:
 
 def main():
     parser = argparse.ArgumentParser(description="Clean up RLM cache.")
-    parser.add_argument("--type", choices=["project", "tool"], default="project", help="RLM Type (loads manifest from factory)")
+    # parser.add_argument("--type", choices=["project", "tool"], default="project", help="RLM Type (loads manifest from factory)")
     parser.add_argument("--apply", action="store_true", help="Perform the deletion")
     parser.add_argument("--prune-orphans", action="store_true", help="Remove entries not matching manifest")
     parser.add_argument("--prune-failed", action="store_true", help="Remove entries with [DISTILLATION FAILED]")
@@ -67,7 +67,7 @@ def main():
     args = parser.parse_args()
     
     # Load Config based on Type
-    config = RLMConfig(run_type=args.type)
+    config = RLMConfig(run_type="project")
 
     print(f"Checking cache at: {config.cache_path}")
     

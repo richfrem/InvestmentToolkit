@@ -370,7 +370,7 @@ if __name__ == "__main__":
     from datetime import datetime, timedelta
     
     parser = argparse.ArgumentParser(description="Recursive Learning Model (RLM) Distiller")
-    parser.add_argument("--type", choices=["project", "tool"], default="project", help="RLM Type (loads manifest from factory)")
+    # parser.add_argument("--type", choices=["project", "tool"], default="tool", help="RLM Type (loads manifest from factory)")
     parser.add_argument("--target", "-t", nargs="+", help="Override target directories to process")
     parser.add_argument("--file", "-f", help="Single file to process")
     parser.add_argument("--model", "-m", help="Ollama model to use")
@@ -387,11 +387,11 @@ if __name__ == "__main__":
         DEBUG_MODE = True
         print("[DEBUG] Debug mode enabled")
     
-    debug(f"Raw args.type: {args.type}")
+    # debug(f"Raw args.type: {args.type}")
         
     # Load Config based on Type
     try:
-        config = RLMConfig(run_type=args.type, override_targets=args.target)
+        config = RLMConfig(run_type="project", override_targets=args.target)
         if args.model:
             config.llm_model = args.model  # Override model in config
             print(f"🤖 Using model override: {config.llm_model}")

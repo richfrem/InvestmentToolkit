@@ -89,6 +89,9 @@ def install_antigravity(plugin_path: Path, root: Path, metadata: dict):
 
     # 1. Workflows (Commands)
     commands_dir = plugin_path / "commands"
+    if not commands_dir.exists():
+        commands_dir = plugin_path / "workflows"
+        
     if commands_dir.exists():
         plugin_wf_dir = target_wf / plugin_name
         plugin_wf_dir.mkdir(parents=True, exist_ok=True)
@@ -131,6 +134,9 @@ def install_github(plugin_path: Path, root: Path, metadata: dict):
 
     # 1. Workflows -> Prompts
     commands_dir = plugin_path / "commands"
+    if not commands_dir.exists():
+        commands_dir = plugin_path / "workflows"
+        
     if commands_dir.exists():
         for f in commands_dir.glob("*.md"):
             content = f.read_text()
@@ -153,6 +159,9 @@ def install_gemini(plugin_path: Path, root: Path, metadata: dict):
 
     # 1. Workflows -> TOML Commands
     commands_dir = plugin_path / "commands"
+    if not commands_dir.exists():
+        commands_dir = plugin_path / "workflows"
+        
     if commands_dir.exists():
         for f in commands_dir.glob("*.md"):
             content = f.read_text()
@@ -173,6 +182,9 @@ def install_claude(plugin_path: Path, root: Path, metadata: dict):
 
     # 1. Workflows (Commands)
     commands_dir = plugin_path / "commands"
+    if not commands_dir.exists():
+        commands_dir = plugin_path / "workflows"
+        
     if commands_dir.exists():
         for f in commands_dir.glob("*.md"):
             content = f.read_text()

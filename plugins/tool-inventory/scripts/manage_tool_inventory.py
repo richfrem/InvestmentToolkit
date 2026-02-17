@@ -1134,7 +1134,7 @@ def generate_markdown(manager: InventoryManager, output_path: Path):
         "",
         f"> **Auto-generated:** {timestamp}",
         f"> **Source:** [`{inv_rel_path}`]({inv_rel_path})",
-        f"> **Regenerate:** `python tools/curate/inventories/manage_tool_inventory.py generate --inventory {inv_rel_path}`",
+        f"> **Regenerate:** `python plugins/tool-inventory/scripts/manage_tool_inventory.py generate --inventory {inv_rel_path}`",
         "",
         "---",
         ""
