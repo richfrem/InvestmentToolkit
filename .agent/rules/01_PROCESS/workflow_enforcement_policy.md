@@ -4,8 +4,8 @@ trigger: manual
 
 # Workflow Enforcement Policy
 
-**Tool discovery details → `.agent/skills/tool_discovery/SKILL.md`**
-**Spec workflow details → `.agent/skills/spec_kitty_workflow/SKILL.md`**
+**Tool discovery details → `plugins/tool-inventory/skills/tool_discovery/SKILL.md`**
+**Spec workflow details → `plugins/spec-kitty/skills/spec_kitty_workflow/SKILL.md`**
 
 ## Core Principle
 All agent interactions MUST be mediated by **Slash Commands** (`.agent/workflows/*.md`). No bypassing with raw shell.
