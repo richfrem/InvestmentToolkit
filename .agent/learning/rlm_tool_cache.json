@@ -47,6 +47,18 @@
     "summarized_at": "2026-02-15T18:25:33.993586",
     "summary": "{\n  \"purpose\": \"Core utility suite for the snapshot engine. Implements consolidated exclusion logic, token counting via tiktoken, GFM header generation, and the doctrinal prompt foundry for Awakening Seeds.\",\n  \"layer\": \"Utility / Snapshot\",\n  \"supported_object_types\": [\"Generic\", \"Mnemonic Weight\", \"Awakening Prompt\"],\n  \"usage\": [\n    \"from snapshot_utils import generate_snapshot, get_token_count\"\n  ],\n  \"args\": [\"(Various utilities exported for capture_code_snapshot.py)\"],\n  \"inputs\": [\"mcp_servers/lib/exclusion_config.py\", \"tiktoken byte-pair encoding\"],\n  \"outputs\": [\"Formatted Markdown blocks\", \"Token estimates\", \"Role-specific awakening prompts\"],\n  \"dependencies\": [\"tiktoken\", \"mcp_servers/lib/exclusion_config.py\", \"plugins/code-snapshot/scripts/logging_utils.py\"],\n  \"consumed_by\": [\"plugins/code-snapshot/scripts/capture_code_snapshot.py\"],\n  \"key_functions\": [\n    \"get_token_count(): Accurate LLM context estimation using cl100k_base encoding.\",\n    \"should_exclude_file(): Enforcement logic for ADR-082 and Protocol-128 (Manifest Priority Bypass).\",\n    \"generate_awakening_prompt(): The prompt foundry that synthesizes role-specific mandates (Auditor, Coordinator, Strategist, Guardian).\",\n    \"append_file_content(): Standardizes file inclusion with GFM fences and optional Living Chronicle distillation.\"\n  ]\n}"
   },
+  "plugins/coding-conventions/templates/js-tool-header-template.js": {
+    "file_mtime": 1771310304.192153,
+    "hash": "4aa418ad2523e5d2",
+    "summarized_at": "2026-02-16T23:20:51.820402",
+    "summary": "{\"purpose\": \"Standardized file header template for Node.js CLI tools in the project.\", \"layer\": \"Standards / Templates\", \"supported_object_types\": [\"CLI Scripts\"], \"usage\": [\"Copy and paste into new .js files\"], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"consumed_by\": [\"Skill: coding-conventions\"], \"key_functions\": []}"
+  },
+  "plugins/coding-conventions/templates/python-tool-header-template.py": {
+    "file_mtime": 1771310304.1925213,
+    "hash": "6b69298304e24c25",
+    "summarized_at": "2026-02-16T23:20:53.727832",
+    "summary": "{\"purpose\": \"Standardized file header template for Python CLI tools in the project.\", \"layer\": \"Standards / Templates\", \"supported_object_types\": [\"CLI Scripts\"], \"usage\": [\"Copy and paste into new .py files\"], \"args\": [], \"inputs\": [], \"outputs\": [], \"dependencies\": [], \"consumed_by\": [\"Skill: coding-conventions\"], \"key_functions\": []}"
+  },
   "plugins/context-bundler/scripts/bundle.py": {
     "file_mtime": 1771199598.8364775,
     "hash": "c07cb3aa937bc213",
@@ -65,6 +77,162 @@
     "summarized_at": "2026-02-15T18:21:57.932551",
     "summary": "{\n  \"purpose\": \"Standardizes path resolution across platforms and provides access to the Master Object Collection for artifact mapping.\",\n  \"layer\": \"Curate / Bundler\",\n  \"supported_object_types\": [\"Generic\"],\n  \"usage\": [\"from path_resolver import PathResolver; PathResolver.to_absolute(\\\"path\\\")\"],\n  \"args\": [\"None (Utility class and helper functions)\"],\n  \"inputs\": [\"Environment variables (PROJECT_ROOT)\", \"Filesystem landmarks\"],\n  \"outputs\": [\"Absolute system paths\", \"Master Object Collection data\"],\n  \"dependencies\": [\"None\"],\n  \"consumed_by\": [\"plugins/context-bundler/scripts/bundle.py\", \"plugins/context-bundler/scripts/manifest_manager.py\"],\n  \"key_functions\": [\n    \"PathResolver.get_project_root(): Robust root discovery mechanism.\",\n    \"PathResolver.to_absolute(): Normalizes relative paths to system absolute paths.\",\n    \"PathResolver.get_object_path(): Maps high-level object IDs to physical files.\"\n  ]\n}"
   },
+  "plugins/dependency-analysis/scripts/BatchGenerateGraphs.py": {
+    "file_mtime": 1771310304.2249103,
+    "hash": "82b6d86c1794f825",
+    "summarized_at": "2026-02-16T23:20:56.757978",
+    "summary": "{\"purpose\": \"Reads a list of form IDs from a CSV file and generates dependency graphs for each form in batch mode.\", \"layer\": \"Analysis / Visualization\", \"supported_object_types\": [\"Form\", \"Report\"], \"usage\": [\"python BatchGenerateGraphs.py\", \"python BatchGenerateGraphs.py -type ALL\", \"python BatchGenerateGraphs.py -levels 2 -type R\", \"python BatchGenerateGraphs.py --show\"], \"args\": [\"-levels: Number of levels to include (default: 1)\", \"-type: Filter type (F=Forms, R=Reports, ALL)\", \"--show: Display graphs interactively (disables silent mode)\"], \"inputs\": [\"forms-to-search.csv\"], \"outputs\": [\"PNG dependency graph images in dependency-graphs/ folder\"], \"dependencies\": [\"GenerateFormDependencyGraph.py\"], \"consumed_by\": [\"User (Ad-hoc Analysis)\"], \"key_functions\": [\"generate_graphs_for_forms\", \"main\"]}"
+  },
+  "plugins/dependency-analysis/scripts/GenerateFormDependencyGraph.py": {
+    "file_mtime": 1771310304.2252665,
+    "hash": "b0080bb9c65e7ff3",
+    "summarized_at": "2026-02-16T23:20:59.309581",
+    "summary": "{\"purpose\": \"Generates a visual dependency graph (PNG image) for a specified Oracle Form, showing parent-child relationships up to N levels deep.\", \"layer\": \"Analysis / Visualization\", \"supported_object_types\": [\"Form\", \"Report\"], \"usage\": [\"python GenerateFormDependencyGraph.py -form FORM0000\", \"python GenerateFormDependencyGraph.py -form FORM0000 -levels 2\", \"python GenerateFormDependencyGraph.py -form FORM0000 -type F\"], \"args\": [\"-form: The parent form ID to visualize\", \"-csv: Path to CSV file with parent-child relationships\", \"-levels: Number of child levels to include\", \"-type: Filter by R (Reports) or F (Forms)\", \"-silent: Save plot without displaying\"], \"inputs\": [\"form_relationships.csv\", \"master_object_collection.json\"], \"outputs\": [\"PNG image in dependency-graphs/\"], \"dependencies\": [\"networkx\", \"matplotlib\"], \"consumed_by\": [\"BatchGenerateGraphs.py\"], \"key_functions\": [\"read_relationships\", \"build_graph\", \"get_descendants_limited\", \"plot_graph\"]}"
+  },
+  "plugins/dependency-analysis/scripts/dependencies.py": {
+    "file_mtime": 1771310304.2258406,
+    "hash": "73a93166c7f1cfa4",
+    "summarized_at": "2026-02-16T23:21:01.385450",
+    "summary": "{\"purpose\": \"Traces Call Graph (Upstream/Downstream) using Map + Deep Search.\", \"layer\": \"Curate / Search\", \"supported_object_types\": [\"Generic\"], \"usage\": [\"python plugins/dependency-analysis/scripts/dependencies.py --target FORM0000 --deep\"], \"args\": [\"--target: Target Object ID\", \"--deep: Enable Deep Search (scan raw source files)\", \"--json: Output results as JSON\", \"--applications: Trace upstream to find parent applications\", \"--direction: Scope of analysis (upstream, downstream, both)\"], \"inputs\": [\"dependency_map.json\", \"master_object_collection.json\", \"Raw Source Files (XML, PLL, SQL)\"], \"outputs\": [\"JSON or Text Report\"], \"dependencies\": [], \"consumed_by\": [\"User (Ad-hoc Analysis)\"], \"key_functions\": [\"load_dependency_map\", \"find_upstream\", \"trace_applications\", \"find_downstream\", \"deep_search\"]}"
+  },
+  "plugins/dependency-analysis/scripts/generate_dependency_map.py": {
+    "file_mtime": 1771310304.2264905,
+    "hash": "6c04cb398c824f41",
+    "summarized_at": "2026-02-16T23:21:03.328189",
+    "summary": "{\"purpose\": \"Generates a system-wide dependency map by scanning source files for direct dependencies.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Generic\"], \"usage\": [\"python plugins/dependency-analysis/scripts/generate_dependency_map.py\"], \"args\": [], \"inputs\": [\"legacy-system/oracle-forms/XML\", \"legacy-system/oracle-database/\", \"relationship_graph.json\", \"master_object_collection.json\"], \"outputs\": [\"dependency_map.json\"], \"dependencies\": [], \"consumed_by\": [\"User (System Analysis)\"], \"key_functions\": [\"scan_text_for_deps\", \"scan_forms\", \"scan_reports\", \"scan_plls\", \"scan_db_packages\"]}"
+  },
+  "plugins/excel-to-csv/scripts/convert.py": {
+    "file_mtime": 1771310315.7457302,
+    "hash": "d421105fb2a710a4",
+    "summarized_at": "2026-02-16T23:21:09.473618",
+    "summary": "{\"purpose\": \"Convert all (or selected) sheets from an Excel workbook into CSV files.\", \"layer\": \"Curate / Utilities\", \"supported_object_types\": [\"Excel Workbook\"], \"usage\": [\"python convert.py --excel workbook.xlsx\"], \"args\": [\"--excel: Path to workbook\", \"--outdir: Output directory\", \"--sheets: List of sheets to convert\", \"--write-empty: Write CSV even if sheet empty\"], \"inputs\": [\"Excel Workbook (.xlsx)\"], \"outputs\": [\"CSV files\"], \"dependencies\": [\"pandas\", \"openpyxl\"], \"consumed_by\": [\"User\", \"Data Ingestion Workflows\"], \"key_functions\": [\"convert_excel_to_csv\", \"sanitize_sheet_name\"]}"
+  },
+  "plugins/inventory-manager/scripts/audit_inventory.py": {
+    "file_mtime": 1771310327.8049512,
+    "hash": "31b794a05499c656",
+    "summarized_at": "2026-02-16T23:21:11.467488",
+    "summary": "{\"purpose\": \"Compares forms_and_reports_inventory.json against actual Overview files to find gaps.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Form\", \"Report\"], \"usage\": [\"python audit_inventory.py\"], \"args\": [], \"inputs\": [\"forms_and_reports_inventory.json\", \"legacy-system/oracle-forms-overviews/forms\"], \"outputs\": [\"Console Report\"], \"dependencies\": [], \"consumed_by\": [\"Inventory Management\"], \"key_functions\": []}"
+  },
+  "plugins/inventory-manager/scripts/audit_scope_zombies.py": {
+    "file_mtime": 1771310327.8055081,
+    "hash": "880574cf00534f44",
+    "summarized_at": "2026-02-16T23:21:13.284315",
+    "summary": "{\"purpose\": \"Identifies zombie forms - documented in markdown overviews but not present in the master scope CSV.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Form\"], \"usage\": [\"python audit_scope_zombies.py\"], \"args\": [], \"inputs\": [\"APP-MasterScope.csv\", \"legacy-system/oracle-forms-overviews/forms\"], \"outputs\": [\"Console Report\"], \"dependencies\": [], \"consumed_by\": [\"Inventory Management\"], \"key_functions\": []}"
+  },
+  "plugins/inventory-manager/scripts/build_master_collection.py": {
+    "file_mtime": 1771310327.8071387,
+    "hash": "70f3443a64b35577",
+    "summarized_at": "2026-02-16T23:21:41.142842",
+    "summary": "{\"purpose\": \"Aggregates all individual inventories (forms, reports, tables, etc.) into a single master_object_collection.json.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Generic\"], \"usage\": [\"python plugins/inventory-manager/scripts/build_master_collection.py\"], \"args\": [], \"inputs\": [\"legacy-system/reference-data/inventories/*.json\"], \"outputs\": [\"legacy-system/reference-data/master_object_collection.json\"], \"dependencies\": [], \"consumed_by\": [\"Global Search\", \"Dependency Analysis\"], \"key_functions\": [\"load_json\", \"add_object\", \"populate_forms\", \"build_full_collection\"]}"
+  },
+  "plugins/inventory-manager/scripts/business_rules_inventory_manager.py": {
+    "file_mtime": 1771310327.8098626,
+    "hash": "8b7265efa3f65644",
+    "summarized_at": "2026-02-16T23:21:43.601390",
+    "summary": "{\"purpose\": \"Manages the Business Rules Inventory, including scanning, searching (Inventory, RLM, Vector), registration, and updates.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Business Rule\"], \"usage\": [\"python business_rules_inventory_manager.py --scan\", \"python business_rules_inventory_manager.py --search term\", \"python business_rules_inventory_manager.py --register ...\"], \"args\": [\"--scan\", \"--search\", \"--register\", \"--update-summary\", \"--title\", \"--source\", \"--priority\", \"--new-summary\", \"--investigate\"], \"inputs\": [\"legacy-system/business-rules/*.md\"], \"outputs\": [\"legacy-system/reference-data/inventories/business_rules_inventory.json\"], \"dependencies\": [\"tools.retrieve.rlm.query_cache\", \"tools.retrieve.vector.query\"], \"consumed_by\": [\"User\"], \"key_functions\": [\"scan_business_rules\", \"search_multi_source\", \"register_business_rule\", \"investigate_topic\"]}"
+  },
+  "plugins/inventory-manager/scripts/business_workflows_inventory_manager.py": {
+    "file_mtime": 1771310327.8106785,
+    "hash": "98ac721fc086f38e",
+    "summarized_at": "2026-02-16T23:21:46.033457",
+    "summary": "{\"purpose\": \"Manages the Business Workflows Inventory, including scanning, searching, registration, and updates.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Business Workflow\"], \"usage\": [\"python business_workflows_inventory_manager.py --scan\", \"python business_workflows_inventory_manager.py --search term\"], \"args\": [\"--scan\", \"--search\", \"--register\", \"--update-summary\", \"--title\", \"--source\", \"--priority\", \"--new-summary\", \"--investigate\"], \"inputs\": [\"legacy-system/business-workflows/*.md\"], \"outputs\": [\"legacy-system/reference-data/inventories/business_workflows_inventory.json\"], \"dependencies\": [\"tools.retrieve.rlm.query_cache\", \"tools.retrieve.vector.query\"], \"consumed_by\": [\"User\"], \"key_functions\": [\"scan_workflows\", \"search_multi_source\", \"register_business_workflow\", \"investigate_topic\"]}"
+  },
+  "plugins/inventory-manager/scripts/button_inventory_generator.py": {
+    "file_mtime": 1771310327.811381,
+    "hash": "1a669857d99a2edd",
+    "summarized_at": "2026-02-16T23:21:47.976408",
+    "summary": "{\"purpose\": \"Generates dashboard button groupings for React UI based on a CSV configuration.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Generic\"], \"usage\": [\"python button_inventory_generator.py\"], \"args\": [], \"inputs\": [\"legacy-system/reference-data/collections/menuconfig/MainModuleButtonVisibilityRulesByRole.csv\"], \"outputs\": [\"sandbox/ui/public/config/*.json\"], \"dependencies\": [], \"consumed_by\": [\"React UI\"], \"key_functions\": [\"generate_button_configs\"]}"
+  },
+  "plugins/inventory-manager/scripts/check_pll_usage.py": {
+    "file_mtime": 1771310327.811869,
+    "hash": "d24de9754206192a",
+    "summarized_at": "2026-02-16T23:21:49.809231",
+    "summary": "{\"purpose\": \"Checks if any Forms attach logic from known Backup/Deprecated libraries.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Generic\"], \"usage\": [\"python check_pll_usage.py\"], \"args\": [], \"inputs\": [\"legacy-system/reference-data/inventories/dependency_map.json\"], \"outputs\": [\"Console Warning\"], \"dependencies\": [], \"consumed_by\": [\"User (Audit)\"], \"key_functions\": [\"check_usage\"]}"
+  },
+  "plugins/inventory-manager/scripts/generate_applications_inventory.py": {
+    "file_mtime": 1771310327.8124254,
+    "hash": "a58eb4445ff62df4",
+    "summarized_at": "2026-02-16T23:22:46.113617",
+    "summary": "{\"purpose\": \"Scans applications directory for Overview markdowns and extracts metadata to build applications_inventory.json.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Application\"], \"usage\": [\"python generate_applications_inventory.py\"], \"args\": [], \"inputs\": [\"legacy-system/applications/*.md\"], \"outputs\": [\"legacy-system/reference-data/applications_inventory.json\"], \"dependencies\": [], \"consumed_by\": [\"Global Search\"], \"key_functions\": [\"extract_metadata_from_file\", \"scan_applications\"]}"
+  },
+  "plugins/inventory-manager/scripts/generate_db_schema_inventory.py": {
+    "file_mtime": 1771310327.813473,
+    "hash": "e7ff6637b89f4511",
+    "summarized_at": "2026-02-16T23:22:48.141375",
+    "summary": "{\"purpose\": \"Generates separate inventory JSON files for all database schema objects (Tables, Views, Procedures, etc.) by scanning SQL files.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Table\", \"View\", \"Procedure\", \"Function\", \"Package\", \"Type\", \"Trigger\", \"Constraint\", \"Index\", \"Sequence\"], \"usage\": [\"python generate_db_schema_inventory.py\"], \"args\": [], \"inputs\": [\"legacy-system/oracle-database/*/*.sql\"], \"outputs\": [\"legacy-system/reference-data/inventories/*_inventory.json\"], \"dependencies\": [], \"consumed_by\": [\"Global Search\"], \"key_functions\": [\"scan_directory\"]}"
+  },
+  "plugins/inventory-manager/scripts/generate_forms_object_inventory.py": {
+    "file_mtime": 1771310327.813838,
+    "hash": "5736985ae017027d",
+    "summarized_at": "2026-02-16T23:22:49.851231",
+    "summary": "{\"purpose\": \"Scans XML directory for Menus (.mmb) and Object Libraries (.olb) files to build their respective JSON inventories.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Menu\", \"Object Library\"], \"usage\": [\"python generate_forms_object_inventory.py\"], \"args\": [], \"inputs\": [\"legacy-system/oracle-forms/XML/*.xml\"], \"outputs\": [\"menus_inventory.json\", \"olb_inventory.json\"], \"dependencies\": [], \"consumed_by\": [\"Global Search\"], \"key_functions\": [\"main\"]}"
+  },
+  "plugins/inventory-manager/scripts/generate_pll_inventory.py": {
+    "file_mtime": 1771310327.814434,
+    "hash": "221d4b72ca5e7ec1",
+    "summarized_at": "2026-02-16T23:22:51.802512",
+    "summary": "{\"purpose\": \"Parses PLL text dump files to extract Package, Procedure, and Function names, building a JSON inventory of library contents.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"PLL\"], \"usage\": [\"python generate_pll_inventory.py\"], \"args\": [], \"inputs\": [\"legacy-system/oracle-forms/pll/*.txt\"], \"outputs\": [\"legacy-system/reference-data/inventories/pll_inventory.json\"], \"dependencies\": [], \"consumed_by\": [\"Global Search\", \"Dependency Analysis\"], \"key_functions\": [\"parse_pll_file\"]}"
+  },
+  "plugins/inventory-manager/scripts/generate_reports_inventory.py": {
+    "file_mtime": 1771310327.8148263,
+    "hash": "6e37b7daabe0507b",
+    "summarized_at": "2026-02-16T23:22:53.447373",
+    "summary": "{\"purpose\": \"Scans report overviews and source XML paths to build a consolidated reports_inventory.json.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Report\"], \"usage\": [\"python generate_reports_inventory.py\"], \"args\": [], \"inputs\": [\"legacy-system/oracle-forms-overviews/reports/*.md\", \"legacy-system/oracle-forms/Reports/*.xml\"], \"outputs\": [\"legacy-system/reference-data/inventories/reports_inventory.json\"], \"dependencies\": [], \"consumed_by\": [\"Global Search\"], \"key_functions\": [\"get_reports_from_overviews\", \"get_reports_from_source\"]}"
+  },
+  "plugins/inventory-manager/scripts/manage_data_inventory.py": {
+    "file_mtime": 1771310327.8155477,
+    "hash": "3be5415739d0d1f7",
+    "summarized_at": "2026-02-16T23:23:14.160464",
+    "summary": "{\"purpose\": \"Comprehensive manager for Data Inventories (Legacy System Reference Data). Manages the meta-inventory that tracks all JSON inventories.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Inventory\"], \"usage\": [\"python manage_data_inventory.py list\", \"python manage_data_inventory.py audit\", \"python manage_data_inventory.py discover\"], \"args\": [\"--inventory\", \"list\", \"add\", \"update\", \"remove\", \"search\", \"audit\", \"discover\", \"generate\", \"find-scripts\"], \"inputs\": [\"legacy-system/reference-data/inventories/*.json\"], \"outputs\": [\"legacy-system/reference-data/data_manifest.json\"], \"dependencies\": [], \"consumed_by\": [\"User\"], \"key_functions\": [\"list_inventories\", \"add_inventory\", \"audit\", \"auto_discover\"]}"
+  },
+  "plugins/inventory-manager/scripts/manage_missing_objects.py": {
+    "file_mtime": 1771310327.816002,
+    "hash": "28be711161b87dad",
+    "summarized_at": "2026-02-16T23:23:15.959415",
+    "summary": "{\"purpose\": \"Manages the inventory of missing legacy objects (Forms, Reports, Tables, etc.) referenced in code but missing artifacts.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Missing Object\"], \"usage\": [\"python manage_missing_objects.py add ...\"], \"args\": [\"add\", \"search\", \"list\", \"--id\", \"--type\", \"--artifacts\", \"--notes\"], \"inputs\": [\"legacy-system/reference-data/missing_objects.json\"], \"outputs\": [\"legacy-system/reference-data/missing_objects.json\"], \"dependencies\": [], \"consumed_by\": [\"User\"], \"key_functions\": [\"add_entry\", \"search_entry\", \"list_entries\"]}"
+  },
+  "plugins/inventory-manager/scripts/menu_inventory_generator.py": {
+    "file_mtime": 1771310327.8163953,
+    "hash": "69dc2a15a380129f",
+    "summarized_at": "2026-02-16T23:23:17.545210",
+    "summary": "{\"purpose\": \"Generates master menu inventory from MenuConfig/XML and saves a copy for React UI.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Menu\"], \"usage\": [\"python menu_inventory_generator.py\"], \"args\": [], \"inputs\": [\"MenuConfig/XML\"], \"outputs\": [\"sandbox/ui/public/config/menu_inventory.json\"], \"dependencies\": [\"menu_builder\"], \"consumed_by\": [\"React UI\"], \"key_functions\": [\"main\"]}"
+  },
+  "plugins/inventory-manager/scripts/process_relationship_csv.py": {
+    "file_mtime": 1771310327.8173614,
+    "hash": "bd9090c006147226",
+    "summarized_at": "2026-02-16T23:23:19.554364",
+    "summary": "{\"purpose\": \"Processes CSV files containing form relationships and generates a JSON relationship graph.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Generic\"], \"usage\": [\"python process_relationship_csv.py\"], \"args\": [], \"inputs\": [\"legacy-system/reference-data/collections/code-detected/form_relationships.csv\", \"legacy-system/reference-data/master_object_collection.json\"], \"outputs\": [\"legacy-system/reference-data/inventories/relationship_graph.json\"], \"dependencies\": [], \"consumed_by\": [\"generate_dependency_map.py\"], \"key_functions\": [\"process_csv\", \"infer_type\"]}"
+  },
+  "plugins/inventory-manager/scripts/regenerate_all_inventories.py": {
+    "file_mtime": 1771310327.817887,
+    "hash": "3a0125176b953bf2",
+    "summarized_at": "2026-02-16T23:23:21.379273",
+    "summary": "{\"purpose\": \"Orchestrates the regeneration of all legacy inventory files (DB, PLL, Reports, Forms, Master Collection) in sequence.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Generic\"], \"usage\": [\"python regenerate_all_inventories.py\"], \"args\": [], \"inputs\": [\"(Calls other scripts)\"], \"outputs\": [\"All Inventory JSONs\"], \"dependencies\": [\"generate_db_schema_inventory.py\", \"generate_pll_inventory.py\", \"generate_reports_inventory.py\", \"generate_forms_object_inventory.py\", \"build_master_collection.py\"], \"consumed_by\": [\"User (Batch Update)\"], \"key_functions\": [\"run_script\", \"main\"]}"
+  },
+  "plugins/inventory-manager/scripts/remove_modernization_tracks.py": {
+    "file_mtime": 1771310327.8184788,
+    "hash": "b9008c443529ca4b",
+    "summarized_at": "2026-02-16T23:23:37.633717",
+    "summary": "{\"purpose\": \"Clean up deprecated Modernization tools from tool_inventory.json.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Tool\"], \"usage\": [\"python remove_modernization_tracks.py\"], \"args\": [], \"inputs\": [\"tools/tool_inventory.json\"], \"outputs\": [\"tools/tool_inventory.json\"], \"dependencies\": [\"manage_tool_inventory\"], \"consumed_by\": [\"User (Cleanup)\"], \"key_functions\": [\"main\"]}"
+  },
+  "plugins/inventory-manager/scripts/scan_forms_artifacts.py": {
+    "file_mtime": 1771310327.819207,
+    "hash": "397f57c356c96dab",
+    "summarized_at": "2026-02-16T23:23:39.308731",
+    "summary": "{\"purpose\": \"Unified scanner for Oracle Forms artifacts (FMB, MMB, OLB). Generates Forms, Menus, and OLB inventories from XML exports.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Form\", \"Menu\", \"Object Library\"], \"usage\": [\"python scan_forms_artifacts.py\"], \"args\": [], \"inputs\": [\"legacy-system/oracle-forms/XML/*.xml\"], \"outputs\": [\"forms_inventory.json\", \"menus_inventory.json\", \"olb_inventory.json\"], \"dependencies\": [], \"consumed_by\": [\"User\", \"Global Search\"], \"key_functions\": [\"scan_artifacts\", \"extract_metadata\"]}"
+  },
+  "plugins/inventory-manager/scripts/update_pll_status.py": {
+    "file_mtime": 1771310327.8213785,
+    "hash": "838bac5eb74cb1dc",
+    "summarized_at": "2026-02-16T23:23:40.993240",
+    "summary": "{\"purpose\": \"Updates PLL inventory with status information (Archived/Ignored) based on a blacklist.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"PLL\"], \"usage\": [\"python update_pll_status.py\"], \"args\": [], \"inputs\": [\"legacy-system/reference-data/ignored_libraries.json\", \"pll_inventory.json\"], \"outputs\": [\"pll_inventory.json\"], \"dependencies\": [], \"consumed_by\": [\"User (Audit)\"], \"key_functions\": [\"update_status\"]}"
+  },
+  "plugins/inventory-manager/scripts/validate_counts.py": {
+    "file_mtime": 1771310327.8228464,
+    "hash": "4bde117727d29f52",
+    "summarized_at": "2026-02-16T23:23:42.830625",
+    "summary": "{\"purpose\": \"Validates and counts legacy system artifacts (Forms, Reports, DB Objects) across source directories, reporting found vs valid vs ignored.\", \"layer\": \"Curate / Curate\", \"supported_object_types\": [\"Generic\"], \"usage\": [\"python validate_counts.py\"], \"args\": [], \"inputs\": [\"legacy-system/oracle-forms/*\", \"legacy-system/oracle-database/*\"], \"outputs\": [\"Console Report\"], \"dependencies\": [], \"consumed_by\": [\"User (Verification)\"], \"key_functions\": [\"should_ignore\"]}"
+  },
   "plugins/json-hygiene/scripts/find_json_duplicates.py": {
     "file_mtime": 1771201626.5599413,
     "hash": "88d20ce365a5f967",
@@ -77,6 +245,18 @@
     "summarized_at": "2026-02-15T18:21:58.063230",
     "summary": "{\n  \"purpose\": \"Recursively scans documentation files for broken relative links, ensuring documentation integrity and cross-referencing accuracy.\",\n  \"layer\": \"Curate / Cli_Entry_Points\",\n  \"supported_object_types\": [\"Generic\", \"Documentation Link\"],\n  \"usage\": [\"python plugins/link-checker/scripts/check_broken_paths.py [target_dir]\"],\n  \"args\": [\n    \"target_dir : Directory to scan (defaults to CWD)\",\n    \"--file : Specific file to scan\"\n  ],\n  \"inputs\": [\"Markdown files\", \"Filesystem\"],\n  \"outputs\": [\"Log of broken links (broken_links.log)\"],\n  \"dependencies\": [\"None\"],\n  \"consumed_by\": [\"Link Checker workflow\"],\n  \"key_functions\": [\n    \"check_broken_links(): Core regex and fs-check logic for link validation.\",\n    \"find_files(): Recursive discovery of documentation files.\",\n    \"main(): CLI orchestration and logging.\"\n  ]\n}"
   },
+  "plugins/link-checker/scripts/enrich_links_v2.py": {
+    "file_mtime": 1771310341.542747,
+    "hash": "86962fa8da5519d8",
+    "summarized_at": "2026-02-16T23:23:44.645970",
+    "summary": "{\"purpose\": \"Enriches markdown documentation with links to referenced objects (Forms, Reports, Tables, etc.) using the Master Object Collection.\", \"layer\": \"Curate / Utilities\", \"supported_object_types\": [\"Markdown Document\"], \"usage\": [\"python enrich_links_v2.py --all\", \"python enrich_links_v2.py --file <path>\"], \"args\": [\"--all\", \"--file\"], \"inputs\": [\"legacy-system/**/*.md\", \"master_object_collection.json\"], \"outputs\": [\"Modified Markdown Files\"], \"dependencies\": [], \"consumed_by\": [\"User\", \"CI/CD\"], \"key_functions\": [\"enrich_content\", \"enrich_file\", \"load_master_collection\", \"create_link\"]}"
+  },
+  "plugins/link-checker/scripts/find_source_links.py": {
+    "file_mtime": 1771310341.54349,
+    "hash": "4da65b670757f961",
+    "summarized_at": "2026-02-16T23:24:03.107277",
+    "summary": "{\"purpose\": \"Finds relative paths to source files (FMB, XML, PLL, MD) for a given object identifier (e.g. FORM0000).\", \"layer\": \"Curate / Utilities\", \"supported_object_types\": [\"Form\", \"Library\", \"Report\"], \"usage\": [\"python find_source_links.py FORM0000\"], \"args\": [\"identifier\", \"--doc-path\"], \"inputs\": [\"legacy-system/\"], \"outputs\": [\"Markdown Links\"], \"dependencies\": [], \"consumed_by\": [\"User (Documentation Authoring)\"], \"key_functions\": [\"find_files\", \"generate_links\"]}"
+  },
   "plugins/link-checker/scripts/map_repository_files.py": {
     "file_mtime": 1771199598.8568432,
     "hash": "2d9cf0674b6cb614",
@@ -88,6 +268,18 @@
     "hash": "49d932d758077ea0",
     "summarized_at": "2026-02-15T18:23:28.764881",
     "summary": "{\n  \"purpose\": \"Link Repair tool that auto-corrects broken documentation links using fuzzy matching against a pre-generated file inventory. Handles ambiguous matches and markups missing references.\",\n  \"layer\": \"Curate / Cli_Entry_Points\",\n  \"supported_object_types\": [\"Generic\", \"Documentation Link\"],\n  \"usage\": [\"python3 plugins/link-checker/scripts/smart_fix_links.py\"],\n  \"args\": [\"(No specific CLI arguments, uses file_inventory.json in its directory)\"],\n  \"inputs\": [\"Markdown files\", \"file_inventory.json\"],\n  \"outputs\": [\"Updated Markdown files (in-place link correction)\"],\n  \"dependencies\": [\"plugins/link-checker/scripts/map_repository_files.py\"],\n  \"consumed_by\": [\"Link Checker fix workflow\"],\n  \"key_functions\": [\n    \"fix_links_in_file(): Core logic using regex substitution and inventory-based lookup.\",\n    \"calculate_relative_path(): Helper for generating correct relative links post-fix.\",\n    \"load_inventory(): JSON loader for the mapping database.\"\n  ]\n}"
+  },
+  "plugins/mcp-builder/skills/mcp-builder/scripts/connections.py": {
+    "file_mtime": 1771310341.5560825,
+    "hash": "9403668a20415687",
+    "summarized_at": "2026-02-16T23:24:04.733066",
+    "summary": "{\"purpose\": \"Provides a factory and base classes for establishing connections to MCP servers via Stdio, SSE, or HTTP.\", \"layer\": \"Technical / Infrastructure\", \"supported_object_types\": [\"MCP Connection\"], \"usage\": [\"Import and use create_connection()\"], \"args\": [], \"inputs\": [], \"outputs\": [\"MCPConnection Object\"], \"dependencies\": [\"mcp\"], \"consumed_by\": [\"evaluation.py\", \"mcp-builder skill\"], \"key_functions\": [\"create_connection\"]}"
+  },
+  "plugins/mcp-builder/skills/mcp-builder/scripts/evaluation.py": {
+    "file_mtime": 1771310341.556481,
+    "hash": "49ed1d17cdce5da1",
+    "summarized_at": "2026-02-16T23:24:06.378086",
+    "summary": "{\"purpose\": \"Evaluates MCP servers by running a test suite of questions against them using an LLM (Claude) and reporting metrics.\", \"layer\": \"Technical / Testing\", \"supported_object_types\": [\"MCP Server\"], \"usage\": [\"python evaluation.py eval.xml -t stdio ...\"], \"args\": [\"eval_file\", \"-t\", \"-m\", \"-c\", \"-a\", \"-e\", \"-u\", \"-H\", \"-o\"], \"inputs\": [\"eval.xml\"], \"outputs\": [\"Evaluation Report (Markdown)\"], \"dependencies\": [\"anthropic\", \"mcp\", \"connections.py\"], \"consumed_by\": [\"User (QA)\"], \"key_functions\": [\"run_evaluation\", \"evaluate_single_task\"]}"
   },
   "plugins/mermaid-export/scripts/export_mmd_to_image.py": {
     "file_mtime": 1771199598.8616655,
@@ -124,6 +316,12 @@
     "hash": "de6e8ce9389f759a",
     "summarized_at": "2026-02-15T18:25:47.051662",
     "summary": "{\n  \"purpose\": \"Universal Plugin Installer that deploys Agent Plugins (.claude-plugin structure) into target environments. It handles content transformation for platform-specific syntax (Antigravity, GitHub Copilot, Gemini) and manages namespacing to prevent command collisions.\",\n  \"layer\": \"Curate / Bridge\",\n  \"supported_object_types\": [\"Generic\", \"Agent Plugin\", \"Installer\"],\n  \"usage\": [\n    \"python3 plugins/plugin-bridge/scripts/bridge_installer.py --plugin plugins/my-plugin\",\n    \"python3 plugins/plugin-bridge/scripts/bridge_installer.py --plugin plugins/my-plugin --target antigravity\"\n  ],\n  \"args\": [\n    \"--plugin : Path to the source plugin directory\",\n    \"--target : Destination environment (auto, antigravity, github, gemini, claude)\"\n  ],\n  \"inputs\": [\".claude-plugin/plugin.json (Metadata)\", \"Plugin commands/, skills/, and resources/\"],\n  \"outputs\": [\"Namespaced workflows and skills in target .agent/, .github/, etc.\"],\n  \"dependencies\": [\"shutil\", \"json\", \"pathlib\"],\n  \"consumed_by\": [\"/plugin-bridge_install workflow\", \"Phase 5 Migration scripts\"],\n  \"key_functions\": [\n    \"transform_content(): Context-aware rewriter that swaps --actor IDs and Gemini argument tokens ({{args}}) at deploy-time.\",\n    \"install_antigravity(): Orchestrates the deployment of namespaced workflows and skill directories while syncing resources for RLM path parity.\",\n    \"detect_targets(): Auto-discovers active development environments by probing for structural markers like .agent or .github.\"\n  ]\n}"
+  },
+  "plugins/plugin-bridge/scripts/install_all_plugins.py": {
+    "file_mtime": 1771313410.0071645,
+    "hash": "5afc198e8e3f758c",
+    "summarized_at": "2026-02-16T23:30:25.840551",
+    "summary": "{\"purpose\": \"Bulk installer for all plugins. Iterates through plugins/ directory and runs bridge_installer.py for each.\", \"layer\": \"Technical / Build\", \"supported_object_types\": [\"Plugin\"], \"usage\": [\"python install_all_plugins.py\"], \"args\": [], \"inputs\": [\"plugins/*\"], \"outputs\": [\"Installed Plugins\"], \"dependencies\": [\"bridge_installer.py\"], \"consumed_by\": [\"User (Maintenance)\"], \"key_functions\": [\"main\"]}"
   },
   "plugins/rlm-factory/scripts/cleanup_cache.py": {
     "file_mtime": 1771207313.4528685,
@@ -167,6 +365,24 @@
     "summarized_at": "2026-02-15T18:25:05.368861",
     "summary": "{\n  \"purpose\": \"Centralized configuration and utility logic for the RLM Toolchain. Implements the Manifest Factory pattern to resolve manifests and caches based on Analysis Type (Project vs. Tool).\",\n  \"layer\": \"Curate / Rlm\",\n  \"supported_object_types\": [\"RLM Config (Project)\", \"RLM Config (Tool)\"],\n  \"usage\": [\"from rlm_config import RLMConfig, load_cache, collect_files\"],\n  \"args\": [\"run_type : [project|tool] Selecting the configuration profile\"],\n  \"inputs\": [\"manifest-index.json\", \"Individual profile manifests (e.g., tool_inventory.json)\"],\n  \"outputs\": [\"RLMConfig object (Typed configuration state)\"],\n  \"dependencies\": [\"None (Shared core module)\"],\n  \"consumed_by\": [\"plugins/rlm-factory/scripts/distiller.py\", \"plugins/rlm-factory/scripts/query_cache.py\", \"plugins/rlm-factory/scripts/cleanup_cache.py\"],\n  \"key_functions\": [\n    \"RLMConfig: Loads and validates configuration from the factory index and environment variables.\",\n    \"collect_files(): Centralized discovery logic supporting both glob patterns and inventory-based recursion.\",\n    \"load_cache()/save_cache(): Shared, atomic I/O routines for the RLM ledger.\"\n  ]\n}"
   },
+  "plugins/skill-creator/skills/skill-creator/scripts/init_skill.py": {
+    "file_mtime": 1771310374.9934025,
+    "hash": "cf12790f1d495879",
+    "summarized_at": "2026-02-16T23:24:08.014021",
+    "summary": "{\"purpose\": \"Initializes a new skill directory with a standard structure (SKILL.md, scripts/, references/, assets/) and templates.\", \"layer\": \"Curate / Skills\", \"supported_object_types\": [\"Skill\"], \"usage\": [\"python init_skill.py <name> --path <path>\"], \"args\": [\"skill_name\", \"--path\"], \"inputs\": [], \"outputs\": [\"New Skill Directory\"], \"dependencies\": [], \"consumed_by\": [\"User\"], \"key_functions\": [\"init_skill\"]}"
+  },
+  "plugins/skill-creator/skills/skill-creator/scripts/package_skill.py": {
+    "file_mtime": 1771310375.006051,
+    "hash": "b31fbcb3e362d5c5",
+    "summarized_at": "2026-02-16T23:24:09.679562",
+    "summary": "{\"purpose\": \"Packages a skill folder into a distributable .skill (zip) file after validation.\", \"layer\": \"Curate / Skills\", \"supported_object_types\": [\"Skill\"], \"usage\": [\"python package_skill.py <skill-path> [output-dir]\"], \"args\": [\"skill_path\", \"output_dir\"], \"inputs\": [\"Skill Directory\"], \"outputs\": [\".skill file\"], \"dependencies\": [\"quick_validate.py\"], \"consumed_by\": [\"User\"], \"key_functions\": [\"package_skill\"]}"
+  },
+  "plugins/skill-creator/skills/skill-creator/scripts/quick_validate.py": {
+    "file_mtime": 1771310375.0077536,
+    "hash": "67cf570340201393",
+    "summarized_at": "2026-02-16T23:24:11.274510",
+    "summary": "{\"purpose\": \"Performs basic validation of a skill structure and SKILL.md frontmatter.\", \"layer\": \"Curate / Skills\", \"supported_object_types\": [\"Skill\"], \"usage\": [\"python quick_validate.py <skill-path>\"], \"args\": [\"skill_path\"], \"inputs\": [\"SKILL.md\"], \"outputs\": [\"Validation Status\"], \"dependencies\": [\"pyyaml\"], \"consumed_by\": [\"package_skill.py\", \"User\"], \"key_functions\": [\"validate_skill\"]}"
+  },
   "plugins/spec-kitty/scripts/speckit_system_bridge.py": {
     "file_mtime": 1771201092.9210405,
     "hash": "a559e844a4fe2456",
@@ -203,11 +419,29 @@
     "summarized_at": "2026-02-15T18:29:43.436116",
     "summary": "{\n  \"purpose\": \"A phase-based validation utility for the Spec-Driven Development (SDD) workflow. It programmatically verifies the existence and integrity of critical artifacts (spec.md, plan.md, tasks.md, and WP prompts) required for each phase of the lifecycle, ensuring that the agent does not bypass governance steps.\",\n  \"layer\": \"Plugin / Spec-Kitty / Verification\",\n  \"supported_object_types\": [\"Generic\", \"Workflow State\", \"Artifact Manifest\"],\n  \"usage\": [\n    \"python3 plugins/spec-kitty/scripts/verify_workflow_state.py --phase specify\",\n    \"python3 plugins/spec-kitty/scripts/verify_workflow_state.py --wp WP-001 --phase tasks\"\n  ],\n  \"args\": [\n    \"--phase : The target SDD phase to validate (specify, plan, tasks, review)\",\n    \"--feature : Specific feature slug to audit\",\n    \"--wp : Work Package ID (searches spec directories automatically)\"\n  ],\n  \"inputs\": [\"specs/ directory structure\", \"Phase-specific artifact requirements\"],\n  \"outputs\": [\"Detailed CLI status report\", \"Binary exit code (0=Pass, 1=Fail)\"],\n  \"dependencies\": [\"argparse\", \"pathlib\"],\n  \"consumed_by\": [\"/spec-kitty.analyze workflow\", \"Dual-loop supervisor\"],\n  \"key_functions\": [\n    \"verify_tasks(): Ensures that not only the master tasks.md exists but that individual WP prompt files are populated in the tasks/ subdirectory.\",\n    \"main(): Implements a look-up heuristic to resolve spec directories from individual Work Package IDs.\"\n  ]\n}"
   },
+  "plugins/stock-valuation/skills/stock_valuation/scripts/example.py": {
+    "file_mtime": 1771212834.4061,
+    "hash": "4952a07c09809716",
+    "summarized_at": "2026-02-16T23:24:32.551702",
+    "summary": "{\"purpose\": \"Placeholder example script for stock_valuation skill, demonstrating structure for future scripts.\", \"layer\": \"Curate / Skills\", \"supported_object_types\": [\"Generic\"], \"usage\": [\"python example.py\"], \"args\": [], \"inputs\": [], \"outputs\": [\"Console Output\"], \"dependencies\": [], \"consumed_by\": [\"User (Reference)\"], \"key_functions\": [\"main\"]}"
+  },
   "plugins/task-manager/scripts/task_manager.py": {
     "file_mtime": 1771199598.9171677,
     "hash": "f34484341908d05d",
     "summarized_at": "2026-02-15T18:26:02.051039",
     "summary": "{\n  \"purpose\": \"Lightweight Kanban Task Manager that provides a JSON-backed board with lanes (backlog, todo, in-progress, done). It serves as a standalone, plugin-resident replacement for task tracking, featuring transition notes and rich metadata support.\",\n  \"layer\": \"Plugin / Task-Manager\",\n  \"supported_object_types\": [\"Generic\", \"Task Board\", \"Kanban Task\"],\n  \"usage\": [\n    \"python3 plugins/task-manager/scripts/task_manager.py create \\\"Title\\\" --objective \\\"Goal\\\"\",\n    \"python3 plugins/task-manager/scripts/task_manager.py move <id> in-progress --note \\\"Starting work\\\"\",\n    \"python3 plugins/task-manager/scripts/task_manager.py board\"\n  ],\n  \"args\": [\n    \"create : Initializes a new task with title, objective, deliverables, and criteria\",\n    \"move : Transitions a task between lanes and logs the event in the task notes\",\n    \"list : Displays tasks filtered by status\",\n    \"board : Renders a high-level visual representation of the kanban state\"\n  ],\n  \"inputs\": [\"tasks/tasks.json (Persistence layer)\"],\n  \"outputs\": [\"Updated tasks.json\", \"CLI board and task detail views\"],\n  \"dependencies\": [\"json\", \"argparse\", \"pathlib\"],\n  \"consumed_by\": [\"/task-manager_board\", \"/task-manager_create\", \"/task-manager_move workflows\"],\n  \"key_functions\": [\n    \"TaskManager.create(): Factory method for task instantiation with automatic ID incrementing.\",\n    \"TaskManager.move(): State transition engine that captures history and timestamps.\",\n    \"TaskManager.board(): Visualization routine that groups tasks by lane with status icons.\"\n  ]\n}"
+  },
+  "plugins/tool-inventory/scripts/audit_plugins.py": {
+    "file_mtime": 1771313810.5598402,
+    "hash": "e5cfa64c2f4efd0f",
+    "summarized_at": "2026-02-16T23:37:13.514637",
+    "summary": "{\"purpose\": \"Audits the plugin inventory against the file system and RLM cache.\", \"layer\": \"Technical / Maintenance\", \"supported_object_types\": [\"Plugin\", \"Script\"], \"usage\": [\"python audit_plugins.py\"], \"args\": [], \"inputs\": [\"plugins/\", \"tool_inventory.json\", \"rlm_tool_cache.json\"], \"outputs\": [\"Audit Report\"], \"dependencies\": [], \"consumed_by\": [\"User (Maintenance)\"], \"key_functions\": [\"main\"]}"
+  },
+  "plugins/tool-inventory/scripts/cleanup_cache.py": {
+    "file_mtime": 1771310389.3800185,
+    "hash": "b65b38f52118707d",
+    "summarized_at": "2026-02-16T23:24:34.448581",
+    "summary": "{\"purpose\": \"Removes stale and orphan entries from the RLM Tool Cache to maintain hygiene.\", \"layer\": \"Curate / Rlm\", \"supported_object_types\": [\"RLM Cache Entry\"], \"usage\": [\"python cleanup_cache.py --apply --prune-orphans\"], \"args\": [\"--apply\", \"--prune-orphans\", \"--prune-failed\", \"--v\"], \"inputs\": [\"rlm_tool_cache.json\"], \"outputs\": [\"Updated rlm_tool_cache.json\"], \"dependencies\": [\"rlm_config\"], \"consumed_by\": [\"User (Maintenance)\"], \"key_functions\": [\"main\", \"remove_entry\"]}"
   },
   "plugins/tool-inventory/scripts/distiller.py": {
     "file_mtime": 1739671151.0,
@@ -233,11 +467,23 @@
     "summarized_at": "2026-02-15T18:21:11.966569",
     "summary": "{\n  \"purpose\": \"RLM Search utility providing instant semantic search of the ledger by matching terms against file paths, summaries, or content hashes.\",\n  \"layer\": \"Curate / Rlm\",\n  \"supported_object_types\": [\"Generic\"],\n  \"usage\": [\n    \"python plugins/tool-inventory/scripts/query_cache.py \\\"term\\\"\",\n    \"python plugins/tool-inventory/scripts/query_cache.py --list\"\n  ],\n  \"args\": [\n    \"term : Search term keyword\",\n    \"--list : List all cached files\",\n    \"--no-summary : Hide summary text\",\n    \"--json : Output as JSON\"\n  ],\n  \"inputs\": [\".agent/learning/rlm_tool_cache.json\"],\n  \"outputs\": [\"Console search results or JSON data\"],\n  \"dependencies\": [\"plugins/tool-inventory/scripts/rlm_config.py\"],\n  \"consumed_by\": [\"Manual search workflow\"],\n  \"key_functions\": [\n    \"search_cache(): Filters the RLM ledger by search term.\",\n    \"load_cache(): Reads and parses the RLM JSON ledger.\",\n    \"list_cache(): Displays all paths currently indexed in the ledger.\"\n  ]\n}"
   },
+  "plugins/tool-inventory/scripts/rebuild_inventory.py": {
+    "file_mtime": 1771310389.382631,
+    "hash": "35bf7f3d793ba85d",
+    "summarized_at": "2026-02-16T23:24:36.084298",
+    "summary": "{\"purpose\": \"Scans the plugins directory and rebuilds tool_inventory.json from scratch, registering all found tools.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Tool Inventory\"], \"usage\": [\"python rebuild_inventory.py\"], \"args\": [], \"inputs\": [\"plugins/**/*.py\"], \"outputs\": [\"tools/tool_inventory.json\"], \"dependencies\": [\"manage_tool_inventory\"], \"consumed_by\": [\"User (Reset)\"], \"key_functions\": [\"rebuild\"]}"
+  },
   "plugins/tool-inventory/scripts/rlm_config.py": {
     "file_mtime": 1771206834.655329,
     "hash": "e3862a7f48241f19",
     "summarized_at": "2026-02-15T18:08:08.268414",
     "summary": "{\n  \"purpose\": \"Centralized configuration and utility logic for the RLM Toolchain. Implement the 'Manifest Factory' pattern (ADR-0024) to dynamically resolve manifests and cache files based on the Analysis Type (Legacy vs Tool). This module is the Single Source of Truth for RLM logic.\",\n  \"layer\": \"Curate / Rlm\",\n  \"supported_object_types\": [\"RLM Config (Legacy Documentation)\", \"RLM Config (Tool Discovery)\"],\n  \"usage\": [\"# No direct usage (Shared Module)\"],\n  \"args\": [\"--type : [legacy|tool] Selects the configuration profile.\"],\n  \"inputs\": [\"plugins/rlm-factory/resources/manifest-index.json\", \"(Manifests referenced by the index)\"],\n  \"outputs\": [\"RLMConfig object (Typed configuration)\", \"Shared Utility Pointers (load_cache, save_cache, etc.)\"],\n  \"dependencies\": [\"None (this is a dependency for others)\"],\n  \"consumed_by\": [\"plugins/rlm-factory/scripts/distiller.py\", \"plugins/rlm-factory/scripts/query_cache.py\", \"plugins/rlm-factory/scripts/cleanup_cache.py\"],\n  \"key_functions\": [\"RLMConfig: Loads and validates configuration from the factory index.\", \"load_cache(): Shared cache loader.\", \"save_cache(): Shared cache persister.\", \"collect_files(): Centralized file discovery logic (Glob vs Inventory)\"]\n}"
+  },
+  "plugins/tool-inventory/scripts/sync_inventory_descriptions.py": {
+    "file_mtime": 1771310389.3835437,
+    "hash": "63335ba38f793b1a",
+    "summarized_at": "2026-02-16T23:24:37.731735",
+    "summary": "{\"purpose\": \"Syncs descriptions from RLM Cache (High Fidelity) to tool_inventory.json (Manifest), ensuring consistency.\", \"layer\": \"Curate / Inventories\", \"supported_object_types\": [\"Tool Inventory\"], \"usage\": [\"python sync_inventory_descriptions.py\"], \"args\": [], \"inputs\": [\"rlm_tool_cache.json\", \"tool_inventory.json\"], \"outputs\": [\"Updated tool_inventory.json\"], \"dependencies\": [\"manage_tool_inventory\"], \"consumed_by\": [\"User (Sync)\"], \"key_functions\": [\"main\"]}"
   },
   "plugins/tool-inventory/scripts/tool_chroma.py": {
     "file_mtime": 1771207313.4665484,
