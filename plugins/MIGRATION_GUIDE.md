@@ -295,6 +295,24 @@ The initial exact-match inventory script will miss many files. The recommended a
 ### Phase 7: RLM Refresh & Inventory Update
 Finalize the migration by ensuring the semantic discovery layer is up-to-date.
 
+1.  **Run Audit Tool**: Validate inventory vs filesystem and RLM cache.
+    ```bash
+    python3 plugins/tool-inventory/scripts/audit_plugins.py
+    ```
+2.  **Verify Inventory**: Ensure `tools/tool_inventory.json` paths point to canonical `plugins/` locations.
+3.  **Verify RLM Config**: Ensure `rlm_config.py` uses robust root detection.
+4.  **Clear Stale Cache**: Remove old `tools/` paths from the RLM ledger.
+    ```bash
+    python3 plugins/tool-inventory/scripts/cleanup_cache.py --type tool --apply --prune-orphans
+    ```
+5.  **Distill Missing Plugins**: If audit reports "Missing from RLM Cache", run the distillation agent.
+    ```bash
+    # Option A: Agent-Driven (High Quality, see .agent/workflows/tool-inventory/tool-inventory_distill-agent.md)
+    # Option B: Manual CLI -> python3 plugins/tool-inventory/scripts/distiller.py --file <path>
+    ```
+
+6.  **Legacy Cleanup (Optional)**:
+
 1.  **Verify Inventory**: Ensure `tools/tool_inventory.json` paths point to canonical `plugins/` locations.
 2.  **Verify RLM Config**: Ensure `rlm_config.py` uses robust root detection and points to its local `manifest-index.json`.
 3.  **Clear Stale Cache**: Remove old `tools/` paths from the RLM ledger.
