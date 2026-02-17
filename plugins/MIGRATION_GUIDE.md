@@ -313,16 +313,7 @@ Finalize the migration by ensuring the semantic discovery layer is up-to-date.
 
 6.  **Legacy Cleanup (Optional)**:
 
-1.  **Verify Inventory**: Ensure `tools/tool_inventory.json` paths point to canonical `plugins/` locations.
-2.  **Verify RLM Config**: Ensure `rlm_config.py` uses robust root detection and points to its local `manifest-index.json`.
-3.  **Clear Stale Cache**: Remove old `tools/` paths from the RLM ledger.
-    ```bash
-    python3 plugins/tool-inventory/scripts/cleanup_cache.py --type tool --apply --prune-orphans
-    ```
-4.  **Distill Plugins**: Regenerate semantic summaries for the scripts in `plugins/`.
-    ```bash
-    python3 plugins/tool-inventory/scripts/distiller.py --type tool --cleanup
-    ```
+
 
 ---
 
