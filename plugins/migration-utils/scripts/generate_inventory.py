@@ -1,6 +1,13 @@
 import json
 import os
+import sys
 from pathlib import Path
+
+# Add project root to sys.path to find plugins package
+SCRIPT_DIR = Path(__file__).parent.resolve()
+PROJECT_ROOT = SCRIPT_DIR.parent.parent.parent.resolve()
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.append(str(PROJECT_ROOT))
 
 # Known mappings from MIGRATION_GUIDE.md and analysis
 KNOWN_MAPPINGS = {
@@ -51,6 +58,156 @@ KNOWN_MAPPINGS = {
     
     # Code Snapshot (New?)
     "tools/snapshot_utils.py": "plugins/code-snapshot/scripts/snapshot_utils.py", # Guess
+
+    # --- Second Wave Moves (Refinement) ---
+    # Legacy System Roles
+    "plugins/inventory-manager/scripts/generate_role_inventory.py": "plugins/legacy-system-roles/scripts/generate_role_inventory.py",
+    "plugins/legacy-doc-gen/scripts/capture_role_profile.py": "plugins/legacy-system-roles/scripts/capture_role_profile.py",
+    "plugins/link-checker/scripts/fix_invalid_role_links.py": "plugins/legacy-system-roles/scripts/fix_invalid_role_links.py",
+    "plugins/temporary-scripts/scripts/split_roles.py": "plugins/legacy-system-roles/scripts/split_roles.py",
+    
+    # Dependency Analysis
+    "plugins/dependency-analysis/workflows/investigate-direct-dependencies.md": "plugins/dependency-analysis/workflows/investigate-direct-dependencies.md", # No rename
+    
+    # Inventory Manager
+    ".agent/workflows/legacy-system/inventories/curate-inventories.md": "plugins/inventory-manager/workflows/curate-inventories.md",
+
+    # ADR Manager
+    ".agent/workflows/utilities/adr-manage.md": "plugins/adr-manager/workflows/adr-manage.md",
+    ".agent/workflows/utilities/adrs-manage.md": "plugins/adr-manager/workflows/adrs-manage.md",
+
+    # Context Bundler
+    ".agent/workflows/utilities/bundle-manage.md": "plugins/context-bundler/workflows/bundle-manage.md",
+
+    # Task Manager
+    ".agent/workflows/utilities/tasks-manage.md": "plugins/task-manager/workflows/tasks-manage.md",
+
+    # Tool Inventory
+    ".agent/workflows/utilities/tool-inventory-manage.md": "plugins/tool-inventory/workflows/tool-inventory-manage.md",
+
+    # Link Checker
+    ".agent/workflows/utilities/post-move-link-check.md": "plugins/link-checker/workflows/post-move-link-check.md",
+
+    # Business Rules
+    ".agent/workflows/legacy-system/business-rules/codify-business-rule.md": "plugins/legacy-system-business-rules/workflows/codify-business-rule.md",
+    ".agent/workflows/legacy-system/business-rules/consolidate-business-rules.md": "plugins/legacy-system-business-rules/workflows/consolidate-business-rules.md",
+    ".agent/workflows/legacy-system/business-rules/investigate-business-rule.md": "plugins/legacy-system-business-rules/workflows/investigate-business-rule.md",
+
+    # Business Workflows
+    ".agent/workflows/legacy-system/business-workflows/codify-business-workflow.md": "plugins/legacy-system-business-workflows/workflows/codify-business-workflow.md",
+    ".agent/workflows/legacy-system/business-workflows/investigate-business-workflow.md": "plugins/legacy-system-business-workflows/workflows/investigate-business-workflow.md",
+
+    # Spec Kitty Workflows
+    ".agent/workflows/spec-kitty.accept.md": "plugins/spec-kitty/workflows/spec-kitty.accept.md",
+    ".agent/workflows/spec-kitty.analyze.md": "plugins/spec-kitty/workflows/spec-kitty.analyze.md",
+    ".agent/workflows/spec-kitty.checklist.md": "plugins/spec-kitty/workflows/spec-kitty.checklist.md",
+    ".agent/workflows/spec-kitty.clarify.md": "plugins/spec-kitty/workflows/spec-kitty.clarify.md",
+    ".agent/workflows/spec-kitty.constitution.md": "plugins/spec-kitty/workflows/spec-kitty.constitution.md",
+    ".agent/workflows/spec-kitty.dashboard.md": "plugins/spec-kitty/workflows/spec-kitty.dashboard.md",
+    ".agent/workflows/spec-kitty.implement.md": "plugins/spec-kitty/workflows/spec-kitty.implement.md",
+    ".agent/workflows/spec-kitty.merge.md": "plugins/spec-kitty/workflows/spec-kitty.merge.md",
+    ".agent/workflows/spec-kitty.plan.md": "plugins/spec-kitty/workflows/spec-kitty.plan.md",
+    ".agent/workflows/spec-kitty.research.md": "plugins/spec-kitty/workflows/spec-kitty.research.md",
+    # Oracle DB Analysis
+    "tools/codify/rlm/sql_dump_miner.py": "plugins/legacy-system-database/scripts/sql_dump_miner.py",
+    "tools/curate/utils/split_sql_dump.py": "plugins/legacy-system-database/scripts/split_sql_dump.py",
+    "tools/investigate/miners/extract_triggers.py": "plugins/legacy-system-database/scripts/extract_triggers.py",
+    "tools/investigate/miners/granulate_sql.py": "plugins/legacy-system-database/scripts/granulate_sql.py",
+    "tools/codify/enrichment/batch_enrich_db_objects.py": "plugins/legacy-system-database/scripts/batch_enrich_db_objects.py",
+    "tools/codify/doc_gen/batch_create_trigger_overviews.py": "plugins/legacy-system-database/scripts/batch_create_trigger_overviews.py",
+    "tools/codify/enrichment/batch_process_db_objects.py": "plugins/legacy-system-database/scripts/batch_process_db_objects.py",
+    "tools/investigate/miners/db_miner.py": "plugins/legacy-system-database/scripts/db_miner.py",
+    "tools/investigate/search/search_plsql.py": "plugins/legacy-system-database/scripts/search_plsql.py",
+
+    # Oracle DB Analysis (Workflows)
+    ".agent/workflows/legacy-system/investigate-code-search.md": "plugins/legacy-system-database/workflows/investigate-code-search.md",
+
+    # Oracle Forms Analysis (Orchestrator)
+    ".agent/workflows/legacy-system/codify-app.md": "plugins/legacy-system-oracle-forms/workflows/codify-app.md",
+
+    # Legacy Doc Gen
+    "tools/codify/doc_gen/analyze_tracking_status.py": "plugins/legacy-doc-gen/scripts/analyze_tracking_status.py",
+    "tools/codify/doc_gen/audit_template_compliance.py": "plugins/legacy-doc-gen/scripts/audit_template_compliance.py",
+    # ... (keeping existing lines)
+    "tools/codify/doc_gen/update_analysis_tracking.py": "plugins/legacy-doc-gen/scripts/update_analysis_tracking.py",
+
+    # --- Documentation Moves ---
+    # Agent Orchestrator
+    "docs/architecture/agent-architecture.md": "plugins/agent-orchestrator/docs/agent-architecture.md",
+    "docs/architecture/multi_agent_relationship.mmd": "plugins/agent-orchestrator/docs/multi_agent_relationship.mmd",
+    "docs/architecture/context_management_flow.mmd": "plugins/agent-orchestrator/docs/context_management_flow.mmd",
+    
+    # Coding Conventions
+    "docs/standards/coding_conventions_policy.md": "plugins/coding-conventions/docs/coding_conventions_policy.md",
+    "docs/standards/file-naming.md": "plugins/coding-conventions/docs/file-naming.md",
+    
+    # Forms Visualizer
+    "docs/oracle-forms-visualizer/setup.md": "plugins/forms-visualizer/docs/setup.md",
+    
+    # Legacy System Oracle Forms
+    "docs/architecture/legacy-oracle-architecture.mmd": "plugins/legacy-system-oracle-forms/docs/legacy-oracle-architecture.mmd",
+    
+    # Spec Kitty
+    "docs/OPERATIONS.md": "plugins/spec-kitty/docs/OPERATIONS.md",
+    "docs/architecture/workflow-architecture.md": "plugins/spec-kitty/docs/workflow-architecture.md",
+    "docs/architecture/project_management_structure.mmd": "plugins/spec-kitty/docs/project_management_structure.mmd",
+    "docs/architecture/spec-driven-development-lifecycle.mmd": "plugins/spec-kitty/docs/spec-driven-development-lifecycle.mmd",
+    "docs/diagrams/speckit_system_bridge.mmd": "plugins/spec-kitty/docs/diagrams/speckit_system_bridge.mmd",
+    "docs/diagrams/speckit_system_bridge.png": "plugins/spec-kitty/docs/diagrams/speckit_system_bridge.png",
+    "docs/diagrams/agents/gemini-bridge-architecture.mmd": "plugins/spec-kitty/docs/diagrams/agents/gemini-bridge-architecture.mmd",
+    "docs/diagrams/agents/gemini-bridge-architecture.png": "plugins/spec-kitty/docs/diagrams/agents/gemini-bridge-architecture.png",
+    
+    # Tool Inventory
+    "docs/tools/Tool_Script_Organization_Strategy.md": "plugins/tool-inventory/docs/Tool_Script_Organization_Strategy.md",
+    "docs/diagrams/tools/Tool_Architecture_Domain_Model.mmd": "plugins/tool-inventory/docs/diagrams/legacy-architecture/Tool_Architecture_Domain_Model.mmd",
+    "docs/diagrams/tools/Tool_Architecture_Domain_Model.png": "plugins/tool-inventory/docs/diagrams/legacy-architecture/Tool_Architecture_Domain_Model.png",
+
+    # RLM Factory
+    "docs/diagrams/rlm/rlm_process.mmd": "plugins/rlm-factory/docs/diagrams/rlm_process.mmd",
+    "docs/diagrams/architecture/rlm-factory-architecture.mmd": "plugins/rlm-factory/docs/diagrams/architecture/rlm-factory-architecture.mmd",
+    "docs/diagrams/architecture/rlm-factory-architecture.png": "plugins/rlm-factory/docs/diagrams/architecture/rlm-factory-architecture.png",
+    "docs/diagrams/architecture/rlm-factory-dual-path.mmd": "plugins/rlm-factory/docs/diagrams/architecture/rlm-factory-dual-path.mmd",
+    "docs/diagrams/architecture/rlm-factory-dual-path.png": "plugins/rlm-factory/docs/diagrams/architecture/rlm-factory-dual-path.png",
+
+    # AI Resources
+    "tools/ai-resources/prompts/": "plugins/ai-resources/prompts/",
+    "tools/ai-resources/personas/": "plugins/ai-resources/personas/",
+
+    # Standalone Docs
+    "docs/tools/standalone/context-bundler/": "plugins/context-bundler/docs/",
+    "docs/tools/standalone/link-checker/": "plugins/link-checker/docs/",
+    "docs/tools/standalone/rlm-factory/": "plugins/rlm-factory/docs/",
+    "docs/tools/standalone/vector-db/": "plugins/vector-db/docs/",
+    "docs/tools/standalone/xml-to-markdown/": "plugins/xml-to-markdown/docs/",
+
+    # Diagram Moves
+    # Database
+    "docs/diagrams/workflows/db-*.mmd": "plugins/legacy-system-database/docs/diagrams/workflows/db-*.mmd",
+    "docs/diagrams/workflows/db-*.png": "plugins/legacy-system-database/docs/diagrams/workflows/db-*.png",
+    
+    # Business Rules
+    "docs/diagrams/workflows/business-rule-candidate-discovery.mmd": "plugins/legacy-system-business-rules/docs/diagrams/workflows/business-rule-candidate-discovery.mmd",
+    "docs/diagrams/workflows/business-rule-candidate-discovery.png": "plugins/legacy-system-business-rules/docs/diagrams/workflows/business-rule-candidate-discovery.png",
+
+    # Business Workflows
+    "docs/diagrams/workflows/business-workflow-discovery.mmd": "plugins/legacy-system-business-workflows/docs/diagrams/workflows/business-workflow-discovery.mmd",
+
+    # Roles
+    "docs/diagrams/workflows/role-discovery.mmd": "plugins/legacy-system-roles/docs/diagrams/workflows/role-discovery.mmd",
+    
+    # Reports
+    "docs/diagrams/workflows/report-discovery.mmd": "plugins/legacy-system-oracle-reports/docs/diagrams/workflows/report-discovery.mmd",
+    "docs/diagrams/workflows/report-discovery.png": "plugins/legacy-system-oracle-reports/docs/diagrams/workflows/report-discovery.png",
+    
+    # Forms
+    "docs/diagrams/workflows/form-*.mmd": "plugins/legacy-system-oracle-forms/docs/diagrams/workflows/form-*.mmd",
+    "docs/diagrams/workflows/form-*.png": "plugins/legacy-system-oracle-forms/docs/diagrams/workflows/form-*.png",
+    "docs/diagrams/workflows/library-discovery.mmd": "plugins/legacy-system-oracle-forms/docs/diagrams/workflows/library-discovery.mmd",
+    "docs/diagrams/workflows/library-discovery.png": "plugins/legacy-system-oracle-forms/docs/diagrams/workflows/library-discovery.png",
+    "docs/diagrams/workflows/menu-*.mmd": "plugins/legacy-system-oracle-forms/docs/diagrams/workflows/menu-*.mmd",
+    "docs/diagrams/workflows/menu-*.png": "plugins/legacy-system-oracle-forms/docs/diagrams/workflows/menu-*.png",
+    "docs/diagrams/workflows/menu_generation_pipeline.mmd": "plugins/legacy-system-oracle-forms/docs/diagrams/workflows/menu_generation_pipeline.mmd",
+    "docs/diagrams/workflows/menu_generation_pipeline.png": "plugins/legacy-system-oracle-forms/docs/diagrams/workflows/menu_generation_pipeline.png",
 }
 
 # Paths to explicitly exclude from migration (they will be deleted later or handled manually)
@@ -159,13 +316,12 @@ def map_skills():
     return mappings
 
 def generate_inventory():
-    tools_files = find_files("tools", skip_dirs=[".git", "node_modules", "venv", ".venv"], extensions=[".py"])
+    # tools_files = find_files("tools", ...) # DEPRECATED: Scanning references instead
     plugins_files = find_files("plugins", skip_dirs=[".git", "node_modules", "venv", ".venv"], extensions=[".py"])
     
     inventory = {}
     
-    # --- TOOLS MAPPING ---
-    # Create potential targets map: filename -> full_path
+    # Create potential targets map: filename -> full_path (Fallback)
     plugin_targets = {}
     for p in plugins_files:
         filename = os.path.basename(p)
@@ -173,18 +329,69 @@ def generate_inventory():
             plugin_targets[filename] = []
         plugin_targets[filename].append(p)
 
-    tools_files.sort()
-    
-    for tool_path in tools_files:
-        # Normalize path
-        rel_path = os.path.relpath(tool_path, ".")
-        
-        # Skip cli.py and orchestrator/workflow_manager.py as they persist
-        if rel_path == "tools/cli.py":
-            continue
-        if rel_path == "plugins/spec-kitty/scripts/workflow_manager.py":
-            continue
+    # --- TOOLS MAPPING ---
+    # Load RLM Cache
+    # We need to import from plugins.tool_inventory.scripts.query_cache
+    # Since PROJECT_ROOT is in sys.path, we can import plugins...
+    try:
+        from plugins.tool_inventory.scripts.query_cache import load_cache, RLMConfig
+    except ImportError:
+        # Fallback: try adding specific path if package structure is loose
+        tool_inv_path = os.path.join(PROJECT_ROOT, 'plugins', 'tool-inventory', 'scripts')
+        if tool_inv_path not in sys.path:
+            sys.path.append(tool_inv_path)
+        from query_cache import load_cache, RLMConfig
 
+    config = RLMConfig(run_type="tool")
+    cache_data = load_cache(config)
+    
+    # Build filename -> new_path map from cache
+    # Only map if new path is in plugins/
+    cache_map = {}
+    for path, entry in cache_data.items():
+        if path.startswith("plugins/"):
+            filename = os.path.basename(path)
+            # Handle duplicates: if filename exists, mark as ambiguous (None)
+            if filename in cache_map:
+                cache_map[filename] = None 
+            else:
+                cache_map[filename] = path
+
+    # --- REFERENCE SCANNING ---
+    print("Scanning codebase for 'tools/' references...")
+    import re
+    
+    # Regex to find tools/... references
+    # Matches words starting with tools/ ending in .py, .md, .sh etc
+    # We'll be generous and refine later
+    ref_pattern = re.compile(r'tools/[\w\-\./]+\.[a-zA-Z]+')
+    
+    found_refs = set()
+    
+    # Scan all files in project
+    all_files = find_files(".", skip_dirs=[".git", "node_modules", "venv", ".venv", "__pycache__", "coverage", "dist", "build"])
+    
+    for file_path in all_files:
+        try:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read()
+                matches = ref_pattern.findall(content)
+                for m in matches:
+                    # Filter out tools/cli.py valid usages
+                    if m == "tools/cli.py": continue
+                    found_refs.add(m)
+        except Exception:
+            continue
+            
+    print(f"Found {len(found_refs)} unique 'tools/...' references in codebase.")
+
+    # --- RESOLUTION ---
+    # Resolve found references against RLM Cache
+    
+    for tool_path in sorted(list(found_refs)):
+        # Normalize path just in case
+        rel_path = tool_path
+        
         # Skip explicit exclusions
         if any(rel_path.startswith(prefix) for prefix in EXCLUDE_PREFIXES):
             continue
@@ -192,26 +399,20 @@ def generate_inventory():
         new_path = None
         status = "pending"
         
-        # Check known mappings first
+        # 1. Check known mappings first (Overrides)
         if rel_path in KNOWN_MAPPINGS:
             new_path = KNOWN_MAPPINGS[rel_path]
         else:
-            # Try to match by filename
+            # 2. Try to match by filename using RLM Cache
             filename = os.path.basename(rel_path)
-            if filename in plugin_targets:
-                 candidates = plugin_targets[filename]
-                 if len(candidates) == 1:
-                     new_path = candidates[0]
-                 else:
-                     # Heuristic: Prefer path with similar parent dir name
-                     best_match = None
-                     tool_parts = rel_path.split(os.sep)
-                     for cand in candidates:
-                         cand_parts = cand.split(os.sep)
-                         if set(tool_parts) & set(cand_parts):
-                             best_match = cand
-                             break
-                     new_path = best_match if best_match else candidates[0]
+            if filename in cache_map and cache_map[filename]:
+                 new_path = cache_map[filename]
+            else:
+                 # 3. Fallback: Try to find file in plugins dir if cache missed it (e.g. new file)
+                 if filename in plugin_targets:
+                     candidates = plugin_targets[filename]
+                     if len(candidates) == 1:
+                         new_path = candidates[0]
             
         if new_path:
              if not os.path.exists(new_path):
@@ -234,13 +435,33 @@ def generate_inventory():
             "status": "pending"
         }
         
-    # --- SKILLS MAPPING ---
-    skill_mappings = map_skills()
-    for src, dst in skill_mappings.items():
-        rel_src = os.path.relpath(src, ".")
-        rel_dst = os.path.relpath(dst, ".")
-        inventory[rel_src] = {
-            "new_path": rel_dst,
+    # Skills
+    # Skills
+    skills_map = {
+        ".agent/skills/oracle-forms-tech-stack-mapping/SKILL.md": "plugins/code-conversion/skills/oracle-forms-tech-stack-mapping/SKILL.md",
+        ".agent/skills/dependency-management/SKILL.md": "plugins/dependency-management/skills/dependency-management/SKILL.md",
+        ".agent/skills/spec_kitty_workflow/SKILL.md": "plugins/spec-kitty/skills/spec_kitty_workflow/SKILL.md",
+        ".agent/skills/coding-conventions/SKILL.md": "plugins/coding-conventions/skills/coding-conventions/SKILL.md",
+        ".agent/skills/context-bundling/SKILL.md": "plugins/context-bundler/skills/context-bundling/SKILL.md",
+        ".agent/skills/rlm-distill/SKILL.md": "plugins/rlm-factory/skills/rlm-distill/SKILL.md",
+        ".agent/skills/vector-db-launch/SKILL.md": "plugins/vector-db/skills/vector-db-launch/SKILL.md",
+        ".agent/skills/tool_discovery/SKILL.md": "plugins/tool-inventory/skills/tool_discovery/SKILL.md",
+        ".agent/skills/ollama-launch/SKILL.md": "plugins/rlm-factory/skills/ollama-launch/SKILL.md",
+        
+        # Generic Skills
+        ".agent/skills/code-review/SKILL.md": "plugins/code-review/skills/code-review/SKILL.md",
+        ".agent/skills/doc-coauthoring/SKILL.md": "plugins/doc-coauthoring/skills/doc-coauthoring/SKILL.md",
+        ".agent/skills/mcp-builder/SKILL.md": "plugins/mcp-builder/skills/mcp-builder/SKILL.md",
+        ".agent/skills/memory-management/SKILL.md": "plugins/memory-management/skills/memory-management/SKILL.md",
+        ".agent/skills/skill-creator/SKILL.md": "plugins/skill-creator/skills/skill-creator/SKILL.md",
+        
+        # Rules
+        ".agent/rules/standard-workflow-rules.md": "plugins/spec-kitty/references/standard-workflow-rules.md",
+    }
+    
+    for src, dst in skills_map.items():
+        inventory[src] = {
+            "new_path": dst,
             "status": "pending"
         }
 

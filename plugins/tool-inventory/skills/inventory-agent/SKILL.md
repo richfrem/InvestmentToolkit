@@ -41,7 +41,7 @@ architecture: JSON for structured data + ChromaDB for semantic search.
 | Store | Location | Purpose |
 |:---|:---|:---|
 | **ChromaDB** | `${PLUGIN_ROOT}/data/chroma/` | Semantic search (primary) |
-| **JSON Inventory** | `tools/tool_inventory.json` (project-level) | Structured registry |
+| **JSON Inventory** | `tools/tool_inventory.json` | Project-level structured registry |
 | **JSON Cache** | `.agent/learning/rlm_tool_cache.json` (project-level) | Backward compat |
 
 ---

@@ -13,7 +13,7 @@ except FileNotFoundError:
 
 # File extensions to scan
 SCAN_EXTS = {".py", ".md", ".sh", ".yaml", ".yml", ".json", ".toml"}
-SKIP_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", "plugins"} # Skip plugins so we don't rewrite target files
+SKIP_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv"} # Allow scanning plugins to fix internal references
 
 def scan_and_replace(root_dir):
     updates_count = 0
