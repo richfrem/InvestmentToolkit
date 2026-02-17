@@ -36,7 +36,7 @@ After loading, `/help` should show:
 ## Configuration
 
 ### Environment Variables (.env)
-Create a `.env` file in the **project root** (`/Users/richardfremmerlid/Projects/InvestmentToolkit/.env`) to customize the factory:
+Create a `.env` file in the **project root** (`.env`) to customize the factory:
 
 ```bash
 # Configuration in <project_root>/.env

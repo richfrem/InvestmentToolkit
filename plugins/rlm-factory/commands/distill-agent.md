@@ -10,7 +10,7 @@ Use this workflow to bypass slow local Ollama models when summarizing **document
 
 1.  **Identify the document** (e.g., `docs/architecture_overview.md`).
 2.  **Read the document** using `view_file`.
-3.  **Read the project prompt** from [rlm_summarize_sanctuary.md](file:///Users/richardfremmerlid/Projects/InvestmentToolkit/plugins/rlm-factory/resources/prompts/rlm/rlm_summarize_sanctuary.md).
+3.  **Read the project prompt** from [rlm_summarize_sanctuary.md](plugins/rlm-factory/resources/prompts/rlm/rlm_summarize_sanctuary.md).
 4.  **Generate a high-quality one-sentence summary** (Concise text sentence).
 5.  **Execute the distiller** for the **project** type (Targets `rlm_summary_cache.json`):
 

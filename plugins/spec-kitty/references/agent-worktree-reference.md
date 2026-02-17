@@ -20,9 +20,9 @@ IF you are implementing a WP:
 ```
 
 **Examples:**
-- `.worktrees/002-screener-ui-improvements-WP07/`
-- `.worktrees/001-auth-system-WP03/`
-- `.worktrees/014-dashboard-redesign-WP01/`
+- `.worktrees/0002-screener-ui-improvements-WP07/`
+- `.worktrees/0001-auth-system-WP03/`
+- `.worktrees/0014-dashboard-redesign-WP01/`
 
 ### Branch Names
 Branches should match the worktree pattern:
@@ -52,7 +52,7 @@ pwd && git branch --show-current
 
 ### Expected Output When in a Worktree:
 ```
-/path/to/project/.worktrees/002-feature-WP07
+/path/to/project/.worktrees/0002-feature-WP07
 002-feature-WP07
 ```
 
@@ -76,7 +76,7 @@ main
 
 ### ✅ CORRECT: Commit from Worktree
 ```bash
-cd /path/to/.worktrees/002-feature-WP07/
+cd /path/to/.worktrees/0002-feature-WP07/
 git add .
 git commit -m "feat(WP07): implement feature"
 ```
@@ -117,7 +117,7 @@ git push origin main  # NEVER DO THIS
 spec-kitty implement WP07
 
 # 2. IMMEDIATELY change directory
-cd .worktrees/002-screener-ui-improvements-WP07/
+cd .worktrees/0002-screener-ui-improvements-WP07/
 
 # 3. Verify location
 pwd && git branch --show-current
@@ -156,8 +156,8 @@ When using file tools, always use absolute paths:
 
 | Operation | Path Format |
 |-----------|-------------|
-| View file in worktree | `/full/path/.worktrees/002-feature-WP07/src/file.ts` |
-| Edit file in worktree | `/full/path/.worktrees/002-feature-WP07/src/file.ts` |
+| View file in worktree | `/full/path/.worktrees/0002-feature-WP07/src/file.ts` |
+| Edit file in worktree | `/full/path/.worktrees/0002-feature-WP07/src/file.ts` |
 | View file in main | `/full/path/InvestmentToolkit/src/file.ts` |
 
 **Template:**
