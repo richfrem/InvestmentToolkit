@@ -207,9 +207,7 @@ After all references point to `plugins/`, run the bridge to populate agent-speci
 
 ```bash
 # Install all plugins to all detected environments
-for plugin in plugins/*/; do
-    python3 plugins/plugin-bridge/scripts/bridge_installer.py --plugin "$plugin"
-done
+python3 plugins/plugin-bridge/scripts/install_all_plugins.py
 ```
 
 This auto-populates:
