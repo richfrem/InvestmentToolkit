@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Save, RotateCcw, Info, X, AlertTriangle, Table2, SlidersHorizontal, ChevronUp, ChevronDown } from 'lucide-react';
+import { Save, RotateCcw, Info, X, AlertTriangle, Table2, SlidersHorizontal, ChevronUp, ChevronDown, TrendingUp, TrendingDown } from 'lucide-react';
 import type { StockData } from '../services/api';
 import { ProjectionsPanel } from './ProjectionsPanel';
 import { storage } from '../services/storage';
@@ -34,6 +34,8 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const [saveAsDefault, setSaveAsDefault] = useState(false);
     const [showPresetModal, setShowPresetModal] = useState(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
+    const [showFullAnalysis, setShowFullAnalysis] = useState(false);
+    const [showMatrix, setShowMatrix] = useState(false);
 
     const [viewingProjection, setViewingProjection] = useState<Projection | null>(null); // State for modal viewing
     const [activeProjection, setActiveProjection] = useState<{ id: string, version: number } | null>(null); // Track loaded projection for updates
@@ -764,113 +766,26 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 </div>
             </div>
 
-            {/* Top Row: Hero & Matrix */}
-            <div className="mb-6 flex-none">
-                {/* Hero Section: Target Price (Full Width) */}
-                <div className="w-full flex flex-col items-center justify-center bg-gradient-to-r from-slate-900/80 to-slate-900/30 rounded-xl border border-slate-800/50 relative overflow-hidden min-h-[200px]">
-                    {/* Top Right Actions (Toggles) */}
-                    <div className="absolute top-3 right-3 flex gap-1 z-20 bg-slate-950/40 p-1 rounded-lg border border-white/5 backdrop-blur-sm">
-                        {(['bear', 'base', 'bull'] as const).map((s) => (
-                            <button
-                                key={s}
-                                onClick={() => setActiveScenario(s)}
-                                className={`px-3 py-1 rounded text-[9px] font-bold uppercase tracking-wider transition-all ${activeScenario === s
-                                    ? s === 'bull' ? 'bg-green-500/20 text-green-400 border border-green-500/30 shadow-[0_0_10px_rgba(74,222,128,0.2)]'
-                                        : s === 'bear' ? 'bg-red-500/20 text-red-400 border border-red-500/30 shadow-[0_0_10px_rgba(248,113,113,0.2)]'
-                                            : 'bg-primary/20 text-primary border border-primary/30 shadow-[0_0_10px_rgba(99,102,241,0.2)]'
-                                    : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
-                                    }`}
-                            >
-                                {s}
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className="flex flex-col items-center justify-center flex-1 my-2 relative z-10">
-                        <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em] mb-1 flex items-center gap-1.5 opacity-80">
-                            Weighted Fair Value
-                            <HelpTrigger topicId="fairValue" size={12} />
-                        </span>
-                        <div className="text-[9px] text-slate-500 font-normal mb-2 tracking-wide">(Weighted across Bear/Base/Bull scenarios)</div>
-                        <div className="relative group cursor-help">
-                            <div className="text-5xl font-black text-white tracking-tight flex items-baseline gap-3 drop-shadow-2xl">
-                                <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400">
-                                    ${Math.round(targetPrice)}
-                                </span>
-                            </div>
-                            {/* Hover Detail: Upside */}
-                            <div className={`absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-bold tracking-wide ${upside >= 0 ? 'text-green-400' : 'text-red-400'} opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap`}>
-                                {upside > 0 ? '+' : ''}{upside.toFixed(0)}% Upside
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* AI Calibration Alert (Overlay) */}
-                    {aiResult && aiResult.fair_value && Math.abs(targetPrice - aiResult.fair_value) / aiResult.fair_value > 0.05 && (
-                        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-30">
-                            <button
-                                onClick={() => {
-                                    const ratio = aiResult.fair_value / targetPrice;
-                                    updateCurrent({ qualityMultiplier: Math.min(2.0, Math.max(0.5, current.qualityMultiplier * ratio)) });
-                                    setScenarios(prev => ({
-                                        bear: { ...prev.bear, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.bear.qualityMultiplier * ratio)) },
-                                        base: { ...prev.base, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.base.qualityMultiplier * ratio)) },
-                                        bull: { ...prev.bull, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.bull.qualityMultiplier * ratio)) }
-                                    }));
-                                }}
-                                className="px-3 py-1 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-200 text-[10px] font-bold uppercase rounded-full border border-yellow-500/30 transition-colors whitespace-nowrap flex items-center gap-2 backdrop-blur-md shadow-lg animate-pulse"
-                            >
-                                <AlertTriangle size={10} />
-                                Sync to AI Target: ${aiResult.fair_value.toFixed(0)}
-                            </button>
-                        </div>
-                    )}
-
-                    {/* Bottom Status Bar (Active Scenario Detail) */}
-                    <div className="mt-auto w-full border-t border-white/5 bg-black/20 pt-3 pb-1 px-4 flex justify-between items-center backdrop-blur-sm">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider">Active Scenario:</span>
-                            <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${activeScenario === 'bull' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
-                                activeScenario === 'bear' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
-                                    'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
-                                }`}>
-                                {activeScenario}
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-4 text-[10px] text-slate-400 font-medium">
-                            <div className="flex items-baseline gap-1">
-                                <span>Target:</span>
-                                <span className="text-white font-bold text-xs">${Math.round(activePrice)}</span>
-                            </div>
-                            <div className="flex items-baseline gap-1">
-                                <span>Implied Return:</span>
-                                <span className={`font-bold ${activeUpside >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                    {activeUpside > 0 ? '+' : ''}{activeUpside.toFixed(0)}%
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+            {/* AI Calibration Alert (Overlay) */}
+            {aiResult && aiResult.fair_value && Math.abs(targetPrice - aiResult.fair_value) / aiResult.fair_value > 0.05 && (
+                <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-30">
+                    <button
+                        onClick={() => {
+                            const ratio = aiResult.fair_value / targetPrice;
+                            updateCurrent({ qualityMultiplier: Math.min(2.0, Math.max(0.5, current.qualityMultiplier * ratio)) });
+                            setScenarios(prev => ({
+                                bear: { ...prev.bear, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.bear.qualityMultiplier * ratio)) },
+                                base: { ...prev.base, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.base.qualityMultiplier * ratio)) },
+                                bull: { ...prev.bull, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.bull.qualityMultiplier * ratio)) }
+                            }));
+                        }}
+                        className="px-3 py-1 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-200 text-[10px] font-bold uppercase rounded-full border border-yellow-500/30 transition-colors whitespace-nowrap flex items-center gap-2 backdrop-blur-md shadow-lg animate-pulse"
+                    >
+                        <AlertTriangle size={10} />
+                        Sync to AI Target: ${aiResult.fair_value.toFixed(0)}
+                    </button>
                 </div>
-
-                {/* Vertical Matrix (Span 1) */}
-                <div className="bg-surface border border-slate-800/50 rounded-xl p-3 flex flex-col justify-center">
-                    <div className="space-y-2">
-                        {[
-                            { mode: 'Bear', price: Math.round(bearPrice), upside: ((bearPrice - stockData.price) / stockData.price) * 100, color: 'text-red-400' },
-                            { mode: 'Base', price: Math.round(basePrice), upside: ((basePrice - stockData.price) / stockData.price) * 100, color: 'text-primary' },
-                            { mode: 'Bull', price: Math.round(bullPrice), upside: ((bullPrice - stockData.price) / stockData.price) * 100, color: 'text-green-400' }
-                        ].map((item) => (
-                            <div key={item.mode} className="flex justify-between items-center p-2 bg-slate-900/50 rounded-lg">
-                                <span className="text-xs font-bold text-secondary">{item.mode}</span>
-                                <div className="text-right leading-none">
-                                    <div className={`text-sm font-bold ${item.color}`}>${item.price}</div>
-                                    <div className="text-[10px] text-slate-500">{item.upside > 0 ? '+' : ''}{item.upside.toFixed(0)}%</div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
+            )}
 
             {/* AI Thesis Section */}
             {
@@ -927,8 +842,8 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                     <p className="text-xs text-slate-400">{aiError}</p>
                                 </div>
                             ) : aiResult ? (
-                                <div className="relative z-10">
-                                    <div className="text-xs text-slate-300 leading-relaxed font-medium max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                                <div className="relative z-10 transition-all duration-300 ease-in-out">
+                                    <div className={`text-xs text-slate-300 leading-relaxed font-medium pr-2 custom-scrollbar ${showFullAnalysis ? 'max-h-96 overflow-y-auto' : 'max-h-[60px] overflow-hidden'}`}>
                                         <ReactMarkdown components={{
                                             strong: ({ node, ...props }: any) => <span className="font-bold text-indigo-200" {...props} />,
                                             h1: ({ node, ...props }: any) => <span className="block font-bold mt-2 mb-1" {...props} />,
@@ -939,6 +854,19 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                             {aiResult.rationale}
                                         </ReactMarkdown>
                                     </div>
+                                    {!showFullAnalysis && (
+                                        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-slate-900 to-transparent pointer-events-none"></div>
+                                    )}
+                                    <button
+                                        onClick={() => setShowFullAnalysis(!showFullAnalysis)}
+                                        className="mt-1 text-[10px] uppercase font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 bg-slate-800/50 px-2 py-0.5 rounded transition-colors"
+                                    >
+                                        {showFullAnalysis ? (
+                                            <>Show Less <ChevronUp size={10} /></>
+                                        ) : (
+                                            <>Show Full Analysis <ChevronDown size={10} /></>
+                                        )}
+                                    </button>
                                 </div>
                             ) : null}
                         </div>
@@ -946,183 +874,275 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 )
             }
 
-            {/* Main Body: Inputs & Preview */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                {/* Left Column: Sliders (Span 2) */}
-                <div className="lg:col-span-2 bg-slate-900/40 border border-slate-800 rounded-xl p-5 backdrop-blur-sm">
-                    <div className="flex justify-between items-center mb-6 border-b border-slate-800/50 pb-2">
-                        <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                            <SlidersHorizontal size={16} className="text-indigo-400" />
-                            Model Drivers
-                        </h3>
-                        <button
-                            onClick={() => setShowAdvanced(!showAdvanced)}
-                            className="text-[10px] uppercase font-bold text-slate-500 hover:text-indigo-400 transition-colors flex items-center gap-1 bg-slate-800/50 px-2 py-1 rounded hover:bg-slate-800"
-                        >
-                            {showAdvanced ? 'Hide Advanced' : 'Show Advanced'}
-                            {showAdvanced ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                        </button>
-                    </div>
+            {/* Main Body: 2-Column Grid (Left: Drivers, Right: Analysis) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-4 min-h-0 flex-1 overflow-y-auto custom-scrollbar pr-1">
+                {/* Left Column (65%): Hero + Drivers */}
+                <div className="lg:col-span-8 flex flex-col gap-4">
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                        {/* Core Inputs: Growth */}
-                        <div>
-                            <div className="flex justify-between mb-3 items-center">
-                                <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">Growth Engine</span>
-                                <div className="flex gap-1">
-                                    <button
-                                        onClick={() => { setGrowthBasis('current'); resetToYahoo(); }}
-                                        className={`px-1.5 py-0.5 text-[8px] rounded border transition-colors ${growthBasis === 'current' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
-                                    >
-                                        Cur: {(() => {
-                                            const val = stockData.growth_estimates?.stockTrend['0y'];
-                                            if (val === undefined) return 'N/A';
-                                            return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
-                                        })()}
-                                    </button>
-                                    <button
-                                        onClick={() => { setGrowthBasis('next'); resetToYahoo(); }}
-                                        className={`px-1.5 py-0.5 text-[8px] rounded border transition-colors ${growthBasis === 'next' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
-                                    >
-                                        Next: {(() => {
-                                            const val = stockData.growth_estimates?.stockTrend['+1y'];
-                                            if (val === undefined) return 'N/A';
-                                            return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
-                                        })()}
-                                    </button>
-                                </div>
-                            </div>
-                            <SliderInput
-                                label="Revenue Growth"
-                                value={growthRate}
-                                setValue={setGrowthRate}
-                                min={-50} max={100} unit="%"
-                                impact="High"
-                                helpTopic="growthRate"
-                            />
+                    {/* Hero Section (Target Price Dashboard) */}
+                    <div className="w-full bg-gradient-to-r from-slate-900/80 to-slate-900/30 rounded-xl border border-slate-800/50 relative overflow-hidden min-h-[140px] flex flex-col justify-between p-4">
+                        {/* Top Right Actions (Toggles) */}
+                        <div className="absolute top-3 right-3 flex gap-1 z-20 bg-slate-950/40 p-1 rounded-lg border border-white/5 backdrop-blur-sm">
+                            {(['bear', 'base', 'bull'] as const).map((s) => (
+                                <button
+                                    key={s}
+                                    onClick={() => setActiveScenario(s)}
+                                    className={`px-3 py-1 rounded text-[9px] font-bold uppercase tracking-wider transition-all ${activeScenario === s
+                                        ? s === 'bull' ? 'bg-green-500/20 text-green-400 border border-green-500/30 shadow-[0_0_10px_rgba(74,222,128,0.2)]'
+                                            : s === 'bear' ? 'bg-red-500/20 text-red-400 border border-red-500/30 shadow-[0_0_10px_rgba(248,113,113,0.2)]'
+                                                : 'bg-primary/20 text-primary border border-primary/30 shadow-[0_0_10px_rgba(99,102,241,0.2)]'
+                                        : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                                        }`}
+                                >
+                                    {s}
+                                </button>
+                            ))}
                         </div>
 
-                        {/* Core Inputs: Profitability */}
-                        <div>
-                            <div className="flex justify-between mb-3 items-center">
-                                <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">Profitability</span>
-                                <div className="flex gap-1">
-                                    <button
-                                        onClick={() => { setMarginBasis('ttm'); resetToYahoo(); }}
-                                        className={`px-1.5 py-0.5 text-[8px] rounded border transition-colors ${marginBasis === 'ttm' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
-                                    >
-                                        TTM: {(() => {
-                                            const val = stockData.metrics?.profit_margin ?? 0;
-                                            return (Math.abs(val) > 1 ? val : val * 100).toFixed(1);
-                                        })()}%
-                                    </button>
-                                    <button
-                                        onClick={() => { setMarginBasis('quarterly'); resetToYahoo(); }}
-                                        className={`px-1.5 py-0.5 text-[8px] rounded border transition-colors ${marginBasis === 'quarterly' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
-                                    >
-                                        Q: {stockData.quarterly_margin ? stockData.quarterly_margin.toFixed(1) + '%' : 'N/A'}
-                                    </button>
-                                </div>
+                        {/* Center Metric */}
+                        <div className="flex flex-col items-center justify-center flex-1 z-10">
+                            <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em] mb-1 flex items-center gap-1.5 opacity-80">
+                                Weighted Fair Value
+                            </span>
+                            <div className="text-4xl font-black text-white tracking-tight flex items-baseline gap-2 drop-shadow-2xl">
+                                ${Math.round(targetPrice)}
+                                <span className={`text-sm font-bold ${upside > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                    ({upside > 0 ? '+' : ''}{upside.toFixed(0)}%)
+                                </span>
                             </div>
-                            <SliderInput
-                                label="Net Margin"
-                                value={netMargin}
-                                setValue={setNetMargin}
-                                min={-20} max={80} unit="%"
-                                impact="High"
-                                helpTopic="netMargin"
-                            />
                         </div>
 
-                        {/* Core Inputs: Valuation */}
-                        <div>
-                            <div className="text-[10px] font-bold text-indigo-300 uppercase mb-3 tracking-wider flex justify-between items-center">
-                                Valuation
-                                <div className={`text-[9px] px-1.5 py-0.5 rounded border ${Math.abs(totalWeight - 1.0) < 0.01 ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20 animate-pulse'}`}>
-                                    Risk Weight: {Math.round(totalWeight * 100)}%
-                                </div>
+                        {/* Bottom Status Bar */}
+                        <div className="mt-auto w-full border-t border-white/5 pt-2 flex justify-between items-center z-10">
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] text-slate-400 uppercase">Active Case:</span>
+                                <span className={`text-xs font-bold uppercase ${activeScenario === 'bull' ? 'text-green-400' : activeScenario === 'bear' ? 'text-red-400' : 'text-indigo-400'}`}>
+                                    {activeScenario}
+                                </span>
                             </div>
-                            <SliderInput
-                                label="Exit P/E"
-                                value={peRatio}
-                                setValue={setPeRatio}
-                                min={1} max={100} unit="x"
-                                impact="High"
-                                helpTopic="exitPE"
-                                note={`Fwd: ${(stockData.analyst_estimates?.forward_pe || stockData.metrics?.forward_pe || 0).toFixed(1)}x`}
-                            />
-                            <SliderInput
-                                label="Scenario Prob."
-                                value={currentWeight}
-                                setValue={setWeight}
-                                min={0} max={100} unit="%"
-                                impact="High"
-                                helpTopic="probabilityWeight"
-                                note="Weight"
-                            />
-                        </div>
-
-                        {/* Core Inputs: Structure */}
-                        <div>
-                            <div className="text-[10px] font-bold text-indigo-300 uppercase mb-3 tracking-wider">Structure</div>
-                            <SliderInput
-                                label="Discount Rate"
-                                value={discountRate}
-                                setValue={setDiscountRate}
-                                min={0} max={20} unit="%"
-                                impact="Med"
-                                helpTopic="discountRate"
-                                warningThreshold={4}
-                                note="Typ: 8-12%"
-                            />
+                            <div className="flex items-center gap-4 text-[10px] text-slate-400">
+                                <span>Target: <span className="text-white font-bold">${Math.round(activePrice)}</span></span>
+                                <span>Upside: <span className={activeUpside > 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold'}>{activeUpside > 0 ? '+' : ''}{activeUpside.toFixed(0)}%</span></span>
+                            </div>
                         </div>
                     </div>
 
-                    {showAdvanced && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mt-6 pt-6 border-t border-slate-800/50 animate-in fade-in slide-in-from-top-2">
+                    {/* Drivers Panel */}
+                    <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-5 backdrop-blur-sm">
+                        <div className="flex justify-between items-center mb-4 border-b border-slate-800/50 pb-2">
+                            <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                <SlidersHorizontal size={16} className="text-indigo-400" />
+                                Model Drivers
+                            </h3>
+                            <button
+                                onClick={() => setShowAdvanced(!showAdvanced)}
+                                className="text-[10px] uppercase font-bold text-slate-500 hover:text-indigo-400 transition-colors flex items-center gap-1 bg-slate-800/50 px-2 py-1 rounded hover:bg-slate-800"
+                            >
+                                {showAdvanced ? 'Hide Advanced' : 'Show Advanced'}
+                                {showAdvanced ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                            {/* Core Inputs: Growth */}
                             <div>
-                                <div className="text-[10px] font-bold text-slate-500 uppercase mb-3 tracking-wider">Advanced Assumptions</div>
-                                <div className="space-y-4">
-                                    <SliderInput label="Quality Multiplier" value={qualityMultiplier} setValue={setQualityMultiplier} min={0.5} max={2.0} step={0.05} unit="x" impact="Med" helpTopic="qualityMultiplier" note="Typ: 1.0x" />
-                                    <SliderInput label="Share Change" value={shareChange} setValue={setShareChange} min={-20} max={20} unit="%" impact="Med" helpTopic="shareChange" note="(-) Buyback" />
+                                <div className="flex justify-between mb-2 items-center">
+                                    <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">Growth Engine</span>
+                                    <div className="flex gap-1">
+                                        <button
+                                            onClick={() => { setGrowthBasis('current'); resetToYahoo(); }}
+                                            className={`px-1.5 py-0.5 text-[8px] rounded border transition-colors ${growthBasis === 'current' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
+                                        >
+                                            Cur: {(() => {
+                                                const val = stockData.growth_estimates?.stockTrend['0y'];
+                                                if (val === undefined) return 'N/A';
+                                                return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
+                                            })()}
+                                        </button>
+                                        <button
+                                            onClick={() => { setGrowthBasis('next'); resetToYahoo(); }}
+                                            className={`px-1.5 py-0.5 text-[8px] rounded border transition-colors ${growthBasis === 'next' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
+                                        >
+                                            Next: {(() => {
+                                                const val = stockData.growth_estimates?.stockTrend['+1y'];
+                                                if (val === undefined) return 'N/A';
+                                                return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
+                                            })()}
+                                        </button>
+                                    </div>
                                 </div>
+                                <SliderInput
+                                    label="Revenue Growth"
+                                    value={growthRate}
+                                    setValue={setGrowthRate}
+                                    min={-50} max={100} unit="%"
+                                    impact="High"
+                                    helpTopic="growthRate"
+                                />
                             </div>
+
+                            {/* Core Inputs: Profitability */}
                             <div>
-                                <div className="text-[10px] font-bold text-slate-500 uppercase mb-3 tracking-wider">Long Term Factors</div>
-                                <div className="space-y-4">
-                                    <SliderInput label="Time Horizon" value={timeHorizon} setValue={setTimeHorizon} min={1} max={10} unit="yr" impact="Low" helpTopic="timeHorizon" />
-                                    <SliderInput label="Strategic Moat" value={moatScore} setValue={setMoatScore} min={0} max={5} unit="/5" helpTopic="moatScore" note="+5% per pt" />
-                                    <SliderInput label="Govt / Insider" value={managementScore} setValue={setManagementScore} min={0} max={5} unit="/5" helpTopic="managementScore" note="+5% per pt" />
+                                <div className="flex justify-between mb-2 items-center">
+                                    <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">Profitability</span>
+                                    <div className="flex gap-1">
+                                        <button
+                                            onClick={() => { setMarginBasis('ttm'); resetToYahoo(); }}
+                                            className={`px-1.5 py-0.5 text-[8px] rounded border transition-colors ${marginBasis === 'ttm' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
+                                        >
+                                            TTM: {(() => {
+                                                const val = stockData.metrics?.profit_margin ?? 0;
+                                                return (Math.abs(val) > 1 ? val : val * 100).toFixed(1);
+                                            })()}%
+                                        </button>
+                                        <button
+                                            onClick={() => { setMarginBasis('quarterly'); resetToYahoo(); }}
+                                            className={`px-1.5 py-0.5 text-[8px] rounded border transition-colors ${marginBasis === 'quarterly' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
+                                        >
+                                            Q: {stockData.quarterly_margin ? stockData.quarterly_margin.toFixed(1) + '%' : 'N/A'}
+                                        </button>
+                                    </div>
                                 </div>
+                                <SliderInput
+                                    label="Net Margin"
+                                    value={netMargin}
+                                    setValue={setNetMargin}
+                                    min={-20} max={80} unit="%"
+                                    impact="High"
+                                    helpTopic="netMargin"
+                                />
+                            </div>
+
+                            {/* Core Inputs: Valuation */}
+                            <div>
+                                <div className="text-[10px] font-bold text-indigo-300 uppercase mb-2 tracking-wider flex justify-between items-center">
+                                    Valuation
+                                    <div className={`text-[9px] px-1.5 py-0.5 rounded border ${Math.abs(totalWeight - 1.0) < 0.01 ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20 animate-pulse'}`}>
+                                        Risk Weight: {Math.round(totalWeight * 100)}%
+                                    </div>
+                                </div>
+                                <SliderInput
+                                    label="Exit P/E"
+                                    value={peRatio}
+                                    setValue={setPeRatio}
+                                    min={1} max={100} unit="x"
+                                    impact="High"
+                                    helpTopic="exitPE"
+                                    note={`Fwd: ${(stockData.analyst_estimates?.forward_pe || stockData.metrics?.forward_pe || 0).toFixed(1)}x`}
+                                />
+                                <SliderInput
+                                    label="Scenario Prob."
+                                    value={currentWeight}
+                                    setValue={setWeight}
+                                    min={0} max={100} unit="%"
+                                    impact="High"
+                                    helpTopic="probabilityWeight"
+                                    note="Weight"
+                                />
+                            </div>
+
+                            {/* Core Inputs: Structure */}
+                            <div>
+                                <div className="text-[10px] font-bold text-indigo-300 uppercase mb-2 tracking-wider">Structure</div>
+                                <SliderInput
+                                    label="Discount Rate"
+                                    value={discountRate}
+                                    setValue={setDiscountRate}
+                                    min={0} max={20} unit="%"
+                                    impact="Med"
+                                    helpTopic="discountRate"
+                                    warningThreshold={4}
+                                    note="Typ: 8-12%"
+                                />
                             </div>
                         </div>
-                    )}
+
+                        {/* Collapsible Advanced Section */}
+                        {showAdvanced && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mt-4 pt-4 border-t border-slate-800/50 animate-in fade-in slide-in-from-top-2">
+                                <div>
+                                    <div className="text-[10px] font-bold text-slate-500 uppercase mb-2 tracking-wider">Advanced Evaluation</div>
+                                    <div className="space-y-3">
+                                        <SliderInput
+                                            label="Quality Multiplier"
+                                            value={qualityMultiplier}
+                                            setValue={setQualityMultiplier}
+                                            min={0.5} max={2.0} step={0.05} unit="x"
+                                            impact="Med"
+                                            helpTopic="qualityMultiplier"
+                                            note="Typ: 1.0x"
+                                        />
+                                        <SliderInput
+                                            label="Share Change"
+                                            value={shareChange}
+                                            setValue={setShareChange}
+                                            min={-20} max={20} unit="%"
+                                            impact="Med"
+                                            helpTopic="shareChange"
+                                            note="(-) Buyback"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="text-[10px] font-bold text-slate-500 uppercase mb-2 tracking-wider">Qualitative Factors</div>
+                                    <div className="space-y-3">
+                                        <SliderInput
+                                            label="Time Horizon"
+                                            value={timeHorizon}
+                                            setValue={setTimeHorizon}
+                                            min={1} max={10} unit="yr"
+                                            impact="Low"
+                                            helpTopic="timeHorizon"
+                                        />
+                                        <SliderInput
+                                            label="Strategic Moat"
+                                            value={moatScore}
+                                            setValue={setMoatScore}
+                                            min={0} max={5} unit="/5"
+                                            impact="Low"
+                                            helpTopic="moatScore"
+                                            note="+5% per pt"
+                                        />
+                                        <SliderInput
+                                            label="Govt / Insider"
+                                            value={managementScore}
+                                            setValue={setManagementScore}
+                                            min={0} max={5} unit="/5"
+                                            impact="Low"
+                                            helpTopic="managementScore"
+                                            note="+5% per pt"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* Right Column: Live Output (Scenario Breakdown) */}
-                <div className="lg:col-span-1 space-y-4">
+                {/* Right Column (35%): Live Analysis */}
+                <div className="lg:col-span-4 flex flex-col gap-4">
                     <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-5 h-full backdrop-blur-sm flex flex-col">
                         <h3 className="text-xs font-bold text-white mb-4 uppercase tracking-wider border-b border-slate-800 pb-2 flex justify-between items-center">
-                            <span>Live Analysis</span>
+                            <span>Live Projections</span>
                             <span className="text-[10px] text-slate-500">{activeScenario} Case</span>
                         </h3>
 
-                        {/* Mini P&L Preview */}
-                        <div className="space-y-3 mb-6 flex-1">
-                            <div className="flex justify-between items-center p-2 bg-slate-800/30 rounded">
+                        {/* Live P&L Preview */}
+                        <div className="space-y-4 mb-6 flex-1">
+                            <div className="flex justify-between items-center p-3 bg-slate-800/30 rounded-lg">
                                 <div className="text-[10px] text-slate-400 uppercase tracking-wide">Revenue (T+5)</div>
                                 <div className="text-sm font-bold text-white">
                                     ${((stockData.metrics.revenue || 0) * Math.pow(1 + growthRate / 100, timeHorizon) / 1000000000).toFixed(1)}B
                                 </div>
                             </div>
-                            <div className="flex justify-between items-center p-2 bg-slate-800/30 rounded">
+                            <div className="flex justify-between items-center p-3 bg-slate-800/30 rounded-lg">
                                 <div className="text-[10px] text-slate-400 uppercase tracking-wide">Net Income (T+5)</div>
                                 <div className="text-sm font-bold text-secondary">
                                     ${((stockData.metrics.revenue || 0) * Math.pow(1 + growthRate / 100, timeHorizon) * (netMargin / 100) / 1000000000).toFixed(1)}B
                                 </div>
                             </div>
-                            <div className="flex justify-between items-center p-2 bg-slate-800/30 rounded">
-                                <div className="text-[10px] text-slate-400 uppercase tracking-wide">Terminal Value</div>
+                            <div className="flex justify-between items-center p-3 bg-slate-800/30 rounded-lg border border-indigo-500/20 bg-indigo-500/5">
+                                <div className="text-[10px] text-indigo-300 uppercase tracking-wide font-bold">Terminal Value</div>
                                 <div className="text-sm font-bold text-indigo-300">
                                     ${(((stockData.metrics.revenue || 0) * Math.pow(1 + growthRate / 100, timeHorizon) * (netMargin / 100) * peRatio) / 1000000000).toFixed(1)}B
                                 </div>
@@ -1136,23 +1156,23 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                 Target Range
                             </h4>
                             <div className="space-y-2.5">
-                                <div className="flex justify-between text-xs items-center group cursor-pointer hover:bg-white/5 p-1 rounded transition-colors" onClick={() => setActiveScenario('bear')}>
+                                <div className="flex justify-between text-xs items-center group cursor-pointer hover:bg-white/5 p-2 rounded transition-colors" onClick={() => setActiveScenario('bear')}>
                                     <span className="text-red-400 font-bold flex items-center gap-2">
-                                        <div className={`w-1.5 h-1.5 rounded-full ${activeScenario === 'bear' ? 'bg-red-400 ring-2 ring-red-400/30' : 'bg-red-900'}`}></div>
+                                        <div className={`w-2 h-2 rounded-full ${activeScenario === 'bear' ? 'bg-red-400 ring-2 ring-red-400/30' : 'bg-red-900'}`}></div>
                                         Bear
                                     </span>
                                     <span className="text-slate-300 font-mono">${Math.round(bearPrice)}</span>
                                 </div>
-                                <div className="flex justify-between text-xs items-center group cursor-pointer hover:bg-white/5 p-1 rounded transition-colors" onClick={() => setActiveScenario('base')}>
+                                <div className="flex justify-between text-xs items-center group cursor-pointer hover:bg-white/5 p-2 rounded transition-colors" onClick={() => setActiveScenario('base')}>
                                     <span className="text-indigo-400 font-bold flex items-center gap-2">
-                                        <div className={`w-1.5 h-1.5 rounded-full ${activeScenario === 'base' ? 'bg-indigo-400 ring-2 ring-indigo-400/30' : 'bg-indigo-900'}`}></div>
+                                        <div className={`w-2 h-2 rounded-full ${activeScenario === 'base' ? 'bg-indigo-400 ring-2 ring-indigo-400/30' : 'bg-indigo-900'}`}></div>
                                         Base
                                     </span>
                                     <span className="text-white font-bold font-mono">${Math.round(basePrice)}</span>
                                 </div>
-                                <div className="flex justify-between text-xs items-center group cursor-pointer hover:bg-white/5 p-1 rounded transition-colors" onClick={() => setActiveScenario('bull')}>
+                                <div className="flex justify-between text-xs items-center group cursor-pointer hover:bg-white/5 p-2 rounded transition-colors" onClick={() => setActiveScenario('bull')}>
                                     <span className="text-green-400 font-bold flex items-center gap-2">
-                                        <div className={`w-1.5 h-1.5 rounded-full ${activeScenario === 'bull' ? 'bg-green-400 ring-2 ring-green-400/30' : 'bg-green-900'}`}></div>
+                                        <div className={`w-2 h-2 rounded-full ${activeScenario === 'bull' ? 'bg-green-400 ring-2 ring-green-400/30' : 'bg-green-900'}`}></div>
                                         Bull
                                     </span>
                                     <span className="text-slate-300 font-mono">${Math.round(bullPrice)}</span>
@@ -1163,9 +1183,27 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 </div>
             </div>
 
-            {/* Bottom: Sensitivity Matrix (Full Width) */}
-            <div className="mb-8 min-h-[160px]">
-                <SensitivityMatrix />
+            {/* Bottom: Collapsible Sensitivity Matrix */}
+            <div className="mb-2 bg-slate-900/40 border border-slate-800 rounded-xl overflow-hidden flex-none">
+                <button
+                    onClick={() => setShowMatrix(!showMatrix)}
+                    className="w-full flex justify-between items-center p-3 hover:bg-slate-800/50 transition-colors"
+                >
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                        <Table2 size={14} className="text-purple-400" />
+                        Sensitivity Matrix
+                    </span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-slate-500">{showMatrix ? 'Hide' : 'Expand to view sensitivity'}</span>
+                        {showMatrix ? <ChevronUp size={14} className="text-slate-500" /> : <ChevronDown size={14} className="text-slate-500" />}
+                    </div>
+                </button>
+
+                {showMatrix && (
+                    <div className="p-4 border-t border-slate-800 h-64 animate-in slide-in-from-top-2">
+                        <SensitivityMatrix />
+                    </div>
+                )}
             </div>
 
 
