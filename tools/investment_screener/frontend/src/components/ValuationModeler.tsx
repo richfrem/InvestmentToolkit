@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Save, RotateCcw, TrendingUp, TrendingDown, Info, X, AlertTriangle } from 'lucide-react';
+import { Save, RotateCcw, Info, X, AlertTriangle, Table2, SlidersHorizontal, ChevronUp, ChevronDown } from 'lucide-react';
 import type { StockData } from '../services/api';
 import { ProjectionsPanel } from './ProjectionsPanel';
 import { storage } from '../services/storage';
@@ -33,6 +33,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const [saveName, setSaveName] = useState('');
     const [saveAsDefault, setSaveAsDefault] = useState(false);
     const [showPresetModal, setShowPresetModal] = useState(false);
+    const [showAdvanced, setShowAdvanced] = useState(false);
 
     const [viewingProjection, setViewingProjection] = useState<Projection | null>(null); // State for modal viewing
     const [activeProjection, setActiveProjection] = useState<{ id: string, version: number } | null>(null); // Track loaded projection for updates
@@ -275,13 +276,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         }
     };
 
-    const handleApplyAISuggestions = () => {
-        if (!aiResult) return;
-        if (aiResult.suggested_growth) setGrowthRate(Math.round(aiResult.suggested_growth * 100));
-        if (aiResult.suggested_margin) setNetMargin(Math.round(aiResult.suggested_margin * 100));
-        if (aiResult.exit_pe) setPeRatio(aiResult.exit_pe);
-        if (aiResult.quality_multiplier) setQualityMultiplier(aiResult.quality_multiplier);
-    };
+
 
 
 
@@ -556,36 +551,65 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
     // --- Components ---
 
-    const SliderInput = ({ label, value, setValue, min, max, unit = '', step = 1, note = '', helpTopic = '', warningThreshold = null }: any) => {
+    const SliderInput = ({ label, value, setValue, min, max, unit = '', step = 1, note = '', helpTopic = '', warningThreshold = null, impact = 'Low' }: any) => {
         const isWarning = warningThreshold !== null && value < warningThreshold;
+        const impactColor = impact === 'High' ? 'bg-purple-500' : impact === 'Med' ? 'bg-blue-400' : 'bg-slate-600';
 
         return (
-            <div className="mb-2">
-                <div className="flex justify-between items-center mb-1">
-                    <div className="flex items-center gap-1">
-                        <label className={`text-[10px] font-medium uppercase tracking-wider flex items-center gap-1 ${isWarning ? 'text-red-400' : 'text-secondary'}`}>
+            <div className="mb-3 group">
+                <div className="flex justify-between items-center mb-1.5">
+                    <div className="flex items-center gap-2">
+                        {/* Impact Indicator */}
+                        <div className={`w-1 h-3 rounded-full ${impactColor}`} title={`${impact} Impact on Valuation`}></div>
+
+                        <label className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 ${isWarning ? 'text-red-400' : 'text-slate-300 group-hover:text-white transition-colors'}`}>
                             {label}
                         </label>
                         {helpTopic && (
-                            <HelpTrigger topicId={helpTopic} className="opacity-50 hover:opacity-100 transition-opacity" size={12} />
-                        )}
-                        {isWarning && (
-                            <span className="flex items-center text-[9px] text-red-500 font-bold animate-pulse ml-1" title="Below Risk-Free Rate (10y Treasury ~4%)">
-                                <Info size={10} className="text-red-500" />
-                            </span>
+                            <HelpTrigger topicId={helpTopic} className="opacity-30 hover:opacity-100 transition-opacity" size={12} />
                         )}
                     </div>
-                    <div className={`flex items-center rounded px-1.5 py-0.5 border ${isWarning ? 'bg-red-500/10 border-red-500/50' : 'bg-slate-800 border-slate-700'}`}>
-                        <input
-                            type="number"
-                            value={value}
-                            step={step}
-                            onChange={(e) => setValue(Number(e.target.value))}
-                            className={`w-14 bg-transparent text-right text-xs font-bold focus:outline-none ${isWarning ? 'text-red-400' : 'text-text'}`}
-                        />
-                        <span className="text-[10px] text-slate-500 ml-1">{unit}</span>
+
+                    {/* Value & Note Inline */}
+                    <div className="flex items-baseline gap-2">
+                        {note && <span className="text-[9px] text-slate-600 font-medium">{note}</span>}
+                        <div className={`flex items-center rounded px-2 py-0.5 border ${isWarning ? 'bg-red-500/10 border-red-500/50' : 'bg-slate-800 border-slate-700 GROUP-HOVER:border-slate-500 transition-colors'}`}>
+                            <input
+                                type="number"
+                                value={value}
+                                step={step}
+                                onChange={(e) => setValue(Number(e.target.value))}
+                                className={`w-12 bg-transparent text-right text-xs font-bold focus:outline-none ${isWarning ? 'text-red-400' : 'text-white'}`}
+                            />
+                            <span className="text-[10px] text-slate-500 ml-0.5">{unit}</span>
+                        </div>
                     </div>
                 </div>
+
+                <div className="relative h-2 flex items-center">
+                    <input
+                        type="range"
+                        min={min}
+                        max={max}
+                        step={step}
+                        value={value}
+                        onChange={(e) => setValue(Number(e.target.value))}
+                        className={`absolute w-full h-1 rounded-lg appearance-none cursor-pointer z-10 opacity-0`}
+                    />
+                    {/* Custom Track */}
+                    <div className="w-full h-1 bg-slate-800 rounded-lg overflow-hidden relative">
+                        <div
+                            className={`h-full ${isWarning ? 'bg-red-500' : 'bg-indigo-500'} transition-all duration-75 ease-out`}
+                            style={{ width: `${((value - min) / (max - min)) * 100}%` }}
+                        ></div>
+                    </div>
+                    {/* Thumb visual (optional, since opacity-0 hides native thumb, we rely on track fill or need custom thumb. 
+                        Let's keep native thumb for simplicity but style it better if possible. 
+                        Actually, keeping native fully visible is safer for usability unless we build custom handle) 
+                    */}
+                </div>
+
+                {/* Reverting to standard range input for reliability, but styled */}
                 <input
                     type="range"
                     min={min}
@@ -593,14 +617,14 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     step={step}
                     value={value}
                     onChange={(e) => setValue(Number(e.target.value))}
-                    className={`w-full h-1 rounded-lg appearance-none cursor-pointer transition-all ${isWarning
-                        ? 'bg-red-900/50 accent-red-500 hover:accent-red-400'
-                        : 'bg-slate-800 accent-primary hover:accent-primary-hover'
+                    className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer transition-all mt-1 ${isWarning
+                        ? 'bg-red-900/30 accent-red-500 hover:accent-red-400'
+                        : 'bg-slate-800 accent-indigo-500 hover:accent-indigo-400'
                         }`}
                 />
-                <div className="flex justify-between text-[8px] text-slate-600 mt-0.5">
+
+                <div className="flex justify-between text-[8px] text-slate-700 mt-1 px-0.5">
                     <span>{min}</span>
-                    <span className="text-primary/70">{note}</span>
                     <span>{max}</span>
                 </div>
             </div>
@@ -635,9 +659,9 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         ];
 
         return (
-            <div className="bg-slate-900/20 p-3 rounded-xl border border-slate-800 overflow-x-auto h-full flex flex-col">
-                <h3 className="text-xs font-bold text-white mb-2 flex items-center gap-2">
-                    <span className="w-1 h-3 bg-purple-500 rounded-full"></span>
+            <div className="bg-slate-900/40 p-4 rounded-xl border border-slate-800 h-full flex flex-col">
+                <h3 className="text-xs font-bold text-slate-300 mb-3 flex items-center gap-2 uppercase tracking-wider">
+                    <span className="w-1 h-3 bg-purple-500 rounded-full animate-pulse"></span>
                     Sensitivity Matrix
                 </h3>
                 <div className="flex-1 overflow-auto">
@@ -646,7 +670,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             <tr>
                                 <th className="p-1 text-slate-500 font-medium text-left border-b border-slate-800">G \ PE</th>
                                 {peRange.map(pe => (
-                                    <th key={pe} className={`p-1 border-b border-slate-800 ${pe === currentPe ? 'text-primary font-bold' : 'text-slate-500'}`}>
+                                    <th key={pe} className={`p-1 border-b border-slate-800 text-center transition-colors duration-300 ${pe === currentPe ? 'text-white font-bold bg-purple-500/20' : 'text-slate-600'}`}>
                                         {pe}x
                                     </th>
                                 ))}
@@ -741,9 +765,9 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             </div>
 
             {/* Top Row: Hero & Matrix */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-2 flex-none min-h-32">
-                {/* Hero Section: Target Price (Span 2) */}
-                <div className="lg:col-span-2 flex flex-col items-center justify-center bg-gradient-to-r from-slate-900/80 to-slate-900/30 rounded-xl border border-slate-800/50 relative overflow-hidden">
+            <div className="mb-6 flex-none">
+                {/* Hero Section: Target Price (Full Width) */}
+                <div className="w-full flex flex-col items-center justify-center bg-gradient-to-r from-slate-900/80 to-slate-900/30 rounded-xl border border-slate-800/50 relative overflow-hidden min-h-[200px]">
                     {/* Top Right Actions (Toggles) */}
                     <div className="absolute top-3 right-3 flex gap-1 z-20 bg-slate-950/40 p-1 rounded-lg border border-white/5 backdrop-blur-sm">
                         {(['bear', 'base', 'bull'] as const).map((s) => (
@@ -762,12 +786,12 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                         ))}
                     </div>
 
-                    {/* Center High-Impact Metric */}
                     <div className="flex flex-col items-center justify-center flex-1 my-2 relative z-10">
-                        <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em] mb-2 flex items-center gap-1.5 opacity-80">
-                            Weighted Fair Value (5yr)
+                        <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em] mb-1 flex items-center gap-1.5 opacity-80">
+                            Weighted Fair Value
                             <HelpTrigger topicId="fairValue" size={12} />
                         </span>
+                        <div className="text-[9px] text-slate-500 font-normal mb-2 tracking-wide">(Weighted across Bear/Base/Bull scenarios)</div>
                         <div className="relative group cursor-help">
                             <div className="text-5xl font-black text-white tracking-tight flex items-baseline gap-3 drop-shadow-2xl">
                                 <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400">
@@ -922,178 +946,225 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 )
             }
 
-            {/* Inputs Grid: 3 Columns, auto-fit */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0">
-                <section className="bg-slate-900/20 p-4 rounded-xl border border-slate-800">
-                    <h3 className="text-xs font-bold text-white mb-3 flex items-center gap-2">
-                        <span className="w-1 h-3 bg-primary rounded-full"></span>
-                        Growth & Profitability
-                    </h3>
-                    <div className="space-y-4">
-                        {/* Growth Toggle */}
-                        <div className="flex gap-1 mb-1">
-                            <button
-                                onClick={() => { setGrowthBasis('current'); resetToYahoo(); }}
-                                className={`flex-1 py-0.5 text-[9px] rounded border transition-colors ${growthBasis === 'current' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
-                            >
-                                Cur Yr: {(() => {
-                                    const val = stockData.growth_estimates?.stockTrend['0y'];
-                                    if (val === undefined) return 'N/A';
-                                    return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
-                                })()}
-                            </button>
-                            <button
-                                onClick={() => { setGrowthBasis('next'); resetToYahoo(); }}
-                                className={`flex-1 py-0.5 text-[9px] rounded border transition-colors ${growthBasis === 'next' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
-                            >
-                                Next Yr: {(() => {
-                                    const val = stockData.growth_estimates?.stockTrend['+1y'];
-                                    if (val === undefined) return 'N/A';
-                                    return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
-                                })()}
-                            </button>
-                        </div>
-
-                        <SliderInput
-                            label="Growth Rate"
-                            value={growthRate}
-                            setValue={setGrowthRate}
-                            min={-50}
-                            max={100}
-                            unit="%"
-                            helpTopic="growthRate"
-                            note=""
-                        />
-
-                        {/* Margin Toggle */}
-                        <div className="flex gap-1 mb-1 mt-4">
-                            <button
-                                onClick={() => { setMarginBasis('ttm'); resetToYahoo(); }}
-                                className={`flex-1 py-0.5 text-[9px] rounded border transition-colors ${marginBasis === 'ttm' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
-                            >
-                                TTM: {(() => {
-                                    const val = stockData.metrics?.profit_margin ?? 0;
-                                    return (Math.abs(val) > 1 ? val : val * 100).toFixed(1);
-                                })()}%
-                            </button>
-                            <button
-                                onClick={() => { setMarginBasis('quarterly'); resetToYahoo(); }}
-                                className={`flex-1 py-0.5 text-[9px] rounded border transition-colors ${marginBasis === 'quarterly' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
-                            >
-                                Last Q: {stockData.quarterly_margin ? stockData.quarterly_margin.toFixed(1) + '%' : 'N/A'}
-                            </button>
-                        </div>
-
-                        <SliderInput
-                            label="Net Margin"
-                            value={netMargin}
-                            setValue={setNetMargin}
-                            min={-20}
-                            max={80}
-                            unit="%"
-                            helpTopic="netMargin"
-                            note=""
-                        />
+            {/* Main Body: Inputs & Preview */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                {/* Left Column: Sliders (Span 2) */}
+                <div className="lg:col-span-2 bg-slate-900/40 border border-slate-800 rounded-xl p-5 backdrop-blur-sm">
+                    <div className="flex justify-between items-center mb-6 border-b border-slate-800/50 pb-2">
+                        <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                            <SlidersHorizontal size={16} className="text-indigo-400" />
+                            Model Drivers
+                        </h3>
+                        <button
+                            onClick={() => setShowAdvanced(!showAdvanced)}
+                            className="text-[10px] uppercase font-bold text-slate-500 hover:text-indigo-400 transition-colors flex items-center gap-1 bg-slate-800/50 px-2 py-1 rounded hover:bg-slate-800"
+                        >
+                            {showAdvanced ? 'Hide Advanced' : 'Show Advanced'}
+                            {showAdvanced ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                        </button>
                     </div>
-                </section>
 
-                <section className="bg-slate-900/20 p-4 rounded-xl border border-slate-800">
-                    <h3 className="text-xs font-bold text-white mb-3 flex items-center gap-2 justify-between">
-                        <div className="flex items-center gap-2">
-                            <span className="w-1 h-3 bg-primary rounded-full"></span>
-                            Valuation & Structure
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                        {/* Core Inputs: Growth */}
+                        <div>
+                            <div className="flex justify-between mb-3 items-center">
+                                <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">Growth Engine</span>
+                                <div className="flex gap-1">
+                                    <button
+                                        onClick={() => { setGrowthBasis('current'); resetToYahoo(); }}
+                                        className={`px-1.5 py-0.5 text-[8px] rounded border transition-colors ${growthBasis === 'current' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
+                                    >
+                                        Cur: {(() => {
+                                            const val = stockData.growth_estimates?.stockTrend['0y'];
+                                            if (val === undefined) return 'N/A';
+                                            return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
+                                        })()}
+                                    </button>
+                                    <button
+                                        onClick={() => { setGrowthBasis('next'); resetToYahoo(); }}
+                                        className={`px-1.5 py-0.5 text-[8px] rounded border transition-colors ${growthBasis === 'next' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
+                                    >
+                                        Next: {(() => {
+                                            const val = stockData.growth_estimates?.stockTrend['+1y'];
+                                            if (val === undefined) return 'N/A';
+                                            return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
+                                        })()}
+                                    </button>
+                                </div>
+                            </div>
+                            <SliderInput
+                                label="Revenue Growth"
+                                value={growthRate}
+                                setValue={setGrowthRate}
+                                min={-50} max={100} unit="%"
+                                impact="High"
+                                helpTopic="growthRate"
+                            />
                         </div>
-                        <div className={`text-[9px] px-1.5 py-0.5 rounded border ${Math.abs(totalWeight - 1.0) < 0.01 ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20 animate-pulse'}`}>
-                            Total Prob: {Math.round(totalWeight * 100)}%
+
+                        {/* Core Inputs: Profitability */}
+                        <div>
+                            <div className="flex justify-between mb-3 items-center">
+                                <span className="text-[10px] font-bold text-indigo-300 uppercase tracking-wider">Profitability</span>
+                                <div className="flex gap-1">
+                                    <button
+                                        onClick={() => { setMarginBasis('ttm'); resetToYahoo(); }}
+                                        className={`px-1.5 py-0.5 text-[8px] rounded border transition-colors ${marginBasis === 'ttm' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
+                                    >
+                                        TTM: {(() => {
+                                            const val = stockData.metrics?.profit_margin ?? 0;
+                                            return (Math.abs(val) > 1 ? val : val * 100).toFixed(1);
+                                        })()}%
+                                    </button>
+                                    <button
+                                        onClick={() => { setMarginBasis('quarterly'); resetToYahoo(); }}
+                                        className={`px-1.5 py-0.5 text-[8px] rounded border transition-colors ${marginBasis === 'quarterly' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
+                                    >
+                                        Q: {stockData.quarterly_margin ? stockData.quarterly_margin.toFixed(1) + '%' : 'N/A'}
+                                    </button>
+                                </div>
+                            </div>
+                            <SliderInput
+                                label="Net Margin"
+                                value={netMargin}
+                                setValue={setNetMargin}
+                                min={-20} max={80} unit="%"
+                                impact="High"
+                                helpTopic="netMargin"
+                            />
                         </div>
-                    </h3>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                        <SliderInput
-                            label="Probability"
-                            value={currentWeight}
-                            setValue={setWeight}
-                            min={0}
-                            max={100}
-                            unit="%"
-                            helpTopic="probabilityWeight"
-                            note="Scen. Weight"
-                        />
-                        <SliderInput
-                            label="Exit P/E"
-                            value={peRatio}
-                            setValue={setPeRatio}
-                            min={1}
-                            max={100}
-                            unit="x"
-                            helpTopic="exitPE"
-                            note={`Fwd: ${(stockData.analyst_estimates?.forward_pe || stockData.metrics?.forward_pe || 0).toFixed(1)}x`}
-                        />
-                        <SliderInput
-                            label="Quality Mult."
-                            value={qualityMultiplier}
-                            setValue={setQualityMultiplier}
-                            min={0.5}
-                            max={2.0}
-                            step={0.05}
-                            unit="x"
-                            helpTopic="qualityMultiplier"
-                            note="Typ: 1.0x"
-                        />
-                        <SliderInput
-                            label="Discount Rate"
-                            value={discountRate}
-                            setValue={setDiscountRate}
-                            min={0}
-                            max={20}
-                            unit="%"
-                            helpTopic="discountRate"
-                            warningThreshold={4}
-                            note="Typ: 8-12%"
-                        />
-                        <SliderInput
-                            label="Share Change"
-                            value={shareChange}
-                            setValue={setShareChange}
-                            min={-20}
-                            max={20}
-                            unit="%"
-                            helpTopic="shareChange"
-                            note="( - ) Buyback"
-                        />
-                        <SliderInput
-                            label="Time Horizon"
-                            value={timeHorizon}
-                            setValue={setTimeHorizon}
-                            min={1}
-                            max={10}
-                            unit="yr"
-                            helpTopic="timeHorizon"
-                            note="Def: 5yr"
-                        />
-                        <SliderInput
-                            label="Strategic Moat"
-                            value={moatScore}
-                            setValue={setMoatScore}
-                            min={0}
-                            max={5}
-                            unit="/5"
-                            helpTopic="moatScore"
-                            note="+5% per pt"
-                        />
-                        <SliderInput
-                            label="Govt / Insider"
-                            value={managementScore}
-                            setValue={setManagementScore}
-                            min={0}
-                            max={5}
-                            unit="/5"
-                            helpTopic="managementScore"
-                            note="+5% per pt"
-                        />
+
+                        {/* Core Inputs: Valuation */}
+                        <div>
+                            <div className="text-[10px] font-bold text-indigo-300 uppercase mb-3 tracking-wider flex justify-between items-center">
+                                Valuation
+                                <div className={`text-[9px] px-1.5 py-0.5 rounded border ${Math.abs(totalWeight - 1.0) < 0.01 ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20 animate-pulse'}`}>
+                                    Risk Weight: {Math.round(totalWeight * 100)}%
+                                </div>
+                            </div>
+                            <SliderInput
+                                label="Exit P/E"
+                                value={peRatio}
+                                setValue={setPeRatio}
+                                min={1} max={100} unit="x"
+                                impact="High"
+                                helpTopic="exitPE"
+                                note={`Fwd: ${(stockData.analyst_estimates?.forward_pe || stockData.metrics?.forward_pe || 0).toFixed(1)}x`}
+                            />
+                            <SliderInput
+                                label="Scenario Prob."
+                                value={currentWeight}
+                                setValue={setWeight}
+                                min={0} max={100} unit="%"
+                                impact="High"
+                                helpTopic="probabilityWeight"
+                                note="Weight"
+                            />
+                        </div>
+
+                        {/* Core Inputs: Structure */}
+                        <div>
+                            <div className="text-[10px] font-bold text-indigo-300 uppercase mb-3 tracking-wider">Structure</div>
+                            <SliderInput
+                                label="Discount Rate"
+                                value={discountRate}
+                                setValue={setDiscountRate}
+                                min={0} max={20} unit="%"
+                                impact="Med"
+                                helpTopic="discountRate"
+                                warningThreshold={4}
+                                note="Typ: 8-12%"
+                            />
+                        </div>
                     </div>
-                </section>
 
-                {/* Sensitivity Matrix (Col 3) */}
+                    {showAdvanced && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mt-6 pt-6 border-t border-slate-800/50 animate-in fade-in slide-in-from-top-2">
+                            <div>
+                                <div className="text-[10px] font-bold text-slate-500 uppercase mb-3 tracking-wider">Advanced Assumptions</div>
+                                <div className="space-y-4">
+                                    <SliderInput label="Quality Multiplier" value={qualityMultiplier} setValue={setQualityMultiplier} min={0.5} max={2.0} step={0.05} unit="x" impact="Med" helpTopic="qualityMultiplier" note="Typ: 1.0x" />
+                                    <SliderInput label="Share Change" value={shareChange} setValue={setShareChange} min={-20} max={20} unit="%" impact="Med" helpTopic="shareChange" note="(-) Buyback" />
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-[10px] font-bold text-slate-500 uppercase mb-3 tracking-wider">Long Term Factors</div>
+                                <div className="space-y-4">
+                                    <SliderInput label="Time Horizon" value={timeHorizon} setValue={setTimeHorizon} min={1} max={10} unit="yr" impact="Low" helpTopic="timeHorizon" />
+                                    <SliderInput label="Strategic Moat" value={moatScore} setValue={setMoatScore} min={0} max={5} unit="/5" helpTopic="moatScore" note="+5% per pt" />
+                                    <SliderInput label="Govt / Insider" value={managementScore} setValue={setManagementScore} min={0} max={5} unit="/5" helpTopic="managementScore" note="+5% per pt" />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Right Column: Live Output (Scenario Breakdown) */}
+                <div className="lg:col-span-1 space-y-4">
+                    <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-5 h-full backdrop-blur-sm flex flex-col">
+                        <h3 className="text-xs font-bold text-white mb-4 uppercase tracking-wider border-b border-slate-800 pb-2 flex justify-between items-center">
+                            <span>Live Analysis</span>
+                            <span className="text-[10px] text-slate-500">{activeScenario} Case</span>
+                        </h3>
+
+                        {/* Mini P&L Preview */}
+                        <div className="space-y-3 mb-6 flex-1">
+                            <div className="flex justify-between items-center p-2 bg-slate-800/30 rounded">
+                                <div className="text-[10px] text-slate-400 uppercase tracking-wide">Revenue (T+5)</div>
+                                <div className="text-sm font-bold text-white">
+                                    ${((stockData.metrics.revenue || 0) * Math.pow(1 + growthRate / 100, timeHorizon) / 1000000000).toFixed(1)}B
+                                </div>
+                            </div>
+                            <div className="flex justify-between items-center p-2 bg-slate-800/30 rounded">
+                                <div className="text-[10px] text-slate-400 uppercase tracking-wide">Net Income (T+5)</div>
+                                <div className="text-sm font-bold text-secondary">
+                                    ${((stockData.metrics.revenue || 0) * Math.pow(1 + growthRate / 100, timeHorizon) * (netMargin / 100) / 1000000000).toFixed(1)}B
+                                </div>
+                            </div>
+                            <div className="flex justify-between items-center p-2 bg-slate-800/30 rounded">
+                                <div className="text-[10px] text-slate-400 uppercase tracking-wide">Terminal Value</div>
+                                <div className="text-sm font-bold text-indigo-300">
+                                    ${(((stockData.metrics.revenue || 0) * Math.pow(1 + growthRate / 100, timeHorizon) * (netMargin / 100) * peRatio) / 1000000000).toFixed(1)}B
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Scenario Targets Summary */}
+                        <div className="mt-auto pt-4 border-t border-slate-800">
+                            <h4 className="text-[10px] font-bold text-slate-500 uppercase mb-3 flex items-center gap-2">
+                                <Table2 size={12} />
+                                Target Range
+                            </h4>
+                            <div className="space-y-2.5">
+                                <div className="flex justify-between text-xs items-center group cursor-pointer hover:bg-white/5 p-1 rounded transition-colors" onClick={() => setActiveScenario('bear')}>
+                                    <span className="text-red-400 font-bold flex items-center gap-2">
+                                        <div className={`w-1.5 h-1.5 rounded-full ${activeScenario === 'bear' ? 'bg-red-400 ring-2 ring-red-400/30' : 'bg-red-900'}`}></div>
+                                        Bear
+                                    </span>
+                                    <span className="text-slate-300 font-mono">${Math.round(bearPrice)}</span>
+                                </div>
+                                <div className="flex justify-between text-xs items-center group cursor-pointer hover:bg-white/5 p-1 rounded transition-colors" onClick={() => setActiveScenario('base')}>
+                                    <span className="text-indigo-400 font-bold flex items-center gap-2">
+                                        <div className={`w-1.5 h-1.5 rounded-full ${activeScenario === 'base' ? 'bg-indigo-400 ring-2 ring-indigo-400/30' : 'bg-indigo-900'}`}></div>
+                                        Base
+                                    </span>
+                                    <span className="text-white font-bold font-mono">${Math.round(basePrice)}</span>
+                                </div>
+                                <div className="flex justify-between text-xs items-center group cursor-pointer hover:bg-white/5 p-1 rounded transition-colors" onClick={() => setActiveScenario('bull')}>
+                                    <span className="text-green-400 font-bold flex items-center gap-2">
+                                        <div className={`w-1.5 h-1.5 rounded-full ${activeScenario === 'bull' ? 'bg-green-400 ring-2 ring-green-400/30' : 'bg-green-900'}`}></div>
+                                        Bull
+                                    </span>
+                                    <span className="text-slate-300 font-mono">${Math.round(bullPrice)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom: Sensitivity Matrix (Full Width) */}
+            <div className="mb-8 min-h-[160px]">
                 <SensitivityMatrix />
             </div>
 
