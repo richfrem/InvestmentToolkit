@@ -12,9 +12,10 @@ export const spawnPythonScript = async (scriptName: string, args: string[]): Pro
     return new Promise((resolve, reject) => {
         const scriptPath = path.resolve(process.cwd(), 'py_services', scriptName);
 
-        console.log(`[Bridge] Spawning: python3 ${scriptPath} ${args.join(' ')}`);
+        const pythonCommand = process.platform === 'win32' ? 'python' : 'python3';
+        console.log(`[Bridge] Spawning: ${pythonCommand} ${scriptPath} ${args.join(' ')}`);
 
-        const pythonProcess = spawn('python3', [scriptPath, ...args]);
+        const pythonProcess = spawn(pythonCommand, [scriptPath, ...args]);
 
         let dataString = '';
         let errorString = '';
