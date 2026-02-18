@@ -105,7 +105,7 @@ Workflows are installed into `.agent/workflows/` in **subdirectories matching pl
 The project includes a managed startup script for the entire suite:
 
 ```bash
-python3 tools/manage_servers.py
+python3 python tools/manage_servers.py start all
 ```
 
 This will automatically handle port conflicts, launch the backend API, and start the frontend dashboard.
