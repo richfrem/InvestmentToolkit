@@ -355,16 +355,62 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
             // Also take scenarios from it
             if (p.scenarios) {
-                setScenarios(p.scenarios);
+                // Normalize Percentages (if saved as decimals 0.15 instead of 15)
+                const normalize = (s: Scenario) => ({
+                    ...s,
+                    growthRate: Math.abs(s.growthRate) <= 1 && s.growthRate !== 0 ? s.growthRate * 100 : s.growthRate,
+                    netMargin: Math.abs(s.netMargin) <= 1 && s.netMargin !== 0 ? s.netMargin * 100 : s.netMargin,
+                    shareChange: Math.abs(s.shareChange) <= 1 && s.shareChange !== 0 ? s.shareChange * 100 : s.shareChange,
+                });
+
+                setScenarios({
+                    bear: normalize(p.scenarios.bear),
+                    base: normalize(p.scenarios.base),
+                    bull: normalize(p.scenarios.bull)
+                });
+            } else if (p.base && p.bull && p.bear) {
+                // Legacy support
+                const normalize = (s: any) => ({
+                    ...s,
+                    growthRate: Math.abs(s.growthRate) <= 1 && s.growthRate !== 0 ? s.growthRate * 100 : s.growthRate,
+                    netMargin: Math.abs(s.netMargin) <= 1 && s.netMargin !== 0 ? s.netMargin * 100 : s.netMargin,
+                    shareChange: Math.abs(s.shareChange) <= 1 && s.shareChange !== 0 ? s.shareChange * 100 : s.shareChange,
+                });
+                setScenarios({
+                    bear: normalize(p.bear),
+                    base: normalize(p.base),
+                    bull: normalize(p.bull)
+                });
             }
         } else {
             // Legacy or partial load - treat as new
             setActiveProjection(null);
             // Try to patch from legacy structure
             if (p.scenarios) {
-                setScenarios(p.scenarios);
+                // Normalize Percentages
+                const normalize = (s: Scenario) => ({
+                    ...s,
+                    growthRate: Math.abs(s.growthRate) <= 1 && s.growthRate !== 0 ? s.growthRate * 100 : s.growthRate,
+                    netMargin: Math.abs(s.netMargin) <= 1 && s.netMargin !== 0 ? s.netMargin * 100 : s.netMargin,
+                    shareChange: Math.abs(s.shareChange) <= 1 && s.shareChange !== 0 ? s.shareChange * 100 : s.shareChange,
+                });
+                setScenarios({
+                    bear: normalize(p.scenarios.bear),
+                    base: normalize(p.scenarios.base),
+                    bull: normalize(p.scenarios.bull)
+                });
             } else if (p.base && p.bull && p.bear) {
-                setScenarios(p);
+                const normalize = (s: any) => ({
+                    ...s,
+                    growthRate: Math.abs(s.growthRate) <= 1 && s.growthRate !== 0 ? s.growthRate * 100 : s.growthRate,
+                    netMargin: Math.abs(s.netMargin) <= 1 && s.netMargin !== 0 ? s.netMargin * 100 : s.netMargin,
+                    shareChange: Math.abs(s.shareChange) <= 1 && s.shareChange !== 0 ? s.shareChange * 100 : s.shareChange,
+                });
+                setScenarios({
+                    bear: normalize(p.bear),
+                    base: normalize(p.base),
+                    bull: normalize(p.bull)
+                });
             }
         }
 
@@ -681,106 +727,135 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                         Weighted Fair Value (5yr)
                         <HelpTrigger topicId="fairValue" />
                     </div>
-                    <div className="text-4xl font-black text-text tracking-tight mb-2">
-                        ${Math.round(targetPrice)}
-                    </div>
-
-                    {/* Active Scenario Indicator (Dynamic) */}
-                    <div className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border transition-all ${activeScenario === 'bull' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
-                        activeScenario === 'bear' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
-                            'bg-primary/10 border-primary/20 text-primary'
-                        }`}>
-                        <span className="font-bold uppercase text-[9px] tracking-wider">{activeScenario} Case:</span>
-                        <span className="font-bold">${Math.round(activePrice)}</span>
-                        <span className="opacity-80 text-[10px]">
-                            ({activeUpside > 0 ? '+' : ''}{activeUpside.toFixed(0)}%)
-                        </span>
-                    </div>
+                    ${Math.round(targetPrice)}
                 </div>
 
-                {/* Vertical Matrix (Span 1) */}
-                <div className="bg-surface border border-slate-800/50 rounded-xl p-3 flex flex-col justify-center">
-                    <div className="space-y-2">
-                        {[
-                            { mode: 'Bear', price: Math.round(bearPrice), upside: ((bearPrice - stockData.price) / stockData.price) * 100, color: 'text-red-400' },
-                            { mode: 'Base', price: Math.round(basePrice), upside: ((basePrice - stockData.price) / stockData.price) * 100, color: 'text-primary' },
-                            { mode: 'Bull', price: Math.round(bullPrice), upside: ((bullPrice - stockData.price) / stockData.price) * 100, color: 'text-green-400' }
-                        ].map((item) => (
-                            <div key={item.mode} className="flex justify-between items-center p-2 bg-slate-900/50 rounded-lg">
-                                <span className="text-xs font-bold text-secondary">{item.mode}</span>
-                                <div className="text-right leading-none">
-                                    <div className={`text-sm font-bold ${item.color}`}>${item.price}</div>
-                                    <div className="text-[10px] text-slate-500">{item.upside > 0 ? '+' : ''}{item.upside.toFixed(0)}%</div>
-                                </div>
-                            </div>
-                        ))}
+                {/* AI Calibration Alert */}
+                {aiResult && aiResult.fair_value && Math.abs(targetPrice - aiResult.fair_value) / aiResult.fair_value > 0.05 && (
+                    <div className="mb-2 px-2 py-1 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
+                        <div className="text-[10px] text-yellow-200 text-left leading-tight">
+                            <span className="font-bold">Mismatch:</span> AI Thesis suggests <span className="underline decoration-dotted" title="The AI model likely used different implied assumptions (e.g. higher moat/quality scores) than the current slider defaults.">${aiResult.fair_value.toFixed(0)}</span>.
+                        </div>
+                        <button
+                            onClick={() => {
+                                // Auto-Calibrate: Scale Quality Multipliers to match AI Target
+                                const ratio = aiResult.fair_value / targetPrice;
+                                updateCurrent({
+                                    qualityMultiplier: Math.min(2.0, Math.max(0.5, current.qualityMultiplier * ratio))
+                                });
+                                // Apply to all scenarios for consistency (optional, but cleaner)
+                                setScenarios(prev => ({
+                                    bear: { ...prev.bear, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.bear.qualityMultiplier * ratio)) },
+                                    base: { ...prev.base, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.base.qualityMultiplier * ratio)) },
+                                    bull: { ...prev.bull, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.bull.qualityMultiplier * ratio)) }
+                                }));
+                            }}
+                            className="px-1.5 py-0.5 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 text-[9px] font-bold uppercase rounded border border-yellow-500/30 transition-colors whitespace-nowrap"
+                            title="Auto-adjust Quality Multipliers to align the model output with the AI's fair value."
+                        >
+                            Sync to ${aiResult.fair_value.toFixed(0)}
+                        </button>
                     </div>
+                )}
+
+                {/* Active Scenario Indicator (Dynamic) */}
+                <div className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border transition-all ${activeScenario === 'bull' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
+                    activeScenario === 'bear' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
+                        'bg-primary/10 border-primary/20 text-primary'
+                    }`}>
+                    <span className="font-bold uppercase text-[9px] tracking-wider">{activeScenario} Case:</span>
+                    <span className="font-bold">${Math.round(activePrice)}</span>
+                    <span className="opacity-80 text-[10px]">
+                        ({activeUpside > 0 ? '+' : ''}{activeUpside.toFixed(0)}%)
+                    </span>
                 </div>
             </div>
 
-            {/* AI Thesis Section (Expanded when result exists) */}
-            {(aiResult || isAnalyzing || aiError) && (
-                <div className="mb-4 flex-none animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="bg-gradient-to-br from-indigo-900/40 via-slate-900/60 to-purple-900/30 border border-indigo-500/30 rounded-xl p-4 shadow-xl overflow-hidden relative group">
-                        {/* Glow effect */}
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 opacity-50"></div>
-                        <div className="absolute -right-10 -top-10 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full group-hover:bg-indigo-500/20 transition-all duration-1000"></div>
-
-                        <div className="flex justify-between items-start mb-3 relative z-10">
-                            <div className="flex items-center gap-2">
-                                <div className="p-1.5 bg-indigo-500/20 rounded-lg text-indigo-400">
-                                    <BrainCircuit size={18} />
-                                </div>
-                                <div>
-                                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                                        {activeCoachMetric ? `AI Coach: ${activeCoachMetric}` : 'AI Expert Thesis'}
-                                        {aiResult?.action && (
-                                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-tighter border ${aiResult.action === 'BUY' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
-                                                aiResult.action === 'SELL' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
-                                                    'bg-slate-500/20 text-slate-400 border-slate-500/30'
-                                                }`}>
-                                                {aiResult.action}
-                                            </span>
-                                        )}
-                                    </h3>
-                                    <p className="text-[10px] text-indigo-300 font-medium tracking-wide uppercase">{aiResult?.model_name || 'AI ANALYST'} ANALYSIS</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => { setAiResult(null); setAiError(null); setActiveCoachMetric(null); }}
-                                    className="text-slate-500 hover:text-white transition-colors"
-                                >
-                                    <X size={16} />
-                                </button>
+            {/* Vertical Matrix (Span 1) */}
+            <div className="bg-surface border border-slate-800/50 rounded-xl p-3 flex flex-col justify-center">
+                <div className="space-y-2">
+                    {[
+                        { mode: 'Bear', price: Math.round(bearPrice), upside: ((bearPrice - stockData.price) / stockData.price) * 100, color: 'text-red-400' },
+                        { mode: 'Base', price: Math.round(basePrice), upside: ((basePrice - stockData.price) / stockData.price) * 100, color: 'text-primary' },
+                        { mode: 'Bull', price: Math.round(bullPrice), upside: ((bullPrice - stockData.price) / stockData.price) * 100, color: 'text-green-400' }
+                    ].map((item) => (
+                        <div key={item.mode} className="flex justify-between items-center p-2 bg-slate-900/50 rounded-lg">
+                            <span className="text-xs font-bold text-secondary">{item.mode}</span>
+                            <div className="text-right leading-none">
+                                <div className={`text-sm font-bold ${item.color}`}>${item.price}</div>
+                                <div className="text-[10px] text-slate-500">{item.upside > 0 ? '+' : ''}{item.upside.toFixed(0)}%</div>
                             </div>
                         </div>
-
-                        {isAnalyzing ? (
-                            <div className="py-6 flex flex-col items-center justify-center gap-3">
-                                <Loader2 size={24} className="text-indigo-400 animate-spin" />
-                                <div className="flex flex-col items-center">
-                                    <p className="text-sm text-indigo-200 animate-pulse">Analyzing financials & growth vectors...</p>
-                                    <p className="text-[10px] text-slate-500">Processing "Twin Revolutions" Framework</p>
-                                </div>
-                            </div>
-                        ) : aiError ? (
-                            <div className="py-4 text-center">
-                                <div className="text-red-400 font-bold mb-1 flex items-center justify-center gap-2">
-                                    <AlertTriangle size={16} /> Analysis Failed
-                                </div>
-                                <p className="text-xs text-slate-400">{aiError}</p>
-                            </div>
-                        ) : aiResult ? (
-                            <div className="relative z-10">
-                                <p className="text-xs text-slate-300 leading-relaxed font-medium italic">
-                                    "{aiResult.rationale}"
-                                </p>
-                            </div>
-                        ) : null}
-                    </div>
+                    ))}
                 </div>
-            )}
+            </div>
+
+
+            {/* AI Thesis Section */}
+            {
+                (aiResult || isAnalyzing || aiError) && (
+                    <div className="mb-4 flex-none animate-in fade-in slide-in-from-top-4 duration-500">
+                        <div className="bg-gradient-to-br from-indigo-900/40 via-slate-900/60 to-purple-900/30 border border-indigo-500/30 rounded-xl p-4 shadow-xl overflow-hidden relative group">
+                            {/* Glow effect */}
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 opacity-50"></div>
+                            <div className="absolute -right-10 -top-10 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full group-hover:bg-indigo-500/20 transition-all duration-1000"></div>
+
+                            <div className="flex justify-between items-start mb-3 relative z-10">
+                                <div className="flex items-center gap-2">
+                                    <div className="p-1.5 bg-indigo-500/20 rounded-lg text-indigo-400">
+                                        <BrainCircuit size={18} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                            {activeCoachMetric ? `AI Coach: ${activeCoachMetric}` : 'AI Expert Thesis'}
+                                            {aiResult?.action && (
+                                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-tighter border ${aiResult.action === 'BUY' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
+                                                    aiResult.action === 'SELL' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                                                        'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                                                    }`}>
+                                                    {aiResult.action}
+                                                </span>
+                                            )}
+                                        </h3>
+                                        <p className="text-[10px] text-indigo-300 font-medium tracking-wide uppercase">{aiResult?.model_name || 'AI ANALYST'} ANALYSIS</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => { setAiResult(null); setAiError(null); setActiveCoachMetric(null); }}
+                                        className="text-slate-500 hover:text-white transition-colors"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {isAnalyzing ? (
+                                <div className="py-6 flex flex-col items-center justify-center gap-3">
+                                    <Loader2 size={24} className="text-indigo-400 animate-spin" />
+                                    <div className="flex flex-col items-center">
+                                        <p className="text-sm text-indigo-200 animate-pulse">Analyzing financials & growth vectors...</p>
+                                        <p className="text-[10px] text-slate-500">Processing "Twin Revolutions" Framework</p>
+                                    </div>
+                                </div>
+                            ) : aiError ? (
+                                <div className="py-4 text-center">
+                                    <div className="text-red-400 font-bold mb-1 flex items-center justify-center gap-2">
+                                        <AlertTriangle size={16} /> Analysis Failed
+                                    </div>
+                                    <p className="text-xs text-slate-400">{aiError}</p>
+                                </div>
+                            ) : aiResult ? (
+                                <div className="relative z-10">
+                                    <p className="text-xs text-slate-300 leading-relaxed font-medium italic">
+                                        "{aiResult.rationale}"
+                                    </p>
+                                </div>
+                            ) : null}
+                        </div>
+                    </div>
+                )
+            }
 
             {/* Inputs Grid: 3 Columns, auto-fit */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0">
@@ -960,40 +1035,42 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
 
             {/* Red Team / Sanity Check Section */}
-            {(discountRate < 4 || peRatio > 80 || growthRate > 50 || netMargin > 50) && (
-                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-4 animate-in fade-in slide-in-from-bottom-2">
-                    <h4 className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                        <Info size={12} />
-                        Sanity Checks & Risk Flags
-                    </h4>
-                    <ul className="space-y-1">
-                        {discountRate < 4 && (
-                            <li className="text-[10px] text-red-300 flex gap-2">
-                                <span className="font-bold">• Discount Rate ({discountRate}%):</span>
-                                Below 10y Treasury (~4%). Implies zero risk premium. Unrealistic for equity.
-                            </li>
-                        )}
-                        {peRatio > 80 && (
-                            <li className="text-[10px] text-red-300 flex gap-2">
-                                <span className="font-bold">• Exit P/E ({peRatio}x):</span>
-                                Extremely high multiple. Assumes perpetual hyper-growth. Bubbled territory.
-                            </li>
-                        )}
-                        {growthRate > 50 && (
-                            <li className="text-[10px] text-red-300 flex gap-2">
-                                <span className="font-bold">• Growth Rate ({growthRate}%):</span>
-                                Hard to sustain {'>'}50% CAGR for {timeHorizon} years. Law of large numbers risk.
-                            </li>
-                        )}
-                        {netMargin > 50 && (
-                            <li className="text-[10px] text-red-300 flex gap-2">
-                                <span className="font-bold">• Net Margin ({netMargin}%):</span>
-                                Extremely high profitability. Attracts competition / Regulatory scrutiny.
-                            </li>
-                        )}
-                    </ul>
-                </div>
-            )}
+            {
+                (discountRate < 4 || peRatio > 80 || growthRate > 50 || netMargin > 50) && (
+                    <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-4 animate-in fade-in slide-in-from-bottom-2">
+                        <h4 className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                            <Info size={12} />
+                            Sanity Checks & Risk Flags
+                        </h4>
+                        <ul className="space-y-1">
+                            {discountRate < 4 && (
+                                <li className="text-[10px] text-red-300 flex gap-2">
+                                    <span className="font-bold">• Discount Rate ({discountRate}%):</span>
+                                    Below 10y Treasury (~4%). Implies zero risk premium. Unrealistic for equity.
+                                </li>
+                            )}
+                            {peRatio > 80 && (
+                                <li className="text-[10px] text-red-300 flex gap-2">
+                                    <span className="font-bold">• Exit P/E ({peRatio}x):</span>
+                                    Extremely high multiple. Assumes perpetual hyper-growth. Bubbled territory.
+                                </li>
+                            )}
+                            {growthRate > 50 && (
+                                <li className="text-[10px] text-red-300 flex gap-2">
+                                    <span className="font-bold">• Growth Rate ({growthRate}%):</span>
+                                    Hard to sustain {'>'}50% CAGR for {timeHorizon} years. Law of large numbers risk.
+                                </li>
+                            )}
+                            {netMargin > 50 && (
+                                <li className="text-[10px] text-red-300 flex gap-2">
+                                    <span className="font-bold">• Net Margin ({netMargin}%):</span>
+                                    Extremely high profitability. Attracts competition / Regulatory scrutiny.
+                                </li>
+                            )}
+                        </ul>
+                    </div>
+                )
+            }
 
             {/* AI Analysis Modal */}
             <AIAnalysisModal
@@ -1004,94 +1081,100 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             />
 
             {/* Save Modal */}
-            {showSaveModal && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-surface border border-slate-700 p-6 rounded-xl w-80 shadow-2xl scale-100">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-lg font-bold text-white">Save Projection</h3>
-                            <button onClick={() => setShowSaveModal(false)} className="text-slate-400 hover:text-white">
-                                <X size={20} />
-                            </button>
-                        </div>
-                        <input
-                            type="text"
-                            value={saveName}
-                            onChange={(e) => setSaveName(e.target.value)}
-                            placeholder="Projection Name (e.g. Bull 2026)"
-                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white mb-4 focus:outline-none focus:border-primary"
-                            autoFocus
-                        />
-                        <div className="flex items-center gap-2 mb-4">
+            {
+                showSaveModal && (
+                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                        <div className="bg-surface border border-slate-700 p-6 rounded-xl w-80 shadow-2xl scale-100">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-bold text-white">Save Projection</h3>
+                                <button onClick={() => setShowSaveModal(false)} className="text-slate-400 hover:text-white">
+                                    <X size={20} />
+                                </button>
+                            </div>
                             <input
-                                type="checkbox"
-                                id="saveAsDefault"
-                                checked={saveAsDefault}
-                                onChange={(e) => setSaveAsDefault(e.target.checked)}
-                                className="rounded border-slate-700 bg-slate-900 text-primary focus:ring-primary"
+                                type="text"
+                                value={saveName}
+                                onChange={(e) => setSaveName(e.target.value)}
+                                placeholder="Projection Name (e.g. Bull 2026)"
+                                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white mb-4 focus:outline-none focus:border-primary"
+                                autoFocus
                             />
-                            <label htmlFor="saveAsDefault" className="text-xs text-slate-300 cursor-pointer select-none">
-                                Set as Default Load (Auto-load on refresh)
-                            </label>
-                        </div>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => setShowSaveModal(false)}
-                                className="flex-1 px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 font-medium"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleSaveConfirm}
-                                disabled={!saveName.trim()}
-                                className="flex-1 px-4 py-2 bg-primary text-slate-900 rounded-lg hover:bg-primary-hover font-bold disabled:opacity-50"
-                            >
-                                Save
-                            </button>
+                            <div className="flex items-center gap-2 mb-4">
+                                <input
+                                    type="checkbox"
+                                    id="saveAsDefault"
+                                    checked={saveAsDefault}
+                                    onChange={(e) => setSaveAsDefault(e.target.checked)}
+                                    className="rounded border-slate-700 bg-slate-900 text-primary focus:ring-primary"
+                                />
+                                <label htmlFor="saveAsDefault" className="text-xs text-slate-300 cursor-pointer select-none">
+                                    Set as Default Load (Auto-load on refresh)
+                                </label>
+                            </div>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setShowSaveModal(false)}
+                                    className="flex-1 px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 font-medium"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSaveConfirm}
+                                    disabled={!saveName.trim()}
+                                    className="flex-1 px-4 py-2 bg-primary text-slate-900 rounded-lg hover:bg-primary-hover font-bold disabled:opacity-50"
+                                >
+                                    Save
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Projections Panel Slide-over */}
-            {showProjectionsPanel && (
-                <ProjectionsPanel
-                    isOpen={showProjectionsPanel}
-                    onClose={() => setShowProjectionsPanel(false)}
-                    ticker={stockData.symbol}
-                    onLoad={handleLoad}
-                />
-            )}
+            {
+                showProjectionsPanel && (
+                    <ProjectionsPanel
+                        isOpen={showProjectionsPanel}
+                        onClose={() => setShowProjectionsPanel(false)}
+                        ticker={stockData.symbol}
+                        onLoad={handleLoad}
+                    />
+                )
+            }
 
             {/* Preset Selector Modal */}
-            {showPresetModal && (
-                <PresetSelectorModal
-                    symbol={stockData.symbol}
-                    onLoad={handlePresetLoad}
-                    onViewReport={(aiProjection) => {
-                        setShowPresetModal(false);
-                        setViewingProjection(aiProjection);
-                        setShowAIModal(true);
-                        // Map stored AIThesis (camelCase) to ValuationResult (snake_case)
-                        const thesis = aiProjection.aiThesis;
-                        const base = aiProjection.scenarios?.base;
-                        if (thesis) {
-                            setAiResult({
-                                fair_value: thesis.fairValue,
-                                model_name: thesis.model,
-                                rationale: thesis.rationale,
-                                action: thesis.action,
-                                // Map data from base scenario if available
-                                growth_assumption: base ? base.growthRate / 100 : 0,
-                                suggested_growth: base ? base.growthRate / 100 : undefined,
-                                suggested_margin: base ? base.netMargin / 100 : undefined,
-                                exit_pe: base ? base.exitPE : undefined,
-                                quality_multiplier: base ? base.qualityMultiplier : undefined
-                            });
-                        }
-                    }}
-                    onClose={() => setShowPresetModal(false)}
-                />
-            )}
-        </div>
+            {
+                showPresetModal && (
+                    <PresetSelectorModal
+                        symbol={stockData.symbol}
+                        onLoad={handlePresetLoad}
+                        onViewReport={(aiProjection) => {
+                            setShowPresetModal(false);
+                            setViewingProjection(aiProjection);
+                            setShowAIModal(true);
+                            // Map stored AIThesis (camelCase) to ValuationResult (snake_case)
+                            const thesis = aiProjection.aiThesis;
+                            const base = aiProjection.scenarios?.base;
+                            if (thesis) {
+                                setAiResult({
+                                    fair_value: thesis.fairValue,
+                                    model_name: thesis.model,
+                                    rationale: thesis.rationale,
+                                    action: thesis.action,
+                                    // Map data from base scenario if available
+                                    growth_assumption: base ? base.growthRate / 100 : 0,
+                                    suggested_growth: base ? base.growthRate / 100 : undefined,
+                                    suggested_margin: base ? base.netMargin / 100 : undefined,
+                                    exit_pe: base ? base.exitPE : undefined,
+                                    quality_multiplier: base ? base.qualityMultiplier : undefined
+                                });
+                            }
+                        }}
+                        onClose={() => setShowPresetModal(false)}
+                    />
+                )
+            }
+        </div >
     );
 }
