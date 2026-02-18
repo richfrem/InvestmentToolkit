@@ -32,8 +32,8 @@ function SliderInput({ label, value, setValue, min, max, unit = '', step = 1, no
     const impactColor = impact === 'High' ? 'bg-purple-500' : impact === 'Med' ? 'bg-blue-400' : 'bg-slate-600';
 
     return (
-        <div className="mb-3 group">
-            <div className="flex justify-between items-center mb-1.5">
+        <div className="mb-1.5 group">
+            <div className="flex justify-between items-center mb-1">
                 <div className="flex items-center gap-2">
                     <div className={`w-1 h-3 rounded-full ${impactColor}`} title={`${impact} Impact on Valuation`}></div>
                     <label className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 ${isWarning ? 'text-red-400' : 'text-slate-300 group-hover:text-white transition-colors'}`}>
@@ -75,7 +75,7 @@ function SliderInput({ label, value, setValue, min, max, unit = '', step = 1, no
                     ${isWarning ? '[&::-webkit-slider-thumb]:ring-2 [&::-webkit-slider-thumb]:ring-red-500' : ''}`}
             />
 
-            <div className="flex justify-between text-[8px] text-slate-700 mt-1 px-0.5">
+            <div className="flex justify-between text-[8px] text-slate-700 mt-0.5 px-0.5">
                 <span>{min}</span>
                 <span>{max}</span>
             </div>
@@ -105,13 +105,9 @@ function SensitivityMatrix({ peRatio, growthRate, stockPrice, calculatePrice }: 
     );
 
     return (
-        <div className="bg-slate-900/40 p-4 rounded-xl border border-slate-800 h-full flex flex-col">
-            <h3 className="text-xs font-bold text-slate-300 mb-3 flex items-center gap-2 uppercase tracking-wider">
-                <span className="w-1 h-3 bg-purple-500 rounded-full animate-pulse"></span>
-                Sensitivity Matrix
-            </h3>
+        <div className="h-full flex flex-col">
             <div className="flex-1 overflow-auto">
-                <table className="w-full text-[9px] border-collapse min-w-[300px]">
+                <table className="w-full text-[9px] border-collapse min-w-[280px]">
                     <thead>
                         <tr>
                             <th className="p-1 text-slate-500 font-medium text-left border-b border-slate-800">G \ PE</th>
@@ -626,6 +622,43 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         alert(`Saved preset: ${presetName}`);
     }, [stockData.symbol, scenarios, discountRate, timeHorizon]);
 
+    const handleViewFullReport = useCallback(() => {
+        const tempProjection: Projection = {
+            id: 'temp-ai-view',
+            source: 'AI_AGENT',
+            schemaVersion: '1.1',
+            ticker: stockData.symbol,
+            version: 1,
+            savedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            name: 'Current AI Analysis',
+            rationale: aiResult?.rationale,
+            snapshot: {
+                price: stockData.price,
+                currency: stockData.currency,
+                revenue: stockData.metrics.revenue || 0,
+                shares: stockData.metrics.shares_outstanding || 0,
+                lastActualPS: stockData.metrics.market_cap / (stockData.metrics.revenue || 1),
+                fiscalPeriod: "TTM",
+                analystGrowthEstimate: stockData.analyst_estimates?.revenue_growth,
+                analystMarginEstimate: stockData.analyst_estimates?.profit_margin
+            },
+            dataPreferences: { growthBasis, marginBasis },
+            scenarios: scenarios,
+            globalSettings: { discountRate, timeHorizon },
+            aiThesis: aiResult ? {
+                model: aiResult.model_name,
+                rationale: aiResult.rationale,
+                fairValue: aiResult.fair_value,
+                action: (aiResult.action as 'BUY' | 'SELL' | 'HOLD') || 'HOLD',
+                analyzedAt: new Date().toISOString(),
+                researchReport: (aiResult as any).researchReport
+            } : undefined
+        };
+        setViewingProjection(tempProjection);
+        setShowAIModal(true);
+    }, [aiResult, stockData, scenarios, growthBasis, marginBasis, discountRate, timeHorizon]);
+
     const handleSyncToAI = useCallback(() => {
         if (!aiResult?.fair_value) return;
         const ratio = aiResult.fair_value / targetPrice;
@@ -719,12 +752,12 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
             {/* AI Thesis Section */}
             {(aiResult || isAnalyzing || aiError) && (
-                <div className="mb-4 flex-none animate-in fade-in slide-in-from-top-4 duration-500">
-                    <div className="bg-gradient-to-br from-indigo-900/40 via-slate-900/60 to-purple-900/30 border border-indigo-500/30 rounded-xl p-4 shadow-xl overflow-hidden relative group">
+                <div className="mb-2 flex-none animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="bg-gradient-to-br from-indigo-900/40 via-slate-900/60 to-purple-900/30 border border-indigo-500/30 rounded-xl p-3 shadow-xl overflow-hidden relative group">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 opacity-50"></div>
                         <div className="absolute -right-10 -top-10 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full group-hover:bg-indigo-500/20 transition-all duration-1000"></div>
 
-                        <div className="flex justify-between items-start mb-3 relative z-10">
+                        <div className="flex justify-between items-start mb-2 relative z-10">
                             <div className="flex items-center gap-2">
                                 <div className="p-1.5 bg-indigo-500/20 rounded-lg text-indigo-400">
                                     <BrainCircuit size={18} />
@@ -770,57 +803,23 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                 <p className="text-xs text-slate-400">{aiError}</p>
                             </div>
                         ) : aiResult ? (
-                            <div className="relative z-10 transition-all duration-300 ease-in-out">
-                                <div className={`text-xs text-slate-300 leading-relaxed font-medium pr-2 custom-scrollbar max-h-[44px] overflow-hidden`}>
-                                    <ReactMarkdown components={{
-                                        strong: ({ node, ...props }: any) => <span className="font-bold text-indigo-200" {...props} />,
-                                        h1: ({ node, ...props }: any) => <span className="block font-bold mt-2 mb-1" {...props} />,
-                                        h2: ({ node, ...props }: any) => <span className="block font-bold mt-2 mb-1" {...props} />,
-                                        h3: ({ node, ...props }: any) => <span className="block font-bold mt-1 mb-0.5" {...props} />,
-                                        p: ({ node, ...props }: any) => <p className="mb-1 last:mb-0 inline" {...props} />
-                                    }}>
-                                        {aiResult.rationale}
-                                    </ReactMarkdown>
+                            <div className="z-10 transition-all duration-300 ease-in-out">
+                                <div className="relative">
+                                    <div className={`text-xs text-slate-300 leading-relaxed font-medium pr-2 custom-scrollbar max-h-[44px] overflow-hidden`}>
+                                        <ReactMarkdown components={{
+                                            strong: ({ node, ...props }: any) => <span className="font-bold text-indigo-200" {...props} />,
+                                            h1: ({ node, ...props }: any) => <span className="block font-bold mt-2 mb-1" {...props} />,
+                                            h2: ({ node, ...props }: any) => <span className="block font-bold mt-2 mb-1" {...props} />,
+                                            h3: ({ node, ...props }: any) => <span className="block font-bold mt-1 mb-0.5" {...props} />,
+                                            p: ({ node, ...props }: any) => <p className="mb-1 last:mb-0 inline" {...props} />
+                                        }}>
+                                            {aiResult.rationale}
+                                        </ReactMarkdown>
+                                    </div>
+                                    <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-slate-900 to-transparent pointer-events-none"></div>
                                 </div>
-                                <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-slate-900 to-transparent pointer-events-none"></div>
                                 <button
-                                    onClick={() => {
-                                        const tempProjection: Projection = {
-                                            id: 'temp-ai-view',
-                                            source: 'AI_AGENT',
-                                            schemaVersion: '1.1',
-                                            ticker: stockData.symbol,
-                                            version: 1,
-                                            savedAt: new Date().toISOString(),
-                                            updatedAt: new Date().toISOString(),
-                                            name: 'Current AI Analysis',
-                                            rationale: aiResult.rationale, // Populate root rationale for modal display
-                                            snapshot: {
-                                                price: stockData.price,
-                                                currency: stockData.currency,
-                                                // Fix lints: Include required snapshot fields
-                                                revenue: stockData.metrics.revenue || 0,
-                                                shares: stockData.metrics.shares_outstanding || 0,
-                                                lastActualPS: stockData.metrics.market_cap / (stockData.metrics.revenue || 1),
-                                                fiscalPeriod: "TTM",
-                                                analystGrowthEstimate: stockData.analyst_estimates?.revenue_growth,
-                                                analystMarginEstimate: stockData.analyst_estimates?.profit_margin
-                                            },
-                                            dataPreferences: { growthBasis, marginBasis },
-                                            scenarios: scenarios,
-                                            globalSettings: { discountRate, timeHorizon },
-                                            aiThesis: {
-                                                model: aiResult.model_name,
-                                                rationale: aiResult.rationale,
-                                                fairValue: aiResult.fair_value,
-                                                action: (aiResult.action as 'BUY' | 'SELL' | 'HOLD') || 'HOLD',
-                                                analyzedAt: new Date().toISOString(),
-                                                researchReport: (aiResult as any).researchReport
-                                            }
-                                        };
-                                        setViewingProjection(tempProjection);
-                                        setShowAIModal(true);
-                                    }}
+                                    onClick={handleViewFullReport}
                                     className="mt-1 text-[10px] uppercase font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 bg-slate-800/50 px-2 py-0.5 rounded transition-colors group-hover:bg-slate-800"
                                 >
                                     View Full Report <FolderOpen size={10} />
@@ -832,12 +831,12 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             )}
 
             {/* Main Body: 2-Column Grid (Left: Drivers, Right: Analysis) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-2 min-h-0 overflow-hidden pr-1">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 mb-1 min-h-0 flex-1 overflow-hidden pr-1">
                 {/* Left Column (65%): Hero + Drivers */}
-                <div className="lg:col-span-8 flex flex-col gap-4 overflow-y-auto custom-scrollbar pr-1">
+                <div className="lg:col-span-8 flex flex-col gap-2 overflow-y-auto custom-scrollbar pr-1">
 
                     {/* Hero Section (Target Price Dashboard) */}
-                    <div className="w-full bg-gradient-to-r from-slate-900/80 to-slate-900/30 rounded-xl border border-slate-800/50 relative overflow-hidden flex flex-col justify-between p-3 shrink-0">
+                    <div className="w-full bg-gradient-to-r from-slate-900/80 to-slate-900/30 rounded-xl border border-slate-800/50 relative overflow-hidden flex flex-col justify-between p-2 shrink-0">
                         <div className="absolute top-3 right-3 flex gap-1 z-20 bg-slate-950/40 p-1 rounded-lg border border-white/5 backdrop-blur-sm">
                             {(['bear', 'base', 'bull'] as const).map((s) => (
                                 <button
@@ -859,7 +858,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em] mb-1 flex items-center gap-1.5 opacity-80">
                                 Weighted Fair Value
                             </span>
-                            <div className="text-4xl font-black text-white tracking-tight flex items-baseline gap-2 drop-shadow-2xl">
+                            <div className="text-3xl font-black text-white tracking-tight flex items-baseline gap-2 drop-shadow-2xl">
                                 ${Math.round(targetPrice)}
                                 <span className={`text-sm font-bold ${upside > 0 ? 'text-green-400' : 'text-red-400'}`}>
                                     ({upside > 0 ? '+' : ''}{upside.toFixed(0)}%)
@@ -882,8 +881,8 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     </div>
 
                     {/* Drivers Panel */}
-                    <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-5 backdrop-blur-sm">
-                        <div className="flex justify-between items-center mb-4 border-b border-slate-800/50 pb-2">
+                    <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-3 backdrop-blur-sm">
+                        <div className="flex justify-between items-center mb-2 border-b border-slate-800/50 pb-1">
                             <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
                                 <SlidersHorizontal size={16} className="text-indigo-400" />
                                 Model Drivers
@@ -897,7 +896,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             </button>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
                             {/* Core Inputs: Growth */}
                             <div>
                                 <div className="flex justify-between mb-2 items-center">
@@ -1002,7 +1001,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
                         {/* Collapsible Advanced Section */}
                         {showAdvanced && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 mt-4 pt-4 border-t border-slate-800/50 animate-in fade-in slide-in-from-top-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 mt-2 pt-2 border-t border-slate-800/50 animate-in fade-in slide-in-from-top-2">
                                 <div>
                                     <div className="text-[10px] font-bold text-slate-500 uppercase mb-2 tracking-wider">Advanced Evaluation</div>
                                     <div className="space-y-3">
@@ -1063,27 +1062,27 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 </div>
 
                 {/* Right Column (35%): Live Analysis */}
-                <div className="lg:col-span-4 flex flex-col gap-4 overflow-y-auto custom-scrollbar">
-                    <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-4 h-full backdrop-blur-sm flex flex-col">
-                        <h3 className="text-xs font-bold text-white mb-4 uppercase tracking-wider border-b border-slate-800 pb-2 flex justify-between items-center">
+                <div className="lg:col-span-4 flex flex-col gap-2 overflow-y-auto custom-scrollbar">
+                    <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-3 h-full backdrop-blur-sm flex flex-col">
+                        <h3 className="text-xs font-bold text-white mb-2 uppercase tracking-wider border-b border-slate-800 pb-1 flex justify-between items-center">
                             <span>Live Projections</span>
                             <span className="text-[10px] text-slate-500">{activeScenario} Case</span>
                         </h3>
 
-                        <div className="space-y-3 mb-4 flex-1">
-                            <div className="flex justify-between items-center p-3 bg-slate-800/30 rounded-lg">
+                        <div className="space-y-2 mb-2 flex-1">
+                            <div className="flex justify-between items-center p-2 bg-slate-800/30 rounded-lg">
                                 <div className="text-[10px] text-slate-400 uppercase tracking-wide">Revenue (T+5)</div>
                                 <div className="text-sm font-bold text-white">
                                     ${((stockData.metrics.revenue || 0) * Math.pow(1 + growthRate / 100, timeHorizon) / 1000000000).toFixed(1)}B
                                 </div>
                             </div>
-                            <div className="flex justify-between items-center p-3 bg-slate-800/30 rounded-lg">
+                            <div className="flex justify-between items-center p-2 bg-slate-800/30 rounded-lg">
                                 <div className="text-[10px] text-slate-400 uppercase tracking-wide">Net Income (T+5)</div>
                                 <div className="text-sm font-bold text-secondary">
                                     ${((stockData.metrics.revenue || 0) * Math.pow(1 + growthRate / 100, timeHorizon) * (netMargin / 100) / 1000000000).toFixed(1)}B
                                 </div>
                             </div>
-                            <div className="flex justify-between items-center p-3 bg-slate-800/30 rounded-lg border border-indigo-500/20 bg-indigo-500/5">
+                            <div className="flex justify-between items-center p-2 bg-slate-800/30 rounded-lg border border-indigo-500/20 bg-indigo-500/5">
                                 <div className="text-[10px] text-indigo-300 uppercase tracking-wide font-bold">Terminal Value</div>
                                 <div className="text-sm font-bold text-indigo-300">
                                     ${(((stockData.metrics.revenue || 0) * Math.pow(1 + growthRate / 100, timeHorizon) * (netMargin / 100) * peRatio) / 1000000000).toFixed(1)}B
@@ -1091,12 +1090,12 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             </div>
                         </div>
 
-                        <div className="mt-auto pt-4 border-t border-slate-800">
-                            <h4 className="text-[10px] font-bold text-slate-500 uppercase mb-3 flex items-center gap-2">
+                        <div className="mt-auto pt-2 border-t border-slate-800">
+                            <h4 className="text-[10px] font-bold text-slate-500 uppercase mb-1.5 flex items-center gap-2">
                                 <Table2 size={12} />
                                 Target Range
                             </h4>
-                            <div className="space-y-2.5">
+                            <div className="space-y-1.5">
                                 <div className="flex justify-between text-xs items-center group cursor-pointer hover:bg-white/5 p-2 rounded transition-colors" onClick={() => setActiveScenario('bear')}>
                                     <span className="text-red-400 font-bold flex items-center gap-2">
                                         <div className={`w-2 h-2 rounded-full ${activeScenario === 'bear' ? 'bg-red-400 ring-2 ring-red-400/30' : 'bg-red-900'}`}></div>
@@ -1123,7 +1122,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     </div>
 
                     {/* Sensitivity Matrix - Narrow Version */}
-                    <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-3 backdrop-blur-sm flex-none mt-4">
+                    <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-3 backdrop-blur-sm flex-none">
                         <div className="flex justify-between items-center mb-2">
                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
                                 <Table2 size={12} className="text-purple-400" />
