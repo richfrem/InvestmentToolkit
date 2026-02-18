@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Save, RotateCcw, Info, X, AlertTriangle, Table2, SlidersHorizontal, ChevronUp, ChevronDown } from 'lucide-react';
 import type { StockData } from '../services/api';
@@ -10,6 +10,184 @@ import { Sparkles, BrainCircuit, Loader2, FolderOpen } from 'lucide-react';
 import { AIAnalysisModal } from './AIAnalysisModal';
 import { PresetSelectorModal } from './PresetSelectorModal';
 import { saveUserPreset } from '../services/presets';
+
+// --- Extracted Components (defined outside render to avoid remounting) ---
+
+interface SliderInputProps {
+    label: string;
+    value: number;
+    setValue: (v: number) => void;
+    min: number;
+    max: number;
+    unit?: string;
+    step?: number;
+    note?: string;
+    helpTopic?: string;
+    warningThreshold?: number | null;
+    impact?: 'High' | 'Med' | 'Low';
+}
+
+function SliderInput({ label, value, setValue, min, max, unit = '', step = 1, note = '', helpTopic = '', warningThreshold = null, impact = 'Low' }: SliderInputProps) {
+    const isWarning = warningThreshold !== null && value < warningThreshold;
+    const impactColor = impact === 'High' ? 'bg-purple-500' : impact === 'Med' ? 'bg-blue-400' : 'bg-slate-600';
+
+    return (
+        <div className="mb-3 group">
+            <div className="flex justify-between items-center mb-1.5">
+                <div className="flex items-center gap-2">
+                    <div className={`w-1 h-3 rounded-full ${impactColor}`} title={`${impact} Impact on Valuation`}></div>
+                    <label className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 ${isWarning ? 'text-red-400' : 'text-slate-300 group-hover:text-white transition-colors'}`}>
+                        {label}
+                    </label>
+                    {helpTopic && (
+                        <HelpTrigger topicId={helpTopic} className="opacity-30 hover:opacity-100 transition-opacity" size={12} />
+                    )}
+                </div>
+                <div className="flex items-baseline gap-2">
+                    {note && <span className="text-[9px] text-slate-600 font-medium">{note}</span>}
+                    <div className={`flex items-center rounded px-2 py-0.5 border ${isWarning ? 'bg-red-500/10 border-red-500/50' : 'bg-slate-800 border-slate-700 group-hover:border-slate-500 transition-colors'}`}>
+                        <input
+                            type="number"
+                            value={value}
+                            step={step}
+                            onChange={(e) => setValue(Number(e.target.value))}
+                            className={`w-12 bg-transparent text-right text-xs font-bold focus:outline-none ${isWarning ? 'text-red-400' : 'text-white'}`}
+                        />
+                        <span className="text-[10px] text-slate-500 ml-0.5">{unit}</span>
+                    </div>
+                </div>
+            </div>
+
+            <input
+                type="range"
+                min={min}
+                max={max}
+                step={step}
+                value={value}
+                onChange={(e) => setValue(Number(e.target.value))}
+                style={{
+                    background: `linear-gradient(to right, ${isWarning ? '#ef4444' : '#6366f1'} 0%, ${isWarning ? '#ef4444' : '#6366f1'} ${((value - min) / (max - min)) * 100}%, #1e293b ${((value - min) / (max - min)) * 100}%, #1e293b 100%)`
+                }}
+                className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer transition-all mt-1 focus:outline-none focus:ring-1 focus:ring-indigo-500/50
+                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 
+                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white 
+                    [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(0,0,0,0.5)] [&::-webkit-slider-thumb]:mt-[-3px] 
+                    ${isWarning ? '[&::-webkit-slider-thumb]:ring-2 [&::-webkit-slider-thumb]:ring-red-500' : ''}`}
+            />
+
+            <div className="flex justify-between text-[8px] text-slate-700 mt-1 px-0.5">
+                <span>{min}</span>
+                <span>{max}</span>
+            </div>
+        </div>
+    );
+}
+
+interface SensitivityMatrixProps {
+    peRatio: number;
+    growthRate: number;
+    stockPrice: number;
+    calculatePrice: (g: number, pe: number) => number;
+}
+
+function SensitivityMatrix({ peRatio, growthRate, stockPrice, calculatePrice }: SensitivityMatrixProps) {
+    const currentPe = Math.max(5, Math.round(peRatio / 5) * 5);
+    const currentGrowth = Math.round(growthRate / 5) * 5;
+
+    const peRange = useMemo(() =>
+        [currentPe - 10, currentPe - 5, currentPe, currentPe + 5, currentPe + 10].filter(p => p > 0),
+        [currentPe]
+    );
+
+    const growthRange = useMemo(() =>
+        [currentGrowth - 10, currentGrowth - 5, currentGrowth, currentGrowth + 5, currentGrowth + 10],
+        [currentGrowth]
+    );
+
+    return (
+        <div className="bg-slate-900/40 p-4 rounded-xl border border-slate-800 h-full flex flex-col">
+            <h3 className="text-xs font-bold text-slate-300 mb-3 flex items-center gap-2 uppercase tracking-wider">
+                <span className="w-1 h-3 bg-purple-500 rounded-full animate-pulse"></span>
+                Sensitivity Matrix
+            </h3>
+            <div className="flex-1 overflow-auto">
+                <table className="w-full text-[9px] border-collapse min-w-[300px]">
+                    <thead>
+                        <tr>
+                            <th className="p-1 text-slate-500 font-medium text-left border-b border-slate-800">G \ PE</th>
+                            {peRange.map(pe => (
+                                <th key={pe} className={`p-1 border-b border-slate-800 text-center transition-colors duration-300 ${pe === currentPe ? 'text-white font-bold bg-purple-500/20' : 'text-slate-600'}`}>
+                                    {pe}x
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {growthRange.map(g => (
+                            <tr key={g} className="hover:bg-slate-800/30 transition-colors">
+                                <td className={`p-1 font-bold border-r border-slate-800/50 ${g === currentGrowth ? 'text-primary' : 'text-slate-500'}`}>
+                                    {g}%
+                                </td>
+                                {peRange.map(pe => {
+                                    const price = calculatePrice(g, pe);
+                                    const mxUpside = stockPrice > 0 ? ((price - stockPrice) / stockPrice) * 100 : 0;
+
+                                    let colorClass = 'text-slate-600';
+                                    if (mxUpside > 50) colorClass = 'bg-green-500/20 text-green-400 font-bold';
+                                    else if (mxUpside > 20) colorClass = 'bg-green-500/10 text-green-500';
+                                    else if (mxUpside > 0) colorClass = 'text-green-600';
+                                    else if (mxUpside > -20) colorClass = 'text-red-400';
+                                    else colorClass = 'bg-red-500/10 text-red-500 font-bold';
+
+                                    if (g === currentGrowth && pe === currentPe) {
+                                        colorClass += ' ring-1 ring-primary relative z-10';
+                                    }
+
+                                    return (
+                                        <td key={pe} className={`p-1 text-right rounded-sm ${colorClass}`}>
+                                            ${Math.round(price)}
+                                        </td>
+                                    );
+                                })}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
+
+// --- Normalization helper (extracted to avoid duplication) ---
+
+function normalizeScenario(s: any): Scenario & { weight: number } {
+    return {
+        ...s,
+        growthRate: (Math.abs(s.growthRate) > 0 && Math.abs(s.growthRate) < 1.0) ? s.growthRate * 100 : s.growthRate,
+        netMargin: (Math.abs(s.netMargin) > 0 && Math.abs(s.netMargin) < 1.0) ? s.netMargin * 100 : s.netMargin,
+        shareChange: (Math.abs(s.shareChange) > 0 && Math.abs(s.shareChange) < 1.0) ? s.shareChange * 100 : s.shareChange,
+    };
+}
+
+function extractScenariosFromProjection(p: any): { bear: Scenario & { weight: number }; base: Scenario & { weight: number }; bull: Scenario & { weight: number } } | null {
+    if (p.scenarios?.bear && p.scenarios?.base && p.scenarios?.bull) {
+        return {
+            bear: normalizeScenario(p.scenarios.bear),
+            base: normalizeScenario(p.scenarios.base),
+            bull: normalizeScenario(p.scenarios.bull),
+        };
+    }
+    if (p.bear && p.base && p.bull) {
+        return {
+            bear: normalizeScenario(p.bear),
+            base: normalizeScenario(p.base),
+            bull: normalizeScenario(p.bull),
+        };
+    }
+    return null;
+}
+
+// --- Main Component ---
 
 interface ValuationModelerProps {
     stockData: StockData;
@@ -34,11 +212,8 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const [saveAsDefault, setSaveAsDefault] = useState(false);
     const [showPresetModal, setShowPresetModal] = useState(false);
     const [showAdvanced, setShowAdvanced] = useState(false);
-    const [showFullAnalysis, setShowFullAnalysis] = useState(false);
-    const [showMatrix, setShowMatrix] = useState(false);
-
-    const [viewingProjection, setViewingProjection] = useState<Projection | null>(null); // State for modal viewing
-    const [activeProjection, setActiveProjection] = useState<{ id: string, version: number } | null>(null); // Track loaded projection for updates
+    const [viewingProjection, setViewingProjection] = useState<Projection | null>(null);
+    const [activeProjection, setActiveProjection] = useState<{ id: string; version: number } | null>(null);
 
     // Global Settings
     const [discountRate, setDiscountRate] = useState(10);
@@ -57,19 +232,18 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
     // Helpers to get/set current scenario values
     const current = scenarios[activeScenario];
-    const updateCurrent = (updates: Partial<Scenario & { weight: number }>) => {
+    const updateCurrent = useCallback((updates: Partial<Scenario & { weight: number }>) => {
         setScenarios(prev => ({
             ...prev,
             [activeScenario]: { ...prev[activeScenario], ...updates }
         }));
-    };
+    }, [activeScenario]);
 
     // Derived State for UI Compatibility
     const growthRate = current.growthRate;
     const netMargin = current.netMargin;
     const peRatio = current.exitPE;
     const qualityMultiplier = current.qualityMultiplier;
-
     const shareChange = current.shareChange;
     const moatScore = current.moatScore ?? 0;
     const managementScore = current.managementScore ?? 0;
@@ -77,51 +251,61 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const totalWeight = scenarios.bear.weight + scenarios.base.weight + scenarios.bull.weight;
     const currentWeight = Math.round(current.weight * 100);
 
-    const setGrowthRate = (v: number) => updateCurrent({ growthRate: v });
-    const setNetMargin = (v: number) => updateCurrent({ netMargin: v });
-    const setPeRatio = (v: number) => updateCurrent({ exitPE: v });
-    const setQualityMultiplier = (v: number) => updateCurrent({ qualityMultiplier: v });
-    const setShareChange = (v: number) => updateCurrent({ shareChange: v });
-    const setMoatScore = (v: number) => updateCurrent({ moatScore: v });
-    const setManagementScore = (v: number) => updateCurrent({ managementScore: v });
-    const setWeight = (v: number) => updateCurrent({ weight: v / 100 });
-
-    // Data preferences
+    const setGrowthRate = useCallback((v: number) => updateCurrent({ growthRate: v }), [updateCurrent]);
+    const setNetMargin = useCallback((v: number) => updateCurrent({ netMargin: v }), [updateCurrent]);
+    const setPeRatio = useCallback((v: number) => updateCurrent({ exitPE: v }), [updateCurrent]);
+    const setQualityMultiplier = useCallback((v: number) => updateCurrent({ qualityMultiplier: v }), [updateCurrent]);
+    const setShareChange = useCallback((v: number) => updateCurrent({ shareChange: v }), [updateCurrent]);
+    const setMoatScore = useCallback((v: number) => updateCurrent({ moatScore: v }), [updateCurrent]);
+    const setManagementScore = useCallback((v: number) => updateCurrent({ managementScore: v }), [updateCurrent]);
+    const setWeight = useCallback((v: number) => updateCurrent({ weight: v / 100 }), [updateCurrent]);
 
     // Data preferences
     const [growthBasis, setGrowthBasis] = useState<'current' | 'next'>('next');
     const [marginBasis, setMarginBasis] = useState<'ttm' | 'quarterly'>('quarterly');
 
-    // Initialize: Try to load latest saved projection, otherwise default to Yahoo
-    useEffect(() => {
-        const init = async () => {
-            // 1. Sync & Fetch saved projections
-            const saved = await storage.syncProjections(stockData.symbol);
-            setSavedCount(saved.length);
+    // --- Calculations ---
 
-            // 2. Auto-load the default or most recent
-            if (saved.length > 0) {
-                // Priority: isDefault=true, then latest updatedAt
-                const defaults = saved.filter(p => p.isDefault);
-                let target;
-                if (defaults.length > 0) {
-                    target = defaults.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
-                    console.log(`[AutoLoad] Loading default projection: ${target.name}`);
-                } else {
-                    target = saved.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
-                    console.log(`[AutoLoad] Loading latest projection (no default set): ${target.name}`);
-                }
-                handleLoad(target);
-            } else {
-                // 3. Fallback to Yahoo defaults
-                resetToYahoo();
-            }
+    const calculateScenarioPrice = useCallback((s: Scenario, horizon: number = timeHorizon, discount: number = discountRate) => {
+        const currentRevenue = stockData.metrics.revenue || 0;
+        const futureRevenue = currentRevenue * Math.pow(1 + s.growthRate / 100, horizon);
+        const futureNetIncome = futureRevenue * (s.netMargin / 100);
+        const futureMarketCap = futureNetIncome * s.exitPE * s.qualityMultiplier;
+        const currentShares = stockData.metrics.shares_outstanding || 1;
+        const futureShares = currentShares * Math.pow(1 + s.shareChange / 100, horizon);
+        let futurePrice = futureShares > 0 ? futureMarketCap / futureShares : 0;
+
+        const moatPremium = (s.moatScore ?? 0) * 0.05;
+        const mgmtPremium = (s.managementScore ?? 0) * 0.05;
+        futurePrice = futurePrice * (1 + moatPremium + mgmtPremium);
+
+        return futurePrice / Math.pow(1 + discount / 100, horizon);
+    }, [stockData.metrics.revenue, stockData.metrics.shares_outstanding, timeHorizon, discountRate]);
+
+    // Used by Sensitivity Matrix
+    const calculatePrice = useCallback((g: number, pe: number) => {
+        const tempScenario: Scenario = {
+            ...current,
+            growthRate: g,
+            exitPE: pe,
         };
-        init();
-    }, [stockData.symbol]); // Re-run when ticker changes
+        return calculateScenarioPrice(tempScenario);
+    }, [current, calculateScenarioPrice]);
 
-    const resetToYahoo = () => {
-        // --- Base Logic ---
+    // Derived Prices
+    const bearPrice = calculateScenarioPrice(scenarios.bear);
+    const basePrice = calculateScenarioPrice(scenarios.base);
+    const bullPrice = calculateScenarioPrice(scenarios.bull);
+
+    const weightedPrice = (bearPrice * scenarios.bear.weight) + (basePrice * scenarios.base.weight) + (bullPrice * scenarios.bull.weight);
+    const targetPrice = weightedPrice;
+
+    const activePrice = activeScenario === 'bull' ? bullPrice : activeScenario === 'bear' ? bearPrice : basePrice;
+    const activeUpside = stockData.price > 0 ? ((activePrice - stockData.price) / stockData.price) * 100 : 0;
+    const upside = stockData.price > 0 ? ((targetPrice - stockData.price) / stockData.price) * 100 : 0;
+
+    // --- resetToYahoo ---
+    const resetToYahoo = useCallback(() => {
         let baseGrowth = 15;
         const est = stockData.growth_estimates?.stockTrend;
         if (est) {
@@ -140,8 +324,6 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             baseMargin = Math.abs(raw) > 1 ? raw : raw * 100;
         }
 
-        // Fix for negative earners (Turnaround logic)
-        // If margin is negative, default to 5% to show a recovery scenario rather than bankruptcy
         if (baseMargin < 0) {
             baseMargin = 5.0;
         }
@@ -150,8 +332,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
         setDiscountRate(10);
         setTimeHorizon(5);
-
-        setActiveProjection(null); // Clear active projection tracking for clean slate
+        setActiveProjection(null);
 
         setScenarios({
             bear: {
@@ -185,73 +366,87 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 weight: 0.3
             }
         });
-    };
+    }, [stockData, growthBasis, marginBasis]);
 
-    // --- Calculations ---
+    // --- handleLoad ---
+    const handleLoad = useCallback((loadedProjection: any) => {
+        const p = loadedProjection;
 
-    // Helper to calculate price for a specific scenario object
-    const calculateScenarioPrice = (s: Scenario, horizon: number = timeHorizon, discount: number = discountRate) => {
-        // 1. Future Revenue
-        const currentRevenue = stockData.metrics.revenue || 0;
-        const futureRevenue = currentRevenue * Math.pow(1 + s.growthRate / 100, horizon);
+        if (p.id && p.ticker) {
+            if (p.source === 'USER') {
+                setActiveProjection({ id: p.id, version: p.version });
+            } else {
+                setActiveProjection(null);
+            }
+        } else {
+            setActiveProjection(null);
+        }
 
-        // 2. Future Net Income
-        const futureNetIncome = futureRevenue * (s.netMargin / 100);
+        const extracted = extractScenariosFromProjection(p);
+        if (extracted) {
+            setScenarios(extracted);
+        }
 
-        // 3. Future Market Cap
-        const futureMarketCap = futureNetIncome * s.exitPE * s.qualityMultiplier;
+        if (p.globalSettings) {
+            setDiscountRate(p.globalSettings.discountRate);
+            setTimeHorizon(p.globalSettings.timeHorizon);
+        }
 
-        // 4. Future Share Count
-        const currentShares = stockData.metrics.shares_outstanding || 1;
-        const futureShares = currentShares * Math.pow(1 + s.shareChange / 100, horizon);
+        if (p.dataPreferences) {
+            setGrowthBasis(p.dataPreferences.growthBasis);
+            setMarginBasis(p.dataPreferences.marginBasis);
+        }
 
-        // 5. Future Price
-        let futurePrice = futureShares > 0 ? futureMarketCap / futureShares : 0;
+        if (p.name) setSaveName(p.name);
 
-        // 6. Apply Moat & Management Premiums (0-5 score, each point = 5% premium)
-        // This reflects "Drivers" that expand the multiple or cash flow reliability
-        const moatPremium = (s.moatScore ?? 0) * 0.05;
-        const mgmtPremium = (s.managementScore ?? 0) * 0.05;
-        futurePrice = futurePrice * (1 + moatPremium + mgmtPremium);
+        // Populate aiResult if aiThesis exists in the loaded projection
+        if (p.aiThesis) {
+            const thesis = p.aiThesis;
+            const base = extracted?.base || p.scenarios?.base; // Use extracted if available, else raw
+            setAiResult({
+                fair_value: thesis.fairValue,
+                model_name: thesis.model,
+                rationale: p.rationale || thesis.rationale, // Prefer root rationale (summary) over thesis detail
+                action: thesis.action,
+                growth_assumption: base ? base.growthRate / 100 : 0,
+                suggested_growth: base ? base.growthRate / 100 : undefined,
+                suggested_margin: base ? base.netMargin / 100 : undefined,
+                exit_pe: base ? base.exitPE : undefined,
+                quality_multiplier: base ? base.qualityMultiplier : undefined,
+                researchReport: thesis.researchReport
+            } as any);
+        } else {
+            setAiResult(null);
+        }
 
-        // 7. Discount to PV
-        return futurePrice / Math.pow(1 + discount / 100, horizon);
-    };
+        setShowProjectionsPanel(false);
+    }, []);
 
-    // Used by Sensitivity Matrix (uses current scenario context but overrides g/pe)
-    const calculatePrice = (g: number, pe: number) => {
-        const tempScenario: Scenario = {
-            ...current,
-            growthRate: g,
-            exitPE: pe,
+    // Initialize: Try to load latest saved projection, otherwise default to Yahoo
+    useEffect(() => {
+        const init = async () => {
+            const saved = await storage.syncProjections(stockData.symbol);
+            setSavedCount(saved.length);
+
+            if (saved.length > 0) {
+                const defaults = saved.filter(p => p.isDefault);
+                let target;
+                if (defaults.length > 0) {
+                    target = defaults.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
+                } else {
+                    target = saved.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
+                }
+                handleLoad(target);
+            } else {
+                resetToYahoo();
+            }
         };
-        return calculateScenarioPrice(tempScenario);
-    };
-
-    // Derived Prices
-    const bearPrice = calculateScenarioPrice(scenarios.bear);
-    const basePrice = calculateScenarioPrice(scenarios.base);
-    const bullPrice = calculateScenarioPrice(scenarios.bull);
-
-    // Weighted Average
-    const weightedPrice = (bearPrice * scenarios.bear.weight) + (basePrice * scenarios.base.weight) + (bullPrice * scenarios.bull.weight);
-
-    // Target Price for Hero (Interactive)
-    // Reverted to Weighted Average per user request (with explanation)
-    const targetPrice = weightedPrice;
-
-    // Active Scenario Helpers for UI (Dynamic secondary display)
-    const activePrice = activeScenario === 'bull' ? bullPrice : activeScenario === 'bear' ? bearPrice : basePrice;
-    // Calculate upside for active scenario
-    const activeUpside = stockData.price > 0 ? ((activePrice - stockData.price) / stockData.price) * 100 : 0;
-
-    const upside = stockData.price > 0 ? ((targetPrice - stockData.price) / stockData.price) * 100 : 0;
+        init();
+    }, [stockData.symbol, handleLoad, resetToYahoo]);
 
     // --- Actions ---
 
-
-
-    const handleAIAnalysis = async (metric?: string) => {
+    const handleAIAnalysis = useCallback(async (metric?: string) => {
         setIsAnalyzing(true);
         setAiError(null);
         setActiveCoachMetric(metric || null);
@@ -276,16 +471,11 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         } finally {
             setIsAnalyzing(false);
         }
-    };
+    }, [stockData.symbol, setGrowthRate]);
 
-
-
-
-
-    const handleSaveConfirm = () => {
+    const handleSaveConfirm = useCallback(() => {
         if (!saveName.trim()) return;
 
-        // Current snapshot
         const snapshot = {
             price: stockData.price,
             currency: stockData.currency,
@@ -294,31 +484,29 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             lastActualPS: stockData.metrics.market_cap / (stockData.metrics.revenue || 1),
             analystGrowthEstimate: stockData.analyst_estimates?.revenue_growth,
             analystMarginEstimate: stockData.analyst_estimates?.profit_margin,
-            fiscalPeriod: "TTM" // Simplified
+            fiscalPeriod: "TTM"
         };
 
         const projection: Projection = {
-            id: activeProjection?.id || crypto.randomUUID(), // Use existing ID if updating
+            id: activeProjection?.id || crypto.randomUUID(),
             source: 'USER',
             ticker: stockData.symbol,
             schemaVersion: '1.1',
-            version: activeProjection ? activeProjection.version + 1 : 1, // Increment version if updating
+            version: activeProjection ? activeProjection.version + 1 : 1,
             savedAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             name: saveName,
             isDefault: saveAsDefault,
             snapshot,
             dataPreferences: { growthBasis, marginBasis },
-            scenarios: scenarios, // Save all 3
+            scenarios: scenarios,
             globalSettings: { discountRate, timeHorizon },
-            // Preserve AI Thesis if available
             aiThesis: aiResult ? {
                 model: aiResult.model_name,
                 rationale: aiResult.rationale,
                 fairValue: aiResult.fair_value,
                 action: (aiResult.action as any) || 'HOLD',
                 analyzedAt: new Date().toISOString(),
-                // If we have a report link, preserve it (though it might not be in aiResult unless we put it there)
                 researchReport: (aiResult as any).researchReport
             } : undefined
         };
@@ -326,132 +514,29 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         storage.saveProjection(projection)
             .then(() => {
                 setSavedCount(prev => prev + 1);
-                // Update active projection state to match the newly saved one
                 setActiveProjection({ id: projection.id, version: projection.version });
                 setShowSaveModal(false);
             })
             .catch(err => alert("Failed to save: " + err.message));
-    };
+    }, [saveName, stockData, activeProjection, saveAsDefault, growthBasis, marginBasis, scenarios, discountRate, timeHorizon, aiResult]);
 
-    const handleLoad = (loadedProjection: any) => {
-        // We expect a full Projection object here, but older callers might pass just scenarios.
-        // Actually storage.syncProjections returns Projection[]. 
-        // ProjectionsPanel onLoad passes `p.scenarios` or `p`.
-
-        let p = loadedProjection;
-        // If it's a full projection object (has id/ticker), use it. 
-        // If it's a full projection object (has id/ticker), use it. 
-        if (p.id && p.ticker) {
-            // CRITICAL fix: Only treat it as an "active" projection to update if it's a USER one.
-            // If it's an AI or System projection, treat it as a "Template" (Load values, but don't bind ID).
-            // This ensures saving creates a new USER entry instead of overwriting the AI/System one.
-            if (p.source === 'USER') {
-                setActiveProjection({ id: p.id, version: p.version });
-            } else {
-                setActiveProjection(null);
-            }
-
-            // Also take scenarios from it
-            if (p.scenarios) {
-                // Normalize Percentages (if saved as decimals 0.15 instead of 15)
-                const normalize = (s: Scenario) => ({
-                    ...s,
-                    // If < 1.0 (e.g. 0.15), treat as decimal and convert to %. Exception: 0 is ambiguous but 0% is fine.
-                    // Risk: If user INTENDS 0.5% growth, this converts it to 50%?
-                    growthRate: (Math.abs(s.growthRate) > 0 && Math.abs(s.growthRate) < 1.0) ? s.growthRate * 100 : s.growthRate,
-                    netMargin: (Math.abs(s.netMargin) > 0 && Math.abs(s.netMargin) < 1.0) ? s.netMargin * 100 : s.netMargin,
-                    shareChange: (Math.abs(s.shareChange) > 0 && Math.abs(s.shareChange) < 1.0) ? s.shareChange * 100 : s.shareChange,
-                });
-
-                setScenarios({
-                    bear: normalize(p.scenarios.bear),
-                    base: normalize(p.scenarios.base),
-                    bull: normalize(p.scenarios.bull)
-                });
-            } else if (p.base && p.bull && p.bear) {
-                // Legacy support
-                const normalize = (s: any) => ({
-                    ...s,
-                    growthRate: Math.abs(s.growthRate) <= 1 && s.growthRate !== 0 ? s.growthRate * 100 : s.growthRate,
-                    netMargin: Math.abs(s.netMargin) <= 1 && s.netMargin !== 0 ? s.netMargin * 100 : s.netMargin,
-                    shareChange: Math.abs(s.shareChange) <= 1 && s.shareChange !== 0 ? s.shareChange * 100 : s.shareChange,
-                });
-                setScenarios({
-                    bear: normalize(p.bear),
-                    base: normalize(p.base),
-                    bull: normalize(p.bull)
-                });
-            }
-        } else {
-            // Legacy or partial load - treat as new
-            setActiveProjection(null);
-            // Try to patch from legacy structure
-            if (p.scenarios) {
-                // Normalize Percentages
-                const normalize = (s: Scenario) => ({
-                    ...s,
-                    growthRate: Math.abs(s.growthRate) <= 1 && s.growthRate !== 0 ? s.growthRate * 100 : s.growthRate,
-                    netMargin: Math.abs(s.netMargin) <= 1 && s.netMargin !== 0 ? s.netMargin * 100 : s.netMargin,
-                    shareChange: Math.abs(s.shareChange) <= 1 && s.shareChange !== 0 ? s.shareChange * 100 : s.shareChange,
-                });
-                setScenarios({
-                    bear: normalize(p.scenarios.bear),
-                    base: normalize(p.scenarios.base),
-                    bull: normalize(p.scenarios.bull)
-                });
-            } else if (p.base && p.bull && p.bear) {
-                const normalize = (s: any) => ({
-                    ...s,
-                    growthRate: Math.abs(s.growthRate) <= 1 && s.growthRate !== 0 ? s.growthRate * 100 : s.growthRate,
-                    netMargin: Math.abs(s.netMargin) <= 1 && s.netMargin !== 0 ? s.netMargin * 100 : s.netMargin,
-                    shareChange: Math.abs(s.shareChange) <= 1 && s.shareChange !== 0 ? s.shareChange * 100 : s.shareChange,
-                });
-                setScenarios({
-                    bear: normalize(p.bear),
-                    base: normalize(p.base),
-                    bull: normalize(p.bull)
-                });
-            }
-        }
-
-        if (p.globalSettings) {
-            setDiscountRate(p.globalSettings.discountRate);
-            setTimeHorizon(p.globalSettings.timeHorizon);
-        }
-
-        if (p.dataPreferences) {
-            setGrowthBasis(p.dataPreferences.growthBasis);
-            setMarginBasis(p.dataPreferences.marginBasis);
-        }
-
-        if (p.name) setSaveName(p.name);
-
-        setShowProjectionsPanel(false);
-    };
-
-    const handlePresetLoad = async (preset: any) => {
+    const handlePresetLoad = useCallback(async (preset: any) => {
         if (preset.type === 'yahoo') {
-            // Load Yahoo Consensus
             resetToYahoo();
         } else if (preset.type === 'ai') {
-            // Load specific AI Analysis from the preset
             const aiProjection = preset.aiProjection;
             if (aiProjection && aiProjection.scenarios) {
-                // Prepare new settings
                 const newSettings = aiProjection.globalSettings || { discountRate: 10, timeHorizon: 5 };
 
-                // Deep copy scenarios to avoid mutation issues and allow calibration
                 const newScenarios = {
                     bear: { ...aiProjection.scenarios.bear },
                     base: { ...aiProjection.scenarios.base },
                     bull: { ...aiProjection.scenarios.bull }
                 };
 
-                // Auto-Calibration: Check against AI Fair Value
                 if (aiProjection.aiThesis && aiProjection.aiThesis.fairValue) {
                     const targetFV = aiProjection.aiThesis.fairValue;
 
-                    // Calculate implied Fair Value using App's data + AI's Scenarios
                     const bearP = calculateScenarioPrice(newScenarios.bear, newSettings.timeHorizon, newSettings.discountRate);
                     const baseP = calculateScenarioPrice(newScenarios.base, newSettings.timeHorizon, newSettings.discountRate);
                     const bullP = calculateScenarioPrice(newScenarios.bull, newSettings.timeHorizon, newSettings.discountRate);
@@ -460,12 +545,8 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                         (baseP * newScenarios.base.weight) +
                         (bullP * newScenarios.bull.weight);
 
-                    // If mismatch > 2% (e.g. strict vs TTM revenue diff), calibrate multipliers
                     if (targetFV > 0 && impliedWeighted > 0 && Math.abs(impliedWeighted - targetFV) / targetFV > 0.02) {
                         const ratio = targetFV / impliedWeighted;
-                        // console.log(`[Auto-Calibrate] Adjusting Quality Multipliers by ${ratio.toFixed(2)}x to match AI FV $${targetFV}`);
-
-                        // Limit calibration to reasonable bounds (e.g. 0.5x to 3.0x scaling) - allow wiggle room
                         const safeRatio = Math.min(3.0, Math.max(0.3, ratio));
 
                         newScenarios.bear.qualityMultiplier *= safeRatio;
@@ -478,7 +559,6 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 setDiscountRate(newSettings.discountRate);
                 setTimeHorizon(newSettings.timeHorizon);
 
-                // Also load the thesis into the AI Result view
                 const thesis = aiProjection.aiThesis;
                 const base = aiProjection.scenarios.base;
                 if (thesis) {
@@ -495,23 +575,19 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     });
                 }
 
-                // Open the modal with this projection
                 setViewingProjection(aiProjection);
                 setShowAIModal(true);
-
                 setActiveScenario('base');
             } else {
                 console.error('AI Preset missing projection data');
                 alert('Failed to load this specific AI Analysis');
             }
         } else if (preset.type === 'user' && preset.data) {
-            // Load User Preset
             setScenarios(preset.data.scenarios);
             setDiscountRate(preset.data.globalSettings.discountRate);
             setTimeHorizon(preset.data.globalSettings.timeHorizon);
 
-            // Also restore AI Analysis if saved with it (User Presets often inherit AI data)
-            const p = preset.data as any; // Cast to access optional aiThesis
+            const p = preset.data as any;
             if (p.aiThesis) {
                 const thesis = p.aiThesis;
                 const base = preset.data.scenarios.base;
@@ -525,19 +601,18 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     suggested_margin: base ? base.netMargin / 100 : undefined,
                     exit_pe: base ? base.exitPE : undefined,
                     quality_multiplier: base ? base.qualityMultiplier : undefined,
-                    researchReport: thesis.researchReport // Preserve report link
+                    researchReport: thesis.researchReport
                 } as any);
             } else {
-                // Clear AI result if loading a manual preset that has no AI data
                 setAiResult(null);
             }
 
             setActiveScenario('base');
         }
         setShowPresetModal(false);
-    };
+    }, [resetToYahoo, calculateScenarioPrice]);
 
-    const handleSaveAsPreset = () => {
+    const handleSaveAsPreset = useCallback(() => {
         const presetName = prompt('Name this preset:');
         if (!presetName?.trim()) return;
 
@@ -549,167 +624,38 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         );
 
         alert(`Saved preset: ${presetName}`);
-    };
+    }, [stockData.symbol, scenarios, discountRate, timeHorizon]);
 
-    // --- Components ---
+    const handleSyncToAI = useCallback(() => {
+        if (!aiResult?.fair_value) return;
+        const ratio = aiResult.fair_value / targetPrice;
+        setScenarios(prev => ({
+            bear: { ...prev.bear, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.bear.qualityMultiplier * ratio)) },
+            base: { ...prev.base, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.base.qualityMultiplier * ratio)) },
+            bull: { ...prev.bull, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.bull.qualityMultiplier * ratio)) }
+        }));
+    }, [aiResult, targetPrice]);
 
-    const SliderInput = ({ label, value, setValue, min, max, unit = '', step = 1, note = '', helpTopic = '', warningThreshold = null, impact = 'Low' }: any) => {
-        const isWarning = warningThreshold !== null && value < warningThreshold;
-        const impactColor = impact === 'High' ? 'bg-purple-500' : impact === 'Med' ? 'bg-blue-400' : 'bg-slate-600';
+    // Memoized growth estimate display values
+    const currentYearGrowth = useMemo(() => {
+        const val = stockData.growth_estimates?.stockTrend['0y'];
+        if (val === undefined) return 'N/A';
+        return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
+    }, [stockData.growth_estimates]);
 
-        return (
-            <div className="mb-3 group">
-                <div className="flex justify-between items-center mb-1.5">
-                    <div className="flex items-center gap-2">
-                        {/* Impact Indicator */}
-                        <div className={`w-1 h-3 rounded-full ${impactColor}`} title={`${impact} Impact on Valuation`}></div>
+    const nextYearGrowth = useMemo(() => {
+        const val = stockData.growth_estimates?.stockTrend['+1y'];
+        if (val === undefined) return 'N/A';
+        return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
+    }, [stockData.growth_estimates]);
 
-                        <label className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 ${isWarning ? 'text-red-400' : 'text-slate-300 group-hover:text-white transition-colors'}`}>
-                            {label}
-                        </label>
-                        {helpTopic && (
-                            <HelpTrigger topicId={helpTopic} className="opacity-30 hover:opacity-100 transition-opacity" size={12} />
-                        )}
-                    </div>
-
-                    {/* Value & Note Inline */}
-                    <div className="flex items-baseline gap-2">
-                        {note && <span className="text-[9px] text-slate-600 font-medium">{note}</span>}
-                        <div className={`flex items-center rounded px-2 py-0.5 border ${isWarning ? 'bg-red-500/10 border-red-500/50' : 'bg-slate-800 border-slate-700 GROUP-HOVER:border-slate-500 transition-colors'}`}>
-                            <input
-                                type="number"
-                                value={value}
-                                step={step}
-                                onChange={(e) => setValue(Number(e.target.value))}
-                                className={`w-12 bg-transparent text-right text-xs font-bold focus:outline-none ${isWarning ? 'text-red-400' : 'text-white'}`}
-                            />
-                            <span className="text-[10px] text-slate-500 ml-0.5">{unit}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Single optimized slider with gradient fill */}
-                <input
-                    type="range"
-                    min={min}
-                    max={max}
-                    step={step}
-                    value={value}
-                    onChange={(e) => setValue(Number(e.target.value))}
-                    style={{
-                        background: `linear-gradient(to right, ${isWarning ? '#ef4444' : '#6366f1'} 0%, ${isWarning ? '#ef4444' : '#6366f1'} ${((value - min) / (max - min)) * 100}%, #1e293b ${((value - min) / (max - min)) * 100}%, #1e293b 100%)`
-                    }}
-                    className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer transition-all mt-1 focus:outline-none focus:ring-1 focus:ring-indigo-500/50
-                        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 
-                        [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white 
-                        [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(0,0,0,0.5)] [&::-webkit-slider-thumb]:mt-[-3px] 
-                        ${isWarning ? '[&::-webkit-slider-thumb]:ring-2 [&::-webkit-slider-thumb]:ring-red-500' : ''}`}
-                />
-
-                <div className="flex justify-between text-[8px] text-slate-700 mt-1 px-0.5">
-                    <span>{min}</span>
-                    <span>{max}</span>
-                </div>
-            </div>
-        );
-    };
-
-    const SensitivityMatrix = () => {
-        // Dynamic Ranges centered on current inputs
-        // Round to nearest 5 to keep matrix clean, min 5
-        const currentPe = Math.max(5, Math.round(peRatio / 5) * 5);
-        const currentGrowth = Math.round(growthRate / 5) * 5;
-
-        // Generate ranges centered on current values
-        const peRange = [
-            currentPe - 15,
-            currentPe - 10,
-            currentPe - 5,
-            currentPe,
-            currentPe + 5,
-            currentPe + 10,
-            currentPe + 15
-        ].filter(p => p > 0);
-
-        const growthRange = [
-            currentGrowth - 15,
-            currentGrowth - 10,
-            currentGrowth - 5,
-            currentGrowth,
-            currentGrowth + 5,
-            currentGrowth + 10,
-            currentGrowth + 15
-        ];
-
-        return (
-            <div className="bg-slate-900/40 p-4 rounded-xl border border-slate-800 h-full flex flex-col">
-                <h3 className="text-xs font-bold text-slate-300 mb-3 flex items-center gap-2 uppercase tracking-wider">
-                    <span className="w-1 h-3 bg-purple-500 rounded-full animate-pulse"></span>
-                    Sensitivity Matrix
-                </h3>
-                <div className="flex-1 overflow-auto">
-                    <table className="w-full text-[9px] border-collapse min-w-[300px]">
-                        <thead>
-                            <tr>
-                                <th className="p-1 text-slate-500 font-medium text-left border-b border-slate-800">G \ PE</th>
-                                {peRange.map(pe => (
-                                    <th key={pe} className={`p-1 border-b border-slate-800 text-center transition-colors duration-300 ${pe === currentPe ? 'text-white font-bold bg-purple-500/20' : 'text-slate-600'}`}>
-                                        {pe}x
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {growthRange.map(g => (
-                                <tr key={g} className="hover:bg-slate-800/30 transition-colors">
-                                    <td className={`p-1 font-bold border-r border-slate-800/50 ${g === currentGrowth ? 'text-primary' : 'text-slate-500'}`}>
-                                        {g}%
-                                    </td>
-                                    {peRange.map(pe => {
-                                        const price = calculatePrice(g, pe);
-                                        const mxUpside = stockData.price > 0 ? ((price - stockData.price) / stockData.price) * 100 : 0;
-
-                                        // Color logic
-                                        let colorClass = 'text-slate-600';
-                                        if (mxUpside > 50) colorClass = 'bg-green-500/20 text-green-400 font-bold';
-                                        else if (mxUpside > 20) colorClass = 'bg-green-500/10 text-green-500';
-                                        else if (mxUpside > 0) colorClass = 'text-green-600';
-                                        else if (mxUpside > -20) colorClass = 'text-red-400';
-                                        else colorClass = 'bg-red-500/10 text-red-500 font-bold';
-
-                                        // Highlight center cell area
-                                        if (g === currentGrowth && pe === currentPe) {
-                                            colorClass += ' ring-1 ring-primary relative z-10';
-                                        }
-
-                                        return (
-                                            <td key={pe} className={`p-1 text-right rounded-sm ${colorClass}`}>
-                                                ${Math.round(price)}
-                                            </td>
-                                        );
-                                    })}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        );
-    };
+    const ttmMarginDisplay = useMemo(() => {
+        const val = stockData.metrics?.profit_margin ?? 0;
+        return (Math.abs(val) > 1 ? val : val * 100).toFixed(1);
+    }, [stockData.metrics?.profit_margin]);
 
     return (
         <div className="flex flex-col h-full overflow-hidden relative p-1">
-            {/* 
-              VIEWPORT BUDGET — Target: 1440x900, 100% zoom, no outer scroll
-              Height allocation (approximate):
-                Header bar:        ~40px
-                Component header:  ~36px  
-                AI Thesis (shown): ~80px  (collapsed: 0px)
-                Hero section:      ~110px
-                Grid body:         ~380px (flex, fills remaining)
-                Matrix (collapsed):~44px
-                Total:             ~690px + gaps ≈ 900px ✓
-            */}
             {/* Header: Title & Actions */}
             <div className="flex justify-between items-center mb-1 flex-none">
                 <div>
@@ -718,7 +664,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 </div>
                 <div className="flex gap-2">
                     <button
-                        onClick={() => handleAIAnalysis()} // Call without specific metric for general analysis
+                        onClick={() => handleAIAnalysis()}
                         disabled={isAnalyzing}
                         className={`flex items-center gap-2 px-2 py-1 rounded-lg transition-all text-[10px] font-medium border ${isAnalyzing
                             ? 'bg-purple-500/20 text-purple-300 border-purple-500/30 cursor-not-allowed'
@@ -762,15 +708,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             {aiResult && aiResult.fair_value && Math.abs(targetPrice - aiResult.fair_value) / aiResult.fair_value > 0.05 && (
                 <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-30">
                     <button
-                        onClick={() => {
-                            const ratio = aiResult.fair_value / targetPrice;
-                            updateCurrent({ qualityMultiplier: Math.min(2.0, Math.max(0.5, current.qualityMultiplier * ratio)) });
-                            setScenarios(prev => ({
-                                bear: { ...prev.bear, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.bear.qualityMultiplier * ratio)) },
-                                base: { ...prev.base, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.base.qualityMultiplier * ratio)) },
-                                bull: { ...prev.bull, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.bull.qualityMultiplier * ratio)) }
-                            }));
-                        }}
+                        onClick={handleSyncToAI}
                         className="px-3 py-1 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-200 text-[10px] font-bold uppercase rounded-full border border-yellow-500/30 transition-colors whitespace-nowrap flex items-center gap-2 backdrop-blur-md shadow-lg animate-pulse"
                     >
                         <AlertTriangle size={10} />
@@ -780,91 +718,118 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             )}
 
             {/* AI Thesis Section */}
-            {
-                (aiResult || isAnalyzing || aiError) && (
-                    <div className="mb-4 flex-none animate-in fade-in slide-in-from-top-4 duration-500">
-                        <div className="bg-gradient-to-br from-indigo-900/40 via-slate-900/60 to-purple-900/30 border border-indigo-500/30 rounded-xl p-4 shadow-xl overflow-hidden relative group">
-                            {/* Glow effect */}
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 opacity-50"></div>
-                            <div className="absolute -right-10 -top-10 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full group-hover:bg-indigo-500/20 transition-all duration-1000"></div>
+            {(aiResult || isAnalyzing || aiError) && (
+                <div className="mb-4 flex-none animate-in fade-in slide-in-from-top-4 duration-500">
+                    <div className="bg-gradient-to-br from-indigo-900/40 via-slate-900/60 to-purple-900/30 border border-indigo-500/30 rounded-xl p-4 shadow-xl overflow-hidden relative group">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 opacity-50"></div>
+                        <div className="absolute -right-10 -top-10 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full group-hover:bg-indigo-500/20 transition-all duration-1000"></div>
 
-                            <div className="flex justify-between items-start mb-3 relative z-10">
-                                <div className="flex items-center gap-2">
-                                    <div className="p-1.5 bg-indigo-500/20 rounded-lg text-indigo-400">
-                                        <BrainCircuit size={18} />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                                            {activeCoachMetric ? `AI Coach: ${activeCoachMetric}` : 'AI Expert Thesis'}
-                                            {aiResult?.action && (
-                                                <span className={`text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-tighter border ${aiResult.action === 'BUY' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
-                                                    aiResult.action === 'SELL' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
-                                                        'bg-slate-500/20 text-slate-400 border-slate-500/30'
-                                                    }`}>
-                                                    {aiResult.action}
-                                                </span>
-                                            )}
-                                        </h3>
-                                        <p className="text-[10px] text-indigo-300 font-medium tracking-wide uppercase">{aiResult?.model_name || 'AI ANALYST'} ANALYSIS</p>
-                                    </div>
+                        <div className="flex justify-between items-start mb-3 relative z-10">
+                            <div className="flex items-center gap-2">
+                                <div className="p-1.5 bg-indigo-500/20 rounded-lg text-indigo-400">
+                                    <BrainCircuit size={18} />
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => { setAiResult(null); setAiError(null); setActiveCoachMetric(null); }}
-                                        className="text-slate-500 hover:text-white transition-colors"
-                                    >
-                                        <X size={16} />
-                                    </button>
+                                <div>
+                                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                        {activeCoachMetric ? `AI Coach: ${activeCoachMetric}` : 'AI Expert Thesis'}
+                                        {aiResult?.action && (
+                                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-tighter border ${aiResult.action === 'BUY' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
+                                                aiResult.action === 'SELL' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                                                    'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                                                }`}>
+                                                {aiResult.action}
+                                            </span>
+                                        )}
+                                    </h3>
+                                    <p className="text-[10px] text-indigo-300 font-medium tracking-wide uppercase">{aiResult?.model_name || 'AI ANALYST'} ANALYSIS</p>
                                 </div>
                             </div>
-
-                            {isAnalyzing ? (
-                                <div className="py-6 flex flex-col items-center justify-center gap-3">
-                                    <Loader2 size={24} className="text-indigo-400 animate-spin" />
-                                    <div className="flex flex-col items-center">
-                                        <p className="text-sm text-indigo-200 animate-pulse">Analyzing financials & growth vectors...</p>
-                                        <p className="text-[10px] text-slate-500">Processing "Twin Revolutions" Framework</p>
-                                    </div>
-                                </div>
-                            ) : aiError ? (
-                                <div className="py-4 text-center">
-                                    <div className="text-red-400 font-bold mb-1 flex items-center justify-center gap-2">
-                                        <AlertTriangle size={16} /> Analysis Failed
-                                    </div>
-                                    <p className="text-xs text-slate-400">{aiError}</p>
-                                </div>
-                            ) : aiResult ? (
-                                <div className="relative z-10 transition-all duration-300 ease-in-out">
-                                    <div className={`text-xs text-slate-300 leading-relaxed font-medium pr-2 custom-scrollbar ${showFullAnalysis ? 'max-h-80 overflow-y-auto' : 'max-h-[44px] overflow-hidden'}`}>
-                                        <ReactMarkdown components={{
-                                            strong: ({ node, ...props }: any) => <span className="font-bold text-indigo-200" {...props} />,
-                                            h1: ({ node, ...props }: any) => <span className="block font-bold mt-2 mb-1" {...props} />,
-                                            h2: ({ node, ...props }: any) => <span className="block font-bold mt-2 mb-1" {...props} />,
-                                            h3: ({ node, ...props }: any) => <span className="block font-bold mt-1 mb-0.5" {...props} />,
-                                            p: ({ node, ...props }: any) => <p className="mb-1 last:mb-0 inline" {...props} />
-                                        }}>
-                                            {aiResult.rationale}
-                                        </ReactMarkdown>
-                                    </div>
-                                    {!showFullAnalysis && (
-                                        <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-slate-900 to-transparent pointer-events-none"></div>
-                                    )}
-                                    <button
-                                        onClick={() => setShowFullAnalysis(!showFullAnalysis)}
-                                        className="mt-1 text-[10px] uppercase font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 bg-slate-800/50 px-2 py-0.5 rounded transition-colors"
-                                    >
-                                        {showFullAnalysis ? (
-                                            <>Show Less <ChevronUp size={10} /></>
-                                        ) : (
-                                            <>Show Full Analysis <ChevronDown size={10} /></>
-                                        )}
-                                    </button>
-                                </div>
-                            ) : null}
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => { setAiResult(null); setAiError(null); setActiveCoachMetric(null); }}
+                                    className="text-slate-500 hover:text-white transition-colors"
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
                         </div>
+
+                        {isAnalyzing ? (
+                            <div className="py-6 flex flex-col items-center justify-center gap-3">
+                                <Loader2 size={24} className="text-indigo-400 animate-spin" />
+                                <div className="flex flex-col items-center">
+                                    <p className="text-sm text-indigo-200 animate-pulse">Analyzing financials & growth vectors...</p>
+                                    <p className="text-[10px] text-slate-500">Processing "Twin Revolutions" Framework</p>
+                                </div>
+                            </div>
+                        ) : aiError ? (
+                            <div className="py-4 text-center">
+                                <div className="text-red-400 font-bold mb-1 flex items-center justify-center gap-2">
+                                    <AlertTriangle size={16} /> Analysis Failed
+                                </div>
+                                <p className="text-xs text-slate-400">{aiError}</p>
+                            </div>
+                        ) : aiResult ? (
+                            <div className="relative z-10 transition-all duration-300 ease-in-out">
+                                <div className={`text-xs text-slate-300 leading-relaxed font-medium pr-2 custom-scrollbar max-h-[44px] overflow-hidden`}>
+                                    <ReactMarkdown components={{
+                                        strong: ({ node, ...props }: any) => <span className="font-bold text-indigo-200" {...props} />,
+                                        h1: ({ node, ...props }: any) => <span className="block font-bold mt-2 mb-1" {...props} />,
+                                        h2: ({ node, ...props }: any) => <span className="block font-bold mt-2 mb-1" {...props} />,
+                                        h3: ({ node, ...props }: any) => <span className="block font-bold mt-1 mb-0.5" {...props} />,
+                                        p: ({ node, ...props }: any) => <p className="mb-1 last:mb-0 inline" {...props} />
+                                    }}>
+                                        {aiResult.rationale}
+                                    </ReactMarkdown>
+                                </div>
+                                <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-slate-900 to-transparent pointer-events-none"></div>
+                                <button
+                                    onClick={() => {
+                                        const tempProjection: Projection = {
+                                            id: 'temp-ai-view',
+                                            source: 'AI_AGENT',
+                                            schemaVersion: '1.1',
+                                            ticker: stockData.symbol,
+                                            version: 1,
+                                            savedAt: new Date().toISOString(),
+                                            updatedAt: new Date().toISOString(),
+                                            name: 'Current AI Analysis',
+                                            rationale: aiResult.rationale, // Populate root rationale for modal display
+                                            snapshot: {
+                                                price: stockData.price,
+                                                currency: stockData.currency,
+                                                // Fix lints: Include required snapshot fields
+                                                revenue: stockData.metrics.revenue || 0,
+                                                shares: stockData.metrics.shares_outstanding || 0,
+                                                lastActualPS: stockData.metrics.market_cap / (stockData.metrics.revenue || 1),
+                                                fiscalPeriod: "TTM",
+                                                analystGrowthEstimate: stockData.analyst_estimates?.revenue_growth,
+                                                analystMarginEstimate: stockData.analyst_estimates?.profit_margin
+                                            },
+                                            dataPreferences: { growthBasis, marginBasis },
+                                            scenarios: scenarios,
+                                            globalSettings: { discountRate, timeHorizon },
+                                            aiThesis: {
+                                                model: aiResult.model_name,
+                                                rationale: aiResult.rationale,
+                                                fairValue: aiResult.fair_value,
+                                                action: (aiResult.action as 'BUY' | 'SELL' | 'HOLD') || 'HOLD',
+                                                analyzedAt: new Date().toISOString(),
+                                                researchReport: (aiResult as any).researchReport
+                                            }
+                                        };
+                                        setViewingProjection(tempProjection);
+                                        setShowAIModal(true);
+                                    }}
+                                    className="mt-1 text-[10px] uppercase font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 bg-slate-800/50 px-2 py-0.5 rounded transition-colors group-hover:bg-slate-800"
+                                >
+                                    View Full Report <FolderOpen size={10} />
+                                </button>
+                            </div>
+                        ) : null}
                     </div>
-                )
-            }
+                </div>
+            )}
 
             {/* Main Body: 2-Column Grid (Left: Drivers, Right: Analysis) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-2 min-h-0 overflow-hidden pr-1">
@@ -873,7 +838,6 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
                     {/* Hero Section (Target Price Dashboard) */}
                     <div className="w-full bg-gradient-to-r from-slate-900/80 to-slate-900/30 rounded-xl border border-slate-800/50 relative overflow-hidden flex flex-col justify-between p-3 shrink-0">
-                        {/* Top Right Actions (Toggles) */}
                         <div className="absolute top-3 right-3 flex gap-1 z-20 bg-slate-950/40 p-1 rounded-lg border border-white/5 backdrop-blur-sm">
                             {(['bear', 'base', 'bull'] as const).map((s) => (
                                 <button
@@ -891,7 +855,6 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             ))}
                         </div>
 
-                        {/* Center Metric */}
                         <div className="flex flex-col items-center justify-center flex-1 z-10">
                             <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em] mb-1 flex items-center gap-1.5 opacity-80">
                                 Weighted Fair Value
@@ -904,7 +867,6 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             </div>
                         </div>
 
-                        {/* Bottom Status Bar */}
                         <div className="mt-auto w-full border-t border-white/5 pt-2 flex justify-between items-center z-10">
                             <div className="flex items-center gap-2">
                                 <span className="text-[10px] text-slate-400 uppercase">Active Case:</span>
@@ -945,21 +907,13 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                             onClick={() => { setGrowthBasis('current'); resetToYahoo(); }}
                                             className={`px-1.5 py-0.5 text-[8px] rounded border transition-colors ${growthBasis === 'current' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
                                         >
-                                            Cur: {(() => {
-                                                const val = stockData.growth_estimates?.stockTrend['0y'];
-                                                if (val === undefined) return 'N/A';
-                                                return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
-                                            })()}
+                                            Cur: {currentYearGrowth}
                                         </button>
                                         <button
                                             onClick={() => { setGrowthBasis('next'); resetToYahoo(); }}
                                             className={`px-1.5 py-0.5 text-[8px] rounded border transition-colors ${growthBasis === 'next' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
                                         >
-                                            Next: {(() => {
-                                                const val = stockData.growth_estimates?.stockTrend['+1y'];
-                                                if (val === undefined) return 'N/A';
-                                                return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
-                                            })()}
+                                            Next: {nextYearGrowth}
                                         </button>
                                     </div>
                                 </div>
@@ -982,10 +936,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                             onClick={() => { setMarginBasis('ttm'); resetToYahoo(); }}
                                             className={`px-1.5 py-0.5 text-[8px] rounded border transition-colors ${marginBasis === 'ttm' ? 'bg-primary/20 text-primary border-primary/30' : 'bg-slate-800 text-slate-500 border-slate-700 hover:text-slate-300'}`}
                                         >
-                                            TTM: {(() => {
-                                                const val = stockData.metrics?.profit_margin ?? 0;
-                                                return (Math.abs(val) > 1 ? val : val * 100).toFixed(1);
-                                            })()}%
+                                            TTM: {ttmMarginDisplay}%
                                         </button>
                                         <button
                                             onClick={() => { setMarginBasis('quarterly'); resetToYahoo(); }}
@@ -1119,7 +1070,6 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             <span className="text-[10px] text-slate-500">{activeScenario} Case</span>
                         </h3>
 
-                        {/* Live P&L Preview */}
                         <div className="space-y-3 mb-4 flex-1">
                             <div className="flex justify-between items-center p-3 bg-slate-800/30 rounded-lg">
                                 <div className="text-[10px] text-slate-400 uppercase tracking-wide">Revenue (T+5)</div>
@@ -1141,7 +1091,6 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             </div>
                         </div>
 
-                        {/* Scenario Targets Summary */}
                         <div className="mt-auto pt-4 border-t border-slate-800">
                             <h4 className="text-[10px] font-bold text-slate-500 uppercase mb-3 flex items-center gap-2">
                                 <Table2 size={12} />
@@ -1172,71 +1121,62 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             </div>
                         </div>
                     </div>
+
+                    {/* Sensitivity Matrix - Narrow Version */}
+                    <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-3 backdrop-blur-sm flex-none mt-4">
+                        <div className="flex justify-between items-center mb-2">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                                <Table2 size={12} className="text-purple-400" />
+                                Sensitivity Matrix
+                            </span>
+                        </div>
+                        <SensitivityMatrix
+                            peRatio={peRatio}
+                            growthRate={growthRate}
+                            stockPrice={stockData.price}
+                            calculatePrice={calculatePrice}
+                        />
+                    </div>
                 </div>
             </div>
 
-            {/* Bottom: Collapsible Sensitivity Matrix */}
-            <div className="mb-2 bg-slate-900/40 border border-slate-800 rounded-xl overflow-hidden flex-none">
-                <button
-                    onClick={() => setShowMatrix(!showMatrix)}
-                    className="w-full flex justify-between items-center p-3 hover:bg-slate-800/50 transition-colors"
-                >
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                        <Table2 size={14} className="text-purple-400" />
-                        Sensitivity Matrix
-                    </span>
-                    <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-slate-500">{showMatrix ? 'Hide' : 'Expand to view sensitivity'}</span>
-                        {showMatrix ? <ChevronUp size={14} className="text-slate-500" /> : <ChevronDown size={14} className="text-slate-500" />}
-                    </div>
-                </button>
-
-                {showMatrix && (
-                    <div className="p-4 border-t border-slate-800 h-56 overflow-hidden animate-in slide-in-from-top-2">
-                        <SensitivityMatrix />
-                    </div>
-                )}
-            </div>
-
-
+            {/* Bottom: Removed Sensitivity Matrix Footer */}
 
             {/* Red Team / Sanity Check Section */}
-            {
-                (discountRate < 4 || peRatio > 80 || growthRate > 50 || netMargin > 50) && (
-                    <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-4 animate-in fade-in slide-in-from-bottom-2">
-                        <h4 className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                            <Info size={12} />
-                            Sanity Checks & Risk Flags
-                        </h4>
-                        <ul className="space-y-1">
-                            {discountRate < 4 && (
-                                <li className="text-[10px] text-red-300 flex gap-2">
-                                    <span className="font-bold">• Discount Rate ({discountRate}%):</span>
-                                    Below 10y Treasury (~4%). Implies zero risk premium. Unrealistic for equity.
-                                </li>
-                            )}
-                            {peRatio > 80 && (
-                                <li className="text-[10px] text-red-300 flex gap-2">
-                                    <span className="font-bold">• Exit P/E ({peRatio}x):</span>
-                                    Extremely high multiple. Assumes perpetual hyper-growth. Bubbled territory.
-                                </li>
-                            )}
-                            {growthRate > 50 && (
-                                <li className="text-[10px] text-red-300 flex gap-2">
-                                    <span className="font-bold">• Growth Rate ({growthRate}%):</span>
-                                    Hard to sustain {'>'}50% CAGR for {timeHorizon} years. Law of large numbers risk.
-                                </li>
-                            )}
-                            {netMargin > 50 && (
-                                <li className="text-[10px] text-red-300 flex gap-2">
-                                    <span className="font-bold">• Net Margin ({netMargin}%):</span>
-                                    Extremely high profitability. Attracts competition / Regulatory scrutiny.
-                                </li>
-                            )}
-                        </ul>
-                    </div>
-                )
-            }
+            {(discountRate < 4 || peRatio > 80 || growthRate > 50 || netMargin > 50) && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-4 animate-in fade-in slide-in-from-bottom-2">
+                    <h4 className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <Info size={12} />
+                        Sanity Checks & Risk Flags
+                    </h4>
+                    <ul className="space-y-1">
+                        {discountRate < 4 && (
+                            <li className="text-[10px] text-red-300 flex gap-2">
+                                <span className="font-bold">• Discount Rate ({discountRate}%):</span>
+                                Below 10y Treasury (~4%). Implies zero risk premium. Unrealistic for equity.
+                            </li>
+                        )}
+                        {peRatio > 80 && (
+                            <li className="text-[10px] text-red-300 flex gap-2">
+                                <span className="font-bold">• Exit P/E ({peRatio}x):</span>
+                                Extremely high multiple. Assumes perpetual hyper-growth. Bubbled territory.
+                            </li>
+                        )}
+                        {growthRate > 50 && (
+                            <li className="text-[10px] text-red-300 flex gap-2">
+                                <span className="font-bold">• Growth Rate ({growthRate}%):</span>
+                                Hard to sustain {'>'}50% CAGR for {timeHorizon} years. Law of large numbers risk.
+                            </li>
+                        )}
+                        {netMargin > 50 && (
+                            <li className="text-[10px] text-red-300 flex gap-2">
+                                <span className="font-bold">• Net Margin ({netMargin}%):</span>
+                                Extremely high profitability. Attracts competition / Regulatory scrutiny.
+                            </li>
+                        )}
+                    </ul>
+                </div>
+            )}
 
             {/* AI Analysis Modal */}
             <AIAnalysisModal
@@ -1247,100 +1187,92 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             />
 
             {/* Save Modal */}
-            {
-                showSaveModal && (
-                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                        <div className="bg-surface border border-slate-700 p-6 rounded-xl w-80 shadow-2xl scale-100">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-bold text-white">Save Projection</h3>
-                                <button onClick={() => setShowSaveModal(false)} className="text-slate-400 hover:text-white">
-                                    <X size={20} />
-                                </button>
-                            </div>
+            {showSaveModal && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-surface border border-slate-700 p-6 rounded-xl w-80 shadow-2xl scale-100">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-bold text-white">Save Projection</h3>
+                            <button onClick={() => setShowSaveModal(false)} className="text-slate-400 hover:text-white">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <input
+                            type="text"
+                            value={saveName}
+                            onChange={(e) => setSaveName(e.target.value)}
+                            placeholder="Projection Name (e.g. Bull 2026)"
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white mb-4 focus:outline-none focus:border-primary"
+                            autoFocus
+                        />
+                        <div className="flex items-center gap-2 mb-4">
                             <input
-                                type="text"
-                                value={saveName}
-                                onChange={(e) => setSaveName(e.target.value)}
-                                placeholder="Projection Name (e.g. Bull 2026)"
-                                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white mb-4 focus:outline-none focus:border-primary"
-                                autoFocus
+                                type="checkbox"
+                                id="saveAsDefault"
+                                checked={saveAsDefault}
+                                onChange={(e) => setSaveAsDefault(e.target.checked)}
+                                className="rounded border-slate-700 bg-slate-900 text-primary focus:ring-primary"
                             />
-                            <div className="flex items-center gap-2 mb-4">
-                                <input
-                                    type="checkbox"
-                                    id="saveAsDefault"
-                                    checked={saveAsDefault}
-                                    onChange={(e) => setSaveAsDefault(e.target.checked)}
-                                    className="rounded border-slate-700 bg-slate-900 text-primary focus:ring-primary"
-                                />
-                                <label htmlFor="saveAsDefault" className="text-xs text-slate-300 cursor-pointer select-none">
-                                    Set as Default Load (Auto-load on refresh)
-                                </label>
-                            </div>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => setShowSaveModal(false)}
-                                    className="flex-1 px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 font-medium"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleSaveConfirm}
-                                    disabled={!saveName.trim()}
-                                    className="flex-1 px-4 py-2 bg-primary text-slate-900 rounded-lg hover:bg-primary-hover font-bold disabled:opacity-50"
-                                >
-                                    Save
-                                </button>
-                            </div>
+                            <label htmlFor="saveAsDefault" className="text-xs text-slate-300 cursor-pointer select-none">
+                                Set as Default Load (Auto-load on refresh)
+                            </label>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setShowSaveModal(false)}
+                                className="flex-1 px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 font-medium"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSaveConfirm}
+                                disabled={!saveName.trim()}
+                                className="flex-1 px-4 py-2 bg-primary text-slate-900 rounded-lg hover:bg-primary-hover font-bold disabled:opacity-50"
+                            >
+                                Save
+                            </button>
                         </div>
                     </div>
-                )
-            }
+                </div>
+            )}
 
             {/* Projections Panel Slide-over */}
-            {
-                showProjectionsPanel && (
-                    <ProjectionsPanel
-                        isOpen={showProjectionsPanel}
-                        onClose={() => setShowProjectionsPanel(false)}
-                        ticker={stockData.symbol}
-                        onLoad={handleLoad}
-                    />
-                )
-            }
+            {showProjectionsPanel && (
+                <ProjectionsPanel
+                    isOpen={showProjectionsPanel}
+                    onClose={() => setShowProjectionsPanel(false)}
+                    ticker={stockData.symbol}
+                    onLoad={handleLoad}
+                />
+            )}
 
             {/* Preset Selector Modal */}
-            {
-                showPresetModal && (
-                    <PresetSelectorModal
-                        symbol={stockData.symbol}
-                        onLoad={handlePresetLoad}
-                        onViewReport={(aiProjection) => {
-                            setShowPresetModal(false);
-                            setViewingProjection(aiProjection);
-                            setShowAIModal(true);
-                            // Map stored AIThesis (camelCase) to ValuationResult (snake_case)
-                            const thesis = aiProjection.aiThesis;
-                            const base = aiProjection.scenarios?.base;
-                            if (thesis) {
-                                setAiResult({
-                                    fair_value: thesis.fairValue,
-                                    model_name: thesis.model,
-                                    rationale: thesis.rationale,
-                                    action: thesis.action,
-                                    // Map data from base scenario if available
-                                    growth_assumption: base ? base.growthRate / 100 : 0,
-                                    suggested_growth: base ? base.growthRate / 100 : undefined,
-                                    suggested_margin: base ? base.netMargin / 100 : undefined,
-                                    exit_pe: base ? base.exitPE : undefined,
-                                    quality_multiplier: base ? base.qualityMultiplier : undefined
-                                });
-                            }
-                        }}
-                        onClose={() => setShowPresetModal(false)}
-                    />
-                )
-            }
-        </div >
+            {showPresetModal && (
+                <PresetSelectorModal
+                    symbol={stockData.symbol}
+                    onLoad={handlePresetLoad}
+                    onViewReport={(aiProjection) => {
+                        setShowPresetModal(false);
+                        setViewingProjection(aiProjection);
+                        setShowAIModal(true);
+                        const thesis = aiProjection.aiThesis;
+                        const base = aiProjection.scenarios?.base;
+                        if (thesis) {
+                            setAiResult({
+                                fair_value: thesis.fairValue,
+                                model_name: thesis.model,
+                                rationale: thesis.rationale,
+                                action: thesis.action,
+                                growth_assumption: base ? base.growthRate / 100 : 0,
+                                suggested_growth: base ? base.growthRate / 100 : undefined,
+                                suggested_margin: base ? base.netMargin / 100 : undefined,
+                                exit_pe: base ? base.exitPE : undefined,
+                                quality_multiplier: base ? base.qualityMultiplier : undefined
+                            });
+                        }
+                    }}
+                    onClose={() => setShowPresetModal(false)}
+                />
+            )}
+        </div>
     );
 }
