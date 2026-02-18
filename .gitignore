@@ -108,3 +108,6 @@ tools/investment-screener/frontend/src/data/portfolio.json
 # Block WP status files (managed in main repo, prevents merge conflicts)
 # Research artifacts in kitty-specs/**/research/ are allowed
 kitty-specs/**/tasks/*.md
+
+# Backend cache
+tools/investment_screener/backend/py_services/cache/
