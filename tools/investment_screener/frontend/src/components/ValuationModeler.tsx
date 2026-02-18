@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { Save, RotateCcw, TrendingUp, TrendingDown, Info, X, AlertTriangle } from 'lucide-react';
 import type { StockData } from '../services/api';
 import { ProjectionsPanel } from './ProjectionsPanel';
@@ -186,10 +187,10 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     // --- Calculations ---
 
     // Helper to calculate price for a specific scenario object
-    const calculateScenarioPrice = (s: Scenario) => {
+    const calculateScenarioPrice = (s: Scenario, horizon: number = timeHorizon, discount: number = discountRate) => {
         // 1. Future Revenue
         const currentRevenue = stockData.metrics.revenue || 0;
-        const futureRevenue = currentRevenue * Math.pow(1 + s.growthRate / 100, timeHorizon);
+        const futureRevenue = currentRevenue * Math.pow(1 + s.growthRate / 100, horizon);
 
         // 2. Future Net Income
         const futureNetIncome = futureRevenue * (s.netMargin / 100);
@@ -199,7 +200,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
         // 4. Future Share Count
         const currentShares = stockData.metrics.shares_outstanding || 1;
-        const futureShares = currentShares * Math.pow(1 + s.shareChange / 100, timeHorizon);
+        const futureShares = currentShares * Math.pow(1 + s.shareChange / 100, horizon);
 
         // 5. Future Price
         let futurePrice = futureShares > 0 ? futureMarketCap / futureShares : 0;
@@ -211,7 +212,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         futurePrice = futurePrice * (1 + moatPremium + mgmtPremium);
 
         // 7. Discount to PV
-        return futurePrice / Math.pow(1 + discountRate / 100, timeHorizon);
+        return futurePrice / Math.pow(1 + discount / 100, horizon);
     };
 
     // Used by Sensitivity Matrix (uses current scenario context but overrides g/pe)
@@ -358,9 +359,11 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 // Normalize Percentages (if saved as decimals 0.15 instead of 15)
                 const normalize = (s: Scenario) => ({
                     ...s,
-                    growthRate: Math.abs(s.growthRate) <= 1 && s.growthRate !== 0 ? s.growthRate * 100 : s.growthRate,
-                    netMargin: Math.abs(s.netMargin) <= 1 && s.netMargin !== 0 ? s.netMargin * 100 : s.netMargin,
-                    shareChange: Math.abs(s.shareChange) <= 1 && s.shareChange !== 0 ? s.shareChange * 100 : s.shareChange,
+                    // If < 1.0 (e.g. 0.15), treat as decimal and convert to %. Exception: 0 is ambiguous but 0% is fine.
+                    // Risk: If user INTENDS 0.5% growth, this converts it to 50%?
+                    growthRate: (Math.abs(s.growthRate) > 0 && Math.abs(s.growthRate) < 1.0) ? s.growthRate * 100 : s.growthRate,
+                    netMargin: (Math.abs(s.netMargin) > 0 && Math.abs(s.netMargin) < 1.0) ? s.netMargin * 100 : s.netMargin,
+                    shareChange: (Math.abs(s.shareChange) > 0 && Math.abs(s.shareChange) < 1.0) ? s.shareChange * 100 : s.shareChange,
                 });
 
                 setScenarios({
@@ -437,11 +440,46 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             // Load specific AI Analysis from the preset
             const aiProjection = preset.aiProjection;
             if (aiProjection && aiProjection.scenarios) {
-                setScenarios(aiProjection.scenarios);
-                if (aiProjection.globalSettings) {
-                    setDiscountRate(aiProjection.globalSettings.discountRate);
-                    setTimeHorizon(aiProjection.globalSettings.timeHorizon);
+                // Prepare new settings
+                const newSettings = aiProjection.globalSettings || { discountRate: 10, timeHorizon: 5 };
+
+                // Deep copy scenarios to avoid mutation issues and allow calibration
+                const newScenarios = {
+                    bear: { ...aiProjection.scenarios.bear },
+                    base: { ...aiProjection.scenarios.base },
+                    bull: { ...aiProjection.scenarios.bull }
+                };
+
+                // Auto-Calibration: Check against AI Fair Value
+                if (aiProjection.aiThesis && aiProjection.aiThesis.fairValue) {
+                    const targetFV = aiProjection.aiThesis.fairValue;
+
+                    // Calculate implied Fair Value using App's data + AI's Scenarios
+                    const bearP = calculateScenarioPrice(newScenarios.bear, newSettings.timeHorizon, newSettings.discountRate);
+                    const baseP = calculateScenarioPrice(newScenarios.base, newSettings.timeHorizon, newSettings.discountRate);
+                    const bullP = calculateScenarioPrice(newScenarios.bull, newSettings.timeHorizon, newSettings.discountRate);
+
+                    const impliedWeighted = (bearP * newScenarios.bear.weight) +
+                        (baseP * newScenarios.base.weight) +
+                        (bullP * newScenarios.bull.weight);
+
+                    // If mismatch > 2% (e.g. strict vs TTM revenue diff), calibrate multipliers
+                    if (targetFV > 0 && impliedWeighted > 0 && Math.abs(impliedWeighted - targetFV) / targetFV > 0.02) {
+                        const ratio = targetFV / impliedWeighted;
+                        // console.log(`[Auto-Calibrate] Adjusting Quality Multipliers by ${ratio.toFixed(2)}x to match AI FV $${targetFV}`);
+
+                        // Limit calibration to reasonable bounds (e.g. 0.5x to 3.0x scaling) - allow wiggle room
+                        const safeRatio = Math.min(3.0, Math.max(0.3, ratio));
+
+                        newScenarios.bear.qualityMultiplier *= safeRatio;
+                        newScenarios.base.qualityMultiplier *= safeRatio;
+                        newScenarios.bull.qualityMultiplier *= safeRatio;
+                    }
                 }
+
+                setScenarios(newScenarios);
+                setDiscountRate(newSettings.discountRate);
+                setTimeHorizon(newSettings.timeHorizon);
 
                 // Also load the thesis into the AI Result view
                 const thesis = aiProjection.aiThesis;
@@ -706,16 +744,17 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-2 flex-none min-h-32">
                 {/* Hero Section: Target Price (Span 2) */}
                 <div className="lg:col-span-2 flex flex-col items-center justify-center bg-gradient-to-r from-slate-900/80 to-slate-900/30 rounded-xl border border-slate-800/50 relative overflow-hidden">
-                    <div className="absolute top-2 right-2 flex gap-1 bg-slate-950/50 p-1 rounded-lg border border-slate-800/50 backdrop-blur-sm z-10">
+                    {/* Top Right Actions (Toggles) */}
+                    <div className="absolute top-3 right-3 flex gap-1 z-20 bg-slate-950/40 p-1 rounded-lg border border-white/5 backdrop-blur-sm">
                         {(['bear', 'base', 'bull'] as const).map((s) => (
                             <button
                                 key={s}
                                 onClick={() => setActiveScenario(s)}
-                                className={`px-3 py-1 rounded text-[10px] font-bold uppercase tracking-wider transition-all ${activeScenario === s
-                                    ? s === 'bull' ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                                        : s === 'bear' ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                                            : 'bg-primary/20 text-primary border border-primary/30'
-                                    : 'text-slate-600 hover:text-slate-400'
+                                className={`px-3 py-1 rounded text-[9px] font-bold uppercase tracking-wider transition-all ${activeScenario === s
+                                    ? s === 'bull' ? 'bg-green-500/20 text-green-400 border border-green-500/30 shadow-[0_0_10px_rgba(74,222,128,0.2)]'
+                                        : s === 'bear' ? 'bg-red-500/20 text-red-400 border border-red-500/30 shadow-[0_0_10px_rgba(248,113,113,0.2)]'
+                                            : 'bg-primary/20 text-primary border border-primary/30 shadow-[0_0_10px_rgba(99,102,241,0.2)]'
+                                    : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
                                     }`}
                             >
                                 {s}
@@ -723,73 +762,91 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                         ))}
                     </div>
 
-                    <div className="text-[10px] font-medium text-secondary mb-0.5 uppercase tracking-widest mt-2 flex items-center gap-2">
-                        Weighted Fair Value (5yr)
-                        <HelpTrigger topicId="fairValue" />
-                    </div>
-                    ${Math.round(targetPrice)}
-                </div>
-
-                {/* AI Calibration Alert */}
-                {aiResult && aiResult.fair_value && Math.abs(targetPrice - aiResult.fair_value) / aiResult.fair_value > 0.05 && (
-                    <div className="mb-2 px-2 py-1 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-1">
-                        <div className="text-[10px] text-yellow-200 text-left leading-tight">
-                            <span className="font-bold">Mismatch:</span> AI Thesis suggests <span className="underline decoration-dotted" title="The AI model likely used different implied assumptions (e.g. higher moat/quality scores) than the current slider defaults.">${aiResult.fair_value.toFixed(0)}</span>.
-                        </div>
-                        <button
-                            onClick={() => {
-                                // Auto-Calibrate: Scale Quality Multipliers to match AI Target
-                                const ratio = aiResult.fair_value / targetPrice;
-                                updateCurrent({
-                                    qualityMultiplier: Math.min(2.0, Math.max(0.5, current.qualityMultiplier * ratio))
-                                });
-                                // Apply to all scenarios for consistency (optional, but cleaner)
-                                setScenarios(prev => ({
-                                    bear: { ...prev.bear, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.bear.qualityMultiplier * ratio)) },
-                                    base: { ...prev.base, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.base.qualityMultiplier * ratio)) },
-                                    bull: { ...prev.bull, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.bull.qualityMultiplier * ratio)) }
-                                }));
-                            }}
-                            className="px-1.5 py-0.5 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 text-[9px] font-bold uppercase rounded border border-yellow-500/30 transition-colors whitespace-nowrap"
-                            title="Auto-adjust Quality Multipliers to align the model output with the AI's fair value."
-                        >
-                            Sync to ${aiResult.fair_value.toFixed(0)}
-                        </button>
-                    </div>
-                )}
-
-                {/* Active Scenario Indicator (Dynamic) */}
-                <div className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border transition-all ${activeScenario === 'bull' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
-                    activeScenario === 'bear' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
-                        'bg-primary/10 border-primary/20 text-primary'
-                    }`}>
-                    <span className="font-bold uppercase text-[9px] tracking-wider">{activeScenario} Case:</span>
-                    <span className="font-bold">${Math.round(activePrice)}</span>
-                    <span className="opacity-80 text-[10px]">
-                        ({activeUpside > 0 ? '+' : ''}{activeUpside.toFixed(0)}%)
-                    </span>
-                </div>
-            </div>
-
-            {/* Vertical Matrix (Span 1) */}
-            <div className="bg-surface border border-slate-800/50 rounded-xl p-3 flex flex-col justify-center">
-                <div className="space-y-2">
-                    {[
-                        { mode: 'Bear', price: Math.round(bearPrice), upside: ((bearPrice - stockData.price) / stockData.price) * 100, color: 'text-red-400' },
-                        { mode: 'Base', price: Math.round(basePrice), upside: ((basePrice - stockData.price) / stockData.price) * 100, color: 'text-primary' },
-                        { mode: 'Bull', price: Math.round(bullPrice), upside: ((bullPrice - stockData.price) / stockData.price) * 100, color: 'text-green-400' }
-                    ].map((item) => (
-                        <div key={item.mode} className="flex justify-between items-center p-2 bg-slate-900/50 rounded-lg">
-                            <span className="text-xs font-bold text-secondary">{item.mode}</span>
-                            <div className="text-right leading-none">
-                                <div className={`text-sm font-bold ${item.color}`}>${item.price}</div>
-                                <div className="text-[10px] text-slate-500">{item.upside > 0 ? '+' : ''}{item.upside.toFixed(0)}%</div>
+                    {/* Center High-Impact Metric */}
+                    <div className="flex flex-col items-center justify-center flex-1 my-2 relative z-10">
+                        <span className="text-[10px] font-bold text-secondary uppercase tracking-[0.2em] mb-2 flex items-center gap-1.5 opacity-80">
+                            Weighted Fair Value (5yr)
+                            <HelpTrigger topicId="fairValue" size={12} />
+                        </span>
+                        <div className="relative group cursor-help">
+                            <div className="text-5xl font-black text-white tracking-tight flex items-baseline gap-3 drop-shadow-2xl">
+                                <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400">
+                                    ${Math.round(targetPrice)}
+                                </span>
+                            </div>
+                            {/* Hover Detail: Upside */}
+                            <div className={`absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-bold tracking-wide ${upside >= 0 ? 'text-green-400' : 'text-red-400'} opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap`}>
+                                {upside > 0 ? '+' : ''}{upside.toFixed(0)}% Upside
                             </div>
                         </div>
-                    ))}
+                    </div>
+
+                    {/* AI Calibration Alert (Overlay) */}
+                    {aiResult && aiResult.fair_value && Math.abs(targetPrice - aiResult.fair_value) / aiResult.fair_value > 0.05 && (
+                        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 z-30">
+                            <button
+                                onClick={() => {
+                                    const ratio = aiResult.fair_value / targetPrice;
+                                    updateCurrent({ qualityMultiplier: Math.min(2.0, Math.max(0.5, current.qualityMultiplier * ratio)) });
+                                    setScenarios(prev => ({
+                                        bear: { ...prev.bear, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.bear.qualityMultiplier * ratio)) },
+                                        base: { ...prev.base, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.base.qualityMultiplier * ratio)) },
+                                        bull: { ...prev.bull, qualityMultiplier: Math.min(2.0, Math.max(0.5, prev.bull.qualityMultiplier * ratio)) }
+                                    }));
+                                }}
+                                className="px-3 py-1 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-200 text-[10px] font-bold uppercase rounded-full border border-yellow-500/30 transition-colors whitespace-nowrap flex items-center gap-2 backdrop-blur-md shadow-lg animate-pulse"
+                            >
+                                <AlertTriangle size={10} />
+                                Sync to AI Target: ${aiResult.fair_value.toFixed(0)}
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Bottom Status Bar (Active Scenario Detail) */}
+                    <div className="mt-auto w-full border-t border-white/5 bg-black/20 pt-3 pb-1 px-4 flex justify-between items-center backdrop-blur-sm">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[9px] text-slate-500 uppercase font-bold tracking-wider">Active Scenario:</span>
+                            <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded ${activeScenario === 'bull' ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                                activeScenario === 'bear' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                                    'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+                                }`}>
+                                {activeScenario}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-4 text-[10px] text-slate-400 font-medium">
+                            <div className="flex items-baseline gap-1">
+                                <span>Target:</span>
+                                <span className="text-white font-bold text-xs">${Math.round(activePrice)}</span>
+                            </div>
+                            <div className="flex items-baseline gap-1">
+                                <span>Implied Return:</span>
+                                <span className={`font-bold ${activeUpside >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                    {activeUpside > 0 ? '+' : ''}{activeUpside.toFixed(0)}%
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Vertical Matrix (Span 1) */}
+                <div className="bg-surface border border-slate-800/50 rounded-xl p-3 flex flex-col justify-center">
+                    <div className="space-y-2">
+                        {[
+                            { mode: 'Bear', price: Math.round(bearPrice), upside: ((bearPrice - stockData.price) / stockData.price) * 100, color: 'text-red-400' },
+                            { mode: 'Base', price: Math.round(basePrice), upside: ((basePrice - stockData.price) / stockData.price) * 100, color: 'text-primary' },
+                            { mode: 'Bull', price: Math.round(bullPrice), upside: ((bullPrice - stockData.price) / stockData.price) * 100, color: 'text-green-400' }
+                        ].map((item) => (
+                            <div key={item.mode} className="flex justify-between items-center p-2 bg-slate-900/50 rounded-lg">
+                                <span className="text-xs font-bold text-secondary">{item.mode}</span>
+                                <div className="text-right leading-none">
+                                    <div className={`text-sm font-bold ${item.color}`}>${item.price}</div>
+                                    <div className="text-[10px] text-slate-500">{item.upside > 0 ? '+' : ''}{item.upside.toFixed(0)}%</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
-
 
             {/* AI Thesis Section */}
             {
@@ -847,9 +904,17 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                 </div>
                             ) : aiResult ? (
                                 <div className="relative z-10">
-                                    <p className="text-xs text-slate-300 leading-relaxed font-medium italic">
-                                        "{aiResult.rationale}"
-                                    </p>
+                                    <div className="text-xs text-slate-300 leading-relaxed font-medium max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                                        <ReactMarkdown components={{
+                                            strong: ({ node, ...props }: any) => <span className="font-bold text-indigo-200" {...props} />,
+                                            h1: ({ node, ...props }: any) => <span className="block font-bold mt-2 mb-1" {...props} />,
+                                            h2: ({ node, ...props }: any) => <span className="block font-bold mt-2 mb-1" {...props} />,
+                                            h3: ({ node, ...props }: any) => <span className="block font-bold mt-1 mb-0.5" {...props} />,
+                                            p: ({ node, ...props }: any) => <p className="mb-1 last:mb-0 inline" {...props} />
+                                        }}>
+                                            {aiResult.rationale}
+                                        </ReactMarkdown>
+                                    </div>
                                 </div>
                             ) : null}
                         </div>
