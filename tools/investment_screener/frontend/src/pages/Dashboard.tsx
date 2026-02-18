@@ -186,7 +186,7 @@ export default function Dashboard() {
                         )}
 
                         {activeTab === 'valuation' && (
-                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 w-full">
+                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 w-full h-full">
                                 <ValuationModeler stockData={stockData} />
                             </div>
                         )}

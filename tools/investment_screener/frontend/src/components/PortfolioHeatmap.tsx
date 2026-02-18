@@ -52,7 +52,7 @@ export default function PortfolioHeatmap() {
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        refreshPrices();
+        fetchHeatmapData();
     }, []);
 
     useEffect(() => {
@@ -87,8 +87,9 @@ export default function PortfolioHeatmap() {
             const result = await response.json();
             setData(result.heatmap);
         } catch (err: any) {
+            // Prevent double-hitting the API on failure
+            // await fetchHeatmapData(); 
             setError(err.message || 'Failed to refresh prices');
-            await fetchHeatmapData();
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -96,9 +97,24 @@ export default function PortfolioHeatmap() {
     };
 
     const fetchHeatmapData = async () => {
+        // Validation: If we already have data and aren't forcing a reload, maybe skip? 
+        // For now, let's just ensure we don't double-fetch if loading is true from a previous call (though checking loading state here can be tricky with async).
+
         try {
-            const saved = localStorage.getItem('portfolio_items');
-            const items: PortfolioItem[] = saved ? JSON.parse(saved) : [];
+            // We are NOT setting loading=true here if we want a silent background update, 
+            // but for initial load, loading is initialized to true.
+
+            // We need to get the portfolio items to send to the backend, 
+            // OR the backend could just read its own file. 
+            // The current backend implementation of /api/portfolio-heatmap expects { items: [...] }.
+            // The /api/portfolio endpoint returns { items: [...] }.
+
+            // Let's first GET the portfolio from the backend to ensure we have the source of truth
+            const portfolioRes = await fetch('/api/portfolio');
+            if (!portfolioRes.ok) throw new Error('Failed to fetch portfolio config');
+            const portfolioConfig = await portfolioRes.json();
+
+            const items = portfolioConfig.items || [];
 
             const response = await fetch('/api/portfolio-heatmap', {
                 method: 'POST',
@@ -111,6 +127,7 @@ export default function PortfolioHeatmap() {
             const result = await response.json();
             setData(result);
         } catch (err: any) {
+            console.error(err);
             setError(err.message || 'Failed to load portfolio data');
         } finally {
             setLoading(false);
