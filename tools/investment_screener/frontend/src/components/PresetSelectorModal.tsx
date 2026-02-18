@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, TrendingUp, BrainCircuit, User, Trash2, Globe, FileText, Star } from 'lucide-react';
+import { X, TrendingUp, BrainCircuit, User, Trash2, Globe, FileText, Star, BookOpen } from 'lucide-react';
 import { fetchProjections } from '../services/api';
 import { deleteUserPreset, type UserPreset } from '../services/presets';
 import { storage } from '../services/storage';
@@ -246,9 +246,6 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    {/* Star Button for System Presets */}
-                                                    <StarButton preset={preset} />
-
                                                     <StarButton preset={preset} />
 
                                                     {onViewReport && preset.aiProjection && (
@@ -274,7 +271,7 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
                                                                     }}
                                                                     title="Open Deep Dive Research Report"
                                                                 >
-                                                                    <span className="text-base">📖</span>
+                                                                    <BookOpen size={14} />
                                                                     Deep Dive
                                                                 </button>
                                                             )}
@@ -327,6 +324,36 @@ export const PresetSelectorModal: React.FC<PresetSelectorModalProps> = ({
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <StarButton preset={preset} />
+
+                                                        {onViewReport && preset.aiProjection && (
+                                                            <>
+                                                                <button
+                                                                    className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        onViewReport(preset.aiProjection);
+                                                                    }}
+                                                                    title="View detailed AI report"
+                                                                >
+                                                                    <FileText size={14} />
+                                                                    Report
+                                                                </button>
+
+                                                                {preset.aiProjection.aiThesis?.researchReport && (
+                                                                    <button
+                                                                        className="px-3 py-2 bg-purple-900/30 hover:bg-purple-800/40 text-purple-300 border border-purple-500/30 hover:border-purple-400/50 text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setDeepDiveFile(preset.aiProjection.aiThesis.researchReport);
+                                                                        }}
+                                                                        title="Open Deep Dive Research Report"
+                                                                    >
+                                                                        <BookOpen size={14} />
+                                                                        Deep Dive
+                                                                    </button>
+                                                                )}
+                                                            </>
+                                                        )}
 
                                                         <button
                                                             className="p-1.5 text-slate-400 hover:text-red-400 transition-colors hover:bg-red-500/20 rounded-md"
