@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Save, RotateCcw, Info, X, AlertTriangle, Table2, SlidersHorizontal, ChevronUp, ChevronDown, TrendingUp, TrendingDown } from 'lucide-react';
+import { Save, RotateCcw, Info, X, AlertTriangle, Table2, SlidersHorizontal, ChevronUp, ChevronDown } from 'lucide-react';
 import type { StockData } from '../services/api';
 import { ProjectionsPanel } from './ProjectionsPanel';
 import { storage } from '../services/storage';
@@ -588,30 +588,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     </div>
                 </div>
 
-                <div className="relative h-2 flex items-center">
-                    <input
-                        type="range"
-                        min={min}
-                        max={max}
-                        step={step}
-                        value={value}
-                        onChange={(e) => setValue(Number(e.target.value))}
-                        className={`absolute w-full h-1 rounded-lg appearance-none cursor-pointer z-10 opacity-0`}
-                    />
-                    {/* Custom Track */}
-                    <div className="w-full h-1 bg-slate-800 rounded-lg overflow-hidden relative">
-                        <div
-                            className={`h-full ${isWarning ? 'bg-red-500' : 'bg-indigo-500'} transition-all duration-75 ease-out`}
-                            style={{ width: `${((value - min) / (max - min)) * 100}%` }}
-                        ></div>
-                    </div>
-                    {/* Thumb visual (optional, since opacity-0 hides native thumb, we rely on track fill or need custom thumb. 
-                        Let's keep native thumb for simplicity but style it better if possible. 
-                        Actually, keeping native fully visible is safer for usability unless we build custom handle) 
-                    */}
-                </div>
-
-                {/* Reverting to standard range input for reliability, but styled */}
+                {/* Single optimized slider with gradient fill */}
                 <input
                     type="range"
                     min={min}
@@ -619,10 +596,14 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     step={step}
                     value={value}
                     onChange={(e) => setValue(Number(e.target.value))}
-                    className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer transition-all mt-1 ${isWarning
-                        ? 'bg-red-900/30 accent-red-500 hover:accent-red-400'
-                        : 'bg-slate-800 accent-indigo-500 hover:accent-indigo-400'
-                        }`}
+                    style={{
+                        background: `linear-gradient(to right, ${isWarning ? '#ef4444' : '#6366f1'} 0%, ${isWarning ? '#ef4444' : '#6366f1'} ${((value - min) / (max - min)) * 100}%, #1e293b ${((value - min) / (max - min)) * 100}%, #1e293b 100%)`
+                    }}
+                    className={`w-full h-1.5 rounded-lg appearance-none cursor-pointer transition-all mt-1 focus:outline-none focus:ring-1 focus:ring-indigo-500/50
+                        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 
+                        [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white 
+                        [&::-webkit-slider-thumb]:shadow-[0_0_10px_rgba(0,0,0,0.5)] [&::-webkit-slider-thumb]:mt-[-3px] 
+                        ${isWarning ? '[&::-webkit-slider-thumb]:ring-2 [&::-webkit-slider-thumb]:ring-red-500' : ''}`}
                 />
 
                 <div className="flex justify-between text-[8px] text-slate-700 mt-1 px-0.5">
@@ -718,6 +699,17 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
     return (
         <div className="flex flex-col h-full overflow-hidden relative p-1">
+            {/* 
+              VIEWPORT BUDGET — Target: 1440x900, 100% zoom, no outer scroll
+              Height allocation (approximate):
+                Header bar:        ~40px
+                Component header:  ~36px  
+                AI Thesis (shown): ~80px  (collapsed: 0px)
+                Hero section:      ~110px
+                Grid body:         ~380px (flex, fills remaining)
+                Matrix (collapsed):~44px
+                Total:             ~690px + gaps ≈ 900px ✓
+            */}
             {/* Header: Title & Actions */}
             <div className="flex justify-between items-center mb-1 flex-none">
                 <div>
@@ -843,7 +835,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                 </div>
                             ) : aiResult ? (
                                 <div className="relative z-10 transition-all duration-300 ease-in-out">
-                                    <div className={`text-xs text-slate-300 leading-relaxed font-medium pr-2 custom-scrollbar ${showFullAnalysis ? 'max-h-96 overflow-y-auto' : 'max-h-[60px] overflow-hidden'}`}>
+                                    <div className={`text-xs text-slate-300 leading-relaxed font-medium pr-2 custom-scrollbar ${showFullAnalysis ? 'max-h-80 overflow-y-auto' : 'max-h-[44px] overflow-hidden'}`}>
                                         <ReactMarkdown components={{
                                             strong: ({ node, ...props }: any) => <span className="font-bold text-indigo-200" {...props} />,
                                             h1: ({ node, ...props }: any) => <span className="block font-bold mt-2 mb-1" {...props} />,
@@ -875,12 +867,12 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             }
 
             {/* Main Body: 2-Column Grid (Left: Drivers, Right: Analysis) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-4 min-h-0 flex-1 overflow-y-auto custom-scrollbar pr-1">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-2 min-h-0 overflow-hidden pr-1">
                 {/* Left Column (65%): Hero + Drivers */}
-                <div className="lg:col-span-8 flex flex-col gap-4">
+                <div className="lg:col-span-8 flex flex-col gap-4 overflow-y-auto custom-scrollbar pr-1">
 
                     {/* Hero Section (Target Price Dashboard) */}
-                    <div className="w-full bg-gradient-to-r from-slate-900/80 to-slate-900/30 rounded-xl border border-slate-800/50 relative overflow-hidden min-h-[140px] flex flex-col justify-between p-4">
+                    <div className="w-full bg-gradient-to-r from-slate-900/80 to-slate-900/30 rounded-xl border border-slate-800/50 relative overflow-hidden flex flex-col justify-between p-3 shrink-0">
                         {/* Top Right Actions (Toggles) */}
                         <div className="absolute top-3 right-3 flex gap-1 z-20 bg-slate-950/40 p-1 rounded-lg border border-white/5 backdrop-blur-sm">
                             {(['bear', 'base', 'bull'] as const).map((s) => (
@@ -1120,15 +1112,15 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 </div>
 
                 {/* Right Column (35%): Live Analysis */}
-                <div className="lg:col-span-4 flex flex-col gap-4">
-                    <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-5 h-full backdrop-blur-sm flex flex-col">
+                <div className="lg:col-span-4 flex flex-col gap-4 overflow-y-auto custom-scrollbar">
+                    <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-4 h-full backdrop-blur-sm flex flex-col">
                         <h3 className="text-xs font-bold text-white mb-4 uppercase tracking-wider border-b border-slate-800 pb-2 flex justify-between items-center">
                             <span>Live Projections</span>
                             <span className="text-[10px] text-slate-500">{activeScenario} Case</span>
                         </h3>
 
                         {/* Live P&L Preview */}
-                        <div className="space-y-4 mb-6 flex-1">
+                        <div className="space-y-3 mb-4 flex-1">
                             <div className="flex justify-between items-center p-3 bg-slate-800/30 rounded-lg">
                                 <div className="text-[10px] text-slate-400 uppercase tracking-wide">Revenue (T+5)</div>
                                 <div className="text-sm font-bold text-white">
@@ -1200,7 +1192,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 </button>
 
                 {showMatrix && (
-                    <div className="p-4 border-t border-slate-800 h-64 animate-in slide-in-from-top-2">
+                    <div className="p-4 border-t border-slate-800 h-56 overflow-hidden animate-in slide-in-from-top-2">
                         <SensitivityMatrix />
                     </div>
                 )}
