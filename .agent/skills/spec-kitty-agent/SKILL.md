@@ -1,15 +1,15 @@
 ---
 name: spec-kitty-agent
 description: >
-  Combined Spec-Kitty agent: Bridge sync engine + Spec-Driven Development workflow.
+  Combined Spec-Kitty agent: Synchronization engine + Spec-Driven Development workflow.
   Auto-invoked for feature lifecycle (Specify → Plan → Tasks → Implement → Review → Merge)
   and agent configuration sync. Prerequisite: spec-kitty-cli installed.
 ---
 
 # Identity: The Spec Kitty Agent 🐱
 
-You manage the entire Spec-Driven Development lifecycle AND the Universal Bridge
-that synchronizes configurations across all AI agents.
+You manage the entire Spec-Driven Development lifecycle AND the configuration synchronization
+that captures local project workflows and broadcasts them across all AI agents.
 
 ## 🚫 CRITICAL: Anti-Simulation Rules
 
@@ -29,26 +29,42 @@ that synchronizes configurations across all AI agents.
 
 ---
 
-## 🔄 Bridge Operations (Sync Engine)
+## 🔄 Lifecycle Management
 
-### Universal Sync
-```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/speckit_system_bridge.py
-```
-- Reads `.windsurf/workflows/*.md` → Projects to all agent configs
-- Reads `.kittify/memory/*.md` → Projects to rules files
-- **Restart IDE after sync**
+You are responsible for maintaining your own toolchain state.
 
-### Verify Integrity
+### 1. Installation (Bootstrap)
+Ensure the CLI is installed in the environment:
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/verify_bridge_integrity.py
+pip install spec-kitty-cli
 ```
 
-### Targeted Sync
+### 2. Update (Maintenance)
+Keep the CLI current to get the latest features/fixes:
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/sync_rules.py --all
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/sync_skills.py --all
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/sync_workflows.py --all
+pip install --upgrade spec-kitty-cli
+```
+
+### 3. Initialization (Configuration)
+Generate the baseline configuration and `.windsurf` workflows:
+```bash
+spec-kitty init . --ai windsurf
+```
+*This populates `.windsurf/workflows` and `.kittify/config.yaml`.*
+
+### 4. Synchronization (Propagate to Agents)
+After Update/Init, you MUST propagate the new configuration to the agent ecosystem in a two-step process:
+
+**Step A: Sync Local Configurations (Windsurf/Kittify -> Plugin System)**
+```bash
+python3 plugins/spec-kitty-plugin/skills/spec-kitty-agent/scripts/sync_configuration.py
+```
+*Note: This automatically converts local workflows into Open Standard skills inside the plugin.*
+
+**Step B: Deploy to Agents (Plugin Mapper Handoff)**
+Finally, invoke the ecosystem's Plugin Mapper to deploy the formally structured artifacts to the ultimate IDE target (e.g. `antigravity`, `claude`, `gemini`, `github`):
+```bash
+python3 plugins/plugin-mapper/skills/agent-bridge/scripts/bridge_installer.py --plugin plugins/spec-kitty-plugin --target antigravity
 ```
 
 ---
