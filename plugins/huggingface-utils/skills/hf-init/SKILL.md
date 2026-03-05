@@ -1,12 +1,13 @@
 ---
 name: hf-init
-description: "Initialize HuggingFace integration — validates .env variables, tests API connectivity, and ensures the dataset repository structure exists."
+description: "Initialize HuggingFace integration - validates .env variables, tests API connectivity, and ensures the dataset repository structure exists. Use when onboarding a new project to HuggingFace or when credentials change."
+allowed-tools: Bash, Read
 ---
 
 # HuggingFace Init (Onboarding)
 
 **Status:** Active
-**Author:** Sanctuary Guardian
+**Author:** Richard Fremmerlid
 **Domain:** HuggingFace Integration
 
 ## Purpose

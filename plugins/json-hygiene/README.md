@@ -1,9 +1,9 @@
-# JSON Hygiene Plugin 🧹
+# JSON Hygiene Plugin (V2) 🧹
 
 Safeguard your JSON configuration files against silent data loss caused by duplicate keys.
 
 ## Features
-- **Heuristic Duplicate Detection**: Finds duplicate keys that standard parsers ignore (last-one-wins).
+- **Deterministic AST Detection**: Hook into the Python JSON parser (`object_pairs_hook`) to intercept the AST. Catches 100% of duplicate keys (the "last-one-wins" flaw) across all nesting depths.
 - **Manifest Validation**: Designed to audit complex nested configuration structures.
 
 ## Installation
@@ -18,7 +18,7 @@ claude --plugin-dir ./plugins/json-hygiene
 ### CLI
 ```bash
 # Check a single file
-python3 plugins/json-hygiene/scripts/find_json_duplicates.py --file tools/tool_inventory.json
+python3 plugins/json-hygiene/scripts/find_json_duplicates.py --file plugins/tool_inventory.json
 ```
 
 ### Agent Integration

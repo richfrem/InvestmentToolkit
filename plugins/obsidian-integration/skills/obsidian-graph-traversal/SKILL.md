@@ -1,12 +1,13 @@
 ---
 name: obsidian-graph-traversal
-description: "Semantic link traversal for Obsidian Vaults. Builds an in-memory graph index from wikilinks and provides instant forward-link, backlink, and multi-degree connection queries."
+description: "Semantic link traversal for Obsidian Vaults. Builds an in-memory graph index from wikilinks and provides instant forward-link, backlink, and multi-degree connection queries. Use when exploring note relationships or finding orphaned notes."
+allowed-tools: Bash, Read
 ---
 
 # Obsidian Graph Traversal
 
 **Status:** Active
-**Author:** Sanctuary Guardian
+**Author:** Richard Fremmerlid
 **Domain:** Obsidian Integration
 **Depends On:** `obsidian-markdown-mastery` (WP05, `obsidian-parser`)
 
@@ -54,8 +55,8 @@ python plugins/obsidian-integration/skills/obsidian-graph-traversal/scripts/grap
 - The index is cached as `.graph-index.json` at the vault root
 - Invalidation uses file `mtime` — if a file changed since last build, only that file is re-indexed
 
-### The Guardian as Librarian
-The graph index enables the Guardian to:
+### The Primary Agent as Librarian
+The graph index enables the agent to:
 - **Detect blind spots**: Orphaned notes indicate areas where agents act without historical context
 - **Resolve conflicts**: If two agents update the same note, the graph shows the impact radius
 - **Enforce schema**: Frontmatter metadata (status, trust_score) tracked across linked notes
