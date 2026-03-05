@@ -1,46 +1,85 @@
 # Thesis Balancer Plugin
 
-> Portfolio health monitoring, drift analysis, and thesis alignment enforcement.
+> Strategic portfolio health monitor and thesis alignment engine. Detects drift, flags Thesis Breaker conditions, resolves Strategic Conflicts against AI valuations, and suggests rebalancing actions.
+>
+> **Maturity**: L5 — Meta-capable (tested + connectors + evals + fallback trees)  
+> **Architecture**: Supercharged (standalone-capable; enhanced with portfolio API)
+
+---
+
+## File Tree
+
+```
+thesis-balancer/
+├── plugin.json                               # Plugin manifest (L5)
+├── CONNECTORS.md                             # Tool connector abstractions
+├── README.md                                 # This file
+├── commands/
+│   └── review-portfolio.md                  # /review-portfolio command
+├── docs/
+│   └── tool_b_implementation_brief.md
+└── skills/
+    └── thesis-balancer/
+        ├── SKILL.md                          # Main skill definition
+        ├── evals/
+        │   └── evals.json                   # 8-case evaluation suite
+        └── references/
+            ├── acceptance-criteria.md        # 8 testable pass/fail criteria (AC-01–08)
+            ├── fallback-tree.md              # 4 procedural fallback sequences (FB-01–04)
+            ├── rebalance_prompt.md           # Rebalance trade generation prompt
+            └── strategic_review_prompt.md    # Strategic dialogue prompt
+```
+
+---
 
 ## Commands
 
 | Command | Description |
 |:---|:---|
-| `/thesis-balancer_review-portfolio` | Run portfolio health check against a strategic thesis |
+| `/review-portfolio [thesis_id]` | Full portfolio health check: drift analysis, conflict detection, rebalance suggestions |
+
+---
 
 ## Skill
 
-The `thesis-balancer` skill provides rebalance and strategic review prompts for evaluating portfolio drift against thesis targets.
+The `thesis_balancer` skill runs a 5-phase review:
+1. **Select & Load Thesis** — from API or manual paste in standalone mode
+2. **Run Health Check** — via `~~portfolio-api`
+3. **Strategic Analysis** — drift classification, conflict detection, thesis breaker checks, missing valuation surfacing
+4. **Report & Recommendations** — structured findings with drift table and action suggestions
+5. **Thesis Evolution** — proposed target weight updates with impact preview before confirmation
 
-## External Dependencies (Web App)
+**Standalone Mode**: If backend API is unavailable, skill requests portfolio + thesis data as JSON paste and computes drift manually. See `CONNECTORS.md` and `references/fallback-tree.md`.
 
-> **This plugin does NOT own the backend or data.** The thesis APIs and data files live inside the Investment Screener web app at `tools/investment_screener/`. Do not move or duplicate them.
+---
 
-| Resource | Canonical Path | Purpose |
-|:---|:---|:---|
-| Backend Server | `tools/investment_screener/backend/` | Express.js API serving thesis & portfolio endpoints |
-| Thesis Data | `tools/investment_screener/backend/data/theses/` | JSON thesis definitions |
-| Portfolio Data | `tools/investment_screener/backend/data/portfolio.json` | Current portfolio holdings |
-| Projections Data | `tools/investment_screener/backend/data/projections/` | AI valuations (shared with stock-valuation plugin) |
+## External Dependencies (Web App APIs)
 
-| API Endpoint | Method | Purpose |
-|:---|:---|:---|
-| `/api/theses` | GET | List available theses |
-| `/api/theses/:id/health` | GET | Run health check against a thesis |
-| `/api/theses/:id/optimize` | POST | Generate rebalancing trades (future) |
+> **This plugin does NOT own these endpoints.** They are served by the Investment Screener backend.
 
-## Architecture Docs
-
-| Document | Purpose |
+| Endpoint | Purpose |
 |:---|:---|
-| `tool_b_implementation_brief.md` | Full implementation specification |
-| `thesis_alignment_sequence.mmd` | Sequence diagram (Mermaid) |
+| `GET /api/theses` | Lists all available investment theses |
+| `GET /api/theses/:id/health` | Returns per-holding drift scores, alerts, and overall status |
+
+---
+
+## Key Reference Files
+
+| File | Purpose |
+|:---|:---|
+| `references/acceptance-criteria.md` | 8 testable AC definitions with pass/fail conditions |
+| `references/fallback-tree.md` | Step-by-step fallbacks for all 4 brittle operations |
+| `references/rebalance_prompt.md` | Trade generation prompt for rebalancing suggestions |
+| `references/strategic_review_prompt.md` | Strategic dialogue prompt for conviction assessment |
+| `evals/evals.json` | 8-case eval suite for trigger + logic + robustness |
+
+---
 
 ## Dependencies
 
-- Backend server running on `localhost:3001`
-- `portfolio.json` and thesis files loaded
+- Backend server running on `localhost:3001` *(supercharged; not required in standalone mode)*
 
-## Related
+## Related Plugins
 
-- [`stock-valuation`](../stock-valuation/) — AI-driven stock valuation workflow
+- [`stock-valuation`](../stock-valuation/) — AI stock valuations used for Strategic Conflict detection
