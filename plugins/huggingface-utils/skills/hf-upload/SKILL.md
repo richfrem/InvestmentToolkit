@@ -1,18 +1,19 @@
 ---
 name: hf-upload
-description: "Upload primitives for HuggingFace Soul persistence - file, folder, snapshot, JSONL append, and dataset card management with exponential backoff."
+description: "Upload primitives for HuggingFace Soul persistence - file, folder, snapshot, JSONL append, and dataset card management with exponential backoff. Use when persisting agent learnings, snapshots, or semantic caches to HuggingFace."
+allowed-tools: Bash, Read
 ---
 
 # HuggingFace Upload Primitives
 
 **Status:** Active
-**Author:** Sanctuary Guardian
+**Author:** Richard Fremmerlid
 **Domain:** HuggingFace Integration
 **Depends on:** `hf-init` (credentials must be configured first)
 
 ## Purpose
 
-Provides consolidated upload operations for all HF-consuming plugins (Guardian, Forge Soul, etc.). All uploads include exponential backoff for rate-limit handling.
+Provides consolidated upload operations for all HF-consuming plugins (Primary Agent, Orchestrator, etc.). All uploads include exponential backoff for rate-limit handling.
 
 ## Available Operations
 

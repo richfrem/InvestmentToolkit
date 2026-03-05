@@ -64,17 +64,17 @@ from scripts.stabilizers.vector_consistency_check import (
     export_report_json
 )
 
-# Define your Cortex MCP query function
-def cortex_query(query: str, max_results: int = 5) -> dict:
-    # Call the actual Cortex MCP tool here
-    # This would use mcp_rag_cortex_cortex_query in production
+# Define your native Python Vector DB query function
+def vector_query(query: str, max_results: int = 5) -> dict:
+    # Call the actual Vector DB query script here
+    # This would use plugins/vector-db/skills/vector-db-agent/scripts/query.py in production
     pass
 
 # Run stabilizer check on a topic directory
 topic_dir = Path('LEARNING/topics/quantum-error-correction')
 report = run_stabilizer_check(
     topic_dir=topic_dir,
-    cortex_query_func=cortex_query,
+    vector_query_func=vector_query,
     max_results=5,
     relevance_threshold=0.2
 )
@@ -116,7 +116,7 @@ fact_atoms = extract_fact_atoms(markdown_file)
 # Check first fact
 result = vector_consistency_check(
     fact_atom=fact_atoms[0],
-    cortex_query_func=cortex_query,
+    vector_query_func=vector_query,
     max_results=5,
     relevance_threshold=0.2
 )
@@ -230,14 +230,14 @@ Top Results:
 
 1. **Implement Semantic Entropy Stabilizer** (79% hallucination detection)
 2. **Build Stabilizer Dashboard** (visualize fact atom health)
-3. **Integrate with Guardian Wakeup** (Protocol 114)
+3. **Integrate with Primary Agent Wakeup** (Protocol 114)
 4. **Deploy to Production** (run weekly via cron)
 
 ## References
 
 - **Protocol 126**: QEC-Inspired AI Robustness (Virtual Stabilizer Architecture)
 - **Protocol 125**: Autonomous AI Learning System Architecture
-- **Protocol 114**: Guardian Wakeup (Boot Digest)
+- **Protocol 114**: Primary Agent Wakeup (Boot Digest)
 - **Mission LEARN-CLAUDE-001**: Quantum Error Correction Research
 - **Mission LEARN-CLAUDE-002**: Protocol 126 Creation
 - **Mission LEARN-CLAUDE-003**: Vector Consistency Stabilizer Implementation
