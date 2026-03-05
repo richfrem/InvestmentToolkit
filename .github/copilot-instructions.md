@@ -548,7 +548,6 @@ globs: ["*.py", "*.ts", "*.js", "*.cs"]
 
 <!-- END RULES FROM PLUGIN: coding-conventions -->
 
-
 <!-- BEGIN RULES FROM PLUGIN: dependency-management -->
 # SHARED RULES FROM dependency-management
 
@@ -572,7 +571,6 @@ globs: ["requirements*.txt", "requirements*.in", "Dockerfile", "pyproject.toml"]
 5. **Declarative Dockerfiles** — only `COPY requirements.txt` + `RUN pip install -r`. No ad-hoc installs.
 
 <!-- END RULES FROM PLUGIN: dependency-management -->
-
 
 <!-- BEGIN RULES FROM PLUGIN: spec-kitty -->
 # SHARED RULES FROM spec-kitty
