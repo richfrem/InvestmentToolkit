@@ -1,0 +1,49 @@
+{
+    "name": "thesis-balancer",
+    "version": "2.0.0",
+    "description": "Portfolio health monitor and strategic thesis alignment engine. Detects drift, flags Thesis Breaker conditions, resolves Strategic Conflicts (Tool A SELL vs Core designation), and suggests rebalancing trades.",
+    "author": "InvestmentToolkit",
+    "maturity": "L5",
+    "architecture": "supercharged",
+    "skills": [
+        {
+            "name": "thesis_balancer",
+            "path": "skills/thesis-balancer/SKILL.md",
+            "trigger": "/review-portfolio"
+        }
+    ],
+    "commands": [
+        {
+            "name": "review-portfolio",
+            "path": "commands/review-portfolio.md",
+            "trigger": "/review-portfolio"
+        }
+    ],
+    "connectors": "CONNECTORS.md",
+    "evals": "skills/thesis-balancer/evals/evals.json",
+    "acceptance_criteria": "skills/thesis-balancer/references/acceptance-criteria.md",
+    "external_dependencies": [
+        {
+            "name": "theses-api",
+            "canonical_path": "http://localhost:3001/api/theses",
+            "owned_by": "investment-screener-app",
+            "purpose": "Lists all available investment theses"
+        },
+        {
+            "name": "health-api",
+            "canonical_path": "http://localhost:3001/api/theses/:id/health",
+            "owned_by": "investment-screener-app",
+            "purpose": "Returns per-holding drift scores, alerts, and overall portfolio health status"
+        }
+    ],
+    "related_plugins": [
+        "stock-valuation"
+    ],
+    "tags": [
+        "finance",
+        "portfolio",
+        "thesis",
+        "rebalancing",
+        "drift-detection"
+    ]
+}
