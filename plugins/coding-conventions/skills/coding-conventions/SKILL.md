@@ -1,12 +1,13 @@
 ---
 name: coding-conventions
 description: >
-  Coding conventions and documentation standards for Project Sanctuary across Python,
+  Coding conventions and documentation standards across Python,
   TypeScript/JavaScript, and C#/.NET codebases. Use when: (1) writing new code files or
   functions, (2) reviewing code for style and documentation compliance, (3) adding file
   headers or docstrings, (4) creating new tools that need inventory registration,
   (5) refactoring code that exceeds complexity thresholds, (6) setting up module structure.
   Covers file headers, function documentation, naming conventions, and tool inventory integration.
+allowed-tools: Read, Write
 ---
 
 # Coding Conventions
@@ -158,7 +159,7 @@ The extended Python header's `Purpose:` section is auto-extracted for the RLM ca
 
 ### Pre-Commit Checklist
 - [ ] File has proper header
-- [ ] Script registered in `tool_inventory.json`
+- [ ] Script registered in `plugins/tool_inventory.json`
 - [ ] `manage_tool_inventory.py audit` shows 0 untracked scripts
 
 ## Manifest Schema (ADR 097)

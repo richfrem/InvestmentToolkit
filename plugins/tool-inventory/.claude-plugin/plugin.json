@@ -1,13 +1,23 @@
 {
     "name": "tool-inventory",
-    "description": "Manage tool registries with embedded ChromaDB for semantic tool discovery \u2014 self-contained with vendored RLM scripts",
-    "version": "1.0.0",
+    "description": "Manage tool registries with embedded ChromaDB for semantic tool discovery \u2014 self-contained with vendored RLM scripts. V2 upgrades include strict Negative Constraints preventing manual OS search.",
+    "version": "2.0.0",
     "author": {
-        "name": "Project Sanctuary",
-        "url": "https://github.com/richfrem/Project_Sanctuary"
+        "name": "Richard Fremmerlid",
+        "url": "https://github.com/richfrem"
     },
-    "repository": "https://github.com/richfrem/Project_Sanctuary",
+    "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
+    "security": {
+        "whitelists": {
+            "python": {
+                "imports": [
+                    "subprocess",
+                    "os"
+                ]
+            }
+        }
+    },
     "keywords": [
         "tools",
         "inventory",

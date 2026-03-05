@@ -10,20 +10,27 @@ We would like to give special recognition to the official Anthropic plugin repos
 - [Anthropic Claude Plugins Official Repository](https://github.com/anthropics/claude-plugins-official)
 - [Official Plugin-Dev Toolkit](https://github.com/anthropics/claude-plugins-official/tree/main/plugins/plugin-dev)
 
+## Core Dependencies
+This plugin relies heavily on the **Separation of Concerns** principle. It acts as the "Tool/Router" but relies on the `agent-skill-open-specifications` plugin as the "Source of Truth" for canonical standards. Therefore, to scaffold L4 skills, this plugin dynamically fetches constraints from:
+- `plugins reference/agent-skill-open-specifications/L4-pattern-definitions/`
+
 ## Directory Structure
+
 
 ```text
 agent-scaffolders/
-├── .claude-plugin/
-│   └── plugin.json       # Plugin manifest and routing definitions
-├── skills/               # Directory containing Agent Skills (prompt logic)
-├── agents/               # Directory containing Sub-Agent definitions
-├── commands/             # Slash commands defined as Markdown frontmatter files
-├── hooks/
-│   └── hooks.json        # Agent lifecycle hook subscriptions
-│   └── scripts/          # Event validation scripts
-├── lsp.json              # Language Server Protocol definitions
-├── .mcp.json             # Model Context Protocol integrations
-├── README.md             # This documentation file
-└── agent-scaffolders-architecture.mmd # Mermaid visual architecture diagram
+```
+agent-scaffolders/
+├── .claude-plugin/plugin.json
+├── README.md
+├── references/
+│   ├── hitl-interaction-design.md
+│   └── pattern-decision-matrix.md
+├── scripts/
+│   ├── audit.py
+│   └── scaffold.py
+├── skills/
+│   └── (12 scaffolder skills)
+└── templates/
+    └── (5 Jinja templating files)
 ```

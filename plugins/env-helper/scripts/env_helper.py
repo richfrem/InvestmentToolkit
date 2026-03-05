@@ -1,7 +1,7 @@
 """
-# Purpose: Shared ecosystem environment variable helper for Project Sanctuary plugins.
+# Purpose: Shared ecosystem environment variable helper for plugins.
 # Provides safe resolution of HuggingFace credentials, project root, and dataset config
-# without any dependency on `mcp_servers.lib` or other internal libraries.
+# without any dependency on internal shared libraries.
 #
 # Usage:
 #   python3 plugins/env-helper/scripts/env_helper.py --key HF_TOKEN
@@ -66,7 +66,7 @@ def _get_project_root() -> Path:
 
 
 DEFAULTS: dict[str, str] = {
-    "HF_DATASET_REPO": "SanctuaryDB",
+    "HF_DATASET_REPO": "YouRepoDataSetName",
     "HF_LINEAGE_FOLDER": "lineage",
     "HF_SOUL_TRACES_FILE": "data/soul_traces.jsonl",
 }
@@ -114,7 +114,7 @@ def resolve_hf_config() -> dict[str, Optional[str]]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Resolve Project Sanctuary ecosystem environment constants."
+        description="Resolve ecosystem environment constants."
     )
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--key", metavar="KEY", help="Resolve a single environment variable.")

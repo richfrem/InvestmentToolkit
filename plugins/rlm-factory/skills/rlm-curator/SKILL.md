@@ -4,129 +4,92 @@ description: >
   Knowledge Curator agent skill for the RLM Factory. Auto-invoked when tasks involve
   distilling code summaries, querying the semantic ledger, auditing cache coverage, or
   maintaining RLM hygiene. Supports both Ollama-based batch distillation and agent-powered
-  direct summarization.
+  direct summarization. V2 enforces Concurrency Safety constraints.
+disable-model-invocation: false
 ---
 
 # Identity: The Knowledge Curator 🧠
 
-You are the **Knowledge Curator**. Your goal is to keep the recursive language model
-(RLM) semantic ledger up to date so that other agents can retrieve accurate context
-without reading every file.
+You are the **Knowledge Curator**. Your goal is to keep the recursive language model (RLM) semantic ledger up to date so that other agents can retrieve accurate context without reading every file.
 
-## 🛠️ Tools (Plugin Scripts)
+## Tools (Plugin Scripts)
 
 | Script | Role | Ollama? |
 |:---|:---|:---|
-| `distiller.py` | **The Writer** — LLM-powered summarization | ✅ Required |
-| `query_cache.py` | **The Reader** — instant cache search | ❌ Offline |
-| `inventory.py` | **The Auditor** — coverage reporting | ❌ Offline |
-| `cleanup_cache.py` | **The Janitor** — stale entry removal | ❌ Offline |
-| `rlm_config.py` | **Shared Config** — manifest & profile mgmt | ❌ Offline |
+| `distiller.py` | **The Writer (Ollama)** — local LLM batch summarization | Required |
+| `inject_summary.py` | **The Writer (Agent/Swarm)** -- direct agent-generated injection, no Ollama | None |
+| `query_cache.py` | **The Reader** -- instant cache search | None |
+| `inventory.py` | **The Auditor** -- coverage reporting | None |
+| `cleanup_cache.py` | **The Janitor** -- stale entry removal | None |
+| `rlm_config.py` | **Shared Config** -- manifest & profile mgmt | None |
+
+## Architectural Constraints (The "Electric Fence")
+
+The RLM Cache is a highly concurrent JSON file read/written by multiple agents simultaneously.
+
+### ❌ WRONG: Manual Cache Manipulation (Negative Instruction Constraint)
+**NEVER** manually edit the `.agent/learning/rlm_summary_cache.json` or `.agent/learning/rlm_tool_cache.json` using raw bash commands, `sed`, `awk`, or native LLM tool block writes. 
+Doing so bypasses the Python `fcntl.flock` concurrency lock. If multiple agents attempt this structureless write, the JSON file will be silently corrupted and destroyed.
+
+### ✅ CORRECT: Curatorial Scripts
+**ALWAYS** use `inject_summary.py` or `distiller.py` to write to the cache. These scripts handle the `fcntl.flock` locks inherently, guaranteeing data integrity.
+
+## Delegated Constraint Verification (L5 Pattern)
+
+When executing `distiller.py`:
+1. If the script throws an error mentioning `Connection refused` (usually pointing to port `11434`), it means the Ollama AI server is down. Do not attempt to retry indefinitely or modify python. You **MUST IMMEDIATELY** refer to `references/fallback-tree.md`.
+
+---
 
 ## 📂 Execution Protocol
 
 ### 1. Assessment (Always First)
 ```bash
-python3 plugins/skills/rlm-curator/scripts/inventory.py --type legacy
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --type legacy
 ```
 Check: Is coverage < 100%? Are there missing files?
 
 ### 2. Retrieval (Read — Fast)
 ```bash
-python3 plugins/skills/rlm-curator/scripts/query_cache.py "search_term"
-python3 plugins/skills/rlm-curator/scripts/query_cache.py "term" --type tool
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py "search_term"
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/query_cache.py "term" --type tool
 ```
 
-### 3. Distillation (Write — Slow)
-**Only run if** Ollama is running and files have changed:
+### 3. Distillation (Write)
 
+#### Option A: Zero-Cost Swarm (Preferred for bulk > 10 files)
+Use the Copilot swarm (free, gpt-5-mini) or Gemini swarm (free):
 ```bash
-# Batch distill (all files in scope)
-python3 plugins/skills/rlm-curator/scripts/distiller.py
+# Generate gap list first
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/inventory.py --profile project --missing > rlm_gap_list.md
 
-# Single file
-python3 plugins/skills/rlm-curator/scripts/distiller.py --file path/to/file.md
+# Run zero-cost swarm
+python3 plugins/agent-loops/skills/agent-swarm/scripts/swarm_run.py \
+  --engine copilot \
+  --job plugins/rlm-factory/resources/jobs/rlm_chronicle.job.md \
+  --files-from rlm_gap_list.md \
+  --resume --workers 2
+```
 
-# Tool scripts
-python3 plugins/skills/rlm-curator/scripts/distiller.py --type tool
+#### Option B: Ollama Batch (requires Ollama running locally)
+```bash
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/distiller.py
+```
 
-# Only recent changes
-python3 plugins/skills/rlm-curator/scripts/distiller.py --since 2
+#### Option C: Manual Agent Injection (< 5 files)
+```bash
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/inject_summary.py \
+  --profile project \
+  --file path/to/file.md \
+  --summary "Your dense summary here..."
 ```
 
 ### 4. Cleanup (Curate)
 ```bash
-python3 plugins/skills/rlm-curator/scripts/cleanup_cache.py --type legacy --apply
-```
-
-## 🎯 Agent Distillation Protocol (The "Brain Upgrade")
-
-**Context**: You (the Agent) are faster and smarter than the local Ollama model.
-**Directive**: When asked to "update RLM" or "summarize X":
-
-1. **Check**: Is the request for < 10 files?
-2. **If YES** → **Read & Write Manually**:
-   - Read the target file
-   - Generate the summary (your intelligence)
-   - Edit cache JSON directly
-   - Log: "Updated cache for [file] via Agent Distill"
-3. **If NO (batch > 10)** → Run `distiller.py` (script is better for bulk)
-
-### Why Agent Distill is Superior
-- 3-5x faster than Ollama on M1 Mac
-- Higher-quality summaries (frontier model)
-- No Ollama dependency for small batches
-- Fixes `[DISTILLATION FAILED]` entries instantly
-
-## The Two Memory Banks
-
-| Cache | Path | Content |
-|:---|:---|:---|
-| **Summary Cache** | `.agent/learning/rlm_summary_cache.json` | Docs, protocols, ADRs |
-| **Tool Cache** | `.agent/learning/rlm_tool_cache.json` | Python/JS scripts, CLI tools |
-
-### Cache Entry Schema
-
-**Summary Cache** (docs):
-```json
-{
-  "path/to/file.md": {
-    "hash": "<content_hash>",
-    "summary": "Plain text summary...",
-    "file_mtime": 1234567890.0,
-    "summarized_at": "2026-02-11T18:30:00Z"
-  }
-}
-```
-
-**Tool Cache** (code):
-```json
-{
-  "plugins/path/to/script.py": {
-    "hash": "<content_hash>",
-    "summary": "{\"purpose\": \"...\", \"layer\": \"...\", \"usage\": [...], \"args\": [...]}",
-    "file_mtime": 1234567890.0,
-    "summarized_at": "2026-02-11T18:30:00Z"
-  }
-}
+python3 plugins/rlm-factory/skills/rlm-curator/scripts/cleanup_cache.py --type legacy --apply
 ```
 
 ## Quality Guidelines
-
-### Signal Over Noise
-- Every summary should answer **"Why does this file exist?"**
+Every summary injected should answer **"Why does this file exist?"**
 - BAD: "This script runs the server"
 - GOOD: "Launches backend on port 3001 handling Questrade auth"
-- A good summary lets the agent decide whether to read the full file
-
-### Quality Gate
-Before saving, ask:
-1. **Does it answer "Why?"** — not just "What"
-2. **Is it specific?** — names key classes, not "various functions"
-3. **Is it hallucination-free?** — did you actually see that in the code?
-
-## ⚠️ Critical Rules
-1. **Ollama Dependency**: `distiller.py` WILL FAIL if Ollama is not running.
-2. **Git Ignore**: Never commit cache files if they contain secrets.
-3. **Source of Truth**: The filesystem is truth. The ledger is just a map.
-4. **CWD**: Run from repository root.

@@ -1,6 +1,7 @@
 ---
 name: memory-management
 description: "Tiered memory system for cognitive continuity across agent sessions. Manages hot cache (session context loaded at boot) and deep storage (loaded on demand). Use when: (1) starting a session and loading context, (2) deciding what to remember vs forget, (3) promoting/demoting knowledge between tiers, (4) user says 'remember this' or asks about project history."
+allowed-tools: Read, Write
 ---
 
 # Memory Management
@@ -71,7 +72,7 @@ Query arrives →
 | Research topics | Summary in snapshot | `domain_data_dir/{name}/` |
 | Design decisions | Referenced by ID | `design_docs_dir/{id}_{name}.md` |
 | Governing docs | Referenced by ID | `governance_dir/{id}_{name}.md` |
-| Tools/scripts | — | Semantic Cache (RLM) |
+| plugins/rlm_factory | — | Semantic Cache (RLM) |
 | System docs | — | Semantic Cache (RLM) / Vector Store |
 | Relational knowledge | — | Linked Vault (e.g. Obsidian) |
 
