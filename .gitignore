@@ -44,7 +44,8 @@ temp/
 # Excluded via sparse-checkout or local-only
 .env
 .env.*
-.questrade_cache/
+.questrade_cache
+**/.questrade_cache
 
 # folders to ignore
 kittywindsurf/
