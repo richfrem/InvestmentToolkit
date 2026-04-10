@@ -73,10 +73,22 @@ class PortfolioAggregator:
             book_price = float(pos.get("averageEntryPrice", 0)) or None
             
             if symbol in aggregated:
-                aggregated[symbol]["shares"] += shares
+                old_shares = aggregated[symbol]["shares"]
+                old_book   = aggregated[symbol].get("book_price") or 0.0
+                new_book   = book_price or 0.0
+                total_shares = old_shares + shares
+
+                aggregated[symbol]["shares"] = total_shares
                 aggregated[symbol]["price"] = price
-                if book_price:
-                    aggregated[symbol]["book_price"] = book_price
+
+                # Weighted-average book price across accounts
+                if old_book > 0 and new_book > 0:
+                    aggregated[symbol]["book_price"] = (
+                        (old_shares * old_book + shares * new_book) / total_shares
+                    )
+                elif new_book > 0:
+                    aggregated[symbol]["book_price"] = new_book
+                # else: keep whatever we already have
             else:
                 aggregated[symbol] = {
                     "symbol": symbol,
