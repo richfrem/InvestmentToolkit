@@ -100,6 +100,21 @@ python3 manage.py
 
 This will automatically handle port conflicts, launch the backend API, and start the frontend dashboard.
 
+### Individual Service Management
+If you prefer to run or debug the servers separately, use the following commands from the root directory:
+
+**1. Start Backend Server (Port 3001):**
+```bash
+npm --prefix investment_screener run dev -w backend
+```
+
+**2. Start Frontend Dashboard (Port 5173):**
+```bash
+npm --prefix investment_screener run dev -w frontend
+```
+
+*Note: Ensure the backend is running first so the frontend can fetch data.*
+
 ## 🤖 AI Development Framework
 This project utilizes the **Spec Kitty** framework to systematize AI agent workflows.
 -   **Specs**: Located in `kitty-specs/`.

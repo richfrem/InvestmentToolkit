@@ -54,7 +54,7 @@ def main():
     #    but we are about to setup a venv.
 
     # 3. Environment Check
-    env_file = ".env"
+    env_file = os.path.join(ROOT_DIR, ".env")
     if not os.path.exists(env_file) and "QUESTRADE_REFRESH_TOKEN" not in os.environ:
         Colors.print("Warning: No .env file found and QUESTRADE_REFRESH_TOKEN not set.", Colors.YELLOW)
         Colors.print("Please copy .env.example to .env and configure it.", Colors.YELLOW)
