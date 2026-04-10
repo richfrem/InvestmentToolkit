@@ -14,8 +14,10 @@ import path from 'path';
  */
 
 export class QuestradeSyncService {
-    private static PYTHON_SCRIPT_PATH = path.resolve(__dirname, '../QuestradeDataEngine.py');
-    private static CACHE_DIR = path.resolve(__dirname, '../../'); // Root of backend where .questrade_cache lives
+    // __dirname is backend/src/services/ in dev, backend/dist/services/ in built.
+    // Going up two levels always lands at backend/, then src/ has the Python scripts.
+    private static PYTHON_SCRIPT_PATH = path.resolve(__dirname, '../../src/QuestradeDataEngine.py');
+    private static CACHE_DIR = path.resolve(__dirname, '../../'); // backend/ root where .questrade_cache lives
     private static OUTPUT_FILE = path.resolve(__dirname, '../../../frontend/src/data/portfolio.json');
 
     /**
