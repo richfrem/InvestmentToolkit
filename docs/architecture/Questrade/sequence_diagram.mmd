@@ -1,26 +1,33 @@
 sequenceDiagram
-    participant User as User/Script
-    participant Service as questradeService
-    participant Env as .env File
-    participant QA as Questrade Auth
-    participant QAPI as Questrade API
-    participant Store as Local Data Stores
+    participant User as User (You)
+    participant Agent as AI Agent (Claude/Copilot/Gemini)
+    participant Portal as Questrade Portal
+    participant Engine as QuestradeDataEngine.py
+    participant KC as macOS Keychain
+    participant Cache as .questrade_cache (encrypted)
+    participant API as Questrade OAuth2 API
+    participant Backend as Node.js Backend (port 3001)
 
-    User->>Service: getAllAccountData()
-    Service->>Env: Read QUESTRADE_REFRESH_TOKEN
-    Service->>QA: GET /oauth2/token (Refresh Token)
-    QA-->>Service: Access Token + NEW Refresh Token
-    Service->>Env: Update with NEW Refresh Token
-    
-    Service->>QAPI: GET /v1/accounts
-    QAPI-->>Service: List of Accounts
-    
-    loop For each account
-        Service->>QAPI: GET /v1/accounts/{id}/positions
-        QAPI-->>Service: Positions Data
-        Service->>QAPI: GET /v1/accounts/{id}/balances
-        QAPI-->>Service: Balances Data
-    end
-    
-    Service->>Store: Update currentHoldings.ts, etc.
-    Service-->>User: Success (Data Updated)
+    Note over User, Portal: One-Time Setup (or when token expires)
+    User->>Portal: Generate One-Week App Token
+    Portal-->>User: Returns one-week token string
+    User->>Agent: "Here is my token: <token>"
+
+    Note over Agent, Cache: Agent handles everything from here
+    Agent->>API: POST /oauth2/token?refresh_token=<one_week_token> (with -d '')
+    API-->>Agent: refresh_token + access_token (JSON)
+    Agent->>Engine: --seed "<refresh_token>" --cache-dir investment_screener/backend/
+    Engine->>KC: Get or create AES-256 master key
+    KC-->>Engine: Master key (hardware-backed)
+    Engine->>Cache: Write AES-256-GCM encrypted token
+    Agent->>Backend: POST /api/portfolio/sync-questrade
+    Backend-->>Agent: { success: true }
+
+    Note over Cache, API: Every Subsequent Sync (fully automatic)
+    Backend->>Cache: Read encrypted token
+    Cache-->>Backend: Ciphertext + Nonce
+    Backend->>KC: Decrypt with master key
+    Backend->>API: POST /oauth2/token (current refresh_token)
+    API-->>Backend: New access_token + New refresh_token
+    Backend->>Cache: Atomic write of NEW refresh_token (encrypted)
+    Backend->>API: Fetch portfolio data with access_token

@@ -79,10 +79,19 @@ class QuestradeAPIClient:
         response = requests.post(url)
         
         if not response.ok:
-            error_data = response.json() if response.content else {"error": response.reason}
+            # Defensive: handle non-JSON error bodies
+            try:
+                error_data = response.json()
+            except ValueError:
+                error_data = {"status_code": response.status_code, "body": response.text}
             raise RuntimeError(f"Token rotation failed: {error_data}")
 
-        new_tokens = response.json()
+        try:
+            new_tokens = response.json()
+        except ValueError:
+            # Unexpected non-JSON success response
+            raise RuntimeError(f"Token rotation succeeded with non-JSON body: status={response.status_code}, body={response.text}")
+
         self.token_manager.save_tokens(new_tokens)
         self.logger.info("Tokens rotated successfully.")
         return new_tokens
@@ -125,8 +134,22 @@ class QuestradeAPIClient:
             headers["Authorization"] = f"Bearer {tokens['access_token']}"
             response = requests.request(method, url, headers=headers, **kwargs)
             
-        response.raise_for_status()
-        return response.json()
+        # Raise detailed errors for non-JSON or bad responses
+        try:
+            response.raise_for_status()
+        except requests.HTTPError as he:
+            # Attempt to include response body for easier debugging
+            body = None
+            try:
+                body = response.json()
+            except ValueError:
+                body = response.text
+            raise RuntimeError(f"HTTP error during request: {he}, status={response.status_code}, body={body}")
+
+        try:
+            return response.json()
+        except ValueError:
+            raise RuntimeError(f"Non-JSON response from Questrade: status={response.status_code}, body={response.text}")
 
     def get_accounts(self) -> List[Dict[str, Any]]:
         """

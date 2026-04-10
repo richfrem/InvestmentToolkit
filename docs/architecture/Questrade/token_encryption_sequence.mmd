@@ -2,35 +2,41 @@ sequenceDiagram
     autonumber
     actor U as User
     participant QP as Questrade Portal
-    participant UI as Setup UI (Frontend)
-    participant PS as Python Script (TokenManager)
+    participant Agent as AI Agent (Claude/Copilot/Gemini)
+    participant Engine as QuestradeDataEngine.py
     participant KC as macOS Keychain
     participant CF as .questrade_cache
+    participant QAuth as Questrade OAuth2 API
 
-    Note over U, QP: Phase 1: Manual Seeding
-    U->>QP: Generate Manual Refresh Token
-    QP-->>U: Return 1-week Token
-    U->>UI: Paste Token into Modal
-    UI->>PS: Initialize Cache with Seed Token
+    Note over U, QP: Phase 1: User generates one-week app token (manual, ~2 min)
+    U->>QP: Visit apphub.questrade.com → Generate Token
+    QP-->>U: One-week application token string
+    U->>Agent: "Here is my token: <token>"
 
-    Note over PS, KC: Phase 2: Secure Encryption (ADR 019)
-    PS->>KC: keyring.get_password("InvestmentToolkit", "QuestradeMasterKey")
-    
-    alt Key not found (First Run)
-        PS->>PS: Generate 256-bit AES Master Key
-        PS->>KC: keyring.set_password(...)
-        Note right of KC: Key stored in hardware security
-    else Key exists
-        KC-->>PS: Return hex-encoded Master Key
+    Note over Agent, QAuth: Phase 2: Agent redeems token (automated)
+    Agent->>QAuth: POST /oauth2/token?refresh_token=<one_week_token> -d ''
+    QAuth-->>Agent: HTTP 200 → { refresh_token, access_token, api_server }
+
+    Note over Agent, KC: Phase 3: Secure encryption (ADR 019)
+    Agent->>Engine: python3 QuestradeDataEngine.py --seed "<refresh_token>" --cache-dir investment_screener/backend/
+    Engine->>KC: keyring.get_password("InvestmentToolkit", "QuestradeMasterKey")
+
+    alt First run — no key yet
+        Engine->>Engine: Generate 256-bit AES master key
+        Engine->>KC: keyring.set_password(...) → stored in hardware enclave
+    else Key already exists
+        KC-->>Engine: Return hex-encoded master key
     end
 
-    PS->>PS: Encrypt tokens with AES-GCM (Nonce + Ciphertext)
-    
+    Engine->>Engine: AES-256-GCM encrypt refresh_token (Nonce + Ciphertext)
+
     rect rgb(200, 230, 255)
-    Note right of PS: Phase 3: Atomic Storage (ADR 015)
-    PS->>CF: Write encrypted refresh token to .questrade_cache.tmp
-    PS->>CF: os.replace(.tmp, .cache)
-    Note right of CF: Validated write complete (Persistence)
+        Note right of Engine: Phase 4: Atomic write (ADR 015)
+        Engine->>CF: Write encrypted payload to .questrade_cache.tmp
+        Engine->>CF: os.replace(.tmp → .questrade_cache)
+        Note right of CF: Binary noise only — no plaintext on disk
     end
-    
-    Note over CF: Only binary noise visible locally
+
+    Note over Agent: Phase 5: Agent verifies via API
+    Agent->>Agent: POST /api/portfolio/sync-questrade
+    Agent-->>U: ✅ Sync successful — setup complete
