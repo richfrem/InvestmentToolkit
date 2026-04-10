@@ -44,7 +44,7 @@ const COLUMNS: ColDef[] = [
     { id: 'symbol',         label: 'Symbol',    always: true,  defaultOn: true, align: 'left',  format: v => v },
     { id: 'name',           label: 'Name',      always: true,  defaultOn: true, align: 'left',  format: v => v },
     { id: 'sector',         label: 'Sector',    defaultOn: false, align: 'left', format: v => v ?? '—' },
-    { id: 'shares',         label: 'Shares',    defaultOn: false, align: 'right', format: v => v?.toLocaleString() ?? '—' },
+    { id: 'shares',         label: 'Shares',    defaultOn: true,  align: 'right', format: v => v?.toLocaleString() ?? '—' },
     { id: 'price',          label: 'Price',     defaultOn: true, align: 'right', format: v => v != null ? `$${v.toFixed(2)}` : '—' },
     { id: 'book_price',     label: 'Avg Cost',  defaultOn: true, align: 'right', format: v => v != null ? `$${v.toFixed(2)}` : '—' },
     { id: 'change_1d',      label: '1D %',   isChange: true, defaultOn: true,  align: 'right', format: fmtPct },

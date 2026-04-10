@@ -112,6 +112,23 @@ def main():
     # 9. Start Services
     Colors.print("Starting Services...", Colors.GREEN)
 
+    # Free ports before starting to avoid EADDRINUSE on restart
+    for port in [3001, 5173]:
+        try:
+            result = subprocess.run(
+                ["lsof", "-ti", f":{port}"],
+                capture_output=True, text=True
+            )
+            pids = result.stdout.strip().split()
+            for pid in pids:
+                if pid:
+                    os.kill(int(pid), signal.SIGKILL)
+                    Colors.print(f"  Cleared stale process on :{port} (PID {pid})", Colors.YELLOW)
+            if pids:
+                time.sleep(0.5)
+        except Exception:
+            pass
+
     processes = []
     try:
         # Start Backend
