@@ -70,16 +70,19 @@ class PortfolioAggregator:
             symbol = self.normalize_symbol(raw_symbol)
             shares = float(pos.get("openQuantity", 0))
             price = float(pos.get("currentPrice", 0))
+            book_price = float(pos.get("averageEntryPrice", 0)) or None
             
             if symbol in aggregated:
                 aggregated[symbol]["shares"] += shares
-                # Use the latest price from the most recent position found
                 aggregated[symbol]["price"] = price
+                if book_price:
+                    aggregated[symbol]["book_price"] = book_price
             else:
                 aggregated[symbol] = {
                     "symbol": symbol,
                     "shares": shares,
                     "price": price,
+                    "book_price": book_price,
                     "sector": "Other",       # Placeholder: Questrade doesn't provide sectors via positions
                     "industry": "Other",     # Placeholder
                     "last_updated": datetime.now().isoformat()

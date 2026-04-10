@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Settings, History, Briefcase, Grid3X3, BarChart3, Search, RefreshCcw, Link2 } from 'lucide-react';
+import { Settings, History, Briefcase, Grid3X3, BarChart3, Search, RefreshCcw, Link2, TableProperties } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useRecentTickers } from '../hooks/useRecentTickers';
 import { PortfolioModal } from './PortfolioModal';
@@ -18,6 +18,7 @@ export default function Sidebar() {
     // Main nav items (excluding Settings)
     const navItems = [
         { name: 'Heatmap', icon: Grid3X3, path: '/' },
+        { name: 'Portfolio Table', icon: TableProperties, path: '/portfolio-table' },
         { name: 'Stock Analysis', icon: BarChart3, path: '/analysis' },
     ];
 
