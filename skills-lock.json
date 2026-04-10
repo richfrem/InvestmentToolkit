@@ -379,6 +379,13 @@
       "installedAt": "2026-04-10T14:54:19.196680Z",
       "updatedAt": "2026-04-10T14:54:19.196680Z"
     },
+    "stock_valuation": {
+      "source": "stock-valuation",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-04-10T15:53:47.497060Z",
+      "updatedAt": "2026-04-10T15:53:47.497060Z"
+    },
     "subagent-driven-prototyping": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
@@ -406,6 +413,13 @@
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:21.315922Z",
       "updatedAt": "2026-04-10T14:54:21.315922Z"
+    },
+    "thesis-balancer": {
+      "source": "thesis-balancer",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-04-10T15:53:47.553814Z",
+      "updatedAt": "2026-04-10T15:53:47.553814Z"
     },
     "todo-check": {
       "source": "https://github.com/richfrem/agent-plugins-skills",

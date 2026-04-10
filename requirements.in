@@ -1,0 +1,10 @@
+# Core Project Dependencies
+yfinance
+pandas
+uvicorn
+fastapi
+python-dotenv
+cryptography>=46.0.3
+pydantic>=2.7.0
+rich
+typer

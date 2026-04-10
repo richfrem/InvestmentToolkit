@@ -19,38 +19,9 @@ prisma/dev.db
 prisma/*.db
 
 # Logs
-logs
+logs/
+temp/logs/
 *.log
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-
-# nyc test coverage
-.nyc_output
-
-# Dependency directories
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# dotenv environment variables file
-.env
 
 # IDE
 .vscode/
@@ -65,22 +36,23 @@ dist/
 build/
 
 # Temporary files
+temp/
 *.tmp
 *.temp
 
 # Sensitive account and portfolio data (DO NOT COMMIT)
-TargetPortfolio/*.json
-TargetPortfolio/*.md
-TargetPortfolio/*.csv
-backend/src/data/accounts.ts
-backend/src/data/balances.ts
-backend/src/data/currentHoldings.ts
-backend/src/data/orders.ts
-backend/src/data/positions.ts
-# Excluded via sparse-checkout
-# kitty-specs/  # Removed to allow spec commits
+# Excluded via sparse-checkout or local-only
+.env
+.env.*
+.questrade_cache/
 
-# Added by Spec Kitty CLI (auto-managed)
+# folders to ignore
+kittywindsurf/
+kittyclaude/
+kittycopilot/
+kittygemini/
+archive/
+InvestmentStrategy/
 .claude/
 .codex/
 .opencode/
@@ -95,19 +67,8 @@ backend/src/data/positions.ts
 .github/copilot/
 .kittify/.dashboard
 
-# folders to ignore
-temp/
-kittywindsurf/
-kittyclaude/
-kittycopilot/
-kittygemini/
-archive/
-InvestmentStrategy/
-tools/investment-screener/frontend/src/data/portfolio.json
-.questrade_cache
-# Block WP status files (managed in main repo, prevents merge conflicts)
-# Research artifacts in kitty-specs/**/research/ are allowed
+# Research artifacts
 kitty-specs/**/tasks/*.md
 
 # Backend cache
-tools/investment_screener/backend/py_services/cache/
+investment_screener/backend/py_services/cache/
