@@ -1,0 +1,8 @@
+[
+  {"prompt": "Check all links in this README and report any that are broken.", "should_trigger": true},
+  {"prompt": "Run the link checker and fix what you can — auto-repair all unambiguous broken documentation links.", "should_trigger": true},
+  {"prompt": "Audit broken docs paths across the repository and generate a report of unfixable links.", "should_trigger": true},
+  {"prompt": "Refactor the Python import paths in src/ to use absolute imports instead of relative ones.", "should_trigger": false},
+  {"prompt": "Write unit tests for the authentication module.", "should_trigger": false},
+  {"prompt": "Deploy the application to production using the CI/CD pipeline.", "should_trigger": false}
+]

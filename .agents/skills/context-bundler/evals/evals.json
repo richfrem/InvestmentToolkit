@@ -1,0 +1,8 @@
+[
+  {"prompt": "Bundle the src/ folder into a single markdown file for sharing with an external AI.", "should_trigger": true},
+  {"prompt": "Create a context bundle of these project files packaged into a portable zip archive for review.", "should_trigger": true},
+  {"prompt": "Package the architecture docs and implementation files into a context bundle for external review.", "should_trigger": true},
+  {"prompt": "Prepare a red team security review bundle targeting OWASP vulnerabilities.", "should_trigger": false},
+  {"prompt": "Scaffold the .claude directory for this project.", "should_trigger": false},
+  {"prompt": "Audit this plugin directory structure for ecosystem compliance.", "should_trigger": false}
+]

@@ -1,0 +1,8 @@
+[
+  {"prompt": "Add the boto3 package to the auth service — update the requirements.in and run pip-compile.", "should_trigger": true},
+  {"prompt": "Dependabot flagged a security vulnerability CVE-2024-12345 in cryptography. Apply the fix using pip-compile.", "should_trigger": true},
+  {"prompt": "Debug this pip install failure in the Docker build and recompile the affected lockfiles.", "should_trigger": true},
+  {"prompt": "Add an npm package to the frontend package.json.", "should_trigger": false},
+  {"prompt": "Review this Python module for coding conventions compliance.", "should_trigger": false},
+  {"prompt": "Scaffold a new micro-service project structure.", "should_trigger": false}
+]

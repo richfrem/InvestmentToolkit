@@ -1,0 +1,8 @@
+[
+  {"prompt": "Create a new task to fix the authentication bug and put it in the backlog.", "should_trigger": true},
+  {"prompt": "Move task 3 to in-progress on the kanban board.", "should_trigger": true},
+  {"prompt": "Show me all tasks in the todo lane.", "should_trigger": true},
+  {"prompt": "Audit my plugins for structural compliance against the open standards.", "should_trigger": false},
+  {"prompt": "Speed read my document at 300 WPM using RSVP.", "should_trigger": false},
+  {"prompt": "Convert my memo.md to a Microsoft Word document.", "should_trigger": false}
+]
