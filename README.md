@@ -4,7 +4,7 @@ A premium, "Luxury Dark Mode" investment analysis suite built for sophisticated 
 
 ## 🌟 Core Components
 
-### 1. Investment Screener (`tools/investment-screener`)
+### 1. Investment Screener (`investment_screener`)
 A web-based financial analysis dashboard featuring:
 -   **Luxury Dark Mode**: Professional Black/Gold aesthetic.
 -   **Expert Metrics**: Instant access to PEG Ratio, Piotroski F-Score, and Insider Ownership.
@@ -19,18 +19,18 @@ A professional-grade brokerage sync engine featuring:
 -   **Onboarding Flow**: Guided UI for secure account linking and rotation management.
 
 ### Stock Analysis & Metrics
-![Analysis Metrics](tools/investment-screener/assets/images/analysis_metrics.png)
+![Analysis Metrics](investment_screener/assets/images/analysis_metrics.png)
 *(15+ Premium metrics including Rule of 40, Piotroski F-Score, and Analyst Targets)*
 
 ### Historical Performance
-![Performance Charts](tools/investment-screener/assets/images/analysis_charts.png)
+![Performance Charts](investment_screener/assets/images/analysis_charts.png)
 
 ### Valuation Modeler
-![Valuation Modeler](tools/investment-screener/assets/images/valuation_modeler.png)
+![Valuation Modeler](investment_screener/assets/images/valuation_modeler.png)
 *(Interactive DCF modeling with sensitivity matrices)*
 
 ### Market Heatmap
-![Market Heatmap](tools/investment-screener/assets/images/heatmap.png)
+![Market Heatmap](investment_screener/assets/images/heatmap.png)
 *(Real-time sector performance visualization)*
 
 ## 🛠️ Tech Stack
@@ -70,29 +70,19 @@ A "Strategic Guardian" agent that monitors your portfolio's alignment with your 
 
 All agent tooling is organized as portable plugins in `plugins/`. Each plugin contains commands, skills, scripts, and documentation.
 
-```
-plugins/
-├── adr-manager/          # Architecture Decision Records
-├── agent-orchestrator/   # Dual-loop agent delegation
-├── claude-cli/           # Persona-based analysis via Claude
-├── code-snapshot/        # Token-counted context packages
-├── coding-conventions/   # Code standards & headers
-├── context-bundler/      # LLM context bundling
-├── dependency-management/# pip-compile workflow
-├── link-checker/         # Documentation link validation
-├── mermaid-export/       # Diagram rendering
-├── plugin-bridge/        # Universal agent installer
-├── rlm-factory/          # Semantic RLM distillation
-├── spec-kitty/           # Spec-Driven Development + Bridge
-├── stock-valuation/      # AI stock valuation (project-specific)
-├── task-manager/         # Kanban board
-├── thesis-balancer/      # Portfolio drift analysis (project-specific)
-├── tool-inventory/       # Tool registry + ChromaDB search
-├── vector-db/            # Semantic search via ChromaDB
-└── workflow-inventory/   # Workflow registry
+### Plugin Installation
+
+To install the plugins and skills for this project, use `uvx` (part of the [Astral `uv`](https://github.com/astral-sh/uv) toolkit):
+
+**1. Install Project-Specific Plugins (Local):**
+```bash
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add /Users/richardfremmerlid/Projects/InvestmentToolkit/plugins
 ```
 
-Workflows are installed into `.agent/workflows/` in **subdirectories matching plugin names**. See [`plugins/MIGRATION_GUIDE.md`](plugins/MIGRATION_GUIDE.md) for full details.
+**2. Install Core Library Plugins (Remote):**
+```bash
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
+```
 
 ## 🚀 Getting Started
 
@@ -105,7 +95,7 @@ Workflows are installed into `.agent/workflows/` in **subdirectories matching pl
 The project includes a managed startup script for the entire suite:
 
 ```bash
-python3 python tools/manage_servers.py start all
+python3 manage.py
 ```
 
 This will automatically handle port conflicts, launch the backend API, and start the frontend dashboard.
