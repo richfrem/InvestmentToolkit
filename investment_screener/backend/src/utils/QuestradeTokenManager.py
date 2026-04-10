@@ -127,23 +127,32 @@ class QuestradeTokenManager:
     def load_tokens(self) -> Optional[Dict[str, Any]]:
         """
         Loads and decrypts tokens from the cache file.
+        Implements ADR 015 fallback to environment variable.
 
         Returns:
             The decrypted token dictionary or None if loading fails.
         """
-        if not os.path.exists(self.cache_path):
-            return None
+        # 1. Try Loading from Cache (ADR 015 - Layer 1)
+        if os.path.exists(self.cache_path):
+            try:
+                with open(self.cache_path, "rb") as f:
+                    encrypted_bytes = f.read()
+                
+                decrypted_str = self._decrypt(encrypted_bytes)
+                return json.loads(decrypted_str)
+            except Exception as e:
+                # If decryption fails (e.g. invalid key or corrupted file), 
+                # we don't return partial data.
+                pass
             
-        try:
-            with open(self.cache_path, "rb") as f:
-                encrypted_bytes = f.read()
-            
-            decrypted_str = self._decrypt(encrypted_bytes)
-            return json.loads(decrypted_str)
-        except Exception as e:
-            # If decryption fails (e.g. invalid key or corrupted file), 
-            # we don't return partial data.
-            return None
+        # 2. Fallback to Environment Variable (ADR 015 - Layer 2)
+        env_token = os.environ.get("QUESTRADE_REFRESH_TOKEN")
+        if env_token:
+            # We wrap it in a dictionary to match the expected format
+            # This will trigger an initial rotation in the API client
+            return {"refresh_token": env_token}
+
+        return None
 
     def clear_cache(self) -> None:
         """Deletes the local cache file."""

@@ -1,25 +1,36 @@
 sequenceDiagram
-    participant User as User/UI
-    participant App as TokenManager (Python)
-    participant Cache as .questrade_cache (Local)
-    participant QAuth as Questrade Auth API
+    participant Agent as AI Agent
+    participant TM as QuestradeTokenManager.py
+    participant KC as macOS Keychain
+    participant Cache as .questrade_cache
+    participant QAuth as Questrade OAuth2 API
 
-    User->>App: Request Data Update
-    
-    App->>Cache: Read Active Token
-    alt Cache Missing/Invalid
-        App->>User: Get "Seed" Token (Env)
+    Note over Agent, Cache: Triggered on every sync request
+
+    Agent->>TM: Request token for API call
+    TM->>Cache: Read encrypted binary data
+
+    alt Cache missing or corrupt
+        Cache-->>TM: Error / None
+        TM-->>Agent: Re-seed required — ask user for new one-week token
+        Note over Agent: Agent prompts user to visit portal and generate token
+    else Cache valid
+        Cache-->>TM: Ciphertext + Nonce
     end
 
-    App->>QAuth: POST /oauth2/token (Current Token)
-    
-    alt Success
-        QAuth-->>App: New Access Token + New Refresh Token
-        Note over App,Cache: Atomic Swap Process
-        App->>Cache: Write NEW_REFRESH_TOKEN to .tmp
-        App->>Cache: Rename .tmp to .questrade_cache
-        App-->>User: Refresh Successful (Data Flow Starts)
-    else Failure (Single-Use Violation/Expir)
-        QAuth-->>App: 400 Bad Request
-        App->>User: Trigger Setup Modal (Re-seed Required)
+    TM->>KC: keyring.get_password("InvestmentToolkit", "QuestradeMasterKey")
+    KC-->>TM: AES-256 Master Key
+    TM->>TM: AES-256-GCM Decrypt → current refresh_token
+
+    TM->>QAuth: POST /oauth2/token?refresh_token=<current>
+    alt Success (HTTP 200)
+        QAuth-->>TM: New access_token + New refresh_token
+        Note over TM, Cache: Atomic Swap (ADR 015)
+        TM->>Cache: Write new refresh_token encrypted to .tmp
+        TM->>Cache: os.replace(.tmp → .questrade_cache)
+        TM-->>Agent: access_token ready
+    else Failure (HTTP 400)
+        QAuth-->>TM: Bad Request (token expired/already used)
+        TM-->>Agent: Re-seed required — token expired
+        Note over Agent: Agent prompts user to generate new one-week token
     end

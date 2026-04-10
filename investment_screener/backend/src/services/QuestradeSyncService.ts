@@ -34,7 +34,10 @@ export class QuestradeSyncService {
                 '--output', QuestradeSyncService.OUTPUT_FILE
             ];
 
-            const pythonProcess = spawn('python3', [QuestradeSyncService.PYTHON_SCRIPT_PATH, ...args]);
+            // Explicitly pass process.env to ensure QUESTRADE_REFRESH_TOKEN is inherited
+            const pythonProcess = spawn('python3', [QuestradeSyncService.PYTHON_SCRIPT_PATH, ...args], {
+                env: process.env
+            });
 
             let errorOutput = '';
 

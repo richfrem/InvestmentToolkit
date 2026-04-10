@@ -1,58 +1,47 @@
-# Spec Kitty Configuration and Templates
-# These are internal directories that shouldn't be scanned by AI assistants
-
-# Template directories (not working code)
-.kittify/templates/
-.kittify/missions/
-.kittify/scripts/
-
-# Agent command directories (generated from templates, not source)
-.claude/
-.codex/
-.gemini/
-.cursor/
-.qwen/
-.opencode/
-.windsurf/
-.kilocode/
-.augment/
-.roo/
-.amazonq/
-.github/copilot/
-
-# Git metadata
-.git/
-
-# Build artifacts and caches
-__pycache__/
-*.pyc
-*.pyo
-.pytest_cache/
-.coverage
-htmlcov/
+# Core Build Artifacts
 node_modules/
 dist/
 build/
+.next/
+.turbo/
+out/
 *.egg-info/
+__pycache__/
+*.pyc
+*.pyo
 
-# Virtual environments
-.venv/
+# Environments
 venv/
+.venv/
 env/
+.env
+.env.*
+!.env.example
 
-# OS-specific files
-.DS_Store
-Thumbs.db
-desktop.ini
-
-# IDE directories
+# IDEs and Tools
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
+.DS_Store
+Thumbs.db
 
-# Logs and databases
+# Project-Specific Ignores
+temp/
+.agent/
+.agents/
+docs/images/
+
+# Ignore the Exploration Cycle generated data (except templates if any)
+exploration/captures/
+exploration/discovery-plans/
+exploration/handoffs/
+exploration/planning-drafts/
+exploration/exploration-dashboard.md
+exploration/session-brief.md
+
+# Logs
 *.log
-*.db
-*.sqlite
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
