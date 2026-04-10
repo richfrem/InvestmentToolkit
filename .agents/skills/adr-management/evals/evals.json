@@ -1,0 +1,8 @@
+[
+  {"prompt": "Create an ADR for switching from SQLite to PostgreSQL.", "should_trigger": true},
+  {"prompt": "Document the architecture decision to adopt hexagonal architecture in the backend.", "should_trigger": true},
+  {"prompt": "This new ADR supersedes ADR-0003. Update ADR-0003's status to Superseded.", "should_trigger": true},
+  {"prompt": "Write a wiki page summarizing our database migration strategy.", "should_trigger": false},
+  {"prompt": "Review the pull request that changes the database layer.", "should_trigger": false},
+  {"prompt": "Commit the latest code changes to main and push.", "should_trigger": false}
+]

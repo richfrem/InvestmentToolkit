@@ -1,8 +1,0 @@
-{
-  "plugins/MIGRATION_GUIDE.md": {
-    "file_mtime": 1771208329.3579204,
-    "hash": "7af9483384b5d1d9",
-    "summarized_at": "2026-02-15T18:19:14.739066",
-    "summary": "Comprehensive guide for migrating the InvestmentToolkit from mirrored tools/ to isolated plugins/ architecture using the RLM-supported Direct Plugin Execution strategy."
-  }
-}
