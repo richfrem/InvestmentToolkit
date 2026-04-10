@@ -1,1 +1,0 @@
-/Users/richardfremmerlid/Projects/InvestmentToolkit/.agent/rules/constitution.md
