@@ -73,13 +73,13 @@ The `stock_valuation` skill runs the full 9-step pipeline:
 
 | Script | Canonical Path | Purpose |
 |:---|:---|:---|
-| `fetch_financials.py` | `tools/investment_screener/backend/py_services/fetch_financials.py` | Fetches raw financial data from yfinance |
-| `persist_projection.py` | `tools/investment_screener/backend/py_services/persist_projection.py` | Saves projection JSON to the data directory |
+| `fetch_financials.py` | `investment_screener/backend/py_services/fetch_financials.py` | Fetches raw financial data from yfinance |
+| `persist_projection.py` | `investment_screener/backend/py_services/persist_projection.py` | Saves projection JSON to the data directory |
 
 | Data Directory | Path |
 |:---|:---|
-| Projections | `tools/investment_screener/backend/data/projections/` |
-| Research Reports | `tools/investment_screener/backend/data/research/` |
+| Projections | `investment_screener/backend/data/projections/` |
+| Research Reports | `investment_screener/backend/data/research/` |
 
 ---
 

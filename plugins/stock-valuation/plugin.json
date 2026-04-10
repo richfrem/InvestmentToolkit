@@ -25,13 +25,13 @@
     "external_dependencies": [
         {
             "name": "fetch_financials.py",
-            "canonical_path": "tools/investment_screener/backend/py_services/fetch_financials.py",
+            "canonical_path": "investment_screener/backend/py_services/fetch_financials.py",
             "owned_by": "investment-screener-app",
             "purpose": "Fetches raw financial data from yfinance"
         },
         {
             "name": "persist_projection.py",
-            "canonical_path": "tools/investment_screener/backend/py_services/persist_projection.py",
+            "canonical_path": "investment_screener/backend/py_services/persist_projection.py",
             "owned_by": "investment-screener-app",
             "purpose": "Saves projection JSON to the data directory"
         }
