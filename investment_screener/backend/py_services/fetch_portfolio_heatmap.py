@@ -14,6 +14,7 @@ import json
 import os
 import time
 import yfinance as yf
+from history_store import HistoricalPriceStore
 
 # --- Caching Configuration ---
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
@@ -57,6 +58,8 @@ def save_info_to_cache(ticker, data):
 
 def fetch_portfolio_data(items: list) -> dict:
     """Fetch heatmap data for portfolio items with shares."""
+
+    history = HistoricalPriceStore()
     
     # Sector/industry overrides for stocks Yahoo doesn't classify correctly
     SECTOR_OVERRIDES = {
@@ -84,8 +87,9 @@ def fetch_portfolio_data(items: list) -> dict:
         else:
             symbol = item.get("symbol", "")
             shares = item.get("shares", 1)
-            item_sector = item.get("sector")  # User override from JSON
-            item_industry = item.get("industry")  # User override from JSON
+            item_sector = item.get("sector")
+            item_industry = item.get("industry")
+            book_price = item.get("book_price") or item.get("price")  # avg cost basis if available
         
         if not symbol:
             continue
@@ -120,27 +124,46 @@ def fetch_portfolio_data(items: list) -> dict:
                 sector = yahoo_sector
                 industry = yahoo_industry
             
-            # Get price change
+            # Get price change (today)
             current_price = info.get("currentPrice") or info.get("regularMarketPrice", 0)
             prev_close = info.get("regularMarketPreviousClose", 0)
-            
+
             if prev_close and prev_close > 0:
                 change_pct = ((current_price - prev_close) / prev_close) * 100
             else:
                 change_pct = 0
-            
+
+            # Historical % changes from CSV store (incremental, date-range fetches)
+            hist_changes = history.calc_changes(symbol, current_price)
+
+            # Book/cost basis values
+            total_market = round(shares * current_price, 2)
+            total_book   = round(shares * book_price, 2) if book_price else None
+            change_overall = None
+            if book_price and book_price > 0 and current_price > 0:
+                change_overall = round(((current_price - book_price) / book_price) * 100, 2)
+
             # Calculate portfolio value for this position
-            position_value = shares * current_price
-            
+            position_value = total_market
+
             stock_data = {
                 "symbol": symbol,
                 "name": name,
                 "sector": sector,
                 "industry": industry,
                 "price": current_price,
+                "book_price": round(book_price, 4) if book_price else None,
                 "shares": shares,
-                "position_value": round(position_value, 2),
-                "change_pct": round(change_pct, 2)
+                "position_value": total_market,
+                "total_market": total_market,
+                "total_book": total_book,
+                "change_pct": round(change_pct, 2),      # today (used by heatmap)
+                "change_1d": round(change_pct, 2),
+                "change_1w": hist_changes.get("change_1w"),
+                "change_1m": hist_changes.get("change_1m"),
+                "change_ytd": hist_changes.get("change_ytd"),
+                "change_1y": hist_changes.get("change_1y"),
+                "change_overall": change_overall,
             }
             
             result["stocks"].append(stock_data)

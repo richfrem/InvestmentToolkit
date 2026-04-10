@@ -3,6 +3,7 @@ import MainLayout from './layouts/MainLayout';
 import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import Heatmap from './pages/Heatmap';
+import PortfolioTablePage from './pages/PortfolioTablePage';
 
 import { HelpModalProvider } from './components/HelpModal';
 
@@ -13,6 +14,7 @@ function App() {
         <Routes>
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Heatmap />} />
+            <Route path="portfolio-table" element={<PortfolioTablePage />} />
             <Route path="analysis" element={<Dashboard />} />
             <Route path="settings" element={<Settings />} />
           </Route>
