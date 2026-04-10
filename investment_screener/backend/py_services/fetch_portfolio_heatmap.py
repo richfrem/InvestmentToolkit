@@ -89,7 +89,7 @@ def fetch_portfolio_data(items: list) -> dict:
             shares = item.get("shares", 1)
             item_sector = item.get("sector")
             item_industry = item.get("industry")
-            book_price = item.get("book_price") or item.get("price")  # avg cost basis if available
+            book_price = item.get("book_price")   # weighted-avg cost per share from Questrade; None if unknown
         
         if not symbol:
             continue
