@@ -259,7 +259,7 @@ export default function PortfolioTable() {
                                 return (
                                     <th
                                         key={col.id}
-                                        onClick={() => handleSort(col.id)}
+                                    onClick={(e) => { e.stopPropagation(); handleSort(col.id); }}
                                         className={`px-3 py-2.5 font-semibold text-xs uppercase tracking-wider cursor-pointer select-none whitespace-nowrap
                                             ${col.align === 'right' ? 'text-right' : 'text-left'}
                                             ${active ? 'text-amber-400' : 'text-zinc-400 hover:text-zinc-200'}`}
