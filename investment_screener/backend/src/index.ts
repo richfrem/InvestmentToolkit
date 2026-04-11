@@ -92,6 +92,101 @@ app.get('/api/portfolio', async (_req, res) => {
     }
 });
 
+// --- Portfolio Summary (YTD Performance & Total Value) ---
+
+const YTD_START_VALUE_CAD = 34126.27;
+const JAN1_USD_CAD_RATE = 1.3723;
+
+app.get('/api/portfolio/summary', async (_req, res) => {
+    console.log(`[API] Computing portfolio summary...`);
+    try {
+        if (!fs.existsSync(PORTFOLIO_FILE)) {
+            res.status(404).json({ error: 'No portfolio data found' });
+            return;
+        }
+
+        const positions = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+
+        // Compute totals in USD (all holdings are US stocks)
+        let totalMarketValueUSD = 0;
+        let totalBookValueUSD = 0;
+
+        for (const pos of positions) {
+            const marketVal = (pos.shares || 0) * (pos.price || 0);
+            const bookVal = (pos.shares || 0) * (pos.book_price || 0);
+            totalMarketValueUSD += marketVal;
+            totalBookValueUSD += bookVal;
+        }
+
+        // Fetch live USD/CAD exchange rate
+        const apiKey = process.env.EXCHANGE_RATE_API_KEY;
+        let liveUsdCadRate = JAN1_USD_CAD_RATE; // fallback
+
+        if (apiKey) {
+            try {
+                const rateResponse = await fetch(
+                    `https://v6.exchangerate-api.com/v6/${apiKey}/pair/USD/CAD`
+                );
+                const rateData = await rateResponse.json();
+                if (rateData.result === 'success') {
+                    liveUsdCadRate = rateData.conversion_rate;
+                }
+            } catch (err) {
+                console.warn('[API] Exchange rate fetch failed, using fallback rate');
+            }
+        }
+
+        // Convert to CAD using live rate
+        const totalMarketValueCAD = totalMarketValueUSD * liveUsdCadRate;
+        const totalBookValueCAD = totalBookValueUSD * liveUsdCadRate;
+
+        // YTD calculations (starting value is in CAD)
+        const ytdStartValueCAD = YTD_START_VALUE_CAD;
+        const ytdStartValueUSD = ytdStartValueCAD / JAN1_USD_CAD_RATE;
+        const ytdChangeCAD = totalMarketValueCAD - ytdStartValueCAD;
+        const ytdChangePctCAD = ((totalMarketValueCAD - ytdStartValueCAD) / ytdStartValueCAD) * 100;
+        const ytdChangeUSD = totalMarketValueUSD - ytdStartValueUSD;
+        const ytdChangePctUSD = ((totalMarketValueUSD - ytdStartValueUSD) / ytdStartValueUSD) * 100;
+
+        // Book vs Market (unrealized gain/loss)
+        const unrealizedGainUSD = totalMarketValueUSD - totalBookValueUSD;
+        const unrealizedGainPctUSD = totalBookValueUSD > 0
+            ? ((totalMarketValueUSD - totalBookValueUSD) / totalBookValueUSD) * 100
+            : 0;
+        const unrealizedGainCAD = totalMarketValueCAD - totalBookValueCAD;
+        const unrealizedGainPctCAD = unrealizedGainPctUSD; // same % regardless of currency
+
+        res.json({
+            positionCount: positions.length,
+            // Market value
+            totalMarketValueUSD,
+            totalMarketValueCAD,
+            // Book value
+            totalBookValueUSD,
+            totalBookValueCAD,
+            // YTD
+            ytdStartValueCAD,
+            ytdStartValueUSD,
+            ytdChangeCAD,
+            ytdChangePctCAD,
+            ytdChangeUSD,
+            ytdChangePctUSD,
+            // Unrealized gain/loss
+            unrealizedGainUSD,
+            unrealizedGainPctUSD,
+            unrealizedGainCAD,
+            unrealizedGainPctCAD,
+            // Exchange rates
+            liveUsdCadRate,
+            jan1UsdCadRate: JAN1_USD_CAD_RATE,
+            lastUpdated: new Date().toISOString(),
+        });
+    } catch (error) {
+        console.error(`[API] Error computing portfolio summary: `, error);
+        res.status(500).json({ error: 'Failed to compute portfolio summary' });
+    }
+});
+
 app.post('/api/portfolio', async (req, res) => {
     const { items } = req.body;
     console.log(`[API] Saving portfolio with ${items?.length || 0} positions...`);

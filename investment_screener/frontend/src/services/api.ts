@@ -96,6 +96,38 @@ export interface StockData {
     error?: string;
 }
 
+// --- Portfolio Summary ---
+
+export interface PortfolioSummary {
+    positionCount: number;
+    totalMarketValueUSD: number;
+    totalMarketValueCAD: number;
+    totalBookValueUSD: number;
+    totalBookValueCAD: number;
+    ytdStartValueCAD: number;
+    ytdStartValueUSD: number;
+    ytdChangeCAD: number;
+    ytdChangePctCAD: number;
+    ytdChangeUSD: number;
+    ytdChangePctUSD: number;
+    unrealizedGainUSD: number;
+    unrealizedGainPctUSD: number;
+    unrealizedGainCAD: number;
+    unrealizedGainPctCAD: number;
+    liveUsdCadRate: number;
+    jan1UsdCadRate: number;
+    lastUpdated: string;
+}
+
+export const fetchPortfolioSummary = async (): Promise<PortfolioSummary> => {
+    const response = await fetch('/api/portfolio/summary');
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to fetch portfolio summary');
+    }
+    return await response.json();
+};
+
 export const fetchStockData = async (ticker: string): Promise<StockData> => {
     try {
         const response = await fetch(`/api/stock/${ticker}`);
