@@ -53,10 +53,15 @@ For the **Spec Readiness Check**, every item must include an evidence field — 
 
 If you cannot fill an evidence field from the captures, write `[NEEDS HUMAN INPUT]` — do not invent evidence.
 
-## Operating Principles
-- Do not add requirements that are not present in the capture documents.
+## Anti-Hallucination Rules (Strict)
+
+- Do NOT add requirements that are not present in the capture documents.
 - Synthesize, do not invent. The handoff is only as good as the capture quality.
 - Flag low-confidence sections explicitly.
+- **Every major claim must cite its source:** append `(per [filename], [section])` inline. If you cannot identify a source, write `[NEEDS HUMAN INPUT — no exploration evidence]`.
+- Use `[CONFIRMED]` / `[UNCONFIRMED]` / `[NEEDS HUMAN INPUT]` on every major item.
+- Never promote an `[UNCONFIRMED]` item to fact without explicit SME sign-off.
+- The `## Consolidated Gaps` section is required and must list every open decision exactly once — do not scatter `[NEEDS HUMAN INPUT]` markers across sections without consolidating them here.
 
 ## Gap Consolidation Rule
 
@@ -66,6 +71,21 @@ When the same unresolved decision appears across multiple captures, consolidate 
 - In other sections (readiness check, risks, next steps), reference the consolidated entry by name rather than repeating the marker.
 - The five canonical open decisions from any waitlist-type exploration are: data model, minimum signup fields, admit lifecycle, bulk admin behavior, and privacy/retention rules. Consolidate all occurrences of these into one entry each.
 - Only add `[NEEDS HUMAN INPUT]` for a genuinely new unresolved item not already captured elsewhere in the handoff.
+
+## Tier 3 Hard Stop
+
+**Before writing `exploration-handoff.md`, check whether a Risk Assessment section is present in the capture documents or has been provided by the invoking agent.**
+
+If the Risk Assessment shows **Tier 3 (High Risk)** — i.e., "yes" was answered on Q3 (high-privilege access) or Q4 (financial/compliance), or both Q1 and Q2 are "yes" — do NOT write the final handoff package silently. Instead:
+
+1. Generate the Tier 3 risk summary first as a separate `exploration/handoffs/tier3-risk-summary.md` file, containing:
+   - The filled TierGate checklist with all evidence
+   - The exact delivery path: "Formal engineering cycle (Opportunity 4) required before deployment"
+   - Which specific gate answers triggered Tier 3 and why
+2. Announce: *"This exploration has assessed as Tier 3 (High Risk). A formal engineering review is required before deployment. I've written a risk summary at `exploration/handoffs/tier3-risk-summary.md`. I'll now include this as the opening section of the handoff package."*
+3. Include `tier3-risk-summary.md` content as the first section of `exploration-handoff.md`, before any other synthesis.
+
+Do NOT skip this step or proceed with a generic handoff if Tier 3 conditions are met. The risk summary is not optional.
 
 ## Opportunity 4 Format Selection
 

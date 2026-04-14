@@ -57,7 +57,7 @@ class QuestradeSyncEngine:
         """
         Executes the full sync lifecycle:
         1. Discover accounts
-        2. Fetch positions
+        2. Fetch positions & balances
         3. Aggregate holdings
         4. Save to portfolio.json
 
@@ -67,13 +67,14 @@ class QuestradeSyncEngine:
         try:
             logger.info("Starting Questrade Portfolio Sync...")
             
-            # 1. Fetch All Positions
+            # 1. Fetch All Positions & Balances
             all_positions = self.api_client.get_all_positions()
-            logger.info(f"Retrieved {len(all_positions)} raw position records.")
+            all_balances = self.api_client.get_all_balances()
+            logger.info(f"Retrieved {len(all_positions)} raw position records and balances from {len(all_balances)} accounts.")
             
             # 2. Aggregate
-            aggregated_holdings = self.aggregator.aggregate_positions(all_positions)
-            logger.info(f"Aggregated into {len(aggregated_holdings)} unique tickers.")
+            aggregated_holdings = self.aggregator.aggregate_positions(all_positions, balances=all_balances)
+            logger.info(f"Aggregated into {len(aggregated_holdings)} unique holdings (including cash).")
             
             # 3. Enrich (ADR 018)
             self.enricher.enrich_holdings(aggregated_holdings)

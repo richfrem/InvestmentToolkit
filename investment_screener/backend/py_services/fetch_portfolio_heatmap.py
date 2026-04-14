@@ -84,6 +84,7 @@ def fetch_portfolio_data(items: list) -> dict:
             shares = 1  # Default to 1 share for old format
             item_sector = None
             item_industry = None
+            book_price = None
         else:
             symbol = item.get("symbol", "")
             shares = item.get("shares", 1)
@@ -95,46 +96,49 @@ def fetch_portfolio_data(items: list) -> dict:
             continue
             
         try:
-            # TRY CACHE FIRST
-            info = get_cached_info(symbol)
-            
-            if not info:
-                # Fetch if not in cache
-                stock = yf.Ticker(symbol)
-                info = stock.info
-                # Save to cache
-                save_info_to_cache(symbol, info)
-            
-            # Get basic info with override support
-            # Priority: 1) portfolio.json override, 2) SECTOR_OVERRIDES, 3) Yahoo data
-            yahoo_sector = info.get("sector", "Unknown")
-            yahoo_industry = info.get("industry", "Unknown")
-            name = info.get("shortName", symbol)
-            
-            # Use portfolio.json override if present
-            if item_sector:
-                sector = item_sector
-                industry = item_industry or yahoo_industry
-            # Apply hardcoded overrides for known issues
-            elif symbol.upper() in SECTOR_OVERRIDES:
-                override = SECTOR_OVERRIDES[symbol.upper()]
-                sector = override.get("sector", yahoo_sector)
-                industry = override.get("industry", yahoo_industry)
+            # SPECIAL CASE: USD_CASH (bypass yfinance)
+            if symbol == "USD_CASH":
+                name = "USD Cash"
+                sector = "CASH"
+                industry = "CASH"
+                current_price = 1.0
+                change_pct = 0.0
+                hist_changes = {}
+                book_price = 1.0
             else:
-                sector = yahoo_sector
-                industry = yahoo_industry
-            
-            # Get price change (today)
-            current_price = info.get("currentPrice") or info.get("regularMarketPrice", 0)
-            prev_close = info.get("regularMarketPreviousClose", 0)
-
-            if prev_close and prev_close > 0:
-                change_pct = ((current_price - prev_close) / prev_close) * 100
-            else:
-                change_pct = 0
-
-            # Historical % changes from CSV store (incremental, date-range fetches)
-            hist_changes = history.calc_changes(symbol, current_price)
+                # TRY CACHE FIRST
+                info = get_cached_info(symbol)
+                
+                if not info:
+                    # Fetch if not in cache
+                    stock = yf.Ticker(symbol)
+                    info = stock.info
+                    # Save to cache
+                    save_info_to_cache(symbol, info)
+                
+                # Get basic info with override support
+                yahoo_sector = info.get("sector", "Unknown")
+                yahoo_industry = info.get("industry", "Unknown")
+                name = info.get("shortName", symbol)
+                
+                if item_sector:
+                    sector = item_sector
+                    industry = item_industry or yahoo_industry
+                elif symbol.upper() in SECTOR_OVERRIDES:
+                    override = SECTOR_OVERRIDES[symbol.upper()]
+                    sector = override.get("sector", yahoo_sector)
+                    industry = override.get("industry", yahoo_industry)
+                else:
+                    sector = yahoo_sector
+                    industry = yahoo_industry
+                
+                current_price = info.get("currentPrice") or info.get("regularMarketPrice", 0)
+                prev_close = info.get("regularMarketPreviousClose", 0)
+                if prev_close and prev_close > 0:
+                    change_pct = ((current_price - prev_close) / prev_close) * 100
+                else:
+                    change_pct = 0
+                hist_changes = history.calc_changes(symbol, current_price)
 
             # Book/cost basis values
             total_market = round(shares * current_price, 2)

@@ -174,6 +174,37 @@ class QuestradeAPIClient:
         data = self._request("GET", f"v1/accounts/{account_id}/positions")
         return data.get("positions", [])
 
+    def get_balances(self, account_id: str) -> Dict[str, Any]:
+        """
+        Retrieves current balances (cash) for a specific account.
+
+        Args:
+            account_id: The Questrade account number.
+
+        Returns:
+            Dictionary containing combined, per-currency balances.
+        """
+        return self._request("GET", f"v1/accounts/{account_id}/balances")
+
+    def get_all_balances(self) -> List[Dict[str, Any]]:
+        """
+        Discover all accounts and aggregate all cash balances.
+
+        Returns:
+            List of balance dictionaries from all accounts.
+        """
+        all_balances = []
+        accounts = self.get_accounts()
+        for account in accounts:
+            account_id = account["number"]
+            self.logger.info(f"Fetching balances for account {account_id} ({account['type']})")
+            balances = self.get_balances(account_id)
+            # Annotate with account info
+            balances["_account_id"] = account_id
+            balances["_account_type"] = account["type"]
+            all_balances.append(balances)
+        return all_balances
+
     def get_all_positions(self) -> List[Dict[str, Any]]:
         """
         Discover all accounts and aggregate all positions into a flat list.
