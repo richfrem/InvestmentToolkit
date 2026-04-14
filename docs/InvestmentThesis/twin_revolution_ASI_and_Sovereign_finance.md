@@ -1,7 +1,7 @@
 # The Twin Revolutions: An Investment Thesis for the ASI & Sovereign Finance Era
 
 **Version:** 7.3 ("The Sovereign Manufacturer")
-**Date:** October 19, 2025
+**Date:** April 13, 2026
 **Filename:** twin_revolution_ASI_and_Sovereign_finance_v7.3.md
 
 ## I. Core Premise: The Twin Revolutions - A Two-Front War for Global Dominance
@@ -126,38 +126,38 @@ Applied AI / Robotics: [█████] 5.9%
 
 ## IV. The Final Portfolio Blueprint ("Sharpened Edge" Edition)
 
-*This table represents the final, optimized target allocations for the portfolio. The "Thesis for Inclusion" column provides the specific, strategic rationale for each core holding, linking it directly back to the Two-Front War thesis.*
+*This table represents the actual holdings of the portfolio aligned with the "Twin Revolutions" thesis. The "Thesis for Inclusion" column provides the specific, strategic rationale for each core holding.*
 
-| Pillar | Ticker | Name | Final Goal % | **Thesis for Inclusion (Detailed Rationale)** |
-| :--- | :--- | :--- | :--- | :--- |
-| **CASH** | PSU.U | Purpose US Cash Fund ETF | 12.67% | **Strategic Reserve:** High-yield cash providing tactical optionality to exploit market dislocations and a buffer against thesis volatility. The "dry powder" for the war. |
-| **ASI / Compute**| INTC | Intel Corp | 10.87% | **The Sovereign Foundry:** The designated US "National Champion" for manufacturing sovereign, onshored compute. This is the core contrarian bet on securing the physical supply chain for **Front #1**. Success here is a matter of national security, providing a powerful state-sponsored tailwind. |
-| **ASI / Compute**| AVGO | Broadcom Inc. | 6.35% | **The Agnostic Enabler:** A high-quality compounder that provides critical custom silicon (ASICs) and networking hardware. Profits regardless of who wins the GPU race, making it a foundational, lower-risk enabler of the entire AI buildout on **Front #1**. |
-| **AI Titans / Cloud**| GOOG | Alphabet Inc. | 5.86% | **The "Brains" Hedge:** The world leader in foundational AI research (DeepMind, Gemini). This serves as the primary hedge against a "Black Swan" event where algorithmic breakthroughs, rather than raw compute, drive the next phase of AI, directly addressing a key risk factor for the compute-heavy thesis. |
-| **Power / Energy**| VST & CEG | Vistra & Constellation | 8.67% | **Fueling the War Machine:** ASI is a battle of megawatts. These companies provide the two essential components of sovereign power for **Front #1**: reliable, at-scale baseload power (VST - natural gas) and clean, carbon-free baseload power (CEG - nuclear), addressing the primary physical constraint on compute growth. |
-| **ASI / Compute**| NVDA | NVIDIA Corporation | 4.32% | **The Apex Predator & Incumbent Hedge:** The undisputed leader of **Front #1**. Owning it is non-negotiable. It serves two critical roles: 1) Direct exposure to the primary engine of the AI revolution. 2) A powerful hedge against the execution risk of the contrarian Intel bet. |
-| **Sovereign Finance**| ETHA | Ethereum ETF | 3.69% | **The Global Settlement Layer:** The foundational programmable rail upon which all Real-World Assets (RWAs) will be tokenized and traded. It represents the "world's checking account" and capital market infrastructure, making it the core software asset for winning **Front #2**. |
-| **AI Titans / Cloud**| MSFT | Microsoft Corporation| 3.60% | **The Sovereign Distribution Channel:** The dominant enterprise platform for distributing AI services via its Azure cloud and Co-pilot ecosystem. Represents the primary, US-allied channel for deploying AI at scale to businesses and governments, solidifying the US's lead in **Front #1**. |
-| **Security / Data OS**| PANW | Palo Alto Networks | 3.77% | **The Fortress Architect for Sovereign Infrastructure:** Security is paramount in a two-front war. PANW is the consolidating platform leader tasked with securing both fronts: <br> 1. Protecting the onshored AI supply chain (**Front #1**). <br> 2. Securing the nascent tokenized financial system (**Front #2**) from state-level cyberattacks. |
-| **Sovereign Finance**| COIN | Coinbase Global | 3.41% | **The Regulated App Store for Sovereign Finance:** The primary US-domiciled gateway and "picks-and-shovels" play for **Front #2**. It provides diversified exposure to the entire ecosystem's growth via: <br> 1. Trading/Custody Fees (BTC, SOL) <br> 2. Staking Rewards (ETH) <br> 3. A direct bet on L2 adoption (Base). |
-| **Data Infra / Supply**| CORZ | Core Scientific | 3.25% | **High-Beta Infrastructure Play:** A leveraged, speculative bet on the physical infrastructure convergence of **Front #1** (AI data centers) and **Front #2** (Bitcoin mining). Provides high-beta exposure to the exploding demand for specialized, power-dense compute facilities. |
-| **Sovereign Finance**| IBIT | Bitcoin ETF | 3.13% | **The Digital Gold & Pristine Reserve Asset:** The ultimate neutral, un-inflatable store of value for the digital age. It represents the system's pristine collateral—the "digital bedrock" upon which the entire tokenized financial system of **Front #2** will be built. |
-| **AI Titans / Cloud**| META | Meta Platforms | 2.94% | The consumer AI distribution channel and leader in open source AI models. |
-| **Data Infra / Supply**| EQIX | Equinix Inc | 2.82% | **The Digital Geneva:** The critical, neutral physical nexus where the compute for ASI (**Front #1**) and the validator nodes for sovereign finance (**Front #2**) must interconnect. Owning the world's premier data interconnection points is a non-negotiable strategic chokepoint. |
-| **Applied AI / Robo**| HUMN | Robotics ETFs | 2.82% | Thematic bet on the physical embodiment of AI. |
-| **ASI / Compute**| AMD | AMD, Inc. | 2.67% | **The Fortified #2 & Design Hedge:** The only credible US-based competitor to NVIDIA in high-end GPU design. Ensures the portfolio profits from US AI chip *design* leadership, agnostic of whether Intel or TSMC wins the manufacturing battle, providing a crucial secondary hedge on **Front #1**. |
-| **Security / Data OS**| CRWD | CrowdStrike | 2.50% | **Fortified Security.** "The Elite Royal Guard"; best-in-class endpoint protection. |
-| **Applied AI / Robo**| KOID | Robotics ETFs | 2.44% | Thematic bet on the physical embodiment of AI. |
-| **ASI / Compute**| SNPS & CDNS | Synopsys & Cadence | 3.44% | **The Sovereign Blueprint Makers:** The indispensable US-led EDA duopoly that provides the software blueprints for every advanced chip. Controlling the design tools is the first and most critical step to controlling the entire sovereign semiconductor supply chain for **Front #1**. |
-| **Sovereign Finance**| CRCL | Circle Internet | 2.06% | **The Sovereign Stablecoin Manufacturer:** The pure-play "Builder" of the regulated digital dollar (USDC). This is the direct, private-sector execution of the **GENIUS Act** thesis. Its business model—earning interest on the T-bill reserves backing USDC—creates the perpetual bid for US debt that is the cornerstone of the Sovereign Finance feedback loop. |
-| **Security / Data OS**| ZS | Zscaler, Inc. | 2.00% | "The Secure Gateway"; leader in Zero Trust and secure access. |
-| **Data Infra / Supply**| CRWV | CoreWeave, Inc. | 1.77% | A pure-play on providing specialized AI cloud compute. |
-| **Data Infra / Supply**| ANET | Arista Networks | 1.63% | The dominant networking provider for the open, Ethernet-based AI data center. |
-| **Power / Energy** | OKLO | Oklo Inc. | 1.32% | **Trimmed Speculation.** A venture-style bet on next-gen modular nuclear. |
-| **Data Infra / Supply**| VRT | Vertiv Holdings Co | 1.30% | Solves the critical data center cooling bottleneck. |
-| **Applied AI / Robo**| AIFF | Firefly Neuroscience | 0.63% | **Venture-Style Asymmetric Bet.** A tiny, long-term bet on applied AI in neuroscience using EEGs for diagnostics. |
-| **CASH**| USD CASH| MY USD CASH | 0.00% | Optimized tactical cash reserve. (Fully Deployed) |
-| **TOTAL**| | | **100.00%** | |
+| Pillar | Ticker | Name | **Thesis for Inclusion (Detailed Rationale)** |
+| :--- | :--- | :--- | :--- |
+| **CASH** | PSU.U | Purpose US Cash Fund ETF | **Strategic Reserve:** High-yield cash providing tactical optionality to exploit market dislocations. |
+| **ASI / Compute**| INTC | Intel Corp | **The Sovereign Foundry:** The designated US "National Champion" for manufacturing sovereign, onshored compute. Core contrarian bet on securing the physical supply chain for **Front #1**. |
+| **ASI / Compute**| AMD | AMD, Inc. | **The Fortified #2 & Design Hedge:** The only credible US-based competitor to NVIDIA in high-end GPU design. Ensures the portfolio profits from US AI chip *design* leadership. |
+| **ASI / Compute**| POET | POET Technologies Inc. | **Photonics Alpha:** Speculative bet on optical interconnections to solve the I/O bottleneck in AI compute. |
+| **AI Titans / Cloud**| GOOG | Alphabet Inc. | **The "Brains" Hedge:** World leader in foundational AI research (DeepMind, Gemini). Hedge against algorithmic breakthroughs reducing compute demand. |
+| **AI Titans / Cloud**| MSFT | Microsoft Corporation| **The Sovereign Distribution Channel:** Dominant enterprise platform for distributing AI services via Azure and Co-pilot. |
+| **AI Titans / Cloud**| META | Meta Platforms | **Consumer AI Leader:** Leader in open-source AI models (Llama) and massive consumer distribution scale. |
+| **AI Titans / Cloud**| NBIS | Nebius Group N.V. | **AI Infrastructure Cloud:** Emerging pure-play AI infrastructure provider. |
+| **Power / Energy**| VST | Vistra Corp | **Fueling the War Machine:** Essential provider of reliable, at-scale baseload power for ASI compute. |
+| **Power / Energy**| CEG | Constellation Energy | **Nuclear Renaissance:** Clean, carbon-free baseload power essential for the exponential growth in data center energy demand. |
+| **Power / Energy** | OKLO | Oklo Inc. | **Fission Future:** A venture-style bet on next-gen modular nuclear power (SMRs). |
+| **Sovereign Finance**| ETHA | Ethereum ETF | **The Global Settlement Layer:** The foundational programmable rail for Real-World Asset (RWA) tokenization. |
+| **Sovereign Finance**| IBIT | Bitcoin ETF | **The Digital Gold:** The ultimate neutral, un-inflatable store of value and pristine reserve asset for the digital age. |
+| **Sovereign Finance**| COIN | Coinbase Global | **The Regulated App Store for Sovereign Finance:** Primary US-domiciled gateway and picks-and-shovels play for **Front #2**. |
+| **Sovereign Finance**| CRCL | Circle Internet | **The Sovereign Stablecoin Manufacturer:** The pure-play builder of the regulated digital dollar (USDC). |
+| **Sovereign Finance**| SOLZ | Solana ETF | **The Speed Layer:** High-throughput decentralized rail for everyday transactions and retail-scale tokenization. |
+| **Sovereign Finance**| IREN | IREN LIMITED | **Converged Infrastructure:** Bitcoin mining transformed into high-density power/compute infrastructure. |
+| **Data Infra / Supply**| CORZ | Core Scientific | **High-Beta Infrastructure Play:** Strategic convergence of Bitcoin mining and AI data centers. |
+| **Data Infra / Supply**| EQIX | Equinix Inc | **The Digital Geneva:** The critical physical nexus where compute and sovereign finance interconnect. |
+| **Data Infra / Supply**| VRT | Vertiv Holdings Co | **Thermal Management:** Solves the critical liquid cooling bottleneck for high-density AI clusters. |
+| **Data Infra / Supply**| CRWV | CoreWeave, Inc. | **GPU Cloud:** Pure-play specialized AI compute cloud provider. |
+| **Security / Data OS**| PANW | Palo Alto Networks | **Fortress Architect:** Platform leader securing the onshored AI supply chain and the new financial system. |
+| **Security / Data OS**| CRWD | CrowdStrike | **The Elite Royal Guard:** Best-in-class endpoint protection for sovereign infrastructure. |
+| **Security / Data OS**| ZS | Zscaler, Inc. | **The Secure Gateway:** Leader in Zero Trust access for the distributed AI workforce. |
+| **Applied AI / Robo**| HUMN | Robotics ETFs | **Physical Embodiment:** Thematic bet on the physical manifestation of AI via robotics. |
+| **Applied AI / Robo**| KOID | Robotics ETFs | **Humanoid Future:** Strategic exposure to the automation and robotics revolution. |
+| **Applied AI / Robo**| RGTI | Rigetti Computing | **Quantum Leap:** Speculative bet on quantum computing as the successor to classical ASI compute. |
+| **Applied AI / Robo**| TEM | Tempus AI, Inc. | **AI in Healthcare:** Practical application of AI in diagnostics and personalized medicine. |
 
 ---
 
@@ -271,4 +271,3 @@ This section provides sources and further reading to support the core pillars of
 ---
 
 *This document should be treated as a living thesis, to be updated and challenged as new market data, technological developments, and geopolitical events unfold.*
-```

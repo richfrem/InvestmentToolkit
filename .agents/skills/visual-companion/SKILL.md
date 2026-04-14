@@ -16,8 +16,8 @@ Before doing anything else, silently check for `exploration/exploration-dashboar
     Announce to the user:
     > "It looks like you have an active Exploration Session in progress. Let me take you back
     > to your session dashboard so we can keep your progress on track."
-    **Immediately transfer control to `exploration-workflow`.** Stop your response here and
-    switch to `exploration-workflow` now — do not print the word "invoke" as literal text.
+    **Return to the orchestrator.** Use the Skill tool: `skill: "exploration-workflow"`.
+    After invoking it, stop generating output from this skill — do not continue below.
 
 - **If the file does NOT exist:** Proceed with this skill's standalone flow as normal.
 
@@ -33,27 +33,49 @@ User: [dispatched by prototype-builder after Discovery Plan approval]
 Agent: Reads the Discovery Plan silently, presents three contextually adapted layout options in plain language, confirms the SME's selection, and writes the confirmed layout direction to exploration/captures/layout-direction.md before signalling ready to build.
 </example>
 
+## Skippable Phase
+
+This phase may be skipped for brownfield sessions or simple features where the design is straightforward. If skipped, it will be marked `- [~]` in the dashboard. The downstream Phase 3 skill handles missing layout direction gracefully.
+
 ## Role
 
-This skill is invoked after the Discovery Plan is approved. Its purpose is to confirm the visual structure of the prototype before any building starts. It ensures the SME has a clear picture of what they are agreeing to before anything is created.
+This skill is invoked after the Discovery Plan is approved. Its purpose is to confirm the **structure and shape** of the output before any building or drafting starts. For software, this means UI layout. For non-software work, this means document structure, process flow shape, or analysis format. It ensures the SME has a clear picture of what they are agreeing to before anything is created.
 
 ## Session Flow
 
-### Step 1 — Read context
+### Step 1 — Read context and determine output type
 
 Read the most recent file in `exploration/discovery-plans/`. Understand the problem domain, stakeholders, and success criteria before proposing anything. Do not skip this step.
 
-### Step 2 — Present 3 options
+Determine the **output type** from the Discovery Plan and session type:
+- **Software UI** — the output is a screen, page, or interactive interface
+- **Process or workflow** — the output is a business process, approval chain, or operational flow
+- **Document or analysis** — the output is a report, requirements doc, policy, or strategic plan
+- **Mixed** — some combination of the above
 
-Offer 3 layout options adapted to the context of the Discovery Plan. Describe each in plain language (2–4 sentences). No technical terms. No code. No wireframes. Words only.
+### Step 2 — Present 3 options (adapted to output type)
+
+Offer 3 structure options adapted to the context of the Discovery Plan. Describe each in plain language (2–4 sentences). No technical terms. No code. No wireframes. Words only.
 
 Label them **Option A**, **Option B**, **Option C**.
 
-Adapt these generic starting points to the specific problem and user group from the Discovery Plan:
+**For software UI outputs**, adapt these starting points:
 
 - **Option A:** A single-page view with a summary at the top and details below — good when people need to see everything at once and make decisions without switching screens
 - **Option B:** A step-by-step flow that walks the user through one thing at a time — good when there's a sequence of decisions, approvals, or actions that need to happen in order
 - **Option C:** A two-panel layout with a list on the left and details on the right — good when people need to browse through a number of items and compare them before deciding
+
+**For process or workflow outputs**, adapt these starting points:
+
+- **Option A:** A linear flow — steps happen in a fixed order from start to finish, good for simple processes with no branches
+- **Option B:** A decision-tree flow — the path branches based on conditions or approvals, good when different situations lead to different actions
+- **Option C:** A swimlane view — shows who does what at each stage, good when multiple people or teams are involved and handoffs matter
+
+**For document or analysis outputs**, adapt these starting points:
+
+- **Option A:** Executive summary up front with supporting detail sections — good when the audience wants the answer first and the reasoning second
+- **Option B:** Problem → Analysis → Recommendations structure — good when the audience needs to follow the logic to be convinced
+- **Option C:** Comparison format with side-by-side options — good when the deliverable is about choosing between alternatives
 
 After presenting the three options, ask:
 > "Which of these feels closest to what you had in mind? Or if none of them fit, describe what you're picturing and I'll work with that."
@@ -89,10 +111,9 @@ If operating within an active Exploration Session (i.e., `exploration/exploratio
 exists and `**Status:**` is not `Complete`):
 1. Say to the user:
    > "Returning to your session dashboard now."
-2. **Immediately transfer control to `exploration-workflow`.** This is a live skill switch.
-   Stop generating output and switch to `exploration-workflow` now. Do not print the phrase
-   "invoke exploration-workflow" as literal text — execute the switch. If your harness uses
-   `@skill-name` routing, trigger `@exploration-workflow`. If direct invocation is
-   unavailable, tell the user: "Please start `exploration-workflow` to continue your session."
+2. **Return to the orchestrator.** Use the Skill tool: `skill: "exploration-workflow"`.
+   After invoking it, stop generating output from this skill.
+   If the Skill tool is not available in your harness, tell the user:
+   *"Please run `/exploration-workflow` to continue your session."*
 
 If operating standalone (no dashboard file, or `**Status:** Complete`), the skill is complete.

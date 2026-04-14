@@ -27,7 +27,7 @@ if (!fs.existsSync(PORTFOLIO_FILE) && fs.existsSync(PORTFOLIO_EXAMPLE)) {
 }
 
 // Validates ticker symbols: 1-10 uppercase alphanumeric chars, dots, hyphens (e.g. BRK-B, BTC-USD)
-const isValidTicker = (ticker: string): boolean => /^[A-Z0-9.\-]{1,10}$/.test(ticker);
+const isValidTicker = (ticker: string): boolean => /^[A-Z0-9.\-_]{1,10}$/.test(ticker);
 
 app.get('/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });

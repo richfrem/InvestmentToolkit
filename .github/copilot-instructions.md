@@ -42,11 +42,14 @@ npm run lint -w frontend
 python3 manage.py           # Full suite startup (from repo root)
 ```
 
-> **npm path rule**: Always run npm commands from `investment_screener/`. Never use `--prefix investment_screener` from within `investment_screener/` — it doubles the path.
+> [!IMPORTANT]
+> **NPM Path Mandate**: Always run npm commands from `investment_screener/`. Never use `--prefix investment_screener` from within `investment_screener/` — it doubles the path and fails.
 
 ---
 
-## 🔐 Questrade Token Protocol
+## 🔐 Questrade Authentication & Security
+
+The backend uses a stateful token rotation engine with **AES-256-GCM hardware-backed encryption** (macOS Keychain).
 
 ### ⚠️ Tokens Expire — Agent Must Handle This
 
@@ -55,14 +58,9 @@ Questrade refresh tokens are **single-use and can expire**. When a sync returns 
 **As an AI agent, if you encounter a 400 token error, you must:**
 1. Inform the user their Questrade token has expired
 2. Ask them to visit [Questrade API Centre](https://apphub.questrade.com/UI/UserApps.aspx) and generate a new one-week token
-3. Once they provide the token, handle everything else automatically
+3. Once they provide the token, handle the seed sequence yourself.
 
-### What the User Does (Once)
-1. Visit [apphub.questrade.com](https://apphub.questrade.com/UI/UserApps.aspx)
-2. Generate a **One-Week App Token**
-3. Give it to you (the agent)
-
-### What the Agent Does (Everything Else)
+### Initial Setup / Re-Seeding
 ```bash
 # Step 1: Redeem the one-week token (-d '' required to avoid HTTP 411)
 curl -s -X POST \
@@ -70,6 +68,7 @@ curl -s -X POST \
   -d '' -H 'Content-Type: application/x-www-form-urlencoded'
 
 # Step 2: Seed the returned refresh_token into backend cache (--cache-dir required)
+# IMPORTANT: --cache-dir investment_screener/backend/ is REQUIRED when run from repo root.
 python3 investment_screener/backend/src/QuestradeDataEngine.py \
   --seed "<refresh_token>" \
   --cache-dir investment_screener/backend/
@@ -79,19 +78,11 @@ curl -s -X POST http://localhost:3001/api/portfolio/sync-questrade \
   -H 'Content-Type: application/json' -d '{}'
 ```
 
-### Token Storage
+### Token Storage Rules
 - **Location**: `investment_screener/backend/.questrade_cache` (binary, AES-256-GCM encrypted)
-- **Encryption key**: macOS Keychain — never on disk in plaintext
-- **Git**: `.questrade_cache` is **git-ignored at all paths** — never committed
-- **`~/.zshrc`**: `QUESTRADE_REFRESH_TOKEN` is an emergency fallback only — not updated on rotation
-
-### When Does the User Need to Re-Seed?
-- New machine / fresh clone (no cache exists)
-- Cache file deleted
-- Token expired without being redeemed
-- Questrade security event / password change
-
-Full protocol: `docs/architecture/Questrade/questrade_token_setup.md`
+- **Encryption key**: Managed via **macOS Keychain** (keyring library) — never on disk in plaintext.
+- **Git**: `.questrade_cache` is **git-ignored at all paths** — never committed.
+- **`~/.zshrc`**: `QUESTRADE_REFRESH_TOKEN` is an emergency fallback only.
 
 ---
 
@@ -101,14 +92,13 @@ Full protocol: `docs/architecture/Questrade/questrade_token_setup.md`
 
 ---
 
-## 🔑 Key Files
+## 🔑 Key Files for AI Context
 
 | File | Purpose |
 |------|---------|
-| `GEMINI.md` | Context for Gemini agents |
-| `.claude/CLAUDE.md` | Context for Claude agents |
-| `.github/copilot-instructions.md` | Context for GitHub Copilot (this file) |
+| `GEMINI.md` | Primary context file for Gemini agents |
+| `.claude/CLAUDE.md` | Primary context file for Claude agents |
+| `.github/copilot-instructions.md` | Primary context for GitHub Copilot (this file) |
 | `docs/architecture/Questrade/questrade_token_setup.md` | Full token protocol |
 | `investment_screener/backend/src/utils/QuestradeAPIClient.py` | OAuth2 client |
 | `investment_screener/backend/src/services/QuestradeSyncService.ts` | Node→Python bridge |
-| `docs/github_instructions.md` | GitHub/CI onboarding guide |

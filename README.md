@@ -119,5 +119,5 @@ npm --prefix investment_screener run dev -w frontend
 This project utilizes the **Spec Kitty** framework to systematize AI agent workflows.
 -   **Specs**: Located in `kitty-specs/`.
 -   **Plugins**: Located in `plugins/` — each plugin provides commands, skills, and scripts.
--   **Agents**: Supports Antigravity, Gemini, Copilot, Claude, and GitHub Copilot via the `plugins/spec-kitty/scripts/speckit_system_bridge.py` sync tool.
+-   **Harness**: Extension of superpowers harness for AI agent workflows. exploration-cycle-plugin. see [.agents/agents/exploration-cycle-plugin-intake-agent.md](.agents/agents/exploration-cycle-plugin-intake-agent.md)
 -   **Migration Guide**: See [`plugins/MIGRATION_GUIDE.md`](plugins/MIGRATION_GUIDE.md) for onboarding new repos.
