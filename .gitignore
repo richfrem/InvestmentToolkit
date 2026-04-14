@@ -55,6 +55,7 @@ kittygemini/
 archive/
 InvestmentStrategy/
 .claude/
+.agents/
 .codex/
 .opencode/
 .windsurf/

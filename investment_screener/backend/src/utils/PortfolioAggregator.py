@@ -49,13 +49,14 @@ class PortfolioAggregator:
             return symbol.split(".")[0]
         return symbol
 
-    def aggregate_positions(self, positions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def aggregate_positions(self, positions: List[Dict[str, Any]], balances: List[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         """
         Aggregates multiple positions of the same ticker across accounts.
-        Computes total shares and keeps price data.
+        Computes total shares and keeps price data. Also aggregates cash balances.
 
         Args:
             positions: List of raw position dictionaries from Questrade.
+            balances: List of balance dictionaries from Questrade accounts.
 
         Returns:
             List of aggregated holding dictionaries in portfolio.json format.
@@ -97,6 +98,31 @@ class PortfolioAggregator:
                     "book_price": book_price,
                     "sector": "Other",       # Placeholder: Questrade doesn't provide sectors via positions
                     "industry": "Other",     # Placeholder
+                    "last_updated": datetime.now().isoformat()
+                }
+
+        # Aggregate Cash Balances (USD)
+        if balances:
+            total_usd_cash = 0.0
+            for account_balance in balances:
+                # 'perCurrencyBalances' contains the actual cash
+                curr_balances = account_balance.get("perCurrencyBalances", [])
+                for cb in curr_balances:
+                    if cb.get("currency") == "USD":
+                        total_usd_cash += float(cb.get("cash", 0))
+            
+            if total_usd_cash > 0:
+                # Create or update USD_CASH entry
+                # We treat shares as the total cash amount, and price as 1.0
+                symbol = "USD_CASH"
+                aggregated[symbol] = {
+                    "symbol": symbol,
+                    "shares": total_usd_cash,
+                    "price": 1.0,
+                    "book_price": 1.0,
+                    "name": "USD Cash",
+                    "sector": "CASH",
+                    "industry": "CASH",
                     "last_updated": datetime.now().isoformat()
                 }
 
