@@ -13,7 +13,7 @@ Output:
     context/memory/reports/summary_YYYYMMDD_HHMM.md     -- text summary
 
 Usage:
-    python3 generate_report.py --plugin-dir /path/to/agent-agentic-os [--project-dir /path/to/project]
+    pythonenerate_report.py --plugin-dir /path/to/agent-agentic-os [--project-dir /path/to/project]
 
 Dependencies: pandas, matplotlib (see requirements.txt)
 """
@@ -23,6 +23,7 @@ import re
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 try:
     import matplotlib.pyplot as plt

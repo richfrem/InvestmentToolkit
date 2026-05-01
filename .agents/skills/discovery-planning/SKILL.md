@@ -1,5 +1,6 @@
 ---
 name: discovery-planning
+plugin: exploration-cycle-plugin
 description: >
   Guides a Subject Matter Expert through a structured discovery session to create and approve a Discovery Plan before any building begins. This is the HARD-GATE brainstorming skill — no prototype can be built until the SME explicitly approves the plan. Trigger phrases: "start a discovery session", "let's plan this out", "help me figure out what we're building", "I have an idea I want to explore", "let's start from scratch"
 allowed-tools: Read, Write
@@ -382,6 +383,26 @@ Repeat until the SME is satisfied.
 On approval:
 1. Write the final plan file to `exploration/discovery-plans/discovery-plan-YYYY-MM-DD.md`
 2. Announce: "Your plan is saved — Phase 1 is complete."
+
+Output this machine-readable block so the orchestrator can parse phase completion:
+
+~~~
+## HANDOFF_BLOCK
+PHASE: 1
+STATUS: COMPLETE
+OUTPUT: exploration/discovery-plans/discovery-plan-YYYY-MM-DD.md
+SESSION_TYPE: [value from dashboard or classification]
+INTERVENTION_TYPE: [software / process / strategic / legacy-analysis / risk-compliance / spike]
+OPEN_QUESTIONS: [count of items in ## Open Questions section]
+~~~
+
+## Gotchas
+
+- **Dashboard intercept ordering**: The dashboard intercept runs before the HARD-GATE check. If the dashboard status field is missing (file corrupted), the intercept will not fire and this skill will run standalone instead of redirecting. Always write `**Status:**` as the first field in a new dashboard.
+- **Assumptions Check is not a gate**: The two assumptions questions must not block progress — but agents sometimes treat "I'm not sure" as a blocker. If the SME is unsure, note it as an open question and continue.
+- **Legacy/Brownfield track skips Intervention Check**: The Intervention Check is implicit in LQ5. Do NOT re-run Q4 from the Standard Track for brownfield sessions — it will confuse the SME with redundant questions.
+- **Discovery Plan date in filename vs content**: The plan file uses `YYYY-MM-DD` in both the filename and the `# Discovery Plan — [Date]` header. If the session spans midnight, these may differ. Use the date when the plan was approved, not when the session started.
+- **Spike re-entry loses plan context**: When archiving a prior spike discovery plan (iteration N), ensure the new Phase 1 starts with a brief showing the prior plan path. The SME should not have to re-describe their idea from scratch.
 
 ## Completion — Return to Orchestrator
 

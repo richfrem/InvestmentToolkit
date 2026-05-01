@@ -1,5 +1,6 @@
 ---
 name: gemini-cli-agent
+plugin: gemini-cli
 description: >
   Gemini CLI sub-agent system for persona-based analysis. Use when piping
   large contexts to Google Gemini models for security audits, architecture reviews,
@@ -12,7 +13,7 @@ allowed-tools: Bash, Read, Write
 You, the Antigravity agent, dispatch specialized analysis tasks to Gemini CLI sub-agents. 
 
 > [!IMPORTANT]
-> By default, all Gemini sub-agent orchestration uses the **gemini-3-flash-preview** model for high context efficiency (1M+ tokens) and stable analytical reasoning. Explicitly use this model unless the user authorizes a different model for specific benchmarks.
+> By default, all Gemini sub-agent orchestration uses the **gemini-3-flash-preview** model for maximum cost-efficiency. For deep analytical reasoning, structural validation, or multimodal vision tasks, explicitly override the model to **gemini-3.1-pro-preview**.
 
 ### ✅ Minimal Working Code Review Agent Pattern
 
@@ -38,18 +39,18 @@ For reusable sub-agent execution, use the provided Python orchestrator which han
 
 ```bash
 # Location: plugins/gemini-cli/scripts/run_agent.py
-python3 ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" [MODEL_NAME]
+python ./scripts/run_agent.py <PERSONA_FILE> <INPUT_FILE> <OUTPUT_FILE> "<INSTRUCTION>" [MODEL_NAME]
 ```
 
 ### 🧪 Mandatory Validation Protocol (Phase 0.5)
 Before using Gemini in any autonomous Triple-Loop or complex orchestration, you **must** verify the CLI's and the orchestrator's health:
 1. **Hello Check**: `gemini --yolo -m gemini-3-flash-preview -p "hello"`
-2. **Functional Check**: `python3 ./scripts/run_agent.py agents/refactor-expert.md target.py ./HEARTBEAT_MD.md "Verify health"`
+2. **Functional Check**: `python ./scripts/run_agent.py agents/refactor-expert.md target.py ./HEARTBEAT_MD.md "Verify health"`
 3. **Verify Output**: Confirm `./HEARTBEAT_MD.md` is not empty.
 
 ### Example Usage:
 ```bash
-python3 ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
+python ./scripts/run_agent.py agents/security-auditor.md target.py security.md \
 "Find vulnerabilities. Use severity levels: 🔴 CRITICAL, 🟡 MODERATE, 🟢 MINOR."
 ```
 
@@ -67,10 +68,24 @@ These personas are mirrored from the Copilot CLI plugin to ensure consistent "Ag
 
 ---
 
+## 🚫 Capability Boundary — Read Before Dispatching
+
+### ❌ Image Generation is NOT supported via Gemini CLI
+The Gemini CLI (`gemini` binary) is a **text and code assistant only**. It cannot generate, render, or save image files regardless of model.
+
+- `gemini-3.1-pro-preview`, `gemini-2.5-pro`, `gemini-3-flash-preview` — **text only**
+- Asking the CLI to "generate an image and save it" will always fail or hallucinate
+- Image generation models (`imagen-4.0-*`, `gemini-2.5-flash-image`, `gemini-3-pro-image-preview`) are **not accessible via the CLI** — they require the Python `google-genai` SDK with a **paid billing account** (separate from Gemini Pro subscription)
+- `gemini-3.1-pro-preview` may hit `MODEL_CAPACITY_EXHAUSTED` (429) under load — retry or fall back to `gemini-2.5-pro`
+
+**Do not attempt image generation via this skill. Inform the user immediately.**
+
+---
+
 ## ⚠️ CLI Best Practices & Failure Modes
 
 ### 1. ⚡ Preferred Model: Gemini 3 Flash
-For analytical sub-agent tasks, **always** specify `-m gemini-3-flash-preview`. It provides the best balance of context window (1M+ tokens) and latency for analytical reviews.
+For analytical sub-agent tasks where cost is prioritized, **always** specify `-m gemini-3-flash-preview`. For deep reasoning or validation, use `-m gemini-3.1-pro-preview`.
 
 ### 2. ❌ Avoid Shell Expansion for Large Contexts
 Large prompt expansions (e.g., `$(cat ...)` > 10KB) can silently fail when run in the background. 
@@ -99,9 +114,9 @@ nohup gemini --yolo -m gemini-3-flash-preview -p "..." >> log.txt 2>&1 < /dev/nu
 
 ---
 
-## 🔄 How to Update Gemini CLI
-- **Via NPM (Global)**: Run `npm install -g @google/gemini-cli@latest`.
-- **Via Brew (macOS/Linux)**: Run `brew upgrade gemini-cli`.
+## 🔄 How to Manage Gemini CLI
+- **Update CLI**: Run `npm install -g @google/gemini-cli@latest`.
+- **Install Plugin Suite**: Run `gemini extensions install https://github.com/richfrem/agent-plugins-skills`.
 - **Using NPX**: Use `npx @google/gemini-cli` to automatically pull the latest version.
 
 ---
@@ -109,5 +124,5 @@ nohup gemini --yolo -m gemini-3-flash-preview -p "..." >> log.txt 2>&1 < /dev/nu
 ## ✅ Smoke Test
 
 ```bash
-python3 ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Refactor this code."
+python ./scripts/run_agent.py agents/refactor-expert.md target.py output.md "Refactor this code."
 ```

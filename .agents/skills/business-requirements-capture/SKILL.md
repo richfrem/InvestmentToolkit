@@ -1,5 +1,6 @@
 ---
 name: business-requirements-capture
+plugin: exploration-cycle-plugin
 description: >
   Captures and refines business requirements, including functional requirements,
   non-functional requirements, business rules, constraints, assumptions, and
@@ -17,7 +18,7 @@ Generate structured Business Requirements Documents from exploration session cap
 ## Usage
 
 ```bash
-python3 ./scripts/execute.py \
+python ./scripts/execute.py \
   --input <file> [<file2>...] \
   --mode <brd|rules|constraints> \
   --output <output_file.md>

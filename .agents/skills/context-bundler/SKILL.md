@@ -1,5 +1,6 @@
 ---
 name: context-bundler
+plugin: context-bundler
 description: Interactively creates technical bundles of code, design, and documentation for external review or context sharing. It conducts a brief discovery phase to confirm the targets and format, presents a plan, and then packages multiple project files into a single Markdown file or a portable `.zip` archive.
 allowed-tools: Bash, Read, Write
 ---
@@ -81,12 +82,12 @@ Invoke the appropriate script based on the format negotiated in Phase 1.
 
 - **For Markdown (.md):**
   ```bash
-  python3 ./scripts/bundle.py --manifest path/to/file-manifest.json --bundle path/to/output.md
+  python ./scripts/bundle.py --manifest path/to/file-manifest.json --bundle path/to/output.md
   ```
 
 - **For ZIP Archive (.zip):**
   ```bash
-  python3 ./scripts/bundle_zip.py --manifest path/to/file-manifest.json --bundle path/to/output.zip
+  python ./scripts/bundle_zip.py --manifest path/to/file-manifest.json --bundle path/to/output.zip
   ```
 
 Inform the user the payload is ready.

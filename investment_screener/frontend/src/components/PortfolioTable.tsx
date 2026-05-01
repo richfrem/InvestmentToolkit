@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
+import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -110,11 +110,16 @@ export default function PortfolioTable() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Column visibility — keyed by col id
+    // Column visibility & ordering
     const defaultVisible = new Set(COLUMNS.filter(c => c.always || c.defaultOn).map(c => c.id));
     const [visible, setVisible] = useState<Set<string>>(defaultVisible);
+    const [columnOrder, setColumnOrder] = useState<string[]>(COLUMNS.map(c => c.id));
     const [pickerOpen, setPickerOpen] = useState(false);
     const pickerRef = useRef<HTMLDivElement>(null);
+
+    // Filtering
+    const [showFilters, setShowFilters] = useState(false);
+    const [filters, setFilters] = useState<Record<string, string>>({});
 
     // Sorting
     const [sortCol, setSortCol] = useState<keyof StockRow>('total_market');
@@ -173,8 +178,34 @@ export default function PortfolioTable() {
         });
     }
 
-    const visibleCols = COLUMNS.filter(c => visible.has(c.id));
-    const rows = data ? sortRows(data.stocks, sortCol, sortDir) : [];
+    function moveColumn(id: string, direction: 'up' | 'down') {
+        setColumnOrder(prev => {
+            const idx = prev.indexOf(id);
+            if (idx === -1) return prev;
+            const nextIdx = direction === 'up' ? idx - 1 : idx + 1;
+            if (nextIdx < 0 || nextIdx >= prev.length) return prev;
+
+            const next = [...prev];
+            [next[idx], next[nextIdx]] = [next[nextIdx], next[idx]];
+            return next;
+        });
+    }
+
+    // Derived columns based on order and visibility
+    const orderedCols = columnOrder.map(id => COLUMNS.find(c => c.id === id)!).filter(Boolean);
+    const visibleCols = orderedCols.filter(c => visible.has(c.id));
+
+    // Filtered and sorted rows
+    const filteredRows = (data?.stocks ?? []).filter(row => {
+        return Object.entries(filters).every(([colId, filterVal]) => {
+            if (!filterVal) return true;
+            const val = row[colId as keyof StockRow];
+            if (val == null) return false;
+            return String(val).toLowerCase().includes(filterVal.toLowerCase());
+        });
+    });
+
+    const rows = sortRows(filteredRows, sortCol, sortDir);
 
     // ── Loading / error states ───────────────────────────────────────────────
 
@@ -211,6 +242,15 @@ export default function PortfolioTable() {
                 <div className="flex items-center gap-3">
                     <span className="text-zinc-300 text-sm font-bold">{fmtDollar(data.total_value)}</span>
 
+                    {/* Filter Toggle */}
+                    <button
+                        onClick={() => setShowFilters(s => !s)}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs transition-colors ${showFilters ? 'bg-amber-500/20 text-amber-400 border border-amber-500/50' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}`}
+                    >
+                        <Filter size={13} />
+                        Filter
+                    </button>
+
                     {/* Column picker */}
                     <div className="relative" ref={pickerRef}>
                         <button
@@ -221,21 +261,43 @@ export default function PortfolioTable() {
                             Columns
                         </button>
                         {pickerOpen && (
-                            <div className="absolute right-0 top-8 z-50 w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-2xl p-2">
+                            <div className="absolute right-0 top-8 z-50 w-64 bg-zinc-800 border border-zinc-700 rounded-lg shadow-2xl p-2 max-h-96 overflow-y-auto">
                                 <div className="text-[10px] text-zinc-500 uppercase font-bold px-2 pb-1 mb-1 border-b border-zinc-700">
-                                    Toggle Columns
+                                    Configure Columns
                                 </div>
-                                {COLUMNS.filter(c => !c.always).map(col => (
-                                    <label key={col.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-zinc-700 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={visible.has(col.id)}
-                                            onChange={() => toggleCol(col.id)}
-                                            className="accent-amber-500 w-3.5 h-3.5"
-                                        />
-                                        <span className="text-xs text-zinc-300">{col.label}</span>
-                                    </label>
-                                ))}
+                                {columnOrder.map((colId, idx) => {
+                                    const col = COLUMNS.find(c => c.id === colId)!;
+                                    return (
+                                        <div key={colId} className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-zinc-700 group">
+                                            <label className="flex items-center gap-2 cursor-pointer flex-1">
+                                                <input
+                                                    type="checkbox"
+                                                    disabled={col.always}
+                                                    checked={visible.has(col.id)}
+                                                    onChange={() => toggleCol(col.id)}
+                                                    className="accent-amber-500 w-3.5 h-3.5"
+                                                />
+                                                <span className={`text-xs ${visible.has(col.id) ? 'text-zinc-200' : 'text-zinc-500'}`}>{col.label}</span>
+                                            </label>
+                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button
+                                                    onClick={() => moveColumn(colId, 'up')}
+                                                    disabled={idx === 0}
+                                                    className="p-1 hover:bg-zinc-600 rounded text-zinc-400 disabled:text-zinc-700"
+                                                >
+                                                    <ArrowUp size={12} />
+                                                </button>
+                                                <button
+                                                    onClick={() => moveColumn(colId, 'down')}
+                                                    disabled={idx === columnOrder.length - 1}
+                                                    className="p-1 hover:bg-zinc-600 rounded text-zinc-400 disabled:text-zinc-700"
+                                                >
+                                                    <ArrowDown size={12} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
@@ -277,6 +339,22 @@ export default function PortfolioTable() {
                                 );
                             })}
                         </tr>
+                        {showFilters && (
+                            <tr className="bg-zinc-800/40 border-b border-zinc-700">
+                                {visibleCols.map(col => (
+                                    <th key={`filter-${col.id}`} className="px-2 py-1.5">
+                                        <input
+                                            type="text"
+                                            placeholder={`Filter ${col.label}...`}
+                                            value={filters[col.id] ?? ''}
+                                            onChange={(e) => setFilters(prev => ({ ...prev, [col.id]: e.target.value }))}
+                                            className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-[11px] text-zinc-300 focus:outline-none focus:border-amber-500/50 placeholder:text-zinc-600"
+                                            onClick={(e) => e.stopPropagation()}
+                                        />
+                                    </th>
+                                ))}
+                            </tr>
+                        )}
                     </thead>
                     <tbody>
                         {rows.map((row, i) => (

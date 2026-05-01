@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 bulk_symlink_fixer.py — Find and fix broken symlinks in a folder hierarchy.
 
@@ -176,7 +176,10 @@ def fix_symlinks(issues: list[SymlinkIssue]) -> tuple[int, int, int]:
     print()
 
     repo_root = find_repo_root()
-    symlink_manager = repo_root / "plugins" / "link-checker" / "scripts" / "symlink_manager.py"
+    # Try installed location first, then plugin source as fallback
+    symlink_manager = repo_root / ".agents" / "skills" / "symlink-manager" / "scripts" / "symlink_manager.py"
+    if not symlink_manager.exists():
+        symlink_manager = repo_root / "plugins" / "link-checker" / "scripts" / "symlink_manager.py"
 
     if not symlink_manager.exists():
         print(f"Error: symlink_manager.py not found at {symlink_manager}")

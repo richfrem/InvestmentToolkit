@@ -1,0 +1,10 @@
+{
+  "name": "toolkit-manager",
+  "description": "Orchestrator plugin for managing the Investment Screener suite and Questrade API integration.",
+  "skills": [
+    "plugins/toolkit-manager/skills/questrade-token-setup/SKILL.md",
+    "plugins/toolkit-manager/skills/run-screener/SKILL.md"
+  ],
+  "commands": [],
+  "agents": []
+}

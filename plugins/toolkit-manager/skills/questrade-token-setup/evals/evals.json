@@ -1,0 +1,5 @@
+[
+  { "id": "questrade-setup-trigger-1", "type": "positive", "prompt": "how do i set up my questrade token?", "should_trigger": true },
+  { "id": "questrade-setup-trigger-2", "type": "positive", "prompt": "configure questrade api", "should_trigger": true },
+  { "id": "questrade-setup-negative-1", "type": "negative", "prompt": "show me the stock prices", "should_trigger": false }
+]

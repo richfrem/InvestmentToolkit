@@ -21,7 +21,7 @@ InvestmentToolkit/
 │       └── src/
 │           ├── services/       ← QuestradeSyncService.ts
 │           └── utils/          ← QuestradeAPIClient.py, QuestradeTokenManager.py
-├── plugins/                    ← AI agent plugins (stock-valuation, thesis-balancer)
+├── plugins/                    ← AI agent plugins (stock-valuation, thesis-balancer, toolkit-manager)
 ├── .agents/                    ← Agent skills and prompts
 ├── .claude/                    ← Claude Code config + CLAUDE.md
 ├── .github/                    ← Copilot instructions (this file)
@@ -39,8 +39,13 @@ npm run dev -w frontend     # Frontend → port 5173
 npm run build -w backend
 npm run build -w frontend
 npm run lint -w frontend
-python3 manage.py           # Full suite startup (from repo root)
+python3 run_investment_toolkit.py           # Full suite startup (from repo root)
 ```
+
+### 🤖 Orchestration
+Use the **toolkit-manager** plugin skills:
+- `/start-screener` — Launch the full suite.
+- `/setup-questrade` — Guide user through token setup.
 
 > [!IMPORTANT]
 > **NPM Path Mandate**: Always run npm commands from `investment_screener/`. Never use `--prefix investment_screener` from within `investment_screener/` — it doubles the path and fails.
@@ -50,6 +55,10 @@ python3 manage.py           # Full suite startup (from repo root)
 ## 🔐 Questrade Authentication & Security
 
 The backend uses a stateful token rotation engine with **AES-256-GCM hardware-backed encryption** (macOS Keychain).
+
+### 🤖 Interactive Token Setup
+Use the **toolkit-manager** plugin to guide the user:
+- `/setup-questrade` — Interactively guide the user through setting up their Questrade API refresh token.
 
 ### ⚠️ Tokens Expire — Agent Must Handle This
 
@@ -67,7 +76,7 @@ curl -s -X POST \
   "https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token=<ONE_WEEK_TOKEN>" \
   -d '' -H 'Content-Type: application/x-www-form-urlencoded'
 
-# Step 2: Seed the returned refresh_token into backend cache (--cache-dir required)
+# 2. Seed the returned refresh_token into backend cache (--cache-dir required)
 # IMPORTANT: --cache-dir investment_screener/backend/ is REQUIRED when run from repo root.
 python3 investment_screener/backend/src/QuestradeDataEngine.py \
   --seed "<refresh_token>" \

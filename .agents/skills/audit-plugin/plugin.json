@@ -1,22 +1,21 @@
 {
-    "name": "agent-plugin-analyzer",
-    "version": "2.1.0",
-    "description": "Systematically analyze agent plugins and skills to extract design patterns, architectural decisions, and reusable techniques. Translates raw analysis into concrete improvement recommendations.",
+    "name": "agent-scaffolders",
+    "version": "2.0.0",
+    "description": "Meta-plugin containing the ecosystem generation primitives. Includes scaffolding for Agent Skills, Plugins, CLI sub-agents, autonomous GitHub workflows, Azure Foundry agents, and more.",
     "author": {
         "name": "Richard Fremmerlid"
     },
     "repository": "https://github.com/richfrem/agent-plugins-skills",
     "license": "MIT",
     "keywords": [
-        "plugin-analyzer",
-        "pattern-extraction",
-        "security-audit",
-        "maturity-model",
-        "skill-analysis"
+        "scaffolder",
+        "plugin-generator",
+        "skill-generator",
+        "agent-tooling"
     ],
     "capabilities": [
-        "code-analysis",
-        "plugin-audit",
-        "pattern-extraction"
+        "skill-scaffolding",
+        "plugin-scaffolding",
+        "code-generation"
     ]
 }

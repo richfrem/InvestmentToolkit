@@ -90,17 +90,25 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richf
 -   Node.js 18+
 -   Python 3.11+
 -   Access to this repository
-
 ### Quick Start
 The project includes a managed startup script for the entire suite:
 
 ```bash
-python3 manage.py
+python3 run_investment_toolkit.py
 ```
 
 This will automatically handle port conflicts, launch the backend API, and start the frontend dashboard.
 
-### Individual Service Management
+### 🤖 AI Orchestration
+You can manage the toolkit using specialized AI skills:
+- `run investment screener` — Launch the full suite (Frontend & Backend).
+- `setup questrade` — Interactive guide for API token configuration.
+
+### 🔐 Questrade Setup
+If your sync fails or this is a first-time setup:
+1. Ask the AI agent: "setup questrade"
+2. Follow the interactive prompts to generate and seed your token.
+
 If you prefer to run or debug the servers separately, use the following commands from the root directory:
 
 **1. Start Backend Server (Port 3001):**

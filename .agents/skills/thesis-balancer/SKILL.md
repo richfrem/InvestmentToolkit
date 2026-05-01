@@ -1,5 +1,6 @@
 ---
 name: thesis_balancer
+plugin: thesis-balancer
 description: >
   Monitor portfolio health, calculate drift, and enforce thesis alignment.
   Trigger when user asks to review their portfolio, check thesis compliance,

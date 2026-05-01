@@ -1,5 +1,6 @@
 ---
 name: user-story-capture
+plugin: exploration-cycle-plugin
 description: >
   Derives, groups, and refines user stories from exploration work, prototype behavior,
   and business context, with prioritization for the first implementation slice.
@@ -16,7 +17,7 @@ Derive structured user stories and acceptance criteria from exploration session 
 ## Usage
 
 ```bash
-python3 ./scripts/execute.py \
+python ./scripts/execute.py \
   --input <file> [<file2>...] \
   --format <standard|gherkin> \
   --output <output_file.md>
