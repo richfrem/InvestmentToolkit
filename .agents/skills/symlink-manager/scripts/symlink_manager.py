@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 symlink_manager.py — Cross-platform symlink creation and management.
 
@@ -70,14 +70,14 @@ class Manifest:
     def load(cls, path: Path) -> "Manifest":
         if not path.exists():
             return cls()
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
         links = [LinkEntry(**e) for e in data.get("links", [])]
         return cls(version=data.get("version", 1), links=links)
 
     def save(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(
                 {"version": self.version, "links": [asdict(e) for e in self.links]},
                 f,
@@ -185,10 +185,10 @@ def _create_windows_symlink(src: Path, dst: Path) -> tuple[bool, str, LinkStrate
     """
     # Calculate relative path from dst's parent directory to src
     try:
-        rel_path = os.path.relpath(src, dst.parent)
+        rel_path = os.path.relpath(src, dst.parent).replace("\\", "/")
     except ValueError:
         # On Windows, relpath can fail if src and dst are on different drives
-        rel_path = str(src)
+        rel_path = str(src).replace("\\", "/")
 
     if can_create_symlinks():
         try:
@@ -396,8 +396,8 @@ def cmd_create(args: argparse.Namespace) -> None:
 
     if ok:
         entry = LinkEntry(
-            src=str(src),
-            dst=str(dst),
+            src=str(src).replace("\\", "/"),
+            dst=str(dst).replace("\\", "/"),
             strategy=strategy,
             description=args.description or "",
         )

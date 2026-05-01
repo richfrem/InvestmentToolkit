@@ -1,5 +1,6 @@
 ---
 name: dependency-management
+plugin: dependency-management
 description: >
   Python dependency and environment management for multi-service or monorepo python backends.
   Use when: (1) adding, upgrading, or removing a Python package, (2) responding to Dependabot
@@ -30,8 +31,8 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 ## Plugin & Skill Script Architecture (Hub-and-Spoke)
 
 1. **DRY in source - Hub-and-Spoke.** One canonical script file lives at `plugins/<plugin-name>/scripts/`. Skills that need it use a file-level symlink in their own `scripts/` directory pointing back to the root (`ln -s ../../../scripts/foo.py`).
-2. **File-level symlinks only.** Never symlink entire directories. The Bridge Installer (`bridge_installer.py`) only resolves individual file-level symlinks. Directory-level symlinks are silently dropped by binary packaging tools.
-3. **Self-contained at install.** The installer (`bridge_installer.py`) resolves all symlinks to physical copies when deploying to `.agents/`. This ensures every skill is independently runnable regardless of the source mono-repo's presence.
+2. **File-level symlinks only.** Never symlink entire directories. The Bridge Installer (`plugin_installer.py`) only resolves individual file-level symlinks. Directory-level symlinks are silently dropped by binary packaging tools.
+3. **Self-contained at install.** The installer (`plugin_installer.py`) resolves all symlinks to physical copies when deploying to `.agents/`. This ensures every skill is independently runnable regardless of the source mono-repo's presence.
 4. **Windows Compatibility.** The `plugin_installer.py` uses a 3-tier strategy for Windows:
    - **Symlink** (if Developer Mode is on)
    - **Junction** (fallback for directory-level logic, though file-level is preferred)

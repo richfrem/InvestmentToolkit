@@ -1,5 +1,6 @@
 ---
 name: stock_valuation
+plugin: stock-valuation
 description: >
   Perform autonomous stock valuation. Produces a Projection object saved to
   backend/data/projections/{TICKER}.json AND a deep-dive research report saved

@@ -13,7 +13,7 @@ Changes here affect how *new* plugins and skills are bootstrapped.
 | **Execution Pattern** | `skills/create-skill/SKILL.md` | Add instructions on when to generate branching/phase logic. |
 | **Meta Pattern** | `plugins reference/agent-scaffolders/plugin.json` | Add entire new scaffolder skills (e.g., `create-connector`) |
 
-## Target 2: agent-skill-open-specifications
+## Target 2: agent-scaffolders
 
 Changes here affect the written law of the ecosystem.
 
@@ -24,7 +24,7 @@ Changes here affect the written law of the ecosystem.
 | **Anti-Pattern** | `skills/ecosystem-standards/SKILL.md` | Add new hard requirements to the code audit phase. |
 | **Anti-Pattern** | `agent-scaffolders/scripts/audit.py` | Codify the anti-pattern as an automatic failure in the `audit_plugin()` script. |
 
-## Target 3: agent-plugin-analyzer
+## Target 3: agent-scaffolders
 
 Changes here improve our ability to analyze future plugins.
 

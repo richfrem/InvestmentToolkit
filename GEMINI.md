@@ -23,11 +23,12 @@ InvestmentToolkit/
 │           └── utils/          ← QuestradeAPIClient.py, QuestradeTokenManager.py
 ├── plugins/                    ← Modular AI agent plugins
 │   ├── stock-valuation/        ← Bear/Base/Bull valuation model agent
-│   └── thesis-balancer/        ← Portfolio drift monitoring agent
+│   ├── thesis-balancer/        ← Portfolio drift monitoring agent
+│   └── toolkit-manager/        ← Orchestrator (token setup, startup)
 ├── .agents/                    ← Agent skills, prompts, and evaluations
 ├── .claude/                    ← Claude Code configuration
 ├── docs/                       ← Architecture decision records and guides
-└── manage.py                   ← Unified startup script (venv + npm + services)
+└── run_investment_toolkit.py   ← Unified startup script (venv + npm + services)
 ```
 
 ---
@@ -37,9 +38,22 @@ InvestmentToolkit/
 ### Complete Suite Startup (Recommended)
 Run from repo root:
 ```bash
-python3 manage.py
+python3 run_investment_toolkit.py
 ```
 *Creates the Python venv, installs all dependencies (npm & pip), builds the backend, and launches both services.*
+
+### 🤖 Orchestration Command
+You can also use the **Toolkit Manager** plugin to launch the suite:
+- `/start-screener` — Launch the Investment Screener suite (Frontend and Backend).
+
+---
+
+## 🔐 Authentication & Security (Questrade)
+The project uses a professional-grade brokerage sync engine for Questrade, prioritizing security through **AES-256-GCM hardware-backed encryption** and stateful token rotation.
+
+### 🤖 Interactive Token Setup
+Use the **Toolkit Manager** plugin to guide the user through the initial token setup or re-seeding:
+- `/setup-questrade` — Interactively guide the user through setting up their Questrade API refresh token.
 
 ### Individual Service Commands
 Run from `investment_screener/`:

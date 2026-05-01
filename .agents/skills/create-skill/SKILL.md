@@ -1,5 +1,6 @@
 ---
 name: create-skill
+plugin: agent-scaffolders
 description: >
   Scaffolds the filesystem structure for a new agent skill: creates the directory layout,
   writes a starter SKILL.md, generates evals/evals.json, references/, scripts/, and assets/
@@ -89,7 +90,7 @@ Create the confirmed directory structure. Standards enforced by `acceptance-crit
   ```bash
   ln -s ../../../scripts/<canonical_name>.py skills/<skill>/scripts/<name>.py
   ```
-  Verify the symlink resolved: `python3 -c "import os; print(os.path.exists('skills/<skill>/scripts/<name>.py'))"`
+  Verify the symlink resolved: `python -c "import os; print(os.path.exists('skills/<skill>/scripts/<name>.py'))"`
   must print `True`. On Windows/`core.symlinks=false` machines, git will check these out as
   plain-text "stand-in" files — run `bulk_symlink_fixer.py` to restore them after checkout.
 - **Starter SKILL.md** — frontmatter with `name`, `description` (use the purpose from Phase 1; **MUST NOT exceed 1024 characters**),
@@ -157,5 +158,6 @@ Scaffold complete. To verify routing accuracy and trigger description quality, e
 
 - [`acceptance-criteria.md`](references/acceptance-criteria.md) — structural pass/fail criteria
 - [`fallback-tree.md`](fallback-tree.md) — error handling procedures
+- **Architectural Decision Records (ADRs)** located at `references/ADRs/`. Always consult them for standards on plugin architecture, shared scripts, cross-plugin dependencies, symlinking, and loose coupling to avoid repeating yourself.
 - **`~~skill-improvement`** *(~~eval-gate capability — see CONNECTORS.md)*: TDD methodology, RED scenario protocol, eval gate.
 - **`~~eval-gate`** *(~~eval-gate capability — see CONNECTORS.md)*: autoresearch eval loop for skill optimization.

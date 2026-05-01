@@ -1,5 +1,6 @@
 ---
 name: create-sub-agent
+plugin: agent-scaffolders
 description: Design and scaffold a Claude Code sub-agent
 argument-hint: "[agent-name or use-case description]"
 allowed-tools: Bash, Read, Write
@@ -27,6 +28,14 @@ Follow the `create-sub-agent` skill workflow to design and generate a Claude Cod
 Agent `.md` file with complete YAML frontmatter (name, description with `<example>` blocks,
 model, maxTokens, color, permissions.allowedTools, permissions.deny) and a second-person
 system prompt targeting 500-3,000 characters.
+
+## Placement Rules
+
+**Plugin agents**: flat `.md` file — `plugins/<plugin-name>/agents/<agent-name>.md`
+- **No subdirectory.** Skills use `skills/<name>/SKILL.md` subdirectory format, but agents do NOT.
+- Confirmed against Anthropic official plugins (`feature-dev`, `code-simplifier`, `hookify`).
+
+**Local/project agents**: `.claude/agents/<agent-name>.md` (also flat, no subdirectory).
 
 ## Edge Cases
 

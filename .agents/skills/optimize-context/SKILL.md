@@ -1,5 +1,6 @@
 ---
 name: optimize-context
+plugin: claude-cli
 description: >-
   Reduces Claude Code context bloat across three dimensions: (1) duplicate skill
   deduplication — clears .claude/ copies since Claude Code already reads from
@@ -94,7 +95,7 @@ rm -rf .claude/skills/* .claude/agents/* .claude/commands/* .claude/hooks/*
 Run the scanner to confirm no remaining filesystem duplicates:
 
 ```bash
-python3 plugins/claude-cli/scripts/optimize_context.py [--dry-run if requested]
+python plugins/claude-cli/scripts/optimize_context.py [--dry-run if requested]
 ```
 
 **Exit 0**: Clean — report counts cleared and confirm scanner is satisfied.
@@ -105,7 +106,7 @@ python3 plugins/claude-cli/scripts/optimize_context.py [--dry-run if requested]
 > the shared multi-IDE store and is **never touched**. Gemini CLI, Copilot, and
 > Antigravity continue to work unchanged.
 
-> **Future installs**: `bridge_installer.py` has been updated to set
+> **Future installs**: `plugin_installer.py` has been updated to set
 > `"skills": None` for `.claude` — new installations will not recreate the
 > duplicate copies.
 
@@ -210,7 +211,7 @@ dispatches. For Copilot CLI: use `copilot gpt-5-mini` for free-tier passes.
 
 ```bash
 wc -l CLAUDE.md   # confirm ≤ 80 lines
-python3 plugins/claude-cli/scripts/optimize_context.py --dry-run  # confirm 0 skill duplicates
+python plugins/claude-cli/scripts/optimize_context.py --dry-run  # confirm 0 skill duplicates
 ```
 
 ---

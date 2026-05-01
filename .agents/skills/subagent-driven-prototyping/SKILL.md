@@ -1,5 +1,6 @@
 ---
 name: subagent-driven-prototyping
+plugin: exploration-cycle-plugin
 description: >
   Builds a prototype component by component, self-reviewing each component against the Discovery Plan before moving to the next. Invoked by prototype-builder after the layout direction is confirmed. Trigger phrases: "build the prototype", "let's build it", "start building". Also invoked by prototype-builder-agent after visual-companion confirms layout.
 allowed-tools: Bash, Read, Write
@@ -100,6 +101,35 @@ Read `exploration/exploration-dashboard.md` and check the `**Session Type:**` fi
 - **Brownfield (Type 2):** Build directly into the existing codebase. Before starting, read the project structure to understand existing patterns (component conventions, file locations, styling, API patterns). Match them. Write documentation of what was built to `exploration/prototype/components/` as `.md` files for tracking.
 - **If the session type field is missing, blank, or unrecognized:** Ask the SME: *"Should I build a standalone prototype, or add this directly into your existing codebase?"*
 
+## Agent Plugin Build Mode Detection
+
+> ⚠️ **HARD CONSTRAINT — read before touching any file.**
+
+Before entering the Build Loop, check the Discovery Plan's Intervention Type field:
+
+- If the output is described as an **"Agent Plugin"**, **"Claude Plugin"**, **"agentic plugin"**, or **"plugin"** with skills/agents/commands — this is **Agent Plugin Mode**.
+
+**If Agent Plugin Mode is detected:**
+
+1. **Redirect the build path away from `exploration/prototype/`.**
+   Build to `plugins/[plugin-name]/` at the project root — NOT `exploration/prototype/`.
+   Announce: *"Since we're building an Agent Plugin, I'll scaffold it into `plugins/[plugin-name]/` using the standard plugin structure."*
+
+2. **MUST use the ecosystem scaffolding tools — no raw `mkdir`, no hand-crafted markdown.**
+   You are **prohibited** from creating plugin directories or skill files with raw bash commands (`mkdir`, manual file writes).
+   Instead, invoke the `.agents/skills/create-plugin` and `.agents/skills/create-skill` skills from the local `agent-scaffolders` plugin:
+   ```
+   Skill: create-plugin
+   Skill: create-skill
+   ```
+   These enforce eval harnesses, directory templates, frontmatter standards, and `plugin.json` registration. Bypassing them produces non-compliant plugins that will fail audit.
+
+3. After the `create-plugin` scaffold is complete, ensure every generated skill and agent is wired into `.claude-plugin/plugin.json`. See the **plugin.json Binding Check** in the Assembly section below.
+
+4. After all components are built, run: `/agent-scaffolders:audit-plugin` to verify structural compliance before marking Phase 3 complete.
+
+**If NOT Agent Plugin Mode:** Follow the standard Greenfield or Brownfield build path below.
+
 ## Component Decomposition
 
 Based on the Discovery Plan and layout direction (if available), identify 3–6 logical components. Use plain-language names the SME will understand (e.g., "top navigation bar", "summary panel", "request form", "approval confirmation screen") — not technical terms.
@@ -147,6 +177,17 @@ After all components reach `COMPLETE` status:
    - All existing files modified (with paths)
    - How to test the feature (which URL, which command, etc.)
 
+**Agent Plugin Mode — plugin.json Binding Check (MANDATORY before completion):**
+1. Read `.claude-plugin/plugin.json` in the built plugin directory.
+2. For every skill directory under `skills/`, verify its entry appears in the `skills` list in `plugin.json`.
+3. For every agent file under `agents/`, verify its entry appears in the `agents` list in `plugin.json`.
+4. For every command file under `commands/`, verify its entry appears in the `commands` list in `plugin.json`.
+5. For every hook file under `hooks/`, verify its entry appears in the `hooks` list in `plugin.json`.
+6. **If any component is missing from `plugin.json`:** Add it now. Do NOT wait for the SME to notice.
+7. Report: *"All plugin components are registered in `plugin.json`. ✅"* or list any additions made.
+
+This check is non-optional. A plugin with unregistered components is a broken plugin.
+
 ## Completion Report
 
 Announce: "Your prototype is ready — Phase 3 is complete."
@@ -161,9 +202,29 @@ exists and `**Status:**` is not `Complete`):
    > "Please reply with exactly: **'Return to dashboard and start Phase 4 Handoff'**"
 2. **Immediately stop.** Do not attempt an automated skill switch. You must wait for the user to explicitly type the confirmation phrase to ensure they have actually reviewed the prototype before Phase 4 automation begins.
 
+After the user provides the confirmation phrase, output this machine-readable block:
+
+~~~
+## HANDOFF_BLOCK
+PHASE: 3
+STATUS: COMPLETE
+OUTPUT: exploration/prototype/index.html
+SESSION_TYPE: [Greenfield / Brownfield / Agent Plugin]
+COMPONENTS_BUILT: [count]
+WORKTREE: [branch name if worktree was created, or "none"]
+~~~
+
 If operating standalone (no dashboard file, or `**Status:** Complete`), the skill is complete.
 Report back to prototype-builder: all components are built, the entry point is at
 `exploration/prototype/index.html`, and the prototype is ready for the SME walkthrough.
+
+## Gotchas
+
+- **Worktree setup not idempotent**: If `superpowers:using-git-worktrees` was already called by the orchestrator, calling it again creates a nested worktree. Check if a worktree branch already exists before invoking the setup skill.
+- **Brownfield build leaves orphaned prototype/ directory**: For brownfield sessions, the actual code changes go into the real codebase but `.md` tracking files go to `exploration/prototype/components/`. If the session is later revisited, these stale `.md` files may describe code that has since been refactored. Mark tracking files with the build date.
+- **Agent Plugin Mode detection is order-sensitive**: The Discovery Plan Intervention Type check happens BEFORE Component Decomposition. If the model reads "plugin" in a different context (e.g., "we'll use the WordPress plugin ecosystem"), it may incorrectly trigger Agent Plugin Mode. The trigger condition is "Agent Plugin" or "agentic plugin" as the PRIMARY output type, not any mention of "plugin".
+- **plugin.json Binding Check must run before completion, not after**: The check is listed in the Assembly section but agents sometimes defer it to "after the build loop". Run the binding check as part of Agent Plugin Mode assembly, not as a post-completion step.
+- **Two-stage review skipped for direct mode**: In `direct` mode the self-review is supposed to run twice (plan alignment + quality). In practice only one pass is done. Explicitly label and separate the two review purposes when self-reviewing.
 
 ## Persona Enforcement
 

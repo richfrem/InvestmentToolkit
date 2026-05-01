@@ -1,8 +1,9 @@
 ---
 name: synthesize-learnings
+plugin: agent-scaffolders
 description: >
   Convert raw plugin analysis results into actionable improvement recommendations for agent-scaffolders
-  and agent-skill-open-specifications. Trigger with "synthesize learnings", "generate improvement
+  and agent-scaffolders. Trigger with "synthesize learnings", "generate improvement
   recommendations", "what should we improve in our scaffolders", "update our meta-skills based on
   these findings", or after completing a plugin analysis.
 allowed-tools: Bash, Read, Write
@@ -38,7 +39,7 @@ Improvements to the plugin/skill/hook/sub-agent scaffolding tools.
 - New scaffolder skills needed (e.g., creating connectors, reference files)
 - Improved acceptance criteria templates based on real-world examples
 
-### Target 2: `agent-skill-open-specifications`
+### Target 2: `agent-scaffolders`
 Improvements to ecosystem standards and authoritative source documentation.
 
 **What to look for:**
@@ -47,7 +48,7 @@ Improvements to ecosystem standards and authoritative source documentation.
 - Spec gaps where plugins do things the standards don't address
 - New pattern categories to add to ecosystem knowledge
 
-### Target 3: `agent-plugin-analyzer` (Self-Improvement)
+### Target 3: `agent-scaffolders` (Self-Improvement)
 Improvements to this analyzer plugin itself.
 
 **What to look for:**
