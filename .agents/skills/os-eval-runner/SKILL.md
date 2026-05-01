@@ -1,5 +1,6 @@
 ---
 name: os-eval-runner
+plugin: agent-agentic-os
 description: >
   Stateless evaluation engine that scores and gates skill improvement iterations using
   headless Python evaluation scripts. Use when the user says "evaluate this skill",
@@ -45,7 +46,7 @@ pip install -r ./requirements.txt
 
 See `./requirements.txt` for the dependency lockfile (currently empty — standard library only).
 
-> **Prerequisites:** The target skill must be inside a **git repository** (`git init` first if needed). Python 3.8+ must be available as `python3`.
+> **Prerequisites:** The target skill must be inside a **git repository** (`git init` first if needed). Python 3.8+ must be available as `python`.
 
 ---
 
@@ -96,11 +97,11 @@ Before running any loops in a new environment, ensure it is clean and correctly 
 2. **Initialize Local Git**: `git init && git add . && git commit -m "init"`.
 3. **Delete Old Config**: `rm -rf .agent .agents .gemini .claude`.
 4. **Install Skill**: Ensure **os-eval-runner** is installed. See [INSTALL.md](https://github.com/richfrem/agent-plugins-skills/blob/main/INSTALL.md).
-5. **Verify Python 3**: `python3 --version` (must be 3.8+).
+5. **Verify Python 3**: `python --version` (must be 3.8+).
 
 **Step 1 — Deploy templates into your experiment directory:**
 ```bash
-python3 ./scripts/init_autoresearch.py \
+python ./scripts/init_autoresearch.py \
     --experiment-dir <path/to/your-experiment-dir> \
     --mutation-target SKILL.md   # or any filename being mutated
 ```
@@ -111,8 +112,9 @@ This creates `references/program.md`, `evals/evals.json`, and `evals/results.tsv
 - `evals/evals.json` — replace the `REPLACE` placeholders with real test inputs and `should_trigger` values
 
 **Step 3 — Establish baseline and start the loop:**
+*(Best Practice: Run a functional CLI heartbeat using `run_agent.py` and a cheap model like `gpt-5-mini` to verify end-to-end connectivity before starting a long loop.)*
 ```bash
-python3 ./scripts/evaluate.py \
+python ./scripts/evaluate.py \
     --skill <path/to/experiment-dir> \
     --baseline --desc "initial baseline"
 git add <path/to/experiment-dir>/evals/
@@ -183,6 +185,8 @@ This skill strictly enforces the Karpathy 3-file autoresearch framework. Subject
 
 ## Phase 0: Intake Interview
 
+*(Note: Triple-Loop architectures require a functional CLI Heartbeat before starting unattended loops. If you are starting an unattended loop, ensure `run_agent.py` and your AI models like `gpt-5-mini` or `gemini-3-flash-preview` are reachable).*
+
 Run this before any evaluation or loop. If `$ARGUMENTS` provides enough information, confirm rather than re-ask. Otherwise ask each question that is unanswered.
 
 **Q1 — What are you evaluating?**
@@ -238,7 +242,7 @@ If not specified: "How many iterations? Or run until a target score — e.g. sto
 Check `<experiment-dir>/evals/evals.json`.
 - If exists: show the number of test cases.
 - If missing: "No evals.json found. I'll scaffold it from the template — you'll need to replace the placeholder test cases before the loop starts."
-  Run: `python3 ./scripts/init_autoresearch.py --experiment-dir <experiment-dir> --mutation-target <filename>`
+  Run: `python ./scripts/init_autoresearch.py --experiment-dir <experiment-dir> --mutation-target <filename>`
   Then pause for the user to fill in the test cases.
 
 **Q6 — (Loop mode only) Does `program.md` exist?**
@@ -284,8 +288,8 @@ The agent drives N iterations against a target skill. Start with:
 "Run the autoresearch loop on <path/to/target-skill> for N iterations"
 ```
 The agent will:
-1. Read `<target-skill>/references/program.md` (goal + locked files + NEVER STOP). If missing, run `python3 ./scripts/init_autoresearch.py --skill <target-path>` first.
-2. Establish a baseline if none exists: `python3 ./scripts/evaluate.py --skill <path/to/skill-folder> --baseline`
+1. Read `<target-skill>/references/program.md` (goal + locked files + NEVER STOP). If missing, run `python ./scripts/init_autoresearch.py --skill <target-path>` first.
+2. Establish a baseline if none exists: `python ./scripts/evaluate.py --skill <path/to/skill-folder> --baseline`
 3. Loop N times (default: run until told to stop per NEVER STOP directive). Each iteration:
 
    **Step A — Classify failure:** Read the latest row in `<skill>/evals/results.tsv` and the most recent trace file in `<skill>/evals/traces/`. Identify the dominant failure type: `false_positive`, `false_negative`, or `ambiguity`.
@@ -295,28 +299,23 @@ The agent will:
    The proposer prompt lives in `<experiment-dir>/references/copilot_proposer_prompt.md`. Read it each
    iteration — do not rebuild inline. If the file is missing, scaffold it first:
    ```bash
-   python3 ./scripts/init_autoresearch.py \
+   python ./scripts/init_autoresearch.py \
        --experiment-dir <experiment-dir> --mutation-target <filename>
    ```
 
-   Call pattern:
+   Call pattern (incorporating Triple-Loop Orchestrator stability patterns):
    ```bash
-   cp <skill>/SKILL.md /tmp/current-skill.md
-   cp <skill>/evals/evals.json /tmp/current-evals.json
-   copilot -p "$(cat <experiment-dir>/references/copilot_proposer_prompt.md)
-
-   ---CURRENT SKILL---
-   $(cat /tmp/current-skill.md)
-
-   ---EVAL SUITE---
-   $(cat /tmp/current-evals.json)
-
-   ---FAILURE ANALYSIS---
-   Type: <failure_type>
-   Summary: <one-sentence description of what the last iteration got wrong>" > /tmp/proposed-skill.md
+   # Explicitly delegate to a cost-effective CLI sub-agent (e.g., gpt-5-mini or gemini-flash)
+   # Use run_agent.py for stability instead of raw CLI calls to avoid quoting/piping fragility
+   python .agents/skills/copilot-cli-agent/scripts/run_agent.py \
+     <experiment-dir>/references/copilot_proposer_prompt.md \
+     <skill>/SKILL.md \
+     /tmp/proposed-skill.md \
+     "Optimize agentic skill routing accuracy. FAILURE TYPE: <failure_type>. Summary: <one-sentence description of what the last iteration got wrong>"
+     
    cp /tmp/proposed-skill.md <skill>/SKILL.md
    ```
-   Use `gemini` instead of `copilot` if specified. Fall back to self-proposing only if neither CLI is available. If the proposed file is identical to current, re-prompt with "try a different approach".
+   Use `gemini-cli-agent` instead of `copilot-cli-agent` if specified. Fall back to self-proposing only if neither CLI is available. If using raw CLI due to lack of `run_agent.py`, ensure prompts are piped appropriately. If the proposed file is identical to current, re-prompt with "try a different approach" and log a friction event via `context/kernel.py`.
 
    **Step B.1 — Evolve the proposer prompt (second-order mutation):**
    After 3 consecutive DISCARDs with the same failure type, consider that the *prompt itself* may be
@@ -336,7 +335,7 @@ The agent will:
 
    **Step C — Eval gate:**
    ```bash
-   python3 .scripts/evaluate.py --skill <path/to/skill-folder> --primary-metric <metric> --desc "what changed"
+   python .scripts/evaluate.py --skill <path/to/skill-folder> --primary-metric <metric> --desc "what changed"
    ```
    - exit 0 (KEEP): `git add . && git commit -m "keep: score=X <desc>" && git push origin main`
    - exit 1 (DISCARD): already auto-reverted, move to next iteration silently
@@ -363,12 +362,38 @@ Execute these phases in strict order:
 Do NOT attempt to "mentally simulate" whether the skill will route correctly. Subjective checking is banned.
 Run the loop gate against the target skill. It calls `eval_runner.py` internally and compares against the baseline:
 ```bash
-python3 ./scripts/evaluate.py --skill path/to/skill-folder --desc "what changed"
+python ./scripts/evaluate.py --skill path/to/skill-folder --desc "what changed"
 ```
 `eval_runner.py` is a pure scorer — it only outputs metrics, it does not determine KEEP/DISCARD. `evaluate.py` is the gate that reads the baseline, compares, writes one row to `<target-skill>/evals/results.tsv`, and exits 0 (KEEP) or 1 (DISCARD).
 
+### Phase 2b: Overfitting Gate (hard override — runs before Phase 3)
+
+After `evaluate.py` completes, read the scores from `evals/results.tsv` for the current
+iteration AND the previous baseline row. Apply this rule:
+
+```
+IF base_score > prev_base AND holdout_score < prev_holdout → OVERFIT → force DISCARD
+```
+
+This gate overrides any KEEP decision from `evaluate.py`. Overfitting is always a DISCARD
+regardless of how the lab was configured. The holdout set is a **required** input — a run
+without a holdout set cannot pass the overfitting gate and must be flagged as incomplete.
+
+```python
+# Pseudocode for the overfitting check
+if base_score > prev_base and holdout_score < prev_holdout:
+    print(f"OVERFIT DETECTED: base={base_score:.3f} (+{base_score - prev_base:.3f}) "
+          f"holdout={holdout_score:.3f} ({holdout_score - prev_holdout:.3f})")
+    print("Forcing DISCARD — overfitting always overrides KEEP.")
+    # Treat as DISCARD: revert SKILL.md and report failure
+    exit_code = 1
+```
+
+Report the overfitting event to the orchestrator with both base and holdout deltas so the
+pattern is visible in the experiment log.
+
 ### Phase 3: The Revert/Reset Protocol
-1. Check the exit code from `evaluate.py` (0 = KEEP, 1 = DISCARD).
+1. Check the exit code from `evaluate.py` (0 = KEEP, 1 = DISCARD) after overfitting gate.
 2. **If `DISCARD`**: `evaluate.py` already ran `git checkout -- SKILL.md` automatically before exiting 1. Verify the file is restored (read its frontmatter). Report the `DISCARD` failure to the orchestrator with the score delta.
 3. **If `KEEP`**: The change objectively improved the skill against the baseline. Leave the file on disk, proceed to Phase 4.
 
@@ -387,6 +412,7 @@ python3 ./scripts/evaluate.py --skill path/to/skill-folder --desc "what changed"
    ```
    Iteration <N>: <KEEP|DISCARD>  score=<X>  delta=<+/-Y>  f1=<Z>  — <desc>
    ```
+   *Note: Best practice is to also emit kernel intent/result events via `context/kernel.py` here to provide an observability trail for morning backport reviews.*
 4. If a target score threshold was set (e.g. `--until-score 0.95`) and `status == KEEP`: check whether `score >= threshold`. If yes, stop the loop and notify the user.
 
 ### Phase 5: Self-Assessment Survey (MANDATORY)

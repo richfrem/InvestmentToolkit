@@ -1,0 +1,5 @@
+[
+  { "id": "run-screener-trigger-1", "type": "positive", "prompt": "start the app", "should_trigger": true },
+  { "id": "run-screener-trigger-2", "type": "positive", "prompt": "run investment screener", "should_trigger": true },
+  { "id": "run-screener-negative-1", "type": "negative", "prompt": "rebalance my portfolio", "should_trigger": false }
+]

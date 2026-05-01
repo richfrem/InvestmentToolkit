@@ -1,0 +1,29 @@
+{
+  "sources": [
+    {
+      "source": "richfrem/agent-plugins-skills",
+      "plugins": [
+        "agent-agentic-os",
+        "agent-loops",
+        "agent-scaffolders",
+        "claude-cli",
+        "coding-conventions",
+        "context-bundler",
+        "copilot-cli",
+        "dependency-management",
+        "exploration-cycle-plugin",
+        "gemini-cli",
+        "link-checker",
+        "task-manager"
+      ]
+    },
+    {
+      "source": "/Users/richardfremmerlid/Projects/InvestmentToolkit/plugins",
+      "plugins": [
+        "stock-valuation",
+        "thesis-balancer",
+        "toolkit-manager"
+      ]
+    }
+  ]
+}

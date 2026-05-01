@@ -1,5 +1,6 @@
 ---
 name: mine-plugins
+plugin: agent-scaffolders
 description: >
   Trigger with "mine plugins", "analyze plugin collection", "run the full analysis pipeline",
   "inventory and analyze all plugins", "mine patterns from this directory", or when you want
@@ -69,7 +70,7 @@ Check if `$ARGUMENTS` points to:
 
 For each plugin in scope, run:
 ```bash
-python3 "scripts/inventory_plugin.py" --path "$ARGUMENTS" --format json
+python "scripts/inventory_plugin.py" --path "$ARGUMENTS" --format json
 ```
 
 > **Security scanning is enabled by default.** The inventory script runs credential detection,
@@ -100,8 +101,8 @@ If analyzing multiple plugins, identify:
 
 Invoke the `synthesize-learnings` skill to produce targeted recommendations for:
 1. `agent-scaffolders` — template and scaffold improvements
-2. `agent-skill-open-specifications` — standards and spec updates
-3. `agent-plugin-analyzer` — self-improvement of this analyzer
+2. `agent-scaffolders` — standards and spec updates
+3. `agent-scaffolders` — self-improvement of this analyzer
 4. Domain plugins (e.g., `oracle-legacy-system-analysis`) — transferable patterns for legacy code analysis
 
 ### Step 6: Deliver Report

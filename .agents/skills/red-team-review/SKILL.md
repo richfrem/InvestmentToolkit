@@ -1,5 +1,6 @@
 ---
 name: red-team-review
+plugin: agent-loops
 description: "(Industry standard: Review and Critique Pattern) Primary Use Case: Iterative generation paired with adversarial review, continuing until an 'Approved' verdict is reached. Orchestrated adversarial review loop. Use when: research, designs, architectures, or decisions need to be reviewed by red team agents (human, browser, or CLI). Iterates in rounds of research → bundle → review → feedback until approved."
 allowed-tools: Bash, Read, Write
 ---
@@ -37,7 +38,8 @@ An iterative review loop where research is bundled via `context-bundler` and dis
 ## Dependencies
 
 - **`context-bundler`** — Required for creating review packets
-- **Personas** — Adversarial personas in `personas/` directory (e.g., `security-audit.md`, `architect-review.md`)
+- **Adversarial personas**: user-supplied system prompt, or from an installed CLI agent plugin
+  (e.g., agent-personas). The `personas/` directory is no longer bundled with agent-loops.
 
 ## Diagram
 

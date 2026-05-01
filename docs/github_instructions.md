@@ -45,7 +45,7 @@ python3 QuestradeDataEngine.py --seed "<refresh_token>"
 - If sync fails with token rotation errors, re-seed a valid refresh_token and re-run the sync.
 
 6) Useful commands
-- Full managed start: python3 manage.py
+- Full managed start: python3 run_investment_toolkit.py
 - One-time seed: python3 investment_screener/backend/src/QuestradeDataEngine.py --seed "<refresh_token>"
 
 Notes: This file was generated from GEMINI.md and the Questrade setup guide; do not commit tokens or .questrade_cache. Update GEMINI.md and docs/architecture/Questrade/questrade_token_setup.md if process changes.

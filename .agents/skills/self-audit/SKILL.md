@@ -1,9 +1,10 @@
 ---
 name: self-audit
+plugin: agent-scaffolders
 description: >
   Trigger with "run self-audit", "test the analyzer", "regression test the plugin analyzer",
-  "audit the agent-plugin-analyzer", or "verify the analyzer works correctly". Runs the
-  analyze-plugin skill against the agent-plugin-analyzer itself and its test fixtures as a
+  "audit the agent-scaffolders", or "verify the analyzer works correctly". Runs the
+  analyze-plugin skill against the agent-scaffolders itself and its test fixtures as a
   regression smoke test. Use this after making changes to the analyzer to verify nothing broke.
 user-invocable: true
 argument-hint: "[optional: path to plugin]"
@@ -26,19 +27,19 @@ See `./requirements.txt` for the dependency lockfile (currently empty — standa
 
 # Self-Audit: Analyze the Analyzer
 
-Run the `analyze-plugin` skill against the `agent-plugin-analyzer` itself and the test fixtures. This is a regression smoke test that verifies the analyzer produces consistent, expected results.
+Run the `analyze-plugin` skill against the `agent-scaffolders` itself and the test fixtures. This is a regression smoke test that verifies the analyzer produces consistent, expected results.
 
 ## Execution Steps
 
 1. **Run inventory on self (security scanning is on by default):**
    ```bash
-   python3 ./scripts/inventory_plugin.py --path . --format json
+   python ./scripts/inventory_plugin.py --path . --format json
    ```
 
 2. **Run scanner against test fixtures:**
    ```bash
-   python3 ./scripts/inventory_plugin.py --path ./tests/gold-standard-plugin --format json
-   python3 ./scripts/inventory_plugin.py --path ./tests/flawed-plugin --format json
+   python ./scripts/inventory_plugin.py --path ./tests/gold-standard-plugin --format json
+   python ./scripts/inventory_plugin.py --path ./tests/flawed-plugin --format json
    ```
 
 3. **Validate deterministic scanner results:**
@@ -60,7 +61,7 @@ Run the `analyze-plugin` skill against the `agent-plugin-analyzer` itself and th
 
    **To run assertions programmatically:**
    ```bash
-   python3 ./scripts/assert_audit.py --fixture flawed --json-output <path-to-scan-output.json>
+   python ./scripts/assert_audit.py --fixture flawed --json-output <path-to-scan-output.json>
    ```
 
 4. **Run the full 6-phase analysis on each fixture:**

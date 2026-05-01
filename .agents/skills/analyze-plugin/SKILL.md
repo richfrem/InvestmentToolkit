@@ -1,5 +1,6 @@
 ---
 name: analyze-plugin
+plugin: agent-scaffolders
 description: >
   Systematically analyze agent plugins and skills to extract design patterns, architectural
   decisions, and reusable techniques. Trigger with "analyze this plugin", "mine patterns from",
@@ -74,7 +75,7 @@ hardcoded credentials, missing required fields), flag them prominently in the fi
 
 Run the deterministic inventory script first:
 ```bash
-python3 "scripts/inventory_plugin.py" --path <plugin-dir> --format json
+python "scripts/inventory_plugin.py" --path <plugin-dir> --format json
 ```
 
 If the script is unavailable, manually enumerate:
@@ -209,4 +210,8 @@ Generate a structured markdown report. For single plugins, output inline. For co
 **Iteration Directory Isolation**: All analysis reports must be saved into explicitly versioned and isolated outputs (e.g. `analysis-reports/target-run-1/`) to prevent destructive overrides on re-runs.
 **Asynchronous Benchmark Metric Capture**: Once the audit run completes, immediately log the resulting `total_tokens` and `duration_ms` to a `timing.json` file to calculate the cost of the deep-dive analysis.
 
-Always end with **Virtuous Cycle Recommendations**: specific, actionable improvements for `agent-plugin-analyzer` (this plugin), `agent-scaffolders`, and `agent-skill-open-specifications` based on patterns discovered.
+Always end with **Virtuous Cycle Recommendations**: specific, actionable improvements for `agent-scaffolders` (this plugin), `agent-scaffolders`, and `agent-scaffolders` based on patterns discovered.
+
+## References
+
+- **Architectural Decision Records (ADRs)** located at `references/*.md`. Always consult them (especially ADR 001-006) to evaluate if the analyzed plugin follows our standards for shared scripts, cross-plugin dependencies, symlinking patterns, and loose coupling. Use these as the source of truth for "Quality" and "Structural Analysis" assessments to avoid repeating yourself or missing standard patterns.

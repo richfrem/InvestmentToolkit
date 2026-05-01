@@ -1,9 +1,11 @@
 ---
 name: manage-marketplace
+plugin: agent-scaffolders
 description: >
   This skill should be used when the user wants to "create a marketplace", 
-  "setup a marketplace catalog", "scaffold marketplace.json", or "initialize 
-  a plugin registry". Use this even if they just mention "setting up a marketplace".
+  "setup a marketplace catalog", "scaffold marketplace.json", "initialize 
+  a plugin registry", or "configure a Gemini CLI extension". Use this even if 
+  they just mention "setting up a marketplace".
 allowed-tools: Bash, Read, Write
 ---
 
@@ -71,9 +73,18 @@ Note: field is `path` (not `subdir`), and the key is `source` (not `type`). Also
 ```
 The `.git` suffix is optional — Azure DevOps and AWS CodeCommit URLs without it work fine.
 
-3.  Set **`strict`** mode:
-    - `strict: true` (default) — plugin's own `plugin.json` is authoritative; marketplace entry can supplement with additional components.
-    - `strict: false` — marketplace entry IS the entire definition; plugin must NOT also have a `plugin.json` declaring components (conflict = plugin fails to load).
+3.  Set **`strict`** mode (always set this explicitly — never rely on the default):
+
+    | Value | Requires | Behavior |
+    |-------|----------|----------|
+    | `true` *(default when omitted)* | Plugin **must** have its own `plugin.json` | `plugin.json` is authoritative; marketplace entry supplements it |
+    | `false` | Plugin **must NOT** have a `plugin.json` that declares components | Marketplace entry IS the entire definition |
+
+    **Both failure modes cause the entire plugin to silently fail to load:**
+    - `strict: true` (or omitted) + **no** `plugin.json` → load failure (authority source missing)
+    - `strict: false` + plugin **has** a `plugin.json` declaring components → conflict = load failure
+
+    > **Best practice for monorepo plugins:** Always set `"strict": true` explicitly and ensure your plugin directory has a `.claude-plugin/plugin.json`. Never omit `strict` and assume the default will work.
 
 4.  Optional: use `metadata.pluginRoot` to shorten relative source paths. Setting `"pluginRoot": "./plugins"` lets you write `"source": "formatter"` instead of `"source": "./plugins/formatter"`.
 
@@ -284,6 +295,34 @@ Shortcuts: `/plugin market` = `/plugin marketplace`, `rm` = `remove`.
 
 ### Watch Out
 Skills at `plugins/<plugin>/skills/<skill>/SKILL.md` (4 levels deep) may not be crawled. If not indexed after first sync, add a top-level `skills/` directory mirroring the skill folders.
+
+---
+
+## Step 6: Universal Marketplace Compatibility (Gemini)
+
+To ensure your repository is installable as a native extension suite in the **Gemini CLI**, you must provide a manifestation file in the root directory.
+
+### 1. `gemini-extension.json`
+The manifest defines the identity and behavior of the extension:
+```json
+{
+  "name": "my-extension-id",
+  "version": "1.0.0",
+  "description": "Universal Agent Plugins & Skills extension.",
+  "contextFileName": "GEMINI.md"
+}
+```
+
+### 2. `GEMINI.md`
+The `contextFileName` (usually `GEMINI.md`) serves as the "Instruction Profile" for the session.
+- Consolidated rules (coding conventions, discipline).
+- Specific personas or logic for the plugins in the suite.
+- If missing, Gemini may fail to load the extension instructions.
+
+### Gemini Installation Command
+```bash
+gemini extensions install https://github.com/owner/repo
+```
 
 ---
 

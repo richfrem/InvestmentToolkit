@@ -1,5 +1,6 @@
 ---
 name: symlink-manager
+plugin: link-checker
 description: >
   Create, audit, repair, and document cross-platform symlinks that work correctly
   on both Windows and macOS/Linux. Use this skill whenever the user mentions symlinks,
@@ -89,7 +90,7 @@ This prompts for source and destination paths and uses the Python symlink manage
 Or use the Python script directly (works on Windows, macOS, and Linux):
 ```bash
 # Create a single symlink (automatically detects OS)
-python ./scripts/symlink_manager.py create --src plugins/plugin-manager/scripts/bridge_installer.py --dst plugins/plugin-manager/skills/plugin-installer/scripts/bridge_installer.py
+python ./scripts/symlink_manager.py create --src plugins/plugin-manager/scripts/plugin_installer.py --dst plugins/plugin-manager/skills/plugin-installer/scripts/plugin_installer.py
 
 # Re-create ALL links from the manifest
 python ./scripts/symlink_manager.py restore
@@ -108,7 +109,7 @@ python ./scripts/symlink_manager.py diagnose
 - ✓ No external shell scripts needed — pure Python with standard library only
 
 **Critical: If symlinks were created as hardlinks or plain-text files:**
-1. Delete them: `rm plugins/plugin-manager/skills/*/scripts/bridge_installer.py`
+1. Delete them: `rm plugins/plugin-manager/skills/*/scripts/plugin_installer.py`
 2. Enable Developer Mode on Windows (Settings → System → For Developers)
 3. Set git config: `git config core.symlinks true`
 4. Use `/create-sym-link` command or `python ./scripts/symlink_manager.py create ...`
@@ -158,6 +159,7 @@ python ./scripts/symlink_manager.py restore
 - `references/troubleshooting.md` — Common error messages and fixes
 - `scripts/symlink_manager.py` — The cross-platform Python script
 - `.agent/rules/symlink-cross-platform.md` — Repository-wide symlink best practices and requirements
+- **Architectural Decision Records (ADRs)** located at `references/ADRs/`. Always consult them for standards on shared scripts, cross-plugin dependencies, symlinking patterns and loose coupling to avoid repeating yourself.
 
 Read `references/troubleshooting.md` when the user reports specific error messages.
 

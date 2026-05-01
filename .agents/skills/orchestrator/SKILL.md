@@ -1,5 +1,6 @@
 ---
 name: orchestrator
+plugin: agent-loops
 description: "(Industry standard: Routing Agent / Orchestrator Pattern) Primary Use Case: Analyzing an ambiguous trigger and routing it to one of the specific specialized implementations. Routes triggers to the appropriate agent-loop pattern. Use when: assessing a task, research need, or work assignment and deciding whether to run a simple learning loop, red team review, dual-loop delegation, or parallel swarm. Manages shared closure (seal, persist, retrospective, self-improvement)."
 allowed-tools: Bash, Read, Write
 ---
@@ -118,7 +119,7 @@ python ./scripts/agent_orchestrator.py correct --packet handoffs/task_packet_NNN
 ### 4. Parallel Execution (Agent Swarm)
 For bulk operations or partitioned tasks, use the `swarm_run.py` script from the `agent-swarm` skill.
 ```bash
-python3 ./swarm_run.py --job <JOB_FILE> [--resume]
+python ./swarm_run.py --job <JOB_FILE> [--resume]
 ```
 This is the designated route for all Pattern 4 triggers.
 
@@ -166,18 +167,13 @@ Once the loop is complete and learning has been extracted, the Orchestrator MUST
 
 These are environment-specific actions owned entirely by the **Primary Agent**.
 
-#### Chained Command Handoff
+#### Session Closure
 
-When the Orchestrator loop is complete, it must use **Chained Command Invocation** to offer the user the explicit next steps to seal the ecosystem. Output this block:
+**Session Closure**
 
-```markdown
-## Orchestration Complete. Offer Next Steps:
-
-The Inner Loop has successfully executed and verified the task. Please trigger the closure sequence:
-- **"/sanctuary-seal"**: To capture the learning snapshot and update RLMs.
-- **"/sanctuary-persist"**: To backup the soul to HuggingFace.
-- **"Run Retrospective"**: If you wish to review the friction log.
-```
+Execution complete. Run your environment's standard session closure sequence. If you are
+using `agent-agentic-os`, trigger `os-improvement-loop` closure. If you are in a standalone
+project, save any outputs to your preferred persistence location and close the session.
 
 ---
 

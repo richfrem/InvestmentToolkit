@@ -1,5 +1,6 @@
 ---
 name: audit-plugin
+plugin: agent-scaffolders
 description: >
   This skill should be used when the user asks to "audit a plugin", "validate my plugin",
   "check plugin structure", "verify plugin is correct", "validate .claude-plugin/plugin.json", "check if
@@ -86,7 +87,7 @@ Claude Code from loading the plugin at all. These are silent failures — the pl
 simply doesn't load with no useful error until you run `/doctor`.
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/fix_plugin_load_errors.py <plugin_root>
+python ${CLAUDE_PLUGIN_ROOT}/scripts/fix_plugin_load_errors.py <plugin_root>
 ```
 
 **What it fixes automatically:**
@@ -107,7 +108,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/fix_plugin_load_errors.py <plugin_root>
     "SessionStart": [
       {
         "matcher": "",
-        "hooks": [{ "type": "command", "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/script.py" }]
+        "hooks": [{ "type": "command", "command": "python ${CLAUDE_PLUGIN_ROOT}/hooks/script.py" }]
       }
     ]
   }
@@ -135,7 +136,7 @@ but contain only a relative path (e.g. `../../../scripts/execute.py`). They are 
 **Run the bulk scanner** from the link-checker plugin:
 
 ```bash
-python3 plugins/link-checker/scripts/bulk_symlink_fixer.py plugins/<plugin-name>
+python plugins/link-checker/scripts/bulk_symlink_fixer.py plugins/<plugin-name>
 ```
 
 The scanner detects both:
@@ -189,7 +190,7 @@ After plugin-validator, run targeted scripts for detailed checks:
 
 **Validate each agent file:**
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/validate_agent.py agents/my-agent.md
+python ${CLAUDE_PLUGIN_ROOT}/scripts/validate_agent.py agents/my-agent.md
 ```
 Checks: frontmatter structure, required fields (name/description/model/color), name format
 (3-50 chars, lowercase + hyphens), description has `<example>` blocks, system prompt
@@ -197,7 +198,7 @@ length (minimum 20 chars, recommended 500-3,000).
 
 **Validate hooks.json schema:**
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/validate_hook_schema.py hooks/hooks.json
+python ${CLAUDE_PLUGIN_ROOT}/scripts/validate_hook_schema.py hooks/hooks.json
 ```
 Checks: JSON syntax, valid event names, each hook has `matcher` + `hooks` array,
 hook type is `command` or `prompt`, command hooks reference existing scripts with
@@ -205,7 +206,7 @@ hook type is `command` or `prompt`, command hooks reference existing scripts wit
 
 **Test a hook script directly:**
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/test_hook.py \
+python ${CLAUDE_PLUGIN_ROOT}/scripts/test_hook.py \
   --hook hooks/scripts/validate.py \
   --event PreToolUse \
   --input '{"tool_name": "Write", "tool_input": {"file_path": "src/app.py"}}'
@@ -213,7 +214,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/scripts/test_hook.py \
 
 **Lint hook scripts for common issues:**
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/scripts/hook_linter.py hooks/
+python ${CLAUDE_PLUGIN_ROOT}/scripts/hook_linter.py hooks/
 ```
 
 ---
@@ -276,6 +277,12 @@ grep -rn "/Users/\|/home/" --include="*.json" --include="*.sh" .
 **Keep running until: 0 critical issues, warnings addressed or documented.**
 
 ---
+
+---
+
+## Standards & References
+
+- **Architectural Decision Records (ADRs)** located at `references/*.md`. Always consult them (especially ADR 001-006) to verify if the plugin follows our standards for shared scripts, cross-plugin dependencies, symlinking patterns, and loose coupling. A plugin that violates these ADRs (e.g. duplicates shared scripts instead of symlinking) is considered structurally non-compliant.
 
 ## Standards Reference
 
