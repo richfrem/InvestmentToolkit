@@ -8,13 +8,13 @@
     "plugins": [
         {
             "name": "stock-valuation",
-            "description": "AI-driven autonomous stock valuation engine. Produces Bear/Base/Bull scenario projections, persists structured JSON for the app UI, and generates deep-dive research reports with interactive Q&A.",
+            "description": "AI-driven autonomous stock valuation and research engine. Skills: /evaluate-stock (Bear/Base/Bull DCF projections with analyticsLog), /research-stock (qualitative sweep with Class A/B/C/D change classification and decision gate before re-valuation).",
             "source": "./plugins/stock-valuation",
             "strict": true
         },
         {
             "name": "thesis-balancer",
-            "description": "Portfolio health monitor and strategic thesis alignment engine. Detects drift, flags Thesis Breaker conditions, and resolves Strategic Conflicts.",
+            "description": "Portfolio thesis health and rebalancing suite. Skills: /review-portfolio (drift monitor, pillar conviction audit, thesis formula health score), /strategic-review (adversarial thesis challenger with valuation-grounded formula improvement proposals), /rebalance (valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift).",
             "source": "./plugins/thesis-balancer",
             "strict": true
         },
