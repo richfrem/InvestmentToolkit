@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "LBRT",
+    "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e5f",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T18:40:00.000Z",
+    "updatedAt": "2026-05-02T18:40:00.000Z",
+    "name": "AI Deep Dive — LBRT — 2026-05-02",
+    "rationale": "Liberty Energy (LBRT) has seen its stock price surge 181% over the past year despite a significant deterioration in core fundamentals. Free cash flow has collapsed from $411M to just $14M, and net margins have compressed to a razor-thin 3.7%. At a $5.3B market cap and trading at a steep 92x forward earnings, the market is pricing in a massive margin recovery that contradicts its low Piotroski F-Score (3). Weighted fair value of $16.54 suggests the stock is severely overvalued and due for a major correction.",
+    "snapshot": {
+      "price": 32.68,
+      "currency": "USD",
+      "shares": 163191416,
+      "revenue": 4006116000,
+      "lastActualPS": 1.33,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 4.5,
+      "analystMarginEstimate": 3.71
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": -2,
+        "netMargin": 1,
+        "exitPE": 10,
+        "qualityMultiplier": 0.8,
+        "moatScore": 1,
+        "managementScore": 2,
+        "shareChange": 5,
+        "scenarioPrice": 1.7
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 5,
+        "netMargin": 4,
+        "exitPE": 15,
+        "qualityMultiplier": 1,
+        "moatScore": 2,
+        "managementScore": 2,
+        "shareChange": 0,
+        "scenarioPrice": 16.54
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 10,
+        "netMargin": 8,
+        "exitPE": 20,
+        "qualityMultiplier": 1.1,
+        "moatScore": 3,
+        "managementScore": 3,
+        "shareChange": -5,
+        "scenarioPrice": 53.6
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "LBRT presents a dangerous divergence between stock price momentum and underlying business health. While the top line sits at a respectable $4B, operational efficiency is plunging. The Piotroski F-Score of 3 highlights weak cash flow generation and deteriorating margins (gross margins fell from 20% to 8% in two years). At 92x forward P/E, the market is treating this cyclical oilfield services company like a high-growth tech stock. The base case ($16.54 PV) models a return to historical averages (5% growth, 4% margins), implying a dramatic 50% downside from current levels.",
+      "fairValue": 18.75,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T18:40:00.000Z",
+      "researchReport": "LBRT_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

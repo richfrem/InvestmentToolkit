@@ -192,8 +192,8 @@ def fetch_financial_data(ticker_symbol):
         cashflow = stock.cashflow
         
         if financials.empty:
-             print(json.dumps({"error": "Insufficient financial data"}), file=sys.stderr)
-             pass 
+            print(json.dumps({"error": "Insufficient financial data"}), file=sys.stderr)
+            sys.exit(1)
 
         # SORT FINANCIALS BY DATE (Oldest -> Newest)
         financials = financials.reindex(sorted(financials.columns), axis=1)
@@ -353,10 +353,26 @@ def fetch_financial_data(ticker_symbol):
         piotroski_details['asset_turnover_improving'] = asset_turnover > prev_asset_turnover
         if asset_turnover > prev_asset_turnover: piotroski_score += 1
 
-        # --- Construct Final Result ---
+        # --- Derive effective diluted share count from reported EPS + Net Income ---
+        # shares_outstanding (from yfinance) returns only the primary share class for
+        # multi-class structures (e.g. GOOG Class C = 5.4B vs actual diluted 12.1B).
+        # Using net_income / basic_eps gives the true diluted count used in reported EPS.
+        shares_primary = info.get('sharesOutstanding', 0)
+        shares_diluted = shares_primary  # default
+        latest_eps = hist_eps[latest_idx] if hist_eps and hist_eps[latest_idx] != 0 else 0
+        latest_ni = hist_net_income[latest_idx] if hist_net_income else 0
+        if latest_eps != 0 and latest_ni != 0:
+            derived_shares = abs(latest_ni / latest_eps)
+            # Use derived if it differs materially (>15%) from the API value
+            if shares_primary == 0 or abs(derived_shares - shares_primary) / max(shares_primary, derived_shares) > 0.15:
+                shares_diluted = derived_shares
+
+        market_cap = info.get('marketCap', 0)
+        current_price = info.get('currentPrice', 0)
+        last_actual_ps = market_cap / current_revenue if current_revenue else 0
         result = {
             "symbol": ticker_symbol,
-            "price": info.get('currentPrice', 0),
+            "price": current_price,
             "currency": info.get('currency', 'USD'),
             "profile": {
                 "sector": info.get('sector', 'Unknown'),
@@ -364,12 +380,15 @@ def fetch_financial_data(ticker_symbol):
                 "description": info.get('longBusinessSummary', '')
             },
             "metrics": {
+                "price": current_price,
                 "pe_ratio": trailing_pe,
                 "forward_pe": forward_pe,
-                "market_cap": info.get('marketCap', 0),
+                "market_cap": market_cap,
                 "beta": info.get('beta', 0),
                 "revenue": current_revenue,
-                "shares_outstanding": info.get('sharesOutstanding', 0),
+                "shares_outstanding": shares_primary,
+                "shares_diluted": shares_diluted,
+                "last_actual_ps": round(last_actual_ps, 2),
                 "revenue_growth": round(final_rev_growth * 100, 2),
                 "profit_margin": round(profit_margin * 100, 2)
             },
@@ -379,7 +398,9 @@ def fetch_financial_data(ticker_symbol):
                     "score": round(rule_of_40_score, 2),
                     "revenue_growth": round(final_rev_growth * 100, 2),
                     "ebitda_margin": round(ebitda_margin * 100, 2),
-                    "is_saas": info.get('sector') == 'Technology'
+                    "is_saas": info.get('industry', '') in (
+                        'Software—Application', 'Software—Infrastructure'
+                    )
                 },
                 "piotroski_f_score": {
                     "score": piotroski_score,

@@ -454,7 +454,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-01T14:56:49.314940Z",
-      "updatedAt": "2026-05-02T16:49:17.537569Z"
+      "updatedAt": "2026-05-02T18:33:57.738725Z"
     },
     "red-team-bundler": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -482,7 +482,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-01T14:56:49.314940Z",
-      "updatedAt": "2026-05-02T16:49:17.537569Z"
+      "updatedAt": "2026-05-02T18:33:57.738725Z"
     },
     "self-audit": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -496,7 +496,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T15:53:47.497060Z",
-      "updatedAt": "2026-05-02T16:49:17.444959Z"
+      "updatedAt": "2026-05-02T18:33:57.645712Z"
     },
     "subagent-driven-prototyping": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -545,7 +545,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T15:53:47.553814Z",
-      "updatedAt": "2026-05-02T16:49:17.492319Z"
+      "updatedAt": "2026-05-02T18:33:57.692987Z"
     },
     "todo-check": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
