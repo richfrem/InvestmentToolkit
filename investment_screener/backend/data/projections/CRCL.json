@@ -1,0 +1,115 @@
+[
+  {
+    "ticker": "CRCL",
+    "id": "e2a3b4c5-d6e7-8f9a-0b1c-2d3e4f5a6b7c",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T19:30:00.000Z",
+    "updatedAt": "2026-05-02T19:30:00.000Z",
+    "name": "AI Deep Dive — CRCL — 2026-05-02",
+    "rationale": "Circle (CRCL) has emerged as a primary market infrastructure layer for stablecoins (USDC) and blockchain applications. Despite currently negative net margins (-2.5% TTM), its massive $2.7B top line and highly scalable payment network support a $26.5B valuation. If Circle successfully captures global cross-border payments and stablecoin yields, the margin expansion potential is vast. A weighted fair value of $142.29 implies 42% upside, making it a BUY.",
+    "snapshot": {
+      "price": 99.7,
+      "currency": "USD",
+      "shares": 157972727,
+      "revenue": 2746642000,
+      "lastActualPS": 9.65,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 76.9,
+      "analystMarginEstimate": -2.53
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.3,
+        "growthRate": 15,
+        "netMargin": 5,
+        "exitPE": 15,
+        "qualityMultiplier": 0.8,
+        "moatScore": 3,
+        "managementScore": 3,
+        "shareChange": 5,
+        "scenarioPrice": 6.06
+      },
+      "base": {
+        "weight": 0.5,
+        "growthRate": 25,
+        "netMargin": 20,
+        "exitPE": 25,
+        "qualityMultiplier": 1,
+        "moatScore": 4,
+        "managementScore": 4,
+        "shareChange": 2,
+        "scenarioPrice": 88.63
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 40,
+        "netMargin": 30,
+        "exitPE": 35,
+        "qualityMultiplier": 1.2,
+        "moatScore": 5,
+        "managementScore": 5,
+        "shareChange": -2,
+        "scenarioPrice": 480.79
+      }
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used metrics.shares_diluted (157.9M) in snapshot for schema compliance, but DCF calculator auto-derived 265.9M from market cap and price due to massive >60% discrepancy. The mkt cap implied share count ensures valuation math accuracy.",
+      "marginAnchor": "4yr avg is highly volatile (-99% to 18%). TTM -2.5% used as anchor but projected to expand significantly as the platform scales and regulatory clarity emerges for stablecoin reserves.",
+      "growthDerivation": "Y1 +14.1% / Y2 +38.3% blended 26.2%; base 25% aligns tightly with near-term trajectory without over-extrapolating the 76% TTM hypergrowth.",
+      "sectorBenchmarkRow": "Financial Services - Capital Markets / FinTech",
+      "dataQualityFlags": [
+        "Massive discrepancy between reported diluted shares (157M) and market cap implied shares (265.9M). Likely multi-class or tokenized equity structure.",
+        "High historical margin volatility (-99% to 18% to -2.5%)."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 3133228520,
+        "y2RevEstimate": 4332946350,
+        "y1GrowthPct": 14.08,
+        "y2GrowthPct": 38.29,
+        "blendedConsensusPct": 26.18,
+        "analystTargetMean": 128.65,
+        "analystCount": 21
+      },
+      "historicalRevenue": [
+        0,
+        772052000,
+        1450466000,
+        1676253000,
+        2746642000
+      ],
+      "historicalNetMargins": [
+        0,
+        -99.58487252154,
+        18.44662336104397,
+        9.28660530361467,
+        -2.5306537947064087
+      ],
+      "historicalEPS": [
+        0,
+        -3.888014,
+        0.227097,
+        0.081374,
+        -0.44
+      ],
+      "confidenceBreakdown": "0.75/1.0 - Base: 1.0. [-0.15 for share count discrepancy and extreme historical margin volatility, -0.10 for regulatory risk on stablecoins, +0.05 for strong FCF conversion]."
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "Circle Internet Group (CRCL) sits at the foundation of the programmable money revolution as the issuer of USDC. While GAAP net margins are currently slightly negative (-2.5%), the company is generating massive free cash flow ($485M TTM). At 9.6x trailing sales, the market is pricing it as a high-quality FinTech platform. As stablecoin adoption broadens and Circle monetizes interest on reserve assets along with transaction network fees, operating leverage will be tremendous. The base case ($88.63 PV) assumes 25% revenue growth and 20% terminal margins. The bull case ($480 PV) models the network effect of USDC becoming a global settlement standard, driving 40% growth and software-like 30% margins. The weighted fair value implies strong upside.",
+      "fairValue": 142.29,
+      "action": "BUY",
+      "analyzedAt": "2026-05-02T19:30:00.000Z",
+      "researchReport": "CRCL_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

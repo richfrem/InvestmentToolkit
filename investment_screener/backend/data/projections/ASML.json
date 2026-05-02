@@ -1,0 +1,134 @@
+[
+  {
+    "ticker": "ASML",
+    "id": "e0b96b0f-b4df-41ed-a16f-7b1bb363a033",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T19:16:32.961Z",
+    "updatedAt": "2026-05-02T19:16:32.961Z",
+    "name": "AI Deep Dive — ASML — 2026-05-02",
+    "rationale": "ASML holds a structural monopoly on Extreme Ultraviolet (EUV) lithography, the critical bottleneck technology required for all leading-edge semiconductor manufacturing. This gives them immense pricing power, reflected in their highly stable ~30% net margins. However, with a trailing P/E of ~47x and a market cap of $550B, the market is pricing in flawless execution of the next-generation High-NA EUV rollout alongside sustained strong demand from foundries. At a conservative base case valuation of $1220.98, the stock is currently slightly overvalued (-14.4% downside) and offers no margin of safety. SELL.",
+    "snapshot": {
+      "price": 1427.02,
+      "currency": "USD",
+      "shares": 385417665,
+      "revenue": 32667300000,
+      "lastActualPS": 16.84,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 13.2,
+      "analystMarginEstimate": 29.71
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 10,
+        "netMargin": 25,
+        "exitPE": 20,
+        "qualityMultiplier": 1.1,
+        "shareChange": -0.5,
+        "rationale": "Growth slows to 10% as China export restrictions bite and leading-edge foundry capex cools. Net margins compress to 25% due to underutilized capacity and high R&D costs for next-gen tools. The exit P/E compresses to 20x, a more typical multiple for semi-cap equipment during a downcycle. The 1.1x quality multiplier acknowledges their monopoly but reflects the severe macro/geopolitical constraints.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 52611,
+        "year5NetIncome": 13152.8,
+        "year5EPS": 34.99,
+        "scenarioPrice": 478,
+        "risks": [
+          "Geopolitical tensions lead to stricter export bans to China, severely limiting addressable market",
+          "Foundries (TSMC, Samsung, Intel) delay leading-edge node buildouts due to macro weakness"
+        ]
+      },
+      "base": {
+        "weight": 0.6,
+        "growthRate": 15,
+        "netMargin": 30,
+        "exitPE": 28,
+        "qualityMultiplier": 1.25,
+        "shareChange": -1,
+        "rationale": "Growth of 15% assumes smooth execution of the High-NA EUV rollout and continued strong demand for DUV systems. Net margin remains steady at 30%, reflecting strong pricing power. The exit P/E of 28x is a premium multiple for semi-cap equipment, justified by their monopoly status. A high quality multiplier of 1.25x is applied due to their absolute monopoly on the most critical technology in modern manufacturing.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 65705.6,
+        "year5NetIncome": 19711.7,
+        "year5EPS": 53.78,
+        "scenarioPrice": 1168.75,
+        "risks": [
+          "High-NA EUV adoption is slower than expected due to astronomical tool costs",
+          "Valuation remains highly vulnerable to any cyclical downturn in the broader semi market"
+        ]
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 20,
+        "netMargin": 33,
+        "exitPE": 35,
+        "qualityMultiplier": 1.3,
+        "shareChange": -1.5,
+        "rationale": "Catalyst: Global 'fab on-shoring' subsidies (CHIPS Act, EU Chips Act) trigger an unprecedented, state-sponsored semi-cap spending spree that ignores traditional supply/demand cycles. Growth accelerates to a 20% CAGR. High-NA EUV carries massive margins, pushing overall net margin to 33%. The exit P/E expands to 35x. The maximum 1.30x quality multiplier reflects their status as the most strategically important company in the global semiconductor supply chain.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 81286.7,
+        "year5NetIncome": 26824.6,
+        "year5EPS": 75.06,
+        "scenarioPrice": 2120.65,
+        "risks": [
+          "Priced for perfection; any supply chain disruption could derail growth targets"
+        ]
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 1.5 Pro",
+      "rationale": "ASML holds a structural monopoly on Extreme Ultraviolet (EUV) lithography, the critical bottleneck technology required for all leading-edge semiconductor manufacturing. This gives them immense pricing power, reflected in their highly stable ~30% net margins. However, with a trailing P/E of ~47x and a market cap of $550B, the market is pricing in flawless execution of the next-generation High-NA EUV rollout alongside sustained strong demand from foundries. At a conservative base case valuation of $1220.98, the stock is currently slightly overvalued (-14.4% downside) and offers no margin of safety. SELL.",
+      "fairValue": 1220.98,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T19:16:32.961Z",
+      "researchReport": "ASML_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used 385.4M (shares_diluted). API provided matching figures for outstanding and diluted. No discrepancies.",
+      "marginAnchor": "TTM 29.4% used as the anchor. Margins are extremely stable for a hardware manufacturer (26.5% -> 28.4% -> 26.7% -> 29.4%), reflecting deep structural pricing power. Base case holds this at 30%.",
+      "growthDerivation": "Analyst Y1 revenue implies 19.1% growth ($38.9B vs $32.6B TTM), Y2 implies 20.7%. Blended consensus ~20%. Base case growth set more conservatively to 15% to account for cyclicality and the law of large numbers.",
+      "sectorBenchmarkRow": "Technology — Semiconductors / Semi-Cap Equipment: median P/E 20, best-in-class 30+. Used 28x for base case due to absolute monopoly status.",
+      "dataQualityFlags": [
+        "No anomalies detected. Financial data is exceptionally clean and consistent."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 38931.34,
+        "y2RevEstimate": 47007.08,
+        "y1GrowthPct": 19.1,
+        "y2GrowthPct": 20.7,
+        "blendedConsensusPct": 19.9,
+        "analystTargetMean": 1661.53,
+        "analystCount": 15
+      },
+      "historicalRevenue": [
+        21173.4,
+        27558.5,
+        28262.9,
+        32667.3
+      ],
+      "historicalNetMargins": [
+        26.56,
+        28.44,
+        26.78,
+        29.41
+      ],
+      "historicalEPS": [
+        16.08,
+        20.61,
+        19.25,
+        24.73
+      ],
+      "confidenceBreakdown": "0.90/1.0 — +0.10 for absolute technological monopoly and highly visible backlog, -0.10 for extreme vulnerability to U.S./China geopolitical trade restrictions."
+    }
+  }
+]

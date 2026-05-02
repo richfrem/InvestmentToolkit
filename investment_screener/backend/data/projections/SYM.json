@@ -1,0 +1,135 @@
+[
+  {
+    "ticker": "SYM",
+    "id": "e0b96b0f-b4df-41ed-a16f-7b1bb363a033",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T19:16:32.961Z",
+    "updatedAt": "2026-05-02T19:16:32.961Z",
+    "name": "AI Deep Dive — SYM — 2026-05-02",
+    "rationale": "Symbotic is pioneering warehouse automation with a massive $23B+ backlog and a captive customer in Walmart. The company is currently operating near breakeven with a -0.47% TTM profit margin but generated a massive $787M in free cash flow, pointing to structural cash generation capability ahead of accounting profitability. Assuming they execute their backlog and transition to a recurring software/services model, achieving 10%+ net margins is highly probable. Even with significant dilution factored in, our base case yields a fair value of $148.21, suggesting the stock is heavily undervalued at $58.89. BUY.",
+    "snapshot": {
+      "price": 58.89,
+      "currency": "USD",
+      "shares": 105856250,
+      "revenue": 2246922000,
+      "lastActualPS": 15.79,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 29.4,
+      "analystMarginEstimate": -0.47
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 15,
+        "netMargin": 5,
+        "exitPE": 25,
+        "qualityMultiplier": 1,
+        "shareChange": 5,
+        "rationale": "Growth decelerates to 15% due to execution bottlenecks and macro-driven delays in capital expenditures by retail customers. Net margin struggles to reach 5% due to high deployment costs. The exit P/E contracts to 25x, treating it as a standard industrial equipment company rather than a robotics/software player. Heavy 5% annual dilution from stock-based compensation acts as a major drag on EPS.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 4519.4,
+        "year5NetIncome": 226,
+        "year5EPS": 1.67,
+        "scenarioPrice": 25.96,
+        "risks": [
+          "Execution delays in backlog deployment compress growth and margins",
+          "Overreliance on Walmart creates massive pricing pressure"
+        ]
+      },
+      "base": {
+        "weight": 0.6,
+        "growthRate": 23,
+        "netMargin": 10,
+        "exitPE": 35,
+        "qualityMultiplier": 1.1,
+        "shareChange": 3,
+        "rationale": "Growth of 23% aligns closely with analyst consensus estimates (23.1% Y1 / 29.0% Y2 implied) as the company steadily executes its massive backlog. Net margin expands to 10% as the high-margin recurring software and services revenue becomes a larger portion of the mix. The exit P/E of 35x is a premium industrial/tech hybrid multiple. A quality multiplier of 1.1x reflects high switching costs once installed in a warehouse. Annual dilution is modeled at a conservative 3%.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 6325.8,
+        "year5NetIncome": 632.6,
+        "year5EPS": 5.15,
+        "scenarioPrice": 123.23,
+        "risks": [
+          "Rising steel and raw material costs pressure gross margins",
+          "Competitor entry from established automation players like AutoStore"
+        ]
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 29,
+        "netMargin": 15,
+        "exitPE": 45,
+        "qualityMultiplier": 1.2,
+        "shareChange": 2,
+        "rationale": "Catalyst: Rapid expansion of the recurring software/services model and successful deployment of the GreenBox joint venture with SoftBank. Growth sustains at 29%. Operating leverage drives net margins to an impressive 15%. The market awards a 45x exit P/E, re-rating the company as an AI/Robotics pure-play. The 1.2x quality multiplier reflects a dominant, unassailable monopoly in its specific high-density storage niche.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 8026.7,
+        "year5NetIncome": 1204,
+        "year5EPS": 10.3,
+        "scenarioPrice": 345.41,
+        "risks": [
+          "Aggressive valuation requires flawless execution on margin expansion"
+        ]
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 1.5 Pro",
+      "rationale": "Symbotic is pioneering warehouse automation with a massive $23B+ backlog and a captive customer in Walmart. The company is currently operating near breakeven with a -0.47% TTM profit margin but generated a massive $787M in free cash flow, pointing to structural cash generation capability ahead of accounting profitability. Assuming they execute their backlog and transition to a recurring software/services model, achieving 10%+ net margins is highly probable. Even with significant dilution factored in, our base case yields a fair value of $148.21, suggesting the stock is heavily undervalued at $58.89. BUY.",
+      "fairValue": 148.21,
+      "action": "BUY",
+      "analyzedAt": "2026-05-02T19:16:32.961Z",
+      "researchReport": "SYM_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used 105.8M (shares_diluted). API indicated 125.7M outstanding but 105.8M diluted. Used the diluted figure provided by the metrics endpoint.",
+      "marginAnchor": "TTM -0.47% used. The company is operating near breakeven but generating massive free cash flow ($787M TTM). The base case target of 10% is a conservative long-term assumption as the business model shifts towards high-margin recurring software and services post-deployment.",
+      "growthDerivation": "Analyst Y1 revenue implies 23.1% growth ($2.76B vs $2.24B TTM), Y2 implies 29.0%. Blended consensus ~26%. Base case growth set slightly more conservatively to 23% to account for execution risks on hardware deployment.",
+      "sectorBenchmarkRow": "Industrials — Machinery / Automation: median P/E 25. Used a premium 35x for base case given the AI/Robotics software component.",
+      "dataQualityFlags": [
+        "Company is currently unprofitable on a GAAP basis, making margin projections highly sensitive to future execution.",
+        "Dual-class share structure and heavy insider ownership (Walmart, Cohen) can skew public float metrics."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 2768.16,
+        "y2RevEstimate": 3572.87,
+        "y1GrowthPct": 23.1,
+        "y2GrowthPct": 29,
+        "blendedConsensusPct": 26,
+        "analystTargetMean": 64.81,
+        "analystCount": 17
+      },
+      "historicalRevenue": [
+        593.31,
+        1176.89,
+        1788.17,
+        2246.92
+      ],
+      "historicalNetMargins": [
+        -13.31,
+        -2.02,
+        -0.75,
+        -0.47
+      ],
+      "historicalEPS": [
+        -0.13,
+        -0.37,
+        -0.08,
+        -0.16
+      ],
+      "confidenceBreakdown": "0.75/1.0 — -0.15 due to reliance on future margin expansion from a currently unprofitable base, -0.10 for high customer concentration risk (Walmart)."
+    }
+  }
+]

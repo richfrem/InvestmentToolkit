@@ -1,0 +1,134 @@
+[
+  {
+    "ticker": "NOW",
+    "id": "e0b96b0f-b4df-41ed-a16f-7b1bb363a033",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T19:16:32.961Z",
+    "updatedAt": "2026-05-02T19:16:32.961Z",
+    "name": "AI Deep Dive — NOW — 2026-05-02",
+    "rationale": "ServiceNow is a best-in-class enterprise SaaS platform with a powerful 'land and expand' model. Its Rule of 40 score of 44.86 and high retention rates highlight its deep entrenchment in IT Service Management (ITSM) and beyond. Operating and net margins have been steadily improving, and free cash flow generation is outstanding at $4.5B TTM. The recent massive selloff to ~$91 implies a complete breakdown in the growth narrative, which contradicts the underlying financials and analyst estimates of ~20% forward growth. At a conservative base case valuation of $143.77, the stock offers nearly 60% upside, presenting a highly asymmetric buying opportunity.",
+    "snapshot": {
+      "price": 91.16,
+      "currency": "USD",
+      "shares": 1031308000,
+      "revenue": 13278000000,
+      "lastActualPS": 7.08,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 22.1,
+      "analystMarginEstimate": 12.59
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 14,
+        "netMargin": 12,
+        "exitPE": 20,
+        "qualityMultiplier": 1.1,
+        "shareChange": 1,
+        "rationale": "Growth decelerates severely to 14% as enterprise IT budgets freeze. Net margin compresses back to 12% under pricing pressure. The exit P/E contracts to 20x, a generic software multiple stripped of its premium. Ongoing stock-based compensation leads to 1.0% annual dilution. The 1.1x quality multiplier reflects a sticky but mature platform.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 25565.7,
+        "year5NetIncome": 3067.9,
+        "year5EPS": 2.83,
+        "scenarioPrice": 38.66,
+        "risks": [
+          "Macroeconomic tightening forces enterprises to halt IT platform expansion",
+          "Competitors successfully undercut pricing in core ITSM"
+        ]
+      },
+      "base": {
+        "weight": 0.6,
+        "growthRate": 20,
+        "netMargin": 18,
+        "exitPE": 30,
+        "qualityMultiplier": 1.2,
+        "shareChange": 0,
+        "rationale": "Growth of 20% aligns with the blended analyst consensus estimates. Target net margin expands to 18% as the company continues to gain operating leverage on its immense scale. The exit P/E of 30x is the median for high-quality SaaS platforms. A quality multiplier of 1.2x is applied due to the extreme switching costs and unassailable incumbency of their core IT workflow engine.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 33039.9,
+        "year5NetIncome": 5947.2,
+        "year5EPS": 5.77,
+        "scenarioPrice": 128.9,
+        "risks": [
+          "Failure to monetize AI 'RaptorDB' features in line with expectations",
+          "Slower adoption in new adjacencies like HR and Customer Service"
+        ]
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 25,
+        "netMargin": 22,
+        "exitPE": 40,
+        "qualityMultiplier": 1.3,
+        "shareChange": -1,
+        "rationale": "Catalyst: AI-driven workflow automation triggers a massive upgrade cycle, and NOW becomes the default 'system of action' across the entire enterprise. Revenue accelerates to a 25% CAGR. Operating leverage drives net margins to a best-in-class 22%. The exit P/E expands to 40x on re-rating as an AI leader. The 1.3x quality multiplier reflects a durable monopoly in enterprise workflow orchestration.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 40521.2,
+        "year5NetIncome": 8914.7,
+        "year5EPS": 9.09,
+        "scenarioPrice": 293.48,
+        "risks": [
+          "Massive valuation expansion requires flawless execution"
+        ]
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 1.5 Pro",
+      "rationale": "ServiceNow is a best-in-class enterprise SaaS platform with a powerful 'land and expand' model. Its Rule of 40 score of 44.86 and high retention rates highlight its deep entrenchment in IT Service Management (ITSM) and beyond. Operating and net margins have been steadily improving, and free cash flow generation is outstanding at $4.5B TTM. The recent massive selloff to ~$91 implies a complete breakdown in the growth narrative, which contradicts the underlying financials and analyst estimates of ~20% forward growth. At a conservative base case valuation of $143.77, the stock offers nearly 60% upside, presenting a highly asymmetric buying opportunity.",
+      "fairValue": 143.77,
+      "action": "BUY",
+      "analyzedAt": "2026-05-02T19:16:32.961Z",
+      "researchReport": "NOW_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used 1031.3M (shares_diluted). API provided matching figures for outstanding and diluted. No discrepancies.",
+      "marginAnchor": "TTM 13.16% used as the anchor. Net margin has expanded significantly from 4.4% four years ago to ~13% today. Base case targets 18% as operating leverage continues to take hold.",
+      "growthDerivation": "Analyst Y1 revenue implies 22.0% growth ($16.19B vs $13.27B TTM), Y2 implies 18.2%. Blended consensus ~20%. Base case growth set to 20%.",
+      "sectorBenchmarkRow": "Technology — Software (SaaS): median P/E 30, growth 50+; net margin typical 15–25%.",
+      "dataQualityFlags": [
+        "The current price of $91.16 is down >50% YoY, which may indicate market concerns not fully captured in trailing financial data or analyst forward estimates."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 16198.95,
+        "y2RevEstimate": 19156.48,
+        "y1GrowthPct": 22,
+        "y2GrowthPct": 18.2,
+        "blendedConsensusPct": 20,
+        "analystTargetMean": 142.04,
+        "analystCount": 43
+      },
+      "historicalRevenue": [
+        7245,
+        8971,
+        10984,
+        13278
+      ],
+      "historicalNetMargins": [
+        4.49,
+        19.3,
+        12.97,
+        13.16
+      ],
+      "historicalEPS": [
+        0.32,
+        1.7,
+        1.38,
+        1.69
+      ],
+      "confidenceBreakdown": "0.80/1.0 — +0.10 for strong SaaS recurring revenue model, -0.20 for the severe divergence between market price action and underlying fundamentals, suggesting possible hidden risks."
+    }
+  }
+]

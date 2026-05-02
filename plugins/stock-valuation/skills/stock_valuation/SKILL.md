@@ -33,8 +33,11 @@ You are an **independent analyst**, not a stock promoter. Before generating scen
 - ❌ NEVER anchor fair value to current market price. Derive independently from fundamentals, then compare.
 - ❌ NEVER set all three scenarios as minor variations of each other. Bear must reference a historical trough or named risk. Bull MUST name ≥1 specific catalyst.
 - ❌ NEVER assign `qualityMultiplier > 1.1` without citing a specific structural moat from the company profile.
+- ❌ NEVER inherit prior model's assumptions without independent re-derivation from fresh data. Prior analysis is **context only** — not a starting point to copy from.
+- ❌ If the prior model was GPT-5 mini, Gemini, or any flagged non-Sonnet model, treat ALL its assumptions as unvalidated. Re-derive everything from scratch.
 - ✅ If fair value < current price, output SELL or HOLD regardless of user sentiment about the stock.
 - ✅ `exitPE` MUST be benchmarked against sector median from `references/valuation-benchmarks.md`.
+- ✅ If prior thesis said BUY and price has since surged significantly, the new analysis MUST independently re-evaluate whether thesis still holds — do not carry forward the prior bullish stance.
 
 ## Dual-Mode Operation
 See `CONNECTORS.md` for full degradation contract.
@@ -68,7 +71,50 @@ else:
 "
 ```
 - If output starts with `CACHED` → **STOP**. Report the cached fair value and action to the user. Offer to force-refresh if they explicitly ask.
-- If `NO_CACHE` or `STALE` → continue to Step 1.
+- If `NO_CACHE` → skip Step 0.5, continue to Step 1.
+- If `STALE` → continue to Step 0.5 (prior analysis review) before Step 1.
+
+---
+
+## Step 0.5: Prior Analysis Review (Build-On Mode)
+> Only runs when a STALE prior projection exists. Purpose: extract the prior thesis for **context and fact-checking** — NOT to inherit its assumptions.
+
+```bash
+curl -s http://localhost:3001/api/projections/{TICKER} | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+ai = [p for p in data if p.get('source') == 'AI_AGENT']
+if not ai: sys.exit(0)
+p = max(ai, key=lambda x: x.get('savedAt',''))
+snap = p.get('snapshot', {})
+s = p.get('scenarios', {})
+print(json.dumps({
+  'id': p.get('id'),
+  'version': p.get('version', 1),
+  'model': p.get('aiThesis', {}).get('model'),
+  'date': p.get('savedAt','')[:10],
+  'prior_price': snap.get('price'),
+  'prior_fv': p.get('aiThesis', {}).get('fairValue'),
+  'prior_action': p.get('aiThesis', {}).get('action'),
+  'bear': {k: s.get('bear',{}).get(k) for k in ['growthRate','netMargin','exitPE','qualityMultiplier','weight']},
+  'base': {k: s.get('base',{}).get(k) for k in ['growthRate','netMargin','exitPE','qualityMultiplier','weight']},
+  'bull': {k: s.get('bull',{}).get(k) for k in ['growthRate','netMargin','exitPE','qualityMultiplier','weight']},
+  'prior_rationale': p.get('aiThesis', {}).get('rationale','')[:300]
+}, indent=2))
+"
+```
+
+After reading the output, **explicitly answer each of these questions in your reasoning** before touching any scenario parameters:
+
+1. **Price delta**: Current price vs prior price — did the thesis play out, overshoot, or miss?
+2. **Assumption audit**: Were prior `growthRate`, `netMargin`, `exitPE`, `qualityMultiplier` grounded, or were they inflated? Compare each against sector benchmarks now.
+3. **Model quality flag**: If prior model was GPT-5 mini, Gemini, Antigravity, or "UNKNOWN" → mark all assumptions as **unvalidated**. Re-derive everything independently.
+4. **Thesis outcome**: If prior said BUY and stock surged, the thesis may have been correct *then* but irrelevant *now* — evaluate current entry, not past entry.
+5. **What changed fundamentally**: New revenue data, margin trend reversal, competitive shift, regulatory news.
+
+Record findings in `analyticsLog.priorAnalysisReview`. Then fetch fresh data and build scenarios **entirely from the new data** — prior assumptions inform but never constrain.
+
+**Version continuity**: Preserve the prior projection's `id`. Set `version` = prior `version` + 1.
 
 ---
 
@@ -208,6 +254,18 @@ Normalize weights if sum ≠ 1.0. Cast string numbers to actual numbers. Clamp o
     "historicalRevenue": ["<array of last 4-5 fiscal years in $M, oldest→newest>"],
     "historicalNetMargins": ["<array of last 4-5 fiscal years as % floats, oldest→newest>"],
     "historicalEPS": ["<array of last 4-5 fiscal years, oldest→newest; post-split equivalent>"],
+    "priorAnalysisReview": {
+      "priorModel": "<model name from prior projection, e.g. 'Gemini 3 Pro'>",
+      "priorDate": "<YYYY-MM-DD>",
+      "priorPrice": "<price when prior analysis was done>",
+      "priorFairValue": "<prior weighted fair value>",
+      "priorAction": "<BUY/HOLD/SELL>",
+      "priceDelta": "<e.g. '+113% since prior analysis — prior BUY thesis played out'>",
+      "assumptionAudit": "<e.g. 'Prior base netMargin 22% had no grounding — semiconductor median is 15-30% but INTC was -0.5% TTM at the time; inflated. Prior QM 1.15 on bull unjustified — Intel has no durable pricing power across cycles per benchmark rule.'>",
+      "modelQualityFlag": "<VALIDATED if prior was Claude Sonnet 4.6, UNVALIDATED if GPT-5 mini/Gemini/Antigravity/other>",
+      "thesisOutcome": "<e.g. 'Thesis was correct directionally (BUY at $46 → now $99) but current price has exceeded prior base case $64 — full re-evaluation required at new entry point'>",
+      "fundamentalChanges": "<list key changes since prior analysis: new earnings data, competitive shifts, management changes, macro events>"
+    },
     "confidenceBreakdown": "<score>/1.0 — Base: 1.0. [+ for moat/quality signals, - for data anomalies/uncertainty]. E.g.: '0.72 — -0.08 volatile GAAP margins, -0.05 share count ambiguity, -0.05 EPS anomaly, -0.10 unproven platformization strategy'"
   },
   "aiThesis": {
@@ -237,6 +295,7 @@ curl -s -X POST http://localhost:3001/api/projections \
 ```
 - Success response: `{"success":true,"message":"Projection saved successfully"}`
 - If 409 conflict → increment `version` field and retry once
+- **Version continuity for updates**: If a prior projection exists (Step 0.5), reuse its `id` and set `version` = prior `version` + 1. This keeps the full version history queryable in the backend.
 - If any other failure → invoke **FB-03** from `references/fallback-tree.md`
 
 ## Step 7: Generate Deep-Dive Research Report
@@ -285,6 +344,8 @@ If write fails → invoke **FB-04** from `references/fallback-tree.md`.
 
 **Biggest risk**: {Single most important risk.}
 **Confidence**: {X}/1.0
+
+> **Prior analysis** ({prior_model}, {prior_date}): {prior_action} at ${prior_price} → now ${current_price} ({delta}%). {One sentence: thesis outcome — played out / overshot / missed / N/A}
 
 I've saved the projection and a full deep-dive research report.
 Want me to stress-test an assumption, adjust the model, or dig deeper?

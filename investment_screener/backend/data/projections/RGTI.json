@@ -1,0 +1,124 @@
+[
+  {
+    "ticker": "RGTI",
+    "id": "0b860016-bd45-4a26-b811-4c4a3c472571",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T19:21:25Z",
+    "updatedAt": "2026-05-02T19:21:25Z",
+    "name": "AI Deep Dive — RGTI — 2026-05-02",
+    "rationale": "Rigetti (RGTI) has promising quantum hardware and service offerings but very small revenue base and persistent losses. DCF under conservative assumptions produces a near-zero fair value; action is SELL.",
+    "snapshot": {
+      "price": 17.5,
+      "currency": "USD",
+      "shares": 332345548,
+      "revenue": 7088000,
+      "lastActualPS": 820.55,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 160.98
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 0.2863,
+        "netMargin": 0,
+        "exitPE": 12,
+        "qualityMultiplier": 0.9,
+        "shareChange": 0,
+        "year5Revenue": 7.2,
+        "year5NetIncome": 0,
+        "year5EPS": 0,
+        "scenarioPrice": 0,
+        "year5Shares": 332.3,
+        "year5PriceUndiscounted": 0,
+        "presentValue": 0
+      },
+      "base": {
+        "weight": 0.6,
+        "growthRate": 1.4317,
+        "netMargin": 5,
+        "exitPE": 18,
+        "qualityMultiplier": 1,
+        "shareChange": 0,
+        "year5Revenue": 7.6,
+        "year5NetIncome": 0.4,
+        "year5EPS": 0,
+        "scenarioPrice": 0.02,
+        "year5Shares": 332.3,
+        "year5PriceUndiscounted": 0.02,
+        "presentValue": 0.01
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 2.1476,
+        "netMargin": 12,
+        "exitPE": 28,
+        "qualityMultiplier": 1.05,
+        "shareChange": 0,
+        "year5Revenue": 7.9,
+        "year5NetIncome": 0.9,
+        "year5EPS": 0,
+        "scenarioPrice": 0.08,
+        "year5Shares": 332.3,
+        "year5PriceUndiscounted": 0.08,
+        "presentValue": 0.05
+      }
+    },
+    "aiThesis": {
+      "model": "GPT-5 mini (model ID: gpt-5-mini)",
+      "rationale": "Quantum hardware is nascent; revenue growth depends on successful commercialization of QPU cloud services. Base assumes modest margin recovery to low single-digits; downside keeps margins at zero.",
+      "fairValue": 0.02,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T19:21:25Z",
+      "researchReport": "investment_screener/backend/data/research/RGTI_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used metrics.shares_diluted=332345548; DCF-derived baseShares=332345548; difference 0.0%",
+      "marginAnchor": "TTM 0.0 used; historical net margins deeply negative → use cautious recovery to positive by Yr5",
+      "growthDerivation": "Y1=22634920.0, Y2=45862750.0; Y1 growth 219.34%, Y2 growth 102.62%; derived 5-yr CAGR used for base: 1.4317",
+      "sectorBenchmarkRow": "Technology — Hardware / Consumer Electronics: Conservative P/E 12, Median P/E 18, Growth P/E 25",
+      "dataQualityFlags": [
+        "Very small revenue base with analyst projections implying extreme growth — high execution risk",
+        "Persistent GAAP losses and volatile margins; EPS history negative",
+        "High sensitivity to margin and commercialization assumptions"
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 22634920,
+        "y2RevEstimate": 45862750,
+        "y1GrowthPct": 219.34,
+        "y2GrowthPct": 102.62,
+        "blendedConsensusPct": 160.98,
+        "analystTargetMean": 30.57583,
+        "analystCount": 12
+      },
+      "historicalRevenue": [
+        13102000,
+        12008000,
+        10790000,
+        7088000
+      ],
+      "historicalNetMargins": [
+        -545.8784918333079,
+        -625.4746835443038,
+        -1862.7247451343837,
+        -3050.366817155756
+      ],
+      "historicalEPS": [
+        -0.7,
+        -0.57,
+        -1.09,
+        -0.7
+      ],
+      "confidenceBreakdown": "0.30 — -0.20 execution risk, -0.10 data uncertainty"
+    }
+  }
+]

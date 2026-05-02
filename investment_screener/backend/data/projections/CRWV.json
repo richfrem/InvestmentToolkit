@@ -4,19 +4,19 @@
     "id": "a7e3c5d1-9f8b-4e2a-b6d4-3c1f7e8a2b5d",
     "source": "AI_AGENT",
     "schemaVersion": "1.2",
-    "version": 2,
-    "savedAt": "2026-02-16T02:55:00.000Z",
-    "updatedAt": "2026-05-02T18:58:18.848Z",
-    "name": "AI Deep Dive \u2014 CRWV \u2014 2026-02-15",
-    "rationale": "CoreWeave is a GPU-cloud infrastructure company riding the GenAI capex wave. Revenue surged from $229M (2023) to $1.9B (2024 fiscal) to an estimated $4.3B TTM, representing 133% YoY growth. Analyst consensus projects $5.1B in 2025 and $12.0B in 2026. Gross margins of 73.9% are exceptional for infrastructure, though the company carries $18.8B in debt financing its GPU fleet. Operating income turned positive at $324M in 2024. The weighted fair value of $137.28 suggests significant upside from the current $96.04, contingent on sustaining demand and managing the debt load.",
+    "version": 3,
+    "savedAt": "2026-05-02T19:55:00Z",
+    "updatedAt": "2026-05-02T19:53:03.749Z",
+    "name": "AI Deep Dive — CRWV — 2026-05-02",
+    "rationale": "CoreWeave is the defining pure-play GPU cloud of the GenAI era — revenue has exploded from $16M (2022) to $5.13B TTM, growing 110% YoY, with 71.7% gross margins demonstrating genuine pricing power. The investment thesis centers on whether CoreWeave can sustain outsized growth long enough to service its $18-20B debt load and transition from a 'GPU landlord' to a sticky enterprise AI platform before hyperscalers commoditize the market. Our probability-weighted fair value of $162.55 implies 37% upside from $119.01, but with only 45% weight on the base case — the outcome distribution is wide and binary in nature.",
     "snapshot": {
-      "price": 96.04,
+      "price": 119.01,
       "currency": "USD",
-      "shares": 409.337,
-      "revenue": 4306.526,
-      "lastActualPS": 11.63,
+      "shares": 442969348,
+      "revenue": 5131000000,
+      "lastActualPS": 12.25,
       "fiscalPeriod": "TTM",
-      "analystGrowthEstimate": 134.95,
+      "analystGrowthEstimate": null,
       "analystMarginEstimate": null
     },
     "dataPreferences": {
@@ -25,112 +25,128 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.25,
-        "growthRate": 25.0,
-        "netMargin": 5.0,
-        "exitPE": 20.0,
+        "weight": 0.3,
+        "growthRate": 30,
+        "netMargin": 5,
+        "exitPE": 15,
         "qualityMultiplier": 0.85,
+        "shareChange": 4,
+        "rationale": "Bear deceleration path derived from hypergrowth exception: Y1 ~$8B (56% growth), Y2 ~$10.5B (31%), Y3 ~$13B (24%), Y4 ~$16B (23%), Y5 ~$19B (19%) → 5-yr CAGR 30%. This scenario sees hyperscalers closing GPU availability gaps faster than expected — AWS EC2 P5 and Google A3 already competing on price. Net margin of 5% reflects $18-20B debt service consuming operating profit; gross margins compress from 71.7% to ~45% as GPU pricing power fades. Exit P/E 15x is at the conservative semiconductor infrastructure tier — appropriate for a commoditized GPU rental business with no recurring software revenue. QM 0.85: no durable moat if GPU access is commoditized. 4%/yr dilution from equity raises to fund capex shortfall.",
         "moatScore": 2,
         "managementScore": 2,
-        "shareChange": 3.0,
-        "year5Revenue": 13142,
-        "year5NetIncome": 657,
-        "year5EPS": 1.38,
-        "scenarioPrice": 14.62,
+        "year5Revenue": 19051,
+        "year5NetIncome": 952.6,
+        "year5EPS": 1.77,
+        "scenarioPrice": 13.99,
         "risks": [
-          "AI capex cycle ends abruptly \u2014 hyperscalers build in-house GPU capacity",
-          "Debt service ($18.8B) becomes unsustainable if revenue growth decelerates",
-          "Customer concentration risk with limited enterprise diversification"
-        ],
-        "rationale": "Assumes AI infrastructure demand normalizes as hyperscalers (AWS, GCP, Azure) expand their own GPU fleets, commoditizing CoreWeave's core offering. Revenue CAGR of 25% reflects significant deceleration from 133% current pace. Net margin of only 5% as heavy interest expense ($360M/yr) and depreciation ($863M/yr) absorb operating profit. Exit PE of 20x with 0.85 quality multiplier reflects a commoditized infrastructure provider. 3% annual dilution from convertible debt and equity raises to fund capex."
+          "AWS/Azure/GCP close the GPU availability gap by 2027-2028 as Blackwell supply normalizes, commoditizing CoreWeave's core offering — historical precedent: commodity cloud pricing erodes margin within 24-36 months of supply normalization",
+          "Debt service on $18-20B in GPU financing becomes unserviceable if revenue CAGR drops below 25% — interest expense alone consumes all operating profit at that scale",
+          "Customer concentration: Microsoft accounts for an estimated 60%+ of revenue; any contract reduction triggers a revenue cliff"
+        ]
       },
       "base": {
-        "weight": 0.5,
-        "growthRate": 45.0,
-        "netMargin": 12.0,
-        "exitPE": 30.0,
-        "qualityMultiplier": 1.0,
+        "weight": 0.45,
+        "growthRate": 38,
+        "netMargin": 15,
+        "exitPE": 28,
+        "qualityMultiplier": 1,
+        "shareChange": 2.5,
+        "rationale": "Base deceleration path (hypergrowth exception): Y1 ~$9.5B (85% growth), Y2 ~$13.5B (42%), Y3 ~$17.3B (28%), Y4 ~$21.1B (22%), Y5 ~$24.9B (18%) → CAGR 37-38%. No API analyst estimates available (new IPO — data sparseness flagged); used prior analysis Y1/Y2 anchors deflated by current higher TTM base. Net margin improving trend continues: -196% → -259% → -45% → -22.7% TTM, reaching 15% by Y5 via operating leverage as GPU fleet depreciation stabilizes relative to revenue. Exit P/E 28x = software infrastructure median; QM 1.0 = average quality, reflecting real customer relationships (Weights & Biases platform, enterprise contracts) but no proven moat vs hyperscalers. 2.5%/yr dilution normalizes from high startup-phase rate.",
         "moatScore": 3,
         "managementScore": 3,
-        "shareChange": 2.0,
-        "year5Revenue": 27601,
-        "year5NetIncome": 3312,
-        "year5EPS": 7.33,
-        "scenarioPrice": 136.6,
+        "year5Revenue": 25680.1,
+        "year5NetIncome": 3852,
+        "year5EPS": 7.69,
+        "scenarioPrice": 133.63,
         "risks": [
-          "Competition from Lambda, Together AI, and hyperscaler GPU-as-a-service",
-          "Enterprise AI workloads shift from training to inference, reducing GPU demand per customer"
-        ],
-        "rationale": "Revenue CAGR of 45% is well below the analyst consensus of 83% for next year but accounts for multi-year deceleration as the business scales past $20B. Net margin of 12% reflects improving operating leverage as GPU fleet depreciation stabilizes relative to revenue. CoreWeave's direct GPU access model and Kubernetes-native platform maintain differentiation vs. generic cloud. Exit PE of 30x appropriate for a high-growth infrastructure company at maturity. 2% annual dilution from ongoing equity compensation and debt conversion."
+          "Gross margin compression below 68% would indicate loss of GPU pricing power ahead of schedule",
+          "FCF remaining deeply negative beyond 2027 signals capex cycle is not self-funding — may require additional dilutive equity"
+        ]
       },
       "bull": {
         "weight": 0.25,
-        "growthRate": 65.0,
-        "netMargin": 18.0,
-        "exitPE": 40.0,
-        "qualityMultiplier": 1.1,
+        "growthRate": 48,
+        "netMargin": 22,
+        "exitPE": 35,
+        "qualityMultiplier": 1.05,
+        "shareChange": 1,
+        "rationale": "Catalyst: CoreWeave becomes the de-facto 'fourth hyperscaler' for GPU workloads — signing 5+ year enterprise anchor contracts (beyond Microsoft) with AI labs (xAI, Anthropic, Meta Research) that create high switching costs via data gravity and Kubernetes-native integrations. Weights & Biases (acquired) becomes a platform layer that locks in model developers. Deceleration path: Y1 ~$11B (114%), Y2 ~$16B (45%), Y3 ~$22B (38%), Y4 ~$29B (32%), Y5 ~$37B (28%) → 5-yr CAGR 48%. Net margin 22%: operating leverage on fixed GPU infrastructure + W&B software margin contribution. Exit P/E 35x = above median (25x) justified by platform optionality premium; QM 1.05 (limited moat — switching costs exist but not yet proven at hyperscaler scale). Dilution drops to 1%/yr as FCF turns positive and debt service begins from operating cash flow.",
         "moatScore": 4,
         "managementScore": 4,
-        "shareChange": 1.0,
-        "year5Revenue": 52541,
-        "year5NetIncome": 9457,
-        "year5EPS": 21.99,
-        "scenarioPrice": 602.47,
+        "year5Revenue": 36434.3,
+        "year5NetIncome": 8015.5,
+        "year5EPS": 17.22,
+        "scenarioPrice": 392.87,
         "risks": [
-          "Valuation re-rates sharply if growth disappoints even slightly at these multiples",
-          "Geopolitical disruption to NVIDIA GPU supply chain"
-        ],
-        "rationale": "Catalyst: Enterprise AI adoption enters sustained multi-year buildout phase. CoreWeave becomes the 'fourth hyperscaler' for GPU workloads, signing long-term contracts with Fortune 500 companies. Revenue CAGR of 65% assumes CoreWeave captures outsized share of the GPU cloud market as training and inference demand compounds. Net margin of 18% achievable through operating leverage on fixed GPU infrastructure. Exit PE of 40x with 1.10 quality multiplier reflects a differentiated platform with switching costs (Kubernetes integrations, data gravity). Annual share dilution drops to 1% as debt is serviced from cash flow."
+          "NVIDIA supply disruption or Blackwell successor delay cascades into CoreWeave build-out delays",
+          "Valuation re-rates sharply (from 35x to 20x) on any single quarter of growth miss — no margin of safety at this multiple"
+        ]
       }
     },
     "aiThesis": {
-      "model": "Opus 4.6",
-      "rationale": "CoreWeave is the defining GPU-cloud pure-play of the GenAI era. Revenue has exploded from $16M (2022) to an estimated $4.3B TTM \u2014 an extraordinary trajectory driven by insatiable demand for NVIDIA GPU compute from AI labs and enterprises. Gross margins of 73.9% demonstrate pricing power, and operating income turned positive in 2024 at $324M. However, this growth is fueled by $18.8B in debt financing a massive GPU fleet, creating significant financial risk if the AI capex cycle slows. Analyst consensus projects $12B+ revenue by 2026, but the path to sustained profitability depends on whether CoreWeave can transition from a 'GPU landlord' to a platform with sticky enterprise relationships. At $96/share, the market is pricing in strong growth but not the full bull case. Our weighted fair value of $137.28 suggests meaningful upside, but with a reduced confidence score (0.55) reflecting the binary nature of the thesis: CoreWeave either becomes the AWS of AI, or gets commoditized when hyperscalers catch up.",
-      "fairValue": 137.28,
+      "model": "Claude Sonnet 4.6",
+      "rationale": "CoreWeave is the highest-conviction AI infrastructure pure-play in the portfolio — and the highest-risk. Revenue has compounded from $16M to $5.1B in four years, with 71.7% gross margins proving that GPU cloud pricing power is real. The path to $162 fair value runs through the base case (45% probability): 38% revenue CAGR over 5 years, gradually reaching 15% net margins as the GPU fleet's depreciation stabilizes relative to revenue, exiting at a reasonable 28x P/E. The bull case ($393 PV, 25% weight) requires CoreWeave to become the 'fourth hyperscaler' for GPU workloads — a real possibility given Weights & Biases as a platform layer and enterprise contract momentum. The bear case ($14 PV, 30% weight) is the scenario where AWS/Azure/GCP close the GPU availability gap faster than expected, commoditizing CoreWeave's core offering and leaving it with $20B in debt and a collapsing revenue trajectory. The critical risk to monitor is the FCF trajectory: burning -$7.25B/yr is sustainable only as long as the revenue growth story holds and lenders remain supportive. At $119/share, there is asymmetric upside in our probability weighting, but this is not a defensive holding — it is a high-conviction, high-volatility bet on the GenAI infrastructure supercycle continuing.",
+      "fairValue": 162.55,
       "action": "BUY",
-      "analyzedAt": "2026-02-16T02:55:00.000Z",
-      "researchReport": "CRWV_2026-02-15.md"
+      "analyzedAt": "2026-05-02T19:55:00Z",
+      "researchReport": "CRWV_2026-05-02.md"
     },
     "globalSettings": {
-      "discountRate": 10.0,
+      "discountRate": 10,
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "Used metrics.shares_outstanding as fallback/default during migration.",
-      "marginAnchor": "TTM margin used as baseline for migration.",
-      "growthDerivation": "Y1 +143.4% / Y2 +88.9% blended 116.2%; base 45.0%",
-      "sectorBenchmarkRow": "Technology - Software - Infrastructure",
+      "shareCountMethod": "shares_diluted = 442,969,348 per API. NI/EPS derived check: $1.167B / $2.75 = 424.4M (4.2% discrepancy, within 15% threshold). Used shares_diluted (442.97M) as primary for consistency. Note: CoreWeave IPO'd March 2025; pre-IPO option pool and RSU grants likely still vesting — watch for dilution acceleration.",
+      "marginAnchor": "Improving trend (not mean-reverting). Historical net margins: -196.2% (FY2022) → -259.4% (FY2023) → -45.1% (FY2024) → -22.7% TTM. Early extreme values are startup/pre-scale artifacts; clear improvement trend since FY2023 peak loss. TTM -22.74% used as anchor. Base margin 15% by Y5 represents +37.7pp improvement over 5 years via operating leverage — justified by gross margin stability (71.7%) indicating unit economics work; path to profitability is scale, not pricing power.",
+      "growthDerivation": "HYPERGROWTH EXCEPTION APPLIED — TTM growth 110.4% >> 40% threshold. No API analyst estimates available (yfinance sparse for recent IPO). Used prior analysis Y1/Y2 estimates as reference anchor (deflated from $4.3B to $5.131B TTM base). Base deceleration path: Y1 ~$9.5B (+85%), Y2 ~$13.5B (+42%), Y3 ~$17.3B (+28%), Y4 ~$21.1B (+22%), Y5 ~$24.9B (+18%) → 5yr CAGR 37-38%. See NVDA example in references for precedent. Bear uses 30% CAGR (normalized supply scenario). Bull 48% (fourth hyperscaler thesis).",
+      "sectorBenchmarkRow": "Technology — Software Infrastructure / Cloud: conservative P/E 18-20, median P/E 28-30, growth P/E 40-50+. Net margin typical for cloud infra: 15-25%. CoreWeave is closer to IaaS (AWS/Azure comparable) than pure SaaS, justifying slightly lower P/E range than software-only peers.",
       "dataQualityFlags": [
-        "Retroactively migrated to schemaVersion 1.2."
+        "CRITICAL: No analyst estimates returned from API (estimates section empty) — CoreWeave IPO'd March 2025; yfinance data coverage incomplete for new IPOs. Growth derivation based on internal deceleration model + prior analysis reference only. Higher uncertainty than typical.",
+        "FCF worsening year-over-year: -$71M (FY2022) → -$1.1B (FY2023) → -$5.95B (FY2024) → -$7.25B TTM. Capex cycle is not self-funding; company is financing GPU fleet via debt. Bear case viability depends heavily on debt covenant structure.",
+        "Historical net margins FY2022 (-196%) and FY2023 (-259%) are startup-phase artifacts and excluded from margin anchor — using TTM as anchor with improving trend rule.",
+        "Gross margin slight decline: 74.3% (FY2024) → 71.7% (TTM) — early indicator of potential GPU pricing pressure; needs monitoring.",
+        "Prior analyticsLog was a migration placeholder (note: 'Retroactively migrated to schemaVersion 1.2') — no validated prior analytical data to inherit."
       ],
       "analystInputs": {
-        "y1RevEstimate": 12490847340.0,
-        "y2RevEstimate": 23595138660.0,
-        "y1GrowthPct": 143.43884895731827,
-        "y2GrowthPct": 88.89942385606003,
-        "blendedConsensusPct": 116.16913640668915,
-        "analystTargetMean": 128.80646,
-        "analystCount": 31
+        "y1RevEstimate": null,
+        "y2RevEstimate": null,
+        "y1GrowthPct": null,
+        "y2GrowthPct": null,
+        "blendedConsensusPct": null,
+        "analystTargetMean": null,
+        "analystCount": null
       },
       "historicalRevenue": [
-        15830000.0,
-        229000000.0,
-        1915000000.0,
-        5131000000.0
+        15.83,
+        229,
+        1915,
+        5131
       ],
       "historicalNetMargins": [
-        -196.17814276689828,
-        -259.3886462882096,
-        -45.06527415143603,
-        -22.74410446306763
+        -196.18,
+        -259.39,
+        -45.07,
+        -22.74
       ],
       "historicalEPS": [
-        -0.076921,
-        -1.471291,
-        -2.018966,
+        -0.077,
+        -1.471,
+        -2.019,
         -2.75
       ],
-      "confidenceBreakdown": "0.8/1.0 - Base confidence assigned during migration."
+      "priorAnalysisReview": {
+        "priorModel": "Opus 4.6",
+        "priorDate": "2026-02-16",
+        "priorPrice": 96.04,
+        "priorFairValue": 137.28,
+        "priorAction": "BUY",
+        "priceDelta": "+23.9% since prior analysis — prior BUY thesis playing out; stock approaching prior base case PV of $133.63",
+        "assumptionAudit": "Prior base CAGR was 45% (from $4.3B TTM base); adjusted to 38% from larger $5.131B base — lower percentage but similar absolute trajectory. Prior weights were symmetric 0.25/0.50/0.25 — adjusted to 0.30/0.45/0.25 to weight bear risk slightly higher given FCF deterioration. Prior analyticsLog was an acknowledged migration placeholder with no validated data — re-derived entirely from scratch. Overall prior thesis was directionally sound; Opus 4.6 analysis reasonable but used migrated data artifacts.",
+        "modelQualityFlag": "PARTIALLY_VALIDATED — Opus 4.6 is a higher-capability Anthropic model (not in the flagged non-Sonnet list of GPT-5 mini/Gemini/Antigravity); assumptions reviewed critically and updated with fresh data. Growth and margin re-derived independently.",
+        "thesisOutcome": "BUY at $96 was correct — stock up 24% in 75 days. Still below new FV of $162.55; base case thesis intact. FCF deterioration is the key new risk that prior analysis underweighted.",
+        "fundamentalChanges": "Revenue accelerated to $5.131B TTM (vs $4.3B prior, +19.4%). FCF worsened to -$7.25B TTM (vs -$5.95B FY2024 — capex buildout continuing). Gross margin compressed slightly 74.3% → 71.7%. No analyst estimate data available from API (IPO data sparseness). Net margin improvement trend intact (-45% → -22.7%)."
+      },
+      "confidenceBreakdown": "0.58/1.0 — Base: 1.0. -0.12 no API analyst estimates (new IPO — critical data gap). -0.10 FCF worsening trend (-$7.25B) with no near-term inflection. -0.08 extreme debt load ($18-20B) creating binary risk. -0.05 gross margin compression trend (early warning signal). -0.05 customer concentration (Microsoft ~60%+ estimated). -0.02 prior analyticsLog was migration placeholder — no historical validation. Positive retained: gross margin 71.7% (real pricing power signal) and clear revenue growth trajectory."
     }
   }
 ]

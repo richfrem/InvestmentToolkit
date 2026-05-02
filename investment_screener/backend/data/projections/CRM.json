@@ -1,0 +1,114 @@
+[
+  {
+    "ticker": "CRM",
+    "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7c7d",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T19:35:00.000Z",
+    "updatedAt": "2026-05-02T19:35:00.000Z",
+    "name": "AI Deep Dive — CRM — 2026-05-02",
+    "rationale": "Salesforce (CRM) dominates enterprise software with its core CRM and growing Agentforce AI suite. The company has heavily focused on operational efficiency, pushing net margins to nearly 18% and generating massive free cash flow ($14.4B). The market is overly pessimistic about top-line deceleration (pricing the stock at $183 with a forward P/E of 12.3x), ignoring the massive cash generation and share buyback potential. My weighted fair value of $281 indicates a deep 53% upside, making CRM a strong value-oriented BUY.",
+    "snapshot": {
+      "price": 183.82,
+      "currency": "USD",
+      "shares": 818053744,
+      "revenue": 41525000000,
+      "lastActualPS": 3.62,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 12.1,
+      "analystMarginEstimate": 17.96
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.3,
+        "growthRate": 5,
+        "netMargin": 15,
+        "exitPE": 15,
+        "qualityMultiplier": 1,
+        "shareChange": -1,
+        "moatScore": 4,
+        "managementScore": 4,
+        "scenarioPrice": 95.17
+      },
+      "base": {
+        "weight": 0.5,
+        "growthRate": 10,
+        "netMargin": 20,
+        "exitPE": 20,
+        "qualityMultiplier": 1.1,
+        "shareChange": -3,
+        "moatScore": 4,
+        "managementScore": 5,
+        "scenarioPrice": 260.09
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 15,
+        "netMargin": 25,
+        "exitPE": 25,
+        "qualityMultiplier": 1.2,
+        "shareChange": -5,
+        "moatScore": 5,
+        "managementScore": 5,
+        "scenarioPrice": 614.46
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "Salesforce (CRM) dominates enterprise software with its core CRM and growing Agentforce suite. After a turbulent period, the company has heavily focused on operational efficiency, pushing operating margins to 21% and generating massive free cash flow ($14.4B). The market is overly pessimistic about growth (currently pricing the stock at $183 with a forward P/E of 12.3x), ignoring the massive cash generation and share buyback potential. My weighted fair value of $281 indicates a deep 53% upside, making CRM a strong value-oriented BUY in the software space.",
+      "fairValue": 281.49,
+      "action": "BUY",
+      "analyzedAt": "2026-05-02T19:35:00.000Z",
+      "researchReport": "CRM_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used metrics.shares_outstanding (818M) as default. No multi-class discrepancy noted.",
+      "marginAnchor": "TTM net margin of 17.96% used as anchor. Salesforce has been steadily improving margins for 3+ years, validating a TTM anchor over the historical average.",
+      "growthDerivation": "Blended analyst consensus is 10.5% (Y1 11.4%, Y2 9.6%). Base scenario uses 10%, tightly aligned with near-term trajectory.",
+      "sectorBenchmarkRow": "Technology - Software - Application",
+      "dataQualityFlags": [
+        "No anomalies detected in baseline financial data. Operating margins show consistent upward trend."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 46265111240,
+        "y2RevEstimate": 50690963910,
+        "y1GrowthPct": 11.41,
+        "y2GrowthPct": 9.57,
+        "blendedConsensusPct": 10.49,
+        "analystTargetMean": 269.75,
+        "analystCount": 52
+      },
+      "historicalRevenue": [
+        0,
+        31352000000,
+        34857000000,
+        37895000000,
+        41525000000
+      ],
+      "historicalNetMargins": [
+        0,
+        0.6634345496300076,
+        11.865622400091803,
+        16.353080881382766,
+        17.9578567128236
+      ],
+      "historicalEPS": [
+        0,
+        0.21,
+        4.25,
+        6.44,
+        7.85
+      ],
+      "confidenceBreakdown": "0.85/1.0 - Base: 1.0. [+0.05 strong FCF generation, -0.20 for macroeconomic software spend uncertainty]."
+    }
+  }
+]
