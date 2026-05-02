@@ -5,18 +5,25 @@ import { z } from 'zod';
 // Let's use the broader one from index.ts to allow BRK-B, BTC-USD, etc.
 const tickerRegex = /^[A-Z0-9.\-]{1,10}$/;
 
-// Scenario Schema
+// Scenario Schema — .passthrough() preserves v1.2 fields (year5Revenue, year5NetIncome,
+// year5EPS, scenarioPrice, risks) without stripping them on save.
 export const ScenarioSchema = z.object({
     weight: z.number().min(0).max(1),
-    growthRate: z.number().min(-100).max(1000), // Reasonable bounds for growth
+    growthRate: z.number().min(-100).max(1000),
     netMargin: z.number().min(-100).max(100),
     exitPE: z.number().min(0).max(1000),
-    qualityMultiplier: z.number().min(0.1).max(10), // Quality multiplier range
-    shareChange: z.number().min(-100).max(1000), // Share dilution/buyback %
-    rationale: z.string().max(2000).optional(), // Limit rationale length
-    moatScore: z.number().min(0).max(5).optional(), // 0-5
-    managementScore: z.number().min(0).max(5).optional(), // 0-5
-});
+    qualityMultiplier: z.number().min(0.1).max(10),
+    shareChange: z.number().min(-100).max(1000),
+    rationale: z.string().max(10000).optional(),  // raised from 2000 — detailed AI rationales are long
+    moatScore: z.number().min(0).max(5).optional(),
+    managementScore: z.number().min(0).max(5).optional(),
+    // v1.2 output fields
+    year5Revenue: z.number().optional(),
+    year5NetIncome: z.number().optional(),
+    year5EPS: z.number().optional(),
+    scenarioPrice: z.number().optional(),
+    risks: z.array(z.string()).optional(),
+}).passthrough(); // preserve any future extension fields
 
 // Snapshot Schema
 export const SnapshotSchema = z.object({
@@ -26,21 +33,22 @@ export const SnapshotSchema = z.object({
     revenue: z.number().nonnegative(),
     lastActualPS: z.number().nonnegative(),
     fiscalPeriod: z.string().optional(),
-    analystGrowthEstimate: z.number().optional(),
-    analystMarginEstimate: z.number().optional(),
+    analystGrowthEstimate: z.number().nullable().optional(),
+    analystMarginEstimate: z.number().nullable().optional(),
 });
 
-// Full Projection Schema
+// Full Projection Schema — .passthrough() ensures analyticsLog and any future v1.x
+// extension fields are preserved in parseResult.data (not just the original object).
 export const ProjectionSchema = z.object({
     ticker: z.string().regex(tickerRegex),
     id: z.string().uuid(),
-    source: z.enum(['USER', 'SYSTEM', 'AI_AGENT']).default('USER'), // Red Team C2: Source Isolation
-    schemaVersion: z.literal('1.1'),
+    source: z.enum(['USER', 'SYSTEM', 'AI_AGENT']).default('USER'),
+    schemaVersion: z.union([z.literal('1.1'), z.literal('1.2')]),
     version: z.number().int().nonnegative(),
     savedAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
-    name: z.string().min(1).max(100),
-    rationale: z.string().max(5000).optional(),
+    name: z.string().min(1).max(200),  // raised from 100 — AI names include ticker + date
+    rationale: z.string().max(10000).optional(),  // raised from 5000
     snapshot: SnapshotSchema,
     dataPreferences: z.object({
         growthBasis: z.enum(['ttm', 'next', 'current']),
@@ -51,12 +59,11 @@ export const ProjectionSchema = z.object({
         base: ScenarioSchema,
         bull: ScenarioSchema,
     }).refine((data) => {
-        // Validate strict weight sum = 1.0 (with small float tolerance)
         const sum = data.bear.weight + data.base.weight + data.bull.weight;
         return Math.abs(sum - 1.0) < 0.01;
     }, {
         message: "Scenario weights must sum to 1.0",
-        path: ["base"], // Attach error to base scenario for UI simplicity
+        path: ["base"],
     }),
     aiThesis: z.object({
         model: z.string(),
@@ -64,13 +71,16 @@ export const ProjectionSchema = z.object({
         fairValue: z.number(),
         action: z.enum(['BUY', 'HOLD', 'SELL']),
         analyzedAt: z.string().datetime(),
-        researchReport: z.string().max(200).optional(), // Link to markdown report
-    }).optional(), // Optional because user might save manual projection without AI
+        researchReport: z.string().max(200).optional(),
+    }).optional(),
     globalSettings: z.object({
         discountRate: z.number().min(0).max(100),
         timeHorizon: z.number().int().min(1).max(50),
     }),
-});
+    // v1.2: full analytical decision log — preserved but not rigidly typed so schema
+    // changes to analyticsLog don't require backend deploys.
+    analyticsLog: z.record(z.unknown()).optional(),
+}).passthrough();
 
 export type Projection = z.infer<typeof ProjectionSchema>;
 

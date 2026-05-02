@@ -3,11 +3,11 @@
     "ticker": "SNDK",
     "id": "e9c12b42-1a2d-4f8e-9c1a-2e5f903b4d72",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T17:15:00.000Z",
-    "updatedAt": "2026-05-02T17:22:53.141Z",
-    "name": "AI Deep Dive — SNDK — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:02.478Z",
+    "name": "AI Deep Dive \u2014 SNDK \u2014 2026-05-02",
     "rationale": "SNDK (formerly SanDisk) appears as a $175B market cap hardware play with 251% revenue growth ($7.3B TTM). While the growth is extraordinary, the $1,187 price tag reflects an unsustainable 24x P/S multiple for a hardware entity. My weighted fair value of $412 reflects a 65% downside, as hardware cycles inevitably mean-revert and the current valuation prices in SaaS-like terminal dominance which is unproven for this asset.",
     "snapshot": {
       "price": 1187,
@@ -69,6 +69,40 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (148000000) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of 34.19% used as anchor for baseline profitability.",
+      "growthDerivation": "Hypergrowth exception applied: Y1 consensus is 163.6%. Derived a 80% 5-year CAGR accounting for out-year deceleration.",
+      "sectorBenchmarkRow": "Technology - Computer Hardware",
+      "dataQualityFlags": [
+        "No anomalies detected in baseline financial data."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 19387189660.0,
+        "y2RevEstimate": 38250461820.0,
+        "y1GrowthPct": 163.59,
+        "y2GrowthPct": 97.3,
+        "blendedConsensusPct": 130.44,
+        "analystTargetMean": 1205.7142,
+        "analystCount": 21
+      },
+      "historicalRevenue": [
+        6086000000.0,
+        6663000000.0,
+        7355000000.0
+      ],
+      "historicalNetMargins": [
+        -35.21196187972396,
+        -10.085547050877983,
+        -22.31135282121006
+      ],
+      "historicalEPS": [
+        -14.78,
+        -4.63,
+        -11.32
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

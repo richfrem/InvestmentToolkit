@@ -3,11 +3,11 @@
     "ticker": "BE",
     "id": "e8c23f54-2b4e-5e9f-8b2c-4f7f105d6e94",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T17:35:00.000Z",
-    "updatedAt": "2026-05-02T17:35:00.000Z",
-    "name": "AI Deep Dive — BE — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:05.097Z",
+    "name": "AI Deep Dive \u2014 BE \u2014 2026-05-02",
     "rationale": "Bloom Energy (BE) is experiencing a massive hyper-growth cycle (130% YoY) driven by AI data center power demands, propelling its valuation to $82.6B. While its solid oxide fuel cells are uniquely positioned to solve grid bottlenecks, pricing perfection is assumed at 40x trailing sales. My weighted fair value of $257 indicates mild downside risk. Strong execution is required to justify the current $290 share price.",
     "snapshot": {
       "price": 290.52,
@@ -69,6 +69,46 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (284443868) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of 0.25% used as anchor for baseline profitability.",
+      "growthDerivation": "Hypergrowth exception applied: Y1 consensus is 83.8%. Derived a 60% 5-year CAGR accounting for out-year deceleration.",
+      "sectorBenchmarkRow": "Industrials - Electrical Equipment & Parts",
+      "dataQualityFlags": [
+        "No anomalies detected in baseline financial data."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 3721071240.0,
+        "y2RevEstimate": 6154769420.0,
+        "y1GrowthPct": 83.85,
+        "y2GrowthPct": 65.4,
+        "blendedConsensusPct": 74.63,
+        "analystTargetMean": 230.75,
+        "analystCount": 24
+      },
+      "historicalRevenue": [
+        0,
+        1199125000.0,
+        1333470000.0,
+        1473856000.0,
+        2023994000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        -25.13566141978526,
+        -22.65637772128357,
+        -1.9830295496982064,
+        -4.369281727119744
+      ],
+      "historicalEPS": [
+        0,
+        -1.62,
+        -1.42,
+        -0.13,
+        -0.37
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

@@ -3,11 +3,11 @@
     "ticker": "HUT",
     "id": "f5e9c0a2-d8b3-4e4f-b7a1-c6d5e4f3a2b1",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T18:25:00.000Z",
-    "updatedAt": "2026-05-02T18:25:00.000Z",
-    "name": "AI Deep Dive — HUT — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:09.542Z",
+    "name": "AI Deep Dive \u2014 HUT \u2014 2026-05-02",
     "rationale": "Hut 8 (HUT) presents a severe capital destruction profile. Trading at an $8.6B valuation on just $15M in trailing revenue, the market is pricing in an impossibly seamless pivot to AI/HPC hosting. The company burned -$787M in free cash flow over the last year, with operating margins collapsing to -2104%. To fund this infrastructure arms race, massive shareholder dilution is inevitable. My weighted fair value of $9.15 implies nearly 90% downside risk from the current $76.98 price.",
     "snapshot": {
       "price": 76.98,
@@ -69,6 +69,44 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (112552646) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of -96.19% used as anchor for baseline profitability.",
+      "growthDerivation": "Hypergrowth exception applied: Y1 consensus is 2185.0%. Derived a 80% 5-year CAGR accounting for out-year deceleration.",
+      "sectorBenchmarkRow": "Financial Services - Capital Markets",
+      "dataQualityFlags": [
+        "No anomalies detected in baseline financial data.",
+        "Crypto-exposed business model; high volatility and capital intensity limit forecast confidence."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 344604440.0,
+        "y2RevEstimate": 543012690.0,
+        "y1GrowthPct": 2185.02,
+        "y2GrowthPct": 57.58,
+        "blendedConsensusPct": 1121.3,
+        "analystTargetMean": 84.5,
+        "analystCount": 16
+      },
+      "historicalRevenue": [
+        79185000.0,
+        86737000.0,
+        671722000.0,
+        15081000.0
+      ],
+      "historicalNetMargins": [
+        -40.16290964197765,
+        -75.64361229924945,
+        49.40764185183751,
+        -1499.562363238512
+      ],
+      "historicalEPS": [
+        -0.359153,
+        -0.740948,
+        3.63,
+        -2.14
+      ],
+      "confidenceBreakdown": "0.7/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

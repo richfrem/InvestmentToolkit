@@ -3,11 +3,11 @@
     "ticker": "BITF",
     "id": "c7a8b9f1-3d2e-4a5b-9c8d-7e6f5a4b3c2d",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T17:40:00.000Z",
-    "updatedAt": "2026-05-02T17:40:00.000Z",
-    "name": "AI Deep Dive — BITF — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:05.563Z",
+    "name": "AI Deep Dive \u2014 BITF \u2014 2026-05-02",
     "rationale": "BITF (Bitfarms/Keel Infrastructure) presents a classic capital-destruction trap. Despite 72% top-line growth, the company burned -$347M in free cash flow over the last year to generate $229M in revenue. Operating margins stand at -42%, and the structural economics of crypto mining/infrastructure require constant, severe shareholder dilution just to maintain market share. My weighted fair value of $1.18 implies 40% downside.",
     "snapshot": {
       "price": 1.98,
@@ -69,6 +69,46 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (602851137) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of 0.0% used as anchor for baseline profitability.",
+      "growthDerivation": "Blended analyst consensus is 0.0% (Y1 0.0%, Y2 0.0%). Base scenario uses 30%, aligned with near-term trajectory.",
+      "sectorBenchmarkRow": "Financial Services - Capital Markets",
+      "dataQualityFlags": [
+        "No anomalies detected in baseline financial data."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 0,
+        "y2RevEstimate": 0,
+        "y1GrowthPct": 0,
+        "y2GrowthPct": 0,
+        "blendedConsensusPct": 0,
+        "analystTargetMean": 0,
+        "analystCount": 0
+      },
+      "historicalRevenue": [
+        0,
+        142428000.0,
+        120400000.0,
+        133274000.0,
+        229276000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        -123.32125705619681,
+        -33.16694352159468,
+        -5.52170715968606,
+        -90.94453846019644
+      ],
+      "historicalEPS": [
+        0,
+        -1.15,
+        -0.21,
+        -0.07,
+        -0.52
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

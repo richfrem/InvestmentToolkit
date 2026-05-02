@@ -3,11 +3,11 @@
     "ticker": "BTDR",
     "id": "a1b2c3d4-e5f6-4a5b-8c7d-9e8f7a6b5c4d",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 2,
     "savedAt": "2026-05-02T17:45:00.000Z",
-    "updatedAt": "2026-05-02T17:45:00.000Z",
-    "name": "AI Deep Dive — BTDR — 2026-05-02",
+    "updatedAt": "2026-05-02T18:58:19.718Z",
+    "name": "AI Deep Dive \u2014 BTDR \u2014 2026-05-02",
     "rationale": "Bitdeer (BTDR) is transitioning from pure Bitcoin mining into AI/HPC hosting. While revenue growth is spectacular (225%), the capital requirements are equally staggering, with $2.0B in negative FCF over the last 12 months. This requires massive shareholder dilution. Despite modeling a 100% share count increase in the base case, the sheer scale of HPC revenue potential yields a weighted fair value of $29.21, offering substantial upside if they execute their infrastructure pipeline.",
     "snapshot": {
       "price": 11.84,
@@ -69,6 +69,46 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used metrics.shares_outstanding as fallback/default during migration.",
+      "marginAnchor": "TTM margin used as baseline for migration.",
+      "growthDerivation": "Y1 +65.9% / Y2 +47.5% blended 56.7%; base 50%",
+      "sectorBenchmarkRow": "Technology - Software - Application",
+      "dataQualityFlags": [
+        "Retroactively migrated to schemaVersion 1.2."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 1028871180.0,
+        "y2RevEstimate": 1517731380.0,
+        "y1GrowthPct": 65.87927507001174,
+        "y2GrowthPct": 47.514228166056704,
+        "blendedConsensusPct": 56.69675161803423,
+        "analystTargetMean": 20.53333,
+        "analystCount": 12
+      },
+      "historicalRevenue": [
+        0,
+        333342000.0,
+        368554000.0,
+        349782000.0,
+        620253000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        -18.109329157441906,
+        -15.372509862869485,
+        -171.29269087603137,
+        10.575845662979463
+      ],
+      "historicalEPS": [
+        0,
+        -0.542428,
+        -0.51,
+        -4.36,
+        0.32
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence assigned during migration."
     }
   }
 ]

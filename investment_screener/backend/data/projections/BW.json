@@ -3,11 +3,11 @@
     "ticker": "BW",
     "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e3f",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T17:50:00.000Z",
-    "updatedAt": "2026-05-02T17:50:00.000Z",
-    "name": "AI Deep Dive — BW — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:05.996Z",
+    "name": "AI Deep Dive \u2014 BW \u2014 2026-05-02",
     "rationale": "Babcock & Wilcox (BW) has experienced an astonishing 2952% 1-year run, reflecting a dramatic turnaround narrative anchored by its BrightLoop chemical looping technology (hydrogen/syngas). While trailing growth is only 2%, analysts project a massive acceleration (37% next year). The company sits at the nexus of the energy transition, but cash flow remains negative (-$85M FCF). At 3.25x sales, the market is pricing in a successful commercialization phase. Weighted fair value of $27.13 suggests meaningful upside if execution holds.",
     "snapshot": {
       "price": 14.07,
@@ -69,6 +69,46 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (135741811) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of -6.15% used as anchor for baseline profitability.",
+      "growthDerivation": "Blended analyst consensus is 52.0% (Y1 37.4%, Y2 66.7%). Base scenario uses 35%, aligned with near-term trajectory.",
+      "sectorBenchmarkRow": "Industrials - Specialty Industrial Machinery",
+      "dataQualityFlags": [
+        "No anomalies detected in baseline financial data."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 807266670.0,
+        "y2RevEstimate": 1345933330.0,
+        "y1GrowthPct": 37.37,
+        "y2GrowthPct": 66.73,
+        "blendedConsensusPct": 52.05,
+        "analystTargetMean": 20.33333,
+        "analystCount": 3
+      },
+      "historicalRevenue": [
+        0,
+        609437000.0,
+        587448000.0,
+        581039000.0,
+        587676000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        -3.75116706074623,
+        -33.57029047677411,
+        -10.311700247315585,
+        -6.152880158454659
+      ],
+      "historicalEPS": [
+        0.26,
+        0.43,
+        -2.38,
+        -0.82,
+        0
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

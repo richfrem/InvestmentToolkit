@@ -3,11 +3,11 @@
     "ticker": "INTC",
     "id": "e3e842b5-5009-409e-83b9-247112358f1d",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 6,
+    "schemaVersion": "1.2",
+    "version": 7,
     "savedAt": "2026-02-14T23:15:00.000Z",
-    "updatedAt": "2026-02-15T06:51:34.970923+00:00",
-    "name": "AI Deep Dive — INTC — 2026-02-14",
+    "updatedAt": "2026-05-02T18:58:16.140Z",
+    "name": "AI Deep Dive \u2014 INTC \u2014 2026-02-14",
     "rationale": "National Champion Thesis v6. Final synchronization. Bull case aligned to $143. Base to $64. Bear to $21.",
     "snapshot": {
       "price": 46.79,
@@ -76,16 +76,53 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used metrics.shares_outstanding as fallback/default during migration.",
+      "marginAnchor": "TTM margin used as baseline for migration.",
+      "growthDerivation": "Y1 +10.9% / Y2 +10.0% blended 10.5%; base 10%",
+      "sectorBenchmarkRow": "Technology - Semiconductors",
+      "dataQualityFlags": [
+        "Retroactively migrated to schemaVersion 1.2."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 58605371780.0,
+        "y2RevEstimate": 64479783420.0,
+        "y1GrowthPct": 10.883718577942592,
+        "y2GrowthPct": 10.023674386116156,
+        "blendedConsensusPct": 10.453696482029374,
+        "analystTargetMean": 78.21071,
+        "analystCount": 42
+      },
+      "historicalRevenue": [
+        63054000000.0,
+        54228000000.0,
+        53101000000.0,
+        52853000000.0
+      ],
+      "historicalNetMargins": [
+        12.709740857043169,
+        3.114627129895995,
+        -35.321368712453626,
+        -0.5051747299112632
+      ],
+      "historicalEPS": [
+        1.95,
+        0.4,
+        -4.38,
+        -0.06
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence assigned during migration."
     }
   },
   {
     "ticker": "INTC",
     "id": "dcba83cf-9e59-4991-9588-a3914f14951f",
     "source": "USER",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 2,
     "savedAt": "2026-02-15T15:25:31.502Z",
-    "updatedAt": "2026-02-15T15:25:31.503Z",
+    "updatedAt": "2026-05-02T18:58:16.566Z",
     "name": "Debug Save Test",
     "snapshot": {
       "price": 50,
@@ -141,6 +178,43 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used metrics.shares_outstanding as fallback/default during migration.",
+      "marginAnchor": "TTM margin used as baseline for migration.",
+      "growthDerivation": "Y1 +10.9% / Y2 +10.0% blended 10.5%; base 10%",
+      "sectorBenchmarkRow": "Technology - Semiconductors",
+      "dataQualityFlags": [
+        "Retroactively migrated to schemaVersion 1.2."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 58605371780.0,
+        "y2RevEstimate": 64479783420.0,
+        "y1GrowthPct": 10.883718577942592,
+        "y2GrowthPct": 10.023674386116156,
+        "blendedConsensusPct": 10.453696482029374,
+        "analystTargetMean": 78.21071,
+        "analystCount": 42
+      },
+      "historicalRevenue": [
+        63054000000.0,
+        54228000000.0,
+        53101000000.0,
+        52853000000.0
+      ],
+      "historicalNetMargins": [
+        12.709740857043169,
+        3.114627129895995,
+        -35.321368712453626,
+        -0.5051747299112632
+      ],
+      "historicalEPS": [
+        1.95,
+        0.4,
+        -4.38,
+        -0.06
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence assigned during migration."
     }
   }
 ]

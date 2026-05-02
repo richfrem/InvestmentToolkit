@@ -3,11 +3,11 @@
     "ticker": "CEG",
     "id": "e2f4a1c5-b8d9-4c3f-a6b7-9d8e7f6a5b4c",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T19:20:00.000Z",
-    "updatedAt": "2026-05-02T19:20:00.000Z",
-    "name": "AI Deep Dive — CEG — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:06.429Z",
+    "name": "AI Deep Dive \u2014 CEG \u2014 2026-05-02",
     "rationale": "Constellation Energy (CEG) is perfectly positioned as the largest operator of nuclear power plants in the US, providing the reliable, carbon-free baseload power desperately needed by AI data centers. With strong FCF generation ($1.28B) and solid margins, it trades at a forward P/E of 22.5x, reflecting its premium utility status. My weighted fair value of $341 indicates modest upside, making it a solid BUY for stable, long-term AI infrastructure exposure.",
     "snapshot": {
       "price": 307.81,
@@ -69,6 +69,46 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (362294672) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of 9.08% used as anchor for baseline profitability.",
+      "growthDerivation": "Blended analyst consensus is 15.2% (Y1 24.8%, Y2 5.7%). Base scenario uses 12%, aligned with near-term trajectory.",
+      "sectorBenchmarkRow": "Utilities - Utilities - Independent Power Producers",
+      "dataQualityFlags": [
+        "No anomalies detected in baseline financial data."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 31866816710.0,
+        "y2RevEstimate": 33672937550.0,
+        "y1GrowthPct": 24.81,
+        "y2GrowthPct": 5.67,
+        "blendedConsensusPct": 15.24,
+        "analystTargetMean": 369.9315,
+        "analystCount": 20
+      },
+      "historicalRevenue": [
+        0,
+        24440000000.0,
+        24918000000.0,
+        23568000000.0,
+        25533000000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        -0.6546644844517185,
+        6.5133638333734645,
+        15.907162253903598,
+        9.08236399953002
+      ],
+      "historicalEPS": [
+        0,
+        -0.489297,
+        5.02,
+        11.91,
+        7.4
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

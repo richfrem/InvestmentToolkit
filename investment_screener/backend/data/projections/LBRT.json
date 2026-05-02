@@ -3,11 +3,11 @@
     "ticker": "LBRT",
     "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e5f",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T18:40:00.000Z",
-    "updatedAt": "2026-05-02T18:40:00.000Z",
-    "name": "AI Deep Dive — LBRT — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:10.844Z",
+    "name": "AI Deep Dive \u2014 LBRT \u2014 2026-05-02",
     "rationale": "Liberty Energy (LBRT) has seen its stock price surge 181% over the past year despite a significant deterioration in core fundamentals. Free cash flow has collapsed from $411M to just $14M, and net margins have compressed to a razor-thin 3.7%. At a $5.3B market cap and trading at a steep 92x forward earnings, the market is pricing in a massive margin recovery that contradicts its low Piotroski F-Score (3). Weighted fair value of $16.54 suggests the stock is severely overvalued and due for a major correction.",
     "snapshot": {
       "price": 32.68,
@@ -69,6 +69,46 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (163191416) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of 3.71% used as anchor for baseline profitability.",
+      "growthDerivation": "Blended analyst consensus is 7.1% (Y1 7.6%, Y2 6.5%). Base scenario uses 5%, aligned with near-term trajectory.",
+      "sectorBenchmarkRow": "Energy - Oil & Gas Equipment & Services",
+      "dataQualityFlags": [
+        "No anomalies detected in baseline financial data."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 4311706910.0,
+        "y2RevEstimate": 4592778790.0,
+        "y1GrowthPct": 7.63,
+        "y2GrowthPct": 6.52,
+        "blendedConsensusPct": 7.07,
+        "analystTargetMean": 32.76923,
+        "analystCount": 13
+      },
+      "historicalRevenue": [
+        0,
+        4149228000.0,
+        4747928000.0,
+        4315161000.0,
+        4006116000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        9.630755407993968,
+        11.717047941754803,
+        7.323249352689273,
+        3.691156222136353
+      ],
+      "historicalEPS": [
+        0,
+        2.17,
+        3.24,
+        1.91,
+        0.91
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

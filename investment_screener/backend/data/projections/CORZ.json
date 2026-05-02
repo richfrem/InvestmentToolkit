@@ -3,11 +3,11 @@
     "ticker": "CORZ",
     "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e3a",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T18:15:00.000Z",
-    "updatedAt": "2026-05-02T18:15:00.000Z",
-    "name": "AI Deep Dive — CORZ — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:08.681Z",
+    "name": "AI Deep Dive \u2014 CORZ \u2014 2026-05-02",
     "rationale": "Core Scientific (CORZ) has ridden the post-bankruptcy AI/HPC hype wave to a $6.4B valuation. While forward estimates suggest aggressive top-line acceleration as they pivot from pure Bitcoin mining to AI hosting, the capital requirements remain brutal (-$460M FCF). At 20x trailing sales, the market is pricing in flawless execution and ignoring the inevitable shareholder dilution required to fund infrastructure capex. My weighted fair value of $5.71 indicates massive downside risk.",
     "snapshot": {
       "price": 20.35,
@@ -69,6 +69,46 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (315594802) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of -90.47% used as anchor for baseline profitability.",
+      "growthDerivation": "Hypergrowth exception applied: Y1 consensus is 94.2%. Derived a 30% 5-year CAGR accounting for out-year deceleration.",
+      "sectorBenchmarkRow": "Technology - Software - Infrastructure",
+      "dataQualityFlags": [
+        "No anomalies detected in baseline financial data."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 619594930.0,
+        "y2RevEstimate": 1007023640.0,
+        "y1GrowthPct": 94.22,
+        "y2GrowthPct": 62.53,
+        "blendedConsensusPct": 78.37,
+        "analystTargetMean": 26.54688,
+        "analystCount": 16
+      },
+      "historicalRevenue": [
+        0,
+        640313000.0,
+        502400000.0,
+        510672000.0,
+        319019000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        -335.1982546036079,
+        -49.06190286624204,
+        -281.5650750383808,
+        -90.46984662355534
+      ],
+      "historicalEPS": [
+        0,
+        -6.3,
+        -0.65,
+        -4.39,
+        -0.88
+      ],
+      "confidenceBreakdown": "0.6/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

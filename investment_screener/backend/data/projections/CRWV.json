@@ -3,10 +3,10 @@
     "ticker": "CRWV",
     "id": "a7e3c5d1-9f8b-4e2a-b6d4-3c1f7e8a2b5d",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 2,
     "savedAt": "2026-02-16T02:55:00.000Z",
-    "updatedAt": "2026-02-16T02:55:00.000Z",
+    "updatedAt": "2026-05-02T18:58:18.848Z",
     "name": "AI Deep Dive \u2014 CRWV \u2014 2026-02-15",
     "rationale": "CoreWeave is a GPU-cloud infrastructure company riding the GenAI capex wave. Revenue surged from $229M (2023) to $1.9B (2024 fiscal) to an estimated $4.3B TTM, representing 133% YoY growth. Analyst consensus projects $5.1B in 2025 and $12.0B in 2026. Gross margins of 73.9% are exceptional for infrastructure, though the company carries $18.8B in debt financing its GPU fleet. Operating income turned positive at $324M in 2024. The weighted fair value of $137.28 suggests significant upside from the current $96.04, contingent on sustaining demand and managing the debt load.",
     "snapshot": {
@@ -94,6 +94,43 @@
     "globalSettings": {
       "discountRate": 10.0,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used metrics.shares_outstanding as fallback/default during migration.",
+      "marginAnchor": "TTM margin used as baseline for migration.",
+      "growthDerivation": "Y1 +143.4% / Y2 +88.9% blended 116.2%; base 45.0%",
+      "sectorBenchmarkRow": "Technology - Software - Infrastructure",
+      "dataQualityFlags": [
+        "Retroactively migrated to schemaVersion 1.2."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 12490847340.0,
+        "y2RevEstimate": 23595138660.0,
+        "y1GrowthPct": 143.43884895731827,
+        "y2GrowthPct": 88.89942385606003,
+        "blendedConsensusPct": 116.16913640668915,
+        "analystTargetMean": 128.80646,
+        "analystCount": 31
+      },
+      "historicalRevenue": [
+        15830000.0,
+        229000000.0,
+        1915000000.0,
+        5131000000.0
+      ],
+      "historicalNetMargins": [
+        -196.17814276689828,
+        -259.3886462882096,
+        -45.06527415143603,
+        -22.74410446306763
+      ],
+      "historicalEPS": [
+        -0.076921,
+        -1.471291,
+        -2.018966,
+        -2.75
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence assigned during migration."
     }
   }
 ]

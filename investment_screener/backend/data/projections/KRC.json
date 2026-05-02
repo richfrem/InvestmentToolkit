@@ -3,11 +3,11 @@
     "ticker": "KRC",
     "id": "e5a8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e5c",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T18:35:00.000Z",
-    "updatedAt": "2026-05-02T18:35:00.000Z",
-    "name": "AI Deep Dive — KRC — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:10.401Z",
+    "name": "AI Deep Dive \u2014 KRC \u2014 2026-05-02",
     "rationale": "Kilroy Realty (KRC) is navigating the challenging West Coast office REIT market. While top-line growth is flat (-0.3%), the company maintains a solid Piotroski F-Score of 7 and healthy 19.6% net margins, largely buoyed by its life science portfolio. At $33.64, the stock is trading at a depressed multiple reflecting macro work-from-home headwinds. My weighted fair value of $30.82 suggests the stock is currently fairly valued to slightly overvalued, lacking a clear near-term catalyst for a major re-rating.",
     "snapshot": {
       "price": 33.64,
@@ -69,6 +69,46 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (116278807) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of 19.59% used as anchor for baseline profitability.",
+      "growthDerivation": "Blended analyst consensus is -0.4% (Y1 -3.9%, Y2 3.2%). Base scenario uses 2%, aligned with near-term trajectory.",
+      "sectorBenchmarkRow": "Real Estate - REIT - Office",
+      "dataQualityFlags": [
+        "Negative Y1 growth consensus (-3.9%) indicates shrinking core business or cyclical trough."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 1069034970.0,
+        "y2RevEstimate": 1103246060.0,
+        "y1GrowthPct": -3.92,
+        "y2GrowthPct": 3.2,
+        "blendedConsensusPct": -0.36,
+        "analystTargetMean": 35.5,
+        "analystCount": 14
+      },
+      "historicalRevenue": [
+        0,
+        1096987000.0,
+        1129694000.0,
+        1135629000.0,
+        1112667000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        21.204900331544493,
+        18.78747696278815,
+        18.577281841164677,
+        24.81613995921511
+      ],
+      "historicalEPS": [
+        0,
+        1.98,
+        1.8,
+        1.78,
+        2.33
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

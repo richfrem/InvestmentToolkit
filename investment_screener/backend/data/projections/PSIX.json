@@ -3,11 +3,11 @@
     "ticker": "PSIX",
     "id": "a1b2c3d4-e5f6-4a5b-8c7d-9e8f7a6b5c5e",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T18:50:00.000Z",
-    "updatedAt": "2026-05-02T18:50:00.000Z",
-    "name": "AI Deep Dive — PSIX — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:11.760Z",
+    "name": "AI Deep Dive \u2014 PSIX \u2014 2026-05-02",
     "rationale": "Power Solutions International (PSIX) is a highly profitable, under-the-radar beneficiary of the AI data center power constraint. Producing $722M in revenue with 32% growth and stellar 15.7% net margins, it trades at an attractive 14x P/E multiple. The company provides prime and standby power generation, perfectly positioning it to capture demand where grid power falls short. Weighted PV of $112.87 implies significant upside.",
     "snapshot": {
       "price": 70.5,
@@ -69,6 +69,46 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (23050450) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of 15.78% used as anchor for baseline profitability.",
+      "growthDerivation": "Blended analyst consensus is 19.2% (Y1 22.3%, Y2 16.2%). Base scenario uses 15%, aligned with near-term trajectory.",
+      "sectorBenchmarkRow": "Industrials - Specialty Industrial Machinery",
+      "dataQualityFlags": [
+        "No anomalies detected in baseline financial data."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 883400000.0,
+        "y2RevEstimate": 1026466670.0,
+        "y1GrowthPct": 22.29,
+        "y2GrowthPct": 16.2,
+        "blendedConsensusPct": 19.24,
+        "analystTargetMean": 102.96667,
+        "analystCount": 3
+      },
+      "historicalRevenue": [
+        0,
+        481333000.0,
+        458973000.0,
+        475967000.0,
+        722405000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        2.3414143638603626,
+        5.731491830674136,
+        14.555420859009132,
+        15.778822128861233
+      ],
+      "historicalEPS": [
+        0,
+        0.49,
+        1.15,
+        3.01,
+        4.95
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

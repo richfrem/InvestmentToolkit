@@ -3,11 +3,11 @@
     "ticker": "IREN",
     "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e4a",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T18:30:00.000Z",
-    "updatedAt": "2026-05-02T18:30:00.000Z",
-    "name": "AI Deep Dive — IREN — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:09.975Z",
+    "name": "AI Deep Dive \u2014 IREN \u2014 2026-05-02",
     "rationale": "IREN (formerly Iris Energy) has achieved a $15.1B valuation on the promise of its dual Bitcoin/HPC data center model. Growth is strong (59%), but free cash flow burn is severe (-$1.12B TTM). However, analysts forecast explosive revenue acceleration toward $2.8B by 2027. Unlike pure crypto miners, IREN's HPC optionality provides a potential path to sustainable high margins. Weighted fair value of $50.38 implies a mild 10% upside, but the dilution risk required to fund their gigawatt pipeline makes it a HOLD.",
     "snapshot": {
       "price": 45.66,
@@ -69,6 +69,47 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (331759177) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of 51.48% used as anchor for baseline profitability.",
+      "growthDerivation": "Hypergrowth exception applied: Y1 consensus is 91.3%. Derived a 65% 5-year CAGR accounting for out-year deceleration.",
+      "sectorBenchmarkRow": "Financial Services - Capital Markets",
+      "dataQualityFlags": [
+        "Unusually high TTM margin (51.48%) \u2014 verified as sustainable or flagged as one-off.",
+        "Crypto-exposed business model; high volatility and capital intensity limit forecast confidence."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 958417770.0,
+        "y2RevEstimate": 2869216060.0,
+        "y1GrowthPct": 91.29,
+        "y2GrowthPct": 199.37,
+        "blendedConsensusPct": 145.33,
+        "analystTargetMean": 70.4,
+        "analystCount": 15
+      },
+      "historicalRevenue": [
+        0,
+        59037000.0,
+        75509000.0,
+        187192000.0,
+        501023000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        -711.0286769314158,
+        -227.55830430809573,
+        -15.44937817855464,
+        17.352696383199973
+      ],
+      "historicalEPS": [
+        0,
+        -10.253,
+        -3.14,
+        -0.29,
+        0.336687
+      ],
+      "confidenceBreakdown": "0.7/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]
