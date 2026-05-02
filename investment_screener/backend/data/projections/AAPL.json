@@ -130,5 +130,110 @@
       ],
       "confidenceBreakdown": "0.95/1.0 — +0.10 for extreme financial consistency and buyback predictability, +0.05 for high analyst coverage."
     }
+  },
+  {
+    "ticker": "AAPL",
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T21:15:00.000Z",
+    "updatedAt": "2026-05-02T21:15:00.000Z",
+    "name": "AI Deep Dive — AAPL — 2026-05-02",
+    "rationale": "Apple at $280 is the world most valuable consumer ecosystem — 2B+ active devices, 30%+ Services margins expanding, AI Apple Intelligence driving modest upgrade cycle. TTM net margin ~29% (P/E-derived) reflects Services mix improving hardware economics. HOLD at fair value $270.65 (-3.4%) — not cheap enough to add, too high quality to sell.",
+    "snapshot": {
+      "price": 280.14,
+      "currency": "USD",
+      "shares": 14668000000,
+      "revenue": 416200000000,
+      "lastActualPS": 0,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": null,
+      "analystMarginEstimate": null
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 5,
+        "netMargin": 26,
+        "exitPE": 20,
+        "qualityMultiplier": 1.1,
+        "shareChange": -1,
+        "rationale": "China iPhone ban expands to enterprise + government (60% of China revenue lost), AI Apple Intelligence fails to drive upgrade cycle. TTM margin compresses to 26% on pricing pressure. PE 20x below hardware median.",
+        "scenarioPrice": 135.24
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 11,
+        "netMargin": 29,
+        "exitPE": 24,
+        "qualityMultiplier": 1.1,
+        "shareChange": -1.5,
+        "rationale": "AI integration drives mid-cycle iPhone upgrade. Services CAGR outpaces hardware, blending margins toward 29%. 11% revenue CAGR. QM 1.1: brand moat + iOS ecosystem switching costs (2B device installed base with ~97% annual retention).",
+        "scenarioPrice": 245.12
+      },
+      "bull": {
+        "weight": 0.3,
+        "growthRate": 16,
+        "netMargin": 32,
+        "exitPE": 28,
+        "qualityMultiplier": 1.15,
+        "shareChange": -2,
+        "rationale": "Catalyst: Apple Intelligence becomes defining personal AI platform — Siri 3.0 enables entirely new revenue streams (AI subscriptions, health, financial services). 16% CAGR to $874B. QM 1.15: brand + ecosystem + silicon (Apple Silicon cost/performance moat enabling Apple-only features).",
+        "scenarioPrice": 421.8
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "Apple at $280 is the world most valuable consumer ecosystem — 2B+ active devices, 30%+ Services margins expanding, AI Apple Intelligence driving modest upgrade cycle. TTM net margin ~29% (P/E-derived) reflects Services mix improving hardware economics. HOLD at fair value $270.65 (-3.4%) — not cheap enough to add, too high quality to sell.",
+      "fairValue": 270.65,
+      "action": "HOLD",
+      "analyzedAt": "2026-05-02T21:15:00.000Z",
+      "researchReport": "AAPL_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used metrics.shares_diluted. Mktcap-implied cross-check: $4110B / $280.14 = 14.671B shares vs API 14.668B — consistent.",
+      "marginAnchor": "TTM 29.1% (P/E-derived: $4.11T / 33.9x = $121.2B NI / $416.2B = 29.1%). Historical AAPL margins: FY2022 25.3%, FY2023 25.3%, FY2024 26.4% — upward trend from Services mix. TTM 29.1% used as anchor (trending rule).",
+      "growthDerivation": "No analyst estimates. TTM growth 16.6%. Base 11% = deceleration toward mature large-cap rate. Services CAGR ~15%, hardware ~8%, blend ~11%. Within ±3pp of expected consensus.",
+      "sectorBenchmarkRow": "Technology — Hardware / Consumer Electronics: conservative P/E 12, median 18, growth 25. Note: Services premium justifies above-median exit PE.",
+      "dataQualityFlags": [
+        "net_income, net_margin, eps, financials all null — P/E-derived metrics used",
+        "No analyst estimates or financial history available",
+        "China exposure (~17% revenue) is geopolitical risk not capturable in DCF"
+      ],
+      "analystInputs": {
+        "y1RevEstimate": null,
+        "y2RevEstimate": null,
+        "y1GrowthPct": null,
+        "y2GrowthPct": null,
+        "blendedConsensusPct": null,
+        "analystTargetMean": null,
+        "analystCount": null
+      },
+      "historicalRevenue": [],
+      "historicalNetMargins": [],
+      "historicalEPS": [],
+      "priorAnalysisReview": {
+        "priorModel": "Gemini 1.5 Pro",
+        "priorDate": "2026-05-02",
+        "priorPrice": 280.14,
+        "priorFairValue": 269.82,
+        "priorAction": "HOLD",
+        "priceDelta": "0% — same-day analysis",
+        "assumptionAudit": "Prior bear QM 1.1 fine. Base/bull QM 1.2 cited as \"brand and ecosystem\" — Apple has two genuine moats (brand + ecosystem lock-in) making 1.2 defensible, but I use 1.1/1.15 to stay conservative within benchmark. Growth rates 5/11/15% well-calibrated. Bear margin 24% < TTM 29% — correct direction.",
+        "modelQualityFlag": "UNVALIDATED — Gemini 1.5 Pro",
+        "thesisOutcome": "Same-day analysis — no price movement. Prior HOLD $269.82 vs our HOLD $270.65.",
+        "fundamentalChanges": "Same-day analysis — no fundamental changes. Differences reflect QM recalibration, growth rate adjustment, and margin anchoring corrections."
+      },
+      "confidenceBreakdown": "0.63/1.0 — Base: 1.0. -0.12 no API net_margin (P/E-derived 29.1%); -0.10 no financials history; -0.10 China geopolitical exposure; -0.05 no analyst estimates; +0.10 brand moat quality undeniable"
+    }
   }
 ]
