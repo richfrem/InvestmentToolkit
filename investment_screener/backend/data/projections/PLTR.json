@@ -130,5 +130,126 @@
       ],
       "confidenceBreakdown": "0.85/1.0 — +0.10 for clean recent GAAP profitability and cash flow, -0.15 for the high sensitivity of the valuation to terminal growth and multiple assumptions."
     }
+  },
+  {
+    "ticker": "PLTR",
+    "id": "3625bf63-d5fb-45e8-9a70-8e2839c88349",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T21:00:00Z",
+    "updatedAt": "2026-05-02T21:00:00Z",
+    "name": "AI Deep Dive — PLTR — 2026-05-02",
+    "rationale": "Palantir has achieved a genuine inflection: 70% YoY revenue growth, 36% GAAP net margins, and Rule of 40 score of 102 confirm it is now a high-quality, structurally profitable AI platform. However at $144/share (228x trailing, 77x forward P/E), the market prices the next 5 years of base-case DCF value at today's price with zero time-value discount — a pattern seen in only the most aggressively valued names. Weighted fair value $96.54 (-33%) signals SELL; the core question is whether AIP commercial expansion and government AI dominance can sustain 34%+ CAGR long enough to justify current multiples.",
+    "snapshot": {
+      "price": 144.07,
+      "currency": "USD",
+      "shares": 2295915766,
+      "revenue": 4475446000,
+      "lastActualPS": 77.17,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 62.6,
+      "analystMarginEstimate": 36.31
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.3,
+        "growthRate": 20,
+        "netMargin": 24,
+        "exitPE": 30,
+        "qualityMultiplier": 0.9,
+        "shareChange": 1,
+        "rationale": "Government contract headwinds: US defense budget cuts, DoD procurement delays, and increasing competition from Microsoft/AWS/Google for government AI contracts erode PLTR's largest revenue segment. Commercial AIP adoption slows as enterprises discover integration complexity. Revenue grows only 20% CAGR — still strong by most standards but a severe disappointment vs current pricing. Net margin compresses to 24% as deceleration removes operating leverage and SBC re-inflates as % of revenue. Exit PE 30x — significant multiple compression from today's 77x forward; represents a mature software company re-rating. QM 0.90: government contract cancellation risk is real (PLTR lost UK NHS contract in 2022). Year 5 revenue $11.1B, EPS $1.11, price $29.91, PV $18.57.",
+        "scenarioPrice": 18.57
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 34,
+        "netMargin": 35,
+        "exitPE": 45,
+        "qualityMultiplier": 1.1,
+        "shareChange": 0.5,
+        "rationale": "Hypergrowth deceleration path. Analyst: Y1 $7.28B (+62.6%), Y2 $10.41B (+43.1%). Deceleration applied: Y3→30%, Y4→22%, Y5→17%. Y5 base revenue $19.3B → 5-yr CAGR 34% (hypergrowth exception applied per skill Rule 8). Net margin 35% ≈ TTM 36.3% minus small haircut for deceleration leverage effect; margin trend is strongly upward so TTM used as anchor. Exit PE 45x: premium for AI platform with proven commercial traction at scale, below current 77x forward (reasonable 5-yr compression). QM 1.10: Moat 1 — classified government access (AIP deployed in SCIF environments; no cloud hyper scaler can replicate); Moat 2 — AIP bootcamp model creating rapid enterprise switching costs (customers build AI workflows on PLTR stack). Year 5 revenue $19.3B, EPS $2.88, price $142.31, PV $88.37. Note: Year 5 undiscounted base price $142.31 ≈ current price $144.07 — market paying today for 5yr base-case terminal value.",
+        "scenarioPrice": 88.37
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 45,
+        "netMargin": 40,
+        "exitPE": 60,
+        "qualityMultiplier": 1.1,
+        "shareChange": 0,
+        "rationale": "Catalyst: AIP becomes the enterprise standard for AI integration, analogous to Salesforce becoming the CRM standard in the 2000s. US government AI spending accelerates (DOGE efficiency mandate + military AI modernization drive massive PLTR contracts). Commercial AIP customer count grows from ~500 to 3,000+. Revenue 45% CAGR — above analyst consensus, powered by AIP viral enterprise expansion. Net margin 40%: continued operating leverage as platform scales with minimal marginal cost per new customer. Exit PE 60x: dominant AI platform with proven government + commercial dual moat; still below current 228x trailing. QM 1.10 maintained — PLTR has strong switching costs but is NOT a monopoly; government contracts are re-bid, commercial customers retain choice. Year 5 revenue $28.7B, EPS $5.00, price $329.86, PV $204.81.",
+        "scenarioPrice": 204.81
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "Palantir has completed a fundamental business transformation. After a decade of losses funded by government contracts, the company has achieved genuine GAAP profitability (36.3% TTM net margin) while simultaneously growing revenue at 70% YoY — a combination that only a handful of software companies have ever achieved. The Artificial Intelligence Platform (AIP) is real: enterprises are adopting it through PLTR's distinctive 'bootcamp' model (5-day intensive deployments that demonstrate ROI before contracts are signed), and commercial customer count has been growing at 50%+ quarterly rates. The Rule of 40 score of 102 places PLTR among the elite cohort of software businesses.\n\nThe valuation, however, is priced for perfection — and then some. At $144/share and 228x trailing P/E, PLTR must sustain a 34% 5-year revenue CAGR and 35% margins just to justify $88/share (the base case present value). The current market price equals the Year 5 base-case undiscounted terminal value ($142.31) — meaning investors are getting zero time-value compensation for 5 years of execution risk. This is the 'priced for perfection' trap: the stock is not wrong about PLTR's quality, but the price already reflects it.\n\nThe bear case (-87% to $18.57) is severe but not remote. Government contracts are opaque, subject to political winds, and can be cancelled without warning (PLTR lost the NHS contract in 2022). If commercial AIP adoption slows — because enterprise AI integration is harder than the bootcamp makes it look, or because AWS/Azure build competing native AI workflow tools — PLTR faces both a growth miss and a multiple compression simultaneously.\n\nThe bull case ($204.81) is genuine: if AIP becomes the enterprise AI standard the way Salesforce became CRM, the platform value is real and $200+ is achievable. But the distribution of outcomes from current price is asymmetric: the downside is 87% in the bear, the upside is only 42% in the bull. Weighted, that mathematics produces $96.54 and a SELL. For investors who want PLTR exposure, a pullback to $90-100 would provide a materially better risk/reward entry.",
+      "fairValue": 96.54,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T21:00:00Z",
+      "researchReport": "PLTR_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used API shares_diluted 2,295.9M. Mktcap-implied: $345.4B / $144.07 = 2,397M (4.4% discrepancy). NI/EPS check: $1,625M / $0.69 = 2,355M (2.6% off). Neither matches perfectly — likely diluted share count includes in-the-money options/RSUs not in basic count. Flagged as minor; does not materially affect DCF at this discrepancy level.",
+      "marginAnchor": "TTM 36.3% used. Historical trend: -19.6% → 9.4% → 16.1% → 36.3% — strongly trending upward every year. Per Rule 9, TTM used as anchor for trending margins. Base 35% = slight haircut from TTM for deceleration leverage effect. Bear 24% = significant compression as growth slows and SBC re-inflates as % of revenue. Bull 40% = continued expansion as platform scales.",
+      "growthDerivation": "Hypergrowth exception triggered: Y1 analyst +62.6% (>40% threshold). Y2 analyst +43.1% (>40%). Cannot use Y1 directly as 5-yr CAGR. Deceleration path: Y1→62%, Y2→43%, Y3→30%, Y4→22%, Y5→17%. Revenue path: $4.475B → $7.25B → $10.37B → $13.48B → $16.45B → $19.24B. 5-yr CAGR = (19.24/4.475)^0.2 - 1 = 34.0%. Base case 34% — consistent with deceleration derivation. Bull 45% = above analyst, AIP dominance scenario. Bear 20% = major disappointment.",
+      "sectorBenchmarkRow": "Technology — Software (SaaS/Platform): conservative P/E 20, median P/E 30, growth P/E 50+. Net margin typical 15-25%, best-in-class 30%+. PLTR at 36.3% exceeds best-in-class. Bear exit PE 30x (SaaS median — growth disappointment re-rating). Base 45x (premium platform, above SaaS median). Bull 60x (dominant AI platform — at growth ceiling and above, justified by 45% CAGR). Note: Current 228x trailing and 77x forward — significant compression assumed in all scenarios.",
+      "dataQualityFlags": [
+        "UUID collision: Prior PLTR projection had same UUID as ASML (e0b96b0f-b4df-41ed-a16f-7b1bb363a033) — Gemini 1.5 Pro likely assigned non-unique IDs. Fresh UUID generated for this version to prevent data integrity issues.",
+        "Share count 3-way discrepancy: API diluted 2,295.9M vs mktcap-implied 2,397M vs NI/EPS 2,355M. Minor variance (2-4%) likely from option/RSU vesting timing. Does not materially affect per-share valuation.",
+        "Revenue growth metric 70% vs computed 56.2% from historical array. Metric likely represents trailing 12-month QoQ comparison vs prior TTM. Both indicate very high growth; 62% Y1 analyst consensus used as primary anchor.",
+        "SBC treatment: PLTR's margins are GAAP (include SBC expense). GAAP-based DCF is appropriate here; no adjustments made. Bear case assumes SBC cost re-inflates as % of revenue when growth decelerates."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 7276940150,
+        "y2RevEstimate": 10412212050,
+        "y1GrowthPct": 62.6,
+        "y2GrowthPct": 43.1,
+        "blendedConsensusPct": 52.9,
+        "analystTargetMean": 185.06,
+        "analystCount": 26
+      },
+      "historicalRevenue": [
+        1905.9,
+        2225,
+        2865.5,
+        4475.4
+      ],
+      "historicalNetMargins": [
+        -19.61,
+        9.43,
+        16.13,
+        36.31
+      ],
+      "historicalEPS": [
+        -0.18,
+        0.1,
+        0.21,
+        0.69
+      ],
+      "priorAnalysisReview": {
+        "priorModel": "Gemini 1.5 Pro",
+        "priorDate": "2026-05-02",
+        "priorPrice": 144.07,
+        "priorFairValue": 122.92,
+        "priorAction": "SELL",
+        "priceDelta": "0% — same day",
+        "assumptionAudit": "Prior base QM 1.20 and bull QM 1.30 both exceed 1.10 without moat citations — violates adversarial objectivity rule. Prior bear weight only 0.20 minimizes government contract cancellation risk. Base exit PE 50x and bull 65x are aggressive for 5-year horizon where growth decelerates to ~15%. Base margin 36% aligns with TTM (reasonable). Corrected to QM 1.10 max (no cross-cycle pricing monopoly), bear weight 30%, exit PE 45/60.",
+        "modelQualityFlag": "UNVALIDATED — Gemini 1.5 Pro",
+        "thesisOutcome": "N/A — same-day analysis",
+        "fundamentalChanges": "AIP commercial bootcamp model driving rapid enterprise adoption. Rule of 40 score 102 — exceptional. Piotroski 8/9. FCF growing: $184M → $697M → $1,141M → $2,101M (TTM). PLTR has entered a genuine profitability regime after years of losses."
+      },
+      "confidenceBreakdown": "0.71/1.0 — Base 1.0. +0.06 genuine growth inflection confirmed (4yr revenue CAGR 32%); +0.05 FCF quality ($2.1B TTM, growing consistently); +0.04 Piotroski 8/9; -0.10 extreme valuation (228x trailing creates massive downside if growth disappoints); -0.08 government contract concentration risk (opaque; re-bid cycles); -0.06 share count 3-way discrepancy; -0.05 SBC dilution history (Piotroski shows leverage increasing); -0.05 hypergrowth deceleration timing is primary unknown; +0.05 dual commercial+government moat is structurally differentiated vs pure SaaS peers"
+    }
   }
 ]

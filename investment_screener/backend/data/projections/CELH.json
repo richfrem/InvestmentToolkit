@@ -130,5 +130,127 @@
       ],
       "confidenceBreakdown": "0.70/1.0 — -0.20 for margin volatility and reliance on rapid market share capture against entrenched incumbents, -0.10 for recent stock price decoupling from trailing fundamentals."
     }
+  },
+  {
+    "ticker": "CELH",
+    "id": "07edd804-07b5-41c3-b7e1-bf354baee4f2",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T21:10:00Z",
+    "updatedAt": "2026-05-02T21:10:00Z",
+    "name": "AI Deep Dive — CELH — 2026-05-02",
+    "rationale": "Celsius Holdings is recovering from a severe PepsiCo inventory destocking crisis that compressed revenue to essentially flat in FY2024 before a sharp TTM rebound (+117% YoY from trough). While the brand and distribution partnership are genuine assets, margins have collapsed from 17% to 4.3%, Piotroski score is 4/9 (weak), and the diluted share count (432M) vs basic (257M) creates a 68% warrant-related uncertainty. DCF using diluted shares gives $19.02 (-43.6% SELL); adjusted for analyst-consistent basic share count the FV is ~$32 — suggesting CELH is approximately fairly valued to modestly overvalued at $33.73.",
+    "snapshot": {
+      "price": 33.73,
+      "currency": "USD",
+      "shares": 431996000,
+      "revenue": 2515269000,
+      "lastActualPS": 3.45,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 34.4,
+      "analystMarginEstimate": 4.29
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.3,
+        "growthRate": 8,
+        "netMargin": 5,
+        "exitPE": 15,
+        "qualityMultiplier": 0.9,
+        "shareChange": 2,
+        "rationale": "Margin recovery fails: competitive pressure from Monster Energy, Bang, and Prime Energy forces continued elevated marketing spend; margins stagnate at 5%. Revenue grows only 8% CAGR as energy drink category matures and Celsius loses share to new entrants. Piotroski 4/9 financial weakness materializes as working capital deteriorates. PepsiCo warrants exercise on any upswing adds further dilution (+2%/yr). Exit PE 15x = beverage mature. QM 0.90: brand moat offset by distribution dependency on PepsiCo (single-distributor risk). Year 5 rev $3.7B, EPS $0.39 (diluted), PV $3.25. Note: on 257M basic shares, bear PV = ~$5.46.",
+        "scenarioPrice": 3.25
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 14,
+        "netMargin": 11,
+        "exitPE": 20,
+        "qualityMultiplier": 1,
+        "shareChange": 1,
+        "rationale": "Revenue recovery continues. Analyst Y1 $3.38B (+34.4%), Y2 $3.71B (+9.7%); deceleration to 14% 5-yr CAGR. Margin recovery to 11% (mean-reverting to 3-yr avg 10.73%; analyst consensus implies ~12-13% on basic shares). Exit PE 20x = beverage growth. No structural moat beyond PepsiCo distribution — Q 1.00. Year 5 rev $4.8B, EPS $1.17 (diluted), PV $14.57. Note: on 257M basic shares, base PV = ~$24.47 — essentially at current market price, supporting 'fairly valued' read on analyst-consistent basis.",
+        "scenarioPrice": 14.57
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 22,
+        "netMargin": 16,
+        "exitPE": 28,
+        "qualityMultiplier": 1.05,
+        "shareChange": 0,
+        "rationale": "Catalyst: Celsius achieves Monster Beverage-like scale efficiency as North American market share reaches 15%+ and international expansion (Europe, Asia) adds high-margin licensing revenue. PepsiCo warrants either expire OTM or are exercised near current prices (no further dilution). Margin expands to 16% — approaching Monster (21%) but with headroom for marketing investment. Revenue 22% CAGR via category expansion. Exit PE 28x = premium beverage growth (Monster trades 28-32x in growth periods). QM 1.05: brand recognition + PepsiCo partnership creates exclusive distribution moat. Year 5 rev $6.8B, EPS $2.52 (diluted), PV $45.96. On basic shares, bull PV = ~$77 — provides significant analyst price target justification ($65-85 range).",
+        "scenarioPrice": 45.96
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "Celsius is a brand story at a critical inflection: the PepsiCo distribution partnership gave it national scale, the destocking crisis tested it, and the recovery is real. But three structural concerns dominate the investment case at $33.73. First, the 68% dilution overhang from PepsiCo warrants (432M diluted vs 257M basic) means every per-share metric looks far worse than analyst consensus suggests — the DCF fair value of $19.02 is conservative and the analyst-adjusted value is ~$32, essentially at current price. Second, margins have collapsed from 17% to 4.3% despite massive revenue growth — the brand is spending heavily to maintain momentum, and the path back to double-digit margins is unclear. Third, Piotroski 4/9 — the weakest score in this analysis session — flags real financial health concerns (ROA declining, leverage increasing, dilution occurring). The analyst community is strongly bullish (Buy, target $65) and may be right about the margin recovery thesis. But on a risk-adjusted DCF basis, CELH appears fairly valued to modestly overvalued at current price, with the warrant dilution the dominant uncertainty. SELL until margin recovery is confirmed and warrant picture clarifies.",
+      "fairValue": 19.02,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T21:10:00Z",
+      "researchReport": "CELH_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "CRITICAL FLAG: API shares_diluted 432.0M vs shares_outstanding 257.0M — 68% discrepancy from PepsiCo convertible investment (2022 $550M deal with warrants). Mktcap-implied: $8.665B / $33.73 = 256.9M (matches basic, NOT diluted). Per skill rules, used diluted 432M for DCF (conservative). Analyst EPS consensus ($1.62 FY2026) likely uses ~257-280M basic/diluted-ex-warrants. Adjusted FV = DCF output × (432/257) = 1.68× — yields ~$32 base case on analyst-consistent basis.",
+      "marginAnchor": "Mean-reverting (severely). Historical: -28.65% → 17.21% → 10.70% → 4.29% (TTM). Wild swings driven by: early startup losses, then rapid scaling (17% peak), then marketing spend surge and destocking (collapsed to 4.3%). Using 3-yr avg excl. startup loss = 10.73% as mean-reversion target. Bear 5% (stagnation), Base 11% (partial recovery to 3-yr avg), Bull 16% (Monster-like scale efficiency).",
+      "growthDerivation": "Y1 analyst $3.38B (+34.4%), Y2 $3.71B (+9.7%). Growth_estimates show 0y:+20.6%, +1y:+25.5%. No hypergrowth exception (Y1 34.4% < 40% threshold). Deceleration: Y3→8%, Y4→6%, Y5→5%. 5-yr CAGR = 14%. Bear 8% (mature category), Bull 22% (international expansion + category growth).",
+      "sectorBenchmarkRow": "Consumer Staples — Beverages Non-Alcoholic: conservative P/E 15, median P/E 20-25, growth P/E 30-35. Monster Beverage peer comparison (most direct): P/E 28-32x in growth phase, 20-25x in mature. CELH exits at 15/20/28 across bear/base/bull.",
+      "dataQualityFlags": [
+        "UUID collision: Prior CELH had same UUID as ASML/PLTR/CAKE (e0b96b0f). Fresh UUID assigned.",
+        "Share count 68% discrepancy: 432M diluted vs 257M basic. PepsiCo warrants from 2022 $550M investment. All DCF per-share values understated vs analyst consensus by ~1.68x. Flag throughout — adjusted values provided in scenario rationale.",
+        "Revenue growth 117.2% metric reflects recovery from PepsiCo destocking trough (prior TTM ~$1.16B). Not indicative of sustainable growth rate — forward analyst consensus 34% Y1, 10% Y2 is the correct anchoring.",
+        "Piotroski 4/9: ROA not improving, leverage increasing, current ratio declining, dilution occurring. Weakest Piotroski score in session — flags financial quality concern despite revenue recovery.",
+        "Margin collapse: 17.21% FY2023 → 4.29% TTM despite revenue growing. Suggests elevated SGA/marketing investment during distribution ramp. Recovery to analyst-implied ~12-13% is the critical assumption."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 3380196040,
+        "y2RevEstimate": 3709398240,
+        "y1GrowthPct": 34.4,
+        "y2GrowthPct": 9.7,
+        "blendedConsensusPct": 22.1,
+        "analystTargetMean": 65.25,
+        "analystCount": 20
+      },
+      "historicalRevenue": [
+        653.6,
+        1318,
+        1355.6,
+        2515.3
+      ],
+      "historicalNetMargins": [
+        -28.65,
+        17.21,
+        10.7,
+        4.29
+      ],
+      "historicalEPS": [
+        -0.88,
+        0.79,
+        0.46,
+        0.25
+      ],
+      "priorAnalysisReview": {
+        "priorModel": "Gemini 1.5 Pro",
+        "priorDate": "2026-05-02",
+        "priorPrice": 33.73,
+        "priorFairValue": 21.93,
+        "priorAction": "SELL",
+        "priceDelta": "0% — same day",
+        "assumptionAudit": "Prior Gemini assumptions (10%/8%/15, 15%/12%/20, 20%/16%/25) are directionally reasonable. Main corrections: (1) bear weight raised to 30% given Piotroski 4/9, margin collapse, dilution risk; (2) bull QM 1.2 → 1.05 (no exceptional pricing power justification; distribution dependency on PepsiCo is a risk, not a moat bonus); (3) bear margin 8% → 5% to properly reflect stagnation scenario; (4) prominent share count flag added. Gemini's $21.93 FV was computed using similar parameters but likely basic share count — on diluted 432M shares our FV is $19.02.",
+        "modelQualityFlag": "UNVALIDATED — Gemini 1.5 Pro",
+        "thesisOutcome": "N/A — same day",
+        "fundamentalChanges": "TTM revenue recovery from destocking trough confirmed. FCF $323M TTM (healthy). Piotroski 4/9 is a new concern. PepsiCo warrant overhang remains unresolved."
+      },
+      "confidenceBreakdown": "0.59/1.0 — Base 1.0. -0.15 68% share count discrepancy (largest uncertainty in any analysis this session); -0.10 Piotroski 4/9 financial weakness; -0.08 margin collapse from 17% to 4.3% (direction unclear); -0.05 single-distributor risk (PepsiCo); +0.04 FCF positive and growing ($323M TTM); +0.03 20 analyst coverage with clear buy thesis; -0.03 warrant dilution could add up to 170M+ shares; +0.05 brand velocity is real (117% recovery confirms demand)"
+    }
   }
 ]

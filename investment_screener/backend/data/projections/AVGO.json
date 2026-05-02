@@ -130,5 +130,111 @@
       ],
       "confidenceBreakdown": "0.85/1.0 — +0.15 for pristine free cash flow generation and Piotroski 8 score, -0.10 for the execution risk inherent in the VMware integration and sustaining extreme hypergrowth."
     }
+  },
+  {
+    "ticker": "AVGO",
+    "id": "e5f6a7b8-c9d0-1234-efab-345678901234",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T21:15:00.000Z",
+    "updatedAt": "2026-05-02T21:15:00.000Z",
+    "name": "AI Deep Dive — AVGO — 2026-05-02",
+    "rationale": "Broadcom is a diversified semiconductor + enterprise software company post-VMware acquisition. Trailing P/E 82x is GAAP-distorted by VMware amortization; forward P/E 23x implies massive earnings normalization. DCF using GAAP-sustainable margins yields $284.76 SELL (-32%). The $421 price may be pricing non-GAAP earnings power — this analysis uses conservative GAAP. Critical prior corrections: Gemini QM 1.25/1.3 far exceeded defensible levels; growth rates 25-45% too aggressive on $64B base.",
+    "snapshot": {
+      "price": 421.28,
+      "currency": "USD",
+      "shares": 4735000000,
+      "revenue": 63900000000,
+      "lastActualPS": 0,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": null,
+      "analystMarginEstimate": null
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 12,
+        "netMargin": 35,
+        "exitPE": 20,
+        "qualityMultiplier": 1,
+        "shareChange": 0.5,
+        "rationale": "VMware integration underwhelms — enterprise customers pause on Broadcom consolidation pricing. AI custom chip competition intensifies from Marvell/Intel. Organic semi growth normalizes to 12% CAGR. GAAP margin 35% persists as amortization continues. PE 20x on below-median growth.",
+        "scenarioPrice": 100.81
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 18,
+        "netMargin": 42,
+        "exitPE": 27,
+        "qualityMultiplier": 1.1,
+        "shareChange": 0,
+        "rationale": "AI ASIC custom chips (Google TPU8, Meta MTIA3, Apple) sustain Broadcom semi growth. VMware software cross-sell drives recurring revenue ramp. CAGR 18%, margin 42% (amortization partially rolling off 2026-2028). QM 1.1: AI ASIC design wins — AVGO has exclusive custom chip agreements with 3 hyperscalers, creating multi-year sole-source relationships.",
+        "scenarioPrice": 239.1
+      },
+      "bull": {
+        "weight": 0.3,
+        "growthRate": 25,
+        "netMargin": 48,
+        "exitPE": 35,
+        "qualityMultiplier": 1.15,
+        "shareChange": -0.5,
+        "rationale": "Catalyst: Two additional sovereign AI programs (Saudi Arabia, UAE, Japan) each deploy $10B+ custom AVGO AI ASIC clusters. VMware cross-sell reaches $15B+ ARR. CAGR 25% to $195B Y5. QM 1.15: AI ASIC monopoly contracts + VMware enterprise lock-in (two compounding moats).",
+        "scenarioPrice": 506.53
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "Broadcom is a diversified semiconductor + enterprise software company post-VMware acquisition. Trailing P/E 82x is GAAP-distorted by VMware amortization; forward P/E 23x implies massive earnings normalization. DCF using GAAP-sustainable margins yields $284.76 SELL (-32%). The $421 price may be pricing non-GAAP earnings power — this analysis uses conservative GAAP. Critical prior corrections: Gemini QM 1.25/1.3 far exceeded defensible levels; growth rates 25-45% too aggressive on $64B base.",
+      "fairValue": 284.76,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T21:15:00.000Z",
+      "researchReport": "AVGO_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used metrics.shares_diluted. Mktcap-implied cross-check: $1990B / $421.28 = 4.724B shares vs API 4.735B — consistent.",
+      "marginAnchor": "TTM 38.1% (P/E-derived: $1.99T / 82x = $24.3B NI / $63.9B = 38.1%). ⚠️ Forward P/E 23.3x implies Y+1 EPS of $18.12 vs TTM $5.14 = 3.5x growth — GAAP/non-GAAP distortion suspected. Used conservative GAAP-consistent scenarios.",
+      "growthDerivation": "No analyst estimates. TTM growth 29.5% (VMware-inflated). Base 18% = organic semi growth + VMware normalized. Bear 12% = normalization only. Bull 25% requires sovereign AI ASIC mandates.",
+      "sectorBenchmarkRow": "Technology — Semiconductors: conservative P/E 15, median 25, growth 40. Hybrid semi+software warrants premium above pure semiconductor median.",
+      "dataQualityFlags": [
+        "net_income, net_margin, eps, financials all null — P/E-derived metrics used",
+        "CRITICAL: Trailing P/E 82x vs forward P/E 23.3x = 3.5x Y+1 earnings growth implied — likely GAAP/non-GAAP distortion from VMware amortization",
+        "No analyst estimates or financial history",
+        "Analysis uses conservative GAAP margins — non-GAAP analysis would produce higher FV"
+      ],
+      "analystInputs": {
+        "y1RevEstimate": null,
+        "y2RevEstimate": null,
+        "y1GrowthPct": null,
+        "y2GrowthPct": null,
+        "blendedConsensusPct": null,
+        "analystTargetMean": null,
+        "analystCount": null
+      },
+      "historicalRevenue": [],
+      "historicalNetMargins": [],
+      "historicalEPS": [],
+      "priorAnalysisReview": {
+        "priorModel": "Gemini 1.5 Pro",
+        "priorDate": "2026-05-02",
+        "priorPrice": 421.28,
+        "priorFairValue": 661.65,
+        "priorAction": "BUY",
+        "priceDelta": "0% — same-day analysis",
+        "assumptionAudit": "Prior BUY $661 is dramatically wrong at GAAP fundamentals. Three corrections: (1) Bear/base/bull growth 25/36/45% all inflated — base 36% on $64B revenue = $270B in Y5 (larger than all semiconductor companies combined); corrected to 12/18/25%. (2) QM 1.25/1.3 exceptional-tier uncited; corrected to 1.0/1.1/1.15. (3) Forward P/E 23x vs trailing 82x = GAAP/non-GAAP distortion flagged. SELL $284 is honest GAAP-based analysis; non-GAAP analysis would yield higher FV but requires restating for amortization.",
+        "modelQualityFlag": "UNVALIDATED — Gemini 1.5 Pro",
+        "thesisOutcome": "Same-day analysis — no price movement. Prior BUY $661.65 vs our SELL $284.76.",
+        "fundamentalChanges": "Same-day analysis — no fundamental changes. Differences reflect QM recalibration, growth rate adjustment, and margin anchoring corrections."
+      },
+      "confidenceBreakdown": "0.50/1.0 — Base: 1.0. -0.20 GAAP/non-GAAP P/E discrepancy (82x vs 23x) — largest data quality concern; -0.15 no financial history; -0.10 VMware integration execution risk; -0.05 no analyst estimates; +0.10 AI ASIC moat well-documented"
+    }
   }
 ]
