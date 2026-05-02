@@ -199,10 +199,15 @@ def load_raw_json(path: str) -> tuple[str, float, float, float]:
     ticker = d.get("ticker") or d.get("symbol", "UNKNOWN")
     m = d["metrics"]
     revenue = float(m["revenue"])
-    # Prefer mktcap-implied share count (most current snapshot); fall back to shares_outstanding
     price = float(m["price"])
-    mcap = float(m.get("market_cap") or 0)
-    shares = mcap / price if mcap and price else float(m["shares_outstanding"])
+    # Prefer NI/EPS-derived diluted share count — captures full dilution from options/warrants/RSUs.
+    # Fall back to mktcap/price (basic shares) if shares_diluted is missing or zero.
+    shares_diluted = m.get("shares_diluted")
+    if shares_diluted and float(shares_diluted) > 0:
+        shares = float(shares_diluted)
+    else:
+        mcap = float(m.get("market_cap") or 0)
+        shares = mcap / price if mcap and price else float(m["shares_outstanding"])
     return ticker, revenue, shares, price
 
 
