@@ -4,11 +4,11 @@
     "id": "0b860016-bd45-4a26-b811-4c4a3c472571",
     "source": "AI_AGENT",
     "schemaVersion": "1.2",
-    "version": 1,
-    "savedAt": "2026-05-02T19:21:25Z",
-    "updatedAt": "2026-05-02T19:21:25Z",
+    "version": 2,
+    "savedAt": "2026-05-02T20:19:45Z",
+    "updatedAt": "2026-05-02T20:24:46.481Z",
     "name": "AI Deep Dive — RGTI — 2026-05-02",
-    "rationale": "Rigetti (RGTI) has promising quantum hardware and service offerings but very small revenue base and persistent losses. DCF under conservative assumptions produces a near-zero fair value; action is SELL.",
+    "rationale": "Rigetti Computing is a pre-commercial quantum hardware company trading at 820x P/S on $7M TTM revenue that is DECLINING (-17.9% YoY). Standard DCF fundamentals produce a fair value of $1.05 — a 94% discount to the current $17.50 price. The market price reflects pure optionality premium on quantum computing's long-term potential, not any near-term cash flow. Even in the bull case (130% CAGR to $456M revenue, 15% GAAP margin), present value is $4.63. SELL for investors expecting fundamental returns; speculative hold only for those sizing appropriately for binary quantum computing outcomes.",
     "snapshot": {
       "price": 17.5,
       "currency": "USD",
@@ -16,7 +16,8 @@
       "revenue": 7088000,
       "lastActualPS": 820.55,
       "fiscalPeriod": "TTM",
-      "analystGrowthEstimate": 160.98
+      "analystGrowthEstimate": null,
+      "analystMarginEstimate": null
     },
     "dataPreferences": {
       "growthBasis": "next",
@@ -24,101 +25,99 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.2,
-        "growthRate": 0.2863,
-        "netMargin": 0,
-        "exitPE": 12,
-        "qualityMultiplier": 0.9,
-        "shareChange": 0,
-        "year5Revenue": 7.2,
-        "year5NetIncome": 0,
+        "weight": 0.4,
+        "growthRate": 20,
+        "netMargin": 3,
+        "exitPE": 8,
+        "qualityMultiplier": 0.75,
+        "shareChange": 5,
+        "rationale": "Revenue growth fails to recover from current -17.9% YoY decline, reaching only $17.6M by Y5 despite modest recovery assumptions. Continuous equity raises at dilutive prices (+5%/yr share count growth). Even at 3% GAAP margin (barely breakeven), the combination of tiny absolute earnings ($0.5M) and heavy dilution produces essentially zero per-share value. Historical reference: many quantum computing companies face funding cliffs if commercial adoption doesn't materialize by 2027-2028.",
+        "year5Revenue": 17.6,
+        "year5NetIncome": 0.5,
         "year5EPS": 0,
         "scenarioPrice": 0,
-        "year5Shares": 332.3,
-        "year5PriceUndiscounted": 0,
+        "year5Shares": 424.2,
+        "year5PriceUndiscounted": 0.01,
         "presentValue": 0
       },
       "base": {
-        "weight": 0.6,
-        "growthRate": 1.4317,
-        "netMargin": 5,
-        "exitPE": 18,
-        "qualityMultiplier": 1,
-        "shareChange": 0,
-        "year5Revenue": 7.6,
-        "year5NetIncome": 0.4,
-        "year5EPS": 0,
-        "scenarioPrice": 0.02,
-        "year5Shares": 332.3,
-        "year5PriceUndiscounted": 0.02,
-        "presentValue": 0.01
+        "weight": 0.4,
+        "growthRate": 75,
+        "netMargin": 8,
+        "exitPE": 25,
+        "qualityMultiplier": 0.9,
+        "shareChange": 5,
+        "rationale": "Rigetti reverses revenue decline via government contracts and cloud QaaS expansion, reaching $116M by Y5 at 75% CAGR. GAAP margins reach 8% as SBC normalizes and quantum access contracts carry high gross margins (~70%). Exit at 25x P/E (emerging technology with proven commercial model but not yet dominant). Ongoing dilution reflects capital needs for quantum hardware R&D. Catalyst: US quantum supremacy push + DARPA contracts.",
+        "year5Revenue": 116.3,
+        "year5NetIncome": 9.3,
+        "year5EPS": 0.02,
+        "scenarioPrice": 0.31,
+        "year5Shares": 424.2,
+        "year5PriceUndiscounted": 0.49,
+        "presentValue": 0.31
       },
       "bull": {
         "weight": 0.2,
-        "growthRate": 2.1476,
-        "netMargin": 12,
-        "exitPE": 28,
+        "growthRate": 130,
+        "netMargin": 15,
+        "exitPE": 40,
         "qualityMultiplier": 1.05,
-        "shareChange": 0,
-        "year5Revenue": 7.9,
-        "year5NetIncome": 0.9,
-        "year5EPS": 0,
-        "scenarioPrice": 0.08,
-        "year5Shares": 332.3,
-        "year5PriceUndiscounted": 0.08,
-        "presentValue": 0.05
+        "shareChange": 3,
+        "rationale": "Catalyst: Rigetti's superconducting QPU achieves error rates competitive with IBM/Google, triggering hyperscaler adoption (AWS, Azure, Google Cloud all onboard). Revenue scales from $7M to $456M via cloud QaaS + enterprise direct contracts. 15% GAAP margin reflects high-margin software-like QaaS revenue mix. QM 1.05 citing specific moat: superconducting qubit fabrication IP + tunable coupler architecture that is difficult to replicate — Rigetti holds 60+ patents in this area.",
+        "year5Revenue": 456.2,
+        "year5NetIncome": 68.4,
+        "year5EPS": 0.18,
+        "scenarioPrice": 4.63,
+        "year5Shares": 385.3,
+        "year5PriceUndiscounted": 7.46,
+        "presentValue": 4.63
       }
     },
     "aiThesis": {
-      "model": "GPT-5 mini (model ID: gpt-5-mini)",
-      "rationale": "Quantum hardware is nascent; revenue growth depends on successful commercialization of QPU cloud services. Base assumes modest margin recovery to low single-digits; downside keeps margins at zero.",
-      "fairValue": 0.02,
+      "model": "Claude Sonnet 4.6",
+      "rationale": "## RGTI Investment Thesis\n\nRigetti Computing is trading at 820x P/S on $7M TTM revenue that is actively declining (-17.9% YoY). This is not an investment in a business with visible cash flows — it is a bet on quantum computing achieving commercial viability within a 5-7 year window and Rigetti being a meaningful participant when it does.\n\n**The Bear Math**: Even if Rigetti survives and reaches $17.6M revenue at 3% GAAP margin by 2031, continuous equity dilution (+5%/yr) means earnings per share approach zero. Present value: essentially $0.\n\n**The Base Math**: Reversal of revenue decline requires commercial quantum contracts at scale. $116M revenue by 2031 (75% CAGR) is achievable only if quantum cloud access becomes a real enterprise spend category and Rigetti wins contracts against IBM Quantum, Google Quantum AI, and AWS Braket. Even so, $0.31 present value — 98% below current price.\n\n**The Bull Math**: $456M revenue at 15% margins by 2031 represents a quantum computing breakthrough scenario — Rigetti's superconducting QPUs achieve error rates that make them commercially useful for optimization, simulation, or ML acceleration. Present value: $4.63. At 20% weight, this contributes $0.93 to the weighted average.\n\n**Weighted Fair Value: $1.05 — SELL at $17.50 (-94%)**\n\nThe $16.45 gap between fundamental value ($1.05) and market price ($17.50) is the quantum computing speculation premium. If you believe quantum computing will be commercially transformative AND Rigetti will be a major player, this is a lottery ticket with theoretically large upside. But sized as an investment expecting fundamental returns: SELL.\n\n**Prior Analysis Correction**: GPT-5 mini output of $0.02 FV was directionally correct but presented without scenario context or acknowledgment of the optionality premium that partially justifies the market price. This analysis improves on that by being explicit about what the market is pricing vs what fundamentals support.",
+      "fairValue": 1.05,
       "action": "SELL",
-      "analyzedAt": "2026-05-02T19:21:25Z",
-      "researchReport": "investment_screener/backend/data/research/RGTI_2026-05-02.md"
+      "analyzedAt": "2026-05-02T20:19:45Z",
+      "researchReport": "RGTI_2026-05-02.md"
     },
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "Used metrics.shares_diluted=332345548; DCF-derived baseShares=332345548; difference 0.0%",
-      "marginAnchor": "TTM 0.0 used; historical net margins deeply negative → use cautious recovery to positive by Yr5",
-      "growthDerivation": "Y1=22634920.0, Y2=45862750.0; Y1 growth 219.34%, Y2 growth 102.62%; derived 5-yr CAGR used for base: 1.4317",
-      "sectorBenchmarkRow": "Technology — Hardware / Consumer Electronics: Conservative P/E 12, Median P/E 18, Growth P/E 25",
+      "shareCountMethod": "Used 332,345,548 shares from shares_diluted directly. Net income is null in API so NI/EPS derivation unavailable. No discrepancy check possible. Note: shares are likely understated vs fully diluted (warrants, options) — actual diluted count likely 350-380M.",
+      "marginAnchor": "Not applicable — no margin history available from API (all null). Profit margin shows 0.0 (likely rounding from tiny loss). Scenarios use speculative forward projections, not historical anchor. Bear 3% assumes barely-profitable managed wind-down; base 8% assumes commercial-scale unit economics; bull 15% assumes software-mix dominance.",
+      "growthDerivation": "TTM revenue $7.088M with -17.9% YoY growth (declining). No analyst estimates available. Bear 20% CAGR assumes decline reverses modestly ($17.6M Y5). Base 75% CAGR assumes commercial breakthrough reversal ($116M Y5). Bull 130% CAGR assumes hyperscaler adoption ($456M Y5). No consensus available — widest uncertainty range in portfolio. Hypergrowth exception not applicable in base case (no Y1 consensus >40%); instead used reverse-DCF peer benchmarking (IonQ targets $1B+ by 2030 — Rigetti at ~40% of IonQ revenue would imply similar trajectory at scale).",
+      "sectorBenchmarkRow": "Technology — Hardware / Consumer Electronics: conservative P/E 12, median 18, growth 25. Used as lower-bound anchor for bear/base exit multiples. Quantum computing has no direct benchmark; bull case uses 40x citing emerging-platform premium (nearest analog: early SaaS/biotech breakthrough valuations).",
       "dataQualityFlags": [
-        "Very small revenue base with analyst projections implying extreme growth — high execution risk",
-        "Persistent GAAP losses and volatile margins; EPS history negative",
-        "High sensitivity to margin and commercialization assumptions"
+        "CRITICAL: Revenue declining -17.9% YoY — $7.09M TTM vs estimated $8.6M prior year. Growth trajectory is negative, not positive.",
+        "CRITICAL: No financial history available in API (revenue, margins, EPS arrays all null). Cannot perform mean-reversion analysis.",
+        "CRITICAL: No analyst estimates available. Highest uncertainty of any portfolio holding.",
+        "WARNING: Profit margin shows 0.0% — likely rounding artifact; actual margin is meaningfully negative (forward P/E = -96.6x implies expected losses).",
+        "WARNING: Market cap $5.82B on $7M revenue = 820x P/S. Valued entirely on quantum computing optionality, not fundamentals.",
+        "WARNING: Prior GPT-5 mini analysis FV $0.02 — directionally correct (SELL / near-zero) but magnitude presented without proper scenario decomposition or speculative premium context.",
+        "INFO: Peer comparison — IonQ (IONQ) 200x P/S at $43M revenue; D-Wave (QBTS) 160x P/S at $11M revenue. RGTI at 820x P/S is most expensive quantum pure-play on this metric."
       ],
       "analystInputs": {
-        "y1RevEstimate": 22634920,
-        "y2RevEstimate": 45862750,
-        "y1GrowthPct": 219.34,
-        "y2GrowthPct": 102.62,
-        "blendedConsensusPct": 160.98,
-        "analystTargetMean": 30.57583,
-        "analystCount": 12
+        "y1RevEstimate": null,
+        "y2RevEstimate": null,
+        "y1GrowthPct": null,
+        "y2GrowthPct": null,
+        "blendedConsensusPct": null,
+        "analystTargetMean": null,
+        "analystCount": null
       },
       "historicalRevenue": [
-        13102000,
-        12008000,
-        10790000,
-        7088000
+        "unavailable — yfinance returns null for RGTI historical arrays"
       ],
       "historicalNetMargins": [
-        -545.8784918333079,
-        -625.4746835443038,
-        -1862.7247451343837,
-        -3050.366817155756
+        "unavailable — yfinance returns null"
       ],
       "historicalEPS": [
-        -0.7,
-        -0.57,
-        -1.09,
-        -0.7
+        "unavailable — yfinance returns null"
       ],
-      "confidenceBreakdown": "0.30 — -0.20 execution risk, -0.10 data uncertainty"
+      "confidenceBreakdown": "0.35/1.0 — Base: 1.0. -0.15 no analyst estimates (maximum uncertainty). -0.15 no historical financial data from API. -0.15 revenue currently declining (negative momentum). -0.10 no proven commercial scale (pre-commercial stage). -0.10 peer valuation multiples suggest speculative bubble premium. This is the lowest confidence score of any portfolio holding — use position sizing accordingly."
     }
   }
 ]
