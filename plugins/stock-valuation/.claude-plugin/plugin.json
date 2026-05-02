@@ -1,0 +1,10 @@
+{
+    "name": "stock-valuation",
+    "version": "2.0.0",
+    "description": "AI-driven autonomous stock valuation engine. Produces Bear/Base/Bull scenario projections, persists structured JSON for the app UI, and generates deep-dive research reports with interactive Q&A.",
+    "author": {
+        "name": "richfrem",
+        "email": "connect.richfrem@gmail.com"
+    },
+    "keywords": ["finance", "stock-analysis", "valuation", "ai-analyst"]
+}
