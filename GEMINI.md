@@ -22,8 +22,8 @@ InvestmentToolkit/
 │           ├── services/       ← QuestradeSyncService.ts, etc.
 │           └── utils/          ← QuestradeAPIClient.py, QuestradeTokenManager.py
 ├── plugins/                    ← Modular AI agent plugins
-│   ├── stock-valuation/        ← Bear/Base/Bull valuation model agent
-│   ├── thesis-balancer/        ← Portfolio drift monitoring agent
+│   ├── stock-valuation/        ← DCF valuation + research sweep skills
+│   ├── thesis-balancer/        ← Portfolio drift, strategic review, rebalance skills
 │   └── toolkit-manager/        ← Orchestrator (token setup, startup)
 ├── .agents/                    ← Agent skills, prompts, and evaluations
 ├── .claude/                    ← Claude Code configuration
@@ -113,6 +113,20 @@ Questrade refresh tokens can expire. **If you (as an agent) encounter `Token rot
 
 ---
 
+## 🤖 AI Agent Skills — Quick Reference
+
+| Trigger | Plugin | Purpose |
+|---------|--------|---------|
+| `/evaluate-stock {TICKER}` | stock-valuation | Full DCF valuation — Bear/Base/Bull scenarios, fair value, research report |
+| `/research-stock {TICKER}` | stock-valuation | Qualitative research sweep — classifies findings, gates re-valuation on confirmation |
+| `/review-portfolio` | thesis-balancer | Drift monitor + pillar conviction audit + thesis formula health score (0–100) |
+| `/strategic-review` | thesis-balancer | Adversarial thesis challenger — surfaces failing pillars, proposes formula improvements |
+| `/rebalance` | thesis-balancer | Valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift |
+| `/start-screener` | toolkit-manager | Launch full suite (frontend + backend) |
+| `/setup-questrade` | toolkit-manager | Interactive Questrade token setup |
+
+---
+
 ## 🤖 AI Development: Exploration Workflow
 We use the **Exploration Workflow** (a modification of the orba/superpowers plugin) for building and discovery.
 
@@ -182,6 +196,9 @@ Frontend hot-reloads via Vite; backend does not.
 
 ### 4. Questrade seed endpoint — do not bypass the OAuth exchange
 The `/api/questrade/seed` endpoint accepts a raw **One-Week App Token** from the portal and internally exchanges it via OAuth before seeding. Do not seed raw one-week tokens directly via `QuestradeDataEngine.py --seed` unless you have already done the curl exchange yourself.
+
+### 5. `lastActualPS` nullable in Zod schema
+`investment_screener/backend/src/utils/zod-schemas.ts`: `lastActualPS` is `.nullable().transform(v => v ?? 0)`. Pre-revenue stocks and some mining companies return `null` from yfinance for this field. If adding similar numeric fields, use the same nullable pattern — strict `z.number()` causes 400 validation errors.
 
 ---
 
