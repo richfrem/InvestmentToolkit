@@ -2,7 +2,7 @@
   "ticker": "GOOG",
   "id": "d0d3da68-d15b-4ad6-a2da-8d6b06302e7e",
   "source": "AI_AGENT",
-  "schemaVersion": "1.1",
+  "schemaVersion": "1.2",
   "version": 1,
   "savedAt": "2026-05-02T18:24:00Z",
   "updatedAt": "2026-05-02T18:24:00Z",
@@ -93,5 +93,48 @@
   "globalSettings": {
     "discountRate": 10.0,
     "timeHorizon": 5
+  },
+  "analyticsLog": {
+    "shareCountMethod": "API shares_outstanding returned 5,438M \u2014 Class C shares only (Alphabet has Class A, B, C). Actual diluted share count derived from NI/EPS: net_income / eps = ~12,115M \u2014 a 2.23x discrepancy (well above 15% threshold). Used 12,115M diluted shares for all EPS calculations. Root cause: yfinance shares_outstanding maps to a single share class for GOOGL/GOOG dual-class structure. Fix applied in fetch_financials.py (shares_diluted field).",
+    "marginAnchor": "TTM 37.9% used as anchor \u2014 NOT the 4-year average (26.7%). Rationale: GOOG margins expanded every single year for 5 consecutive years: 21.2% (FY2022) \u2192 24.0% (FY2023) \u2192 28.6% (FY2024) \u2192 32.8% (int. TTM) \u2192 37.9% (current TTM). Rule #9 trending pattern confirmed \u2014 using 4yr avg would have systematically understated the structurally improved margin base driven by operating leverage and Cloud mix shift. The FY2022 trough (21.2%) was a cost-cycle reaction, not a structural reversion.",
+    "growthDerivation": "Analyst Y1 consensus: +20.5% (from metrics.analystGrowthEstimate). Analyst Y2 consensus: +16.4% (from analyst_revenue_forecast array). Blended 2yr average: ~18.5%. Base CAGR 18% is 0.5pp below blended consensus \u2014 within \u00b13pp rule \u2713. No hypergrowth exception (Y1 20.5% < 40% threshold). Slight discount vs consensus reflects natural deceleration as the revenue base grows past $500B.",
+    "sectorBenchmarkRow": "Technology \u2014 Internet / Platforms. Resolved via profile.industry = 'Internet Content & Information' \u2014 NOT profile.sector = 'Communication Services' (which would have pointed to wrong benchmark row). P/E: conservative 18, median 28, growth 35+. Net margin: typical 20-30%, best-in-class 35%+.",
+    "dataQualityFlags": [
+      "CRITICAL: shares_outstanding (5,438M) = Class C only; actual diluted 12,115M \u2014 2.23x discrepancy. Multi-class Alphabet share structure (Class A: voting, Class B: Brin/Page, Class C: non-voting). Used NI/EPS derivation to correct; fix committed to fetch_financials.py.",
+      "Piotroski F-Score 7/9 \u2014 high financial quality signal (strong profitability + stability).",
+      "Margins in strong multi-year uptrend (5 consecutive years of expansion) \u2014 used TTM 37.9% as anchor per Rule #9 trending exception.",
+      "DOJ antitrust ruling (2024): forced divestiture risk is real but unquantified \u2014 modelled as bear-case weight increase to 20%."
+    ],
+    "analystInputs": {
+      "y1RevEstimate": null,
+      "y2RevEstimate": null,
+      "y1GrowthPct": 20.5,
+      "y2GrowthPct": 16.4,
+      "blendedConsensusPct": 18.5,
+      "analystTargetMean": null,
+      "analystCount": null
+    },
+    "historicalRevenue": [
+      282836,
+      307394,
+      350018,
+      380000,
+      402836
+    ],
+    "historicalNetMargins": [
+      21.2,
+      24.0,
+      28.6,
+      32.8,
+      37.9
+    ],
+    "historicalEPS": [
+      4.95,
+      6.09,
+      8.26,
+      10.29,
+      12.6
+    ],
+    "confidenceBreakdown": "0.85/1.0 \u2014 Base 1.0. +0.05 three confirmed structural moats (Search data flywheel, YouTube network effects, Cloud switching costs). +0.05 Piotroski 7/9 and 5 consecutive years of margin expansion. -0.05 AI search disruption risk (structural threat from Perplexity/ChatGPT, not cyclical). -0.10 regulatory tail risk (DOJ antitrust \u2014 forced divestiture of Chrome/Android has binary, unquantifiable impact). -0.10 share count complexity requiring manual derivation (dual-class structure not transparent in API)."
   }
 }

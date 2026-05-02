@@ -3,11 +3,11 @@
     "ticker": "AMD",
     "id": "f5e9c0a2-d8b3-4e4f-b7a1-c6d5e4f3a2b2",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T19:15:00.000Z",
-    "updatedAt": "2026-05-02T19:15:00.000Z",
-    "name": "AI Deep Dive — AMD — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:13.944Z",
+    "name": "AI Deep Dive \u2014 AMD \u2014 2026-05-02",
     "rationale": "Advanced Micro Devices (AMD) is successfully positioning itself as the sole viable alternative to NVIDIA in the AI accelerator market. With revenue growing at 34% and an exceptional Piotroski F-Score of 8, operational execution is near flawless. While trading at a premium 32x forward P/E, capturing even 15-20% of the hyperscaler AI budget justifies the $587B valuation. My weighted fair value of $443 indicates a solid 23% upside, making AMD a strong BUY for the AI infrastructure supercycle.",
     "snapshot": {
       "price": 360.54,
@@ -69,6 +69,46 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (1630338779) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of 12.52% used as anchor for baseline profitability.",
+      "growthDerivation": "Blended analyst consensus is 40.7% (Y1 35.4%, Y2 46.1%). Base scenario uses 30%, aligned with near-term trajectory.",
+      "sectorBenchmarkRow": "Technology - Semiconductors",
+      "dataQualityFlags": [
+        "No anomalies detected in baseline financial data."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 46884124950.0,
+        "y2RevEstimate": 68494637730.0,
+        "y1GrowthPct": 35.35,
+        "y2GrowthPct": 46.09,
+        "blendedConsensusPct": 40.72,
+        "analystTargetMean": 304.23914,
+        "analystCount": 46
+      },
+      "historicalRevenue": [
+        0,
+        23601000000.0,
+        22680000000.0,
+        25785000000.0,
+        34639000000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        5.592983348163213,
+        3.7654320987654324,
+        6.364165212332752,
+        12.514795461762754
+      ],
+      "historicalEPS": [
+        0,
+        0.85,
+        0.53,
+        1.01,
+        2.67
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

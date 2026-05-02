@@ -49,13 +49,15 @@ export class ProjectionService {
     }
 
     async saveProjection(projection: Projection): Promise<void> {
-        // 1. Zod Validation
+        // 1. Zod Validation — use parseResult.data so .passthrough() fields (analyticsLog,
+        //    scenario year5/risks fields, etc.) are included in the object we save.
         const parseResult = ProjectionSchema.safeParse(projection);
         if (!parseResult.success) {
             throw new Error(`Validation Failed: ${parseResult.error.message}`);
         }
+        const validated = parseResult.data as Projection;
 
-        const ticker = projection.ticker;
+        const ticker = validated.ticker;
         const filePath = this.getFilePath(ticker);
 
         if (!fs.existsSync(filePath)) {
@@ -78,22 +80,22 @@ export class ProjectionService {
                 projections = [];
             }
 
-            const existingIndex = projections.findIndex(p => p.id === projection.id);
+            const existingIndex = projections.findIndex(p => p.id === validated.id);
             if (existingIndex !== -1) {
                 const existing = projections[existingIndex];
-                if (existing.version > projection.version) {
+                if (existing.version > validated.version) {
                     throw new Error(
-                        `Conflict: Server has version ${existing.version}, incoming is ${projection.version}`
+                        `Conflict: Server has version ${existing.version}, incoming is ${validated.version}`
                     );
                 }
                 // Server-side increment
-                projection.version = existing.version + 1;
-                projection.updatedAt = new Date().toISOString();
-                projections[existingIndex] = projection;
+                (validated as any).version = existing.version + 1;
+                (validated as any).updatedAt = new Date().toISOString();
+                projections[existingIndex] = validated;
             } else {
                 // New projection
-                projection.version = 1;
-                projections.push(projection);
+                (validated as any).version = 1;
+                projections.push(validated);
             }
 
             // Atomic write

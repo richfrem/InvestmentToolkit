@@ -3,11 +3,11 @@
     "ticker": "SEI",
     "id": "b3c4d5e6-f7a8-1b2c-3d4e-5f6a7b8c9d0e",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T19:05:00.000Z",
-    "updatedAt": "2026-05-02T19:05:00.000Z",
-    "name": "AI Deep Dive — SEI — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:13.081Z",
+    "name": "AI Deep Dive \u2014 SEI \u2014 2026-05-02",
     "rationale": "Solaris Energy Infrastructure (SEI) has surged 219% over the past year, riding the data center power narrative. While top-line growth is explosive (55%), the company burned -$437M in free cash flow to achieve it. At $72.33, the stock trades at 27x forward earnings, pricing in significant operational success. My weighted fair value of $67.81 suggests the stock is currently fairly valued, balancing the massive growth potential of its Power Solutions segment against the harsh reality of capital intensity and inevitable shareholder dilution.",
     "snapshot": {
       "price": 72.33,
@@ -69,6 +69,46 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used metrics.shares_diluted (43,723,188) over shares_outstanding (58,138,451) for conservative EPS derivation.",
+      "marginAnchor": "TTM net margin of 6.69% used as anchor for baseline profitability.",
+      "growthDerivation": "Blended analyst consensus is 40.0% (Y1 32.7%, Y2 47.4%). Base scenario uses 35%, aligned with near-term trajectory.",
+      "sectorBenchmarkRow": "Energy - Oil & Gas Equipment & Services",
+      "dataQualityFlags": [
+        "No anomalies detected in baseline financial data."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 825487800.0,
+        "y2RevEstimate": 1216880000.0,
+        "y1GrowthPct": 32.67,
+        "y2GrowthPct": 47.41,
+        "blendedConsensusPct": 40.04,
+        "analystTargetMean": 83.56667,
+        "analystCount": 12
+      },
+      "historicalRevenue": [
+        0,
+        320005000.0,
+        292947000.0,
+        313091000.0,
+        622205000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        6.611771691067327,
+        8.307304734303475,
+        5.0490113098108855,
+        4.848723491453781
+      ],
+      "historicalEPS": [
+        0,
+        0.64,
+        0.78,
+        0.51,
+        0.69
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

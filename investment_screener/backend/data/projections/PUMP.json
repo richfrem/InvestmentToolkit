@@ -3,11 +3,11 @@
     "ticker": "PUMP",
     "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e6e",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T18:55:00.000Z",
-    "updatedAt": "2026-05-02T18:55:00.000Z",
-    "name": "AI Deep Dive — PUMP — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:12.190Z",
+    "name": "AI Deep Dive \u2014 PUMP \u2014 2026-05-02",
     "rationale": "ProPetro (PUMP) is a legacy hydraulic fracturing company attempting an AI infrastructure pivot by repurposing its power generation assets for data centers. The stock has surged 210% on this narrative despite terrible core fundamentals: revenue is down 25% YoY and margins are near zero. While the data center power bottleneck is real, PUMP's ability to transition its cyclical oilfield business into steady infrastructure hosting is highly unproven. The weighted fair value of $9.56 indicates severe downside risk from the current $16.62 valuation.",
     "snapshot": {
       "price": 16.62,
@@ -69,6 +69,43 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used metrics.shares_diluted (82,400,000) over shares_outstanding (122,616,976) for conservative EPS derivation.",
+      "marginAnchor": "TTM net margin of -1.05% used as anchor for baseline profitability.",
+      "growthDerivation": "Blended analyst consensus is 6.7% (Y1 -4.0%, Y2 17.4%). Base scenario uses 5%, aligned with near-term trajectory.",
+      "sectorBenchmarkRow": "Energy - Oil & Gas Equipment & Services",
+      "dataQualityFlags": [
+        "Negative Y1 growth consensus (-4.0%) indicates shrinking core business or cyclical trough."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 1218767860.0,
+        "y2RevEstimate": 1431123450.0,
+        "y1GrowthPct": -3.97,
+        "y2GrowthPct": 17.42,
+        "blendedConsensusPct": 6.73,
+        "analystTargetMean": 15.45455,
+        "analystCount": 11
+      },
+      "historicalRevenue": [
+        1279701000.0,
+        1630399000.0,
+        1444286000.0,
+        1269158000.0
+      ],
+      "historicalNetMargins": [
+        0.15863080516464392,
+        5.252333937888824,
+        -9.545131642901753,
+        0.06492493448412254
+      ],
+      "historicalEPS": [
+        0.02,
+        0.76,
+        -1.31,
+        0.01
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

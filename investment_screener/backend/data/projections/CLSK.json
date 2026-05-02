@@ -3,11 +3,11 @@
     "ticker": "CLSK",
     "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e3f",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T18:05:00.000Z",
-    "updatedAt": "2026-05-02T18:05:00.000Z",
-    "name": "AI Deep Dive — CLSK — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:07.353Z",
+    "name": "AI Deep Dive \u2014 CLSK \u2014 2026-05-02",
     "rationale": "CleanSpark (CLSK) is a major Bitcoin miner. It burned $1.0B in FCF last year on $766M in revenue due to massive capex. At $3.1B market cap and $12.17/share, it trades at 4x sales but requires massive dilution to sustain the hash rate arms race. Weighted PV of $6.09 indicates significant downside.",
     "snapshot": {
       "price": 12.17,
@@ -69,6 +69,47 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (255752913) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of -33.25% used as anchor for baseline profitability.",
+      "growthDerivation": "Blended analyst consensus is 2.2% (Y1 -14.9%, Y2 19.2%). Base scenario uses 15%, aligned with near-term trajectory.",
+      "sectorBenchmarkRow": "Financial Services - Capital Markets",
+      "dataQualityFlags": [
+        "Negative Y1 growth consensus (-14.9%) indicates shrinking core business or cyclical trough.",
+        "Crypto-exposed business model; high volatility and capital intensity limit forecast confidence."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 652110000.0,
+        "y2RevEstimate": 777429800.0,
+        "y1GrowthPct": -14.9,
+        "y2GrowthPct": 19.22,
+        "blendedConsensusPct": 2.16,
+        "analystTargetMean": 19.20833,
+        "analystCount": 12
+      },
+      "historicalRevenue": [
+        0,
+        131525000.0,
+        168408000.0,
+        378968000.0,
+        766314000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        -43.58563010834442,
+        -82.0317324592656,
+        -38.46683625002639,
+        47.56066051253141
+      ],
+      "historicalEPS": [
+        0,
+        -0.95,
+        -1.33,
+        -0.69,
+        1.25
+      ],
+      "confidenceBreakdown": "0.7/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

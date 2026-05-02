@@ -3,11 +3,11 @@
     "ticker": "COHR",
     "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e3e",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T18:10:00.000Z",
-    "updatedAt": "2026-05-02T18:10:00.000Z",
-    "name": "AI Deep Dive — COHR — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:07.785Z",
+    "name": "AI Deep Dive \u2014 COHR \u2014 2026-05-02",
     "rationale": "Coherent (COHR) is successfully capitalizing on the AI optical networking boom. With revenue growth accelerating and margins inflecting positively, the $61.7B valuation reflects high expectations. The company possesses a strong structural moat in optical transceivers and lasers. While trading at a premium (43x Forward P/E), the massive secular tailwinds in datacenter connectivity justify the multiple. My weighted fair value of $357 indicates mild upside, making it a solid HOLD/BUY for infrastructure exposure.",
     "snapshot": {
       "price": 329.5,
@@ -69,6 +69,46 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (187481852) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of 4.66% used as anchor for baseline profitability.",
+      "growthDerivation": "Blended analyst consensus is 23.7% (Y1 19.9%, Y2 27.5%). Base scenario uses 18%, aligned with near-term trajectory.",
+      "sectorBenchmarkRow": "Technology - Scientific & Technical Instruments",
+      "dataQualityFlags": [
+        "No anomalies detected in baseline financial data."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 6965769620.0,
+        "y2RevEstimate": 8879806050.0,
+        "y1GrowthPct": 19.89,
+        "y2GrowthPct": 27.48,
+        "blendedConsensusPct": 23.68,
+        "analystTargetMean": 320.25894,
+        "analystCount": 21
+      },
+      "historicalRevenue": [
+        0,
+        3316616000.0,
+        5160100000.0,
+        4707688000.0,
+        5810115000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        7.078268934359601,
+        -5.028158369023856,
+        -3.31699976718933,
+        0.8496217372633761
+      ],
+      "historicalEPS": [
+        0,
+        1.57,
+        -2.93,
+        -1.84,
+        -0.52
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

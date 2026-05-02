@@ -2,7 +2,7 @@
   "ticker": "NVDA",
   "id": "62c1d0b1-24e3-4f5a-8ceb-8c21d78c37b5",
   "source": "AI_AGENT",
-  "schemaVersion": "1.1",
+  "schemaVersion": "1.2",
   "version": 1,
   "savedAt": "2026-05-02T18:30:00Z",
   "updatedAt": "2026-05-02T18:30:00Z",
@@ -93,5 +93,45 @@
   "globalSettings": {
     "discountRate": 10.0,
     "timeHorizon": 5
+  },
+  "analyticsLog": {
+    "shareCountMethod": "shares_outstanding (API) = 24,300M. shares_diluted (NI/EPS derived): NI $120,062M / TTM EPS $4.94 = 24,302M. Discrepancy <1% \u2014 no correction required. Note: NVDA completed a 10:1 stock split June 2024; all share counts and EPS figures use post-split equivalents.",
+    "marginAnchor": "TTM 55.6% used as anchor. Margins have expanded dramatically and consistently post-AI inflection: 16.2% (FY2023) \u2192 55.0% (FY2024) \u2192 55.6% (TTM). Rule #9 trending exception applies \u2014 using 4yr average would include FY2022 (36.2%) and FY2023 (16.2%) which reflect a pre-AI-boom business structurally different from today's. TTM margin is the correct anchor for projecting from the AI-era NVIDIA.",
+    "growthDerivation": "Analyst Y1 consensus: +71.8% (from metrics.analystGrowthEstimate). HYPERGROWTH EXCEPTION (Rule #8): Y1 > 40% \u2014 do NOT use 71.8% as the 5-year CAGR. Derivation from analyst trajectory: Y1 rev ~$371B (+71.8% from $216B TTM base); Y2 rev ~$484B (+30.5% from Y1); Y3 estimated ~$580B (+20%); Y4 ~$667B (+15%); Y5 ~$734B (+10%) \u2014 blended 5yr CAGR from $216B base: ~27%. Base 27% is used (not 71.8%). No semiconductor company has sustained 70%+ CAGR beyond 2-3 years at this revenue scale.",
+    "sectorBenchmarkRow": "Semiconductors (Fabless AI). profile.sector = 'Technology', profile.industry = 'Semiconductors'. P/E: conservative 15, median 25, growth 40+. Net margin: typical 20-40%, best-in-class (fabless) 40%+.",
+    "dataQualityFlags": [
+      "HYPERGROWTH CAGR DERIVATION REQUIRED: analyst Y1 consensus +71.8% cannot be used as 5yr CAGR. Deceleration path modelled explicitly: 71.8% \u2192 30.5% \u2192 20% \u2192 15% \u2192 10% \u2192 5yr CAGR ~27%.",
+      "NVDA 10:1 stock split June 2024 \u2014 all historical EPS are post-split equivalents for consistency.",
+      "FY2023 margin trough (16.2%) reflects crypto-bust + AI-winter demand collapse \u2014 not a recurring risk pattern. Excluded from margin anchor calculation; included in bear case trough reference.",
+      "qualityMultiplier 1.30 (base) and 1.35 (bull) exceed 1.1 \u2014 justified by three confirmed structural moats: CUDA ecosystem (30M+ devs), NVLink/NVSwitch multi-GPU interconnect, InfiniBand networking dominance."
+    ],
+    "analystInputs": {
+      "y1RevEstimate": 371000000000,
+      "y2RevEstimate": 484000000000,
+      "y1GrowthPct": 71.8,
+      "y2GrowthPct": 30.5,
+      "blendedConsensusPct": 71.8,
+      "analystTargetMean": null,
+      "analystCount": null
+    },
+    "historicalRevenue": [
+      26914,
+      26974,
+      60922,
+      215938
+    ],
+    "historicalNetMargins": [
+      36.2,
+      16.2,
+      55.0,
+      55.6
+    ],
+    "historicalEPS": [
+      0.4,
+      0.18,
+      1.38,
+      4.94
+    ],
+    "confidenceBreakdown": "0.88/1.0 \u2014 Base 1.0. +0.10 three confirmed structural moats (CUDA ecosystem, NVLink interconnect, InfiniBand). +0.05 demonstrated pricing power across cycles (H100 $30K, 8-month lead times). -0.05 hypergrowth CAGR derivation required \u2014 5yr projection uncertainty is high at this scale. -0.07 CSP custom silicon risk (AWS Trainium, Google TPU, Microsoft Maia) \u2014 tail risk with binary outcome. -0.05 AI capex cycle peak uncertainty \u2014 hyperscaler ROI pressure timing is unknowable. Note: highest-conviction BUY in the portfolio due to CUDA moat depth."
   }
 }

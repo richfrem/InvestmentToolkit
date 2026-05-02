@@ -3,11 +3,11 @@
     "ticker": "LITE",
     "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e6b",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T18:45:00.000Z",
-    "updatedAt": "2026-05-02T18:45:00.000Z",
-    "name": "AI Deep Dive — LITE — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:11.331Z",
+    "name": "AI Deep Dive \u2014 LITE \u2014 2026-05-02",
     "rationale": "Lumentum (LITE) has experienced a staggering 1444% 1-year surge, riding the wave of optical networking demand for AI data centers. While the $67.8B valuation prices in perfection (58x forward P/E), the fundamentals are rapidly improving, marked by a Piotroski F-Score of 7 and explosive analyst forward revenue estimates. The company is transitioning from a cyclical hardware supplier to a critical AI infrastructure monopoly. Weighted fair value of $917 indicates the current price of $949 is fully valued, making it a HOLD.",
     "snapshot": {
       "price": 949.93,
@@ -69,6 +69,46 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (71400000) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of 11.95% used as anchor for baseline profitability.",
+      "growthDerivation": "Hypergrowth exception applied: Y1 consensus is 77.6%. Derived a 55% 5-year CAGR accounting for out-year deceleration.",
+      "sectorBenchmarkRow": "Technology - Communication Equipment",
+      "dataQualityFlags": [
+        "No anomalies detected in baseline financial data."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 2921633700.0,
+        "y2RevEstimate": 5074153710.0,
+        "y1GrowthPct": 77.61,
+        "y2GrowthPct": 73.68,
+        "blendedConsensusPct": 75.64,
+        "analystTargetMean": 871.55914,
+        "analystCount": 24
+      },
+      "historicalRevenue": [
+        0,
+        1712600000.0,
+        1767000000.0,
+        1359200000.0,
+        1645000000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        11.613920355015765,
+        -7.447651386530843,
+        -40.207474985285465,
+        1.574468085106383
+      ],
+      "historicalEPS": [
+        0,
+        2.79,
+        -1.93,
+        -8.12,
+        0.38
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]
