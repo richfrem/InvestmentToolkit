@@ -1,10 +1,28 @@
 {
-  "name": "toolkit-manager",
-  "description": "Orchestrator plugin for managing the Investment Screener suite and Questrade API integration.",
-  "skills": [
-    "plugins/toolkit-manager/skills/questrade-token-setup/SKILL.md",
-    "plugins/toolkit-manager/skills/run-screener/SKILL.md"
-  ],
-  "commands": [],
-  "agents": []
+    "name": "toolkit-manager",
+    "version": "2.0.0",
+    "description": "Orchestrator plugin for managing the Investment Screener suite and Questrade API integration. Handles server startup and token seeding.",
+    "author": "InvestmentToolkit",
+    "maturity": "L5",
+    "architecture": "supercharged",
+    "skills": [
+        {
+            "name": "questrade_token_setup",
+            "path": "skills/questrade-token-setup/SKILL.md",
+            "trigger": "/setup-questrade"
+        },
+        {
+            "name": "run_screener",
+            "path": "skills/run-screener/SKILL.md",
+            "trigger": "/start-screener"
+        }
+    ],
+    "commands": [],
+    "agents": [],
+    "tags": [
+        "finance",
+        "questrade",
+        "infrastructure",
+        "startup"
+    ]
 }

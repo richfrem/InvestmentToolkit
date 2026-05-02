@@ -1,0 +1,28 @@
+{
+    "name": "investment-toolkit-plugins",
+    "description": "Investment Toolkit plugins: AI stock valuation, portfolio thesis balancing, and suite orchestration.",
+    "owner": {
+        "name": "richfrem",
+        "email": "connect.richfrem@gmail.com"
+    },
+    "plugins": [
+        {
+            "name": "stock-valuation",
+            "description": "AI-driven autonomous stock valuation engine. Produces Bear/Base/Bull scenario projections, persists structured JSON for the app UI, and generates deep-dive research reports with interactive Q&A.",
+            "source": "./plugins/stock-valuation",
+            "strict": true
+        },
+        {
+            "name": "thesis-balancer",
+            "description": "Portfolio health monitor and strategic thesis alignment engine. Detects drift, flags Thesis Breaker conditions, and resolves Strategic Conflicts.",
+            "source": "./plugins/thesis-balancer",
+            "strict": true
+        },
+        {
+            "name": "toolkit-manager",
+            "description": "Orchestrator for the Investment Screener suite. Handles server startup (/start-screener) and Questrade API token seeding (/setup-questrade).",
+            "source": "./plugins/toolkit-manager",
+            "strict": true
+        }
+    ]
+}

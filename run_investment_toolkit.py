@@ -178,10 +178,22 @@ def setup_virtual_env(venv_dir: str, env: Dict[str, str]) -> None:
     
     Colors.print("Installing Python dependencies...", Colors.GREEN)
     python_exec = "python" if IS_WINDOWS else "python3"
-    
+
     run_command([python_exec, "-m", "pip", "install", "--upgrade", "pip"], env=env)
-    # Note: These could be moved to a requirements.txt but kept here for parity with original script
-    run_command([python_exec, "-m", "pip", "install", "yfinance", "pandas", "uvicorn", "fastapi"], env=env)
+
+    # Install from compiled requirements.txt if present; otherwise fall back to requirements.in.
+    # Always run `pip-compile requirements.in -o requirements.txt` after adding a new dep to requirements.in.
+    req_txt = os.path.join(ROOT_DIR, "requirements.txt")
+    req_in  = os.path.join(ROOT_DIR, "requirements.in")
+    if os.path.exists(req_txt):
+        run_command([python_exec, "-m", "pip", "install", "-r", req_txt], env=env)
+    elif os.path.exists(req_in):
+        Colors.print("Warning: requirements.txt not found — installing from requirements.in (unpinned).", Colors.YELLOW)
+        run_command([python_exec, "-m", "pip", "install", "-r", req_in], env=env)
+    else:
+        Colors.print("Warning: No requirements file found — installing minimal fallback deps.", Colors.YELLOW)
+        run_command([python_exec, "-m", "pip", "install", "yfinance", "pandas", "uvicorn", "fastapi",
+                     "cryptography", "keyring"], env=env)
 
 # main function
 def main() -> None:
@@ -219,6 +231,26 @@ def main() -> None:
     # 5. Install Node dependencies
     Colors.print("Installing Node dependencies...", Colors.GREEN)
     run_command(["npm", "install"], env=process_env)
+
+    # 5b. Python dependency preflight — fail fast before starting servers
+    Colors.print("Verifying Python dependencies...", Colors.GREEN)
+    _required_modules = ["keyring", "cryptography", "yfinance", "pandas"]
+    _python_exec = "python" if IS_WINDOWS else "python3"
+    _missing = []
+    for _mod in _required_modules:
+        result = subprocess.run(
+            [_python_exec, "-c", f"import {_mod}"],
+            env=process_env,
+            capture_output=True
+        )
+        if result.returncode != 0:
+            _missing.append(_mod)
+    if _missing:
+        Colors.print(f"❌ Missing Python modules: {', '.join(_missing)}", Colors.RED)
+        Colors.print("Run: pip install " + " ".join(_missing), Colors.YELLOW)
+        Colors.print("Or add missing packages to requirements.in and re-run pip-compile.", Colors.YELLOW)
+        sys.exit(1)
+    Colors.print("✅ Python dependencies OK.", Colors.GREEN)
 
     # 6. Build Backend
     Colors.print("Building Backend...", Colors.GREEN)

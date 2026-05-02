@@ -5,6 +5,7 @@ uvicorn
 fastapi
 python-dotenv
 cryptography>=46.0.3
+keyring
 pydantic>=2.7.0
 rich
 typer

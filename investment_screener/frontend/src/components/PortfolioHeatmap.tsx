@@ -134,6 +134,16 @@ export default function PortfolioHeatmap() {
         }
     };
 
+    // Returns black or white depending on background luminance (WCAG split at L=0.179)
+    const getTextColor = (hexColor: string): string => {
+        const r = parseInt(hexColor.slice(1, 3), 16) / 255;
+        const g = parseInt(hexColor.slice(3, 5), 16) / 255;
+        const b = parseInt(hexColor.slice(5, 7), 16) / 255;
+        const toLinear = (c: number) => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        const L = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+        return L > 0.179 ? '#000000' : '#ffffff';
+    };
+
     // Finviz-style colors: bigger gains = darker green, bigger losses = darker red
     const getColorForChange = (change: number): string => {
         if (change >= 8) return '#004d00';    // Deepest green
@@ -255,37 +265,48 @@ export default function PortfolioHeatmap() {
         // Symbol - larger, bold
         leaves.append('text')
             .attr('x', d => ((d as any).x1 - (d as any).x0) / 2)
-            .attr('y', d => ((d as any).y1 - (d as any).y0) / 2 - 6)
+            .attr('y', d => ((d as any).y1 - (d as any).y0) / 2 - 9)
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'middle')
-            .attr('fill', 'white')
+            .attr('fill', d => getTextColor(getColorForChange(d.data.change_pct || 0)))
             .attr('font-size', d => {
                 const w = (d as any).x1 - (d as any).x0;
-                if (w > 100) return '16px';
-                if (w > 70) return '14px';
-                if (w > 50) return '12px';
-                if (w > 35) return '10px';
-                return '8px';
+                if (w > 150) return '26px';
+                if (w > 100) return '22px';
+                if (w > 70)  return '18px';
+                if (w > 50)  return '15px';
+                if (w > 35)  return '12px';
+                return '10px';
             })
             .attr('font-weight', '800')
-            .style('text-shadow', '0 1px 2px rgba(0,0,0,0.8)')
+            .style('text-shadow', d => {
+                const tc = getTextColor(getColorForChange(d.data.change_pct || 0));
+                return tc === '#000000' ? 'none' : '0 1px 3px rgba(0,0,0,0.8)';
+            })
             .text(d => ((d as any).x1 - (d as any).x0) > 28 ? d.data.symbol || '' : '');
 
         // Change percentage
         leaves.append('text')
             .attr('x', d => ((d as any).x1 - (d as any).x0) / 2)
-            .attr('y', d => ((d as any).y1 - (d as any).y0) / 2 + 8)
+            .attr('y', d => ((d as any).y1 - (d as any).y0) / 2 + 13)
             .attr('text-anchor', 'middle')
-            .attr('fill', 'rgba(255,255,255,0.95)')
+            .attr('fill', d => {
+                const tc = getTextColor(getColorForChange(d.data.change_pct || 0));
+                return tc === '#000000' ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.95)';
+            })
             .attr('font-size', d => {
                 const w = (d as any).x1 - (d as any).x0;
-                if (w > 100) return '13px';
-                if (w > 70) return '11px';
-                if (w > 50) return '10px';
-                return '8px';
+                if (w > 150) return '18px';
+                if (w > 100) return '16px';
+                if (w > 70)  return '14px';
+                if (w > 50)  return '12px';
+                return '10px';
             })
             .attr('font-weight', '600')
-            .style('text-shadow', '0 1px 2px rgba(0,0,0,0.6)')
+            .style('text-shadow', d => {
+                const tc = getTextColor(getColorForChange(d.data.change_pct || 0));
+                return tc === '#000000' ? 'none' : '0 1px 2px rgba(0,0,0,0.6)';
+            })
             .text(d => {
                 const w = (d as any).x1 - (d as any).x0;
                 if (w < 38) return '';
@@ -295,11 +316,20 @@ export default function PortfolioHeatmap() {
         // Value for larger cells
         leaves.append('text')
             .attr('x', d => ((d as any).x1 - (d as any).x0) / 2)
-            .attr('y', d => ((d as any).y1 - (d as any).y0) / 2 + 22)
+            .attr('y', d => ((d as any).y1 - (d as any).y0) / 2 + 32)
             .attr('text-anchor', 'middle')
-            .attr('fill', 'rgba(255,255,255,0.5)')
-            .attr('font-size', '9px')
-            .attr('font-weight', '500')
+            .attr('fill', d => {
+                const tc = getTextColor(getColorForChange(d.data.change_pct || 0));
+                return tc === '#000000' ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.5)';
+            })
+            .attr('font-size', d => {
+                const w = (d as any).x1 - (d as any).x0;
+                if (w > 150) return '16px';
+                if (w > 100) return '14px';
+                if (w > 70)  return '13px';
+                return '12px';
+            })
+            .attr('font-weight', '600')
             .text(d => {
                 const w = (d as any).x1 - (d as any).x0;
                 const h = (d as any).y1 - (d as any).y0;

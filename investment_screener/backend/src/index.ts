@@ -270,9 +270,32 @@ app.post('/api/questrade/seed', async (req, res) => {
 
     console.log(`[API] Seeding Questrade refresh token...`);
     try {
+        // Exchange the one-week app token for a proper OAuth2 refresh token.
+        // Questrade portal tokens are single-use; the exchange produces the long-lived token.
+        const exchangeUrl = `https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token=${encodeURIComponent(refreshToken)}`;
+        const exchangeRes = await fetch(exchangeUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: '',
+        });
+        if (!exchangeRes.ok) {
+            const errText = await exchangeRes.text();
+            console.error(`[API][Seed] Token exchange failed: ${errText}`);
+            res.status(400).json({ error: 'Token exchange failed. Ensure you are using a fresh one-week token from the Questrade portal.', details: errText });
+            return;
+        }
+        const exchangeData: any = await exchangeRes.json();
+        const seedToken: string = exchangeData.refresh_token;
+        if (!seedToken) {
+            res.status(400).json({ error: 'Token exchange did not return a refresh_token.' });
+            return;
+        }
+        console.log(`[API][Seed] Token exchanged successfully.`);
+
         const { spawn } = require('child_process');
-        const enginePath = path.resolve(__dirname, 'QuestradeDataEngine.py');
-        const args = ['--cache-dir', path.resolve(__dirname, '../'), '--seed', refreshToken];
+        // __dirname is dist/ at runtime; Python scripts live in src/
+        const enginePath = path.resolve(__dirname, '../src/QuestradeDataEngine.py');
+        const args = ['--cache-dir', path.resolve(__dirname, '../'), '--seed', seedToken];
 
         console.log(`[API][Seed] Spawning: python3 ${enginePath} ${args.join(' ')} `);
         const pythonProcess = spawn('python3', [enginePath, ...args]);
