@@ -228,6 +228,34 @@ def main() -> None:
     process_env = os.environ.copy()
     setup_virtual_env(os.path.join(ROOT_DIR, "venv"), process_env)
 
+    # 5. Pre-flight: fix root-owned node_modules (caused by accidental sudo npm/rm)
+    node_modules_dir = os.path.join(ROOT_DIR, "investment_screener", "node_modules")
+    if os.path.exists(node_modules_dir) and not IS_WINDOWS:
+        import pwd
+        current_user = pwd.getpwuid(os.getuid()).pw_name
+        result = subprocess.run(
+            ["find", node_modules_dir, "-maxdepth", "1", "-user", "root"],
+            capture_output=True, text=True
+        )
+        root_owned = [l for l in result.stdout.strip().splitlines() if l]
+        if root_owned:
+            Colors.print(
+                f"⚠️  {len(root_owned)} node_modules packages are owned by root — fixing permissions...",
+                Colors.YELLOW
+            )
+            fix_result = subprocess.run(
+                ["sudo", "chown", "-R", f"{current_user}", node_modules_dir],
+                check=False
+            )
+            if fix_result.returncode != 0:
+                Colors.print("❌ Permission fix failed. Please run this manually, then re-run:", Colors.RED)
+                Colors.print(
+                    f"   sudo chown -R {current_user} {node_modules_dir}",
+                    Colors.YELLOW
+                )
+                sys.exit(1)
+            Colors.print("✅ node_modules permissions restored.", Colors.GREEN)
+
     # 5. Install Node dependencies
     Colors.print("Installing Node dependencies...", Colors.GREEN)
     run_command(["npm", "install"], env=process_env)
