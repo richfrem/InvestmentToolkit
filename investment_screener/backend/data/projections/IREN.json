@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "IREN",
+    "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e4a",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T18:30:00.000Z",
+    "updatedAt": "2026-05-02T18:30:00.000Z",
+    "name": "AI Deep Dive — IREN — 2026-05-02",
+    "rationale": "IREN (formerly Iris Energy) has achieved a $15.1B valuation on the promise of its dual Bitcoin/HPC data center model. Growth is strong (59%), but free cash flow burn is severe (-$1.12B TTM). However, analysts forecast explosive revenue acceleration toward $2.8B by 2027. Unlike pure crypto miners, IREN's HPC optionality provides a potential path to sustainable high margins. Weighted fair value of $50.38 implies a mild 10% upside, but the dilution risk required to fund their gigawatt pipeline makes it a HOLD.",
+    "snapshot": {
+      "price": 45.66,
+      "currency": "USD",
+      "shares": 331759177,
+      "revenue": 501023000,
+      "lastActualPS": 30.23,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 59,
+      "analystMarginEstimate": 51.48
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": 30,
+        "netMargin": 5,
+        "exitPE": 15,
+        "qualityMultiplier": 0.8,
+        "moatScore": 1,
+        "managementScore": 2,
+        "shareChange": 60,
+        "scenarioPrice": 1.63
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 65,
+        "netMargin": 15,
+        "exitPE": 25,
+        "qualityMultiplier": 1,
+        "moatScore": 2,
+        "managementScore": 3,
+        "shareChange": 35,
+        "scenarioPrice": 31.95
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 90,
+        "netMargin": 25,
+        "exitPE": 35,
+        "qualityMultiplier": 1.1,
+        "moatScore": 3,
+        "managementScore": 4,
+        "shareChange": 15,
+        "scenarioPrice": 177.2
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "IREN is executing a massive infrastructure expansion, pivoting its Bitcoin mining operations into AI and High-Performance Computing (HPC) hosting. The execution so far has been aggressive, resulting in a staggering -$1.12B in free cash flow over the last 12 months. To fund this at a $15B market cap, current shareholders will face significant equity dilution (modeled at 35% in the base case). However, if analyst projections for 2027 ($2.8B+ revenue) materialize, the terminal cash flows from the HPC hosting transition can overpower the dilution effect. The current $45.66 valuation is stretched, making it a HOLD as execution risks remain high.",
+      "fairValue": 50.38,
+      "action": "HOLD",
+      "analyzedAt": "2026-05-02T18:30:00.000Z",
+      "researchReport": "IREN_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

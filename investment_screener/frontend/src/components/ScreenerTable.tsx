@@ -1,0 +1,463 @@
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown, BrainCircuit, ExternalLink, Activity } from 'lucide-react';
+import { fetchAllProjections, type Projection } from '../services/api';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface ScreenerRow {
+    symbol: string;
+    name: string;
+    model: string;
+    action: 'BUY' | 'HOLD' | 'SELL' | '—';
+    fairValue: number | null;
+    currentPrice: number;
+    gainLoss: number | null;
+    upside: number | null;
+    growth: number | null;
+    margin: number | null;
+    ruleOf40: number | null;
+    bear: number | null;
+    base: number | null;
+    bull: number | null;
+    lastAnalyzed: string;
+    qualityMultiplier: number | null;
+}
+
+// ─── Column Definitions ───────────────────────────────────────────────────────
+
+interface ColDef {
+    id: keyof ScreenerRow;
+    label: string;
+    always?: boolean;
+    isChange?: boolean;
+    defaultOn?: boolean;
+    align?: 'left' | 'right';
+    format: (v: any) => string;
+}
+
+const COLUMNS: ColDef[] = [
+    { id: 'symbol',         label: 'Ticker',     always: true,  defaultOn: true,  align: 'left',  format: v => String(v ?? '') },
+    { id: 'action',         label: 'Action',     defaultOn: true,  align: 'left',  format: v => String(v ?? '—') },
+    { id: 'fairValue',      label: 'Fair Value', defaultOn: true,  align: 'right', format: v => v != null ? `$${Math.round(v)}` : '—' },
+    { id: 'currentPrice',   label: 'Price',       defaultOn: true,  align: 'right', format: v => v != null ? `$${v.toFixed(2)}` : '—' },
+    { id: 'gainLoss',       label: 'Gain ($)',    isChange: true, defaultOn: true,  align: 'right', format: v => v != null ? `${v >= 0 ? '+$' : '-$'}${Math.abs(Math.round(v))}` : '—' },
+    { id: 'upside',         label: 'Upside (%)',  isChange: true, defaultOn: true,  align: 'right', format: v => v != null ? `${v >= 0 ? '+' : ''}${v.toFixed(1)}%` : '—' },
+    { id: 'ruleOf40',       label: 'R40',        defaultOn: true,  align: 'right', format: v => v != null ? v.toFixed(1) : '—' },
+    { id: 'growth',         label: 'Growth',      defaultOn: true,  align: 'right', format: v => v != null ? `${v.toFixed(1)}%` : '—' },
+    { id: 'model',          label: 'Analyst',     defaultOn: true,  align: 'left',  format: v => String(v ?? '—') },
+    { id: 'bear',           label: 'Bear',        defaultOn: false, align: 'right', format: v => v != null ? `$${Math.round(v)}` : '—' },
+    { id: 'base',           label: 'Base',        defaultOn: false, align: 'right', format: v => v != null ? `$${Math.round(v)}` : '—' },
+    { id: 'bull',           label: 'Bull',        defaultOn: false, align: 'right', format: v => v != null ? `$${Math.round(v)}` : '—' },
+    { id: 'qualityMultiplier', label: 'Quality', defaultOn: false, align: 'right', format: v => v != null ? `${v.toFixed(2)}x` : '—' },
+    { id: 'lastAnalyzed',   label: 'Analyzed',    defaultOn: true,  align: 'right', format: v => v ? new Date(v).toLocaleDateString() : '—' },
+];
+
+const DEFAULT_WIDTHS: Record<string, number> = {
+    symbol: 80, action: 80, fairValue: 95, currentPrice: 80, gainLoss: 85,
+    upside: 85, ruleOf40: 70, growth: 80, model: 130, base: 80,
+    bear: 80, bull: 80, qualityMultiplier: 80, lastAnalyzed: 90
+};
+
+// ─── Persistence ──────────────────────────────────────────────────────────────
+
+const STORAGE_KEY = 'ai-screener-table-prefs-v1';
+
+interface TablePrefs {
+    visible: string[];
+    columnOrder: string[];
+    columnWidths: Record<string, number>;
+}
+
+function loadPrefs(): TablePrefs | null {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? (JSON.parse(raw) as TablePrefs) : null;
+    } catch { return null; }
+}
+
+function savePrefs(prefs: TablePrefs) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs)); } catch { /* quota */ }
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function changeBg(v: number | null): string {
+    if (v == null) return 'transparent';
+    if (v >=  50) return 'rgba(0,102,0,0.85)';
+    if (v >=  25) return 'rgba(0,160,0,0.70)';
+    if (v >=  10) return 'rgba(0,220,0,0.40)';
+    if (v >=   0) return 'rgba(30,180,30,0.20)';
+    if (v >= -10) return 'rgba(200,30,30,0.20)';
+    if (v >= -25) return 'rgba(210,0,0,0.50)';
+    return 'rgba(120,0,0,0.80)';
+}
+
+function sortRows(rows: ScreenerRow[], col: keyof ScreenerRow, dir: 'asc' | 'desc'): ScreenerRow[] {
+    return [...rows].sort((a, b) => {
+        const av = a[col], bv = b[col];
+        if (av == null && bv == null) return 0;
+        if (av == null) return 1;
+        if (bv == null) return -1;
+        const cmp = av < bv ? -1 : av > bv ? 1 : 0;
+        return dir === 'asc' ? cmp : -cmp;
+    });
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+export default function ScreenerTable() {
+    const navigate = useNavigate();
+    const [projections, setProjections] = useState<Projection[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // Load persisted prefs
+    const [visible, setVisible] = useState<Set<string>>(new Set());
+    const [columnOrder, setColumnOrder] = useState<string[]>([]);
+    const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
+
+    const [pickerOpen, setPickerOpen] = useState(false);
+    const pickerRef = useRef<HTMLDivElement>(null);
+    const [showFilters, setShowFilters] = useState(false);
+    const [filters, setFilters] = useState<Record<string, string>>({});
+    const [sortCol, setSortCol] = useState<keyof ScreenerRow>('upside');
+    const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+
+    const dragRef = useRef<{ colId: string; startX: number; startWidth: number } | null>(null);
+
+    // Initialize Prefs
+    useEffect(() => {
+        const prefs = loadPrefs();
+        const defaultVisible = new Set(COLUMNS.filter(c => c.always || c.defaultOn).map(c => c.id));
+        setVisible(prefs ? new Set(prefs.visible) : defaultVisible);
+        setColumnOrder(prefs?.columnOrder ?? COLUMNS.map(c => c.id));
+        setColumnWidths({ ...DEFAULT_WIDTHS, ...(prefs?.columnWidths ?? {}) });
+    }, []);
+
+    // Persist prefs
+    useEffect(() => {
+        if (visible.size > 0) {
+            savePrefs({ visible: [...visible], columnOrder, columnWidths });
+        }
+    }, [visible, columnOrder, columnWidths]);
+
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const data = await fetchAllProjections();
+            // Filter only AI projections
+            const aiOnly = data.filter(p => p.source === 'AI_AGENT');
+            // Group by ticker and take latest
+            const latestByTicker = aiOnly.reduce((acc, curr) => {
+                if (!acc[curr.ticker] || new Date(curr.savedAt) > new Date(acc[curr.ticker].savedAt)) {
+                    acc[curr.ticker] = curr;
+                }
+                return acc;
+            }, {} as Record<string, Projection>);
+
+            setProjections(Object.values(latestByTicker));
+        } catch (err: any) {
+            setError(err.message || 'Failed to load screener data');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => { fetchData(); }, [fetchData]);
+
+    // Close picker on outside click
+    useEffect(() => {
+        function handle(e: MouseEvent) {
+            if (pickerRef.current && !pickerRef.current.contains(e.target as Node))
+                setPickerOpen(false);
+        }
+        document.addEventListener('mousedown', handle);
+        return () => document.removeEventListener('mousedown', handle);
+    }, []);
+
+    // Resize handlers
+    useEffect(() => {
+        function onMouseMove(e: MouseEvent) {
+            if (!dragRef.current) return;
+            const { colId, startX, startWidth } = dragRef.current;
+            const newWidth = Math.max(40, startWidth + (e.clientX - startX));
+            setColumnWidths(prev => ({ ...prev, [colId]: newWidth }));
+        }
+        function onMouseUp() {
+            dragRef.current = null;
+            document.body.style.cursor = '';
+        }
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+        return () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+    }, []);
+
+    const startResize = useCallback((e: React.MouseEvent, colId: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragRef.current = { colId, startX: e.clientX, startWidth: columnWidths[colId] ?? DEFAULT_WIDTHS[colId] };
+        document.body.style.cursor = 'col-resize';
+    }, [columnWidths]);
+
+    // Map Projections to Table Rows
+    const rows = useMemo(() => {
+        return projections.map(p => {
+            const thesis = p.aiThesis;
+            const base = p.scenarios.base;
+            const bear = p.scenarios.bear;
+            const bull = p.scenarios.bull;
+            
+            const currentPrice = p.snapshot.price;
+            const fairValue = thesis?.fairValue ?? null;
+            const upside = (fairValue && currentPrice) ? ((fairValue - currentPrice) / currentPrice) * 100 : null;
+            const gainLoss = (fairValue && currentPrice) ? (fairValue - currentPrice) : null;
+
+            // Simple Rule of 40 calc if not in metrics
+            const growth = base.growthRate;
+            const margin = base.netMargin;
+            const r40 = growth + margin;
+
+            return {
+                symbol: p.ticker,
+                name: p.name,
+                model: thesis?.model || '—',
+                action: thesis?.action || '—',
+                fairValue,
+                currentPrice,
+                gainLoss,
+                upside,
+                growth,
+                margin,
+                ruleOf40: r40,
+                bear: bear.scenarioPrice || null,
+                base: base.scenarioPrice || null,
+                bull: bull.scenarioPrice || null,
+                qualityMultiplier: base.qualityMultiplier,
+                lastAnalyzed: p.savedAt
+            } as ScreenerRow;
+        });
+    }, [projections]);
+
+    const filteredRows = rows.filter(row =>
+        Object.entries(filters).every(([colId, filterVal]) => {
+            if (!filterVal) return true;
+            const val = row[colId as keyof ScreenerRow];
+            return val != null && String(val).toLowerCase().includes(filterVal.toLowerCase());
+        })
+    );
+
+    const sortedRows = sortRows(filteredRows, sortCol, sortDir);
+
+    const visibleCols = columnOrder.map(id => COLUMNS.find(c => c.id === id)!).filter(c => c && visible.has(c.id));
+
+    if (loading) return (
+        <div className="flex flex-col items-center justify-center h-64 bg-slate-900/50 rounded-xl border border-slate-800 animate-pulse">
+            <BrainCircuit size={32} className="text-indigo-500 mb-4 animate-bounce" />
+            <span className="text-slate-400 font-medium">Aggregating AI Insights...</span>
+        </div>
+    );
+
+    if (error) return (
+        <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-6 rounded-xl text-center">
+            <div className="font-bold mb-2">Aggregation Failed</div>
+            <div className="text-sm mb-4">{error}</div>
+            <button onClick={fetchData} className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-lg text-sm font-bold transition-colors">Retry</button>
+        </div>
+    );
+
+    return (
+        <div className="flex flex-col bg-slate-900/40 rounded-xl overflow-hidden border border-slate-800 backdrop-blur-md h-full">
+            {/* Header bar */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900/60">
+                <div className="flex items-center gap-4">
+                    <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
+                        <Activity size={18} />
+                    </div>
+                    <div>
+                        <span className="text-white font-bold text-sm block">Intelligence Feed</span>
+                        <span className="text-slate-500 text-[10px] uppercase font-black tracking-widest">{sortedRows.length} Deep Dives</span>
+                    </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setShowFilters(s => !s)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${showFilters ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700'}`}
+                    >
+                        <Filter size={13} /> Filter
+                    </button>
+
+                    <div className="relative" ref={pickerRef}>
+                        <button
+                            onClick={() => setPickerOpen(o => !o)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 text-slate-400 rounded-lg text-xs font-bold hover:text-white border border-slate-700 transition-all"
+                        >
+                            <SlidersHorizontal size={13} /> Columns
+                        </button>
+                        {pickerOpen && (
+                            <div className="absolute right-0 top-10 z-50 w-64 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl p-2 max-h-[70vh] overflow-y-auto backdrop-blur-xl">
+                                <div className="text-[10px] text-slate-500 uppercase font-black tracking-[0.2em] px-3 py-2 mb-1 border-b border-slate-800">
+                                    Display Metrics
+                                </div>
+                                {columnOrder.map((colId, idx) => {
+                                    const col = COLUMNS.find(c => c.id === colId)!;
+                                    const isVisible = visible.has(colId);
+                                    return (
+                                        <div key={colId} className="flex items-center justify-between px-2 py-1.5 rounded-lg hover:bg-white/5 group">
+                                            <label className="flex items-center gap-3 cursor-pointer flex-1 py-1">
+                                                <input
+                                                    type="checkbox"
+                                                    disabled={col.always}
+                                                    checked={isVisible}
+                                                    onChange={() => setVisible(prev => {
+                                                        const next = new Set(prev);
+                                                        if (next.has(colId)) next.delete(colId); else next.add(colId);
+                                                        return next;
+                                                    })}
+                                                    className="accent-indigo-500 w-4 h-4 rounded border-slate-700 bg-slate-800"
+                                                />
+                                                <span className={`text-xs font-bold ${isVisible ? 'text-white' : 'text-slate-600'}`}>{col.label}</span>
+                                            </label>
+                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button onClick={() => setColumnOrder(prev => {
+                                                    const next = [...prev];
+                                                    const i = next.indexOf(colId);
+                                                    if (i > 0) [next[i], next[i-1]] = [next[i-1], next[i]];
+                                                    return next;
+                                                })} className="p-1 hover:bg-slate-700 rounded text-slate-400">
+                                                    <ChevronUp size={14} />
+                                                </button>
+                                                <button onClick={() => setColumnOrder(prev => {
+                                                    const next = [...prev];
+                                                    const i = next.indexOf(colId);
+                                                    if (i < next.length - 1) [next[i], next[i+1]] = [next[i+1], next[i]];
+                                                    return next;
+                                                })} className="p-1 hover:bg-slate-700 rounded text-slate-400">
+                                                    <ChevronDown size={14} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    <button onClick={fetchData} className="p-1.5 bg-slate-800 text-slate-400 rounded-lg hover:text-white border border-slate-700 transition-all">
+                        <ChevronsUpDown size={16} className="rotate-90" />
+                    </button>
+                </div>
+            </div>
+
+            {/* Table */}
+            <div className="flex-1 overflow-auto custom-scrollbar min-h-0">
+                <table className="text-sm border-collapse w-full" style={{ tableLayout: 'fixed' }}>
+                    <colgroup>
+                        {visibleCols.map(col => (
+                            <col key={col.id} style={{ width: columnWidths[col.id] ?? 100 }} />
+                        ))}
+                    </colgroup>
+                    <thead className="sticky top-0 z-20">
+                        <tr className="bg-slate-900 border-b border-slate-800">
+                            {visibleCols.map(col => {
+                                const active = sortCol === col.id;
+                                return (
+                                    <th
+                                        key={col.id}
+                                        onClick={() => {
+                                            if (sortCol === col.id) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+                                            else { setSortCol(col.id as any); setSortDir('desc'); }
+                                        }}
+                                        className={`relative px-4 py-3 font-black text-[10px] uppercase tracking-widest cursor-pointer select-none whitespace-nowrap
+                                            ${col.align === 'right' ? 'text-right' : 'text-left'}
+                                            ${active ? 'text-indigo-400 bg-indigo-500/5' : 'text-slate-500 hover:text-slate-200'}`}
+                                    >
+                                        <div className={`flex items-center gap-1.5 ${col.align === 'right' ? 'justify-end' : 'justify-start'}`}>
+                                            {col.label}
+                                            {active && (sortDir === 'asc' ? <ArrowUp size={10} /> : <ArrowDown size={10} />)}
+                                        </div>
+                                        <div
+                                            className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-indigo-500/40 transition-colors z-10"
+                                            onMouseDown={e => startResize(e, col.id)}
+                                            onClick={e => e.stopPropagation()}
+                                        />
+                                    </th>
+                                );
+                            })}
+                        </tr>
+                        {showFilters && (
+                            <tr className="bg-slate-900/80 border-b border-slate-800 backdrop-blur-sm">
+                                {visibleCols.map(col => (
+                                    <th key={`filter-${col.id}`} className="px-3 py-2">
+                                        <input
+                                            type="text"
+                                            placeholder={`Filter…`}
+                                            value={filters[col.id] ?? ''}
+                                            onChange={e => setFilters(prev => ({ ...prev, [col.id]: e.target.value }))}
+                                            className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1.5 text-[10px] font-bold text-white focus:outline-none focus:border-indigo-500/50 placeholder:text-slate-700"
+                                            onClick={e => e.stopPropagation()}
+                                        />
+                                    </th>
+                                ))}
+                            </tr>
+                        )}
+                    </thead>
+                    <tbody>
+                        {sortedRows.map((row, i) => (
+                            <tr
+                                key={row.symbol}
+                                onClick={() => navigate(`/analysis?ticker=${row.symbol}`)}
+                                className={`group border-b border-slate-800/50 cursor-pointer transition-all duration-200
+                                    ${i % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}
+                                    hover:bg-indigo-500/10`}
+                            >
+                                {visibleCols.map(col => {
+                                    const val = row[col.id];
+                                    const numVal = typeof val === 'number' ? val : null;
+                                    
+                                    let cellContent;
+                                    if (col.id === 'symbol') {
+                                        cellContent = (
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-black text-white text-base tracking-tighter group-hover:text-indigo-300 transition-colors">{val}</span>
+                                                <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-400" />
+                                            </div>
+                                        );
+                                    } else if (col.id === 'action') {
+                                        const color = val === 'BUY' ? 'text-green-400' : val === 'SELL' ? 'text-red-400' : 'text-slate-400';
+                                        cellContent = <span className={`font-black text-[10px] uppercase tracking-tighter ${color}`}>{val}</span>;
+                                    } else {
+                                        cellContent = (
+                                            <span className={`font-bold ${col.align === 'right' ? 'font-mono' : ''} ${isVisibleCol(col.id) ? 'text-slate-200' : 'text-slate-400'}`}>
+                                                {col.format(val)}
+                                            </span>
+                                        );
+                                    }
+
+                                    return (
+                                        <td
+                                            key={col.id}
+                                            className={`px-4 py-4 whitespace-nowrap overflow-hidden text-ellipsis ${col.align === 'right' ? 'text-right' : 'text-left'}`}
+                                            style={col.isChange ? { backgroundColor: changeBg(numVal) } : undefined}
+                                        >
+                                            {cellContent}
+                                        </td>
+                                    );
+                                })}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
+
+function isVisibleCol(id: string) {
+    return !['model', 'lastAnalyzed'].includes(id);
+}

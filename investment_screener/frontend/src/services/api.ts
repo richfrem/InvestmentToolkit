@@ -279,6 +279,14 @@ export const fetchProjections = async (ticker: string): Promise<Projection[] | n
     }
 };
 
+export const fetchAllProjections = async (): Promise<Projection[]> => {
+    const response = await fetch('/api/projections');
+    if (!response.ok) {
+        throw new Error('Failed to fetch projections');
+    }
+    return await response.json();
+};
+
 export const saveProjection = async (projection: Projection): Promise<{ success: boolean; message: string }> => {
     const response = await fetch('/api/projections', {
         method: 'POST',

@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "APLD",
+    "id": "f8d23e54-2b3f-4e9f-8a2b-3f6e104c5d83",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T17:30:00.000Z",
+    "updatedAt": "2026-05-02T17:30:00.000Z",
+    "name": "AI Deep Dive — APLD — 2026-05-02",
+    "rationale": "APLD is an AI infrastructure and data center play growing at 139% YoY, but trading at an extreme 66x Price-to-Sales multiple ($9.5B market cap on $144M revenue). The market is pricing in flawless execution of their multi-gigawatt pipeline and SaaS-like terminal margins. However, data center hosting is capital intensive and highly competitive. My weighted fair value of $15 indicates significant downside risk as the hype cycle normalizes.",
+    "snapshot": {
+      "price": 33.55,
+      "currency": "USD",
+      "shares": 285769539,
+      "revenue": 144193000,
+      "lastActualPS": 66.49,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 139.3,
+      "analystMarginEstimate": -59.47
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": 30,
+        "netMargin": 5,
+        "exitPE": 15,
+        "qualityMultiplier": 0.9,
+        "moatScore": 1,
+        "managementScore": 2,
+        "shareChange": 20,
+        "scenarioPrice": 2
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 60,
+        "netMargin": 15,
+        "exitPE": 25,
+        "qualityMultiplier": 1,
+        "moatScore": 2,
+        "managementScore": 3,
+        "shareChange": 10,
+        "scenarioPrice": 13
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 90,
+        "netMargin": 25,
+        "exitPE": 35,
+        "qualityMultiplier": 1.1,
+        "moatScore": 3,
+        "managementScore": 4,
+        "shareChange": 5,
+        "scenarioPrice": 44
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "Applied Digital (APLD) is riding the AI infrastructure super-cycle, securing massive leases (like CoreWeave). However, a $9.5B valuation on $144M in trailing revenue requires the company to execute perfectly for the next decade. Data centers are capital-heavy (APLD burned $797M in FCF last year), which will likely necessitate further severe shareholder dilution. Even in a bullish scenario where they reach $3.5B in revenue by Year 5 with 25% net margins, the current price offers very little margin of safety.",
+      "fairValue": 15.35,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T17:30:00.000Z",
+      "researchReport": "APLD_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

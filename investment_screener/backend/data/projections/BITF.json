@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "BITF",
+    "id": "c7a8b9f1-3d2e-4a5b-9c8d-7e6f5a4b3c2d",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T17:40:00.000Z",
+    "updatedAt": "2026-05-02T17:40:00.000Z",
+    "name": "AI Deep Dive — BITF — 2026-05-02",
+    "rationale": "BITF (Bitfarms/Keel Infrastructure) presents a classic capital-destruction trap. Despite 72% top-line growth, the company burned -$347M in free cash flow over the last year to generate $229M in revenue. Operating margins stand at -42%, and the structural economics of crypto mining/infrastructure require constant, severe shareholder dilution just to maintain market share. My weighted fair value of $1.18 implies 40% downside.",
+    "snapshot": {
+      "price": 1.98,
+      "currency": "USD",
+      "shares": 602851137,
+      "revenue": 229276000,
+      "lastActualPS": 5.23,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 72.03,
+      "analystMarginEstimate": 0
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": 10,
+        "netMargin": 0,
+        "exitPE": 10,
+        "qualityMultiplier": 0.5,
+        "moatScore": 0,
+        "managementScore": 1,
+        "shareChange": 30,
+        "scenarioPrice": 0.04
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 30,
+        "netMargin": 5,
+        "exitPE": 15,
+        "qualityMultiplier": 0.8,
+        "moatScore": 1,
+        "managementScore": 2,
+        "shareChange": 20,
+        "scenarioPrice": 0.43
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 50,
+        "netMargin": 15,
+        "exitPE": 20,
+        "qualityMultiplier": 1,
+        "moatScore": 2,
+        "managementScore": 3,
+        "shareChange": 10,
+        "scenarioPrice": 4.88
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "The structural economics of BITF's business model are fundamentally flawed. A company cannot sustainably burn $1.50 in free cash flow for every $1.00 of revenue it generates (-$347M FCF on $229M Revenue). The infrastructure race (whether for crypto mining or AI pivot) is purely an arms race of capital expenditure. Without a differentiated moat, BITF will be forced to repeatedly dilute shareholders (currently 602M shares, heavily expanded over recent years) to fund operations. The 'Bull' case ($4.88) assumes a miraculous pivot to highly profitable hosting, but the 'Base' case ($0.43) reflects the grim reality of commodity computing.",
+      "fairValue": 1.18,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T17:40:00.000Z",
+      "researchReport": "BITF_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

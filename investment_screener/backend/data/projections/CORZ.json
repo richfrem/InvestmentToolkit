@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "CORZ",
+    "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e3a",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T18:15:00.000Z",
+    "updatedAt": "2026-05-02T18:15:00.000Z",
+    "name": "AI Deep Dive — CORZ — 2026-05-02",
+    "rationale": "Core Scientific (CORZ) has ridden the post-bankruptcy AI/HPC hype wave to a $6.4B valuation. While forward estimates suggest aggressive top-line acceleration as they pivot from pure Bitcoin mining to AI hosting, the capital requirements remain brutal (-$460M FCF). At 20x trailing sales, the market is pricing in flawless execution and ignoring the inevitable shareholder dilution required to fund infrastructure capex. My weighted fair value of $5.71 indicates massive downside risk.",
+    "snapshot": {
+      "price": 20.35,
+      "currency": "USD",
+      "shares": 315594802,
+      "revenue": 319019000,
+      "lastActualPS": 20.13,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": -16,
+      "analystMarginEstimate": -90.47
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": 10,
+        "netMargin": 5,
+        "exitPE": 15,
+        "qualityMultiplier": 0.8,
+        "moatScore": 1,
+        "managementScore": 2,
+        "shareChange": 50,
+        "scenarioPrice": 0.39
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 30,
+        "netMargin": 12,
+        "exitPE": 20,
+        "qualityMultiplier": 1,
+        "moatScore": 2,
+        "managementScore": 3,
+        "shareChange": 25,
+        "scenarioPrice": 4.53
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 40,
+        "netMargin": 20,
+        "exitPE": 25,
+        "qualityMultiplier": 1.1,
+        "moatScore": 3,
+        "managementScore": 4,
+        "shareChange": 10,
+        "scenarioPrice": 17.76
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "CORZ is another crypto-miner executing an HPC/AI data center pivot. Emerging from bankruptcy, the stock has surged on retail momentum and the AI infrastructure narrative. However, the economic reality is inescapable: building gigawatt data centers requires billions in capex. Last year, CORZ burned $460M in FCF. Funding the pipeline at a $6.4B market cap guarantees significant equity dilution (modeled at 25% in the base case). Even if they scale to $1.2B in revenue by Year 5 with a 12% net margin, the inflated share count suppresses the present value to $4.53. The current $20.35 price offers zero margin of safety.",
+      "fairValue": 5.71,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T18:15:00.000Z",
+      "researchReport": "CORZ_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

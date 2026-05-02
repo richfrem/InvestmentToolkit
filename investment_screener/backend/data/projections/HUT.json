@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "HUT",
+    "id": "f5e9c0a2-d8b3-4e4f-b7a1-c6d5e4f3a2b1",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T18:25:00.000Z",
+    "updatedAt": "2026-05-02T18:25:00.000Z",
+    "name": "AI Deep Dive — HUT — 2026-05-02",
+    "rationale": "Hut 8 (HUT) presents a severe capital destruction profile. Trading at an $8.6B valuation on just $15M in trailing revenue, the market is pricing in an impossibly seamless pivot to AI/HPC hosting. The company burned -$787M in free cash flow over the last year, with operating margins collapsing to -2104%. To fund this infrastructure arms race, massive shareholder dilution is inevitable. My weighted fair value of $9.15 implies nearly 90% downside risk from the current $76.98 price.",
+    "snapshot": {
+      "price": 76.98,
+      "currency": "USD",
+      "shares": 112552646,
+      "revenue": 15081000,
+      "lastActualPS": 574.52,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 179.2,
+      "analystMarginEstimate": -96.19
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": 30,
+        "netMargin": 0,
+        "exitPE": 10,
+        "qualityMultiplier": 0.7,
+        "moatScore": 1,
+        "managementScore": 1,
+        "shareChange": 80,
+        "scenarioPrice": 1.25
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 80,
+        "netMargin": 10,
+        "exitPE": 15,
+        "qualityMultiplier": 0.9,
+        "moatScore": 2,
+        "managementScore": 2,
+        "shareChange": 50,
+        "scenarioPrice": 8.78
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 120,
+        "netMargin": 20,
+        "exitPE": 25,
+        "qualityMultiplier": 1.1,
+        "moatScore": 3,
+        "managementScore": 3,
+        "shareChange": 30,
+        "scenarioPrice": 23.82
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "Hut 8's valuation is completely decoupled from economic reality. The $8.6B market cap is sustained purely by the AI/HPC infrastructure narrative, yet their execution thus far has resulted in terrifying cash burn (-$787M FCF) and negative gross margins. The capital required to build out gigawatt-scale data centers will force continuous, punishing equity dilution on current shareholders. Even if HUT manages a miraculous 80% CAGR for 5 years and stabilizes margins at 10%, the required 50% dilution suppresses the PV to $8.78. At $76.98, the stock is a dangerous bubble offering zero margin of safety.",
+      "fairValue": 9.15,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T18:25:00.000Z",
+      "researchReport": "HUT_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

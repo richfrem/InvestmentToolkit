@@ -20,6 +20,7 @@ export default function Sidebar() {
         { name: 'Heatmap', icon: Grid3X3, path: '/' },
         { name: 'Portfolio Summary', icon: PieChart, path: '/portfolio-summary' },
         { name: 'Portfolio Table', icon: TableProperties, path: '/portfolio-table' },
+        { name: 'AI Screener', icon: Search, path: '/screener' },
         { name: 'Stock Analysis', icon: BarChart3, path: '/analysis' },
     ];
 

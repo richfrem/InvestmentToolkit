@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "COHR",
+    "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e3e",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T18:10:00.000Z",
+    "updatedAt": "2026-05-02T18:10:00.000Z",
+    "name": "AI Deep Dive — COHR — 2026-05-02",
+    "rationale": "Coherent (COHR) is successfully capitalizing on the AI optical networking boom. With revenue growth accelerating and margins inflecting positively, the $61.7B valuation reflects high expectations. The company possesses a strong structural moat in optical transceivers and lasers. While trading at a premium (43x Forward P/E), the massive secular tailwinds in datacenter connectivity justify the multiple. My weighted fair value of $357 indicates mild upside, making it a solid HOLD/BUY for infrastructure exposure.",
+    "snapshot": {
+      "price": 329.5,
+      "currency": "USD",
+      "shares": 187481852,
+      "revenue": 5810115000,
+      "lastActualPS": 10.63,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 17.5,
+      "analystMarginEstimate": 4.66
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.3,
+        "growthRate": 10,
+        "netMargin": 10,
+        "exitPE": 20,
+        "qualityMultiplier": 1,
+        "moatScore": 3,
+        "managementScore": 3,
+        "shareChange": 5,
+        "scenarioPrice": 146
+      },
+      "base": {
+        "weight": 0.5,
+        "growthRate": 18,
+        "netMargin": 18,
+        "exitPE": 30,
+        "qualityMultiplier": 1.1,
+        "moatScore": 4,
+        "managementScore": 4,
+        "shareChange": 0,
+        "scenarioPrice": 381
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 25,
+        "netMargin": 25,
+        "exitPE": 40,
+        "qualityMultiplier": 1.2,
+        "moatScore": 5,
+        "managementScore": 5,
+        "shareChange": -5,
+        "scenarioPrice": 760
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "Coherent is a critical enabler of the AI datacenter buildout, dominating the optical transceiver and networking components market. The 376% 1-year run perfectly tracks the surge in AI infrastructure spending. Piotroski F-Score of 7 and improving operating margins (from 1.5% to 9.2%) demonstrate strong operational leverage. At a $61B market cap, it trades at roughly 10x sales and 43x forward P/E, pricing in significant future margin expansion. The base case ($381 PV) assumes they reach 18% net margins on 18% annualized growth. Given their structural moat in photonics, this premium is warranted.",
+      "fairValue": 386.3,
+      "action": "BUY",
+      "analyzedAt": "2026-05-02T18:10:00.000Z",
+      "researchReport": "COHR_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "CLSK",
+    "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e3f",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T18:05:00.000Z",
+    "updatedAt": "2026-05-02T18:05:00.000Z",
+    "name": "AI Deep Dive — CLSK — 2026-05-02",
+    "rationale": "CleanSpark (CLSK) is a major Bitcoin miner. It burned $1.0B in FCF last year on $766M in revenue due to massive capex. At $3.1B market cap and $12.17/share, it trades at 4x sales but requires massive dilution to sustain the hash rate arms race. Weighted PV of $6.09 indicates significant downside.",
+    "snapshot": {
+      "price": 12.17,
+      "currency": "USD",
+      "shares": 255752913,
+      "revenue": 766314000,
+      "lastActualPS": 4.06,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 11.6,
+      "analystMarginEstimate": -33.25
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": 5,
+        "netMargin": 0,
+        "exitPE": 10,
+        "qualityMultiplier": 0.8,
+        "moatScore": 1,
+        "managementScore": 2,
+        "shareChange": 40,
+        "scenarioPrice": 1.25
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 15,
+        "netMargin": 10,
+        "exitPE": 15,
+        "qualityMultiplier": 1,
+        "moatScore": 2,
+        "managementScore": 3,
+        "shareChange": 25,
+        "scenarioPrice": 5.43
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 30,
+        "netMargin": 25,
+        "exitPE": 20,
+        "qualityMultiplier": 1.1,
+        "moatScore": 3,
+        "managementScore": 4,
+        "shareChange": 10,
+        "scenarioPrice": 16.03
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "CleanSpark has scaled its top-line to $766M but remains trapped in the brutal capex cycle of Bitcoin mining. Over the last year, FCF was -$1.02B. Funding this massive cash burn requires continuous equity dilution. While Bitcoin prices heavily dictate the bull/bear outcomes, the fundamental business model is structurally disadvantaged by hardware depreciation and energy intensity. The base case ($5.43 PV) reflects ongoing dilution necessary to maintain operations. Only in an extended crypto supercycle (Bull case $16.03) does the stock beat its current $12.17 valuation.",
+      "fairValue": 6.09,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T18:05:00.000Z",
+      "researchReport": "CLSK_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

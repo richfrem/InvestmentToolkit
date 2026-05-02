@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "EQT",
+    "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e3b",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T18:20:00.000Z",
+    "updatedAt": "2026-05-02T18:20:00.000Z",
+    "name": "AI Deep Dive — EQT — 2026-05-02",
+    "rationale": "EQT Corporation is the largest natural gas producer in the US, exhibiting strong operational excellence with a Piotroski F-Score of 8. The company is generating massive free cash flow ($2.8B TTM) on $8.3B in revenue with robust 24% net margins. At 11x trailing earnings and 12.5x forward P/E, it is trading at a very reasonable valuation for a commodity producer executing at this level. Weighted PV of $68.45 indicates solid upside and margin of safety.",
+    "snapshot": {
+      "price": 58.66,
+      "currency": "USD",
+      "shares": 625478000,
+      "revenue": 8353217000,
+      "lastActualPS": 4.39,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 49.9,
+      "analystMarginEstimate": 35.07
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.3,
+        "growthRate": 5,
+        "netMargin": 15,
+        "exitPE": 8,
+        "qualityMultiplier": 0.9,
+        "moatScore": 3,
+        "managementScore": 3,
+        "shareChange": -2,
+        "scenarioPrice": 38.5
+      },
+      "base": {
+        "weight": 0.5,
+        "growthRate": 12,
+        "netMargin": 25,
+        "exitPE": 12,
+        "qualityMultiplier": 1.1,
+        "moatScore": 4,
+        "managementScore": 4,
+        "shareChange": -5,
+        "scenarioPrice": 71
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 20,
+        "netMargin": 35,
+        "exitPE": 15,
+        "qualityMultiplier": 1.2,
+        "moatScore": 5,
+        "managementScore": 5,
+        "shareChange": -10,
+        "scenarioPrice": 107
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "EQT stands out as a highly efficient operator in the cyclical oil & gas exploration sector. An exceptional Piotroski F-Score of 8 highlights comprehensive financial health across profitability, leverage, and operating efficiency. Producing $2.8B in FCF gives management massive flexibility for share buybacks and debt reduction. Natural gas prices drive the terminal value here, but EQT's scale and low extraction costs provide a significant structural moat. The base case models modest 12% revenue growth and 25% margins, returning a $71 PV. The stock is a strong BUY for commodity exposure and dividend/buyback potential.",
+      "fairValue": 68.45,
+      "action": "BUY",
+      "analyzedAt": "2026-05-02T18:20:00.000Z",
+      "researchReport": "EQT_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]
