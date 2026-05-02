@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "LITE",
+    "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e6b",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T18:45:00.000Z",
+    "updatedAt": "2026-05-02T18:45:00.000Z",
+    "name": "AI Deep Dive — LITE — 2026-05-02",
+    "rationale": "Lumentum (LITE) has experienced a staggering 1444% 1-year surge, riding the wave of optical networking demand for AI data centers. While the $67.8B valuation prices in perfection (58x forward P/E), the fundamentals are rapidly improving, marked by a Piotroski F-Score of 7 and explosive analyst forward revenue estimates. The company is transitioning from a cyclical hardware supplier to a critical AI infrastructure monopoly. Weighted fair value of $917 indicates the current price of $949 is fully valued, making it a HOLD.",
+    "snapshot": {
+      "price": 949.93,
+      "currency": "USD",
+      "shares": 71400000,
+      "revenue": 1645000000,
+      "lastActualPS": 41.23,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 65.5,
+      "analystMarginEstimate": 11.95
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.3,
+        "growthRate": 25,
+        "netMargin": 15,
+        "exitPE": 25,
+        "qualityMultiplier": 1,
+        "moatScore": 3,
+        "managementScore": 3,
+        "shareChange": 5,
+        "scenarioPrice": 381
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 55,
+        "netMargin": 22,
+        "exitPE": 35,
+        "qualityMultiplier": 1.1,
+        "moatScore": 4,
+        "managementScore": 4,
+        "shareChange": 0,
+        "scenarioPrice": 962
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 75,
+        "netMargin": 30,
+        "exitPE": 45,
+        "qualityMultiplier": 1.2,
+        "moatScore": 5,
+        "managementScore": 5,
+        "shareChange": -2,
+        "scenarioPrice": 1478
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "Lumentum is executing a massive inflection point. As AI clusters scale, optical transceivers are the critical bottleneck. The company's recent results (Piotroski F-Score 7) show strong operational leverage, transitioning from deep net losses to a 12% margin trajectory. Analysts are modeling a tripling of revenue by 2027. At $67B, it trades at an aggressive ~41x trailing sales, meaning the massive growth curve is largely priced in. The base case ($962 PV) assumes they successfully defend their market share and hit 22% net margins, matching the current price. The stock is a HOLD; it requires flawless execution to justify further upside.",
+      "fairValue": 917,
+      "action": "HOLD",
+      "analyzedAt": "2026-05-02T18:45:00.000Z",
+      "researchReport": "LITE_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

@@ -17,7 +17,10 @@ allowed-tools: Bash, Read, Write
 - **Trigger**: `/perform-stock-valuation {TICKER}` or `/evaluate-stock {TICKER}`
 - **Output (JSON)**: `backend/data/projections/{TICKER}.json`
 - **Output (Research)**: `backend/data/research/{TICKER}_{YYYY-MM-DD}.md`
-- **Schema**: `references/example_NVDA.json`
+- **Schema + Examples**: `references/examples/` ← Two real validated projections:
+  - `example_GOOG_2026-05-02.json` — large-cap Internet/Platform, trending margins, multi-class shares
+  - `example_NVDA_2026-05-02.json` — hypergrowth semiconductor, 73% near-term consensus, CAGR derivation
+  - `example_NVDA_placeholder.json` — **⚠️ DO NOT use as reference** (legacy placeholder, missing fields)
 - **Benchmarks**: `references/valuation-benchmarks.md` ← Load for P/E + margin anchoring
 - **Fallbacks**: `references/fallback-tree.md` ← Load on ANY step failure
 - **API Docs**: `references/api_reference.md`
@@ -84,14 +87,16 @@ Read `/tmp/{TICKER}_raw.json` and extract:
 {
   "price": <metrics.price>,
   "currency": <metrics.currency>,
-  "shares": <metrics.shares_outstanding>,
+  "shares": <metrics.shares_diluted>,
   "revenue": <metrics.revenue>,
-  "lastActualPS": <price * shares / revenue>,
+  "lastActualPS": <metrics.last_actual_ps>,
   "fiscalPeriod": "TTM",
   "analystGrowthEstimate": <estimates.revenue_growth or null>,
   "analystMarginEstimate": <estimates.profit_margin or null>
 }
 ```
+
+> ⚠️ **Always use `metrics.shares_diluted`** (not `metrics.shares_outstanding`) for all EPS calculations. The script now derives effective diluted share count from `net_income / eps` to handle multi-class share structures (e.g. GOOG returns 5.4B Class C shares vs 12.1B actual diluted — a 2.2× EPS error if wrong field used). Note any discrepancy >15% in `dataQualityFlags`.
 
 ## Step 3: Cognitive Analysis — Generate Scenarios
 Use `references/analysis_prompt.md` for full methodology. Key constraints:
@@ -102,7 +107,18 @@ Use `references/analysis_prompt.md` for full methodology. Key constraints:
 4. **Margins**: Realistic (-100% to 100%); see sector benchmarks in `references/valuation-benchmarks.md`
 5. **Large caps** (>$50B revenue): growth >30% requires named catalyst citation
 6. **`shareChange`**: -5.0 to +5.0; **Scores**: integers 0–5
-7. **Base anchoring**: `base.growthRate` must be within ±3pp of analyst consensus growth
+7. **Base anchoring — standard**: `base.growthRate` must be within ±3pp of analyst consensus growth, with explicit justification for any deviation
+8. **Base anchoring — hypergrowth exception** (analyst Y1 consensus >40%): Do NOT use Y1 consensus directly as the 5-year CAGR. Instead derive a realistic CAGR from the analyst trajectory:
+   - Collect Y1 and Y2 analyst revenue estimates from the data
+   - Project years 3-5 using natural deceleration (typically halving the growth rate increment each year)
+   - Compute the 5-year CAGR from `(Y5_revenue / TTM_revenue)^(1/5) - 1`
+   - State this derivation explicitly in the scenario `rationale`
+   - See `references/examples/example_NVDA_2026-05-02.json` for a worked example (73% Y1 consensus → 27% 5-yr CAGR base)
+9. **Margin anchoring — trending vs mean-reverting**: The `analysis_prompt.md` rule of ±5pp from 4-year average applies to **mean-reverting** margins. For companies with a consistent multi-year expansion trend (every year higher), use the TTM margin as the anchor instead, and justify any projected expansion or compression relative to TTM:
+   - ✅ Mean-reverting: volatile margins with no clear trend → use 4-year average
+   - ✅ Trending: margin improving every year for 3+ years → use TTM as anchor; deviations >5pp from TTM require justification
+   - See `references/examples/example_GOOG_2026-05-02.json` (4yr avg 26.7% vs TTM 37.9% — TTM used as anchor)
+10. **Sector classification**: Match the company's `profile.industry` to the nearest row in `references/valuation-benchmarks.md`. When `profile.sector` is ambiguous (e.g. "Communication Services" for Alphabet), use the industry string to resolve: `Internet Content & Information` → "Technology — Internet / Platforms" benchmark row.
 
 ## Step 4: Validate & Repair
 ```bash
@@ -171,10 +187,23 @@ If write fails → invoke **FB-04** from `references/fallback-tree.md`.
 - TL;DR (2-3 sentences, verdict + why)
 - Company Snapshot table
 - Investment Thesis (3-5 paragraphs, data-grounded)
-- Scenario Analysis (Bear / Base / Bull — narrative paragraphs + assumption tables)
-- Valuation Math (show arithmetic transparently)
-- Key Risks, What to Watch, Comparables
-- Data Quality & Confidence Score
+- Scenario Analysis — for each scenario (Bear/Base/Bull): one narrative paragraph **plus** an assumption table in this exact format:
+
+  | Assumption | Value | Rationale |
+  |-----------|-------|-----------|
+  | 5-yr Revenue CAGR | X% | ... |
+  | Year 5 Revenue | $XB | ... |
+  | Net Margin (Yr 5) | X% | ... |
+  | Exit P/E | Xx | ... |
+  | Quality Multiplier | X.XX | ... |
+  | Share Change | X%/yr | ... |
+  | **Year 5 EPS** | **$X.XX** | — |
+  | **Year 5 Price** | **$XXX** | — |
+  | **Present Value** | **$XXX** | — |
+
+- Valuation Math section showing full arithmetic for all three scenarios and the weighted average
+- Key Risks (numbered list, 3-5 items), What to Watch, Comparables table
+- Data Quality & Confidence Score with explicit flags
 - Discussion Log (initially empty, appended during Q&A)
 
 ## Step 8: Conversational Summary in Chat
