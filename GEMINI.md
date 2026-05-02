@@ -134,6 +134,30 @@ We use the **Exploration Workflow** (a modification of the orba/superpowers plug
 
 ---
 
+## 🧮 AI Agent Calculation Policy — Fix Once, Reuse Always
+
+> **Rule**: Never perform financial or analytical calculations inline (ad-hoc bash/python snippets in tool calls). Always use or create a versioned `.py` script in `investment_screener/backend/py_services/`. Fix bugs once in the script; every future run benefits automatically.
+
+### Canonical scripts
+
+| Script | Purpose | How to call |
+|--------|---------|-------------|
+| `fetch_financials.py {TICKER}` | Fetch raw financial data from yfinance | `python3 investment_screener/backend/py_services/fetch_financials.py AAPL > /tmp/AAPL_raw.json` |
+| `dcf_scenarios.py --raw ... --scenarios ...` | DCF scenario math — validates constraints, computes all intermediates, outputs weighted fair value | `python3 investment_screener/backend/py_services/dcf_scenarios.py --raw /tmp/AAPL_raw.json --scenarios /tmp/AAPL_scenarios.json --pretty` |
+| `validate_projection.py` | Pre-persistence JSON schema validator | `cat /tmp/AAPL_projection.json \| python3 plugins/stock-valuation/skills/stock_valuation/scripts/validate_projection.py --verbose` |
+
+### When to create a new script
+If you find yourself computing the same formula more than once across sessions → extract it into a new `py_services/` script, add a row to this table, and add a corresponding ADR in `docs/architecture/`.
+
+### When NOT to inline calculations
+- ❌ DCF math (use `dcf_scenarios.py`)
+- ❌ Financial ratio derivations that appear in multiple valuations
+- ❌ Any calculation where a bug would silently affect multiple outputs
+
+**ADR**: `docs/architecture/stock-valuation/ADR-dcf-calculator.md`
+
+---
+
 ## ⚠️ Known Pitfalls — Read Before Touching These Areas
 
 ### 1. Python `__dirname` path in TypeScript backend
