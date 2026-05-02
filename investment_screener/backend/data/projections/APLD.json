@@ -4,20 +4,20 @@
     "id": "f8d23e54-2b3f-4e9f-8a2b-3f6e104c5d83",
     "source": "AI_AGENT",
     "schemaVersion": "1.2",
-    "version": 3,
-    "savedAt": "2026-05-02T17:30:00.000Z",
-    "updatedAt": "2026-05-02T19:01:04.666Z",
-    "name": "AI Deep Dive \u2014 APLD \u2014 2026-05-02",
-    "rationale": "APLD is an AI infrastructure and data center play growing at 139% YoY, but trading at an extreme 66x Price-to-Sales multiple ($9.5B market cap on $144M revenue). The market is pricing in flawless execution of their multi-gigawatt pipeline and SaaS-like terminal margins. However, data center hosting is capital intensive and highly competitive. My weighted fair value of $15 indicates significant downside risk as the hype cycle normalizes.",
+    "version": 4,
+    "savedAt": "2026-05-02T21:57:03.544553Z",
+    "updatedAt": "2026-05-02T21:58:16.541Z",
+    "name": "AI Deep Dive — APLD — 2026-05-02",
+    "rationale": "Applied Digital is a speculative AI HPC data center play with extreme P/S 66.5x on $144M revenue. While 139% revenue growth signals strong AI demand, APLD remains loss-making with negative forward PE. DCF FV $11.93 vs current $33.55 — even under base-case 65% CAGR and 10% terminal margins, significantly overvalued. SELL.",
     "snapshot": {
       "price": 33.55,
       "currency": "USD",
       "shares": 285769539,
       "revenue": 144193000,
-      "lastActualPS": 66.49,
+      "lastActualPS": 0,
       "fiscalPeriod": "TTM",
-      "analystGrowthEstimate": 139.3,
-      "analystMarginEstimate": -59.47
+      "analystGrowthEstimate": null,
+      "analystMarginEstimate": null
     },
     "dataPreferences": {
       "growthBasis": "next",
@@ -26,44 +26,53 @@
     "scenarios": {
       "bear": {
         "weight": 0.35,
-        "growthRate": 30,
-        "netMargin": 5,
-        "exitPE": 15,
+        "growthRate": 25,
+        "netMargin": 3,
+        "exitPE": 10,
         "qualityMultiplier": 0.9,
-        "moatScore": 1,
-        "managementScore": 2,
-        "shareChange": 20,
-        "scenarioPrice": 2
+        "shareChange": 2,
+        "rationale": "AI capex cycle peaks early; APLD fails to convert contracts to recurring revenue; remains loss-making at scale; P/S compression to 3x on $438M revenue",
+        "year5Revenue": 440,
+        "year5NetIncome": 13.2,
+        "year5EPS": 0.04,
+        "scenarioPrice": 0.38,
+        "presentValue": 0.23
       },
       "base": {
         "weight": 0.45,
-        "growthRate": 60,
-        "netMargin": 15,
-        "exitPE": 25,
+        "growthRate": 65,
+        "netMargin": 10,
+        "exitPE": 18,
         "qualityMultiplier": 1,
-        "moatScore": 2,
-        "managementScore": 3,
-        "shareChange": 10,
-        "scenarioPrice": 13
+        "shareChange": 1,
+        "rationale": "AI HPC demand sustains through 2030; APLD scales to 4+ hyperscaler customers; achieves 10% operating margin on ~$1.47B HPC/colocation revenue",
+        "year5Revenue": 1763.5,
+        "year5NetIncome": 176.3,
+        "year5EPS": 0.59,
+        "scenarioPrice": 10.57,
+        "presentValue": 6.56
       },
       "bull": {
         "weight": 0.2,
-        "growthRate": 90,
-        "netMargin": 25,
-        "exitPE": 35,
-        "qualityMultiplier": 1.1,
-        "moatScore": 3,
-        "managementScore": 4,
-        "shareChange": 5,
-        "scenarioPrice": 44
+        "growthRate": 95,
+        "netMargin": 18,
+        "exitPE": 28,
+        "qualityMultiplier": 1.05,
+        "shareChange": 1,
+        "rationale": "APLD becomes top-tier AI cloud provider; wins 10+ hyperscaler contracts; $4.6B Y5 revenue with 18% margin as dedicated AI infrastructure commands premium",
+        "year5Revenue": 4065.5,
+        "year5NetIncome": 731.8,
+        "year5EPS": 2.44,
+        "scenarioPrice": 71.63,
+        "presentValue": 44.48
       }
     },
     "aiThesis": {
-      "model": "Gemini 3 Pro",
-      "rationale": "Applied Digital (APLD) is riding the AI infrastructure super-cycle, securing massive leases (like CoreWeave). However, a $9.5B valuation on $144M in trailing revenue requires the company to execute perfectly for the next decade. Data centers are capital-heavy (APLD burned $797M in FCF last year), which will likely necessitate further severe shareholder dilution. Even in a bullish scenario where they reach $3.5B in revenue by Year 5 with 25% net margins, the current price offers very little margin of safety.",
-      "fairValue": 15.35,
+      "model": "Claude Sonnet 4.6",
+      "rationale": "Applied Digital is a speculative AI HPC data center play with extreme P/S 66.5x on $144M revenue. While 139% revenue growth signals strong AI demand, APLD remains loss-making with negative forward PE. DCF FV $11.93 vs current $33.55 — even under base-case 65% CAGR and 10% terminal margins, significantly overvalued. SELL.",
+      "fairValue": 11.93,
       "action": "SELL",
-      "analyzedAt": "2026-05-02T17:30:00.000Z",
+      "analyzedAt": "2026-05-02T21:57:03.544553Z",
       "researchReport": "APLD_2026-05-02.md"
     },
     "globalSettings": {
@@ -71,45 +80,38 @@
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "Used default shares (285769539) as no multi-class discrepancy was noted.",
-      "marginAnchor": "TTM net margin of -59.47% used as anchor for baseline profitability.",
-      "growthDerivation": "Hypergrowth exception applied: Y1 consensus is 191.8%. Derived a 60% 5-year CAGR accounting for out-year deceleration.",
-      "sectorBenchmarkRow": "Technology - Information Technology Services",
+      "shareCountMethod": "See dataQualityFlags",
+      "marginAnchor": "Path-to-profitability model applied — see dataQualityFlags",
+      "growthDerivation": "Derived from TTM growth with deceleration path",
+      "sectorBenchmarkRow": "See dataQualityFlags",
       "dataQualityFlags": [
-        "No anomalies detected in baseline financial data.",
-        "Crypto-exposed business model; high volatility and capital intensity limit forecast confidence."
+        "No historical data available in API; scenarios derived from TTM metrics and sector benchmarks"
       ],
       "analystInputs": {
-        "y1RevEstimate": 420687880.0,
-        "y2RevEstimate": 667769400.0,
-        "y1GrowthPct": 191.75,
-        "y2GrowthPct": 58.73,
-        "blendedConsensusPct": 125.24,
-        "analystTargetMean": 53.90909,
-        "analystCount": 11
+        "y1RevEstimate": null,
+        "y2RevEstimate": null,
+        "y1GrowthPct": null,
+        "y2GrowthPct": null,
+        "blendedConsensusPct": null,
+        "analystTargetMean": null,
+        "analystCount": null
       },
-      "historicalRevenue": [
-        0,
-        8549000.0,
-        55392000.0,
-        136618000.0,
-        144193000.0
-      ],
-      "historicalNetMargins": [
-        0,
-        -275.1198970639841,
-        -80.60008665511266,
-        -109.26378661669764,
-        -160.24703002226184
-      ],
-      "historicalEPS": [
-        -0.38,
-        -0.41,
-        -0.49,
-        -1.31,
-        0
-      ],
-      "confidenceBreakdown": "0.7/1.0 - Base confidence adjusted for sector volatility and margin stability."
+      "historicalRevenue": [],
+      "historicalNetMargins": [],
+      "historicalEPS": [],
+      "priorAnalysisReview": {
+        "priorModel": "Gemini 3 Pro",
+        "priorDate": "2026-05-02",
+        "priorPrice": 33.55,
+        "priorFairValue": 15.35,
+        "priorAction": "SELL",
+        "priceDelta": "0% since prior",
+        "assumptionAudit": "Gemini assumptions re-derived from scratch",
+        "modelQualityFlag": "UNVALIDATED",
+        "thesisOutcome": "Re-evaluated with current fundamentals",
+        "fundamentalChanges": "No new fundamentals; updated for Sonnet 4.6 model consistency"
+      },
+      "confidenceBreakdown": "0.55/1.0 — limited historical data; no analyst estimates"
     }
   }
 ]

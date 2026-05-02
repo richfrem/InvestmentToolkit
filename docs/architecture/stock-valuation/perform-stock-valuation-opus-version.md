@@ -22,7 +22,7 @@ Verify before executing — STOP and report if any check fails.
 
 ```bash
 # Backend running
-curl -sf http://localhost:3001/health || echo "FAIL: Start backend with: python3 tools/manage_servers.py"
+curl -sf http://localhost:3001/health || echo "FAIL: Start backend with: python3 run_investment_toolkit.py"
 
 # Python + yfinance
 python3 -c "import yfinance; print('OK')" || echo "FAIL: pip install yfinance"
@@ -75,7 +75,7 @@ When triggered with `/evaluate-stock {TICKER}`:
 | HTTP 400 (validation) | Read error message, fix payload per skill's constraints table, retry once. |
 | HTTP 409 (conflict) | GET `/api/projections/{TICKER}`, find existing AI_AGENT entry, use its `version + 1`, retry. |
 | HTTP 500 (server error) | Report to user. Suggest restarting backend. |
-| Backend not running | Tell user: `python3 tools/manage_servers.py` |
+| Backend not running | Tell user: `python3 run_investment_toolkit.py` |
 | Weights don't sum to 1.0 | Proportionally rescale before POST. |
 
 ## Files
