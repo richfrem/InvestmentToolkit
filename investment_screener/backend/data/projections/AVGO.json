@@ -1,0 +1,134 @@
+[
+  {
+    "ticker": "AVGO",
+    "id": "e0b96b0f-b4df-41ed-a16f-7b1bb363a033",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T19:16:32.961Z",
+    "updatedAt": "2026-05-02T19:16:32.961Z",
+    "name": "AI Deep Dive — AVGO — 2026-05-02",
+    "rationale": "Broadcom is experiencing a monumental growth phase driven by custom AI silicon for hyperscalers and the successful integration of VMware. With trailing revenue growth of 29.5% and a phenomenal Rule of 40 score of 83.84, the company's financial execution is near flawless. TTM net margins are a robust 36.2%. The massive market capitalization ($2T) and trailing P/E of ~82x might seem daunting, but the forward P/E of just ~23.2x suggests explosive near-term earnings growth. Valued on our hypergrowth deceleration model, the intrinsic value is $661.65, presenting a highly attractive +57.1% upside from the current price. BUY.",
+    "snapshot": {
+      "price": 421.28,
+      "currency": "USD",
+      "shares": 4734668184,
+      "revenue": 63887000000,
+      "lastActualPS": 31.22,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 29.5,
+      "analystMarginEstimate": 36.57
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 25,
+        "netMargin": 35,
+        "exitPE": 22,
+        "qualityMultiplier": 1.1,
+        "shareChange": 0,
+        "rationale": "Growth decelerates to 25% as the initial wave of AI networking and custom ASIC buildouts matures. Net margins compress slightly to 35% under pricing pressure. The exit P/E contracts to 22x, reflecting a mature tech giant rather than a hypergrowth AI infrastructure play. The 1.1x quality multiplier acknowledges their sticky VMware installed base and crucial networking IP.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 194967.7,
+        "year5NetIncome": 68238.7,
+        "year5EPS": 14.41,
+        "scenarioPrice": 216.57,
+        "risks": [
+          "AI custom silicon demand normalizes as hyperscalers slow capex",
+          "VMware integration synergies are fully realized, leaving no further margin expansion"
+        ]
+      },
+      "base": {
+        "weight": 0.6,
+        "growthRate": 36,
+        "netMargin": 40,
+        "exitPE": 28,
+        "qualityMultiplier": 1.25,
+        "shareChange": -2,
+        "rationale": "Hypergrowth exception applied: analyst consensus for Y1 (63.4%) decelerates to yield a robust 36% 5-year CAGR. Net margins expand to 40% driven by VMware cost rationalization and high-margin AI custom silicon. The exit P/E of 28x is a slight premium over traditional semiconductors, justified by their recurring software mix. A 1.25x quality multiplier reflects a dual monopoly in AI networking/custom ASICs and enterprise virtualization (VMware). 2% annual buybacks are supported by massive free cash flow.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 297239.9,
+        "year5NetIncome": 118895.9,
+        "year5EPS": 27.78,
+        "scenarioPrice": 603.74,
+        "risks": [
+          "Heavy customer concentration with top hyperscalers",
+          "Valuation remains vulnerable if Y1/Y2 hypergrowth estimates are missed"
+        ]
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 45,
+        "netMargin": 45,
+        "exitPE": 35,
+        "qualityMultiplier": 1.3,
+        "shareChange": -3,
+        "rationale": "Catalyst: Hyperscalers (Google, Meta, Amazon) overwhelmingly shift to custom ASICs (designed by AVGO) over off-the-shelf GPUs to optimize power and cost for AI inference. Growth sustains a 45% CAGR. Unprecedented software and hardware operating leverage drives net margins to 45%. The market re-rates AVGO to a 35x exit P/E, on par with NVDA. The maximum 1.30x quality multiplier reflects their status as an indispensable layer of the global AI architecture. Aggressive 3% annual share repurchases.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 409498.7,
+        "year5NetIncome": 184274.4,
+        "year5EPS": 45.32,
+        "scenarioPrice": 1280.46,
+        "risks": [
+          "Priced for absolute perfection and sustained AI dominance"
+        ]
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 1.5 Pro",
+      "rationale": "Broadcom is experiencing a monumental growth phase driven by custom AI silicon for hyperscalers and the successful integration of VMware. With trailing revenue growth of 29.5% and a phenomenal Rule of 40 score of 83.84, the company's financial execution is near flawless. TTM net margins are a robust 36.2%. The massive market capitalization ($2T) and trailing P/E of ~82x might seem daunting, but the forward P/E of just ~23.2x suggests explosive near-term earnings growth. Valued on our hypergrowth deceleration model, the intrinsic value is $661.65, presenting a highly attractive +57.1% upside from the current price. BUY.",
+      "fairValue": 661.65,
+      "action": "BUY",
+      "analyzedAt": "2026-05-02T19:16:32.961Z",
+      "researchReport": "AVGO_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used 4.734B (shares_diluted). Matches API output.",
+      "marginAnchor": "TTM 36.2% used as the historical anchor. Margins are robust and expanding post-VMware acquisition. Base case models expansion to 40% as software recurring revenue scales.",
+      "growthDerivation": "Hypergrowth exception strictly applied. Analyst Y1 revenue implies 63.4% growth ($104.3B vs $63.8B TTM). Y2 implies 51.8% growth ($158.4B). Modeling a deceleration path yields a 5-yr CAGR of ~36%. Base case growth set to 36%.",
+      "sectorBenchmarkRow": "Technology — Semiconductors / Infrastructure Software: median P/E 25, growth 30+; net margin typical 20–35%, best-in-class 40%+.",
+      "dataQualityFlags": [
+        "The trailing P/E of 82x is heavily skewed by the recent VMware acquisition and massive AI growth expectations. Forward P/E of ~23.2x is a much more accurate reflection of the business's normalized earning power."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 104363.5,
+        "y2RevEstimate": 158465.1,
+        "y1GrowthPct": 63.4,
+        "y2GrowthPct": 51.8,
+        "blendedConsensusPct": 57.6,
+        "analystTargetMean": 475.49,
+        "analystCount": 42
+      },
+      "historicalRevenue": [
+        33203,
+        35819,
+        51574,
+        63887
+      ],
+      "historicalNetMargins": [
+        34.62,
+        39.31,
+        11.43,
+        36.2
+      ],
+      "historicalEPS": [
+        2.74,
+        3.39,
+        1.27,
+        4.91
+      ],
+      "confidenceBreakdown": "0.85/1.0 — +0.15 for pristine free cash flow generation and Piotroski 8 score, -0.10 for the execution risk inherent in the VMware integration and sustaining extreme hypergrowth."
+    }
+  }
+]

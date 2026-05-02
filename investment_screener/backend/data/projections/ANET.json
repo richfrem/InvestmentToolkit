@@ -1,0 +1,134 @@
+[
+  {
+    "ticker": "ANET",
+    "id": "e0b96b0f-b4df-41ed-a16f-7b1bb363a033",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T19:16:32.961Z",
+    "updatedAt": "2026-05-02T19:16:32.961Z",
+    "name": "AI Deep Dive — ANET — 2026-05-02",
+    "rationale": "Arista Networks is perfectly positioned to capitalize on the massive networking requirements of AI data centers. With trailing revenue growing 28.9% to $9B and exceptional operating leverage pushing net margins to ~39%, the company boasts a pristine Rule of 40 score of 72.52. Its EOS software platform creates a very sticky ecosystem that commands premium pricing over legacy hardware vendors. While the stock has surged, trailing and forward multiples (62.8x and 40.1x respectively) are justifiable given the structural AI tailwinds. Our base case projects a 22% CAGR and a fair value of $198.76, offering ~15% upside. BUY.",
+    "snapshot": {
+      "price": 172.7,
+      "currency": "USD",
+      "shares": 1259169438,
+      "revenue": 9005700000,
+      "lastActualPS": 24.15,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 28.9,
+      "analystMarginEstimate": 38.99
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 15,
+        "netMargin": 35,
+        "exitPE": 20,
+        "qualityMultiplier": 1.1,
+        "shareChange": 0,
+        "rationale": "Growth decelerates to 15% as hyperscalers digest their initial wave of AI networking infrastructure. Net margins compress to 35% under increased pricing pressure from white-box switch manufacturers. The exit P/E compresses to 20x, stripping away the premium AI infrastructure multiple. The 1.1x quality multiplier acknowledges the sticky EOS software layer preventing a total collapse.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 18113.7,
+        "year5NetIncome": 6339.8,
+        "year5EPS": 5.03,
+        "scenarioPrice": 68.78,
+        "risks": [
+          "AI networking spend pivots away from Ethernet toward Nvidia's proprietary InfiniBand",
+          "Hyperscaler capex cycle peaks and severely curtails networking upgrades"
+        ]
+      },
+      "base": {
+        "weight": 0.6,
+        "growthRate": 22,
+        "netMargin": 40,
+        "exitPE": 30,
+        "qualityMultiplier": 1.2,
+        "shareChange": -1,
+        "rationale": "Growth of 22% aligns closely with the blended consensus estimates (~24%), assuming Arista continues to dominate the transition to high-speed Ethernet (400G/800G) in AI clusters. Net margins hold strong at 40%, reflecting immense operating leverage. The exit P/E of 30x is a premium hardware/software hybrid multiple. A quality multiplier of 1.2x is applied due to their unassailable technological lead and structural moat over legacy vendors like Cisco. Modest 1% annual dilution offset.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 24339.8,
+        "year5NetIncome": 9735.9,
+        "year5EPS": 8.13,
+        "scenarioPrice": 181.74,
+        "risks": [
+          "Customer concentration risk with top 'cloud titan' clients",
+          "Valuation remains sensitive to maintaining growth above 20%"
+        ]
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 28,
+        "netMargin": 45,
+        "exitPE": 40,
+        "qualityMultiplier": 1.25,
+        "shareChange": -2,
+        "rationale": "Catalyst: Ethernet overwhelmingly wins the AI networking architecture battle against InfiniBand, leading to a massive, sustained upgrade cycle across all tier-1 and tier-2 cloud providers. Growth sustains a 28% CAGR. Extreme software leverage pushes net margins to 45%. The market awards a 40x exit P/E, re-rating ANET as a core AI monopoly. The 1.25x quality multiplier reflects absolute dominance in the data center networking space. Strong cash flow funds 2% annual share buybacks.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 30943.3,
+        "year5NetIncome": 13924.5,
+        "year5EPS": 12.23,
+        "scenarioPrice": 379.81,
+        "risks": [
+          "Priced for absolute perfection in the transition to 800G Ethernet"
+        ]
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 1.5 Pro",
+      "rationale": "Arista Networks is perfectly positioned to capitalize on the massive networking requirements of AI data centers. With trailing revenue growing 28.9% to $9B and exceptional operating leverage pushing net margins to ~39%, the company boasts a pristine Rule of 40 score of 72.52. Its EOS software platform creates a very sticky ecosystem that commands premium pricing over legacy hardware vendors. While the stock has surged, trailing and forward multiples (62.8x and 40.1x respectively) are justifiable given the structural AI tailwinds. Our base case projects a 22% CAGR and a fair value of $198.76, offering ~15% upside. BUY.",
+      "fairValue": 198.76,
+      "action": "BUY",
+      "analyzedAt": "2026-05-02T19:16:32.961Z",
+      "researchReport": "ANET_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used 1.259B (shares_diluted). Matches API output.",
+      "marginAnchor": "TTM 38.99% used as the historical anchor. Margins are robust and expanding (30.8% -> 35.6% -> 40.7% -> 38.9%). Base case models expansion to 40% as high-margin software and services revenue scales.",
+      "growthDerivation": "Analyst Y1 revenue implies ~27% growth ($11.44B vs $9.0B TTM). Y2 implies ~21.9% growth ($13.95B). Blended consensus ~24%. Base case growth set to 22% to account for the law of large numbers on a nearly $10B base.",
+      "sectorBenchmarkRow": "Technology — Hardware / Networking: median P/E 20, best-in-class 30+. Used 30x for base case due to the high mix of EOS software and AI premium.",
+      "dataQualityFlags": [
+        "No anomalies detected. The company exhibits a pristine Piotroski F-Score of 6 and massive free cash flow generation ($4.25B TTM)."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 11443.57,
+        "y2RevEstimate": 13951.5,
+        "y1GrowthPct": 27,
+        "y2GrowthPct": 21.9,
+        "blendedConsensusPct": 24.45,
+        "analystTargetMean": 180.33,
+        "analystCount": 26
+      },
+      "historicalRevenue": [
+        4381.31,
+        5860.2,
+        7003.1,
+        9005.7
+      ],
+      "historicalNetMargins": [
+        30.87,
+        35.62,
+        40.73,
+        38.99
+      ],
+      "historicalEPS": [
+        1.1,
+        1.69,
+        2.27,
+        2.79
+      ],
+      "confidenceBreakdown": "0.90/1.0 — +0.10 for pristine free cash flow generation and high visibility into hyperscaler capex plans, -0.10 for the structural risk of the Ethernet vs. InfiniBand architecture war."
+    }
+  }
+]

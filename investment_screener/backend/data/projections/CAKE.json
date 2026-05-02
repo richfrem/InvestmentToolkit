@@ -1,0 +1,134 @@
+[
+  {
+    "ticker": "CAKE",
+    "id": "e0b96b0f-b4df-41ed-a16f-7b1bb363a033",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T19:16:32.961Z",
+    "updatedAt": "2026-05-02T19:16:32.961Z",
+    "name": "AI Deep Dive — CAKE — 2026-05-02",
+    "rationale": "The Cheesecake Factory is a mature, slow-growth casual dining restaurant chain operating with thin margins. The company's Rule of 40 score is a very weak 13.13, primarily due to low revenue growth (5.6%) and low margins. While the company produces consistent free cash flow, it is highly sensitive to wage inflation, food costs, and macro-driven consumer discretionary spending pullbacks. The current valuation of ~17.6x trailing P/E is too rich for a business exhibiting these fundamentals. A base case valuation of $48.93 indicates the stock is overvalued by ~18.7%. SELL.",
+    "snapshot": {
+      "price": 60.2,
+      "currency": "USD",
+      "shares": 49796002,
+      "revenue": 3751806000,
+      "lastActualPS": 0.8,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 5.6,
+      "analystMarginEstimate": 4.34
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 2,
+        "netMargin": 2,
+        "exitPE": 10,
+        "qualityMultiplier": 0.9,
+        "shareChange": 1,
+        "rationale": "Growth decelerates to 2% (below inflation) indicating volume declines offset by minor menu pricing increases. Net margin compresses to 2% due to rising labor and food costs that cannot be fully passed onto the consumer without destroying demand. The exit P/E contracts to a depressed 10x, reflecting a structurally challenged business in a difficult macro environment. Dilution from SBC runs at 1% annually.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 4142.3,
+        "year5NetIncome": 82.8,
+        "year5EPS": 1.58,
+        "scenarioPrice": 8.85,
+        "risks": [
+          "Wage inflation and commodity costs severely compress operating margins",
+          "Consumer recession leads to significant declines in foot traffic and average check size"
+        ]
+      },
+      "base": {
+        "weight": 0.6,
+        "growthRate": 6,
+        "netMargin": 4.5,
+        "exitPE": 15,
+        "qualityMultiplier": 1,
+        "shareChange": -1,
+        "rationale": "Growth of 6% aligns with analyst estimates, driven by low single-digit comparable store sales and modest unit expansion. Net margins recover slightly to 4.5% (from 3.96% TTM) but remain structurally low. The exit P/E of 15x is appropriate for a mature, slow-growing restaurant operator. The 1.0x quality multiplier provides no premium, reflecting the lack of a significant competitive moat beyond brand recognition. Modest 1% annual buybacks are executed from free cash flow.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 5020.8,
+        "year5NetIncome": 225.9,
+        "year5EPS": 4.77,
+        "scenarioPrice": 44.44,
+        "risks": [
+          "Inability to expand footprint without cannibalizing existing stores",
+          "Execution risks in scaling newer concepts like North Italia"
+        ]
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 9,
+        "netMargin": 6.5,
+        "exitPE": 18,
+        "qualityMultiplier": 1.1,
+        "shareChange": -2,
+        "rationale": "Catalyst: Successful scaling of high-margin secondary concepts (North Italia, Flower Child) and robust consumer spending drive revenue to a 9% CAGR. Operating leverage and stabilizing commodity costs push net margins up to historical highs of 6.5%. The market awards an 18x exit P/E, re-rating CAKE as a premium multi-brand operator. A 1.1x quality multiplier reflects a successful brand diversification strategy. Accelerated buybacks reduce float by 2% annually.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 5772.6,
+        "year5NetIncome": 375.2,
+        "year5EPS": 8.34,
+        "scenarioPrice": 102.49,
+        "risks": [
+          "Requires perfect execution on new concept rollouts and sustained consumer resilience"
+        ]
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 1.5 Pro",
+      "rationale": "The Cheesecake Factory is a mature, slow-growth casual dining restaurant chain operating with thin margins. The company's Rule of 40 score is a very weak 13.13, primarily due to low revenue growth (5.6%) and low margins. While the company produces consistent free cash flow, it is highly sensitive to wage inflation, food costs, and macro-driven consumer discretionary spending pullbacks. The current valuation of ~17.6x trailing P/E is too rich for a business exhibiting these fundamentals. A base case valuation of $48.93 indicates the stock is overvalued by ~18.7%. SELL.",
+      "fairValue": 48.93,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T19:16:32.961Z",
+      "researchReport": "CAKE_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used 49.8M (shares_diluted). API provided matching figures for outstanding and diluted.",
+      "marginAnchor": "TTM 3.96% used as historical anchor. Margins are chronically thin (1.3% -> 2.9% -> 4.4% -> 4.0%). Base case models a slight normalization to 4.5%.",
+      "growthDerivation": "Analyst Y1 revenue implies 4.5% growth ($3.92B vs $3.75B TTM), Y2 implies 6.5%. Blended consensus ~5.6%. Base case growth set to 6.0%.",
+      "sectorBenchmarkRow": "Consumer Discretionary — Restaurants: median P/E 15-20, growth 5-10%; net margin typical 5-10%. Base case uses 15x.",
+      "dataQualityFlags": [
+        "No anomalies detected. However, the business exhibits a very poor Rule of 40 score (13.13), highlighting structural growth/margin challenges."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 3921.16,
+        "y2RevEstimate": 4176.43,
+        "y1GrowthPct": 4.5,
+        "y2GrowthPct": 6.5,
+        "blendedConsensusPct": 5.6,
+        "analystTargetMean": 65.33,
+        "analystCount": 18
+      },
+      "historicalRevenue": [
+        3303.16,
+        3439.5,
+        3581.7,
+        3751.81
+      ],
+      "historicalNetMargins": [
+        1.31,
+        2.95,
+        4.38,
+        3.96
+      ],
+      "historicalEPS": [
+        0.87,
+        2.1,
+        3.28,
+        0
+      ],
+      "confidenceBreakdown": "0.80/1.0 — +0.10 for predictable, slow-changing business model, -0.20 due to high sensitivity of thin margins to macro inputs (wages, commodities)."
+    }
+  }
+]
