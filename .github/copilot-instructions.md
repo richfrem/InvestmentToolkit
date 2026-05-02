@@ -95,6 +95,20 @@ curl -s -X POST http://localhost:3001/api/portfolio/sync-questrade \
 
 ---
 
+## 🤖 AI Agent Skills — Quick Reference
+
+| Trigger | Plugin | Purpose |
+|---------|--------|---------|
+| `/evaluate-stock {TICKER}` | stock-valuation | Full DCF valuation — Bear/Base/Bull scenarios, fair value, analyticsLog, research report |
+| `/research-stock {TICKER}` | stock-valuation | Qualitative research sweep — Class A/B/C/D change classification, gates re-valuation |
+| `/review-portfolio` | thesis-balancer | Drift monitor + pillar conviction audit + thesis formula health score (0–100) |
+| `/strategic-review` | thesis-balancer | Adversarial thesis challenger — surfaces failing pillars, proposes formula improvements |
+| `/rebalance` | thesis-balancer | Valuation-gated trade optimizer — skips SELL-rated holdings when restoring drift |
+| `/start-screener` | toolkit-manager | Launch full suite (frontend + backend) |
+| `/setup-questrade` | toolkit-manager | Interactive Questrade token setup |
+
+---
+
 ## 📦 Dependency Management
 - Python deps: root `requirements.in` → compile with `pip-compile requirements.in -o requirements.txt`
 - Sub-services inherit via `-r ../../requirements.in`
@@ -150,6 +164,9 @@ Frontend hot-reloads via Vite; backend does not.
 
 ### 4. Questrade seed endpoint — do not bypass the OAuth exchange
 The `/api/questrade/seed` endpoint accepts a raw **One-Week App Token** from the portal and internally exchanges it via OAuth before seeding. Do not seed raw one-week tokens directly via `QuestradeDataEngine.py --seed` unless you have already done the curl exchange yourself.
+
+### 5. `lastActualPS` nullable in Zod schema
+`investment_screener/backend/src/utils/zod-schemas.ts` line ~34: `lastActualPS` is `.nullable().transform(v => v ?? 0)`. Pre-revenue stocks and some mining companies return `null` from yfinance for this field. If you revert this or add a similar numeric field, use the same nullable pattern — a strict `z.number()` here causes 400 validation errors for any stock without price-to-sales data.
 
 ---
 
