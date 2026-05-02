@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "PUMP",
+    "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e6e",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T18:55:00.000Z",
+    "updatedAt": "2026-05-02T18:55:00.000Z",
+    "name": "AI Deep Dive — PUMP — 2026-05-02",
+    "rationale": "ProPetro (PUMP) is a legacy hydraulic fracturing company attempting an AI infrastructure pivot by repurposing its power generation assets for data centers. The stock has surged 210% on this narrative despite terrible core fundamentals: revenue is down 25% YoY and margins are near zero. While the data center power bottleneck is real, PUMP's ability to transition its cyclical oilfield business into steady infrastructure hosting is highly unproven. The weighted fair value of $9.56 indicates severe downside risk from the current $16.62 valuation.",
+    "snapshot": {
+      "price": 16.62,
+      "currency": "USD",
+      "shares": 122616976,
+      "revenue": 1269158000,
+      "lastActualPS": 1.61,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": -24.7,
+      "analystMarginEstimate": -1.05
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": -5,
+        "netMargin": 2,
+        "exitPE": 8,
+        "qualityMultiplier": 0.8,
+        "moatScore": 1,
+        "managementScore": 2,
+        "shareChange": 5,
+        "scenarioPrice": 1.48
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 5,
+        "netMargin": 5,
+        "exitPE": 12,
+        "qualityMultiplier": 0.9,
+        "moatScore": 2,
+        "managementScore": 3,
+        "shareChange": 0,
+        "scenarioPrice": 9.45
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 15,
+        "netMargin": 10,
+        "exitPE": 15,
+        "qualityMultiplier": 1.1,
+        "moatScore": 3,
+        "managementScore": 4,
+        "shareChange": -5,
+        "scenarioPrice": 38.6
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "PUMP's 210% run is a classic example of an AI halo effect masking a declining core business. The core fracturing business is shrinking (revenue down 25%), but the market is heavily bidding up their new effort to supply off-grid power to data centers in Texas. Unlike PSIX, which is a pure-play power generator, PUMP is primarily a cyclical oilfield services company trying to find a new use for its equipment. At nearly 58x forward earnings, the market is pricing this pivot as a guaranteed success. The base case ($9.45 PV) assumes they successfully stabilize revenue at 5% growth and 5% margins, which still results in a massive 43% downside.",
+      "fairValue": 12.5,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T18:55:00.000Z",
+      "researchReport": "PUMP_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

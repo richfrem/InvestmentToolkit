@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "AMD",
+    "id": "f5e9c0a2-d8b3-4e4f-b7a1-c6d5e4f3a2b2",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T19:15:00.000Z",
+    "updatedAt": "2026-05-02T19:15:00.000Z",
+    "name": "AI Deep Dive — AMD — 2026-05-02",
+    "rationale": "Advanced Micro Devices (AMD) is successfully positioning itself as the sole viable alternative to NVIDIA in the AI accelerator market. With revenue growing at 34% and an exceptional Piotroski F-Score of 8, operational execution is near flawless. While trading at a premium 32x forward P/E, capturing even 15-20% of the hyperscaler AI budget justifies the $587B valuation. My weighted fair value of $443 indicates a solid 23% upside, making AMD a strong BUY for the AI infrastructure supercycle.",
+    "snapshot": {
+      "price": 360.54,
+      "currency": "USD",
+      "shares": 1630338779,
+      "revenue": 34639000000,
+      "lastActualPS": 16.97,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 34.1,
+      "analystMarginEstimate": 12.52
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.3,
+        "growthRate": 15,
+        "netMargin": 18,
+        "exitPE": 20,
+        "qualityMultiplier": 1,
+        "moatScore": 4,
+        "managementScore": 4,
+        "shareChange": 0,
+        "scenarioPrice": 94
+      },
+      "base": {
+        "weight": 0.5,
+        "growthRate": 30,
+        "netMargin": 25,
+        "exitPE": 30,
+        "qualityMultiplier": 1.1,
+        "moatScore": 4,
+        "managementScore": 5,
+        "shareChange": 0,
+        "scenarioPrice": 401
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 40,
+        "netMargin": 30,
+        "exitPE": 40,
+        "qualityMultiplier": 1.2,
+        "moatScore": 5,
+        "managementScore": 5,
+        "shareChange": -5,
+        "scenarioPrice": 1072
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "AMD has successfully established itself as the indispensable 'second source' to NVIDIA in the AI accelerator market (MI300X/MI400). Generating $6.7B in FCF with an F-Score of 8, the company is operationally pristine. Hyperscalers (Microsoft, Meta, Google) desperately need an alternative to NVIDIA to maintain pricing leverage, practically guaranteeing AMD a 15-20% market share floor. The base case ($401 PV) assumes AMD scales to $128B in revenue by Year 5 with software-like 25% net margins. If AMD can capture closer to 30% of the market (Bull Case $1,072), the upside is immense. At current prices, the risk/reward is highly favorable.",
+      "fairValue": 443.1,
+      "action": "BUY",
+      "analyzedAt": "2026-05-02T19:15:00.000Z",
+      "researchReport": "AMD_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "RIOT",
+    "id": "c8d7e6f5-a4b3-2c1d-0e9f-8a7b6c5d4e3f",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T19:00:00.000Z",
+    "updatedAt": "2026-05-02T19:00:00.000Z",
+    "name": "AI Deep Dive — RIOT — 2026-05-02",
+    "rationale": "Riot Platforms (RIOT) presents a high-beta proxy for Bitcoin with terrifying operational economics. Generating $647M in revenue, the company burned an astonishing $1.14B in free cash flow over the last year. Operating margins sit at a dismal -53%, and net margins are deeply negative. Funding this continuous capex treadmill requires constant shareholder dilution. My weighted fair value of $4.18 suggests severe downside from the current $18.50 price.",
+    "snapshot": {
+      "price": 18.5,
+      "currency": "USD",
+      "shares": 379125849,
+      "revenue": 647435000,
+      "lastActualPS": 10.83,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 3.6,
+      "analystMarginEstimate": -132.76
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": -5,
+        "netMargin": 0,
+        "exitPE": 10,
+        "qualityMultiplier": 0.6,
+        "moatScore": 0,
+        "managementScore": 1,
+        "shareChange": 60,
+        "scenarioPrice": 0.15
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 15,
+        "netMargin": 5,
+        "exitPE": 15,
+        "qualityMultiplier": 0.8,
+        "moatScore": 1,
+        "managementScore": 2,
+        "shareChange": 35,
+        "scenarioPrice": 1.7
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 30,
+        "netMargin": 15,
+        "exitPE": 20,
+        "qualityMultiplier": 1,
+        "moatScore": 2,
+        "managementScore": 3,
+        "shareChange": 15,
+        "scenarioPrice": 16.8
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "RIOT's core business model is a continuous wealth-destruction machine for shareholders. In the trailing twelve months, they generated $647M in revenue but burned $1.14B in free cash flow. This is the definition of the crypto mining 'capex treadmill', where hardware becomes obsolete almost as fast as it is deployed. The only way to survive is via massive, ongoing equity dilution (modeling 35% in the base case). While a massive Bitcoin bull run could temporarily float the stock, the structural economics dictate that the company will destroy value over any multi-year horizon. The $18.50 price is completely disconnected from the underlying cash flows.",
+      "fairValue": 4.18,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T19:00:00.000Z",
+      "researchReport": "RIOT_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]
