@@ -1,0 +1,127 @@
+[
+  {
+    "ticker": "TEM",
+    "id": "32af17ba-5763-4f8c-91dd-64c9ebc09e17",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T19:17:44Z",
+    "updatedAt": "2026-05-02T19:17:44Z",
+    "name": "AI Deep Dive — TEM — 2026-05-02",
+    "rationale": "Tempus (TEM) is a healthcare AI and diagnostics company with accelerating revenue but persistent GAAP losses. The weighted DCF fair value is materially below current market price due to low projected EPS and high discounting; action is SELL.",
+    "snapshot": {
+      "price": 55,
+      "currency": "USD",
+      "shares": 174360831,
+      "revenue": 1271789000,
+      "lastActualPS": 7.76,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 23.64
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 0.08,
+        "netMargin": 0,
+        "exitPE": 12,
+        "qualityMultiplier": 0.9,
+        "shareChange": 0,
+        "year5Revenue": 1276.9,
+        "year5NetIncome": 0,
+        "year5EPS": 0,
+        "scenarioPrice": 0,
+        "year5Shares": 179.4,
+        "year5PriceUndiscounted": 0,
+        "presentValue": 0
+      },
+      "base": {
+        "weight": 0.6,
+        "growthRate": 0.24,
+        "netMargin": 5,
+        "exitPE": 28,
+        "qualityMultiplier": 1,
+        "shareChange": 0,
+        "year5Revenue": 1287.1,
+        "year5NetIncome": 64.4,
+        "year5EPS": 0.36,
+        "scenarioPrice": 10.04,
+        "year5Shares": 179.4,
+        "year5PriceUndiscounted": 10.04,
+        "presentValue": 6.24
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 0.4,
+        "netMargin": 12,
+        "exitPE": 35,
+        "qualityMultiplier": 1.05,
+        "shareChange": 0,
+        "year5Revenue": 1297.4,
+        "year5NetIncome": 155.7,
+        "year5EPS": 0.87,
+        "scenarioPrice": 31.89,
+        "year5Shares": 179.4,
+        "year5PriceUndiscounted": 31.89,
+        "presentValue": 19.8
+      }
+    },
+    "aiThesis": {
+      "model": "GPT-5 mini (model ID: gpt-5-mini)",
+      "rationale": "Revenue growth is strong but GAAP profitability remains weak. Base scenario assumes margin recovery to ~5% by year 5; bull scenario assumes successful product monetization and partnerships drive margin to ~12%.",
+      "fairValue": 7.7,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T19:17:44Z",
+      "researchReport": "investment_screener/backend/data/research/TEM_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used metrics.shares_diluted=174360831; DCF-derived baseShares=179404632; difference 2.89%",
+      "marginAnchor": "TTM -19.27 used; trending improvement over last 3 years → use TTM as anchor",
+      "growthDerivation": "Y1=1591964500.0, Y2=1943729130.0; Y1 growth 25.18%, Y2 growth 22.1%; blendedConsensusPct=23.64%",
+      "sectorBenchmarkRow": "Healthcare — Biotech (profitable): Conservative P/E 18, Median P/E 28, Growth P/E 50",
+      "dataQualityFlags": [
+        "Negative GAAP EPS and volatile net margins — currently loss-making",
+        "Historical revenue array contains leading 0 placeholder year — confirm fiscal alignment",
+        "Analyst revenue estimates project growth but earnings remain negative in near term"
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 1591964500,
+        "y2RevEstimate": 1943729130,
+        "y1GrowthPct": 25.18,
+        "y2GrowthPct": 22.1,
+        "blendedConsensusPct": 23.64,
+        "analystTargetMean": 72.4,
+        "analystCount": 15
+      },
+      "historicalRevenue": [
+        0,
+        320668000,
+        531822000,
+        693398000,
+        1271789000
+      ],
+      "historicalNetMargins": [
+        0,
+        -90.37727493856575,
+        -40.26121521862578,
+        -101.78988113608634,
+        -19.26640346787085
+      ],
+      "historicalEPS": [
+        0,
+        -5.264512,
+        -1.61354,
+        -6.23,
+        -1.41
+      ],
+      "confidenceBreakdown": "0.45 — -0.15 data risk, -0.10 margin recovery uncertainty, -0.30 loss-making near term"
+    }
+  }
+]

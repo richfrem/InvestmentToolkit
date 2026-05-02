@@ -1,0 +1,134 @@
+[
+  {
+    "ticker": "NKE",
+    "id": "e0b96b0f-b4df-41ed-a16f-7b1bb363a033",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T19:16:32.961Z",
+    "updatedAt": "2026-05-02T19:16:32.961Z",
+    "name": "AI Deep Dive — NKE — 2026-05-02",
+    "rationale": "Nike is struggling with a profound growth stall and margin compression. Trailing revenue growth is near zero (0.1%), and TTM net margins have contracted to ~7%. The Rule of 40 score is an abysmal 9.84. While the brand is iconic, increased competition from agile upstarts (On, Hoka) and a challenging macro environment for consumer discretionary goods are weighing heavily on performance. Even with the stock price battered down to $44.40, a conservative base case projecting 1% growth and a modest margin recovery yields a fair value of $40.01. The stock remains slightly overvalued. SELL.",
+    "snapshot": {
+      "price": 44.4,
+      "currency": "USD",
+      "shares": 1483410138,
+      "revenue": 46309000000,
+      "lastActualPS": 1.42,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 0.1,
+      "analystMarginEstimate": 4.84
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": -2,
+        "netMargin": 5,
+        "exitPE": 15,
+        "qualityMultiplier": 1,
+        "shareChange": 0,
+        "rationale": "Revenues shrink at a 2% CAGR as the brand continues to lose relevance and market share to newer competitors. Margins stay depressed at 5% due to high promotional activity needed to clear stale inventory. Exit P/E compresses to 15x, treating Nike as a structurally challenged apparel retailer rather than a premium brand.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 41859.7,
+        "year5NetIncome": 2093,
+        "year5EPS": 1.41,
+        "scenarioPrice": 13.14,
+        "risks": [
+          "Continued market share loss to On, Hoka, and other specialized brands",
+          "Severe recessionary pullback in discretionary consumer spending"
+        ]
+      },
+      "base": {
+        "weight": 0.6,
+        "growthRate": 1,
+        "netMargin": 8,
+        "exitPE": 20,
+        "qualityMultiplier": 1.05,
+        "shareChange": -1,
+        "rationale": "Growth is anemic at a 1% CAGR, aligning with muted analyst consensus estimates (roughly flat Y1, +0.7% Y2). Net margin recovers slightly to 8% (up from 6.95% TTM) as inventory issues normalize, though still below historical double-digit highs. The exit P/E of 20x is standard for a mature, slow-growth consumer staple. A 1.05x quality multiplier provides a slight premium for the enduring brand value.",
+        "moatScore": 4,
+        "managementScore": 3,
+        "year5Revenue": 48671.2,
+        "year5NetIncome": 3893.7,
+        "year5EPS": 2.76,
+        "scenarioPrice": 35.99,
+        "risks": [
+          "Inability to reignite innovation cycle",
+          "Margin recovery is slower than expected due to DTC transition hiccups"
+        ]
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 4,
+        "netMargin": 11,
+        "exitPE": 25,
+        "qualityMultiplier": 1.1,
+        "shareChange": -2,
+        "rationale": "Catalyst: A successful management overhaul and a refreshed innovation cycle reignite consumer interest, regaining lost market share. Revenue grows at a steady 4% CAGR. Margins expand back to historical highs of 11% driven by a successful Direct-To-Consumer (DTC) mix. The market re-rates the multiple to 25x. Aggressive buybacks reduce float by 2% annually.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 56342,
+        "year5NetIncome": 6197.6,
+        "year5EPS": 4.62,
+        "scenarioPrice": 78.92,
+        "risks": [
+          "Macro environment does not support multiple expansion"
+        ]
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 1.5 Pro",
+      "rationale": "Nike is struggling with a profound growth stall and margin compression. Trailing revenue growth is near zero (0.1%), and TTM net margins have contracted to ~7%. The Rule of 40 score is an abysmal 9.84. While the brand is iconic, increased competition from agile upstarts (On, Hoka) and a challenging macro environment for consumer discretionary goods are weighing heavily on performance. Even with the stock price battered down to $44.40, a conservative base case projecting 1% growth and a modest margin recovery yields a fair value of $40.01. The stock remains slightly overvalued. SELL.",
+      "fairValue": 40.01,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T19:16:32.961Z",
+      "researchReport": "NKE_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used 1.483B (shares_diluted). Reflects the expanded share count metric provided by the API.",
+      "marginAnchor": "TTM 6.95% used as historical anchor. Margins have compressed significantly from historical highs of 12.9% four years ago. Base case models a modest recovery to 8%.",
+      "growthDerivation": "Analyst Y1 revenue implies virtually flat growth ($46.26B vs $46.3B TTM). Y2 implies 0.77% growth. Blended consensus is ~0%. Modeled Base case slightly optimistically at 1.0%.",
+      "sectorBenchmarkRow": "Consumer Discretionary — Apparel & Footwear: median P/E 18-20, growth 0-5%; net margin typical 5-10%. Base case uses 20x.",
+      "dataQualityFlags": [
+        "The massive negative performance (-63% over 5 years) and terrible Rule of 40 score (9.84) highlight severe fundamental deterioration."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 46264.8,
+        "y2RevEstimate": 46621.9,
+        "y1GrowthPct": -0.1,
+        "y2GrowthPct": 0.77,
+        "blendedConsensusPct": 0.3,
+        "analystTargetMean": 61.68,
+        "analystCount": 33
+      },
+      "historicalRevenue": [
+        46710,
+        51217,
+        51362,
+        46309
+      ],
+      "historicalNetMargins": [
+        12.94,
+        9.9,
+        11.1,
+        6.95
+      ],
+      "historicalEPS": [
+        3.83,
+        3.27,
+        3.76,
+        2.17
+      ],
+      "confidenceBreakdown": "0.80/1.0 — +0.10 for relatively predictable albeit stagnant revenues, -0.20 for margin uncertainty in a highly competitive and promotional retail environment."
+    }
+  }
+]
