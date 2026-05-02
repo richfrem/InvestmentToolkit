@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "COIN",
+    "id": "b3c4d5e6-f7a8-1b2c-3d4e-5f6a7b8c9d0f",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T19:25:00.000Z",
+    "updatedAt": "2026-05-02T19:25:00.000Z",
+    "name": "AI Deep Dive — COIN — 2026-05-02",
+    "rationale": "Coinbase (COIN) generated $7.18B in TTM revenue with strong 18% net margins, highlighting its dominant position as the premier US crypto exchange. However, recent top-line momentum has stalled (-22% YoY growth), making the current 38x forward P/E appear stretched for a highly cyclical asset. The business is a massive cash cow ($2.4B FCF), but volume dependency is a severe headwind during market lulls. My weighted fair value of $161 suggests a 15% downside risk, classifying it as a HOLD/SELL.",
+    "snapshot": {
+      "price": 191.25,
+      "currency": "USD",
+      "shares": 223041278,
+      "revenue": 7181325000,
+      "lastActualPS": 7.03,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": -22.2,
+      "analystMarginEstimate": 18.31
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": -10,
+        "netMargin": 10,
+        "exitPE": 15,
+        "qualityMultiplier": 0.9,
+        "moatScore": 3,
+        "managementScore": 3,
+        "shareChange": 5,
+        "scenarioPrice": 51
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 10,
+        "netMargin": 18,
+        "exitPE": 20,
+        "qualityMultiplier": 1,
+        "moatScore": 4,
+        "managementScore": 4,
+        "shareChange": -2,
+        "scenarioPrice": 165
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 25,
+        "netMargin": 25,
+        "exitPE": 25,
+        "qualityMultiplier": 1.1,
+        "moatScore": 5,
+        "managementScore": 4,
+        "shareChange": -5,
+        "scenarioPrice": 345
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "Coinbase is the blue-chip proxy for the cryptocurrency market. Operationally, the company has matured into a cash-generating machine ($2.4B FCF last year) with an F-Score of 5. However, their revenue is entirely dependent on retail trading volume and crypto asset volatility. The recent 22% YoY decline in revenue demonstrates how viciously the cycle can turn. At $50.5B market cap and 38x forward earnings, the market is pricing in an imminent return to peak bull market volumes. The base case ($165 PV) models a modest 10% CAGR and stable 18% margins, which fails to justify the current $191 price. The stock requires a massive new crypto bull run to beat its current valuation.",
+      "fairValue": 161.1,
+      "action": "HOLD",
+      "analyzedAt": "2026-05-02T19:25:00.000Z",
+      "researchReport": "COIN_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]
