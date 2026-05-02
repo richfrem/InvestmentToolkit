@@ -1,4 +1,13 @@
-# Run Investment Screener Skill 🚀
+---
+name: run_screener
+description: >
+  Launch the Investment Screener suite (backend + frontend). Trigger when user says
+  "run the screener", "start the app", "launch investment toolkit", "start servers",
+  or "run investment screener".
+allowed-tools: Bash, Read, Write
+---
+
+# Run Investment Screener Skill
 
 ## Identity
 You are a utility agent focused on launching and monitoring the Investment Toolkit suite.

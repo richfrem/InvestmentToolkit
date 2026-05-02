@@ -41,20 +41,20 @@ export default function PortfolioBreakdown({ data }: Props) {
 
     return (
         <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
+            <h3 className="text-base font-bold text-slate-500 uppercase tracking-widest mb-4">
                 Detailed Breakdown
             </h3>
             <div className="overflow-x-auto">
                 <table className="w-full">
                     <thead>
                         <tr className="border-b border-slate-800">
-                            <th className="text-left text-xs font-semibold text-slate-500 uppercase pb-3 pr-4">
+                            <th className="text-left text-base font-semibold text-slate-500 uppercase pb-3 pr-4">
                                 Metric
                             </th>
-                            <th className="text-right text-xs font-semibold text-slate-500 uppercase pb-3 px-4">
+                            <th className="text-right text-base font-semibold text-slate-500 uppercase pb-3 px-4">
                                 USD
                             </th>
-                            <th className="text-right text-xs font-semibold text-slate-500 uppercase pb-3 pl-4">
+                            <th className="text-right text-base font-semibold text-slate-500 uppercase pb-3 pl-4">
                                 CAD
                             </th>
                         </tr>
@@ -62,13 +62,13 @@ export default function PortfolioBreakdown({ data }: Props) {
                     <tbody>
                         {rows.map((row) => (
                             <tr key={row.label} className="border-b border-slate-800/50">
-                                <td className="text-sm text-slate-300 py-3 pr-4">
+                                <td className="text-lg text-slate-300 py-3 pr-4">
                                     {row.label}
                                 </td>
-                                <td className={`text-sm text-right py-3 px-4 font-medium ${row.color || 'text-slate-300'}`}>
+                                <td className={`text-lg text-right py-3 px-4 font-semibold ${row.color || 'text-slate-300'}`}>
                                     {row.usd}
                                 </td>
-                                <td className={`text-sm text-right py-3 pl-4 font-medium ${row.color || 'text-slate-300'}`}>
+                                <td className={`text-lg text-right py-3 pl-4 font-semibold ${row.color || 'text-slate-300'}`}>
                                     {row.cad}
                                 </td>
                             </tr>
