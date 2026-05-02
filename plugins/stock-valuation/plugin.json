@@ -10,6 +10,11 @@
             "name": "stock_valuation",
             "path": "skills/stock_valuation/SKILL.md",
             "trigger": "/perform-stock-valuation"
+        },
+        {
+            "name": "stock_research",
+            "path": "skills/stock-research/SKILL.md",
+            "trigger": "/research-stock"
         }
     ],
     "commands": [
@@ -17,6 +22,11 @@
             "name": "evaluate-stock",
             "path": "commands/evaluate-stock.md",
             "trigger": "/evaluate-stock"
+        },
+        {
+            "name": "research-stock",
+            "path": "commands/research-stock.md",
+            "trigger": "/research-stock"
         }
     ],
     "connectors": "CONNECTORS.md",
