@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "BTDR",
+    "id": "a1b2c3d4-e5f6-4a5b-8c7d-9e8f7a6b5c4d",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T17:45:00.000Z",
+    "updatedAt": "2026-05-02T17:45:00.000Z",
+    "name": "AI Deep Dive — BTDR — 2026-05-02",
+    "rationale": "Bitdeer (BTDR) is transitioning from pure Bitcoin mining into AI/HPC hosting. While revenue growth is spectacular (225%), the capital requirements are equally staggering, with $2.0B in negative FCF over the last 12 months. This requires massive shareholder dilution. Despite modeling a 100% share count increase in the base case, the sheer scale of HPC revenue potential yields a weighted fair value of $29.21, offering substantial upside if they execute their infrastructure pipeline.",
+    "snapshot": {
+      "price": 11.84,
+      "currency": "USD",
+      "shares": 198591256,
+      "revenue": 620253000,
+      "lastActualPS": 4.64,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 225.8,
+      "analystMarginEstimate": 10.58
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": 20,
+        "netMargin": 5,
+        "exitPE": 10,
+        "qualityMultiplier": 0.8,
+        "moatScore": 1,
+        "managementScore": 2,
+        "shareChange": 150,
+        "scenarioPrice": 0.77
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 50,
+        "netMargin": 10,
+        "exitPE": 15,
+        "qualityMultiplier": 1,
+        "moatScore": 2,
+        "managementScore": 3,
+        "shareChange": 100,
+        "scenarioPrice": 11.02
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 80,
+        "netMargin": 18,
+        "exitPE": 25,
+        "qualityMultiplier": 1.1,
+        "moatScore": 3,
+        "managementScore": 4,
+        "shareChange": 50,
+        "scenarioPrice": 120
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "Bitdeer presents a high-risk, high-reward infrastructure play. The company is burning cash at a terrifying rate (-$2.0B FCF) to build out its HPC and SEALMINER operations. To fund this at a $2.8B market cap, current shareholders will face severe dilution (I model 100% dilution in the base case). However, because they are trading at a relatively modest 4.6x trailing sales (compared to APLD's 66x), if they capture a fraction of the AI hosting market at 10% net margins, the equity has multi-bagger potential despite the dilution.",
+      "fairValue": 29.21,
+      "action": "BUY",
+      "analyzedAt": "2026-05-02T17:45:00.000Z",
+      "researchReport": "BTDR_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { fetchStockData, type StockData } from '../services/api';
+import { fetchStockData, type StockData, type ValuationResult, type Projection } from '../services/api';
 import { useRecentTickers } from '../hooks/useRecentTickers';
 import MetricsGrid from '../components/MetricsGrid';
 import FinancialChart from '../components/analysis/FinancialChart';
@@ -8,6 +8,9 @@ import AnalysisChartToggle, { type ChartMode } from '../components/analysis/Anal
 import ValuationModeler from '../components/ValuationModeler';
 import { LayoutDashboard, BarChart3, Calculator } from 'lucide-react';
 import PerformanceMetrics from '../components/PerformanceMetrics';
+import { AIThesisSummary } from '../components/AIThesisSummary';
+import { AIAnalysisModal } from '../components/AIAnalysisModal';
+import { storage } from '../services/storage';
 
 type Tab = 'overview' | 'analysis' | 'valuation';
 
@@ -20,17 +23,55 @@ export default function Dashboard() {
     const [error, setError] = useState<string | null>(null);
     const { addTicker } = useRecentTickers();
 
+    // AI State
+    const [aiResult, setAiResult] = useState<ValuationResult | null>(null);
+    const [viewingProjection, setViewingProjection] = useState<Projection | null>(null);
+    const [showAIModal, setShowAIModal] = useState(false);
+
+    const loadAIThesis = useCallback(async (ticker: string) => {
+        try {
+            const saved = await storage.syncProjections(ticker);
+            const aiProjections = saved.filter(p => p.source === 'AI_AGENT');
+            
+            if (aiProjections.length > 0) {
+                // Sort by date descending
+                const latest = aiProjections.sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime())[0];
+                
+                if (latest.aiThesis) {
+                    const thesis = latest.aiThesis;
+                    const base = latest.scenarios.base;
+                    setAiResult({
+                        fair_value: thesis.fairValue,
+                        model_name: thesis.model,
+                        rationale: latest.rationale || thesis.rationale,
+                        action: thesis.action as any,
+                        growth_assumption: base ? base.growthRate / 100 : 0,
+                        researchReport: thesis.researchReport
+                    } as any);
+                    setViewingProjection(latest);
+                }
+            } else {
+                setAiResult(null);
+                setViewingProjection(null);
+            }
+        } catch (err) {
+            console.error("Failed to load AI thesis:", err);
+        }
+    }, []);
+
     const performSearch = async (ticker: string) => {
         if (!ticker) return;
         
         setLoading(true);
         setError(null);
         setStockData(null);
+        setAiResult(null);
 
         try {
             const data = await fetchStockData(ticker);
             setStockData(data);
             addTicker(ticker);
+            loadAIThesis(ticker);
         } catch (err: any) {
             console.error("Search failed:", err);
             setError(err.message || "Failed to fetch stock data");
@@ -169,6 +210,12 @@ export default function Dashboard() {
 
                         {activeTab === 'overview' && (
                             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                                {aiResult && (
+                                    <AIThesisSummary 
+                                        aiResult={aiResult} 
+                                        onViewFullReport={() => setShowAIModal(true)} 
+                                    />
+                                )}
                                 <MetricsGrid stockData={stockData} />
                             </div>
                         )}
@@ -192,6 +239,16 @@ export default function Dashboard() {
                         )}
                     </div>
                 </div>
+            )}
+
+            {/* AI Analysis Modal */}
+            {stockData && (
+                <AIAnalysisModal
+                    isOpen={showAIModal}
+                    onClose={() => setShowAIModal(false)}
+                    symbol={stockData.symbol}
+                    initialProjection={viewingProjection || undefined}
+                />
             )}
         </div>
     );

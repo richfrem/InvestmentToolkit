@@ -45,6 +45,30 @@ If health check fails → immediately invoke **FB-02** from `references/fallback
 
 ---
 
+## Step 0: Freshness Check (Skip Analysis If Recent)
+```bash
+# Check for existing AI projection within the last 30 days
+curl -s http://localhost:3001/api/projections/{TICKER} | python3 -c "
+import json, sys
+from datetime import datetime, timezone, timedelta
+data = json.load(sys.stdin)
+ai = [p for p in data if p.get('source') == 'AI_AGENT']
+if not ai:
+    print('NO_CACHE')
+    sys.exit(0)
+latest = max(ai, key=lambda p: p.get('savedAt',''))
+age = datetime.now(timezone.utc) - datetime.fromisoformat(latest['savedAt'].replace('Z','+00:00'))
+if age < timedelta(days=30):
+    print(f'CACHED — analyzed {age.days}d ago — fair value \${latest[\"aiThesis\"][\"fairValue\"]}')
+else:
+    print(f'STALE — {age.days}d old — re-analyze')
+"
+```
+- If output starts with `CACHED` → **STOP**. Report the cached fair value and action to the user. Offer to force-refresh if they explicitly ask.
+- If `NO_CACHE` or `STALE` → continue to Step 1.
+
+---
+
 ## Step 1: Fetch Financial Data
 ```bash
 # Health check first
@@ -125,9 +149,14 @@ cat > /tmp/{TICKER}_projection.json << 'EOF'
 <JSON_PAYLOAD>
 EOF
 
-cat /tmp/{TICKER}_projection.json | python3 investment_screener/backend/py_services/persist_projection.py
+# Persist via REST API (persist_projection.py does not exist — use the API)
+curl -s -X POST http://localhost:3001/api/projections \
+  -H 'Content-Type: application/json' \
+  -d @/tmp/{TICKER}_projection.json
 ```
-If persistence fails → invoke **FB-03** from `references/fallback-tree.md`.
+- Success response: `{"success":true,"message":"Projection saved successfully"}`
+- If 409 conflict → increment `version` field and retry once
+- If any other failure → invoke **FB-03** from `references/fallback-tree.md`
 
 ## Step 7: Generate Deep-Dive Research Report
 **Iteration Directory Isolation**: Write to dated path to prevent overwrites.

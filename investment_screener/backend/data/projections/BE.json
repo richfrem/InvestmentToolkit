@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "BE",
+    "id": "e8c23f54-2b4e-5e9f-8b2c-4f7f105d6e94",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T17:35:00.000Z",
+    "updatedAt": "2026-05-02T17:35:00.000Z",
+    "name": "AI Deep Dive — BE — 2026-05-02",
+    "rationale": "Bloom Energy (BE) is experiencing a massive hyper-growth cycle (130% YoY) driven by AI data center power demands, propelling its valuation to $82.6B. While its solid oxide fuel cells are uniquely positioned to solve grid bottlenecks, pricing perfection is assumed at 40x trailing sales. My weighted fair value of $257 indicates mild downside risk. Strong execution is required to justify the current $290 share price.",
+    "snapshot": {
+      "price": 290.52,
+      "currency": "USD",
+      "shares": 284443868,
+      "revenue": 2023994000,
+      "lastActualPS": 40.83,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 130.4,
+      "analystMarginEstimate": 0.25
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.3,
+        "growthRate": 30,
+        "netMargin": 5,
+        "exitPE": 15,
+        "qualityMultiplier": 0.8,
+        "moatScore": 2,
+        "managementScore": 3,
+        "shareChange": 10,
+        "scenarioPrice": 8
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 60,
+        "netMargin": 15,
+        "exitPE": 25,
+        "qualityMultiplier": 1.1,
+        "moatScore": 4,
+        "managementScore": 4,
+        "shareChange": 5,
+        "scenarioPrice": 180
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 80,
+        "netMargin": 20,
+        "exitPE": 35,
+        "qualityMultiplier": 1.2,
+        "moatScore": 5,
+        "managementScore": 4,
+        "shareChange": 0,
+        "scenarioPrice": 697
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "Bloom Energy is uniquely positioned to solve the acute power bottleneck facing AI hyperscalers. At $82B market cap, it has graduated into a mega-cap infrastructure play. However, hardware manufacturing at scale carries execution risks. While margins recently turned positive (0.25%), getting to software-like margins to justify a 40x P/S multiple is challenging. The base case ($180 PV) assumes exceptional execution, but the current $290 price requires the 'Bull' scenario (80% 5Y CAGR, 20% net margin) to play out.",
+      "fairValue": 257.65,
+      "action": "HOLD",
+      "analyzedAt": "2026-05-02T17:35:00.000Z",
+      "researchReport": "BE_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

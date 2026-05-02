@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "KRC",
+    "id": "e5a8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e5c",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T18:35:00.000Z",
+    "updatedAt": "2026-05-02T18:35:00.000Z",
+    "name": "AI Deep Dive — KRC — 2026-05-02",
+    "rationale": "Kilroy Realty (KRC) is navigating the challenging West Coast office REIT market. While top-line growth is flat (-0.3%), the company maintains a solid Piotroski F-Score of 7 and healthy 19.6% net margins, largely buoyed by its life science portfolio. At $33.64, the stock is trading at a depressed multiple reflecting macro work-from-home headwinds. My weighted fair value of $30.82 suggests the stock is currently fairly valued to slightly overvalued, lacking a clear near-term catalyst for a major re-rating.",
+    "snapshot": {
+      "price": 33.64,
+      "currency": "USD",
+      "shares": 116278807,
+      "revenue": 1112667000,
+      "lastActualPS": 3.55,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": -0.3,
+      "analystMarginEstimate": 19.59
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": -5,
+        "netMargin": 12,
+        "exitPE": 10,
+        "qualityMultiplier": 0.8,
+        "moatScore": 2,
+        "managementScore": 3,
+        "shareChange": 5,
+        "scenarioPrice": 14.15
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 2,
+        "netMargin": 18,
+        "exitPE": 15,
+        "qualityMultiplier": 1,
+        "moatScore": 3,
+        "managementScore": 4,
+        "shareChange": 0,
+        "scenarioPrice": 34.5
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 6,
+        "netMargin": 25,
+        "exitPE": 18,
+        "qualityMultiplier": 1.1,
+        "moatScore": 4,
+        "managementScore": 4,
+        "shareChange": -5,
+        "scenarioPrice": 72
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "KRC is a high-quality operator trapped in a tough sector. Its focus on modern, sustainable buildings and life science properties gives it an edge over legacy office REITs, evidenced by its strong 19.6% net margins and F-Score of 7. However, the secular shift toward remote/hybrid work continues to cap occupancy and pricing power in key markets like San Francisco and Seattle. The base case ($34.50 PV) assumes flat growth but stable margins. The stock is a HOLD, acting primarily as a yield play until a clearer macro catalyst emerges for West Coast real estate.",
+      "fairValue": 34.88,
+      "action": "HOLD",
+      "analyzedAt": "2026-05-02T18:35:00.000Z",
+      "researchReport": "KRC_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

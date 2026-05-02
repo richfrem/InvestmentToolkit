@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "CIFR",
+    "id": "e2f4a1c5-b8d9-4c3f-a6b7-9d8e7f6a5b4c",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T18:00:00.000Z",
+    "updatedAt": "2026-05-02T18:00:00.000Z",
+    "name": "AI Deep Dive — CIFR — 2026-05-02",
+    "rationale": "CIFR (Cipher Digital) is executing an aggressive HPC/AI data center pivot from its legacy bitcoin mining roots. The valuation ($6.9B on $224M revenue = 30x P/S) is pricing in massive hyperscaler tenant demand. However, with trailing FCF at a deeply negative -$702M, the capital required to build out these sites will necessitate substantial equity dilution. My weighted fair value of $6.02 reflects a 65% downside risk due to the sheer volume of capital required to scale.",
+    "snapshot": {
+      "price": 17.04,
+      "currency": "USD",
+      "shares": 405912959,
+      "revenue": 223942000,
+      "lastActualPS": 30.89,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 41.4,
+      "analystMarginEstimate": 0
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": 25,
+        "netMargin": 5,
+        "exitPE": 15,
+        "qualityMultiplier": 0.8,
+        "moatScore": 1,
+        "managementScore": 2,
+        "shareChange": 60,
+        "scenarioPrice": 1.15
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 55,
+        "netMargin": 12,
+        "exitPE": 20,
+        "qualityMultiplier": 1,
+        "moatScore": 2,
+        "managementScore": 3,
+        "shareChange": 40,
+        "scenarioPrice": 5.92
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 85,
+        "netMargin": 20,
+        "exitPE": 30,
+        "qualityMultiplier": 1.1,
+        "moatScore": 3,
+        "managementScore": 4,
+        "shareChange": 20,
+        "scenarioPrice": 14.8
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "Cipher is facing the same structural reality as other crypto-to-HPC transition plays: the capital expenditure required to host hyperscalers is astronomical. Last year they generated $224M in revenue but burned $702M in free cash flow. Funding this gap at a $6.9B market cap means significant dilution is incoming (estimated 40% in base case). Even if they successfully scale HPC revenue at a 55% CAGR over 5 years with a 12% net margin, the resulting cash flows divided by a bloated share count yield a $5.92 present value. The 30x current trailing sales multiple offers no margin of safety.",
+      "fairValue": 6.02,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T18:00:00.000Z",
+      "researchReport": "CIFR_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

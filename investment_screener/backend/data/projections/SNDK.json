@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "SNDK",
+    "id": "e9c12b42-1a2d-4f8e-9c1a-2e5f903b4d72",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T17:15:00.000Z",
+    "updatedAt": "2026-05-02T17:22:53.141Z",
+    "name": "AI Deep Dive — SNDK — 2026-05-02",
+    "rationale": "SNDK (formerly SanDisk) appears as a $175B market cap hardware play with 251% revenue growth ($7.3B TTM). While the growth is extraordinary, the $1,187 price tag reflects an unsustainable 24x P/S multiple for a hardware entity. My weighted fair value of $412 reflects a 65% downside, as hardware cycles inevitably mean-revert and the current valuation prices in SaaS-like terminal dominance which is unproven for this asset.",
+    "snapshot": {
+      "price": 1187,
+      "currency": "USD",
+      "shares": 148000000,
+      "revenue": 7355000000,
+      "lastActualPS": 23.88,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 251,
+      "analystMarginEstimate": 34.19
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": 30,
+        "netMargin": 10,
+        "exitPE": 12,
+        "qualityMultiplier": 0.85,
+        "moatScore": 1,
+        "managementScore": 2,
+        "shareChange": 5,
+        "scenarioPrice": 85
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 80,
+        "netMargin": 20,
+        "exitPE": 18,
+        "qualityMultiplier": 1,
+        "moatScore": 2,
+        "managementScore": 3,
+        "shareChange": 2,
+        "scenarioPrice": 412
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 150,
+        "netMargin": 30,
+        "exitPE": 25,
+        "qualityMultiplier": 1.2,
+        "moatScore": 4,
+        "managementScore": 4,
+        "shareChange": 0,
+        "scenarioPrice": 1340
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "SNDK is currently trading at extreme valuation levels ($1,187, 24x P/S) that assume perpetual hyper-growth in a cyclical industry. While 251% growth is remarkable, hardware (NAND/Storage) history shows that margins peak during shortages and collapse during oversupply. At $175B market cap, it is priced larger than most diversified semi giants. A 'Base Case' fair value of $412 assumes the company becomes a best-in-class operator with 20% margins, but still implies significant overvaluation today.",
+      "fairValue": 412,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T17:15:00.000Z",
+      "researchReport": "SNDK_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]
