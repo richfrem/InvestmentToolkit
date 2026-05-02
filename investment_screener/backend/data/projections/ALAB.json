@@ -130,5 +130,110 @@
       ],
       "confidenceBreakdown": "0.75/1.0 — -0.15 for short public history and extreme multiple expansion risk, -0.10 for heavy customer concentration risk typical in the AI infrastructure supply chain."
     }
+  },
+  {
+    "ticker": "ALAB",
+    "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T21:15:00.000Z",
+    "updatedAt": "2026-05-02T21:15:00.000Z",
+    "name": "AI Deep Dive — ALAB — 2026-05-02",
+    "rationale": "Astera Labs makes PCIe retimer and CXL connectivity chips critical for AI data center scale — genuine AI infrastructure play with 91.8% YoY growth. At P/S 38x and PE 166x, valuation requires flawless hypergrowth execution. DCF derives 5-yr CAGR ~30% (deceleration from 91.8% peak). Weighted FV $133.25 vs $202.68 = SELL -34%. Even the bull case ($315) requires sustained 42% CAGR.",
+    "snapshot": {
+      "price": 202.68,
+      "currency": "USD",
+      "shares": 171000000,
+      "revenue": 900000000,
+      "lastActualPS": 0,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": null,
+      "analystMarginEstimate": null
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.3,
+        "growthRate": 20,
+        "netMargin": 18,
+        "exitPE": 20,
+        "qualityMultiplier": 1,
+        "shareChange": 1,
+        "rationale": "AI connectivity commoditizes faster than expected. Marvell/Synopsys introduce competing retimer chips. Revenue CAGR decelerates to 20%. Margin compresses to 18% as ASP pressure sets in. PE 20x = mature semiconductor multiple.",
+        "scenarioPrice": 26.34
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 30,
+        "netMargin": 28,
+        "exitPE": 30,
+        "qualityMultiplier": 1.1,
+        "shareChange": 0.5,
+        "rationale": "PCIe 5.0/6.0 and CXL adoption ramps with AI data centers. ALAB maintains design win momentum. Hypergrowth exception applied: TTM 91.8% → Y1 ~55% → Y2 ~35% → Y3 ~25% → Y4 ~18% → Y5 ~14% = 30% 5-yr CAGR. QM 1.1: design-win switching costs (replacing retimers mid-rack is operationally disruptive).",
+        "scenarioPrice": 103.42
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 42,
+        "netMargin": 35,
+        "exitPE": 45,
+        "qualityMultiplier": 1.15,
+        "shareChange": 0.5,
+        "rationale": "Catalyst: CXL 3.0 memory expansion chips become standard in every AI server. ALAB becomes the Ethernet PHY of AI interconnect. 42% CAGR to $5.2B Y5 revenue. QM 1.15: CXL design-win lock-in + PCIe ecosystem partnerships (Intel, AMD qualified).",
+        "scenarioPrice": 315.23
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "Astera Labs makes PCIe retimer and CXL connectivity chips critical for AI data center scale — genuine AI infrastructure play with 91.8% YoY growth. At P/S 38x and PE 166x, valuation requires flawless hypergrowth execution. DCF derives 5-yr CAGR ~30% (deceleration from 91.8% peak). Weighted FV $133.25 vs $202.68 = SELL -34%. Even the bull case ($315) requires sustained 42% CAGR.",
+      "fairValue": 133.25,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T21:15:00.000Z",
+      "researchReport": "ALAB_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used metrics.shares_diluted. Mktcap-implied cross-check: $35B / $202.68 = 0.171B shares vs API 0.171B — consistent.",
+      "marginAnchor": "TTM 24.5% (P/E-derived: $34.7B / 166x = $209M NI / $900M = 23.2%). Early-stage fabless semi — expanding margins as revenue scales. Bear 18% below TTM (correct direction), base 28% and bull 35% model scale expansion.",
+      "growthDerivation": "Hypergrowth exception (TTM 91.8%). No analyst estimates. Derived CAGR: Y1 ~55%, Y2 ~35%, Y3 ~25%, Y4 ~18%, Y5 ~14% → 5-yr base CAGR 30%. Bull 42% requires CXL becoming standard. Bear 20% = AI connectivity commoditization.",
+      "sectorBenchmarkRow": "Technology — Semiconductors: conservative P/E 15, median 25, growth 40. Fabless semi with AI connectivity focus.",
+      "dataQualityFlags": [
+        "net_income, net_margin, eps, financials all null — P/E-derived metrics used",
+        "Hypergrowth (91.8% YoY) — CAGR derivation highly uncertain without analyst estimates",
+        "Single-product concentration risk (PCIe retimers/CXL)"
+      ],
+      "analystInputs": {
+        "y1RevEstimate": null,
+        "y2RevEstimate": null,
+        "y1GrowthPct": null,
+        "y2GrowthPct": null,
+        "blendedConsensusPct": null,
+        "analystTargetMean": null,
+        "analystCount": null
+      },
+      "historicalRevenue": [],
+      "historicalNetMargins": [],
+      "historicalEPS": [],
+      "priorAnalysisReview": {
+        "priorModel": "Gemini 1.5 Pro",
+        "priorDate": "2026-05-02",
+        "priorPrice": 202.68,
+        "priorFairValue": 112.46,
+        "priorAction": "SELL",
+        "priceDelta": "0% — same-day analysis",
+        "assumptionAudit": "Prior SELL $112 at $202 — more extreme SELL than our $133. Prior growth rates 20/28/35% severely understated given 91.8% TTM (hypergrowth exception applies). QM 1.2 on base/bull uncited — corrected to 1.0/1.1/1.15. Bear margin 20% < TTM 24.5% — correct direction. Main correction: growth rates adjusted per hypergrowth CAGR derivation.",
+        "modelQualityFlag": "UNVALIDATED — Gemini 1.5 Pro",
+        "thesisOutcome": "Same-day analysis — no price movement. Prior SELL $112.46 vs our SELL $133.25.",
+        "fundamentalChanges": "Same-day analysis — no fundamental changes. Differences reflect QM recalibration, growth rate adjustment, and margin anchoring corrections."
+      },
+      "confidenceBreakdown": "0.48/1.0 — Base: 1.0. -0.20 hypergrowth with no analyst estimates (CAGR derivation uncertain); -0.15 no financial history; -0.10 small cap single-product concentration risk; -0.07 share count small (171M = large percentage moves on block trades)"
+    }
   }
 ]

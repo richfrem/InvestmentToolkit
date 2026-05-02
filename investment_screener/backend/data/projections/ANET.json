@@ -130,5 +130,110 @@
       ],
       "confidenceBreakdown": "0.90/1.0 — +0.10 for pristine free cash flow generation and high visibility into hyperscaler capex plans, -0.10 for the structural risk of the Ethernet vs. InfiniBand architecture war."
     }
+  },
+  {
+    "ticker": "ANET",
+    "id": "d4e5f6a7-b8c9-0123-defa-234567890123",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T21:15:00.000Z",
+    "updatedAt": "2026-05-02T21:15:00.000Z",
+    "name": "AI Deep Dive — ANET — 2026-05-02",
+    "rationale": "Arista Networks dominates AI data center networking — EOS software creates deep switching costs among hyperscaler customers. TTM net margin ~38.5% is genuine (consistent with known ANET GAAP margins of 36-42%). At $172.70, HOLD at fair value $173.71 (+0.6%). Prior Gemini BUY $198 flips to HOLD — QM inflation and higher bull margins explain the gap.",
+    "snapshot": {
+      "price": 172.7,
+      "currency": "USD",
+      "shares": 1259000000,
+      "revenue": 9000000000,
+      "lastActualPS": 0,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": null,
+      "analystMarginEstimate": null
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 14,
+        "netMargin": 34,
+        "exitPE": 22,
+        "qualityMultiplier": 1,
+        "shareChange": 0.5,
+        "rationale": "Hyperscaler capex moderation slows AI networking upgrades (400G→800G cycle delayed). Cisco retaliates with aggressive EOS-compatible pricing. CAGR 14% (decelerates from 28.9%). Margin 34% below TTM on pricing pressure. PE 22x below median.",
+        "scenarioPrice": 62.38
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 22,
+        "netMargin": 38,
+        "exitPE": 28,
+        "qualityMultiplier": 1.1,
+        "shareChange": 0,
+        "rationale": "AI cluster networking (spine/leaf 800G→1.6T Ethernet) drives consistent demand. ANET maintains 35%+ cloud titan market share. CAGR 22%, margin 38% (at TTM). QM 1.1: EOS network OS switching costs — replacing Arista requires full OS migration and retraining across entire network team.",
+        "scenarioPrice": 140.48
+      },
+      "bull": {
+        "weight": 0.35,
+        "growthRate": 28,
+        "netMargin": 42,
+        "exitPE": 38,
+        "qualityMultiplier": 1.15,
+        "shareChange": 0,
+        "rationale": "Catalyst: Ultra-Ethernet Consortium (UEC) wins vs InfiniBand as preferred AI cluster fabric, with ANET as primary switch vendor. CAGR 28% to $31B Y5. Margin 42% on EOS software mix growth. QM 1.15: EOS switching costs + hyperscaler design-win lock-in (Meta, Microsoft AI clusters are sole-source ANET).",
+        "scenarioPrice": 280.06
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "Arista Networks dominates AI data center networking — EOS software creates deep switching costs among hyperscaler customers. TTM net margin ~38.5% is genuine (consistent with known ANET GAAP margins of 36-42%). At $172.70, HOLD at fair value $173.71 (+0.6%). Prior Gemini BUY $198 flips to HOLD — QM inflation and higher bull margins explain the gap.",
+      "fairValue": 173.71,
+      "action": "HOLD",
+      "analyzedAt": "2026-05-02T21:15:00.000Z",
+      "researchReport": "ANET_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used metrics.shares_diluted. Mktcap-implied cross-check: $217B / $172.7 = 1.259B shares vs API 1.259B — consistent.",
+      "marginAnchor": "TTM 38.5% (P/E-derived: $217.4B / 62.8x = $3.46B NI / $9.0B = 38.5%). Consistent with known ANET GAAP margins (36-42% range). Bear 34% below TTM (correct). Base 38% at TTM. Bull 42% = best-in-class for networking/hardware.",
+      "growthDerivation": "No analyst estimates. TTM growth 28.9%. Base 22% = AI networking sustains but decelerates from peak. Bull 28% requires UEC win vs InfiniBand. Bear 14% = capex moderation scenario.",
+      "sectorBenchmarkRow": "Technology — Semiconductors (closest proxy): conservative P/E 15, median 25, growth 40. Networking hardware with SaaS-like EOS margins warrants premium.",
+      "dataQualityFlags": [
+        "net_income, net_margin, eps, financials all null — P/E-derived metrics used",
+        "No analyst estimates or financial history",
+        "Customer concentration: ~70% of revenue from 3 hyperscalers"
+      ],
+      "analystInputs": {
+        "y1RevEstimate": null,
+        "y2RevEstimate": null,
+        "y1GrowthPct": null,
+        "y2GrowthPct": null,
+        "blendedConsensusPct": null,
+        "analystTargetMean": null,
+        "analystCount": null
+      },
+      "historicalRevenue": [],
+      "historicalNetMargins": [],
+      "historicalEPS": [],
+      "priorAnalysisReview": {
+        "priorModel": "Gemini 1.5 Pro",
+        "priorDate": "2026-05-02",
+        "priorPrice": 172.7,
+        "priorFairValue": 198.76,
+        "priorAction": "BUY",
+        "priceDelta": "0% — same-day analysis",
+        "assumptionAudit": "Prior BUY $198 (same day). Bull QM 1.25 uncited — \"networking excellence\" is not a structural moat definition. Corrected to 1.15 with explicit EOS switching costs + hyperscaler lock-in. Bull margin 45% > ANET historical best-in-class — corrected to 42% (top of Semiconductor benchmark range). Base QM 1.2 → 1.1. Bear margin 35% < TTM 38.5% — correct direction.",
+        "modelQualityFlag": "UNVALIDATED — Gemini 1.5 Pro",
+        "thesisOutcome": "Same-day analysis — no price movement. Prior BUY $198.76 vs our HOLD $173.71.",
+        "fundamentalChanges": "Same-day analysis — no fundamental changes. Differences reflect QM recalibration, growth rate adjustment, and margin anchoring corrections."
+      },
+      "confidenceBreakdown": "0.65/1.0 — Base: 1.0. -0.10 no financial history from API; -0.10 no analyst estimates; -0.10 networking hardware subject to hyperscaler capex cycle volatility; -0.05 share concentration at 3 customers (Meta/Microsoft/Google ~70%+ of revenue); +0.10 GAAP margin quality validated by industry knowledge"
+    }
   }
 ]

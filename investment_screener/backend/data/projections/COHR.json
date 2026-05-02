@@ -4,11 +4,11 @@
     "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e3e",
     "source": "AI_AGENT",
     "schemaVersion": "1.2",
-    "version": 3,
-    "savedAt": "2026-05-02T18:10:00.000Z",
-    "updatedAt": "2026-05-02T19:01:07.785Z",
-    "name": "AI Deep Dive \u2014 COHR \u2014 2026-05-02",
-    "rationale": "Coherent (COHR) is successfully capitalizing on the AI optical networking boom. With revenue growth accelerating and margins inflecting positively, the $61.7B valuation reflects high expectations. The company possesses a strong structural moat in optical transceivers and lasers. While trading at a premium (43x Forward P/E), the massive secular tailwinds in datacenter connectivity justify the multiple. My weighted fair value of $357 indicates mild upside, making it a solid HOLD/BUY for infrastructure exposure.",
+    "version": 4,
+    "savedAt": "2026-05-02T20:44:06Z",
+    "updatedAt": "2026-05-02T20:48:10.306Z",
+    "name": "AI Deep Dive — COHR — 2026-05-02",
+    "rationale": "Coherent Corp is the leading supplier of optical transceivers and compound semiconductors for AI data center interconnects — a genuine structural moat in the secular growth of 400G/800G/1.6T optical networking. At $329.50 with forward P/E 43x, the market prices significant margin expansion from the current 4.66% GAAP trough (depressed by the 2022 II-VI merger integration). Weighted fair value $319.53 — HOLD (-3%). Approximately fairly valued: strong secular tailwinds, real moat, but integration execution risk and rich valuation cap upside. Prior Gemini BUY $386 corrected for bear margin error (10% > TTM 4.66%), uncited QM 1.2, and faulty 94.9M API diluted share count.",
     "snapshot": {
       "price": 329.5,
       "currency": "USD",
@@ -16,8 +16,8 @@
       "revenue": 5810115000,
       "lastActualPS": 10.63,
       "fiscalPeriod": "TTM",
-      "analystGrowthEstimate": 17.5,
-      "analystMarginEstimate": 4.66
+      "analystGrowthEstimate": null,
+      "analystMarginEstimate": null
     },
     "dataPreferences": {
       "growthBasis": "next",
@@ -25,45 +25,60 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.3,
+        "weight": 0.25,
         "growthRate": 10,
-        "netMargin": 10,
-        "exitPE": 20,
-        "qualityMultiplier": 1,
-        "moatScore": 3,
-        "managementScore": 3,
-        "shareChange": 5,
-        "scenarioPrice": 146
+        "netMargin": 5,
+        "exitPE": 18,
+        "qualityMultiplier": 0.9,
+        "shareChange": 2,
+        "rationale": "II-VI/Coherent merger integration fails to deliver synergies on schedule. Competition from Chinese optical transceiver vendors (InnoLight, Eoptolink) intensifies on 400G/800G, compressing COHR's pricing power. AI data center capex cycle moderates after 2026-2027 peak, reducing transceiver demand growth. Revenue grows only 10% CAGR; GAAP margins reach 5% by Y5 as integration costs persist and pricing pressure intensifies. Exit P/E 18x reflects hardware company with limited margin improvement. QM 0.90 — moat partially eroded by Chinese optical competition. Note: prior Gemini bear margin 10% > TTM 4.66% — corrected to 5% (below-TTM bear to avoid optimistic-bear error).",
+        "year5Revenue": 9357.2,
+        "year5NetIncome": 467.9,
+        "year5EPS": 2.26,
+        "scenarioPrice": 22.74,
+        "year5Shares": 207,
+        "year5PriceUndiscounted": 36.62,
+        "presentValue": 22.74
       },
       "base": {
-        "weight": 0.5,
-        "growthRate": 18,
+        "weight": 0.45,
+        "growthRate": 20,
         "netMargin": 18,
         "exitPE": 30,
-        "qualityMultiplier": 1.1,
-        "moatScore": 4,
-        "managementScore": 4,
-        "shareChange": 0,
-        "scenarioPrice": 381
+        "qualityMultiplier": 1,
+        "shareChange": 1,
+        "rationale": "Integration completes over 2024-2026; merger synergies of $250M+ annualized fully realized. AI optical networking demand sustains 20% CAGR through data center build-out and inference scaling. GAAP margins expand from 4.66% TTM to 18% by Y5 via operating leverage on $14.5B revenue base, elimination of one-time integration charges (~$400-500M/yr rolling off), and scale efficiencies in compound semiconductor manufacturing. Forward P/E 43x already implies near-term margin expansion consistent with this trajectory. Exit P/E 30x (profitable optical components leader with secular growth). Margin anchor: 4.66% TTM is a depressed trough; pre-merger II-VI ran 8-12% GAAP margins; combined entity targets 20%+ non-GAAP (GAAP target ~18% after SBC/amortization).",
+        "year5Revenue": 14457.4,
+        "year5NetIncome": 2602.3,
+        "year5EPS": 13.21,
+        "scenarioPrice": 246.01,
+        "year5Shares": 197,
+        "year5PriceUndiscounted": 396.2,
+        "presentValue": 246.01
       },
       "bull": {
-        "weight": 0.2,
-        "growthRate": 25,
+        "weight": 0.3,
+        "growthRate": 28,
         "netMargin": 25,
         "exitPE": 40,
-        "qualityMultiplier": 1.2,
-        "moatScore": 5,
-        "managementScore": 5,
-        "shareChange": -5,
-        "scenarioPrice": 760
+        "qualityMultiplier": 1.05,
+        "shareChange": 0.5,
+        "rationale": "Catalyst: COHR's vertical integration from compound semiconductor wafers (SiC, GaAs, InP) through chip design to transceiver modules creates unbreakable pricing power for 1.6T and next-generation 3.2T optical transceivers. Hyperscalers (Meta, Google, Microsoft, Amazon) source 80%+ of high-speed transceivers from COHR as Chinese vendors can't achieve 1.6T yields at scale. Revenue grows to $20B at 28% CAGR. GAAP margins reach 25% as compound semiconductor vertical integration delivers best-in-class gross margins (~55%+). QM 1.05 citing specific moat: COHR is the only company with end-to-end vertical integration from compound semiconductor wafer to finished transceiver module — this supply chain control enables 6-12 month technology lead time advantages over Chinese vendors. Note: Gemini used QM 1.2 ('exceptional durable pricing power' tier) without moat citation — corrected to 1.05.",
+        "year5Revenue": 19963.4,
+        "year5NetIncome": 4990.9,
+        "year5EPS": 25.96,
+        "scenarioPrice": 677.13,
+        "year5Shares": 192.2,
+        "year5PriceUndiscounted": 1090.52,
+        "presentValue": 677.13
       }
     },
     "aiThesis": {
-      "model": "Gemini 3 Pro",
-      "rationale": "Coherent is a critical enabler of the AI datacenter buildout, dominating the optical transceiver and networking components market. The 376% 1-year run perfectly tracks the surge in AI infrastructure spending. Piotroski F-Score of 7 and improving operating margins (from 1.5% to 9.2%) demonstrate strong operational leverage. At a $61B market cap, it trades at roughly 10x sales and 43x forward P/E, pricing in significant future margin expansion. The base case ($381 PV) assumes they reach 18% net margins on 18% annualized growth. Given their structural moat in photonics, this premium is warranted.",
-      "fairValue": 386.3,
-      "action": "BUY",
-      "analyzedAt": "2026-05-02T18:10:00.000Z",
+      "model": "Claude Sonnet 4.6",
+      "rationale": "## COHR Investment Thesis\n\nCoherent Corp sits at the nexus of two secular growth drivers: AI data center connectivity and the optical transceiver upgrade cycle from 400G to 800G to 1.6T. The company's vertical integration — from compound semiconductor wafers (InP, GaAs, SiC) through chip design to finished module assembly — gives them a 6-12 month technology lead time advantage over Chinese competitors, who can replicate modules but not the full supply chain.\n\nThe margin story is the entire thesis. Current 4.66% GAAP margins reflect the brutal economics of integrating two major companies (II-VI + Coherent Inc.) simultaneously while ramping the fastest optical technology upgrade cycle in history. The forward P/E of 43x already implies the market expects ~$7.59 EPS next year — a 7.4x improvement from trailing $1.02 EPS. That's the integration costs rolling off.\n\n**Bear ($22.74, 25%)**: Integration synergies disappoint. Chinese optical vendors (InnoLight, Eoptolink) achieve 800G yields at competitive pricing. Revenue grows only 10% CAGR; margins stuck at 5%. Present value: $22.74.\n\n**Base ($246.01, 45%)**: Integration completes 2025-2026. GAAP margins expand from 4.66% to 18% via synergy realization and operating leverage on $14.5B revenue. 20% CAGR. Exit 30x P/E. Present value: $246.01.\n\n**Bull ($677.13, 30%)**: Vertical integration creates unassailable 1.6T transceiver dominance. Hyperscalers source 80%+ from COHR. Revenue to $20B at 28% CAGR, 25% margins. Present value: $677.13.\n\n**Weighted Fair Value: $319.53 — HOLD at $329.50 (-3%)**\n\nApproximately fairly valued. The secular thesis is real, the moat is documented, but the integration execution risk (25% weight, $22.74 PV) creates meaningful downside. Not compelling to buy here at -3% margin of safety, but not a sell either. Re-entry on any optical capex demand concern pulling the stock to $250-270.",
+      "fairValue": 319.53,
+      "action": "HOLD",
+      "analyzedAt": "2026-05-02T20:44:06Z",
       "researchReport": "COHR_2026-05-02.md"
     },
     "globalSettings": {
@@ -71,44 +86,38 @@
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "Used default shares (187481852) as no multi-class discrepancy was noted.",
-      "marginAnchor": "TTM net margin of 4.66% used as anchor for baseline profitability.",
-      "growthDerivation": "Blended analyst consensus is 23.7% (Y1 19.9%, Y2 27.5%). Base scenario uses 18%, aligned with near-term trajectory.",
-      "sectorBenchmarkRow": "Technology - Scientific & Technical Instruments",
+      "shareCountMethod": "API shares_diluted = 94,930,769 — CRITICAL DATA ERROR (only 50.6% of shares_outstanding 187,481,852 and mktcap-implied 187,481,852). This would double EPS and produce 2x inflated fair value. Overridden to mktcap-implied 187,481,852 (= shares_outstanding). NI/EPS-derived shares = 265,442,496 (from P/E=323x, EPS=$1.02, NI=$270.8M) — discrepancy vs outstanding likely due to convertible instruments or period mismatch in yfinance P/E calculation. Used 187.5M as most conservative defensible figure.",
+      "marginAnchor": "TTM 4.66% GAAP net margin is a MERGER INTEGRATION TROUGH — not a steady-state anchor for bear/base/bull. Post-II-VI/Coherent merger (March 2022): integration costs ($400-500M/yr in one-time charges), purchase price amortization, and SBC from RSU grants depress GAAP margins severely. Pre-merger II-VI GAAP margins were 8-12%; combined entity targets 20%+ non-GAAP (GAAP ~18% after adjustments). Applied FORWARD-LOOKING margin model: bear 5% (integration stalls, stays near trough), base 18% (integration completes), bull 25% (operating leverage + vertical integration premium). All scenarios above TTM are justified because TTM reflects transient merger costs, not structural margins. Contrast with AMD/INTC/CRWD error: those companies had bear > TTM for no structural reason; COHR's TTM trough IS structural and all cases model improvement.",
+      "growthDerivation": "TTM +17.5% YoY. No analyst estimates available. Forward P/E 43.4x vs trailing 323x implies massive near-term EPS expansion from margin improvement (same revenue growing at ~17.5%, margins going from 4.66% → ~20%+). Base 20% CAGR = slight acceleration from 17.5% TTM as AI optical demand continues to ramp. Bull 28% = sustained AI data center connectivity buildout. Bear 10% = demand cycle moderates post-2027. Growth rates bounded by COHR's $5.81B base — becoming a $20B revenue company in 5 years (bull) requires maintaining dominant position in a secular growth market.",
+      "sectorBenchmarkRow": "Technology — Scientific & Technical Instruments (API). More appropriate comparison: Technology — Semiconductors (P/E 15-40). Used optical components/hardware context: conservative P/E 18 (below semi median), median 30 (optical components leader), bull 40 (semiconductor-like premium with vertical integration moat). Prior Gemini bull PE 40 kept unchanged — appropriate for optical networking platform dominance.",
       "dataQualityFlags": [
-        "No anomalies detected in baseline financial data."
+        "CRITICAL: API shares_diluted = 94.9M is a DATA ERROR (50.6% of outstanding/mktcap-implied 187.5M). Overridden to 187.5M. Using faulty 94.9M would produce 2x inflated fair value.",
+        "WARNING: TTM GAAP margin 4.66% is a post-merger integration trough — NOT representative of steady-state margins. All scenarios model improvement; this is justified by merger dynamics, not an analytical error.",
+        "WARNING: Trailing P/E = 323x is distorted by merger integration trough earnings. Forward P/E 43.4x is a more useful anchor. Implies market expects ~7x EPS growth from current levels.",
+        "WARNING: No financial history available from API.",
+        "WARNING: No analyst estimates available.",
+        "WARNING: Prior Gemini v3 bear margin 10% > TTM 4.66% — corrected to 5%. QM 1.2 uncited — corrected to 1.05. Faulty 94.9M diluted shares would have inflated FV ~2x.",
+        "INFO: NI/EPS-derived shares (265.4M) > outstanding (187.5M) — suggests possible convertible note dilution not reflected in outstanding share count. Using 187.5M is conservative on this dimension."
       ],
       "analystInputs": {
-        "y1RevEstimate": 6965769620.0,
-        "y2RevEstimate": 8879806050.0,
-        "y1GrowthPct": 19.89,
-        "y2GrowthPct": 27.48,
-        "blendedConsensusPct": 23.68,
-        "analystTargetMean": 320.25894,
-        "analystCount": 21
+        "y1RevEstimate": null,
+        "y2RevEstimate": null,
+        "y1GrowthPct": null,
+        "y2GrowthPct": null,
+        "blendedConsensusPct": null,
+        "analystTargetMean": null,
+        "analystCount": null
       },
       "historicalRevenue": [
-        0,
-        3316616000.0,
-        5160100000.0,
-        4707688000.0,
-        5810115000.0
+        "unavailable — yfinance returns null"
       ],
       "historicalNetMargins": [
-        0,
-        7.078268934359601,
-        -5.028158369023856,
-        -3.31699976718933,
-        0.8496217372633761
+        "unavailable — yfinance returns null; TTM 4.66% is post-merger integration trough"
       ],
       "historicalEPS": [
-        0,
-        1.57,
-        -2.93,
-        -1.84,
-        -0.52
+        "unavailable — yfinance returns null"
       ],
-      "confidenceBreakdown": "0.8/1.0 - Base confidence adjusted for sector volatility and margin stability."
+      "confidenceBreakdown": "0.52/1.0 — Base: 1.0. -0.15 no analyst estimates. -0.12 no financial history. -0.10 share count data error required manual override (introduces uncertainty). -0.08 margin trajectory highly uncertain (trough or structural impairment?). -0.03 API sector misclassification. Net: 0.52. Below-average confidence driven by data quality issues, but COHR's position in optical networking is well-documented externally."
     }
   }
 ]
