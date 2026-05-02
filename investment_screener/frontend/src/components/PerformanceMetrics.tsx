@@ -18,20 +18,20 @@ export default function PerformanceMetrics({ performance }: PerformanceMetricsPr
     ];
 
     return (
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-1.5 items-center">
             {metrics.map((m) => {
                 const isPositive = m.value >= 0;
                 return (
                     <div
                         key={m.label}
-                        className={`flex flex-col px-2 py-1 rounded border min-w-[60px] text-center
+                        className={`flex flex-col px-2 py-0.5 rounded border min-w-[54px] text-center
                             ${isPositive
-                                ? 'bg-green-500/5 border-green-500/20'
-                                : 'bg-red-500/5 border-red-500/20'
+                                ? 'bg-green-500/10 border-green-500/20'
+                                : 'bg-red-500/10 border-red-500/20'
                             }`}
                     >
-                        <span className="text-[10px] text-secondary uppercase font-semibold">{m.label}</span>
-                        <span className={`text-xs font-bold ${isPositive ? 'text-green-400' : 'text-red-400'}`}>
+                        <span className="text-[9px] text-slate-500 uppercase font-bold leading-tight">{m.label}</span>
+                        <span className={`text-[11px] font-black ${isPositive ? 'text-green-400' : 'text-red-400'} leading-tight`}>
                             {isPositive ? '+' : ''}{m.value.toFixed(1)}%
                         </span>
                     </div>

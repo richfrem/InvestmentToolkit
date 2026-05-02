@@ -33,6 +33,21 @@ export class ProjectionService {
         }
     }
 
+    async getAllProjections(): Promise<Projection[]> {
+        const files = fs.readdirSync(PROJECTIONS_DIR).filter(f => f.endsWith('.json'));
+        let all: Projection[] = [];
+        for (const f of files) {
+            try {
+                const data = fs.readFileSync(path.join(PROJECTIONS_DIR, f), 'utf-8');
+                const json = JSON.parse(data);
+                if (Array.isArray(json)) all.push(...json);
+            } catch (e) {
+                console.error(`[ProjectionService] Error loading ${f}`, e);
+            }
+        }
+        return all;
+    }
+
     async saveProjection(projection: Projection): Promise<void> {
         // 1. Zod Validation
         const parseResult = ProjectionSchema.safeParse(projection);

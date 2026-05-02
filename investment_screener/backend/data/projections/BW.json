@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "BW",
+    "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e3f",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T17:50:00.000Z",
+    "updatedAt": "2026-05-02T17:50:00.000Z",
+    "name": "AI Deep Dive — BW — 2026-05-02",
+    "rationale": "Babcock & Wilcox (BW) has experienced an astonishing 2952% 1-year run, reflecting a dramatic turnaround narrative anchored by its BrightLoop chemical looping technology (hydrogen/syngas). While trailing growth is only 2%, analysts project a massive acceleration (37% next year). The company sits at the nexus of the energy transition, but cash flow remains negative (-$85M FCF). At 3.25x sales, the market is pricing in a successful commercialization phase. Weighted fair value of $27.13 suggests meaningful upside if execution holds.",
+    "snapshot": {
+      "price": 14.07,
+      "currency": "USD",
+      "shares": 135741811,
+      "revenue": 587676000,
+      "lastActualPS": 3.25,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 37.3,
+      "analystMarginEstimate": -6.15
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": 10,
+        "netMargin": 3,
+        "exitPE": 12,
+        "qualityMultiplier": 0.9,
+        "moatScore": 1,
+        "managementScore": 2,
+        "shareChange": 20,
+        "scenarioPrice": 1.15
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 35,
+        "netMargin": 8,
+        "exitPE": 20,
+        "qualityMultiplier": 1,
+        "moatScore": 3,
+        "managementScore": 3,
+        "shareChange": 5,
+        "scenarioPrice": 18.3
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 60,
+        "netMargin": 12,
+        "exitPE": 25,
+        "qualityMultiplier": 1.1,
+        "moatScore": 4,
+        "managementScore": 4,
+        "shareChange": 0,
+        "scenarioPrice": 92.5
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "BW is an explosive turnaround play transitioning from legacy industrial boilers to next-gen clean energy tech (BrightLoop hydrogen). The stock's 2952% surge indicates the market believes bankruptcy risk is off the table and exponential growth is imminent. Analysts expect revenue to leap from $587M to $1.34B by 2027. If BW achieves 35% CAGR and 8% net margins, the base case implies an $18 PV. The bull case ($92) factors in massive licensing or deployment of their hydrogen tech with high margins. However, execution risk is high, and the -$85M cash burn could trigger dilution if commercialization stalls.",
+      "fairValue": 27.13,
+      "action": "BUY",
+      "analyzedAt": "2026-05-02T17:50:00.000Z",
+      "researchReport": "BW_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

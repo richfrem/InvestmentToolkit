@@ -440,6 +440,17 @@ app.get('/api/research', async (_req, res) => {
     }
 });
 
+// Projections API
+app.get('/api/projections', async (req, res) => {
+    try {
+        const projections = await projectionService.getAllProjections();
+        res.json(projections);
+    } catch (error) {
+        console.error(`[API] Error getting all projections:`, error);
+        res.status(500).json({ error: 'Failed to fetch projections' });
+    }
+});
+
 app.get('/api/projections/:ticker', async (req, res) => {
     const { ticker } = req.params;
     if (!isValidTicker(ticker)) {

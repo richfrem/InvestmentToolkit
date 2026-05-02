@@ -1,5 +1,6 @@
 import { geminiService } from './GeminiService';
 import { analysisContextBuilder } from './AnalysisContextBuilder';
+import { projectionService } from './ProjectionService';
 
 interface ValuationResult {
     fair_value: number;
@@ -25,6 +26,37 @@ export class ValuationService {
      * @param userMessage Optional override from the user (e.g., "Assume 5% growth").
      */
     async analyzeStock(ticker: string, userMessage?: string): Promise<ValuationResult> {
+
+        // 0. Step 0: Freshness Check (30-day skip logic)
+        // This ensures we don't burn tokens if a deep analysis was recently done (e.g. via CLI agent)
+        console.log(`[ValuationService] Checking freshness for ${ticker}...`);
+        const existingProjections = await projectionService.getProjections(ticker);
+        const latestAI = existingProjections
+            .filter(p => p.source === 'AI_AGENT')
+            .sort((a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime())[0];
+
+        if (latestAI && latestAI.aiThesis) {
+            const savedDate = new Date(latestAI.savedAt);
+            const now = new Date();
+            const ageInDays = (now.getTime() - savedDate.getTime()) / (1000 * 60 * 60 * 24);
+
+            if (ageInDays < 30) {
+                console.log(`[ValuationService] CACHED — Analysis for ${ticker} is only ${Math.floor(ageInDays)}d old. Skipping Gemini call.`);
+                const thesis = latestAI.aiThesis;
+                const base = latestAI.scenarios.base;
+                return {
+                    fair_value: thesis.fairValue,
+                    growth_assumption: base.growthRate / 100,
+                    suggested_growth: base.growthRate / 100,
+                    suggested_margin: base.netMargin / 100,
+                    exit_pe: base.exitPE,
+                    quality_multiplier: base.qualityMultiplier,
+                    rationale: latestAI.rationale || thesis.rationale,
+                    action: thesis.action as any,
+                    model_name: `CACHED: ${thesis.model} (${Math.floor(ageInDays)}d ago)`
+                };
+            }
+        }
 
         // 1. Get Live Data
         const context = await analysisContextBuilder.buildStockContext(ticker);
