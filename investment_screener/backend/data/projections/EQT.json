@@ -3,11 +3,11 @@
     "ticker": "EQT",
     "id": "e4f8d9b1-c7a2-4d3f-9e6b-1a5c8d2b7e3b",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T18:20:00.000Z",
-    "updatedAt": "2026-05-02T18:20:00.000Z",
-    "name": "AI Deep Dive — EQT — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:09.111Z",
+    "name": "AI Deep Dive \u2014 EQT \u2014 2026-05-02",
     "rationale": "EQT Corporation is the largest natural gas producer in the US, exhibiting strong operational excellence with a Piotroski F-Score of 8. The company is generating massive free cash flow ($2.8B TTM) on $8.3B in revenue with robust 24% net margins. At 11x trailing earnings and 12.5x forward P/E, it is trading at a very reasonable valuation for a commodity producer executing at this level. Weighted PV of $68.45 indicates solid upside and margin of safety.",
     "snapshot": {
       "price": 58.66,
@@ -69,6 +69,46 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (625478000) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of 35.07% used as anchor for baseline profitability.",
+      "growthDerivation": "Blended analyst consensus is 8.0% (Y1 17.0%, Y2 -1.0%). Base scenario uses 12%, aligned with near-term trajectory.",
+      "sectorBenchmarkRow": "Energy - Oil & Gas E&P",
+      "dataQualityFlags": [
+        "No anomalies detected in baseline financial data."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 9771801060.0,
+        "y2RevEstimate": 9676087590.0,
+        "y1GrowthPct": 16.98,
+        "y2GrowthPct": -0.98,
+        "blendedConsensusPct": 8.0,
+        "analystTargetMean": 70.36,
+        "analystCount": 25
+      },
+      "historicalRevenue": [
+        0,
+        12140621000.0,
+        5069982000.0,
+        5222192000.0,
+        8353217000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        14.587103905146204,
+        34.225604745736774,
+        4.415329807866122,
+        24.412714287202164
+      ],
+      "historicalEPS": [
+        0,
+        4.79,
+        4.56,
+        0.45,
+        3.33
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

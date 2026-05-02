@@ -3,11 +3,11 @@
     "ticker": "TSEM",
     "id": "c8d7e6f5-a4b3-2c1d-0e9f-8a7b6c5d4e4c",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T19:10:00.000Z",
-    "updatedAt": "2026-05-02T19:10:00.000Z",
-    "name": "AI Deep Dive — TSEM — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:13.515Z",
+    "name": "AI Deep Dive \u2014 TSEM \u2014 2026-05-02",
     "rationale": "Tower Semiconductor (TSEM) has surged nearly 500% over the past year, commanding a premium $25.9B valuation on $1.56B of revenue. While operational health is strong (Piotroski F-Score 7, 14% net margins), the 45x forward P/E prices in an aggressive, flawless growth trajectory that contrasts with their historically cyclical foundry business. Weighted PV of $114.73 points to severe overvaluation and suggests taking profits.",
     "snapshot": {
       "price": 218.01,
@@ -69,6 +69,46 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (112824944) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of 14.08% used as anchor for baseline profitability.",
+      "growthDerivation": "Blended analyst consensus is 22.5% (Y1 18.4%, Y2 26.6%). Base scenario uses 15%, aligned with near-term trajectory.",
+      "sectorBenchmarkRow": "Technology - Semiconductors",
+      "dataQualityFlags": [
+        "No anomalies detected in baseline financial data."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 1854197500.0,
+        "y2RevEstimate": 2348114830.0,
+        "y1GrowthPct": 18.4,
+        "y2GrowthPct": 26.64,
+        "blendedConsensusPct": 22.52,
+        "analystTargetMean": 173.0,
+        "analystCount": 6
+      },
+      "historicalRevenue": [
+        0,
+        1677614000.0,
+        1422680000.0,
+        1436122000.0,
+        1566104000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        15.770552701634582,
+        36.44487867967498,
+        14.473979230176823,
+        14.077609149839345
+      ],
+      "historicalEPS": [
+        0,
+        2.42,
+        4.7,
+        1.87,
+        1.97
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

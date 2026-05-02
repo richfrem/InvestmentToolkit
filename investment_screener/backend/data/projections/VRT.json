@@ -3,7 +3,7 @@
     "ticker": "VRT",
     "id": "e9820063-eebb-49f9-aa8b-47805167732d",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
+    "schemaVersion": "1.2",
     "name": "AI Deep Dive \u2014 VRT \u2014 2026-02-14",
     "snapshot": {
       "price": 234.53,
@@ -61,8 +61,48 @@
       "analyzedAt": "2026-02-14T21:35:00Z",
       "researchReport": null
     },
-    "version": 2,
-    "updatedAt": "2026-02-15T05:27:14.854806+00:00",
-    "savedAt": "2026-02-15T05:26:37.073532+00:00"
+    "version": 3,
+    "updatedAt": "2026-05-02T18:58:11.329Z",
+    "savedAt": "2026-02-15T05:26:37.073532+00:00",
+    "analyticsLog": {
+      "shareCountMethod": "Used metrics.shares_outstanding as fallback/default during migration.",
+      "marginAnchor": "TTM margin used as baseline for migration.",
+      "growthDerivation": "Y1 +35.7% / Y2 +26.0% blended 30.9%; base 22%",
+      "sectorBenchmarkRow": "Industrials - Electrical Equipment & Parts",
+      "dataQualityFlags": [
+        "Retroactively migrated to schemaVersion 1.2."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 13883235760.0,
+        "y2RevEstimate": 17499799830.0,
+        "y1GrowthPct": 35.71233110783096,
+        "y2GrowthPct": 26.049864257293276,
+        "blendedConsensusPct": 30.88109768256212,
+        "analystTargetMean": 327.44,
+        "analystCount": 25
+      },
+      "historicalRevenue": [
+        0,
+        5691500000.0,
+        6863200000.0,
+        8011800000.0,
+        10229900000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        1.3458666432399191,
+        6.705326961184286,
+        6.188372151077162,
+        13.028475351665216
+      ],
+      "historicalEPS": [
+        0,
+        0.2,
+        1.21,
+        1.32,
+        3.49
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence assigned during migration."
+    }
   }
 ]

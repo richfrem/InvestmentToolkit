@@ -3,11 +3,11 @@
     "ticker": "CIFR",
     "id": "e2f4a1c5-b8d9-4c3f-a6b7-9d8e7f6a5b4c",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T18:00:00.000Z",
-    "updatedAt": "2026-05-02T18:00:00.000Z",
-    "name": "AI Deep Dive — CIFR — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:06.919Z",
+    "name": "AI Deep Dive \u2014 CIFR \u2014 2026-05-02",
     "rationale": "CIFR (Cipher Digital) is executing an aggressive HPC/AI data center pivot from its legacy bitcoin mining roots. The valuation ($6.9B on $224M revenue = 30x P/S) is pricing in massive hyperscaler tenant demand. However, with trailing FCF at a deeply negative -$702M, the capital required to build out these sites will necessitate substantial equity dilution. My weighted fair value of $6.02 reflects a 65% downside risk due to the sheer volume of capital required to scale.",
     "snapshot": {
       "price": 17.04,
@@ -69,6 +69,43 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (405912959) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of 0.0% used as anchor for baseline profitability.",
+      "growthDerivation": "Blended analyst consensus is 135.5% (Y1 5.0%, Y2 266.0%). Base scenario uses 55%, aligned with near-term trajectory.",
+      "sectorBenchmarkRow": "Technology - Information Technology Services",
+      "dataQualityFlags": [
+        "No anomalies detected in baseline financial data."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 235197500.0,
+        "y2RevEstimate": 860899620.0,
+        "y1GrowthPct": 5.03,
+        "y2GrowthPct": 266.03,
+        "blendedConsensusPct": 135.53,
+        "analystTargetMean": 28.0,
+        "analystCount": 14
+      },
+      "historicalRevenue": [
+        3037000.0,
+        126842000.0,
+        151270000.0,
+        223942000.0
+      ],
+      "historicalNetMargins": [
+        -1285.907145209088,
+        -20.322133047413317,
+        -29.506842070470018,
+        -367.16828464513134
+      ],
+      "historicalEPS": [
+        -0.16,
+        -0.1,
+        -0.14,
+        -2.15
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

@@ -15,7 +15,7 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 app.use(cors());
-app.use(express.json({ limit: '50kb' }));
+app.use(express.json({ limit: '1mb' })); // raised from 50kb — v1.2 projections with analyticsLog can be 50-200kb
 
 const PORTFOLIO_FILE = path.join(__dirname, '../../frontend/src/data/portfolio.json');
 const PORTFOLIO_EXAMPLE = PORTFOLIO_FILE + '.example';

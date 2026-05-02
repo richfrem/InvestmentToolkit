@@ -3,11 +3,11 @@
     "ticker": "COIN",
     "id": "b3c4d5e6-f7a8-1b2c-3d4e-5f6a7b8c9d0f",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T19:25:00.000Z",
-    "updatedAt": "2026-05-02T19:25:00.000Z",
-    "name": "AI Deep Dive — COIN — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:08.235Z",
+    "name": "AI Deep Dive \u2014 COIN \u2014 2026-05-02",
     "rationale": "Coinbase (COIN) generated $7.18B in TTM revenue with strong 18% net margins, highlighting its dominant position as the premier US crypto exchange. However, recent top-line momentum has stalled (-22% YoY growth), making the current 38x forward P/E appear stretched for a highly cyclical asset. The business is a massive cash cow ($2.4B FCF), but volume dependency is a severe headwind during market lulls. My weighted fair value of $161 suggests a 15% downside risk, classifying it as a HOLD/SELL.",
     "snapshot": {
       "price": 191.25,
@@ -69,6 +69,47 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (223041278) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of 18.31% used as anchor for baseline profitability.",
+      "growthDerivation": "Blended analyst consensus is 8.6% (Y1 -4.2%, Y2 21.3%). Base scenario uses 10%, aligned with near-term trajectory.",
+      "sectorBenchmarkRow": "Financial Services - Financial Data & Stock Exchanges",
+      "dataQualityFlags": [
+        "Negative Y1 growth consensus (-4.2%) indicates shrinking core business or cyclical trough.",
+        "Crypto-exposed business model; high volatility and capital intensity limit forecast confidence."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 6878763180.0,
+        "y2RevEstimate": 8346014670.0,
+        "y1GrowthPct": -4.21,
+        "y2GrowthPct": 21.33,
+        "blendedConsensusPct": 8.56,
+        "analystTargetMean": 235.43108,
+        "analystCount": 28
+      },
+      "historicalRevenue": [
+        0,
+        3194208000.0,
+        3108383000.0,
+        6564028000.0,
+        7181325000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        -82.17839915246597,
+        3.0521013658870224,
+        39.29090491387301,
+        17.55006214034318
+      ],
+      "historicalEPS": [
+        0,
+        -11.81,
+        0.4,
+        10.42,
+        4.85
+      ],
+      "confidenceBreakdown": "0.7/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]

@@ -3,11 +3,11 @@
     "ticker": "RIOT",
     "id": "c8d7e6f5-a4b3-2c1d-0e9f-8a7b6c5d4e3f",
     "source": "AI_AGENT",
-    "schemaVersion": "1.1",
-    "version": 1,
+    "schemaVersion": "1.2",
+    "version": 3,
     "savedAt": "2026-05-02T19:00:00.000Z",
-    "updatedAt": "2026-05-02T19:00:00.000Z",
-    "name": "AI Deep Dive — RIOT — 2026-05-02",
+    "updatedAt": "2026-05-02T19:01:12.639Z",
+    "name": "AI Deep Dive \u2014 RIOT \u2014 2026-05-02",
     "rationale": "Riot Platforms (RIOT) presents a high-beta proxy for Bitcoin with terrifying operational economics. Generating $647M in revenue, the company burned an astonishing $1.14B in free cash flow over the last year. Operating margins sit at a dismal -53%, and net margins are deeply negative. Funding this continuous capex treadmill requires constant shareholder dilution. My weighted fair value of $4.18 suggests severe downside from the current $18.50 price.",
     "snapshot": {
       "price": 18.5,
@@ -69,6 +69,47 @@
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used default shares (379125849) as no multi-class discrepancy was noted.",
+      "marginAnchor": "TTM net margin of -132.76% used as anchor for baseline profitability.",
+      "growthDerivation": "Blended analyst consensus is 13.2% (Y1 1.6%, Y2 24.8%). Base scenario uses 15%, aligned with near-term trajectory.",
+      "sectorBenchmarkRow": "Financial Services - Capital Markets",
+      "dataQualityFlags": [
+        "Extreme negative TTM margin (-132.76%) suggests heavy capex cycle or one-time write-downs.",
+        "Crypto-exposed business model; high volatility and capital intensity limit forecast confidence."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 658078250.0,
+        "y2RevEstimate": 821454060.0,
+        "y1GrowthPct": 1.64,
+        "y2GrowthPct": 24.83,
+        "blendedConsensusPct": 13.24,
+        "analystTargetMean": 25.38947,
+        "analystCount": 19
+      },
+      "historicalRevenue": [
+        0,
+        259171000.0,
+        280678000.0,
+        376658000.0,
+        647435000.0
+      ],
+      "historicalNetMargins": [
+        0,
+        -196.60880268239887,
+        -17.625891591075895,
+        29.04518157054941,
+        -102.4320588167152
+      ],
+      "historicalEPS": [
+        -0.17,
+        -3.65,
+        -0.28,
+        0.4,
+        0
+      ],
+      "confidenceBreakdown": "0.7/1.0 - Base confidence adjusted for sector volatility and margin stability."
     }
   }
 ]
