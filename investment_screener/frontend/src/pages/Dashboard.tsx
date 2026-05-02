@@ -128,6 +128,9 @@ export default function Dashboard() {
         );
     }
 
+    const isETF = Boolean((stockData as any)?.profile?.type === 'ETF' || (stockData as any)?.profile?.assetType === 'ETF' || ((stockData as any)?.profile?.industry || '').toLowerCase().includes('etf'));
+    const hasProjection = Boolean(stockData && Array.isArray(storage.getProjections(stockData.symbol)) && storage.getProjections(stockData.symbol).length > 0);
+
     return (
         <div className="flex flex-col h-full overflow-hidden">
             {loading && (
@@ -195,13 +198,35 @@ export default function Dashboard() {
                                 <BarChart3 size={16} />
                                 Analysis
                             </button>
-                            <button
-                                onClick={() => setActiveTab('valuation')}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'valuation' ? 'bg-primary/10 text-primary shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
-                            >
-                                <Calculator size={16} />
-                                Valuation
-                            </button>
+
+                            {/* Valuation tab is hidden for ETFs unless a projection exists */}
+                            {(() => {
+                                const isETF = Boolean((stockData as any)?.profile?.type === 'ETF' || (stockData as any)?.profile?.assetType === 'ETF' || ((stockData as any)?.profile?.industry || '').toLowerCase().includes('etf'));
+                                const projections = storage.getProjections(stockData?.symbol || '');
+                                const hasProjection = Array.isArray(projections) && projections.length > 0;
+                                if (!isETF || hasProjection) {
+                                    return (
+                                        <button
+                                            onClick={() => setActiveTab('valuation')}
+                                            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'valuation' ? 'bg-primary/10 text-primary shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+                                        >
+                                            <Calculator size={16} />
+                                            Valuation
+                                        </button>
+                                    );
+                                }
+                                // For ETFs without projections show a tooltip-like disabled button
+                                return (
+                                    <button
+                                        title="Valuation not available for ETFs"
+                                        disabled
+                                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium opacity-40 cursor-not-allowed`}
+                                    >
+                                        <Calculator size={16} />
+                                        Valuation
+                                    </button>
+                                );
+                            })()}
                         </div>
                     </div>
 
@@ -232,9 +257,18 @@ export default function Dashboard() {
                             </div>
                         )}
 
-                        {activeTab === 'valuation' && (
+                        {activeTab === 'valuation' && (!isETF || hasProjection) && (
                             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 w-full h-full">
                                 <ValuationModeler stockData={stockData} />
+                            </div>
+                        )}
+
+                        {activeTab === 'valuation' && isETF && !hasProjection && (
+                            <div className="p-6">
+                                <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-6 text-slate-400">
+                                    <h3 className="text-lg font-bold text-white mb-2">Valuation not available for ETFs</h3>
+                                    <p>Detailed DCF valuations are out-of-scope for ETFs. This ETF has no saved projections; you can request per-holding valuations or save a projection for this ETF to enable the valuation page.</p>
+                                </div>
                             </div>
                         )}
                     </div>

@@ -1,0 +1,134 @@
+[
+  {
+    "ticker": "TSLA",
+    "id": "e0b96b0f-b4df-41ed-a16f-7b1bb363a033",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T19:16:32.961Z",
+    "updatedAt": "2026-05-02T19:16:32.961Z",
+    "name": "AI Deep Dive — TSLA — 2026-05-02",
+    "rationale": "Tesla is undergoing a difficult transition period. Trailing revenue growth has slowed to 15.8% while net margins have severely compressed from over 15% to just 4.0% TTM due to aggressive vehicle price cuts and intense competition in China. The stock currently trades at an astronomical 358x trailing and 154x forward P/E, pricing in massive future success in currently unproven businesses like Robotaxi and humanoid robotics. The core automotive business cannot support this valuation. At a conservative base case valuation of $191.79, the stock represents extreme downside risk (-50.9%), rating a SELL.",
+    "snapshot": {
+      "price": 390.82,
+      "currency": "USD",
+      "shares": 3755723871,
+      "revenue": 94827000000,
+      "lastActualPS": 15.48,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 15.8,
+      "analystMarginEstimate": 3.95
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 5,
+        "netMargin": 5,
+        "exitPE": 30,
+        "qualityMultiplier": 1.1,
+        "shareChange": 1,
+        "rationale": "Growth decelerates to 5% as the core auto business matures and energy storage growth peaks. Net margin stays depressed at 5% due to ongoing price wars and high fixed costs. The exit P/E compresses to 30x, stripping out the 'robotaxi' premium. The 1.1x quality multiplier reflects their charging network and manufacturing scale.",
+        "moatScore": 4,
+        "managementScore": 3,
+        "year5Revenue": 121026,
+        "year5NetIncome": 6051.3,
+        "year5EPS": 1.53,
+        "scenarioPrice": 31.41,
+        "risks": [
+          "FSD fails to achieve regulatory approval for unsupervised autonomy",
+          "Chinese EV makers severely erode global market share"
+        ]
+      },
+      "base": {
+        "weight": 0.6,
+        "growthRate": 12,
+        "netMargin": 10,
+        "exitPE": 45,
+        "qualityMultiplier": 1.2,
+        "shareChange": 0,
+        "rationale": "Growth of 12% aligns with the blended consensus estimates (7.9% Y1 / 16.8% Y2 implied). Target net margin recovers to 10% as FSD software attach rates increase and energy storage margins expand, offsetting auto hardware weakness. The exit P/E of 45x maintains a significant tech/AI premium over legacy auto. A quality multiplier of 1.2x is applied due to their unassailable Supercharger network and software integration.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 167117.6,
+        "year5NetIncome": 16711.8,
+        "year5EPS": 4.45,
+        "scenarioPrice": 149.2,
+        "risks": [
+          "Margin recovery takes longer than expected due to EV overcapacity",
+          "Key personnel risk"
+        ]
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 20,
+        "netMargin": 15,
+        "exitPE": 60,
+        "qualityMultiplier": 1.3,
+        "shareChange": -1,
+        "rationale": "Catalyst: Robotaxi network launches successfully in major US cities, and the energy storage business becomes larger than automotive. Revenue sustains a 20% CAGR. Operating leverage from high-margin software services drives net margins back to historical highs of 15%. The exit P/E expands to an aggressive 60x on re-rating as an AI/Robotics company. The 1.3x quality multiplier reflects a dominant, unassailable monopoly in autonomous transit.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 235959.9,
+        "year5NetIncome": 35394,
+        "year5EPS": 9.91,
+        "scenarioPrice": 479.94,
+        "risks": [
+          "Valuation remains extremely sensitive to terminal growth assumptions"
+        ]
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 1.5 Pro",
+      "rationale": "Tesla is undergoing a difficult transition period. Trailing revenue growth has slowed to 15.8% while net margins have severely compressed from over 15% to just 4.0% TTM due to aggressive vehicle price cuts and intense competition in China. The stock currently trades at an astronomical 358x trailing and 154x forward P/E, pricing in massive future success in currently unproven businesses like Robotaxi and humanoid robotics. The core automotive business cannot support this valuation. At a conservative base case valuation of $191.79, the stock represents extreme downside risk (-50.9%), rating a SELL.",
+      "fairValue": 191.79,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T19:16:32.961Z",
+      "researchReport": "TSLA_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used 3.755B (shares_diluted). Matches API output.",
+      "marginAnchor": "TTM 4.0% used as the anchor. Margins have compressed severely (15.5% -> 7.3% -> 4.0%). Base case targets 10% assuming some recovery from FSD software revenue, but this is highly speculative.",
+      "growthDerivation": "Analyst Y1 revenue implies 7.9% growth ($102.3B vs $94.8B TTM), Y2 implies 16.8%. Blended consensus ~12%. Base case growth set to 12%.",
+      "sectorBenchmarkRow": "Consumer Discretionary (Auto) / Tech Platform hybrid. Used a highly elevated premium exit P/E of 45x for base case (vs standard auto P/E of ~10x) to account for software and energy businesses.",
+      "dataQualityFlags": [
+        "The massive divergence between the 358x trailing P/E and the deteriorating fundamental margins (4.0% TTM) indicates the stock trades entirely on future narratives (AI, Robotaxi) rather than current financials."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 102348.1,
+        "y2RevEstimate": 119550.1,
+        "y1GrowthPct": 7.9,
+        "y2GrowthPct": 16.8,
+        "blendedConsensusPct": 12,
+        "analystTargetMean": 414.09,
+        "analystCount": 41
+      },
+      "historicalRevenue": [
+        81462,
+        96773,
+        97690,
+        94827
+      ],
+      "historicalNetMargins": [
+        15.45,
+        15.5,
+        7.3,
+        4
+      ],
+      "historicalEPS": [
+        4.02,
+        4.73,
+        2.23,
+        1.18
+      ],
+      "confidenceBreakdown": "0.60/1.0 — +0.10 for clean financial data, -0.50 because the current market valuation is completely disconnected from core automotive fundamentals, making DCF modeling highly subjective to AI narrative assumptions."
+    }
+  }
+]

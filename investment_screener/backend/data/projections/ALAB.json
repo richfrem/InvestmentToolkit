@@ -1,0 +1,134 @@
+[
+  {
+    "ticker": "ALAB",
+    "id": "e0b96b0f-b4df-41ed-a16f-7b1bb363a033",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T19:16:32.961Z",
+    "updatedAt": "2026-05-02T19:16:32.961Z",
+    "name": "AI Deep Dive — ALAB — 2026-05-02",
+    "rationale": "Astera Labs is a pure-play AI infrastructure company providing critical connectivity solutions (PCIe/CXL retimers) for cloud hyperscalers. The company is in a hypergrowth phase, with trailing revenue expanding 91.8% to $852.5 million. It recently achieved GAAP profitability with an impressive 25.7% TTM net margin, reflecting extreme operating leverage. However, the stock trades at astronomical multiples (166x trailing, 56.5x forward P/E), pricing in years of uninterrupted hypergrowth. At a conservative base case valuation of $112.46, the stock trades at a severe 44.5% premium to intrinsic value. This represents significant multiple-contraction risk if AI capex spending decelerates, rating the stock a SELL.",
+    "snapshot": {
+      "price": 202.68,
+      "currency": "USD",
+      "shares": 171281952,
+      "revenue": 852525000,
+      "lastActualPS": 40.72,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 91.8,
+      "analystMarginEstimate": 25.7
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 20,
+        "netMargin": 20,
+        "exitPE": 20,
+        "qualityMultiplier": 1.1,
+        "shareChange": 3,
+        "rationale": "Growth decelerates sharply to 20% as the initial wave of AI infrastructure buildout matures. Net margins compress to 20% due to increased competition and pricing pressure from hyperscalers. The exit P/E of 20x reflects a standard hardware multiple stripped of its AI premium. High stock-based compensation drives 3% annual dilution. The 1.1x quality multiplier reflects a sticky but increasingly commoditized product.",
+        "moatScore": 3,
+        "managementScore": 4,
+        "year5Revenue": 2121.4,
+        "year5NetIncome": 424.3,
+        "year5EPS": 2.14,
+        "scenarioPrice": 29.19,
+        "risks": [
+          "Hyperscalers shift to in-house developed connectivity chips",
+          "AI capital expenditure cycle peaks and normalizes downward"
+        ]
+      },
+      "base": {
+        "weight": 0.6,
+        "growthRate": 28,
+        "netMargin": 30,
+        "exitPE": 30,
+        "qualityMultiplier": 1.2,
+        "shareChange": 2,
+        "rationale": "Growth is anchored by the hypergrowth exception: Y1 analyst consensus of 59.3% decelerates naturally to derive a 28% 5-yr CAGR. Net margin expands to 30%, typical for successful fabless semiconductor companies. The exit P/E of 30x reflects sustained growth but normalization from current astronomical levels. A 1.2x quality multiplier is applied due to their early-mover advantage and structural moat in CXL/PCIe AI connectivity.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 2929.3,
+        "year5NetIncome": 878.8,
+        "year5EPS": 4.65,
+        "scenarioPrice": 103.87,
+        "risks": [
+          "Customer concentration risk (high dependence on top 3 hyperscalers)",
+          "Valuation leaves zero room for execution missteps"
+        ]
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 35,
+        "netMargin": 35,
+        "exitPE": 40,
+        "qualityMultiplier": 1.2,
+        "shareChange": 1,
+        "rationale": "Catalyst: AI server racks require increasingly complex connectivity, making ALAB's retimers and controllers a non-negotiable bottleneck component. Growth sustains a massive 35% CAGR over 5 years. Operating leverage drives net margins to a best-in-class 35%. The market awards a 40x exit P/E to reflect continued hypergrowth. Dilution is minimized to 1% annually as the company scales free cash flow.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 3822.8,
+        "year5NetIncome": 1338,
+        "year5EPS": 7.43,
+        "scenarioPrice": 221.52,
+        "risks": [
+          "Growth expectations are so high that even slight misses trigger massive sell-offs"
+        ]
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 1.5 Pro",
+      "rationale": "Astera Labs is a pure-play AI infrastructure company providing critical connectivity solutions (PCIe/CXL retimers) for cloud hyperscalers. The company is in a hypergrowth phase, with trailing revenue expanding 91.8% to $852.5 million. It recently achieved GAAP profitability with an impressive 25.7% TTM net margin, reflecting extreme operating leverage. However, the stock trades at astronomical multiples (166x trailing, 56.5x forward P/E), pricing in years of uninterrupted hypergrowth. At a conservative base case valuation of $112.46, the stock trades at a severe 44.5% premium to intrinsic value. This represents significant multiple-contraction risk if AI capex spending decelerates, rating the stock a SELL.",
+      "fairValue": 112.46,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T19:16:32.961Z",
+      "researchReport": "ALAB_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used 171.3M (shares_diluted). API provided matching figures for outstanding and diluted. No discrepancies.",
+      "marginAnchor": "TTM 25.7% used. The company recently turned a profit after years of heavy losses. A 30% base target represents reasonable progression for a fabless semi with 75%+ gross margins.",
+      "growthDerivation": "Hypergrowth exception applied. Analyst Y1 revenue implies 59.3% growth ($1.358B vs $852.5M TTM). Y2 implies 39.0%. Projecting a natural deceleration path (25%, 15%, 10% in years 3-5) yields a 5-yr CAGR of 28.4%. Base case growth set conservatively to 28%.",
+      "sectorBenchmarkRow": "Technology — Semiconductors: median P/E 25, growth 40; fabless net margin typical 15–30%, best-in-class 40%+.",
+      "dataQualityFlags": [
+        "Company has a short public history, making historical comparisons less reliable. Massive multiple (166x trailing P/E) creates high sensitivity to terminal assumptions."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 1358.28,
+        "y2RevEstimate": 1888.58,
+        "y1GrowthPct": 59.3,
+        "y2GrowthPct": 39,
+        "blendedConsensusPct": 49.15,
+        "analystTargetMean": 202.24,
+        "analystCount": 22
+      },
+      "historicalRevenue": [
+        79.87,
+        115.79,
+        396.29,
+        852.53
+      ],
+      "historicalNetMargins": [
+        -73.05,
+        -22.68,
+        -21.05,
+        25.7
+      ],
+      "historicalEPS": [
+        -0.45,
+        -0.17,
+        -0.64,
+        1.32
+      ],
+      "confidenceBreakdown": "0.75/1.0 — -0.15 for short public history and extreme multiple expansion risk, -0.10 for heavy customer concentration risk typical in the AI infrastructure supply chain."
+    }
+  }
+]

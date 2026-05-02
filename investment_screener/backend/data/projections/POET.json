@@ -1,0 +1,127 @@
+[
+  {
+    "ticker": "POET",
+    "id": "e73b03c5-c070-4bd1-8045-558c5cffb4d1",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-02T19:24:33Z",
+    "updatedAt": "2026-05-02T19:24:33Z",
+    "name": "AI Deep Dive — POET — 2026-05-02",
+    "rationale": "POET develops photonic integration tech; despite analyst-projected revenue expansion, current revenue base is tiny and margins negative, producing a DCF fair value well below market price — SELL.",
+    "snapshot": {
+      "price": 7.31,
+      "currency": "USD",
+      "shares": 92592960.29411764,
+      "revenue": 1074865,
+      "lastActualPS": 1038.57,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 947.47
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 0.4,
+        "netMargin": 0,
+        "exitPE": 12,
+        "qualityMultiplier": 0.9,
+        "shareChange": 0,
+        "year5Revenue": 1.1,
+        "year5NetIncome": 0,
+        "year5EPS": 0,
+        "scenarioPrice": 0,
+        "year5Shares": 92.6,
+        "year5PriceUndiscounted": 0,
+        "presentValue": 0
+      },
+      "base": {
+        "weight": 0.6,
+        "growthRate": 2,
+        "netMargin": 8,
+        "exitPE": 25,
+        "qualityMultiplier": 1,
+        "shareChange": 0,
+        "year5Revenue": 1.2,
+        "year5NetIncome": 0.1,
+        "year5EPS": 0,
+        "scenarioPrice": 0.03,
+        "year5Shares": 92.6,
+        "year5PriceUndiscounted": 0.03,
+        "presentValue": 0.02
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 3,
+        "netMargin": 18,
+        "exitPE": 40,
+        "qualityMultiplier": 1.05,
+        "shareChange": 0,
+        "year5Revenue": 1.2,
+        "year5NetIncome": 0.2,
+        "year5EPS": 0,
+        "scenarioPrice": 0.1,
+        "year5Shares": 92.6,
+        "year5PriceUndiscounted": 0.1,
+        "presentValue": 0.06
+      }
+    },
+    "aiThesis": {
+      "model": "GPT-5 mini (model ID: gpt-5-mini)",
+      "rationale": "Photonic interposer shows promise in high-bandwidth interconnects, but monetization and scale are uncertain. Base assumes meaningful revenue growth and modest margins; downside reflects inability to scale.",
+      "fairValue": 0.02,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T19:24:33Z",
+      "researchReport": "investment_screener/backend/data/research/POET_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used metrics.shares_diluted=92592960.29411764; DCF-derived baseShares=92592960; difference 0.0%",
+      "marginAnchor": "TTM 0.0 used; historical margins negative → cautious recovery to positive by Yr5",
+      "growthDerivation": "Y1=13918900.0, Y2=111351200.0; Y1 growth 1194.94%, Y2 growth 700.0%; blendedConsensusPct=947.47%",
+      "sectorBenchmarkRow": "Technology — Semiconductors: Conservative P/E 15, Median P/E 25, Growth P/E 40",
+      "dataQualityFlags": [
+        "Extremely high analyst growth projections from tiny revenue base — execution and scaling risk",
+        "Historical net margins deeply negative; GAAP losses persistent",
+        "Small sample size for margins/growth makes estimates fragile"
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 13918900,
+        "y2RevEstimate": 111351200,
+        "y1GrowthPct": 1194.94,
+        "y2GrowthPct": 700,
+        "blendedConsensusPct": 947.47,
+        "analystTargetMean": 8.2,
+        "analystCount": 2
+      },
+      "historicalRevenue": [
+        0,
+        552748,
+        465777,
+        41427,
+        1074865
+      ],
+      "historicalNetMargins": [
+        0,
+        -3805.837379782469,
+        -4351.3022326134615,
+        -136857.17768605016,
+        -5857.778697789955
+      ],
+      "historicalEPS": [
+        0,
+        -0.57,
+        -0.51,
+        -0.94,
+        -0.68
+      ],
+      "confidenceBreakdown": "0.40 — -0.25 execution risk, -0.15 data uncertainty"
+    }
+  }
+]
