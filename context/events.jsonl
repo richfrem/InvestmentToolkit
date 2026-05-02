@@ -538,3 +538,35 @@
 {"time": "2026-05-02T09:23:36.470946Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
 {"time": "2026-05-02T09:24:02.812707Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
 {"time": "2026-05-02T16:24:08.426930+00:00", "agent": "post_run_hook", "type": "metric", "action": "session_summary", "status": "success", "results": {"human_interventions": 0, "workflow_uncertainty": 0, "missed_steps": 0, "cli_errors": 0, "friction_events_total": 0, "hook_errors": 0, "correlation_id": "session", "session_id": "unknown"}}
+{"time": "2026-05-02T09:25:36.157462Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:25:36.677192Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:25:39.683030Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:25:40.524252Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:25:46.260651Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:26:21.908277Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:26:21.917221Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:26:24.783958Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:26:25.148680Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:26:35.188956Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:26:35.625433Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:26:44.587087Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:26:58.021642Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:27:26.434285Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:27:31.106910Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:27:33.607875Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:27:35.186577Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:27:38.632490Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:27:42.796530Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:27:51.127848Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:27:56.943555Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:28:01.547245Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:28:04.254099Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:28:13.907144Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:28:54.242897Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:28:56.362367Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:29:06.099501Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T09:29:11.142835Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T16:29:17.591071+00:00", "agent": "post_run_hook", "type": "metric", "action": "session_summary", "status": "success", "results": {"human_interventions": 0, "workflow_uncertainty": 0, "missed_steps": 0, "cli_errors": 0, "friction_events_total": 0, "hook_errors": 0, "correlation_id": "session", "session_id": "unknown"}}
+{"time": "2026-05-02T09:32:40.574421Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-02T16:33:04.570645+00:00", "agent": "post_run_hook", "type": "metric", "action": "session_summary", "status": "success", "results": {"human_interventions": 0, "workflow_uncertainty": 0, "missed_steps": 0, "cli_errors": 0, "friction_events_total": 0, "hook_errors": 0, "correlation_id": "session", "session_id": "unknown"}}
+{"time": "2026-05-02T09:33:20.108031Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
