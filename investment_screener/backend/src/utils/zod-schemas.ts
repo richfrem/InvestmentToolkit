@@ -31,7 +31,7 @@ export const SnapshotSchema = z.object({
     currency: z.string().length(3),
     shares: z.number().nonnegative(),
     revenue: z.number().nonnegative(),
-    lastActualPS: z.number().nonnegative(),
+    lastActualPS: z.number().nonnegative().nullable().transform(v => v ?? 0),
     fiscalPeriod: z.string().optional(),
     analystGrowthEstimate: z.number().nullable().optional(),
     analystMarginEstimate: z.number().nullable().optional(),

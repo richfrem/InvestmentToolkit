@@ -10,6 +10,16 @@
             "name": "thesis_balancer",
             "path": "skills/thesis-balancer/SKILL.md",
             "trigger": "/review-portfolio"
+        },
+        {
+            "name": "strategic_review",
+            "path": "skills/strategic-review/SKILL.md",
+            "trigger": "/strategic-review"
+        },
+        {
+            "name": "rebalance_portfolio",
+            "path": "skills/rebalance-portfolio/SKILL.md",
+            "trigger": "/rebalance"
         }
     ],
     "commands": [
@@ -17,6 +27,16 @@
             "name": "review-portfolio",
             "path": "commands/review-portfolio.md",
             "trigger": "/review-portfolio"
+        },
+        {
+            "name": "strategic-review",
+            "path": "commands/strategic-review.md",
+            "trigger": "/strategic-review"
+        },
+        {
+            "name": "rebalance",
+            "path": "commands/rebalance.md",
+            "trigger": "/rebalance"
         }
     ],
     "connectors": "CONNECTORS.md",

@@ -543,7 +543,7 @@ With `--deep-dive true`:
 ## Prerequisites
 \`\`\`bash
 # Backend running
-curl -sf http://localhost:3001/health || echo "FAIL: Start with python3 tools/manage_servers.py"
+curl -sf http://localhost:3001/health || echo "FAIL: Start with python3 run_investment_toolkit.py"
 
 # At least one thesis exists
 curl -s http://localhost:3001/api/theses | python3 -c "import sys,json; d=json.load(sys.stdin); assert len(d)>0" || echo "FAIL: No thesis found. Create one first."

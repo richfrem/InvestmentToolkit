@@ -4,11 +4,11 @@
     "id": "f5e9c0a2-d8b3-4e4f-b7a1-c6d5e4f3a2b1",
     "source": "AI_AGENT",
     "schemaVersion": "1.2",
-    "version": 3,
-    "savedAt": "2026-05-02T18:25:00.000Z",
-    "updatedAt": "2026-05-02T19:01:09.542Z",
-    "name": "AI Deep Dive \u2014 HUT \u2014 2026-05-02",
-    "rationale": "Hut 8 (HUT) presents a severe capital destruction profile. Trading at an $8.6B valuation on just $15M in trailing revenue, the market is pricing in an impossibly seamless pivot to AI/HPC hosting. The company burned -$787M in free cash flow over the last year, with operating margins collapsing to -2104%. To fund this infrastructure arms race, massive shareholder dilution is inevitable. My weighted fair value of $9.15 implies nearly 90% downside risk from the current $76.98 price.",
+    "version": 4,
+    "savedAt": "2026-05-02T22:00:00Z",
+    "updatedAt": "2026-05-02T22:01:08.313Z",
+    "name": "AI Deep Dive — HUT — 2026-05-02",
+    "rationale": "Hut 8 Corp is a Bitcoin mining company trading at $76.98 with a $8.66B market cap on $15M TTM revenue — a 575x price-to-sales ratio. Standard DCF gives $3.52 fair value, representing -95.4% downside. The stock is not a traditional fundamental business; it is a leveraged Bitcoin call option. The $76.98 price implies BTC at $200K+ or transformational AI/HPC hosting revenue that does not exist in current GAAP financials. Piotroski 2/9. SELL on fundamentals; buyers are making a macro BTC bet.",
     "snapshot": {
       "price": 76.98,
       "currency": "USD",
@@ -25,45 +25,42 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.35,
-        "growthRate": 30,
-        "netMargin": 0,
-        "exitPE": 10,
+        "weight": 0.4,
+        "growthRate": 50,
+        "netMargin": 1,
+        "exitPE": 5,
         "qualityMultiplier": 0.7,
-        "moatScore": 1,
-        "managementScore": 1,
-        "shareChange": 80,
-        "scenarioPrice": 1.25
+        "shareChange": 5,
+        "rationale": "BTC price collapses to $20K-$30K range. Mining becomes unprofitable at most operations. Revenue reaches only $115M at Y5 (50% CAGR from $15M trough) but margins remain near breakeven. Continued capital destruction via miner purchases and energy costs with no monetization of AI/HPC ambitions. QM 0.70: no durable moat — any miner can set up operations if BTC price is wrong. Piotroski 2/9 confirms financial distress trajectory. Year 5: $115M × 1% / 148M shares = $0.01 EPS × 5x = $0.03 × 0.70 / 1.61 = $0.02.",
+        "scenarioPrice": 0.02
       },
       "base": {
-        "weight": 0.45,
-        "growthRate": 80,
-        "netMargin": 10,
+        "weight": 0.4,
+        "growthRate": 100,
+        "netMargin": 3,
         "exitPE": 15,
-        "qualityMultiplier": 0.9,
-        "moatScore": 2,
-        "managementScore": 2,
-        "shareChange": 50,
-        "scenarioPrice": 8.78
+        "qualityMultiplier": 0.8,
+        "shareChange": 3,
+        "rationale": "BTC stabilizes $60-80K. Revenue reaches $483M by Y5 (100% CAGR from $15M trough normalizing to analyst trajectory). Margins near breakeven at 3% — mining is capital-intensive and competitive; margins above 5% are unusual for public miners. Exit PE 15x on meager GAAP earnings. Note: analyst Y1 $344M Y2 $543M reflects similar trajectory. Year 5: $483M × 3% / 130M shares = $0.11 EPS × 15x × 0.80 / 1.61 = $0.83.",
+        "scenarioPrice": 0.83
       },
       "bull": {
         "weight": 0.2,
-        "growthRate": 120,
-        "netMargin": 20,
-        "exitPE": 25,
-        "qualityMultiplier": 1.1,
-        "moatScore": 3,
-        "managementScore": 3,
-        "shareChange": 30,
-        "scenarioPrice": 23.82
+        "growthRate": 150,
+        "netMargin": 12,
+        "exitPE": 20,
+        "qualityMultiplier": 0.9,
+        "shareChange": 2,
+        "rationale": "Catalyst: BTC reaches $150K-$200K. Revenue reaches $1.47B by Y5 (150% CAGR). AI/HPC hosting becomes meaningful additional revenue stream at 12% blended margin. HUT's large-scale power infrastructure and data center footprint commands a premium. Exit PE 20x. Even in this scenario, fair value $15.90 is 79% below current price — highlighting how extreme the current valuation premium is.",
+        "scenarioPrice": 15.9
       }
     },
     "aiThesis": {
-      "model": "Gemini 3 Pro",
-      "rationale": "Hut 8's valuation is completely decoupled from economic reality. The $8.6B market cap is sustained purely by the AI/HPC infrastructure narrative, yet their execution thus far has resulted in terrifying cash burn (-$787M FCF) and negative gross margins. The capital required to build out gigawatt-scale data centers will force continuous, punishing equity dilution on current shareholders. Even if HUT manages a miraculous 80% CAGR for 5 years and stabilizes margins at 10%, the required 50% dilution suppresses the PV to $8.78. At $76.98, the stock is a dangerous bubble offering zero margin of safety.",
-      "fairValue": 9.15,
+      "model": "Claude Sonnet 4.6",
+      "rationale": "Hut 8 Corp is a Bitcoin mining company masquerading as a traditional investment. At $76.98/share with a $8.66B market cap on $15M TTM revenue, the price-to-sales ratio is 575x — among the most extreme in any public market. The standard DCF produces a fair value of $3.52 (-95.4%), which reflects the reality that near-zero GAAP earnings from an energy-intensive mining operation simply cannot justify a multi-billion dollar valuation through traditional discounted cash flow analysis. The stock is a leveraged directional bet on Bitcoin price appreciation. Buyers are not analyzing P/E ratios; they are buying a synthetic Bitcoin option with operating leverage. This is confirmed by the analyst earnings forecasts: Y1 EPS -$1.76, Y2 EPS -$3.17 — the company is projected to LOSE MORE MONEY in Y2 despite revenue growth. The 16-analyst Strong Buy consensus and $84.50 target are based on BTC price appreciation thesis, not earnings fundamentals. From a DCF fundamental perspective, SELL is the only defensible recommendation. Investors seeking Bitcoin exposure should consider direct BTC ownership rather than paying a 575x P/S premium for a mining vehicle with deeply negative cash flows.",
+      "fairValue": 3.52,
       "action": "SELL",
-      "analyzedAt": "2026-05-02T18:25:00.000Z",
+      "analyzedAt": "2026-05-02T22:00:00Z",
       "researchReport": "HUT_2026-05-02.md"
     },
     "globalSettings": {
@@ -71,42 +68,57 @@
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "Used default shares (112552646) as no multi-class discrepancy was noted.",
-      "marginAnchor": "TTM net margin of -96.19% used as anchor for baseline profitability.",
-      "growthDerivation": "Hypergrowth exception applied: Y1 consensus is 2185.0%. Derived a 80% 5-year CAGR accounting for out-year deceleration.",
-      "sectorBenchmarkRow": "Financial Services - Capital Markets",
+      "shareCountMethod": "API shares_diluted = shares_outstanding = 112,552,646. Mktcap-implied: $8.664B / $76.98 = 112.55M — 0% discrepancy. Clean. Note: consistent dilution expected from new miner purchases and stock-based compensation; shareChange +5% bear, +3% base, +2% bull applied.",
+      "marginAnchor": "TTM margin -96.2% is NOT usable — reflects BTC price volatility (halving April 2024 cut rewards in half) plus Bitcoin price during the transitional quarter. Historical: -40.2% → -75.6% → +49.4% → -1499.6% (TTM). These margins are driven by BTC price mark-to-market, not operational performance. Using near-zero to low positive operational margins (1-12%) that reflect cash mining economics, not GAAP BTC fair value accounting.",
+      "growthDerivation": "TTM revenue $15.1M is anomalously low — reflects post-halving Q4 2024 transitional period. Analyst Y1 $344.6M (+2185%), Y2 $543.0M (+57.6%). This growth is not true CAGR from a stable base — it's normalization from trough. Base 100% CAGR from $15M anchor ≈ reaching $483M by Y5, which is slightly below analyst Y2 projection of $543M. This is a reasonable interpolation. Not applying hypergrowth exception — the issue is a transitional base, not sustained hypergrowth.",
+      "sectorBenchmarkRow": "Financial Services — Capital Markets (classification). Actually a Bitcoin mining company — standard P/E benchmarks do not apply. Using crypto/mining company comparables: exit PE 5-20x GAAP reflecting extreme earnings volatility. Benchmark most comparable to Energy/Mining at distressed multiples: conservative PE 5x, median 15x, growth 20x.",
       "dataQualityFlags": [
-        "No anomalies detected in baseline financial data.",
-        "Crypto-exposed business model; high volatility and capital intensity limit forecast confidence."
+        "TTM revenue $15.1M is a post-April-2024-halving trough. Analyst expects $344.6M in Y1 — a 2185% step-up reflecting normalization, not true growth. DCF SEVERELY UNDERSTATES recovery potential but CORRECTLY reflects that even at $344M+ revenue, near-zero margins give very low EPS-based FV.",
+        "TTM net margin -1499.6% — driven entirely by BTC price mark-to-market accounting. This is NOT an operational metric. All margin assumptions in scenarios use operational margin estimates (mining cash economics), not GAAP BTC-distorted margins.",
+        "Piotroski 2/9 — very weak: ROA negative, CFO negative, ROA not improving. Only positives: leverage decreasing, accruals OK.",
+        "FCF: -$80M, -$32M, -$333M, -$787M — consistently deeply negative. The company burns massive cash on miner infrastructure. This is the fundamental constraint on fair value.",
+        "Standard DCF methodology is poorly suited for Bitcoin mining companies. A NAV analysis (BTC holdings at market value + infrastructure NPV) would give a different picture. Analyst Strong Buy at $84.50 appears to be based on BTC price trajectory, NOT traditional DCF."
       ],
       "analystInputs": {
-        "y1RevEstimate": 344604440.0,
-        "y2RevEstimate": 543012690.0,
-        "y1GrowthPct": 2185.02,
-        "y2GrowthPct": 57.58,
-        "blendedConsensusPct": 1121.3,
+        "y1RevEstimate": 344604440,
+        "y2RevEstimate": 543012690,
+        "y1GrowthPct": 2185,
+        "y2GrowthPct": 57.6,
+        "blendedConsensusPct": null,
         "analystTargetMean": 84.5,
         "analystCount": 16
       },
       "historicalRevenue": [
-        79185000.0,
-        86737000.0,
-        671722000.0,
-        15081000.0
+        79.2,
+        86.7,
+        671.7,
+        15.1
       ],
       "historicalNetMargins": [
-        -40.16290964197765,
-        -75.64361229924945,
-        49.40764185183751,
-        -1499.562363238512
+        -40.16,
+        -75.64,
+        49.41,
+        -1499.56
       ],
       "historicalEPS": [
-        -0.359153,
-        -0.740948,
+        -0.36,
+        -0.74,
         3.63,
         -2.14
       ],
-      "confidenceBreakdown": "0.7/1.0 - Base confidence adjusted for sector volatility and margin stability."
+      "priorAnalysisReview": {
+        "priorModel": "Gemini 3 Pro",
+        "priorDate": "2026-05-02",
+        "priorPrice": 76.98,
+        "priorFairValue": 9.15,
+        "priorAction": "SELL",
+        "priceDelta": "0% — same day",
+        "assumptionAudit": "Prior bear 30% growth / 0% margin / 10x PE / 0.70 QM — Gemini used $15M TTM as anchor. 30% CAGR on $15M = $56M at Y5. Result ~$0.002 bear. Base 80% on $15M = $283M, 10% margin = $28.3M / 112.5M = $0.25 EPS × 15 × 0.9 = $2.09. Prior $9.15 suggests Gemini's base was closer to $14-15. Directionally consistent — both produce a deep SELL. My analysis is more bearish ($3.52 vs $9.15) due to lower margin assumptions (crypto miners rarely achieve 10% GAAP margins).",
+        "modelQualityFlag": "UNVALIDATED — Gemini 3 Pro",
+        "thesisOutcome": "N/A — same day. Both analyses confirm massive SELL from fundamental perspective.",
+        "fundamentalChanges": "April 2024 Bitcoin halving cut block rewards from 6.25 to 3.125 BTC. HUT 8 Corp merger integration complete. AI/HPC hosting business reportedly in development but not generating material revenue. BTC price at ~$65-85K range."
+      },
+      "confidenceBreakdown": "0.42/1.0 — Low confidence reflecting severe methodology mismatch: standard GAAP DCF not suited for BTC miners. Base 1.0. -0.15 BTC price sensitivity makes all scenarios highly uncertain; -0.10 FCF consistently deeply negative (-$787M TTM); -0.10 Piotroski 2/9; -0.10 methodology limitation (BTC NAV not captured); -0.08 analyst estimates dominated by BTC price assumptions not fundamental earnings; -0.05 company in merger integration; +0.05 analyst coverage 16 analysts provides some consensus signal; -0.05 EPS forecasts Y1 -$1.76 and Y2 -$3.17 — getting WORSE not better"
     }
   }
 ]
