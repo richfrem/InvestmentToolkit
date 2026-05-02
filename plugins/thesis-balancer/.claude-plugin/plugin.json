@@ -1,0 +1,10 @@
+{
+    "name": "thesis-balancer",
+    "version": "2.0.0",
+    "description": "Portfolio health monitor and strategic thesis alignment engine. Detects drift, flags Thesis Breaker conditions, and resolves Strategic Conflicts (AI SELL vs Core designation).",
+    "author": {
+        "name": "richfrem",
+        "email": "connect.richfrem@gmail.com"
+    },
+    "keywords": ["finance", "portfolio", "thesis", "rebalancing", "drift-detection"]
+}

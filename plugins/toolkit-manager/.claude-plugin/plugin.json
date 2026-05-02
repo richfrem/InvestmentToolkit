@@ -1,0 +1,10 @@
+{
+    "name": "toolkit-manager",
+    "version": "2.0.0",
+    "description": "Orchestrator for the Investment Screener suite. Handles server startup and Questrade API token seeding.",
+    "author": {
+        "name": "richfrem",
+        "email": "connect.richfrem@gmail.com"
+    },
+    "keywords": ["finance", "questrade", "infrastructure", "startup"]
+}
