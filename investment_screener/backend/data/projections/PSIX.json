@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "PSIX",
+    "id": "a1b2c3d4-e5f6-4a5b-8c7d-9e8f7a6b5c5e",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T18:50:00.000Z",
+    "updatedAt": "2026-05-02T18:50:00.000Z",
+    "name": "AI Deep Dive — PSIX — 2026-05-02",
+    "rationale": "Power Solutions International (PSIX) is a highly profitable, under-the-radar beneficiary of the AI data center power constraint. Producing $722M in revenue with 32% growth and stellar 15.7% net margins, it trades at an attractive 14x P/E multiple. The company provides prime and standby power generation, perfectly positioning it to capture demand where grid power falls short. Weighted PV of $112.87 implies significant upside.",
+    "snapshot": {
+      "price": 70.5,
+      "currency": "USD",
+      "shares": 23050450,
+      "revenue": 722405000,
+      "lastActualPS": 2.25,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 32.5,
+      "analystMarginEstimate": 15.78
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.3,
+        "growthRate": 5,
+        "netMargin": 10,
+        "exitPE": 12,
+        "qualityMultiplier": 0.9,
+        "moatScore": 2,
+        "managementScore": 3,
+        "shareChange": 0,
+        "scenarioPrice": 29.6
+      },
+      "base": {
+        "weight": 0.5,
+        "growthRate": 15,
+        "netMargin": 16,
+        "exitPE": 18,
+        "qualityMultiplier": 1,
+        "moatScore": 3,
+        "managementScore": 4,
+        "shareChange": 0,
+        "scenarioPrice": 112.8
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 25,
+        "netMargin": 20,
+        "exitPE": 22,
+        "qualityMultiplier": 1.1,
+        "moatScore": 4,
+        "managementScore": 5,
+        "shareChange": -2,
+        "scenarioPrice": 285
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "PSIX is a compelling 'picks and shovels' play on the AI power bottleneck. Unlike highly speculative, capital-burning peers, PSIX is already highly profitable (15.7% net margins) and growing robustly (32.5% YoY) with a solid Piotroski F-Score of 6. At just 14x trailing earnings, the market is mispricing this as a cyclical industrial manufacturer rather than critical infrastructure. As data centers increasingly rely on on-site prime and standby power generation to bypass grid delays, PSIX is perfectly positioned. The base case ($112.80 PV) models 15% growth and stable margins, making the current $70.50 price a deep value entry point.",
+      "fairValue": 122.28,
+      "action": "BUY",
+      "analyzedAt": "2026-05-02T18:50:00.000Z",
+      "researchReport": "PSIX_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "TSEM",
+    "id": "c8d7e6f5-a4b3-2c1d-0e9f-8a7b6c5d4e4c",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T19:10:00.000Z",
+    "updatedAt": "2026-05-02T19:10:00.000Z",
+    "name": "AI Deep Dive — TSEM — 2026-05-02",
+    "rationale": "Tower Semiconductor (TSEM) has surged nearly 500% over the past year, commanding a premium $25.9B valuation on $1.56B of revenue. While operational health is strong (Piotroski F-Score 7, 14% net margins), the 45x forward P/E prices in an aggressive, flawless growth trajectory that contrasts with their historically cyclical foundry business. Weighted PV of $114.73 points to severe overvaluation and suggests taking profits.",
+    "snapshot": {
+      "price": 218.01,
+      "currency": "USD",
+      "shares": 112824944,
+      "revenue": 1566104000,
+      "lastActualPS": 16.56,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 13.7,
+      "analystMarginEstimate": 14.08
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": 5,
+        "netMargin": 10,
+        "exitPE": 15,
+        "qualityMultiplier": 0.9,
+        "moatScore": 2,
+        "managementScore": 3,
+        "shareChange": 5,
+        "scenarioPrice": 30.65
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 15,
+        "netMargin": 16,
+        "exitPE": 20,
+        "qualityMultiplier": 1,
+        "moatScore": 3,
+        "managementScore": 4,
+        "shareChange": 0,
+        "scenarioPrice": 114.3
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 25,
+        "netMargin": 22,
+        "exitPE": 25,
+        "qualityMultiplier": 1.1,
+        "moatScore": 4,
+        "managementScore": 5,
+        "shareChange": -2,
+        "scenarioPrice": 262.8
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "TSEM's 500% 1-year surge is largely driven by a broader semiconductor re-rating rather than underlying fundamentals justifying a $26B market cap. While the company is well-run (F-Score of 7, solid 14% margins), its core business is specialty analog foundries, not cutting-edge AI chips. At nearly 17x trailing sales and 45x forward earnings, the market is pricing TSEM like a hyper-growth tech firm rather than a capital-intensive manufacturer. The base case ($114 PV) assumes a robust 15% CAGR and 16% margins, but this still implies nearly 50% downside from the current price. It's a high-quality company trapped in an irrational valuation bubble.",
+      "fairValue": 114.73,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T19:10:00.000Z",
+      "researchReport": "TSEM_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]

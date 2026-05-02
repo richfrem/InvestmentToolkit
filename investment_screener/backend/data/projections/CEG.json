@@ -1,0 +1,74 @@
+[
+  {
+    "ticker": "CEG",
+    "id": "e2f4a1c5-b8d9-4c3f-a6b7-9d8e7f6a5b4c",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.1",
+    "version": 1,
+    "savedAt": "2026-05-02T19:20:00.000Z",
+    "updatedAt": "2026-05-02T19:20:00.000Z",
+    "name": "AI Deep Dive — CEG — 2026-05-02",
+    "rationale": "Constellation Energy (CEG) is perfectly positioned as the largest operator of nuclear power plants in the US, providing the reliable, carbon-free baseload power desperately needed by AI data centers. With strong FCF generation ($1.28B) and solid margins, it trades at a forward P/E of 22.5x, reflecting its premium utility status. My weighted fair value of $341 indicates modest upside, making it a solid BUY for stable, long-term AI infrastructure exposure.",
+    "snapshot": {
+      "price": 307.81,
+      "currency": "USD",
+      "shares": 362294672,
+      "revenue": 25533000000,
+      "lastActualPS": 4.37,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 12.9,
+      "analystMarginEstimate": 9.08
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.3,
+        "growthRate": 5,
+        "netMargin": 8,
+        "exitPE": 15,
+        "qualityMultiplier": 0.9,
+        "moatScore": 4,
+        "managementScore": 3,
+        "shareChange": 0,
+        "scenarioPrice": 182
+      },
+      "base": {
+        "weight": 0.5,
+        "growthRate": 12,
+        "netMargin": 12,
+        "exitPE": 20,
+        "qualityMultiplier": 1.1,
+        "moatScore": 5,
+        "managementScore": 4,
+        "shareChange": -2,
+        "scenarioPrice": 357
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 18,
+        "netMargin": 15,
+        "exitPE": 25,
+        "qualityMultiplier": 1.2,
+        "moatScore": 5,
+        "managementScore": 5,
+        "shareChange": -5,
+        "scenarioPrice": 542
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3 Pro",
+      "rationale": "Constellation Energy is the premier utility play on the AI data center boom. Unlike speculative infrastructure providers, CEG owns the actual baseload nuclear generation required to power gigawatt-scale AI clusters reliably and cleanly. Hyperscalers are increasingly willing to pay a premium (e.g., via long-term PPAs) for carbon-free, 24/7 power, creating a massive structural moat. Generating strong free cash flow and maintaining a Piotroski F-Score of 5, the company is financially solid. While trading at a premium 22.5x forward P/E for a utility, the 'AI power premium' is justified. The base case models steady 12% growth and margin expansion via lucrative hyperscaler contracts, yielding a $357 present value.",
+      "fairValue": 341.5,
+      "action": "BUY",
+      "analyzedAt": "2026-05-02T19:20:00.000Z",
+      "researchReport": "CEG_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    }
+  }
+]
