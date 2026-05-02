@@ -34,37 +34,31 @@ A professional-grade brokerage sync engine featuring:
 *(Real-time sector performance visualization)*
 
 ## 🛠️ Tech Stack
--   **Frontend**: React 19, Vite, Tailwind CSS.
+-   **Frontend**: React 19, Vite, Tailwind CSS 4.0.
 -   **Backend**: Node.js (Express), Python 3.11 (Bridge to `yfinance`).
 -   **Data**: `yfinance` & Questrade API (Dynamic Aggregation).
+-   **Schema**: Zod validation (`zod-schemas.ts`) — `lastActualPS` nullable-safe for pre-revenue stocks.
 
 ## 🧠 AI Capabilities
 
 Autonomous AI agents perform valuation and portfolio analysis, powered by the Plugin Architecture and Spec Kitty framework.
 
 ### 1. Stock Valuation Analyst (`plugins/stock-valuation`)
-An autonomous agent that acts as a buy-side analyst. It fetches real-time financial data, performs cognitive analysis, and generates a 3-scenario valuation model (Bear/Base/Bull) with a final "Buy/Sell/Hold" recommendation.
+An autonomous buy-side analyst. Fetches real-time financial data, builds Bear/Base/Bull DCF scenarios, and generates a fair value with BUY/HOLD/SELL recommendation. Includes a research sweep skill that qualitatively assesses what changed before deciding whether to re-run the model.
 
--   **Trigger**: `/stock-valuation_evaluate-stock {TICKER}`
 -   **Plugin**: [`plugins/stock-valuation/`](plugins/stock-valuation/README.md)
--   **Capabilities**:
-    -   Fetches live financials via `yfinance`.
-    -   Projects 5-year revenue, margins, and PE ratios.
-    -   Calculates fair value and upside/downside.
-    -   Generates deep-dive research reports.
-    -   Persists results to the Valuation Modeler.
-    -   Interactive Q&A for assumption challenges and sensitivity analysis.
+-   **Skills**:
+    -   `/evaluate-stock {TICKER}` — Full DCF valuation with `analyticsLog`, scenario analysis, research report, and persistence to the Valuation Modeler.
+    -   `/research-stock {TICKER}` — Qualitative sweep (earnings, competitive, macro, management, analyst sentiment). Classifies findings as Class A/B/C/D and gates re-valuation on confirmation.
 
-### 2. Strategic Thesis Balancer (`plugins/thesis-balancer`)
-A "Strategic Guardian" agent that monitors your portfolio's alignment with your core investment thesis. It detects drift, checks "Thesis Breakers", and recommends rebalancing trades.
+### 2. Strategic Thesis Suite (`plugins/thesis-balancer`)
+A three-skill suite that monitors, challenges, and optimizes your portfolio against your investment thesis.
 
--   **Trigger**: `/thesis-balancer_review-portfolio`
 -   **Plugin**: [`plugins/thesis-balancer/`](plugins/thesis-balancer/README.md)
--   **Capabilities**:
-    -   **Drift Analysis**: Calculates deviation from target weights (Pillar & Holding level).
-    -   **Strategic Review**: Classifies drift as passive or active, confirms intent before optimizing.
-    -   **Conflict Detection**: Flags when Tool A (valuation) and thesis disagree on a holding.
-    -   **Thesis Evolution**: Supports updating thesis targets when conviction changes.
+-   **Skills**:
+    -   `/review-portfolio` — Drift monitor with pillar conviction audit, thesis formula health score (0–100), and valuation gap ranking. Flags strategic conflicts where core holdings are SELL-rated.
+    -   `/strategic-review` — Adversarial thesis challenger. Surfaces which pillars are failing, proposes specific target weight revisions grounded in fair-value evidence, and generates `formulaImprovements` output.
+    -   `/rebalance` — Valuation-gated trade optimizer. Prioritizes trimming SELL-rated overweights and restoring BUY-rated underweights. Never buys a SELL-rated holding to restore drift — surfaces `skippedRestores` instead.
 
 ## 🔌 Plugin Architecture
 
