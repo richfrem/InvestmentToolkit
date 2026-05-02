@@ -84,19 +84,19 @@ export default function PortfolioSummaryCards({ data }: Props) {
                     className={`bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg ${card.glow}`}
                 >
                     <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest">
                             {card.title}
                         </h3>
-                        <card.icon size={16} className="text-slate-600" />
+                        <card.icon size={18} className="text-slate-600" />
                     </div>
-                    <div className={`text-2xl font-bold mb-3 ${card.primaryColor}`}>
+                    <div className={`text-4xl font-bold mb-4 ${card.primaryColor}`}>
                         {card.primary}
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                         {card.rows.map((row) => (
-                            <div key={row.label} className="flex justify-between text-sm">
+                            <div key={row.label} className="flex justify-between text-base">
                                 <span className="text-slate-500">{row.label}</span>
-                                <span className={`font-medium ${row.color}`}>{row.value}</span>
+                                <span className={`font-semibold ${row.color}`}>{row.value}</span>
                             </div>
                         ))}
                     </div>

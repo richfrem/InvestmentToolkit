@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 
@@ -33,45 +33,72 @@ interface HeatmapResponse {
 interface ColDef {
     id: keyof StockRow;
     label: string;
-    always?: boolean;       // cannot be hidden
-    isChange?: boolean;     // heatmap-coloured background
+    always?: boolean;
+    isChange?: boolean;
     defaultOn?: boolean;
     align?: 'left' | 'right';
     format: (v: number | string | null) => string;
 }
 
 const COLUMNS: ColDef[] = [
-    { id: 'symbol',         label: 'Symbol',    always: true,  defaultOn: true, align: 'left',  format: v => v },
-    { id: 'name',           label: 'Name',      always: true,  defaultOn: true, align: 'left',  format: v => v },
-    { id: 'sector',         label: 'Sector',    defaultOn: false, align: 'left', format: v => v ?? '—' },
-    { id: 'shares',         label: 'Shares',    defaultOn: true,  align: 'right', format: v => v?.toLocaleString() ?? '—' },
-    { id: 'price',          label: 'Price',     defaultOn: true, align: 'right', format: v => v != null ? `$${v.toFixed(2)}` : '—' },
-    { id: 'book_price',     label: 'Avg Cost',  defaultOn: true, align: 'right', format: v => v != null ? `$${v.toFixed(2)}` : '—' },
-    { id: 'change_1d',      label: '1D %',   isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
-    { id: 'change_1w',      label: '1W %',   isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
-    { id: 'change_1m',      label: '1M %',   isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
-    { id: 'change_ytd',     label: 'YTD %',  isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
-    { id: 'change_1y',      label: '1Y %',   isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
-    { id: 'change_overall', label: 'Overall %', isChange: true, defaultOn: true, align: 'right', format: fmtPct },
-    { id: 'total_book',     label: 'Book Value',   defaultOn: true, align: 'right', format: fmtDollar },
-    { id: 'total_market',   label: 'Mkt Value',    defaultOn: true, align: 'right', format: fmtDollar },
+    { id: 'symbol',         label: 'Symbol',     always: true,  defaultOn: true,  align: 'left',  format: v => String(v ?? '') },
+    { id: 'name',           label: 'Name',        always: true,  defaultOn: true,  align: 'left',  format: v => String(v ?? '') },
+    { id: 'sector',         label: 'Sector',      defaultOn: false, align: 'left', format: v => String(v ?? '—') },
+    { id: 'shares',         label: 'Shares',      defaultOn: true,  align: 'right', format: v => v?.toLocaleString() ?? '—' },
+    { id: 'price',          label: 'Price',       defaultOn: true,  align: 'right', format: v => v != null ? `$${(v as number).toFixed(2)}` : '—' },
+    { id: 'book_price',     label: 'Avg Cost',    defaultOn: true,  align: 'right', format: v => v != null ? `$${(v as number).toFixed(2)}` : '—' },
+    { id: 'change_1d',      label: '1D %',        isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
+    { id: 'change_1w',      label: '1W %',        isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
+    { id: 'change_1m',      label: '1M %',        isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
+    { id: 'change_ytd',     label: 'YTD %',       isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
+    { id: 'change_1y',      label: '1Y %',        isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
+    { id: 'change_overall', label: 'Overall %',   isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
+    { id: 'total_book',     label: 'Book Value',  defaultOn: true,  align: 'right', format: fmtDollar },
+    { id: 'total_market',   label: 'Mkt Value',   defaultOn: true,  align: 'right', format: fmtDollar },
 ];
+
+const DEFAULT_WIDTHS: Record<string, number> = {
+    symbol: 70, name: 170, sector: 115, shares: 60, price: 72,
+    book_price: 72, change_1d: 65, change_1w: 65, change_1m: 65,
+    change_ytd: 65, change_1y: 65, change_overall: 80,
+    total_book: 80, total_market: 80,
+};
+
+// ─── Persistence ──────────────────────────────────────────────────────────────
+
+const STORAGE_KEY = 'portfolio-table-prefs-v1';
+
+interface TablePrefs {
+    visible: string[];
+    columnOrder: string[];
+    columnWidths: Record<string, number>;
+}
+
+function loadPrefs(): TablePrefs | null {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? (JSON.parse(raw) as TablePrefs) : null;
+    } catch { return null; }
+}
+
+function savePrefs(prefs: TablePrefs) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs)); } catch { /* quota */ }
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function fmtPct(v: number | null): string {
-    if (v == null) return '—';
+function fmtPct(v: string | number | null): string {
+    if (v == null || typeof v === 'string') return '—';
     return `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
 }
 
-function fmtDollar(v: number | null): string {
-    if (v == null) return '—';
+function fmtDollar(v: string | number | null): string {
+    if (v == null || typeof v === 'string') return '—';
     if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
     if (v >= 1_000)     return `$${(v / 1_000).toFixed(1)}K`;
     return `$${v.toFixed(0)}`;
 }
 
-/** Finviz-style heatmap colour with reduced opacity for table cells */
 function changeBg(v: number | null): string {
     if (v == null) return 'transparent';
     if (v >=  8) return 'rgba(0,77,0,0.85)';
@@ -92,8 +119,7 @@ function changeBg(v: number | null): string {
 
 function sortRows(rows: StockRow[], col: keyof StockRow, dir: 'asc' | 'desc'): StockRow[] {
     return [...rows].sort((a, b) => {
-        const av = a[col];
-        const bv = b[col];
+        const av = a[col], bv = b[col];
         if (av == null && bv == null) return 0;
         if (av == null) return 1;
         if (bv == null) return -1;
@@ -110,33 +136,77 @@ export default function PortfolioTable() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Column visibility & ordering
+    // Load persisted prefs once
+    const savedPrefs = useRef<TablePrefs | null>(null);
+    if (savedPrefs.current === null) savedPrefs.current = loadPrefs();
+    const prefs = savedPrefs.current;
+
     const defaultVisible = new Set(COLUMNS.filter(c => c.always || c.defaultOn).map(c => c.id));
-    const [visible, setVisible] = useState<Set<string>>(defaultVisible);
-    const [columnOrder, setColumnOrder] = useState<string[]>(COLUMNS.map(c => c.id));
+    const [visible, setVisible] = useState<Set<string>>(
+        prefs ? new Set(prefs.visible) : defaultVisible
+    );
+    const [columnOrder, setColumnOrder] = useState<string[]>(
+        prefs?.columnOrder ?? COLUMNS.map(c => c.id)
+    );
+    const [columnWidths, setColumnWidths] = useState<Record<string, number>>(
+        { ...DEFAULT_WIDTHS, ...(prefs?.columnWidths ?? {}) }
+    );
+
     const [pickerOpen, setPickerOpen] = useState(false);
     const pickerRef = useRef<HTMLDivElement>(null);
-
-    // Filtering
     const [showFilters, setShowFilters] = useState(false);
     const [filters, setFilters] = useState<Record<string, string>>({});
-
-    // Sorting
     const [sortCol, setSortCol] = useState<keyof StockRow>('total_market');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+
+    // Resize drag state — stored in ref to avoid re-renders during drag
+    const dragRef = useRef<{ colId: string; startX: number; startWidth: number } | null>(null);
+
+    // Persist prefs whenever they change
+    useEffect(() => {
+        savePrefs({ visible: [...visible], columnOrder, columnWidths });
+    }, [visible, columnOrder, columnWidths]);
 
     useEffect(() => { fetchData(); }, []);
 
     // Close picker on outside click
     useEffect(() => {
         function handle(e: MouseEvent) {
-            if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+            if (pickerRef.current && !pickerRef.current.contains(e.target as Node))
                 setPickerOpen(false);
-            }
         }
         document.addEventListener('mousedown', handle);
         return () => document.removeEventListener('mousedown', handle);
     }, []);
+
+    // Global mouse handlers for column resize
+    useEffect(() => {
+        function onMouseMove(e: MouseEvent) {
+            if (!dragRef.current) return;
+            const { colId, startX, startWidth } = dragRef.current;
+            const newWidth = Math.max(40, startWidth + (e.clientX - startX));
+            setColumnWidths(prev => ({ ...prev, [colId]: newWidth }));
+        }
+        function onMouseUp() {
+            if (dragRef.current) dragRef.current = null;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        }
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+        return () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+    }, []);
+
+    const startResize = useCallback((e: React.MouseEvent, colId: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragRef.current = { colId, startX: e.clientX, startWidth: columnWidths[colId] ?? DEFAULT_WIDTHS[colId] ?? 100 };
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+    }, [columnWidths]);
 
     async function fetchData() {
         setLoading(true);
@@ -145,12 +215,10 @@ export default function PortfolioTable() {
             const portRes = await fetch('/api/portfolio');
             if (!portRes.ok) throw new Error('Failed to fetch portfolio');
             const portConfig = await portRes.json() as { items?: StockRow[] };
-            const items: StockRow[] = portConfig.items ?? [];
-
             const res = await fetch('/api/portfolio-heatmap', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items }),
+                body: JSON.stringify({ items: portConfig.items ?? [] }),
             });
             if (!res.ok) throw new Error('Failed to fetch heatmap data');
             setData(await res.json());
@@ -162,12 +230,8 @@ export default function PortfolioTable() {
     }
 
     function handleSort(col: keyof StockRow) {
-        if (sortCol === col) {
-            setSortDir(d => d === 'asc' ? 'desc' : 'asc');
-        } else {
-            setSortCol(col);
-            setSortDir('desc');
-        }
+        if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+        else { setSortCol(col); setSortDir('desc'); }
     }
 
     function toggleCol(id: string) {
@@ -184,27 +248,22 @@ export default function PortfolioTable() {
             if (idx === -1) return prev;
             const nextIdx = direction === 'up' ? idx - 1 : idx + 1;
             if (nextIdx < 0 || nextIdx >= prev.length) return prev;
-
             const next = [...prev];
             [next[idx], next[nextIdx]] = [next[nextIdx], next[idx]];
             return next;
         });
     }
 
-    // Derived columns based on order and visibility
     const orderedCols = columnOrder.map(id => COLUMNS.find(c => c.id === id)!).filter(Boolean);
     const visibleCols = orderedCols.filter(c => visible.has(c.id));
 
-    // Filtered and sorted rows
-    const filteredRows = (data?.stocks ?? []).filter(row => {
-        return Object.entries(filters).every(([colId, filterVal]) => {
+    const filteredRows = (data?.stocks ?? []).filter(row =>
+        Object.entries(filters).every(([colId, filterVal]) => {
             if (!filterVal) return true;
             const val = row[colId as keyof StockRow];
-            if (val == null) return false;
-            return String(val).toLowerCase().includes(filterVal.toLowerCase());
-        });
-    });
-
+            return val != null && String(val).toLowerCase().includes(filterVal.toLowerCase());
+        })
+    );
     const rows = sortRows(filteredRows, sortCol, sortDir);
 
     // ── Loading / error states ───────────────────────────────────────────────
@@ -242,23 +301,19 @@ export default function PortfolioTable() {
                 <div className="flex items-center gap-3">
                     <span className="text-zinc-300 text-sm font-bold">{fmtDollar(data.total_value)}</span>
 
-                    {/* Filter Toggle */}
                     <button
                         onClick={() => setShowFilters(s => !s)}
                         className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs transition-colors ${showFilters ? 'bg-amber-500/20 text-amber-400 border border-amber-500/50' : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}`}
                     >
-                        <Filter size={13} />
-                        Filter
+                        <Filter size={13} /> Filter
                     </button>
 
-                    {/* Column picker */}
                     <div className="relative" ref={pickerRef}>
                         <button
                             onClick={() => setPickerOpen(o => !o)}
                             className="flex items-center gap-1.5 px-3 py-1 bg-zinc-800 text-zinc-300 rounded text-xs hover:bg-zinc-700 transition-colors"
                         >
-                            <SlidersHorizontal size={13} />
-                            Columns
+                            <SlidersHorizontal size={13} /> Columns
                         </button>
                         {pickerOpen && (
                             <div className="absolute right-0 top-8 z-50 w-64 bg-zinc-800 border border-zinc-700 rounded-lg shadow-2xl p-2 max-h-96 overflow-y-auto">
@@ -280,18 +335,10 @@ export default function PortfolioTable() {
                                                 <span className={`text-xs ${visible.has(col.id) ? 'text-zinc-200' : 'text-zinc-500'}`}>{col.label}</span>
                                             </label>
                                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button
-                                                    onClick={() => moveColumn(colId, 'up')}
-                                                    disabled={idx === 0}
-                                                    className="p-1 hover:bg-zinc-600 rounded text-zinc-400 disabled:text-zinc-700"
-                                                >
+                                                <button onClick={() => moveColumn(colId, 'up')} disabled={idx === 0} className="p-1 hover:bg-zinc-600 rounded text-zinc-400 disabled:text-zinc-700">
                                                     <ArrowUp size={12} />
                                                 </button>
-                                                <button
-                                                    onClick={() => moveColumn(colId, 'down')}
-                                                    disabled={idx === columnOrder.length - 1}
-                                                    className="p-1 hover:bg-zinc-600 rounded text-zinc-400 disabled:text-zinc-700"
-                                                >
+                                                <button onClick={() => moveColumn(colId, 'down')} disabled={idx === columnOrder.length - 1} className="p-1 hover:bg-zinc-600 rounded text-zinc-400 disabled:text-zinc-700">
                                                     <ArrowDown size={12} />
                                                 </button>
                                             </div>
@@ -302,10 +349,7 @@ export default function PortfolioTable() {
                         )}
                     </div>
 
-                    <button
-                        onClick={fetchData}
-                        className="px-3 py-1 bg-zinc-800 text-zinc-300 rounded text-xs hover:bg-zinc-700 transition-colors"
-                    >
+                    <button onClick={fetchData} className="px-3 py-1 bg-zinc-800 text-zinc-300 rounded text-xs hover:bg-zinc-700 transition-colors">
                         ↻ Refresh
                     </button>
                 </div>
@@ -313,7 +357,12 @@ export default function PortfolioTable() {
 
             {/* Table */}
             <div className="overflow-auto">
-                <table className="w-full text-sm border-collapse">
+                <table className="text-sm border-collapse" style={{ tableLayout: 'fixed', width: '100%', minWidth: visibleCols.reduce((sum, c) => sum + (columnWidths[c.id] ?? DEFAULT_WIDTHS[c.id] ?? 100), 0) }}>
+                    <colgroup>
+                        {visibleCols.map(col => (
+                            <col key={col.id} style={{ width: columnWidths[col.id] ?? DEFAULT_WIDTHS[col.id] ?? 100 }} />
+                        ))}
+                    </colgroup>
                     <thead>
                         <tr className="bg-zinc-800/60 border-b border-zinc-700">
                             {visibleCols.map(col => {
@@ -321,8 +370,8 @@ export default function PortfolioTable() {
                                 return (
                                     <th
                                         key={col.id}
-                                    onClick={(e) => { e.stopPropagation(); handleSort(col.id); }}
-                                        className={`px-3 py-2.5 font-semibold text-xs uppercase tracking-wider cursor-pointer select-none whitespace-nowrap
+                                        onClick={() => handleSort(col.id)}
+                                        className={`relative px-3 py-2.5 font-semibold text-xs uppercase tracking-wider cursor-pointer select-none whitespace-nowrap overflow-hidden
                                             ${col.align === 'right' ? 'text-right' : 'text-left'}
                                             ${active ? 'text-amber-400' : 'text-zinc-400 hover:text-zinc-200'}`}
                                     >
@@ -335,6 +384,12 @@ export default function PortfolioTable() {
                                                 : <ChevronsUpDown size={11} className="text-zinc-600" />
                                             }
                                         </span>
+                                        {/* Resize handle */}
+                                        <div
+                                            className="absolute right-0 top-0 bottom-0 w-[5px] cursor-col-resize hover:bg-amber-500/40 active:bg-amber-500/70 transition-colors z-10"
+                                            onMouseDown={e => startResize(e, col.id)}
+                                            onClick={e => e.stopPropagation()}
+                                        />
                                     </th>
                                 );
                             })}
@@ -345,11 +400,11 @@ export default function PortfolioTable() {
                                     <th key={`filter-${col.id}`} className="px-2 py-1.5">
                                         <input
                                             type="text"
-                                            placeholder={`Filter ${col.label}...`}
+                                            placeholder={`Filter…`}
                                             value={filters[col.id] ?? ''}
-                                            onChange={(e) => setFilters(prev => ({ ...prev, [col.id]: e.target.value }))}
+                                            onChange={e => setFilters(prev => ({ ...prev, [col.id]: e.target.value }))}
                                             className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-[11px] text-zinc-300 focus:outline-none focus:border-amber-500/50 placeholder:text-zinc-600"
-                                            onClick={(e) => e.stopPropagation()}
+                                            onClick={e => e.stopPropagation()}
                                         />
                                     </th>
                                 ))}
@@ -368,21 +423,18 @@ export default function PortfolioTable() {
                                 {visibleCols.map(col => {
                                     const val = row[col.id];
                                     const numVal = typeof val === 'number' ? val : null;
-                                    const isChange = col.isChange;
                                     return (
                                         <td
                                             key={col.id}
-                                            className={`px-3 py-2.5 whitespace-nowrap ${col.align === 'right' ? 'text-right' : 'text-left'}`}
-                                            style={isChange ? { backgroundColor: changeBg(numVal) } : undefined}
+                                            className={`px-3 py-2.5 whitespace-nowrap overflow-hidden text-ellipsis ${col.align === 'right' ? 'text-right' : 'text-left'}`}
+                                            style={col.isChange ? { backgroundColor: changeBg(numVal) } : undefined}
                                         >
                                             {col.id === 'symbol' ? (
                                                 <span className="font-bold text-white">{val}</span>
                                             ) : col.id === 'name' ? (
                                                 <span className="text-zinc-300 text-xs">{val}</span>
-                                            ) : isChange ? (
-                                                <span className={`font-semibold text-xs ${val == null ? 'text-zinc-600' : val >= 0 ? 'text-white' : 'text-white'}`}>
-                                                    {col.format(val)}
-                                                </span>
+                                            ) : col.isChange ? (
+                                                <span className="font-semibold text-xs text-white">{col.format(val)}</span>
                                             ) : (
                                                 <span className="text-zinc-300">{col.format(val)}</span>
                                             )}
@@ -393,11 +445,10 @@ export default function PortfolioTable() {
                         ))}
                     </tbody>
 
-                    {/* Totals footer */}
                     <tfoot>
                         <tr className="border-t-2 border-zinc-700 bg-zinc-800/40">
                             {visibleCols.map((col, i) => {
-                                let content: string = '';
+                                let content = '';
                                 if (col.id === 'symbol') content = 'TOTAL';
                                 else if (col.id === 'total_market') content = fmtDollar(data.total_value);
                                 else if (col.id === 'total_book') {
@@ -405,7 +456,7 @@ export default function PortfolioTable() {
                                     content = tb > 0 ? fmtDollar(tb) : '—';
                                 }
                                 return (
-                                    <td key={col.id} className={`px-3 py-2 text-xs font-bold ${col.align === 'right' ? 'text-right' : 'text-left'} ${i === 0 ? 'text-zinc-400' : 'text-zinc-300'}`}>
+                                    <td key={col.id} className={`px-3 py-2 text-xs font-bold overflow-hidden text-ellipsis ${col.align === 'right' ? 'text-right' : 'text-left'} ${i === 0 ? 'text-zinc-400' : 'text-zinc-300'}`}>
                                         {content}
                                     </td>
                                 );

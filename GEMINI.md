@@ -129,7 +129,35 @@ We use the **Exploration Workflow** (a modification of the orba/superpowers plug
 ## 📦 Dependency Management
 - Python deps tracked in root `requirements.in`
 - Sub-services inherit via `-r ../../requirements.in`
-- Always run `pip-compile` after modifying `.in` files.
+- Always run `pip-compile requirements.in -o requirements.txt` after modifying `.in` files
+- The startup script installs from `requirements.txt` — new Python imports **must** be in `requirements.in` or the venv will be missing them at runtime
+
+---
+
+## ⚠️ Known Pitfalls — Read Before Touching These Areas
+
+### 1. Python `__dirname` path in TypeScript backend
+`__dirname` in `dist/index.js` (production) resolves to `backend/dist/`, **not** `backend/src/`. Python scripts live in `src/` and are never copied to `dist/`. Always use:
+```ts
+path.resolve(__dirname, '../src/QuestradeDataEngine.py')  // correct for dist/
+```
+**Reference**: `QuestradeSyncService.ts` uses `../../src/QuestradeDataEngine.py` (from `dist/services/`) — follow that pattern. Never use `path.resolve(__dirname, 'script.py')` — works in ts-node-dev, silently breaks in production.
+
+### 2. Venv dependency gaps
+The startup script sets up a venv and installs from `requirements.txt`. If you add a Python import to any backend file and forget to add it to `requirements.in`:
+- It will work in the terminal (system Python may have it)
+- It will fail at runtime when Node spawns the venv Python
+- **Required packages**: `keyring`, `cryptography`, `yfinance`, `pandas`, `fastapi`, `uvicorn`, `pydantic`, `rich`, `typer`, `python-dotenv`
+- After adding to `requirements.in`, run: `venv/bin/pip-compile requirements.in -o requirements.txt`
+
+### 3. Backend requires explicit restart in production
+The startup script runs `node dist/index.js` — **not** ts-node-dev. Changes to `src/` require:
+1. `npm run build -w backend` (recompile)
+2. Restart the backend process
+Frontend hot-reloads via Vite; backend does not.
+
+### 4. Questrade seed endpoint — do not bypass the OAuth exchange
+The `/api/questrade/seed` endpoint accepts a raw **One-Week App Token** from the portal and internally exchanges it via OAuth before seeding. Do not seed raw one-week tokens directly via `QuestradeDataEngine.py --seed` unless you have already done the curl exchange yourself.
 
 ---
 

@@ -71,10 +71,10 @@ export const QuestradeSetupModal: React.FC<QuestradeSetupModalProps> = ({ isOpen
                                 <strong>Manual Setup Required:</strong> Questrade requires a one-time manual "Refresh Token" to initialize the secure bridge.
                             </div>
                             <ol className="space-y-3 text-gray-300 text-sm list-decimal list-inside">
-                                <li>Log in to <a href="https://my.questrade.com" target="_blank" rel="noopener" className="text-amber-400 hover:underline">Questrade</a></li>
-                                <li>Navigate to <strong>App Hub</strong> → <strong>Questrade API Centre</strong></li>
-                                <li>Look for <strong>Manual Refresh Token</strong></li>
-                                <li>Copy the generated token</li>
+                                <li>Log in to <a href="https://apphub.questrade.com/UI/UserApps.aspx" target="_blank" rel="noopener" className="text-amber-400 hover:underline">Questrade App Hub</a></li>
+                                <li>Click <strong>API Centre</strong> on your application</li>
+                                <li>Click <strong>Generate Token</strong> to get a One-Week Token</li>
+                                <li>Copy and paste it below — we'll exchange it automatically</li>
                             </ol>
                             <button
                                 onClick={() => setStep('INPUT')}
@@ -88,12 +88,12 @@ export const QuestradeSetupModal: React.FC<QuestradeSetupModalProps> = ({ isOpen
                     {step === 'INPUT' && (
                         <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
                             <div>
-                                <label className="block text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">Refresh Token</label>
+                                <label className="block text-gray-400 text-xs font-semibold uppercase tracking-wider mb-2">One-Week Token</label>
                                 <input
                                     type="text"
                                     value={token}
                                     onChange={(e) => setToken(e.target.value)}
-                                    placeholder="Paste your token here..."
+                                    placeholder="Paste your one-week token here..."
                                     className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition-all font-mono text-sm"
                                 />
                                 {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
