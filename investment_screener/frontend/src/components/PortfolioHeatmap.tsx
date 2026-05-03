@@ -41,18 +41,29 @@ export default function PortfolioHeatmap() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [groupBy, setGroupBy] = useState<'sector' | 'strategy'>('sector');
+    const [strategyMap, setStrategyMap] = useState<Record<string, string>>({});
     const svgRef = useRef<SVGSVGElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         fetchHeatmapData();
+        // Fetch strategy assignments from canonical all-holdings endpoint
+        fetch('/api/screener/all-holdings')
+            .then(r => r.ok ? r.json() : [])
+            .then((holdings: any[]) => {
+                const map: Record<string, string> = {};
+                for (const h of holdings) map[h.ticker] = h.subStrategyId ?? 'Other';
+                setStrategyMap(map);
+            })
+            .catch(() => {});
     }, []);
 
     useEffect(() => {
         if (data && svgRef.current && containerRef.current) {
             renderTreemap();
         }
-    }, [data]);
+    }, [data, groupBy, strategyMap]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -177,17 +188,38 @@ export default function PortfolioHeatmap() {
 
         const hierarchyData: TreemapNode = {
             name: 'Portfolio',
-            children: Object.values(data.sectors).map(sector => ({
-                name: sector.name,
-                children: sector.stocks.map(stock => ({
-                    name: stock.symbol,
-                    symbol: stock.symbol,
-                    value: stock.position_value,
-                    change_pct: stock.change_pct,
-                    shares: stock.shares,
-                    price: stock.price
+            children: groupBy === 'strategy'
+                ? (() => {
+                    // Group stocks by subStrategyId from allHoldings
+                    const groups: Record<string, StockHeatmapData[]> = {};
+                    for (const stock of data.stocks) {
+                        const grp = strategyMap[stock.symbol] ?? 'Other';
+                        if (!groups[grp]) groups[grp] = [];
+                        groups[grp].push(stock);
+                    }
+                    return Object.entries(groups).map(([grpName, stocks]) => ({
+                        name: grpName,
+                        children: stocks.map(stock => ({
+                            name: stock.symbol,
+                            symbol: stock.symbol,
+                            value: stock.position_value,
+                            change_pct: stock.change_pct,
+                            shares: stock.shares,
+                            price: stock.price,
+                        }))
+                    }));
+                })()
+                : Object.values(data.sectors).map(sector => ({
+                    name: sector.name,
+                    children: sector.stocks.map(stock => ({
+                        name: stock.symbol,
+                        symbol: stock.symbol,
+                        value: stock.position_value,
+                        change_pct: stock.change_pct,
+                        shares: stock.shares,
+                        price: stock.price
+                    }))
                 }))
-            }))
         };
 
         const root = d3.hierarchy(hierarchyData)
@@ -381,6 +413,17 @@ export default function PortfolioHeatmap() {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
+                    {/* Group by toggle */}
+                    <div className="flex items-center bg-zinc-800 rounded text-xs overflow-hidden">
+                        <button
+                            onClick={() => setGroupBy('sector')}
+                            className={`px-2.5 py-1 transition-colors ${groupBy === 'sector' ? 'bg-zinc-600 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
+                        >Sector</button>
+                        <button
+                            onClick={() => setGroupBy('strategy')}
+                            className={`px-2.5 py-1 transition-colors ${groupBy === 'strategy' ? 'bg-zinc-600 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
+                        >Strategy</button>
+                    </div>
                     <button
                         onClick={refreshPrices}
                         disabled={refreshing}
