@@ -8,28 +8,10 @@
       "description": "update_thesis.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
     },
     {
-      "src": "plugins/thesis-balancer/references/investment_thesis.md",
-      "dst": "plugins/thesis-balancer/skills/update-portfolio-targets/references/investment_thesis.md",
-      "strategy": "symlink",
-      "description": "ADR-003: skill references/ symlink \u2192 plugin root references/"
-    },
-    {
       "src": "plugins/thesis-balancer/scripts/update_thesis.py",
       "dst": "plugins/thesis-balancer/skills/update-portfolio-targets/scripts/update_thesis.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "plugins/thesis-balancer/references/investment_thesis.md",
-      "dst": "plugins/thesis-balancer/skills/thesis-balancer/references/investment_thesis.md",
-      "strategy": "symlink",
-      "description": "ADR-003: thesis-balancer skill references/ symlink \u2192 plugin root references/investment_thesis.md"
-    },
-    {
-      "src": "plugins/thesis-balancer/references/investment_thesis.md",
-      "dst": "plugins/thesis-balancer/skills/strategic-review/references/investment_thesis.md",
-      "strategy": "symlink",
-      "description": "ADR-003: strategic-review skill references/ symlink \u2192 plugin root references/investment_thesis.md"
     },
     {
       "src": "plugins/thesis-balancer/references/investment_thesis.md",
@@ -52,18 +34,6 @@
     {
       "src": "investment_screener/frontend/src/data/portfolio.json",
       "dst": "plugins/thesis-balancer/references/portfolio.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "investment_screener/frontend/src/data/portfolio.json",
-      "dst": "plugins/thesis-balancer/skills/strategic-review/references/portfolio.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "investment_screener/frontend/src/data/portfolio.json",
-      "dst": "plugins/thesis-balancer/skills/thesis-balancer/references/portfolio.json",
       "strategy": "symlink",
       "description": ""
     },
