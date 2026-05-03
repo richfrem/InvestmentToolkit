@@ -1,0 +1,397 @@
+{
+  "id": "target-portfolio",
+  "name": "Investment Thesis v7.4",
+  "schemaVersion": "1.0",
+  "version": 2,
+  "createdAt": "2026-02-14T12:00:00Z",
+  "updatedAt": "2026-05-02T17:00:00Z",
+  "description": "Investment thesis focused on the dual infrastructure buildout for ASI Compute and Sovereign Finance. Builder-First, Empire-Second \u2014 own the physical and digital rails, not the application layer.",
+  "pillars": [
+    {
+      "id": "compute",
+      "name": "ASI / Compute \u2013 Chips",
+      "targetWeight": 27.65
+    },
+    {
+      "id": "cash",
+      "name": "Cash (Strategic Reserve)",
+      "targetWeight": 12.67
+    },
+    {
+      "id": "sovfin",
+      "name": "Sovereign Finance / Digital",
+      "targetWeight": 12.29
+    },
+    {
+      "id": "titans",
+      "name": "AI Titans / Cloud",
+      "targetWeight": 12.4
+    },
+    {
+      "id": "datainfra",
+      "name": "Data Infra / Supply Chain",
+      "targetWeight": 10.86
+    },
+    {
+      "id": "power",
+      "name": "Power / Energy",
+      "targetWeight": 9.97
+    },
+    {
+      "id": "security",
+      "name": "Security / Data OS",
+      "targetWeight": 8.27
+    },
+    {
+      "id": "applied",
+      "name": "Applied AI / Robotics",
+      "targetWeight": 5.89
+    }
+  ],
+  "holdings": [
+    {
+      "ticker": "PSU-U.TO",
+      "name": "Purpose US Cash Fund",
+      "pillarId": "cash",
+      "targetWeight": 12.67,
+      "role": "reserve",
+      "subStrategyId": "cash"
+    },
+    {
+      "ticker": "INTC",
+      "name": "Intel Corp",
+      "pillarId": "compute",
+      "targetWeight": 10.87,
+      "role": "core",
+      "thesisForInclusion": "The Sovereign Foundry: designated US National Champion for onshored compute manufacturing. Core contrarian bet on 18A node.",
+      "thesisBreakers": [
+        "18A HVM delay beyond Q4 2026",
+        "No top-5 fabless design win by EOY 2026",
+        "CEO departure without committed IFS successor"
+      ],
+      "subStrategyId": "sa-asi-race"
+    },
+    {
+      "ticker": "AVGO",
+      "name": "Broadcom Inc.",
+      "pillarId": "compute",
+      "targetWeight": 6.35,
+      "role": "core",
+      "subStrategyId": "sa-asi-race"
+    },
+    {
+      "ticker": "NVDA",
+      "name": "NVIDIA Corporation",
+      "pillarId": "compute",
+      "targetWeight": 4.32,
+      "role": "hedge",
+      "subStrategyId": "sa-asi-race"
+    },
+    {
+      "ticker": "AMD",
+      "name": "AMD Inc.",
+      "pillarId": "compute",
+      "targetWeight": 2.67,
+      "role": "hedge",
+      "subStrategyId": "sa-asi-race"
+    },
+    {
+      "ticker": "SNPS",
+      "name": "Synopsys Inc.",
+      "pillarId": "compute",
+      "targetWeight": 1.72,
+      "role": "core",
+      "subStrategyId": "sa-asi-race"
+    },
+    {
+      "ticker": "CDNS",
+      "name": "Cadence Design",
+      "pillarId": "compute",
+      "targetWeight": 1.72,
+      "role": "core",
+      "subStrategyId": "sa-asi-race"
+    },
+    {
+      "ticker": "GOOG",
+      "name": "Alphabet Inc.",
+      "pillarId": "titans",
+      "targetWeight": 5.86,
+      "role": "hedge",
+      "subStrategyId": "sa-asi-race"
+    },
+    {
+      "ticker": "MSFT",
+      "name": "Microsoft Corp.",
+      "pillarId": "titans",
+      "targetWeight": 3.6,
+      "role": "core",
+      "subStrategyId": "sa-asi-race"
+    },
+    {
+      "ticker": "META",
+      "name": "Meta Platforms",
+      "pillarId": "titans",
+      "targetWeight": 2.94,
+      "role": "core",
+      "subStrategyId": "sa-asi-race"
+    },
+    {
+      "ticker": "ETHA",
+      "name": "Ethereum ETF",
+      "pillarId": "sovfin",
+      "targetWeight": 3.69,
+      "role": "core",
+      "subStrategyId": "sovereign-finance"
+    },
+    {
+      "ticker": "COIN",
+      "name": "Coinbase Global",
+      "pillarId": "sovfin",
+      "targetWeight": 3.41,
+      "role": "core",
+      "thesisBreakers": [
+        "SEC court victory classifying ETH as security",
+        "Base L2 fails top-3 by volume EOY 2026",
+        "Major hack or loss of customer funds"
+      ],
+      "subStrategyId": "sovereign-finance"
+    },
+    {
+      "ticker": "IBIT",
+      "name": "Bitcoin ETF",
+      "pillarId": "sovfin",
+      "targetWeight": 3.13,
+      "role": "core",
+      "subStrategyId": "sovereign-finance"
+    },
+    {
+      "ticker": "CRCL",
+      "name": "Circle Internet",
+      "pillarId": "sovfin",
+      "targetWeight": 2.06,
+      "role": "core",
+      "thesisBreakers": [
+        "Failure to secure GENIUS Act charter",
+        "USDC peg break below $0.98",
+        "Sustained loss of regulated stablecoin market share"
+      ],
+      "subStrategyId": "sovereign-finance"
+    },
+    {
+      "ticker": "VST",
+      "name": "Vistra Corp.",
+      "pillarId": "power",
+      "targetWeight": 4.34,
+      "role": "core",
+      "subStrategyId": "datacenter-infra"
+    },
+    {
+      "ticker": "CEG",
+      "name": "Constellation Energy",
+      "pillarId": "power",
+      "targetWeight": 4.33,
+      "role": "core",
+      "subStrategyId": "datacenter-infra"
+    },
+    {
+      "ticker": "OKLO",
+      "name": "Oklo Inc.",
+      "pillarId": "power",
+      "targetWeight": 1.32,
+      "role": "speculative",
+      "subStrategyId": "datacenter-infra"
+    },
+    {
+      "ticker": "PANW",
+      "name": "Palo Alto Networks",
+      "pillarId": "security",
+      "targetWeight": 3.77,
+      "role": "core",
+      "subStrategyId": "sa-asi-race"
+    },
+    {
+      "ticker": "CRWD",
+      "name": "CrowdStrike Holdings",
+      "pillarId": "security",
+      "targetWeight": 2.5,
+      "role": "core",
+      "subStrategyId": "sa-asi-race"
+    },
+    {
+      "ticker": "ZS",
+      "name": "Zscaler Inc.",
+      "pillarId": "security",
+      "targetWeight": 2.0,
+      "role": "core",
+      "subStrategyId": "sa-asi-race"
+    },
+    {
+      "ticker": "CORZ",
+      "name": "Core Scientific",
+      "pillarId": "datainfra",
+      "targetWeight": 3.25,
+      "role": "speculative",
+      "subStrategyId": "datacenter-infra"
+    },
+    {
+      "ticker": "EQIX",
+      "name": "Equinix Inc.",
+      "pillarId": "datainfra",
+      "targetWeight": 2.82,
+      "role": "core",
+      "subStrategyId": "datacenter-infra"
+    },
+    {
+      "ticker": "CRWV",
+      "name": "CoreWeave Inc.",
+      "pillarId": "datainfra",
+      "targetWeight": 1.77,
+      "role": "core",
+      "subStrategyId": "sa-asi-race"
+    },
+    {
+      "ticker": "ANET",
+      "name": "Arista Networks",
+      "pillarId": "datainfra",
+      "targetWeight": 1.63,
+      "role": "core",
+      "subStrategyId": "sa-asi-race"
+    },
+    {
+      "ticker": "VRT",
+      "name": "Vertiv Holdings",
+      "pillarId": "datainfra",
+      "targetWeight": 1.3,
+      "role": "core",
+      "subStrategyId": "datacenter-infra"
+    },
+    {
+      "ticker": "HUMN",
+      "name": "Robotics ETF (HUMN)",
+      "pillarId": "applied",
+      "targetWeight": 2.82,
+      "role": "core",
+      "subStrategyId": "sa-asi-race",
+      "thesisForInclusion": "Roundhill Humanoid Robotics ETF \u2014 physical embodiment of ASI thesis"
+    },
+    {
+      "ticker": "KOID",
+      "name": "Robotics ETF (KOID)",
+      "pillarId": "applied",
+      "targetWeight": 2.44,
+      "role": "core",
+      "subStrategyId": "sa-asi-race",
+      "thesisForInclusion": "KraneShares Humanoid ETF \u2014 automation and robotics revolution"
+    },
+    {
+      "ticker": "AIFF",
+      "name": "Firefly Neuroscience",
+      "pillarId": "applied",
+      "targetWeight": 0.63,
+      "role": "speculative",
+      "subStrategyId": "frontier-bets"
+    },
+    {
+      "ticker": "SOLZ",
+      "name": "Solana ETF",
+      "subStrategyId": "sovereign-finance",
+      "targetWeight": 0,
+      "role": "untracked",
+      "thesisForInclusion": "Solana ETF \u2014 high-throughput payments layer, speculative allocation"
+    },
+    {
+      "ticker": "IREN",
+      "name": "IREN LIMITED",
+      "subStrategyId": "datacenter-infra",
+      "targetWeight": 0,
+      "role": "untracked",
+      "thesisForInclusion": "IREN AI data centre + Bitcoin mining \u2014 high-beta physical infra bet"
+    },
+    {
+      "ticker": "RGTI",
+      "name": "Rigetti Computing, Inc.",
+      "subStrategyId": "frontier-bets",
+      "targetWeight": 0,
+      "role": "untracked",
+      "thesisForInclusion": "Rigetti Computing \u2014 quantum compute exposure, binary milestone outcome"
+    },
+    {
+      "ticker": "COHR",
+      "name": "Coherent Corp.",
+      "subStrategyId": "sa-asi-race",
+      "targetWeight": 0,
+      "role": "untracked",
+      "thesisForInclusion": "Coherent optics \u2014 optical networking components for AI compute interconnect"
+    },
+    {
+      "ticker": "LITE",
+      "name": "Lumentum Holdings Inc.",
+      "subStrategyId": "sa-asi-race",
+      "targetWeight": 0,
+      "role": "untracked",
+      "thesisForInclusion": "Lumentum photonics \u2014 optical interconnects for AI networking layer"
+    },
+    {
+      "ticker": "EQT",
+      "name": "EQT Corporation",
+      "subStrategyId": "datacenter-infra",
+      "targetWeight": 0,
+      "role": "untracked",
+      "thesisForInclusion": "EQT natural gas infrastructure \u2014 energy security + structural AI power demand"
+    },
+    {
+      "ticker": "POET",
+      "name": "POET Technologies Inc.",
+      "subStrategyId": "frontier-bets",
+      "targetWeight": 0,
+      "role": "untracked",
+      "thesisForInclusion": "POET Technologies \u2014 photonic integrated circuits, optical compute interconnect"
+    },
+    {
+      "ticker": "NOW",
+      "name": "ServiceNow, Inc.",
+      "subStrategyId": "quality-saas",
+      "targetWeight": 0,
+      "role": "untracked",
+      "thesisForInclusion": "ServiceNow \u2014 AI workflow automation embedded in enterprise IT infrastructure"
+    },
+    {
+      "ticker": "BE",
+      "name": "Bloom Energy Corporation",
+      "subStrategyId": "datacenter-infra",
+      "targetWeight": 0,
+      "role": "untracked",
+      "thesisForInclusion": "Bloom Energy fuel cells \u2014 clean distributed power for data centre edge"
+    },
+    {
+      "ticker": "TEM",
+      "name": "Tempus AI, Inc.",
+      "subStrategyId": "frontier-bets",
+      "targetWeight": 0,
+      "role": "untracked",
+      "thesisForInclusion": "Tempus AI \u2014 AI-native healthcare data platform"
+    },
+    {
+      "ticker": "CRM",
+      "name": "Salesforce, Inc.",
+      "subStrategyId": "quality-saas",
+      "targetWeight": 0,
+      "role": "untracked",
+      "thesisForInclusion": "Salesforce \u2014 Agentforce AI platform on top of world's largest CRM dataset"
+    },
+    {
+      "ticker": "NBIS",
+      "name": "Nebius Group N.V.",
+      "subStrategyId": "sa-asi-race",
+      "targetWeight": 0,
+      "role": "untracked",
+      "thesisForInclusion": "Nebius AI infrastructure \u2014 early stage conviction, former Yandex Cloud"
+    }
+  ],
+  "globalSettings": {
+    "driftThresholdPct": 3.0,
+    "criticalDriftPct": 5.0,
+    "rebalanceFrequency": "quarterly",
+    "portfolioValueUSD": 150000
+  }
+}

@@ -16,7 +16,7 @@ allowed-tools: Bash, Read, Write
 ## Quick Reference
 - **Trigger**: `/review-portfolio [thesis_id]` or `/thesis-health`
 - **Persona**: Strategic Guardian — objective, disciplined, adversarial by design
-- **Thesis Doc**: `docs/InvestmentThesis/twin_revolution_ASI_and_Sovereign_finance.md`
+- **Thesis Doc**: `plugins/thesis-balancer/references/investment_thesis.md`
 - **Fallbacks**: `references/fallback-tree.md` ← load on any API failure
 - **Acceptance**: `references/acceptance-criteria.md`
 - **Strategic Prompt**: `references/strategic_review_prompt.md`

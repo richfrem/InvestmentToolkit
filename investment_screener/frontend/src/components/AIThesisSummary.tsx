@@ -28,9 +28,15 @@ export function AIThesisSummary({ aiResult, isAnalyzing, aiError, onViewFullRepo
                                 <h3 className="text-base font-bold text-white">AI Expert Thesis</h3>
                                 {aiResult?.action && (
                                     <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-black tracking-wider border ${
-                                        aiResult.action === 'BUY' ? 'bg-green-500/20 text-green-400 border-green-500/30' :
-                                        aiResult.action === 'SELL' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
-                                        'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                                        ['BUY','INITIATE','ACCUMULATE'].includes(aiResult.action)
+                                            ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                                        : ['SELL','EXIT'].includes(aiResult.action)
+                                            ? 'bg-red-500/20 text-red-400 border-red-500/30'
+                                        : ['TRIM'].includes(aiResult.action)
+                                            ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                                        : ['WATCHLIST'].includes(aiResult.action)
+                                            ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
+                                        : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
                                     }`}>
                                         {aiResult.action}
                                     </span>
@@ -54,7 +60,7 @@ export function AIThesisSummary({ aiResult, isAnalyzing, aiError, onViewFullRepo
                         <Loader2 size={28} className="text-indigo-400 animate-spin" />
                         <div className="flex flex-col items-center">
                             <p className="text-sm text-indigo-200 animate-pulse">Analyzing financials & growth vectors...</p>
-                            <p className="text-[10px] text-slate-500">Processing "Twin Revolutions" Framework</p>
+                            <p className="text-[10px] text-slate-500">Processing Investment Thesis</p>
                         </div>
                     </div>
                 ) : aiError ? (

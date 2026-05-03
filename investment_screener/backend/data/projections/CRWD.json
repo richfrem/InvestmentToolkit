@@ -7,8 +7,8 @@
     "version": 2,
     "savedAt": "2026-05-02T20:35:00Z",
     "updatedAt": "2026-05-02T20:17:40.718Z",
-    "name": "AI Deep Dive — CRWD — 2026-05-02",
-    "rationale": "CrowdStrike's Falcon platform is one of the most defensible enterprise software businesses in existence — a single lightweight agent on every endpoint creates massive switching costs, and the threat intelligence network effects from 1M+ sensors compound over time. Revenue has grown consistently at 23-25% CAGR with 75% gross margins. However, at $455.64 (73x forward P/E on negative GAAP earnings), the market is pricing in a bull case outcome at near-certainty. Our probability-weighted DCF of $155.22 implies 66% downside, driven primarily by the gap between the current multiple and what DCF fundamentals support across realistic scenario probabilities.",
+    "name": "AI Deep Dive \u2014 CRWD \u2014 2026-05-02",
+    "rationale": "CrowdStrike's Falcon platform is one of the most defensible enterprise software businesses in existence \u2014 a single lightweight agent on every endpoint creates massive switching costs, and the threat intelligence network effects from 1M+ sensors compound over time. Revenue has grown consistently at 23-25% CAGR with 75% gross margins. However, at $455.64 (73x forward P/E on negative GAAP earnings), the market is pricing in a bull case outcome at near-certainty. Our probability-weighted DCF of $155.22 implies 66% downside, driven primarily by the gap between the current multiple and what DCF fundamentals support across realistic scenario probabilities.",
     "snapshot": {
       "price": 455.64,
       "currency": "USD",
@@ -31,7 +31,7 @@
         "exitPE": 15,
         "qualityMultiplier": 0.9,
         "shareChange": 2.5,
-        "rationale": "Bear: Growth decelerates to 12% CAGR as Microsoft Defender bundling captures mid-market accounts that currently pay CrowdStrike separately. GAAP net margin reaches only 2% by Y5 — barely profitable as SBC remains elevated (~15% of revenue) during a slower growth phase. Historical reference: 2022-2023 SaaS multiple compression saw CrowdStrike fall from $290 to $95. Exit PE 15x reflects growth-software trough multiple in a compressed environment; QM 0.90 acknowledges competition is eroding pricing power at the margin. ⚠️ NOTE: Prior Gemini 1.5 Pro used bear margin 15% > TTM -3.38% — modeled GAAP margin expansion in the bear case, fundamentally wrong. Corrected to 2%.",
+        "rationale": "Bear: Growth decelerates to 12% CAGR as Microsoft Defender bundling captures mid-market accounts that currently pay CrowdStrike separately. GAAP net margin reaches only 2% by Y5 \u2014 barely profitable as SBC remains elevated (~15% of revenue) during a slower growth phase. Historical reference: 2022-2023 SaaS multiple compression saw CrowdStrike fall from $290 to $95. Exit PE 15x reflects growth-software trough multiple in a compressed environment; QM 0.90 acknowledges competition is eroding pricing power at the margin. \u26a0\ufe0f NOTE: Prior Gemini 1.5 Pro used bear margin 15% > TTM -3.38% \u2014 modeled GAAP margin expansion in the bear case, fundamentally wrong. Corrected to 2%.",
         "moatScore": 2,
         "managementScore": 3,
         "year5Revenue": 8480.4,
@@ -39,7 +39,7 @@
         "year5EPS": 0.59,
         "scenarioPrice": 4.95,
         "risks": [
-          "Microsoft Defender (bundled in M365) continues taking endpoint market share — MSFT has essentially unlimited subsidization ability and 400M+ M365 seats already deployed with free EDR inclusion",
+          "Microsoft Defender (bundled in M365) continues taking endpoint market share \u2014 MSFT has essentially unlimited subsidization ability and 400M+ M365 seats already deployed with free EDR inclusion",
           "Palo Alto Networks and SentinelOne platform consolidation makes customers sticky to rivals while CrowdStrike growth decelerates to 12% as TAM saturation accelerates",
           "SaaS multiple compression: a 2022-style rate-cycle re-rating compresses growth software from 70x+ to 20x forward earnings, creating a multiple headwind regardless of execution"
         ]
@@ -51,7 +51,7 @@
         "exitPE": 35,
         "qualityMultiplier": 1.05,
         "shareChange": 1,
-        "rationale": "Base: CrowdStrike continues executing at 20% CAGR (prior Gemini analysis had consensus ~22%; anchoring base to 20% within ±3pp per protocol). No API analyst estimates available; YoY 23.3% used as reference. GAAP net margin improving from TTM -3.38% toward 10% by Y5 as SBC/revenue ratio normalizes with slower headcount growth — non-GAAP FCF margin already 26%, GAAP lags by ~29pp (SBC + D&A). 4yr GAAP avg: (-8.18% + 2.36% + -0.39% + -3.38%)/4 = -2.40%; base 10% = +12.4pp improvement over 5 years, justified by SBC maturation. Exit PE 35x = SaaS/security median; QM 1.05 citing explicit moat: Falcon sensor installed on every endpoint requires full security stack replacement to migrate (average 18-24 month security platform RFP cycle), plus threat intelligence network effects compound with sensor count (1M+ sensors, each contributing to AI threat detection).",
+        "rationale": "Base: CrowdStrike continues executing at 20% CAGR (prior Gemini analysis had consensus ~22%; anchoring base to 20% within \u00b13pp per protocol). No API analyst estimates available; YoY 23.3% used as reference. GAAP net margin improving from TTM -3.38% toward 10% by Y5 as SBC/revenue ratio normalizes with slower headcount growth \u2014 non-GAAP FCF margin already 26%, GAAP lags by ~29pp (SBC + D&A). 4yr GAAP avg: (-8.18% + 2.36% + -0.39% + -3.38%)/4 = -2.40%; base 10% = +12.4pp improvement over 5 years, justified by SBC maturation. Exit PE 35x = SaaS/security median; QM 1.05 citing explicit moat: Falcon sensor installed on every endpoint requires full security stack replacement to migrate (average 18-24 month security platform RFP cycle), plus threat intelligence network effects compound with sensor count (1M+ sensors, each contributing to AI threat detection).",
         "moatScore": 4,
         "managementScore": 4,
         "year5Revenue": 11973.8,
@@ -59,8 +59,8 @@
         "year5EPS": 4.49,
         "scenarioPrice": 102.51,
         "risks": [
-          "GAAP margin improvement to 10% requires SBC/revenue to decline from ~20% to ~12% — depends on growth slowing enough that headcount additions moderate",
-          "No API analyst estimates available — base growth anchored to TTM YoY 23.3% with deceleration; prior analysis had consensus ~22%"
+          "GAAP margin improvement to 10% requires SBC/revenue to decline from ~20% to ~12% \u2014 depends on growth slowing enough that headcount additions moderate",
+          "No API analyst estimates available \u2014 base growth anchored to TTM YoY 23.3% with deceleration; prior analysis had consensus ~22%"
         ]
       },
       "bull": {
@@ -70,7 +70,7 @@
         "exitPE": 50,
         "qualityMultiplier": 1.1,
         "shareChange": -0.5,
-        "rationale": "Catalyst: CrowdStrike expands from endpoint security into AI-native security operations (Charlotte AI copilot), identity protection, and cloud security, becoming the de-facto 'security data platform' analogous to what Salesforce did for CRM. Multi-product expansion accelerates ARR growth to 28% CAGR. GAAP margin 18% as operating leverage materializes and SBC/rev normalizes to ~10%. Platform lock-in deepens: customers using 6+ Falcon modules have NRR >130% and near-zero churn. Exit PE 50x with QM 1.10 — moat: Falcon's architectural advantage (single sensor, AI-native, cloud-delivered) is genuinely hard to replicate; Charlotte AI creates new switching cost layer; multi-module expansion creates data gravity that compounds threat detection quality. Buybacks of 0.5%/yr as FCF turns strongly positive.",
+        "rationale": "Catalyst: CrowdStrike expands from endpoint security into AI-native security operations (Charlotte AI copilot), identity protection, and cloud security, becoming the de-facto 'security data platform' analogous to what Salesforce did for CRM. Multi-product expansion accelerates ARR growth to 28% CAGR. GAAP margin 18% as operating leverage materializes and SBC/rev normalizes to ~10%. Platform lock-in deepens: customers using 6+ Falcon modules have NRR >130% and near-zero churn. Exit PE 50x with QM 1.10 \u2014 moat: Falcon's architectural advantage (single sensor, AI-native, cloud-delivered) is genuinely hard to replicate; Charlotte AI creates new switching cost layer; multi-module expansion creates data gravity that compounds threat detection quality. Buybacks of 0.5%/yr as FCF turns strongly positive.",
         "moatScore": 5,
         "managementScore": 5,
         "year5Revenue": 16533.9,
@@ -78,14 +78,14 @@
         "year5EPS": 12.03,
         "scenarioPrice": 410.92,
         "risks": [
-          "50x exit P/E requires sustained market belief in CrowdStrike as the defining platform — any competitive setback re-rates to 30x, cutting bull case PV by 40%",
-          "Charlotte AI (security copilot) monetization may be slower than expected — enterprise AI adoption cycles are 18-36 months"
+          "50x exit P/E requires sustained market belief in CrowdStrike as the defining platform \u2014 any competitive setback re-rates to 30x, cutting bull case PV by 40%",
+          "Charlotte AI (security copilot) monetization may be slower than expected \u2014 enterprise AI adoption cycles are 18-36 months"
         ]
       }
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "CrowdStrike is one of the best businesses in enterprise software — Falcon's architecture is genuinely superior, the threat intelligence moat compounds annually, and FCF generation of $1.24B TTM proves the unit economics work. But at $455.64 (73x forward P/E on negative GAAP), the stock is not just pricing in bull case outcomes — it requires near-perfect execution AND premium multiple maintenance simultaneously. The base case DCF produces $102 after discounting 20% CAGR and improving GAAP margins to 10% at 35x exit multiple. For the stock to be worth $455 today, you need roughly the bull case to be near-certainty. The prior Gemini analysis inflated fair value to $261 with a bear margin of 15% (above TTM -3.38%) — modeling margin expansion in the worst case. Corrected, the bear PV is $4.95, dragging the weighted average to $155. SELL — CrowdStrike is the kind of company you want to own at $200-250.",
+      "rationale": "CrowdStrike is one of the best businesses in enterprise software \u2014 Falcon's architecture is genuinely superior, the threat intelligence moat compounds annually, and FCF generation of $1.24B TTM proves the unit economics work. But at $455.64 (73x forward P/E on negative GAAP), the stock is not just pricing in bull case outcomes \u2014 it requires near-perfect execution AND premium multiple maintenance simultaneously. The base case DCF produces $102 after discounting 20% CAGR and improving GAAP margins to 10% at 35x exit multiple. For the stock to be worth $455 today, you need roughly the bull case to be near-certainty. The prior Gemini analysis inflated fair value to $261 with a bear margin of 15% (above TTM -3.38%) \u2014 modeling margin expansion in the worst case. Corrected, the bear PV is $4.95, dragging the weighted average to $155. SELL \u2014 CrowdStrike is the kind of company you want to own at $200-250.",
       "fairValue": 155.22,
       "action": "SELL",
       "analyzedAt": "2026-05-02T20:35:00Z",
@@ -97,14 +97,14 @@
     },
     "analyticsLog": {
       "shareCountMethod": "shares_diluted = 253,614,090 per API. TTM EPS = 0 in API (suppressed for negative); computed EPS = -$162.5M NI / 253.6M shares = -$0.64. No meaningful discrepancy check possible on negative earnings. Used API shares_diluted.",
-      "marginAnchor": "Mean-reverting (volatile GAAP margins driven by SBC cycles). 4yr: -8.18% (FY2022) → 2.36% (FY2023) → -0.39% (FY2024) → -3.38% (TTM). 4yr avg = -2.40%. Key insight: GAAP margin is not the true profitability indicator — FCF margin is ~26% ($1.24B FCF / $4.81B rev) because SBC (~$950M/yr) is the primary gap driver. GAAP margin improvement to 10% (base) requires SBC/revenue to decline from ~20% to ~12% as company matures. No single year excluded — all are representative of the SBC-heavy growth phase. PRIOR ANALYSIS FLAW: Gemini 1.5 Pro used bear margin 15% > TTM -3.38%, modeling GAAP expansion in the bear scenario.",
-      "growthDerivation": "No API analyst estimates. Prior Gemini analysis cited analyst consensus ~22% (Y1 $5.9B, Y2 $7.2B) from Feb 2026 data. TTM YoY: 23.3%. Historical CAGR deceleration: +36.3% (FY2023) → +29.3% (FY2024) → +21.7% (recent). No hypergrowth exception (23.3% < 40%). Base 20% = within ±3pp of ~22% prior consensus. Bear 12%: MSFT Defender displacement scenario. Bull 28%: multi-product platform expansion + AI security spend acceleration.",
-      "sectorBenchmarkRow": "Technology — Software (SaaS/Security): conservative P/E 20-25, median P/E 35-40, growth P/E 50-60+. Bear 15x (2022-style compression trough). Base 35x (SaaS median at maturity). Bull 50x (platform premium, Charlotte AI monetization).",
+      "marginAnchor": "Mean-reverting (volatile GAAP margins driven by SBC cycles). 4yr: -8.18% (FY2022) \u2192 2.36% (FY2023) \u2192 -0.39% (FY2024) \u2192 -3.38% (TTM). 4yr avg = -2.40%. Key insight: GAAP margin is not the true profitability indicator \u2014 FCF margin is ~26% ($1.24B FCF / $4.81B rev) because SBC (~$950M/yr) is the primary gap driver. GAAP margin improvement to 10% (base) requires SBC/revenue to decline from ~20% to ~12% as company matures. No single year excluded \u2014 all are representative of the SBC-heavy growth phase. PRIOR ANALYSIS FLAW: Gemini 1.5 Pro used bear margin 15% > TTM -3.38%, modeling GAAP expansion in the bear scenario.",
+      "growthDerivation": "No API analyst estimates. Prior Gemini analysis cited analyst consensus ~22% (Y1 $5.9B, Y2 $7.2B) from Feb 2026 data. TTM YoY: 23.3%. Historical CAGR deceleration: +36.3% (FY2023) \u2192 +29.3% (FY2024) \u2192 +21.7% (recent). No hypergrowth exception (23.3% < 40%). Base 20% = within \u00b13pp of ~22% prior consensus. Bear 12%: MSFT Defender displacement scenario. Bull 28%: multi-product platform expansion + AI security spend acceleration.",
+      "sectorBenchmarkRow": "Technology \u2014 Software (SaaS/Security): conservative P/E 20-25, median P/E 35-40, growth P/E 50-60+. Bear 15x (2022-style compression trough). Base 35x (SaaS median at maturity). Bull 50x (platform premium, Charlotte AI monetization).",
       "dataQualityFlags": [
-        "GAAP net margin is misleading for CrowdStrike — SBC ~$950M/yr (~20% of revenue) is the primary driver of GAAP losses; FCF margin 26% reflects true unit economics. All scenario margins are GAAP projections requiring SBC normalization.",
+        "GAAP net margin is misleading for CrowdStrike \u2014 SBC ~$950M/yr (~20% of revenue) is the primary driver of GAAP losses; FCF margin 26% reflects true unit economics. All scenario margins are GAAP projections requiring SBC normalization.",
         "No API analyst estimates available. Growth anchored to TTM YoY 23.3% + prior analysis consensus reference (~22%).",
-        "TTM EPS = 0 in API (suppressed for negative earnings) — computing -$0.64 from NI/shares.",
-        "PRIOR ANALYSIS FLAW (Gemini 1.5 Pro v1): Bear margin 15% > TTM -3.38%; bear case modeled GAAP margin EXPANSION — fundamentally wrong. QM 1.1 on base and 1.2 on bull needed moat citations. Corrected: bear 2%, base QM 1.05, bull QM 1.10 with explicit Falcon sensor switching cost citation."
+        "TTM EPS = 0 in API (suppressed for negative earnings) \u2014 computing -$0.64 from NI/shares.",
+        "PRIOR ANALYSIS FLAW (Gemini 1.5 Pro v1): Bear margin 15% > TTM -3.38%; bear case modeled GAAP margin EXPANSION \u2014 fundamentally wrong. QM 1.1 on base and 1.2 on bull needed moat citations. Corrected: bear 2%, base QM 1.05, bull QM 1.10 with explicit Falcon sensor switching cost citation."
       ],
       "analystInputs": {
         "y1RevEstimate": null,
@@ -139,13 +139,165 @@
         "priorPrice": 455.64,
         "priorFairValue": 261.06,
         "priorAction": "SELL",
-        "priceDelta": "0% — same day replacement",
-        "assumptionAudit": "Prior analysis was directionally correct (SELL) but bear margin 15% > TTM -3.38% inflated bear PV, making the weighted result too generous at $261. Correcting bear to 2% GAAP and adjusting QMs brings FV to $155. Prior base QM 1.1 and bull QM 1.2 both exceeded documented thresholds without explicit moat citation — corrected to 1.05/1.10 with Falcon sensor switching cost citation.",
-        "modelQualityFlag": "UNVALIDATED — Gemini 1.5 Pro in flagged non-Sonnet list. All assumptions re-derived.",
+        "priceDelta": "0% \u2014 same day replacement",
+        "assumptionAudit": "Prior analysis was directionally correct (SELL) but bear margin 15% > TTM -3.38% inflated bear PV, making the weighted result too generous at $261. Correcting bear to 2% GAAP and adjusting QMs brings FV to $155. Prior base QM 1.1 and bull QM 1.2 both exceeded documented thresholds without explicit moat citation \u2014 corrected to 1.05/1.10 with Falcon sensor switching cost citation.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Gemini 1.5 Pro in flagged non-Sonnet list. All assumptions re-derived.",
         "thesisOutcome": "Same day replacement. Both analyses agree: SELL. Sonnet analysis is more conservative ($155 vs $261) due to corrected bear margin.",
-        "fundamentalChanges": "Same day. Primary correction: bear GAAP margin 15% → 2%. QM adjustments within documented rules. FCF growth ($1.24B) is a positive not captured in GAAP analysis — noted as context but GAAP used per schema."
+        "fundamentalChanges": "Same day. Primary correction: bear GAAP margin 15% \u2192 2%. QM adjustments within documented rules. FCF growth ($1.24B) is a positive not captured in GAAP analysis \u2014 noted as context but GAAP used per schema."
       },
-      "confidenceBreakdown": "0.63/1.0 — Base: 1.0. -0.12 no API analyst estimates. -0.10 GAAP vs FCF distortion makes margin anchor uncertain (SBC normalization timeline unknown). -0.08 extremely high valuation (73x forward P/E) means any multiple compression independently drives large losses. -0.05 MSFT Defender competitive threat is real and hard to quantify. -0.02 prior analysis flagged UNVALIDATED. +0.10 positive: FCF positive and growing ($1.24B), Falcon moat is objectively strong, consistent 75% gross margins, NRR >120% documented."
+      "confidenceBreakdown": "0.63/1.0 \u2014 Base: 1.0. -0.12 no API analyst estimates. -0.10 GAAP vs FCF distortion makes margin anchor uncertain (SBC normalization timeline unknown). -0.08 extremely high valuation (73x forward P/E) means any multiple compression independently drives large losses. -0.05 MSFT Defender competitive threat is real and hard to quantify. -0.02 prior analysis flagged UNVALIDATED. +0.10 positive: FCF positive and growing ($1.24B), Falcon moat is objectively strong, consistent 75% gross margins, NRR >120% documented."
+    }
+  },
+  {
+    "ticker": "CRWD",
+    "id": "e0b96b0f-b4df-41ed-a16f-7b1bb363a033",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 3,
+    "savedAt": "2026-05-02T23:05:00Z",
+    "updatedAt": "2026-05-02T23:05:00Z",
+    "name": "AI Deep Dive \u2014 CRWD \u2014 2026-05-02",
+    "rationale": "CrowdStrike's Falcon platform is one of the most defensible enterprise software businesses in existence \u2014 a single lightweight agent on every endpoint creates massive switching costs, and the threat intelligence network effects from 1M+ sensors compound over time. Revenue has grown consistently at 23-25% CAGR with 75% gross margins. However, at $455.64 (73x forward P/E on negative GAAP earnings), the market is pricing in a bull case outcome at near-certainty. Our probability-weighted DCF of $155.22 implies 66% downside, driven primarily by the gap between the current multiple and what DCF fundamentals support across realistic scenario probabilities.",
+    "snapshot": {
+      "price": 455.64,
+      "currency": "USD",
+      "shares": 253614090,
+      "revenue": 4812005000,
+      "lastActualPS": 24.01,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": null,
+      "analystMarginEstimate": null
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 12,
+        "netMargin": 2,
+        "exitPE": 15,
+        "qualityMultiplier": 0.9,
+        "shareChange": 2.5,
+        "rationale": "Bear: Growth decelerates to 12% CAGR as Microsoft Defender bundling captures mid-market accounts that currently pay CrowdStrike separately. GAAP net margin reaches only 2% by Y5 \u2014 barely profitable as SBC remains elevated (~15% of revenue) during a slower growth phase. Historical reference: 2022-2023 SaaS multiple compression saw CrowdStrike fall from $290 to $95. Exit PE 15x reflects growth-software trough multiple in a compressed environment; QM 0.90 acknowledges competition is eroding pricing power at the margin. \u26a0\ufe0f NOTE: Prior Gemini 1.5 Pro used bear margin 15% > TTM -3.38% \u2014 modeled GAAP margin expansion in the bear case, fundamentally wrong. Corrected to 2%.",
+        "moatScore": 2,
+        "managementScore": 3,
+        "year5Revenue": 8480.4,
+        "year5NetIncome": 169.6,
+        "year5EPS": 0.59,
+        "scenarioPrice": 4.95,
+        "risks": [
+          "Microsoft Defender (bundled in M365) continues taking endpoint market share \u2014 MSFT has essentially unlimited subsidization ability and 400M+ M365 seats already deployed with free EDR inclusion",
+          "Palo Alto Networks and SentinelOne platform consolidation makes customers sticky to rivals while CrowdStrike growth decelerates to 12% as TAM saturation accelerates",
+          "SaaS multiple compression: a 2022-style rate-cycle re-rating compresses growth software from 70x+ to 20x forward earnings, creating a multiple headwind regardless of execution"
+        ]
+      },
+      "base": {
+        "weight": 0.5,
+        "growthRate": 20,
+        "netMargin": 10,
+        "exitPE": 35,
+        "qualityMultiplier": 1.05,
+        "shareChange": 1,
+        "rationale": "Base: CrowdStrike continues executing at 20% CAGR (prior Gemini analysis had consensus ~22%; anchoring base to 20% within \u00b13pp per protocol). No API analyst estimates available; YoY 23.3% used as reference. GAAP net margin improving from TTM -3.38% toward 10% by Y5 as SBC/revenue ratio normalizes with slower headcount growth \u2014 non-GAAP FCF margin already 26%, GAAP lags by ~29pp (SBC + D&A). 4yr GAAP avg: (-8.18% + 2.36% + -0.39% + -3.38%)/4 = -2.40%; base 10% = +12.4pp improvement over 5 years, justified by SBC maturation. Exit PE 35x = SaaS/security median; QM 1.05 citing explicit moat: Falcon sensor installed on every endpoint requires full security stack replacement to migrate (average 18-24 month security platform RFP cycle), plus threat intelligence network effects compound with sensor count (1M+ sensors, each contributing to AI threat detection).",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 11973.8,
+        "year5NetIncome": 1197.4,
+        "year5EPS": 4.49,
+        "scenarioPrice": 102.51,
+        "risks": [
+          "GAAP margin improvement to 10% requires SBC/revenue to decline from ~20% to ~12% \u2014 depends on growth slowing enough that headcount additions moderate",
+          "No API analyst estimates available \u2014 base growth anchored to TTM YoY 23.3% with deceleration; prior analysis had consensus ~22%"
+        ]
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 28,
+        "netMargin": 18,
+        "exitPE": 50,
+        "qualityMultiplier": 1.1,
+        "shareChange": -0.5,
+        "rationale": "Catalyst: CrowdStrike expands from endpoint security into AI-native security operations (Charlotte AI copilot), identity protection, and cloud security, becoming the de-facto 'security data platform' analogous to what Salesforce did for CRM. Multi-product expansion accelerates ARR growth to 28% CAGR. GAAP margin 18% as operating leverage materializes and SBC/rev normalizes to ~10%. Platform lock-in deepens: customers using 6+ Falcon modules have NRR >130% and near-zero churn. Exit PE 50x with QM 1.10 \u2014 moat: Falcon's architectural advantage (single sensor, AI-native, cloud-delivered) is genuinely hard to replicate; Charlotte AI creates new switching cost layer; multi-module expansion creates data gravity that compounds threat detection quality. Buybacks of 0.5%/yr as FCF turns strongly positive.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 16533.9,
+        "year5NetIncome": 2976.1,
+        "year5EPS": 12.03,
+        "scenarioPrice": 410.92,
+        "risks": [
+          "50x exit P/E requires sustained market belief in CrowdStrike as the defining platform \u2014 any competitive setback re-rates to 30x, cutting bull case PV by 40%",
+          "Charlotte AI (security copilot) monetization may be slower than expected \u2014 enterprise AI adoption cycles are 18-36 months"
+        ]
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "CrowdStrike is one of the best businesses in enterprise software \u2014 Falcon's architecture is genuinely superior, the threat intelligence moat compounds annually, and FCF generation of $1.24B TTM proves the unit economics work. But at $455.64 (73x forward P/E on negative GAAP), the stock is not just pricing in bull case outcomes \u2014 it requires near-perfect execution AND premium multiple maintenance simultaneously. The base case DCF produces $102 after discounting 20% CAGR and improving GAAP margins to 10% at 35x exit multiple. For the stock to be worth $455 today, you need roughly the bull case to be near-certainty. The prior Gemini analysis inflated fair value to $261 with a bear margin of 15% (above TTM -3.38%) \u2014 modeling margin expansion in the worst case. Corrected, the bear PV is $4.95, dragging the weighted average to $155. SELL \u2014 CrowdStrike is the kind of company you want to own at $200-250.",
+      "fairValue": 155.22,
+      "action": "EXIT",
+      "analyzedAt": "2026-05-02T20:35:00Z",
+      "researchReport": "CRWD_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "shares_diluted = 253,614,090 per API. TTM EPS = 0 in API (suppressed for negative); computed EPS = -$162.5M NI / 253.6M shares = -$0.64. No meaningful discrepancy check possible on negative earnings. Used API shares_diluted.",
+      "marginAnchor": "Mean-reverting (volatile GAAP margins driven by SBC cycles). 4yr: -8.18% (FY2022) \u2192 2.36% (FY2023) \u2192 -0.39% (FY2024) \u2192 -3.38% (TTM). 4yr avg = -2.40%. Key insight: GAAP margin is not the true profitability indicator \u2014 FCF margin is ~26% ($1.24B FCF / $4.81B rev) because SBC (~$950M/yr) is the primary gap driver. GAAP margin improvement to 10% (base) requires SBC/revenue to decline from ~20% to ~12% as company matures. No single year excluded \u2014 all are representative of the SBC-heavy growth phase. PRIOR ANALYSIS FLAW: Gemini 1.5 Pro used bear margin 15% > TTM -3.38%, modeling GAAP expansion in the bear scenario.",
+      "growthDerivation": "No API analyst estimates. Prior Gemini analysis cited analyst consensus ~22% (Y1 $5.9B, Y2 $7.2B) from Feb 2026 data. TTM YoY: 23.3%. Historical CAGR deceleration: +36.3% (FY2023) \u2192 +29.3% (FY2024) \u2192 +21.7% (recent). No hypergrowth exception (23.3% < 40%). Base 20% = within \u00b13pp of ~22% prior consensus. Bear 12%: MSFT Defender displacement scenario. Bull 28%: multi-product platform expansion + AI security spend acceleration.",
+      "sectorBenchmarkRow": "Technology \u2014 Software (SaaS/Security): conservative P/E 20-25, median P/E 35-40, growth P/E 50-60+. Bear 15x (2022-style compression trough). Base 35x (SaaS median at maturity). Bull 50x (platform premium, Charlotte AI monetization).",
+      "dataQualityFlags": [
+        "GAAP net margin is misleading for CrowdStrike \u2014 SBC ~$950M/yr (~20% of revenue) is the primary driver of GAAP losses; FCF margin 26% reflects true unit economics. All scenario margins are GAAP projections requiring SBC normalization.",
+        "No API analyst estimates available. Growth anchored to TTM YoY 23.3% + prior analysis consensus reference (~22%).",
+        "TTM EPS = 0 in API (suppressed for negative earnings) \u2014 computing -$0.64 from NI/shares.",
+        "PRIOR ANALYSIS FLAW (Gemini 1.5 Pro v1): Bear margin 15% > TTM -3.38%; bear case modeled GAAP margin EXPANSION \u2014 fundamentally wrong. QM 1.1 on base and 1.2 on bull needed moat citations. Corrected: bear 2%, base QM 1.05, bull QM 1.10 with explicit Falcon sensor switching cost citation."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": null,
+        "y2RevEstimate": null,
+        "y1GrowthPct": null,
+        "y2GrowthPct": null,
+        "blendedConsensusPct": null,
+        "analystTargetMean": null,
+        "analystCount": null
+      },
+      "historicalRevenue": [
+        2241.2,
+        3055.6,
+        3953.6,
+        4812
+      ],
+      "historicalNetMargins": [
+        -8.18,
+        2.36,
+        -0.39,
+        -3.38
+      ],
+      "historicalEPS": [
+        -1.03,
+        -0.79,
+        0.37,
+        -0.08
+      ],
+      "priorAnalysisReview": {
+        "priorModel": "Gemini 1.5 Pro",
+        "priorDate": "2026-05-02",
+        "priorPrice": 455.64,
+        "priorFairValue": 261.06,
+        "priorAction": "SELL",
+        "priceDelta": "0% \u2014 same day replacement",
+        "assumptionAudit": "Prior analysis was directionally correct (SELL) but bear margin 15% > TTM -3.38% inflated bear PV, making the weighted result too generous at $261. Correcting bear to 2% GAAP and adjusting QMs brings FV to $155. Prior base QM 1.1 and bull QM 1.2 both exceeded documented thresholds without explicit moat citation \u2014 corrected to 1.05/1.10 with Falcon sensor switching cost citation.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Gemini 1.5 Pro in flagged non-Sonnet list. All assumptions re-derived.",
+        "thesisOutcome": "Same day replacement. Both analyses agree: SELL. Sonnet analysis is more conservative ($155 vs $261) due to corrected bear margin.",
+        "fundamentalChanges": "Same day. Primary correction: bear GAAP margin 15% \u2192 2%. QM adjustments within documented rules. FCF growth ($1.24B) is a positive not captured in GAAP analysis \u2014 noted as context but GAAP used per schema."
+      },
+      "confidenceBreakdown": "0.63/1.0 \u2014 Base: 1.0. -0.12 no API analyst estimates. -0.10 GAAP vs FCF distortion makes margin anchor uncertain (SBC normalization timeline unknown). -0.08 extremely high valuation (73x forward P/E) means any multiple compression independently drives large losses. -0.05 MSFT Defender competitive threat is real and hard to quantify. -0.02 prior analysis flagged UNVALIDATED. +0.10 positive: FCF positive and growing ($1.24B), Falcon moat is objectively strong, consistent 75% gross margins, NRR >120% documented.",
+      "valuationAction": "SELL",
+      "portfolioRationale": "SELL-rated at $155.22 FV vs price $455.64 (\u221265.9%). Structural post-outage execution damage \u2014 this is not cyclical. ZS (BUY +66.7%) fills the same thesis role without credibility risk. Exit or reduce to \u22640.5% speculative. Freed weight \u2192 ZS.",
+      "portfolioUrgency": "NORMAL"
     }
   }
 ]

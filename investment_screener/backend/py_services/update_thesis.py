@@ -1,0 +1,1 @@
+../../../plugins/thesis-balancer/scripts/update_thesis.py

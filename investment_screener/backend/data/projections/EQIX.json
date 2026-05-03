@@ -7,7 +7,7 @@
     "version": 1,
     "savedAt": "2026-05-02T19:16:32.961Z",
     "updatedAt": "2026-05-02T19:16:32.961Z",
-    "name": "AI Deep Dive — EQIX — 2026-05-02",
+    "name": "AI Deep Dive \u2014 EQIX \u2014 2026-05-02",
     "rationale": "Equinix operates a premier global footprint of high-performance data centers. As AI workloads require dense, highly interconnected infrastructure, Equinix sits at the center of the global internet topology. The company is generating consistent double-digit revenue growth (12.1% TTM) with strong EBITDA margins. However, as a REIT, it trades at an elevated 75x trailing P/E (and ~50x forward). Even allowing for premium exit multiples (40x base) to proxy FFO-based valuation, the current price prices in flawless execution and accelerating AI-driven demand. The base case fair value of $735.41 implies the stock is overvalued by ~32%. SELL.",
     "snapshot": {
       "price": 1085.03,
@@ -97,7 +97,7 @@
       "shareCountMethod": "Used 98.6M (shares_diluted). Matches API output.",
       "marginAnchor": "TTM 14.65% used as historical anchor. Margins have been expanding (9.7% -> 11.8% -> 9.3% -> 14.6%). Base case models a slight expansion to 16% on increased data center utilization.",
       "growthDerivation": "Analyst Y1 revenue implies 10.9% growth ($10.23B vs $9.21B TTM), Y2 implies 9.6%. Blended consensus ~10%. Base case growth set to 10%.",
-      "sectorBenchmarkRow": "Real Estate — Specialized REITs (Data Centers): median P/E 30-40, growth 10-15%; net margin typical 10-20%. Note: REITs are typically valued on AFFO rather than net income; the 40x base exit P/E is intentionally elevated to proxy for a typical 20-25x AFFO multiple.",
+      "sectorBenchmarkRow": "Real Estate \u2014 Specialized REITs (Data Centers): median P/E 30-40, growth 10-15%; net margin typical 10-20%. Note: REITs are typically valued on AFFO rather than net income; the 40x base exit P/E is intentionally elevated to proxy for a typical 20-25x AFFO multiple.",
       "dataQualityFlags": [
         "As a REIT, GAAP net income understates cash generation due to heavy depreciation. The model adjusts for this by utilizing higher baseline exit P/E multiples (40x)."
       ],
@@ -128,7 +128,7 @@
         8.54,
         13.79
       ],
-      "confidenceBreakdown": "0.85/1.0 — +0.10 for extremely high revenue visibility via long-term leases, -0.10 for the structural limitation of using a net-income DCF on a REIT."
+      "confidenceBreakdown": "0.85/1.0 \u2014 +0.10 for extremely high revenue visibility via long-term leases, -0.10 for the structural limitation of using a net-income DCF on a REIT."
     }
   },
   {
@@ -139,8 +139,8 @@
     "version": 1,
     "savedAt": "2026-05-02T21:15:00Z",
     "updatedAt": "2026-05-02T21:15:00Z",
-    "name": "AI Deep Dive — EQIX — 2026-05-02",
-    "rationale": "Equinix is the world's premier colocation and interconnection REIT — 260+ data centers, 70+ metros, 100,000+ interconnections. AI compute demand creates unprecedented tailwinds. However, GAAP margins (14.93% TTM) are suppressed by REIT depreciation (EBITDA margin 44.49% shows true cash earnings). FCF is negative (-$400M TTM) due to heavy AI-driven expansion capex. Weighted DCF gives $883.71 (-18.6% SELL), with the bull case ($1,529) requiring sustained 14% CAGR and power-secured AI data center build-out to deliver.",
+    "name": "AI Deep Dive \u2014 EQIX \u2014 2026-05-02",
+    "rationale": "Equinix is the world's premier colocation and interconnection REIT \u2014 260+ data centers, 70+ metros, 100,000+ interconnections. AI compute demand creates unprecedented tailwinds. However, GAAP margins (14.93% TTM) are suppressed by REIT depreciation (EBITDA margin 44.49% shows true cash earnings). FCF is negative (-$400M TTM) due to heavy AI-driven expansion capex. Weighted DCF gives $883.71 (-18.6% SELL), with the bull case ($1,529) requiring sustained 14% CAGR and power-secured AI data center build-out to deliver.",
     "snapshot": {
       "price": 1085.03,
       "currency": "USD",
@@ -173,7 +173,7 @@
         "exitPE": 55,
         "qualityMultiplier": 1.1,
         "shareChange": 0.5,
-        "rationale": "Analyst consensus Y1 $10.23B (+10.9%), Y2 $11.22B (+9.7%). Base CAGR 10% within ±3pp of blended 10.3%. GAAP net margin 14% ≈ TTM 14.65%; mean-reverting 4-yr avg 11.3% suggests some pressure, TTM used as anchor given REIT depreciation timing variability. Exit PE 55x: above current forward PE 49.6x, appropriate for sustained data center infrastructure growth. QM 1.10: Moat 1 — Internet Exchange (IX) network effects (100,000+ cross-connects; more customers = more valuable the network); Moat 2 — established power contracts in constrained metros (power availability is the binding constraint for AI data centers; EQIX has secured power others cannot). Year 5 rev $14.8B, EPS $20.55, price $1,243.43, PV $772.07.",
+        "rationale": "Analyst consensus Y1 $10.23B (+10.9%), Y2 $11.22B (+9.7%). Base CAGR 10% within \u00b13pp of blended 10.3%. GAAP net margin 14% \u2248 TTM 14.65%; mean-reverting 4-yr avg 11.3% suggests some pressure, TTM used as anchor given REIT depreciation timing variability. Exit PE 55x: above current forward PE 49.6x, appropriate for sustained data center infrastructure growth. QM 1.10: Moat 1 \u2014 Internet Exchange (IX) network effects (100,000+ cross-connects; more customers = more valuable the network); Moat 2 \u2014 established power contracts in constrained metros (power availability is the binding constraint for AI data centers; EQIX has secured power others cannot). Year 5 rev $14.8B, EPS $20.55, price $1,243.43, PV $772.07.",
         "scenarioPrice": 772.07
       },
       "bull": {
@@ -183,13 +183,13 @@
         "exitPE": 70,
         "qualityMultiplier": 1.15,
         "shareChange": 0,
-        "rationale": "Catalyst: AI training/inference drives hyperscaler colocation demand beyond current planning scenarios. EQIX secures multi-billion-dollar, 10+ year hyperscaler anchor leases in EMEA and APAC, driving 14% CAGR. Margin expands to 17% as new high-density AI data centers (10-50kW/rack vs. traditional 5-8kW/rack) carry significantly higher revenue per sq ft and improved margin per unit. Exit PE 70x = data center REIT growth ceiling. QM 1.15 CITED: EQIX demonstrates 'structural pricing power across cycles' via IX network effects — once 100,000+ cross-connections exist on EQIX fabric, the switching cost is the entire network (customers would need to recreate their interconnection architecture elsewhere). This is the closest non-semiconductor analog to a structural moat. Year 5 rev $17.7B, EPS $30.59, price $2,462.49, PV $1,529.01.",
+        "rationale": "Catalyst: AI training/inference drives hyperscaler colocation demand beyond current planning scenarios. EQIX secures multi-billion-dollar, 10+ year hyperscaler anchor leases in EMEA and APAC, driving 14% CAGR. Margin expands to 17% as new high-density AI data centers (10-50kW/rack vs. traditional 5-8kW/rack) carry significantly higher revenue per sq ft and improved margin per unit. Exit PE 70x = data center REIT growth ceiling. QM 1.15 CITED: EQIX demonstrates 'structural pricing power across cycles' via IX network effects \u2014 once 100,000+ cross-connections exist on EQIX fabric, the switching cost is the entire network (customers would need to recreate their interconnection architecture elsewhere). This is the closest non-semiconductor analog to a structural moat. Year 5 rev $17.7B, EPS $30.59, price $2,462.49, PV $1,529.01.",
         "scenarioPrice": 1529.01
       }
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "Equinix is the infrastructure layer of the AI economy — every hyperscaler, enterprise, and cloud provider needs colocation and interconnection, and Equinix has built the densest global network of data centers with 100,000+ cross-connects that make the EQIX platform genuinely hard to replicate. The Internet Exchange network effect is real: the more participants on the EQIX fabric, the more valuable connectivity becomes for all participants, creating a structural switching cost that compounds over time. Power contract security in constrained metros (New York, London, Singapore, Tokyo) is another genuine moat — these markets have effectively stopped issuing new permits, making established EQIX facilities irreplaceable. AI training and inference create structural demand tailwinds that should support 10%+ revenue growth through 2028+. However, at $1,085/share, EQIX is priced for strong base-case execution. The weighted DCF (properly calibrated to REIT accounting norms) gives $883.71 (-18.6%), driven primarily by the base case ($772.07) underweighting the bull case optionality. A key methodology caveat: GAAP margins understated by D&A (EBITDA margin is 44%); the DCF captures this via REIT-calibrated exit PEs (55x base vs 25x for industrial companies). The prior Gemini analysis (FV $735) used non-REIT P/E multiples (30-50x) which were too conservative — our corrected analysis gives $883. SELL at current price; the stock would be a BUY below $800.",
+      "rationale": "Equinix is the infrastructure layer of the AI economy \u2014 every hyperscaler, enterprise, and cloud provider needs colocation and interconnection, and Equinix has built the densest global network of data centers with 100,000+ cross-connects that make the EQIX platform genuinely hard to replicate. The Internet Exchange network effect is real: the more participants on the EQIX fabric, the more valuable connectivity becomes for all participants, creating a structural switching cost that compounds over time. Power contract security in constrained metros (New York, London, Singapore, Tokyo) is another genuine moat \u2014 these markets have effectively stopped issuing new permits, making established EQIX facilities irreplaceable. AI training and inference create structural demand tailwinds that should support 10%+ revenue growth through 2028+. However, at $1,085/share, EQIX is priced for strong base-case execution. The weighted DCF (properly calibrated to REIT accounting norms) gives $883.71 (-18.6%), driven primarily by the base case ($772.07) underweighting the bull case optionality. A key methodology caveat: GAAP margins understated by D&A (EBITDA margin is 44%); the DCF captures this via REIT-calibrated exit PEs (55x base vs 25x for industrial companies). The prior Gemini analysis (FV $735) used non-REIT P/E multiples (30-50x) which were too conservative \u2014 our corrected analysis gives $883. SELL at current price; the stock would be a BUY below $800.",
       "fairValue": 883.71,
       "action": "SELL",
       "analyzedAt": "2026-05-02T21:15:00Z",
@@ -200,15 +200,15 @@
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "API shares_diluted 98.624M. Mktcap-implied: $107.0B / $1,085.03 = 98.62M — 0% discrepancy. Clean. No dilution overhang (Piotroski no_dilution = FALSE but only minor stock compensation).",
-      "marginAnchor": "REIT methodology note: GAAP net margin (14.93% TTM) is suppressed by data center depreciation. EBITDA margin 44.49% reflects true cash earnings. FCF negative (-$400M TTM) due to AI-driven capex expansion. Mean-reverting margins: 9.71% → 11.83% → 9.32% → 14.65% (TTM); 4-yr avg 11.30%. TTM 14.65% above avg — using TTM as anchor with note that REIT D&A timing causes period-to-period noise. Base 14% = TTM anchor. Bear 10% = below avg (financing cost headwinds). Bull 17% = high-density AI facility margin improvement.",
-      "growthDerivation": "Y1 analyst $10.23B (+10.9%), Y2 $11.22B (+9.7%). Blended ~10.3%. Not hypergrowth (<40%). Base CAGR 10% within ±3pp of consensus ✓. Bear 6% = power/permitting constraints. Bull 14% = AI-driven hyperscaler demand acceleration.",
-      "sectorBenchmarkRow": "Real Estate — Data Center REIT: GAAP P/E range 45-80x (D&A suppresses earnings; EBITDA multiple ~20-30x is more representative). Current forward PE 49.6x. Exit PE benchmarks: bear 42x (below forward), base 55x (slight premium), bull 70x (growth ceiling for data center REITs). Note: if P/AFFO were available, multiples would be 25-40x; GAAP overstates multiple due to depreciation drag.",
+      "shareCountMethod": "API shares_diluted 98.624M. Mktcap-implied: $107.0B / $1,085.03 = 98.62M \u2014 0% discrepancy. Clean. No dilution overhang (Piotroski no_dilution = FALSE but only minor stock compensation).",
+      "marginAnchor": "REIT methodology note: GAAP net margin (14.93% TTM) is suppressed by data center depreciation. EBITDA margin 44.49% reflects true cash earnings. FCF negative (-$400M TTM) due to AI-driven capex expansion. Mean-reverting margins: 9.71% \u2192 11.83% \u2192 9.32% \u2192 14.65% (TTM); 4-yr avg 11.30%. TTM 14.65% above avg \u2014 using TTM as anchor with note that REIT D&A timing causes period-to-period noise. Base 14% = TTM anchor. Bear 10% = below avg (financing cost headwinds). Bull 17% = high-density AI facility margin improvement.",
+      "growthDerivation": "Y1 analyst $10.23B (+10.9%), Y2 $11.22B (+9.7%). Blended ~10.3%. Not hypergrowth (<40%). Base CAGR 10% within \u00b13pp of consensus \u2713. Bear 6% = power/permitting constraints. Bull 14% = AI-driven hyperscaler demand acceleration.",
+      "sectorBenchmarkRow": "Real Estate \u2014 Data Center REIT: GAAP P/E range 45-80x (D&A suppresses earnings; EBITDA multiple ~20-30x is more representative). Current forward PE 49.6x. Exit PE benchmarks: bear 42x (below forward), base 55x (slight premium), bull 70x (growth ceiling for data center REITs). Note: if P/AFFO were available, multiples would be 25-40x; GAAP overstates multiple due to depreciation drag.",
       "dataQualityFlags": [
         "REIT depreciation distortion: GAAP margins (14.93%) and PE ratios (75x trailing) significantly overstate traditional valuation multiples. EBITDA margin 44.49% is the more representative operating performance metric. Exit PE benchmarks adjusted upward vs standard benchmarks to reflect REIT depreciation accounting.",
-        "UUID collision: Prior EQIX had same UUID as ASML/PLTR/CAKE/CELH (e0b96b0f). Fresh UUID assigned — Gemini systematic UUID bug now documented across 5 tickers.",
+        "UUID collision: Prior EQIX had same UUID as ASML/PLTR/CAKE/CELH (e0b96b0f). Fresh UUID assigned \u2014 Gemini systematic UUID bug now documented across 5 tickers.",
         "FCF negative (-$400M TTM): EQIX is in heavy capex expansion phase (new AI-ready data centers). Negative FCF is expected and normal for a REIT in buildout phase; it does not indicate financial distress. EBITDA cash generation is strong.",
-        "Prior Gemini exit PEs (30/40/50x) were too low for a data center REIT — significantly undervalued EQIX on a REIT-adjusted basis. This analysis uses 42/55/70x.",
+        "Prior Gemini exit PEs (30/40/50x) were too low for a data center REIT \u2014 significantly undervalued EQIX on a REIT-adjusted basis. This analysis uses 42/55/70x.",
         "Piotroski 5/9: leverage increasing (REIT expansion financing) and dilution occurring (stock compensation). ROA improving and accruals OK are positive signs."
       ],
       "analystInputs": {
@@ -244,13 +244,138 @@
         "priorPrice": 1085.03,
         "priorFairValue": 735.41,
         "priorAction": "SELL",
-        "priceDelta": "0% — same day",
-        "assumptionAudit": "Prior exit PEs of 30/40/50x critically too low for a data center REIT — failed to account for REIT depreciation's inflation of GAAP P/E multiples. At 30x exit PE for bear and 14.65% TTM margin, the prior model severely undervalued EQIX even in bear case. Corrected to 42/55/70x. Bear weight raised to 25% (vs 20%). Base QM 1.2 → 1.10 (replaced with explicit moat citations). Bull QM 1.25 → 1.15 (network effects cited). SELL conclusion maintained but fair value corrected upward: $735.41 → $883.71.",
-        "modelQualityFlag": "UNVALIDATED — Gemini 1.5 Pro",
-        "thesisOutcome": "N/A — same day",
+        "priceDelta": "0% \u2014 same day",
+        "assumptionAudit": "Prior exit PEs of 30/40/50x critically too low for a data center REIT \u2014 failed to account for REIT depreciation's inflation of GAAP P/E multiples. At 30x exit PE for bear and 14.65% TTM margin, the prior model severely undervalued EQIX even in bear case. Corrected to 42/55/70x. Bear weight raised to 25% (vs 20%). Base QM 1.2 \u2192 1.10 (replaced with explicit moat citations). Bull QM 1.25 \u2192 1.15 (network effects cited). SELL conclusion maintained but fair value corrected upward: $735.41 \u2192 $883.71.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Gemini 1.5 Pro",
+        "thesisOutcome": "N/A \u2014 same day",
         "fundamentalChanges": "AI data center demand accelerating. EQIX announcing multi-billion-dollar AI-ready facility expansions. Strong analyst buy consensus (28 analysts, target $1,180). FCF negative as expansion capex peaks."
       },
-      "confidenceBreakdown": "0.76/1.0 — Base 1.0. +0.08 network effects moat (IX density is genuinely structural); +0.06 power contract lock-in in constrained metros; +0.04 28 analyst coverage strong buy; -0.08 REIT methodology complexity (GAAP margins understated; FCF negative); -0.06 interest rate sensitivity (REIT financing costs); -0.05 Piotroski 5/9 (leverage increasing); -0.05 prior model error introduced benchmark confusion; +0.03 EBITDA margin 44.49% shows strong cash generation ability; -0.05 AI capex cycle risk (hyperscalers could pull back orders)"
+      "confidenceBreakdown": "0.76/1.0 \u2014 Base 1.0. +0.08 network effects moat (IX density is genuinely structural); +0.06 power contract lock-in in constrained metros; +0.04 28 analyst coverage strong buy; -0.08 REIT methodology complexity (GAAP margins understated; FCF negative); -0.06 interest rate sensitivity (REIT financing costs); -0.05 Piotroski 5/9 (leverage increasing); -0.05 prior model error introduced benchmark confusion; +0.03 EBITDA margin 44.49% shows strong cash generation ability; -0.05 AI capex cycle risk (hyperscalers could pull back orders)"
+    }
+  },
+  {
+    "ticker": "EQIX",
+    "id": "99e63a72-b1b6-42c7-bfa8-ff836e8cf3da",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 2,
+    "savedAt": "2026-05-02T23:05:00Z",
+    "updatedAt": "2026-05-02T23:05:00Z",
+    "name": "AI Deep Dive \u2014 EQIX \u2014 2026-05-02",
+    "rationale": "Equinix is the world's premier colocation and interconnection REIT \u2014 260+ data centers, 70+ metros, 100,000+ interconnections. AI compute demand creates unprecedented tailwinds. However, GAAP margins (14.93% TTM) are suppressed by REIT depreciation (EBITDA margin 44.49% shows true cash earnings). FCF is negative (-$400M TTM) due to heavy AI-driven expansion capex. Weighted DCF gives $883.71 (-18.6% SELL), with the bull case ($1,529) requiring sustained 14% CAGR and power-secured AI data center build-out to deliver.",
+    "snapshot": {
+      "price": 1085.03,
+      "currency": "USD",
+      "shares": 98624248,
+      "revenue": 9217000000,
+      "lastActualPS": 11.61,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 10.9,
+      "analystMarginEstimate": 14.93
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 6,
+        "netMargin": 10,
+        "exitPE": 42,
+        "qualityMultiplier": 1,
+        "shareChange": 1,
+        "rationale": "Power and permitting constraints slow data center expansion in key metros; AI capex cycle corrects as hyperscalers internalize more compute. Revenue grows only 6% CAGR. Margin compresses to 10% (below 4-yr avg) as elevated interest rates increase REIT financing costs and new facility depreciation front-loads. Exit PE 42x = REIT distress level (still above non-REIT distress because D&A drag is permanent). Year 5 rev $12.3B, EPS $11.90 (GAAP), price $499.78, PV $310.32.",
+        "scenarioPrice": 310.32
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 10,
+        "netMargin": 14,
+        "exitPE": 55,
+        "qualityMultiplier": 1.1,
+        "shareChange": 0.5,
+        "rationale": "Analyst consensus Y1 $10.23B (+10.9%), Y2 $11.22B (+9.7%). Base CAGR 10% within \u00b13pp of blended 10.3%. GAAP net margin 14% \u2248 TTM 14.65%; mean-reverting 4-yr avg 11.3% suggests some pressure, TTM used as anchor given REIT depreciation timing variability. Exit PE 55x: above current forward PE 49.6x, appropriate for sustained data center infrastructure growth. QM 1.10: Moat 1 \u2014 Internet Exchange (IX) network effects (100,000+ cross-connects; more customers = more valuable the network); Moat 2 \u2014 established power contracts in constrained metros (power availability is the binding constraint for AI data centers; EQIX has secured power others cannot). Year 5 rev $14.8B, EPS $20.55, price $1,243.43, PV $772.07.",
+        "scenarioPrice": 772.07
+      },
+      "bull": {
+        "weight": 0.3,
+        "growthRate": 14,
+        "netMargin": 17,
+        "exitPE": 70,
+        "qualityMultiplier": 1.15,
+        "shareChange": 0,
+        "rationale": "Catalyst: AI training/inference drives hyperscaler colocation demand beyond current planning scenarios. EQIX secures multi-billion-dollar, 10+ year hyperscaler anchor leases in EMEA and APAC, driving 14% CAGR. Margin expands to 17% as new high-density AI data centers (10-50kW/rack vs. traditional 5-8kW/rack) carry significantly higher revenue per sq ft and improved margin per unit. Exit PE 70x = data center REIT growth ceiling. QM 1.15 CITED: EQIX demonstrates 'structural pricing power across cycles' via IX network effects \u2014 once 100,000+ cross-connections exist on EQIX fabric, the switching cost is the entire network (customers would need to recreate their interconnection architecture elsewhere). This is the closest non-semiconductor analog to a structural moat. Year 5 rev $17.7B, EPS $30.59, price $2,462.49, PV $1,529.01.",
+        "scenarioPrice": 1529.01
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "Equinix is the infrastructure layer of the AI economy \u2014 every hyperscaler, enterprise, and cloud provider needs colocation and interconnection, and Equinix has built the densest global network of data centers with 100,000+ cross-connects that make the EQIX platform genuinely hard to replicate. The Internet Exchange network effect is real: the more participants on the EQIX fabric, the more valuable connectivity becomes for all participants, creating a structural switching cost that compounds over time. Power contract security in constrained metros (New York, London, Singapore, Tokyo) is another genuine moat \u2014 these markets have effectively stopped issuing new permits, making established EQIX facilities irreplaceable. AI training and inference create structural demand tailwinds that should support 10%+ revenue growth through 2028+. However, at $1,085/share, EQIX is priced for strong base-case execution. The weighted DCF (properly calibrated to REIT accounting norms) gives $883.71 (-18.6%), driven primarily by the base case ($772.07) underweighting the bull case optionality. A key methodology caveat: GAAP margins understated by D&A (EBITDA margin is 44%); the DCF captures this via REIT-calibrated exit PEs (55x base vs 25x for industrial companies). The prior Gemini analysis (FV $735) used non-REIT P/E multiples (30-50x) which were too conservative \u2014 our corrected analysis gives $883. SELL at current price; the stock would be a BUY below $800.",
+      "fairValue": 883.71,
+      "action": "WATCHLIST",
+      "analyzedAt": "2026-05-02T21:15:00Z",
+      "researchReport": "EQIX_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "API shares_diluted 98.624M. Mktcap-implied: $107.0B / $1,085.03 = 98.62M \u2014 0% discrepancy. Clean. No dilution overhang (Piotroski no_dilution = FALSE but only minor stock compensation).",
+      "marginAnchor": "REIT methodology note: GAAP net margin (14.93% TTM) is suppressed by data center depreciation. EBITDA margin 44.49% reflects true cash earnings. FCF negative (-$400M TTM) due to AI-driven capex expansion. Mean-reverting margins: 9.71% \u2192 11.83% \u2192 9.32% \u2192 14.65% (TTM); 4-yr avg 11.30%. TTM 14.65% above avg \u2014 using TTM as anchor with note that REIT D&A timing causes period-to-period noise. Base 14% = TTM anchor. Bear 10% = below avg (financing cost headwinds). Bull 17% = high-density AI facility margin improvement.",
+      "growthDerivation": "Y1 analyst $10.23B (+10.9%), Y2 $11.22B (+9.7%). Blended ~10.3%. Not hypergrowth (<40%). Base CAGR 10% within \u00b13pp of consensus \u2713. Bear 6% = power/permitting constraints. Bull 14% = AI-driven hyperscaler demand acceleration.",
+      "sectorBenchmarkRow": "Real Estate \u2014 Data Center REIT: GAAP P/E range 45-80x (D&A suppresses earnings; EBITDA multiple ~20-30x is more representative). Current forward PE 49.6x. Exit PE benchmarks: bear 42x (below forward), base 55x (slight premium), bull 70x (growth ceiling for data center REITs). Note: if P/AFFO were available, multiples would be 25-40x; GAAP overstates multiple due to depreciation drag.",
+      "dataQualityFlags": [
+        "REIT depreciation distortion: GAAP margins (14.93%) and PE ratios (75x trailing) significantly overstate traditional valuation multiples. EBITDA margin 44.49% is the more representative operating performance metric. Exit PE benchmarks adjusted upward vs standard benchmarks to reflect REIT depreciation accounting.",
+        "UUID collision: Prior EQIX had same UUID as ASML/PLTR/CAKE/CELH (e0b96b0f). Fresh UUID assigned \u2014 Gemini systematic UUID bug now documented across 5 tickers.",
+        "FCF negative (-$400M TTM): EQIX is in heavy capex expansion phase (new AI-ready data centers). Negative FCF is expected and normal for a REIT in buildout phase; it does not indicate financial distress. EBITDA cash generation is strong.",
+        "Prior Gemini exit PEs (30/40/50x) were too low for a data center REIT \u2014 significantly undervalued EQIX on a REIT-adjusted basis. This analysis uses 42/55/70x.",
+        "Piotroski 5/9: leverage increasing (REIT expansion financing) and dilution occurring (stock compensation). ROA improving and accruals OK are positive signs."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 10228298300,
+        "y2RevEstimate": 11218861470,
+        "y1GrowthPct": 10.9,
+        "y2GrowthPct": 9.7,
+        "blendedConsensusPct": 10.3,
+        "analystTargetMean": 1179.86,
+        "analystCount": 28
+      },
+      "historicalRevenue": [
+        7263,
+        8188,
+        8748,
+        9217
+      ],
+      "historicalNetMargins": [
+        9.71,
+        11.83,
+        9.32,
+        14.65
+      ],
+      "historicalEPS": [
+        7.69,
+        10.35,
+        8.54,
+        13.79
+      ],
+      "priorAnalysisReview": {
+        "priorModel": "Gemini 1.5 Pro",
+        "priorDate": "2026-05-02",
+        "priorPrice": 1085.03,
+        "priorFairValue": 735.41,
+        "priorAction": "SELL",
+        "priceDelta": "0% \u2014 same day",
+        "assumptionAudit": "Prior exit PEs of 30/40/50x critically too low for a data center REIT \u2014 failed to account for REIT depreciation's inflation of GAAP P/E multiples. At 30x exit PE for bear and 14.65% TTM margin, the prior model severely undervalued EQIX even in bear case. Corrected to 42/55/70x. Bear weight raised to 25% (vs 20%). Base QM 1.2 \u2192 1.10 (replaced with explicit moat citations). Bull QM 1.25 \u2192 1.15 (network effects cited). SELL conclusion maintained but fair value corrected upward: $735.41 \u2192 $883.71.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Gemini 1.5 Pro",
+        "thesisOutcome": "N/A \u2014 same day",
+        "fundamentalChanges": "AI data center demand accelerating. EQIX announcing multi-billion-dollar AI-ready facility expansions. Strong analyst buy consensus (28 analysts, target $1,180). FCF negative as expansion capex peaks."
+      },
+      "confidenceBreakdown": "0.76/1.0 \u2014 Base 1.0. +0.08 network effects moat (IX density is genuinely structural); +0.06 power contract lock-in in constrained metros; +0.04 28 analyst coverage strong buy; -0.08 REIT methodology complexity (GAAP margins understated; FCF negative); -0.06 interest rate sensitivity (REIT financing costs); -0.05 Piotroski 5/9 (leverage increasing); -0.05 prior model error introduced benchmark confusion; +0.03 EBITDA margin 44.49% shows strong cash generation ability; -0.05 AI capex cycle risk (hyperscalers could pull back orders)",
+      "valuationAction": "SELL",
+      "portfolioRationale": "SELL-rated at $735.41 FV, currently unowned. Data centre REIT thesis requires valuation improvement before initiating. Watch for price correction toward FV before re-evaluating.",
+      "portfolioUrgency": "LOW"
     }
   }
 ]

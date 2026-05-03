@@ -358,6 +358,23 @@ app.post('/api/analysis/valuation', async (req, res) => {
     }
 });
 
+// GET /api/portfolio/weights — percentage weight of every live holding (shares * price / total)
+app.get('/api/portfolio/weights', (_req, res) => {
+    try {
+        if (!fs.existsSync(PORTFOLIO_FILE)) { res.json({}); return; }
+        const positions: any[] = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+        const total = positions.reduce((s, p) => s + (p.shares || 0) * (p.price || 0), 0);
+        const map: Record<string, number> = {};
+        for (const p of positions) {
+            const ticker = p.symbol ?? p.ticker;
+            if (ticker && total > 0) map[ticker] = ((p.shares || 0) * (p.price || 0) / total) * 100;
+        }
+        res.json(map);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.get('/api/portfolio/status', (req, res) => {
     try {
         if (!fs.existsSync(PORTFOLIO_FILE)) {
@@ -634,6 +651,73 @@ app.delete('/api/theses/:id', async (req, res) => {
     } catch (error: any) {
         console.error(`[API] Error deleting thesis:`, error);
         res.status(500).json({ error: 'Failed to delete thesis' });
+    }
+});
+
+// ─── Docs API ─────────────────────────────────────────────────────────────────
+const THESIS_DOC_PATH = path.resolve(__dirname, '../../../plugins/thesis-balancer/references/investment_thesis.md');
+const PORTFOLIO_REVIEWS_DIR = path.resolve(__dirname, '../../../PortfolioAnalysis/strategic-reviews');
+
+// GET /api/docs/investment-thesis — serves the investment thesis markdown + live metadata from target_portfolio.json
+app.get('/api/docs/investment-thesis', async (_req, res) => {
+    try {
+        const content = await fs.promises.readFile(THESIS_DOC_PATH, 'utf-8');
+        // Pull live name/description from the active thesis JSON so the UI never hardcodes the strategy name
+        let thesisName = 'Investment Thesis';
+        let thesisDescription = '';
+        try {
+            const thesisData = await thesisService.getThesis('target-portfolio');
+            if (thesisData) {
+                thesisName = thesisData.name;
+                thesisDescription = thesisData.description ?? '';
+            }
+        } catch { /* thesis JSON unavailable — fall back to generic label */ }
+        res.json({ content, filename: 'investment_thesis.md', thesisName, thesisDescription });
+    } catch (err: any) {
+        res.status(404).json({ error: 'Investment thesis document not found' });
+    }
+});
+
+// GET /api/docs/latest-review — serves the most recent strategic review markdown
+app.get('/api/docs/latest-review', async (_req, res) => {
+    try {
+        await fs.promises.mkdir(PORTFOLIO_REVIEWS_DIR, { recursive: true });
+        const files = (await fs.promises.readdir(PORTFOLIO_REVIEWS_DIR))
+            .filter(f => f.endsWith('.md') && f.match(/^\d{4}-\d{2}-\d{2}/))
+            .sort().reverse();
+        if (!files.length) { res.status(404).json({ error: 'No reviews found' }); return; }
+        const latest = files[0];
+        const content = await fs.promises.readFile(path.join(PORTFOLIO_REVIEWS_DIR, latest), 'utf-8');
+        res.json({ content, filename: latest, date: latest.substring(0, 10) });
+    } catch (err: any) {
+        res.status(500).json({ error: 'Failed to load review' });
+    }
+});
+
+// GET /api/docs/latest-review-data — serves the most recent strategic review JSON
+app.get('/api/docs/latest-review-data', async (_req, res) => {
+    try {
+        await fs.promises.mkdir(PORTFOLIO_REVIEWS_DIR, { recursive: true });
+        const files = (await fs.promises.readdir(PORTFOLIO_REVIEWS_DIR))
+            .filter(f => f.endsWith('.json') && f.match(/^\d{4}-\d{2}-\d{2}/) && !f.includes('patch'))
+            .sort().reverse();
+        if (!files.length) { res.status(404).json({ error: 'No review data found' }); return; }
+        const latest = files[0];
+        const raw = await fs.promises.readFile(path.join(PORTFOLIO_REVIEWS_DIR, latest), 'utf-8');
+        res.json({ ...JSON.parse(raw), filename: latest });
+    } catch (err: any) {
+        res.status(500).json({ error: 'Failed to load review data' });
+    }
+});
+
+// GET /api/docs/agent-guide — serves the agent quick reference markdown
+const AGENT_GUIDE_PATH = path.resolve(__dirname, '../../../plugins/toolkit-manager/references/agent-quick-reference.md');
+app.get('/api/docs/agent-guide', async (_req, res) => {
+    try {
+        const content = await fs.promises.readFile(AGENT_GUIDE_PATH, 'utf-8');
+        res.json({ content, filename: 'agent-quick-reference.md' });
+    } catch (err: any) {
+        res.status(404).json({ error: 'Agent guide not found' });
     }
 });
 

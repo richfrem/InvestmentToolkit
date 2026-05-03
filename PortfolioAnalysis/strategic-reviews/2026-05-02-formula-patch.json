@@ -1,0 +1,56 @@
+{
+  "holdings": [
+    {
+      "ticker": "INTC",
+      "targetWeight": 8.0
+    },
+    {
+      "ticker": "AVGO",
+      "targetWeight": 8.0
+    },
+    {
+      "ticker": "VST",
+      "targetWeight": 6.0
+    },
+    {
+      "ticker": "CEG",
+      "targetWeight": 2.0
+    },
+    {
+      "ticker": "PANW",
+      "targetWeight": 2.0
+    },
+    {
+      "ticker": "COIN",
+      "targetWeight": 1.5
+    },
+    {
+      "ticker": "CORZ",
+      "targetWeight": 0.75
+    },
+    {
+      "ticker": "CRWD",
+      "targetWeight": 0.5
+    },
+    {
+      "ticker": "ZS",
+      "targetWeight": 4.5
+    },
+    {
+      "ticker": "CRWV",
+      "targetWeight": 3.5
+    },
+    {
+      "ticker": "ANET",
+      "targetWeight": 2.5
+    },
+    {
+      "ticker": "OKLO",
+      "targetWeight": 0.5
+    },
+    {
+      "ticker": "VRT",
+      "targetWeight": 0.5
+    }
+  ]
+}

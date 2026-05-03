@@ -792,7 +792,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                 <Loader2 size={24} className="text-indigo-400 animate-spin" />
                                 <div className="flex flex-col items-center">
                                     <p className="text-sm text-indigo-200 animate-pulse">Analyzing financials & growth vectors...</p>
-                                    <p className="text-[10px] text-slate-500">Processing "Twin Revolutions" Framework</p>
+                                    <p className="text-[10px] text-slate-500">Processing Investment Thesis</p>
                                 </div>
                             </div>
                         ) : aiError ? (

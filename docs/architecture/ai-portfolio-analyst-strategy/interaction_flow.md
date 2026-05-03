@@ -33,7 +33,7 @@
 ## Tool B: The Thesis Balancer (High Level)
 
 ### Scenario: Quarterly Portfolio Review
-*You want to know if you are still aligned with the "Twin Revolutions" thesis.*
+*You want to know if you are still aligned with the "Investment Thesis".*
 
 **Step 1: The Health Check (Passive)**
 - **You**: Open the main Dashboard.
