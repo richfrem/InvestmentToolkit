@@ -658,6 +658,31 @@ app.delete('/api/theses/:id', async (req, res) => {
 const THESIS_DOC_PATH = path.resolve(__dirname, '../../../plugins/thesis-balancer/references/investment_thesis.md');
 const TARGET_PORTFOLIO_FILE = path.resolve(__dirname, '../data/theses/target-portfolio.json');
 
+// Calls portfolio_action.py (canonical Python) and returns { ticker → action } map.
+// This is the single source of truth — no TypeScript mirrors of action logic.
+async function getPythonActions(): Promise<Record<string, string>> {
+    const { spawn } = require('child_process');
+    const scriptPath = path.resolve(__dirname, '../../../plugins/thesis-balancer/scripts/portfolio_action.py');
+    const portfolioPath = path.resolve(__dirname, '../../frontend/src/data/portfolio.json');
+    const targetPath = path.resolve(__dirname, '../data/theses/target-portfolio.json');
+    const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+    return new Promise((resolve) => {
+        const proc = spawn(pythonCmd, [scriptPath, '--all', '--portfolio', portfolioPath, '--target', targetPath]);
+        let out = '';
+        let err = '';
+        proc.stdout.on('data', (d: Buffer) => out += d.toString());
+        proc.stderr.on('data', (d: Buffer) => err += d.toString());
+        proc.on('close', (code: number) => {
+            if (code !== 0) {
+                console.error('[Actions] portfolio_action.py failed:', err);
+                resolve({});
+            } else {
+                try { resolve(JSON.parse(out)); } catch { resolve({}); }
+            }
+        });
+    });
+}
+
 // GET /api/screener/all-holdings — all thesis holdings enriched with actual %, review action, and rationale.
 // Used by the screener to show ETFs and other non-projection holdings alongside DCF rows.
 app.get('/api/screener/all-holdings', async (_req, res) => {
@@ -676,8 +701,10 @@ app.get('/api/screener/all-holdings', async (_req, res) => {
             if (ticker && totalValue > 0)
                 actualMap[ticker] = { pct: ((p.shares || 0) * (p.price || 0) / totalValue) * 100, price: p.price || 0 };
         }
+        // 3. Canonical actions from Python — single source of truth
+        const actionsMap = await getPythonActions();
 
-        // 3. Latest review data (action, rationale, actualPct, recommendedTarget)
+        // 4. Rationale from latest review (never overrides weights or actions)
         let reviewMap: Record<string, any> = {};
         try {
             await fs.promises.mkdir(PORTFOLIO_REVIEWS_DIR, { recursive: true });
@@ -692,7 +719,7 @@ app.get('/api/screener/all-holdings', async (_req, res) => {
             }
         } catch { /* no review file — proceed without */ }
 
-        // 4. Merge all sources per holding
+        // 5. Merge: weights from JSON files, action from Python, rationale from review
         const result = thesisHoldings.map((h: any) => {
             const rev = reviewMap[h.ticker];
             const live = actualMap[h.ticker];
@@ -701,14 +728,33 @@ app.get('/api/screener/all-holdings', async (_req, res) => {
                 name: h.name ?? h.ticker,
                 subStrategyId: h.subStrategyId ?? null,
                 role: h.role ?? null,
-                targetPct: rev?.recommendedTarget ?? h.targetWeight ?? null,
-                actualPct: rev?.actualPct ?? live?.pct ?? null,
+                targetPct: h.targetWeight ?? null,
+                actualPct: live?.pct ?? null,
                 currentPrice: live?.price ?? null,
-                action: rev?.action ?? 'MAINTAIN',
+                action: actionsMap[h.ticker] ?? 'WATCHLIST',
                 rationale: rev?.rationale ?? h.thesisForInclusion ?? null,
-                hasValuation: false, // frontend will override for tickers with projections
+                hasValuation: false,
             };
         });
+
+        // Append any positions in portfolio.json with no thesis row (e.g. USD_CASH)
+        const thesisTickers = new Set(thesisHoldings.map((h: any) => h.ticker));
+        for (const [ticker, data] of Object.entries(actualMap) as [string, { pct: number; price: number }][]) {
+            if (!thesisTickers.has(ticker)) {
+                result.push({
+                    ticker,
+                    name: ticker === 'USD_CASH' ? 'US Dollar Cash' : ticker,
+                    subStrategyId: 'cash',
+                    role: 'untracked',
+                    targetPct: null,
+                    actualPct: data.pct,
+                    currentPrice: data.price,
+                    action: actionsMap[ticker] ?? 'EXIT',
+                    rationale: 'Cash position — not mapped to a thesis holding',
+                    hasValuation: false,
+                } as any);
+            }
+        }
 
         res.json(result);
     } catch (err: any) {

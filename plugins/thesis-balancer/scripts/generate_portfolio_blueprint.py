@@ -37,14 +37,7 @@ SUB_STRATEGY_NAMES = {
     "untracked":         "Untracked / Thesis Pending",
 }
 
-ACTION_EMOJI = {
-    "INITIATE":   "🟢",
-    "ACCUMULATE": "🔵",
-    "MAINTAIN":   "⚪",
-    "TRIM":       "🟡",
-    "EXIT":       "🔴",
-    "WATCHLIST":  "👁️",
-}
+from portfolio_action import derive_action, ACTION_EMOJI
 
 
 def load_json(path: Path) -> dict | list:
@@ -86,21 +79,20 @@ def build_thesis_map(thesis: dict) -> dict:
 
 
 def assign_action(actual_pct: float, target_pct: float, existing_action: str = "") -> str:
-    if existing_action == "EXIT":
-        return "EXIT"
-    held = actual_pct > 0
-    delta = target_pct - actual_pct
-    if not held:
-        return "INITIATE" if target_pct > 0 else "WATCHLIST"
-    if delta > 0.5:
-        return "ACCUMULATE"
-    if delta < -0.5:
-        return "TRIM"
-    return "MAINTAIN"
+    return derive_action(actual_pct, target_pct)
 
 
 def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> str:
     today = date.today().isoformat()
+
+    # ── Import shared weight computation from validate_weights ──────────────
+    sys.path.insert(0, str(Path(__file__).parent))
+    from validate_weights import compute_current, compute_target
+    current_data = compute_current(PORTFOLIO_JSON)
+    target_data  = compute_target(THESIS_JSON)
+    # USD_CASH is PSU-U.TO in the thesis — alias it
+    if "USD_CASH" in current_data["holdings"]:
+        current_data["holdings"]["PSU-U.TO"] = current_data["holdings"]["USD_CASH"]
 
     # Group by sub-strategy
     groups: dict[str, list] = {}
@@ -108,17 +100,20 @@ def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> 
         sid = t["subStrategyId"]
         groups.setdefault(sid, []).append(ticker)
 
-    # Add untracked holdings (in portfolio but not in thesis)
-    untracked = [s for s in actual_map if s not in thesis_map and s != "USD_CASH"]
+    # Untracked: held but not in thesis
+    untracked = [s for s in actual_map if s not in thesis_map and s not in ("USD_CASH",)]
     if untracked:
         groups.setdefault("untracked", []).extend(untracked)
 
     lines = []
     lines.append("## IV. Portfolio Blueprint")
     lines.append("")
-    lines.append(f"*Generated {today} from `target-portfolio.json` × `portfolio.json` (Questrade live sync).*")
-    lines.append(f"*Total portfolio value: ${total_value:,.0f}. Run `python3 plugins/thesis-balancer/scripts/generate_portfolio_blueprint.py --write` to refresh.*")
+    lines.append(f"*Generated {today} · Source: `validate_weights.py` × `target-portfolio.json` × `portfolio.json` (Questrade live)*")
+    lines.append(f"*Portfolio value: ${total_value:,.0f}. Refresh: `python3 plugins/thesis-balancer/scripts/generate_portfolio_blueprint.py --write`*")
     lines.append("")
+
+    grand_actual = 0.0
+    grand_target = 0.0
 
     order = ["sa-asi-race", "cybersecurity", "sovereign-finance", "quality-saas", "frontier-bets", "cash", "untracked"]
     for sid in order:
@@ -131,34 +126,106 @@ def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> 
         lines.append("| Ticker | Action | Actual % | Target % | P&L | Conviction |")
         lines.append("| :--- | :--- | ---: | ---: | ---: | :--- |")
 
-        # Sort: EXIT last, then by actual pct descending
         def sort_key(t):
-            a = actual_map.get(t, {})
+            ap = current_data["holdings"].get(t, 0) or 0
             th = thesis_map.get(t, {})
             is_exit = 1 if th.get("role") == "EXIT" else 0
-            return (is_exit, -a.get("actualPct", 0))
+            return (is_exit, -ap)
+
+        sub_actual = 0.0
+        sub_target = 0.0
 
         for ticker in sorted(tickers, key=sort_key):
-            a = actual_map.get(ticker, {})
-            th = thesis_map.get(ticker, {})
-            actual_pct = a.get("actualPct", 0.0)
-            target_pct = th.get("targetPct", 0.0)
-            pnl = a.get("pnl", 0.0)
-            action = assign_action(actual_pct, target_pct, th.get("role", "").upper())
-            emoji = ACTION_EMOJI.get(action, "")
-            note = th.get("thesisNote") or a.get("name", ticker)
-            pnl_str = f"+{pnl:.1f}%" if pnl >= 0 else f"{pnl:.1f}%"
+            a          = actual_map.get(ticker, {})
+            th         = thesis_map.get(ticker, {})
+            actual_pct = current_data["holdings"].get(ticker, 0.0) or 0.0
+            target_pct = target_data["holdings"].get(ticker, 0.0) or 0.0
+            pnl        = a.get("pnl", 0.0)
+            action     = assign_action(actual_pct, target_pct, th.get("role", "").upper())
+            emoji      = ACTION_EMOJI.get(action, "")
+            note       = th.get("thesisNote") or a.get("name", ticker)
+            pnl_str    = f"+{pnl:.1f}%" if pnl >= 0 else f"{pnl:.1f}%"
             actual_str = f"{actual_pct:.2f}%" if actual_pct else "—"
             target_str = f"{target_pct:.2f}%" if target_pct else "—"
 
+            sub_actual += actual_pct
+            sub_target += target_pct
+
             lines.append(f"| **{ticker}** | {emoji} {action} | {actual_str} | {target_str} | {pnl_str} | {note} |")
 
+        # Sub-strategy subtotal row
+        delta = sub_target - sub_actual
+        delta_str = (f"+{delta:.2f}pp" if delta > 0 else f"{delta:.2f}pp") if sub_actual or sub_target else "—"
+        lines.append(f"| **Subtotal** | | **{sub_actual:.2f}%** | **{sub_target:.2f}%** | {delta_str} | |")
         lines.append("")
+
+        grand_actual += sub_actual
+        grand_target += sub_target
+
+    # Overall totals
+    grand_delta = grand_target - grand_actual
+    grand_delta_str = f"+{grand_delta:.2f}pp" if grand_delta >= 0 else f"{grand_delta:.2f}pp"
+    lines.append("### Portfolio Totals")
+    lines.append("")
+    lines.append("| | Actual % | Target % | Delta |")
+    lines.append("| :--- | ---: | ---: | ---: |")
+    lines.append(f"| **All holdings** | **{grand_actual:.2f}%** | **{grand_target:.2f}%** | {grand_delta_str} |")
+    lines.append(f"| *Validate* | `python3 plugins/thesis-balancer/scripts/validate_weights.py --mode both` | | |")
+    lines.append("")
 
     return "\n".join(lines)
 
 
 def update_thesis_md(new_section: str, path: Path) -> None:
+    content = path.read_text()
+    pattern = r"(## IV\. Portfolio Blueprint.*?)(?=\n## |\Z)"
+    replacement = new_section + "\n\n---\n\n"
+    updated, count = re.subn(pattern, replacement, content, flags=re.DOTALL)
+    if count == 0:
+        updated = re.sub(r"(\n## V\.)", "\n\n" + new_section + "\n\n---\n\n## V.", content, count=1)
+    path.write_text(updated)
+    print(f"✅ Updated Section IV: {path}")
+
+
+def update_section_tables(content: str, current_data: dict, target_data: dict) -> str:
+    """
+    Find every '| Ticker | Role | Conviction Note |' table in the thesis and
+    rebuild it with Action / Current % / Target % columns prepended after Ticker.
+    Uses the canonical derive_action() — same logic as the frontend.
+    """
+    # Match table header + separator + all data rows (stops at blank line or non-table line)
+    table_pattern = re.compile(
+        r"(\| Ticker \| Role \| Conviction Note \|\n\| :--- \| :--- \| :--- \|\n)((?:\|[^\n]+\|\n?)+)",
+        re.IGNORECASE
+    )
+
+    def rebuild_table(m: re.Match) -> str:
+        rows_block = m.group(2)
+        new_header = "| Ticker | Action | Current % | Target % | Role | Conviction Note |\n"
+        new_sep    = "| :--- | :--- | ---: | ---: | :--- | :--- |\n"
+        new_rows = []
+        for line in rows_block.splitlines():
+            line = line.strip()
+            if not line.startswith("|"):
+                continue
+            parts = [p.strip() for p in line.strip("|").split("|")]
+            if len(parts) < 3:
+                new_rows.append(line)
+                continue
+            ticker, role, conviction = parts[0], parts[1], "|".join(parts[2:]).strip()
+            actual  = current_data["holdings"].get(ticker, 0) or 0
+            target  = target_data["holdings"].get(ticker, 0)  or 0
+            action  = derive_action(actual, target)
+            emoji   = ACTION_EMOJI.get(action, "")
+            act_str = f"{actual:.2f}%" if actual else "—"
+            tgt_str = f"{target:.2f}%" if target else "—"
+            new_rows.append(f"| **{ticker}** | {emoji} {action} | {act_str} | {tgt_str} | {role} | {conviction} |")
+        return new_header + new_sep + "\n".join(new_rows) + "\n"
+
+    return table_pattern.sub(rebuild_table, content)
+
+
+
     content = path.read_text()
     # Replace from ## IV. ... up to the next ## heading
     pattern = r"(## IV\. Portfolio Blueprint.*?)(?=\n## |\Z)"
@@ -188,7 +255,21 @@ def main():
     section = generate_section(thesis_map, actual_map, total_value)
 
     if args.write:
-        update_thesis_md(section, Path(args.thesis_md))
+        md_path = Path(args.thesis_md)
+        # 1. Load weights via validate_weights for accuracy
+        sys.path.insert(0, str(Path(__file__).parent))
+        from validate_weights import compute_current, compute_target
+        current_data = compute_current(PORTFOLIO_JSON)
+        target_data  = compute_target(THESIS_JSON)
+
+        # 2. Update Section IV (blueprint)
+        update_thesis_md(section, md_path)
+
+        # 3. Enrich early section tables (Ticker | Role | Conviction Note) with live data
+        content = md_path.read_text()
+        updated = update_section_tables(content, current_data, target_data)
+        md_path.write_text(updated)
+        print(f"✅ Section tables enriched with live Action / Current % / Target %")
     else:
         print(section)
 

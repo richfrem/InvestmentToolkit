@@ -15,6 +15,7 @@ interface StockRow {
     position_value: number;
     total_market: number;
     total_book: number | null;
+    currentPct: number | null;
     change_1d: number | null;
     change_1w: number | null;
     change_1m: number | null;
@@ -43,6 +44,7 @@ interface ColDef {
 const COLUMNS: ColDef[] = [
     { id: 'symbol',         label: 'Symbol',     always: true,  defaultOn: true,  align: 'left',  format: v => String(v ?? '') },
     { id: 'name',           label: 'Name',        always: true,  defaultOn: true,  align: 'left',  format: v => String(v ?? '') },
+    { id: 'currentPct',     label: 'Portfolio %', defaultOn: true,  align: 'right', format: v => v != null ? `${(v as number).toFixed(2)}%` : '—' },
     { id: 'sector',         label: 'Sector',      defaultOn: false, align: 'left', format: v => String(v ?? '—') },
     { id: 'shares',         label: 'Shares',      defaultOn: true,  align: 'right', format: v => v?.toLocaleString() ?? '—' },
     { id: 'price',          label: 'Price',       defaultOn: true,  align: 'right', format: v => v != null ? `$${(v as number).toFixed(2)}` : '—' },
@@ -58,7 +60,7 @@ const COLUMNS: ColDef[] = [
 ];
 
 const DEFAULT_WIDTHS: Record<string, number> = {
-    symbol: 70, name: 170, sector: 115, shares: 60, price: 72,
+    symbol: 70, name: 170, currentPct: 90, sector: 115, shares: 60, price: 72,
     book_price: 72, change_1d: 65, change_1w: 65, change_1m: 65,
     change_ytd: 65, change_1y: 65, change_overall: 80,
     total_book: 80, total_market: 80,
@@ -66,7 +68,7 @@ const DEFAULT_WIDTHS: Record<string, number> = {
 
 // ─── Persistence ──────────────────────────────────────────────────────────────
 
-const STORAGE_KEY = 'portfolio-table-prefs-v1';
+const STORAGE_KEY = 'portfolio-table-prefs-v2';
 
 interface TablePrefs {
     visible: string[];
@@ -212,16 +214,32 @@ export default function PortfolioTable() {
         setLoading(true);
         setError(null);
         try {
+            // 1. Raw portfolio positions from portfolio.json
             const portRes = await fetch('/api/portfolio');
             if (!portRes.ok) throw new Error('Failed to fetch portfolio');
-            const portConfig = await portRes.json() as { items?: StockRow[] };
+            const portConfig = await portRes.json() as { items?: any[] };
+            const allItems = portConfig.items ?? [];
+
+            // 2. Live % weights (source of truth for currentPct) — direct from portfolio.json, no aliasing
+            const weightsRes = await fetch('/api/portfolio/weights');
+            const weightsMap: Record<string, number> = weightsRes.ok ? await weightsRes.json() : {};
+
+            // 3. Heatmap for all positions — cash has special case in Python (no yfinance, nulls for changes)
             const res = await fetch('/api/portfolio-heatmap', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items: portConfig.items ?? [] }),
+                body: JSON.stringify({ items: allItems }),
             });
             if (!res.ok) throw new Error('Failed to fetch heatmap data');
-            setData(await res.json());
+            const heatmapData = await res.json() as { stocks: StockRow[]; total_value: number };
+
+            // 4. Merge currentPct from weights into each row
+            const stocksWithPct: StockRow[] = heatmapData.stocks.map(s => ({
+                ...s,
+                currentPct: weightsMap[s.symbol] ?? null,
+            }));
+
+            setData({ stocks: stocksWithPct, total_value: heatmapData.total_value });
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'Failed to load');
         } finally {
@@ -423,11 +441,15 @@ export default function PortfolioTable() {
                                 {visibleCols.map(col => {
                                     const val = row[col.id];
                                     const numVal = typeof val === 'number' ? val : null;
+                                    const isPctCol = col.id === 'currentPct';
+                                    const pctBg = isPctCol && numVal != null
+                                        ? `rgba(34,197,94,${Math.min(numVal / 15, 1) * 0.55 + (numVal > 0 ? 0.08 : 0)})`
+                                        : undefined;
                                     return (
                                         <td
                                             key={col.id}
                                             className={`px-3 py-2.5 whitespace-nowrap overflow-hidden text-ellipsis ${col.align === 'right' ? 'text-right' : 'text-left'}`}
-                                            style={col.isChange ? { backgroundColor: changeBg(numVal) } : undefined}
+                                            style={col.isChange ? { backgroundColor: changeBg(numVal) } : isPctCol ? { backgroundColor: pctBg } : undefined}
                                         >
                                             {col.id === 'symbol' ? (
                                                 <span className="font-bold text-white">{val}</span>
@@ -454,6 +476,9 @@ export default function PortfolioTable() {
                                 else if (col.id === 'total_book') {
                                     const tb = rows.reduce((s, r) => r.total_book != null ? s + r.total_book : s, 0);
                                     content = tb > 0 ? fmtDollar(tb) : '—';
+                                } else if (col.id === 'currentPct') {
+                                    const tot = rows.reduce((s, r) => r.currentPct != null ? s + r.currentPct : s, 0);
+                                    content = tot > 0 ? `${tot.toFixed(2)}%` : '—';
                                 }
                                 return (
                                     <td key={col.id} className={`px-3 py-2 text-xs font-bold overflow-hidden text-ellipsis ${col.align === 'right' ? 'text-right' : 'text-left'} ${i === 0 ? 'text-zinc-400' : 'text-zinc-300'}`}>

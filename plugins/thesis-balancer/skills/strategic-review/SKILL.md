@@ -55,6 +55,38 @@ The actual holdings are in `investment_screener/frontend/src/data/portfolio.json
 
 ---
 
+## ⚠️ Target Weight Integrity — HARD GATE
+
+> **The agent MUST ensure `target-portfolio.json` targetWeights sum to exactly 100% before completing any review.**
+
+Every time the agent proposes, adjusts, or confirms target allocations:
+
+1. **Validate first** — run before making changes:
+   ```bash
+   python3 plugins/thesis-balancer/scripts/validate_weights.py --mode target
+   ```
+
+2. **After any allocation change** — normalize and write:
+   ```bash
+   python3 plugins/thesis-balancer/scripts/validate_weights.py --normalize --write
+   ```
+
+3. **Verify** — confirm the output shows `target.total ≈ 100%` before proceeding.
+
+> ❌ NEVER complete a strategic review without verifying target weights sum to 100%.
+> ❌ NEVER manually set a `targetWeight` without running `--normalize --write` afterwards.
+> ✅ The web app screener footer will show **green ✓ 100%** when the target column is correct.
+
+**Canonical scripts for this skill:**
+
+| Script | Purpose | Command |
+|---|---|---|
+| `validate_weights.py` | Verify/normalize both JSONs sum to 100% | `python3 plugins/thesis-balancer/scripts/validate_weights.py --mode both` |
+| `generate_portfolio_blueprint.py` | Regenerate Section IV of `investment_thesis.md` | `python3 plugins/thesis-balancer/scripts/generate_portfolio_blueprint.py --write` |
+| `relabel_actions.py` | Correct action labels against live holdings | `python3 plugins/thesis-balancer/scripts/relabel_actions.py --recs {json} --portfolio ...` |
+
+---
+
 ## Step 0: Load Actual Portfolio Holdings
 
 **Do this before anything else.** The actual portfolio is the ground truth.
@@ -422,6 +454,42 @@ This script:
 - Writes the updated Section IV directly into `plugins/thesis-balancer/references/investment_thesis.md`
 
 The web app modal reads this file — the Portfolio Blueprint section will be live-accurate after each review.
+
+---
+
+## Step 6c: Validate Weight Totals
+
+Before finalising any review or updating target weights, always verify that both JSONs sum correctly using the canonical validation script.
+
+```bash
+# Dry-run: check both JSONs, print totals to stdout
+python3 plugins/thesis-balancer/scripts/validate_weights.py --mode both
+
+# Check current holdings only (from portfolio.json — shares × price / total)
+python3 plugins/thesis-balancer/scripts/validate_weights.py --mode current
+
+# Check target weights only (from target-portfolio.json — sum of targetWeight fields)
+python3 plugins/thesis-balancer/scripts/validate_weights.py --mode target
+
+# Fix: rescale all targetWeight values so they sum to exactly 100%, then write
+python3 plugins/thesis-balancer/scripts/validate_weights.py --normalize --write
+```
+
+**Expected output:**
+- `current.total` → should be **~100%** (portfolio.json is the source of truth for actual holdings)
+- `target.total` → should be **100%** exactly (target-portfolio.json thesis targets)
+
+**When to run:**
+- After adding, removing, or changing any `targetWeight` in `target-portfolio.json`
+- After any `/rebalance` or `/strategic-review` that changes recommended allocations
+- After adding a new holding to the thesis
+
+**What the script surfaces:**
+- Holdings in `portfolio.json` with no target weight (untracked positions)
+- Holdings in `target-portfolio.json` not yet purchased (INITIATE candidates)
+- Symbol mismatches (`USD_CASH` vs `PSU-U.TO`) that cause screener display gaps
+
+> ⚠️ **Rule:** Never manually adjust individual targetWeights without running `--normalize --write` afterwards. The screener totals footer will show red until the sum reaches 100%.
 
 ---
 
