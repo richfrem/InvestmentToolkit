@@ -3,6 +3,7 @@
     {
       "source": "richfrem/agent-plugins-skills",
       "plugins": [
+        "adr-manager",
         "agent-agentic-os",
         "agent-loops",
         "agent-scaffolders",
@@ -20,8 +21,8 @@
     {
       "source": "/Users/richardfremmerlid/Projects/InvestmentToolkit/plugins",
       "plugins": [
+        "portfolio-advisor",
         "stock-valuation",
-        "thesis-balancer",
         "toolkit-manager"
       ]
     }

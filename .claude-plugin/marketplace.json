@@ -13,9 +13,9 @@
             "strict": true
         },
         {
-            "name": "thesis-balancer",
+            "name": "portfolio-advisor",
             "description": "Portfolio thesis health and rebalancing suite. Skills: /review-portfolio (drift monitor, pillar conviction audit, thesis formula health score), /strategic-review (adversarial thesis challenger with valuation-grounded formula improvement proposals), /rebalance (valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift).",
-            "source": "./plugins/thesis-balancer",
+            "source": "./plugins/portfolio-advisor",
             "strict": true
         },
         {

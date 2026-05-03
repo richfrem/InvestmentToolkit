@@ -1,1 +1,1 @@
-../../../plugins/thesis-balancer/scripts/relabel_actions.py
+../../../plugins/portfolio-advisor/scripts/relabel_actions.py

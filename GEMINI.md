@@ -23,7 +23,7 @@ InvestmentToolkit/
 │           └── utils/          ← QuestradeAPIClient.py, QuestradeTokenManager.py
 ├── plugins/                    ← Modular AI agent plugins
 │   ├── stock-valuation/        ← DCF valuation + research sweep skills
-│   ├── thesis-balancer/        ← Portfolio drift, strategic review, rebalance skills
+│   ├── portfolio-advisor/        ← Portfolio drift, strategic review, rebalance skills
 │   └── toolkit-manager/        ← Orchestrator (token setup, startup)
 ├── .agents/                    ← Agent skills, prompts, and evaluations
 ├── .claude/                    ← Claude Code configuration
@@ -119,9 +119,9 @@ Questrade refresh tokens can expire. **If you (as an agent) encounter `Token rot
 |---------|--------|---------|
 | `/evaluate-stock {TICKER}` | stock-valuation | Full DCF valuation — Bear/Base/Bull scenarios, fair value, research report |
 | `/research-stock {TICKER}` | stock-valuation | Qualitative research sweep — classifies findings, gates re-valuation on confirmation |
-| `/review-portfolio` | thesis-balancer | Drift monitor + pillar conviction audit + thesis formula health score (0–100) |
-| `/strategic-review` | thesis-balancer | Adversarial thesis challenger — surfaces failing pillars, proposes formula improvements |
-| `/rebalance` | thesis-balancer | Valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift |
+| `/review-portfolio` | portfolio-advisor | Drift monitor + pillar conviction audit + thesis formula health score (0–100) |
+| `/strategic-review` | portfolio-advisor | Adversarial thesis challenger — surfaces failing pillars, proposes formula improvements |
+| `/rebalance` | portfolio-advisor | Valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift |
 | `/start-screener` | toolkit-manager | Launch full suite (frontend + backend) |
 | `/setup-questrade` | toolkit-manager | Interactive Questrade token setup |
 

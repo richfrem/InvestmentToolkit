@@ -222,8 +222,8 @@ The thesis scores 78.8/100 — under pressure but structurally sound. The primar
 - **Thesis API:** ✅ Twin Revolutions v7.3
 - **Valuations:** ✅ 20 tickers with AI projections | ⚠️ Missing: SNPS, CDNS, ETHA, IBIT, HUMN, KOID, PSU-U.TO
 - **Pillar Conviction Audit:** ✅ All 8 pillars
-- **Thesis Breakers Doc:** ✅ `plugins/thesis-balancer/references/investment_thesis.md` §VII
-- **Strategic Review Prompt:** ✅ `.agents/skills/thesis-balancer/references/strategic_review_prompt.md`
+- **Thesis Breakers Doc:** ✅ `plugins/portfolio-advisor/references/investment_thesis.md` §VII
+- **Strategic Review Prompt:** ✅ `.agents/skills/portfolio-advisor/references/strategic_review_prompt.md`
 - **Thesis Formula Score:** ✅ 78.8/100
 - **SA 13F Q2 2025:** ✅ Parsed `000204572425000006` — Situational Awareness LP
 - **SA 13F Q4 2025:** ✅ Parsed `000204572426000002` — Situational Awareness LP

@@ -655,14 +655,14 @@ app.delete('/api/theses/:id', async (req, res) => {
 });
 
 // ─── Docs API ─────────────────────────────────────────────────────────────────
-const THESIS_DOC_PATH = path.resolve(__dirname, '../../../plugins/thesis-balancer/references/investment_thesis.md');
+const THESIS_DOC_PATH = path.resolve(__dirname, '../../../plugins/portfolio-advisor/references/investment_thesis.md');
 const TARGET_PORTFOLIO_FILE = path.resolve(__dirname, '../data/theses/target-portfolio.json');
 
 // Calls portfolio_action.py (canonical Python) and returns { ticker → action } map.
 // This is the single source of truth — no TypeScript mirrors of action logic.
 async function getPythonActions(): Promise<Record<string, string>> {
     const { spawn } = require('child_process');
-    const scriptPath = path.resolve(__dirname, '../../../plugins/thesis-balancer/scripts/portfolio_action.py');
+    const scriptPath = path.resolve(__dirname, '../../../plugins/portfolio-advisor/scripts/portfolio_action.py');
     const portfolioPath = path.resolve(__dirname, '../../frontend/src/data/portfolio.json');
     const targetPath = path.resolve(__dirname, '../data/theses/target-portfolio.json');
     const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';

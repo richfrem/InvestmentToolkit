@@ -51,10 +51,10 @@ An autonomous buy-side analyst. Fetches real-time financial data, builds Bear/Ba
     -   `/evaluate-stock {TICKER}` — Full DCF valuation with `analyticsLog`, scenario analysis, research report, and persistence to the Valuation Modeler.
     -   `/research-stock {TICKER}` — Qualitative sweep (earnings, competitive, macro, management, analyst sentiment). Classifies findings as Class A/B/C/D and gates re-valuation on confirmation.
 
-### 2. Strategic Thesis Suite (`plugins/thesis-balancer`)
+### 2. Strategic Thesis Suite (`plugins/portfolio-advisor`)
 A three-skill suite that monitors, challenges, and optimizes your portfolio against your investment thesis.
 
--   **Plugin**: [`plugins/thesis-balancer/`](plugins/thesis-balancer/README.md)
+-   **Plugin**: [`plugins/portfolio-advisor/`](plugins/portfolio-advisor/README.md)
 -   **Skills**:
     -   `/review-portfolio` — Drift monitor with pillar conviction audit, thesis formula health score (0–100), and valuation gap ranking. Flags strategic conflicts where core holdings are SELL-rated.
     -   `/strategic-review` — Adversarial thesis challenger. Surfaces which pillars are failing, proposes specific target weight revisions grounded in fair-value evidence, and generates `formulaImprovements` output.
@@ -99,9 +99,15 @@ You can manage the toolkit using specialized AI skills:
 - `setup questrade` — Interactive guide for API token configuration.
 
 ### 🔐 Questrade Setup
-If your sync fails or this is a first-time setup:
-1. Ask the AI agent: "setup questrade"
-2. Follow the interactive prompts to generate and seed your token.
+Setting up the Questrade integration is secure and straightforward. The system encrypts your token in a local cache (AES-256-GCM hardware-backed), so it never leaves your machine.
+
+**Easiest Method (Built-in UI):**
+Use the built-in "Questrade Integration" modal in the web app. It will guide you through obtaining your one-week token and autonomously seed it for you.
+
+![Questrade Integration Setup](screenshots/2026-05-02-questrade-integration-modal.png)
+
+**Alternative Method (AI Agent):**
+If your sync fails or you prefer the CLI, simply ask the AI agent: `/setup-questrade` and follow the interactive prompts to generate and seed your token.
 
 If you prefer to run or debug the servers separately, use the following commands from the root directory:
 
