@@ -168,6 +168,19 @@ The `/api/questrade/seed` endpoint accepts a raw **One-Week App Token** from the
 ### 5. `lastActualPS` nullable in Zod schema
 `investment_screener/backend/src/utils/zod-schemas.ts` line ~34: `lastActualPS` is `.nullable().transform(v => v ?? 0)`. Pre-revenue stocks and some mining companies return `null` from yfinance for this field. If you revert this or add a similar numeric field, use the same nullable pattern — a strict `z.number()` here causes 400 validation errors for any stock without price-to-sales data.
 
+### 6. Projection JSON `action` field — expanded enum
+`aiThesis.action` is no longer limited to `BUY | HOLD | SELL`. It now carries the full portfolio recommendation vocabulary:
+- `INITIATE` — thesis confirmed, position not yet opened
+- `ACCUMULATE` — thesis confirmed, position undersized vs target
+- `MAINTAIN` — thesis confirmed, position appropriately sized
+- `TRIM` — DCF stretched but thesis intact, reduce sizing
+- `EXIT` — structural thesis failure (not cyclical)
+- `WATCHLIST` — thesis valid but valuation too stretched to act
+
+The original DCF valuation signal (BUY/HOLD/SELL) is preserved in `analyticsLog.valuationAction`. Portfolio-level rationale lives in `analyticsLog.portfolioRationale`. Urgency in `analyticsLog.portfolioUrgency`.
+
+**Frontend:** The AI screener table shows action as a colour-coded pill (cyan=INITIATE, green=ACCUMULATE, slate=MAINTAIN, amber=TRIM, red=EXIT, purple=WATCHLIST). Hovering shows the full rationale. The AIAnalysisModal shows the DCF signal as a sub-badge alongside the portfolio action.
+
 ---
 
 ## 🔑 Key Files for AI Context

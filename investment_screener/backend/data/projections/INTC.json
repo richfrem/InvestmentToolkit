@@ -7,8 +7,8 @@
     "version": 8,
     "savedAt": "2026-05-02T19:50:00Z",
     "updatedAt": "2026-05-02T19:46:50.247Z",
-    "name": "AI Deep Dive — INTC — 2026-05-02",
-    "rationale": "Intel at $99.62 has surged 153% YTD and now trades 27% above the analyst consensus target of $78.21 — a significant red flag. Revenue has been declining for 4 years ($63B→$52.9B TTM), FCF remains deeply negative (-$15.7B TTM), and the company is barely breakeven on net income (-0.5% TTM margin). Analyst consensus projects a modest recovery (+10.9% in 2026, +10% in 2027) returning Intel to ~$1.08-$1.48 EPS — but at the current forward P/E of 67x, those earnings are already more than fully priced in. Our probability-weighted fair value of $22.97 implies the stock is dramatically overvalued at current prices, driven by speculative momentum rather than fundamental recovery.",
+    "name": "AI Deep Dive \u2014 INTC \u2014 2026-05-02",
+    "rationale": "Intel at $99.62 has surged 153% YTD and now trades 27% above the analyst consensus target of $78.21 \u2014 a significant red flag. Revenue has been declining for 4 years ($63B\u2192$52.9B TTM), FCF remains deeply negative (-$15.7B TTM), and the company is barely breakeven on net income (-0.5% TTM margin). Analyst consensus projects a modest recovery (+10.9% in 2026, +10% in 2027) returning Intel to ~$1.08-$1.48 EPS \u2014 but at the current forward P/E of 67x, those earnings are already more than fully priced in. Our probability-weighted fair value of $22.97 implies the stock is dramatically overvalued at current prices, driven by speculative momentum rather than fundamental recovery.",
     "snapshot": {
       "price": 99.62,
       "currency": "USD",
@@ -31,7 +31,7 @@
         "exitPE": 13,
         "qualityMultiplier": 0.85,
         "shareChange": 1.5,
-        "rationale": "Bear case references Intel's demonstrated multi-year market share erosion: server CPU share fell from ~98% (2019) to ~75% (2024) with AMD EPYC. Revenue stagnating at 2% CAGR reflects continued share loss offsetting AI PC uplift. Net margin of 2% reflects Intel barely achieving breakeven — consistent with TTM actual of -0.51% plus modest improvement from cost cuts. Exit P/E of 13x is 48% below semiconductor median (25x), justified for a structurally challenged IDM losing share with negative FCF; comparable to Intel's own trough multiple in 2023-2024. Quality multiplier 0.85 reflects x86 moat eroding with no credible moat against AMD in performance-per-watt. Dilution of 1.5%/yr reflects continued RSU issuance during turnaround phase.",
+        "rationale": "Bear case references Intel's demonstrated multi-year market share erosion: server CPU share fell from ~98% (2019) to ~75% (2024) with AMD EPYC. Revenue stagnating at 2% CAGR reflects continued share loss offsetting AI PC uplift. Net margin of 2% reflects Intel barely achieving breakeven \u2014 consistent with TTM actual of -0.51% plus modest improvement from cost cuts. Exit P/E of 13x is 48% below semiconductor median (25x), justified for a structurally challenged IDM losing share with negative FCF; comparable to Intel's own trough multiple in 2023-2024. Quality multiplier 0.85 reflects x86 moat eroding with no credible moat against AMD in performance-per-watt. Dilution of 1.5%/yr reflects continued RSU issuance during turnaround phase.",
         "moatScore": 1,
         "managementScore": 2,
         "year5Revenue": 58354,
@@ -39,7 +39,7 @@
         "year5EPS": 0.22,
         "scenarioPrice": 1.48,
         "risks": [
-          "AMD Zen 6/7 continues taking x86 CPU share in datacenter and client; Intel drops below 60% market share for the first time — historical trough reference: Intel server market share already fell from 98% to ~75% (2019-2024)",
+          "AMD Zen 6/7 continues taking x86 CPU share in datacenter and client; Intel drops below 60% market share for the first time \u2014 historical trough reference: Intel server market share already fell from 98% to ~75% (2019-2024)",
           "18A process node yields remain uncompetitive vs TSMC N2, forcing continued external fab reliance with no foundry revenue contribution",
           "Ongoing negative FCF (-$15.7B TTM) forces dilutive equity raises or asset sales to fund capex"
         ]
@@ -51,7 +51,7 @@
         "exitPE": 20,
         "qualityMultiplier": 0.95,
         "shareChange": 0.5,
-        "rationale": "Base growth of 8% is within ±3pp of blended analyst consensus of 10.45% (Y1 +10.9%, Y2 +10.0%), with slight downward adjustment for Intel's 4-year revenue decline trend. Net margin anchored to mean-reverting 4-year adjusted average: raw 4yr avg is -4.8%, but FY2024 includes a massive restructuring/impairment charge (-35.3% net margin); excluding that outlier, 3-yr avg (FY2021+FY2022+TTM) = (12.7% + 3.1% - 0.5%) / 3 = 5.1%. Base margin of 12% represents a realistic recovery toward semiconductor typical range (15-30%) anchored at 5.1% adjusted avg +6.9pp, justified by analyst EPS trajectory implying ~9-12% margins by 2027. Exit P/E 20x is 20% below semiconductor sector median (25x), reflecting ongoing competitive headwinds vs AMD and negative FCF history. QM 0.95 reflects below-average quality: x86 moat weakening, one moat source remaining (enterprise compatibility/incumbency). Share change +0.5%/yr reflects modest RSU net dilution.",
+        "rationale": "Base growth of 8% is within \u00b13pp of blended analyst consensus of 10.45% (Y1 +10.9%, Y2 +10.0%), with slight downward adjustment for Intel's 4-year revenue decline trend. Net margin anchored to mean-reverting 4-year adjusted average: raw 4yr avg is -4.8%, but FY2024 includes a massive restructuring/impairment charge (-35.3% net margin); excluding that outlier, 3-yr avg (FY2021+FY2022+TTM) = (12.7% + 3.1% - 0.5%) / 3 = 5.1%. Base margin of 12% represents a realistic recovery toward semiconductor typical range (15-30%) anchored at 5.1% adjusted avg +6.9pp, justified by analyst EPS trajectory implying ~9-12% margins by 2027. Exit P/E 20x is 20% below semiconductor sector median (25x), reflecting ongoing competitive headwinds vs AMD and negative FCF history. QM 0.95 reflects below-average quality: x86 moat weakening, one moat source remaining (enterprise compatibility/incumbency). Share change +0.5%/yr reflects modest RSU net dilution.",
         "moatScore": 2,
         "managementScore": 3,
         "year5Revenue": 77658.4,
@@ -70,7 +70,7 @@
         "exitPE": 27,
         "qualityMultiplier": 1,
         "shareChange": -1,
-        "rationale": "Catalyst: Intel 18A process node achieves competitive yields with TSMC N2/N3 by 2027, enabling Intel Foundry to win at least one major fabless anchor customer (e.g. Qualcomm, MediaTek, or a hyperscaler custom silicon program) — creating a new multi-billion revenue stream not in current consensus. Revenue CAGR of 14% requires re-acceleration from declining trend, justified only by foundry external revenue + AI PC supercycle + AI datacenter Gaudi uptake combining simultaneously. Net margin of 18% is below semiconductor best-in-class (40% fabless), realistic only if foundry reaches >60% utilization by 2030. Exit P/E 27x is 8% above semiconductor sector median (25x), within ±30% tolerance, justified by IDM optionality premium if foundry thesis materializes. QM 1.0 = average; bull does not assert an exceptional moat — only a return to competitive parity. Buybacks of 1%/yr resume only as FCF turns positive, consistent with management's stated capital return framework.",
+        "rationale": "Catalyst: Intel 18A process node achieves competitive yields with TSMC N2/N3 by 2027, enabling Intel Foundry to win at least one major fabless anchor customer (e.g. Qualcomm, MediaTek, or a hyperscaler custom silicon program) \u2014 creating a new multi-billion revenue stream not in current consensus. Revenue CAGR of 14% requires re-acceleration from declining trend, justified only by foundry external revenue + AI PC supercycle + AI datacenter Gaudi uptake combining simultaneously. Net margin of 18% is below semiconductor best-in-class (40% fabless), realistic only if foundry reaches >60% utilization by 2030. Exit P/E 27x is 8% above semiconductor sector median (25x), within \u00b130% tolerance, justified by IDM optionality premium if foundry thesis materializes. QM 1.0 = average; bull does not assert an exceptional moat \u2014 only a return to competitive parity. Buybacks of 1%/yr resume only as FCF turns positive, consistent with management's stated capital return framework.",
         "moatScore": 3,
         "managementScore": 4,
         "year5Revenue": 101763.9,
@@ -78,14 +78,14 @@
         "year5EPS": 3.83,
         "scenarioPrice": 64.25,
         "risks": [
-          "Valuation multiple re-rates sharply downward if 18A node milestones are missed — market has already priced in success",
+          "Valuation multiple re-rates sharply downward if 18A node milestones are missed \u2014 market has already priced in success",
           "TSMC maintains process lead, limiting foundry customer wins to Intel's own products only"
         ]
       }
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "Intel at $99.62 is a SELL. The stock has surged 153% YTD on turnaround optimism, but the fundamentals have not kept pace. Revenue continues to decline (4-year streak), FCF is deeply negative at -$15.7B TTM, and the company is barely breakeven on net income. At a forward P/E of 67x, even the analyst consensus recovery to $1.08 EPS in 2026 is fully — and then some — priced in. The analyst mean target of $78.21 (42 analysts) is itself 27% below the current price. Our independent DCF puts fair value at $22.97, implying 77% downside. The prior STRONG BUY thesis at $46 was directionally correct but has fully played out — continuing to hold at $99 requires an entirely new thesis (foundry transformation, AI PC cycle), which carries its own substantial execution risk. The 18A node catalyst could be real, but it is priced as near-certainty when it is anything but.",
+      "rationale": "Intel at $99.62 is a SELL. The stock has surged 153% YTD on turnaround optimism, but the fundamentals have not kept pace. Revenue continues to decline (4-year streak), FCF is deeply negative at -$15.7B TTM, and the company is barely breakeven on net income. At a forward P/E of 67x, even the analyst consensus recovery to $1.08 EPS in 2026 is fully \u2014 and then some \u2014 priced in. The analyst mean target of $78.21 (42 analysts) is itself 27% below the current price. Our independent DCF puts fair value at $22.97, implying 77% downside. The prior STRONG BUY thesis at $46 was directionally correct but has fully played out \u2014 continuing to hold at $99 requires an entirely new thesis (foundry transformation, AI PC cycle), which carries its own substantial execution risk. The 18A node catalyst could be real, but it is priced as near-certainty when it is anything but.",
       "fairValue": 22.97,
       "action": "SELL",
       "analyzedAt": "2026-05-02T19:50:00Z",
@@ -97,16 +97,16 @@
     },
     "analyticsLog": {
       "shareCountMethod": "shares_outstanding = shares_diluted = 5,026,000,000 per API (no discrepancy). Used shares_diluted per skill protocol.",
-      "marginAnchor": "Mean-reverting margins (volatile, no trend). Raw 4yr avg: (12.71% + 3.11% - 35.32% - 0.51%) / 4 = -4.8%. FY2024 -35.32% is a documented restructuring/impairment outlier — excluded. Adjusted 3yr avg (FY2021+FY2022+TTM): 5.1%. Base margin 12% = adj avg 5.1% + 6.9pp recovery, justified by analyst EPS implying 9-12% margins in 2026-2027. Within ±5pp rule with explicit justification noted.",
-      "growthDerivation": "Y1 analyst revenue +10.9% ($52.85B→$58.6B); Y2 +10.0% ($58.6B→$64.5B); blended consensus 10.45%. No hypergrowth exception (Y1 < 40%). Base 8% = consensus -2.45pp, within ±3pp tolerance; slight downward adjustment for Intel's 4-year declining revenue trend. Bear 2% = stagnation/share-loss scenario. Bull 14% = accelerated recovery via foundry external wins + AI PC + Gaudi datacenter.",
-      "sectorBenchmarkRow": "Technology — Semiconductors: conservative P/E 15, median P/E 25, growth P/E 40. Net margin bear trough 5%, typical 15-30%, best-in-class 40%+ (fabless). Bear exitPE 13x (48% below median — justified by distressed IDM with negative FCF). Base 20x (20% below — ongoing competitive headwinds). Bull 27x (8% above — foundry optionality premium, within ±30%).",
+      "marginAnchor": "Mean-reverting margins (volatile, no trend). Raw 4yr avg: (12.71% + 3.11% - 35.32% - 0.51%) / 4 = -4.8%. FY2024 -35.32% is a documented restructuring/impairment outlier \u2014 excluded. Adjusted 3yr avg (FY2021+FY2022+TTM): 5.1%. Base margin 12% = adj avg 5.1% + 6.9pp recovery, justified by analyst EPS implying 9-12% margins in 2026-2027. Within \u00b15pp rule with explicit justification noted.",
+      "growthDerivation": "Y1 analyst revenue +10.9% ($52.85B\u2192$58.6B); Y2 +10.0% ($58.6B\u2192$64.5B); blended consensus 10.45%. No hypergrowth exception (Y1 < 40%). Base 8% = consensus -2.45pp, within \u00b13pp tolerance; slight downward adjustment for Intel's 4-year declining revenue trend. Bear 2% = stagnation/share-loss scenario. Bull 14% = accelerated recovery via foundry external wins + AI PC + Gaudi datacenter.",
+      "sectorBenchmarkRow": "Technology \u2014 Semiconductors: conservative P/E 15, median P/E 25, growth P/E 40. Net margin bear trough 5%, typical 15-30%, best-in-class 40%+ (fabless). Bear exitPE 13x (48% below median \u2014 justified by distressed IDM with negative FCF). Base 20x (20% below \u2014 ongoing competitive headwinds). Bull 27x (8% above \u2014 foundry optionality premium, within \u00b130%).",
       "dataQualityFlags": [
-        "FY2024 net margin -35.32% = massive restructuring + asset impairment charges — excluded from margin anchor per mean-reverting rule; using adjusted 3yr avg of 5.1%",
-        "FCF deeply negative all 3 years with data: -$9.4B (FY2022), -$14.3B (FY2023), -$15.7B (TTM) — ongoing capital destruction from foundry buildout; recovery timeline highly uncertain",
-        "Trailing P/E = 0 (no earnings) and forward P/E = 67.3x — stock priced on recovery hope, not current fundamentals",
-        "Stock is 27% above analyst mean target ($78.21) with 'Hold' consensus — strong price-vs-target divergence flagged",
+        "FY2024 net margin -35.32% = massive restructuring + asset impairment charges \u2014 excluded from margin anchor per mean-reverting rule; using adjusted 3yr avg of 5.1%",
+        "FCF deeply negative all 3 years with data: -$9.4B (FY2022), -$14.3B (FY2023), -$15.7B (TTM) \u2014 ongoing capital destruction from foundry buildout; recovery timeline highly uncertain",
+        "Trailing P/E = 0 (no earnings) and forward P/E = 67.3x \u2014 stock priced on recovery hope, not current fundamentals",
+        "Stock is 27% above analyst mean target ($78.21) with 'Hold' consensus \u2014 strong price-vs-target divergence flagged",
         "YTD performance +153% appears momentum-driven; prior Antigravity analysis at $46.79 (STRONG BUY) contributed to thesis now fully played out",
-        "Revenue declining 4 consecutive years ($63.1B→$54.2B→$53.1B→$52.9B) — no inflection confirmed yet despite turnaround narrative"
+        "Revenue declining 4 consecutive years ($63.1B\u2192$54.2B\u2192$53.1B\u2192$52.9B) \u2014 no inflection confirmed yet despite turnaround narrative"
       ],
       "analystInputs": {
         "y1RevEstimate": 58605371780,
@@ -141,13 +141,13 @@
         "priorPrice": 46.79,
         "priorFairValue": 83.51,
         "priorAction": "STRONG BUY",
-        "priceDelta": "+113% since prior analysis — prior BUY thesis directionally correct; stock has exceeded prior base case ($64.25) and nearly reached prior bull case ($143.68)",
-        "assumptionAudit": "Prior analysis had critical flaws: (1) Bear case used 15% net margin when Intel was -0.51% TTM — a bear case with 15% margins is unrealistically optimistic, not pessimistic; (2) Base used 22% net margin with no grounding — semiconductor typical is 15-30% but Intel had 4-year declining margins; (3) Bull QM of 1.3 requires 'exceptional durable pricing power across cycles' per benchmark — Intel demonstrably lacks this given AMD market share gains; (4) 'STRONG BUY' is not a valid action per current skill schema. All assumptions re-derived from scratch.",
-        "modelQualityFlag": "UNVALIDATED — Antigravity-Gemini3Pro is a non-Sonnet flagged model; all prior assumptions treated as unvalidated starting points",
-        "thesisOutcome": "Prior BUY at $46.79 was correct directionally — stock doubled in 76 days. However, the thesis has fully played out: current price $99.62 is 27% above analyst mean target and well above our newly derived fair value of $22.97. The original upside has been captured; holding at current price is not supported by fresh fundamentals.",
-        "fundamentalChanges": "Revenue trend unchanged (still declining). FCF worsened (-$15.7B TTM vs -$14.3B prior). Massive stock price surge (+153% YTD) has compressed any margin of safety. Analyst consensus targets remain ~$78 — stock has run well past them. No confirmed 18A node milestone announced. New CEO Lip-Bu Tan turnaround in early stages but no fundamental proof points yet."
+        "priceDelta": "+113% since prior analysis \u2014 prior BUY thesis directionally correct; stock has exceeded prior base case ($64.25) and nearly reached prior bull case ($143.68)",
+        "assumptionAudit": "Prior analysis had critical flaws: (1) Bear case used 15% net margin when Intel was -0.51% TTM \u2014 a bear case with 15% margins is unrealistically optimistic, not pessimistic; (2) Base used 22% net margin with no grounding \u2014 semiconductor typical is 15-30% but Intel had 4-year declining margins; (3) Bull QM of 1.3 requires 'exceptional durable pricing power across cycles' per benchmark \u2014 Intel demonstrably lacks this given AMD market share gains; (4) 'STRONG BUY' is not a valid action per current skill schema. All assumptions re-derived from scratch.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Antigravity-Gemini3Pro is a non-Sonnet flagged model; all prior assumptions treated as unvalidated starting points",
+        "thesisOutcome": "Prior BUY at $46.79 was correct directionally \u2014 stock doubled in 76 days. However, the thesis has fully played out: current price $99.62 is 27% above analyst mean target and well above our newly derived fair value of $22.97. The original upside has been captured; holding at current price is not supported by fresh fundamentals.",
+        "fundamentalChanges": "Revenue trend unchanged (still declining). FCF worsened (-$15.7B TTM vs -$14.3B prior). Massive stock price surge (+153% YTD) has compressed any margin of safety. Analyst consensus targets remain ~$78 \u2014 stock has run well past them. No confirmed 18A node milestone announced. New CEO Lip-Bu Tan turnaround in early stages but no fundamental proof points yet."
       },
-      "confidenceBreakdown": "0.68/1.0 — Base: 1.0. -0.08 4 years of declining revenue with no confirmed inflection. -0.05 FCF deeply negative, no near-term improvement timeline. -0.05 volatile/distorted historical margins (FY2024 impairment). -0.05 stock trading 27% above analyst consensus target (momentum risk). -0.05 prior Antigravity analysis flagged as low-quality/unvalidated. -0.04 18A process node yield data not publicly available. Positive: +0.42 base score retained — large established company with real revenue, analyst coverage (42 analysts), and identifiable recovery path."
+      "confidenceBreakdown": "0.68/1.0 \u2014 Base: 1.0. -0.08 4 years of declining revenue with no confirmed inflection. -0.05 FCF deeply negative, no near-term improvement timeline. -0.05 volatile/distorted historical margins (FY2024 impairment). -0.05 stock trading 27% above analyst consensus target (momentum risk). -0.05 prior Antigravity analysis flagged as low-quality/unvalidated. -0.04 18A process node yield data not publicly available. Positive: +0.42 base score retained \u2014 large established company with real revenue, analyst coverage (42 analysts), and identifiable recovery path."
     }
   },
   {
@@ -250,6 +250,335 @@
         -0.06
       ],
       "confidenceBreakdown": "0.8/1.0 - Base confidence assigned during migration."
+    }
+  },
+  {
+    "ticker": "INTC",
+    "id": "f1a2b3c4-d5e6-7890-abcd-ef1234567891",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 9,
+    "savedAt": "2026-05-02T22:53:00Z",
+    "updatedAt": "2026-05-02T22:53:00Z",
+    "name": "AI Deep Dive \u2014 INTC \u2014 2026-05-02 (Research Update)",
+    "rationale": "Intel at $99.62 has surged 153% YTD and now trades 27% above the analyst consensus target of $78.21 \u2014 a significant red flag. Revenue has been declining for 4 years ($63B\u2192$52.9B TTM), FCF remains deeply negative (-$15.7B TTM), and the company is barely breakeven on net income (-0.5% TTM margin). Analyst consensus projects a modest recovery (+10.9% in 2026, +10% in 2027) returning Intel to ~$1.08-$1.48 EPS \u2014 but at the current forward P/E of 67x, those earnings are already more than fully priced in. Our probability-weighted fair value of $22.97 implies the stock is dramatically overvalued at current prices, driven by speculative momentum rather than fundamental recovery.",
+    "snapshot": {
+      "price": 99.62,
+      "currency": "USD",
+      "shares": 5026000000,
+      "revenue": 54400000000,
+      "lastActualPS": 9.47,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 10.9,
+      "analystMarginEstimate": 12.3
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 3,
+        "netMargin": 4,
+        "exitPE": 14,
+        "qualityMultiplier": 0.9,
+        "shareChange": 1.5,
+        "rationale": "Bear: Revenue inflection confirmed (Q1 2026 +7%) sets a floor. Bear now requires AMD/ARM share acceleration AND 18A yield failure. 3% CAGR = modest positive trajectory stalling out. Margin 4% = near-breakeven on GAAP. exitPE 14x remains distressed-IDM level. QM raised to 0.90 \u2014 government backstop and design-win pipeline reduce catastrophic tail risk vs prior model.",
+        "moatScore": 1,
+        "managementScore": 2,
+        "year5Revenue": 63064.5,
+        "year5NetIncome": 2522.6,
+        "year5EPS": 0.47,
+        "scenarioPrice": 3.65,
+        "risks": [
+          "AMD Zen 6/7 continues taking x86 CPU share in datacenter and client; Intel drops below 60% market share for the first time \u2014 historical trough reference: Intel server market share already fell from 98% to ~75% (2019-2024)",
+          "18A process node yields remain uncompetitive vs TSMC N2, forcing continued external fab reliance with no foundry revenue contribution",
+          "Ongoing negative FCF (-$15.7B TTM) forces dilutive equity raises or asset sales to fund capex"
+        ]
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 10,
+        "netMargin": 14,
+        "exitPE": 22,
+        "qualityMultiplier": 1.0,
+        "shareChange": 0.5,
+        "rationale": "Base: Q1 2026 non-GAAP op margin already at 12.3% \u2014 margin recovery is happening, not projected. 10% CAGR matches Q2 guidance trajectory and analyst consensus. 14% net margin is achievable with foundry utilization improving (18A in production). exitPE 22x reflects design-win credibility premium (Terafab) vs prior 20x. QM raised to 1.0 \u2014 execution record is now positive for 2 consecutive quarters.",
+        "moatScore": 2,
+        "managementScore": 3,
+        "year5Revenue": 87611.7,
+        "year5NetIncome": 12265.6,
+        "year5EPS": 2.38,
+        "scenarioPrice": 32.52,
+        "risks": [
+          "Foundry business remains a cost center through 2028, limiting margin expansion below modeled 12%",
+          "AI PC cycle provides temporary uplift that fades as consumer refresh cycle normalizes in 2027-2028"
+        ]
+      },
+      "bull": {
+        "weight": 0.35,
+        "growthRate": 16,
+        "netMargin": 20,
+        "exitPE": 30,
+        "qualityMultiplier": 1.1,
+        "shareChange": -1,
+        "rationale": "Bull: Terafab (Tesla/SpaceX/xAI) is the anchor customer the prior model said was required. 14A PDKs distributed. If 18A yields hit 70-80% threshold by late 2026 and 14A secures 2-3 more anchor wins (Google TPU, AMD?, Apple?), Intel becomes a $100B+ foundry revenue company by 2030. 16% CAGR requires foundry external revenue scaling. 20% margin = IDM+foundry utilization synergy. exitPE 30x justified by new category: only US-domestic advanced foundry. QM 1.1 = emerging moat (national security + CHIPS Act exclusivity).",
+        "moatScore": 3,
+        "managementScore": 4,
+        "year5Revenue": 114258.6,
+        "year5NetIncome": 22851.7,
+        "year5EPS": 4.78,
+        "scenarioPrice": 97.96,
+        "risks": [
+          "Valuation multiple re-rates sharply downward if 18A node milestones are missed \u2014 market has already priced in success",
+          "TSMC maintains process lead, limiting foundry customer wins to Intel's own products only"
+        ]
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "Intel at $99.62 is a HOLD following material research update (2026-05-02). The prior SELL at $22.97 was built on three incorrect foundations \u2014 all three now resolved: (1) Revenue inflection: Q1 2026 reported +7% YoY to $13.6B with DCAI +22%; the 4-year revenue decline is broken. (2) Foundry design win: Tesla/SpaceX/xAI Terafab on 14A is a marquee anchor customer, satisfying Breaker A.2. (3) CEO commitment: Lip-Bu Tan is explicitly doubling down on IFS \u2014 Breaker C.3 is not triggered. Updated weighted DCF with revised scenario weights (bear 20% / base 45% / bull 35%) yields fair value of $49.65. At $99.62, the stock is priced within the bull scenario range ($97.96) but well above the base case ($32.52). Thesis conviction is validated by Situational Awareness LP holding $746M INTC calls (13.5% of their $5.52B portfolio) through Q4 2025 \u2014 the same fund that authored the thesis underpinning this portfolio. HOLD: position is thesis-validated but no margin of safety at current price. Do not add; maintain existing sizing. Full DCF re-valuation recommended once 18A yields reach 70%+ threshold (expected late 2026).",
+      "fairValue": 49.65,
+      "action": "SELL",
+      "analyzedAt": "2026-05-02T22:53:00Z",
+      "researchReport": "INTC_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "shares_outstanding = shares_diluted = 5,026,000,000 per API (no discrepancy). Used shares_diluted per skill protocol.",
+      "marginAnchor": "Mean-reverting margins (volatile, no trend). Raw 4yr avg: (12.71% + 3.11% - 35.32% - 0.51%) / 4 = -4.8%. FY2024 -35.32% is a documented restructuring/impairment outlier \u2014 excluded. Adjusted 3yr avg (FY2021+FY2022+TTM): 5.1%. Base margin 12% = adj avg 5.1% + 6.9pp recovery, justified by analyst EPS implying 9-12% margins in 2026-2027. Within \u00b15pp rule with explicit justification noted.",
+      "growthDerivation": "Y1 analyst revenue +10.9% ($52.85B\u2192$58.6B); Y2 +10.0% ($58.6B\u2192$64.5B); blended consensus 10.45%. No hypergrowth exception (Y1 < 40%). Base 8% = consensus -2.45pp, within \u00b13pp tolerance; slight downward adjustment for Intel's 4-year declining revenue trend. Bear 2% = stagnation/share-loss scenario. Bull 14% = accelerated recovery via foundry external wins + AI PC + Gaudi datacenter.",
+      "sectorBenchmarkRow": "Technology \u2014 Semiconductors: conservative P/E 15, median P/E 25, growth P/E 40. Net margin bear trough 5%, typical 15-30%, best-in-class 40%+ (fabless). Bear exitPE 13x (48% below median \u2014 justified by distressed IDM with negative FCF). Base 20x (20% below \u2014 ongoing competitive headwinds). Bull 27x (8% above \u2014 foundry optionality premium, within \u00b130%).",
+      "dataQualityFlags": [
+        "Q1 2026 earnings (April 23 2026): Revenue $13.6B (+7% YoY), DCAI +22%, non-GAAP op margin 12.3% \u2014 used as primary margin anchor replacing stale TTM data",
+        "Revenue base updated to $54.4B annualised from Q1 2026 run-rate (was $52.85B TTM)",
+        "GAAP still loss-making (-$0.73 EPS Q1) due to restructuring/impairment charges \u2014 non-GAAP metrics used for margin modelling per semiconductor sector practice",
+        "FCF status unclear \u2014 operating cash flow turned positive ($1.1B Q1) but capex for foundry build not yet known for Q1 2026",
+        "18A yield data not publicly disclosed \u2014 ~60% reported by independent sources, profitability threshold is 70-80%",
+        "Terafab contract value undisclosed \u2014 size of 14A revenue stream unquantifiable until production begins"
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 57200000000,
+        "y2RevEstimate": 63000000000,
+        "y1GrowthPct": 10.9,
+        "y2GrowthPct": 10.2,
+        "blendedConsensusPct": 10.55,
+        "analystTargetMean": 65.0,
+        "analystTargetBullish": 70.0,
+        "analystTargetConsensus": 45.0,
+        "analystCount": 42,
+        "note": "Bullish targets upgraded to $65-70 post-Terafab; consensus $40-50. Q1 2026 beat consensus by 10.4%."
+      },
+      "historicalRevenue": [
+        63054,
+        54228,
+        53101,
+        52853
+      ],
+      "historicalNetMargins": [
+        12.71,
+        3.11,
+        -35.32,
+        -0.51
+      ],
+      "historicalEPS": [
+        1.95,
+        0.4,
+        -4.38,
+        -0.06
+      ],
+      "priorAnalysisReview": {
+        "priorModel": "Claude Sonnet 4.6",
+        "priorDate": "2026-05-02",
+        "priorPrice": 99.62,
+        "priorFairValue": 22.97,
+        "priorAction": "SELL",
+        "priceDelta": "0% (same day research update)",
+        "researchUpdateDate": "2026-05-02",
+        "researchTrigger": "Strategic review flagged INTC SELL rating as potentially stale; user cited Tesla/14A Terafab news and Situational Awareness LP 13F filings as counter-evidence",
+        "classAFindings": [
+          "Q1 2026 revenue +7% YoY ($13.6B) \u2014 breaks 4-year decline streak",
+          "DCAI revenue +22% YoY \u2014 structural AI/datacenter demand confirmed",
+          "Non-GAAP op margin 12.3% vs 5.4% YoY \u2014 margin recovery is happening",
+          "Terafab: Tesla/SpaceX/xAI 14A anchor customer confirmed (April 2026) \u2014 Breaker A.2 satisfied",
+          "18A in volume production at Fab 52 \u2014 Breaker A.1 on-track ahead of Q4 2026 deadline",
+          "Lip-Bu Tan explicitly doubling down on IFS \u2014 Breaker C.3 NOT triggered"
+        ],
+        "sa13fInsight": "Situational Awareness LP (Aschenbrenner) held 20,237,400 INTC calls worth $746M (13.5% of $5.52B portfolio) as of Q4 2025 \u2014 same share count since Q2 2025 ($453M, 21.4%). High-conviction maintained through the rally.",
+        "thesisOutcome": "Prior SELL at $22.97 was incorrect \u2014 built on stale data that did not reflect Q1 2026 inflection, Terafab design win, or confirmed CEO commitment. All three thesis breakers are resolved in Intel's favour. Action upgraded from SELL to HOLD.",
+        "fundamentalChanges": "Revenue inflection confirmed (Q1 2026 +7%); DCAI +22%; non-GAAP op margin 12.3%; Q2 2026 guidance $13.8-14.8B; 18A in production; Terafab 14A design win; Lip-Bu Tan doubling down on IFS; US govt 10% stake (~$8.9B)."
+      },
+      "confidenceBreakdown": "0.74/1.0 \u2014 Base: 1.0. +0.06 Q1 2026 revenue inflection confirmed (+7% YoY) \u2014 removes largest prior deduction. +0.04 Terafab design win clears Breaker A.2 \u2014 removes 'no confirmed design win' deduction. +0.03 Lip-Bu Tan IFS commitment confirmed \u2014 removes CEO-continuity uncertainty. -0.05 Stock still priced at bull-case levels ($99 vs base FV $32.52) \u2014 valuation risk remains. -0.06 18A yields not yet at profitability threshold (currently ~60%, need 70-80%). -0.04 GAAP still loss-making (restructuring charges); operating cash flow positive but FCF recovery timeline uncertain. -0.04 No public confirmation of NVIDIA or Apple on 18A/14A \u2014 Terafab is Musk ecosystem only so far."
+    }
+  },
+  {
+    "ticker": "INTC",
+    "id": "f1a2b3c4-d5e6-7890-abcd-ef1234567891",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 10,
+    "savedAt": "2026-05-02T23:05:00Z",
+    "updatedAt": "2026-05-02T23:05:00Z",
+    "name": "AI Deep Dive \u2014 INTC \u2014 2026-05-02 (Research Update)",
+    "rationale": "Intel at $99.62 has surged 153% YTD and now trades 27% above the analyst consensus target of $78.21 \u2014 a significant red flag. Revenue has been declining for 4 years ($63B\u2192$52.9B TTM), FCF remains deeply negative (-$15.7B TTM), and the company is barely breakeven on net income (-0.5% TTM margin). Analyst consensus projects a modest recovery (+10.9% in 2026, +10% in 2027) returning Intel to ~$1.08-$1.48 EPS \u2014 but at the current forward P/E of 67x, those earnings are already more than fully priced in. Our probability-weighted fair value of $22.97 implies the stock is dramatically overvalued at current prices, driven by speculative momentum rather than fundamental recovery.",
+    "snapshot": {
+      "price": 99.62,
+      "currency": "USD",
+      "shares": 5026000000,
+      "revenue": 54400000000,
+      "lastActualPS": 9.47,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 10.9,
+      "analystMarginEstimate": 12.3
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 3,
+        "netMargin": 4,
+        "exitPE": 14,
+        "qualityMultiplier": 0.9,
+        "shareChange": 1.5,
+        "rationale": "Bear: Revenue inflection confirmed (Q1 2026 +7%) sets a floor. Bear now requires AMD/ARM share acceleration AND 18A yield failure. 3% CAGR = modest positive trajectory stalling out. Margin 4% = near-breakeven on GAAP. exitPE 14x remains distressed-IDM level. QM raised to 0.90 \u2014 government backstop and design-win pipeline reduce catastrophic tail risk vs prior model.",
+        "moatScore": 1,
+        "managementScore": 2,
+        "year5Revenue": 63064.5,
+        "year5NetIncome": 2522.6,
+        "year5EPS": 0.47,
+        "scenarioPrice": 3.65,
+        "risks": [
+          "AMD Zen 6/7 continues taking x86 CPU share in datacenter and client; Intel drops below 60% market share for the first time \u2014 historical trough reference: Intel server market share already fell from 98% to ~75% (2019-2024)",
+          "18A process node yields remain uncompetitive vs TSMC N2, forcing continued external fab reliance with no foundry revenue contribution",
+          "Ongoing negative FCF (-$15.7B TTM) forces dilutive equity raises or asset sales to fund capex"
+        ]
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 10,
+        "netMargin": 14,
+        "exitPE": 22,
+        "qualityMultiplier": 1.0,
+        "shareChange": 0.5,
+        "rationale": "Base: Q1 2026 non-GAAP op margin already at 12.3% \u2014 margin recovery is happening, not projected. 10% CAGR matches Q2 guidance trajectory and analyst consensus. 14% net margin is achievable with foundry utilization improving (18A in production). exitPE 22x reflects design-win credibility premium (Terafab) vs prior 20x. QM raised to 1.0 \u2014 execution record is now positive for 2 consecutive quarters.",
+        "moatScore": 2,
+        "managementScore": 3,
+        "year5Revenue": 87611.7,
+        "year5NetIncome": 12265.6,
+        "year5EPS": 2.38,
+        "scenarioPrice": 32.52,
+        "risks": [
+          "Foundry business remains a cost center through 2028, limiting margin expansion below modeled 12%",
+          "AI PC cycle provides temporary uplift that fades as consumer refresh cycle normalizes in 2027-2028"
+        ]
+      },
+      "bull": {
+        "weight": 0.35,
+        "growthRate": 16,
+        "netMargin": 20,
+        "exitPE": 30,
+        "qualityMultiplier": 1.1,
+        "shareChange": -1,
+        "rationale": "Bull: Terafab (Tesla/SpaceX/xAI) is the anchor customer the prior model said was required. 14A PDKs distributed. If 18A yields hit 70-80% threshold by late 2026 and 14A secures 2-3 more anchor wins (Google TPU, AMD?, Apple?), Intel becomes a $100B+ foundry revenue company by 2030. 16% CAGR requires foundry external revenue scaling. 20% margin = IDM+foundry utilization synergy. exitPE 30x justified by new category: only US-domestic advanced foundry. QM 1.1 = emerging moat (national security + CHIPS Act exclusivity).",
+        "moatScore": 3,
+        "managementScore": 4,
+        "year5Revenue": 114258.6,
+        "year5NetIncome": 22851.7,
+        "year5EPS": 4.78,
+        "scenarioPrice": 97.96,
+        "risks": [
+          "Valuation multiple re-rates sharply downward if 18A node milestones are missed \u2014 market has already priced in success",
+          "TSMC maintains process lead, limiting foundry customer wins to Intel's own products only"
+        ]
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "Intel at $99.62 is a HOLD following material research update (2026-05-02). The prior SELL at $22.97 was built on three incorrect foundations \u2014 all three now resolved: (1) Revenue inflection: Q1 2026 reported +7% YoY to $13.6B with DCAI +22%; the 4-year revenue decline is broken. (2) Foundry design win: Tesla/SpaceX/xAI Terafab on 14A is a marquee anchor customer, satisfying Breaker A.2. (3) CEO commitment: Lip-Bu Tan is explicitly doubling down on IFS \u2014 Breaker C.3 is not triggered. Updated weighted DCF with revised scenario weights (bear 20% / base 45% / bull 35%) yields fair value of $49.65. At $99.62, the stock is priced within the bull scenario range ($97.96) but well above the base case ($32.52). Thesis conviction is validated by Situational Awareness LP holding $746M INTC calls (13.5% of their $5.52B portfolio) through Q4 2025 \u2014 the same fund that authored the thesis underpinning this portfolio. HOLD: position is thesis-validated but no margin of safety at current price. Do not add; maintain existing sizing. Full DCF re-valuation recommended once 18A yields reach 70%+ threshold (expected late 2026).",
+      "fairValue": 49.65,
+      "action": "MAINTAIN",
+      "analyzedAt": "2026-05-02T22:53:00Z",
+      "researchReport": "INTC_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "shares_outstanding = shares_diluted = 5,026,000,000 per API (no discrepancy). Used shares_diluted per skill protocol.",
+      "marginAnchor": "Mean-reverting margins (volatile, no trend). Raw 4yr avg: (12.71% + 3.11% - 35.32% - 0.51%) / 4 = -4.8%. FY2024 -35.32% is a documented restructuring/impairment outlier \u2014 excluded. Adjusted 3yr avg (FY2021+FY2022+TTM): 5.1%. Base margin 12% = adj avg 5.1% + 6.9pp recovery, justified by analyst EPS implying 9-12% margins in 2026-2027. Within \u00b15pp rule with explicit justification noted.",
+      "growthDerivation": "Y1 analyst revenue +10.9% ($52.85B\u2192$58.6B); Y2 +10.0% ($58.6B\u2192$64.5B); blended consensus 10.45%. No hypergrowth exception (Y1 < 40%). Base 8% = consensus -2.45pp, within \u00b13pp tolerance; slight downward adjustment for Intel's 4-year declining revenue trend. Bear 2% = stagnation/share-loss scenario. Bull 14% = accelerated recovery via foundry external wins + AI PC + Gaudi datacenter.",
+      "sectorBenchmarkRow": "Technology \u2014 Semiconductors: conservative P/E 15, median P/E 25, growth P/E 40. Net margin bear trough 5%, typical 15-30%, best-in-class 40%+ (fabless). Bear exitPE 13x (48% below median \u2014 justified by distressed IDM with negative FCF). Base 20x (20% below \u2014 ongoing competitive headwinds). Bull 27x (8% above \u2014 foundry optionality premium, within \u00b130%).",
+      "dataQualityFlags": [
+        "Q1 2026 earnings (April 23 2026): Revenue $13.6B (+7% YoY), DCAI +22%, non-GAAP op margin 12.3% \u2014 used as primary margin anchor replacing stale TTM data",
+        "Revenue base updated to $54.4B annualised from Q1 2026 run-rate (was $52.85B TTM)",
+        "GAAP still loss-making (-$0.73 EPS Q1) due to restructuring/impairment charges \u2014 non-GAAP metrics used for margin modelling per semiconductor sector practice",
+        "FCF status unclear \u2014 operating cash flow turned positive ($1.1B Q1) but capex for foundry build not yet known for Q1 2026",
+        "18A yield data not publicly disclosed \u2014 ~60% reported by independent sources, profitability threshold is 70-80%",
+        "Terafab contract value undisclosed \u2014 size of 14A revenue stream unquantifiable until production begins"
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 57200000000,
+        "y2RevEstimate": 63000000000,
+        "y1GrowthPct": 10.9,
+        "y2GrowthPct": 10.2,
+        "blendedConsensusPct": 10.55,
+        "analystTargetMean": 65.0,
+        "analystTargetBullish": 70.0,
+        "analystTargetConsensus": 45.0,
+        "analystCount": 42,
+        "note": "Bullish targets upgraded to $65-70 post-Terafab; consensus $40-50. Q1 2026 beat consensus by 10.4%."
+      },
+      "historicalRevenue": [
+        63054,
+        54228,
+        53101,
+        52853
+      ],
+      "historicalNetMargins": [
+        12.71,
+        3.11,
+        -35.32,
+        -0.51
+      ],
+      "historicalEPS": [
+        1.95,
+        0.4,
+        -4.38,
+        -0.06
+      ],
+      "priorAnalysisReview": {
+        "priorModel": "Claude Sonnet 4.6",
+        "priorDate": "2026-05-02",
+        "priorPrice": 99.62,
+        "priorFairValue": 22.97,
+        "priorAction": "SELL",
+        "priceDelta": "0% (same day research update)",
+        "researchUpdateDate": "2026-05-02",
+        "researchTrigger": "Strategic review flagged INTC SELL rating as potentially stale; user cited Tesla/14A Terafab news and Situational Awareness LP 13F filings as counter-evidence",
+        "classAFindings": [
+          "Q1 2026 revenue +7% YoY ($13.6B) \u2014 breaks 4-year decline streak",
+          "DCAI revenue +22% YoY \u2014 structural AI/datacenter demand confirmed",
+          "Non-GAAP op margin 12.3% vs 5.4% YoY \u2014 margin recovery is happening",
+          "Terafab: Tesla/SpaceX/xAI 14A anchor customer confirmed (April 2026) \u2014 Breaker A.2 satisfied",
+          "18A in volume production at Fab 52 \u2014 Breaker A.1 on-track ahead of Q4 2026 deadline",
+          "Lip-Bu Tan explicitly doubling down on IFS \u2014 Breaker C.3 NOT triggered"
+        ],
+        "sa13fInsight": "Situational Awareness LP (Aschenbrenner) held 20,237,400 INTC calls worth $746M (13.5% of $5.52B portfolio) as of Q4 2025 \u2014 same share count since Q2 2025 ($453M, 21.4%). High-conviction maintained through the rally.",
+        "thesisOutcome": "Prior SELL at $22.97 was incorrect \u2014 built on stale data that did not reflect Q1 2026 inflection, Terafab design win, or confirmed CEO commitment. All three thesis breakers are resolved in Intel's favour. Action upgraded from SELL to HOLD.",
+        "fundamentalChanges": "Revenue inflection confirmed (Q1 2026 +7%); DCAI +22%; non-GAAP op margin 12.3%; Q2 2026 guidance $13.8-14.8B; 18A in production; Terafab 14A design win; Lip-Bu Tan doubling down on IFS; US govt 10% stake (~$8.9B)."
+      },
+      "confidenceBreakdown": "0.74/1.0 \u2014 Base: 1.0. +0.06 Q1 2026 revenue inflection confirmed (+7% YoY) \u2014 removes largest prior deduction. +0.04 Terafab design win clears Breaker A.2 \u2014 removes 'no confirmed design win' deduction. +0.03 Lip-Bu Tan IFS commitment confirmed \u2014 removes CEO-continuity uncertainty. -0.05 Stock still priced at bull-case levels ($99 vs base FV $32.52) \u2014 valuation risk remains. -0.06 18A yields not yet at profitability threshold (currently ~60%, need 70-80%). -0.04 GAAP still loss-making (restructuring charges); operating cash flow positive but FCF recovery timeline uncertain. -0.04 No public confirmation of NVIDIA or Apple on 18A/14A \u2014 Terafab is Musk ecosystem only so far.",
+      "valuationAction": "SELL",
+      "portfolioRationale": "Thesis validated by Q1 2026 revenue inflection (+7% YoY), Terafab 14A design win (Tesla/SpaceX/xAI), and all three thesis breakers resolved. Situational Awareness LP holds $746M INTC calls (13.5% of portfolio) \u2014 the thesis fund has conviction. Valuation action remains SELL (price $99.62 vs weighted FV $49.65; bull case $97.96) \u2014 stock is priced for the bull scenario. MAINTAIN existing 10.87% position: thesis is real, but current price leaves no margin of safety to add. Revisit with fresh DCF once 18A yields reach 70%+ profitability threshold (expected late 2026).",
+      "portfolioUrgency": "NORMAL"
     }
   }
 ]

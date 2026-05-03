@@ -16,8 +16,10 @@ thesis-balancer/
 ├── README.md                                 # This file
 ├── commands/
 │   └── review-portfolio.md                  # /review-portfolio command
-├── docs/
-│   └── tool_b_implementation_brief.md
+├── references/
+│   ├── investment_thesis.md                  # Living thesis document
+│   ├── thesis_alignment_sequence.mmd         # Architecture sequence diagram
+│   └── tool_b_implementation_brief.md        # Implementation reference
 └── skills/
     └── thesis-balancer/
         ├── SKILL.md                          # Main skill definition

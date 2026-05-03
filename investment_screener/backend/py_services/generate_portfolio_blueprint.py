@@ -1,0 +1,1 @@
+../plugins/thesis-balancer/scripts/generate_portfolio_blueprint.py

@@ -69,7 +69,10 @@ export const ProjectionSchema = z.object({
         model: z.string(),
         rationale: z.string(),
         fairValue: z.number(),
-        action: z.enum(['BUY', 'HOLD', 'SELL']),
+        // BUY/HOLD/SELL = pure DCF valuation signal.
+        // INITIATE/ACCUMULATE/MAINTAIN/TRIM/EXIT/WATCHLIST = portfolio-level action recommendation.
+        // Both live in this one field; the most recent version of a projection carries the portfolio action.
+        action: z.enum(['BUY', 'HOLD', 'SELL', 'INITIATE', 'ACCUMULATE', 'MAINTAIN', 'TRIM', 'EXIT', 'WATCHLIST']),
         analyzedAt: z.string().datetime(),
         researchReport: z.string().max(200).optional(),
     }).optional(),
@@ -105,7 +108,8 @@ export const ThesisPillarSchema = z.object({
 });
 
 export const ThesisSchema = z.object({
-    id: z.string().uuid(),
+    // slug-style id (e.g. "target-portfolio", "thesis") — no longer requires UUID format
+    id: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, 'id must be lowercase letters, digits or hyphens'),
     name: z.string().min(1).max(100),
     schemaVersion: z.literal('1.0'),
     version: z.number().int().nonnegative(),
@@ -151,14 +155,13 @@ export const HoldingHealthSchema = DriftEntrySchema.extend({
     currentPrice: z.number().optional(),
     marketValue: z.number().optional(),
     role: z.enum(['core', 'hedge', 'speculative', 'reserve']),
-    // Cross-reference with Tool A
-    hasValuation: z.boolean(),       // Does a projection exist in projections/{TICKER}.json?
-    latestAction: z.enum(['BUY', 'HOLD', 'SELL']).optional(),  // From Tool A's aiThesis
+    hasValuation: z.boolean(),
+    latestAction: z.enum(['BUY', 'HOLD', 'SELL', 'INITIATE', 'ACCUMULATE', 'MAINTAIN', 'TRIM', 'EXIT', 'WATCHLIST']).optional(),
     latestFairValue: z.number().optional(),
 });
 
 export const HealthCheckSchema = z.object({
-    thesisId: z.string().uuid(),
+    thesisId: z.string().min(1).max(100),
     thesisName: z.string(),
     analyzedAt: z.string().datetime(),
     portfolioValueUSD: z.number(),

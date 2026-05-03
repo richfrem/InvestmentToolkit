@@ -1,0 +1,1 @@
+../../../references/investment_thesis.md

@@ -132,5 +132,142 @@
       ],
       "confidenceBreakdown": "0.8/1.0 - Base confidence assigned during migration."
     }
+  },
+  {
+    "ticker": "GOOG",
+    "id": "d0d3da68-d15b-4ad6-a2da-8d6b06302e7e",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 3,
+    "savedAt": "2026-05-02T23:05:00Z",
+    "updatedAt": "2026-05-02T23:05:00Z",
+    "name": "AI Deep Dive \u2014 GOOG \u2014 2026-05-02",
+    "rationale": "Alphabet is a dominant internet platform generating $402.8B TTM revenue with a 37.9% net margin and accelerating revenue growth (21.8% YoY TTM, 3-year CAGR 12.5%). The company benefits from multiple structural moats \u2014 data-driven search flywheel, YouTube creator/viewer network effects, and Google Cloud switching costs \u2014 while deploying AI (Gemini) across all products. Our probability-weighted fair value of $517.98 implies ~35% upside from $383.22, driven by a base case of sustained 18% CAGR as AI monetization expands Search CPCs and Cloud accelerates. The primary risk is AI-driven disruption of the core search paradigm, which the bear case prices at a 7% CAGR and margin compression to 24%.",
+    "snapshot": {
+      "price": 383.22,
+      "currency": "USD",
+      "shares": 12115000000,
+      "revenue": 402836000000,
+      "lastActualPS": 11.51,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 20.5,
+      "analystMarginEstimate": 37.92
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 7,
+        "netMargin": 24,
+        "exitPE": 18,
+        "qualityMultiplier": 0.95,
+        "moatScore": 2,
+        "managementScore": 3,
+        "shareChange": -1.5,
+        "year5Revenue": 564998,
+        "year5NetIncome": 135600,
+        "year5EPS": 12.07,
+        "scenarioPrice": 128.17,
+        "risks": [
+          "AI-powered search alternatives (ChatGPT, Perplexity, Claude) erode Googles ~57% global search market share",
+          "DOJ antitrust ruling forces divestiture of Chrome, Android, or default search agreements",
+          "Regulatory-imposed ad market restrictions (EU DMA) compress advertising margins"
+        ],
+        "rationale": "Historical trough reference: Googles net margin reached a trough of 21.2% in 2021. Bear case assumes structural disruption: AI assistants capture 25-30% of query volume by 2030, reducing Search revenue growth to near-stagnation. Revenue CAGR of 7% reflects only Cloud and YouTube growth partially offsetting Search declines. Net margin compresses from TTM 37.9% to 24% due to elevated AI capex ($75B+ annual) with slower monetization, and forced revenue sharing under regulatory compliance. Exit P/E of 18x aligns with the conservative sector multiple for Internet/Platforms; quality multiplier of 0.95 reflects partial erosion of the search network effect moat under AI substitution."
+      },
+      "base": {
+        "weight": 0.55,
+        "growthRate": 18,
+        "netMargin": 33,
+        "exitPE": 24,
+        "qualityMultiplier": 1.12,
+        "moatScore": 4,
+        "managementScore": 4,
+        "shareChange": -2.5,
+        "year5Revenue": 921591,
+        "year5NetIncome": 304125,
+        "year5EPS": 28.49,
+        "scenarioPrice": 475.52,
+        "risks": [
+          "AI capex remains elevated ($75B+/yr) with slower-than-expected Cloud ROI",
+          "Search market share loss is gradual but persistent as Perplexity/AI mode gains traction"
+        ],
+        "rationale": "Base case uses 18% 5-year revenue CAGR, a slight deceleration from analyst Y1 consensus of 20.5% and Y2 of 16.4% (blended 2-year average ~18.5%), justified by natural deceleration as the revenue base expands past $900B. Net margin of 33% represents modest compression from TTM 37.9% as AI infrastructure capex normalizes against growing Cloud revenue (currently 13% of total); this is 6.3pp above the 4-year average (26.7%), justified by the clear upward trend: 21.2% \u2192 24.0% \u2192 28.6% \u2192 32.8% \u2192 37.9% \u2014 structural, not cyclical expansion. Exit P/E of 24 is below the sector median of 28 for Internet/Platforms, conservative given scale. Quality multiplier 1.12: two confirmed structural moats \u2014 (1) data flywheel in Search (30 years of query data, proprietary Knowledge Graph), (2) YouTube creator/viewer network effects with 2.5B+ monthly users. Share buybacks at 2.5%/yr consistent with $70B repurchase authorization."
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 22,
+        "netMargin": 37,
+        "exitPE": 32,
+        "qualityMultiplier": 1.2,
+        "moatScore": 5,
+        "managementScore": 5,
+        "shareChange": -3,
+        "year5Revenue": 1088748,
+        "year5NetIncome": 402837,
+        "year5EPS": 38.72,
+        "scenarioPrice": 923.24,
+        "risks": [
+          "Revenue concentration: if AI monetization disappoints, growth re-rates sharply",
+          "Valuation at 32x P/E leaves little margin of safety if macro turns"
+        ],
+        "rationale": "Catalyst: Gemini AI becomes the dominant enterprise agentic platform (>25% market share in AI enterprise, comparable to Azure OpenAI today), driving Google Cloud to $150B+ revenue by 2030. AI Overviews expands ad monetization with higher-intent CPCs as AI mode handles longer, more commercial queries. Waymo reaches commercial scale in 15+ US cities generating $5B+ revenue. 22% CAGR sustained as AI transitions from R&D investment to revenue harvest phase \u2014 not a large-cap growth extrapolation but a monetization inflection point. Net margin of 37% holds near current TTM levels as AI revenue at 70%+ gross margins offsets capex; consistent with Internet/Platforms best-in-class benchmark of 35%+. Exit P/E of 32 is within +14% of sector median of 28, justified by three moat sources (Search data flywheel + YouTube network effects + Cloud switching costs) and superior capital allocation (aggressive buybacks, proven M&A discipline). Quality multiplier 1.20 justified by: durable pricing power in search advertising (no close substitute), global scale advantages, and AI infrastructure lead (TPU v5, largest AI training compute outside NVIDIA)."
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "## GOOG Investment Thesis\n\n### Summary\nAlphabet (GOOG) trades at $383 against a probability-weighted fair value of $518, implying ~35% upside on a 5-year DCF basis. The company combines dominant market positions (Search, YouTube, Android) with genuine AI infrastructure leadership (Gemini, TPUs, Vertex AI) that positions it to monetize the AI transition rather than be disrupted by it.\n\n### Bull Case for AI Monetization\nGoogle has a structural advantage in the AI era that is often overlooked: it owns the query interface (3.5B daily searches), the distribution (2.5B YouTube users, 3B Android devices), and the infrastructure (TPU clusters, global fiber network). Gemini integration into Search through AI Overviews is already generating higher-intent commercial queries with expanding CPCs. Google Cloud growing 28% YoY is still early in its journey vs AWS/Azure but closing the gap rapidly with differentiated AI offerings (Gemini Enterprise, Vertex AI).\n\n### Moat Assessment\nGoogles moat is multi-layered: (1) The search data flywheel \u2014 30 years of query-click feedback makes Google Search materially better than alternatives, a gap that widens as AI requires more training data. (2) YouTube \u2014 creator/viewer network effects are deeply entrenched; TikTok has competed for short-form but YouTube Shorts has responded effectively while long-form and monetization remain unchallenged. (3) Cloud switching costs \u2014 enterprises integrating with BigQuery, Workspace, and Vertex AI face significant migration friction.\n\n### Financial Quality\nPiotroski F-Score of 7/9 indicates high financial quality. Margins have expanded from 21% in 2021 to 38% TTM \u2014 not a one-time event but structural improvement from operating leverage. The company generates $72B+ in annual FCF and has deployed $70B in buybacks. Net debt is effectively zero ($100B+ cash vs minimal debt).\n\n### Key Risks\nThe primary bear risk is AI search disruption: if perplexity-style AI assistants (or Microsofts Bing AI, or Apples on-device AI) captures >20% of queries over 5 years, Search revenue growth stalls and the entire thesis breaks. The secondary risk is regulatory: the DOJ has already won an antitrust ruling and remedies (forced divestiture of Chrome/Android/search defaults) could structurally impair Googles distribution advantages.",
+      "fairValue": 517.98,
+      "action": "ACCUMULATE",
+      "analyzedAt": "2026-05-02T18:24:00Z",
+      "researchReport": "GOOG_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used metrics.shares_outstanding as fallback/default during migration.",
+      "marginAnchor": "TTM margin used as baseline for migration.",
+      "growthDerivation": "Y1 +20.5% / Y2 +16.4% blended 18.4%; base 18%",
+      "sectorBenchmarkRow": "Communication Services - Internet Content & Information",
+      "dataQualityFlags": [
+        "Retroactively migrated to schemaVersion 1.2."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 485287507570.0,
+        "y2RevEstimate": 564809317780.0,
+        "y1GrowthPct": 20.467760470762286,
+        "y2GrowthPct": 16.38653560405723,
+        "blendedConsensusPct": 18.427148037409758,
+        "analystTargetMean": 400.275,
+        "analystCount": 18
+      },
+      "historicalRevenue": [
+        282836000000.0,
+        307394000000.0,
+        350018000000.0,
+        402836000000.0
+      ],
+      "historicalNetMargins": [
+        21.203807153261963,
+        24.006649446638516,
+        28.603671811164,
+        32.80987796522654
+      ],
+      "historicalEPS": [
+        4.59,
+        5.84,
+        8.13,
+        10.91
+      ],
+      "confidenceBreakdown": "0.8/1.0 - Base confidence assigned during migration.",
+      "valuationAction": "BUY",
+      "portfolioRationale": "BUY-rated at $517.98 FV (+35.2% upside). AI Titans pillar ALIGNED at 100% BUY. Currently at 4.98% actual vs 5.86% target (\u22120.88% drift). Accumulate toward target on any weakness. Gemini revenue inflection is underpriced in current valuation.",
+      "portfolioUrgency": "NORMAL"
+    }
   }
 ]

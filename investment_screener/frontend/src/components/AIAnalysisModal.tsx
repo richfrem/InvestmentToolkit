@@ -115,18 +115,46 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
 
                             {/* Top Stats Row */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className={`p-4 rounded-xl border flex flex-col items-center justify-center text-center ${projection.aiThesis?.action === 'BUY' ? 'bg-green-500/10 border-green-500/20' :
-                                    projection.aiThesis?.action === 'SELL' ? 'bg-red-500/10 border-red-500/20' :
-                                        'bg-slate-500/10 border-slate-500/20'
-                                    }`}>
-                                    <span className="text-xs font-bold uppercase tracking-wider opacity-70 mb-1">Recommendation</span>
-                                    <span className={`text-3xl font-black ${projection.aiThesis?.action === 'BUY' ? 'text-green-400' :
-                                        projection.aiThesis?.action === 'SELL' ? 'text-red-400' :
-                                            'text-slate-300'
-                                        }`}>
-                                        {projection.aiThesis?.action || 'HOLD'}
-                                    </span>
-                                </div>
+                                {(() => {
+                                    const action = projection.aiThesis?.action ?? '—';
+                                    const valuationAction = (projection as any).analyticsLog?.valuationAction as string | undefined;
+                                    const portfolioUrgency = (projection as any).analyticsLog?.portfolioUrgency as string | undefined;
+                                    const actionStyles: Record<string, { bg: string; border: string; text: string }> = {
+                                        INITIATE:   { bg: 'bg-cyan-500/10',    border: 'border-cyan-500/30',    text: 'text-cyan-400'    },
+                                        ACCUMULATE: { bg: 'bg-green-500/10',   border: 'border-green-500/30',   text: 'text-green-400'   },
+                                        MAINTAIN:   { bg: 'bg-slate-500/10',   border: 'border-slate-500/30',   text: 'text-slate-300'   },
+                                        TRIM:       { bg: 'bg-amber-500/10',   border: 'border-amber-500/30',   text: 'text-amber-400'   },
+                                        EXIT:       { bg: 'bg-red-500/10',     border: 'border-red-500/30',     text: 'text-red-400'     },
+                                        WATCHLIST:  { bg: 'bg-purple-500/10',  border: 'border-purple-500/30',  text: 'text-purple-400'  },
+                                        BUY:        { bg: 'bg-green-500/10',   border: 'border-green-500/30',   text: 'text-green-400'   },
+                                        HOLD:       { bg: 'bg-slate-500/10',   border: 'border-slate-500/30',   text: 'text-slate-300'   },
+                                        SELL:       { bg: 'bg-red-500/10',     border: 'border-red-500/30',     text: 'text-red-400'     },
+                                    };
+                                    const urgencyColors: Record<string, string> = {
+                                        URGENT: 'text-red-400 bg-red-500/10 border-red-500/30',
+                                        NORMAL: 'text-slate-400 bg-slate-500/10 border-slate-500/30',
+                                        LOW:    'text-slate-500 bg-slate-800/40 border-slate-700/30',
+                                    };
+                                    const style = actionStyles[action] ?? actionStyles['HOLD'];
+                                    return (
+                                        <div className={`p-4 rounded-xl border flex flex-col items-center justify-center text-center ${style.bg} ${style.border}`}>
+                                            <span className="text-xs font-bold uppercase tracking-wider opacity-70 mb-1">Recommendation</span>
+                                            <span className={`text-3xl font-black ${style.text}`}>{action}</span>
+                                            <div className="flex items-center gap-2 mt-2 flex-wrap justify-center">
+                                                {valuationAction && (
+                                                    <span className="text-[9px] px-2 py-0.5 rounded-full border border-slate-600/40 bg-slate-800/60 text-slate-400 font-bold uppercase tracking-wider">
+                                                        DCF: {valuationAction}
+                                                    </span>
+                                                )}
+                                                {portfolioUrgency && (
+                                                    <span className={`text-[9px] px-2 py-0.5 rounded-full border font-bold uppercase tracking-wider ${urgencyColors[portfolioUrgency] ?? ''}`}>
+                                                        {portfolioUrgency}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
 
 
                                 <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700 flex flex-col items-center justify-center text-center">
@@ -265,6 +293,19 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
                                     </table>
                                 </div>
                             </div>
+
+                            {/* Portfolio Rationale */}
+                            {(projection as any).analyticsLog?.portfolioRationale && (
+                                <div className="bg-slate-800/30 border border-slate-700 rounded-xl p-5">
+                                    <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
+                                        <span className="w-1 h-4 bg-amber-500 rounded-full"></span>
+                                        Portfolio Action Rationale
+                                    </h3>
+                                    <p className="text-sm text-slate-300 leading-relaxed">
+                                        {(projection as any).analyticsLog.portfolioRationale}
+                                    </p>
+                                </div>
+                            )}
 
                             {/* AI Rationale / Deep Dive */}
                             {projection.aiThesis?.rationale && projection.aiThesis.rationale !== projection.rationale && (
