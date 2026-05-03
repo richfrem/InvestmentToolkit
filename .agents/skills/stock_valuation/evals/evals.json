@@ -60,11 +60,11 @@
             "type": "near_miss",
             "category": "trigger_conflict",
             "prompt": "Can you balance my portfolio and check which stocks are overvalued?",
-            "expected_trigger": "thesis_balancer",
+            "expected_trigger": "portfolio_health",
             "expected_not_trigger": [
                 "stock_valuation"
             ],
-            "pass_condition": "Agent routes to thesis-balancer, not stock_valuation. Portfolio-level analysis is a different skill."
+            "pass_condition": "Agent routes to portfolio-advisor, not stock_valuation. Portfolio-level analysis is a different skill."
         },
         {
             "id": "EVAL-008",

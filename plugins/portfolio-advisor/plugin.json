@@ -1,0 +1,80 @@
+{
+    "name": "portfolio-advisor",
+    "version": "2.0.0",
+    "description": "Investment portfolio advisor suite. Skills: /review-portfolio (quick health check — drift monitor, pillar conviction audit, thesis formula score), /strategic-review (adversarial thesis challenger with valuation-grounded formula improvement proposals), /rebalance (valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift), /calibrate-targets (interactive target-weight session), /update-portfolio-targets (apply formula changes).",
+    "author": "InvestmentToolkit",
+    "maturity": "L5",
+    "architecture": "supercharged",
+    "skills": [
+        {
+            "name": "portfolio_health",
+            "path": "skills/portfolio-health/SKILL.md",
+            "trigger": "/review-portfolio"
+        },
+        {
+            "name": "strategic_review",
+            "path": "skills/strategic-review/SKILL.md",
+            "trigger": "/strategic-review"
+        },
+        {
+            "name": "rebalance_portfolio",
+            "path": "skills/rebalance-portfolio/SKILL.md",
+            "trigger": "/rebalance"
+        },
+        {
+            "name": "update_portfolio_targets",
+            "path": "skills/update-portfolio-targets/SKILL.md",
+            "trigger": "/update-portfolio-targets"
+        },
+        {
+            "name": "calibrate_targets",
+            "path": "skills/calibrate-targets/SKILL.md",
+            "trigger": "/calibrate-targets"
+        }
+    ],
+    "commands": [
+        {
+            "name": "review-portfolio",
+            "path": "commands/review-portfolio.md",
+            "trigger": "/review-portfolio"
+        },
+        {
+            "name": "strategic-review",
+            "path": "commands/strategic-review.md",
+            "trigger": "/strategic-review"
+        },
+        {
+            "name": "rebalance",
+            "path": "commands/rebalance.md",
+            "trigger": "/rebalance"
+        }
+    ],
+    "connectors": "CONNECTORS.md",
+    "evals": "skills/portfolio-health/evals/evals.json",
+    "acceptance_criteria": "skills/portfolio-health/references/acceptance-criteria.md",
+    "external_dependencies": [
+        {
+            "name": "theses-api",
+            "canonical_path": "http://localhost:3001/api/theses",
+            "owned_by": "investment-screener-app",
+            "purpose": "Lists all available investment theses"
+        },
+        {
+            "name": "health-api",
+            "canonical_path": "http://localhost:3001/api/theses/:id/health",
+            "owned_by": "investment-screener-app",
+            "purpose": "Returns per-holding drift scores, alerts, and overall portfolio health status"
+        }
+    ],
+    "related_plugins": [
+        "stock-valuation"
+    ],
+    "tags": [
+        "finance",
+        "portfolio",
+        "portfolio-advisor",
+        "thesis-management",
+        "rebalancing",
+        "drift-detection"
+    ]
+}

@@ -1,0 +1,17 @@
+{
+    "name": "portfolio-advisor",
+    "version": "2.0.0",
+    "description": "Investment portfolio advisor suite. Adversarial thesis challenge, drift monitoring, valuation-gated rebalancing, and target calibration.",
+    "author": {
+        "name": "richfrem",
+        "email": "connect.richfrem@gmail.com"
+    },
+    "keywords": [
+        "finance",
+        "portfolio",
+        "portfolio-advisor",
+        "thesis",
+        "rebalancing",
+        "drift-detection"
+    ]
+}
