@@ -38,12 +38,6 @@
       "description": ""
     },
     {
-      "src": "plugins/portfolio-advisor/scripts/relabel_actions.py",
-      "dst": ".agents/skills/strategic-review/scripts/relabel_actions.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md",
       "dst": "plugins/portfolio-advisor/skills/strategic-review/assets/templates/PortfolioAnalysisRecommendations.md",
       "strategy": "symlink",
