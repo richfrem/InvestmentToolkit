@@ -26,6 +26,8 @@ interface ScreenerRow {
     bull: number | null;
     lastAnalyzed: string;
     qualityMultiplier: number | null;
+    rowKind: 'projection' | 'holding'; // 'holding' = no DCF projection yet
+    subStrategyId: string | null;
 }
 
 // ─── Column Definitions ───────────────────────────────────────────────────────
@@ -100,6 +102,36 @@ function changeBg(v: number | null): string {
     if (v >= -25) return 'rgba(210,0,0,0.50)';
     return 'rgba(120,0,0,0.80)';
 }
+
+/**
+ * Translate a raw DCF action (BUY/SELL/HOLD) into portfolio-management language
+ * when no strategic-review action is available for the ticker.
+ *
+ * Rules:
+ *  - Not held + DCF BUY  → INITIATE
+ *  - Not held + DCF SELL → WATCHLIST (can't sell what you don't own)
+ *  - Not held + DCF HOLD → WATCHLIST
+ *  - BUY + held + underweight vs target → ACCUMULATE
+ *  - BUY + held + at/above target → MAINTAIN
+ *  - SELL + held → TRIM (large) or EXIT (small ≤ 1%)
+ *  - HOLD + held → MAINTAIN
+ */
+function derivePortfolioAction(dcfAction: string, actualPct: number | null, targetPct: number | null): string {
+    if (!actualPct || actualPct === 0) {
+        const upper = dcfAction.toUpperCase();
+        if (upper === 'BUY') return 'INITIATE';
+        return 'WATCHLIST'; // SELL/HOLD on unowned = watchlist, not actionable
+    }
+    const upper = dcfAction.toUpperCase();
+    if (upper === 'BUY') {
+        if (!targetPct || targetPct === 0) return 'ACCUMULATE'; // untracked but held + DCF positive
+        return actualPct < targetPct * 0.9 ? 'ACCUMULATE' : 'MAINTAIN';
+    }
+    if (upper === 'SELL') return actualPct > 1 ? 'TRIM' : 'EXIT';
+    if (upper === 'HOLD') return 'MAINTAIN';
+    return dcfAction;
+}
+
 
 function sortRows(rows: ScreenerRow[], col: keyof ScreenerRow, dir: 'asc' | 'desc'): ScreenerRow[] {
     return [...rows].sort((a, b) => {
@@ -190,7 +222,8 @@ export default function ScreenerTable() {
 
     const [portfolioWeights, setPortfolioWeights] = useState<Record<string, { actualPct: number; targetPct: number }>>({});
     const [allPortfolioWeights, setAllPortfolioWeights] = useState<Record<string, number>>({});
-    const [reviewRecommendations, setReviewRecommendations] = useState<Record<string, { target: number; rationale: string; actualPct: number }>>({});
+    const [reviewRecommendations, setReviewRecommendations] = useState<Record<string, { target: number; rationale: string; actualPct: number; action?: string }>>({});
+    const [allHoldings, setAllHoldings] = useState<any[]>([]);
 
     useEffect(() => {
         // Fetch thesis-health portfolio weights (for thesis tickers)
@@ -222,11 +255,17 @@ export default function ScreenerTable() {
                     map[h.ticker] = {
                         target: h.recommendedTarget,
                         rationale: h.rationale ?? '',
-                        actualPct: h.actualPct ?? 0,
+                        actualPct: h.actualPct ?? null,   // keep null so priority chain falls through to live weights
                     };
                 }
                 setReviewRecommendations(map);
             })
+            .catch(() => {});
+
+        // Fetch all thesis holdings (includes ETFs/funds without projections)
+        fetch('/api/screener/all-holdings')
+            .then(r => r.ok ? r.json() : null)
+            .then(data => { if (data) setAllHoldings(data); })
             .catch(() => {});
     }, []);
 
@@ -269,12 +308,13 @@ export default function ScreenerTable() {
 
     // Map Projections to Table Rows
     const rows = useMemo(() => {
-        return projections.map(p => {
+        // --- Projection rows (have DCF analysis) ---
+        const projectionRows: ScreenerRow[] = projections.map(p => {
             const thesis = p.aiThesis;
             const base = p.scenarios.base;
             const bear = p.scenarios.bear;
             const bull = p.scenarios.bull;
-            
+
             const currentPrice = p.snapshot.price;
             const fairValue = thesis?.fairValue ?? null;
             const upside = (fairValue && currentPrice) ? ((fairValue - currentPrice) / currentPrice) * 100 : null;
@@ -282,18 +322,27 @@ export default function ScreenerTable() {
 
             const growth = base.growthRate;
             const margin = base.netMargin;
-            const r40 = growth + margin;
 
-            // Priority: review data (has actualPct stamped) → health check → raw portfolio weights
             const rev = reviewRecommendations[p.ticker];
             const health = portfolioWeights[p.ticker];
-            const rawPct = allPortfolioWeights[p.ticker] ?? null;
+            // Always use live portfolio weights as source of truth for current %; review actualPct is a stale snapshot
+            const currentPct = allPortfolioWeights[p.ticker] ?? health?.actualPct ?? rev?.actualPct ?? null;
+            const recommendedPct = rev?.target ?? health?.targetPct ?? null;
+
+            // Prefer strategic-review action; fall back to DCF action translated into portfolio language
+            const dcfAction = thesis?.action || '—';
+            const rawAction = rev?.action ?? derivePortfolioAction(dcfAction, currentPct, recommendedPct);
+            // If zero holdings, never show MAINTAIN/TRIM/EXIT — those require a position to act on
+            const notHeld = !currentPct || currentPct === 0;
+            const action = notHeld && ['MAINTAIN', 'TRIM', 'EXIT'].includes(rawAction)
+                ? 'WATCHLIST'
+                : rawAction;
 
             return {
                 symbol: p.ticker,
                 name: p.name,
                 model: thesis?.model || '—',
-                action: thesis?.action || '—',
+                action,
                 portfolioRationale: (p as any).analyticsLog?.portfolioRationale ?? null,
                 fairValue,
                 currentPrice,
@@ -301,18 +350,59 @@ export default function ScreenerTable() {
                 upside,
                 growth,
                 margin,
-                ruleOf40: r40,
+                ruleOf40: growth + margin,
                 bear: bear.scenarioPrice || null,
                 base: base.scenarioPrice || null,
                 bull: bull.scenarioPrice || null,
                 qualityMultiplier: base.qualityMultiplier,
                 lastAnalyzed: p.savedAt,
-                currentPct: rev?.actualPct ?? health?.actualPct ?? rawPct,
-                recommendedPct: rev?.target ?? health?.targetPct ?? null,
+                currentPct,
+                recommendedPct,
                 rationale: rev?.rationale ?? null,
-            } as ScreenerRow;
+                rowKind: 'projection',
+                subStrategyId: null,
+            };
         });
-    }, [projections, portfolioWeights, allPortfolioWeights, reviewRecommendations]);
+
+        // --- Holding stub rows (in thesis/portfolio but no DCF projection yet) ---
+        const projectionTickers = new Set(projections.map(p => p.ticker));
+        const holdingRows: ScreenerRow[] = allHoldings
+            .filter(h => !projectionTickers.has(h.ticker))
+            .map(h => {
+                const hPct = h.actualPct ?? allPortfolioWeights[h.ticker] ?? null;
+                const hNotHeld = !hPct || hPct === 0;
+                const rawHAction = h.action ?? 'MAINTAIN';
+                const hAction = hNotHeld && ['MAINTAIN', 'TRIM', 'EXIT'].includes(rawHAction)
+                    ? 'WATCHLIST'
+                    : rawHAction;
+                return {
+                    symbol: h.ticker,
+                    name: h.name,
+                    model: '—',
+                    action: hAction,
+                    portfolioRationale: null,
+                    fairValue: null,
+                    currentPrice: h.currentPrice ?? 0,
+                    gainLoss: null,
+                    upside: null,
+                    growth: null,
+                    margin: null,
+                    ruleOf40: null,
+                    bear: null,
+                    base: null,
+                    bull: null,
+                    qualityMultiplier: null,
+                    lastAnalyzed: '',
+                    currentPct: hPct,
+                    recommendedPct: h.targetPct ?? null,
+                    rationale: h.rationale ?? null,
+                    rowKind: 'holding',
+                    subStrategyId: h.subStrategyId ?? null,
+                };
+            });
+
+        return [...projectionRows, ...holdingRows];
+    }, [projections, portfolioWeights, allPortfolioWeights, reviewRecommendations, allHoldings]);
 
     const filteredRows = rows.filter(row =>
         Object.entries(filters).every(([colId, filterVal]) => {
@@ -484,19 +574,42 @@ export default function ScreenerTable() {
                                 key={row.symbol}
                                 onClick={() => navigate(`/analysis?ticker=${row.symbol}`)}
                                 className={`group border-b border-slate-800/50 cursor-pointer transition-all duration-200
+                                    ${row.rowKind === 'holding' ? 'opacity-80' : ''}
                                     ${i % 2 === 0 ? 'bg-transparent' : 'bg-white/[0.02]'}
                                     hover:bg-indigo-500/10`}
                             >
                                 {visibleCols.map(col => {
                                     const val = row[col.id];
                                     const numVal = typeof val === 'number' ? val : null;
+
+                                    // For holding rows, DCF-specific columns show as pending
+                                    const isDcfCol = ['fairValue','gainLoss','upside','ruleOf40','growth','model','bear','base','bull','qualityMultiplier','lastAnalyzed'].includes(col.id);
+                                    if (row.rowKind === 'holding' && isDcfCol) {
+                                        return (
+                                            <td key={col.id} className={`px-4 py-4 whitespace-nowrap ${col.align === 'right' ? 'text-right' : 'text-left'}`}>
+                                                {col.id === 'model' ? (
+                                                    <span
+                                                        className="inline-flex items-center px-2 py-0.5 rounded border text-[9px] font-black uppercase tracking-wider text-slate-600 border-slate-700/40 bg-slate-800/30 cursor-pointer"
+                                                        title="No DCF analysis yet — click to analyze"
+                                                    >
+                                                        + Analyze
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-slate-700 text-xs">—</span>
+                                                )}
+                                            </td>
+                                        );
+                                    }
                                     
                                     let cellContent;
                                     if (col.id === 'symbol') {
                                         cellContent = (
                                             <div className="flex items-center gap-2">
                                                 <span className="font-black text-white text-base tracking-tighter group-hover:text-indigo-300 transition-colors">{val}</span>
-                                                <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-400" />
+                                                {row.rowKind === 'holding'
+                                                    ? <span className="text-[8px] font-black uppercase tracking-widest text-slate-600 border border-slate-700/50 rounded px-1 py-px">FUND</span>
+                                                    : <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-400" />
+                                                }
                                             </div>
                                         );
                                     } else if (col.id === 'action') {
