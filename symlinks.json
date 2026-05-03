@@ -14,18 +14,6 @@
       "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
     },
     {
-      "src": "plugins/portfolio-advisor/references/investment_thesis.md",
-      "dst": ".agents/skills/strategic-review/references/investment_thesis.md",
-      "strategy": "symlink",
-      "description": "ADR-003: installed strategic-review skill references/ symlink \u2192 plugin root"
-    },
-    {
-      "src": "plugins/portfolio-advisor/references/investment_thesis.md",
-      "dst": ".agents/skills/portfolio-advisor/references/investment_thesis.md",
-      "strategy": "symlink",
-      "description": "ADR-003: installed portfolio-advisor skill references/ symlink \u2192 plugin root"
-    },
-    {
       "src": "docs/architecture/thesis-alignment-and-portfolio-valuation/thesis_alignment_sequence.mmd",
       "dst": "plugins/portfolio-advisor/references/thesis_alignment_sequence.mmd",
       "strategy": "symlink",
@@ -34,18 +22,6 @@
     {
       "src": "investment_screener/frontend/src/data/portfolio.json",
       "dst": "plugins/portfolio-advisor/references/portfolio.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "investment_screener/frontend/src/data/portfolio.json",
-      "dst": ".agents/skills/strategic-review/references/portfolio.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "investment_screener/frontend/src/data/portfolio.json",
-      "dst": ".agents/skills/portfolio-advisor/references/portfolio.json",
       "strategy": "symlink",
       "description": ""
     },
@@ -122,38 +98,8 @@
       "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
     },
     {
-      "src": "plugins/portfolio-advisor/references/investment_thesis.md",
-      "dst": "plugins/portfolio-advisor/skills/portfolio-health/references/investment_thesis.md",
-      "strategy": "symlink",
-      "description": "ADR-003: skill references/ symlink \u2192 plugin root canonical"
-    },
-    {
-      "src": "investment_screener/frontend/src/data/portfolio.json",
-      "dst": "plugins/portfolio-advisor/skills/portfolio-health/references/portfolio.json",
-      "strategy": "symlink",
-      "description": "ADR-003: skill references/ symlink \u2192 plugin root canonical"
-    },
-    {
       "src": "plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py",
       "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/generate_portfolio_blueprint.py",
-      "strategy": "symlink",
-      "description": "ADR-003: skill references/ symlink \u2192 plugin root canonical"
-    },
-    {
-      "src": "plugins/portfolio-advisor/references/investment_thesis.md",
-      "dst": "plugins/portfolio-advisor/skills/strategic-review/references/investment_thesis.md",
-      "strategy": "symlink",
-      "description": "ADR-003: skill references/ symlink \u2192 plugin root canonical"
-    },
-    {
-      "src": "investment_screener/frontend/src/data/portfolio.json",
-      "dst": "plugins/portfolio-advisor/skills/strategic-review/references/portfolio.json",
-      "strategy": "symlink",
-      "description": "ADR-003: skill references/ symlink \u2192 plugin root canonical"
-    },
-    {
-      "src": "plugins/portfolio-advisor/references/investment_thesis.md",
-      "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/references/investment_thesis.md",
       "strategy": "symlink",
       "description": "ADR-003: skill references/ symlink \u2192 plugin root canonical"
     },
@@ -220,6 +166,48 @@
     {
       "src": "plugins/portfolio-advisor/scripts/validate_weights.py",
       "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/scripts/validate_weights.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/portfolio.json",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/references/portfolio.json",
+      "strategy": "symlink",
+      "description": "ADR-003: relative symlink to plugin root references/ \u2014 NOT pointing outside plugin tree"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/investment_thesis.md",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/references/investment_thesis.md",
+      "strategy": "symlink",
+      "description": "ADR-003: relative symlink to plugin root references/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/portfolio.json",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/references/portfolio.json",
+      "strategy": "symlink",
+      "description": "ADR-003: relative symlink to plugin root references/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/investment_thesis.md",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/references/investment_thesis.md",
+      "strategy": "symlink",
+      "description": "ADR-003: relative symlink to plugin root references/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/investment_thesis.md",
+      "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/references/investment_thesis.md",
+      "strategy": "symlink",
+      "description": "ADR-003: relative symlink to plugin root references/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/scan_opportunities.py",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/scan_opportunities.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/scan_opportunities.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/scan_opportunities.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
     }
