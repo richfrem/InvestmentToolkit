@@ -14,21 +14,255 @@ allowed-tools: Bash, Read, Write
 ## Foundation Context — Load Before Running
 
 Before executing any step, check memory for these files if they exist:
-- `memory/project_dcf_analysis_corpus.md` — 59-ticker BUY/SELL/HOLD scorecard from the most recent full analysis sweep. Use this as supplementary conviction context when the API valuations are loaded.
+- `memory/project_dcf_analysis_corpus.md` — Full-corpus BUY/SELL/HOLD scorecard from the most recent analysis sweep. **PRIMARY INPUT** for Phase 1 Opportunity Scan.
 - `memory/project_portfolio_thesis_state.md` — known EXIT-flagged positions still held, undeployed INITIATE targets, and thesis/DCF strategic conflicts. Pre-populates Step 0 gap analysis.
 
-If memory files are absent, proceed normally — the skill loads live data from the API and portfolio.json.
+If memory files are absent, scan `investment_screener/backend/data/projections/` directly — load all JSON files and extract the latest AI_AGENT projection for each ticker.
 
-# Strategic Review Skill
+---
+
+## ⭐ Phase 1: Opportunity Scan — Biggest Profit Opportunities You're Missing
+
+> **This is the most important section. Run it first, before any thesis analysis.**
+> The goal is to answer: *"Given everything the AI has analyzed, what are the highest-conviction opportunities I'm not currently positioned in?"*
+
+This phase scans the **full DCF corpus** (all tickers in `projections/`), not just your thesis holdings. It surfaces what the market is pricing wrong that you could be exploiting.
+
+### Phase 1a: Load Full Corpus and Filter Unowned BUYs
+
+```python
+import json, os, subprocess
+
+# Load actual portfolio holdings
+with open('investment_screener/frontend/src/data/portfolio.json') as f:
+    raw_holdings = json.load(f)
+held_tickers = {h['symbol'] for h in raw_holdings if h.get('shares', 0) > 0}
+
+# Scan all projections for AI_AGENT entries
+proj_dir = 'investment_screener/backend/data/projections'
+opportunities = []
+
+for fname in os.listdir(proj_dir):
+    if not fname.endswith('.json'):
+        continue
+    ticker = fname.replace('.json', '')
+    if ticker in held_tickers:
+        continue  # skip — already own it
+
+    with open(f'{proj_dir}/{fname}') as f:
+        projections = json.load(f)
+
+    ai = [p for p in projections if p.get('source') == 'AI_AGENT']
+    if not ai:
+        continue
+    latest = max(ai, key=lambda x: x.get('savedAt', ''))
+    th = latest.get('aiThesis', {})
+    sn = latest.get('snapshot', {})
+    fv = th.get('fairValue', 0)
+    price = sn.get('price', 0) or th.get('currentPrice', 0)
+    action = th.get('action', '')
+    conf = latest.get('analyticsLog', {}).get('confidenceScore', 0)
+
+    if action in ('BUY', 'INITIATE', 'ACCUMULATE') and price > 0:
+        upside = round((fv - price) / price * 100, 1)
+        opportunities.append({
+            'ticker': ticker,
+            'action': action,
+            'fairValue': fv,
+            'price': price,
+            'upside': upside,
+            'confidence': conf,
+            'analyzedAt': th.get('analyzedAt', '')[:10],
+            'model': th.get('model', ''),
+            'keyThesis': th.get('thesis', '')[:120],
+        })
+
+# Sort by upside × confidence (conviction-weighted opportunity score)
+opportunities.sort(key=lambda x: x['upside'] * x['confidence'], reverse=True)
+print(json.dumps(opportunities[:15], indent=2))
+```
+
+### Phase 1b: Present Opportunity Leaderboard
+
+Surface the top unowned BUY opportunities as the **first section** of the review output:
+
+```
+🚀 TOP PROFIT OPPORTUNITIES — Stocks You've Analyzed But Don't Own
+════════════════════════════════════════════════════════════════════
+Ranked by: Upside × Confidence Score (conviction-weighted opportunity)
+
+Rank | Ticker | Upside | FV     | Price | Conf | Analyzed   | Key Thesis (1 line)
+-----|--------|--------|--------|-------|------|------------|--------------------
+  1  | NVDA   | +124%  | $445   | $198  | 0.80 | 2026-05-02 | CUDA moat (30M devs), fwd PE 17.7x...
+  2  | META   | +82%   | $1,105 | $609  | 0.83 | 2026-05-02 | Social monopoly 3B DAU × AI ad flywheel...
+  3  | CRM    | +53%   | $281   | $184  | 0.87 | 2026-05-02 | Enterprise CRM moat, Agentforce AI...
+  ...
+
+💡 Capital required to initiate all Top 5 at 2% position each: ~${amount}
+   Your available cash: ~${cash_amount} ({cash_pct}% of portfolio)
+```
+
+### Phase 1c: Flag Stale Analyses
+
+For any opportunity where `analyzedAt` is >90 days old, flag it:
+```
+⚠️ STALE: {TICKER} was last analyzed {N} days ago. Run /evaluate-stock {TICKER} to refresh before initiating.
+```
+
+---
+
+## ⭐ Phase 2: Thesis Gap Analysis — What These Opportunities Reveal About Your Formula
+
+> This answers: *"Based on what the AI found compelling outside your thesis, what does your current thesis formula appear to be missing?"*
+
+After presenting Phase 1, analyze the opportunity list against the current thesis structure to identify systematic blind spots:
+
+### Phase 2a: Detect Missing Themes
+
+```python
+# For each top opportunity not in thesis, classify its theme:
+theme_gaps = {}
+for opp in opportunities[:10]:
+    ticker = opp['ticker']
+    # Is there ANY pillar in the thesis that covers this ticker's sector?
+    covered_by = [p for p in thesis_pillars if ticker in [h['ticker'] for h in p.get('holdings', [])]]
+    if not covered_by:
+        theme = infer_sector_theme(ticker)  # e.g. "Enterprise SaaS", "AI Infrastructure", etc.
+        theme_gaps[theme] = theme_gaps.get(theme, []) + [ticker]
+```
+
+### Phase 2b: Present Gap Analysis
+
+```
+📊 THESIS GAP ANALYSIS — What Your Formula Appears to Be Missing
+════════════════════════════════════════════════════════════════════
+
+Based on the top unowned BUY opportunities, your current thesis has these uncovered themes:
+
+Theme Gap 1: Enterprise SaaS / AI Workflow
+  → Tickers with strong DCF conviction: CRM (+53%, conf 0.87), NOW (+45%, conf 0.82), ORCL (+52%, conf 0.77)
+  → Your current thesis has no pillar covering enterprise AI workflow tooling
+  → Question: Is this an intentional omission (you prefer infrastructure over SaaS layer)?
+    Or a gap worth closing?
+
+Theme Gap 2: [next theme...]
+
+⚠️ Overlaps with your EXIT-flagged holdings: CRM, NOW are held but thesis-EXIT.
+   The DCF strongly disagrees with your exit decision on these. This tension requires resolution.
+```
+
+### Phase 2c: Ask the User to React
+
+Before proceeding to thesis-specific analysis, ask a single targeted question:
+
+```
+🔍 BEFORE I ANALYSE YOUR THESIS WEIGHTS: A few reactions needed.
+
+The opportunity scan surfaced {N} compelling stocks you don't own (or own but thesis-EXIT).
+The highest-conviction ones are: {top 3 tickers with upsides}
+
+① Are any of these stocks you've already decided against for a reason not in the model?
+  (e.g. you don't want SaaS exposure, you have a macro view against a sector)
+  → This will tell me which opportunities to keep as recommendations vs. filter out.
+
+② Do any of these represent a theme you've been MEANING to add to your thesis but haven't?
+  → I'll incorporate those into the formula improvement proposals.
+
+③ Are there major stocks you want analyzed that AREN'T in the projections corpus yet?
+  (I'll note them for a `/evaluate-stock` follow-up run)
+  → Answer "none" to skip.
+```
+
+> ✅ Wait for user response before proceeding to Phase 3.
+> ✅ Apply user filters to all subsequent recommendations — if user says "no SaaS", suppress CRM/NOW/ORCL from proposals.
+
+---
+
+## ⭐ Phase 3: Sub-Strategy & Conviction Interview
+
+> This answers: *"Are your current pillar weightings actually aligned with your conviction, or have they just drifted there by default?"*
+
+**Run this BEFORE looking at drift/valuation numbers.** The goal is to get conviction inputs from the user *independently* of what the numbers say — so you can compare stated conviction vs. actual allocation vs. valuation.
+
+### Phase 3a: Present Current Sub-Strategy Weights
+
+```
+📐 YOUR CURRENT FORMULA vs STATED TARGETS
+════════════════════════════════════════════════════════════════════
+
+Sub-Strategy          | Thesis Target | Actual Today | Drift    | # Holdings
+----------------------|---------------|--------------|----------|----------
+SA / ASI Race         | 66.0%         | 51.5%        | -14.5pp  | 12
+AI-Native Security    | 8.5%          | 10.8%        | +2.3pp   | 3
+Sovereign Finance     | 12.6%         | 13.1%        | +0.5pp   | 5
+Quality SaaS          | 0.0%          | 1.8%         | +1.8pp   | 2 (EXIT-flagged)
+Frontier Bets         | 0.0%          | 6.0%         | +6.0pp   | 3 (EXIT-flagged)
+Strategic Reserve     | 13.0%         | 16.8%        | +3.8pp   | 1
+```
+
+### Phase 3b: Conviction Interview — Ask All Questions in One Message
+
+```
+💭 CONVICTION CHECK — Answer these before I score your formula:
+
+━━━ SUB-STRATEGY CONVICTION ━━━
+
+① SA/ASI Race is your biggest bet at 66% target. On a scale of 1-10, 
+  how convicted are you in this theme RIGHT NOW (vs. 6 months ago)?
+  → If conviction has decreased: which sub-sector has faded most 
+    (chips / hyperscalers / physical infrastructure)?
+
+② Sovereign Finance (crypto/stablecoin) at 12.6% target — has the 
+  regulatory/macro environment changed your view here?
+  → Higher conviction (ETF approvals, USDC adoption)?
+  → Lower conviction (cycle risk, thin moats)?
+
+③ Are there any sub-strategies you've been MEANING to add but haven't 
+  formalized? (Based on the opportunity scan, candidates are: {themes from Phase 2})
+
+━━━ POSITION-LEVEL CONVICTION ━━━
+
+④ Rank your TOP 3 highest-conviction holdings right now (the ones 
+  you'd be most comfortable doubling down on):
+  → This will tell me where to concentrate freed capital.
+
+⑤ Which holding has your LOWEST conviction right now — beyond the 
+  obvious EXIT-flagged positions?
+  → This is the first cut when we need to free capital.
+
+⑥ Any conviction changes since the last review that aren't reflected 
+  in the current thesis weights?
+  → e.g. "I've gotten more bullish on INTC after the earnings call"
+  → e.g. "I've lost conviction in CEG after the regulatory ruling"
+```
+
+> ✅ Wait for user response.
+> ✅ Map answers to specific formula adjustment proposals in the review output.
+> ✅ When user names a TOP conviction holding → raise its target weight proposal.
+> ✅ When user names a LOW conviction holding → reduce its target or flag for trim.
+
+
+---
 
 ## Quick Reference
+
 - **Trigger**: `/strategic-review` or `/challenge-thesis`
 - **Persona**: Adversarial Thesis Challenger — objective, data-grounded, does not protect user bias
 - **Strategic Prompt**: `references/strategic_review_prompt.md` ← LLM prompt for structured output
   - **Fallback path** (if not installed alongside skill): `.agents/skills/portfolio-advisor/references/strategic_review_prompt.md`
 - **Thesis Doc**: `plugins/portfolio-advisor/references/investment_thesis.md`
 - **Output Dir**: `PortfolioAnalysis/strategic-reviews/` ← persisted review files for human feedback loop
+- **Output Template**: `plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md` ← canonical structure for all review files
+- **Report Bootstrap Script**: `plugins/portfolio-advisor/scripts/generate_review.py` ← scaffolds a dated review file from the template with live portfolio metadata and opportunity scan pre-populated
 - **Fallbacks**: `references/fallback-tree.md`
+
+> 🚀 **First step before running any analysis:** scaffold the review file:
+> ```bash
+> python3 plugins/portfolio-advisor/scripts/generate_review.py
+> # Creates: PortfolioAnalysis/strategic-reviews/YYYY-MM-DD-PortfolioAnalysisRecommendations.md
+> # Pre-populates: portfolio header, opportunity leaderboard, and sources table
+> # Agent then fills: formula score, pillar audit, conflicts, proposals
+> ```
 
 ## ⚠️ Adversarial Review Constraint
 > This skill is designed to **challenge** the thesis, not validate it.
@@ -89,9 +323,18 @@ portfolio-advisor
 
 | Script | Purpose | Command |
 |---|---|---|
+| `generate_review.py` | **Bootstrap review file from template** — pre-populates header, opportunity scan | `python3 plugins/portfolio-advisor/scripts/generate_review.py [--date YYYY-MM-DD]` |
 | `validate_weights.py` | Verify/normalize both JSONs sum to 100% | `python3 plugins/portfolio-advisor/scripts/validate_weights.py --mode both` |
 | `generate_portfolio_blueprint.py` | Regenerate Section IV of `investment_thesis.md` | `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write` |
 | `relabel_actions.py` | Correct action labels against live holdings | `python3 plugins/portfolio-advisor/scripts/relabel_actions.py --recs {json} --portfolio ...` |
+
+**Canonical assets for this skill:**
+
+| Asset | Purpose | Path |
+|---|---|---|
+| `PortfolioAnalysisRecommendations.md` | Master template for all review output files | `plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md` |
+
+> ⚠️ **Never hand-write a review from scratch.** Always call `generate_review.py` first to get a correctly-structured file with live metadata, then populate the AI sections.
 
 ---
 
@@ -550,6 +793,24 @@ Print the relabeling summary to chat so the user can see what changed.
 **Portfolio Value:** ${value} USD
 **Status:** {one-line status}
 
+---
+
+## 🚀 Top Profit Opportunities — Stocks Analyzed But Not Owned
+{Opportunity leaderboard table: Rank | Ticker | Upside | FV | Price | Conf | Analyzed | Key Thesis}
+{Capital required note}
+{⚠️ STALE flags for analyses > 90 days old}
+
+## 📊 Thesis Gap Analysis — What Your Formula Appears to Be Missing
+{Theme gaps detected from opportunity scan: each gap with tickers, conviction scores, and question for user}
+{Overlap callouts: tickers held but thesis-EXIT that DCF rates BUY}
+
+## 💭 Conviction Check Summary
+{Summary of user's answers from Phase 3 interview, mapped to specific weight proposals}
+{TOP conviction holdings identified → raised target proposals}
+{LOW conviction holdings identified → trim/exit flags}
+
+---
+
 ## Overall Assessment
 {2–3 sentence strategicAssessment from JSON output}
 
@@ -587,6 +848,7 @@ Print the relabeling summary to chat so the user can see what changed.
 ---
 *Generated by `/strategic-review` skill — {THESIS_NAME} — {date}*
 ```
+
 
 After writing the file, tell the user:
 > "I've saved the full review to `PortfolioAnalysis/strategic-reviews/{date}-PortfolioAnalysisRecommendations.md`.

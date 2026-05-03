@@ -66,6 +66,48 @@
       "dst": ".agents/skills/strategic-review/scripts/relabel_actions.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/assets/templates/PortfolioAnalysisRecommendations.md",
+      "strategy": "symlink",
+      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md",
+      "dst": "plugins/portfolio-advisor/skills/calibrate-targets/assets/templates/PortfolioAnalysisRecommendations.md",
+      "strategy": "symlink",
+      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/assets/templates/PortfolioAnalysisRecommendations.md",
+      "strategy": "symlink",
+      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md",
+      "dst": "plugins/portfolio-advisor/skills/rebalance-portfolio/assets/templates/PortfolioAnalysisRecommendations.md",
+      "strategy": "symlink",
+      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md",
+      "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/assets/templates/PortfolioAnalysisRecommendations.md",
+      "strategy": "symlink",
+      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_review.py",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/generate_review.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_review.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/generate_review.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
     }
   ]
 }
