@@ -21,7 +21,7 @@ InvestmentToolkit/
 │       └── src/
 │           ├── services/       ← QuestradeSyncService.ts
 │           └── utils/          ← QuestradeAPIClient.py, QuestradeTokenManager.py
-├── plugins/                    ← AI agent plugins (stock-valuation, thesis-balancer, toolkit-manager)
+├── plugins/                    ← AI agent plugins (stock-valuation, portfolio-advisor, toolkit-manager)
 ├── .agents/                    ← Agent skills and prompts
 ├── .claude/                    ← Claude Code config + CLAUDE.md
 ├── .github/                    ← Copilot instructions (this file)
@@ -101,9 +101,9 @@ curl -s -X POST http://localhost:3001/api/portfolio/sync-questrade \
 |---------|--------|---------|
 | `/evaluate-stock {TICKER}` | stock-valuation | Full DCF valuation — Bear/Base/Bull scenarios, fair value, analyticsLog, research report |
 | `/research-stock {TICKER}` | stock-valuation | Qualitative research sweep — Class A/B/C/D change classification, gates re-valuation |
-| `/review-portfolio` | thesis-balancer | Drift monitor + pillar conviction audit + thesis formula health score (0–100) |
-| `/strategic-review` | thesis-balancer | Adversarial thesis challenger — surfaces failing pillars, proposes formula improvements |
-| `/rebalance` | thesis-balancer | Valuation-gated trade optimizer — skips SELL-rated holdings when restoring drift |
+| `/review-portfolio` | portfolio-advisor | Drift monitor + pillar conviction audit + thesis formula health score (0–100) |
+| `/strategic-review` | portfolio-advisor | Adversarial thesis challenger — surfaces failing pillars, proposes formula improvements |
+| `/rebalance` | portfolio-advisor | Valuation-gated trade optimizer — skips SELL-rated holdings when restoring drift |
 | `/start-screener` | toolkit-manager | Launch full suite (frontend + backend) |
 | `/setup-questrade` | toolkit-manager | Interactive Questrade token setup |
 

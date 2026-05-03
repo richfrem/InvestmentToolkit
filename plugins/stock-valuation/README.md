@@ -104,4 +104,4 @@ The `stock_valuation` skill runs the full 9-step pipeline:
 
 ## Related Plugins
 
-- [`thesis-balancer`](../thesis-balancer/) — Portfolio health check and drift analysis against strategic thesis
+- [`portfolio-advisor`](../portfolio-advisor/) — Portfolio health check and drift analysis against strategic thesis

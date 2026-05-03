@@ -1,1 +1,1 @@
-../../../plugins/thesis-balancer/scripts/update_thesis.py
+../../../plugins/portfolio-advisor/scripts/update_thesis.py

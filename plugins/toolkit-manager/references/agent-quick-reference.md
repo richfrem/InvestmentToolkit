@@ -116,7 +116,7 @@ python3 investment_screener/backend/py_services/update_thesis.py --list
 | File | Purpose |
 |---|---|
 | `investment_screener/backend/data/theses/target_portfolio.json` | Live thesis — pillar targets and holding weights |
-| `plugins/thesis-balancer/references/investment_thesis.md` | Thesis narrative — strategy, pillars, conviction logic |
+| `plugins/portfolio-advisor/references/investment_thesis.md` | Thesis narrative — strategy, pillars, conviction logic |
 | `PortfolioAnalysis/strategic-reviews/` | Historical reviews (MD + JSON + patch) |
 | `investment_screener/backend/data/projections/` | AI DCF valuations per stock |
 
