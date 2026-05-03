@@ -20,6 +20,16 @@
             "name": "rebalance_portfolio",
             "path": "skills/rebalance-portfolio/SKILL.md",
             "trigger": "/rebalance"
+        },
+        {
+            "name": "update_portfolio_targets",
+            "path": "skills/update-portfolio-targets/SKILL.md",
+            "trigger": "/update-portfolio-targets"
+        },
+        {
+            "name": "calibrate_targets",
+            "path": "skills/calibrate-targets/SKILL.md",
+            "trigger": "/calibrate-targets"
         }
     ],
     "commands": [
