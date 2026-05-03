@@ -207,7 +207,7 @@ The thesis scores 78.8/100 — under pressure but structurally sound. The primar
 2. **Cash Intent:** Tactical reserve (stay invested) or strategic? If Option B (redeploy), which URGENT actions get funded first?
 3. **AVGO Valuation Discrepancy:** Latest projection FV $284.76 (SELL-rated) yet thesis has a 6.35% target. Run `/evaluate-stock AVGO` to refresh — older projection may be using stale revenue data.
 4. **CRWD Post-Outage ARR Recovery:** Any Q1 2026 data on enterprise churn recovery? Re-evaluate before EXIT if ARR demonstrably recovering — though ZS rotation is still recommended regardless.
-5. **Applied AI / Robotics pillar (5.89% target, 100% NO DATA):** HUMN, KOID, AIFF have no valuations. Run `/evaluate-stock` on each before next strategic review.
+5. **Applied AI / Robotics pillar (5.89% target, 100% NO DATA):** HUMN, KOID have no valuations. Run `/evaluate-stock` on each before next strategic review.
 6. **SNPS / CDNS:** INTC ecosystem plays, no valuations. Run `/evaluate-stock SNPS` and `/evaluate-stock CDNS` — both are INTC thesis amplifiers if 18A ramp accelerates.
 
 > ✅ **Resolved since prior review:**
@@ -220,7 +220,7 @@ The thesis scores 78.8/100 — under pressure but structurally sound. The primar
 ## 📊 Sources Checked
 
 - **Thesis API:** ✅ Twin Revolutions v7.3
-- **Valuations:** ✅ 20 tickers with AI projections | ⚠️ Missing: SNPS, CDNS, ETHA, IBIT, HUMN, KOID, AIFF, PSU-U.TO
+- **Valuations:** ✅ 20 tickers with AI projections | ⚠️ Missing: SNPS, CDNS, ETHA, IBIT, HUMN, KOID, PSU-U.TO
 - **Pillar Conviction Audit:** ✅ All 8 pillars
 - **Thesis Breakers Doc:** ✅ `plugins/thesis-balancer/references/investment_thesis.md` §VII
 - **Strategic Review Prompt:** ✅ `.agents/skills/thesis-balancer/references/strategic_review_prompt.md`

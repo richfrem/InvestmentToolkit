@@ -450,40 +450,8 @@
       "action": "MAINTAIN",
       "urgency": "LOW",
       "rationale": "No change proposed in this review."
-    },
-    {
-      "ticker": "SNPS",
-      "pillarId": "compute",
-      "role": "core",
-      "currentTarget": 1.72,
-      "recommendedTarget": 1.72,
-      "delta": 0.0,
-      "action": "MAINTAIN",
-      "urgency": "LOW",
-      "rationale": "No change proposed in this review."
-    },
-    {
-      "ticker": "CDNS",
-      "pillarId": "compute",
-      "role": "core",
-      "currentTarget": 1.72,
-      "recommendedTarget": 1.72,
-      "delta": 0.0,
-      "action": "MAINTAIN",
-      "urgency": "LOW",
-      "rationale": "No change proposed in this review."
-    },
-    {
-      "ticker": "AIFF",
-      "pillarId": "applied",
-      "role": "speculative",
-      "currentTarget": 0.63,
-      "recommendedTarget": 0.63,
-      "delta": 0.0,
-      "action": "MAINTAIN",
-      "urgency": "LOW",
-      "rationale": "No change proposed in this review."
     }
   ],
-  "generatedAt": "2026-05-02T23:20:36.369535Z"
+  "generatedAt": "2026-05-02T23:20:36.369535Z",
+  "recommendations": []
 }

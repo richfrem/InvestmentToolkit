@@ -656,7 +656,67 @@ app.delete('/api/theses/:id', async (req, res) => {
 
 // ─── Docs API ─────────────────────────────────────────────────────────────────
 const THESIS_DOC_PATH = path.resolve(__dirname, '../../../plugins/thesis-balancer/references/investment_thesis.md');
-const PORTFOLIO_REVIEWS_DIR = path.resolve(__dirname, '../../../PortfolioAnalysis/strategic-reviews');
+const TARGET_PORTFOLIO_FILE = path.resolve(__dirname, '../data/theses/target-portfolio.json');
+
+// GET /api/screener/all-holdings — all thesis holdings enriched with actual %, review action, and rationale.
+// Used by the screener to show ETFs and other non-projection holdings alongside DCF rows.
+app.get('/api/screener/all-holdings', async (_req, res) => {
+    try {
+        // 1. Target portfolio (thesis targets + names + subStrategyId + thesisForInclusion)
+        const targetPortfolio = JSON.parse(await fs.promises.readFile(TARGET_PORTFOLIO_FILE, 'utf-8'));
+        const thesisHoldings: any[] = targetPortfolio.holdings ?? [];
+
+        // 2. Live portfolio weights (symbol → { pct, price })
+        const positions: any[] = fs.existsSync(PORTFOLIO_FILE)
+            ? JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8')) : [];
+        const totalValue = positions.reduce((s, p) => s + (p.shares || 0) * (p.price || 0), 0);
+        const actualMap: Record<string, { pct: number; price: number }> = {};
+        for (const p of positions) {
+            const ticker = (p.symbol ?? p.ticker) as string;
+            if (ticker && totalValue > 0)
+                actualMap[ticker] = { pct: ((p.shares || 0) * (p.price || 0) / totalValue) * 100, price: p.price || 0 };
+        }
+
+        // 3. Latest review data (action, rationale, actualPct, recommendedTarget)
+        let reviewMap: Record<string, any> = {};
+        try {
+            await fs.promises.mkdir(PORTFOLIO_REVIEWS_DIR, { recursive: true });
+            const files = (await fs.promises.readdir(PORTFOLIO_REVIEWS_DIR))
+                .filter(f => f.endsWith('.json') && f.match(/^\d{4}-\d{2}-\d{2}/) && !f.includes('patch'))
+                .sort().reverse();
+            if (files.length) {
+                const raw = JSON.parse(await fs.promises.readFile(path.join(PORTFOLIO_REVIEWS_DIR, files[0]), 'utf-8'));
+                for (const h of [...(raw.holdings ?? []), ...(raw.holdingsUnchanged ?? [])]) {
+                    reviewMap[h.ticker] = h;
+                }
+            }
+        } catch { /* no review file — proceed without */ }
+
+        // 4. Merge all sources per holding
+        const result = thesisHoldings.map((h: any) => {
+            const rev = reviewMap[h.ticker];
+            const live = actualMap[h.ticker];
+            return {
+                ticker: h.ticker,
+                name: h.name ?? h.ticker,
+                subStrategyId: h.subStrategyId ?? null,
+                role: h.role ?? null,
+                targetPct: rev?.recommendedTarget ?? h.targetWeight ?? null,
+                actualPct: rev?.actualPct ?? live?.pct ?? null,
+                currentPrice: live?.price ?? null,
+                action: rev?.action ?? 'MAINTAIN',
+                rationale: rev?.rationale ?? h.thesisForInclusion ?? null,
+                hasValuation: false, // frontend will override for tickers with projections
+            };
+        });
+
+        res.json(result);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
 
 // GET /api/docs/investment-thesis — serves the investment thesis markdown + live metadata from target_portfolio.json
 app.get('/api/docs/investment-thesis', async (_req, res) => {
@@ -678,7 +738,7 @@ app.get('/api/docs/investment-thesis', async (_req, res) => {
     }
 });
 
-// GET /api/docs/latest-review — serves the most recent strategic review markdown
+const PORTFOLIO_REVIEWS_DIR = path.resolve(__dirname, '../../../PortfolioAnalysis/strategic-reviews');
 app.get('/api/docs/latest-review', async (_req, res) => {
     try {
         await fs.promises.mkdir(PORTFOLIO_REVIEWS_DIR, { recursive: true });

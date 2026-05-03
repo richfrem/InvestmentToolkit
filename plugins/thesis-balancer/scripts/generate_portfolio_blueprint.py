@@ -28,8 +28,8 @@ PORTFOLIO_JSON = REPO_ROOT / "investment_screener/frontend/src/data/portfolio.js
 THESIS_MD     = REPO_ROOT / "plugins/thesis-balancer/references/investment_thesis.md"
 
 SUB_STRATEGY_NAMES = {
-    "sa-asi-race":       "Sub-Strategy 1 — Situational Awareness / ASI Race",
-    "datacenter-infra":  "Sub-Strategy 2 — Data Center Physical Infrastructure",
+    "sa-asi-race":       "Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)",
+    "cybersecurity":     "Sub-Strategy 2 — AI-Native Cybersecurity",
     "sovereign-finance": "Sub-Strategy 3 — Sovereign Finance",
     "quality-saas":      "Sub-Strategy 4 — Quality SaaS Resilience",
     "frontier-bets":     "Sub-Strategy 5 — Applied AI / Frontier Bets",
@@ -120,7 +120,7 @@ def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> 
     lines.append(f"*Total portfolio value: ${total_value:,.0f}. Run `python3 plugins/thesis-balancer/scripts/generate_portfolio_blueprint.py --write` to refresh.*")
     lines.append("")
 
-    order = ["sa-asi-race", "datacenter-infra", "sovereign-finance", "quality-saas", "frontier-bets", "cash", "untracked"]
+    order = ["sa-asi-race", "cybersecurity", "sovereign-finance", "quality-saas", "frontier-bets", "cash", "untracked"]
     for sid in order:
         if sid not in groups:
             continue
