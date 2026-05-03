@@ -475,7 +475,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-01T14:56:49.314940Z",
-      "updatedAt": "2026-05-03T15:55:50.827369Z"
+      "updatedAt": "2026-05-03T16:05:33.351888Z"
     },
     "rebalance-portfolio": {
       "source": "portfolio-advisor",
@@ -510,7 +510,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-01T14:56:49.314940Z",
-      "updatedAt": "2026-05-03T15:55:50.827369Z"
+      "updatedAt": "2026-05-03T16:05:33.351888Z"
     },
     "self-audit": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -524,14 +524,14 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-02T22:24:56.807421Z",
-      "updatedAt": "2026-05-03T15:55:50.784201Z"
+      "updatedAt": "2026-05-03T16:05:33.309399Z"
     },
     "stock_valuation": {
       "source": "stock-valuation",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T15:53:47.497060Z",
-      "updatedAt": "2026-05-03T15:55:50.784201Z"
+      "updatedAt": "2026-05-03T16:05:33.309399Z"
     },
     "strategic-review": {
       "source": "portfolio-advisor",
