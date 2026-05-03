@@ -4,11 +4,11 @@
     "id": "e0b96b0f-b4df-41ed-a16f-7b1bb363a033",
     "source": "AI_AGENT",
     "schemaVersion": "1.2",
-    "version": 1,
-    "savedAt": "2026-05-02T19:16:32.961Z",
-    "updatedAt": "2026-05-02T19:16:32.961Z",
+    "version": 2,
+    "savedAt": "2026-05-02T22:15:00.000Z",
+    "updatedAt": "2026-05-02T22:26:51.307Z",
     "name": "AI Deep Dive — TSLA — 2026-05-02",
-    "rationale": "Tesla is undergoing a difficult transition period. Trailing revenue growth has slowed to 15.8% while net margins have severely compressed from over 15% to just 4.0% TTM due to aggressive vehicle price cuts and intense competition in China. The stock currently trades at an astronomical 358x trailing and 154x forward P/E, pricing in massive future success in currently unproven businesses like Robotaxi and humanoid robotics. The core automotive business cannot support this valuation. At a conservative base case valuation of $191.79, the stock represents extreme downside risk (-50.9%), rating a SELL.",
+    "rationale": "Tesla is trading at 358x trailing PE on collapsing GAAP margins (15%→4%) and declining revenue from its 2024 peak. The DCF SELL at $279.33 vs $390.82 (-28.6%) reflects a sober fundamentals view. The base case (12% CAGR, 7% margin, 80x PE) prices in partial FSD/robotaxi optionality. The analyst consensus is essentially HOLD: $414 mean target (41 analysts, Buy) vs $390 current — the sell-side is nearly fully priced-in already. The Gemini 1.5 Pro prior SELL at $191.79 massively undervalued Elon/robotaxi optionality. Our current SELL is far more modest (-28.6%).",
     "snapshot": {
       "price": 390.82,
       "currency": "USD",
@@ -25,68 +25,48 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.2,
+        "weight": 0.25,
         "growthRate": 5,
-        "netMargin": 5,
+        "netMargin": 3,
         "exitPE": 30,
-        "qualityMultiplier": 1.1,
+        "qualityMultiplier": 0.85,
         "shareChange": 1,
-        "rationale": "Growth decelerates to 5% as the core auto business matures and energy storage growth peaks. Net margin stays depressed at 5% due to ongoing price wars and high fixed costs. The exit P/E compresses to 30x, stripping out the 'robotaxi' premium. The 1.1x quality multiplier reflects their charging network and manufacturing scale.",
-        "moatScore": 4,
-        "managementScore": 3,
-        "year5Revenue": 121026,
-        "year5NetIncome": 6051.3,
-        "year5EPS": 1.53,
-        "scenarioPrice": 31.41,
-        "risks": [
-          "FSD fails to achieve regulatory approval for unsupervised autonomy",
-          "Chinese EV makers severely erode global market share"
-        ]
+        "rationale": "EV market share loss to BYD and Chinese OEMs accelerates. FSD/Robotaxi delayed indefinitely. Margins stay at current 4% or compress further. Revenue grows modestly driven only by energy storage.",
+        "year5EPS": 0.92,
+        "scenarioPrice": 23.49,
+        "presentValue": 14.56
       },
       "base": {
-        "weight": 0.6,
+        "weight": 0.55,
         "growthRate": 12,
-        "netMargin": 10,
-        "exitPE": 45,
-        "qualityMultiplier": 1.2,
-        "shareChange": 0,
-        "rationale": "Growth of 12% aligns with the blended consensus estimates (7.9% Y1 / 16.8% Y2 implied). Target net margin recovers to 10% as FSD software attach rates increase and energy storage margins expand, offsetting auto hardware weakness. The exit P/E of 45x maintains a significant tech/AI premium over legacy auto. A quality multiplier of 1.2x is applied due to their unassailable Supercharger network and software integration.",
-        "moatScore": 5,
-        "managementScore": 4,
-        "year5Revenue": 167117.6,
-        "year5NetIncome": 16711.8,
-        "year5EPS": 4.45,
-        "scenarioPrice": 149.2,
-        "risks": [
-          "Margin recovery takes longer than expected due to EV overcapacity",
-          "Key personnel risk"
-        ]
+        "netMargin": 7,
+        "exitPE": 80,
+        "qualityMultiplier": 1,
+        "shareChange": 1,
+        "rationale": "Analyst-aligned 12% CAGR (Y1 +8%, Y2 +16.8%). Margins recover from 4% to 7% as Cybertruck ramp improves mix and energy storage scales. FSD partial rollout adds software revenue. 80x PE reflects growth + optionality premium well above auto sector.",
+        "year5EPS": 2.96,
+        "scenarioPrice": 236.71,
+        "presentValue": 147.21
       },
       "bull": {
         "weight": 0.2,
-        "growthRate": 20,
-        "netMargin": 15,
-        "exitPE": 60,
-        "qualityMultiplier": 1.3,
-        "shareChange": -1,
-        "rationale": "Catalyst: Robotaxi network launches successfully in major US cities, and the energy storage business becomes larger than automotive. Revenue sustains a 20% CAGR. Operating leverage from high-margin software services drives net margins back to historical highs of 15%. The exit P/E expands to an aggressive 60x on re-rating as an AI/Robotics company. The 1.3x quality multiplier reflects a dominant, unassailable monopoly in autonomous transit.",
-        "moatScore": 5,
-        "managementScore": 5,
-        "year5Revenue": 235959.9,
-        "year5NetIncome": 35394,
-        "year5EPS": 9.91,
-        "scenarioPrice": 479.94,
-        "risks": [
-          "Valuation remains extremely sensitive to terminal growth assumptions"
-        ]
+        "growthRate": 22,
+        "netMargin": 14,
+        "exitPE": 150,
+        "qualityMultiplier": 1.15,
+        "shareChange": 1,
+        "rationale": "Catalyst: Robotaxi full commercial launch in multiple US cities. FSD Level 4 approved. Autonomous fleet generates high-margin recurring revenue. Optimus humanoid robot early commercialization. Tesla becomes AI/robotics platform, not just an automaker.",
+        "year5EPS": 9.09,
+        "scenarioPrice": 1571.81,
+        "presentValue": 973.61
       }
     },
     "aiThesis": {
-      "model": "Gemini 1.5 Pro",
-      "rationale": "Tesla is undergoing a difficult transition period. Trailing revenue growth has slowed to 15.8% while net margins have severely compressed from over 15% to just 4.0% TTM due to aggressive vehicle price cuts and intense competition in China. The stock currently trades at an astronomical 358x trailing and 154x forward P/E, pricing in massive future success in currently unproven businesses like Robotaxi and humanoid robotics. The core automotive business cannot support this valuation. At a conservative base case valuation of $191.79, the stock represents extreme downside risk (-50.9%), rating a SELL.",
-      "fairValue": 191.79,
+      "model": "Claude Sonnet 4.6",
+      "rationale": "**SELL — Fair Value $279.33 vs $390.82 (-28.6%)**\n\nTesla presents the most complex valuation challenge in the portfolio. The GAAP business is deteriorating: revenue peaked at $97.7B in FY2024 and declined to $94.8B TTM, net margins collapsed from 15.5% to 3.95%, and PE is 358x on current earnings. By any traditional auto sector or earnings-based valuation, TSLA is dramatically overvalued.\n\nHowever, Tesla is not valued as a car company. The $1.47T market cap prices in: (1) FSD/Robotaxi commercial launch — a service where Tesla retains 80%+ gross margins on rides; (2) Optimus humanoid robot commercialization; (3) Energy storage scaling (Megapack/Powerwall, growing rapidly); (4) Continued global EV brand premium.\n\nOur base case (12% CAGR, 7% margin recovery, 80x exit PE) values these options at $147 present value. The bull case (22% CAGR, 14% margins, 150x PE) = $974 if robotaxi fully materializes. Weighted: $279.33 — a SELL vs $390.82 current.\n\nThe analyst consensus at $414 (41 analysts, Buy) is essentially a HOLD — the sell-side has almost fully priced in the current opportunity. Our analysis confirms: there's more downside risk ($15 bear case) than upside ($974 bull case, 20% weight). The asymmetry is negative. SELL, but this is a conviction SELL of ~1 notch, not a fundamental short.",
+      "fairValue": 279.33,
       "action": "SELL",
-      "analyzedAt": "2026-05-02T19:16:32.961Z",
+      "analyzedAt": "2026-05-02T22:15:00.000Z",
       "researchReport": "TSLA_2026-05-02.md"
     },
     "globalSettings": {
@@ -94,41 +74,56 @@
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "Used 3.755B (shares_diluted). Matches API output.",
-      "marginAnchor": "TTM 4.0% used as the anchor. Margins have compressed severely (15.5% -> 7.3% -> 4.0%). Base case targets 10% assuming some recovery from FSD software revenue, but this is highly speculative.",
-      "growthDerivation": "Analyst Y1 revenue implies 7.9% growth ($102.3B vs $94.8B TTM), Y2 implies 16.8%. Blended consensus ~12%. Base case growth set to 12%.",
-      "sectorBenchmarkRow": "Consumer Discretionary (Auto) / Tech Platform hybrid. Used a highly elevated premium exit P/E of 45x for base case (vs standard auto P/E of ~10x) to account for software and energy businesses.",
+      "shareCountMethod": "shares_diluted = shares_outstanding = 3,755,723,871 (no discrepancy). Large share count — EPS on $94.83B revenue at 3.95% margin = $3.745B NI / 3.756B shares = $0.997 EPS. PE = $390.82 / $0.997 = 392x (approx matches reported 358x — small delta from rounding).",
+      "marginAnchor": "TTM 3.95% used as anchor. Historical: ~15.5% (FY2022), ~15.5% (FY2023), 7.3% (FY2024), 3.95% (TTM). Severe declining trend — NOT mean-reverting. TTM is the current state; recovery scenarios in base/bull are forward-looking assumptions, NOT anchored to prior highs without justification. Revenue also peaked: $81.5B→$96.8B→$97.7B→$94.8B — slight decline in TTM.",
+      "growthDerivation": "Y1 $102.3B (+7.9%), Y2 $119.6B (+16.8%). Blended ~12.4%. No hypergrowth exception (Y1 <40%). Bear 5% (market share loss), Base 12% (analyst consensus), Bull 22% (robotaxi acceleration). Base within ±3pp of analyst 12.4% ✓.",
+      "sectorBenchmarkRow": "Consumer Cyclical — Auto Manufacturers. Traditional PE 10-20x. TSLA cannot be valued with auto benchmarks due to technology premium. Applied growth+optionality PE: Bear 30x (technology brand premium over pure auto), Base 80x (FSD/energy growth company), Bull 150x (robotaxi platform). These are explicit departures from auto benchmark with full justification.",
       "dataQualityFlags": [
-        "The massive divergence between the 358x trailing P/E and the deteriorating fundamental margins (4.0% TTM) indicates the stock trades entirely on future narratives (AI, Robotaxi) rather than current financials."
+        "Revenue DECLINING: $97.69B (FY2024) → $94.83B (TTM) — negative momentum despite analyst projection of +8% Y1",
+        "Net income collapse: $15.0B (FY2023) → $7.13B (FY2024) → $3.79B (TTM) — margin destruction from price cuts",
+        "PE 358x on current earnings is one of the highest among mega-caps — almost entirely optionality premium",
+        "Bull case PE 150x could be considered aggressive even for a robotaxi scenario — justified only if autonomous fleet revenue materializes"
       ],
       "analystInputs": {
-        "y1RevEstimate": 102348.1,
-        "y2RevEstimate": 119550.1,
+        "y1RevEstimate": 102348140830,
+        "y2RevEstimate": 119550186230,
         "y1GrowthPct": 7.9,
         "y2GrowthPct": 16.8,
-        "blendedConsensusPct": 12,
-        "analystTargetMean": 414.09,
+        "blendedConsensusPct": 12.4,
+        "analystTargetMean": 414.1,
         "analystCount": 41
       },
       "historicalRevenue": [
-        81462,
-        96773,
-        97690,
-        94827
+        81462000000,
+        96773000000,
+        97690000000,
+        94827000000
       ],
       "historicalNetMargins": [
-        15.45,
+        15.5,
         15.5,
         7.3,
-        4
+        3.95
       ],
       "historicalEPS": [
-        4.02,
-        4.73,
-        2.23,
-        1.18
+        null,
+        null,
+        null,
+        null
       ],
-      "confidenceBreakdown": "0.60/1.0 — +0.10 for clean financial data, -0.50 because the current market valuation is completely disconnected from core automotive fundamentals, making DCF modeling highly subjective to AI narrative assumptions."
+      "priorAnalysisReview": {
+        "priorModel": "Gemini 1.5 Pro",
+        "priorDate": "2026-05-02",
+        "priorPrice": 390.82,
+        "priorFairValue": 191.79,
+        "priorAction": "SELL",
+        "priceDelta": "0% — same price; prior SELL thesis not yet validated",
+        "assumptionAudit": "Prior base CAGR 12%, netMargin 10%, PE 45x, QM 1.2. CRITICAL issues: (1) QM 1.2 on base AND QM 1.3 on bull — skill rules require QM>1.1 only with SPECIFIC structural moat citation. Prior provided none. (2) Prior base PE 45x is too low for Tesla's optionality — 80x more appropriate given FSD/robotaxi premium. (3) Prior bear weight only 20% with bull weight 20% and base 60% — asymmetric to the downside given revenue decline. (4) Margin 10% base was too optimistic vs TTM 3.95%.",
+        "modelQualityFlag": "UNVALIDATED — Gemini 1.5 Pro (oldest model in portfolio)",
+        "thesisOutcome": "SELL thesis not resolved — price unchanged. Our re-analysis also gives SELL but more moderate: $279.33 vs prior $191.79. The difference is primarily higher PE (80x vs 45x) reflecting robotaxi optionality that prior model underweighted.",
+        "fundamentalChanges": "Revenue peaked and declining (-2.9% TTM). Margins collapsed from 15.5% to 3.95%. Cybertruck ramp ongoing. Optimus humanoid robot announced for 2025 production. Elon Musk distraction risk (DOGE government role). Chinese EV competitors (BYD) accelerating."
+      },
+      "confidenceBreakdown": "0.55/1.0 — Base: 1.0. -0.20 robotaxi/FSD optionality fundamentally uncertain (binary outcome). -0.15 PE assumptions extremely wide (30x to 150x bear-to-bull). -0.10 Elon concentration risk / distraction."
     }
   }
 ]

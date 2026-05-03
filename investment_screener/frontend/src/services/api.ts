@@ -251,9 +251,9 @@ export interface Projection {
         model: string;
         rationale: string;
         fairValue: number;
-        action: 'BUY' | 'HOLD' | 'SELL';
+        action: 'BUY' | 'HOLD' | 'SELL' | 'INITIATE' | 'ACCUMULATE' | 'MAINTAIN' | 'TRIM' | 'EXIT' | 'WATCHLIST';
         analyzedAt: string;
-        researchReport?: string; // Links to backend/data/research/{TICKER}_{DATE}.md
+        researchReport?: string;
     };
     globalSettings: {
         discountRate: number;
@@ -309,4 +309,45 @@ export const deleteProjection = async (ticker: string, id: string): Promise<{ su
         throw new Error(data.error || 'Failed to delete projection');
     }
     return data;
+};
+
+// ─── Docs API ─────────────────────────────────────────────────────────────────
+
+export const fetchInvestmentThesis = async (): Promise<{ content: string; filename: string; thesisName: string; thesisDescription: string }> => {
+    const res = await fetch('/api/docs/investment-thesis');
+    if (!res.ok) throw new Error('Failed to load investment thesis');
+    return res.json();
+};
+
+export const fetchLatestReviewData = async (): Promise<any> => {
+    const res = await fetch('/api/docs/latest-review-data');
+    if (!res.ok) throw new Error('Failed to load review data');
+    return res.json();
+};
+
+// ─── Portfolio Health API ──────────────────────────────────────────────────────
+
+export interface HoldingWeight {
+    ticker: string;
+    actualPct: number;
+    targetPct: number;
+}
+
+export const fetchPortfolioWeights = async (): Promise<Record<string, HoldingWeight>> => {
+    try {
+        const res = await fetch('/api/theses/target-portfolio/health');
+        if (!res.ok) return {};
+        const data = await res.json();
+        const map: Record<string, HoldingWeight> = {};
+        for (const h of data.holdingHealth ?? []) {
+            map[h.ticker] = { ticker: h.ticker, actualPct: h.actualPct ?? 0, targetPct: h.targetPct ?? 0 };
+        }
+        return map;
+    } catch { return {}; }
+};
+
+export const fetchAgentGuide = async (): Promise<{ content: string; filename: string }> => {
+    const res = await fetch('/api/docs/agent-guide');
+    if (!res.ok) throw new Error('Failed to load agent guide');
+    return res.json();
 };

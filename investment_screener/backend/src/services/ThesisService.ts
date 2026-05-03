@@ -141,7 +141,7 @@ export class ThesisService {
                 marketValue: actualValue,
                 hasValuation: !!aiProj,
                 latestAction: aiProj?.aiThesis?.action,
-                latestFairValue: aiProj?.aiThesis?.fairValue
+                latestFairValue: aiProj?.aiThesis?.fairValue,
             });
 
             // Generate Alerts

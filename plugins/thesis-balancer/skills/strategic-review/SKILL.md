@@ -17,7 +17,9 @@ allowed-tools: Bash, Read, Write
 - **Trigger**: `/strategic-review` or `/challenge-thesis`
 - **Persona**: Adversarial Thesis Challenger — objective, data-grounded, does not protect user bias
 - **Strategic Prompt**: `references/strategic_review_prompt.md` ← LLM prompt for structured output
-- **Thesis Doc**: `docs/InvestmentThesis/twin_revolution_ASI_and_Sovereign_finance.md`
+  - **Fallback path** (if not installed alongside skill): `.agents/skills/thesis-balancer/references/strategic_review_prompt.md`
+- **Thesis Doc**: `plugins/thesis-balancer/references/investment_thesis.md`
+- **Output Dir**: `PortfolioAnalysis/strategic-reviews/` ← persisted review files for human feedback loop
 - **Fallbacks**: `references/fallback-tree.md`
 
 ## ⚠️ Adversarial Review Constraint
@@ -29,6 +31,225 @@ allowed-tools: Bash, Read, Write
 - ✅ If valuation evidence contradicts thesis sizing, say so explicitly
 - ✅ Distinguish between "thesis intact but entry was wrong" vs "thesis structurally broken"
 - ✅ Surface performance failure (negative price return + SELL rating) as compound evidence
+
+---
+
+## ⚠️ Action Label Rules — MUST Follow Before Assigning Any Action
+
+These rules are **non-negotiable**. Apply them to every holding before writing any recommendation:
+
+| Rule | Condition | Correct Action |
+|---|---|---|
+| **Not in portfolio** | `shares == 0` or ticker absent from `portfolio.json` | `INITIATE` |
+| **Held, underweight** | `shares > 0` AND `actualPct < targetPct` | `ACCUMULATE` |
+| **Held, on target** | `shares > 0` AND `actualPct ≈ targetPct` (within 0.5pp) | `MAINTAIN` |
+| **Held, overweight** | `shares > 0` AND `actualPct > targetPct` | `TRIM` |
+| **Held, thesis broken** | thesis breaker triggered | `EXIT` |
+| **Not held, monitoring** | not in portfolio, thesis not yet confirmed | `WATCHLIST` |
+
+> ❌ NEVER assign `INITIATE` to a ticker the user already holds — even one share.
+> ❌ NEVER assign `ACCUMULATE` to a ticker the user doesn't hold — that's `INITIATE`.
+> ❌ NEVER assign `MAINTAIN` when `actualPct` differs from `targetPct` by more than 0.5pp.
+
+The actual holdings are in `investment_screener/frontend/src/data/portfolio.json` — the canonical source, dynamically populated by the Questrade broker sync.
+
+---
+
+## Step 0: Load Actual Portfolio Holdings
+
+**Do this before anything else.** The actual portfolio is the ground truth.
+
+```python
+import json
+
+# Load actual holdings from live portfolio file
+with open('investment_screener/frontend/src/data/portfolio.json') as f:
+    raw_holdings = json.load(f)
+
+# Build lookup: ticker → {shares, currentValue, currentPct, bookPrice, name}
+total_value = sum(h['shares'] * h['price'] for h in raw_holdings)
+actual_portfolio = {}
+for h in raw_holdings:
+    val = h['shares'] * h['price']
+    actual_portfolio[h['symbol']] = {
+        'shares':      h['shares'],
+        'price':       h['price'],
+        'bookPrice':   h.get('book_price', 0),
+        'currentValue': round(val, 2),
+        'currentPct':  round(val / total_value * 100, 2),
+        'name':        h.get('name', h['symbol']),
+    }
+
+print(f"Total portfolio value: ${total_value:,.0f}")
+print(f"Holdings ({len(actual_portfolio)}): {sorted(actual_portfolio.keys())}")
+```
+
+Cross-reference with thesis targets to find:
+- **Thesis holdings you own** → eligible for ACCUMULATE / MAINTAIN / TRIM / EXIT
+- **Thesis holdings you DON'T own** → eligible for INITIATE / WATCHLIST only
+- **Portfolio holdings NOT in thesis** → flag as untracked → run Step 0b before continuing
+
+---
+
+## Step 0b: Thesis Gap Analysis (Untracked Holdings Interview)
+
+If `untrackedHoldings` is non-empty, **pause the review and run this interview before proceeding.**
+
+For each untracked holding, present a one-line summary and ask three questions. Do all untracked tickers in a single message — don't ask one at a time.
+
+### Presentation Format
+
+```
+📋 THESIS GAP ANALYSIS — {N} holdings need classification before review proceeds.
+
+For each, I'll need 3 answers:
+
+──────────────────────────────────────────────────────────────
+NBIS  |  1.00%  |  P&L: +12.3%  |  No thesis on file
+──────────────────────────────────────────────────────────────
+  1. Is there a thesis for holding NBIS?
+     → If YES: What is it in one sentence?
+     → If NO: Should this be flagged for EXIT?
+  2. Which pillar does it belong to?
+     (Compute / AI Titans / Power / Sovereign Finance / Data Infra / Security / Applied AI / New Pillar)
+  3. What's your target weight? (current: 1.00%)
+
+[repeat for each untracked ticker]
+```
+
+### After User Responds — Apply Outcomes
+
+| User Answer | Action |
+|---|---|
+| Has thesis + pillar + target | Add to `target-portfolio.json` under correct pillar; add row to `investment_thesis.md` Section IV |
+| Has thesis but needs new pillar | Create new pillar in `target-portfolio.json`; add new `### Pillar N` section to `investment_thesis.md` Section II |
+| No thesis | Set `action: EXIT` in the review; add to thesis breaker list in Section VII |
+| "Skip for now" | Include in review as WATCHLIST with note "thesis pending" |
+
+### Update investment_thesis.md Section IV
+
+After the interview, add confirmed untracked holdings to the holdings table in Section IV:
+```markdown
+| **{Pillar}** | {TICKER} | {actual}% | {user-provided thesis sentence} |
+```
+
+### Update target-portfolio.json
+
+For holdings with confirmed thesis + pillar:
+```bash
+# Read the file, add the holding to the correct pillar's holdings array:
+# { "ticker": "NBIS", "targetPct": {user_target}, "role": "speculative", "thesisNote": "{sentence}" }
+```
+
+> ⚠️ Only update these files AFTER user confirms. Show a diff-style preview first:
+> "I'll add NBIS to the **Compute** pillar at 1.0% target. Confirm?"
+
+---
+
+## Step 0c: Thesis Clarity Interview (Framework Gaps)
+
+Run this **after Step 0b** (untracked holdings) and **before the full review**.
+
+This step surfaces whether the thesis framework itself needs refactoring — separate from individual holdings. It checks four gap categories. Skip any category where no gaps are detected.
+
+### Gap Detection — What to Check Automatically
+
+```python
+# Compute these from the loaded thesis + portfolio before asking questions:
+
+thesis_version   = thesis['version']          # e.g. "7.3"
+last_updated     = thesis['lastUpdated']       # e.g. "2026-05-02"
+days_since_update = (today - last_updated).days
+
+pillar_count     = len(thesis['pillars'])
+pillars_over_30  = [p for p in pillars if p['targetPct'] > 30]   # concentration risk
+pillars_under_2  = [p for p in pillars if p['targetPct'] < 2]    # rounding noise
+unassigned_weight = 100 - sum(p['targetPct'] for p in pillars)   # formula leak
+
+thesis_tickers  = {h['ticker'] for p in pillars for h in p['holdings']}
+held_tickers    = set(actual_portfolio.keys()) - {'USD_CASH'}
+not_yet_bought  = thesis_tickers - held_tickers                  # INITIATE candidates
+orphaned_held   = held_tickers - thesis_tickers                  # already handled in 0b
+```
+
+### Interview Message Format
+
+Present detected gaps in a single message — not one question at a time:
+
+```
+🔍 THESIS CLARITY CHECK — Before I run the full review, a few framework questions:
+
+━━━ MACRO / CONVICTION ━━━
+① The thesis was last updated {N} days ago. Has anything materially changed
+  in your macro conviction since then? (e.g. geopolitical shift, new catalyst,
+  position you've lost conviction in)
+  → Answer "no change" to skip, or describe what shifted.
+
+━━━ PILLAR STRUCTURE ━━━  [skip section if no gaps detected]
+② [IF unassigned_weight > 2pp]:
+  The formula has {unassigned_weight:.1f}pp unallocated. Where should this go?
+  Current pillars: {pillar_names_and_weights}
+
+③ [IF any pillar > 30%]:
+  {pillar_name} is at {pct}% — above the 30% concentration limit.
+  Is this intentional conviction sizing, or should it be capped?
+
+━━━ POSITIONS WITHOUT THESIS ━━━  [skip if none]
+④ [IF not_yet_bought is non-empty]:
+  These are in your thesis formula but you haven't bought them yet:
+  {not_yet_bought_with_targets}
+  Still planning to INITIATE, or should any be removed from the formula?
+
+━━━ CONVICTION CHANGES ━━━
+⑤ Is there any holding you've changed your mind on since the last review —
+  either higher conviction (want to increase target) or lower
+  (considering exit or reducing target weight)?
+  → Name the ticker and what changed.
+```
+
+### Applying Answers — Refactoring the Thesis
+
+After the user responds, determine the required changes:
+
+| Gap Type | Refactor Action |
+|---|---|
+| Macro conviction shift | Update thesis `## I. Core Premise` section; bump version if material |
+| Pillar weight change | Update `target-portfolio.json` pillar `targetPct`; recalculate formula totals |
+| Pillar restructure (merge/split/rename) | Update both `target-portfolio.json` pillars array AND `investment_thesis.md` Section II |
+| Remove thesis-only holding (never bought) | Remove from `target-portfolio.json`; remove from Section IV table |
+| Conviction increase/decrease on held ticker | Update `targetPct` in thesis; re-run relabeler to refresh action labels |
+| Version bump required (material change) | Increment thesis version; add row to Version History table |
+
+### Version Bump Rules
+
+Bump the thesis version when:
+- A pillar is added, removed, or renamed → **minor version** (e.g. 7.3 → 7.4)
+- Core premise or macro narrative changes → **minor version**
+- Only weights or individual holdings adjusted → **patch** (e.g. 7.3 → 7.3.1, or just update `lastUpdated`)
+
+### Show Changes Before Writing
+
+Always preview the full set of changes as a diff before writing any file:
+
+```
+📝 PROPOSED THESIS UPDATES — confirm to apply:
+
+  investment_thesis.md:
+    • Section I: [2 sentences updated — macro conviction]
+    • Version History: new row 7.4 | {today} | {new theme name if changed}
+
+  target-portfolio.json:
+    • Pillar "Sovereign Finance": targetPct 18% → 20%
+    • Pillar "Security": targetPct 10% → 8%
+    • Holding CRWD: removed from formula (thesis broken)
+
+  Version bump: 7.3 → 7.4
+
+  Apply all? (yes / edit / skip)
+```
+
+> ✅ Only write files after explicit confirmation.
+> ✅ After writing, re-run `relabel_actions.py` on the recommendations JSON to refresh action labels.
 
 ---
 
@@ -163,8 +384,15 @@ For any pillar flagged UNDER PRESSURE or CRITICAL, investigate:
 Assemble the full payload and process through `references/strategic_review_prompt.md`:
 
 ```python
+# Untracked = in portfolio but not in any thesis pillar
+thesis_tickers = set(t for p in pillars_with_holdings for t in p.get('holdings', []))
+untracked = {k: v for k, v in actual_portfolio.items() if k not in thesis_tickers}
+
 review_payload = {
     "thesis": { "name": thesis_name, "pillars": pillars_with_holdings, "version": version },
+    "actualPortfolio": actual_portfolio,          # ← LIVE positions: shares, currentPct, currentValue
+    "untrackedHoldings": untracked,               # ← in portfolio but not in thesis — flag for review
+    "totalPortfolioValue": total_value,
     "pillarConvictionAudit": pillar_audit,
     "valuationGapRanking": { "thesisConfirmed": thesis_confirmed, "thesisChallenged": thesis_challenged },
     "thesisFormulaScore": formula_score,
@@ -174,10 +402,119 @@ review_payload = {
 }
 ```
 Use `references/strategic_review_prompt.md` as the system prompt to produce structured JSON output.
+**Reminder:** apply the Action Label Rules from the top of this skill before assigning any action in the output JSON.
 
 ---
 
-## Step 7: Present Strategic Review Report
+## Step 6b: Refresh Portfolio Blueprint in investment_thesis.md
+
+After completing the analysis and before saving the review, regenerate Section IV of the thesis doc so it reflects the current broker holdings and latest action labels.
+
+```bash
+python3 plugins/thesis-balancer/scripts/generate_portfolio_blueprint.py --write
+```
+
+This script:
+- Reads `investment_screener/frontend/src/data/portfolio.json` (live Questrade holdings)
+- Reads `investment_screener/backend/data/theses/target-portfolio.json` (thesis targets + subStrategyId)
+- Groups holdings by sub-strategy
+- Assigns INITIATE / ACCUMULATE / MAINTAIN / TRIM / EXIT per holding
+- Writes the updated Section IV directly into `plugins/thesis-balancer/references/investment_thesis.md`
+
+The web app modal reads this file — the Portfolio Blueprint section will be live-accurate after each review.
+
+---
+
+## Step 7: Save Review to PortfolioAnalysis
+
+Before presenting the report in chat, write the full review to a dated markdown file so the user can review it, annotate it, and provide feedback for follow-up research.
+
+```python
+import datetime, os, subprocess
+
+review_date = datetime.date.today().isoformat()   # e.g. "2026-05-02"
+out_dir  = "PortfolioAnalysis/strategic-reviews"
+md_path  = f"{out_dir}/{review_date}-PortfolioAnalysisRecommendations.md"
+json_path = f"{out_dir}/{review_date}-PortfolioAnalysisRecommendations.json"
+
+os.makedirs(out_dir, exist_ok=True)
+# Write the full markdown report (see template below) to md_path
+# Write the structured JSON companion to json_path
+```
+
+### Step 7a: Relabel Actions Using Actual Holdings
+
+After writing the JSON companion, immediately run `relabel_actions.py` to correct all action verbs based on what the investor actually holds. This ensures INITIATE/ACCUMULATE/TRIM/EXIT/MAINTAIN are derived from the live portfolio, not guessed by the LLM.
+
+```bash
+python3 plugins/thesis-balancer/scripts/relabel_actions.py \
+  --recs "{json_path}" \
+  --portfolio investment_screener/frontend/src/data/portfolio.json
+```
+
+The script applies these rules automatically:
+- **Not held + buy signal** → `INITIATE`
+- **Held + actual < recommended** → `ACCUMULATE`
+- **Held + actual ≈ recommended** (within 0.5pp) → `MAINTAIN`
+- **Held + actual > recommended** → `TRIM`
+- **Held + `EXIT` already set** → `EXIT` (thesis breaker, preserved)
+- **Not held + no buy signal** → `WATCHLIST`
+
+Print the relabeling summary to chat so the user can see what changed.
+
+**File template** — write this structure to the output file:
+```markdown
+# Strategic Review — {THESIS_NAME}
+**Date:** {YYYY-MM-DD}
+**Thesis Formula Score:** {X}/100 — {status label}
+**Portfolio Value:** ${value} USD
+**Status:** {one-line status}
+
+## Overall Assessment
+{2–3 sentence strategicAssessment from JSON output}
+
+## 🏛️ Pillar Conviction Audit
+{table: Pillar | Target% | Actual% | Drift% | Signal | BUY% | SELL% | No Data%}
+
+## ⚡ Thesis-Challenged Positions
+{table: all SELL-rated holdings sorted by weighted gap ascending}
+
+## 🎯 Thesis-Confirmed Opportunities
+{table: all BUY-rated holdings sorted by weighted gap descending}
+
+## ⚠️ Thesis Breaker Alerts
+{For each triggered/probable/watch breaker: ticker, condition, status, required action}
+
+## 🚨 Strategic Conflicts (SELL-rated Core Holdings)
+{Per conflict: thesis rationale, valuation evidence, tension, resolution}
+
+## 📋 Formula Improvement Proposals
+{Numbered proposals with before/after weight tables}
+
+## 🎯 Suggested Priority Actions
+{Numbered action list}
+
+## ❓ Open Questions / Feedback Requested
+> These items require your input or additional research before recommendations
+> can be confirmed. Edit this section and run /strategic-review again to
+> incorporate your answers.
+
+{Numbered open questions — one per item of genuine uncertainty}
+
+## 📊 Sources Checked
+{sources list}
+
+---
+*Generated by `/strategic-review` skill — {THESIS_NAME} — {date}*
+```
+
+After writing the file, tell the user:
+> "I've saved the full review to `PortfolioAnalysis/strategic-reviews/{date}-PortfolioAnalysisRecommendations.md`.
+> Review it, answer the **Open Questions** section, and run `/strategic-review` again — I'll incorporate your feedback and validate any contested findings with additional research."
+
+---
+
+## Step 8: Present Strategic Review Report
 ```
 **Strategic Review — {THESIS_NAME}**
 *Thesis Formula Score: {X}/100 — {HEALTHY / UNDER PRESSURE / REQUIRES RESTRUCTURE}*

@@ -81,7 +81,7 @@ export class ValuationService {
         const metrics = JSON.stringify(context.metrics, null, 2);
 
         return `
-        SYSTEM: You are an elite equities analyst using the "Twin Revolutions" framework.
+        SYSTEM: You are an elite equities analyst using the active investment thesis framework.
         Your goal is to determine a FAIR VALUE for ${context.ticker}.
         
         DATA CONTEXT:

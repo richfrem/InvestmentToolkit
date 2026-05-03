@@ -7,7 +7,7 @@
     "version": 1,
     "savedAt": "2026-05-02T19:16:32.961Z",
     "updatedAt": "2026-05-02T19:16:32.961Z",
-    "name": "AI Deep Dive — META — 2026-05-02",
+    "name": "AI Deep Dive \u2014 META \u2014 2026-05-02",
     "rationale": "Meta Platforms commands an exceptional 85.7 Rule of 40 score, driven by ~33% trailing revenue growth and high 30%+ net margins. Its near-monopoly in global social networking combined with the highly lucrative targeted ad-model generates massive free cash flow ($46.1B TTM). Meta is heavily reinvesting in AI and Reality Labs, which suppresses current margins but builds future optionality. At a weighted fair value of $1184.90 against the current $608.75 price, the stock is deeply undervalued based on projected cash flows, rating a strong BUY.",
     "snapshot": {
       "price": 608.745,
@@ -97,7 +97,7 @@
       "shareCountMethod": "Used 2.196B (shares_diluted). API provided matching figures for outstanding and diluted. No discrepancies.",
       "marginAnchor": "TTM 30.1% used. Margins have been volatile (19.9% -> 29.0% -> 37.9% -> 30.1%) due to shifting capex/Reality Labs investments. Used 32% for base as a normalized target reflecting operating efficiency offsets.",
       "growthDerivation": "Analyst Y1 revenue implies 25.7% growth ($252.7B vs $200.9B TTM), Y2 implies 18.5%. Blended consensus ~22%. Base case growth set to 22%.",
-      "sectorBenchmarkRow": "Technology — Internet / Platforms: median P/E 28, conservative 18.",
+      "sectorBenchmarkRow": "Technology \u2014 Internet / Platforms: median P/E 28, conservative 18.",
       "dataQualityFlags": [
         "No anomalies detected in the raw data."
       ],
@@ -128,7 +128,7 @@
         24.61,
         23.98
       ],
-      "confidenceBreakdown": "0.90/1.0 — +0.10 for high analyst coverage (59) and strong FCF backing, -0.10 for the uncertainty surrounding the long-term ROI of massive Reality Labs and AI capex."
+      "confidenceBreakdown": "0.90/1.0 \u2014 +0.10 for high analyst coverage (59) and strong FCF backing, -0.10 for the uncertainty surrounding the long-term ROI of massive Reality Labs and AI capex."
     }
   },
   {
@@ -139,7 +139,7 @@
     "version": 1,
     "savedAt": "2026-05-02T21:25:00Z",
     "updatedAt": "2026-05-02T21:25:00Z",
-    "name": "AI Deep Dive — META — 2026-05-02",
+    "name": "AI Deep Dive \u2014 META \u2014 2026-05-02",
     "rationale": "Meta Platforms is one of the most undervalued large-cap technology companies in the market. At $608.75/share with a forward PE of 16.8x, the market is applying a conglomerate discount to a business with 3B+ daily active users, 30% GAAP margins, 16%+ CAGR growth, and the most valuable digital advertising network on the planet. The weighted DCF fair value of $1,105 (+81.6%) represents a genuine BUY with a conviction level rarely seen in this session.",
     "snapshot": {
       "price": 608.745,
@@ -163,7 +163,7 @@
         "exitPE": 18,
         "qualityMultiplier": 1,
         "shareChange": 0.5,
-        "rationale": "Regulatory dismemberment: EU forces Instagram or WhatsApp divestiture, FTC antitrust action gains traction. AI ad competition from Google/Amazon weakens Meta's pricing power. Reality Labs continues burning $10B+/year with no commercialization. Revenue grows only 10% CAGR — well below analyst consensus. Net margin compresses to 24% as regulatory compliance costs and AI/Reality Labs investment erode efficiency gains. Exit PE 18x = tech conglomerate discount for distressed regulatory scenario. Year 5 rev $323.7B, EPS $34.50, price $621, PV $385.60.",
+        "rationale": "Regulatory dismemberment: EU forces Instagram or WhatsApp divestiture, FTC antitrust action gains traction. AI ad competition from Google/Amazon weakens Meta's pricing power. Reality Labs continues burning $10B+/year with no commercialization. Revenue grows only 10% CAGR \u2014 well below analyst consensus. Net margin compresses to 24% as regulatory compliance costs and AI/Reality Labs investment erode efficiency gains. Exit PE 18x = tech conglomerate discount for distressed regulatory scenario. Year 5 rev $323.7B, EPS $34.50, price $621, PV $385.60.",
         "scenarioPrice": 385.6
       },
       "base": {
@@ -173,7 +173,7 @@
         "exitPE": 24,
         "qualityMultiplier": 1.1,
         "shareChange": -0.5,
-        "rationale": "Analyst-grounded deceleration: Y1 +25.8% ($252.7B), Y2 +18.6% ($299.6B), Y3→14%, Y4→11%, Y5→9%. 5-yr CAGR = 16.0%. Net margin 30% = TTM anchor (mean-reverting at 4-yr avg 29.2%; TTM 30.08% ≈ avg → stable). Exit PE 24x: slight premium to forward PE 16.8x, appropriate for a growing 30%-margin platform by Year 5. QM 1.10: Moat 1 — social graph network effects (3B+ daily users; switching cost = your entire social/professional network); Moat 2 — advertiser dependency (no other platform reaches Meta's DAU/scale at equivalent efficiency). Moderate buybacks (-0.5%/yr). Year 5 rev $422.1B, EPS $59.13, price $1,418.92, PV $969.21.",
+        "rationale": "Analyst-grounded deceleration: Y1 +25.8% ($252.7B), Y2 +18.6% ($299.6B), Y3\u219214%, Y4\u219211%, Y5\u21929%. 5-yr CAGR = 16.0%. Net margin 30% = TTM anchor (mean-reverting at 4-yr avg 29.2%; TTM 30.08% \u2248 avg \u2192 stable). Exit PE 24x: slight premium to forward PE 16.8x, appropriate for a growing 30%-margin platform by Year 5. QM 1.10: Moat 1 \u2014 social graph network effects (3B+ daily users; switching cost = your entire social/professional network); Moat 2 \u2014 advertiser dependency (no other platform reaches Meta's DAU/scale at equivalent efficiency). Moderate buybacks (-0.5%/yr). Year 5 rev $422.1B, EPS $59.13, price $1,418.92, PV $969.21.",
         "scenarioPrice": 969.21
       },
       "bull": {
@@ -183,13 +183,13 @@
         "exitPE": 30,
         "qualityMultiplier": 1.1,
         "shareChange": -1,
-        "rationale": "Catalyst: Meta AI (the LLaMA ecosystem) establishes Meta as the dominant open-source AI platform, driving a new ad product cycle (AI-generated creative, AI agents purchasing on behalf of users, WhatsApp commerce). Reality Labs achieves a breakthrough AR/VR platform (Ray-Ban Meta glasses or successor). Revenue grows 22% CAGR — matching prior era growth. Net margin expands to 34% via AI-driven ad targeting efficiency (Advantage+ generates more revenue per ad impression than human-designed ads). Exit PE 30x: global platform standard for Internet/platform companies. Year 5 rev $543.2B, EPS $88.43, price $2,918.08, PV $1,811.90.",
+        "rationale": "Catalyst: Meta AI (the LLaMA ecosystem) establishes Meta as the dominant open-source AI platform, driving a new ad product cycle (AI-generated creative, AI agents purchasing on behalf of users, WhatsApp commerce). Reality Labs achieves a breakthrough AR/VR platform (Ray-Ban Meta glasses or successor). Revenue grows 22% CAGR \u2014 matching prior era growth. Net margin expands to 34% via AI-driven ad targeting efficiency (Advantage+ generates more revenue per ad impression than human-designed ads). Exit PE 30x: global platform standard for Internet/platform companies. Year 5 rev $543.2B, EPS $88.43, price $2,918.08, PV $1,811.90.",
         "scenarioPrice": 1811.9
       }
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "Meta Platforms is the most compelling large-cap BUY in this analysis session. The forward PE of 16.8x on a company generating $201B in revenue (growing 25%+), 30%+ GAAP net margins, and the most extensive social graph in human history is anomalously cheap. Compare: Meta generates more net income annually (~$60B) than most technology companies generate in revenue, yet trades at lower P/E than many much-smaller, slower-growing software businesses. The network effects are structural: the 3 billion daily active users who use Facebook, Instagram, WhatsApp, and Threads have their entire social, professional, and communication history embedded in Meta's ecosystem. This switching cost does not erode. The advertiser network effects compound: more users → more data → better targeting → higher ROI per ad → more advertiser spend. Meta's Advantage+ AI ad products are demonstrating measurable ROAS improvements, creating a flywheel where AI efficiency gains translate directly to advertiser returns and thus advertiser spend. The valuation discount exists because: (1) Reality Labs loses $10B+/year on AR/VR (temporarily diluting margins); (2) regulatory risk (EU antitrust enforcement, FTC action); (3) AI competition from Google/TikTok/X in the attention economy. All three are real risks, but they are in the bear case (20% weight, $385/share). The base case — sustained 16% CAGR at 30% margins — gives $969/share. The market is pricing Meta below the bear case discounted value of $386. The weighted $1,105 fair value represents +81.6% from current. This is the second-highest upside in the session (behind NOW at +45% from prior analysis, though NOW was a SELL correction).",
+      "rationale": "Meta Platforms is the most compelling large-cap BUY in this analysis session. The forward PE of 16.8x on a company generating $201B in revenue (growing 25%+), 30%+ GAAP net margins, and the most extensive social graph in human history is anomalously cheap. Compare: Meta generates more net income annually (~$60B) than most technology companies generate in revenue, yet trades at lower P/E than many much-smaller, slower-growing software businesses. The network effects are structural: the 3 billion daily active users who use Facebook, Instagram, WhatsApp, and Threads have their entire social, professional, and communication history embedded in Meta's ecosystem. This switching cost does not erode. The advertiser network effects compound: more users \u2192 more data \u2192 better targeting \u2192 higher ROI per ad \u2192 more advertiser spend. Meta's Advantage+ AI ad products are demonstrating measurable ROAS improvements, creating a flywheel where AI efficiency gains translate directly to advertiser returns and thus advertiser spend. The valuation discount exists because: (1) Reality Labs loses $10B+/year on AR/VR (temporarily diluting margins); (2) regulatory risk (EU antitrust enforcement, FTC action); (3) AI competition from Google/TikTok/X in the attention economy. All three are real risks, but they are in the bear case (20% weight, $385/share). The base case \u2014 sustained 16% CAGR at 30% margins \u2014 gives $969/share. The market is pricing Meta below the bear case discounted value of $386. The weighted $1,105 fair value represents +81.6% from current. This is the second-highest upside in the session (behind NOW at +45% from prior analysis, though NOW was a SELL correction).",
       "fairValue": 1105.3,
       "action": "BUY",
       "analyzedAt": "2026-05-02T21:25:00Z",
@@ -200,15 +200,15 @@
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "API shares_diluted 2,196M. Mktcap-implied: $1,545.3B / $608.745 = 2,537.7M — 15.6% discrepancy. Near the 15% flag threshold. NI/EPS check: $200.97B × 30.08% = $60.45B NI / 2,196M = $27.53 EPS; PE check $608.745/$27.53 = 22.1x ✓. API diluted 2,196M confirmed as EPS denominator. Mktcap discrepancy may reflect preferred shares or treasury accounting difference. Flag noted; impact minor since PE check confirms denominator.",
-      "marginAnchor": "Mean-reverting (peaked then compressed). Historical: 19.90% → 28.98% → 37.91% → 30.08% (TTM). Year 3 peak (37.91%) was 'Year of Efficiency' cost-cutting boost. TTM 30.08% ≈ 4-yr avg 29.22% — converging to mean. Using TTM 30% as base anchor. Bear 24% = regulatory/AI investment headwinds. Bull 34% = AI ad efficiency gains (Advantage+ flywheel).",
-      "growthDerivation": "Y1 analyst $252.71B (+25.8%), Y2 $299.56B (+18.6%). Not hypergrowth (<40%). Deceleration: Y3→14%, Y4→11%, Y5→9%. Revenue path: $200.97B → $252.7B → $299.6B → $341.5B → $378.7B → $413.0B. 5-yr CAGR = ($413.0B/$200.97B)^0.2 - 1 = 15.6% → 16%. Base 16% within ±3pp of blended consensus (22.2% two-year avg). Bear 10% = regulatory impairment. Bull 22% = AI platform acceleration, matching prior growth cycle.",
-      "sectorBenchmarkRow": "Technology — Internet Content & Information (resolves from Communication Services sector via industry string per skill Rule 10): conservative P/E 15, median P/E 25, growth P/E 40+. Meta's forward PE 16.8x is BELOW benchmark median of 25x — exceptional value signal for a company growing at 25%+. Base exit PE 24x is barely above current. Bull 30x still below benchmark growth ceiling.",
+      "shareCountMethod": "API shares_diluted 2,196M. Mktcap-implied: $1,545.3B / $608.745 = 2,537.7M \u2014 15.6% discrepancy. Near the 15% flag threshold. NI/EPS check: $200.97B \u00d7 30.08% = $60.45B NI / 2,196M = $27.53 EPS; PE check $608.745/$27.53 = 22.1x \u2713. API diluted 2,196M confirmed as EPS denominator. Mktcap discrepancy may reflect preferred shares or treasury accounting difference. Flag noted; impact minor since PE check confirms denominator.",
+      "marginAnchor": "Mean-reverting (peaked then compressed). Historical: 19.90% \u2192 28.98% \u2192 37.91% \u2192 30.08% (TTM). Year 3 peak (37.91%) was 'Year of Efficiency' cost-cutting boost. TTM 30.08% \u2248 4-yr avg 29.22% \u2014 converging to mean. Using TTM 30% as base anchor. Bear 24% = regulatory/AI investment headwinds. Bull 34% = AI ad efficiency gains (Advantage+ flywheel).",
+      "growthDerivation": "Y1 analyst $252.71B (+25.8%), Y2 $299.56B (+18.6%). Not hypergrowth (<40%). Deceleration: Y3\u219214%, Y4\u219211%, Y5\u21929%. Revenue path: $200.97B \u2192 $252.7B \u2192 $299.6B \u2192 $341.5B \u2192 $378.7B \u2192 $413.0B. 5-yr CAGR = ($413.0B/$200.97B)^0.2 - 1 = 15.6% \u2192 16%. Base 16% within \u00b13pp of blended consensus (22.2% two-year avg). Bear 10% = regulatory impairment. Bull 22% = AI platform acceleration, matching prior growth cycle.",
+      "sectorBenchmarkRow": "Technology \u2014 Internet Content & Information (resolves from Communication Services sector via industry string per skill Rule 10): conservative P/E 15, median P/E 25, growth P/E 40+. Meta's forward PE 16.8x is BELOW benchmark median of 25x \u2014 exceptional value signal for a company growing at 25%+. Base exit PE 24x is barely above current. Bull 30x still below benchmark growth ceiling.",
       "dataQualityFlags": [
         "UUID collision: Prior META had same UUID as all prior Gemini analyses (e0b96b0f). Fresh UUID assigned.",
         "Mktcap vs shares discrepancy: mktcap-implied 2,538M vs API diluted 2,196M (15.6% gap, at flag threshold). EPS check confirms 2,196M is correct denominator. Mktcap field may include treasury/preferred share adjustments.",
-        "Meta's forward PE 16.8x is anomalously low for a 25%+ growth company — this is the primary investment thesis driver. Multiple catalysts for re-rating: AI monetization, Reality Labs commercialization, regulatory resolution.",
-        "EPS historical year 4 (TTM 2026): $23.98. This is lower than FY2024 $24.61 — slight dip. Year 3 ($24.61) vs TTM ($23.98). Minor EPS compression despite revenue growth — suggests SBC or other one-time items.",
+        "Meta's forward PE 16.8x is anomalously low for a 25%+ growth company \u2014 this is the primary investment thesis driver. Multiple catalysts for re-rating: AI monetization, Reality Labs commercialization, regulatory resolution.",
+        "EPS historical year 4 (TTM 2026): $23.98. This is lower than FY2024 $24.61 \u2014 slight dip. Year 3 ($24.61) vs TTM ($23.98). Minor EPS compression despite revenue growth \u2014 suggests SBC or other one-time items.",
         "Reality Labs losses are included in GAAP margins (diluting from what would be ~36%+ core business margins to 30% consolidated). Any Reality Labs monetization would be pure margin expansion."
       ],
       "analystInputs": {
@@ -244,13 +244,138 @@
         "priorPrice": 608.745,
         "priorFairValue": 1184.9,
         "priorAction": "BUY",
-        "priceDelta": "0% — same day",
-        "assumptionAudit": "Prior Gemini used base 22% growth / 32% margin / 22x exit PE with BUY thesis — directionally correct (BUY confirmed) but growth rate overstated (analyst-derived CAGR is 16%, not 22%) and margin 32% slightly above TTM anchor 30%. Bull QM 1.2 needs citation. This analysis uses 16% base CAGR (more conservative, analyst-grounded) with 24x exit PE (same direction but not same value). Both analyses confirm BUY. Our FV $1,105 vs Gemini $1,185 — difference is conservative growth assumption.",
-        "modelQualityFlag": "UNVALIDATED — Gemini 1.5 Pro",
-        "thesisOutcome": "N/A — same day",
+        "priceDelta": "0% \u2014 same day",
+        "assumptionAudit": "Prior Gemini used base 22% growth / 32% margin / 22x exit PE with BUY thesis \u2014 directionally correct (BUY confirmed) but growth rate overstated (analyst-derived CAGR is 16%, not 22%) and margin 32% slightly above TTM anchor 30%. Bull QM 1.2 needs citation. This analysis uses 16% base CAGR (more conservative, analyst-grounded) with 24x exit PE (same direction but not same value). Both analyses confirm BUY. Our FV $1,105 vs Gemini $1,185 \u2014 difference is conservative growth assumption.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Gemini 1.5 Pro",
+        "thesisOutcome": "N/A \u2014 same day",
         "fundamentalChanges": "Meta AI assistant integration across all apps. Llama 4 open-source release driving developer ecosystem. Advantage+ AI ad products generating measurable ROAS improvement. Reality Labs Ray-Ban Meta glasses commercially viable (sales reported)."
       },
-      "confidenceBreakdown": "0.83/1.0 — Base 1.0. +0.10 network effects moat (3B+ DAU social graph switching cost); +0.08 forward PE 16.8x creates margin of safety; +0.06 59 analyst strong buy consensus; +0.05 AI ad flywheel (Advantage+) demonstrated ROAS improvement; -0.08 regulatory risk (EU antitrust active; FTC case ongoing); -0.08 Reality Labs drag ($10B+/yr losses embedded in margins); -0.05 share count discrepancy (minor); -0.05 EPS slight dip in TTM despite revenue growth; +0.05 cash generation exceptional ($60B+ NI TTM); -0.05 China/geopolitical exposure via advertiser dependency"
+      "confidenceBreakdown": "0.83/1.0 \u2014 Base 1.0. +0.10 network effects moat (3B+ DAU social graph switching cost); +0.08 forward PE 16.8x creates margin of safety; +0.06 59 analyst strong buy consensus; +0.05 AI ad flywheel (Advantage+) demonstrated ROAS improvement; -0.08 regulatory risk (EU antitrust active; FTC case ongoing); -0.08 Reality Labs drag ($10B+/yr losses embedded in margins); -0.05 share count discrepancy (minor); -0.05 EPS slight dip in TTM despite revenue growth; +0.05 cash generation exceptional ($60B+ NI TTM); -0.05 China/geopolitical exposure via advertiser dependency"
+    }
+  },
+  {
+    "ticker": "META",
+    "id": "ffa1872e-0684-4e15-8f3d-b7c6a193b751",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 2,
+    "savedAt": "2026-05-02T23:05:00Z",
+    "updatedAt": "2026-05-02T23:05:00Z",
+    "name": "AI Deep Dive \u2014 META \u2014 2026-05-02",
+    "rationale": "Meta Platforms is one of the most undervalued large-cap technology companies in the market. At $608.75/share with a forward PE of 16.8x, the market is applying a conglomerate discount to a business with 3B+ daily active users, 30% GAAP margins, 16%+ CAGR growth, and the most valuable digital advertising network on the planet. The weighted DCF fair value of $1,105 (+81.6%) represents a genuine BUY with a conviction level rarely seen in this session.",
+    "snapshot": {
+      "price": 608.745,
+      "currency": "USD",
+      "shares": 2196045588,
+      "revenue": 200966000000,
+      "lastActualPS": 7.69,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 25.8,
+      "analystMarginEstimate": 32.84
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 10,
+        "netMargin": 24,
+        "exitPE": 18,
+        "qualityMultiplier": 1,
+        "shareChange": 0.5,
+        "rationale": "Regulatory dismemberment: EU forces Instagram or WhatsApp divestiture, FTC antitrust action gains traction. AI ad competition from Google/Amazon weakens Meta's pricing power. Reality Labs continues burning $10B+/year with no commercialization. Revenue grows only 10% CAGR \u2014 well below analyst consensus. Net margin compresses to 24% as regulatory compliance costs and AI/Reality Labs investment erode efficiency gains. Exit PE 18x = tech conglomerate discount for distressed regulatory scenario. Year 5 rev $323.7B, EPS $34.50, price $621, PV $385.60.",
+        "scenarioPrice": 385.6
+      },
+      "base": {
+        "weight": 0.5,
+        "growthRate": 16,
+        "netMargin": 30,
+        "exitPE": 24,
+        "qualityMultiplier": 1.1,
+        "shareChange": -0.5,
+        "rationale": "Analyst-grounded deceleration: Y1 +25.8% ($252.7B), Y2 +18.6% ($299.6B), Y3\u219214%, Y4\u219211%, Y5\u21929%. 5-yr CAGR = 16.0%. Net margin 30% = TTM anchor (mean-reverting at 4-yr avg 29.2%; TTM 30.08% \u2248 avg \u2192 stable). Exit PE 24x: slight premium to forward PE 16.8x, appropriate for a growing 30%-margin platform by Year 5. QM 1.10: Moat 1 \u2014 social graph network effects (3B+ daily users; switching cost = your entire social/professional network); Moat 2 \u2014 advertiser dependency (no other platform reaches Meta's DAU/scale at equivalent efficiency). Moderate buybacks (-0.5%/yr). Year 5 rev $422.1B, EPS $59.13, price $1,418.92, PV $969.21.",
+        "scenarioPrice": 969.21
+      },
+      "bull": {
+        "weight": 0.3,
+        "growthRate": 22,
+        "netMargin": 34,
+        "exitPE": 30,
+        "qualityMultiplier": 1.1,
+        "shareChange": -1,
+        "rationale": "Catalyst: Meta AI (the LLaMA ecosystem) establishes Meta as the dominant open-source AI platform, driving a new ad product cycle (AI-generated creative, AI agents purchasing on behalf of users, WhatsApp commerce). Reality Labs achieves a breakthrough AR/VR platform (Ray-Ban Meta glasses or successor). Revenue grows 22% CAGR \u2014 matching prior era growth. Net margin expands to 34% via AI-driven ad targeting efficiency (Advantage+ generates more revenue per ad impression than human-designed ads). Exit PE 30x: global platform standard for Internet/platform companies. Year 5 rev $543.2B, EPS $88.43, price $2,918.08, PV $1,811.90.",
+        "scenarioPrice": 1811.9
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "Meta Platforms is the most compelling large-cap BUY in this analysis session. The forward PE of 16.8x on a company generating $201B in revenue (growing 25%+), 30%+ GAAP net margins, and the most extensive social graph in human history is anomalously cheap. Compare: Meta generates more net income annually (~$60B) than most technology companies generate in revenue, yet trades at lower P/E than many much-smaller, slower-growing software businesses. The network effects are structural: the 3 billion daily active users who use Facebook, Instagram, WhatsApp, and Threads have their entire social, professional, and communication history embedded in Meta's ecosystem. This switching cost does not erode. The advertiser network effects compound: more users \u2192 more data \u2192 better targeting \u2192 higher ROI per ad \u2192 more advertiser spend. Meta's Advantage+ AI ad products are demonstrating measurable ROAS improvements, creating a flywheel where AI efficiency gains translate directly to advertiser returns and thus advertiser spend. The valuation discount exists because: (1) Reality Labs loses $10B+/year on AR/VR (temporarily diluting margins); (2) regulatory risk (EU antitrust enforcement, FTC action); (3) AI competition from Google/TikTok/X in the attention economy. All three are real risks, but they are in the bear case (20% weight, $385/share). The base case \u2014 sustained 16% CAGR at 30% margins \u2014 gives $969/share. The market is pricing Meta below the bear case discounted value of $386. The weighted $1,105 fair value represents +81.6% from current. This is the second-highest upside in the session (behind NOW at +45% from prior analysis, though NOW was a SELL correction).",
+      "fairValue": 1105.3,
+      "action": "INITIATE",
+      "analyzedAt": "2026-05-02T21:25:00Z",
+      "researchReport": "META_2026-05-02.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "API shares_diluted 2,196M. Mktcap-implied: $1,545.3B / $608.745 = 2,537.7M \u2014 15.6% discrepancy. Near the 15% flag threshold. NI/EPS check: $200.97B \u00d7 30.08% = $60.45B NI / 2,196M = $27.53 EPS; PE check $608.745/$27.53 = 22.1x \u2713. API diluted 2,196M confirmed as EPS denominator. Mktcap discrepancy may reflect preferred shares or treasury accounting difference. Flag noted; impact minor since PE check confirms denominator.",
+      "marginAnchor": "Mean-reverting (peaked then compressed). Historical: 19.90% \u2192 28.98% \u2192 37.91% \u2192 30.08% (TTM). Year 3 peak (37.91%) was 'Year of Efficiency' cost-cutting boost. TTM 30.08% \u2248 4-yr avg 29.22% \u2014 converging to mean. Using TTM 30% as base anchor. Bear 24% = regulatory/AI investment headwinds. Bull 34% = AI ad efficiency gains (Advantage+ flywheel).",
+      "growthDerivation": "Y1 analyst $252.71B (+25.8%), Y2 $299.56B (+18.6%). Not hypergrowth (<40%). Deceleration: Y3\u219214%, Y4\u219211%, Y5\u21929%. Revenue path: $200.97B \u2192 $252.7B \u2192 $299.6B \u2192 $341.5B \u2192 $378.7B \u2192 $413.0B. 5-yr CAGR = ($413.0B/$200.97B)^0.2 - 1 = 15.6% \u2192 16%. Base 16% within \u00b13pp of blended consensus (22.2% two-year avg). Bear 10% = regulatory impairment. Bull 22% = AI platform acceleration, matching prior growth cycle.",
+      "sectorBenchmarkRow": "Technology \u2014 Internet Content & Information (resolves from Communication Services sector via industry string per skill Rule 10): conservative P/E 15, median P/E 25, growth P/E 40+. Meta's forward PE 16.8x is BELOW benchmark median of 25x \u2014 exceptional value signal for a company growing at 25%+. Base exit PE 24x is barely above current. Bull 30x still below benchmark growth ceiling.",
+      "dataQualityFlags": [
+        "UUID collision: Prior META had same UUID as all prior Gemini analyses (e0b96b0f). Fresh UUID assigned.",
+        "Mktcap vs shares discrepancy: mktcap-implied 2,538M vs API diluted 2,196M (15.6% gap, at flag threshold). EPS check confirms 2,196M is correct denominator. Mktcap field may include treasury/preferred share adjustments.",
+        "Meta's forward PE 16.8x is anomalously low for a 25%+ growth company \u2014 this is the primary investment thesis driver. Multiple catalysts for re-rating: AI monetization, Reality Labs commercialization, regulatory resolution.",
+        "EPS historical year 4 (TTM 2026): $23.98. This is lower than FY2024 $24.61 \u2014 slight dip. Year 3 ($24.61) vs TTM ($23.98). Minor EPS compression despite revenue growth \u2014 suggests SBC or other one-time items.",
+        "Reality Labs losses are included in GAAP margins (diluting from what would be ~36%+ core business margins to 30% consolidated). Any Reality Labs monetization would be pure margin expansion."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 252710000000,
+        "y2RevEstimate": 299560000000,
+        "y1GrowthPct": 25.8,
+        "y2GrowthPct": 18.6,
+        "blendedConsensusPct": 22.2,
+        "analystTargetMean": 838.62,
+        "analystCount": 59
+      },
+      "historicalRevenue": [
+        116609,
+        134902,
+        164501,
+        200966
+      ],
+      "historicalNetMargins": [
+        19.9,
+        28.98,
+        37.91,
+        30.08
+      ],
+      "historicalEPS": [
+        8.63,
+        15.19,
+        24.61,
+        23.98
+      ],
+      "priorAnalysisReview": {
+        "priorModel": "Gemini 1.5 Pro",
+        "priorDate": "2026-05-02",
+        "priorPrice": 608.745,
+        "priorFairValue": 1184.9,
+        "priorAction": "BUY",
+        "priceDelta": "0% \u2014 same day",
+        "assumptionAudit": "Prior Gemini used base 22% growth / 32% margin / 22x exit PE with BUY thesis \u2014 directionally correct (BUY confirmed) but growth rate overstated (analyst-derived CAGR is 16%, not 22%) and margin 32% slightly above TTM anchor 30%. Bull QM 1.2 needs citation. This analysis uses 16% base CAGR (more conservative, analyst-grounded) with 24x exit PE (same direction but not same value). Both analyses confirm BUY. Our FV $1,105 vs Gemini $1,185 \u2014 difference is conservative growth assumption.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Gemini 1.5 Pro",
+        "thesisOutcome": "N/A \u2014 same day",
+        "fundamentalChanges": "Meta AI assistant integration across all apps. Llama 4 open-source release driving developer ecosystem. Advantage+ AI ad products generating measurable ROAS improvement. Reality Labs Ray-Ban Meta glasses commercially viable (sales reported)."
+      },
+      "confidenceBreakdown": "0.83/1.0 \u2014 Base 1.0. +0.10 network effects moat (3B+ DAU social graph switching cost); +0.08 forward PE 16.8x creates margin of safety; +0.06 59 analyst strong buy consensus; +0.05 AI ad flywheel (Advantage+) demonstrated ROAS improvement; -0.08 regulatory risk (EU antitrust active; FTC case ongoing); -0.08 Reality Labs drag ($10B+/yr losses embedded in margins); -0.05 share count discrepancy (minor); -0.05 EPS slight dip in TTM despite revenue growth; +0.05 cash generation exceptional ($60B+ NI TTM); -0.05 China/geopolitical exposure via advertiser dependency",
+      "valuationAction": "BUY",
+      "portfolioRationale": "BUY-rated at $1,184.90 FV. 2.94% target weight completely unfilled. Titans pillar is 100% ALIGNED \u2014 leaving a confirmed BUY unowned is a formula gap. Initiate position to bring Titans pillar actual closer to 12.4% target.",
+      "portfolioUrgency": "NORMAL"
     }
   }
 ]

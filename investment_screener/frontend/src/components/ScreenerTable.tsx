@@ -9,7 +9,11 @@ interface ScreenerRow {
     symbol: string;
     name: string;
     model: string;
-    action: 'BUY' | 'HOLD' | 'SELL' | '—';
+    action: string;
+    portfolioRationale: string | null;
+    currentPct: number | null;
+    recommendedPct: number | null;
+    rationale: string | null;
     fairValue: number | null;
     currentPrice: number;
     gainLoss: number | null;
@@ -39,6 +43,9 @@ interface ColDef {
 const COLUMNS: ColDef[] = [
     { id: 'symbol',         label: 'Ticker',     always: true,  defaultOn: true,  align: 'left',  format: v => String(v ?? '') },
     { id: 'action',         label: 'Action',     defaultOn: true,  align: 'left',  format: v => String(v ?? '—') },
+    { id: 'currentPct',    label: 'Current %',  defaultOn: true,  align: 'right', format: v => v != null ? `${v.toFixed(2)}%` : '—' },
+    { id: 'recommendedPct',label: 'Target %',   defaultOn: true,  align: 'right', format: v => v != null ? `${v.toFixed(2)}%` : '—' },
+    { id: 'rationale',     label: 'Rationale',  defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
     { id: 'fairValue',      label: 'Fair Value', defaultOn: true,  align: 'right', format: v => v != null ? `$${Math.round(v)}` : '—' },
     { id: 'currentPrice',   label: 'Price',       defaultOn: true,  align: 'right', format: v => v != null ? `$${v.toFixed(2)}` : '—' },
     { id: 'gainLoss',       label: 'Gain ($)',    isChange: true, defaultOn: true,  align: 'right', format: v => v != null ? `${v >= 0 ? '+$' : '-$'}${Math.abs(Math.round(v))}` : '—' },
@@ -54,14 +61,15 @@ const COLUMNS: ColDef[] = [
 ];
 
 const DEFAULT_WIDTHS: Record<string, number> = {
-    symbol: 80, action: 80, fairValue: 95, currentPrice: 80, gainLoss: 85,
+    symbol: 80, action: 115, fairValue: 95, currentPrice: 80, gainLoss: 85,
     upside: 85, ruleOf40: 70, growth: 80, model: 130, base: 80,
-    bear: 80, bull: 80, qualityMultiplier: 80, lastAnalyzed: 90
+    bear: 80, bull: 80, qualityMultiplier: 80, lastAnalyzed: 90,
+    currentPct: 90, recommendedPct: 85, rationale: 260,
 };
 
 // ─── Persistence ──────────────────────────────────────────────────────────────
 
-const STORAGE_KEY = 'ai-screener-table-prefs-v1';
+const STORAGE_KEY = 'ai-screener-table-prefs-v2';
 
 interface TablePrefs {
     visible: string[];
@@ -130,8 +138,21 @@ export default function ScreenerTable() {
     useEffect(() => {
         const prefs = loadPrefs();
         const defaultVisible = new Set(COLUMNS.filter(c => c.always || c.defaultOn).map(c => c.id));
-        setVisible(prefs ? new Set(prefs.visible) : defaultVisible);
-        setColumnOrder(prefs?.columnOrder ?? COLUMNS.map(c => c.id));
+        if (prefs) {
+            // Merge: add any new defaultOn columns not in the saved set
+            const merged = new Set(prefs.visible);
+            for (const id of defaultVisible) {
+                if (!prefs.columnOrder.includes(id)) merged.add(id); // brand-new column
+            }
+            setVisible(merged);
+            // Append any new columns to the end of columnOrder
+            const knownIds = new Set(prefs.columnOrder);
+            const newCols = COLUMNS.map(c => c.id).filter(id => !knownIds.has(id));
+            setColumnOrder([...prefs.columnOrder, ...newCols]);
+        } else {
+            setVisible(defaultVisible);
+            setColumnOrder(COLUMNS.map(c => c.id));
+        }
         setColumnWidths({ ...DEFAULT_WIDTHS, ...(prefs?.columnWidths ?? {}) });
     }, []);
 
@@ -166,6 +187,48 @@ export default function ScreenerTable() {
     }, []);
 
     useEffect(() => { fetchData(); }, [fetchData]);
+
+    const [portfolioWeights, setPortfolioWeights] = useState<Record<string, { actualPct: number; targetPct: number }>>({});
+    const [allPortfolioWeights, setAllPortfolioWeights] = useState<Record<string, number>>({});
+    const [reviewRecommendations, setReviewRecommendations] = useState<Record<string, { target: number; rationale: string; actualPct: number }>>({});
+
+    useEffect(() => {
+        // Fetch thesis-health portfolio weights (for thesis tickers)
+        fetch('/api/theses/target-portfolio/health')
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                if (!data) return;
+                const map: Record<string, { actualPct: number; targetPct: number }> = {};
+                for (const h of data.holdingHealth ?? []) {
+                    map[h.ticker] = { actualPct: h.actualPct ?? 0, targetPct: h.targetPct ?? 0 };
+                }
+                setPortfolioWeights(map);
+            })
+            .catch(() => {});
+
+        // Fetch actual weights for ALL live holdings from portfolio.json
+        fetch('/api/portfolio/weights')
+            .then(r => r.ok ? r.json() : null)
+            .then(data => { if (data) setAllPortfolioWeights(data); })
+            .catch(() => {});
+
+        // Fetch latest review recommendations (with rationale + actualPct)
+        fetch('/api/docs/latest-review-data')
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                if (!data) return;
+                const map: Record<string, { target: number; rationale: string; actualPct: number }> = {};
+                for (const h of [...(data.holdings ?? []), ...(data.holdingsUnchanged ?? [])]) {
+                    map[h.ticker] = {
+                        target: h.recommendedTarget,
+                        rationale: h.rationale ?? '',
+                        actualPct: h.actualPct ?? 0,
+                    };
+                }
+                setReviewRecommendations(map);
+            })
+            .catch(() => {});
+    }, []);
 
     // Close picker on outside click
     useEffect(() => {
@@ -217,16 +280,21 @@ export default function ScreenerTable() {
             const upside = (fairValue && currentPrice) ? ((fairValue - currentPrice) / currentPrice) * 100 : null;
             const gainLoss = (fairValue && currentPrice) ? (fairValue - currentPrice) : null;
 
-            // Simple Rule of 40 calc if not in metrics
             const growth = base.growthRate;
             const margin = base.netMargin;
             const r40 = growth + margin;
+
+            // Priority: review data (has actualPct stamped) → health check → raw portfolio weights
+            const rev = reviewRecommendations[p.ticker];
+            const health = portfolioWeights[p.ticker];
+            const rawPct = allPortfolioWeights[p.ticker] ?? null;
 
             return {
                 symbol: p.ticker,
                 name: p.name,
                 model: thesis?.model || '—',
                 action: thesis?.action || '—',
+                portfolioRationale: (p as any).analyticsLog?.portfolioRationale ?? null,
                 fairValue,
                 currentPrice,
                 gainLoss,
@@ -238,10 +306,13 @@ export default function ScreenerTable() {
                 base: base.scenarioPrice || null,
                 bull: bull.scenarioPrice || null,
                 qualityMultiplier: base.qualityMultiplier,
-                lastAnalyzed: p.savedAt
+                lastAnalyzed: p.savedAt,
+                currentPct: rev?.actualPct ?? health?.actualPct ?? rawPct,
+                recommendedPct: rev?.target ?? health?.targetPct ?? null,
+                rationale: rev?.rationale ?? null,
             } as ScreenerRow;
         });
-    }, [projections]);
+    }, [projections, portfolioWeights, allPortfolioWeights, reviewRecommendations]);
 
     const filteredRows = rows.filter(row =>
         Object.entries(filters).every(([colId, filterVal]) => {
@@ -304,7 +375,7 @@ export default function ScreenerTable() {
                                 <div className="text-[10px] text-slate-500 uppercase font-black tracking-[0.2em] px-3 py-2 mb-1 border-b border-slate-800">
                                     Display Metrics
                                 </div>
-                                {columnOrder.map((colId, idx) => {
+                                {columnOrder.map((colId) => {
                                     const col = COLUMNS.find(c => c.id === colId)!;
                                     const isVisible = visible.has(colId);
                                     return (
@@ -382,7 +453,7 @@ export default function ScreenerTable() {
                                             {active && (sortDir === 'asc' ? <ArrowUp size={10} /> : <ArrowDown size={10} />)}
                                         </div>
                                         <div
-                                            className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-indigo-500/40 transition-colors z-10"
+                                            className="absolute right-0 top-0 bottom-0 w-[5px] cursor-col-resize hover:bg-indigo-500/50 active:bg-indigo-500/80 transition-colors z-10"
                                             onMouseDown={e => startResize(e, col.id)}
                                             onClick={e => e.stopPropagation()}
                                         />
@@ -429,8 +500,52 @@ export default function ScreenerTable() {
                                             </div>
                                         );
                                     } else if (col.id === 'action') {
-                                        const color = val === 'BUY' ? 'text-green-400' : val === 'SELL' ? 'text-red-400' : 'text-slate-400';
-                                        cellContent = <span className={`font-black text-[10px] uppercase tracking-tighter ${color}`}>{val}</span>;
+                                        const actionColors: Record<string, string> = {
+                                            INITIATE:   'text-cyan-400 border-cyan-500/40 bg-cyan-500/10',
+                                            ACCUMULATE: 'text-green-400 border-green-500/40 bg-green-500/10',
+                                            MAINTAIN:   'text-slate-300 border-slate-500/40 bg-slate-500/10',
+                                            TRIM:       'text-amber-400 border-amber-500/40 bg-amber-500/10',
+                                            EXIT:       'text-red-400 border-red-500/40 bg-red-500/10',
+                                            WATCHLIST:  'text-purple-400 border-purple-500/40 bg-purple-500/10',
+                                            BUY:        'text-green-400 border-green-500/40 bg-green-500/10',
+                                            HOLD:       'text-slate-300 border-slate-500/40 bg-slate-500/10',
+                                            SELL:       'text-red-400 border-red-500/40 bg-red-500/10',
+                                        };
+                                        const cls = actionColors[String(val)] ?? 'text-slate-400 border-slate-600/40 bg-transparent';
+                                        const tip = row.portfolioRationale;
+                                        cellContent = (
+                                            <span
+                                                className={`inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-black uppercase tracking-wider cursor-default ${cls}`}
+                                                title={tip ?? undefined}
+                                            >
+                                                {val}
+                                            </span>
+                                        );
+                                    } else if (col.id === 'currentPct' || col.id === 'recommendedPct') {
+                                        const pct = val as number | null;
+                                        const isDelta = col.id === 'recommendedPct' && row.currentPct != null && pct != null;
+                                        const delta = isDelta ? (pct! - row.currentPct!) : 0;
+                                        cellContent = (
+                                            <div className="flex flex-col items-end gap-0.5">
+                                                <span className="font-mono text-xs font-bold text-slate-200">{pct != null ? `${pct.toFixed(2)}%` : '—'}</span>
+                                                {isDelta && Math.abs(delta) > 0.05 && (
+                                                    <span className={`text-[9px] font-bold ${delta > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                        {delta > 0 ? '▲' : '▼'} {Math.abs(delta).toFixed(2)}pp
+                                                    </span>
+                                                )}
+                                            </div>
+                                        );
+                                    } else if (col.id === 'rationale') {
+                                        const text = val as string | null;
+                                        cellContent = text ? (
+                                            <span
+                                                className="text-slate-400 text-xs leading-snug block overflow-hidden"
+                                                style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                                                title={text}
+                                            >
+                                                {text}
+                                            </span>
+                                        ) : <span className="text-slate-700 text-xs">—</span>;
                                     } else {
                                         cellContent = (
                                             <span className={`font-bold ${col.align === 'right' ? 'font-mono' : ''} ${isVisibleCol(col.id) ? 'text-slate-200' : 'text-slate-400'}`}>
@@ -442,7 +557,7 @@ export default function ScreenerTable() {
                                     return (
                                         <td
                                             key={col.id}
-                                            className={`px-4 py-4 whitespace-nowrap overflow-hidden text-ellipsis ${col.align === 'right' ? 'text-right' : 'text-left'}`}
+                                            className={`px-4 py-4 overflow-hidden text-ellipsis ${col.id === 'rationale' ? 'whitespace-normal align-top' : 'whitespace-nowrap'} ${col.align === 'right' ? 'text-right' : 'text-left'}`}
                                             style={col.isChange ? { backgroundColor: changeBg(numVal) } : undefined}
                                         >
                                             {cellContent}
