@@ -1,1 +1,1 @@
-../../scripts/generate_review.py
+../../../scripts/generate_review.py
