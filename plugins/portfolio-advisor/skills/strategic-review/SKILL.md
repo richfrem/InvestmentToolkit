@@ -44,6 +44,54 @@ If memory files are absent, scan `investment_screener/backend/data/projections/`
 
 ---
 
+## 🚫 HARD GATES — Never Violate These When Proposing Target Changes
+
+These rules override all thesis narratives and conversational momentum. No exceptions.
+
+### Gate 1 — No INITIATE on SELL-rated holdings
+- ❌ Never propose or raise a target weight for a stock where DCF action = SELL (upside < 0%)
+- ✅ If the thesis narrative is compelling but price > fair value: status = WATCHLIST. Add a note: *"Strong thesis; re-evaluate when price approaches $X fair value."*
+- This includes holdings the user does not currently own. A good thesis ≠ a good entry price.
+
+### Gate 2 — No unsolicited new positions
+- ❌ Never add a new INITIATE target for a stock the user has not mentioned, unless you first ask: *"I found {TICKER} compelling based on {reason} — would you like me to add it as an INITIATE target?"*
+- ✅ Surface new ideas in the Opportunity Scan section. Wait for user buy-in before writing any target.
+
+### Gate 3 — SA LP signal discipline
+- ❌ Never treat an exited SA LP put (short hedge closed) as a bullish signal for a long position
+- ✅ SA LP conviction = active **long** position in their 13F. Closed puts = neutral, not bullish.
+- When checking SA LP alignment: only count rows in the 13F with no "Option Type" or blank option type and positive Q4 share count.
+
+### Gate 4 — Price discipline before conviction
+- Before any INITIATE proposal, state: `DCF: {action} | FV: ${X} | Current: ${Y} | Gap: {Z}%`
+- If gap is negative (price > FV), block INITIATE regardless of conviction narrative.
+
+### Gate 5 — SA LP 13F analysis must be exhaustive
+- ❌ Never say "I checked the 13F" after reviewing only familiar tickers
+- ✅ Parse every row in the CSV. Check every ticker against the thesis. No exceptions.
+- SA LP long = common equity rows with blank Option Type and positive Q4 share count
+- SA LP puts/calls that were exited are NOT bullish signals — they are neutral
+- For each SA LP long NOT in the thesis, document it explicitly as MISSING or WATCHLIST
+
+### Gate 6 — Every target requires a documented rationale
+- Every holding in `target-portfolio.json` must have an `agentRationale` field before being written
+- Format: `DCF: {action} | FV $X vs $Y price | {Z}% upside. SA LP: {status}. {conflict flag if any}.`
+- Targets without documented rationale are not valid — add the field first, then write the target
+
+### Gate 7 — "No change" positions must be explicitly re-locked after every normalization
+- When the user says "no change" to a position, record its exact actual% and re-apply after any batch edit
+- After every `--set` or `--add` command that triggers normalization, re-run `--set` on all locked positions
+- Locked positions: GOOG, HUMN, KOID, ETHA, IBIT, COIN, CRCL (user-confirmed no change)
+- If normalization pushes a locked position above its actual%, it will generate a false ACCUMULATE — fix immediately
+
+### Gate 8 — SA LP conflict positions require explicit user confirmation before raising targets
+- When SA LP holds a stock long but DCF shows negative upside (SELL-rated), flag as SA/DCF CONFLICT
+- ❌ Do not raise the INITIATE/ACCUMULATE target for a conflict position without surfacing it to the user first
+- ✅ Present the conflict: `SA LP holds {X}K shares (+Y%) BUT DCF shows {Z}% downside. Hold current target or follow SA LP?`
+- Wait for user direction before adjusting the target
+
+---
+
 ## ⭐ Phase 1: Opportunity Scan & Action Subsections
 
 > **This section is pre-populated by `generate_review.py` using the `scan_opportunities.py` data engine.**
