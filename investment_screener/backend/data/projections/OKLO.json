@@ -271,7 +271,7 @@
     "schemaVersion": "1.2",
     "version": 2,
     "savedAt": "2026-05-02T23:05:00Z",
-    "updatedAt": "2026-05-02T23:05:00Z",
+    "updatedAt": "2026-05-04T05:17:23Z",
     "name": "AI Deep Dive \u2014 OKLO \u2014 2026-05-02",
     "rationale": "Oklo is a pre-revenue advanced fission (micro-SMR) developer with accelerating cash burn and a binary NRC licensing dependency. At $70.40, the $12.24B market cap prices in a full-scale nuclear renaissance well beyond a 5-year horizon. A first-principles DCF seeded from a $5M pre-commercial baseline yields a probability-weighted fair value of $5.10, implying 93% downside. Even the bull scenario \u2014 20+ Aurora units online by 2030 \u2014 produces only $16.34 present value. The stock is pricing on real-options/optionality rather than fundamentals. SELL.",
     "snapshot": {
@@ -353,7 +353,17 @@
       "fairValue": 5.1,
       "action": "TRIM",
       "analyzedAt": "2026-05-02T19:47:00Z",
-      "researchReport": "OKLO_2026-05-02.md"
+      "researchReport": "OKLO_2026-05-02.md",
+      "catalystUpdate": {
+        "date": "2026-05-03",
+        "source": "Grok / X.com news sweep",
+        "events": [
+          "Meta signed a nuclear campus deal with Oklo \u2014 first direct hyperscaler-to-SMR company PPA",
+          "Hyperscaler SMR/nuclear PPA interest accelerating broadly (multiple signings)",
+          "AI power demand forecasts remain elevated, validating the data center power thesis"
+        ],
+        "thesisImpact": "Demand-side binary risk is partially resolved: Meta choosing Oklo directly validates the SMR product roadmap before NRC licensing. The binary is now NRC-only (not NRC + demand). Target increased from 1.99%\u21922.40% on this de-risking."
+      }
     },
     "globalSettings": {
       "discountRate": 10,
