@@ -324,6 +324,30 @@
       "dst": "investment_screener/backend/py_services/generate_grok_prompt.py",
       "strategy": "symlink",
       "description": "generate_grok_prompt.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/apply_catalyst.py",
+      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py",
+      "strategy": "symlink",
+      "description": "ADR-003: catalyst weight-shift script \u2014 skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/apply_catalyst.py",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/apply_catalyst.py",
+      "strategy": "symlink",
+      "description": "ADR-003: catalyst weight-shift script \u2014 skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/apply_catalyst.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/apply_catalyst.py",
+      "strategy": "symlink",
+      "description": "ADR-003: catalyst weight-shift script \u2014 skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/apply_catalyst.py",
+      "dst": "investment_screener/backend/py_services/apply_catalyst.py",
+      "strategy": "symlink",
+      "description": "apply_catalyst.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
     }
   ]
 }
