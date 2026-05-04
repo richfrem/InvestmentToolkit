@@ -16,12 +16,30 @@ allowed-tools: Bash, Read, Write
 
 ## Quick Reference
 - **Trigger**: "update target weights", "apply formula changes from strategic review", `/update-portfolio-targets`
-- **Thesis file**: `investment_screener/backend/data/theses/target_portfolio.json`  (id: `"target-portfolio"`)
+- **Thesis file**: `investment_screener/backend/data/theses/target-portfolio.json`  (id: `"target-portfolio"`)
 - **Thesis doc**: `plugins/portfolio-advisor/references/investment_thesis.md`
-- **Update script**: `investment_screener/backend/py_services/update_thesis.py`
+- **Canonical edit script**: `plugins/portfolio-advisor/scripts/update_targets.py` ← **use this**
+- **Legacy update script**: `investment_screener/backend/py_services/update_thesis.py` (older, per-holding patch style)
 - **ADR reference**: `docs/architecture/` — cross-plugin script conventions
 - **Chains from**: `strategic-review` skill (after formula proposals are approved by user)
 - **Chains into**: `rebalance-portfolio` skill (to execute trades aligned with new targets)
+
+### Canonical Edit Commands
+```bash
+# Set one or more target weights (auto-normalizes + regenerates blueprint):
+python3 plugins/portfolio-advisor/scripts/update_targets.py --set NVDA=6.5 META=4.5 CRWD=0 --write --blueprint
+
+# Add a brand-new ticker to the thesis:
+python3 plugins/portfolio-advisor/scripts/update_targets.py \
+  --add TICKER=1.5 --name "Company Name" --pillar compute --strategy sa-asi-race \
+  --note "Thesis rationale." --write --blueprint
+
+# Show current target weights:
+python3 plugins/portfolio-advisor/scripts/update_targets.py --show
+
+# Dry-run (diff only, no write):
+python3 plugins/portfolio-advisor/scripts/update_targets.py --set INTC=7.0 --dry-run
+```
 
 ---
 
