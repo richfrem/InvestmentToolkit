@@ -265,6 +265,7 @@ portfolio-advisor
 
 | Script | Purpose | Command |
 |---|---|---|
+| `update_targets.py` | **Edit target weights** — set/add/remove tickers, auto-normalizes to 100%, optional blueprint regen | `python3 plugins/portfolio-advisor/scripts/update_targets.py --set NVDA=6.5 META=4.5 --write --blueprint` |
 | `generate_review.py` | **Bootstrap review file from template** — pre-populates header, opportunity scan | `python3 plugins/portfolio-advisor/scripts/generate_review.py [--date YYYY-MM-DD]` |
 | `validate_weights.py` | Verify/normalize both JSONs sum to 100% | `python3 plugins/portfolio-advisor/scripts/validate_weights.py --mode both` |
 | `generate_portfolio_blueprint.py` | Regenerate Section IV of `investment_thesis.md` | `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write` |

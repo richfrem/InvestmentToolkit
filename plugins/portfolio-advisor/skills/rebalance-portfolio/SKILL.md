@@ -31,6 +31,19 @@ allowed-tools: Bash, Read, Write
 
 ---
 
+## ⚠️ Verify Targets Before Rebalancing
+Always confirm targets sum to 100% and reflect the latest agreed weights before generating trades.
+If targets need adjustment, use `update_targets.py` first:
+```bash
+# Review current targets:
+python3 plugins/portfolio-advisor/scripts/update_targets.py --show
+
+# Adjust if needed (normalizes + regenerates blueprint automatically):
+python3 plugins/portfolio-advisor/scripts/update_targets.py --set TICKER=X.X --write --blueprint
+```
+
+---
+
 ## Step 1: Load Current State
 ```bash
 # Load thesis + health check
