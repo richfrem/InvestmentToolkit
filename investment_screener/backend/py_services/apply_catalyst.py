@@ -1,0 +1,1 @@
+../../../plugins/portfolio-advisor/scripts/apply_catalyst.py

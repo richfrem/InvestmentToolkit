@@ -82,18 +82,25 @@ def load_thesis(path: Path) -> dict:
         return {}
     raw = load_json(path)
     out = {}
+    
+    # Map pillar IDs to names
+    pillar_names = {}
     for pillar in raw.get("pillars", []):
-        pillar_name = pillar.get("name", "")
-        pillar_id   = pillar.get("id", "")
-        for h in pillar.get("holdings", []):
-            ticker = h.get("ticker", "")
-            out[ticker] = {
-                "targetPct":  h.get("targetWeight", 0),
-                "pillarName": pillar_name,
-                "pillarId":   pillar_id,
-                "thesisFor":  h.get("thesisForInclusion", ""),
-                "role":       h.get("role", ""),
-            }
+        if "id" in pillar and "name" in pillar:
+            pillar_names[pillar["id"]] = pillar["name"]
+            
+    for h in raw.get("holdings", []):
+        ticker = h.get("ticker", "")
+        if not ticker:
+            continue
+        pillar_id = h.get("pillarId", "")
+        out[ticker] = {
+            "targetPct":  h.get("targetWeight", 0),
+            "pillarName": pillar_names.get(pillar_id, "Unclassified"),
+            "pillarId":   pillar_id,
+            "thesisFor":  h.get("thesisForInclusion", ""),
+            "role":       h.get("role", ""),
+        }
     return out
 
 
@@ -157,6 +164,12 @@ def scan_exit(portfolio: dict, thesis: dict) -> list:
         if t.get("targetPct", -1) == 0 or (ticker not in thesis):
             proj = load_projection(ticker)
             pf = _proj_fields(proj) if proj else {}
+            
+            # If AI strongly disagrees with the EXIT (it's a BUY with upside),
+            # this is a conflict, not dead weight. Route to scan_conflicts instead.
+            if pf.get("action") in ("BUY", "ACCUMULATE", "INITIATE") and pf.get("upside", 0) > 10:
+                continue
+
             results.append({
                 "ticker":     ticker,
                 "actualPct":  pos["actualPct"],
@@ -193,6 +206,10 @@ def scan_trim(portfolio: dict, thesis: dict) -> list:
         proj = load_projection(ticker)
         pf = _proj_fields(proj) if proj else {}
         dcf_action = pf.get("action", "")
+        
+        # DO NOT recommend trimming if the AI screams BUY or has massive upside
+        if dcf_action in ("BUY", "ACCUMULATE", "INITIATE") and pf.get("upside", 0) > 10:
+            continue
         results.append({
             "ticker":     ticker,
             "actualPct":  actual,
@@ -293,34 +310,47 @@ def scan_initiate(portfolio: dict, thesis: dict, top: int = 15) -> list:
 
 
 def scan_conflicts(portfolio: dict, thesis: dict) -> list:
-    """Held core holdings (targetPct > 0) where DCF says SELL but thesis says keep."""
+    """Finds two types of conflicts:
+       1) Core holdings (targetPct > 0) where DCF says SELL
+       2) Zero-weight holdings (targetPct == 0) where DCF screams BUY"""
     results = []
     for ticker, pos in portfolio.items():
         if ticker == "_meta":
             continue
         t = thesis.get(ticker, {})
         target = t.get("targetPct", 0)
-        if target == 0:
-            continue
+        
         proj = load_projection(ticker)
         if not proj:
             continue
         pf = _proj_fields(proj)
-        if pf["action"] not in ("SELL", "EXIT", "TRIM"):
+        
+        is_conflict = False
+        conflict_type = ""
+        
+        if target > 0 and pf["action"] in ("SELL", "EXIT", "TRIM"):
+            is_conflict = True
+            conflict_type = "Thesis OVERWEIGHT vs AI SELL"
+        elif target == 0 and pf["action"] in ("BUY", "ACCUMULATE", "INITIATE") and pf["upside"] > 10:
+            is_conflict = True
+            conflict_type = "Thesis ZERO vs AI BUY"
+            
+        if not is_conflict:
             continue
+            
         results.append({
             "ticker":      ticker,
             "actualPct":   pos["actualPct"],
             "targetPct":   target,
-            "value":       pos["value"],
             "dcfAction":   pf["action"],
             "dcfUpside":   pf["upside"],
             "fairValue":   pf["fairValue"],
             "price":       pos["price"],
             "confidence":  pf["confidence"],
-            "pillar":      t.get("pillarName", ""),
-            "thesisFor":   t.get("thesisFor", "")[:80],
+            "pillar":      t.get("pillarName", "Unclassified"),
+            "thesis":      pf.get("thesis", ""),
             "analyzedAt":  pf["analyzedAt"],
+            "conflictType": conflict_type,
             "stale":       pf["stale"],
         })
     results.sort(key=lambda x: abs(x["dcfUpside"] or 0), reverse=True)
@@ -414,14 +444,15 @@ def fmt_initiate_table(rows: list) -> str:
 def fmt_conflicts_table(rows: list) -> str:
     if not rows:
         return "_No thesis/DCF conflicts found._\n"
-    lines = ["| Ticker | Actual% | Target% | DCF | Downside | FV | Conf | Pillar | Thesis (truncated) |",
-             "|--------|---------|---------|-----|----------|----|------|--------|--------------------|"]
+    lines = ["| Ticker | Conflict Type | Actual% | Target% | DCF | Upside/Downside | FV | Conf | Pillar | Thesis (truncated) |",
+             "|--------|---------------|---------|---------|-----|-----------------|----|------|--------|--------------------|"]
     for r in rows:
         up  = f"{r['dcfUpside']:+.0f}%" if r.get("dcfUpside") is not None else "N/A"
         fv  = f"${r['fairValue']:,.0f}" if r.get("fairValue") else "N/A"
         conf= f"{r['confidence']:.2f}" if r.get("confidence") else "—"
         sf  = _stale_flag(r)
-        lines.append(f"| {r['ticker']}{sf} | {r['actualPct']}% | {r['targetPct']}% | {r['dcfAction']} | {up} | {fv} | {conf} | {r['pillar']} | {r['thesisFor']}... |")
+        th  = (r['thesis'][:80] + "...") if len(r['thesis']) > 80 else r['thesis']
+        lines.append(f"| {r['ticker']}{sf} | {r['conflictType']} | {r['actualPct']}% | {r['targetPct']}% | {r['dcfAction']} | {up} | {fv} | {conf} | {r['pillar']} | {th} |")
     return "\n".join(lines) + "\n"
 
 
