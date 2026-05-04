@@ -88,9 +88,6 @@ def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> 
     from validate_weights import compute_current, compute_target
     current_data = compute_current(PORTFOLIO_JSON)
     target_data  = compute_target(THESIS_JSON)
-    # USD_CASH is PSU-U.TO in the thesis — alias it
-    if "USD_CASH" in current_data["holdings"]:
-        current_data["holdings"]["PSU-U.TO"] = current_data["holdings"]["USD_CASH"]
 
     # Group by sub-strategy
     groups: dict[str, list] = {}
