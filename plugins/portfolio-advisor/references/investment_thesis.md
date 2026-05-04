@@ -1,13 +1,13 @@
-# Investment Thesis v7.5
+# Investment Thesis v8.2
 
 | Field | Value |
 | :--- | :--- |
 | **Current Theme** | ASI Buildout + Sovereign Finance + AI-Native Defence |
 | **Edition** | "The Sovereign Manufacturer" |
 | **Status** | ACTIVE |
-| **Last Updated** | 2026-05-02 |
+| **Last Updated** | 2026-05-03 |
 | **Portfolio Data** | Live — synced from Questrade via app or `python3 investment_screener/backend/src/QuestradeDataEngine.py` |
-| **Latest Review** | `PortfolioAnalysis/strategic-reviews/2026-05-02-PortfolioAnalysisRecommendations.md` |
+| **Latest Review** | `PortfolioAnalysis/strategic-reviews/2026-05-03-PortfolioAnalysisRecommendations.md` |
 
 > **Living document.** The framework and sub-strategies persist across versions. Holdings, weights, and conviction details evolve. Only update this doc when conviction, structure, or macro narrative materially shifts.
 
@@ -17,6 +17,8 @@
 
 | Version | Date | Edition | Key Change |
 | :--- | :--- | :--- | :--- |
+| 8.2 | 2026-05-03 | The Sovereign Manufacturer | Exhaustive SA LP Q4 2025 13F cross-reference; EXIT AVGO/EQIX/ANET (price > FV, no SA LP); add SNDK/PSIX (SA LP + DCF BUY); USD_CASH and PSU-U.TO decoupled; hard gates added to agent skill |
+| 8.1 | 2026-05-03 | The Sovereign Manufacturer | First-pass AI target recommendations from DCF corpus; INTC/CRWV conviction raised; NVDA/META capped at 3%; no-change positions locked (GOOG/crypto/ETFs) |
 | 7.5 | 2026-05-02 | The Sovereign Manufacturer | Cybersecurity elevated to standalone sub-strategy; datacenter-infra merged into SA/ASI Race as infrastructure plays; 5 named sub-strategies |
 | 7.4 | 2026-05-02 | The Sovereign Manufacturer | Refactored from pillars to sub-strategies; 5 named conviction frameworks |
 | 7.3 | 2026-05-02 | The Sovereign Manufacturer | INTC Terafab/14A validated, SA 13F conviction confirmed, CRWV elevated |
