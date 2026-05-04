@@ -257,7 +257,7 @@
     "schemaVersion": "1.2",
     "version": 6,
     "savedAt": "2026-05-02T23:05:00Z",
-    "updatedAt": "2026-05-02T23:05:00Z",
+    "updatedAt": "2026-05-04T05:21:25Z",
     "name": "AI Deep Dive \u2014 CORZ \u2014 2026-05-02",
     "rationale": "Core Scientific (CORZ) emerged from Chapter 11 bankruptcy in January 2024 and is aggressively pivoting from Bitcoin mining to AI/HPC hosting. The power infrastructure thesis is real \u2014 ~800 MW of capacity with signed contracts worth billions (CoreWeave-type deals). However at $20.35 ($6.4B market cap) against $319M revenue declining -16% YoY and -90.47% net margin, the market is pricing flawless execution of a capital-intensive, multi-year transformation. Weighted fair value $10.64 \u2014 SELL (-48%). Re-entry thesis at $8-10 where base case provides reasonable margin of safety.",
     "snapshot": {
@@ -330,7 +330,17 @@
       "fairValue": 10.64,
       "action": "TRIM",
       "analyzedAt": "2026-05-02T22:55:00Z",
-      "researchReport": "CORZ_2026-05-02.md"
+      "researchReport": "CORZ_2026-05-02.md",
+      "catalystUpdate": {
+        "date": "2026-05-03",
+        "source": "Grok / X.com news sweep",
+        "events": [
+          "Pecos campus expansion to 1.5 GW capacity for AI workloads announced",
+          "$3.3B bond raise to fund hyperscale AI data center buildout",
+          "Ongoing CoreWeave anchor tenant partnership expanding"
+        ],
+        "thesisImpact": "BTC\u2192AI conversion thesis executing materially ahead of schedule. $3.3B raise proves capital markets support. 1.5 GW Pecos positions CORZ as a genuine hyperscale AI data center operator. DCF model (-47.7% at $20) does not capture recurring AI hosting revenue \u2014 DCF revision warranted once first AI revenue contracts are disclosed. Target lifted 4.14%\u21924.40%."
+      }
     },
     "globalSettings": {
       "discountRate": 10,
