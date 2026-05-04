@@ -167,7 +167,7 @@
         "Base L2 fails top-3 by volume EOY 2026",
         "Major hack or loss of customer funds"
       ],
-      "agentRationale": "DCF: TRIM | FV $124 vs $191 price | -35.0% upside. SA LP: Not in 13F. \u26a0\ufe0f GATE CONFLICT: DCF SELL-rated with no SA LP alignment. Target 3.61% requires user confirmation to hold above 0%."
+      "agentRationale": "DCF: SELL | FV $162 vs $191 price | -15.2% upside (improved from -35.0% post-regulatory catalyst). SA LP: Not in 13F. \u26a0\ufe0f User conviction hold \u2014 regulatory risk materially reduced: SEC enforcement dismissed with prejudice 2026-05-04; Base L2 $13B TVL / 46% L2 DeFi share; ETH-as-security threat stalled. Watch May 7 Q1 earnings for revenue/volume data. Do not trim on DCF alone; confirm after earnings."
     },
     {
       "ticker": "IBIT",
