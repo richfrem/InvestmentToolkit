@@ -47,10 +47,6 @@ def compute_current(portfolio_path: Path) -> dict:
         value = h["shares"] * h["price"]
         result[h["symbol"]] = round(value / total_value * 100, 4)
 
-    # USD_CASH in portfolio.json is the PSU-U.TO slot in the thesis
-    if "USD_CASH" in result:
-        result["PSU-U.TO"] = result.pop("USD_CASH")
-
     total = round(sum(result.values()), 4)
     return {"total": total, "holdings": result, "total_value": round(total_value, 2)}
 
