@@ -276,6 +276,54 @@
       "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/scripts/verify_refresh.py",
       "strategy": "symlink",
       "description": "ADR-003: post-change integrity checker \u2014 mandatory final step in refresh chain"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_grok_prompt.py",
+      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_grok_prompt.py",
+      "strategy": "symlink",
+      "description": "ADR-003: x-news-sweep canonical script \u2014 generates live Grok prompt from target-portfolio.json"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/portfolio_action.py",
+      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/portfolio_action.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/validate_weights.py",
+      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/update_targets.py",
+      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
+      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
+      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py",
+      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_grok_prompt.py",
+      "dst": "investment_screener/backend/py_services/generate_grok_prompt.py",
+      "strategy": "symlink",
+      "description": "generate_grok_prompt.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
     }
   ]
 }
