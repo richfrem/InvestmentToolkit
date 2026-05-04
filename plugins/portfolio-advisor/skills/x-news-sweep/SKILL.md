@@ -174,26 +174,48 @@ python3 scripts/verify_refresh.py
 
 ## Phase 6 — Update Projection JSONs (for material catalysts)
 
-For each approved change where Grok's news is a **material catalyst** (major contract, earnings beat, regulatory decision, SA LP position change):
+For each ticker where Grok's news is a **material catalyst** (major contract, earnings beat,
+regulatory decision, SA LP position change) — run `apply_catalyst.py`. This applies even
+when no target change is made (e.g. hold confirmed after regulatory positive).
 
-Update the projection JSON with a `catalystUpdate` block:
+```bash
+# Choose preset or use custom shifts:
+#   design_win       +10pp bull / -5pp bear
+#   major_contract   +8pp bull  / -5pp bear
+#   funding_secured  +7pp bull  / -4pp bear
+#   partnership      +5pp bull  / -3pp bear
+#   earnings_beat    +5pp bull  / -3pp bear
+#   thesis_breaker  -10pp bull  / +15pp bear
+#   custom           requires --shift-bull and --shift-bear
 
-```python
-# For ticker T with material news:
-proj = json.load(open(f"investment_screener/backend/data/projections/{T}.json"))
-# find latest AI_AGENT entry, add:
-latest["aiThesis"]["catalystUpdate"] = {
-    "date": "{today}",
-    "source": "Grok / X.com news sweep",
-    "events": ["{news summary}"],
-    "thesisImpact": "{impact on bear/base/bull case}"
-}
+python3 scripts/apply_catalyst.py \
+  --ticker TICKER \
+  --type PRESET \
+  --note "one-line catalyst description" \
+  --write \
+  --update-thesis
+
+# For custom weight shifts (e.g. regulatory):
+python3 scripts/apply_catalyst.py \
+  --ticker TICKER \
+  --type custom \
+  --shift-bull 10 --shift-bear -10 \
+  --note "one-line catalyst description" \
+  --write \
+  --update-thesis
 ```
 
-Also update `agentRationale` in `target-portfolio.json` with:
-```
-"{existing rationale}. Target {old}%→{new}% {date}: {catalyst one-liner}."
-```
+**When to run vs. skip:**
+
+| Situation | Run apply_catalyst.py? |
+|-----------|----------------------|
+| Major contract / design win announced | ✅ Yes — major_contract or design_win preset |
+| Regulatory risk removed (e.g. SEC dismissal) | ✅ Yes — custom bear shift |
+| Earnings beat + raise | ✅ Yes — earnings_beat preset |
+| Thesis breaker event | ✅ Yes — thesis_breaker preset |
+| Smart money reconfirms existing hold (no new trade) | ❌ No — not a new catalyst |
+| Analyst maintains price target, no new data | ❌ No — existing known info |
+| Rumour / unconfirmed X post | ❌ No — wait for confirmation |
 
 ---
 
