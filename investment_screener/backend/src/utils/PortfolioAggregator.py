@@ -69,9 +69,9 @@ class PortfolioAggregator:
                 continue
                 
             symbol = self.normalize_symbol(raw_symbol)
-            shares = float(pos.get("openQuantity", 0))
-            price = float(pos.get("currentPrice", 0))
-            book_price = float(pos.get("averageEntryPrice", 0)) or None
+            shares = float(pos.get("openQuantity") or 0)
+            price = float(pos.get("currentPrice") or 0)
+            book_price = float(pos.get("averageEntryPrice") or 0) or None
             
             if symbol in aggregated:
                 old_shares = aggregated[symbol]["shares"]
@@ -109,7 +109,7 @@ class PortfolioAggregator:
                 curr_balances = account_balance.get("perCurrencyBalances", [])
                 for cb in curr_balances:
                     if cb.get("currency") == "USD":
-                        total_usd_cash += float(cb.get("cash", 0))
+                        total_usd_cash += float(cb.get("cash") or 0)
             
             if total_usd_cash > 0:
                 # Create or update USD_CASH entry
