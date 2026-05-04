@@ -53,10 +53,11 @@ python3 plugins/portfolio-advisor/scripts/update_targets.py \
   --set GOOG=4.98 HUMN=2.86 KOID=2.69 ETHA=3.79 IBIT=2.60 COIN=3.11 CRCL=2.27 \
   --write --blueprint
 
-# Step 3: Verify — no false signals, no gate violations
-python3 plugins/portfolio-advisor/scripts/portfolio_action.py --all \
-  --portfolio investment_screener/frontend/src/data/portfolio.json \
-  --target investment_screener/backend/data/theses/target-portfolio.json
+# Step 3: Generate today's review JSON (required for Portfolio Analysis modal)
+python3 plugins/portfolio-advisor/scripts/generate_review_json.py
+
+# Step 4: Self-check — catches inconsistencies before committing
+python3 plugins/portfolio-advisor/scripts/verify_refresh.py
 ```
 
 `generate_portfolio_blueprint.py --write` now refreshes all 3 table formats (6-col early sections, 7-col enriched, and Section IV). Never run blueprint separately — always use `--blueprint` flag on `update_targets.py` so targets and thesis.md stay atomic.

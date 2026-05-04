@@ -228,6 +228,54 @@
       "dst": "plugins/portfolio-advisor/skills/rebalance-portfolio/scripts/update_targets.py",
       "strategy": "symlink",
       "description": "Precision target-weight editor \u2014 set/add/remove weights, auto-normalizes to 100%, optional blueprint regen"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/generate_review_json.py",
+      "strategy": "symlink",
+      "description": "ADR-003: generates dated review JSON for Portfolio Analysis modal \u2014 skill scripts/ symlink"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/generate_review_json.py",
+      "strategy": "symlink",
+      "description": "ADR-003: generates dated review JSON for Portfolio Analysis modal \u2014 skill scripts/ symlink"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
+      "dst": "plugins/portfolio-advisor/skills/calibrate-targets/scripts/generate_review_json.py",
+      "strategy": "symlink",
+      "description": "ADR-003: generates dated review JSON for Portfolio Analysis modal \u2014 skill scripts/ symlink"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
+      "dst": "investment_screener/backend/py_services/generate_review_json.py",
+      "strategy": "symlink",
+      "description": "generate_review_json.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/verify_refresh.py",
+      "strategy": "symlink",
+      "description": "ADR-003: post-change integrity checker \u2014 mandatory final step in refresh chain"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/verify_refresh.py",
+      "strategy": "symlink",
+      "description": "ADR-003: post-change integrity checker \u2014 mandatory final step in refresh chain"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
+      "dst": "plugins/portfolio-advisor/skills/calibrate-targets/scripts/verify_refresh.py",
+      "strategy": "symlink",
+      "description": "ADR-003: post-change integrity checker \u2014 mandatory final step in refresh chain"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
+      "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/scripts/verify_refresh.py",
+      "strategy": "symlink",
+      "description": "ADR-003: post-change integrity checker \u2014 mandatory final step in refresh chain"
     }
   ]
 }

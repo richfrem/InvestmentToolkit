@@ -1,0 +1,1 @@
+../../../plugins/portfolio-advisor/scripts/generate_review_json.py
