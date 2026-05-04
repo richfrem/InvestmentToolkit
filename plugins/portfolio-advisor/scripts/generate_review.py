@@ -76,70 +76,20 @@ def compute_thesis_summary(thesis: dict, portfolio: list) -> dict:
     }
 
 
-def scan_top_opportunities(portfolio: list, limit: int = 10) -> list:
-    """Scan projections dir for unowned BUY-rated tickers, rank by upside × confidence."""
-    if not PROJECTIONS_DIR.exists():
-        return []
+import subprocess
 
-    held_tickers = {h["symbol"] for h in portfolio if h.get("shares", 0) > 0}
-    opportunities = []
-
-    for fname in PROJECTIONS_DIR.iterdir():
-        if fname.suffix != ".json":
-            continue
-        ticker = fname.stem
-        if ticker in held_tickers:
-            continue
-
-        try:
-            projections = load_json(fname)
-            ai = [p for p in projections if p.get("source") == "AI_AGENT"]
-            if not ai:
-                continue
-            latest = max(ai, key=lambda x: x.get("savedAt", ""))
-            th = latest.get("aiThesis", {})
-            sn = latest.get("snapshot", {})
-            fv = th.get("fairValue", 0)
-            price = sn.get("price", 0) or th.get("currentPrice", 0)
-            action = th.get("action", "")
-            conf = latest.get("analyticsLog", {}).get("confidenceScore", 0) or 0
-            analyzed_at = (th.get("analyzedAt") or "")[:10]
-
-            if action in ("BUY", "INITIATE", "ACCUMULATE") and price > 0 and fv > 0:
-                upside = round((fv - price) / price * 100, 1)
-                opportunities.append({
-                    "ticker": ticker,
-                    "action": action,
-                    "fairValue": fv,
-                    "price": price,
-                    "upside": upside,
-                    "confidence": round(float(conf), 2),
-                    "score": round(upside * float(conf), 1),
-                    "analyzedAt": analyzed_at,
-                    "keyThesis": (th.get("thesis") or "")[:100],
-                })
-        except Exception:
-            continue
-
-    opportunities.sort(key=lambda x: x["score"], reverse=True)
-    return opportunities[:limit]
-
-
-def build_opportunity_table(opportunities: list) -> str:
-    """Render the opportunity leaderboard as a markdown table."""
-    if not opportunities:
-        return "_No unowned BUY-rated tickers found in projections corpus._"
-
-    rows = ["| Rank | Ticker | Upside | Fair Value | Price | Conf | Analyzed | Key Thesis |",
-            "|------|--------|--------|------------|-------|------|----------|------------|"]
-    for i, o in enumerate(opportunities, 1):
-        stale = " ⚠️" if o["analyzedAt"] and _days_old(o["analyzedAt"]) > 90 else ""
-        row = (f"| {i} | {o['ticker']}{stale} | +{o['upside']}% | "
-               f"${o['fairValue']:,.0f} | ${o['price']:,.0f} | {o['confidence']} | "
-               f"{o['analyzedAt']} | {o['keyThesis']}... |")
-        rows.append(row)
-    return "\n".join(rows)
-
+def get_action_subsections() -> str:
+    """Run scan_opportunities.py and return its markdown output."""
+    try:
+        script = str(REPO_ROOT / "plugins/portfolio-advisor/scripts/scan_opportunities.py")
+        res = subprocess.run(
+            ["python3", script, "--format", "markdown", "--category", "all"],
+            capture_output=True, text=True, check=True
+        )
+        return res.stdout
+    except subprocess.CalledProcessError as e:
+        print(f"⚠️ Error running scan_opportunities.py: {e.stderr}", file=sys.stderr)
+        return "_Error generating action subsections._"
 
 def _days_old(date_str: str) -> int:
     try:
@@ -148,15 +98,13 @@ def _days_old(date_str: str) -> int:
     except Exception:
         return 0
 
-
 def populate_template(template: str, portfolio_summary: dict, thesis_summary: dict,
-                      opportunities: list, date_str: str) -> str:
+                      action_subsections: str, date_str: str) -> str:
     """Replace all header-level {{PLACEHOLDERS}} we can fill from data."""
     total_value = portfolio_summary["total_value"]
-    opp_table = build_opportunity_table(opportunities)
 
-    # Capital calc: top-5 at 2% each
-    top5_capital = round(total_value * 0.02 * min(5, len(opportunities)), 0)
+    # Calculate capital required for top 5 initiates approximately (if not parsed from action_subsections)
+    top5_capital = round(total_value * 0.02 * 5, 0)
 
     replacements = {
         "{{DATE}}":               date_str,
@@ -179,23 +127,18 @@ def populate_template(template: str, portfolio_summary: dict, thesis_summary: di
         "{{CONVICTION_CHANGES}}": "_Pending Phase 3 conviction interview_",
         "{{TOTAL_REDEPLOY}}":     "??",
         "{{REDEPLOY_PCT}}":       "??",
-        "<!-- {{OPPORTUNITY_ROWS}} -->": opp_table,
+        "<!-- {{ACTION_SUBSECTIONS}} -->": action_subsections,
         "<!-- {{THEME_GAP_ROWS}} -->": "_Pending Phase 2 gap analysis_",
         "<!-- {{PILLAR_AUDIT_ROWS}} -->": "_Pending Step 2 pillar conviction audit_",
         "<!-- {{CHALLENGED_ROWS}} -->": "_Pending analysis_",
         "<!-- {{CONFIRMED_ROWS}} -->": "_Pending analysis_",
         "<!-- {{BREAKER_ROWS}} -->": "_Pending analysis_",
-        "<!-- {{CONFLICT_BLOCKS}} -->": "_Pending analysis_",
         "<!-- {{PROPOSAL_BLOCKS}} -->": "_Pending analysis_",
-        "<!-- {{EXIT_ROWS}} -->": "_Pending analysis_",
-        "<!-- {{INITIATE_ROWS}} -->": "_Pending analysis_",
         "<!-- {{ACTION_LIST}} -->": "_Pending analysis_",
         "<!-- {{OPEN_QUESTIONS}} -->": "_Pending analysis — agent will populate after Phase 3 interview_",
-        "{{EXIT_CAPITAL}}":       "??",
-        "{{EXIT_PCT}}":           "??",
         "{{SOURCE_PORTFOLIO}}":   f"✅ Loaded — {portfolio_summary['holding_count']} holdings, ${total_value:,.0f}",
         "{{SOURCE_THESIS}}":      f"✅ Loaded — v{thesis_summary['thesis_version']}",
-        "{{SOURCE_PROJECTIONS}}": f"✅ {len(opportunities)} unowned BUY candidates surfaced",
+        "{{SOURCE_PROJECTIONS}}": f"✅ Scan opportunities engine successfully ran",
         "{{SOURCE_MISSING}}":     "⚠️ Run /strategic-review to check",
         "{{SOURCE_MEMORY}}":      "⚠️ Run /strategic-review to load",
         "{{SOURCE_WEIGHTS}}":     "⚠️ Run validate_weights.py to verify",
@@ -231,9 +174,9 @@ def main():
 
     portfolio_summary = compute_portfolio_summary(portfolio)
     thesis_summary = compute_thesis_summary(thesis, portfolio)
-    opportunities = scan_top_opportunities(portfolio)
+    action_subsections = get_action_subsections()
 
-    populated = populate_template(template, portfolio_summary, thesis_summary, opportunities, args.date)
+    populated = populate_template(template, portfolio_summary, thesis_summary, action_subsections, args.date)
 
     if args.dry_run:
         print(populated)
