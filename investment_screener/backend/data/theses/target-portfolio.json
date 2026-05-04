@@ -475,7 +475,8 @@
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
       "pillarId": "datainfra",
-      "thesisForInclusion": "SA LP +1839% Q4. DCF BUY +26.4%. AI-era NAND storage infrastructure play."
+      "thesisForInclusion": "SA LP +1839% Q4. DCF BUY +26.4%. AI-era NAND storage infrastructure play.",
+      "agentRationale": "DCF: BUY | FV $32 vs $25 price | +26.4% upside. SA LP: Long \u2014 1.1M shares, +1839% Q4 2025 \u2014 largest percentage gainer in 13F. NAND flash storage for AI data growth."
     },
     {
       "ticker": "PSIX",
@@ -484,7 +485,8 @@
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
       "pillarId": "power",
-      "thesisForInclusion": "SA LP NEW position Q4. DCF BUY +51.9%. AI power infrastructure \u2014 industrial engine/generator systems."
+      "thesisForInclusion": "SA LP NEW position Q4. DCF BUY +51.9%. AI power infrastructure \u2014 industrial engine/generator systems.",
+      "agentRationale": "DCF: BUY | FV $30 vs $20 price | +51.9% upside. SA LP: Long \u2014 432K shares NEW position Q4 2025. Industrial power/generator systems for AI data center energy buildout."
     }
   ],
   "globalSettings": {
