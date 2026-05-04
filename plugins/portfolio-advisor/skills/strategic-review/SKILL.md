@@ -21,93 +21,42 @@ If memory files are absent, scan `investment_screener/backend/data/projections/`
 
 ---
 
-## ⭐ Phase 1: Opportunity Scan — Biggest Profit Opportunities You're Missing
+## 🔄 Target Portfolio Lifecycle — How Targets Work
 
-> **This is the most important section. Run it first, before any thesis analysis.**
-> The goal is to answer: *"Given everything the AI has analyzed, what are the highest-conviction opportunities I'm not currently positioned in?"*
+**The single source of truth for all portfolio targets is:**
+`investment_screener/backend/data/theses/target-portfolio.json`
 
-This phase scans the **full DCF corpus** (all tickers in `projections/`), not just your thesis holdings. It surfaces what the market is pricing wrong that you could be exploiting.
+**Key rules:**
+- Targets must **always sum to 100%**. After any edit, run: `python3 plugins/portfolio-advisor/scripts/validate_weights.py --normalize --write`
+- After updating targets, regenerate the thesis blueprint: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`
+- The web table (`ScreenerTable`) reads from the same JSON via the backend API — it is automatically in sync
+- All actions (INITIATE, ACCUMULATE, TRIM, EXIT) are **derived by Python** by comparing `portfolio.json` (actual broker holdings) against `target-portfolio.json` (thesis targets). No TypeScript mirrors this logic.
+- `USD_CASH` in `portfolio.json` maps to the `PSU-U.TO` thesis slot — the scripts alias this automatically
 
-### Phase 1a: Load Full Corpus and Filter Unowned BUYs
+**As agent you SHOULD update target-portfolio.json multiple times per conversation** as analysis evolves. The expected pattern:
+1. User starts a review → agent reads current targets and actuals
+2. Agent runs DCF analysis, surfaces conflicts → proposes target changes with reasoning
+3. User approves or adjusts → agent edits `target-portfolio.json` directly
+4. Agent runs normalize + blueprint → targets are reflected everywhere (thesis.md + web table)
+5. Loop: more analysis → more target updates → re-run scripts
 
-```python
-import json, os, subprocess
+**Do not treat existing targets as ground truth.** They are the current hypothesis. Your job is to challenge and improve them.
 
-# Load actual portfolio holdings
-with open('investment_screener/frontend/src/data/portfolio.json') as f:
-    raw_holdings = json.load(f)
-held_tickers = {h['symbol'] for h in raw_holdings if h.get('shares', 0) > 0}
+---
 
-# Scan all projections for AI_AGENT entries
-proj_dir = 'investment_screener/backend/data/projections'
-opportunities = []
+## ⭐ Phase 1: Opportunity Scan & Action Subsections
 
-for fname in os.listdir(proj_dir):
-    if not fname.endswith('.json'):
-        continue
-    ticker = fname.replace('.json', '')
-    if ticker in held_tickers:
-        continue  # skip — already own it
+> **This section is pre-populated by `generate_review.py` using the `scan_opportunities.py` data engine.**
 
-    with open(f'{proj_dir}/{fname}') as f:
-        projections = json.load(f)
+When you run `generate_review.py`, it automatically scans the **full DCF corpus** and your live portfolio to generate these subsections in the report:
+1. **🚀 Top Profit Opportunities (INITIATE)** — Unowned BUY-rated stocks ranked by upside × confidence.
+2. **🚨 EXIT Queue** — Holdings with a 0% target weight (zombies and thesis exits).
+3. **✂️ TRIM Queue** — Holdings that are overweight vs their thesis target.
+4. **🔵 ACCUMULATE Queue** — Holdings that are underweight AND have DCF upside.
+5. **⚔️ Strategic Conflicts** — Core holdings where the DCF says SELL but the thesis says HOLD.
+6. **⚠️ Stale Analyses** — Tickers needing a refresh (older than 90 days).
 
-    ai = [p for p in projections if p.get('source') == 'AI_AGENT']
-    if not ai:
-        continue
-    latest = max(ai, key=lambda x: x.get('savedAt', ''))
-    th = latest.get('aiThesis', {})
-    sn = latest.get('snapshot', {})
-    fv = th.get('fairValue', 0)
-    price = sn.get('price', 0) or th.get('currentPrice', 0)
-    action = th.get('action', '')
-    conf = latest.get('analyticsLog', {}).get('confidenceScore', 0)
-
-    if action in ('BUY', 'INITIATE', 'ACCUMULATE') and price > 0:
-        upside = round((fv - price) / price * 100, 1)
-        opportunities.append({
-            'ticker': ticker,
-            'action': action,
-            'fairValue': fv,
-            'price': price,
-            'upside': upside,
-            'confidence': conf,
-            'analyzedAt': th.get('analyzedAt', '')[:10],
-            'model': th.get('model', ''),
-            'keyThesis': th.get('thesis', '')[:120],
-        })
-
-# Sort by upside × confidence (conviction-weighted opportunity score)
-opportunities.sort(key=lambda x: x['upside'] * x['confidence'], reverse=True)
-print(json.dumps(opportunities[:15], indent=2))
-```
-
-### Phase 1b: Present Opportunity Leaderboard
-
-Surface the top unowned BUY opportunities as the **first section** of the review output:
-
-```
-🚀 TOP PROFIT OPPORTUNITIES — Stocks You've Analyzed But Don't Own
-════════════════════════════════════════════════════════════════════
-Ranked by: Upside × Confidence Score (conviction-weighted opportunity)
-
-Rank | Ticker | Upside | FV     | Price | Conf | Analyzed   | Key Thesis (1 line)
------|--------|--------|--------|-------|------|------------|--------------------
-  1  | NVDA   | +124%  | $445   | $198  | 0.80 | 2026-05-02 | CUDA moat (30M devs), fwd PE 17.7x...
-  2  | META   | +82%   | $1,105 | $609  | 0.83 | 2026-05-02 | Social monopoly 3B DAU × AI ad flywheel...
-  3  | CRM    | +53%   | $281   | $184  | 0.87 | 2026-05-02 | Enterprise CRM moat, Agentforce AI...
-  ...
-
-💡 Capital required to initiate all Top 5 at 2% position each: ~${amount}
-   Your available cash: ~${cash_amount} ({cash_pct}% of portfolio)
-```
-
-### Phase 1c: Flag Stale Analyses
-
-For any opportunity where `analyzedAt` is >90 days old, flag it:
-```
-⚠️ STALE: {TICKER} was last analyzed {N} days ago. Run /evaluate-stock {TICKER} to refresh before initiating.
-```
+**Your job as the agent:** Read these pre-populated tables to inform your subsequent analysis. You do **not** need to manually scan the `projections/` directory for Phase 1.
 
 ---
 
@@ -119,17 +68,10 @@ After presenting Phase 1, analyze the opportunity list against the current thesi
 
 ### Phase 2a: Detect Missing Themes
 
-```python
-# For each top opportunity not in thesis, classify its theme:
-theme_gaps = {}
-for opp in opportunities[:10]:
-    ticker = opp['ticker']
-    # Is there ANY pillar in the thesis that covers this ticker's sector?
-    covered_by = [p for p in thesis_pillars if ticker in [h['ticker'] for h in p.get('holdings', [])]]
-    if not covered_by:
-        theme = infer_sector_theme(ticker)  # e.g. "Enterprise SaaS", "AI Infrastructure", etc.
-        theme_gaps[theme] = theme_gaps.get(theme, []) + [ticker]
-```
+Analyze the top 10 tickers from the **🚀 Top Profit Opportunities (INITIATE)** table provided in the review document. 
+
+1. For each ticker, check if its sector/theme is covered by any existing pillar in `target-portfolio.json`.
+2. If it is NOT covered, group it into a "Theme Gap" (e.g., "Enterprise SaaS", "AI Infrastructure", etc.).
 
 ### Phase 2b: Present Gap Analysis
 

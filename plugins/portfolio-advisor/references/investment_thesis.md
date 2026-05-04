@@ -226,81 +226,81 @@ Each holding in `target-portfolio.json` carries a `subStrategyId` field mapping 
 
 ## IV. Portfolio Blueprint
 
-*Generated 2026-05-02 · Source: `validate_weights.py` × `target-portfolio.json` × `portfolio.json` (Questrade live)*
+*Generated 2026-05-03 · Source: `validate_weights.py` × `target-portfolio.json` × `portfolio.json` (Questrade live)*
 *Portfolio value: $30,797. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
 
 ### Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)
 
-| Ticker | Action | Actual % | Target % | P&L | Conviction |
-| :--- | :--- | ---: | ---: | ---: | :--- |
-| **INTC** | ⚪ MAINTAIN | 11.64% | 11.11% | +168.7% | The Sovereign Foundry: designated US National Champion for onshored compute manufacturing. Core contrarian bet on 18A node. |
-| **GOOG** | 🔵 ACCUMULATE | 4.98% | 5.99% | +57.1% | Alphabet Inc. |
-| **CRWV** | 🟡 TRIM | 4.25% | 1.81% | +45.4% | CoreWeave, Inc. |
-| **VST** | 🔵 ACCUMULATE | 3.53% | 4.43% | -20.6% | Vistra Corp. |
-| **AMD** | 🟡 TRIM | 3.51% | 2.73% | +61.5% | Advanced Micro Devices, Inc. |
-| **CEG** | 🔵 ACCUMULATE | 3.00% | 4.42% | -17.5% | Constellation Energy Corporatio |
-| **HUMN** | ⚪ MAINTAIN | 2.86% | 2.88% | +17.6% | Roundhill Humanoid Robotics ETF — physical embodiment of ASI thesis |
-| **MSFT** | 🔵 ACCUMULATE | 2.69% | 3.68% | -19.0% | Microsoft Corporation |
-| **KOID** | ⚪ MAINTAIN | 2.69% | 2.49% | +21.2% | KraneShares Humanoid ETF — automation and robotics revolution |
-| **OKLO** | 🟡 TRIM | 2.29% | 1.35% | -30.5% | Oklo Inc. |
-| **CORZ** | 🔵 ACCUMULATE | 1.98% | 3.32% | +14.3% | Core Scientific, Inc. |
-| **EQT** | 🔴 EXIT | 1.71% | — | -1.7% | EQT natural gas infrastructure — energy security + structural AI power demand |
-| **IREN** | 🔴 EXIT | 1.48% | — | +0.9% | IREN AI data centre + Bitcoin mining — high-beta physical infra bet |
-| **COHR** | 🔴 EXIT | 1.07% | — | +9.0% | Coherent optics — optical networking components for AI compute interconnect |
-| **VRT** | 🔵 ACCUMULATE | 1.07% | 1.33% | +149.5% | Vertiv Holdings, LLC |
-| **NBIS** | 🔴 EXIT | 1.00% | — | +82.6% | Nebius AI infrastructure — early stage conviction, former Yandex Cloud |
-| **BE** | ⚪ MAINTAIN | 0.94% | 1.02% | +6.8% | Bloom Energy fuel cells — clean distributed power for data centre edge. SA LP holding. |
-| **LITE** | 🔵 ACCUMULATE | 0.77% | 1.02% | +9.4% | Lumentum optical interconnects — photonic layer of AI networking. SA LP holding. |
-| **AVGO** | 🟢 INITIATE | — | 6.49% | +0.0% | AVGO |
-| **NVDA** | 🟢 INITIATE | — | 4.41% | +0.0% | NVDA |
-| **META** | 🟢 INITIATE | — | 3.00% | +0.0% | META |
-| **EQIX** | 🟢 INITIATE | — | 2.88% | +0.0% | EQIX |
-| **ANET** | 🟢 INITIATE | — | 1.67% | +0.0% | ANET |
-| **Subtotal** | | **51.47%** | **66.04%** | +14.58pp | |
+| Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
+| :--- | :--- | :--- | ---: | ---: | ---: | :--- |
+| **INTC** | 🟡 TRIM | — | 11.64% | 8.00% | — | The Sovereign Foundry: designated US National Champion for onshored compute manufacturing. Core contrarian bet on 18A node. Reduced from 11.1% — stock is 153% YTD, running well ahead of DCF fundamentals. |
+| **GOOG** | 🔵 ACCUMULATE | — | 4.98% | 7.00% | — | Hyperscaler with vertically integrated AI stack: TPUs, Gemini models, Search, YouTube, GCP. Increased from 6% — underweight given AI monetization runway. |
+| **CRWV** | 🔥 REVIEW | — | 4.25% | 1.81% | — | GPU cloud provider with hyperscaler-grade infrastructure. Microsoft/OpenAI anchor customer. |
+| **VST** | ⚪ MAINTAIN | — | 3.53% | 3.50% | — | Nuclear + natgas power merchant for data center load growth. Trimmed from 4.43% — power thesis still valid but reduce overweight. |
+| **AMD** | ⚪ MAINTAIN | — | 3.51% | 3.20% | — | Hedge against NVDA dominance. MI300X gaining traction in inference. Slight increase from 2.7%. |
+| **CEG** | ⚪ MAINTAIN | — | 3.00% | 3.00% | — | Largest US nuclear operator. Microsoft data center deal secured. DCF TRIM -35% — reduced from 4.42% on regulatory compression risk. Maintain small core. |
+| **HUMN** | 🔵 ACCUMULATE | — | 2.86% | 3.38% | — | Physical embodiment of ASI thesis — humanoid robotics ETF. Increased from 2.88%. |
+| **MSFT** | ⚪ MAINTAIN | — | 2.69% | 2.80% | — | Azure + OpenAI partnership. Copilot monetization slower than expected — reduced from 3.7%. Maintain as infrastructure hedge. |
+| **KOID** | ⚪ MAINTAIN | — | 2.69% | 2.99% | — | Automation and robotics revolution — China + global exposure. Increased from 2.49%. |
+| **OKLO** | 🟡 TRIM | — | 2.29% | 1.80% | — | Micro-nuclear reactor commercialization. Binary bet on NRC licensing. Increased from 1.35% — conviction on data center power timeline. |
+| **CORZ** | 🟡 TRIM | — | 1.98% | 1.50% | — | BTC→AI data center conversion thesis. DCF EXIT -48% — dramatically reduced from 3.32%. Keep small speculative position on data center transition optionality. |
+| **EQT** | 🔴 EXIT | — | 1.71% | — | — | EXIT: EQT natural gas infrastructure — gas commodity, near breakeven. DCF SELL -18%. |
+| **IREN** | 🔴 EXIT | — | 1.48% | — | — | EXIT: IREN AI data centre + Bitcoin mining — high-beta physical infra bet. DCF SELL -15%. |
+| **COHR** | 🔴 EXIT | — | 1.07% | — | — | EXIT: Coherent optics — near fair value. Capital better deployed elsewhere. |
+| **VRT** | 🔵 ACCUMULATE | — | 1.07% | 1.33% | — | Data center thermal management. AI cooling bottleneck play. DCF SELL -32% — maintain small position, thesis is real but valuation stretched. |
+| **NBIS** | 🔵 ACCUMULATE | — | 1.00% | 2.00% | — | DCF BUY +186% upside. Former Yandex Cloud team building European AI infrastructure. INITIATE — DCF conviction overrides thesis EXIT flag. |
+| **BE** | ⚪ MAINTAIN | — | 0.94% | 1.02% | — | Bloom Energy fuel cells — clean distributed power for data centre edge. SA LP holding. |
+| **LITE** | 🔵 ACCUMULATE | — | 0.77% | 1.02% | — | Lumentum optical interconnects — photonic layer of AI networking. SA LP holding. |
+| **AVGO** | 🟢 INITIATE | — | — | 6.49% | — | Custom ASIC + networking moat. Google TPU and Meta MTIA are multi-year engagements. DCF shows -22% short-term but the thesis is multi-year platform lock-in. |
+| **NVDA** | 🟢 INITIATE | — | — | 6.50% | — | Highest-conviction BUY in corpus (+124% DCF upside). GPU monopoly for AI training. Increased from 4.4% — needs to be a core position. |
+| **META** | 🟢 INITIATE | — | — | 4.50% | — | Social monopoly + AI ad flywheel. DCF BUY +82% upside. Llama open-source creating massive ecosystem leverage. Increased from 3% — strong conviction. |
+| **EQIX** | 🟢 INITIATE | — | — | 3.50% | — | Digital Geneva — carrier-neutral colocation in every major financial market. Increased from 2.88%. Not yet owned — INITIATE. |
+| **ANET** | 🟢 INITIATE | — | — | 1.67% | — | AI networking switching fabric. Hyperscaler capex flows through ANET. Near fair value — hold and accumulate on pullbacks. |
+| **Subtotal** | | **51.47%** | **67.01%** | +15.54pp | |
 
 ### Sub-Strategy 2 — AI-Native Cybersecurity
 
-| Ticker | Action | Actual % | Target % | P&L | Conviction |
-| :--- | :--- | ---: | ---: | ---: | :--- |
-| **PANW** | 🟡 TRIM | 4.70% | 3.85% | -10.0% | Palo Alto Networks, Inc. |
-| **ZS** | 🟡 TRIM | 3.18% | 2.04% | -32.5% | Zscaler, Inc. |
-| **CRWD** | 🟡 TRIM | 2.96% | 2.55% | +8.3% | CrowdStrike Holdings, Inc. |
-| **Subtotal** | | **10.84%** | **8.45%** | -2.39pp | |
+| Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
+| :--- | :--- | :--- | ---: | ---: | ---: | :--- |
+| **PANW** | ⚪ MAINTAIN | — | 4.70% | 4.50% | — | AI-native platform consolidation leader. Platformization model winning enterprise. Increased from 3.85% — cybersecurity pillar was underweight. |
+| **ZS** | 🔥 REVIEW | — | 3.18% | 2.75% | — | Zero-trust SASE leader. Network security moving to cloud-native model. Increased from 2.04%. |
+| **CRWD** | 🔴 EXIT | — | 2.96% | — | — | EXIT: DCF -66% downside. Structural outage damage (July 2024) confirmed ongoing customer attrition. Reputational capital permanently impaired at the enterprise level. |
+| **Subtotal** | | **10.84%** | **7.25%** | -3.59pp | |
 
 ### Sub-Strategy 3 — Sovereign Finance
 
-| Ticker | Action | Actual % | Target % | P&L | Conviction |
-| :--- | :--- | ---: | ---: | ---: | :--- |
-| **ETHA** | ⚪ MAINTAIN | 3.79% | 3.77% | -40.8% | iShares Ethereum Trust ETF |
-| **COIN** | ⚪ MAINTAIN | 3.10% | 3.48% | -41.0% | Coinbase Global, Inc. |
-| **IBIT** | 🔵 ACCUMULATE | 2.60% | 3.20% | -31.2% | iShares Bitcoin Trust ETF |
-| **CRCL** | ⚪ MAINTAIN | 2.27% | 2.10% | -2.2% | Circle Internet Group, Inc. |
-| **SOLZ** | 🔴 EXIT | 1.37% | — | -18.7% | Solana ETF — high-throughput payments layer, speculative allocation |
-| **Subtotal** | | **13.13%** | **12.56%** | -0.57pp | |
+| Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
+| :--- | :--- | :--- | ---: | ---: | ---: | :--- |
+| **ETHA** | ⚪ MAINTAIN | — | 3.79% | 4.00% | — | Ethereum as programmable settlement layer. Staking yield embedded in ETF. Slight increase from 3.77%. |
+| **COIN** | 🔵 ACCUMULATE | — | 3.10% | 3.80% | — | Regulated crypto exchange + Base L2 growth. Increased from 3.48%. |
+| **IBIT** | 🔵 ACCUMULATE | — | 2.60% | 3.50% | — | Bitcoin as sovereign reserve asset. US strategic reserve narrative accelerating. Increased from 3.2%. |
+| **CRCL** | ⚪ MAINTAIN | — | 2.27% | 2.10% | — | USDC issuer and stablecoin infrastructure. GENIUS Act tailwind. |
+| **SOLZ** | 🔴 EXIT | — | 1.37% | — | — | EXIT: Solana ETF — high-throughput payments layer. Speculative, no clear catalyst for re-entry. |
+| **Subtotal** | | **13.13%** | **13.41%** | +0.27pp | |
 
 ### Sub-Strategy 4 — Quality SaaS Resilience
 
-| Ticker | Action | Actual % | Target % | P&L | Conviction |
-| :--- | :--- | ---: | ---: | ---: | :--- |
-| **CRM** | 🔴 EXIT | 0.90% | — | +2.6% | Salesforce — Agentforce AI platform on top of world's largest CRM dataset |
-| **NOW** | 🔴 EXIT | 0.89% | — | +3.3% | ServiceNow — AI workflow automation embedded in enterprise IT infrastructure |
-| **Subtotal** | | **1.78%** | **0.00%** | -1.78pp | |
+| Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
+| :--- | :--- | :--- | ---: | ---: | ---: | :--- |
+| **CRM** | ⚪ MAINTAIN | — | 0.90% | 1.00% | — | DCF BUY +53% upside. Agentforce AI platform on world's largest CRM dataset. Small position — thesis EXIT overridden by DCF valuation gap. |
+| **NOW** | ⚪ MAINTAIN | — | 0.89% | 1.00% | — | DCF BUY +45% upside. AI workflow automation embedded in enterprise IT infrastructure. Small position — thesis EXIT overridden by DCF valuation gap. |
+| **Subtotal** | | **1.78%** | **2.00%** | +0.22pp | |
 
 ### Sub-Strategy 5 — Applied AI / Frontier Bets
 
-| Ticker | Action | Actual % | Target % | P&L | Conviction |
-| :--- | :--- | ---: | ---: | ---: | :--- |
-| **RGTI** | 🔴 EXIT | 2.27% | — | -13.9% | Rigetti Computing — quantum compute exposure, binary milestone outcome |
-| **POET** | 🔴 EXIT | 1.90% | — | +23.9% | POET Technologies — photonic integrated circuits, optical compute interconnect |
-| **TEM** | 🔴 EXIT | 1.79% | — | -21.2% | Tempus AI — AI-native healthcare data platform |
+| Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
+| :--- | :--- | :--- | ---: | ---: | ---: | :--- |
+| **RGTI** | 🔴 EXIT | — | 2.27% | — | — | EXIT: Rigetti Computing — quantum compute exposure. DCF STRONG SELL -94%. Pre-commercial. |
+| **POET** | 🔴 EXIT | — | 1.90% | — | — | EXIT: POET Technologies — photonic integrated circuits. DCF STRONG SELL -86%. Pre-commercial. |
+| **TEM** | 🔴 EXIT | — | 1.79% | — | — | EXIT: Tempus AI — AI-native healthcare data platform. DCF HOLD -2%. Not core to thesis. |
 | **Subtotal** | | **5.96%** | **0.00%** | -5.96pp | |
 
 ### Strategic Reserve
 
-| Ticker | Action | Actual % | Target % | P&L | Conviction |
-| :--- | :--- | ---: | ---: | ---: | :--- |
-| **PSU-U.TO** | 🟡 TRIM | 16.82% | 12.95% | +0.0% | PSU-U.TO |
-| **Subtotal** | | **16.82%** | **12.95%** | -3.87pp | |
+| Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
+| :--- | :--- | :--- | ---: | ---: | ---: | :--- |
+| **PSU-U.TO** | 🟡 TRIM | — | 16.82% | 10.34% | — | Strategic reserve for opportunistic deployment. Reduced from 13% to fund NVDA, META, and NBIS initiations. |
+| **Subtotal** | | **16.82%** | **10.34%** | -6.48pp | |
 
 ### Portfolio Totals
 
