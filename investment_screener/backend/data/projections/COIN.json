@@ -175,7 +175,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.35,
+        "weight": 0.24999999999999997,
         "growthRate": -5,
         "netMargin": 5,
         "exitPE": 12,
@@ -214,7 +214,7 @@
         ]
       },
       "bull": {
-        "weight": 0.2,
+        "weight": 0.30000000000000004,
         "growthRate": 22,
         "netMargin": 25,
         "exitPE": 28,
@@ -236,9 +236,9 @@
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
       "rationale": "Coinbase is trading at 38x forward P/E with revenue declining -22.2% YoY from a cycle peak. That combination \u2014 contracting top line at a premium multiple \u2014 is the core of the SELL thesis. The company is genuinely well-run: it survived the 2022 crypto crash, built a regulatory compliance infrastructure that competitors cannot easily replicate, and is diversifying toward subscription/services revenue. But at $191, you are paying bull market prices in a bear market revenue environment. Our base case fair value of $98 reflects a slow recovery. The bull case ($387, 20% probability) requires the next crypto supercycle AND Base chain success AND institutional prime growth to all materialize simultaneously. Prior Gemini 3 Pro analysis was directionally correct (HOLD below current price) but understated the downside \u2014 corrected bear margin from 10% to 5% and tightened growth rates reflect the actual severity of crypto winter scenarios.",
-      "fairValue": 124.29,
-      "action": "TRIM",
-      "analyzedAt": "2026-05-02T20:15:00Z",
+      "fairValue": 162.27,
+      "action": "SELL",
+      "analyzedAt": "2026-05-04T14:58:44Z",
       "researchReport": "COIN_2026-05-02.md"
     },
     "globalSettings": {
@@ -300,6 +300,21 @@
       "valuationAction": "SELL",
       "portfolioRationale": "SELL-rated at $124.29 FV vs price $191.25 (\u221235.0%). BTC-cycle inflated revenue; Breaker B.2 (Base L2 top-3 EOY 2026) not yet confirmed. IBIT/ETHA achieve sovereign finance exposure without exchange business risk. Trim from 3.41% to 1.5%. Freed weight \u2192 IBIT.",
       "portfolioUrgency": "NORMAL"
-    }
+    },
+    "catalystUpdates": [
+      {
+        "date": "2026-05-04",
+        "source": "apply_catalyst.py",
+        "type": "custom",
+        "events": [
+          "SEC enforcement dismissed with prejudice; Base L2 at $13B TVL / 46% L2 DeFi share; ETH-as-security threat stalled; regulatory overhang materially reduced"
+        ],
+        "weightShifts": {
+          "bull": 10.0,
+          "bear": -10.0
+        },
+        "thesisImpact": "Bull probability +10pp; bear -10pp. FV $124.29\u2192$162.27. Action: TRIM\u2192SELL."
+      }
+    ]
   }
 ]
