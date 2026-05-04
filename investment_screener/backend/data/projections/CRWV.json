@@ -313,7 +313,7 @@
     "schemaVersion": "1.2",
     "version": 5,
     "savedAt": "2026-05-02T23:05:00Z",
-    "updatedAt": "2026-05-02T23:05:00Z",
+    "updatedAt": "2026-05-04T05:17:15Z",
     "name": "AI Deep Dive \u2014 CRWV \u2014 2026-05-02",
     "rationale": "CoreWeave is the defining pure-play GPU cloud of the GenAI era \u2014 revenue has exploded from $16M (2022) to $5.13B TTM, growing 110% YoY, with 71.7% gross margins demonstrating genuine pricing power. The investment thesis centers on whether CoreWeave can sustain outsized growth long enough to service its $18-20B debt load and transition from a 'GPU landlord' to a sticky enterprise AI platform before hyperscalers commoditize the market. Our probability-weighted fair value of $162.55 implies 37% upside from $119.01, but with only 45% weight on the base case \u2014 the outcome distribution is wide and binary in nature.",
     "snapshot": {
@@ -396,7 +396,18 @@
       "fairValue": 162.55,
       "action": "ACCUMULATE",
       "analyzedAt": "2026-05-02T22:55:00Z",
-      "researchReport": "CRWV_2026-05-02.md"
+      "researchReport": "CRWV_2026-05-02.md",
+      "catalystUpdate": {
+        "date": "2026-05-03",
+        "source": "Grok / X.com news sweep",
+        "events": [
+          "Meta expanded GPU cloud contract to $21B+ (multi-year, anchor hyperscaler)",
+          "$8.5B investment-grade financing secured \u2014 first GPU cloud company to achieve IG credit rating",
+          "NVIDIA made a strategic investment in CoreWeave, validating GPU fleet and business model",
+          "Additional hyperscaler wins beyond Microsoft/OpenAI anchor"
+        ],
+        "thesisImpact": "All three bear-case risks materially reduced: (1) AWS/GCP GPU competition offset by Meta lock-in; (2) FCF burn now covered by IG financing runway; (3) NVIDIA investment signals platform confidence. DCF base-case probability should be revised upward. Target lifted 3.32%\u21924.80%."
+      }
     },
     "globalSettings": {
       "discountRate": 10,
