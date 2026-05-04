@@ -95,13 +95,13 @@ def main() -> None:
         description="Apply catalyst weight shift to a DCF projection JSON."
     )
     parser.add_argument("--ticker", required=True, help="Ticker symbol (e.g. CRWV)")
-    parser.add_argument("--type", dest="catalyst_type", choices=list(PRESETS), required=True,
-                        help="Catalyst type preset or 'custom'")
+    parser.add_argument("--type", dest="catalyst_type", choices=list(PRESETS), default=None,
+                        help="Catalyst type preset or 'custom'. Omit with --record-sweep.")
     parser.add_argument("--shift-bull", type=float, default=None,
                         help="Bull weight shift in pp (overrides preset; required for custom)")
     parser.add_argument("--shift-bear", type=float, default=None,
                         help="Bear weight shift in pp (overrides preset; required for custom)")
-    parser.add_argument("--note", required=True, help="One-line catalyst description")
+    parser.add_argument("--note", default=None, help="One-line catalyst description")
     parser.add_argument("--date", default=datetime.date.today().isoformat(),
                         help="Catalyst date YYYY-MM-DD (default: today)")
     parser.add_argument("--dry-run", action="store_true",
@@ -110,7 +110,31 @@ def main() -> None:
                         help="Persist changes to projection JSON")
     parser.add_argument("--update-thesis", action="store_true",
                         help="Append catalyst note to agentRationale in target-portfolio.json")
+    parser.add_argument("--record-sweep", action="store_true",
+                        help="Stamp lastGrokSweep date only — no weight shifts (use when sweep "
+                             "finds no material catalyst)")
     args = parser.parse_args()
+
+    # --record-sweep mode: just stamp lastGrokSweep, no catalyst required
+    if args.record_sweep:
+        proj_path = PROJ_DIR / f"{args.ticker}.json"
+        if not proj_path.exists():
+            print(f"✗ No projection file: {proj_path}", file=sys.stderr)
+            sys.exit(1)
+        raw = json.loads(proj_path.read_text())
+        data: list = raw if isinstance(raw, list) else [raw]
+        idx, entry = _find_latest_ai_agent(data)
+        entry["lastGrokSweep"] = args.date
+        data[idx] = entry
+        out = data if isinstance(raw, list) else data[0]
+        proj_path.write_text(json.dumps(out, indent=2) + "\n")
+        print(f"✅ {args.ticker}: lastGrokSweep stamped {args.date} (no catalyst applied)")
+        return
+
+    if args.catalyst_type is None:
+        parser.error("--type is required unless using --record-sweep")
+    if args.note is None:
+        parser.error("--note is required unless using --record-sweep")
 
     if args.catalyst_type == "custom":
         if args.shift_bull is None or args.shift_bear is None:
@@ -198,8 +222,9 @@ def main() -> None:
         for name, w in new_weights.items():
             entry["scenarios"][name]["weight"] = w
 
-    # Append to catalystUpdates log
+    # Append to catalystUpdates log; always stamp last sweep date
     entry.setdefault("catalystUpdates", []).append(catalyst_block)
+    entry["lastGrokSweep"] = args.date
     data[idx] = entry
 
     out = data if isinstance(raw, list) else data[0]
