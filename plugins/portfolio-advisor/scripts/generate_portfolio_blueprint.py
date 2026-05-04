@@ -56,8 +56,6 @@ def build_actual_map(portfolio: list) -> tuple[dict, float]:
             "book":      h.get("book_price", 0),
             "value":     round(val, 2),
             "actualPct": round(val / total * 100, 2) if total else 0,
-            "pnl":       round((h["price"] - h.get("book_price", h["price"])) / h.get("book_price", h["price"]) * 100, 1)
-                         if h.get("book_price", 0) > 0 else 0,
             "name":      h.get("name", h["symbol"]),
         }
     return actual, total
@@ -78,8 +76,8 @@ def build_thesis_map(thesis: dict) -> dict:
     return holdings
 
 
-def assign_action(actual_pct: float, target_pct: float, existing_action: str = "") -> str:
-    return derive_action(actual_pct, target_pct)
+def assign_action(ticker: str, actual_pct: float, target_pct: float, existing_action: str = "") -> str:
+    return derive_action(ticker, actual_pct, target_pct)
 
 
 def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> str:
@@ -123,8 +121,8 @@ def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> 
         section_name = SUB_STRATEGY_NAMES.get(sid, sid)
         lines.append(f"### {section_name}")
         lines.append("")
-        lines.append("| Ticker | Action | Actual % | Target % | P&L | Conviction |")
-        lines.append("| :--- | :--- | ---: | ---: | ---: | :--- |")
+        lines.append("| Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |")
+        lines.append("| :--- | :--- | :--- | ---: | ---: | ---: | :--- |")
 
         def sort_key(t):
             ap = current_data["holdings"].get(t, 0) or 0
@@ -140,18 +138,36 @@ def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> 
             th         = thesis_map.get(ticker, {})
             actual_pct = current_data["holdings"].get(ticker, 0.0) or 0.0
             target_pct = target_data["holdings"].get(ticker, 0.0) or 0.0
-            pnl        = a.get("pnl", 0.0)
-            action     = assign_action(actual_pct, target_pct, th.get("role", "").upper())
+            action     = assign_action(ticker, actual_pct, target_pct, th.get("role", "").upper())
             emoji      = ACTION_EMOJI.get(action, "")
             note       = th.get("thesisNote") or a.get("name", ticker)
-            pnl_str    = f"+{pnl:.1f}%" if pnl >= 0 else f"{pnl:.1f}%"
             actual_str = f"{actual_pct:.2f}%" if actual_pct else "—"
             target_str = f"{target_pct:.2f}%" if target_pct else "—"
+            
+            # Fetch DCF projection for AI Signal & Upside
+            proj_path = REPO_ROOT / f"investment_screener/backend/data/projections/{ticker}.json"
+            ai_signal = "—"
+            upside_str = "—"
+            if proj_path.exists():
+                try:
+                    proj = load_json(proj_path)
+                    thesis_obj = proj.get("aiThesis", {})
+                    if thesis_obj:
+                        fv = thesis_obj.get("fairValue")
+                        curr_price = a.get("price") or thesis_obj.get("currentPrice")
+                        if fv and curr_price and curr_price > 0:
+                            upside = ((fv - curr_price) / curr_price) * 100
+                            upside_str = f"+{upside:.1f}%" if upside >= 0 else f"{upside:.1f}%"
+                        ai_action = thesis_obj.get("action")
+                        if ai_action:
+                            ai_signal = ai_action
+                except Exception:
+                    pass
 
             sub_actual += actual_pct
             sub_target += target_pct
 
-            lines.append(f"| **{ticker}** | {emoji} {action} | {actual_str} | {target_str} | {pnl_str} | {note} |")
+            lines.append(f"| **{ticker}** | {emoji} {action} | {ai_signal} | {actual_str} | {target_str} | {upside_str} | {note} |")
 
         # Sub-strategy subtotal row
         delta = sub_target - sub_actual
@@ -201,8 +217,8 @@ def update_section_tables(content: str, current_data: dict, target_data: dict) -
 
     def rebuild_table(m: re.Match) -> str:
         rows_block = m.group(2)
-        new_header = "| Ticker | Action | Current % | Target % | Role | Conviction Note |\n"
-        new_sep    = "| :--- | :--- | ---: | ---: | :--- | :--- |\n"
+        new_header = "| Ticker | Thesis Action | AI Signal | Actual % | Target % | Role | Conviction Note |\n"
+        new_sep    = "| :--- | :--- | :--- | ---: | ---: | :--- | :--- |\n"
         new_rows = []
         for line in rows_block.splitlines():
             line = line.strip()
@@ -215,27 +231,27 @@ def update_section_tables(content: str, current_data: dict, target_data: dict) -
             ticker, role, conviction = parts[0], parts[1], "|".join(parts[2:]).strip()
             actual  = current_data["holdings"].get(ticker, 0) or 0
             target  = target_data["holdings"].get(ticker, 0)  or 0
-            action  = derive_action(actual, target)
+            action  = derive_action(ticker, actual, target)
             emoji   = ACTION_EMOJI.get(action, "")
             act_str = f"{actual:.2f}%" if actual else "—"
             tgt_str = f"{target:.2f}%" if target else "—"
-            new_rows.append(f"| **{ticker}** | {emoji} {action} | {act_str} | {tgt_str} | {role} | {conviction} |")
+            
+            # Fetch AI Signal
+            proj_path = REPO_ROOT / f"investment_screener/backend/data/projections/{ticker}.json"
+            ai_signal = "—"
+            if proj_path.exists():
+                try:
+                    proj = load_json(proj_path)
+                    ai_action = proj.get("aiThesis", {}).get("action")
+                    if ai_action:
+                        ai_signal = ai_action
+                except Exception:
+                    pass
+            
+            new_rows.append(f"| **{ticker}** | {emoji} {action} | {ai_signal} | {act_str} | {tgt_str} | {role} | {conviction} |")
         return new_header + new_sep + "\n".join(new_rows) + "\n"
 
     return table_pattern.sub(rebuild_table, content)
-
-
-
-    content = path.read_text()
-    # Replace from ## IV. ... up to the next ## heading
-    pattern = r"(## IV\. Portfolio Blueprint.*?)(?=\n## |\Z)"
-    replacement = new_section + "\n\n---\n\n"
-    updated, count = re.subn(pattern, replacement, content, flags=re.DOTALL)
-    if count == 0:
-        # Section doesn't exist yet — append before ## V
-        updated = re.sub(r"(\n## V\.)", "\n\n" + new_section + "\n\n---\n\n## V.", content, count=1)
-    path.write_text(updated)
-    print(f"✅ Updated: {path}")
 
 
 def main():
