@@ -202,53 +202,116 @@ def update_thesis_md(new_section: str, path: Path) -> None:
 
 def update_section_tables(content: str, current_data: dict, target_data: dict) -> str:
     """
-    Find every '| Ticker | Role | Conviction Note |' table in the thesis and
-    rebuild it with Action / Current % / Target % columns prepended after Ticker.
-    Uses the canonical derive_action() — same logic as the frontend.
+    Find every holding table in the thesis — whether in the original 3-column format
+    (| Ticker | Role | Conviction Note |) or the already-enriched 7-column format
+    (| Ticker | Thesis Action | AI Signal | Actual % | Target % | Role | Conviction Note |)
+    — and rebuild it with fresh live data.
+
+    This runs on every --write call so the tables never go stale.
     """
-    # Match table header + separator + all data rows (stops at blank line or non-table line)
-    table_pattern = re.compile(
+    # Pattern 1: original 3-column format (first-time enrichment)
+    pattern_3col = re.compile(
         r"(\| Ticker \| Role \| Conviction Note \|\n\| :--- \| :--- \| :--- \|\n)((?:\|[^\n]+\|\n?)+)",
         re.IGNORECASE
     )
+    # Pattern 2: already-enriched 7-column format (re-enrichment on subsequent runs)
+    pattern_7col = re.compile(
+        r"(\| Ticker \| Thesis Action \| AI Signal \| Actual % \| Target % \| Role \| Conviction Note \|\n\| :--- \| :--- \| :--- \| ---: \| ---: \| :--- \| :--- \|\n)((?:\|[^\n]+\|\n?)+)",
+        re.IGNORECASE
+    )
 
-    def rebuild_table(m: re.Match) -> str:
-        rows_block = m.group(2)
-        new_header = "| Ticker | Thesis Action | AI Signal | Actual % | Target % | Role | Conviction Note |\n"
-        new_sep    = "| :--- | :--- | :--- | ---: | ---: | :--- | :--- |\n"
+    def get_ai_signal(ticker: str) -> str:
+        proj_path = REPO_ROOT / f"investment_screener/backend/data/projections/{ticker}.json"
+        if proj_path.exists():
+            try:
+                proj = load_json(proj_path)
+                projs = proj if isinstance(proj, list) else [proj]
+                ai = [p for p in projs if p.get("source") == "AI_AGENT"]
+                if ai:
+                    latest = max(ai, key=lambda x: x.get("savedAt", ""))
+                    action = latest.get("aiThesis", {}).get("action")
+                    if action:
+                        return action
+            except Exception:
+                pass
+        return "—"
+
+    def build_enriched_row(ticker: str, role: str, conviction: str) -> str:
+        # Strip bold markers for lookup
+        t = ticker.strip("* ")
+        actual  = current_data["holdings"].get(t, 0) or 0
+        target  = target_data["holdings"].get(t, 0)  or 0
+        action  = derive_action(t, actual, target)
+        emoji   = ACTION_EMOJI.get(action, "")
+        act_str = f"{actual:.2f}%" if actual else "—"
+        tgt_str = f"{target:.2f}%" if target else "—"
+        ai_sig  = get_ai_signal(t)
+        return f"| **{t}** | {emoji} {action} | {ai_sig} | {act_str} | {tgt_str} | {role} | {conviction} |"
+
+    new_header = "| Ticker | Thesis Action | AI Signal | Actual % | Target % | Role | Conviction Note |\n"
+    new_sep    = "| :--- | :--- | :--- | ---: | ---: | :--- | :--- |\n"
+
+    def rebuild_from_3col(m: re.Match) -> str:
         new_rows = []
-        for line in rows_block.splitlines():
+        for line in m.group(2).splitlines():
             line = line.strip()
             if not line.startswith("|"):
                 continue
             parts = [p.strip() for p in line.strip("|").split("|")]
             if len(parts) < 3:
-                new_rows.append(line)
                 continue
             ticker, role, conviction = parts[0], parts[1], "|".join(parts[2:]).strip()
-            actual  = current_data["holdings"].get(ticker, 0) or 0
-            target  = target_data["holdings"].get(ticker, 0)  or 0
-            action  = derive_action(ticker, actual, target)
+            new_rows.append(build_enriched_row(ticker, role, conviction))
+        return new_header + new_sep + "\n".join(new_rows) + "\n"
+
+    def rebuild_from_7col(m: re.Match) -> str:
+        new_rows = []
+        for line in m.group(2).splitlines():
+            line = line.strip()
+            if not line.startswith("|"):
+                continue
+            parts = [p.strip() for p in line.strip("|").split("|")]
+            if len(parts) < 7:
+                continue
+            # 7-col layout: ticker | thesis_action | ai_signal | actual | target | role | conviction
+            ticker, role, conviction = parts[0], parts[5], parts[6]
+            new_rows.append(build_enriched_row(ticker, role, conviction))
+        return new_header + new_sep + "\n".join(new_rows) + "\n"
+
+    # Pattern 3: 6-column live format used in early thesis sections
+    # Header: | Ticker | Action | Current % | Target % | Role | Conviction Note |
+    pattern_6col = re.compile(
+        r"(\| Ticker \| Action \| Current % \| Target % \| Role \| Conviction Note \|\n\| :--- \| :--- \| ---: \| ---: \| :--- \| :--- \|\n)((?:\|[^\n]+\|\n?)+)",
+        re.IGNORECASE
+    )
+
+    def rebuild_from_6col(m: re.Match) -> str:
+        header_6 = "| Ticker | Action | Current % | Target % | Role | Conviction Note |\n"
+        sep_6    = "| :--- | :--- | ---: | ---: | :--- | :--- |\n"
+        new_rows = []
+        for line in m.group(2).splitlines():
+            line = line.strip()
+            if not line.startswith("|"):
+                continue
+            parts = [p.strip() for p in line.strip("|").split("|")]
+            if len(parts) < 6:
+                continue
+            # layout: ticker | action | current | target | role | conviction
+            ticker_raw, role, conviction = parts[0], parts[4], parts[5]
+            t = ticker_raw.strip("* ")
+            actual  = current_data["holdings"].get(t, 0) or 0
+            target  = target_data["holdings"].get(t, 0)  or 0
+            action  = derive_action(t, actual, target)
             emoji   = ACTION_EMOJI.get(action, "")
             act_str = f"{actual:.2f}%" if actual else "—"
             tgt_str = f"{target:.2f}%" if target else "—"
-            
-            # Fetch AI Signal
-            proj_path = REPO_ROOT / f"investment_screener/backend/data/projections/{ticker}.json"
-            ai_signal = "—"
-            if proj_path.exists():
-                try:
-                    proj = load_json(proj_path)
-                    ai_action = proj.get("aiThesis", {}).get("action")
-                    if ai_action:
-                        ai_signal = ai_action
-                except Exception:
-                    pass
-            
-            new_rows.append(f"| **{ticker}** | {emoji} {action} | {ai_signal} | {act_str} | {tgt_str} | {role} | {conviction} |")
-        return new_header + new_sep + "\n".join(new_rows) + "\n"
+            new_rows.append(f"| **{t}** | {emoji} {action} | {act_str} | {tgt_str} | {role} | {conviction} |")
+        return header_6 + sep_6 + "\n".join(new_rows) + "\n"
 
-    return table_pattern.sub(rebuild_table, content)
+    content = pattern_6col.sub(rebuild_from_6col, content)
+    content = pattern_7col.sub(rebuild_from_7col, content)
+    content = pattern_3col.sub(rebuild_from_3col, content)
+    return content
 
 
 def main():
