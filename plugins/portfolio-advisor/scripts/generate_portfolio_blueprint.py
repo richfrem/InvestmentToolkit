@@ -341,11 +341,39 @@ def main():
         # 2. Update Section IV (blueprint)
         update_thesis_md(section, md_path)
 
-        # 3. Enrich early section tables (Ticker | Role | Conviction Note) with live data
+        # 3. Enrich early section tables with live data
         content = md_path.read_text()
         updated = update_section_tables(content, current_data, target_data)
+
+        # 4. Sync header metadata from target-portfolio.json
+        import datetime
+        thesis_meta = load_json(THESIS_JSON)
+        thesis_version = thesis_meta.get("name", "Investment Thesis")
+        today = datetime.date.today().isoformat()
+
+        # Find latest review file
+        reviews_dir = REPO_ROOT / "PortfolioAnalysis" / "strategic-reviews"
+        latest_review = ""
+        if reviews_dir.exists():
+            review_files = sorted(
+                [f.name for f in reviews_dir.iterdir()
+                 if f.suffix == ".md" and f.name[0].isdigit()],
+                reverse=True
+            )
+            if review_files:
+                latest_review = f"PortfolioAnalysis/strategic-reviews/{review_files[0]}"
+
+        # Update title line
+        updated = re.sub(r"^# Investment Thesis v[\d.]+", f"# {thesis_version}", updated, count=1, flags=re.MULTILINE)
+        # Update Last Updated field
+        updated = re.sub(r"(\| \*\*Last Updated\*\* \| )[\d-]+", rf"\g<1>{today}", updated)
+        # Update Latest Review field
+        if latest_review:
+            updated = re.sub(r"(\| \*\*Latest Review\*\* \| )`[^`]+`", rf"\1`{latest_review}`", updated)
+
         md_path.write_text(updated)
         print(f"✅ Section tables enriched with live Action / Current % / Target %")
+        print(f"✅ Header synced: {thesis_version} · Last Updated {today}")
     else:
         print(section)
 
