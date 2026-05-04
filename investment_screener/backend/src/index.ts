@@ -701,11 +701,6 @@ app.get('/api/screener/all-holdings', async (_req, res) => {
             if (ticker && totalValue > 0)
                 actualMap[ticker] = { pct: ((p.shares || 0) * (p.price || 0) / totalValue) * 100, price: p.price || 0 };
         }
-        // USD_CASH in portfolio.json maps to the PSU-U.TO thesis slot
-        if (actualMap['USD_CASH']) {
-            actualMap['PSU-U.TO'] = actualMap['USD_CASH'];
-            delete actualMap['USD_CASH'];
-        }
         // 3. Canonical actions from Python — single source of truth
         const actionsMap = await getPythonActions();
 
