@@ -244,36 +244,24 @@ Wait for direction. Recalculate until total = 100.00% (allow ±0.05% floating po
 Once user confirms the summary:
 
 ```bash
-# Build patch JSON from ledger
-cat > /tmp/calibration_patch.json << 'PATCH'
-{
-  "holdings": [
-    {"ticker": "INTC",  "targetWeight": 15.00},
-    {"ticker": "CRWV",  "targetWeight": 0.00},
-    ...
-  ]
-}
-PATCH
+# Apply all agreed targets in one --set call (auto-normalizes to 100%)
+python3 plugins/portfolio-advisor/scripts/update_targets.py \
+  --set INTC=15.00 CRWV=0.00 \
+  --write --blueprint
 
-# Dry run first
-python3 investment_screener/backend/py_services/update_thesis.py \
-  --patch /tmp/calibration_patch.json \
-  --note "Calibration session {date}: {N} targets adjusted by user" \
-  --dry-run
+# Re-lock no-change positions (normalization may have drifted them above actual)
+# Always run this after any batch --set that changes multiple weights
+python3 plugins/portfolio-advisor/scripts/update_targets.py \
+  --set GOOG=4.98 HUMN=2.86 KOID=2.69 ETHA=3.79 IBIT=2.60 COIN=3.11 CRCL=2.27 \
+  --write --blueprint
 
-# If dry run passes, apply
-python3 investment_screener/backend/py_services/update_thesis.py \
-  --patch /tmp/calibration_patch.json \
-  --note "Calibration session {date}: {N} targets adjusted by user"
-
-# Regenerate canonical actions
+# Verify actions are clean — no false ACCUMULATE on DCF-negative stocks
 python3 plugins/portfolio-advisor/scripts/portfolio_action.py --all \
   --portfolio investment_screener/frontend/src/data/portfolio.json \
   --target investment_screener/backend/data/theses/target-portfolio.json
-
-# Rebuild thesis.md with updated section tables + Section IV
-python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write
 ```
+
+The `--blueprint` flag runs `generate_portfolio_blueprint.py --write` which updates **all** table formats in `investment_thesis.md` (Section IV + all enriched early-section tables). No separate blueprint step is needed.
 
 ---
 

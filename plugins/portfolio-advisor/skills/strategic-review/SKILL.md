@@ -37,10 +37,34 @@ If memory files are absent, scan `investment_screener/backend/data/projections/`
 1. User starts a review → agent reads current targets and actuals
 2. Agent runs DCF analysis, surfaces conflicts → proposes target changes with reasoning
 3. User approves or adjusts → agent edits `target-portfolio.json` directly
-4. Agent runs normalize + blueprint → targets are reflected everywhere (thesis.md + web table)
-5. Loop: more analysis → more target updates → re-run scripts
+4. Agent runs full refresh chain → targets reflected everywhere
+5. Loop: more analysis → more target updates → re-run chain
 
 **Do not treat existing targets as ground truth.** They are the current hypothesis. Your job is to challenge and improve them.
+
+### ⚠️ Full Refresh Chain — Run After Every Target Change
+
+```bash
+# 1. Apply changes — --blueprint updates ALL table formats in investment_thesis.md
+python3 plugins/portfolio-advisor/scripts/update_targets.py --set TICKER=X --write --blueprint
+
+# 2. Re-lock no-change positions after any normalization
+python3 plugins/portfolio-advisor/scripts/update_targets.py \
+  --set GOOG=4.98 HUMN=2.86 KOID=2.69 ETHA=3.79 IBIT=2.60 COIN=3.11 CRCL=2.27 \
+  --write --blueprint
+
+# 3. Verify — confirm actions are clean
+python3 plugins/portfolio-advisor/scripts/portfolio_action.py --all \
+  --portfolio investment_screener/frontend/src/data/portfolio.json \
+  --target investment_screener/backend/data/theses/target-portfolio.json
+```
+
+What `--blueprint` updates:
+- `investment_thesis.md` Section IV (full portfolio blueprint)
+- All 6-column early-section tables (Ticker | Action | Current % | Target % | Role | Conviction Note)
+- All 7-column enriched tables (Ticker | Thesis Action | AI Signal | Actual % | Target % | Role | Conviction Note)
+
+The webapp reads `investment_thesis.md` directly — every `--blueprint` run is immediately live after backend restart.
 
 ---
 
