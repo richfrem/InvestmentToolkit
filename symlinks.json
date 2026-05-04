@@ -204,6 +204,30 @@
       "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/scan_opportunities.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/update_targets.py",
+      "dst": "plugins/portfolio-advisor/skills/calibrate-targets/scripts/update_targets.py",
+      "strategy": "symlink",
+      "description": "Precision target-weight editor \u2014 set/add/remove weights, auto-normalizes to 100%, optional blueprint regen"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/update_targets.py",
+      "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/scripts/update_targets.py",
+      "strategy": "symlink",
+      "description": "Precision target-weight editor \u2014 set/add/remove weights, auto-normalizes to 100%, optional blueprint regen"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/update_targets.py",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/update_targets.py",
+      "strategy": "symlink",
+      "description": "Precision target-weight editor \u2014 set/add/remove weights, auto-normalizes to 100%, optional blueprint regen"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/update_targets.py",
+      "dst": "plugins/portfolio-advisor/skills/rebalance-portfolio/scripts/update_targets.py",
+      "strategy": "symlink",
+      "description": "Precision target-weight editor \u2014 set/add/remove weights, auto-normalizes to 100%, optional blueprint regen"
     }
   ]
 }
