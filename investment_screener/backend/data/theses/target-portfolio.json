@@ -1,61 +1,61 @@
 {
   "id": "target-portfolio",
-  "name": "Investment Thesis v8.5",
+  "name": "Investment Thesis v9.0",
   "schemaVersion": "1.0",
   "version": 9,
   "createdAt": "2026-02-14T12:00:00Z",
-  "updatedAt": "2026-05-04T15:26:52Z",
+  "updatedAt": "2026-05-05T15:05:32Z",
   "description": "Investment thesis focused on the dual infrastructure buildout for ASI Compute and Sovereign Finance. Builder-First, Empire-Second \u2014 own the physical and digital rails, not the application layer.",
   "pillars": [
     {
       "id": "compute",
       "name": "ASI / Compute \u2014 Chips",
-      "targetWeight": 18.7526
+      "targetWeight": 19.6134
     },
     {
       "id": "titans",
       "name": "AI Titans / Cloud",
-      "targetWeight": 11.1742
+      "targetWeight": 13.048
     },
     {
       "id": "sovfin",
       "name": "Sovereign Finance / Digital",
-      "targetWeight": 12.3417
+      "targetWeight": 0.0
     },
     {
       "id": "datainfra",
       "name": "Data Infra / Supply Chain",
-      "targetWeight": 15.1377
+      "targetWeight": 18.8932
     },
     {
       "id": "power",
       "name": "Power / Energy",
-      "targetWeight": 6.83
+      "targetWeight": 8.5246
     },
     {
       "id": "security",
       "name": "Security / Data OS",
-      "targetWeight": 7.6207
+      "targetWeight": 9.5113
     },
     {
       "id": "applied",
       "name": "Applied AI / Robotics",
-      "targetWeight": 5.4195
+      "targetWeight": 5.7319
     },
     {
       "id": "cash",
       "name": "Cash (Strategic Reserve)",
-      "targetWeight": 9.2105
+      "targetWeight": 11.4956
     },
     {
       "id": "quantum",
       "name": "Quantum Computing",
-      "targetWeight": 0.9228
+      "targetWeight": 1.1517
     },
     {
       "id": "biohealth",
       "name": "Healthcare AI / Life Science",
-      "targetWeight": 1.7767
+      "targetWeight": 0.0
     }
   ],
   "holdings": [
@@ -63,7 +63,7 @@
       "ticker": "PSU-U.TO",
       "name": "Purpose US Cash Fund",
       "pillarId": "cash",
-      "targetWeight": 9.2105,
+      "targetWeight": 11.4956,
       "role": "reserve",
       "subStrategyId": "cash",
       "thesisForInclusion": "Strategic reserve for opportunistic deployment. Reduced from 13% to fund NVDA, META, and NBIS initiations.",
@@ -73,7 +73,7 @@
       "ticker": "INTC",
       "name": "Intel Corp",
       "pillarId": "compute",
-      "targetWeight": 10.5929,
+      "targetWeight": 9.4293,
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "The Sovereign Foundry: designated US National Champion for onshored compute manufacturing. Core contrarian bet on 18A node. Target restored to 11.04% (2026-05-03): Terafab manufacturing partnership (Tesla/SpaceX/xAI AI compute) confirms first tier-1 hyperscaler-class design win on 18A \u2014 the thesis catalyst. 18A yield improvements reported. Do not trim before HVM data.",
@@ -98,7 +98,7 @@
       "ticker": "NVDA",
       "name": "NVIDIA Corporation",
       "pillarId": "compute",
-      "targetWeight": 3.4016,
+      "targetWeight": 4.2455,
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Highest-conviction BUY in corpus (+124% DCF upside). GPU monopoly for AI training. Increased from 4.4% \u2014 needs to be a core position.",
@@ -113,7 +113,7 @@
       "ticker": "AMD",
       "name": "AMD Inc.",
       "pillarId": "compute",
-      "targetWeight": 3.2894,
+      "targetWeight": 4.1055,
       "role": "hedge",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Hedge against NVDA dominance. MI300X gaining traction in inference. Slight increase from 2.7%.",
@@ -123,7 +123,7 @@
       "ticker": "GOOG",
       "name": "Alphabet Inc.",
       "pillarId": "titans",
-      "targetWeight": 4.8355,
+      "targetWeight": 5.1367,
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Hyperscaler with vertically integrated AI stack: TPUs, Gemini models, Search, YouTube, GCP. Increased from 6% \u2014 underweight given AI monetization runway.",
@@ -133,7 +133,7 @@
       "ticker": "MSFT",
       "name": "Microsoft Corp.",
       "pillarId": "titans",
-      "targetWeight": 2.9371,
+      "targetWeight": 3.6658,
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Azure + OpenAI partnership. Copilot monetization slower than expected \u2014 reduced from 3.7%. Maintain as infrastructure hedge.",
@@ -143,7 +143,7 @@
       "ticker": "META",
       "name": "Meta Platforms",
       "pillarId": "titans",
-      "targetWeight": 3.4016,
+      "targetWeight": 4.2455,
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Social monopoly + AI ad flywheel. DCF BUY +82% upside. Llama open-source creating massive ecosystem leverage. Increased from 3% \u2014 strong conviction.",
@@ -158,7 +158,7 @@
       "ticker": "ETHA",
       "name": "Ethereum ETF",
       "pillarId": "sovfin",
-      "targetWeight": 3.8316,
+      "targetWeight": 0.0,
       "role": "core",
       "subStrategyId": "sovereign-finance",
       "thesisForInclusion": "Ethereum as programmable settlement layer. Staking yield embedded in ETF. Slight increase from 3.77%.",
@@ -168,7 +168,7 @@
       "ticker": "COIN",
       "name": "Coinbase Global",
       "pillarId": "sovfin",
-      "targetWeight": 3.292,
+      "targetWeight": 0.0,
       "role": "core",
       "subStrategyId": "sovereign-finance",
       "thesisForInclusion": "Regulated crypto exchange + Base L2 growth. Increased from 3.48%.",
@@ -183,7 +183,7 @@
       "ticker": "IBIT",
       "name": "Bitcoin ETF",
       "pillarId": "sovfin",
-      "targetWeight": 2.6163,
+      "targetWeight": 0.0,
       "role": "core",
       "subStrategyId": "sovereign-finance",
       "thesisForInclusion": "Bitcoin as sovereign reserve asset. US strategic reserve narrative accelerating. Increased from 3.2%.",
@@ -193,7 +193,7 @@
       "ticker": "CRCL",
       "name": "Circle Internet",
       "pillarId": "sovfin",
-      "targetWeight": 2.6018,
+      "targetWeight": 0.0,
       "role": "core",
       "subStrategyId": "sovereign-finance",
       "thesisForInclusion": "USDC issuer and stablecoin infrastructure. GENIUS Act tailwind.",
@@ -208,7 +208,7 @@
       "ticker": "VST",
       "name": "Vistra Corp.",
       "pillarId": "power",
-      "targetWeight": 1.1747,
+      "targetWeight": 1.4662,
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Nuclear + natgas power merchant for data center load growth. Trimmed from 4.43% \u2014 power thesis still valid but reduce overweight.",
@@ -218,7 +218,7 @@
       "ticker": "CEG",
       "name": "Constellation Energy",
       "pillarId": "power",
-      "targetWeight": 2.9793,
+      "targetWeight": 3.7185,
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Largest US nuclear operator. Microsoft data center deal secured. DCF TRIM -35% \u2014 reduced from 4.42% on regulatory compression risk. Maintain small core.",
@@ -233,7 +233,7 @@
       "ticker": "OKLO",
       "name": "Oklo Inc.",
       "pillarId": "power",
-      "targetWeight": 2.2106,
+      "targetWeight": 2.759,
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Micro-nuclear reactor commercialization. Binary bet on NRC licensing. Increased from 1.35% \u2014 conviction on data center power timeline.",
@@ -243,7 +243,7 @@
       "ticker": "PANW",
       "name": "Palo Alto Networks",
       "pillarId": "security",
-      "targetWeight": 4.6836,
+      "targetWeight": 5.8455,
       "role": "core",
       "subStrategyId": "cybersecurity",
       "thesisForInclusion": "AI-native platform consolidation leader. Platformization model winning enterprise. Increased from 3.85% \u2014 cybersecurity pillar was underweight.",
@@ -263,7 +263,7 @@
       "ticker": "ZS",
       "name": "Zscaler Inc.",
       "pillarId": "security",
-      "targetWeight": 2.9371,
+      "targetWeight": 3.6658,
       "role": "core",
       "subStrategyId": "cybersecurity",
       "thesisForInclusion": "Zero-trust SASE leader. Network security moving to cloud-native model. Increased from 2.04%.",
@@ -273,7 +273,7 @@
       "ticker": "CORZ",
       "name": "Core Scientific",
       "pillarId": "datainfra",
-      "targetWeight": 4.6123,
+      "targetWeight": 5.7565,
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "BTC\u2192AI data center conversion thesis. Pecos campus expanding to 1.5 GW for AI (2026-05-03); $3.3B bond raise funds hyperscale data center buildout; ongoing CoreWeave partnership anchor. Execution is materially ahead of DCF assumptions.",
@@ -293,7 +293,7 @@
       "ticker": "CRWV",
       "name": "CoreWeave Inc.",
       "pillarId": "datainfra",
-      "targetWeight": 5.6477,
+      "targetWeight": 7.0488,
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "GPU cloud provider with hyperscaler-grade infrastructure. Microsoft/OpenAI anchor customer. Meta $21B+ contract expansion (2026-05-03) confirms hyperscaler demand; $8.5B investment-grade financing is the first IG credit for any GPU cloud company.",
@@ -313,7 +313,7 @@
       "ticker": "VRT",
       "name": "Vertiv Holdings",
       "pillarId": "datainfra",
-      "targetWeight": 0.9485,
+      "targetWeight": 1.1838,
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Data center thermal management. AI cooling bottleneck play. DCF SELL -32% \u2014 maintain small position, thesis is real but valuation stretched.",
@@ -323,7 +323,7 @@
       "ticker": "HUMN",
       "name": "Roundhill Humanoid Robotics ETF",
       "pillarId": "applied",
-      "targetWeight": 2.7851,
+      "targetWeight": 2.9529,
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Physical embodiment of ASI thesis \u2014 humanoid robotics ETF. Increased from 2.88%.",
@@ -333,7 +333,7 @@
       "ticker": "KOID",
       "name": "KraneShares Humanoid ETF",
       "pillarId": "applied",
-      "targetWeight": 2.6344,
+      "targetWeight": 2.779,
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Automation and robotics revolution \u2014 China + global exposure. Increased from 2.49%.",
@@ -343,7 +343,7 @@
       "ticker": "LITE",
       "name": "Lumentum Holdings Inc.",
       "subStrategyId": "sa-asi-race",
-      "targetWeight": 2.0558,
+      "targetWeight": 2.5658,
       "role": "speculative",
       "thesisForInclusion": "Lumentum optical interconnects \u2014 photonic layer of AI networking. SA LP holding.",
       "agentRationale": "DCF: SELL | FV $432 vs $950 price | -54.5% upside. SA LP: Long \u2014 1.3M shares \u2014 NEW position Q4. \u26a0\ufe0f SA/DCF CONFLICT: SA LP holds conviction long but DCF shows negative upside. Holding target pending user thesis decision."
@@ -352,7 +352,7 @@
       "ticker": "BE",
       "name": "Bloom Energy Corporation",
       "subStrategyId": "sa-asi-race",
-      "targetWeight": 3.765,
+      "targetWeight": 4.6991,
       "role": "speculative",
       "thesisForInclusion": "Bloom Energy fuel cells \u2014 clean distributed power for data centre edge. Oracle AI data center fuel cell deal up to 2.8 GW (2026-05-03); strong Q1 results. SA LP top power holding.",
       "agentRationale": "DCF: SELL | FV $106 vs $291 price | -63.5% upside. SA LP: Long \u2014 10.1M shares \u2014 NEW Q4 (top power position). \u26a0\ufe0f SA/DCF CONFLICT. Target lifted 3.19%\u21923.43% 2026-05-03: Oracle 2.8 GW fuel cell deal is direct hyperscaler AI data center demand validation \u2014 the most concrete power-to-AI contract in the portfolio."
@@ -361,7 +361,7 @@
       "ticker": "NBIS",
       "name": "Nebius Group N.V.",
       "pillarId": "datainfra",
-      "targetWeight": 2.3496,
+      "targetWeight": 2.9326,
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "DCF BUY +186% upside. Former Yandex Cloud team building European AI infrastructure. INITIATE \u2014 DCF conviction overrides thesis EXIT flag.",
@@ -376,7 +376,7 @@
       "ticker": "CRM",
       "name": "Salesforce, Inc.",
       "subStrategyId": "quality-saas",
-      "targetWeight": 1.1747,
+      "targetWeight": 1.4662,
       "role": "speculative",
       "thesisForInclusion": "DCF BUY +53% upside. Agentforce AI platform on world's largest CRM dataset. Small position \u2014 thesis EXIT overridden by DCF valuation gap.",
       "agentRationale": "DCF: BUY | FV $281 vs $184 price | +53.1% upside. SA LP: Not in 13F."
@@ -385,7 +385,7 @@
       "ticker": "NOW",
       "name": "ServiceNow, Inc.",
       "subStrategyId": "quality-saas",
-      "targetWeight": 1.1747,
+      "targetWeight": 1.4662,
       "role": "speculative",
       "thesisForInclusion": "DCF BUY +45% upside. AI workflow automation embedded in enterprise IT infrastructure. Small position \u2014 thesis EXIT overridden by DCF valuation gap.",
       "agentRationale": "DCF: BUY | FV $132 vs $91 price | +45.2% upside. SA LP: Not in 13F."
@@ -421,7 +421,7 @@
       "ticker": "COHR",
       "name": "Coherent Corp.",
       "subStrategyId": "sa-asi-race",
-      "targetWeight": 1.4687,
+      "targetWeight": 1.8331,
       "role": "speculative",
       "thesisForInclusion": "EXIT: Coherent optics \u2014 near fair value. Capital better deployed elsewhere.",
       "agentRationale": "DCF: HOLD | FV $320 vs $330 price | -3.0% upside. SA LP: Long \u2014 480K shares \u2014 +433% Q4."
@@ -430,7 +430,7 @@
       "ticker": "EQT",
       "name": "EQT Corporation",
       "subStrategyId": "sa-asi-race",
-      "targetWeight": 1.1747,
+      "targetWeight": 0.0,
       "role": "speculative",
       "thesisForInclusion": "EXIT: EQT natural gas infrastructure \u2014 gas commodity, near breakeven. DCF SELL -18%.",
       "agentRationale": "DCF: SELL | FV $48 vs $59 price | -17.5% upside. SA LP: Long \u2014 2.5M shares + NEW calls \u2014 doubled Q4. \u26a0\ufe0f SA/DCF CONFLICT: SA LP holds conviction long but DCF shows negative upside. Holding target pending user thesis decision."
@@ -448,7 +448,7 @@
       "ticker": "TEM",
       "name": "Tempus AI, Inc.",
       "subStrategyId": "ai-healthcare",
-      "targetWeight": 1.7767,
+      "targetWeight": 0.0,
       "role": "speculative",
       "thesisForInclusion": "Tempus AI \u2014 AI-native healthcare data platform. Thesis: AI compresses drug discovery and powers precision medicine. Pelosi-backed conviction pick. Small speculative allocation.",
       "agentRationale": "DCF: HOLD | FV ~$54 vs $55 price | ~-2% upside (5-yr DCF understates 10-20yr AI-healthcare disruption optionality). Pelosi conviction pick. Pure-play on hospital data + AI diagnostics. Hold at current weight; no urgency to add.",
@@ -463,7 +463,7 @@
       "ticker": "BTDR",
       "name": "Bitdeer Technologies Group",
       "pillarId": "compute",
-      "targetWeight": 1.4687,
+      "targetWeight": 1.8331,
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Proprietary Sealminer ASIC chip design \u2014 structural cost moat over pure BTC miners. DCF BUY +103%. SA LP Q4 2025 increased 92%. ASIC capability aligns with compute thesis.",
@@ -477,7 +477,7 @@
     {
       "ticker": "WYFI",
       "name": "WhiteFiber Inc.",
-      "targetWeight": 0.8863,
+      "targetWeight": 1.1062,
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
       "pillarId": "datainfra",
@@ -487,7 +487,7 @@
     {
       "ticker": "SNDK",
       "name": "SanDisk Corp",
-      "targetWeight": 0.6933,
+      "targetWeight": 0.8653,
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
       "pillarId": "datainfra",
@@ -497,7 +497,7 @@
     {
       "ticker": "PSIX",
       "name": "Power Solutions International",
-      "targetWeight": 0.4654,
+      "targetWeight": 0.5809,
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
       "pillarId": "power",
@@ -510,7 +510,7 @@
       "pillarId": "quantum",
       "subStrategyId": "quantum-compute",
       "role": "speculative",
-      "targetWeight": 0.9228,
+      "targetWeight": 1.1517,
       "agentRationale": "DCF: SELL | FV $8.54 vs $48 price | -82% upside (5-yr DCF understates 10-20yr QC optionality). Speculative quantum thesis: most commercially advanced QC company ($130M TTM revenue, +428% YoY), available on AWS Braket / Azure Quantum / Google Cloud. Trapped-ion accuracy moat vs IBM/Google superconducting. Timeline: 3-7 years to useful QC. Winner-pick over RGTI (superconducting follower) and QBTS (annealing \u2014 limited TAM). Accumulate on weakness. 2026-05-04: Initial thesis entry.",
       "thesisBreakers": [
         "IBM/Google superconducting reaches trapped-ion accuracy parity \u2014 eliminates tech differentiation",
