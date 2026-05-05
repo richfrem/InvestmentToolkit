@@ -59,13 +59,14 @@ const COLUMNS: ColDef[] = [
     { id: 'base',           label: 'Base',        defaultOn: false, align: 'right', format: v => v != null ? `$${Math.round(v)}` : '—' },
     { id: 'bull',           label: 'Bull',        defaultOn: false, align: 'right', format: v => v != null ? `$${Math.round(v)}` : '—' },
     { id: 'qualityMultiplier', label: 'Quality', defaultOn: false, align: 'right', format: v => v != null ? `${v.toFixed(2)}x` : '—' },
+    { id: 'subStrategyId',  label: 'Strategy',    defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
     { id: 'lastAnalyzed',   label: 'Analyzed',    defaultOn: true,  align: 'right', format: v => v ? new Date(v).toLocaleDateString() : '—' },
 ];
 
 const DEFAULT_WIDTHS: Record<string, number> = {
     symbol: 80, action: 115, fairValue: 95, currentPrice: 80, gainLoss: 85,
     upside: 85, ruleOf40: 70, growth: 80, model: 130, base: 80,
-    bear: 80, bull: 80, qualityMultiplier: 80, lastAnalyzed: 90,
+    bear: 80, bull: 80, qualityMultiplier: 80, subStrategyId: 140, lastAnalyzed: 90,
     currentPct: 90, recommendedPct: 85, rationale: 260,
 };
 
