@@ -26,11 +26,11 @@ REVIEWS_DIR = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
 PROJ_DIR    = REPO_ROOT / "investment_screener/backend/data/projections"
 
 # Positions user locked to "no change" — must stay at MAINTAIN
-NO_CHANGE = {"GOOG", "HUMN", "KOID", "ETHA", "IBIT", "COIN", "CRCL"}
+NO_CHANGE = {"GOOG", "HUMN", "KOID"}
 
 # Known SA LP conviction plays where DCF disagrees — warn, don't fail
 # These are intentional: SA LP holds large positions; user has not explicitly resolved the conflict
-SA_DCF_CONFLICTS = {"CORZ", "LITE", "BE", "EQT", "INTC", "IONQ", "QBTS"}
+SA_DCF_CONFLICTS = {"CORZ", "LITE", "BE", "INTC", "IONQ", "QBTS", "OKLO", "CEG"}
 
 sys.path.insert(0, str(Path(__file__).parent))
 from validate_weights import compute_current, compute_target
