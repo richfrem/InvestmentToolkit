@@ -348,6 +348,24 @@
       "dst": "investment_screener/backend/py_services/apply_catalyst.py",
       "strategy": "symlink",
       "description": "apply_catalyst.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/thesis-challenge-prompt.md",
+      "dst": "plugins/portfolio-advisor/skills/thesis-challenge-bundler/assets/templates/thesis-challenge-prompt.md",
+      "strategy": "symlink",
+      "description": "ADR-003: adversarial prompt template canonical in plugin assets; skill symlink"
+    },
+    {
+      "src": ".agents/skills/red-team-bundler/scripts/bundle.py",
+      "dst": "plugins/portfolio-advisor/scripts/bundle.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/bundle.py",
+      "dst": "plugins/portfolio-advisor/skills/thesis-challenge-bundler/scripts/bundle.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
