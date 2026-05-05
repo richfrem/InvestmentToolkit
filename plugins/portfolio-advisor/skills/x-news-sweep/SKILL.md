@@ -221,6 +221,16 @@ python3 scripts/apply_catalyst.py \
 
 ## Phase 7 — Session Close
 
+Before printing the summary, update the **Version History table** in `investment_thesis.md`
+(the `## Version History` table near the top of the file — NOT the Red Team Reviews section).
+Add one row per version bump made this session:
+
+```markdown
+| {version} | {date} | The Sovereign Manufacturer | {one-line summary of key changes} |
+```
+
+Then print:
+
 ```
 ╔══════════════════════════════════════════════════════════════════╗
 ║              GROK SWEEP COMPLETE                                ║
@@ -228,7 +238,7 @@ python3 scripts/apply_catalyst.py \
 
 ✅ {N} targets updated  (Investment Thesis v{version})
 ✅ {N} projection JSONs updated with catalystUpdate
-✅ investment_thesis.md rebuilt
+✅ investment_thesis.md rebuilt + Version History updated
 ✅ Review JSON generated: PortfolioAnalysis/strategic-reviews/{date}-*.json
 ✅ verify_refresh.py: All checks passed ({N} warnings)
 
