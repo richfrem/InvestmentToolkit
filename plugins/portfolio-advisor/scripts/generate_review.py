@@ -23,7 +23,7 @@ from pathlib import Path
 # ── Paths (relative to repo root) ──────────────────────────────────────────────
 REPO_ROOT = Path(__file__).resolve().parents[3]  # plugins/portfolio-advisor/scripts/ → repo root
 TEMPLATE_PATH = REPO_ROOT / "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md"
-PORTFOLIO_PATH = REPO_ROOT / "investment_screener/frontend/src/data/portfolio.json"
+PORTFOLIO_PATH = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 THESIS_PATH    = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 OUTPUT_DIR     = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
 PROJECTIONS_DIR = REPO_ROOT / "investment_screener/backend/data/projections"

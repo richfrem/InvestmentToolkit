@@ -10,7 +10,7 @@ import { geminiService } from './GeminiService';
 
 const THESES_DIR = path.resolve(__dirname, '../../data/theses');
 const PROJECTIONS_DIR = path.resolve(__dirname, '../../data/projections');
-const PORTFOLIO_FILE = path.resolve(__dirname, '../../../frontend/src/data/portfolio.json');
+const PORTFOLIO_FILE = path.resolve(__dirname, '../../data/portfolio.json');
 const REBALANCE_PROMPT_PATH = path.resolve(__dirname, '../../../.agent/skills/portfolio-advisor/references/rebalance_prompt.md');
 
 // Ensure directory exists

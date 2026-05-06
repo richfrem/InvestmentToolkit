@@ -69,7 +69,7 @@ Load current state:
 
 ```bash
 python3 scripts/portfolio_action.py --all \
-  --portfolio investment_screener/frontend/src/data/portfolio.json \
+  --portfolio investment_screener/backend/data/portfolio.json \
   --target investment_screener/backend/data/theses/target-portfolio.json
 ```
 

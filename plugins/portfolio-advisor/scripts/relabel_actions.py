@@ -14,7 +14,7 @@ Logic:
 Usage:
   python3 relabel_actions.py \
     --recs PortfolioAnalysis/strategic-reviews/2026-05-02-PortfolioAnalysisRecommendations.json \
-    [--portfolio investment_screener/frontend/src/data/portfolio.json] \
+    [--portfolio investment_screener/backend/data/portfolio.json] \
     [--threshold 0.5] \
     [--dry-run]
 """
@@ -25,7 +25,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-DEFAULT_PORTFOLIO = REPO_ROOT / "investment_screener/frontend/src/data/portfolio.json"
+DEFAULT_PORTFOLIO = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 MAINTAIN_THRESHOLD = 0.5  # pp — within this band = MAINTAIN
 
 

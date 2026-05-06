@@ -16,6 +16,7 @@ interface StockRow {
     total_market: number;
     total_book: number | null;
     currentPct: number | null;
+    subStrategyId: string | null;
     change_1d: number | null;
     change_1w: number | null;
     change_1m: number | null;
@@ -45,6 +46,7 @@ const COLUMNS: ColDef[] = [
     { id: 'symbol',         label: 'Symbol',     always: true,  defaultOn: true,  align: 'left',  format: v => String(v ?? '') },
     { id: 'name',           label: 'Name',        always: true,  defaultOn: true,  align: 'left',  format: v => String(v ?? '') },
     { id: 'currentPct',     label: 'Portfolio %', defaultOn: true,  align: 'right', format: v => v != null ? `${(v as number).toFixed(2)}%` : '—' },
+    { id: 'subStrategyId',  label: 'Strategy',    defaultOn: true,  align: 'left',  format: v => String(v ?? '—') },
     { id: 'sector',         label: 'Sector',      defaultOn: false, align: 'left', format: v => String(v ?? '—') },
     { id: 'shares',         label: 'Shares',      defaultOn: true,  align: 'right', format: v => v?.toLocaleString() ?? '—' },
     { id: 'price',          label: 'Price',       defaultOn: true,  align: 'right', format: v => v != null ? `$${(v as number).toFixed(2)}` : '—' },
@@ -60,7 +62,7 @@ const COLUMNS: ColDef[] = [
 ];
 
 const DEFAULT_WIDTHS: Record<string, number> = {
-    symbol: 70, name: 170, currentPct: 90, sector: 115, shares: 60, price: 72,
+    symbol: 70, name: 170, currentPct: 90, subStrategyId: 130, sector: 115, shares: 60, price: 72,
     book_price: 72, change_1d: 65, change_1w: 65, change_1m: 65,
     change_ytd: 65, change_1y: 65, change_overall: 80,
     total_book: 80, total_market: 80,
@@ -68,7 +70,7 @@ const DEFAULT_WIDTHS: Record<string, number> = {
 
 // ─── Persistence ──────────────────────────────────────────────────────────────
 
-const STORAGE_KEY = 'portfolio-table-prefs-v2';
+const STORAGE_KEY = 'portfolio-table-prefs-v3';
 
 interface TablePrefs {
     visible: string[];
@@ -143,12 +145,16 @@ export default function PortfolioTable() {
     if (savedPrefs.current === null) savedPrefs.current = loadPrefs();
     const prefs = savedPrefs.current;
 
+    const validIds = new Set<string>(COLUMNS.map(c => c.id as string));
     const defaultVisible = new Set(COLUMNS.filter(c => c.always || c.defaultOn).map(c => c.id));
+    const filteredPrefsOrder = (prefs?.columnOrder.filter(id => validIds.has(id)) ?? null) as (keyof StockRow)[] | null;
     const [visible, setVisible] = useState<Set<string>>(
-        prefs ? new Set(prefs.visible) : defaultVisible
+        prefs ? new Set(prefs.visible.filter(id => validIds.has(id))) : defaultVisible
     );
     const [columnOrder, setColumnOrder] = useState<string[]>(
-        prefs?.columnOrder ?? COLUMNS.map(c => c.id)
+        filteredPrefsOrder
+            ? [...filteredPrefsOrder, ...COLUMNS.map(c => c.id).filter(id => !filteredPrefsOrder.includes(id))]
+            : COLUMNS.map(c => c.id)
     );
     const [columnWidths, setColumnWidths] = useState<Record<string, number>>(
         { ...DEFAULT_WIDTHS, ...(prefs?.columnWidths ?? {}) }
@@ -233,10 +239,23 @@ export default function PortfolioTable() {
             if (!res.ok) throw new Error('Failed to fetch heatmap data');
             const heatmapData = await res.json() as { stocks: StockRow[]; total_value: number };
 
-            // 4. Merge currentPct from weights into each row
+            // 4. Thesis subStrategyId map (best-effort — falls back to null)
+            let strategyMap: Record<string, string> = {};
+            try {
+                const thesisRes = await fetch('/api/theses/target-portfolio');
+                if (thesisRes.ok) {
+                    const thesis = await thesisRes.json() as { holdings?: { ticker: string; subStrategyId?: string }[] };
+                    for (const h of thesis.holdings ?? []) {
+                        if (h.ticker && h.subStrategyId) strategyMap[h.ticker] = h.subStrategyId;
+                    }
+                }
+            } catch { /* proceed without strategy data */ }
+
+            // 5. Merge currentPct and subStrategyId into each row
             const stocksWithPct: StockRow[] = heatmapData.stocks.map(s => ({
                 ...s,
                 currentPct: weightsMap[s.symbol] ?? null,
+                subStrategyId: strategyMap[s.symbol] ?? null,
             }));
 
             setData({ stocks: stocksWithPct, total_value: heatmapData.total_value });
@@ -308,7 +327,7 @@ export default function PortfolioTable() {
     // ── Render ───────────────────────────────────────────────────────────────
 
     return (
-        <div className="flex flex-col bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800">
+        <div className="flex flex-col bg-zinc-900 rounded-lg border border-zinc-800">
 
             {/* Header bar */}
             <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900 border-b border-zinc-800">
@@ -374,7 +393,7 @@ export default function PortfolioTable() {
             </div>
 
             {/* Table */}
-            <div className="overflow-auto">
+            <div className="overflow-auto rounded-b-lg">
                 <table className="text-sm border-collapse" style={{ tableLayout: 'fixed', width: '100%', minWidth: visibleCols.reduce((sum, c) => sum + (columnWidths[c.id] ?? DEFAULT_WIDTHS[c.id] ?? 100), 0) }}>
                     <colgroup>
                         {visibleCols.map(col => (

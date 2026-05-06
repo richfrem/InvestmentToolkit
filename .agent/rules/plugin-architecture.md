@@ -76,13 +76,13 @@ ln -s ../../../references/portfolio.json portfolio.json
 # (plugin root references/ may itself symlink to investment_screener/ — that's fine at root level)
 
 # ❌ Wrong — jumps outside plugin to live data
-ln -s ../../../../investment_screener/frontend/src/data/portfolio.json portfolio.json
+ln -s ../../../../investment_screener/backend/data/portfolio.json portfolio.json
 
 # ❌ Wrong — jumps to .agents/ (different install tree)
 ln -s ../../../../.agents/skills/.../portfolio.json portfolio.json
 ```
 
-> **Why this breaks the installer:** When `_copy_resolving_pointers` copies a skill to `.agents/`, it resolves symlinks. If both the source symlink and the `.agents/` destination symlink resolve to the **same inode** (e.g. both point at `investment_screener/frontend/src/data/portfolio.json`), Python's `shutil.copy2` raises `SameFileError` and the plugin fails to install.
+> **Why this breaks the installer:** When `_copy_resolving_pointers` copies a skill to `.agents/`, it resolves symlinks. If both the source symlink and the `.agents/` destination symlink resolve to the **same inode** (e.g. both point at `investment_screener/backend/data/portfolio.json`), Python's `shutil.copy2` raises `SameFileError` and the plugin fails to install.
 
 ---
 

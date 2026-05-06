@@ -27,7 +27,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT     = Path(__file__).resolve().parents[3]
-PORTFOLIO_JSON   = REPO_ROOT / "investment_screener/frontend/src/data/portfolio.json"
+PORTFOLIO_JSON   = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 TARGET_JSON      = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 
 
