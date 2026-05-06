@@ -22,7 +22,7 @@ from pathlib import Path
 
 REPO_ROOT   = Path(__file__).resolve().parents[3]
 THESIS_JSON = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
-PORTFOLIO   = REPO_ROOT / "investment_screener/frontend/src/data/portfolio.json"
+PORTFOLIO   = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 REVIEWS_DIR = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
 
 sys.path.insert(0, str(Path(__file__).parent))

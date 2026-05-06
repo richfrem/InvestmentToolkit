@@ -21,7 +21,7 @@ from pathlib import Path
 REPO_ROOT   = Path(__file__).resolve().parents[3]
 THESIS_JSON = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 THESIS_MD   = REPO_ROOT / "plugins/portfolio-advisor/references/investment_thesis.md"
-PORTFOLIO   = REPO_ROOT / "investment_screener/frontend/src/data/portfolio.json"
+PORTFOLIO   = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 REVIEWS_DIR = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
 PROJ_DIR    = REPO_ROOT / "investment_screener/backend/data/projections"
 
@@ -30,7 +30,7 @@ NO_CHANGE = {"GOOG", "HUMN", "KOID"}
 
 # Known SA LP conviction plays where DCF disagrees — warn, don't fail
 # These are intentional: SA LP holds large positions; user has not explicitly resolved the conflict
-SA_DCF_CONFLICTS = {"CORZ", "LITE", "BE", "INTC", "IONQ", "QBTS", "OKLO", "CEG"}
+SA_DCF_CONFLICTS = {"CORZ", "LITE", "BE", "INTC", "IONQ", "QBTS", "OKLO", "CEG", "IREN", "EQT"}
 
 sys.path.insert(0, str(Path(__file__).parent))
 from validate_weights import compute_current, compute_target

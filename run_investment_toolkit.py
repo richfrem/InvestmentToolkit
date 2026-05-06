@@ -21,7 +21,7 @@ CLI Arguments:
 
 Input Files:
     - .env: Environment configuration
-    - investment_screener/frontend/src/data/portfolio.json: User portfolio data
+    - investment_screener/backend/data/portfolio.json: User portfolio data
 
 Output:
     - Running services on localhost:3001 and localhost:5173
