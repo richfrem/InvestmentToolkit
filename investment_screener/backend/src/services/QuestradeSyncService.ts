@@ -18,7 +18,7 @@ export class QuestradeSyncService {
     // Going up two levels always lands at backend/, then src/ has the Python scripts.
     private static PYTHON_SCRIPT_PATH = path.resolve(__dirname, '../../src/QuestradeDataEngine.py');
     private static CACHE_DIR = path.resolve(__dirname, '../../'); // backend/ root where .questrade_cache lives
-    private static OUTPUT_FILE = path.resolve(__dirname, '../../../frontend/src/data/portfolio.json');
+    private static OUTPUT_FILE = path.resolve(__dirname, '../../data/portfolio.json');
 
     /**
      * Spawns the QuestradeDataEngine.py script and waits for completion.

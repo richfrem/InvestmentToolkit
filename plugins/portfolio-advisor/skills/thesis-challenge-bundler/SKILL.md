@@ -70,12 +70,12 @@ print(t['name'], '|', len(t['holdings']), 'holdings |', len(t.get('pillars',[]))
 # Get current portfolio total value
 python3 plugins/portfolio-advisor/scripts/validate_weights.py \
   --mode both \
-  --portfolio investment_screener/frontend/src/data/portfolio.json \
+  --portfolio investment_screener/backend/data/portfolio.json \
   --target investment_screener/backend/data/theses/target-portfolio.json
 
 # Get actions summary (ACCUMULATE/TRIM/EXIT counts)
 python3 plugins/portfolio-advisor/scripts/portfolio_action.py --all \
-  --portfolio investment_screener/frontend/src/data/portfolio.json \
+  --portfolio investment_screener/backend/data/portfolio.json \
   --target investment_screener/backend/data/theses/target-portfolio.json
 ```
 

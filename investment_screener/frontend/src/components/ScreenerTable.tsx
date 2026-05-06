@@ -142,16 +142,19 @@ export default function ScreenerTable() {
         const prefs = loadPrefs();
         const defaultVisible = new Set(COLUMNS.filter(c => c.always || c.defaultOn).map(c => c.id));
         if (prefs) {
+            // Filter out stale IDs no longer in COLUMNS (schema changes between versions)
+            const validIds = new Set<string>(COLUMNS.map(c => c.id as string));
+            const filteredOrder = prefs.columnOrder.filter(id => validIds.has(id)) as (keyof ScreenerRow)[];
             // Merge: add any new defaultOn columns not in the saved set
-            const merged = new Set(prefs.visible);
+            const merged = new Set(prefs.visible.filter(id => validIds.has(id)));
             for (const id of defaultVisible) {
-                if (!prefs.columnOrder.includes(id)) merged.add(id); // brand-new column
+                if (!filteredOrder.includes(id)) merged.add(id); // brand-new column
             }
             setVisible(merged);
             // Append any new columns to the end of columnOrder
-            const knownIds = new Set(prefs.columnOrder);
+            const knownIds = new Set(filteredOrder);
             const newCols = COLUMNS.map(c => c.id).filter(id => !knownIds.has(id));
-            setColumnOrder([...prefs.columnOrder, ...newCols]);
+            setColumnOrder([...filteredOrder, ...newCols]);
         } else {
             setVisible(defaultVisible);
             setColumnOrder(COLUMNS.map(c => c.id));
@@ -405,7 +408,7 @@ export default function ScreenerTable() {
     );
 
     return (
-        <div className="flex flex-col bg-slate-900/40 rounded-xl overflow-hidden border border-slate-800 backdrop-blur-md h-full">
+        <div className="flex flex-col bg-slate-900/40 rounded-xl border border-slate-800 backdrop-blur-md h-full">
             {/* Header bar */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900/60">
                 <div className="flex items-center gap-4">
@@ -489,7 +492,7 @@ export default function ScreenerTable() {
             </div>
 
             {/* Table */}
-            <div className="flex-1 overflow-auto custom-scrollbar min-h-0">
+            <div className="flex-1 overflow-auto custom-scrollbar min-h-0 rounded-b-xl">
                 <table className="text-sm border-collapse w-full" style={{ tableLayout: 'fixed' }}>
                     <colgroup>
                         {visibleCols.map(col => (

@@ -29,7 +29,7 @@ All data transformations between source and destination schemas must follow thes
 
 ### Holdings Aggregation → Portfolio Master Data
 - **Source**: Aggregated holdings across accounts (Logic managed in Python services)
-- **Destination**: `investment_screener/frontend/src/data/portfolio.json`
+- **Destination**: `investment_screener/backend/data/portfolio.json`
 - **Mapping Rules**:
   - Holdings grouped by symbol with pillar mapping
   - Percentage calculations based on total portfolio value

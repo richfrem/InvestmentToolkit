@@ -93,7 +93,7 @@ def main():
     """Main entry point for the sync CLI."""
     parser = argparse.ArgumentParser(description="Questrade Portfolio Sync Engine")
     parser.add_argument("--cache-dir", default=".", help="Directory containing .questrade_cache")
-    parser.add_argument("--output", default="../../frontend/src/data/portfolio.json", help="Path to portfolio.json")
+    parser.add_argument("--output", default="../data/portfolio.json", help="Path to portfolio.json")
     parser.add_argument("--seed", help="Seed a new manual refresh token")
     
     args = parser.parse_args()

@@ -3,7 +3,7 @@
 This plan outlines the steps to add dynamic Questrade portfolio retrieval to the `investment-screener` tool, leveraging patterns from the older toolkit version.
 
 ## Goal
-Automatically update `tools/investment-screener/frontend/src/data/portfolio.json` with current holdings from Questrade using a Python-based backend service.
+Automatically update `investment_screener/backend/data/portfolio.json` with current holdings from Questrade using a Python-based backend service.
 
 ## User Review Required
 
@@ -70,5 +70,5 @@ A new UI component that:
    ```
 3. **Audit**: 
    - Verify the script correctly picks up the environment variable.
-   - Check if `tools/investment-screener/frontend/src/data/portfolio.json` has updated `shares` and `price` values.
+   - Check if `investment_screener/backend/data/portfolio.json` has updated `shares` and `price` values.
    - Verify timestamp `last_updated` is current.

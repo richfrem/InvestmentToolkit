@@ -20,7 +20,7 @@
       "description": ""
     },
     {
-      "src": "investment_screener/frontend/src/data/portfolio.json",
+      "src": "investment_screener/backend/data/portfolio.json",
       "dst": "plugins/portfolio-advisor/references/portfolio.json",
       "strategy": "symlink",
       "description": ""

@@ -1,0 +1,142 @@
+[
+  {
+    "ticker": "TEAM",
+    "id": "a3b4f8c1-6d40-4897-8790-f8cbab5aed0d",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-06T14:00:00Z",
+    "updatedAt": "2026-05-06T14:00:00Z",
+    "name": "AI Deep Dive — TEAM — 2026-05-06",
+    "rationale": "Atlassian is a developer collaboration platform (Jira, Confluence, Loom, Rovo) at a 5-year price low (-61% from peak), trading at 4.2x TTM revenue on $5.2B in growing sales and 27% FCF margins. The GAAP loss is entirely a function of ~$1.4B annual SBC, not operational weakness — FCF generation is exceptional and improving. The near-term catalyst is AI monetization: Rovo agents and Jira as the workflow OS for AI-human collaboration. The bear case is a prolonged SaaS spending freeze with Microsoft Planner commoditizing the PM layer. Base case captures the deceleration path toward 17% CAGR as enterprise seat expansion continues. Bull case prices in the AI agent thesis: JIRA evolves from a human task tracker to the interaction layer between humans and AI agents — a structural TAM expansion.",
+    "snapshot": {
+      "price": 85.99,
+      "currency": "USD",
+      "shares": 253767849,
+      "revenue": 5215304000,
+      "lastActualPS": 4.18,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 24,
+      "analystMarginEstimate": -3.5
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 10,
+        "netMargin": 2,
+        "exitPE": 22,
+        "qualityMultiplier": 1,
+        "shareChange": 1.5,
+        "rationale": "Enterprise IT freeze compounds SaaS commoditization. Microsoft Teams + Planner aggressively bundles PM into O365, eroding Jira SMB seat expansion. Cloud cost optimization forces per-seat license downgrades. Atlassian fails to convert Rovo AI from a feature to a monetizable platform. GAAP margins barely turn positive (2%) as SBC dilution continues unabated. Historical reference: comparable SaaS de-ratings in 2022-2023 when growth compressed from 25%+ to sub-10%. Exit PE 22x reflects below-median multiple for a slow-growth software company.",
+        "year5Revenue": 8399.3,
+        "year5NetIncome": 168,
+        "year5EPS": 0.61,
+        "scenarioPrice": 8.39,
+        "year5Shares": 273.4,
+        "year5PriceUndiscounted": 13.52,
+        "presentValue": 8.39
+      },
+      "base": {
+        "weight": 0.5,
+        "growthRate": 17,
+        "netMargin": 8,
+        "exitPE": 32,
+        "qualityMultiplier": 1.05,
+        "shareChange": 1,
+        "rationale": "Analyst deceleration path: 24% (FY2026) → 16% (FY2027) → 14% → 12% → 11% → 5-yr CAGR ~17%. Enterprise seat expansion sustains double-digit growth as distributed workforce collaboration remains structurally embedded. Rovo AI monetizes at premium tier without requiring a full platform re-rating. GAAP margins reach 8% as SBC as % of revenue declines from 26% toward 18% on scaling revenue base. Gross margins hold at ~83%. Quality multiplier 1.05 justified by two moat sources: (1) switching costs — Jira issue tracking is deeply embedded in engineering CI/CD pipelines; (2) ecosystem lock-in — 5000+ Atlassian Marketplace integrations create compounding stickiness. Exit PE 32x slightly above SaaS median (30) for sustained double-digit growth.",
+        "year5Revenue": 11434.3,
+        "year5NetIncome": 914.7,
+        "year5EPS": 3.43,
+        "scenarioPrice": 71.55,
+        "year5Shares": 266.7,
+        "year5PriceUndiscounted": 115.24,
+        "presentValue": 71.55
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 23,
+        "netMargin": 14,
+        "exitPE": 50,
+        "qualityMultiplier": 1.1,
+        "shareChange": 0.5,
+        "rationale": "Catalyst: Jira becomes the human-agent interaction layer — the UI through which humans manage AI agents the way they manage people today. Agent developers, agent QA specialists, and agent orchestrators all need a workflow and ticketing system, and Jira's mental model maps perfectly. This expands TAM from 'human task management' to 'AI fleet operations.' Revenue per seat increases dramatically as AI agent seats are licensed alongside human seats. Rovo evolves into a paid AI platform. GAAP margins reach 14% as AI-driven revenue growth outpaces SBC growth in absolute dollars (SBC normalizes to ~12% of revenue). Exit PE 50x justified by re-rating from SaaS productivity tool to AI infrastructure layer — comparable to the re-rating ServiceNow received when Agentic AI workflows were proven. Quality multiplier 1.10 reflects two+ verified moat sources with AI amplification.",
+        "year5Revenue": 14682.7,
+        "year5NetIncome": 2055.6,
+        "year5EPS": 7.9,
+        "scenarioPrice": 269.81,
+        "year5Shares": 260.2,
+        "year5PriceUndiscounted": 434.54,
+        "presentValue": 269.81
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "# TEAM — Atlassian Corporation\n## Investment Thesis\n\nAtlassian sits at the intersection of two powerful forces: a deep SaaS selloff that has taken the stock 61% below its 5-year high, and an emerging AI agent workflow thesis that could structurally expand its total addressable market. The company generates $5.2B in revenue growing at ~20% with 83% gross margins and 27% FCF margins — the GAAP loss is purely a function of $1.4B in annual stock-based compensation, not operational deterioration.\n\n**The selloff case**: From $440+ in late 2021 to $86 today, TEAM has de-rated from ~25x revenue to 4.2x. This is a function of rate sensitivity (SaaS multiples collapsed with rising rates), Atlassian's decision to shut down its server product and force cloud migration (creating near-term churn headwinds), and the perception that Jira/Confluence are commoditized productivity tools threatened by Microsoft Planner and Monday.com. The selloff is largely complete — the migration headwinds are behind them, and FY2026 consensus is re-accelerating to 24% growth.\n\n**The AI agent thesis**: Jira's mental model — issues, boards, sprints, assignees, status workflows — maps perfectly onto how you'd manage AI agents. An 'agent developer' opens a Jira ticket. The agent picks it up, updates the status, and closes it. The 'agent team lead' reviews completed work in the board. This is not a stretch — it's the natural evolution of Jira from human task management to AI fleet operations. If this plays out, the per-entity revenue TAM expands dramatically: instead of licensing 500 human seats, an enterprise licenses 500 human + 2,000 agent seats.\n\n**Risks**: Microsoft's deep bundling of Planner + Copilot in O365 is the existential bear case. If Microsoft gives away PM functionality for free to Office subscribers, Atlassian's SMB moat erodes. Enterprise and developer-focused tooling (Bitbucket, Compass, Jira Advanced) has higher switching costs. The GAAP-to-positive-earnings path depends on SBC declining as a % of revenue — not guaranteed if AI competition forces talent bidding wars.",
+      "fairValue": 105.33,
+      "action": "BUY",
+      "analyzedAt": "2026-05-06T14:00:00Z",
+      "researchReport": "TEAM_2026-05-06.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used market-cap implied diluted shares: 253.8M = $21.821B / $85.99. Raw API returned 159.6M (Class A ordinary shares only — missing ~94M Class B high-vote shares held by founders Cannon-Brookes and Farquhar). Discrepancy 59% — far above 15% flag threshold. Corrected to mktcap-implied before DCF calculation.",
+      "marginAnchor": "GAAP net margin TTM -4.92% used as current anchor. Trend: -18.5% → -13.8% → -6.9% → -4.9% (improving ~3pp/yr). FCF margin 27.1% TTM — gap of ~32pp reflects SBC (~$1.4B/yr). Scenario Year 5 margins derived from projected SBC as % of revenue declining as revenue scales. Bear 2% (SBC stays elevated), Base 8% (SBC declines from 26% to ~18% of revenue), Bull 14% (SBC normalizes to ~12% on rapid AI revenue). All GAAP; non-GAAP ~21% today per analyst EPS of $5.50 on 253M shares.",
+      "growthDerivation": "Y1 analyst consensus 24.0% (FY2026: $6.469B). Y2 analyst consensus 16.1% (FY2027: $7.509B). Blended 2-yr: 20.1%. Historical CAGR decelerating: 26.1% → 23.3% → 19.7%. Base 5-yr CAGR 17% derived from deceleration path (24% → 16% → 14% → 12% → 11%) — within acceptable range of blended consensus accounting for 5-year deceleration. Bear 10% references 2022-2023 SaaS freeze comps. Bull 23% anchored to AI platform re-rating thesis.",
+      "sectorBenchmarkRow": "Technology — Software (SaaS): Conservative P/E 20, Median P/E 30, Growth P/E 50+; typical net margin 15-25% (non-GAAP best-in-class 30%+; GAAP materially lower due to SBC); bear trough 0%.",
+      "dataQualityFlags": [
+        "Share count: API returned 159.6M (Class A only) vs 253.8M market-cap implied — 59% discrepancy. Class B shares (~94M) held by founders not in outstanding count. Corrected to 253.8M mktcap-implied.",
+        "GAAP net margin -4.92% distorted by ~$1.4B annual SBC (~26% of TTM revenue). FCF margin 27.1% represents true cash generation. Scenario margins modeled on GAAP trajectory toward positive.",
+        "Historical FY0 (oldest year) all zeros — API data integrity gap. Four-year history FY1-FY4 used.",
+        "EPS TTM returned as null/0 by API — GAAP EPS is essentially 0 or slightly negative; analyst FY2026 non-GAAP EPS $5.50 used as non-GAAP sanity check only. DCF uses GAAP-derived margins.",
+        "Revenue growth field (31.7%) reflects recent quarterly growth rate, not full-year. Annual growth FY24→FY25 TTM computed as 19.7%. Analyst forecasts used as primary growth anchors."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 6468574600,
+        "y2RevEstimate": 7508824130,
+        "y1GrowthPct": 24,
+        "y2GrowthPct": 16.1,
+        "blendedConsensusPct": 20.1,
+        "analystTargetMean": 141.7,
+        "analystCount": 31
+      },
+      "historicalRevenue": [
+        2802882000,
+        3534647000,
+        4358603000,
+        5215304000
+      ],
+      "historicalNetMargins": [
+        -18.53,
+        -13.77,
+        -6.89,
+        -4.92
+      ],
+      "historicalEPS": [
+        -2.79,
+        -2.42,
+        -1.9,
+        -1.16
+      ],
+      "priorAnalysisReview": {
+        "priorModel": "N/A",
+        "priorDate": "N/A",
+        "priorPrice": "N/A",
+        "priorFairValue": "N/A",
+        "priorAction": "N/A",
+        "priceDelta": "N/A — first analysis",
+        "assumptionAudit": "N/A — no prior projection on file",
+        "modelQualityFlag": "N/A",
+        "thesisOutcome": "N/A — first analysis",
+        "fundamentalChanges": "First analysis. Context: TEAM down 58.7% YTD from multi-year high, trading at 5-year price lows. AI product suite (Rovo agents) launched H2 2025. FY2026 analyst consensus re-accelerating to 24% growth driven by AI monetization."
+      },
+      "confidenceBreakdown": "0.72/1.0 — Base: 1.0. +0.05 exceptional FCF quality (27.1% FCF margin — top-quartile SaaS). +0.05 Piotroski F-score 8/9 (near-perfect financial health signal). -0.08 GAAP/non-GAAP margin gap makes Year 5 margin projections uncertain (SBC trajectory speculative over 5yr horizon). -0.05 share count data quality issue (Class B shares missing — corrected but introduces model risk). -0.10 high macro sensitivity: SaaS multiples remain volatile; a 10-point contraction in exit PE changes fair value by ~$20. -0.10 AI agent thesis (bull case) is speculative with no revenue evidence yet — Rovo launched but monetization unproven."
+    }
+  }
+]

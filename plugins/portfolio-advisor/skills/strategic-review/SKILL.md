@@ -308,7 +308,7 @@ These rules are **non-negotiable**. Apply them to every holding before writing a
 > ❌ NEVER assign `ACCUMULATE` to a ticker the user doesn't hold — that's `INITIATE`.
 > ❌ NEVER assign `MAINTAIN` when `actualPct` differs from `targetPct` by more than 0.5pp.
 
-The actual holdings are in `investment_screener/frontend/src/data/portfolio.json` — the canonical source, dynamically populated by the Questrade broker sync.
+The actual holdings are in `investment_screener/backend/data/portfolio.json` — the canonical source, dynamically populated by the Questrade broker sync.
 
 ---
 
@@ -362,7 +362,7 @@ portfolio-advisor
 import json
 
 # Load actual holdings from live portfolio file
-with open('investment_screener/frontend/src/data/portfolio.json') as f:
+with open('investment_screener/backend/data/portfolio.json') as f:
     raw_holdings = json.load(f)
 
 # Build lookup: ticker → {shares, currentValue, currentPct, bookPrice, name}
@@ -718,7 +718,7 @@ python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --writ
 ```
 
 This script:
-- Reads `investment_screener/frontend/src/data/portfolio.json` (live Questrade holdings)
+- Reads `investment_screener/backend/data/portfolio.json` (live Questrade holdings)
 - Reads `investment_screener/backend/data/theses/target-portfolio.json` (thesis targets + subStrategyId)
 - Groups holdings by sub-strategy
 - Assigns INITIATE / ACCUMULATE / MAINTAIN / TRIM / EXIT per holding
@@ -788,7 +788,7 @@ After writing the JSON companion, immediately run `relabel_actions.py` to correc
 ```bash
 python3 plugins/portfolio-advisor/scripts/relabel_actions.py \
   --recs "{json_path}" \
-  --portfolio investment_screener/frontend/src/data/portfolio.json
+  --portfolio investment_screener/backend/data/portfolio.json
 ```
 
 The script applies these rules automatically:

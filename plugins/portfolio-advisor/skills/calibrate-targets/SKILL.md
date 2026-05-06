@@ -53,7 +53,7 @@ python3 plugins/portfolio-advisor/scripts/update_targets.py --show
 ```bash
 # 1. Canonical actions + current/target from Python
 python3 plugins/portfolio-advisor/scripts/portfolio_action.py --all \
-  --portfolio investment_screener/frontend/src/data/portfolio.json \
+  --portfolio investment_screener/backend/data/portfolio.json \
   --target investment_screener/backend/data/theses/target-portfolio.json
 
 # 2. Full target-portfolio.json for names, roles, subStrategyId
@@ -62,7 +62,7 @@ cat investment_screener/backend/data/theses/target-portfolio.json
 # 3. Current weights
 python3 plugins/portfolio-advisor/scripts/validate_weights.py \
   --mode both \
-  --portfolio investment_screener/frontend/src/data/portfolio.json \
+  --portfolio investment_screener/backend/data/portfolio.json \
   --target investment_screener/backend/data/theses/target-portfolio.json
 
 # 4. Latest DCF valuations for context (optional enrichment)
@@ -257,7 +257,7 @@ python3 plugins/portfolio-advisor/scripts/update_targets.py \
 
 # Verify actions are clean — no false ACCUMULATE on DCF-negative stocks
 python3 plugins/portfolio-advisor/scripts/portfolio_action.py --all \
-  --portfolio investment_screener/frontend/src/data/portfolio.json \
+  --portfolio investment_screener/backend/data/portfolio.json \
   --target investment_screener/backend/data/theses/target-portfolio.json
 ```
 

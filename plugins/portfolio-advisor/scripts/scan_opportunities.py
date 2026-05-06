@@ -32,7 +32,7 @@ from pathlib import Path
 
 # ── Repo paths ──────────────────────────────────────────────────────────────────
 REPO_ROOT      = Path(__file__).resolve().parents[3]
-PORTFOLIO_PATH = REPO_ROOT / "investment_screener/frontend/src/data/portfolio.json"
+PORTFOLIO_PATH = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 THESIS_PATH    = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 PROJECTIONS    = REPO_ROOT / "investment_screener/backend/data/projections"
 STALE_DAYS     = 90

@@ -17,7 +17,7 @@ const port = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json({ limit: '1mb' })); // raised from 50kb — v1.2 projections with analyticsLog can be 50-200kb
 
-const PORTFOLIO_FILE = path.join(__dirname, '../../frontend/src/data/portfolio.json');
+const PORTFOLIO_FILE = path.join(__dirname, '../data/portfolio.json');
 const PORTFOLIO_EXAMPLE = PORTFOLIO_FILE + '.example';
 
 // On startup, seed portfolio.json from .example if it doesn't exist (clean clone)
@@ -663,7 +663,7 @@ const TARGET_PORTFOLIO_FILE = path.resolve(__dirname, '../data/theses/target-por
 async function getPythonActions(): Promise<Record<string, string>> {
     const { spawn } = require('child_process');
     const scriptPath = path.resolve(__dirname, '../../../plugins/portfolio-advisor/scripts/portfolio_action.py');
-    const portfolioPath = path.resolve(__dirname, '../../frontend/src/data/portfolio.json');
+    const portfolioPath = path.resolve(__dirname, '../data/portfolio.json');
     const targetPath = path.resolve(__dirname, '../data/theses/target-portfolio.json');
     const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
     return new Promise((resolve) => {
@@ -800,19 +800,31 @@ app.get('/api/docs/latest-review', async (_req, res) => {
     }
 });
 
-// GET /api/docs/latest-review-data — serves the most recent strategic review JSON
+// GET /api/docs/latest-review-data — generates live review from current portfolio + thesis
+// Runs generate_review_json.py --dry-run so data always reflects the latest portfolio sync.
 app.get('/api/docs/latest-review-data', async (_req, res) => {
+    const { spawn } = require('child_process');
+    const scriptPath = path.resolve(__dirname, '../../../plugins/portfolio-advisor/scripts/generate_review_json.py');
+    const pythonCmd  = process.platform === 'win32' ? 'python' : 'python3';
     try {
-        await fs.promises.mkdir(PORTFOLIO_REVIEWS_DIR, { recursive: true });
-        const files = (await fs.promises.readdir(PORTFOLIO_REVIEWS_DIR))
-            .filter(f => f.endsWith('.json') && f.match(/^\d{4}-\d{2}-\d{2}/) && !f.includes('patch'))
-            .sort().reverse();
-        if (!files.length) { res.status(404).json({ error: 'No review data found' }); return; }
-        const latest = files[0];
-        const raw = await fs.promises.readFile(path.join(PORTFOLIO_REVIEWS_DIR, latest), 'utf-8');
-        res.json({ ...JSON.parse(raw), filename: latest });
+        const review = await new Promise<any>((resolve, reject) => {
+            const proc = spawn(pythonCmd, [scriptPath, '--dry-run']);
+            let out = '';
+            let err = '';
+            const timer = setTimeout(() => { proc.kill(); reject(new Error('Review generation timed out')); }, 20_000);
+            proc.stdout.on('data', (d: Buffer) => { out += d.toString(); });
+            proc.stderr.on('data', (d: Buffer) => { err += d.toString(); });
+            proc.on('close', (code: number) => {
+                clearTimeout(timer);
+                if (code !== 0) return reject(new Error(`generate_review_json exited ${code}: ${err}`));
+                try { resolve(JSON.parse(out)); } catch { reject(new Error('Failed to parse review JSON')); }
+            });
+            proc.on('error', (e: Error) => { clearTimeout(timer); reject(e); });
+        });
+        res.json(review);
     } catch (err: any) {
-        res.status(500).json({ error: 'Failed to load review data' });
+        console.error('[API] latest-review-data error:', err.message);
+        res.status(500).json({ error: 'Failed to generate review data' });
     }
 });
 
