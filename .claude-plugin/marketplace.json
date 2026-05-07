@@ -1,6 +1,6 @@
 {
     "name": "investment-toolkit-plugins",
-    "description": "Investment Toolkit plugins: AI stock valuation, portfolio thesis balancing, and suite orchestration.",
+    "description": "Investment Toolkit plugins: AI stock valuation, portfolio advisor (health, rebalancing, strategy review), and suite orchestration.",
     "owner": {
         "name": "richfrem",
         "email": "connect.richfrem@gmail.com"
@@ -14,7 +14,7 @@
         },
         {
             "name": "portfolio-advisor",
-            "description": "Portfolio thesis health and rebalancing suite. Skills: /review-portfolio (drift monitor, pillar conviction audit, thesis formula health score), /strategic-review (adversarial thesis challenger with valuation-grounded formula improvement proposals), /rebalance (valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift).",
+            "description": "Investment portfolio advisor suite. Skills: /review-portfolio (quick health check — drift monitor, pillar conviction audit, thesis formula score), /strategic-review (adversarial thesis challenger with valuation-grounded formula improvement proposals), /rebalance (valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift), /calibrate-targets (interactive target-weight session), /update-portfolio-targets (apply formula changes).",
             "source": "./plugins/portfolio-advisor",
             "strict": true
         },

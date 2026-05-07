@@ -28,6 +28,17 @@ interface ScreenerRow {
     qualityMultiplier: number | null;
     rowKind: 'projection' | 'holding'; // 'holding' = no DCF projection yet
     subStrategyId: string | null;
+    change_1d: number | null;
+    change_overall: number | null;
+    sector: string | null;
+    shares: number | null;
+    book_price: number | null;
+    total_book: number | null;
+    total_market: number | null;
+    change_1w: number | null;
+    change_1m: number | null;
+    change_ytd: number | null;
+    change_1y: number | null;
 }
 
 // ─── Column Definitions ───────────────────────────────────────────────────────
@@ -44,27 +55,40 @@ interface ColDef {
 
 const COLUMNS: ColDef[] = [
     { id: 'symbol',         label: 'Ticker',     always: true,  defaultOn: true,  align: 'left',  format: v => String(v ?? '') },
+    { id: 'name',           label: 'Name',       always: true,  defaultOn: false, align: 'left',  format: v => String(v ?? '') },
     { id: 'action',         label: 'Action',     defaultOn: true,  align: 'left',  format: v => String(v ?? '—') },
-    { id: 'currentPct',    label: 'Current %',  defaultOn: true,  align: 'right', format: v => v != null ? `${v.toFixed(2)}%` : '—' },
-    { id: 'recommendedPct',label: 'Target %',   defaultOn: true,  align: 'right', format: v => v != null ? `${v.toFixed(2)}%` : '—' },
-    { id: 'rationale',     label: 'Rationale',  defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
-    { id: 'fairValue',      label: 'Fair Value', defaultOn: true,  align: 'right', format: v => v != null ? `$${Math.round(v)}` : '—' },
-    { id: 'currentPrice',   label: 'Price',       defaultOn: true,  align: 'right', format: v => v != null ? `$${v.toFixed(2)}` : '—' },
-    { id: 'gainLoss',       label: 'Gain ($)',    isChange: true, defaultOn: true,  align: 'right', format: v => v != null ? `${v >= 0 ? '+$' : '-$'}${Math.abs(Math.round(v))}` : '—' },
-    { id: 'upside',         label: 'Upside (%)',  isChange: true, defaultOn: true,  align: 'right', format: v => v != null ? `${v >= 0 ? '+' : ''}${v.toFixed(1)}%` : '—' },
-    { id: 'ruleOf40',       label: 'R40',        defaultOn: true,  align: 'right', format: v => v != null ? v.toFixed(1) : '—' },
-    { id: 'growth',         label: 'Growth',      defaultOn: true,  align: 'right', format: v => v != null ? `${v.toFixed(1)}%` : '—' },
-    { id: 'model',          label: 'Analyst',     defaultOn: true,  align: 'left',  format: v => String(v ?? '—') },
-    { id: 'bear',           label: 'Bear',        defaultOn: false, align: 'right', format: v => v != null ? `$${Math.round(v)}` : '—' },
-    { id: 'base',           label: 'Base',        defaultOn: false, align: 'right', format: v => v != null ? `$${Math.round(v)}` : '—' },
-    { id: 'bull',           label: 'Bull',        defaultOn: false, align: 'right', format: v => v != null ? `$${Math.round(v)}` : '—' },
-    { id: 'qualityMultiplier', label: 'Quality', defaultOn: false, align: 'right', format: v => v != null ? `${v.toFixed(2)}x` : '—' },
-    { id: 'subStrategyId',  label: 'Strategy',    defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
-    { id: 'lastAnalyzed',   label: 'Analyzed',    defaultOn: true,  align: 'right', format: v => v ? new Date(v).toLocaleDateString() : '—' },
+    { id: 'currentPct',     label: 'Current %',  defaultOn: true,  align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)!.toFixed(2)}%` : '—' },
+    { id: 'recommendedPct', label: 'Target %',   defaultOn: true,  align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)!.toFixed(2)}%` : '—' },
+    { id: 'rationale',      label: 'Rationale',  defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
+    { id: 'fairValue',      label: 'Fair Value', defaultOn: true,  align: 'right', format: fmtDollar },
+    { id: 'currentPrice',   label: 'Price',      defaultOn: true,  align: 'right', format: fmtPrice },
+    { id: 'gainLoss',       label: 'Gain ($)',   isChange: true, defaultOn: true,  align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)! >= 0 ? '+$' : '-$'}${Math.abs(Math.round(safeNum(v)!))}` : '—' },
+    { id: 'upside',         label: 'Upside (%)', isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
+    { id: 'ruleOf40',       label: 'R40',        defaultOn: true,  align: 'right', format: v => safeNum(v) != null ? safeNum(v)!.toFixed(1) : '—' },
+    { id: 'growth',         label: 'Growth',     defaultOn: true,  align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)!.toFixed(1)}%` : '—' },
+    { id: 'model',          label: 'Analyst',    defaultOn: true,  align: 'left',  format: v => String(v ?? '—') },
+    { id: 'bear',           label: 'Bear',       defaultOn: false, align: 'right', format: fmtDollar },
+    { id: 'base',           label: 'Base',       defaultOn: false, align: 'right', format: fmtDollar },
+    { id: 'bull',           label: 'Bull',       defaultOn: false, align: 'right', format: fmtDollar },
+    { id: 'change_1d',      label: '1D %',       isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
+    { id: 'change_1w',      label: '1W %',       isChange: true, defaultOn: false, align: 'right', format: fmtPct },
+    { id: 'change_1m',      label: '1M %',       isChange: true, defaultOn: false, align: 'right', format: fmtPct },
+    { id: 'change_ytd',     label: 'YTD %',      isChange: true, defaultOn: false, align: 'right', format: fmtPct },
+    { id: 'change_1y',      label: '1Y %',       isChange: true, defaultOn: false, align: 'right', format: fmtPct },
+    { id: 'change_overall', label: 'Overall %',  isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
+    { id: 'sector',         label: 'Sector',     defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
+    { id: 'shares',         label: 'Shares',     defaultOn: false, align: 'right', format: v => safeNum(v) != null ? safeNum(v)!.toLocaleString() : '—' },
+    { id: 'book_price',     label: 'Avg Cost',   defaultOn: false, align: 'right', format: fmtPrice },
+    { id: 'total_book',     label: 'Book Value', defaultOn: false, align: 'right', format: fmtDollar },
+    { id: 'total_market',   label: 'Mkt Value',  defaultOn: false, align: 'right', format: fmtDollar },
+    { id: 'qualityMultiplier', label: 'Quality', defaultOn: false, align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)!.toFixed(2)}x` : '—' },
+    { id: 'subStrategyId',  label: 'Strategy',   defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
+    { id: 'lastAnalyzed',   label: 'Analyzed',   defaultOn: true,  align: 'right', format: v => v ? new Date(v as string).toLocaleDateString() : '—' },
 ];
 
 const DEFAULT_WIDTHS: Record<string, number> = {
     symbol: 80, action: 115, fairValue: 95, currentPrice: 80, gainLoss: 85,
+    change_1d: 65, change_overall: 80, change_1w: 65, change_1m: 65, change_ytd: 65, change_1y: 65, sector: 115, shares: 60, book_price: 72, total_book: 80, total_market: 80, 
     upside: 85, ruleOf40: 70, growth: 80, model: 130, base: 80,
     bear: 80, bull: 80, qualityMultiplier: 80, subStrategyId: 140, lastAnalyzed: 90,
     currentPct: 90, recommendedPct: 85, rationale: 260,
@@ -91,7 +115,33 @@ function savePrefs(prefs: TablePrefs) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs)); } catch { /* quota */ }
 }
 
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function safeNum(v: any): number | null {
+    if (v == null || v === '' || typeof v === 'boolean') return null;
+    const n = Number(v);
+    return isNaN(n) ? null : n;
+}
+
+function fmtPct(v: any): string {
+    const n = safeNum(v);
+    if (n == null) return '—';
+    return `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
+}
+
+function fmtDollar(v: any): string {
+    const n = safeNum(v);
+    if (n == null) return '—';
+    if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
+    if (n >= 1_000)     return `$${(n / 1_000).toFixed(1)}K`;
+    return `$${n.toFixed(0)}`;
+}
+
+function fmtPrice(v: any): string {
+    const n = safeNum(v);
+    return n != null ? `$${n.toFixed(2)}` : '—';
+}
 
 function changeBg(v: number | null): string {
     if (v == null) return 'transparent';
@@ -198,6 +248,7 @@ export default function ScreenerTable() {
     const [allPortfolioWeights, setAllPortfolioWeights] = useState<Record<string, number>>({});
     const [reviewRecommendations, setReviewRecommendations] = useState<Record<string, { target: number; rationale: string; actualPct: number; action?: string }>>({});
     const [allHoldings, setAllHoldings] = useState<any[]>([]);
+    const [heatmapMap, setHeatmapMap] = useState<Record<string, any>>({});
     // Index of allHoldings by ticker for O(1) action lookup
     const allHoldingsMap = allHoldings.reduce((m, h) => { m[h.ticker] = h; return m; }, {} as Record<string, any>);
 
@@ -243,6 +294,29 @@ export default function ScreenerTable() {
             .then(r => r.ok ? r.json() : null)
             .then(data => { if (data) setAllHoldings(data); })
             .catch(() => {});
+
+        // Fetch heatmap data for change_1d and change_overall
+        fetch('/api/portfolio')
+            .then(r => r.ok ? r.json() : null)
+            .then(portData => {
+                if (!portData?.items) return;
+                fetch('/api/portfolio-heatmap', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: portData.items }),
+                })
+                .then(r => r.ok ? r.json() : null)
+                .then(heatmapData => {
+                    if (!heatmapData?.stocks) return;
+                    const map: Record<string, any> = {};
+                    for (const s of heatmapData.stocks) {
+                        map[s.symbol] = s;
+                    }
+                    setHeatmapMap(map);
+                })
+                .catch(() => {});
+            })
+            .catch(() => {});
     }, []);
 
     // Close picker on outside click
@@ -287,17 +361,17 @@ export default function ScreenerTable() {
         // --- Projection rows (have DCF analysis) ---
         const projectionRows: ScreenerRow[] = projections.map(p => {
             const thesis = p.aiThesis;
-            const base = p.scenarios.base;
-            const bear = p.scenarios.bear;
-            const bull = p.scenarios.bull;
+            const base = p.scenarios?.base;
+            const bear = p.scenarios?.bear;
+            const bull = p.scenarios?.bull;
 
-            const currentPrice = p.snapshot.price;
+            const currentPrice = p.snapshot?.price ?? 0;
             const fairValue = thesis?.fairValue ?? null;
             const upside = (fairValue && currentPrice) ? ((fairValue - currentPrice) / currentPrice) * 100 : null;
             const gainLoss = (fairValue && currentPrice) ? (fairValue - currentPrice) : null;
 
-            const growth = base.growthRate;
-            const margin = base.netMargin;
+            const growth = base?.growthRate ?? null;
+            const margin = base?.netMargin ?? null;
 
             const rev = reviewRecommendations[p.ticker];
             const health = portfolioWeights[p.ticker];
@@ -318,17 +392,28 @@ export default function ScreenerTable() {
                 upside,
                 growth,
                 margin,
-                ruleOf40: growth + margin,
-                bear: bear.scenarioPrice || null,
-                base: base.scenarioPrice || null,
-                bull: bull.scenarioPrice || null,
-                qualityMultiplier: base.qualityMultiplier,
+                ruleOf40: (growth != null && margin != null) ? growth + margin : null,
+                bear: bear?.scenarioPrice || null,
+                base: base?.scenarioPrice || null,
+                bull: bull?.scenarioPrice || null,
+                qualityMultiplier: base?.qualityMultiplier ?? null,
                 lastAnalyzed: p.savedAt,
                 currentPct,
                 recommendedPct,
                 rationale: rev?.rationale ?? null,
                 rowKind: 'projection',
                 subStrategyId: allHoldingsMap[p.ticker]?.subStrategyId ?? null,
+                change_1d: heatmapMap[p.ticker]?.change_1d ?? null,
+                change_overall: heatmapMap[p.ticker]?.change_overall ?? null,
+                sector: heatmapMap[p.ticker]?.sector ?? null,
+                shares: heatmapMap[p.ticker]?.shares ?? null,
+                book_price: heatmapMap[p.ticker]?.book_price ?? null,
+                total_book: heatmapMap[p.ticker]?.total_book ?? null,
+                total_market: heatmapMap[p.ticker]?.total_market ?? null,
+                change_1w: heatmapMap[p.ticker]?.change_1w ?? null,
+                change_1m: heatmapMap[p.ticker]?.change_1m ?? null,
+                change_ytd: heatmapMap[p.ticker]?.change_ytd ?? null,
+                change_1y: heatmapMap[p.ticker]?.change_1y ?? null,
             };
         });
 
@@ -361,11 +446,22 @@ export default function ScreenerTable() {
                     rationale: h.rationale ?? null,
                     rowKind: 'holding',
                     subStrategyId: h.subStrategyId ?? null,
+                    change_1d: heatmapMap[h.ticker]?.change_1d ?? null,
+                    change_overall: heatmapMap[h.ticker]?.change_overall ?? null,
+                    sector: heatmapMap[h.ticker]?.sector ?? null,
+                    shares: heatmapMap[h.ticker]?.shares ?? null,
+                    book_price: heatmapMap[h.ticker]?.book_price ?? null,
+                    total_book: heatmapMap[h.ticker]?.total_book ?? null,
+                    total_market: heatmapMap[h.ticker]?.total_market ?? null,
+                    change_1w: heatmapMap[h.ticker]?.change_1w ?? null,
+                    change_1m: heatmapMap[h.ticker]?.change_1m ?? null,
+                    change_ytd: heatmapMap[h.ticker]?.change_ytd ?? null,
+                    change_1y: heatmapMap[h.ticker]?.change_1y ?? null,
                 };
             });
 
         return [...projectionRows, ...holdingRows];
-    }, [projections, portfolioWeights, allPortfolioWeights, reviewRecommendations, allHoldings, allHoldingsMap]);
+    }, [projections, portfolioWeights, allPortfolioWeights, reviewRecommendations, allHoldings, allHoldingsMap, heatmapMap]);
 
     const filteredRows = rows.filter(row =>
         Object.entries(filters).every(([colId, filterVal]) => {

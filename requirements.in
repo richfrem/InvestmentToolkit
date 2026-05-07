@@ -1,6 +1,7 @@
 # Core Project Dependencies
 yfinance
 pandas
+numpy
 uvicorn
 fastapi
 python-dotenv
