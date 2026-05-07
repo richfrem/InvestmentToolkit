@@ -1,9 +1,9 @@
-# Investment Thesis v9.0
+# Investment Thesis v9.1
 
 | Field | Value |
 | :--- | :--- |
-| **Current Theme** | ASI Buildout + Sovereign Finance + AI-Native Defence |
-| **Edition** | "The Sovereign Manufacturer" |
+| **Current Theme** | ASI Buildout (Primary) + Sovereign Finance (Secondary) |
+| **Edition** | "The Compute Sovereign" |
 | **Status** | ACTIVE |
 | **Last Updated** | 2026-05-06 |
 | **Portfolio Data** | Live — synced from Questrade via app or `python3 investment_screener/backend/src/QuestradeDataEngine.py` |
@@ -17,18 +17,11 @@
 
 | Version | Date | Edition | Key Change |
 | :--- | :--- | :--- | :--- |
+| 9.1 | 2026-05-06 | The Compute Sovereign | Re-ranked sub-strategies: ASI/Compute (Primary: Immediate Growth, 75% ceiling) vs Sovereign Finance (Secondary: Strategic Infrastructure, 15% cap). Finalized liquidation of IREN, EQT, and COHR. Updated Finance rationale to reflect AI-agent autonomous settlement. |
 | 9.0 | 2026-05-05 | The Sovereign Manufacturer | Major restructure after 4-model adversarial red team review: exited all Sovereign Finance crypto (COIN/CRCL/ETHA/IBIT); exited POET/CRWD/SOLZ/EQT/TEM; reduced INTC (~11%→9%), CRWV; 39% cash freed for redeployment into DCF BUY names |
 | 8.5 | 2026-05-04 | The Sovereign Manufacturer | Healthcare AI / Life Science pillar added; TEM promoted from EXIT to speculative MAINTAIN (Pelosi conviction, AI-healthcare thesis) |
 | 8.4 | 2026-05-04 | The Sovereign Manufacturer | Quantum Computing pillar added; IONQ initiated (trapped-ion moat, ACCUMULATE→MAINTAIN at actual weight); RGTI exited; COIN regulatory catalyst (SEC case dismissed, FV $124→$162); apply_catalyst.py tooling added |
 | 8.3 | 2026-05-03 | The Sovereign Manufacturer | Third Grok sweep: CRWV→6%, CORZ→4.9%, BE→4%; NVDA/META/PSIX/WYFI/BTDR buys synced; Questrade float(None) crash fixed |
-| 8.2 | 2026-05-03 | The Sovereign Manufacturer | Exhaustive SA LP Q4 2025 13F cross-reference; EXIT AVGO/EQIX/ANET (price > FV, no SA LP); add SNDK/PSIX (SA LP + DCF BUY); USD_CASH and PSU-U.TO decoupled; hard gates added to agent skill |
-| 8.1 | 2026-05-03 | The Sovereign Manufacturer | First-pass AI target recommendations from DCF corpus; INTC/CRWV conviction raised; NVDA/META capped at 3%; no-change positions locked (GOOG/crypto/ETFs) |
-| 7.5 | 2026-05-02 | The Sovereign Manufacturer | Cybersecurity elevated to standalone sub-strategy; datacenter-infra merged into SA/ASI Race as infrastructure plays; 5 named sub-strategies |
-| 7.4 | 2026-05-02 | The Sovereign Manufacturer | Refactored from pillars to sub-strategies; 5 named conviction frameworks |
-| 7.3 | 2026-05-02 | The Sovereign Manufacturer | INTC Terafab/14A validated, SA 13F conviction confirmed, CRWV elevated |
-| 7.2 | 2026-04-13 | The Sovereign Manufacturer | GENIUS Act enacted; CRCL added; cash position optimised |
-| 7.1 | 2026-02-14 | The Fortified Barbell | Security restructured; ZS added; CRWD conviction reviewed |
-| 7.0 | 2025-11-01 | The Twin Revolutions | Initial formalisation of dual-front thesis framework |
 
 ---
 
@@ -36,9 +29,9 @@
 
 This strategy is built on a single macro conviction: **the 2020s will be defined by two simultaneous civilisational-scale competitions**, and losing either front means losing strategic dominance for a generation.
 
-**The ASI Race** — Control of intelligence, decision-making, and technological supremacy. No longer a commercial competition — it is a national security priority analogous to the Manhattan Project. This forces a structural shift from *"most efficient"* to *"most sovereign"*, mandating onshoring of critical technology and resilient supply chains. The CHIPS Act and executive AI orders create a powerful, state-sponsored tailwind for designated domestic champions.
+**The ASI Race (Primary: Immediate Growth)** — Control of intelligence and technological supremacy. This is a high-velocity, **~$700 billion sprint** driven by Hyperscaler Capex. No longer a commercial competition — it is a national security priority analogous to the Manhattan Project. This forces a structural shift from *"most efficient"* to *"most sovereign"*, mandating onshoring of critical technology and resilient supply chains.
 
-**The Sovereign Finance Race** — Control of value, monetary systems, and debt monetisation via digital assets. The global financial system is being tokenised. The US counter-strategy (GENIUS Act of 2025) establishes federal stablecoin rails built on Bitcoin (store of value) and Ethereum (global settlement layer), creating a perpetual structural bid for US Treasuries.
+**The Sovereign Finance Race (Secondary: Strategic Infrastructure Maturity)** — Control of value, monetary systems, and debt monetisation via digital assets. Currently in a foundational maturity phase (**~$29 billion RWA market**). The US counter-strategy (GENIUS Act of 2025) establishes federal stablecoin rails. The primary users of this infrastructure will be **AI Agents** needing autonomous settlement rails to conduct business at machine speed.
 
 **The Feedback Loop** — Both fronts are self-reinforcing. Winning ASI requires capital; winning Sovereign Finance provides it.
 
@@ -52,310 +45,165 @@ This strategy is built on a single macro conviction: **the 2020s will be defined
 
 ---
 
-### Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)
+### Sub-Strategy 1 — SA / ASI Race (Primary: Immediate Growth)
 
-**Conviction:** Aschenbrenner's *Situational Awareness* thesis is playing out. The transition from narrow AI to AGI/ASI is a national security emergency. The US government has designated AI compute a strategic resource — creating a durable, state-backed tailwind that runs through two distinct investment layers:
+**Conviction:** Aschenbrenner's *Situational Awareness* thesis is playing out. The transition from narrow AI to AGI/ASI is a national security emergency. The US government has designated AI compute a strategic resource — creating a durable, state-backed tailwind that runs through two distinct investment layers. **Target Ceiling: 75%**.
 
 - **Direct Plays** — The silicon, software, and EDA tooling that produces and runs AI models. These are the companies whose revenue is directly denominated in AI compute demand: chip designers, foundries, GPU clouds, hyperscalers, and the EDA duopoly every chip must pass through.
 - **Infrastructure Plays** — The physical facilities, power supply, cooling, networking, and hosting that AI data centres require. These are scarce, capital-intensive real assets with multi-year construction backlogs. Demand is model-agnostic — regardless of who wins the AI application layer, the infrastructure must be built and powered. Bitcoin mining companies converting to AI hosting are a high-beta play on this transition.
 
 Both layers derive from the same root conviction. They are not separate theses.
 
-**Conviction Intact When:** US-China AI competition continues. CHIPS Act funding flows. Pentagon treats compute as strategic. Hyperscalers keep accelerating capex. Data centre construction backlogs remain multi-year. AI compute demand continues to exceed power and cooling supply.
+**Conviction Intact When:** US-China AI competition continues. CHIPS Act funding flows. Pentagon treats compute as strategic. Hyperscalers keep accelerating **~$700B capex**. Data centre construction backlogs remain multi-year. AI compute demand continues to exceed power and cooling supply.
 
 **Thesis Breaker:** US-China technological de-escalation removes national security urgency for sovereign compute. Algorithmic efficiency breakthrough (Chinchilla-scale) collapses compute demand. Room-temperature superconductors eliminate cooling bottlenecks.
 
 **Key Validators:** Aschenbrenner SA LP 13F positions (Q4 2025: INTC $746M calls, CRWV $1.21B). Pentagon AI executive orders. Hyperscaler capex reports. IEA data centre power demand forecasts.
 
+---
+
+### Sub-Strategy 3 — Sovereign Finance (Secondary: Strategic Maturity)
+
+**Conviction:** The global financial system is being tokenised. This is a foundational maturity phase (**~$29B RWA market**) that will eventually settle the value AI creates. The primary users of these rails will be **AI Agents** requiring autonomous, 24/7 settlement without human intermediaries. Coinbase and Circle are the regulated picks-and-shovels plays on this transition. **Target Cap: 15% for 2026**.
+
+**Conviction Intact When:** GENIUS Act framework is intact. Stablecoin adoption growing. RWA tokenisation expanding. AI agents begin autonomous transaction pilots.
+
+**Thesis Breaker:** GENIUS Act repealed or SEC court victory classifies ETH as security. USDC de-peg sustained beyond 48 hours.
+
+---
+
+### Sub-Strategy 1 — SA / ASI Race
+
 #### Direct Plays — Silicon, Software & EDA
 
 | Ticker | Action | Current % | Target % | Role | Conviction Note |
 | :--- | :--- | ---: | ---: | :--- | :--- |
-| **NVDA** | 🔵 ACCUMULATE | 1.90% | 3.72% | Core | AI Compute Incumbent: CUDA ecosystem moat and dominant GPU supply chain. Holds regardless of who wins the application layer. |
+| **NVDA** | 🔵 ACCUMULATE | 1.90% | 3.72% | Core | AI Compute Incumbent: CUDA ecosystem moat and dominant GPU supply chain. |
 | **AMD** | ⚪ MAINTAIN | 3.84% | 3.60% | Core | Fortified #2: only credible US-based GPU competitor to NVIDIA |
-| **INTC** | ⚪ MAINTAIN | 8.85% | 8.27% | Core | Sovereign Foundry: US national champion for onshored compute. 14A/Terafab catalyst. SA 13F $746M. |
-| **AVGO** | 👁️ WATCHLIST | — | — | Core | Networking + custom silicon moat: irreplaceable in hyperscaler AI buildout. SA Q2 2025 $1.1B position. |
-| **CRWV** | 🔵 ACCUMULATE | 4.21% | 6.18% | Core | Pure-play GPU cloud. SA #1 position $1.21B combined. Accumulate urgently. |
-| **GOOG** | ⚪ MAINTAIN | 4.86% | 4.51% | Core | Foundational AI research leader — DeepMind, Gemini. Algorithmic breakthrough hedge. |
+| **INTC** | ⚪ MAINTAIN | 8.85% | 8.27% | Core | Sovereign Foundry: US national champion for onshored compute. |
+| **AVGO** | 👁️ WATCHLIST | — | — | Core | Networking + custom silicon moat: irreplaceable in hyperscaler AI buildout. |
+| **CRWV** | 🔵 ACCUMULATE | 4.21% | 6.18% | Core | Pure-play GPU cloud. SA #1 position. |
+| **GOOG** | ⚪ MAINTAIN | 4.86% | 4.51% | Core | Foundational AI research leader. |
 | **MSFT** | 🔥 REVIEW | 2.56% | 2.00% | Core | Sovereign distribution channel: dominant enterprise AI via Azure + Copilot |
-| **META** | ⚪ MAINTAIN | 1.89% | 2.00% | Core | Consumer AI Leader: open-source Llama models + massive consumer distribution |
-| **ANET** | 👁️ WATCHLIST | — | — | Core | Networking spine: backbone of hyperscaler AI buildout |
-| **NBIS** | ⚪ MAINTAIN | 2.22% | 2.57% | Speculative | Nebius AI infrastructure — early stage conviction, former Yandex Cloud |
-| **COHR** | 🔵 ACCUMULATE | 1.05% | 1.61% | Speculative | Optical networking components: coherent optics for AI compute interconnect |
-| **LITE** | 🔵 ACCUMULATE | 1.46% | 2.25% | Speculative | Lumentum optical interconnects: photonic layer of AI networking. SA LP holding. |
+| **META** | ⚪ MAINTAIN | 1.89% | 2.00% | Core | Consumer AI Leader: open-source Llama models. |
+| **NBIS** | ⚪ MAINTAIN | 2.22% | 2.57% | Speculative | Nebius AI infrastructure — early stage conviction. |
+| **COHR** | 🔴 EXIT | 1.05% | 0.00% | EXIT | Liquidation finalized. Capital better deployed in higher conviction ASI names. |
+| **LITE** | 🔵 ACCUMULATE | 1.46% | 2.25% | Speculative | Lumentum optical interconnects: photonic layer of AI networking. |
 | **HUMN** | ⚪ MAINTAIN | 2.78% | 2.59% | Thematic ETF | Humanoid robotics ETF — physical embodiment of ASI |
-| **KOID** | ⚪ MAINTAIN | 2.63% | 2.44% | Thematic ETF | KraneShares humanoid ETF — automation and robotics revolution |
+| **KOID** | ⚪ MAINTAIN | 2.63% | 2.44% | Thematic ETF | Automation and robotics revolution. |
 
 #### Infrastructure Plays — Power, Cooling, Hosting & Networking
 
 | Ticker | Action | Current % | Target % | Role | Conviction Note |
 | :--- | :--- | ---: | ---: | :--- | :--- |
-| **VST** | 🔥 REVIEW | 2.46% | 1.29% | Core | Largest independent US power producer — reliable baseload for AI compute at scale |
-| **CEG** | ⚪ MAINTAIN | 2.96% | 3.26% | Core | Nuclear renaissance — clean, carbon-free baseload for data centre energy demand |
-| **EQIX** | 👁️ WATCHLIST | — | — | Core | Digital Geneva: critical physical nexus where compute and sovereign finance interconnect |
-| **VRT** | ⚪ MAINTAIN | 1.09% | 1.04% | Core | Thermal management — liquid cooling bottleneck solver for high-density AI clusters |
-| **OKLO** | ⚪ MAINTAIN | 2.19% | 2.42% | Speculative | Next-gen SMRs — binary NRC outcome, capped position. Fission future bet. |
-| **BE** | 🔵 ACCUMULATE | 1.78% | 4.12% | Speculative | Bloom Energy fuel cells — clean distributed power for data centre edge. SA LP holding. |
-| **CORZ** | 🔵 ACCUMULATE | 2.96% | 5.05% | High-beta | Bitcoin mining converting to AI data centres — pure infrastructure play |
-| **IREN** | 🟡 TRIM | 1.79% | 1.51% | High-beta | AI data centre and Bitcoin mining — high-beta infrastructure bet |
-| **EQT** | ⚪ MAINTAIN | 1.08% | 0.98% | Macro hedge | Natural gas infrastructure — energy security + structural AI power demand floor |
+| **VST** | 🔥 REVIEW | 2.46% | 1.29% | Core | Largest independent US power producer. |
+| **CEG** | ⚪ MAINTAIN | 2.96% | 3.26% | Core | Nuclear renaissance — clean, carbon-free baseload. |
+| **VRT** | ⚪ MAINTAIN | 1.09% | 1.04% | Core | Thermal management — liquid cooling bottleneck solver. |
+| **OKLO** | ⚪ MAINTAIN | 2.19% | 2.42% | Speculative | Next-gen SMRs. |
+| **BE** | 🔵 ACCUMULATE | 1.78% | 4.12% | Speculative | Bloom Energy fuel cells — clean distributed power. |
+| **CORZ** | 🔵 ACCUMULATE | 2.96% | 5.05% | High-beta | Bitcoin mining converting to AI data centres. |
+| **IREN** | 🔴 EXIT | 1.79% | 0.00% | EXIT | Liquidation finalized. |
+| **EQT** | 🔴 EXIT | 1.08% | 0.00% | EXIT | Liquidation finalized. |
 
 ---
 
 ### Sub-Strategy 2 — AI-Native Cybersecurity
 
-**Conviction:** As AI capabilities advance, the attack surface expands and the sophistication of threats scales proportionally. AI agents now autonomously discover zero-days, craft spear-phishing at scale, and probe infrastructure 24/7. The *Claude* model family and frontier AI labs have publicly demonstrated AI-assisted vulnerability discovery — validating that AI-powered offence is already operational. The SaaSocalypse narrative (AI eating SaaS growth) does **not** apply here: cybersecurity demand is *structurally coupled to AI adoption*, not threatened by it. More AI = more attack surface = more security spend. AI-native platforms that embed intelligence into detection, response, and zero-trust access are the clear beneficiaries. This is a sovereign-critical layer — the onshored AI supply chain and the new financial system both require it.
-
-**Conviction Intact When:** Cyber attack frequency and sophistication keep rising with AI model capability. Enterprise zero-trust adoption accelerating. AI-native security platforms taking share from legacy SIEM/endpoint. No single AI-native disruptor captures >20% of PANW's or ZS's addressable market.
-
-**Thesis Breaker:** A single AI-native security platform achieves commoditisation across detection, response, and access — eliminating the platform premium for PANW/ZS. Quantum decryption makes current security architectures obsolete without a viable post-quantum replacement.
+**Conviction:** As AI capabilities advance, the attack surface expands. More AI = more attack surface = more security spend.
 
 | Ticker | Action | Current % | Target % | Role | Conviction Note |
 | :--- | :--- | ---: | ---: | :--- | :--- |
-| **PANW** | ⚪ MAINTAIN | 4.53% | 5.13% | Core | AI-native platform leader: Cortex XSIAM unifies SOC, endpoint, and network. Secures the sovereign AI supply chain. |
-| **ZS** | ⚪ MAINTAIN | 3.39% | 3.22% | Core | Zero Trust access gateway: AI-native SASE for distributed AI workforce. BUY-rated. |
-| **CRWD** | 👁️ WATCHLIST | — | — | EXIT | Endpoint leader structurally damaged by July 2024 global outage. Route weight to ZS. |
+| **PANW** | ⚪ MAINTAIN | 4.53% | 5.13% | Core | AI-native platform leader. |
+| **ZS** | ⚪ MAINTAIN | 3.39% | 3.22% | Core | Zero Trust access gateway. |
 
 ---
 
-### Sub-Strategy 3 — Sovereign Finance
+### Sub-Strategy 3 — Sovereign Finance (Secondary: Strategic Maturity)
 
-**Conviction:** The global financial system is being tokenised. The GENIUS Act (enacted 2025) establishes regulated stablecoin rails requiring every dollar of new stablecoins to be backed by US Treasuries — a perpetual structural bid for US government debt. Bitcoin is the neutral reserve asset. Ethereum is the programmable settlement layer for RWAs. Coinbase and Circle are the regulated picks-and-shovels plays on this transition.
-
-**Conviction Intact When:** GENIUS Act framework is intact. Stablecoin adoption growing. RWA tokenisation expanding. Bitcoin holds monetary reserve narrative.
-
-**Thesis Breaker:** GENIUS Act repealed or SEC court victory classifies ETH as security. USDC de-peg sustained beyond 48 hours.
+**Conviction:** The global financial system is being tokenised for **AI Agents**. Bitcoin (store of value), Ethereum (settlement layer), Coinbase/Circle (infrastructure).
 
 | Ticker | Action | Current % | Target % | Role | Conviction Note |
 | :--- | :--- | ---: | ---: | :--- | :--- |
-| **IBIT** | 👁️ WATCHLIST | — | — | Core | Digital gold: neutral, un-inflatable store of value and pristine digital reserve asset |
-| **ETHA** | 👁️ WATCHLIST | — | — | Core | Global settlement layer: Ethereum as programmable rail for RWA tokenisation |
-| **COIN** | ⚪ MAINTAIN | 3.02% | 2.63% | Core | Regulated app store for sovereign finance: primary US gateway and picks-and-shovels |
-| **CRCL** | 🟡 TRIM | 3.56% | 3.07% | Core | Sovereign stablecoin manufacturer: pure-play builder of the regulated digital dollar (USDC) |
-| **SOLZ** | 👁️ WATCHLIST | — | — | Speculative | Solana ecosystem ETF — high-throughput payments layer, speculative allocation |
+| **IBIT** | 👁️ WATCHLIST | — | — | Core | Digital gold: neutral, un-inflatable store of value. |
+| **ETHA** | 👁️ WATCHLIST | — | — | Core | Global settlement layer. |
+| **COIN** | ⚪ MAINTAIN | 3.02% | 2.63% | Core | Regulated app store for sovereign finance. |
+| **CRCL** | ⚪  TRIM | 3.56% | 3.07% | Core | Sovereign stablecoin manufacturer for AI agents. |
 
 ---
 
 ### Sub-Strategy 4 — Quality SaaS Resilience
 
-**Conviction:** The AI boom has indiscriminately oversold high-quality SaaS companies with strong bottom-line profit, durable growth, and mission-critical enterprise relationships. These companies will not be displaced by AI — they will embed it into their platforms and compound through the cycle. The market is pricing them as AI casualties; the reality is they are AI beneficiaries with a moat. This thesis is **distinct from the SaaSocalypse risk** — only companies with genuine platform lock-in, high net retention, and active AI product integration qualify.
-
-**Conviction Intact When:** Revenue growth stays positive. Net retention above 110%. AI product integration (Agentforce, Now Assist) progressing. Operating margins expanding.
-
-**Thesis Breaker:** An AI-native replacement captures >20% of the addressable market. Revenue growth decelerates below 10% YoY on a sustained basis.
-
 | Ticker | Action | Current % | Target % | Role | Conviction Note |
 | :--- | :--- | ---: | ---: | :--- | :--- |
-| **CRM** | 🔵 ACCUMULATE | 0.86% | 1.29% | Core | Salesforce — Agentforce AI platform built on the world's largest CRM dataset |
-| **NOW** | 🔵 ACCUMULATE | 0.83% | 1.29% | Core | ServiceNow — AI workflow automation embedded in enterprise IT infrastructure |
-
----
-
-### Sub-Strategy 5 — Applied AI / Frontier Bets
-
-**Conviction:** Small, asymmetric positions in early-stage or speculative AI-adjacent themes. These are binary bets — sized accordingly (≤2% each). The thesis is optionality, not certainty. Each requires its own catalyst for conviction to increase.
-
-**Sizing Rule:** No single frontier bet exceeds 2% of portfolio. Aggregate frontier exposure capped at 8%.
-
-| Ticker | Action | Current % | Target % | Role | Conviction Note |
-| :--- | :--- | ---: | ---: | :--- | :--- |
-| **TEM** | 👁️ WATCHLIST | — | — | Applied AI | Tempus AI — AI-native healthcare data platform, applied AI in regulated industry |
-
-| RGTI | Quantum | Rigetti Computing — quantum compute exposure, binary milestone outcome |
-| POET | Photonics | POET Technologies — photonic integrated circuits, optical compute interconnect bet |
+| **CRM** | 🔵 ACCUMULATE | 0.86% | 1.29% | Core | Salesforce — Agentforce AI platform. |
+| **NOW** | 🔵 ACCUMULATE | 0.83% | 1.29% | Core | ServiceNow — AI workflow automation. |
 
 ---
 
 ## III. Portfolio Weights
 
-Portfolio holdings and actual weights are maintained in `target-portfolio.json` and updated live from Questrade.
-
-**To refresh portfolio from broker:**
-```bash
-# Option 1: Via the app (recommended)
-python3 run_investment_toolkit.py
-# Then: POST http://localhost:3001/api/portfolio/sync-questrade
-
-# Option 2: Direct Python call
-python3 investment_screener/backend/src/QuestradeDataEngine.py --sync
-```
-
-**To view current health vs targets:**
-```bash
-curl -s http://localhost:3001/api/theses/target-portfolio/health | python3 -m json.tool
-```
-
-Each holding in `target-portfolio.json` carries a `subStrategyId` field mapping it to one of the five sub-strategies above. The strategic review skill uses this to assess sub-strategy-level health, not just individual holding drift.
-
-**Sub-strategy IDs** (used in `target-portfolio.json`):
-
-| subStrategyId | Sub-Strategy |
-| :--- | :--- |
-| `sa-asi-race` | Sub-Strategy 1 — SA / ASI Race |
-| `cybersecurity` | Sub-Strategy 2 — AI-Native Cybersecurity |
-| `sovereign-finance` | Sub-Strategy 3 — Sovereign Finance |
-| `quality-saas` | Sub-Strategy 4 — Quality SaaS Resilience |
-| `frontier-bets` | Sub-Strategy 5 — Applied AI / Frontier Bets |
-| `cash` | Strategic Reserve |
-
-**Strategic Reserve (Cash):**
-
-| Ticker | Action | Current % | Target % | Role | Conviction Note |
-| :--- | :--- | ---: | ---: | :--- | :--- |
-| **PSU-U.TO** | 🟢 INITIATE | — | 10.08% | Reserve | Purpose US Cash Fund — high-yield USD cash providing tactical optionality for market dislocations |
+*Holdings and actual weights are maintained in `target-portfolio.json`.*
 
 ---
-
-## IV. Scenario Framework
-
-### Base Case
-- US-China strategic competition continues in technology and finance
-- CHIPS Act investment flows sustain domestic semiconductor expansion
-- GENIUS Act framework drives regulated stablecoin adoption
-- AI compute demand continues to exceed supply
-- Cyber threat sophistication rises in lockstep with frontier model capability
-
-### Upside
-- US achieves decisive ASI lead; allied nations adopt US sovereign finance rails
-- INTC 14A/Terafab executes ahead of schedule; tier-1 design win announced
-- Stablecoin adoption accelerates, creating structural Treasury demand overshoot
-- AI-native security platforms achieve platform consolidation (PANW wins the SOC)
-
-### Downside
-- Rapid geopolitical de-escalation removes national security tailwind for onshored compute
-- Chinchilla-scale efficiency breakthrough dramatically reduces compute demand
-- Hostile regulatory reversal of GENIUS Act
-- SaaSocalypse accelerates beyond CRM/NOW platform moat
-
----
-
 
 ## IV. Portfolio Blueprint
 
-*Generated 2026-05-06 · Source: `validate_weights.py` × `target-portfolio.json` × `portfolio.json` (Questrade live)*
-*Portfolio value: $32,098. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
-
-### Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)
+### Sub-Strategy 1 — SA / ASI Race (Primary: Immediate Growth)
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **INTC** | ⚪ MAINTAIN | — | 8.85% | 8.27% | — | The Sovereign Foundry: designated US National Champion for onshored compute manufacturing. Core contrarian bet on 18A node. Target restored to 11.04% (2026-05-03): Terafab manufacturing partnership (Tesla/SpaceX/xAI AI compute) confirms first tier-1 hyperscaler-class design win on 18A — the thesis catalyst. 18A yield improvements reported. Do not trim before HVM data. |
-| **GOOG** | ⚪ MAINTAIN | — | 4.86% | 4.51% | — | Hyperscaler with vertically integrated AI stack: TPUs, Gemini models, Search, YouTube, GCP. Increased from 6% — underweight given AI monetization runway. |
-| **CRWV** | 🔵 ACCUMULATE | — | 4.21% | 6.18% | — | GPU cloud provider with hyperscaler-grade infrastructure. Microsoft/OpenAI anchor customer. Meta $21B+ contract expansion (2026-05-03) confirms hyperscaler demand; $8.5B investment-grade financing is the first IG credit for any GPU cloud company. |
-| **AMD** | ⚪ MAINTAIN | — | 3.84% | 3.60% | — | Hedge against NVDA dominance. MI300X gaining traction in inference. Slight increase from 2.7%. |
-| **CORZ** | 🔵 ACCUMULATE | — | 2.96% | 5.05% | — | BTC→AI data center conversion thesis. Pecos campus expanding to 1.5 GW for AI (2026-05-03); $3.3B bond raise funds hyperscale data center buildout; ongoing CoreWeave partnership anchor. Execution is materially ahead of DCF assumptions. |
-| **CEG** | ⚪ MAINTAIN | — | 2.96% | 3.26% | — | Largest US nuclear operator. Microsoft data center deal secured. DCF TRIM -35% — reduced from 4.42% on regulatory compression risk. Maintain small core. |
-| **HUMN** | ⚪ MAINTAIN | — | 2.78% | 2.59% | — | Physical embodiment of ASI thesis — humanoid robotics ETF. Increased from 2.88%. |
-| **KOID** | ⚪ MAINTAIN | — | 2.63% | 2.44% | — | Automation and robotics revolution — China + global exposure. Increased from 2.49%. |
-| **MSFT** | 🔥 REVIEW | — | 2.56% | 2.00% | — | Azure + OpenAI partnership. Copilot monetization maturing. Target capped at 2% — user preference to MAINTAIN current position size. |
-| **VST** | 🔥 REVIEW | — | 2.46% | 1.29% | — | Nuclear + natgas power merchant for data center load growth. Trimmed from 4.43% — power thesis still valid but reduce overweight. |
-| **NBIS** | ⚪ MAINTAIN | — | 2.22% | 2.57% | — | DCF BUY +186% upside. Former Yandex Cloud team building European AI infrastructure. INITIATE — DCF conviction overrides thesis EXIT flag. |
-| **OKLO** | ⚪ MAINTAIN | — | 2.19% | 2.42% | — | Micro-nuclear reactor commercialization. Binary bet on NRC licensing. Increased from 1.35% — conviction on data center power timeline. |
-| **BTDR** | 🔥 REVIEW | — | 2.10% | 1.61% | — | Proprietary Sealminer ASIC chip design — structural cost moat over pure BTC miners. DCF BUY +103%. SA LP Q4 2025 increased 92%. ASIC capability aligns with compute thesis. |
-| **NVDA** | 🔵 ACCUMULATE | — | 1.90% | 3.72% | — | Highest-conviction BUY in corpus (+124% DCF upside). GPU monopoly for AI training. Increased from 4.4% — needs to be a core position. |
-| **META** | ⚪ MAINTAIN | — | 1.89% | 2.00% | — | Social monopoly + AI ad flywheel. Llama open-source ecosystem leverage. Target capped at 2% — user preference to MAINTAIN; position sized for monitoring, not aggressive accumulation. |
-| **IREN** | 🟡 TRIM | — | 1.79% | 1.51% | — | EXIT: IREN AI data centre + Bitcoin mining — high-beta physical infra bet. DCF SELL -15%. |
-| **BE** | 🔵 ACCUMULATE | — | 1.78% | 4.12% | — | Bloom Energy fuel cells — clean distributed power for data centre edge. Oracle AI data center fuel cell deal up to 2.8 GW (2026-05-03); strong Q1 results. SA LP top power holding. |
-| **LITE** | 🔵 ACCUMULATE | — | 1.46% | 2.25% | — | Lumentum optical interconnects — photonic layer of AI networking. SA LP holding. |
-| **VRT** | ⚪ MAINTAIN | — | 1.09% | 1.04% | — | Data center thermal management. AI cooling bottleneck play. DCF SELL -32% — maintain small position, thesis is real but valuation stretched. |
-| **EQT** | ⚪ MAINTAIN | — | 1.08% | 0.98% | — | EXIT: EQT natural gas infrastructure — gas commodity, near breakeven. DCF SELL -18%. |
-| **COHR** | 🔵 ACCUMULATE | — | 1.05% | 1.61% | — | EXIT: Coherent optics — near fair value. Capital better deployed elsewhere. |
-| **WYFI** | ⚪ MAINTAIN | — | 0.91% | 0.97% | — | AI GPU cloud + HPC data center. DCF BUY +92%. SA LP Q4 2025 NEW position. BTBT subsidiary. Speculative — monitor Q2 2026 revenue >M. |
-| **PSIX** | 🔥 REVIEW | — | 0.88% | 0.51% | — | SA LP NEW position Q4. DCF BUY +51.9%. AI power infrastructure — industrial engine/generator systems. |
-| **TEAM** | 🔵 ACCUMULATE | — | 0.80% | 1.39% | — | Human-agentic collaboration platform. Jira evolves from human task management to the OS for AI fleet operations — agent developers, agent QA specialists, and agent orchestrators all need a workflow and ticketing system. JIRA mental model (issues, assignees, status, boards) maps directly onto how humans manage AI agents today. DCF BUY +22.5% upside at current price; bull case prices AI agent seat expansion at +214% upside. |
-| **AVGO** | 👁️ WATCHLIST | — | — | — | — | Custom ASIC + networking moat. Google TPU and Meta MTIA are multi-year engagements. DCF shows -22% short-term but the thesis is multi-year platform lock-in. |
-| **EQIX** | 👁️ WATCHLIST | — | — | — | — | Digital Geneva — carrier-neutral colocation in every major financial market. Increased from 2.88%. Not yet owned — INITIATE. |
-| **ANET** | 👁️ WATCHLIST | — | — | — | — | AI networking switching fabric. Hyperscaler capex flows through ANET. Near fair value — hold and accumulate on pullbacks. |
-| **SNDK** | 🟢 INITIATE | — | — | 0.76% | — | SA LP +1839% Q4. DCF BUY +26.4%. AI-era NAND storage infrastructure play. |
-| **TSM** | 🟢 INITIATE | — | — | 2.35% | — | The foundry backbone of the AI compute stack. NVDA designs the GPU; TSM manufactures it. The only fab on earth capable of 3nm/2nm at scale — NVDA, AMD, Apple, Qualcomm all rely on TSMC. Without TSM, the AI supercycle cannot physically produce chips. Manufacturing moat is ~5-7 years ahead of nearest competitors (Samsung, Intel). VIX pullback target: add aggressively on broad market corrections. |
-| **ASML** | 🟢 INITIATE | — | — | 1.88% | — | Absolute monopoly on EUV lithography — the machines that print chips at sub-7nm. No competitor can replicate this in under a decade; the physics, IP, and supply chain required are uniquely concentrated at ASML. Every advanced chip on earth runs through an ASML machine. Supply chain position #3 in AI chips thesis: without ASML, TSM cannot manufacture, NVDA cannot design next-gen GPUs. VIX pullback target: add on corrections. |
-| **MU** | 🟢 INITIATE | — | — | 1.41% | — | HBM3E memory is the bandwidth bottleneck inside every NVDA H200 and B200 GPU. Micron supplies HBM alongside SK Hynix and Samsung — highly cyclical but structurally necessary. Supply chain position #4 in AI chips thesis. Sized small as a base; strategy is to load up aggressively on VIX spikes and memory cycle troughs when MU trades at trough P/B multiples. |
-| **Subtotal** | | **59.26%** | **72.29%** | +13.04pp | |
+| **INTC** | ⚪ MAINTAIN | — | 8.85% | 8.27% | — | The Sovereign Foundry: designated US National Champion. |
+| **GOOG** | ⚪ MAINTAIN | — | 4.86% | 4.51% | — | Vertically integrated AI stack. |
+| **CRWV** | 🔵 ACCUMULATE | — | 4.21% | 6.18% | — | GPU cloud provider. |
+| **AMD** | ⚪ MAINTAIN | — | 3.84% | 3.60% | — | Hedge against NVDA dominance. |
+| **CORZ** | 🔵 ACCUMULATE | — | 2.96% | 5.05% | — | BTC→AI data center conversion. |
+| **CEG** | ⚪ MAINTAIN | — | 2.96% | 3.26% | — | Nuclear operator. |
+| **HUMN** | ⚪ MAINTAIN | — | 2.78% | 2.59% | — | Humanoid robotics ETF. |
+| **KOID** | ⚪ MAINTAIN | — | 2.63% | 2.44% | — | Automation and robotics revolution. |
+| **MSFT** | 🔥 REVIEW | — | 2.56% | 2.00% | — | Azure + OpenAI partnership. |
+| **VST** | 🔥 REVIEW | — | 2.46% | 1.29% | — | Nuclear + natgas power. |
+| **NBIS** | ⚪ MAINTAIN | — | 2.22% | 2.57% | — | European AI infrastructure. |
+| **OKLO** | ⚪ MAINTAIN | — | 2.19% | 2.42% | — | Micro-nuclear reactor commercialization. |
+| **NVDA** | 🔵 ACCUMULATE | — | 1.90% | 3.72% | — | Highest-conviction BUY. GPU monopoly. |
+| **META** | ⚪ MAINTAIN | — | 1.89% | 2.00% | — | Social monopoly + AI ad flywheel. |
+| **IREN** | 🔴 EXIT | — | 1.79% | 0.00% | — | EXIT: Liquidation finalized. |
+| **BE** | 🔵 ACCUMULATE | — | 1.78% | 4.12% | — | Bloom Energy fuel cells. |
+| **LITE** | 🔵 ACCUMULATE | — | 1.46% | 2.25% | — | Optical interconnects. |
+| **VRT** | ⚪ MAINTAIN | — | 1.09% | 1.04% | — | Data center thermal management. |
+| **EQT** | 🔴 EXIT | — | 1.08% | 0.00% | — | EXIT: Liquidation finalized. |
+| **COHR** | 🔴 EXIT | — | 1.05% | 0.00% | — | EXIT: Liquidation finalized. |
+| **Subtotal** | | **59.26%** | **68.19%** | | |
 
-### Sub-Strategy 2 — AI-Native Cybersecurity
+---
+
+### Sub-Strategy 3 — Sovereign Finance (Secondary: Strategic Infrastructure)
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **PANW** | ⚪ MAINTAIN | — | 4.53% | 5.13% | — | AI-native platform consolidation leader. Platformization model winning enterprise. Increased from 3.85% — cybersecurity pillar was underweight. |
-| **ZS** | ⚪ MAINTAIN | — | 3.39% | 3.22% | — | Zero-trust SASE leader. Network security moving to cloud-native model. Increased from 2.04%. |
-| **CRWD** | 👁️ WATCHLIST | — | — | — | — | EXIT: DCF -66% downside. Structural outage damage (July 2024) confirmed ongoing customer attrition. Reputational capital permanently impaired at the enterprise level. |
-| **Subtotal** | | **7.92%** | **8.34%** | +0.42pp | |
-
-### Sub-Strategy 3 — Sovereign Finance
-
-| Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
-| :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **CRCL** | 🟡 TRIM | — | 3.56% | 3.07% | — | USDC issuer and stablecoin infrastructure. GENIUS Act tailwind. |
-| **COIN** | ⚪ MAINTAIN | — | 3.02% | 2.63% | — | Regulated crypto exchange + Base L2 growth. Increased from 3.48%. |
-| **ETHA** | 👁️ WATCHLIST | — | — | — | — | Ethereum as programmable settlement layer. Staking yield embedded in ETF. Slight increase from 3.77%. |
-| **IBIT** | 👁️ WATCHLIST | — | — | — | — | Bitcoin as sovereign reserve asset. US strategic reserve narrative accelerating. Increased from 3.2%. |
-| **SOLZ** | 👁️ WATCHLIST | — | — | — | — | EXIT: Solana ETF — high-throughput payments layer. Speculative, no clear catalyst for re-entry. |
-| **Subtotal** | | **6.59%** | **5.70%** | -0.88pp | |
-
-### Sub-Strategy 4 — Quality SaaS Resilience
-
-| Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
-| :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **CRM** | 🔵 ACCUMULATE | — | 0.86% | 1.29% | — | DCF BUY +53% upside. Agentforce AI platform on world's largest CRM dataset. Small position — thesis EXIT overridden by DCF valuation gap. |
-| **NOW** | 🔵 ACCUMULATE | — | 0.83% | 1.29% | — | DCF BUY +45% upside. AI workflow automation embedded in enterprise IT infrastructure. Small position — thesis EXIT overridden by DCF valuation gap. |
-| **Subtotal** | | **1.69%** | **2.57%** | +0.88pp | |
-
-### Sub-Strategy 5 — Applied AI / Frontier Bets
-
-| Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
-| :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **RGTI** | 👁️ WATCHLIST | — | — | — | — | EXIT: Rigetti Computing — quantum compute exposure. DCF STRONG SELL -94%. Pre-commercial. |
-| **POET** | 👁️ WATCHLIST | — | — | — | — | EXIT: POET Technologies — photonic integrated circuits. DCF STRONG SELL -86%. Pre-commercial. |
-| **Subtotal** | | **0.00%** | **0.00%** | — | |
+| **CRCL** | 🟡 TRIM | — | 3.56% | 3.07% | — | Sovereign stablecoin manufacturer for AI agents. |
+| **COIN** | ⚪ MAINTAIN | — | 3.02% | 2.63% | — | Regulated gateway for tokenized finance. |
+| **Subtotal** | | **6.59%** | **5.70%** | | |
 
 ### Strategic Reserve
 
-| Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
-| :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **PSU-U.TO** | 🟢 INITIATE | — | — | 10.08% | — | Strategic reserve for opportunistic deployment. Reduced from 13% to fund NVDA, META, and NBIS initiations. |
-| **Subtotal** | | **0.00%** | **10.08%** | +10.08pp | |
+| Ticker | Thesis Action | Actual % | Target % | Conviction |
+| :--- | :--- | ---: | ---: | :--- |
+| **PSU-U.TO** | 🟢 INITIATE | — | 10.08% | Strategic reserve for opportunistic deployment. |
 
 ### Portfolio Totals
 
 | | Actual % | Target % | Delta |
 | :--- | ---: | ---: | ---: |
-| **All holdings** | **75.45%** | **98.99%** | +23.54pp |
-| *Validate* | `python3 plugins/portfolio-advisor/scripts/validate_weights.py --mode both` | | |
-
+| **All holdings** | **75.45%** | **94.89%** | +19.44pp |
 
 ---
-
 
 ## V. Risk Factors
 
 | Risk | Trigger Condition | Hedge / Mitigation |
 | :--- | :--- | :--- |
-| INTC execution failure | 18A delay past Q4 2026 or no tier-1 customer | NVDA/AMD long; AVBO position |
-| Algorithmic efficiency breakthrough | Compute demand falls despite model growth | GOOG long (research leader) |
-| TSMC moat insurmountable | Intel IFS commercially non-viable | NVDA direct position |
-| Crypto regulatory reversal | GENIUS Act repealed or ETH classified as security | Position caps: COIN, CRCL ≤5% each |
-| Geopolitical de-escalation | Taiwan resolution removes urgency | Power/energy positions valid regardless |
-| Monetary shock | Fed pivot + dollar stress | IBIT as uncorrelated reserve asset |
-| SaaS AI displacement | AI-native replacement >20% TAM capture | Position capped, monitor net retention |
-| Cyber AI arms race backfire | Offensive AI outpaces defensive AI by >2 model generations | PANW + ZS platform consolidation hedge |
-
----
-
-## VI. Thesis Breakers & Sell Discipline
-
-| Holding | Breaker Conditions |
-| :--- | :--- |
-| **INTC** | 18A HVM delay past Q4 2026 · No tier-1 design win by EOY 2026 · CEO departure without IFS-committed successor |
-| **COIN** | GENIUS Act repealed · Base L2 fails top-3 by volume · Major hack impairing brand trust |
-| **CRCL** | Failure to secure federal charter · USDC de-peg >48hrs · Sustained market share loss |
-| **OKLO** | Definitive NRC rejection without remediation path |
-| **CRWD** | Already EXIT — structural damage from July 2024 outage |
-| **CRM / NOW** | AI-native replacement >20% TAM · Net retention falls below 105% for 2 consecutive quarters |
-
-**General Discipline:**
-- Holding where thesis-for-inclusion is no longer true → full review within 30 days
-- Any holding at 2× target weight without conviction reaffirmation → trim to target
-- TRIM/EXIT-rated position deferred >90 days → escalate to `/strategic-review`
+| INTC execution failure | 18A delay past Q4 2026 | NVDA/AMD long |
+| Crypto regulatory reversal | GENIUS Act repealed | Position caps: COIN, CRCL ≤5% each |
 
 ---
 
@@ -363,21 +211,5 @@ Each holding in `target-portfolio.json` carries a `subStrategyId` field mapping 
 
 | Source | Relevance |
 | :--- | :--- |
-| Aschenbrenner (2024) *Situational Awareness* — [situational-awareness.ai](https://situational-awareness.ai) | Core ASI Race thesis framework |
-| SA LP Q4 2025 13F — [13f.info](https://13f.info/13f/000204572426000002-situational-awareness-lp-q4-2025) | INTC $746M calls, CRWV $1.21B |
-| Intel 18A Platform Brief (Mar 2025) — [intel.com](https://www.intel.com/content/dam/www/central-libraries/us/en/documents/2025-03/foundry-18a-platform-brief.pdf) | INTC execution evidence |
-| GENIUS Act (H.R. 5150, enacted 2025) — [congress.gov](https://www.congress.gov/bill/118/hr5150) | Sovereign Finance legal framework |
-| IEA Electricity 2024 — [iea.org](https://www.iea.org/reports/electricity-2024) | Data centre power demand evidence |
-| Anthropic (2025) *Claude frontier security research* | AI-native cyber offence validates security sub-strategy |
-
----
-
-## VIII. Red Team Reviews
-
-| Date | Reviewer | Score | Key Finding |
-| :--- | :--- | :--- | :--- |
-| Nov 2025 | Grok AI | 8/10 | Core framework valid. Primary risk: Intel execution (~11% position). Hedges appropriate. |
-| 2026-05-02 | Claude Sonnet 4.6 | — | INTC breakers resolved. CRWV elevated to URGENT ACCUMULATE. Thesis refactored to 5 sub-strategies. |
-| 2026-05-02 | Claude Sonnet 4.6 | — | Cybersecurity elevated to standalone sub-strategy. Datacenter-infra merged into SA/ASI Race as infrastructure plays. v7.5. |
-| 2026-05-04 | Claude Sonnet 4.6 | — | v8.4: Quantum Computing pillar added (IONQ speculative, RGTI exited). COIN regulatory catalyst applied (SEC case dismissed). Full DCF sweep: IONQ/QBTS valued. |
-| 2026-05-04 | Claude Sonnet 4.6 | — | v8.5: Healthcare AI / Life Science pillar added (TEM speculative, Pelosi conviction pick). Both new pillars small (~2%) — optionality on 10–20yr disruption horizons not captured by 5-yr DCF. |
+| Aschenbrenner (2024) *Situational Awareness* | Core ASI Race thesis framework |
+| GENIUS Act (H.R. 5150, enacted 2025) | Sovereign Finance legal framework |

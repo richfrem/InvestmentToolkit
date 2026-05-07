@@ -187,6 +187,95 @@ app.get('/api/portfolio/summary', async (_req, res) => {
     }
 });
 
+// --- Portfolio Period Performance (1d / 1w / 1m changes via yfinance) ---
+
+app.get('/api/portfolio/performance', async (_req, res) => {
+    console.log(`[API] Computing portfolio period performance...`);
+    try {
+        if (!fs.existsSync(PORTFOLIO_FILE)) {
+            res.status(404).json({ error: 'No portfolio data found' });
+            return;
+        }
+        const data = await spawnPythonScript('portfolio_performance.py', [PORTFOLIO_FILE]);
+        res.json(data);
+    } catch (error) {
+        console.error(`[API] Error computing performance: `, error);
+        res.status(500).json({ error: 'Failed to compute portfolio performance' });
+    }
+});
+
+// --- Portfolio Strategy Allocation (actual value by thesis pillar) ---
+
+const THESIS_FILE = path.join(__dirname, '../data/theses/target-portfolio.json');
+
+app.get('/api/portfolio/strategy-allocation', async (_req, res) => {
+    console.log(`[API] Computing strategy allocation...`);
+    try {
+        if (!fs.existsSync(PORTFOLIO_FILE)) {
+            res.status(404).json({ error: 'No portfolio data found' });
+            return;
+        }
+
+        const positions: any[] = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+
+        let pillarMap: Record<string, string> = {};
+        let subStrategyMap: Record<string, string> = {};
+        let pillars: Array<{ id: string; name: string }> = [];
+
+        if (fs.existsSync(THESIS_FILE)) {
+            const thesis = JSON.parse(fs.readFileSync(THESIS_FILE, 'utf-8'));
+            pillars = thesis.pillars ?? [];
+            for (const h of (thesis.holdings ?? [])) {
+                if (h.ticker && h.pillarId) pillarMap[h.ticker] = h.pillarId;
+                if (h.ticker && h.subStrategyId) subStrategyMap[h.ticker] = h.subStrategyId;
+            }
+        }
+
+        const pillarValues: Record<string, number> = {};
+        const pillarPositions: Record<string, any[]> = {};
+        for (const pos of positions) {
+            const value = (pos.shares ?? 0) * (pos.price ?? 0);
+            const pillarId = (pos.symbol === 'USD_CASH' || pos.sector === 'CASH')
+                ? 'cash'
+                : (pillarMap[pos.symbol] ?? 'other');
+            pillarValues[pillarId] = (pillarValues[pillarId] ?? 0) + value;
+            (pillarPositions[pillarId] ??= []).push(pos);
+        }
+
+        const totalUSD = Object.values(pillarValues).reduce((a, b) => a + b, 0);
+
+        const pillarNameMap: Record<string, string> = { other: 'Other' };
+        for (const p of pillars) pillarNameMap[p.id] = p.name;
+
+        const allocation = Object.entries(pillarValues)
+            .map(([id, value]) => ({
+                id,
+                name: pillarNameMap[id] ?? id,
+                valueUSD: Math.round(value * 100) / 100,
+                pct: totalUSD > 0 ? Math.round((value / totalUSD) * 10000) / 100 : 0,
+                holdings: (pillarPositions[id] ?? [])
+                    .map((pos: any) => ({
+                        symbol: pos.symbol as string,
+                        name: (pos.name ?? pos.symbol) as string,
+                        sector: (pos.sector ?? 'Other') as string,
+                        subStrategyId: (subStrategyMap[pos.symbol] ?? (pos.symbol === 'USD_CASH' ? 'cash' : null)) as string | null,
+                        shares: (pos.shares ?? 0) as number,
+                        price: (pos.price ?? 0) as number,
+                        valueUSD: Math.round((pos.shares ?? 0) * (pos.price ?? 0) * 100) / 100,
+                        pct: totalUSD > 0 ? Math.round(((pos.shares ?? 0) * (pos.price ?? 0) / totalUSD) * 10000) / 100 : 0,
+                    }))
+                    .sort((a: any, b: any) => b.valueUSD - a.valueUSD),
+            }))
+            .filter(a => a.valueUSD > 0)
+            .sort((a, b) => b.valueUSD - a.valueUSD);
+
+        res.json({ allocation, totalUSD: Math.round(totalUSD * 100) / 100 });
+    } catch (error) {
+        console.error(`[API] Error computing strategy allocation: `, error);
+        res.status(500).json({ error: 'Failed to compute strategy allocation' });
+    }
+});
+
 app.post('/api/portfolio', async (req, res) => {
     const { items } = req.body;
     console.log(`[API] Saving portfolio with ${items?.length || 0} positions...`);

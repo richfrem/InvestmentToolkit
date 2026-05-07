@@ -30,6 +30,16 @@
             "name": "calibrate_targets",
             "path": "skills/calibrate-targets/SKILL.md",
             "trigger": "/calibrate-targets"
+        },
+        {
+            "name": "x_news_sweep",
+            "path": "skills/x-news-sweep/SKILL.md",
+            "trigger": "/x-news-sweep"
+        },
+        {
+            "name": "thesis_challenge_bundler",
+            "path": "skills/thesis-challenge-bundler/SKILL.md",
+            "trigger": "/bundle-thesis-review"
         }
     ],
     "commands": [
@@ -47,6 +57,16 @@
             "name": "rebalance",
             "path": "commands/rebalance.md",
             "trigger": "/rebalance"
+        },
+        {
+            "name": "x-news-sweep",
+            "path": "commands/x-news-sweep.md",
+            "trigger": "/x-news-sweep"
+        },
+        {
+            "name": "bundle-thesis-review",
+            "path": "commands/bundle-thesis-review.md",
+            "trigger": "/bundle-thesis-review"
         }
     ],
     "connectors": "CONNECTORS.md",

@@ -61,8 +61,8 @@ Wait for explicit confirmation before writing files.
 ## Phase 3: Scaffold
 
 ### CLAUDE.md Rules
-- **MUST stay under 200 lines** — if content exceeds this, split into `.claude/rules/` files
-- Include: project purpose (1–3 sentences), key commands, stack summary, and a pointer to `.claude/rules/` for domain-specific conventions
+- **Target under 200 lines** for standard projects — if content exceeds this, split into `.claude/rules/` files. Agent-heavy projects with rich AI context (skills tables, daily protocols, pitfall registers) may justify more; prefer quality over arbitrary line count.
+- Include: project purpose (1–3 sentences), key commands, stack summary, a pointer to `.claude/rules/` for domain-specific conventions, and a **Daily Workflow** section if the project has recurring AI-assisted routines (e.g., daily sweeps, session-start protocols)
 - Do NOT include: exhaustive rule lists, framework docs, anything that only applies to specific file types (those go in scoped rules)
 
 **Template structure:**
@@ -99,6 +99,7 @@ Always include:
 - `permissions.deny` for sensitive files discovered in Phase 1
 - Any `permissions.allow` for commands the user confirmed are safe
 - Hooks if requested
+- `enabledPlugins` map if the project uses Claude Code plugins (`"pluginName@marketplace": true/false`) — ask during Phase 1 whether any plugins are installed
 
 ### `settings.local.json`
 Generate only if the user has personal overrides. Add to `.gitignore` if not already there.
@@ -123,7 +124,9 @@ After writing files:
 Next steps:
 - Run /memory to verify CLAUDE.md loaded correctly
 - Add `.claude/settings.local.json` to .gitignore if not already present
-- Run bridge installer if deploying to other agent environments
+- Run bridge installer if deploying to other agent environments (GEMINI.md, .github/copilot-instructions.md)
+- If using plugins: run /reload-plugins to verify enabledPlugins loaded correctly
+- Keep the AI Agent Skills table in CLAUDE.md in sync whenever a plugin adds or removes skills
 ```
 
 ---

@@ -95,6 +95,17 @@ curl -s -X POST http://localhost:3001/api/portfolio/sync-questrade \
 
 ---
 
+## 🔄 Daily Session Protocol
+
+At the start of each new trading day session, run `/x-news-sweep`:
+1. Generates a fresh Grok prompt from live `target-portfolio.json`
+2. Paste into [x.com/i/grok](https://x.com/i/grok) and submit
+3. Paste Grok's response back — the skill gates every recommendation against DCF + 8 hard gates before applying anything
+
+This keeps thesis targets, `agentRationale`, and projection catalyst notes current with market developments.
+
+---
+
 ## 🤖 AI Agent Skills — Quick Reference
 
 | Trigger | Plugin | Purpose |
@@ -104,6 +115,11 @@ curl -s -X POST http://localhost:3001/api/portfolio/sync-questrade \
 | `/review-portfolio` | portfolio-advisor | Drift monitor + pillar conviction audit + thesis formula health score (0–100) |
 | `/strategic-review` | portfolio-advisor | Adversarial thesis challenger — surfaces failing pillars, proposes formula improvements |
 | `/rebalance` | portfolio-advisor | Valuation-gated trade optimizer — skips SELL-rated holdings when restoring drift |
+| `/calibrate-targets` | portfolio-advisor | Interactive target-weight calibration session |
+| `/update-portfolio-targets` | portfolio-advisor | Apply formula/weight changes to `target-portfolio.json` |
+| `/x-news-sweep` | portfolio-advisor | Daily Grok/X.com news sweep — gates recommendations against DCF + 8 hard gates |
+| `/bundle-thesis-review` | portfolio-advisor | Package thesis + DCF projections for paste into external LLM (Grok, ChatGPT, Gemini) |
+| `/run-advisor` | portfolio-advisor | Interactive Portfolio Advisor orchestrator — full review → calibrate → rebalance lifecycle |
 | `/start-screener` | toolkit-manager | Launch full suite (frontend + backend) |
 | `/setup-questrade` | toolkit-manager | Interactive Questrade token setup |
 
