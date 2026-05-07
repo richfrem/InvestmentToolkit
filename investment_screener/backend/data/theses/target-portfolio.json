@@ -1,11 +1,11 @@
 {
   "id": "target-portfolio",
-  "name": "Investment Thesis v9.0",
+  "name": "Investment Thesis v9.1",
   "schemaVersion": "1.0",
   "version": 9,
   "createdAt": "2026-02-14T12:00:00Z",
-  "updatedAt": "2026-05-05T15:05:32Z",
-  "description": "Investment thesis focused on the dual infrastructure buildout for ASI Compute and Sovereign Finance. Builder-First, Empire-Second \u2014 own the physical and digital rails, not the application layer.",
+  "updatedAt": "2026-05-06T10:00:00Z",
+  "description": "Investment thesis focused on the dual infrastructure buildout for ASI Compute (Primary) and Sovereign Finance (Secondary).",
   "pillars": [
     {
       "id": "compute",
@@ -66,7 +66,7 @@
       "targetWeight": 10.0827,
       "role": "reserve",
       "subStrategyId": "cash",
-      "thesisForInclusion": "Strategic reserve for opportunistic deployment. Reduced from 13% to fund NVDA, META, and NBIS initiations.",
+      "thesisForInclusion": "Strategic reserve for opportunistic deployment.",
       "agentRationale": "DCF: No AI_AGENT projection on file. SA LP: Not in 13F."
     },
     {
@@ -76,13 +76,8 @@
       "targetWeight": 8.2703,
       "role": "core",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "The Sovereign Foundry: designated US National Champion for onshored compute manufacturing. Core contrarian bet on 18A node. Target restored to 11.04% (2026-05-03): Terafab manufacturing partnership (Tesla/SpaceX/xAI AI compute) confirms first tier-1 hyperscaler-class design win on 18A \u2014 the thesis catalyst. 18A yield improvements reported. Do not trim before HVM data.",
-      "thesisBreakers": [
-        "18A HVM delay beyond Q4 2026",
-        "No top-5 fabless design win by EOY 2026",
-        "CEO departure without committed IFS successor"
-      ],
-      "agentRationale": "DCF: MAINTAIN | FV $50 vs $100 price | -50.2% upside. SA LP: Long \u2014 20.2M call options \u2014 sovereign foundry thesis conviction. \u26a0\ufe0f SA/DCF CONFLICT. Target lifted 9.30%\u219211.04% 2026-05-03: Terafab (Tesla/SpaceX/xAI AI compute project) named Intel as primary manufacturing partner on 18A node \u2014 tier-1 design win satisfying Thesis Breaker A.2. Do not trim pending 18A HVM yield data (expected Q4 2026)."
+      "thesisForInclusion": "The Sovereign Foundry: designated US National Champion for onshored compute manufacturing.",
+      "agentRationale": "DCF: MAINTAIN | FV $50 vs $100 price | -50.2% upside. SA LP: Long \u2014 20.2M call options."
     },
     {
       "ticker": "AVGO",
@@ -91,23 +86,18 @@
       "targetWeight": 0.0,
       "role": "core",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Custom ASIC + networking moat. Google TPU and Meta MTIA are multi-year engagements. DCF shows -22% short-term but the thesis is multi-year platform lock-in.",
-      "agentRationale": "DCF: INITIATE | FV $285 vs $421 price | -32.4% upside. SA LP: Had 230K put hedge Q3, closed Q4 \u2014 neutral, not a long. Target 0%: Price 32% above DCF fair value at time of target set. Re-evaluate when price approaches $285."
+      "thesisForInclusion": "Custom ASIC + networking moat.",
+      "agentRationale": "DCF: INITIATE | FV $285 vs $421 price | -32.4% upside."
     },
     {
       "ticker": "NVDA",
       "name": "NVIDIA Corporation",
       "pillarId": "compute",
-      "targetWeight": 3.7237,
+      "targetWeight": 7.8225,
       "role": "core",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Highest-conviction BUY in corpus (+124% DCF upside). GPU monopoly for AI training. Increased from 4.4% \u2014 needs to be a core position.",
-      "thesisBreakers": [
-        "AMD MI400 closes performance gap within 2 generations",
-        "Export controls remove >15% of addressable revenue",
-        "CUDA ecosystem fragmentation"
-      ],
-      "agentRationale": "DCF: INITIATE | FV $445 vs $198 price | +124.3% upside. SA LP: Had 1.6M put hedge Q3, closed Q4 \u2014 neutral, not a long."
+      "thesisForInclusion": "Highest-conviction BUY. Target increased to absorb freed capital from IREN, COHR, and EQT exits.",
+      "agentRationale": "DCF: INITIATE | FV $445 vs $198 price | +124.3% upside."
     },
     {
       "ticker": "AMD",
@@ -116,8 +106,8 @@
       "targetWeight": 3.6008,
       "role": "hedge",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Hedge against NVDA dominance. MI300X gaining traction in inference. Slight increase from 2.7%.",
-      "agentRationale": "DCF: MAINTAIN | FV $320 vs $361 price | -11.2% upside. SA LP: Not in 13F."
+      "thesisForInclusion": "Hedge against NVDA dominance.",
+      "agentRationale": "DCF: MAINTAIN | FV $320 vs $361 price | -11.2% upside."
     },
     {
       "ticker": "GOOG",
@@ -126,8 +116,8 @@
       "targetWeight": 4.5054,
       "role": "core",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Hyperscaler with vertically integrated AI stack: TPUs, Gemini models, Search, YouTube, GCP. Increased from 6% \u2014 underweight given AI monetization runway.",
-      "agentRationale": "DCF: ACCUMULATE | FV $518 vs $383 price | +35.2% upside. SA LP: Not in 13F."
+      "thesisForInclusion": "Hyperscaler with vertically integrated AI stack.",
+      "agentRationale": "DCF: ACCUMULATE | FV $518 vs $383 price | +35.2% upside."
     },
     {
       "ticker": "MSFT",
@@ -136,8 +126,8 @@
       "targetWeight": 2.0,
       "role": "core",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Azure + OpenAI partnership. Copilot monetization maturing. Target capped at 2% \u2014 user preference to MAINTAIN current position size.",
-      "agentRationale": "DCF: ACCUMULATE | FV $612 vs $414 price | +47.6% upside. SA LP: Not in 13F."
+      "thesisForInclusion": "Azure + OpenAI partnership.",
+      "agentRationale": "DCF: ACCUMULATE | FV $612 vs $414 price | +47.6% upside."
     },
     {
       "ticker": "META",
@@ -146,13 +136,8 @@
       "targetWeight": 2.0,
       "role": "core",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Social monopoly + AI ad flywheel. Llama open-source ecosystem leverage. Target capped at 2% \u2014 user preference to MAINTAIN; position sized for monitoring, not aggressive accumulation.",
-      "thesisBreakers": [
-        "EU regulatory fragmentation of Instagram/WhatsApp",
-        "Teen mental health legislation restricting ad targeting",
-        "Ray-Ban smart glasses fail to become category-defining"
-      ],
-      "agentRationale": "DCF: INITIATE | FV $1105 vs $609 price | +81.6% upside. SA LP: Not in 13F."
+      "thesisForInclusion": "Social monopoly + AI ad flywheel.",
+      "agentRationale": "DCF: INITIATE | FV $1105 vs $609 price | +81.6% upside."
     },
     {
       "ticker": "ETHA",
@@ -161,8 +146,8 @@
       "targetWeight": 0.0,
       "role": "core",
       "subStrategyId": "sovereign-finance",
-      "thesisForInclusion": "Ethereum as programmable settlement layer. Staking yield embedded in ETF. Slight increase from 3.77%.",
-      "agentRationale": "DCF: No AI_AGENT projection on file. SA LP: Not in 13F."
+      "thesisForInclusion": "Ethereum as programmable settlement layer.",
+      "agentRationale": "DCF: No AI_AGENT projection on file."
     },
     {
       "ticker": "COIN",
@@ -171,13 +156,8 @@
       "targetWeight": 2.6312,
       "role": "speculative",
       "subStrategyId": "sovereign-finance",
-      "thesisForInclusion": "Regulated crypto exchange + Base L2 growth. Increased from 3.48%.",
-      "thesisBreakers": [
-        "SEC court victory classifying ETH as security",
-        "Base L2 fails top-3 by volume EOY 2026",
-        "Major hack or loss of customer funds"
-      ],
-      "agentRationale": "GENIUS Act play: regulated crypto exchange + Base L2 + institutional custody gateway. Earns fees on every dollar of tokenized finance. SA LP: Not in Q4 13F. Re-initiated post-red-team review as toll-booth infrastructure play."
+      "thesisForInclusion": "Regulated crypto exchange + Base L2 growth. Settlement rail for AI Agents.",
+      "agentRationale": "GENIUS Act play. Primary infrastructure for AI agent autonomous settlement."
     },
     {
       "ticker": "IBIT",
@@ -186,8 +166,8 @@
       "targetWeight": 0.0,
       "role": "core",
       "subStrategyId": "sovereign-finance",
-      "thesisForInclusion": "Bitcoin as sovereign reserve asset. US strategic reserve narrative accelerating. Increased from 3.2%.",
-      "agentRationale": "DCF: No AI_AGENT projection on file. SA LP: Not in 13F."
+      "thesisForInclusion": "Bitcoin as sovereign reserve asset.",
+      "agentRationale": "DCF: No AI_AGENT projection on file."
     },
     {
       "ticker": "CRCL",
@@ -196,13 +176,8 @@
       "targetWeight": 3.0697,
       "role": "speculative",
       "subStrategyId": "sovereign-finance",
-      "thesisForInclusion": "USDC issuer and stablecoin infrastructure. GENIUS Act tailwind.",
-      "thesisBreakers": [
-        "Failure to secure GENIUS Act charter",
-        "USDC peg break below $0.98",
-        "Sustained loss of regulated stablecoin market share"
-      ],
-      "agentRationale": "GENIUS Act pure-play: Circle is the issuer of USDC, the second-largest stablecoin. OCC national trust bank charter. Earns yield on Treasury reserves backing every USDC. Direct beneficiary of regulated stablecoin expansion. Re-initiated post-red-team review."
+      "thesisForInclusion": "USDC issuer and stablecoin infrastructure for AI agents.",
+      "agentRationale": "GENIUS Act pure-play. Sovereign stablecoin manufacturer for machine-speed transactions."
     },
     {
       "ticker": "VST",
@@ -211,8 +186,8 @@
       "targetWeight": 1.286,
       "role": "core",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Nuclear + natgas power merchant for data center load growth. Trimmed from 4.43% \u2014 power thesis still valid but reduce overweight.",
-      "agentRationale": "DCF: ACCUMULATE | FV $196 vs $155 price | +26.5% upside. SA LP: EXITED Q4 \u2014 Exited completely (-100%) Q4."
+      "thesisForInclusion": "Nuclear + natgas power merchant.",
+      "agentRationale": "DCF: ACCUMULATE | FV $196 vs $155 price | +26.5% upside."
     },
     {
       "ticker": "CEG",
@@ -221,13 +196,8 @@
       "targetWeight": 3.2616,
       "role": "core",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Largest US nuclear operator. Microsoft data center deal secured. DCF TRIM -35% \u2014 reduced from 4.42% on regulatory compression risk. Maintain small core.",
-      "thesisBreakers": [
-        "Nuclear regulatory moratorium",
-        "Data center power deal cancellation",
-        "NRC permitting delays beyond 2027"
-      ],
-      "agentRationale": "DCF: TRIM | FV $175 vs $308 price | -43.2% upside. SA LP: Not in 13F. \u26a0\ufe0f GATE CONFLICT: DCF SELL-rated with no SA LP alignment. Target 3.54% requires user confirmation to hold above 0%."
+      "thesisForInclusion": "Largest US nuclear operator.",
+      "agentRationale": "DCF: TRIM | FV $175 vs $308 price | -43.2% upside."
     },
     {
       "ticker": "OKLO",
@@ -236,8 +206,8 @@
       "targetWeight": 2.4199,
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Micro-nuclear reactor commercialization. Binary bet on NRC licensing. Increased from 1.35% \u2014 conviction on data center power timeline.",
-      "agentRationale": "DCF: TRIM | FV $5 vs $70 price | -92.8% upside. SA LP: Not in 13F. \u26a0\ufe0f GATE CONFLICT: DCF SELL-rated with no SA LP alignment. Target 1.77% requires user confirmation to hold above 0%."
+      "thesisForInclusion": "Micro-nuclear reactor commercialization.",
+      "agentRationale": "DCF: TRIM | FV $5 vs $70 price | -92.8% upside."
     },
     {
       "ticker": "PANW",
@@ -246,8 +216,8 @@
       "targetWeight": 5.1271,
       "role": "core",
       "subStrategyId": "cybersecurity",
-      "thesisForInclusion": "AI-native platform consolidation leader. Platformization model winning enterprise. Increased from 3.85% \u2014 cybersecurity pillar was underweight.",
-      "agentRationale": "DCF: TRIM | FV $155 vs $181 price | -14.5% upside. SA LP: Not in 13F."
+      "thesisForInclusion": "AI-native platform consolidation leader.",
+      "agentRationale": "DCF: TRIM | FV $155 vs $181 price | -14.5% upside."
     },
     {
       "ticker": "CRWD",
@@ -256,8 +226,8 @@
       "targetWeight": 0,
       "role": "untracked",
       "subStrategyId": "cybersecurity",
-      "thesisForInclusion": "EXIT: DCF -66% downside. Structural outage damage (July 2024) confirmed ongoing customer attrition. Reputational capital permanently impaired at the enterprise level.",
-      "agentRationale": "DCF: EXIT | FV $155 vs $456 price | -65.9% upside. SA LP: Not in 13F. Target 0%: EXIT \u2014 thesis no longer supports holding."
+      "thesisForInclusion": "EXIT: DCF -66% downside.",
+      "agentRationale": "DCF: EXIT | FV $155 vs $456 price | -65.9% upside."
     },
     {
       "ticker": "ZS",
@@ -266,8 +236,8 @@
       "targetWeight": 3.2152,
       "role": "core",
       "subStrategyId": "cybersecurity",
-      "thesisForInclusion": "Zero-trust SASE leader. Network security moving to cloud-native model. Increased from 2.04%.",
-      "agentRationale": "DCF: ACCUMULATE | FV $233 vs $140 price | +66.7% upside. SA LP: Not in 13F."
+      "thesisForInclusion": "Zero-trust SASE leader.",
+      "agentRationale": "DCF: ACCUMULATE | FV $233 vs $140 price | +66.7% upside."
     },
     {
       "ticker": "CORZ",
@@ -276,8 +246,8 @@
       "targetWeight": 5.049,
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "BTC\u2192AI data center conversion thesis. Pecos campus expanding to 1.5 GW for AI (2026-05-03); $3.3B bond raise funds hyperscale data center buildout; ongoing CoreWeave partnership anchor. Execution is materially ahead of DCF assumptions.",
-      "agentRationale": "DCF: TRIM | FV $11 vs $20 price | -47.7% upside. SA LP: Long \u2014 28.8M shares \u2014 3rd largest position, +43% Q4. \u26a0\ufe0f SA/DCF CONFLICT. Target lifted 4.14%\u21924.40% 2026-05-03: Pecos 1.5 GW AI expansion + $3.3B bond raise validates BTC\u2192AI conversion thesis ahead of schedule. CoreWeave anchor tenant."
+      "thesisForInclusion": "BTC\u2192AI data center conversion thesis.",
+      "agentRationale": "DCF: TRIM | FV $11 vs $20 price | -47.7% upside."
     },
     {
       "ticker": "EQIX",
@@ -286,8 +256,8 @@
       "targetWeight": 0.0,
       "role": "core",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Digital Geneva \u2014 carrier-neutral colocation in every major financial market. Increased from 2.88%. Not yet owned \u2014 INITIATE.",
-      "agentRationale": "DCF: WATCHLIST | FV $884 vs $1085 price | -18.6% upside. SA LP: Not in 13F. \u26a0\ufe0f GATE CONFLICT: DCF SELL-rated with no SA LP alignment. Target 4.13% requires user confirmation to hold above 0%."
+      "thesisForInclusion": "Digital Geneva.",
+      "agentRationale": "DCF: WATCHLIST | FV $884 vs $1085 price | -18.6% upside."
     },
     {
       "ticker": "CRWV",
@@ -296,8 +266,8 @@
       "targetWeight": 6.1825,
       "role": "core",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "GPU cloud provider with hyperscaler-grade infrastructure. Microsoft/OpenAI anchor customer. Meta $21B+ contract expansion (2026-05-03) confirms hyperscaler demand; $8.5B investment-grade financing is the first IG credit for any GPU cloud company.",
-      "agentRationale": "DCF: ACCUMULATE | FV $163 vs $119 price | +36.6% upside. SA LP: Long \u2014 6.1M shares common + 10.8M calls \u2014 major position, doubled. Target lifted 3.32%\u21924.80% 2026-05-03: Meta $21B+ deal expansion, $8.5B IG financing, NVIDIA strategic investment confirm CoreWeave as the pure-play GPU cloud compounder in the ASI infrastructure supercycle."
+      "thesisForInclusion": "GPU cloud provider.",
+      "agentRationale": "DCF: ACCUMULATE | FV $163 vs $119 price | +36.6% upside."
     },
     {
       "ticker": "ANET",
@@ -306,8 +276,8 @@
       "targetWeight": 0.0,
       "role": "core",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "AI networking switching fabric. Hyperscaler capex flows through ANET. Near fair value \u2014 hold and accumulate on pullbacks.",
-      "agentRationale": "DCF: INITIATE | FV $174 vs $173 price | +0.6% upside. SA LP: Not in 13F."
+      "thesisForInclusion": "AI networking switching fabric.",
+      "agentRationale": "DCF: INITIATE | FV $174 vs $173 price | +0.6% upside."
     },
     {
       "ticker": "VRT",
@@ -316,8 +286,8 @@
       "targetWeight": 1.0384,
       "role": "core",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Data center thermal management. AI cooling bottleneck play. DCF SELL -32% \u2014 maintain small position, thesis is real but valuation stretched.",
-      "agentRationale": "DCF: TRIM | FV $223 vs $328 price | -31.9% upside. SA LP: Not in 13F. \u26a0\ufe0f GATE CONFLICT: DCF SELL-rated with no SA LP alignment. Target 1.18% requires user confirmation to hold above 0%."
+      "thesisForInclusion": "Data center thermal management.",
+      "agentRationale": "DCF: TRIM | FV $223 vs $328 price | -31.9% upside."
     },
     {
       "ticker": "HUMN",
@@ -326,8 +296,8 @@
       "targetWeight": 2.59,
       "role": "core",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Physical embodiment of ASI thesis \u2014 humanoid robotics ETF. Increased from 2.88%.",
-      "agentRationale": "DCF: No AI_AGENT projection on file. SA LP: Not in 13F."
+      "thesisForInclusion": "Physical embodiment of ASI thesis.",
+      "agentRationale": "DCF: No AI_AGENT projection on file."
     },
     {
       "ticker": "KOID",
@@ -336,8 +306,8 @@
       "targetWeight": 2.4375,
       "role": "core",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Automation and robotics revolution \u2014 China + global exposure. Increased from 2.49%.",
-      "agentRationale": "DCF: No AI_AGENT projection on file. SA LP: Not in 13F."
+      "thesisForInclusion": "Automation and robotics revolution.",
+      "agentRationale": "DCF: No AI_AGENT projection on file."
     },
     {
       "ticker": "LITE",
@@ -345,8 +315,8 @@
       "subStrategyId": "sa-asi-race",
       "targetWeight": 2.2504,
       "role": "speculative",
-      "thesisForInclusion": "Lumentum optical interconnects \u2014 photonic layer of AI networking. SA LP holding.",
-      "agentRationale": "DCF: SELL | FV $432 vs $950 price | -54.5% upside. SA LP: Long \u2014 1.3M shares \u2014 NEW position Q4. \u26a0\ufe0f SA/DCF CONFLICT: SA LP holds conviction long but DCF shows negative upside. Holding target pending user thesis decision."
+      "thesisForInclusion": "Lumentum optical interconnects.",
+      "agentRationale": "DCF: SELL | FV $432 vs $950 price | -54.5% upside."
     },
     {
       "ticker": "BE",
@@ -354,8 +324,8 @@
       "subStrategyId": "sa-asi-race",
       "targetWeight": 4.1216,
       "role": "speculative",
-      "thesisForInclusion": "Bloom Energy fuel cells \u2014 clean distributed power for data centre edge. Oracle AI data center fuel cell deal up to 2.8 GW (2026-05-03); strong Q1 results. SA LP top power holding.",
-      "agentRationale": "DCF: SELL | FV $106 vs $291 price | -63.5% upside. SA LP: Long \u2014 10.1M shares \u2014 NEW Q4 (top power position). \u26a0\ufe0f SA/DCF CONFLICT. Target lifted 3.19%\u21923.43% 2026-05-03: Oracle 2.8 GW fuel cell deal is direct hyperscaler AI data center demand validation \u2014 the most concrete power-to-AI contract in the portfolio."
+      "thesisForInclusion": "Bloom Energy fuel cells.",
+      "agentRationale": "DCF: SELL | FV $106 vs $291 price | -63.5% upside."
     },
     {
       "ticker": "NBIS",
@@ -364,13 +334,8 @@
       "targetWeight": 2.5722,
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "DCF BUY +186% upside. Former Yandex Cloud team building European AI infrastructure. INITIATE \u2014 DCF conviction overrides thesis EXIT flag.",
-      "thesisBreakers": [
-        "Yandex Russia reputational contagion",
-        "Customer concentration above 30% single client",
-        "Failure to achieve GPU utilization >60% by EOY 2026"
-      ],
-      "agentRationale": "DCF: BUY | FV $441 vs $154 price | +185.6% upside. SA LP: Not in 13F."
+      "thesisForInclusion": "European AI infrastructure.",
+      "agentRationale": "DCF: BUY | FV $441 vs $154 price | +185.6% upside."
     },
     {
       "ticker": "CRM",
@@ -378,8 +343,8 @@
       "subStrategyId": "quality-saas",
       "targetWeight": 1.286,
       "role": "speculative",
-      "thesisForInclusion": "DCF BUY +53% upside. Agentforce AI platform on world's largest CRM dataset. Small position \u2014 thesis EXIT overridden by DCF valuation gap.",
-      "agentRationale": "DCF: BUY | FV $281 vs $184 price | +53.1% upside. SA LP: Not in 13F."
+      "thesisForInclusion": "Agentforce AI platform.",
+      "agentRationale": "DCF: BUY | FV $281 vs $184 price | +53.1% upside."
     },
     {
       "ticker": "NOW",
@@ -387,8 +352,8 @@
       "subStrategyId": "quality-saas",
       "targetWeight": 1.286,
       "role": "speculative",
-      "thesisForInclusion": "DCF BUY +45% upside. AI workflow automation embedded in enterprise IT infrastructure. Small position \u2014 thesis EXIT overridden by DCF valuation gap.",
-      "agentRationale": "DCF: BUY | FV $132 vs $91 price | +45.2% upside. SA LP: Not in 13F."
+      "thesisForInclusion": "AI workflow automation.",
+      "agentRationale": "DCF: BUY | FV $132 vs $91 price | +45.2% upside."
     },
     {
       "ticker": "SOLZ",
@@ -396,17 +361,17 @@
       "subStrategyId": "sovereign-finance",
       "targetWeight": 0,
       "role": "untracked",
-      "thesisForInclusion": "EXIT: Solana ETF \u2014 high-throughput payments layer. Speculative, no clear catalyst for re-entry.",
-      "agentRationale": "DCF: No AI_AGENT projection on file. SA LP: Not in 13F. Target 0%: EXIT \u2014 thesis no longer supports holding."
+      "thesisForInclusion": "EXIT: Solana ETF.",
+      "agentRationale": "Target 0%: EXIT."
     },
     {
       "ticker": "IREN",
       "name": "IREN LIMITED",
       "subStrategyId": "sa-asi-race",
-      "targetWeight": 1.5087,
-      "role": "speculative",
-      "thesisForInclusion": "EXIT: IREN AI data centre + Bitcoin mining \u2014 high-beta physical infra bet. DCF SELL -15%.",
-      "agentRationale": "SA LP: Long 8.7M shares (6% of fund, Q4 2025 13F) \u2014 top 7 SA LP position. DCF: SELL | -14.5% upside (mild). AI compute + crypto mining infrastructure. SA LP conviction overrides mild DCF gap. Holding as SA LP conviction play."
+      "targetWeight": 0.0,
+      "role": "untracked",
+      "thesisForInclusion": "EXIT: Liquidation finalized.",
+      "agentRationale": "Target 0%: EXIT."
     },
     {
       "ticker": "RGTI",
@@ -414,26 +379,26 @@
       "subStrategyId": "frontier-bets",
       "targetWeight": 0,
       "role": "untracked",
-      "thesisForInclusion": "EXIT: Rigetti Computing \u2014 quantum compute exposure. DCF STRONG SELL -94%. Pre-commercial.",
-      "agentRationale": "DCF: SELL | FV $1 vs $18 price | -94.0% upside. SA LP: Not in 13F. Target 0%: EXIT \u2014 thesis no longer supports holding."
+      "thesisForInclusion": "EXIT: Rigetti Computing.",
+      "agentRationale": "Target 0%: EXIT."
     },
     {
       "ticker": "COHR",
       "name": "Coherent Corp.",
       "subStrategyId": "sa-asi-race",
-      "targetWeight": 1.6078,
-      "role": "speculative",
-      "thesisForInclusion": "EXIT: Coherent optics \u2014 near fair value. Capital better deployed elsewhere.",
-      "agentRationale": "DCF: HOLD | FV $320 vs $330 price | -3.0% upside. SA LP: Long \u2014 480K shares \u2014 +433% Q4."
+      "targetWeight": 0.0,
+      "role": "untracked",
+      "thesisForInclusion": "EXIT: Liquidation finalized.",
+      "agentRationale": "Target 0%: EXIT."
     },
     {
       "ticker": "EQT",
       "name": "EQT Corporation",
       "subStrategyId": "sa-asi-race",
-      "targetWeight": 0.9823,
-      "role": "speculative",
-      "thesisForInclusion": "EXIT: EQT natural gas infrastructure \u2014 gas commodity, near breakeven. DCF SELL -18%.",
-      "agentRationale": "SA LP: Long 2.5M shares (2.4% of fund, Q4 2025 13F) \u2014 doubled position + added calls Q4. DCF: SELL | -17.5% upside (mild). Natural gas / AI power demand thesis \u2014 largest US natural gas producer. SA LP conviction overrides mild DCF gap."
+      "targetWeight": 0.0,
+      "role": "untracked",
+      "thesisForInclusion": "EXIT: Liquidation finalized.",
+      "agentRationale": "Target 0%: EXIT."
     },
     {
       "ticker": "POET",
@@ -441,23 +406,8 @@
       "subStrategyId": "frontier-bets",
       "targetWeight": 0,
       "role": "untracked",
-      "thesisForInclusion": "EXIT: POET Technologies \u2014 photonic integrated circuits. DCF STRONG SELL -86%. Pre-commercial.",
-      "agentRationale": "DCF: SELL | FV $1 vs $7 price | -86.2% upside. SA LP: Not in 13F. Target 0%: EXIT \u2014 thesis no longer supports holding."
-    },
-    {
-      "ticker": "TEM",
-      "name": "Tempus AI, Inc.",
-      "subStrategyId": "ai-healthcare",
-      "targetWeight": 0.0,
-      "role": "untracked",
-      "thesisForInclusion": "Exited \u2014 non-core. Thesis: AI healthcare optionality; Pelosi conviction pick. Exited to simplify portfolio and free capital for higher-conviction positions.",
-      "agentRationale": "EXITED 2026-05-05. Non-core position. Target 0%.",
-      "pillarId": "biohealth",
-      "thesisBreakers": [
-        "Revenue growth decelerates below 20% YoY for 2 consecutive quarters",
-        "Big-pharma builds equivalent in-house data platform (Oracle/Epic AI moat threat)",
-        "Regulatory: FDA restricts AI-driven diagnostic data monetization"
-      ]
+      "thesisForInclusion": "EXIT: POET Technologies.",
+      "agentRationale": "Target 0%: EXIT."
     },
     {
       "ticker": "BTDR",
@@ -466,13 +416,8 @@
       "targetWeight": 1.6078,
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Proprietary Sealminer ASIC chip design \u2014 structural cost moat over pure BTC miners. DCF BUY +103%. SA LP Q4 2025 increased 92%. ASIC capability aligns with compute thesis.",
-      "thesisBreakers": [
-        "BTC price below $40K collapses mining economics before ASIC revenue scales",
-        "Sealminer ASIC fails to win external customers beyond internal mining use",
-        "NVIDIA/AMD crush custom ASIC economics for AI workloads"
-      ],
-      "agentRationale": "DCF: BUY | FV $24 vs $12 price | +103.5% upside. SA LP: Long \u2014 1.8M shares \u2014 +92% Q4."
+      "thesisForInclusion": "Proprietary Sealminer ASIC chip design.",
+      "agentRationale": "DCF: BUY | FV $24 vs $12 price | +103.5% upside."
     },
     {
       "ticker": "WYFI",
@@ -481,8 +426,8 @@
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
       "pillarId": "datainfra",
-      "thesisForInclusion": "AI GPU cloud + HPC data center. DCF BUY +92%. SA LP Q4 2025 NEW position. BTBT subsidiary. Speculative \u2014 monitor Q2 2026 revenue >M.",
-      "agentRationale": "DCF: BUY | FV $32 vs $17 price | +92.2% upside. SA LP: Long \u2014 1.8M shares \u2014 NEW position Q4."
+      "thesisForInclusion": "AI GPU cloud + HPC data center.",
+      "agentRationale": "DCF: BUY | FV $32 vs $17 price | +92.2% upside."
     },
     {
       "ticker": "SNDK",
@@ -491,8 +436,8 @@
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
       "pillarId": "datainfra",
-      "thesisForInclusion": "SA LP +1839% Q4. DCF BUY +26.4%. AI-era NAND storage infrastructure play.",
-      "agentRationale": "DCF: BUY | FV $32 vs $25 price | +26.4% upside. SA LP: Long \u2014 1.1M shares, +1839% Q4 2025 \u2014 largest percentage gainer in 13F. NAND flash storage for AI data growth."
+      "thesisForInclusion": "NAND storage infrastructure play.",
+      "agentRationale": "DCF: BUY | FV $32 vs $25 price | +26.4% upside."
     },
     {
       "ticker": "PSIX",
@@ -501,8 +446,8 @@
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
       "pillarId": "power",
-      "thesisForInclusion": "SA LP NEW position Q4. DCF BUY +51.9%. AI power infrastructure \u2014 industrial engine/generator systems.",
-      "agentRationale": "DCF: BUY | FV $30 vs $20 price | +51.9% upside. SA LP: Long \u2014 432K shares NEW position Q4 2025. Industrial power/generator systems for AI data center energy buildout."
+      "thesisForInclusion": "AI power infrastructure.",
+      "agentRationale": "DCF: BUY | FV $30 vs $20 price | +51.9% upside."
     },
     {
       "ticker": "IONQ",
@@ -511,12 +456,7 @@
       "subStrategyId": "quantum-compute",
       "role": "speculative",
       "targetWeight": 1.0101,
-      "agentRationale": "DCF: SELL | FV $8.54 vs $48 price | -82% upside (5-yr DCF understates 10-20yr QC optionality). Speculative quantum thesis: most commercially advanced QC company ($130M TTM revenue, +428% YoY), available on AWS Braket / Azure Quantum / Google Cloud. Trapped-ion accuracy moat vs IBM/Google superconducting. Timeline: 3-7 years to useful QC. Winner-pick over RGTI (superconducting follower) and QBTS (annealing \u2014 limited TAM). Accumulate on weakness. 2026-05-04: Initial thesis entry.",
-      "thesisBreakers": [
-        "IBM/Google superconducting reaches trapped-ion accuracy parity \u2014 eliminates tech differentiation",
-        "Gross margins decline below 25% \u2014 pricing power and cloud delivery model failing",
-        "Quantum winter / enterprise adoption stalls below $500M ARR by 2028"
-      ]
+      "agentRationale": "DCF: SELL | FV $8.54 vs $48 price."
     },
     {
       "ticker": "TEAM",
@@ -525,13 +465,8 @@
       "targetWeight": 1.39,
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Human-agentic collaboration platform. Jira evolves from human task management to the OS for AI fleet operations \u2014 agent developers, agent QA specialists, and agent orchestrators all need a workflow and ticketing system. JIRA mental model (issues, assignees, status, boards) maps directly onto how humans manage AI agents today. DCF BUY +22.5% upside at current price; bull case prices AI agent seat expansion at +214% upside.",
-      "thesisBreakers": [
-        "Microsoft Planner bundled free into O365 erodes SMB seat count below 20% growth for 2 consecutive quarters",
-        "Rovo AI fails to monetize as premium SKU \u2014 bundled into base tier for competitive reasons",
-        "Agent seat licensing not announced by EOY 2027"
-      ],
-      "agentRationale": "DCF: BUY | FV $105 vs $86 price | +22.5% upside. Bull case FV $270 if AI agent seat thesis confirmed. FCF margin 27.1% \u2014 exceptional for GAAP-loss SaaS. Piotroski F-Score 8/9. Analyzed 2026-05-06."
+      "thesisForInclusion": "Human-agentic collaboration platform.",
+      "agentRationale": "DCF: BUY | FV $105 vs $86 price | +22.5% upside."
     },
     {
       "ticker": "TSM",
@@ -540,13 +475,8 @@
       "targetWeight": 2.3529,
       "role": "core",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "The foundry backbone of the AI compute stack. NVDA designs the GPU; TSM manufactures it. The only fab on earth capable of 3nm/2nm at scale \u2014 NVDA, AMD, Apple, Qualcomm all rely on TSMC. Without TSM, the AI supercycle cannot physically produce chips. Manufacturing moat is ~5-7 years ahead of nearest competitors (Samsung, Intel). VIX pullback target: add aggressively on broad market corrections.",
-      "thesisBreakers": [
-        "Taiwan geopolitical conflict disrupting manufacturing operations",
-        "Intel 18A or Samsung 2nm closes performance gap to within one process generation by 2028",
-        "US export controls restrict TSMC from serving NVDA on advanced nodes"
-      ],
-      "agentRationale": "DCF: No AI_AGENT projection on file. Supply chain position #2 in AI chips thesis. Core to any ASI infrastructure investment."
+      "thesisForInclusion": "The foundry backbone of the AI compute stack.",
+      "agentRationale": "DCF: No AI_AGENT projection on file."
     },
     {
       "ticker": "ASML",
@@ -555,13 +485,8 @@
       "targetWeight": 1.8824,
       "role": "core",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Absolute monopoly on EUV lithography \u2014 the machines that print chips at sub-7nm. No competitor can replicate this in under a decade; the physics, IP, and supply chain required are uniquely concentrated at ASML. Every advanced chip on earth runs through an ASML machine. Supply chain position #3 in AI chips thesis: without ASML, TSM cannot manufacture, NVDA cannot design next-gen GPUs. VIX pullback target: add on corrections.",
-      "thesisBreakers": [
-        "Dutch government bans ASML from servicing existing machines in key markets (beyond current China controls)",
-        "EUV successor technology (High-NA EUV) delayed beyond 2028, opening window for alternative approaches",
-        "US/EU sanctions expand to block ASML from servicing non-allied fabs"
-      ],
-      "agentRationale": "DCF: No AI_AGENT projection on file. Structural monopoly on lithography. Supply chain position #3 in AI chips thesis."
+      "thesisForInclusion": "Absolute monopoly on EUV lithography.",
+      "agentRationale": "DCF: No AI_AGENT projection on file."
     },
     {
       "ticker": "MU",
@@ -570,13 +495,8 @@
       "targetWeight": 1.4118,
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "HBM3E memory is the bandwidth bottleneck inside every NVDA H200 and B200 GPU. Micron supplies HBM alongside SK Hynix and Samsung \u2014 highly cyclical but structurally necessary. Supply chain position #4 in AI chips thesis. Sized small as a base; strategy is to load up aggressively on VIX spikes and memory cycle troughs when MU trades at trough P/B multiples.",
-      "thesisBreakers": [
-        "HBM market share lost to SK Hynix or Samsung below 20% for two consecutive quarters",
-        "AI training shifts to architecture that reduces HBM bandwidth requirements",
-        "DRAM cycle downturn deeper than 2022-2023 trough without AI demand floor"
-      ],
-      "agentRationale": "DCF: No AI_AGENT projection on file. Cyclical \u2014 sized for correction deployment. Supply chain position #4 in AI chips thesis."
+      "thesisForInclusion": "HBM3E memory bandwidth bottleneck.",
+      "agentRationale": "DCF: No AI_AGENT projection on file."
     }
   ],
   "globalSettings": {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { fetchAllProjections, type Projection } from '../services/api';
 import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -9,7 +10,7 @@ interface StockRow {
     name: string;
     sector: string;
     industry: string;
-    price: number;
+    currentPrice: number;
     book_price: number | null;
     shares: number;
     position_value: number;
@@ -23,6 +24,20 @@ interface StockRow {
     change_ytd: number | null;
     change_1y: number | null;
     change_overall: number | null;
+    action: string | null;
+    recommendedPct: number | null;
+    rationale: string | null;
+    fairValue: number | null;
+    gainLoss: number | null;
+    upside: number | null;
+    growth: number | null;
+    ruleOf40: number | null;
+    model: string | null;
+    bear: number | null;
+    base: number | null;
+    bull: number | null;
+    qualityMultiplier: number | null;
+    lastAnalyzed: string | null;
 }
 
 interface HeatmapResponse {
@@ -43,29 +58,46 @@ interface ColDef {
 }
 
 const COLUMNS: ColDef[] = [
-    { id: 'symbol',         label: 'Symbol',     always: true,  defaultOn: true,  align: 'left',  format: v => String(v ?? '') },
-    { id: 'name',           label: 'Name',        always: true,  defaultOn: true,  align: 'left',  format: v => String(v ?? '') },
-    { id: 'currentPct',     label: 'Portfolio %', defaultOn: true,  align: 'right', format: v => v != null ? `${(v as number).toFixed(2)}%` : '—' },
-    { id: 'subStrategyId',  label: 'Strategy',    defaultOn: true,  align: 'left',  format: v => String(v ?? '—') },
-    { id: 'sector',         label: 'Sector',      defaultOn: false, align: 'left', format: v => String(v ?? '—') },
-    { id: 'shares',         label: 'Shares',      defaultOn: true,  align: 'right', format: v => v?.toLocaleString() ?? '—' },
-    { id: 'price',          label: 'Price',       defaultOn: true,  align: 'right', format: v => v != null ? `$${(v as number).toFixed(2)}` : '—' },
-    { id: 'book_price',     label: 'Avg Cost',    defaultOn: true,  align: 'right', format: v => v != null ? `$${(v as number).toFixed(2)}` : '—' },
-    { id: 'change_1d',      label: '1D %',        isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
-    { id: 'change_1w',      label: '1W %',        isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
-    { id: 'change_1m',      label: '1M %',        isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
-    { id: 'change_ytd',     label: 'YTD %',       isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
-    { id: 'change_1y',      label: '1Y %',        isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
-    { id: 'change_overall', label: 'Overall %',   isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
-    { id: 'total_book',     label: 'Book Value',  defaultOn: true,  align: 'right', format: fmtDollar },
-    { id: 'total_market',   label: 'Mkt Value',   defaultOn: true,  align: 'right', format: fmtDollar },
+    { id: 'symbol',         label: 'Ticker',     always: true,  defaultOn: true,  align: 'left',  format: v => String(v ?? '') },
+    { id: 'name',           label: 'Name',       always: true,  defaultOn: false, align: 'left',  format: v => String(v ?? '') },
+    { id: 'action',         label: 'Action',     defaultOn: true,  align: 'left',  format: v => String(v ?? '—') },
+    { id: 'currentPct',     label: 'Current %',  defaultOn: true,  align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)!.toFixed(2)}%` : '—' },
+    { id: 'recommendedPct', label: 'Target %',   defaultOn: true,  align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)!.toFixed(2)}%` : '—' },
+    { id: 'rationale',      label: 'Rationale',  defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
+    { id: 'fairValue',      label: 'Fair Value', defaultOn: true,  align: 'right', format: fmtDollar },
+    { id: 'currentPrice',   label: 'Price',      defaultOn: true,  align: 'right', format: fmtPrice },
+    { id: 'gainLoss',       label: 'Gain ($)',   isChange: true, defaultOn: true,  align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)! >= 0 ? '+$' : '-$'}${Math.abs(Math.round(safeNum(v)!))}` : '—' },
+    { id: 'upside',         label: 'Upside (%)', isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
+    { id: 'ruleOf40',       label: 'R40',        defaultOn: true,  align: 'right', format: v => safeNum(v) != null ? safeNum(v)!.toFixed(1) : '—' },
+    { id: 'growth',         label: 'Growth',     defaultOn: true,  align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)!.toFixed(1)}%` : '—' },
+    { id: 'model',          label: 'Analyst',    defaultOn: true,  align: 'left',  format: v => String(v ?? '—') },
+    { id: 'bear',           label: 'Bear',       defaultOn: false, align: 'right', format: fmtDollar },
+    { id: 'base',           label: 'Base',       defaultOn: false, align: 'right', format: fmtDollar },
+    { id: 'bull',           label: 'Bull',       defaultOn: false, align: 'right', format: fmtDollar },
+    { id: 'change_1d',      label: '1D %',       isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
+    { id: 'change_1w',      label: '1W %',       isChange: true, defaultOn: false, align: 'right', format: fmtPct },
+    { id: 'change_1m',      label: '1M %',       isChange: true, defaultOn: false, align: 'right', format: fmtPct },
+    { id: 'change_ytd',     label: 'YTD %',      isChange: true, defaultOn: false, align: 'right', format: fmtPct },
+    { id: 'change_1y',      label: '1Y %',       isChange: true, defaultOn: false, align: 'right', format: fmtPct },
+    { id: 'change_overall', label: 'Overall %',  isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
+    { id: 'sector',         label: 'Sector',     defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
+    { id: 'shares',         label: 'Shares',     defaultOn: false, align: 'right', format: v => safeNum(v) != null ? safeNum(v)!.toLocaleString() : '—' },
+    { id: 'book_price',     label: 'Avg Cost',   defaultOn: false, align: 'right', format: fmtPrice },
+    { id: 'total_book',     label: 'Book Value', defaultOn: false, align: 'right', format: fmtDollar },
+    { id: 'total_market',   label: 'Mkt Value',  defaultOn: false, align: 'right', format: fmtDollar },
+    { id: 'qualityMultiplier', label: 'Quality', defaultOn: false, align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)!.toFixed(2)}x` : '—' },
+    { id: 'subStrategyId',  label: 'Strategy',   defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
+    { id: 'lastAnalyzed',   label: 'Analyzed',   defaultOn: true,  align: 'right', format: v => v ? new Date(v as string).toLocaleDateString() : '—' },
 ];
 
 const DEFAULT_WIDTHS: Record<string, number> = {
-    symbol: 70, name: 170, currentPct: 90, subStrategyId: 130, sector: 115, shares: 60, price: 72,
+    symbol: 70, name: 170, currentPct: 90, subStrategyId: 130, sector: 115, shares: 60, currentPrice: 72,
     book_price: 72, change_1d: 65, change_1w: 65, change_1m: 65,
     change_ytd: 65, change_1y: 65, change_overall: 80,
     total_book: 80, total_market: 80,
+    action: 115, fairValue: 95, gainLoss: 85, upside: 85, ruleOf40: 70, growth: 80,
+    model: 130, base: 80, bear: 80, bull: 80, qualityMultiplier: 80, lastAnalyzed: 90,
+    recommendedPct: 85, rationale: 260,
 };
 
 // ─── Persistence ──────────────────────────────────────────────────────────────
@@ -91,16 +123,29 @@ function savePrefs(prefs: TablePrefs) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function fmtPct(v: string | number | null): string {
-    if (v == null || typeof v === 'string') return '—';
-    return `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
+function safeNum(v: any): number | null {
+    if (v == null || v === '' || typeof v === 'boolean') return null;
+    const n = Number(v);
+    return isNaN(n) ? null : n;
 }
 
-function fmtDollar(v: string | number | null): string {
-    if (v == null || typeof v === 'string') return '—';
-    if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
-    if (v >= 1_000)     return `$${(v / 1_000).toFixed(1)}K`;
-    return `$${v.toFixed(0)}`;
+function fmtPct(v: any): string {
+    const n = safeNum(v);
+    if (n == null) return '—';
+    return `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
+}
+
+function fmtDollar(v: any): string {
+    const n = safeNum(v);
+    if (n == null) return '—';
+    if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
+    if (n >= 1_000)     return `$${(n / 1_000).toFixed(1)}K`;
+    return `$${n.toFixed(0)}`;
+}
+
+function fmtPrice(v: any): string {
+    const n = safeNum(v);
+    return n != null ? `$${n.toFixed(2)}` : '—';
 }
 
 function changeBg(v: number | null): string {
@@ -251,12 +296,61 @@ export default function PortfolioTable() {
                 }
             } catch { /* proceed without strategy data */ }
 
-            // 5. Merge currentPct and subStrategyId into each row
-            const stocksWithPct: StockRow[] = heatmapData.stocks.map(s => ({
-                ...s,
-                currentPct: weightsMap[s.symbol] ?? null,
-                subStrategyId: strategyMap[s.symbol] ?? null,
-            }));
+            // 5. AI Data Merge
+            let aiProjs: any[] = [];
+            try {
+                const pData = await fetchAllProjections();
+                const aiOnly = pData.filter((p: any) => p.source === 'AI_AGENT');
+                const latest = aiOnly.reduce((acc: any, curr: any) => {
+                    if (!acc[curr.ticker] || new Date(curr.savedAt) > new Date(acc[curr.ticker].savedAt)) acc[curr.ticker] = curr;
+                    return acc;
+                }, {});
+                aiProjs = Object.values(latest);
+            } catch {}
+
+            let actionsMap: Record<string, any> = {};
+            let reviewMap: Record<string, any> = {};
+            try {
+                const ahRes = await fetch('/api/screener/all-holdings');
+                if (ahRes.ok) {
+                    const ahData = await ahRes.json();
+                    for (const h of ahData) actionsMap[h.ticker] = h.action;
+                }
+                const rvRes = await fetch('/api/docs/latest-review-data');
+                if (rvRes.ok) {
+                    const rvData = await rvRes.json();
+                    for (const h of [...(rvData.holdings ?? []), ...(rvData.holdingsUnchanged ?? [])]) reviewMap[h.ticker] = h;
+                }
+            } catch {}
+
+            const projMap: Record<string, any> = aiProjs.reduce((m, p) => { m[p.ticker] = p; return m; }, {});
+
+            const stocksWithPct: StockRow[] = heatmapData.stocks.map(s => {
+                const p = projMap[s.symbol];
+                const rev = reviewMap[s.symbol];
+                const fairValue = p?.aiThesis?.fairValue ?? null;
+                const base = p?.scenarios?.base;
+                
+                return {
+                    ...s,
+                    currentPct: weightsMap[s.symbol] ?? null,
+                    subStrategyId: strategyMap[s.symbol] ?? null,
+                    action: actionsMap[s.symbol] ?? 'WATCHLIST',
+                    recommendedPct: rev?.recommendedTarget ?? null,
+                    rationale: rev?.rationale ?? null,
+                    fairValue: fairValue,
+                    gainLoss: (fairValue && s.currentPrice) ? fairValue - s.currentPrice : null,
+                    upside: (fairValue && s.currentPrice) ? ((fairValue - s.currentPrice) / s.currentPrice) * 100 : null,
+                    growth: base?.growthRate ?? null,
+                    ruleOf40: base ? base.growthRate + base.netMargin : null,
+                    model: p?.aiThesis?.model ?? '—',
+                    bear: p?.scenarios?.bear?.scenarioPrice ?? null,
+                    base: base?.scenarioPrice ?? null,
+                    bull: p?.scenarios?.bull?.scenarioPrice ?? null,
+                    qualityMultiplier: base?.qualityMultiplier ?? null,
+                    lastAnalyzed: p?.savedAt ?? null,
+                };
+            });
 
             setData({ stocks: stocksWithPct, total_value: heatmapData.total_value });
         } catch (err: unknown) {

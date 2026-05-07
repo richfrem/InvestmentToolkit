@@ -128,6 +128,59 @@ export const fetchPortfolioSummary = async (): Promise<PortfolioSummary> => {
     return await response.json();
 };
 
+// --- Portfolio Period Performance ---
+
+export interface PeriodPerformance {
+    change: number;
+    changePct: number;
+    historicalValue: number;
+    currentValue: number;
+}
+
+export interface PortfolioPerformance {
+    '1d': PeriodPerformance | null;
+    '1w': PeriodPerformance | null;
+    '1m': PeriodPerformance | null;
+}
+
+export const fetchPortfolioPerformance = async (): Promise<PortfolioPerformance> => {
+    const response = await fetch('/api/portfolio/performance');
+    if (!response.ok) throw new Error('Failed to fetch portfolio performance');
+    return await response.json();
+};
+
+// --- Strategy Allocation ---
+
+export interface StrategyHolding {
+    symbol: string;
+    name: string;
+    sector: string;
+    subStrategyId: string | null;
+    shares: number;
+    price: number;
+    valueUSD: number;
+    pct: number;
+}
+
+export interface StrategyAllocationItem {
+    id: string;
+    name: string;
+    valueUSD: number;
+    pct: number;
+    holdings: StrategyHolding[];
+}
+
+export interface StrategyAllocation {
+    allocation: StrategyAllocationItem[];
+    totalUSD: number;
+}
+
+export const fetchStrategyAllocation = async (): Promise<StrategyAllocation> => {
+    const response = await fetch('/api/portfolio/strategy-allocation');
+    if (!response.ok) throw new Error('Failed to fetch strategy allocation');
+    return await response.json();
+};
+
 export const fetchStockData = async (ticker: string): Promise<StockData> => {
     try {
         const response = await fetch(`/api/stock/${ticker}`);
