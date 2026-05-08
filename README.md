@@ -4,8 +4,40 @@ A premium, "Luxury Dark Mode" investment analysis suite built for sophisticated 
 
 ---
 
-## External Account Requirements
+## 🚀 Getting Started (Start Here)
 
+The easiest way to set up and use this toolkit is to use the **Interactive Onboarding Agent**. 
+
+Simply launch your CLI agent (Gemini CLI, Claude Code, or Copilot CLI) and type:
+
+> **"Help me set up the toolkit"**
+
+This will trigger the **Toolkit Onboarding Guide**, a dedicated AI concierge that will:
+1.  **Check Dependencies**: Verify your Node.js and Python versions.
+2.  **Sync Portfolio**: Securely guide you through the Questrade API link process.
+3.  **Link Charts**: Help you connect TradingView Desktop for real-time prices.
+4.  **First Run**: Guide you through your first `/evaluate-stock` or `/review-portfolio` command.
+
+---
+
+## 💎 The Core Value: An "Agentic OS" for Investors
+
+Unlike traditional investment apps, **the true power of this repository is not the frontend UI—it is the Agentic Operating System behind it.** 
+
+This repo is designed to be used interactively with **Pro-tier AI subscriptions** (Claude code, Gemini pro, github copilot pro or chatgpt pro) via **CLI agents** like `gemini-cli`, `claude-code`, or `copilot-cli`. 
+
+### Why this matters:
+- **Autonomous Deep Research**: Instead of reading PDFs, you command your CLI agent: `/research-stock NVDA`. The agent autonomously fetches financials, parses news, runs a DCF model, and writes a professional-grade research report to your `backend/data/research/` folder.
+- **Adversarial Thesis Review**: The `portfolio-advisor` plugin acts as a cold-blooded hedge fund auditor. It challenges your "bull cases," flags failing investment pillars, and proposes formula-driven weight changes based on real-time drift and AI fair-value signals.
+- **Real-Time Data Bridge**: CLI tools bridge your brokerage (Questrade) and charts (TradingView Premium) with your local investment thesis. You can ask: *"How does the NVDA earnings beat affect my Power pillar sizing?"* and get an answer rooted in your actual holdings and cost basis.
+
+> [!IMPORTANT]
+> **Subscription Prerequisite**: To use the sub-agents and execute specialized commands like `/strategic-review`, `/x-news-sweep`, and `/evaluate-stock`, you **must** have an active Pro-tier subscription for your chosen CLI environment (e.g., Claude Code, GitHub Copilot Pro, or Google Gemini Pro).
+
+---
+
+## External Account Requirements
+... (rest of the file)
 This toolkit integrates with two external services that require accounts:
 
 ### Questrade (brokerage)
@@ -53,6 +85,10 @@ A professional-grade brokerage sync engine featuring:
 ### Portfolio Table
 ![Portfolio Table](screenshots/2026-05-08-portfolio-table.png)
 *(Detailed positions view with real-time performance and fair value targets)*
+
+### Market Heatmap
+![Market Heatmap](screenshots/2026-05-08-heatmap.png)
+*(Real-time sector performance visualization and strategy mapping)*
 
 ### Stock Analysis & Metrics
 ![Analysis Metrics](screenshots/2026-05-08-nbis-overview.png)
@@ -127,6 +163,7 @@ Orchestrator for server startup and Questrade token management.
 |-------------|-------|
 | Node.js 18+ | `node --version` |
 | Python 3.11+ | `python3 --version` |
+| Pro-tier AI | Required for CLI agents (Claude Code, Copilot Pro, or Gemini Pro) |
 | Questrade account | https://www.questrade.com/ |
 | TradingView Desktop | https://www.tradingview.com/desktop/ — optional but recommended |
 | TradingView Premium | https://www.tradingview.com/pricing/ — required for real-time prices |
