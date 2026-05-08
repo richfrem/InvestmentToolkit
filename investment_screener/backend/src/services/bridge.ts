@@ -1,7 +1,7 @@
 import { spawn } from 'child_process';
 import path from 'path';
 
-const PYTHON_TIMEOUT_MS = 30_000; // 30 second timeout for Python scripts
+const PYTHON_TIMEOUT_MS = 90_000; // 90 second timeout — cold heatmap load fetches ~32 tickers in parallel (~10-15s)
 
 /**
  * Spawns a Python script and returns the JSON output.

@@ -1,10 +1,10 @@
 {
   "id": "target-portfolio",
-  "name": "Investment Thesis v9.2",
+  "name": "Investment Thesis v9.3",
   "schemaVersion": "1.0",
   "version": 9,
   "createdAt": "2026-02-14T12:00:00Z",
-  "updatedAt": "2026-05-07",
+  "updatedAt": "2026-05-08",
   "description": "Investment thesis focused on the dual infrastructure buildout for ASI Compute (Primary) and Sovereign Finance (Secondary).",
   "pillars": [
     {
@@ -157,7 +157,7 @@
       "role": "speculative",
       "subStrategyId": "sovereign-finance",
       "thesisForInclusion": "Regulated crypto exchange + Base L2 growth. Settlement rail for AI Agents.",
-      "agentRationale": "GENIUS Act play. Primary infrastructure for AI agent autonomous settlement. 2026-05-07: Subscription/services revenue ~25% of total and growing (USDC, Base ecosystem, Coinbase One); 14% headcount layoffs signal cost discipline + margin floor; analyst consensus -305; regulatory moat solidified post-SEC dismissal."
+      "agentRationale": "GENIUS Act play. Primary infrastructure for AI agent autonomous settlement. 2026-05-07: Subscription/services revenue ~25% of total and growing (USDC, Base ecosystem, Coinbase One); 14% headcount layoffs signal cost discipline + margin floor; analyst consensus -305; regulatory moat solidified post-SEC dismissal. 2026-05-08: Q1 2026 miss: revenue $1.41B vs $1.49-1.52B est, GAAP net loss $394M (-$1.49/share). Subscription/services held up; positive adj. EBITDA. Cyclical trading volume weakness confirms bear scenario weighting. Structural thesis intact \u2014 MAINTAIN.."
     },
     {
       "ticker": "IBIT",
@@ -371,7 +371,7 @@
       "targetWeight": 1.9014,
       "role": "untracked",
       "thesisForInclusion": "EXIT: Liquidation finalized.",
-      "agentRationale": "MAINTAIN ~1.9%. Exit flag reversed 2026-05-07: NVIDIA partnership + $3.4B 5-year cloud deal announced; Sweetwater 1 energized; Mirantis AI cloud acquisition; hyperscaler contract pipeline de-risking. Miner-to-AI-compute transition executing. SA LP top holding. Hold at current weight; trim on strength if oversized."
+      "agentRationale": "MAINTAIN ~1.9%. Exit flag reversed 2026-05-07: NVIDIA partnership + $3.4B 5-year cloud deal announced; Sweetwater 1 energized; Mirantis AI cloud acquisition; hyperscaler contract pipeline de-risking. Miner-to-AI-compute transition executing. SA LP top holding. Hold at current weight; trim on strength if oversized. 2026-05-08: NVIDIA partnership: $3.4B five-year AI cloud contract; up to 5GW infrastructure collaboration; NVIDIA right to buy 30M shares at $70; miner-to-AI pivot fully confirmed. DCF snapshot ($45.66) is stale \u2014 fresh /evaluate-stock IREN warranted to rebuild scenarios around new revenue baseline.."
     },
     {
       "ticker": "RGTI",
