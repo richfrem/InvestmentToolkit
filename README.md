@@ -46,20 +46,25 @@ A professional-grade brokerage sync engine featuring:
 - **Metadata Enrichment**: Intelligent fallback to `yfinance` for sector/industry categorization of broker holdings.
 - **Onboarding Flow**: Guided UI for secure account linking and rotation management.
 
+### Portfolio Summary
+![Portfolio Summary](screenshots/2026-05-08-portfolio-summary.png)
+*(Total market value, performance metrics, and strategy allocation)*
+
+### Portfolio Table
+![Portfolio Table](screenshots/2026-05-08-portfolio-table.png)
+*(Detailed positions view with real-time performance and fair value targets)*
+
 ### Stock Analysis & Metrics
-![Analysis Metrics](investment_screener/assets/images/analysis_metrics.png)
-*(15+ Premium metrics including Rule of 40, Piotroski F-Score, and Analyst Targets)*
+![Analysis Metrics](screenshots/2026-05-08-nbis-overview.png)
+*(Deep-dive AI Expert Thesis and 15+ Premium fundamental metrics)*
 
-### Historical Performance
-![Performance Charts](investment_screener/assets/images/analysis_charts.png)
+### Portfolio Advisor & Thesis Review
+![Thesis Review](screenshots/2026-05-08-portfolio-analysis-recommendations.png)
+*(Autonomous advisor proposing rebalance actions based on thesis alignment)*
 
-### Valuation Modeler
-![Valuation Modeler](investment_screener/assets/images/valuation_modeler.png)
-*(Interactive DCF modeling with sensitivity matrices)*
-
-### Market Heatmap
-![Market Heatmap](investment_screener/assets/images/heatmap.png)
-*(Real-time sector performance visualization)*
+### Investment Thesis
+![Investment Thesis](screenshots/2026-05-08-investment-thesis-overview.png)
+*(Living document tracking version history and core investment pillars)*
 
 ---
 

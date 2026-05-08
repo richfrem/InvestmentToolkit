@@ -76,6 +76,26 @@ TradingView adds a real-time price layer **only for current price and 1d change%
 | Alert Sync | `/tv-alert-sync` | Create TradingView price alerts at DCF bear/base/bull targets |
 | Alert Sync (single) | `/tv-alert-sync CRWV` | Alert sync for one ticker |
 | Chart Snapshot | `/tv-snapshot CRWV` | Capture chart screenshot → `PortfolioAnalysis/screenshots/` |
+| TA Snapshot | `/tv-ta CRWV` | Screenshot + visual technical analysis — trend, S/R levels, indicator readings, buy/sell zones |
+
+### `/tv-ta` — Technical Analysis Snapshot
+
+Captures a live chart screenshot and runs a full visual TA analysis using Claude's vision:
+
+```
+/tv-ta CRWV        # TA on current CRWV chart
+/tv-ta NVDA 1W     # Weekly chart TA (note the timeframe for context)
+```
+
+**What you get:**
+- Trend direction (higher highs/lows or range-bound)
+- Key support and resistance levels read directly from the chart
+- Indicator readings for whatever you have configured in TradingView (RSI, MACD, MAs, volume, Bollinger Bands, etc.)
+- Buy zone with entry range, invalidation (stop) level, and risk/reward ratio
+- Sell/trim zone at next logical resistance
+- DCF cross-reference: if a projection exists for the ticker, the TA levels are mapped against bear/base/bull scenarios
+
+**Setup tip:** Configure your TradingView chart with the indicators you want before running `/tv-ta`. The skill reads whatever is on screen — add RSI, MACD, volume, moving averages in TradingView Desktop first for richer analysis.
 
 ---
 
