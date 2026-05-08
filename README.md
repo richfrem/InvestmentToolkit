@@ -77,7 +77,7 @@ A professional-grade brokerage sync engine featuring:
 | Market data | `yfinance` (historical + fundamentals) + TradingView Premium (real-time current price) |
 | Portfolio data | Questrade API (positions, cost basis) |
 | Schema | Zod validation — `lastActualPS` nullable-safe for pre-revenue stocks |
-| AI agents | Plugin architecture + Spec Kitty framework |
+| AI agents | Modular Plugin Architecture + Exploration Cycle workflow |
 
 ---
 
@@ -209,13 +209,15 @@ npm --prefix investment_screener run dev -w frontend
 
 ---
 
-## AI Development Framework
+## AI Development Architecture
 
-This project uses the **Spec Kitty** framework to systematize AI agent workflows.
-- **Specs**: `kitty-specs/`
-- **Plugins**: `plugins/` — commands, skills, scripts, documentation
-- **Harness**: Exploration-cycle plugin. See [`.agents/agents/exploration-cycle-plugin-intake-agent.md`](.agents/agents/exploration-cycle-plugin-intake-agent.md)
-- **Migration Guide**: [`plugins/MIGRATION_GUIDE.md`](plugins/MIGRATION_GUIDE.md)
+This project uses the **Exploration Cycle** architecture to systematize AI agent workflows, moving away from template-driven missions toward a modular, phase-gated development loop.
+
+- **Orchestration**: Managed via the `exploration-workflow` skill.
+- **Phases**: 4-phase loop (Discovery → Blueprinting → Prototyping → Handoff).
+- **Dashboard**: `exploration/exploration-dashboard.md` (state management).
+- **Plugins**: Modular AI logic housed in `plugins/`.
+- **Reference**: See ADR [022-exploration-cycle-pivot.md](docs/adrs/022-exploration-cycle-pivot.md) for the design rationale.
 
 ---
 
