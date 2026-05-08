@@ -59,10 +59,11 @@ export default function PortfolioSummaryPage() {
     const [perfLoading, setPerfLoading] = useState(true);
     const [allocLoading, setAllocLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
 
     useEffect(() => {
         fetchPortfolioSummary()
-            .then(setSummary)
+            .then(d => { setSummary(d); setLastRefreshedAt(new Date()); })
             .catch(err => setError(err.message || 'Failed to load portfolio summary'))
             .finally(() => setLoading(false));
 
@@ -97,11 +98,19 @@ export default function PortfolioSummaryPage() {
 
     return (
         <div className="p-4 h-full space-y-4">
-            <div>
-                <h1 className="text-xl font-bold text-white mb-0.5">Portfolio Summary</h1>
-                <p className="text-sm text-slate-500">
-                    YTD performance and total value across all accounts
-                </p>
+            <div className="flex items-start justify-between">
+                <div>
+                    <h1 className="text-xl font-bold text-white mb-0.5">Portfolio Summary</h1>
+                    <p className="text-sm text-slate-500">
+                        YTD performance and total value across all accounts
+                    </p>
+                </div>
+                {lastRefreshedAt && (
+                    <div className="flex items-center gap-1 text-xs text-zinc-500 mt-1">
+                        <span className="w-1.5 h-1.5 rounded-full inline-block bg-zinc-500" />
+                        Refreshed · {lastRefreshedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                    </div>
+                )}
             </div>
 
             {/* Row 1: Original 4 summary cards */}

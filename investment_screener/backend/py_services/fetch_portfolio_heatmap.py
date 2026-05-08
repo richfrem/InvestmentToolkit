@@ -13,6 +13,7 @@ import sys
 import json
 import os
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import yfinance as yf
@@ -253,6 +254,8 @@ def fetch_portfolio_data(items: list) -> dict:
             })
 
     result["total_value"] = round(result["total_value"], 2)
+    result["price_source"] = "tradingview" if _TV_AVAILABLE else "yfinance"
+    result["refreshed_at"] = datetime.now(timezone.utc).isoformat()
     return result
 
 

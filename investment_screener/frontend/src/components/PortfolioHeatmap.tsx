@@ -23,6 +23,8 @@ interface HeatmapResponse {
     sectors: Record<string, SectorData>;
     stocks: StockHeatmapData[];
     total_value: number;
+    price_source?: string;
+    refreshed_at?: string;
 }
 
 interface TreemapNode {
@@ -43,6 +45,8 @@ export default function PortfolioHeatmap() {
     const [error, setError] = useState<string | null>(null);
     const [groupBy, setGroupBy] = useState<'sector' | 'strategy'>('sector');
     const [strategyMap, setStrategyMap] = useState<Record<string, string>>({});
+    const [priceSource, setPriceSource] = useState<string | null>(null);
+    const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
     const svgRef = useRef<SVGSVGElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -90,9 +94,11 @@ export default function PortfolioHeatmap() {
 
             const result = await response.json();
             setData(result.heatmap);
+            if (result.heatmap?.price_source) setPriceSource(result.heatmap.price_source);
+            if (result.heatmap?.refreshed_at) setLastRefreshedAt(new Date(result.heatmap.refreshed_at));
         } catch (err: any) {
             // Prevent double-hitting the API on failure
-            // await fetchHeatmapData(); 
+            // await fetchHeatmapData();
             setError(err.message || 'Failed to refresh prices');
         } finally {
             setLoading(false);
@@ -130,6 +136,8 @@ export default function PortfolioHeatmap() {
 
             const result = await response.json();
             setData(result);
+            if (result.price_source) setPriceSource(result.price_source);
+            if (result.refreshed_at) setLastRefreshedAt(new Date(result.refreshed_at));
         } catch (err: any) {
             console.error(err);
             setError(err.message || 'Failed to load portfolio data');
@@ -431,6 +439,12 @@ export default function PortfolioHeatmap() {
                     >
                         {refreshing ? '↻ Syncing...' : '↻ Refresh'}
                     </button>
+                    {lastRefreshedAt && (
+                        <div className={`flex items-center gap-1 text-xs ${priceSource === 'tradingview' ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full inline-block ${priceSource === 'tradingview' ? 'bg-emerald-400' : 'bg-zinc-500'}`} />
+                            {priceSource === 'tradingview' ? 'TV Live' : 'yfinance'} · {lastRefreshedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </div>
+                    )}
                     <div className="text-xs text-zinc-400">
                         {data.stocks.length} stocks
                     </div>
