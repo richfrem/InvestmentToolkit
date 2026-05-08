@@ -290,7 +290,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.25,
+        "weight": 0.16999999999999998,
         "growthRate": 80,
         "netMargin": 5,
         "exitPE": 14,
@@ -309,7 +309,7 @@
         ]
       },
       "base": {
-        "weight": 0.55,
+        "weight": 0.53,
         "growthRate": 150,
         "netMargin": 12,
         "exitPE": 18,
@@ -328,7 +328,7 @@
         ]
       },
       "bull": {
-        "weight": 0.2,
+        "weight": 0.30000000000000004,
         "growthRate": 200,
         "netMargin": 18,
         "exitPE": 22,
@@ -350,9 +350,9 @@
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
       "rationale": "OKLO is a compelling technological vision priced as though it has already succeeded. The Aurora powerhouse and fuel recycling technology are genuinely differentiated \u2014 but a $12.24B market cap for a company with zero revenue, $115M annual cash burn, no NRC approval, and a first commercial reactor still 1-2 years away is pricing in a nuclear renaissance that may or may not materialise within a decade. My first-principles DCF, seeded from a $5M pre-commercial baseline and modelled across three commercial deployment scenarios, yields a weighted fair value of $5.10 \u2014 a 93% discount to the current price of $70.40. Even in the bull case (20+ reactors, fuel recycling commercial, $1.2B Y5 revenue), present value is only $16.34. The analyst mean target of $91.36 reflects real-options pricing \u2014 a speculative bet on the nuclear renaissance \u2014 not a 5-year fundamental model. The stock is not un-investable on a 10+ year thesis, but at this price it prices in extraordinary success that has a low probability of being achieved by 2030. SELL on fundamentals; acknowledge speculative optionality in sizing decisions.",
-      "fairValue": 5.1,
-      "action": "TRIM",
-      "analyzedAt": "2026-05-02T19:47:00Z",
+      "fairValue": 6.65,
+      "action": "SELL",
+      "analyzedAt": "2026-05-08T05:21:54Z",
       "researchReport": "OKLO_2026-05-02.md",
       "catalystUpdate": {
         "date": "2026-05-03",
@@ -415,6 +415,22 @@
       "valuationAction": "SELL",
       "portfolioRationale": "SELL-rated, FV $0 (pre-revenue DCF). Speculative role at 1.32% actual. Cap at 0.5% \u2014 NRC decision is binary, not a position to size up ahead of regulatory ruling.",
       "portfolioUrgency": "LOW"
-    }
+    },
+    "catalystUpdates": [
+      {
+        "date": "2026-05-07",
+        "source": "apply_catalyst.py",
+        "type": "custom",
+        "events": [
+          "NRC accepted Aurora design certification application; removes key regulatory risk; sets ~2027 construction timeline; regulatory path now materially de-risked"
+        ],
+        "weightShifts": {
+          "bull": 10.0,
+          "bear": -8.0
+        },
+        "thesisImpact": "Bull probability +10pp; bear -8pp. FV $5.10\u2192$6.65. Action: TRIM\u2192SELL."
+      }
+    ],
+    "lastGrokSweep": "2026-05-07"
   }
 ]
