@@ -293,7 +293,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.2,
+        "weight": 0.17,
         "growthRate": 7,
         "netMargin": 30,
         "exitPE": 20,
@@ -312,7 +312,7 @@
         ]
       },
       "base": {
-        "weight": 0.6,
+        "weight": 0.58,
         "growthRate": 13,
         "netMargin": 36,
         "exitPE": 28,
@@ -331,7 +331,7 @@
         ]
       },
       "bull": {
-        "weight": 0.2,
+        "weight": 0.25,
         "growthRate": 19,
         "netMargin": 40,
         "exitPE": 36,
@@ -353,9 +353,9 @@
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
       "rationale": "Microsoft is priced as if it is a mature, low-growth utility rather than an AI-era platform compounder. At $414.44, the implied growth rate is approximately 8% \u2014 well below the 18.3% TTM trajectory and the 12.4% 3-yr historical CAGR. The business has printed 34-37% net margins for four consecutive years with zero volatility, generating $74B of real FCF. Azure is the #2 cloud provider growing at 20-30% YoY, Copilot is in early commercial ramp across 400M+ Office seats at $30/user/month premium, and GitHub Copilot is the dominant AI coding assistant. The multi-source moat \u2014 enterprise switching costs in Office 365, infrastructure lock-in in Azure, developer workflow monopoly in GitHub, professional network monopoly in LinkedIn \u2014 is among the widest in technology. The forward P/E of 21.45x is actually at the low end of MSFT's historical range (normally 28-35x forward), suggesting the market is not yet pricing AI optionality. A base DCF at 13% CAGR and 36% margin yields $580.59 PV; probability-weighted across bear/base/bull gives $611.52. At $414.44, this represents 47.6% upside. BUY \u2014 this is a high-conviction position with exceptional confidence given the margin stability and moat depth.",
-      "fairValue": 611.52,
-      "action": "ACCUMULATE",
-      "analyzedAt": "2026-05-02T20:05:00Z",
+      "fairValue": 648.6,
+      "action": "BUY",
+      "analyzedAt": "2026-05-08T05:21:40Z",
       "researchReport": "MSFT_2026-05-02.md"
     },
     "globalSettings": {
@@ -404,6 +404,22 @@
       "valuationAction": "BUY",
       "portfolioRationale": "BUY-rated at $710.63 FV (+71.5% upside). Largest BUY upside in Titans pillar. Currently 2.69% actual vs 3.60% target (\u22120.91% drift). Accumulate toward target. Azure AI monetization is the clearest thesis confirmation in the portfolio.",
       "portfolioUrgency": "NORMAL"
-    }
+    },
+    "catalystUpdates": [
+      {
+        "date": "2026-05-07",
+        "source": "apply_catalyst.py",
+        "type": "earnings_beat",
+        "events": [
+          "Q3 FY2026: rev .1B +13%, Azure +33% (AI services acceleration), cloud margins expanding; raised FY guidance; B AI capex commitment on track"
+        ],
+        "weightShifts": {
+          "bull": 5,
+          "bear": -3
+        },
+        "thesisImpact": "Bull probability +5pp; bear -3pp. FV $611.52\u2192$648.60. Action: ACCUMULATE\u2192BUY."
+      }
+    ],
+    "lastGrokSweep": "2026-05-07"
   }
 ]

@@ -175,7 +175,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.24999999999999997,
+        "weight": 0.16999999999999998,
         "growthRate": -5,
         "netMargin": 5,
         "exitPE": 12,
@@ -214,7 +214,7 @@
         ]
       },
       "bull": {
-        "weight": 0.30000000000000004,
+        "weight": 0.38000000000000006,
         "growthRate": 22,
         "netMargin": 25,
         "exitPE": 28,
@@ -236,9 +236,9 @@
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
       "rationale": "Coinbase is trading at 38x forward P/E with revenue declining -22.2% YoY from a cycle peak. That combination \u2014 contracting top line at a premium multiple \u2014 is the core of the SELL thesis. The company is genuinely well-run: it survived the 2022 crypto crash, built a regulatory compliance infrastructure that competitors cannot easily replicate, and is diversifying toward subscription/services revenue. But at $191, you are paying bull market prices in a bear market revenue environment. Our base case fair value of $98 reflects a slow recovery. The bull case ($387, 20% probability) requires the next crypto supercycle AND Base chain success AND institutional prime growth to all materialize simultaneously. Prior Gemini 3 Pro analysis was directionally correct (HOLD below current price) but understated the downside \u2014 corrected bear margin from 10% to 5% and tightened growth rates reflect the actual severity of crypto winter scenarios.",
-      "fairValue": 162.27,
-      "action": "SELL",
-      "analyzedAt": "2026-05-04T14:58:44Z",
+      "fairValue": 192.66,
+      "action": "MAINTAIN",
+      "analyzedAt": "2026-05-08T05:20:56Z",
       "researchReport": "COIN_2026-05-02.md"
     },
     "globalSettings": {
@@ -314,8 +314,21 @@
           "bear": -10.0
         },
         "thesisImpact": "Bull probability +10pp; bear -10pp. FV $124.29\u2192$162.27. Action: TRIM\u2192SELL."
+      },
+      {
+        "date": "2026-05-07",
+        "source": "apply_catalyst.py",
+        "type": "custom",
+        "events": [
+          "Subscription/services revenue ~25% of total and growing (USDC, Base ecosystem, Coinbase One); 14% headcount layoffs signal cost discipline + margin floor; analyst consensus -305; regulatory moat solidified post-SEC dismissal"
+        ],
+        "weightShifts": {
+          "bull": 8.0,
+          "bear": -8.0
+        },
+        "thesisImpact": "Bull probability +8pp; bear -8pp. FV $162.27\u2192$192.66. Action: SELL\u2192MAINTAIN."
       }
     ],
-    "lastGrokSweep": "2026-05-04"
+    "lastGrokSweep": "2026-05-07"
   }
 ]
