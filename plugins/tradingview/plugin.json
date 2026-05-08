@@ -8,12 +8,14 @@
   "skills": [
     { "name": "tv_alert_sync", "path": "skills/alert-sync/SKILL.md", "trigger": "/tv-alert-sync" },
     { "name": "tv_price_refresh", "path": "skills/price-refresh/SKILL.md", "trigger": "/tv-price-refresh" },
-    { "name": "tv_chart_snapshot", "path": "skills/chart-snapshot/SKILL.md", "trigger": "/tv-snapshot" }
+    { "name": "tv_chart_snapshot", "path": "skills/chart-snapshot/SKILL.md", "trigger": "/tv-snapshot" },
+    { "name": "tv_ta_snapshot", "path": "skills/ta-snapshot/SKILL.md", "trigger": "/tv-ta" }
   ],
   "commands": [
     { "name": "tv-alert-sync", "path": "commands/tv-alert-sync.md", "trigger": "/tv-alert-sync" },
     { "name": "tv-price-refresh", "path": "commands/tv-price-refresh.md", "trigger": "/tv-price-refresh" },
-    { "name": "tv-snapshot", "path": "commands/tv-snapshot.md", "trigger": "/tv-snapshot" }
+    { "name": "tv-snapshot", "path": "commands/tv-snapshot.md", "trigger": "/tv-snapshot" },
+    { "name": "tv-ta", "path": "commands/tv-ta.md", "trigger": "/tv-ta" }
   ],
   "external_dependencies": [
     {
