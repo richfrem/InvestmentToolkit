@@ -2189,3 +2189,8 @@
 {"time": "2026-05-08T08:21:09.779387Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
 {"time": "2026-05-08T08:21:12.065585Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
 {"time": "2026-05-08T08:21:51.181618Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-08T08:21:58.271444Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-08T08:22:03.405096Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-08T08:22:05.853785Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-08T08:22:16.722537Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}
+{"time": "2026-05-08T08:22:19.424621Z", "agent": "legacy-hook", "type": "agent_start", "action": "session_start", "status": "success"}

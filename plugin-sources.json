@@ -23,7 +23,8 @@
       "plugins": [
         "portfolio-advisor",
         "stock-valuation",
-        "toolkit-manager"
+        "toolkit-manager",
+        "tradingview"
       ]
     }
   ]
