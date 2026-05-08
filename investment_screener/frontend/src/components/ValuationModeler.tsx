@@ -8,6 +8,7 @@ import { HelpTrigger } from './HelpModal';
 import { runAIAnalysis, type ValuationResult, type Projection, type Scenario } from '../services/api';
 import { Sparkles, BrainCircuit, Loader2, FolderOpen } from 'lucide-react';
 import { AIAnalysisModal } from './AIAnalysisModal';
+import { AgentReminderModal } from './AgentReminderModal';
 import { PresetSelectorModal } from './PresetSelectorModal';
 import { saveUserPreset } from '../services/presets';
 
@@ -204,6 +205,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     // Save Modal State
     const [showSaveModal, setShowSaveModal] = useState(false);
     const [showAIModal, setShowAIModal] = useState(false);
+    const [showAgentReminder, setShowAgentReminder] = useState(false);
     const [saveName, setSaveName] = useState('');
     const [saveAsDefault, setSaveAsDefault] = useState(false);
     const [showPresetModal, setShowPresetModal] = useState(false);
@@ -443,6 +445,11 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     // --- Actions ---
 
     const handleAIAnalysis = useCallback(async (metric?: string) => {
+        // Feature disabled in UI: Redirect users to CLI environment for high-quality Pro-tier analysis
+        setShowAgentReminder(true);
+        return;
+
+        /* Legacy UI-based AI Analysis logic
         setIsAnalyzing(true);
         setAiError(null);
         setActiveCoachMetric(metric || null);
@@ -467,7 +474,8 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
         } finally {
             setIsAnalyzing(false);
         }
-    }, [stockData.symbol, setGrowthRate]);
+        */
+    }, []);
 
     const handleSaveConfirm = useCallback(() => {
         if (!saveName.trim()) return;
