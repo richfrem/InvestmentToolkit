@@ -332,7 +332,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.3,
+        "weight": 0.27,
         "growthRate": 30,
         "netMargin": 5,
         "exitPE": 15,
@@ -352,7 +352,7 @@
         ]
       },
       "base": {
-        "weight": 0.45,
+        "weight": 0.43,
         "growthRate": 38,
         "netMargin": 15,
         "exitPE": 28,
@@ -371,7 +371,7 @@
         ]
       },
       "bull": {
-        "weight": 0.25,
+        "weight": 0.3,
         "growthRate": 48,
         "netMargin": 22,
         "exitPE": 35,
@@ -393,9 +393,9 @@
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
       "rationale": "CoreWeave is the highest-conviction AI infrastructure pure-play in the portfolio \u2014 and the highest-risk. Revenue has compounded from $16M to $5.1B in four years, with 71.7% gross margins proving that GPU cloud pricing power is real. The path to $162 fair value runs through the base case (45% probability): 38% revenue CAGR over 5 years, gradually reaching 15% net margins as the GPU fleet's depreciation stabilizes relative to revenue, exiting at a reasonable 28x P/E. The bull case ($393 PV, 25% weight) requires CoreWeave to become the 'fourth hyperscaler' for GPU workloads \u2014 a real possibility given Weights & Biases as a platform layer and enterprise contract momentum. The bear case ($14 PV, 30% weight) is the scenario where AWS/Azure/GCP close the GPU availability gap faster than expected, commoditizing CoreWeave's core offering and leaving it with $20B in debt and a collapsing revenue trajectory. The critical risk to monitor is the FCF trajectory: burning -$7.25B/yr is sustainable only as long as the revenue growth story holds and lenders remain supportive. At $119/share, there is asymmetric upside in our probability weighting, but this is not a defensive holding \u2014 it is a high-conviction, high-volatility bet on the GenAI infrastructure supercycle continuing. [2026-05-02 13F Update: Situational Awareness LP holds CRWV as the #2 position overall (calls $774M + stock $436M = $1.21B, ~21.9% of portfolio) as of Q4 2025. This is the highest-conviction SA position alongside INTC. BUY r...]",
-      "fairValue": 162.55,
-      "action": "ACCUMULATE",
-      "analyzedAt": "2026-05-02T22:55:00Z",
+      "fairValue": 179.1,
+      "action": "BUY",
+      "analyzedAt": "2026-05-08T05:22:31Z",
       "researchReport": "CRWV_2026-05-02.md",
       "catalystUpdate": {
         "date": "2026-05-03",
@@ -475,6 +475,22 @@
       "valuationAction": "BUY",
       "portfolioRationale": "BUY-rated at $162.55 FV (+36.6% upside). Situational Awareness LP's largest position: $1.21B combined calls+stock (21.9% of portfolio) as of Q4 2025. GPU cloud infrastructure is the real Data Infra thesis. Currently 4.25% actual (above 1.77% target via price appreciation). Increase target to 3.5% to formalise the oversized actual. Consider adding if thesis holds through 2026.",
       "portfolioUrgency": "URGENT"
-    }
+    },
+    "catalystUpdates": [
+      {
+        "date": "2026-05-07",
+        "source": "apply_catalyst.py",
+        "type": "earnings_beat",
+        "events": [
+          "Q1 2026: revenue .08B +112% YoY; RPO backlog .4B +50% QoQ demand de-risked; NVIDIA confirmed top customer; losses wider but demand trajectory offsets"
+        ],
+        "weightShifts": {
+          "bull": 5,
+          "bear": -3
+        },
+        "thesisImpact": "Bull probability +5pp; bear -3pp. FV $162.55\u2192$179.10. Action: ACCUMULATE\u2192BUY."
+      }
+    ],
+    "lastGrokSweep": "2026-05-07"
   }
 ]

@@ -174,7 +174,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.3,
+        "weight": 0.27,
         "growthRate": 15,
         "netMargin": 10,
         "exitPE": 18,
@@ -194,7 +194,7 @@
         ]
       },
       "base": {
-        "weight": 0.45,
+        "weight": 0.43,
         "growthRate": 28,
         "netMargin": 20,
         "exitPE": 28,
@@ -213,7 +213,7 @@
         ]
       },
       "bull": {
-        "weight": 0.25,
+        "weight": 0.3,
         "growthRate": 38,
         "netMargin": 28,
         "exitPE": 38,
@@ -235,9 +235,9 @@
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
       "rationale": "AMD is an excellent company at a slightly stretched valuation. The bull case \u2014 ROCm software parity enabling AMD to capture AI training GPU market share from NVIDIA \u2014 is real but low-probability given CUDA's decade-long ecosystem moat. The base case of 28% CAGR and 20% margins by year 5 produces a fair value of $254 \u2014 30% below the current price. Only the bull case justifies $360+, and at 25% probability weighting, it contributes $194 to our $320 weighted fair value. The critical error in the prior Gemini 3 Pro analysis was modeling an 18% net margin in the bear case \u2014 higher than AMD's current TTM margin \u2014 which made the bear scenario look like an acceptable outcome rather than actual downside risk. Correcting this, and normalizing the quality multipliers within documented rules, produces a SELL at -11%. AMD should be on a watchlist for re-entry below $280.",
-      "fairValue": 320.12,
+      "fairValue": 352.63,
       "action": "MAINTAIN",
-      "analyzedAt": "2026-05-02T20:05:00Z",
+      "analyzedAt": "2026-05-08T05:21:26Z",
       "researchReport": "AMD_2026-05-02.md"
     },
     "globalSettings": {
@@ -298,6 +298,22 @@
       "valuationAction": "SELL",
       "portfolioRationale": "SELL-rated at $320.12 FV vs price $360.54 (\u221211.2%). Hedge role at 2.51% actual. Small overvaluation, not a critical mismatch. Hold existing position; do not add. Reassess if price corrects toward FV.",
       "portfolioUrgency": "LOW"
-    }
+    },
+    "catalystUpdates": [
+      {
+        "date": "2026-05-07",
+        "source": "apply_catalyst.py",
+        "type": "earnings_beat",
+        "events": [
+          "Q1 2026: revenue +38% YoY to .44B, data center GPU +57%; MI300X ramp; beat on EPS; raised guidance"
+        ],
+        "weightShifts": {
+          "bull": 5,
+          "bear": -3
+        },
+        "thesisImpact": "Bull probability +5pp; bear -3pp. FV $320.12\u2192$352.63. Action: MAINTAIN\u2192MAINTAIN."
+      }
+    ],
+    "lastGrokSweep": "2026-05-07"
   }
 ]

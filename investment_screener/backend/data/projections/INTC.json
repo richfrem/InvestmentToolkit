@@ -441,7 +441,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.2,
+        "weight": 0.17,
         "growthRate": 3,
         "netMargin": 4,
         "exitPE": 14,
@@ -461,7 +461,7 @@
         ]
       },
       "base": {
-        "weight": 0.45,
+        "weight": 0.43,
         "growthRate": 10,
         "netMargin": 14,
         "exitPE": 22,
@@ -480,7 +480,7 @@
         ]
       },
       "bull": {
-        "weight": 0.35,
+        "weight": 0.39999999999999997,
         "growthRate": 16,
         "netMargin": 20,
         "exitPE": 30,
@@ -502,9 +502,9 @@
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
       "rationale": "Intel at $99.62 is a HOLD following material research update (2026-05-02). The prior SELL at $22.97 was built on three incorrect foundations \u2014 all three now resolved: (1) Revenue inflection: Q1 2026 reported +7% YoY to $13.6B with DCAI +22%; the 4-year revenue decline is broken. (2) Foundry design win: Tesla/SpaceX/xAI Terafab on 14A is a marquee anchor customer, satisfying Breaker A.2. (3) CEO commitment: Lip-Bu Tan is explicitly doubling down on IFS \u2014 Breaker C.3 is not triggered. Updated weighted DCF with revised scenario weights (bear 20% / base 45% / bull 35%) yields fair value of $49.65. At $99.62, the stock is priced within the bull scenario range ($97.96) but well above the base case ($32.52). Thesis conviction is validated by Situational Awareness LP holding $746M INTC calls (13.5% of their $5.52B portfolio) through Q4 2025 \u2014 the same fund that authored the thesis underpinning this portfolio. HOLD: position is thesis-validated but no margin of safety at current price. Do not add; maintain existing sizing. Full DCF re-valuation recommended once 18A yields reach 70%+ threshold (expected late 2026).",
-      "fairValue": 49.65,
-      "action": "MAINTAIN",
-      "analyzedAt": "2026-05-02T22:53:00Z",
+      "fairValue": 53.79,
+      "action": "SELL",
+      "analyzedAt": "2026-05-08T05:21:16Z",
       "researchReport": "INTC_2026-05-02.md"
     },
     "globalSettings": {
@@ -579,6 +579,22 @@
       "valuationAction": "SELL",
       "portfolioRationale": "Thesis validated by Q1 2026 revenue inflection (+7% YoY), Terafab 14A design win (Tesla/SpaceX/xAI), and all three thesis breakers resolved. Situational Awareness LP holds $746M INTC calls (13.5% of portfolio) \u2014 the thesis fund has conviction. Valuation action remains SELL (price $99.62 vs weighted FV $49.65; bull case $97.96) \u2014 stock is priced for the bull scenario. MAINTAIN existing 10.87% position: thesis is real, but current price leaves no margin of safety to add. Revisit with fresh DCF once 18A yields reach 70%+ profitability threshold (expected late 2026).",
       "portfolioUrgency": "NORMAL"
-    }
+    },
+    "catalystUpdates": [
+      {
+        "date": "2026-05-07",
+        "source": "apply_catalyst.py",
+        "type": "earnings_beat",
+        "events": [
+          "Q1 2026: revenue .6B (+9% QoQ), EPS /bin/zsh.29 vs /bin/zsh.01 est; data center +8%, Foundry ramp; cost cuts ahead of schedule"
+        ],
+        "weightShifts": {
+          "bull": 5,
+          "bear": -3
+        },
+        "thesisImpact": "Bull probability +5pp; bear -3pp. FV $49.65\u2192$53.79. Action: MAINTAIN\u2192SELL."
+      }
+    ],
+    "lastGrokSweep": "2026-05-07"
   }
 ]
