@@ -55,10 +55,10 @@ Stop if TradingView is not available — screenshots cannot be taken without it.
 ## Phase 3 — Switch Chart to Ticker
 
 ```bash
-node temp/tradingview-mcp/src/cli/index.js symbol TICKER
+node plugins/tradingview/node/cli.js quote TICKER
 ```
 
-Wait for the command to succeed before proceeding.
+This verifies the ticker is accessible. The screenshot will capture whatever chart is currently active in TradingView Desktop — switch to the ticker manually in TradingView before running if needed.
 
 ---
 
@@ -70,13 +70,9 @@ DATE=$(python3 -c "from datetime import date; print(date.today().isoformat())")
 SAVE_DIR="PortfolioAnalysis/screenshots/$DATE"
 mkdir -p "$SAVE_DIR"
 
-# Capture screenshot (output filename without .png extension)
-node temp/tradingview-mcp/src/cli/index.js screenshot --output "$SAVE_DIR/$TICKER"
+# Capture screenshot — saved to PortfolioAnalysis/screenshots/{date}/{TICKER}.png automatically
+node plugins/tradingview/node/cli.js screenshot --output "$SAVE_DIR/$TICKER"
 ```
-
-Note: The `screenshot` command saves to `screenshots/` inside the `temp/tradingview-mcp/`
-directory by default. After capture, move/copy the file to the canonical path:
-`PortfolioAnalysis/screenshots/{YYYY-MM-DD}/{TICKER}.png`
 
 ---
 
