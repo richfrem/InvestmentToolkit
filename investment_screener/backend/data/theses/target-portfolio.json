@@ -1,10 +1,10 @@
 {
   "id": "target-portfolio",
-  "name": "Investment Thesis v9.1",
+  "name": "Investment Thesis v9.2",
   "schemaVersion": "1.0",
   "version": 9,
   "createdAt": "2026-02-14T12:00:00Z",
-  "updatedAt": "2026-05-06T10:00:00Z",
+  "updatedAt": "2026-05-07",
   "description": "Investment thesis focused on the dual infrastructure buildout for ASI Compute (Primary) and Sovereign Finance (Secondary).",
   "pillars": [
     {
