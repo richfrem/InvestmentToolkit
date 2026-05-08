@@ -1,0 +1,10 @@
+{
+  "name": "tradingview",
+  "version": "1.0.0",
+  "description": "TradingView Desktop integration — real-time prices, DCF alerts, chart snapshots.",
+  "author": {
+    "name": "richfrem",
+    "email": "connect.richfrem@gmail.com"
+  },
+  "keywords": ["finance", "tradingview", "real-time", "alerts"]
+}

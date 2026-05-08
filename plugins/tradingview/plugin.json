@@ -1,0 +1,46 @@
+{
+  "name": "tradingview",
+  "version": "1.0.0",
+  "description": "TradingView Desktop integration for real-time prices, DCF price alerts, and chart snapshots. Calls TradingView Desktop CLI via CDP — requires Desktop running with --remote-debugging-port=9222. Falls back to yfinance when unavailable.",
+  "author": "InvestmentToolkit",
+  "maturity": "L3",
+  "architecture": "standard",
+  "skills": [
+    { "name": "tv_alert_sync", "path": "skills/alert-sync/SKILL.md", "trigger": "/tv-alert-sync" },
+    { "name": "tv_price_refresh", "path": "skills/price-refresh/SKILL.md", "trigger": "/tv-price-refresh" },
+    { "name": "tv_chart_snapshot", "path": "skills/chart-snapshot/SKILL.md", "trigger": "/tv-snapshot" }
+  ],
+  "commands": [
+    { "name": "tv-alert-sync", "path": "commands/tv-alert-sync.md", "trigger": "/tv-alert-sync" },
+    { "name": "tv-price-refresh", "path": "commands/tv-price-refresh.md", "trigger": "/tv-price-refresh" },
+    { "name": "tv-snapshot", "path": "commands/tv-snapshot.md", "trigger": "/tv-snapshot" }
+  ],
+  "external_dependencies": [
+    {
+      "name": "tradingview-mcp-cli",
+      "canonical_path": "temp/tradingview-mcp/src/cli/index.js",
+      "owned_by": "community",
+      "purpose": "Node.js CLI that connects to TradingView Desktop via CDP"
+    },
+    {
+      "name": "portfolio-json",
+      "canonical_path": "investment_screener/backend/data/portfolio.json",
+      "owned_by": "investment-screener-app",
+      "purpose": "Current portfolio holdings (synced from Questrade)"
+    },
+    {
+      "name": "target-portfolio-json",
+      "canonical_path": "investment_screener/backend/data/theses/target-portfolio.json",
+      "owned_by": "portfolio-advisor",
+      "purpose": "Target weights and thesis for all holdings"
+    },
+    {
+      "name": "projections-dir",
+      "canonical_path": "investment_screener/backend/data/projections/",
+      "owned_by": "stock-valuation",
+      "purpose": "DCF projection JSONs — source of bear/base/bull alert prices"
+    }
+  ],
+  "related_plugins": ["portfolio-advisor", "stock-valuation"],
+  "tags": ["finance", "tradingview", "real-time", "alerts", "prices"]
+}

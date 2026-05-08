@@ -1,22 +1,50 @@
 # InvestmentToolkit
 
-A premium, "Luxury Dark Mode" investment analysis suite built for sophisticated retail investors. This toolkit provides deep fundamental analysis, valuation modeling, and comparative screening without the need for expensive terminal subscriptions.
+A premium, "Luxury Dark Mode" investment analysis suite built for sophisticated retail investors. This toolkit provides deep fundamental analysis, DCF valuation modeling, real-time portfolio monitoring, and autonomous AI agents for research and thesis management — without the need for expensive terminal subscriptions.
 
-## 🌟 Core Components
+---
+
+## External Account Requirements
+
+This toolkit integrates with two external services that require accounts:
+
+### Questrade (brokerage)
+
+**Required for live portfolio sync.** The toolkit connects to your Questrade brokerage account to retrieve current holdings, positions, and cost-basis data.
+
+- Account: https://www.questrade.com/
+- The toolkit uses Questrade's OAuth2 API with AES-256-GCM encrypted token storage (macOS Keychain). Your credentials never leave your machine.
+- See [Questrade Setup](#questrade-setup) below.
+
+### TradingView Premium (real-time prices)
+
+**Required for real-time market data.** The toolkit integrates with TradingView Desktop to pull live prices directly from your Premium feed.
+
+- Desktop app: https://www.tradingview.com/desktop/
+- Subscription plans (Premium or higher required): https://www.tradingview.com/pricing/
+- Without a Premium subscription, current prices are delayed 15–20 minutes — identical to the yfinance fallback that is already in place. The integration adds no value below Premium tier.
+- **Free and Essential plans:** yfinance remains the data source; TradingView integration is inactive.
+- **Premium and above:** real-time prices, 1d change%, and DCF price alerts via the TradingView plugin.
+
+> **Note:** yfinance is not replaced. It remains the source for historical OHLCV, financial fundamentals (revenue, margins, EPS, ratios), and all data when TradingView Desktop is not running.
+
+---
+
+## Core Components
 
 ### 1. Investment Screener (`investment_screener`)
 A web-based financial analysis dashboard featuring:
--   **Luxury Dark Mode**: Professional Black/Gold aesthetic.
--   **Expert Metrics**: Instant access to PEG Ratio, Piotroski F-Score, and Insider Ownership.
--   **Valuation Modeler**: Interactive Bear/Base/Bull scenario modeling to project 5-year price targets.
--   **Comparative Analysis**: Side-by-side ticker comparison.
+- **Luxury Dark Mode**: Professional Black/Gold aesthetic.
+- **Expert Metrics**: Instant access to PEG Ratio, Piotroski F-Score, and Insider Ownership.
+- **Valuation Modeler**: Interactive Bear/Base/Bull scenario modeling to project 5-year price targets.
+- **Comparative Analysis**: Side-by-side ticker comparison.
 
 ### 2. Questrade Portfolio Integration
 A professional-grade brokerage sync engine featuring:
--   **Dynamic Sync**: Real-time retrieval of account positions and balances.
--   **Secure Token Bridge**: AES-256-GCM encryption with hardware-backed master keys (macOS Keychain).
--   **Metadata Enrichment**: Intelligent fallback to `yfinance` for sector/industry categorization of broker holdings.
--   **Onboarding Flow**: Guided UI for secure account linking and rotation management.
+- **Dynamic Sync**: Real-time retrieval of account positions and balances.
+- **Secure Token Bridge**: AES-256-GCM encryption with hardware-backed master keys (macOS Keychain).
+- **Metadata Enrichment**: Intelligent fallback to `yfinance` for sector/industry categorization of broker holdings.
+- **Onboarding Flow**: Guided UI for secure account linking and rotation management.
 
 ### Stock Analysis & Metrics
 ![Analysis Metrics](investment_screener/assets/images/analysis_metrics.png)
@@ -33,40 +61,84 @@ A professional-grade brokerage sync engine featuring:
 ![Market Heatmap](investment_screener/assets/images/heatmap.png)
 *(Real-time sector performance visualization)*
 
-## 🛠️ Tech Stack
--   **Frontend**: React 19, Vite, Tailwind CSS 4.0.
--   **Backend**: Node.js (Express), Python 3.11 (Bridge to `yfinance`).
--   **Data**: `yfinance` & Questrade API (Dynamic Aggregation).
--   **Schema**: Zod validation (`zod-schemas.ts`) — `lastActualPS` nullable-safe for pre-revenue stocks.
+---
 
-## 🧠 AI Capabilities
+## Tech Stack
 
-Autonomous AI agents perform valuation and portfolio analysis, powered by the Plugin Architecture and Spec Kitty framework.
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19, Vite, Tailwind CSS 4.0 |
+| Backend | Node.js (Express), Python 3.11 bridge |
+| Market data | `yfinance` (historical + fundamentals) + TradingView Premium (real-time current price) |
+| Portfolio data | Questrade API (positions, cost basis) |
+| Schema | Zod validation — `lastActualPS` nullable-safe for pre-revenue stocks |
+| AI agents | Plugin architecture + Spec Kitty framework |
 
-### 1. Stock Valuation Analyst (`plugins/stock-valuation`)
-An autonomous buy-side analyst. Fetches real-time financial data, builds Bear/Base/Bull DCF scenarios, and generates a fair value with BUY/HOLD/SELL recommendation. Includes a research sweep skill that qualitatively assesses what changed before deciding whether to re-run the model.
+---
 
--   **Plugin**: [`plugins/stock-valuation/`](plugins/stock-valuation/README.md)
--   **Skills**:
-    -   `/evaluate-stock {TICKER}` — Full DCF valuation with `analyticsLog`, scenario analysis, research report, and persistence to the Valuation Modeler.
-    -   `/research-stock {TICKER}` — Qualitative sweep (earnings, competitive, macro, management, analyst sentiment). Classifies findings as Class A/B/C/D and gates re-valuation on confirmation.
-
-### 2. Strategic Thesis Suite (`plugins/portfolio-advisor`)
-A three-skill suite that monitors, challenges, and optimizes your portfolio against your investment thesis.
-
--   **Plugin**: [`plugins/portfolio-advisor/`](plugins/portfolio-advisor/README.md)
--   **Skills**:
-    -   `/review-portfolio` — Drift monitor with pillar conviction audit, thesis formula health score (0–100), and valuation gap ranking. Flags strategic conflicts where core holdings are SELL-rated.
-    -   `/strategic-review` — Adversarial thesis challenger. Surfaces which pillars are failing, proposes specific target weight revisions grounded in fair-value evidence, and generates `formulaImprovements` output.
-    -   `/rebalance` — Valuation-gated trade optimizer. Prioritizes trimming SELL-rated overweights and restoring BUY-rated underweights. Never buys a SELL-rated holding to restore drift — surfaces `skippedRestores` instead.
-
-## 🔌 Plugin Architecture
+## AI Agent Plugins
 
 All agent tooling is organized as portable plugins in `plugins/`. Each plugin contains commands, skills, scripts, and documentation.
 
-### Plugin Installation
+### 1. Stock Valuation Analyst (`plugins/stock-valuation`)
+An autonomous buy-side analyst. Fetches real-time financial data, builds Bear/Base/Bull DCF scenarios, and generates a fair value with BUY/HOLD/SELL recommendation.
 
-To install the plugins and skills for this project, use `uvx` (part of the [Astral `uv`](https://github.com/astral-sh/uv) toolkit):
+- `/evaluate-stock {TICKER}` — Full DCF valuation with scenario analysis and persistence to the Valuation Modeler
+- `/research-stock {TICKER}` — Qualitative sweep; classifies findings as Class A/B/C/D and gates re-valuation on confirmation
+
+### 2. Strategic Thesis Suite (`plugins/portfolio-advisor`)
+A multi-skill suite that monitors, challenges, and optimizes your portfolio against your investment thesis.
+
+- `/review-portfolio` — Drift monitor + pillar conviction audit + thesis formula health score (0–100)
+- `/strategic-review` — Adversarial thesis challenger; surfaces failing pillars and proposes formula improvements
+- `/rebalance` — Valuation-gated trade optimizer; never buys a SELL-rated holding to restore drift
+- `/x-news-sweep` — Daily Grok/X.com news sweep gated against DCF + 8 hard gates
+
+### 3. TradingView Integration (`plugins/tradingview`)
+Real-time price and alert integration via TradingView Desktop and Chrome DevTools Protocol.
+
+**Requires:** TradingView Desktop + Premium subscription (see [above](#tradingview-premium-real-time-prices)).
+
+- `/tv-price-refresh` — Live prices for all portfolio positions (TV → yfinance fallback per ticker)
+- `/tv-alert-sync` — Create TradingView price alerts at DCF bear/base/bull targets for all holdings
+- `/tv-alert-sync CRWV` — Single-ticker alert sync
+- `/tv-snapshot CRWV` — Capture chart screenshot → `PortfolioAnalysis/screenshots/`
+
+See [`plugins/tradingview/README.md`](plugins/tradingview/README.md) for full setup and usage.
+
+### 4. Toolkit Manager (`plugins/toolkit-manager`)
+Orchestrator for server startup and Questrade token management.
+
+- `/start-screener` — Launch full suite (frontend + backend)
+- `/setup-questrade` — Interactive Questrade token setup
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+| Requirement | Notes |
+|-------------|-------|
+| Node.js 18+ | `node --version` |
+| Python 3.11+ | `python3 --version` |
+| Questrade account | https://www.questrade.com/ |
+| TradingView Desktop | https://www.tradingview.com/desktop/ — optional but recommended |
+| TradingView Premium | https://www.tradingview.com/pricing/ — required for real-time prices |
+
+### Quick Start
+
+```bash
+python3 run_investment_toolkit.py
+```
+
+This handles everything automatically:
+- Creates Python venv and installs dependencies
+- Installs Node dependencies and builds the backend
+- **Launches TradingView Desktop** with CDP enabled (if installed)
+- Starts the backend API (port 3001) and frontend dashboard (port 5173)
+
+### Plugin Installation
 
 **1. Install Project-Specific Plugins (Local):**
 ```bash
@@ -78,54 +150,90 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add /User
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
 ```
 
-## 🚀 Getting Started
-
-### Prerequisites
--   Node.js 18+
--   Python 3.11+
--   Access to this repository
-### Quick Start
-The project includes a managed startup script for the entire suite:
+### TradingView Plugin Setup (one-time)
 
 ```bash
-python3 run_investment_toolkit.py
+cd plugins/tradingview/node
+npm install
+cd ../../..
+
+# Verify connection (run after TradingView Desktop is open)
+python3 plugins/tradingview/scripts/tv_health_check.py
 ```
 
-This will automatically handle port conflicts, launch the backend API, and start the frontend dashboard.
+---
 
-### 🤖 AI Orchestration
-You can manage the toolkit using specialized AI skills:
-- `run investment screener` — Launch the full suite (Frontend & Backend).
-- `setup questrade` — Interactive guide for API token configuration.
+## Questrade Setup
 
-### 🔐 Questrade Setup
-Setting up the Questrade integration is secure and straightforward. The system encrypts your token in a local cache (AES-256-GCM hardware-backed), so it never leaves your machine.
+Setting up Questrade is secure — your token is encrypted in a local cache (AES-256-GCM, macOS Keychain) and never leaves your machine.
 
-**Easiest Method (Built-in UI):**
-Use the built-in "Questrade Integration" modal in the web app. It will guide you through obtaining your one-week token and autonomously seed it for you.
+**Easiest method (built-in UI):**
+Use the "Questrade Integration" modal in the web app. It guides you through obtaining your one-week token and seeds it automatically.
 
 ![Questrade Integration Setup](screenshots/2026-05-02-questrade-integration-modal.png)
 
-**Alternative Method (AI Agent):**
-If your sync fails or you prefer the CLI, simply ask the AI agent: `/setup-questrade` and follow the interactive prompts to generate and seed your token.
-
-If you prefer to run or debug the servers separately, use the following commands from the root directory:
-
-**1. Start Backend Server (Port 3001):**
-```bash
-npm --prefix investment_screener run dev -w backend
+**AI agent method:**
+```
+/setup-questrade
 ```
 
-**2. Start Frontend Dashboard (Port 5173):**
+**Manual method (CLI):**
 ```bash
+# 1. Redeem one-week app token from https://apphub.questrade.com/UI/UserApps.aspx
+curl -s -X POST \
+  "https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token=<ONE_WEEK_TOKEN>" \
+  -d '' -H 'Content-Type: application/x-www-form-urlencoded'
+
+# 2. Seed the returned refresh_token
+python3 investment_screener/backend/src/QuestradeDataEngine.py \
+  --seed "<refresh_token>" \
+  --cache-dir investment_screener/backend/
+```
+
+---
+
+## Running Services Separately
+
+```bash
+# Backend (port 3001)
+npm --prefix investment_screener run dev -w backend
+
+# Frontend (port 5173)
 npm --prefix investment_screener run dev -w frontend
 ```
 
-*Note: Ensure the backend is running first so the frontend can fetch data.*
+---
 
-## 🤖 AI Development Framework
-This project utilizes the **Spec Kitty** framework to systematize AI agent workflows.
--   **Specs**: Located in `kitty-specs/`.
--   **Plugins**: Located in `plugins/` — each plugin provides commands, skills, and scripts.
--   **Harness**: Extension of superpowers harness for AI agent workflows. exploration-cycle-plugin. see [.agents/agents/exploration-cycle-plugin-intake-agent.md](.agents/agents/exploration-cycle-plugin-intake-agent.md)
--   **Migration Guide**: See [`plugins/MIGRATION_GUIDE.md`](plugins/MIGRATION_GUIDE.md) for onboarding new repos.
+## AI Development Framework
+
+This project uses the **Spec Kitty** framework to systematize AI agent workflows.
+- **Specs**: `kitty-specs/`
+- **Plugins**: `plugins/` — commands, skills, scripts, documentation
+- **Harness**: Exploration-cycle plugin. See [`.agents/agents/exploration-cycle-plugin-intake-agent.md`](.agents/agents/exploration-cycle-plugin-intake-agent.md)
+- **Migration Guide**: [`plugins/MIGRATION_GUIDE.md`](plugins/MIGRATION_GUIDE.md)
+
+---
+
+## Acknowledgements
+
+The TradingView Desktop integration in this project was informed by research into the following open-source projects. Our implementation (`plugins/tradingview/node/`) is an owned, minimal adaptation — not a dependency on either repo at runtime.
+
+### tradingview-mcp (CDP bridge)
+- **Repository:** https://github.com/tradesdontlie/tradingview-mcp (cloned to `temp/tradingview-mcp/`)
+- **Author:** tradesdontlie
+- **License:** MIT — Copyright (c) 2026 tradesdontlie
+- **What it does:** 68-tool MCP server connecting to TradingView Desktop via Chrome DevTools Protocol (CDP). Full chart control, Pine Script editor, alerts, OHLCV, screenshots, replay, DOM-level interaction.
+- **Our approach:** We extracted only the CDP connection, quote, alert, and screenshot logic (~360 lines) into `plugins/tradingview/node/`. No MCP server process required; Python calls Node directly via subprocess. This removes the need for a persistent background server and eliminates the external dependency at runtime.
+
+### tradingview-mcp-server (REST aggregator)
+- **Repository:** https://github.com/atilaahmettaner/tradingview-mcp (cloned to `temp/atilaahmettaner-tradingview-mcp/`)
+- **Author:** Ahmet Taner Atila
+- **License:** MIT — Copyright (c) 2025 Ahmet Taner Atila
+- **What it does:** Python MCP server using TradingView public REST APIs (`tradingview-screener`, `tradingview-ta`). Supports screener scans, multi-exchange sentiment, technical analysis signals, and walk-forward backtesting — no TradingView Desktop required.
+- **Why we prefer the CDP approach:** The REST APIs used by this repo aggregate public/delayed data and cannot access your Premium real-time feed. CDP connects directly to your authenticated TradingView session — real-time prices, your watchlists, your alerts, your charts. For a personal portfolio tool where Premium data is the point, CDP is the right layer.
+
+Both projects are MIT licensed. Their licenses apply to their respective source code only and do not grant any rights to TradingView Inc.'s software, data, or intellectual property.
+
+---
+
+*Personal use only. Data from TradingView is subject to their Terms of Use: https://www.tradingview.com/policies/*

@@ -195,6 +195,69 @@ def setup_virtual_env(venv_dir: str, env: Dict[str, str]) -> None:
         run_command([python_exec, "-m", "pip", "install", "yfinance", "pandas", "uvicorn", "fastapi",
                      "cryptography", "keyring"], env=env)
 
+def _launch_tradingview() -> None:
+    """
+    Attempt to launch TradingView Desktop with CDP remote debugging enabled.
+
+    Non-blocking and best-effort: if TradingView is not installed, already
+    running, or the launch fails for any reason, startup continues normally.
+    The investment screener works without TradingView — yfinance is the fallback.
+
+    Requires TradingView Desktop: https://www.tradingview.com/desktop/
+    Requires TradingView Premium for real-time (non-delayed) prices.
+    """
+    TV_PORT = 9222
+    TV_APP_MAC = "/Applications/TradingView.app"
+    TV_APP_WIN = os.path.join(
+        os.environ.get("LOCALAPPDATA", ""), "TradingView", "TradingView.exe"
+    )
+
+    # Check if already running on CDP port
+    import socket
+    try:
+        with socket.create_connection(("localhost", TV_PORT), timeout=1):
+            Colors.print(f"TradingView Desktop already running on port {TV_PORT}.", Colors.CYAN)
+            return
+    except OSError:
+        pass  # Not running — try to launch
+
+    if IS_WINDOWS:
+        candidates = [TV_APP_WIN]
+    else:
+        candidates = [TV_APP_MAC]
+
+    tv_path = next((p for p in candidates if p and os.path.exists(p)), None)
+    if not tv_path:
+        Colors.print(
+            "TradingView Desktop not found — skipping auto-launch. "
+            "Install from https://www.tradingview.com/desktop/ for real-time prices.",
+            Colors.YELLOW,
+        )
+        return
+
+    try:
+        if IS_WINDOWS:
+            subprocess.Popen(
+                [tv_path, f"--remote-debugging-port={TV_PORT}"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                creationflags=0x00000008,  # DETACHED_PROCESS — Windows only flag
+            )
+        else:
+            # macOS: `open` hands off to launchd — the process survives independently
+            subprocess.Popen(
+                ["open", tv_path, "--args", f"--remote-debugging-port={TV_PORT}"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        Colors.print(
+            f"TradingView Desktop launching on port {TV_PORT} (real-time prices enabled).",
+            Colors.CYAN,
+        )
+    except Exception as e:
+        Colors.print(f"TradingView Desktop launch failed (continuing without it): {e}", Colors.YELLOW)
+
+
 # main function
 def main() -> None:
     """
@@ -279,6 +342,9 @@ def main() -> None:
         Colors.print("Or add missing packages to requirements.in and re-run pip-compile.", Colors.YELLOW)
         sys.exit(1)
     Colors.print("✅ Python dependencies OK.", Colors.GREEN)
+
+    # 5c. Launch TradingView Desktop (non-blocking, best-effort)
+    _launch_tradingview()
 
     # 6. Build Backend
     Colors.print("Building Backend...", Colors.GREEN)

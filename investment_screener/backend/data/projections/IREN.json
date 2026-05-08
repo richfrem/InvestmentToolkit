@@ -25,7 +25,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.25,
+        "weight": 0.2,
         "growthRate": 20,
         "netMargin": 5,
         "exitPE": 12,
@@ -41,7 +41,7 @@
         "presentValue": 1.26
       },
       "base": {
-        "weight": 0.42,
+        "weight": 0.39,
         "growthRate": 42,
         "netMargin": 18,
         "exitPE": 25,
@@ -57,7 +57,7 @@
         "presentValue": 27
       },
       "bull": {
-        "weight": 0.33,
+        "weight": 0.41000000000000003,
         "growthRate": 60,
         "netMargin": 28,
         "exitPE": 30,
@@ -76,9 +76,9 @@
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
       "rationale": "## IREN Investment Thesis\n\nIris Energy is one of the better-positioned Bitcoin mining companies: renewable hydro power at sub-$0.03/kWh gives them a structural cost advantage that survives multiple BTC mining halvings and difficulty cycles where higher-cost miners get squeezed out. The 59% revenue growth confirms they're executing on capacity expansion. And their early AI/HPC hosting pivot adds an optionality layer that didn't exist in the prior cycle.\n\nThe problem is the margin anchor. At 51.48% TTM net margins, IREN is operating at a cyclical peak. The forward P/E (36.1x) already tells you: the market expects earnings compression from here. Through-cycle normalized margins of 18% in the base case \u2014 weighted against bear case margin collapse to 5% and bull retention of 28% \u2014 produce a more realistic picture.\n\n**Bear ($1.26, 30%)**: BTC price corrects 60%+. Mining economics deteriorate. AI hosting ramp stalls. 20% CAGR, 5% margin, heavy dilution. Present value: $1.26.\n\n**Base ($27.00, 45%)**: Through-cycle normalization. BTC oscillates moderately, AI hosting ramps to meaningful revenue mix. 42% CAGR, 18% margin, 25x exit PE. Present value: $27.00.\n\n**Bull ($106.01, 25%)**: BTC appreciates to $200K+, AI hosting fully scales. Hydro PPA cost advantage drives premium margins (28%). 60% CAGR. Present value: $106.01.\n\n**Weighted Fair Value: $39.03 \u2014 SELL at $45.66 (-14.5%)**\n\nThis is a modest overvaluation \u2014 not the dramatic 50-90% downside we see in CEG, CRWD, or COIN. The IREN bull case is genuinely credible (real hydro power moat, real AI hosting pipeline) and carries meaningful weight. At $35-37, the stock approaches fair value; at $30, it's a reasonable entry for the AI infrastructure + BTC thesis.\n\nPrior Gemini HOLD $50.38 correction: the HOLD result was driven by a 90% bull CAGR (producing $12.4B Y5 revenue \u2014 extreme for a $501M company without named catalysts) and QM 1.1 (uncited moat). Correcting to 60% CAGR and QM 1.05 with explicit hydro PPA citation changes result to SELL $39.03.",
-      "fairValue": 46.64,
-      "action": "MAINTAIN",
-      "analyzedAt": "2026-05-07T15:35:09Z",
+      "fairValue": 54.25,
+      "action": "ACCUMULATE",
+      "analyzedAt": "2026-05-08T13:47:31Z",
       "researchReport": "IREN_2026-05-02.md"
     },
     "globalSettings": {
@@ -134,8 +134,21 @@
           "bear": -5.0
         },
         "thesisImpact": "Bull probability +8pp; bear -5pp. FV $39.03\u2192$46.64. Action: SELL\u2192MAINTAIN."
+      },
+      {
+        "date": "2026-05-08",
+        "source": "apply_catalyst.py",
+        "type": "major_contract",
+        "events": [
+          "NVIDIA partnership: $3.4B five-year AI cloud contract; up to 5GW infrastructure collaboration; NVIDIA right to buy 30M shares at $70; miner-to-AI pivot fully confirmed. DCF snapshot ($45.66) is stale \u2014 fresh /evaluate-stock IREN warranted to rebuild scenarios around new revenue baseline."
+        ],
+        "weightShifts": {
+          "bull": 8,
+          "bear": -5
+        },
+        "thesisImpact": "Bull probability +8pp; bear -5pp. FV $46.64\u2192$54.25. Action: MAINTAIN\u2192ACCUMULATE."
       }
     ],
-    "lastGrokSweep": "2026-05-07"
+    "lastGrokSweep": "2026-05-08"
   }
 ]

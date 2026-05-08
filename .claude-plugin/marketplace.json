@@ -23,6 +23,12 @@
             "description": "Orchestrator for the Investment Screener suite. Handles server startup (/start-screener) and Questrade API token seeding (/setup-questrade).",
             "source": "./plugins/toolkit-manager",
             "strict": true
+        },
+        {
+            "name": "tradingview",
+            "description": "TradingView Desktop integration for real-time prices, DCF price alerts, and chart snapshots. Skills: /tv-price-refresh (live quotes for all positions via TradingView Premium, falls back to yfinance), /tv-alert-sync (create TradingView price alerts at DCF bear/base/bull targets), /tv-snapshot TICKER (capture chart screenshot). Requires TradingView Desktop running with --remote-debugging-port=9222.",
+            "source": "./plugins/tradingview",
+            "strict": true
         }
     ]
 }
