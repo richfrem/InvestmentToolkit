@@ -47,20 +47,25 @@ Interactive scenario analysis with Bear/Base/Bull projections:
 
 ## Screenshots
 
+### Portfolio Summary
+![Portfolio Summary](assets/images/portfolio_summary.png)
+*(Total market value, performance metrics, and strategy allocation)*
+
+### Portfolio Table
+![Portfolio Table](assets/images/portfolio_table.png)
+*(Detailed positions view with real-time performance and fair value targets)*
+
 ### Stock Analysis & Metrics
 ![Analysis Metrics](assets/images/analysis_metrics.png)
 *(15+ Premium metrics including Rule of 40, Piotroski F-Score, and Analyst Targets)*
 
-### Historical Performance
-![Performance Charts](assets/images/analysis_charts.png)
+### Portfolio Advisor & Thesis Review
+![Thesis Review](assets/images/analysis_recommendations.png)
+*(Autonomous advisor proposing rebalance actions based on thesis alignment)*
 
-### Valuation Modeler
-![Valuation Modeler](assets/images/valuation_modeler.png)
-*(Interactive DCF modeling with sensitivity matrices)*
-
-### Market Heatmap
-![Market Heatmap](assets/images/heatmap.png)
-*(Real-time sector performance visualization)*
+### Investment Thesis
+![Investment Thesis](assets/images/thesis_overview.png)
+*(Living document tracking version history and core investment pillars)*
 
 ## Tech Stack
 
