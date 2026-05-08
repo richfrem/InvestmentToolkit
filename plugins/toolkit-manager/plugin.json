@@ -18,7 +18,13 @@
         }
     ],
     "commands": [],
-    "agents": [],
+    "agents": [
+        {
+            "name": "toolkit-onboarding-guide",
+            "path": "agents/toolkit-onboarding-guide.md",
+            "trigger": "Help me set up the toolkit"
+        }
+    ],
     "tags": [
         "finance",
         "questrade",
