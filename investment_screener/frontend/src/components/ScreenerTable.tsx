@@ -253,70 +253,60 @@ export default function ScreenerTable() {
     const allHoldingsMap = allHoldings.reduce((m, h) => { m[h.ticker] = h; return m; }, {} as Record<string, any>);
 
     useEffect(() => {
-        // Fetch thesis-health portfolio weights (for thesis tickers)
-        fetch('/api/theses/target-portfolio/health')
-            .then(r => r.ok ? r.json() : null)
-            .then(data => {
-                if (!data) return;
+        const init = async () => {
+            // Fetch all data sources in parallel
+            const [healthData, weightsData, reviewData, holdingsData, portData] = await Promise.all([
+                fetch('/api/theses/target-portfolio/health').then(r => r.ok ? r.json() : null).catch(() => null),
+                fetch('/api/portfolio/weights').then(r => r.ok ? r.json() : null).catch(() => null),
+                fetch('/api/docs/latest-review-data').then(r => r.ok ? r.json() : null).catch(() => null),
+                fetch('/api/screener/all-holdings').then(r => r.ok ? r.json() : null).catch(() => null),
+                fetch('/api/portfolio').then(r => r.ok ? r.json() : null).catch(() => null),
+            ]);
+
+            if (healthData) {
                 const map: Record<string, { actualPct: number; targetPct: number }> = {};
-                for (const h of data.holdingHealth ?? []) {
+                for (const h of healthData.holdingHealth ?? []) {
                     map[h.ticker] = { actualPct: h.actualPct ?? 0, targetPct: h.targetPct ?? 0 };
                 }
                 setPortfolioWeights(map);
-            })
-            .catch(() => {});
-
-        // Fetch actual weights for ALL live holdings from portfolio.json
-        fetch('/api/portfolio/weights')
-            .then(r => r.ok ? r.json() : null)
-            .then(data => { if (data) setAllPortfolioWeights(data); })
-            .catch(() => {});
-
-        // Fetch latest review recommendations (with rationale + actualPct)
-        fetch('/api/docs/latest-review-data')
-            .then(r => r.ok ? r.json() : null)
-            .then(data => {
-                if (!data) return;
+            }
+            if (weightsData) setAllPortfolioWeights(weightsData);
+            if (reviewData) {
                 const map: Record<string, { target: number; rationale: string; actualPct: number }> = {};
-                for (const h of [...(data.holdings ?? []), ...(data.holdingsUnchanged ?? [])]) {
+                for (const h of [...(reviewData.holdings ?? []), ...(reviewData.holdingsUnchanged ?? [])]) {
                     map[h.ticker] = {
                         target: h.recommendedTarget,
                         rationale: h.rationale ?? '',
-                        actualPct: h.actualPct ?? null,   // keep null so priority chain falls through to live weights
+                        actualPct: h.actualPct ?? null,
                     };
                 }
                 setReviewRecommendations(map);
-            })
-            .catch(() => {});
+            }
+            if (holdingsData) setAllHoldings(holdingsData);
 
-        // Fetch all thesis holdings (includes ETFs/funds without projections)
-        fetch('/api/screener/all-holdings')
-            .then(r => r.ok ? r.json() : null)
-            .then(data => { if (data) setAllHoldings(data); })
-            .catch(() => {});
+            // Build combined heatmap items: owned positions (full data) + watchlist tickers (shares: 0)
+            // This ensures change_1d shows for ALL screener tickers, not just owned ones.
+            const portfolioItems: any[] = portData?.items ?? [];
+            const portfolioSymbols = new Set(portfolioItems.map((i: any) => i.symbol));
+            const watchlistItems = (holdingsData ?? [])
+                .filter((h: any) => !portfolioSymbols.has(h.ticker))
+                .map((h: any) => ({ symbol: h.ticker, shares: 0 }));
+            const allItems = [...portfolioItems, ...watchlistItems];
 
-        // Fetch heatmap data for change_1d and change_overall
-        fetch('/api/portfolio')
-            .then(r => r.ok ? r.json() : null)
-            .then(portData => {
-                if (!portData?.items) return;
-                fetch('/api/portfolio-heatmap', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ items: portData.items }),
-                })
-                .then(r => r.ok ? r.json() : null)
-                .then(heatmapData => {
-                    if (!heatmapData?.stocks) return;
-                    const map: Record<string, any> = {};
-                    for (const s of heatmapData.stocks) {
-                        map[s.symbol] = s;
-                    }
-                    setHeatmapMap(map);
-                })
-                .catch(() => {});
-            })
-            .catch(() => {});
+            if (allItems.length === 0) return;
+            const heatmapData = await fetch('/api/portfolio-heatmap', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items: allItems }),
+            }).then(r => r.ok ? r.json() : null).catch(() => null);
+
+            if (heatmapData?.stocks) {
+                const map: Record<string, any> = {};
+                for (const s of heatmapData.stocks) map[s.symbol] = s;
+                setHeatmapMap(map);
+            }
+        };
+        init();
     }, []);
 
     // Close picker on outside click

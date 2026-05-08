@@ -23,6 +23,12 @@ allowed-tools: Bash, Read, Write
 
 ## Phase 1 — Generate the Grok Prompt
 
+The prompt uses a **tiered deep dive** approach to keep output focused:
+
+- **Part 1 (Sweep Table)** — every position gets one row; Grok marks `[DD]` for any with material news
+- **Part 2 (INITIATE Deep Dives)** — always included for all INITIATE targets (undeployed capital decisions)
+- **Part 3 (Active Holdings Deep Dives)** — only `[DD]`-flagged positions from Part 1
+
 ```bash
 # Standard: print to terminal for copy-paste
 python3 scripts/generate_grok_prompt.py
@@ -40,7 +46,12 @@ After running, say to the user:
 ✅ Grok prompt generated — {N} active holdings, {N} INITIATE targets, {N} EXIT positions.
 
 Paste this into x.com/i/grok (or any Grok interface) and send.
-Then paste Grok's full response back here — I'll gate each recommendation
+Grok will return:
+  Part 1 — sweep table with [DD] flags for material news
+  Part 2 — deep dives for all INITIATE targets
+  Part 3 — deep dives for [DD]-flagged active holdings
+
+Paste Grok's full response back here — I'll gate each recommendation
 against our DCF projections and the 8 hard gates before applying anything.
 ```
 
@@ -48,11 +59,24 @@ against our DCF projections and the 8 hard gates before applying anything.
 
 ## Phase 2 — Receive Grok's Response
 
-When the user pastes Grok's table back, parse each row to extract:
+When the user pastes Grok's response back, parse **all three parts**:
 
+**Part 1 — Sweep Table:** extract from each row:
 ```
-ticker | news | thesis_impact | action_rec | target_change
+ticker | news | thesis_impact | action_rec | target_change | deep_dive_flag
 ```
+
+**Part 2 — INITIATE Deep Dives:** for each INITIATE ticker, extract:
+```
+ticker | deep_dive_text | conviction | key_risks
+```
+Use these to enrich the ledger entry and as input to apply_catalyst.py if a material catalyst is present.
+
+**Part 3 — Active Holdings Deep Dives:** for each `[DD]`-flagged ticker, extract:
+```
+ticker | catalyst | thesis_impact | conviction_change
+```
+Cross-reference against Part 1 row to confirm action/target consistency.
 
 Build an in-memory **recommendation ledger**:
 
@@ -120,7 +144,8 @@ If `action_rec = ACCUMULATE/INITIATE` and DCF upside < -15% AND ticker not in kn
 
 ## Phase 4 — Present Gated Summary
 
-Show the user a single table before writing anything:
+Show the user a single table before writing anything. For any position with a deep dive (Part 2 or Part 3),
+include one line of deep dive context below the row.
 
 ```
 ╔══════════════════════════════════════════════════════════════════╗
@@ -131,8 +156,13 @@ Ticker  Current%  New Target%   Action      Gate      News Summary
 ------  --------  -----------   ------      ----      ------------
 CRWV    4.30%     → 5.50%       ACCUMULATE  ✅ APPROVED  Meta $21B deal...
 BE      0.94%     → 3.50%       ACCUMULATE  ⚠️ WARN (SA/DCF)  Oracle 2.8 GW...
+  ↳ Deep dive: BE oracle 2.8GW expansion confirmed; SA LP top holding; DCF still -64%
 AVGO    0.00%     → 2.00%       INITIATE    🚫 BLOCKED (G1: DCF -32%)  ...
 NEWT    0.00%     → 1.00%       INITIATE    ❓ CONFIRM (G2: not in thesis)  ...
+
+--- INITIATE conviction summaries ---
+TSM     2.40%  (undeployed)   ❓ CONFIRM   Foundry demand strong; no urgency signal
+PSU-U.TO 10.1% (undeployed)  ✅ APPROVED  Reserve intact; no new developments
 
 Approved:  {N}  |  Warned:  {N}  |  Blocked:  {N}  |  Needs confirm:  {N}
 Total weight delta if all approved: {delta:+.2f}pp
