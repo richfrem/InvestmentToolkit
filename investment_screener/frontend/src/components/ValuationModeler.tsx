@@ -711,10 +711,10 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             ? 'bg-purple-500/20 text-purple-300 border-purple-500/30 cursor-not-allowed'
                             : 'bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 border-indigo-500/20'
                             }`}
-                        title="Get AI feedback from the 'Valuation Expert'"
+                        title="Run professional deep-research analysis in your terminal"
                     >
                         {isAnalyzing ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                        AI Analyst
+                        AI Analyst (CLI)
                     </button>
                     <button
                         onClick={() => setShowPresetModal(true)}
@@ -1175,7 +1175,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                 Hard to sustain {'>'}50% CAGR for {timeHorizon} years. Law of large numbers risk.
                             </li>
                         )}
-                        {netMargin > 50 && (
+                        {nextMargin > 50 && (
                             <li className="text-[10px] text-red-300 flex gap-2">
                                 <span className="font-bold">• Net Margin ({netMargin}%):</span>
                                 Extremely high profitability. Attracts competition / Regulatory scrutiny.
@@ -1191,6 +1191,13 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                 onClose={() => { setShowAIModal(false); setViewingProjection(null); }}
                 symbol={stockData.symbol}
                 initialProjection={viewingProjection}
+            />
+
+            {/* CLI Agent Reminder Modal */}
+            <AgentReminderModal
+                isOpen={showAgentReminder}
+                onClose={() => setShowAgentReminder(false)}
+                symbol={stockData.symbol}
             />
 
             {/* Save Modal */}
