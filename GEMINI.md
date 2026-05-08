@@ -1,9 +1,19 @@
 # GEMINI.md - InvestmentToolkit Context
 
 ## 🌟 Project Overview
-**InvestmentToolkit** is a high-end investment analysis suite designed for sophisticated retail investors. It features a "Luxury Dark Mode" web dashboard, professional fundamental analysis tools, valuation modeling, and autonomous AI agents for deep-dive research and portfolio alignment.
+**InvestmentToolkit** is a high-end investment analysis suite designed for sophisticated retail investors. It features a "Luxury Dark Mode" web dashboard, professional fundamental analysis tools, valuation modeling, and autonomous AI agents for research and thesis management.
+
+### 🚀 Getting Started (Interactive Onboarding)
+The quickest way to initialize the workstation is to trigger the **Toolkit Onboarding Guide**. 
+Type: **"Help me set up the toolkit"** 
+The onboarding agent handles dependency verification, secure Questrade syncing, and TradingView link-up.
+
+### 🔐 Prerequisites (Subscription)
+> [!IMPORTANT]
+> **Pro-tier AI Required**: To execute autonomous sub-agent skills like `/strategic-review`, `/x-news-sweep`, and `/evaluate-stock`, you **must** have an active Pro-tier subscription for your CLI environment (Claude Code, GitHub Copilot Pro, or Google Gemini Pro).
 
 ### Core Stack:
+... (rest of the file)
 - **Frontend**: React 19, Vite, Tailwind CSS 4.0.
 - **Backend**: Node.js (Express) with a Python bridge for financial data.
 - **Data Sources**: `yfinance` (real-time/historical) and Questrade API (brokerage sync).
