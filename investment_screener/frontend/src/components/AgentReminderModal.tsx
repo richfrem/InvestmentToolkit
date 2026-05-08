@@ -6,7 +6,7 @@ interface Props {
     symbol?: string;
 }
 
-export default function AgentReminderModal({ isOpen, onClose, symbol }: Props) {
+export function AgentReminderModal({ isOpen, onClose, symbol }: Props) {
     if (!isOpen) return null;
 
     return (
