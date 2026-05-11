@@ -1,3 +1,22 @@
+/**
+ * ThesisService.ts (TypeScript Service)
+ * =====================================
+ *
+ * Purpose:
+ *     The core engine for managing investment theses, strategy pillars, and portfolio drift analysis.
+ *     Orchestrates health checks, strategic reviews via AI, and trade optimization logic.
+ *
+ * Layer: Backend / Services / Strategy
+ *
+ * Usage Examples:
+ *     const health = await thesisService.computeHealthCheck(thesisId);
+ *     const review = await thesisService.performStrategicReview(thesisId);
+ *
+ * Key Functions:
+ *     - computeHealthCheck() - Calculates portfolio drift at both holding and pillar levels, generating actionable alerts
+ *     - performStrategicReview() - Combines thesis targets with AI valuation data to produce a qualitative adversarial report
+ *     - optimizePortfolio() - Generates specific trade recommendations to restore thesis alignment
+ */
 import fs from 'fs';
 import path from 'path';
 import { lock } from 'proper-lockfile';
@@ -12,7 +31,6 @@ const THESES_DIR = path.resolve(__dirname, '../../data/theses');
 const PROJECTIONS_DIR = path.resolve(__dirname, '../../data/projections');
 const PORTFOLIO_FILE = path.resolve(__dirname, '../../data/portfolio.json');
 const REBALANCE_PROMPT_PATH = path.resolve(__dirname, '../../../.agent/skills/portfolio-advisor/references/rebalance_prompt.md');
-
 // Ensure directory exists
 if (!fs.existsSync(THESES_DIR)) {
     fs.mkdirSync(THESES_DIR, { recursive: true });

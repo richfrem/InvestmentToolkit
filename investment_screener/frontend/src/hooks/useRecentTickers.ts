@@ -1,3 +1,19 @@
+/**
+ * useRecentTickers.ts (React Hook)
+ * =====================================
+ *
+ * Purpose:
+ *     Custom hook for managing and persisting a list of recently searched stock tickers in localStorage.
+ *
+ * Layer: Frontend / Hooks
+ *
+ * Usage Examples:
+ *     const { recentTickers, addTicker } = useRecentTickers();
+ *
+ * Key Functions:
+ *     - addTicker() - Adds a new ticker to the front of the list, ensuring uniqueness and limiting to the last 10 entries
+ *     - useRecentTickers() - Maintains the stateful list of tickers and handles initial hydration from localStorage
+ */
 import { useState, useEffect } from 'react';
 
 export function useRecentTickers() {

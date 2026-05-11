@@ -1,3 +1,19 @@
+/**
+ * FundamentalChart.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Visualizes historical revenue and net income trends using an Area Chart.
+ *
+ * Layer: Frontend / UI / Components / Charts
+ *
+ * Usage Examples:
+ *     <FundamentalChart stockData={stockData} />
+ *
+ * Key Functions:
+ *     - formatCurrency() - Formats large numeric values into readable B/M (Billions/Millions) strings
+ *     - FundamentalChart() - Maps historical financial arrays into an object format suitable for Recharts
+ */
 import {
     AreaChart,
     Area,

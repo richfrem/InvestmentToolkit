@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
 """
-generate_grok_prompt.py — Build a live Grok/X.com news-sweep prompt from
-target-portfolio.json and portfolio.json.
+generate_grok_prompt.py (Python Service)
+=====================================
 
-Each run reflects the *current* targets, actions, and DCF signals — no stale
-ticker lists or copy-paste drift.
+Purpose:
+    Generates a structured, live news-sweep prompt for Grok/X.com based on the current portfolio and thesis.
+    Synthesizes target weights, actual positions, and DCF signals to identify priority research areas.
 
-Usage (run from repo root):
-    python3 plugins/portfolio-advisor/scripts/generate_grok_prompt.py
-    python3 plugins/portfolio-advisor/scripts/generate_grok_prompt.py --output /tmp/grok_prompt.md
-    python3 plugins/portfolio-advisor/scripts/generate_grok_prompt.py --clipboard
+Layer: Backend / Python Services / AI Prompt Engineering
 
-Output:
-    A structured Grok prompt ready to paste into x.com/i/grok
-    Optionally written to --output path or copied to clipboard.
+Usage Examples:
+    python3 generate_grok_prompt.py --clipboard
+    python3 generate_grok_prompt.py --output grok_prompt.md
+
+Key Functions:
+    - build_prompt() - Primary orchestrator that aggregates thesis, portfolio, and DCF data into a formatted Markdown prompt
+    - load_dcf() - Retrieves the latest AI-generated valuation signals for inclusion in the prompt context
+    - _action_emoji() - Utility for visual status indicators in the generated prompt table
 """
 
 import json

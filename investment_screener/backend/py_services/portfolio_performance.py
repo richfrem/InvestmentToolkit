@@ -1,11 +1,21 @@
 #!/usr/bin/env python3
 """
-Calculate portfolio performance over 1d, 1w, 1m periods using yfinance.
-Uses the most recent yfinance close as "current" for accuracy regardless of
-how stale portfolio.json prices are.
+portfolio_performance.py (Python Service)
+=====================================
 
-Usage: python3 portfolio_performance.py <portfolio_json_path>
-Output: JSON { "1d": { change, changePct, historicalValue, currentValue }, "1w": ..., "1m": ... }
+Purpose:
+    Calculates aggregate portfolio performance over standard horizons (1d, 1w, 1m).
+    Downloads batched historical data via yfinance and uses the most recent close as the "current" price 
+    baseline to ensure accuracy independent of brokerage sync staleness.
+
+Layer: Backend / Python Services / Performance Analytics
+
+Usage Examples:
+    python3 portfolio_performance.py investment_screener/backend/data/portfolio.json
+
+Key Functions:
+    - main() - CLI orchestrator that filters positions, fetches batched history, and computes time-weighted performance
+    - safe_float() - Utility to handle NaN/None values from financial data frames
 """
 import json
 import sys

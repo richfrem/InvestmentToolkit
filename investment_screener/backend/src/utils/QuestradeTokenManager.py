@@ -1,20 +1,23 @@
 #!/usr/bin/env python3
 """
-QuestradeTokenManager.py
+QuestradeTokenManager.py (Python Utility)
 =====================================
 
 Purpose:
-    Manages Questrade OAuth2 tokens with hardware-backed encryption (keyring)
-    and atomic disk operations. Implements ADR 015 and ADR 019.
+    Securely manages Questrade OAuth2 tokens using AES-256-GCM encryption with keys stored in the OS Keychain (via keyring).
+    Ensures atomic disk operations to prevent data corruption during token rotation.
 
-Layer: Retrieve
+Layer: Backend / Utils / Security
 
-Usage:
-    Imported by QuestradeAPIClient.py and QuestradeDataEngine.py.
+Usage Examples:
+    manager = QuestradeTokenManager(cache_dir="path/to/cache")
+    manager.save_tokens(new_token_data)
+    tokens = manager.load_tokens()
 
-Related:
-    - QuestradeAPIClient.py
-    - QuestradeDataEngine.py
+Key Functions:
+    - save_tokens() - Encrypts and atomically writes token data to the .questrade_cache file
+    - load_tokens() - Decrypts tokens from disk or falls back to environment variables for initial seeding
+    - _get_or_create_key() - Manages the hardware-backed master key lifecycle in the system Keychain
 """
 
 import os

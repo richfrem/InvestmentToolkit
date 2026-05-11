@@ -1,3 +1,20 @@
+/**
+ * Sidebar.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Main navigation sidebar for the application, providing access to different 
+ *     views and core tool configurations.
+ *
+ * Layer: Frontend / UI / Layout
+ *
+ * Usage Examples:
+ *     <Sidebar />
+ *
+ * Key Functions:
+ *     - handleSync() - Triggers a real-time portfolio sync with the Questrade API and reloads the current view
+ *     - formatLastSync() - Formats the ISO sync timestamp into a human-readable HH:MM display
+ */
 import { useState, useEffect } from 'react';
 import { Settings, History, Briefcase, Grid3X3, BarChart3, Search, RefreshCcw, Link2, TableProperties, PieChart } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';

@@ -1,3 +1,22 @@
+/**
+ * index.ts (Express Server Entry Point)
+ * =====================================
+ *
+ * Purpose:
+ *     The primary backend orchestrator for the InvestmentToolkit. Handles API routing, Python process bridging,
+ *     data persistence for portfolios and projections, and secure integration with external financial services (Questrade, Exchange Rates).
+ *
+ * Layer: Backend / Core
+ *
+ * Usage Examples:
+ *     node dist/index.js (Production)
+ *     npm run dev (Development via ts-node-dev)
+ *
+ * Key Functions:
+ *     - spawnPythonScript() - Bridges Node.js requests to the Python financial data engine (fetch_financials.py, etc.)
+ *     - questradeSyncService.runSync() - Coordinates the automated brokerage data synchronization lifecycle
+ *     - projectionService.saveProjection() - Manages the validation and archival of AI-generated stock valuation models
+ */
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';

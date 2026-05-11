@@ -1,3 +1,18 @@
+/**
+ * AnalysisChartToggle.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Selection control for toggling between different financial visualization modes (Revenue, FCF, Margins, EPS).
+ *
+ * Layer: Frontend / UI / Components / Analysis
+ *
+ * Usage Examples:
+ *     <AnalysisChartToggle activeMode="revenue" onModeChange={(mode) => setMode(mode)} />
+ *
+ * Key Functions:
+ *     - AnalysisChartToggle() - Renders a button group for switching chart context within the analysis view
+ */
 import { BarChart3, TrendingUp, PieChart, Coins } from 'lucide-react';
 
 export type ChartMode = 'revenue' | 'fcf' | 'margins' | 'eps';

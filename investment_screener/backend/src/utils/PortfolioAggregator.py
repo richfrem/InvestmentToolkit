@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
 """
-PortfolioAggregator.py
+PortfolioAggregator.py (Python Utility)
 =====================================
 
 Purpose:
-    Handles aggregation of Questrade positions into the unified portfolio.json format.
+    Handles aggregation and normalization of Questrade brokerage positions into the unified portfolio.json format.
+    Consolidates holdings across multiple accounts and calculates weighted-average book prices.
 
-Layer: Retrieve
+Layer: Backend / Utils / Data Aggregation
 
-Usage:
-    Imported by QuestradeDataEngine.py or used standalone in scripts.
+Usage Examples:
+    aggregator = PortfolioAggregator(output_path="data/portfolio.json")
+    aggregated = aggregator.aggregate_positions(raw_questrade_positions)
+    aggregator.save_portfolio(aggregated)
 
-Related:
-    - QuestradeDataEngine.py
+Key Functions:
+    - aggregate_positions() - Primary entry point to merge raw Questrade data into the standardized application schema
+    - normalize_symbol() - Ensures ticker consistency by stripping exchange suffixes and handling special identifiers
+    - save_portfolio() - Performs an atomic write of the aggregated data to the canonical storage location
 """
 
 import json

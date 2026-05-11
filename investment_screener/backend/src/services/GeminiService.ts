@@ -1,9 +1,21 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
 /**
- * Service to interact with Google's Gemini Models.
- * Centralizes API key management and model configuration.
+ * GeminiService.ts (TypeScript Service)
+ * =====================================
+ *
+ * Purpose:
+ *     Centralized interface for interacting with Google's Gemini Generative AI models.
+ *     Manages API key security and model configuration from environment variables.
+ *
+ * Layer: Backend / Services / AI
+ *
+ * Usage Examples:
+ *     const response = await geminiService.generateContent("Analyze this stock...");
+ *
+ * Key Functions:
+ *     - generateContent() - Primary entry point for sending prompts and receiving AI-generated text
+ *     - getModel() - Lazy-initializer for the GoogleGenerativeAI client and specific model instance
  */
+import { GoogleGenerativeAI } from "@google/generative-ai";
 class GeminiService {
     private genAI: GoogleGenerativeAI | null = null;
     private model: any | null = null;

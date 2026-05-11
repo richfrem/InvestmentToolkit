@@ -1,37 +1,44 @@
 #!/usr/bin/env python3
 """
-update_thesis.py — CLI tool to update target weights in the portfolio thesis JSON.
+update_thesis.py (Python Service)
+=====================================
 
-Reads: investment_screener/backend/data/theses/target_portfolio.json
-Writes: same file (after --dry-run validation pass)
+Purpose:
+    CLI tool for modifying target weights, roles, and rationale in the portfolio thesis JSON.
+    Enforces strict validation rules (e.g., weights must sum to 100%) and maintains a versioned changeLog.
+    Aligns changes with the primary investment thesis Markdown document.
 
-Aligns with investment thesis document:
-  plugins/portfolio-advisoror/references/investment_thesis.md
+Layer: Backend / Python Services / Strategy Configuration
 
-Usage examples:
-  # Update a pillar's target weight
-  python3 update_thesis.py --pillar ai-compute --target 45.0
+Usage Examples:
+    # Update a pillar's target weight
+    python3 update_thesis.py --pillar ai-compute --target 45.0
 
-  # Update a holding's target weight
-  python3 update_thesis.py --holding INTC --target 8.0
+    # Update a holding's target weight
+    python3 update_thesis.py --holding INTC --target 8.0
 
-  # Move a holding to a different pillar
-  python3 update_thesis.py --holding INTC --pillar sovereign-infra
+    # Move a holding to a different pillar
+    python3 update_thesis.py --holding INTC --pillar sovereign-infra
 
-  # Update holding role
-  python3 update_thesis.py --holding OKLO --role speculative
+    # Update holding role
+    python3 update_thesis.py --holding OKLO --role speculative
 
-  # Update holding thesis-for-inclusion text
-  python3 update_thesis.py --holding CRWV --thesis "CoreWeave: pure-play GPU cloud for hyperscaler overflow"
+    # Update holding thesis-for-inclusion text
+    python3 update_thesis.py --holding CRWV --thesis "CoreWeave: pure-play GPU cloud for hyperscaler overflow"
 
-  # Batch update from a JSON patch file (see --help for format)
-  python3 update_thesis.py --patch /tmp/formula_changes.json
+    # Batch update from a JSON patch file
+    python3 update_thesis.py --patch /tmp/formula_changes.json
 
-  # Preview without writing
-  python3 update_thesis.py --holding INTC --target 8.0 --dry-run
+    # Preview without writing
+    python3 update_thesis.py --holding INTC --target 8.0 --dry-run
 
-  # Bump version and write a change note
-  python3 update_thesis.py --holding AVGO --target 8.0 --note "Strategic review 2026-05-02: increase weight per SA 13F conviction"
+    # Bump version and write a change note
+    python3 update_thesis.py --holding AVGO --target 8.0 --note "Strategic review: increase weight per conviction"
+
+Key Functions:
+    - apply_patch() - Supports batch updates from a JSON patch file
+    - validate_weights() - Hard-gate validation ensuring all target allocations sum exactly to 100%
+    - save_thesis() - Atomic write operation that bumps version numbers and persists changes to data storage
 """
 
 import argparse

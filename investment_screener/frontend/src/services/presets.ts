@@ -1,4 +1,21 @@
-// localStorage utilities for user preset management
+/**
+ * presets.ts (TypeScript Service)
+ * =====================================
+ *
+ * Purpose:
+ *     Client-side persistence layer for managing user-defined valuation presets in localStorage.
+ *
+ * Layer: Frontend / Services / Storage
+ *
+ * Usage Examples:
+ *     import { loadUserPresets } from './services/presets';
+ *     const presets = loadUserPresets('AAPL');
+ *
+ * Key Functions:
+ *     - saveUserPreset() - Creates and persists a new valuation configuration for a specific symbol
+ *     - loadUserPresets() - Filters and retrieves all user-saved presets for a given ticker
+ *     - deleteUserPreset() - Removes a specific preset from localStorage by its unique ID
+ */
 
 export interface UserPreset {
     id: string;

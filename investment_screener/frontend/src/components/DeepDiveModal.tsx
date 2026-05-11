@@ -1,3 +1,12 @@
+/**
+ * DeepDiveModal.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Displays a full research report (markdown) for a specific ticker in a full-screen modal.
+ *
+ * Layer: Frontend / UI / Modals
+ */
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';

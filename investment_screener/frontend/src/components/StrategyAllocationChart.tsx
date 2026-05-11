@@ -9,11 +9,16 @@
  * Layer: Frontend / UI / Components
  *
  * Usage Examples:
- *     <StrategyAllocationChart data={allocationData} />
+ *     <StrategyAllocationChart data={allocationData} totalUSD={1000} usdCadRate={1.35} />
  *
  * Key Functions:
- *     - renderDonut() - D3-driven donut chart rendering
- *     - handleGroupingChange() - Logic for re-calculating arc segments
+ *     - shortLabel() - Maps long IDs/names to display labels
+ *     - color() - Retrieves theme-consistent colors from predefined maps
+ *     - fmtCAD() - Formats currency with CA$ prefix
+ *     - groupBySector() - Aggregates holdings by industry sector
+ *     - groupBySubStrategy() - Aggregates holdings by sub-strategy tags
+ *     - renderDonut() - Main D3 rendering for the allocation ring
+ *     - renderHoldings() - Secondary visualization for individual positions
  */
 import { useEffect, useRef, useState, useMemo } from 'react';
 import * as d3 from 'd3';

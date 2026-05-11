@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
 """
-MetadataEnricher.py
+MetadataEnricher.py (Python Utility)
 =====================================
 
 Purpose:
-    Enriches portfolio holdings with sector and industry data using yfinance.
-    Implements ADR 018.
+    Enriches portfolio holdings with sector and industry metadata using yfinance. 
+    Handles classification logic and applies overrides for assets with inconsistent reporting.
 
-Layer: Retrieve
+Layer: Backend / Utils / Data Enrichment
 
-Usage:
-    Imported by QuestradeDataEngine.py.
+Usage Examples:
+    enricher = MetadataEnricher()
+    enriched_data = enricher.enrich_holdings(raw_holdings)
+
+Key Functions:
+    - enrich_holdings() - Primary entry point to fetch and apply missing metadata to a list of holdings
+    - resolve_classification() - Implements the hierarchy of classification logic (Overrides -> Yahoo Finance -> Fallbacks)
 """
 
 import logging

@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
 """
-history_store.py - Persistent CSV-based historical price store for portfolio stocks.
+history_store.py (Python Service)
+=====================================
 
-Storage: py_services/cache/<SYMBOL>_history.csv
-Schema:  date (YYYY-MM-DD), close
+Purpose:
+    Provides a persistent, CSV-based historical price store for portfolio holdings.
+    Implements a rolling 365-day window with incremental yfinance updates to minimize API overhead.
+    Used primarily for calculating period performance (1w, 1m, YTD, 1y).
 
-Strategy:
-  - First run:        fetch 1 full year via yfinance (period="1y")
-  - Incremental run:  fetch only dates after last cached date
-  - Rolling window:   drop rows older than 365 calendar days after each update
-  - ~252 rows/stock × 30 stocks = ~7,560 rows total — very lightweight
+Layer: Backend / Python Services / Data Persistence
 
-Usage:
+Usage Examples:
     from history_store import HistoricalPriceStore
     store = HistoricalPriceStore()
-    df = store.get_or_update("AAPL")   # returns DataFrame with [date, close]
     changes = store.calc_changes("AAPL", current_price=185.20)
+
+Key Functions:
+    - get_or_update() - High-level entry point that manages full vs. incremental fetching and persistence
+    - calc_changes() - Derives percentage changes for standard investment horizons from the stored history
+    - _trim() - Maintains the rolling 365-day window by pruning stale data
 """
 
 import os

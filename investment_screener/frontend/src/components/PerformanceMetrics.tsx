@@ -1,3 +1,18 @@
+/**
+ * PerformanceMetrics.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Simple display of performance statistics for a stock across multiple time horizons.
+ *
+ * Layer: Frontend / UI / Components
+ *
+ * Usage Examples:
+ *     <PerformanceMetrics performance={stockData.performance} />
+ *
+ * Key Functions:
+ *     - PerformanceMetrics() - Functional component that maps performance timeframes to visual indicators
+ */
 import type { StockData } from '../services/api';
 
 interface PerformanceMetricsProps {

@@ -1,3 +1,19 @@
+/**
+ * AIAnalysisModal.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Modal component for displaying deep AI analysis and projections for a specific stock.
+ *
+ * Layer: Frontend / UI / Modals
+ *
+ * Usage Examples:
+ *     <AIAnalysisModal isOpen={true} onClose={() => {}} symbol="AAPL" />
+ *
+ * Key Functions:
+ *     - loadAIProjection() - Fetches and filters AI-specific DCF projections
+ *     - handlePresetChange() - Manages switching between different valuation scenarios
+ */
 import React, { useEffect, useState } from 'react';
 import { X, BrainCircuit, TrendingUp, TrendingDown, AlertTriangle, BookOpen } from 'lucide-react';
 import { type Projection, fetchProjections } from '../services/api';

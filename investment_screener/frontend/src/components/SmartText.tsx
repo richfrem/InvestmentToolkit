@@ -1,3 +1,19 @@
+/**
+ * SmartText.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Enhances text by automatically linking financial terms to their help definitions.
+ *
+ * Layer: Frontend / UI / Components
+ *
+ * Usage Examples:
+ *     <SmartText text="The P/S ratio is high." />
+ *
+ * Key Functions:
+ *     - openHelp() - Hook-driven function to trigger the Help Modal for a specific topic ID
+ *     - SmartText() - Functional component that tokenizes text using regex and injects interactive help triggers
+ */
 import React from 'react';
 import { useHelpModal } from './HelpModal';
 import { HelpCircle } from 'lucide-react';

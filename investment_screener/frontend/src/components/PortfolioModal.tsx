@@ -1,3 +1,20 @@
+/**
+ * PortfolioModal.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Modal for viewing and potentially managing portfolio holdings.
+ *
+ * Layer: Frontend / UI / Modals
+ *
+ * Usage Examples:
+ *     <PortfolioModal isOpen={true} onClose={() => {}} />
+ *
+ * Key Functions:
+ *     - savePortfolio() - Persists updated portfolio items to both localStorage and the backend API
+ *     - handleAdd() - Validates and adds a new ticker/share count to the portfolio list
+ *     - handleUpdateShares() - Updates the share quantity for an existing position and triggers a save
+ */
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 

@@ -1,3 +1,18 @@
+/**
+ * LatestReviewModal.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Modal summary of the most recent portfolio review, showing drift and thesis updates.
+ *
+ * Layer: Frontend / UI / Modals
+ *
+ * Usage Examples:
+ *     <LatestReviewModal onClose={() => {}} />
+ *
+ * Key Functions:
+ *     - fetchLatestReviewData() - Async call to retrieve the latest review summary from backend
+ */
 import { useEffect, useState } from 'react';
 import { X, TrendingUp, TrendingDown, Minus, AlertTriangle, Clock, CheckCircle2, Loader2, FileBarChart2 } from 'lucide-react';
 import { fetchLatestReviewData } from '../services/api';

@@ -1,3 +1,21 @@
+/**
+ * ValuationService.ts (TypeScript Service)
+ * =====================================
+ *
+ * Purpose:
+ *     The "Hybrid Analyst" engine that orchestrates stock valuation using Gemini AI.
+ *     Implements a 30-day freshness cache to optimize token usage and integrates live financials with qualitative AI reasoning.
+ *
+ * Layer: Backend / Services / Analysis
+ *
+ * Usage Examples:
+ *     const result = await valuationService.analyzeStock('NVDA');
+ *
+ * Key Functions:
+ *     - analyzeStock() - Primary entry point for conducting a stock valuation, includes freshness checks and context aggregation
+ *     - buildPrompt() - Constructs the specialized system prompt for the AI equities analyst persona
+ *     - parseResponse() - Sanitizes and validates the AI's JSON output for application consumption
+ */
 import { geminiService } from './GeminiService';
 import { analysisContextBuilder } from './AnalysisContextBuilder';
 import { projectionService } from './ProjectionService';
@@ -13,11 +31,6 @@ interface ValuationResult {
     exit_pe?: number;
     quality_multiplier?: number;
 }
-
-/**
- * Tool A: The "Hybrid" Analyst.
- * Orchestrates the Valuation Logic using Gemini 3.0 Pro.
- */
 export class ValuationService {
 
     /**

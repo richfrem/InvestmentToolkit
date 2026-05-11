@@ -1,8 +1,22 @@
 #!/usr/bin/env python3
 """
-fetch_financials.py - Fetches detailed financial data for a stock using yfinance.
+fetch_financials.py (Python Service)
+=====================================
 
-Optimized with local filesystem caching (1 hour) to prevent rate limiting.
+Purpose:
+    Retrieves comprehensive financial data for a stock using yfinance. 
+    Aggregates income statements, balance sheets, cash flows, analyst estimates, and performance history.
+    Includes advanced calculations for Rule of 40 and Piotroski F-Score.
+
+Layer: Backend / Python Services / Data Retrieval
+
+Usage Examples:
+    python3 fetch_financials.py AAPL
+
+Key Functions:
+    - fetch_financial_data() - Primary orchestrator for data retrieval, caching, and transformation
+    - get_cached_data() / save_to_cache() - Implements a local filesystem cache (1-hour TTL) to prevent API rate limiting
+    - Piotroski calculation block - Implements the full 9-point fundamental health methodology
 """
 
 import sys
