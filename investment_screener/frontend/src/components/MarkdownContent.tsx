@@ -1,3 +1,18 @@
+/**
+ * MarkdownContent.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Reusable markdown renderer with GFM support and custom styling for tool-wide reports.
+ *
+ * Layer: Frontend / UI / Components
+ *
+ * Usage Examples:
+ *     <MarkdownContent content="# Hello" accentColor="emerald" />
+ *
+ * Key Functions:
+ *     - MarkdownContent() - Functional component defining custom list and text styles for ReactMarkdown
+ */
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Components } from 'react-markdown';

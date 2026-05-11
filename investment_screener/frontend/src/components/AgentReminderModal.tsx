@@ -1,3 +1,18 @@
+/**
+ * AgentReminderModal.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     In-app modal reminding users about the Agentic CLI capabilities (Grok, DCF, etc.).
+ *
+ * Layer: Frontend / UI / Components
+ *
+ * Usage Examples:
+ *     <AgentReminderModal isOpen={true} onClose={() => {}} symbol="AAPL" />
+ *
+ * Key Functions:
+ *     - AgentReminderModal() - Functional component rendering the UI and the current symbol command
+ */
 import { X, Terminal, ExternalLink } from 'lucide-react';
 
 interface Props {

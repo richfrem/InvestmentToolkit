@@ -1,19 +1,23 @@
 #!/usr/bin/env python3
 """
-QuestradeAPIClient.py
+QuestradeAPIClient.py (Python Utility)
 =====================================
 
 Purpose:
-    Client for interacting with the Questrade API, handling account discovery and position retrieval.
+    Low-level HTTP client for interacting with the Questrade API. 
+    Handles account discovery, position retrieval, and automatic OAuth2 token rotation.
 
-Layer: Retrieve
+Layer: Backend / Utils / API Client
 
-Usage:
-    Imported by QuestradeDataEngine.py.
+Usage Examples:
+    token_manager = QuestradeTokenManager(cache_dir="path/to/cache")
+    client = QuestradeAPIClient(token_manager)
+    positions = client.get_all_positions()
 
-Related:
-    - QuestradeTokenManager.py
-    - QuestradeDataEngine.py
+Key Functions:
+    - get_all_positions() - Discovers all linked accounts and aggregates every holding into a unified list
+    - get_all_balances() - Aggregates cash balances (CAD/USD) across all brokerage accounts
+    - refresh_tokens() - Internal utility for rotating the refresh token via the Questrade OAuth2 endpoint
 """
 
 import requests

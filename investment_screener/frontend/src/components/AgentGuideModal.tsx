@@ -1,3 +1,19 @@
+/**
+ * AgentGuideModal.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Modal that displays the Agent Quick Reference guide for CLI commands and workflows.
+ *
+ * Layer: Frontend / UI / Modals
+ *
+ * Usage Examples:
+ *     <AgentGuideModal onClose={() => {}} />
+ *
+ * Key Functions:
+ *     - fetchAgentGuide() - Async API call to retrieve the markdown guide from the toolkit-manager plugin
+ *     - handler() - Local keyboard event listener for the Escape key to close the modal
+ */
 import { useEffect, useState } from 'react';
 import { X, Terminal, Loader2 } from 'lucide-react';
 import { fetchAgentGuide } from '../services/api';

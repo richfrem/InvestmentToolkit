@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
 """
-fetch_portfolio_heatmap.py - Fetches portfolio data for treemap visualization.
+fetch_portfolio_heatmap.py (Python Service)
+=====================================
 
-Accepts items with shares to calculate actual portfolio values.
-Cached (15 min) for yfinance data. Parallel pre-fetch on first load.
+Purpose:
+    Retrieves and aggregates portfolio data for treemap and sector-based visualizations.
+    Performs parallel pre-fetching of yfinance data and historical prices for rapid rendering.
+    Supports real-time price injection via TradingView Desktop (optional).
 
-Usage:
-    python3 fetch_portfolio_heatmap.py '[{"symbol": "AAPL", "shares": 100}, ...]'
+Layer: Backend / Python Services / Data Aggregation
+
+Usage Examples:
+    python3 fetch_portfolio_heatmap.py '[{"symbol": "AAPL", "shares": 100}, {"symbol": "MSFT", "shares": 50}]'
+
+Key Functions:
+    - fetch_portfolio_data() - Primary orchestrator that manages parallel pre-fetching and result normalization
+    - prefetch_info() / prefetch_history() - Utilizes ThreadPoolExecutor for high-concurrency data retrieval
+    - _fetch_one() - Atomically fetches and caches yfinance info for a single symbol
 """
 
 import sys

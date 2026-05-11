@@ -1,3 +1,18 @@
+/**
+ * Settings.tsx (React Page)
+ * =====================================
+ *
+ * Purpose:
+ *     Global configuration page for managing application preferences and toolkit settings.
+ *
+ * Layer: Frontend / Pages
+ *
+ * Usage Examples:
+ *     <Settings />
+ *
+ * Key Functions:
+ *     - Settings() - Placeholder for future application-wide configuration logic and UI
+ */
 export default function Settings() {
     return (
         <div className="space-y-6">

@@ -1,3 +1,20 @@
+/**
+ * MetricsGrid.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Dashboard grid of key financial metrics (P/S, FCF Yield, etc.) for a specific ticker.
+ *
+ * Layer: Frontend / UI / Components
+ *
+ * Usage Examples:
+ *     <MetricsGrid stockData={apiResponse.data} />
+ *
+ * Key Functions:
+ *     - formatMargin() - Converts margin decimal values to formatted percentage strings
+ *     - getMarginValue() - Normalizes margin values to a 0-100 scale for visual components
+ *     - getOpMarginColor() - Determines conditional formatting for operating margin thresholds
+ */
 import type { StockData } from '../services/api';
 import { AlertTriangle, TrendingUp, DollarSign, Percent, Activity, PieChart, Calculator, BarChart3, Target } from 'lucide-react';
 import { HelpTrigger } from './HelpModal';

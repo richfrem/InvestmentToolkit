@@ -1,3 +1,20 @@
+/**
+ * PortfolioTable.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Interactive table for viewing and sorting portfolio positions with live pricing and drift metrics.
+ *
+ * Layer: Frontend / UI / Components
+ *
+ * Usage Examples:
+ *     <PortfolioTable />
+ *
+ * Key Functions:
+ *     - startResize() - Column resizing interaction logic
+ *     - fetchPortfolioData() - Retrieves holdings and joins with latest AI projections
+ *     - stocksWithPct (memo) - Calculates portfolio weighting and drift against target
+ */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchAllProjections } from '../services/api';

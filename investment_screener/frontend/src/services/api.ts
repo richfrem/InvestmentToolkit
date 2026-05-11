@@ -1,3 +1,23 @@
+/**
+ * api.ts (TypeScript Service)
+ * =====================================
+ *
+ * Purpose:
+ *     Central API client for interacting with the Node.js backend. Handles data fetching for stocks, portfolio summaries,
+ *     Questrade synchronization, and DCF projections.
+ *
+ * Layer: Frontend / Services / API
+ *
+ * Usage Examples:
+ *     import { fetchStockData } from './services/api';
+ *     const data = await fetchStockData('AAPL');
+ *
+ * Key Functions:
+ *     - fetchStockData() - Retrieves comprehensive financial and profile data for a specific ticker
+ *     - fetchPortfolioSummary() - Fetches account-level valuation metrics (USD/CAD) and YTD performance
+ *     - saveProjection() - Persists a versioned DCF projection object to the backend
+ *     - syncQuestrade() - Triggers the background brokerage sync process via the QuestradeDataEngine
+ */
 export interface StockData {
     symbol: string;
     price: number;

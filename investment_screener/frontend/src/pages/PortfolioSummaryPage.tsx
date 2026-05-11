@@ -1,3 +1,20 @@
+/**
+ * PortfolioSummaryPage.tsx (React Page)
+ * =====================================
+ *
+ * Purpose:
+ *     Executive overview of portfolio performance, including YTD returns, period-over-period changes (1D, 1W, 1M), and strategy allocation.
+ *
+ * Layer: Frontend / Pages
+ *
+ * Usage Examples:
+ *     <PortfolioSummaryPage />
+ *
+ * Key Functions:
+ *     - fetchPortfolioSummary() - Retrieves core valuation and currency data (Market Value, Book Value, FX Rate)
+ *     - fetchPortfolioPerformance() - Asynchronously fetches time-series performance metrics from the backend
+ *     - PeriodCard() - Sub-component for rendering standardized performance delta cards with conditional coloring
+ */
 import { useState, useEffect } from 'react';
 import {
     fetchPortfolioSummary,

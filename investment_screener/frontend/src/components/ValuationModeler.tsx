@@ -1,3 +1,20 @@
+/**
+ * ValuationModeler.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Complex interactive DCF modeler supporting dynamic scenarios and preset comparisons.
+ *
+ * Layer: Frontend / UI / Components
+ *
+ * Usage Examples:
+ *     <ValuationModeler symbol="AAPL" data={stockData} />
+ *
+ * Key Functions:
+ *     - calculateDCF() - Core mathematical logic for intrinsic value computation
+ *     - handleInputChange() - Debounced state updates for model inputs
+ *     - saveAsPreset() - Persists the current model configuration to local storage
+ */
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Save, RotateCcw, Info, X, AlertTriangle, Table2, SlidersHorizontal, ChevronUp, ChevronDown } from 'lucide-react';

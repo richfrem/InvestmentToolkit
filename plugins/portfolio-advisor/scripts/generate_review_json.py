@@ -1,17 +1,23 @@
 #!/usr/bin/env python3
 """
-generate_review_json.py — Generate a dated PortfolioAnalysisRecommendations.json
-from the current target-portfolio.json and live portfolio.json.
+generate_review_json.py (Python Service)
+=====================================
 
-The JSON is read by the Portfolio Analysis modal in the frontend.
+Purpose:
+    Generates a dated `PortfolioAnalysisRecommendations.json` by comparing the current thesis targets 
+    against live brokerage holdings. This JSON powers the Portfolio Analysis UI modal and 
+    tracks proposed, approved, and applied rebalancing actions.
 
-Usage (run from repo root):
-    python3 plugins/portfolio-advisor/scripts/generate_review_json.py [--date YYYY-MM-DD] [--dry-run]
+Layer: Backend / Python Services / Rebalancing
 
-Output:
-    PortfolioAnalysis/strategic-reviews/YYYY-MM-DD-PortfolioAnalysisRecommendations.json
+Usage Examples:
+    python3 generate_review_json.py --date 2026-05-11
+    python3 generate_review_json.py --dry-run
 
-Exit 0 = written. Exit 1 = error.
+Key Functions:
+    - generate() - Primary orchestrator that computes deltas, assigns action urgency, and structures the final JSON payload
+    - _urgency() - Logic for classifying rebalance actions into URGENT, NORMAL, or LOW priority based on delta magnitude and action type
+    - main() - CLI wrapper for persistence and interactive overwrite protection
 """
 
 import json

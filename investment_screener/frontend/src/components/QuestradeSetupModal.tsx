@@ -1,3 +1,19 @@
+/**
+ * QuestradeSetupModal.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Interactive setup guide for Questrade API token seeding and account synchronization.
+ *
+ * Layer: Frontend / UI / Modals
+ *
+ * Usage Examples:
+ *     <QuestradeSetupModal isOpen={true} onClose={() => {}} />
+ *
+ * Key Functions:
+ *     - seedQuestradeToken() - Initiates the OAuth exchange and token persistence
+ *     - syncQuestrade() - Triggers a background sync of accounts and positions
+ */
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { seedQuestradeToken, syncQuestrade } from '../services/api';

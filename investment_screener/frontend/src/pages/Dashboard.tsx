@@ -1,3 +1,20 @@
+/**
+ * Dashboard.tsx (React Page)
+ * =====================================
+ *
+ * Purpose:
+ *     The primary analytics hub for a selected stock, providing an overview of metrics, charts, and valuation modeling.
+ *
+ * Layer: Frontend / Pages
+ *
+ * Usage Examples:
+ *     <Dashboard />
+ *
+ * Key Functions:
+ *     - performSearch() - Orchestrates the full data fetching lifecycle for a ticker, including financials and AI thesis
+ *     - loadAIThesis() - Retrieves and synchronizes existing AI-generated projections and rationale from storage
+ *     - handleInputSubmit() - Updates the URL search parameters to trigger a new stock search
+ */
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { fetchStockData, type StockData, type ValuationResult, type Projection } from '../services/api';

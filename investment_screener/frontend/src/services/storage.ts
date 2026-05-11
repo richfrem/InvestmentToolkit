@@ -1,4 +1,23 @@
 
+/**
+ * storage.ts (TypeScript Service)
+ * =====================================
+ *
+ * Purpose:
+ *     Hybrid persistence layer that synchronizes local storage cache with the backend API.
+ *     Handles schema migrations (V1 to V1.1) and ensures eventual consistency for DCF projections.
+ *
+ * Layer: Frontend / Services / Storage
+ *
+ * Usage Examples:
+ *     import { storage } from './services/storage';
+ *     const projections = await storage.syncProjections('AAPL');
+ *
+ * Key Functions:
+ *     - syncProjections() - Performs a bi-directional sync between localStorage and the server, prioritizing server truth but preserving local-only USER data
+ *     - saveProjection() - Validates/repairs projection objects before performing a persistent write to the API and local cache
+ *     - migrateV1toV1_1() - Internal utility for upgrading legacy single-scenario projections to the modern weighted-scenario schema
+ */
 import {
     fetchProjections,
     saveProjection as apiSave,
