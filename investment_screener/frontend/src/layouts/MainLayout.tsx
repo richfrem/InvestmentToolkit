@@ -1,3 +1,18 @@
+/**
+ * MainLayout.tsx (React Layout)
+ * =====================================
+ *
+ * Purpose:
+ *     The primary structural shell of the application, providing a persistent sidebar and main content area.
+ *
+ * Layer: Frontend / Layouts
+ *
+ * Usage Examples:
+ *     <Route element={<MainLayout />}> ... </Route>
+ *
+ * Key Functions:
+ *     - MainLayout() - Root structural component that wraps child routes (via Outlet) with the application's global navigation
+ */
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 

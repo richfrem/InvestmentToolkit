@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
 """
-relabel_actions.py — Re-derive correct action verbs for a recommendations JSON
-by comparing actual portfolio holdings against recommended targets.
+relabel_actions.py (Python Service)
+=====================================
 
-Logic:
-  Not held + delta > 0                → INITIATE   (start new position)
-  Not held + delta <= 0               → WATCHLIST  (monitor, don't buy)
-  Held + actualPct < recommendedPct   → ACCUMULATE (add to existing)
-  Held + actualPct ≈ recommendedPct   → MAINTAIN   (within threshold)
-  Held + actualPct > recommendedPct   → TRIM       (reduce existing)
-  Held + action = EXIT (thesis break) → EXIT       (sell all)
+Purpose:
+    Drives the re-derivation of correct action verbs (INITIATE, ACCUMULATE, TRIM, etc.) for recommendation JSONs.
+    Compares live brokerage holdings against proposed targets to ensure actions reflect actual portfolio state.
 
-Usage:
-  python3 relabel_actions.py \
-    --recs PortfolioAnalysis/strategic-reviews/2026-05-02-PortfolioAnalysisRecommendations.json \
-    [--portfolio investment_screener/backend/data/portfolio.json] \
-    [--threshold 0.5] \
-    [--dry-run]
+Layer: Backend / Python Services / Rebalancing
+
+Usage Examples:
+    python3 relabel_actions.py --recs 2026-05-11-Recommendations.json --threshold 0.5
+
+Key Functions:
+    - assign_action() - Core logic for mapping weight deltas to specific investment action verbs
+    - main() - CLI orchestrator that computes actual weights and updates recommendation files in-place
 """
 
 import argparse

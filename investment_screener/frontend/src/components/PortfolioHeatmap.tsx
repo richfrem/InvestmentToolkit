@@ -12,8 +12,13 @@
  *     <PortfolioHeatmap />
  *
  * Key Functions:
- *     - fetchHeatmapData() - Pulls market data and configuration
- *     - renderTreemap() - D3-driven visualization logic
+ *     - refreshPrices() - Triggers backend price update and re-fetches data
+ *     - fetchHeatmapData() - Pulls current portfolio and generates heatmap metrics
+ *     - getTextColor() - Utility for WCAG-compliant text contrast
+ *     - getColorForChange() - Returns Finviz-style green/red shades for price action
+ *     - formatValue() - Formats dollar amounts (K/M suffixes)
+ *     - formatChange() - Formats percentages with +/- signs
+ *     - renderTreemap() - Core D3 logic for building the hierarchy and SVG nodes
  */
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';

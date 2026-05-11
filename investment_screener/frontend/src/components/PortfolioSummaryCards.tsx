@@ -1,3 +1,21 @@
+/**
+ * PortfolioSummaryCards.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Visual cards showing top-level portfolio performance (Total Value, YTD Change, etc.).
+ *
+ * Layer: Frontend / UI / Components
+ *
+ * Usage Examples:
+ *     <PortfolioSummaryCards data={summaryData} />
+ *
+ * Key Functions:
+ *     - formatCurrency() - Formats numeric values into $ or $M strings
+ *     - formatPct() - Formats numeric percentage values with +/- signs
+ *     - changeColor() - Utility to determine text color (emerald/red/slate) based on delta
+ *     - changeBgGlow() - Utility to apply shadow/glow effects based on performance
+ */
 import type { PortfolioSummary } from '../services/api';
 import { TrendingUp, TrendingDown, DollarSign, BarChart3, ArrowUpDown } from 'lucide-react';
 

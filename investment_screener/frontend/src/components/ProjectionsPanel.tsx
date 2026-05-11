@@ -1,3 +1,20 @@
+/**
+ * ProjectionsPanel.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Panel for viewing and editing DCF projection inputs and saving them as presets.
+ *
+ * Layer: Frontend / UI / Components
+ *
+ * Usage Examples:
+ *     <ProjectionsPanel ticker="AAPL" isOpen={true} onClose={() => {}} onLoad={(p) => {}} />
+ *
+ * Key Functions:
+ *     - loadProjections() - Retrieves saved projection scenarios from the local storage service
+ *     - handleDelete() - Triggers a confirmation dialog and deletes a specific projection from storage
+ *     - onLoad() - Propagates the selected projection back to the parent component (ValuationModeler)
+ */
 import { useState, useEffect } from 'react';
 import { X, Save, Trash2, RotateCcw } from 'lucide-react';
 import { storage } from '../services/storage';

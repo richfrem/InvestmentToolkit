@@ -1,3 +1,22 @@
+/**
+ * HelpModal.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Context-aware help system and modal for explaining financial metrics and toolkit features.
+ *
+ * Layer: Frontend / UI / Components
+ *
+ * Usage Examples:
+ *     <HelpModalProvider>
+ *         <HelpTrigger topicId="ruleOf40" />
+ *     </HelpModalProvider>
+ *
+ * Key Functions:
+ *     - openHelp() - Sets the active help topic and makes the modal visible
+ *     - PECalculator() - Interactive sub-component for dynamic P/E and target price calculations
+ *     - HelpTrigger() - A reusable button component (question mark icon) that triggers the help modal
+ */
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { HelpCircle, ExternalLink, X } from 'lucide-react';
 import { helpTopics, type HelpTopic } from './HelpContent';

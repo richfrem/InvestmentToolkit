@@ -1,3 +1,20 @@
+/**
+ * AnalysisContextBuilder.ts (TypeScript Service)
+ * =====================================
+ *
+ * Purpose:
+ *     Aggregates multi-source financial data into a unified context object for AI analysis.
+ *     Bridges the gap between raw Python financial data and LLM prompt engineering requirements.
+ *
+ * Layer: Backend / Services / Context
+ *
+ * Usage Examples:
+ *     const context = await analysisContextBuilder.buildStockContext('MSFT');
+ *
+ * Key Functions:
+ *     - buildStockContext() - Fetches live financials from the Python engine and formats them for the Valuation Assistant
+ *     - buildPortfolioContext() - (Placeholder) Future entry point for aggregating portfolio-wide thesis health data
+ */
 import { spawnPythonScript } from './bridge';
 
 interface StockContext {
@@ -6,11 +23,6 @@ interface StockContext {
     price: number;
     timestamp: string;
 }
-
-/**
- * Builds the context required for AI Analysis prompts.
- * Aggregates data from Python scripts (yfinance) and internal portfolio state.
- */
 class AnalysisContextBuilder {
 
     /**

@@ -1,3 +1,21 @@
+/**
+ * ScreenerTable.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     The primary data grid for the investment screener, featuring sorting, 
+ *     filtering, and high-density financial metrics.
+ *
+ * Layer: Frontend / UI / Components
+ *
+ * Usage Examples:
+ *     <ScreenerTable />
+ *
+ * Key Functions:
+ *     - fetchData() - Pulls all projections and portfolio holdings from the backend
+ *     - startResize() - Handles column width resizing logic
+ *     - rows (memo) - Computes sorted and filtered data for the grid
+ */
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown, BrainCircuit, ExternalLink, Activity } from 'lucide-react';

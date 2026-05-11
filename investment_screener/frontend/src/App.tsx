@@ -1,3 +1,18 @@
+/**
+ * App.tsx (React Root Component)
+ * =====================================
+ *
+ * Purpose:
+ *     The main application entry point defining the routing structure and global context providers.
+ *
+ * Layer: Frontend / Core
+ *
+ * Usage Examples:
+ *     ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+ *
+ * Key Functions:
+ *     - App() - Configures the React Router hierarchy and wraps the application in essential providers (HelpModalProvider)
+ */
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import Dashboard from './pages/Dashboard';

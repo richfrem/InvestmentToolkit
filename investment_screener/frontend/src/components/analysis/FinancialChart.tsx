@@ -1,3 +1,21 @@
+/**
+ * FinancialChart.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Dynamic multi-mode chart for visualizing historical and forecasted financial data (Revenue, NI, EPS, FCF).
+ *
+ * Layer: Frontend / UI / Components / Analysis
+ *
+ * Usage Examples:
+ *     <FinancialChart stockData={stockData} mode="revenue" />
+ *
+ * Key Functions:
+ *     - historicalData - Computed array of historical financial points aligned by year
+ *     - forecastData - Computed array of analyst forecast points with low/high range cones
+ *     - formatCurrency() - Formats numeric values into human-readable B/M strings
+ *     - FinancialChart() - Main render logic that switches between Recharts configurations based on the 'mode' prop
+ */
 import {
     ComposedChart,
     Bar,

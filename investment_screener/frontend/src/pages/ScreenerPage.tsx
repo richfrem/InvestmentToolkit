@@ -1,3 +1,18 @@
+/**
+ * ScreenerPage.tsx (React Page)
+ * =====================================
+ *
+ * Purpose:
+ *     The primary interface for the Portfolio Advisor, featuring deep-dive agent analyses and investment thesis management.
+ *
+ * Layer: Frontend / Pages
+ *
+ * Usage Examples:
+ *     <ScreenerPage />
+ *
+ * Key Functions:
+ *     - ScreenerPage() - Orchestrates the main layout for the Portfolio Advisor, including quick-access buttons for Thesis, Review, and Guide modals
+ */
 import { useState } from 'react';
 import ScreenerTable from '../components/ScreenerTable';
 import InvestmentThesisModal from '../components/InvestmentThesisModal';

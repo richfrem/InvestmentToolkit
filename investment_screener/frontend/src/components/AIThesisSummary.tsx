@@ -1,3 +1,22 @@
+/**
+ * AIThesisSummary.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Displays a summary of the AI-generated investment thesis with markdown support.
+ *
+ * Layer: Frontend / UI / Components
+ *
+ * Usage Examples:
+ *     <AIThesisSummary 
+ *         aiResult={result} 
+ *         onViewFullReport={() => {}} 
+ *         onClose={() => {}} 
+ *     />
+ *
+ * Key Functions:
+ *     - AIThesisSummary() - Functional component managing loading, error, and rendering of the AI rationale markdown
+ */
 import ReactMarkdown from 'react-markdown';
 import { BrainCircuit, FolderOpen, X, AlertTriangle, Loader2 } from 'lucide-react';
 

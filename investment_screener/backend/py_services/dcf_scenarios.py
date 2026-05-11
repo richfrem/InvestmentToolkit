@@ -1,40 +1,28 @@
 #!/usr/bin/env python3
 """
-DCF Scenario Calculator — InvestmentToolkit
-============================================
-Canonical calculation engine for 5-year DCF scenario valuations.
+dcf_scenarios.py (Python Service)
+=====================================
 
-Usage (from repo root):
-  # With raw financial data file + inline scenario JSON:
-  python3 investment_screener/backend/py_services/dcf_scenarios.py \\
-    --raw /tmp/PANW_raw.json \\
-    --scenarios /tmp/PANW_scenarios.json
+Purpose:
+    Canonical calculation engine for 5-year Discounted Cash Flow (DCF) scenario valuations.
+    Supports bear, base, and bull scenarios with probability weighting and structural validation.
 
-  # With explicit base params + inline scenario JSON:
-  python3 investment_screener/backend/py_services/dcf_scenarios.py \\
-    --ticker PANW \\
-    --revenue 9221500000 \\
-    --shares 811000000 \\
-    --scenarios /tmp/PANW_scenarios.json
+Layer: Backend / Python Services / Valuation Math
 
-  # Pipe scenarios via stdin:
-  echo '<scenarios_json>' | python3 ... --raw /tmp/PANW_raw.json --scenarios -
+Usage Examples:
+    # With raw financial data file + inline scenario JSON
+    python3 dcf_scenarios.py --raw AAPL_raw.json --scenarios AAPL_scenarios.json --pretty
 
-Scenario JSON schema (bear/base/bull each require):
-  {
-    "bear": {
-      "weight": 0.20,       // probability weight (bear+base+bull must sum to 1.0)
-      "growthRate": 11,     // 5-year revenue CAGR as a percentage (e.g. 11 = 11%)
-      "netMargin": 9,       // Year-5 net profit margin as a percentage (e.g. 9 = 9%)
-      "exitPE": 20,         // Terminal P/E multiple applied to Year-5 EPS
-      "qualityMultiplier":  // Moat/management quality adjustment (0.8–1.35)
-      "shareChange": -0.5   // Annual % change in share count (+dilution, -buyback)
-    },
-    "base": { ... },
-    "bull": { ... }
-  }
+    # With explicit base params
+    python3 dcf_scenarios.py --ticker MSFT --revenue 211000000000 --shares 7400000000 --scenarios MSFT_scenarios.json
 
-Output: JSON to stdout with all intermediate values + validation flags.
+    # Pipe scenarios via stdin
+    echo '<scenarios_json>' | python3 dcf_scenarios.py --raw AAPL_raw.json --scenarios -
+
+Key Functions:
+    - compute_scenario() - Calculates all derived 5-year values (EPS, Undiscounted Price, PV) for a single scenario
+    - validate_scenarios() - Enforces ordering constraints and probability weight sums to ensure model integrity
+    - run() - Primary orchestrator that merges scenario outputs into a single weighted fair value and determines the recommended action
 """
 
 import argparse

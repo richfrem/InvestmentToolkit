@@ -1,3 +1,19 @@
+/**
+ * PortfolioBreakdown.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Table displaying total market value, book value, and unrealized gains in USD and CAD.
+ *
+ * Layer: Frontend / UI / Components
+ *
+ * Usage Examples:
+ *     <PortfolioBreakdown data={summaryData} />
+ *
+ * Key Functions:
+ *     - formatCurrency() - Formats numeric values as localized currency strings with 2 decimal places
+ *     - PortfolioBreakdown() - Functional component that maps summary metrics into a structured comparison table
+ */
 import type { PortfolioSummary } from '../services/api';
 
 interface Props {

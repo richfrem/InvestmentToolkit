@@ -1,3 +1,20 @@
+/**
+ * PresetSelectorModal.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Modal for managing and selecting DCF projection presets (User, Advisor, Agent).
+ *
+ * Layer: Frontend / UI / Modals
+ *
+ * Usage Examples:
+ *     <PresetSelectorModal symbol="AAPL" onLoad={(p) => {}} onClose={() => {}} />
+ *
+ * Key Functions:
+ *     - loadPresets() - Asynchronously fetches and merges user, AI, and system consensus projections
+ *     - handleSetDefault() - Toggles the default status of a specific projection for the ticker
+ *     - StarButton() - Reusable UI component for marking a preset as the active default
+ */
 import React, { useEffect, useState } from 'react';
 import { X, TrendingUp, BrainCircuit, User, Trash2, Globe, FileText, Star, BookOpen } from 'lucide-react';
 import { fetchProjections } from '../services/api';

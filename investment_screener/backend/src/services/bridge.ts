@@ -1,13 +1,23 @@
+/**
+ * bridge.ts (TypeScript Service)
+ * =====================================
+ *
+ * Purpose:
+ *     Execution bridge for spawning and managing Python processes from the Node.js backend.
+ *     Handles script location resolution, timeout management, and JSON output parsing.
+ *
+ * Layer: Backend / Services / Bridge
+ *
+ * Usage Examples:
+ *     const data = await spawnPythonScript('fetch_financials.py', ['AAPL']);
+ *
+ * Key Functions:
+ *     - spawnPythonScript() - Spawns a child process for a given Python script and returns parsed JSON results or handles timeouts/errors
+ */
 import { spawn } from 'child_process';
 import path from 'path';
 
 const PYTHON_TIMEOUT_MS = 90_000; // 90 second timeout — cold heatmap load fetches ~32 tickers in parallel (~10-15s)
-
-/**
- * Spawns a Python script and returns the JSON output.
- * @param scriptName Name of the script in py_services folder (e.g., 'fetch_financials.py')
- * @param args Array of arguments to pass to the script
- */
 export const spawnPythonScript = async (scriptName: string, args: string[]): Promise<any> => {
     return new Promise((resolve, reject) => {
         const scriptPath = path.resolve(process.cwd(), 'py_services', scriptName);

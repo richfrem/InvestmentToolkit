@@ -1,8 +1,26 @@
+/**
+ * ProjectionService.ts (TypeScript Service)
+ * =====================================
+ *
+ * Purpose:
+ *     Manages the lifecycle of DCF projections, including validation, versioning, and file-system persistence.
+ *     Implements atomic writes and file locking to ensure data integrity during concurrent edits.
+ *
+ * Layer: Backend / Services / Data Persistence
+ *
+ * Usage Examples:
+ *     await projectionService.saveProjection(projectionData);
+ *     const list = await projectionService.getProjections('AAPL');
+ *
+ * Key Functions:
+ *     - saveProjection() - Validates incoming data against Zod schemas, manages version increments, and performs atomic writes
+ *     - getProjections() - Retrieves all stored projection versions for a specific ticker symbol
+ *     - getAllProjections() - Aggregates projections across all tickers for portfolio-wide analysis
+ */
 import fs from 'fs';
 import path from 'path';
 import { lock } from 'proper-lockfile';
 import { Projection, ProjectionSchema } from '../utils/zod-schemas';
-
 const PROJECTIONS_DIR = path.resolve(__dirname, '../../data/projections');
 
 // Ensure directory exists

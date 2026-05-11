@@ -1,25 +1,31 @@
 #!/usr/bin/env python3
 """
-apply_catalyst.py — Adjust DCF scenario probability weights for a material catalyst.
+apply_catalyst.py (Python Service)
+=====================================
 
-Shifts bear/bull weights, recomputes the weighted fair value from existing
-per-scenario prices, then updates the projection JSON + optionally agentRationale.
+Purpose:
+    Adjusts DCF scenario probability weights based on material market catalysts (e.g., contract wins, earnings beats).
+    Recalculates weighted fair values and updates projection JSON files and thesis rationale.
 
-Usage (run from repo root):
-    python3 plugins/portfolio-advisor/scripts/apply_catalyst.py \\
-        --ticker CRWV \\
-        --type major_contract \\
-        --note "Meta $21B deal expansion + $8.5B IG financing" \\
-        --write
+Layer: Backend / Python Services / Valuation Adjustment
 
-Catalyst type presets (bull shift / bear shift in percentage points):
-    design_win        +10pp bull / -5pp bear
-    major_contract    +8pp bull  / -5pp bear
-    funding_secured   +7pp bull  / -4pp bear
-    partnership       +5pp bull  / -3pp bear
-    earnings_beat     +5pp bull  / -3pp bear
-    thesis_breaker   -10pp bull  / +15pp bear
-    custom            requires --shift-bull and --shift-bear
+Usage Examples:
+    # Major contract win (shifts Bull +8pp, Bear -5pp)
+    python3 apply_catalyst.py --ticker MSFT --type major_contract --note "Cloud expansion deal" --write
+
+    # Earnings beat (shifts Bull +5pp, Bear -3pp)
+    python3 apply_catalyst.py --ticker NVDA --type earnings_beat --note "H100 demand acceleration" --write
+
+    # Thesis breaker (shifts Bull -10pp, Bear +15pp)
+    python3 apply_catalyst.py --ticker INTC --type thesis_breaker --note "GAA node delay to 2027" --write
+
+    # Stamp sweep date only (no catalyst found)
+    python3 apply_catalyst.py --ticker AAPL --record-sweep
+
+Key Functions:
+    - _shift_weights() - Implements the weight shift logic (Bull/Bear shifts with Base absorption)
+    - _compute_fv() - Calculates the new weighted fair value from scenario prices
+    - main() - CLI orchestrator for applying catalysts and persisting changes to data storage
 """
 
 import argparse

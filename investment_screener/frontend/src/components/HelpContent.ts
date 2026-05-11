@@ -1,5 +1,20 @@
-// Help content definitions for the investment screener
-// Each key is a topic ID that can be referenced via HelpTrigger
+/**
+ * HelpContent.ts (TypeScript Service)
+ * =====================================
+ *
+ * Purpose:
+ *     Central dictionary of financial terms, formulas, and educational content used in the Help Modal.
+ *
+ * Layer: Frontend / Services / Data
+ *
+ * Usage Examples:
+ *     import { helpTopics } from './HelpContent';
+ *     const topic = helpTopics['ruleOf40'];
+ *
+ * Key Functions:
+ *     - HelpTopic - Interface defining the structure of educational content (title, summary, explanation, formula, example)
+ *     - helpTopics - Constant object mapping topic IDs to their respective definitions
+ */
 
 export interface HelpTopic {
     title: string;

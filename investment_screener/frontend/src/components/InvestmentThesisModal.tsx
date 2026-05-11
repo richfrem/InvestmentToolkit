@@ -1,3 +1,18 @@
+/**
+ * InvestmentThesisModal.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Modal that displays the canonical Investment Thesis document (markdown).
+ *
+ * Layer: Frontend / UI / Modals
+ *
+ * Usage Examples:
+ *     <InvestmentThesisModal onClose={() => {}} />
+ *
+ * Key Functions:
+ *     - fetchInvestmentThesis() - Async call to retrieve the investment_thesis.md content
+ */
 import { useEffect, useState } from 'react';
 import { X, BookOpen, Loader2 } from 'lucide-react';
 import { fetchInvestmentThesis } from '../services/api';

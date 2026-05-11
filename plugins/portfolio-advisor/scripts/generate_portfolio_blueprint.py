@@ -1,17 +1,29 @@
 #!/usr/bin/env python3
 """
-generate_portfolio_blueprint.py — Generate Section IV: Portfolio Blueprint
-for investment_thesis.md by combining target-portfolio.json (thesis targets)
-with portfolio.json (actual broker holdings).
+generate_portfolio_blueprint.py (Python Service)
+=====================================
 
-Groups holdings by subStrategyId. Shows actual %, target %, P&L, and
-thesis-for-inclusion. Writes the section directly into investment_thesis.md
-(replaces everything between the Section IV header and the next ## header).
+Purpose:
+    Generates the "Portfolio Blueprint" section (Section IV) for the investment thesis document.
+    Synthesizes target-portfolio.json (thesis targets) with portfolio.json (live holdings) to 
+    produce an enriched, data-driven Markdown table grouped by sub-strategy.
 
-Usage:
-  python3 generate_portfolio_blueprint.py              # dry-run, print to stdout
-  python3 generate_portfolio_blueprint.py --write      # update investment_thesis.md in place
-  python3 generate_portfolio_blueprint.py --write --thesis-id target-portfolio
+Layer: Backend / Python Services / Report Generation
+
+Usage Examples:
+    # Preview section in stdout (dry-run)
+    python3 generate_portfolio_blueprint.py
+
+    # Update investment_thesis.md in-place
+    python3 generate_portfolio_blueprint.py --write
+
+    # Specify a custom thesis JSON file
+    python3 generate_portfolio_blueprint.py --write --thesis-json data/theses/target-portfolio.json
+
+Key Functions:
+    - generate_section() - Constructs the primary Section IV Markdown content with live performance metrics
+    - update_section_tables() - Rigorously scans the entire thesis document to enrich legacy tables with live data
+    - build_actual_map() / build_thesis_map() - Normalize disparate data sources into unified maps for aggregation
 """
 
 import argparse

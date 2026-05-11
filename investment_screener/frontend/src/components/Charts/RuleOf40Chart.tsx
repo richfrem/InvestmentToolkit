@@ -1,3 +1,18 @@
+/**
+ * RuleOf40Chart.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Visualizes the Rule of 40 trend by combining revenue growth (bars) and EBITDA margin (line).
+ *
+ * Layer: Frontend / UI / Components / Charts
+ *
+ * Usage Examples:
+ *     <RuleOf40Chart stockData={stockData} />
+ *
+ * Key Functions:
+ *     - RuleOf40Chart() - Composes a dual-axis chart (ComposedChart) showing the interaction between growth and profitability
+ */
 import {
     ComposedChart,
     Bar,

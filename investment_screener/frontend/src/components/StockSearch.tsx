@@ -1,3 +1,18 @@
+/**
+ * StockSearch.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Simple search input for looking up stocks by ticker symbol.
+ *
+ * Layer: Frontend / UI / Components
+ *
+ * Usage Examples:
+ *     <StockSearch onSearch={(ticker) => console.log(ticker)} isLoading={false} />
+ *
+ * Key Functions:
+ *     - handleSubmit() - Prevents default form submission and triggers the search callback with a sanitized uppercase ticker
+ */
 import { Search } from 'lucide-react';
 import { useState } from 'react';
 
