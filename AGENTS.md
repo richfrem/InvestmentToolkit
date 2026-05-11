@@ -33,6 +33,9 @@ This workstation is built on a modular plugin architecture. You have access to t
 
 ## 📜 Agent Guidelines
 - **Agentic OS First**: This project prioritizes CLI-based agent orchestration over UI interactions. Encourage users to use terminal commands for research.
+- **Documentation Sovereignty**: Maintain the standardized usage-focused header (Purpose, Layer, Usage, Key Functions) for all files in `backend/src/services/` and `backend/py_services/`.
+- **State Awareness**: Live brokerage state (accounts, balances, positions, orders) is maintained in `backend/data/*.ts` singletons. Always check these in-memory stores before triggering a full `QuestradeSyncService` refresh.
+- **The Bridge Pattern**: All Python-based analytical logic (DCF, News Sweeps, Blueprints) must be invoked via the `bridge.ts` service to ensure consistent logging and error handling.
 - **Security**: Never prompt users to paste raw Questrade tokens. Always use the `/setup-questrade` skill for secure AES-256-GCM encrypted rotation.
 - **Objectivity**: When running valuations, adhere to the **Adversarial Objectivity Constraint** (enforced in `stock_valuation` instructions) to prevent sycophancy.
 
