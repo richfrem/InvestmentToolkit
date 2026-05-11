@@ -109,11 +109,13 @@ A professional-grade brokerage sync engine featuring:
 | Layer | Technology |
 |-------|-----------|
 | Frontend | React 19, Vite, Tailwind CSS 4.0 |
-| Backend | Node.js (Express), Python 3.11 bridge |
-| Market data | `yfinance` (historical + fundamentals) + TradingView Premium (real-time current price) |
-| Portfolio data | Questrade API (positions, cost basis) |
+| Orchestration | Node.js (Express), TypeScript Services |
+| Analytical Engine | Python 3.11 Utility Layer (yfinance, pandas) |
+| State Management | In-memory TypeScript Data Stores (Singletons) |
+| Market Data | `yfinance` (historical + fundamentals) + TradingView Premium (real-time current price) |
+| AI Agents | Modular Plugin Architecture + Exploration Cycle workflow |
+| Documentation | AI-Native usage-focused headers (Standardized across Backend) |
 | Schema | Zod validation — `lastActualPS` nullable-safe for pre-revenue stocks |
-| AI agents | Modular Plugin Architecture + Exploration Cycle workflow |
 
 ---
 
