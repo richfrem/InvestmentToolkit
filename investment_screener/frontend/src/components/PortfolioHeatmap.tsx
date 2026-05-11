@@ -1,3 +1,20 @@
+/**
+ * PortfolioHeatmap.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Interactive treemap visualization of the investment portfolio, supporting
+ *     grouping by Sector, Thesis Pillar, and Strategy.
+ *
+ * Layer: Frontend / UI / Components
+ *
+ * Usage Examples:
+ *     <PortfolioHeatmap />
+ *
+ * Key Functions:
+ *     - fetchHeatmapData() - Pulls market data and configuration
+ *     - renderTreemap() - D3-driven visualization logic
+ */
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as d3 from 'd3';
@@ -29,6 +46,7 @@ interface HeatmapResponse {
 
 interface TreemapNode {
     name: string;
+    id?: string; // Add id to identify pillar/strategy for coloring
     value?: number;
     change_pct?: number;
     symbol?: string;
@@ -37,14 +55,57 @@ interface TreemapNode {
     children?: TreemapNode[];
 }
 
+const PILLAR_COLORS: Record<string, string> = {
+    compute:   '#3b82f6',
+    titans:    '#8b5cf6',
+    sovfin:    '#f59e0b',
+    datainfra: '#06b6d4',
+    power:     '#10b981',
+    security:  '#ef4444',
+    applied:   '#f97316',
+    cash:      '#eab308',
+    quantum:   '#a78bfa',
+    biohealth: '#ec4899',
+    other:     '#6b7280',
+};
+
+const SECTOR_COLORS: Record<string, string> = {
+    Technology:               '#3b82f6',
+    'Communication Services': '#8b5cf6',
+    Energy:                   '#10b981',
+    Utilities:                '#34d399',
+    'Financial Services':     '#f59e0b',
+    Industrials:              '#fb923c',
+    'Consumer Cyclical':      '#f97316',
+    'Consumer Defensive':     '#a78bfa',
+    Healthcare:               '#ec4899',
+    'Real Estate':            '#06b6d4',
+    'Basic Materials':        '#84cc16',
+    CASH:                     '#eab308',
+    Other:                    '#6b7280',
+};
+
+const SUB_STRATEGY_COLORS: Record<string, string> = {
+    'sa-asi-race':       '#3b82f6',
+    'cybersecurity':     '#ef4444',
+    'sovereign-finance': '#f59e0b',
+    'quality-saas':      '#8b5cf6',
+    'frontier-bets':     '#f97316',
+    'quantum-compute':   '#a78bfa',
+    'cash':              '#eab308',
+    'other':             '#6b7280',
+};
+
 export default function PortfolioHeatmap() {
     const navigate = useNavigate();
     const [data, setData] = useState<HeatmapResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [groupBy, setGroupBy] = useState<'sector' | 'strategy'>('sector');
+    const [groupBy, setGroupBy] = useState<'sector' | 'strategy' | 'pillar'>('sector');
     const [strategyMap, setStrategyMap] = useState<Record<string, string>>({});
+    const [pillarMap, setPillarMap] = useState<Record<string, string>>({});
+    const [pillarNames, setPillarNames] = useState<Record<string, string>>({});
     const [priceSource, setPriceSource] = useState<string | null>(null);
     const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
     const svgRef = useRef<SVGSVGElement>(null);
@@ -52,22 +113,36 @@ export default function PortfolioHeatmap() {
 
     useEffect(() => {
         fetchHeatmapData();
-        // Fetch strategy assignments from canonical all-holdings endpoint
-        fetch('/api/screener/all-holdings')
-            .then(r => r.ok ? r.json() : [])
-            .then((holdings: any[]) => {
-                const map: Record<string, string> = {};
-                for (const h of holdings) map[h.ticker] = h.subStrategyId ?? 'Other';
-                setStrategyMap(map);
-            })
-            .catch(() => {});
+        // Fetch strategy and pillar assignments
+        Promise.all([
+            fetch('/api/screener/all-holdings').then(r => r.ok ? r.json() : []),
+            fetch('/api/theses/pillars').then(r => r.ok ? r.json() : [])
+        ]).then(([holdings, pillars]) => {
+            const sMap: Record<string, string> = {};
+            const pMap: Record<string, string> = {};
+            const pNames: Record<string, string> = {};
+
+            for (const h of holdings) {
+                sMap[h.ticker] = h.subStrategyId ?? 'Other';
+                pMap[h.ticker] = h.pillarId ?? 'other';
+            }
+            for (const p of pillars) {
+                pNames[p.id] = p.name;
+            }
+            pNames['other'] = 'Other';
+            pNames['cash'] = 'Cash';
+
+            setStrategyMap(sMap);
+            setPillarMap(pMap);
+            setPillarNames(pNames);
+        }).catch(() => {});
     }, []);
 
     useEffect(() => {
         if (data && svgRef.current && containerRef.current) {
             renderTreemap();
         }
-    }, [data, groupBy, strategyMap]);
+    }, [data, groupBy, strategyMap, pillarMap, pillarNames]);
 
     useEffect(() => {
         const handleResize = () => {
@@ -196,17 +271,32 @@ export default function PortfolioHeatmap() {
 
         const hierarchyData: TreemapNode = {
             name: 'Portfolio',
-            children: groupBy === 'strategy'
-                ? (() => {
-                    // Group stocks by subStrategyId from allHoldings
+            children: groupBy === 'sector'
+                ? Object.values(data.sectors).map(sector => ({
+                    name: sector.name,
+                    id: sector.name,
+                    children: sector.stocks.map(stock => ({
+                        name: stock.symbol,
+                        symbol: stock.symbol,
+                        value: stock.position_value,
+                        change_pct: stock.change_pct,
+                        shares: stock.shares,
+                        price: stock.price
+                    }))
+                }))
+                : (() => {
+                    const mapToUse = groupBy === 'strategy' ? strategyMap : pillarMap;
+                    const nameMap = groupBy === 'strategy' ? null : pillarNames;
+                    
                     const groups: Record<string, StockHeatmapData[]> = {};
                     for (const stock of data.stocks) {
-                        const grp = strategyMap[stock.symbol] ?? 'Other';
-                        if (!groups[grp]) groups[grp] = [];
-                        groups[grp].push(stock);
+                        const grpId = mapToUse[stock.symbol] ?? (groupBy === 'strategy' ? 'Other' : 'other');
+                        if (!groups[grpId]) groups[grpId] = [];
+                        groups[grpId].push(stock);
                     }
-                    return Object.entries(groups).map(([grpName, stocks]) => ({
-                        name: grpName,
+                    return Object.entries(groups).map(([grpId, stocks]) => ({
+                        name: nameMap ? (nameMap[grpId] ?? grpId) : grpId,
+                        id: grpId,
                         children: stocks.map(stock => ({
                             name: stock.symbol,
                             symbol: stock.symbol,
@@ -217,17 +307,6 @@ export default function PortfolioHeatmap() {
                         }))
                     }));
                 })()
-                : Object.values(data.sectors).map(sector => ({
-                    name: sector.name,
-                    children: sector.stocks.map(stock => ({
-                        name: stock.symbol,
-                        symbol: stock.symbol,
-                        value: stock.position_value,
-                        change_pct: stock.change_pct,
-                        shares: stock.shares,
-                        price: stock.price
-                    }))
-                }))
         };
 
         const root = d3.hierarchy(hierarchyData)
@@ -253,14 +332,42 @@ export default function PortfolioHeatmap() {
             .join('g')
             .attr('class', 'sector');
 
+        // Sector header background for better visibility
+        sectors.append('rect')
+            .attr('x', d => (d as any).x0)
+            .attr('y', d => (d as any).y0)
+            .attr('width', d => (d as any).x1 - (d as any).x0)
+            .attr('height', 18)
+            .attr('fill', d => {
+                const id = d.data.id || d.data.name;
+                if (groupBy === 'pillar') return PILLAR_COLORS[id] || 'rgba(255,255,255,0.05)';
+                if (groupBy === 'sector') return SECTOR_COLORS[id] || 'rgba(255,255,255,0.05)';
+                if (groupBy === 'strategy') return SUB_STRATEGY_COLORS[id] || 'rgba(255,255,255,0.05)';
+                return 'rgba(255,255,255,0.05)';
+            })
+            .attr('opacity', 0.15);
+
         // Sector label - Finviz style with arrow
         sectors.append('text')
             .attr('x', d => (d as any).x0 + 4)
             .attr('y', d => (d as any).y0 + 12)
-            .text(d => `${d.data.name} ›`)
-            .attr('fill', 'rgba(255,255,255,0.6)')
+            .text(d => {
+                const name = d.data.name;
+                // Simple truncate if too long for the header
+                const width = (d as any).x1 - (d as any).x0;
+                if (width < 60) return '';
+                if (name.length * 6 > width) return name.substring(0, Math.floor(width / 7)) + '...';
+                return `${name} ›`;
+            })
+            .attr('fill', d => {
+                const id = d.data.id || d.data.name;
+                if (groupBy === 'pillar') return PILLAR_COLORS[id] || 'rgba(255,255,255,0.6)';
+                if (groupBy === 'sector') return SECTOR_COLORS[id] || 'rgba(255,255,255,0.6)';
+                if (groupBy === 'strategy') return SUB_STRATEGY_COLORS[id] || 'rgba(255,255,255,0.6)';
+                return 'rgba(255,255,255,0.6)';
+            })
             .attr('font-size', '10px')
-            .attr('font-weight', '500');
+            .attr('font-weight', '600');
 
         // Stock cells - clean Finviz style
         const leaves = svg.selectAll('g.leaf')
@@ -427,6 +534,10 @@ export default function PortfolioHeatmap() {
                             onClick={() => setGroupBy('sector')}
                             className={`px-2.5 py-1 transition-colors ${groupBy === 'sector' ? 'bg-zinc-600 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
                         >Sector</button>
+                        <button
+                            onClick={() => setGroupBy('pillar')}
+                            className={`px-2.5 py-1 transition-colors ${groupBy === 'pillar' ? 'bg-zinc-600 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
+                        >Pillar</button>
                         <button
                             onClick={() => setGroupBy('strategy')}
                             className={`px-2.5 py-1 transition-colors ${groupBy === 'strategy' ? 'bg-zinc-600 text-white' : 'text-zinc-400 hover:text-zinc-200'}`}
