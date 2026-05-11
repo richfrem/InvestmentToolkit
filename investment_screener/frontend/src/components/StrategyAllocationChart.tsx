@@ -1,3 +1,20 @@
+/**
+ * StrategyAllocationChart.tsx (React Component)
+ * =====================================
+ *
+ * Purpose:
+ *     Donut chart visualization of portfolio allocation across pillars, 
+ *     sub-strategies, and sectors. Supports drill-down into holdings.
+ *
+ * Layer: Frontend / UI / Components
+ *
+ * Usage Examples:
+ *     <StrategyAllocationChart data={allocationData} />
+ *
+ * Key Functions:
+ *     - renderDonut() - D3-driven donut chart rendering
+ *     - handleGroupingChange() - Logic for re-calculating arc segments
+ */
 import { useEffect, useRef, useState, useMemo } from 'react';
 import * as d3 from 'd3';
 import type { StrategyAllocationItem, StrategyHolding } from '../services/api';
