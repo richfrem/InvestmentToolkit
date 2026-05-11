@@ -621,6 +621,19 @@ app.get('/api/theses', async (_req, res) => {
     res.json(theses);
 });
 
+app.get('/api/theses/pillars', async (_req, res) => {
+    try {
+        if (!fs.existsSync(THESIS_FILE)) {
+            res.json([]);
+            return;
+        }
+        const thesis = JSON.parse(fs.readFileSync(THESIS_FILE, 'utf-8'));
+        res.json(thesis.pillars ?? []);
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.get('/api/theses/:id', async (req, res) => {
     const { id } = req.params;
     const thesis = await thesisService.getThesis(id);
@@ -815,6 +828,7 @@ app.get('/api/screener/all-holdings', async (_req, res) => {
             return {
                 ticker: h.ticker,
                 name: h.name ?? h.ticker,
+                pillarId: h.pillarId ?? 'other',
                 subStrategyId: h.subStrategyId ?? null,
                 role: h.role ?? null,
                 targetPct: h.targetWeight ?? null,
@@ -830,10 +844,12 @@ app.get('/api/screener/all-holdings', async (_req, res) => {
         const thesisTickers = new Set(thesisHoldings.map((h: any) => h.ticker));
         for (const [ticker, data] of Object.entries(actualMap) as [string, { pct: number; price: number }][]) {
             if (!thesisTickers.has(ticker)) {
+                const isCash = ticker === 'USD_CASH' || (ticker as string).includes('CASH');
                 result.push({
                     ticker,
                     name: ticker === 'USD_CASH' ? 'US Dollar Cash' : ticker,
-                    subStrategyId: 'cash',
+                    pillarId: isCash ? 'cash' : 'other',
+                    subStrategyId: isCash ? 'cash' : 'other',
                     role: 'untracked',
                     targetPct: null,
                     actualPct: data.pct,
