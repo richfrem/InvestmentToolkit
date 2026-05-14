@@ -1,0 +1,145 @@
+{
+  "cik": "0002045724",
+  "fund": "Situational Awareness LP",
+  "filing_date": "2025-05-14",
+  "period_of_report": "2025-03-31",
+  "accession": "0002045724-25-000002",
+  "source_xml": "SALP13fq1.xml",
+  "total_value_usd": 1005567727,
+  "position_count": 12,
+  "fetched_at": "2026-05-14T15:12:43.645265+00:00",
+  "holdings": [
+    {
+      "name": "Intel Corp",
+      "cusip": "458140100",
+      "title_class": "COM",
+      "value_usd": 459591354,
+      "shares": 20237400,
+      "type": "SH",
+      "put_call": "Call",
+      "discretion": "SOLE",
+      "value_pct": 45.7
+    },
+    {
+      "name": "Broadcom Inc",
+      "cusip": "11135F101",
+      "title_class": "COM",
+      "value_usd": 117201000,
+      "shares": 700000,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 11.66
+    },
+    {
+      "name": "Onto Innovation Inc",
+      "cusip": "683344105",
+      "title_class": "COM",
+      "value_usd": 71192241,
+      "shares": 586717,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 7.08
+    },
+    {
+      "name": "Vistra Corp",
+      "cusip": "92840M102",
+      "title_class": "COM",
+      "value_usd": 61755354,
+      "shares": 525846,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 6.14
+    },
+    {
+      "name": "Modine Mfg Co",
+      "cusip": "607828100",
+      "title_class": "COM",
+      "value_usd": 55016242,
+      "shares": 716824,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 5.47
+    },
+    {
+      "name": "EQT Corp",
+      "cusip": "26884L109",
+      "title_class": "COM",
+      "value_usd": 52863535,
+      "shares": 989398,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 5.26
+    },
+    {
+      "name": "CoreWeave Inc",
+      "cusip": "21873S108",
+      "title_class": "COM CL A",
+      "value_usd": 45423000,
+      "shares": 1225000,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 4.52
+    },
+    {
+      "name": "Constellation Energy Corp",
+      "cusip": "21037T109",
+      "title_class": "COM",
+      "value_usd": 36978942,
+      "shares": 183400,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 3.68
+    },
+    {
+      "name": "Core Scientific Inc New",
+      "cusip": "21874A106",
+      "title_class": "COM",
+      "value_usd": 32736225,
+      "shares": 4521578,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 3.26
+    },
+    {
+      "name": "Talen Energy Corp",
+      "cusip": "87422Q109",
+      "title_class": "COM",
+      "value_usd": 29630030,
+      "shares": 148395,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 2.95
+    },
+    {
+      "name": "Applied Digital Corp",
+      "cusip": "038169207",
+      "title_class": "COM NEW",
+      "value_usd": 22680072,
+      "shares": 4035600,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 2.26
+    },
+    {
+      "name": "IREN Limited",
+      "cusip": "Q4982L109",
+      "title_class": "ORDINARY SHARES",
+      "value_usd": 20499732,
+      "shares": 3366130,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 2.04
+    }
+  ]
+}

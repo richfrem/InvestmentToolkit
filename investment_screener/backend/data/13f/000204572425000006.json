@@ -1,0 +1,112 @@
+{
+  "cik": "0002045724",
+  "fund": "Situational Awareness LP",
+  "filing_date": "2025-08-14",
+  "period_of_report": "2025-06-30",
+  "accession": "0002045724-25-000006",
+  "source_xml": "Salpform13fq2.xml",
+  "total_value_usd": 2123023762,
+  "position_count": 9,
+  "fetched_at": "2026-05-14T15:12:42.760826+00:00",
+  "holdings": [
+    {
+      "name": "VANECK ETF TRUST",
+      "cusip": "92189F676",
+      "title_class": "SEMICONDUCTR ETF",
+      "value_usd": 570058608,
+      "shares": 2044100,
+      "type": "SH",
+      "put_call": "Put",
+      "discretion": "SOLE",
+      "value_pct": 26.85
+    },
+    {
+      "name": "INTEL CORP",
+      "cusip": "458140100",
+      "title_class": "COM",
+      "value_usd": 453317760,
+      "shares": 20237400,
+      "type": "SH",
+      "put_call": "Call",
+      "discretion": "SOLE",
+      "value_pct": 21.35
+    },
+    {
+      "name": "BROADCOM INC",
+      "cusip": "11135F101",
+      "title_class": "COM",
+      "value_usd": 328466194,
+      "shares": 1191606,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 15.47
+    },
+    {
+      "name": "VISTRA CORP",
+      "cusip": "92840M102",
+      "title_class": "COM",
+      "value_usd": 246948438,
+      "shares": 1274178,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 11.63
+    },
+    {
+      "name": "CORE SCIENTIFIC INC NEW",
+      "cusip": "21874A106",
+      "title_class": "COM",
+      "value_usd": 136458229,
+      "shares": 7994038,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 6.43
+    },
+    {
+      "name": "EQT CORP",
+      "cusip": "26884L109",
+      "title_class": "COM",
+      "value_usd": 125116520,
+      "shares": 2145345,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 5.89
+    },
+    {
+      "name": "CONSTELLATION ENERGY CORP",
+      "cusip": "21037T109",
+      "title_class": "COM",
+      "value_usd": 103024992,
+      "shares": 319200,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 4.85
+    },
+    {
+      "name": "IREN LIMITED",
+      "cusip": "Q4982L109",
+      "title_class": "ORDINARY SHARES",
+      "value_usd": 93253595,
+      "shares": 6400384,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 4.39
+    },
+    {
+      "name": "APPLIED DIGITAL CORP",
+      "cusip": "038169207",
+      "title_class": "COM NEW",
+      "value_usd": 66379426,
+      "shares": 6591800,
+      "type": "SH",
+      "put_call": null,
+      "discretion": "SOLE",
+      "value_pct": 3.13
+    }
+  ]
+}
