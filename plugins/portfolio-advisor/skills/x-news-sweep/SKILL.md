@@ -21,6 +21,33 @@ allowed-tools: Bash, Read, Write
 
 ---
 
+## Browser Automation Mode (Recommended)
+
+Instead of copy-pasting, I can post to Grok directly using the browser harness and read the response back automatically.
+
+**Requirements:**
+- `browser-harness` cloned at `$BROWSER_HARNESS_DIR` (default: `~/projects/browser-harness`)
+- Chrome launched with debug port: `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9223 --user-data-dir="/tmp/chrome-bu-profile" &`
+- First-time only: authorize grok.com via X OAuth in that Chrome window
+
+**Domain skill:** `$BROWSER_HARNESS_DIR/domain-skills/grok/post.md` — contains all selectors, traps, and the full interaction pattern.
+
+**Key facts (from grok/post.md):**
+- Use `https://grok.com/` (not `x.com/i/grok` — that site's input is inaccessible via CDP)
+- `cdp("Emulation.setFocusEmulationEnabled", enabled=True)` must be called before any input events
+- Chat input is a contenteditable DIV; click center at approximately `(660, 266)` in a 1200×652 viewport
+- Submit with `press_key("Enter")`; response complete when page height stabilises
+
+Connect via:
+```bash
+WS=$(curl -s http://127.0.0.1:9223/json/version | python3 -c "import sys,json; print(json.load(sys.stdin)['webSocketDebuggerUrl'])")
+BU_CDP_WS=$WS uv run --project $BROWSER_HARNESS_DIR browser-harness <<'PY'
+# ... interaction code
+PY
+```
+
+---
+
 ## Phase 1 — Generate the Grok Prompt
 
 The prompt uses a **tiered deep dive** approach to keep output focused:
@@ -40,12 +67,14 @@ python3 scripts/generate_grok_prompt.py --clipboard
 python3 scripts/generate_grok_prompt.py --output /tmp/grok_prompt.md
 ```
 
-After running, say to the user:
+After running, check if browser automation is available:
+- If Chrome is running on port 9223: post automatically using the browser harness (see **Browser Automation Mode** above)
+- Otherwise say to the user:
 
 ```
 ✅ Grok prompt generated — {N} active holdings, {N} INITIATE targets, {N} EXIT positions.
 
-Paste this into x.com/i/grok (or any Grok interface) and send.
+Paste this into grok.com and send.
 Grok will return:
   Part 1 — sweep table with [DD] flags for material news
   Part 2 — deep dives for all INITIATE targets
