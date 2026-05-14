@@ -30,7 +30,7 @@ Instead of copy-pasting, I can post to Grok directly using the browser harness a
 - Chrome launched with debug port: `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9223 --user-data-dir="/tmp/chrome-bu-profile" &`
 - First-time only: authorize grok.com via X OAuth in that Chrome window
 
-**Domain skill:** `$BROWSER_HARNESS_DIR/domain-skills/grok/post.md` — contains all selectors, traps, and the full interaction pattern.
+**Domain skill:** [`grok-domain-skill.md`](grok-domain-skill.md) — symlinked from `$BROWSER_HARNESS_DIR/domain-skills/grok/post.md`. Always read this for the latest selectors, traps, and interaction notes before running automation.
 
 **Key facts (from grok/post.md):**
 - Use `https://grok.com/` (not `x.com/i/grok` — that site's input is inaccessible via CDP)
