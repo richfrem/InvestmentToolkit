@@ -131,6 +131,10 @@ This keeps thesis targets, `agentRationale`, and projection catalyst notes curre
 
 ## 🤖 AI Agent Skills — Quick Reference
 
+> **Skill location:** `.agents/` at repo root — project-local skills usable by Gemini CLI,
+> Claude Code, GitHub Copilot, and any other AI tool. Not from any marketplace.
+> Always check `.agents/skills/` before assuming a skill doesn't exist.
+
 | Trigger | Plugin | Purpose |
 |---------|--------|---------|
 | `/evaluate-stock {TICKER}` | stock-valuation | Full DCF valuation — Bear/Base/Bull scenarios, fair value, research report |
@@ -140,7 +144,9 @@ This keeps thesis targets, `agentRationale`, and projection catalyst notes curre
 | `/rebalance` | portfolio-advisor | Valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift |
 | `/calibrate-targets` | portfolio-advisor | Interactive target-weight calibration session |
 | `/update-portfolio-targets` | portfolio-advisor | Apply formula/weight changes to `target-portfolio.json` |
-| `/x-news-sweep` | portfolio-advisor | Daily Grok/X.com news sweep — gates recommendations against DCF + 8 hard gates |
+| `/x-news-sweep` | portfolio-advisor | Daily Grok/X.com news sweep — posts to grok.com via browser automation, gates recs against DCF + 8 hard gates |
+| `/13f-tracker` | portfolio-advisor | Poll SEC EDGAR for new 13F filings, download holdings JSON, diff quarter-over-quarter |
+| `/13f-analyze` | portfolio-advisor | Surgical 13F analysis — cross-references SA LP holdings vs your targets, outputs gated INITIATE/ACCUMULATE/TRIM/EXIT recs, applies approved changes to target-portfolio.json |
 | `/bundle-thesis-review` | portfolio-advisor | Package thesis + DCF projections for paste into external LLM (Grok, ChatGPT, Gemini) |
 | `/run-advisor` | portfolio-advisor | Interactive Portfolio Advisor orchestrator — full review → calibrate → rebalance lifecycle |
 | `/start-screener` | toolkit-manager | Launch full suite (frontend + backend) |

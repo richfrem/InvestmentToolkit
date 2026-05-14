@@ -378,6 +378,30 @@
       "dst": "plugins/portfolio-advisor/skills/13f-tracker/scripts/fetch_13f.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/fetch_13f.py",
+      "dst": "plugins/portfolio-advisor/skills/13f-analyze/scripts/fetch_13f.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/update_targets.py",
+      "dst": "plugins/portfolio-advisor/skills/13f-analyze/scripts/update_targets.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
+      "dst": "plugins/portfolio-advisor/skills/13f-analyze/scripts/verify_refresh.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
+      "dst": "plugins/portfolio-advisor/skills/13f-analyze/scripts/generate_review_json.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
