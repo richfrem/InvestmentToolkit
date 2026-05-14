@@ -366,6 +366,12 @@
       "dst": "plugins/portfolio-advisor/skills/thesis-challenge-bundler/scripts/bundle.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/grok_sweep.py",
+      "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/grok_sweep.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
