@@ -25,6 +25,12 @@
             "strict": true
         },
         {
+            "name": "etf-analysis",
+            "description": "AI-driven ETF and fund analysis engine. Three fund types: CLOSED_END (NAV premium analysis, private holdings valuation — e.g. DXYZ), THEMATIC_ETF (holdings alignment score, expense drag, overlap check — e.g. KOID, HUMN), CASH_FUND (yield, dividend cycle timing — e.g. PSU-U.TO). Saves structured JSON to data/etf_analysis/ and updates agentRationale in target-portfolio.json. Trigger: /analyze-etf {TICKER}.",
+            "source": "./plugins/etf-analysis",
+            "strict": true
+        },
+        {
             "name": "tradingview",
             "description": "TradingView Desktop integration for real-time prices, DCF price alerts, and chart snapshots. Skills: /tv-price-refresh (live quotes for all positions via TradingView Premium, falls back to yfinance), /tv-alert-sync (create TradingView price alerts at DCF bear/base/bull targets), /tv-snapshot TICKER (capture chart screenshot). Requires TradingView Desktop running with --remote-debugging-port=9222.",
             "source": "./plugins/tradingview",
