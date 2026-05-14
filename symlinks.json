@@ -372,6 +372,12 @@
       "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/grok_sweep.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/fetch_13f.py",
+      "dst": "plugins/portfolio-advisor/skills/13f-tracker/scripts/fetch_13f.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
