@@ -30,93 +30,19 @@ Instead of copy-pasting, I can post to Grok directly using the browser harness a
 - Chrome launched with debug port: `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --remote-debugging-port=9223 --user-data-dir="/tmp/chrome-bu-profile" &`
 - First-time only: authorize grok.com via X OAuth in that Chrome window
 
-**Domain skill:** [`grok-domain-skill.md`](grok-domain-skill.md) — symlinked from `$BROWSER_HARNESS_DIR/domain-skills/grok/post.md`. Always read this for the latest selectors, traps, and interaction notes before running automation.
-
-**Key facts (from grok/post.md):**
-- Use `https://grok.com/` (not `x.com/i/grok` — that site's input is inaccessible via CDP)
-- `cdp("Emulation.setFocusEmulationEnabled", enabled=True)` must be called before any input events
-- Chat input is a contenteditable DIV; click center at approximately `(660, 266)` in a 1200×652 viewport
-- Submit with `press_key("Enter")`; response complete when page height stabilises
-
 **Check Chrome is ready:**
 ```bash
 curl -s http://127.0.0.1:9223/json/version | python3 -c "import sys,json; d=json.load(sys.stdin); print('Chrome ready:', d.get('Browser','?'))"
 ```
 
-**Full automation script** (run after generating the prompt to `/tmp/grok_sweep_prompt.md`):
+**Run the sweep** (after generating the prompt):
 ```bash
-BU_CDP_WS=$(curl -s http://127.0.0.1:9223/json/version | python3 -c "import sys,json; print(json.load(sys.stdin)['webSocketDebuggerUrl'])") \
-uv run --project ~/projects/browser-harness browser-harness <<'PY'
-import time, json
-
-# Read the generated sweep prompt
-with open("/tmp/grok_sweep_prompt.md") as f:
-    prompt = f.read()
-
-# Required before any input events — without this, focus never lands on the DIV
-cdp("Emulation.setFocusEmulationEnabled", enabled=True)
-
-# Navigate to grok.com (not x.com/i/grok — that site's input is inaccessible via CDP)
-new_tab("https://grok.com/")
-wait_for_load()
-time.sleep(3)
-
-# Focus the contenteditable DIV (not the hidden TEXTAREA at y=0)
-# In 1200x652 viewport: DIV center is approximately (660, 266)
-click_at_xy(660, 266)
-time.sleep(0.5)
-assert js("document.activeElement.tagName") == "DIV", f"focus failed: {js('document.activeElement.tagName')}"
-
-# Insert prompt via execCommand — required for large prompts
-# Do NOT use pbcopy+Cmd+V: subprocess steals OS focus, paste lands 0-1 chars
-prompt_escaped = json.dumps(prompt)
-js(f"document.execCommand('insertText', false, {prompt_escaped})")
-time.sleep(0.5)
-
-chars = js("document.activeElement ? document.activeElement.innerText.length : 0")
-assert chars > 100, f"text didn't land: {chars} chars"
-
-# Submit
-press_key("Enter")
-time.sleep(5)
-
-# Wait for response to complete — poll until Stop button disappears
-for i in range(60):
-    time.sleep(3)
-    has_stop = js("""
-        var btns = document.querySelectorAll('button');
-        Array.from(btns).some(function(b){ return b.getAttribute('aria-label') === 'Stop'; });
-    """)
-    if not has_stop and i > 3:
-        break
-
-time.sleep(2)
-
-# Scroll the internal container to top to capture full response
-js("""
-var container = Array.from(document.querySelectorAll('*'))
-    .filter(function(el){ return el.scrollHeight > el.clientHeight + 100 && el.clientHeight > 200; })
-    .sort(function(a,b){ return b.scrollHeight - a.scrollHeight; })[0];
-if(container) container.scrollTop = 0;
-""")
-time.sleep(0.5)
-
-# Extract response via innerText — clipboard API is blocked in CDP contexts
-full = js("document.body.innerText")
-marker = "Thought for"
-idx = full.find(marker)
-response = full[idx:] if idx >= 0 else full
-cutoff = response.find("\nAsk anything")
-if cutoff > 0:
-    response = response[:cutoff]
-
-# Write response to file for the skill to read
-with open("/tmp/grok_sweep_response.md", "w") as f:
-    f.write(response)
-
-print(f"Response captured: {len(response)} chars")
-PY
+python3 scripts/grok_sweep.py \
+  --prompt /tmp/grok_sweep_prompt.md \
+  --output /tmp/grok_sweep_response.md
 ```
+
+`scripts/grok_sweep.py` is symlinked from `plugins/portfolio-advisor/scripts/grok_sweep.py` — the canonical copy that ships with the plugin. It handles CDP connection, text insertion, response polling, and innerText extraction automatically.
 
 After running, read the response from `/tmp/grok_sweep_response.md` and proceed to Phase 2.
 

@@ -20,6 +20,7 @@
     {
       "source": "/Users/richardfremmerlid/Projects/InvestmentToolkit/plugins",
       "plugins": [
+        "etf-analysis",
         "portfolio-advisor",
         "stock-valuation",
         "toolkit-manager",
