@@ -1,1 +1,0 @@
-/Users/richardfremmerlid/projects/browser-harness/domain-skills/grok/post.md
