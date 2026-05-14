@@ -1,0 +1,1 @@
+../../../scripts/verify_refresh.py
