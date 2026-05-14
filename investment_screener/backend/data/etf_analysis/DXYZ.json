@@ -1,0 +1,128 @@
+[
+  {
+    "ticker": "DXYZ",
+    "id": "2d2e4265-ce0b-4d55-b5f5-556c3920cd8e",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.0",
+    "schemaType": "ETF_ANALYSIS",
+    "fundType": "CLOSED_END",
+    "version": 1,
+    "savedAt": "2026-05-13T15:23:30.060930+00:00",
+    "updatedAt": "2026-05-13T15:23:30.060930+00:00",
+    "name": "AI ETF Analysis \u2014 DXYZ \u2014 2026-05-13",
+    "rationale": "Destiny Tech100 is the only publicly traded vehicle offering broad exposure to pre-IPO AI/ASI infrastructure leaders \u2014 SpaceX, Anthropic, OpenAI, xAI, Stripe, and Databricks. At $54.67, the fund trades at an estimated 277.0% premium to NAV ($14.5/share estimate), which is HIGH risk but historically normal for this fund (range: ~80\u2013620%). The thesis alignment is exceptional \u2014 DIRECT overlap with portfolio ASI race thesis. Initiate at small satellite size (1\u20131.5%) and accept premium risk as the cost of pre-IPO access; size up only if premium compresses below 150%.",
+    "snapshot": {
+      "price": 54.67,
+      "currency": "USD",
+      "exchange": "NYSE",
+      "sharesOutstanding": 21976305,
+      "estimatedMarketCap": 1201.4,
+      "estimatedNAV": 318.7,
+      "fiftyTwoWeekHigh": 71.24,
+      "fiftyTwoWeekLow": 19.71,
+      "priceChange6mo": 139.5,
+      "averageVolume": 2247693,
+      "expenseRatio": 2.5
+    },
+    "navAnalysis": {
+      "navPerShare": 14.5,
+      "navEstimateMethod": "private_stake_sum",
+      "navEstimateNote": "Estimated from known private company valuations \u00d7 DXYZ disclosed stake weights: SpaceX ~$350B \u00d7 0.024% stake + Anthropic ~$80B \u00d7 0.12% + OpenAI ~$300B \u00d7 0.017% + Stripe ~$65B + Databricks ~$62B + xAI ~$50B + ~94 others. NAV moves with private funding round re-valuations. Source: Q4 2025 estimated.",
+      "premiumPct": 277.0,
+      "premiumRisk": "HIGH",
+      "historicalPremiumRange": {
+        "low": 80,
+        "high": 620
+      },
+      "premiumPercentile": 40,
+      "premiumNote": "Current 277.0% premium sits at ~40th percentile of historical range. Retail demand for pre-IPO access drives structural premium. Premium compresses sharply on major holding IPO (SpaceX or Anthropic IPO = compression event).",
+      "compressionTriggers": [
+        "SpaceX IPO (largest holding ~28% NAV) \u2014 premium compression ~30-50pp expected",
+        "Anthropic IPO (~8% NAV) \u2014 moderate compression",
+        "OpenAI IPO (~5% NAV) \u2014 moderate compression",
+        "Broad private market valuation reset (macro risk)"
+      ]
+    },
+    "holdingsAnalysis": {
+      "topHoldings": [
+        {
+          "name": "SpaceX",
+          "pctNAV": 27.8,
+          "lastValuation": "350B",
+          "alignment": "DIRECT",
+          "ipoOutlook": "2027-2028 speculative"
+        },
+        {
+          "name": "Anthropic",
+          "pctNAV": 8.1,
+          "lastValuation": "80B",
+          "alignment": "DIRECT",
+          "ipoOutlook": "2027+ speculative"
+        },
+        {
+          "name": "OpenAI",
+          "pctNAV": 5.2,
+          "lastValuation": "300B",
+          "alignment": "DIRECT",
+          "ipoOutlook": "2026-2027 possible"
+        },
+        {
+          "name": "Stripe",
+          "pctNAV": 4.9,
+          "lastValuation": "65B",
+          "alignment": "PARTIAL",
+          "ipoOutlook": "2026 rumoured"
+        },
+        {
+          "name": "Databricks",
+          "pctNAV": 4.7,
+          "lastValuation": "62B",
+          "alignment": "DIRECT",
+          "ipoOutlook": "2026 possible"
+        },
+        {
+          "name": "xAI",
+          "pctNAV": 3.8,
+          "lastValuation": "50B",
+          "alignment": "DIRECT",
+          "ipoOutlook": "Unknown"
+        },
+        {
+          "name": "Discord",
+          "pctNAV": 2.6,
+          "lastValuation": "15B",
+          "alignment": "TANGENTIAL",
+          "ipoOutlook": "Unknown"
+        },
+        {
+          "name": "Epic Games",
+          "pctNAV": 2.1,
+          "lastValuation": "32B",
+          "alignment": "TANGENTIAL",
+          "ipoOutlook": "Unknown"
+        }
+      ],
+      "topHoldingsNAVCoverage": 59.2,
+      "thesisAlignmentScore": 82,
+      "thesisAlignmentNote": "Direct ASI race alignment: SpaceX (compute/launch infrastructure), Anthropic (frontier AI), OpenAI (frontier AI), Databricks (data/AI), xAI (frontier AI) = ~49.6% of NAV DIRECT. Score of 82 reflects strong thesis alignment despite partial/tangential consumer holdings.",
+      "overlapWithDirectHoldings": []
+    },
+    "action": "INITIATE",
+    "actionRationale": "Initiate at 1.0\u20131.5% target. Only public vehicle for SpaceX/Anthropic/OpenAI exposure in a single ticker. Premium of 277.0% is HIGH but within historical norm. Size small \u2014 this is a scarcity premium play, not a value play. Do NOT size up above 2% until premium compresses below 150%.",
+    "upsideCatalysts": [
+      "SpaceX IPO \u2014 triggers premium compression on that holding but validates entire thesis",
+      "Anthropic or OpenAI public offering \u2014 revaluation of NAV upward on IPO pricing",
+      "New private company additions at favorable valuations",
+      "Broad AI market re-rating lifting all private valuations"
+    ],
+    "risks": [
+      "Premium compression: any major holding IPO can compress 277.0% premium significantly",
+      "Private market valuation marks are stale \u2014 NAV is estimated, not real-time",
+      "Liquidity risk: 21.98M shares outstanding, avg volume 2.25M \u2014 can be volatile",
+      "Expense ratio ~2.5% \u2014 high drag on a position held long-term",
+      "Retail sentiment driven: premium can collapse independent of NAV changes"
+    ],
+    "entryNote": "Enter on weakness. Avoid chasing price momentum. If premium spikes above 400%, reduce or hold. Best entries historically occur during broad market risk-off when retail exits.",
+    "agentRationale": "ETF_ANALYSIS: INITIATE 1.0-1.5% | CLOSED_END | premium 277.0% (HIGH, ~40th pct historical) | Only public pre-IPO AI basket: SpaceX/Anthropic/OpenAI/xAI/Databricks | NAV est $14.50/share | compression triggers: SpaceX/Anthropic IPO | analyzed 2026-05-13"
+  }
+]
