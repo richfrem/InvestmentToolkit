@@ -169,6 +169,7 @@ Orchestrator for server startup and Questrade token management.
 | Questrade account | https://www.questrade.com/ |
 | TradingView Desktop | https://www.tradingview.com/desktop/ — optional but recommended |
 | TradingView Premium | https://www.tradingview.com/pricing/ — required for real-time prices |
+| browser-harness | https://github.com/browser-use/browser-harness — required for automated Grok sweeps (`/x-news-sweep`) |
 
 ### Quick Start
 
@@ -193,6 +194,28 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add /User
 ```bash
 uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richfrem/agent-plugins-skills
 ```
+
+### Browser Harness Setup (one-time, required for automated Grok sweeps)
+
+```bash
+# Clone into a stable location
+git clone https://github.com/browser-use/browser-harness ~/projects/browser-harness
+cd ~/projects/browser-harness && uv sync
+
+# Add to your .env (copy from .env.example)
+BROWSER_HARNESS_DIR=~/projects/browser-harness
+BROWSER_HARNESS_CDP_PORT=9223
+
+# Launch debug Chrome (separate from TradingView's port 9222)
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  --remote-debugging-port=9223 \
+  --user-data-dir="/tmp/chrome-bu-profile" &
+
+# First-time only: navigate to grok.com in that Chrome window and authorize via X OAuth
+# After that, login persists in /tmp/chrome-bu-profile for all future sessions
+```
+
+See [`~/projects/browser-harness/domain-skills/grok/post.md`](https://github.com/browser-use/browser-harness/tree/main/domain-skills) for the full grok.com interaction skill.
 
 ### TradingView Plugin Setup (one-time)
 
@@ -261,6 +284,13 @@ This project uses the **Exploration Cycle** architecture to systematize AI agent
 ---
 
 ## Acknowledgements
+
+### browser-harness (Grok browser automation)
+- **Repository:** https://github.com/browser-use/browser-harness
+- **Author:** browser-use
+- **License:** MIT
+- **What it does:** Thin CDP harness (~600 lines) that gives an LLM direct browser control via Chrome DevTools Protocol. Used by `/x-news-sweep` to post prompts to grok.com and read responses automatically — eliminating the manual copy-paste step.
+- **Our usage:** Runtime dependency — clone separately to `~/projects/browser-harness`. The grok.com interaction skill lives in `domain-skills/grok/post.md` inside that repo.
 
 The TradingView Desktop integration in this project was informed by research into the following open-source projects. Our implementation (`plugins/tradingview/node/`) is an owned, minimal adaptation — not a dependency on either repo at runtime.
 
