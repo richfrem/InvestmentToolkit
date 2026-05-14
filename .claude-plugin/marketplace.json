@@ -14,7 +14,7 @@
         },
         {
             "name": "portfolio-advisor",
-            "description": "Investment portfolio advisor suite. Skills: /review-portfolio (quick health check — drift monitor, pillar conviction audit, thesis formula score), /strategic-review (adversarial thesis challenger with valuation-grounded formula improvement proposals), /rebalance (valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift), /calibrate-targets (interactive target-weight session), /update-portfolio-targets (apply formula changes).",
+            "description": "Investment portfolio advisor suite. Skills: /review-portfolio (quick health check — drift monitor, pillar conviction audit, thesis formula score), /strategic-review (adversarial thesis challenger with valuation-grounded formula improvement proposals), /rebalance (valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift), /calibrate-targets (interactive target-weight session), /update-portfolio-targets (apply formula changes), /x-news-sweep (daily Grok sweep via browser automation — gates recommendations against DCF + 8 hard gates), /13f-tracker (SEC EDGAR 13F polling — download holdings, parse JSON, diff quarter-over-quarter, integrates with x-news-sweep Gate 5 SA LP cross-check).",
             "source": "./plugins/portfolio-advisor",
             "strict": true
         },
