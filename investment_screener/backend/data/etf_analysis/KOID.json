@@ -1,0 +1,130 @@
+[
+  {
+    "ticker": "KOID",
+    "id": "e57a4b26-d70d-468f-a8a7-f4debd5b8908",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.0",
+    "schemaType": "ETF_ANALYSIS",
+    "fundType": "THEMATIC_ETF",
+    "version": 1,
+    "savedAt": "2026-05-13T15:37:26.816177+00:00",
+    "updatedAt": "2026-05-13T15:37:26.816177+00:00",
+    "name": "AI ETF Analysis \u2014 KOID \u2014 2026-05-13",
+    "rationale": "KraneShares Global Humanoid Robotics and Physical AI Index ETF tracks the Solactive Global Humanoid Robotics and Physical AI Index. Trades near NAV (1.97% premium) with $158M AUM \u2014 reasonable size for a thematic ETF. The fund emphasizes the semiconductor supply chain enabling robotics (CRDO, STM, IFX, NXPI, Harmonic Drive) rather than humanoid robot manufacturers directly. Thesis alignment is moderate (62%) \u2014 broad semiconductor exposure dilutes pure robotics conviction. No overlap with existing direct portfolio holdings. Strong 6-month performance (+38.9%); currently near 52-week high.",
+    "snapshot": {
+      "price": 40.88,
+      "navPrice": 40.09,
+      "premiumPct": 1.97,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "aum": 158218224,
+      "fundFamily": "KraneShares",
+      "fiftyTwoWeekHigh": 40.92,
+      "fiftyTwoWeekLow": 24.854,
+      "priceChange6mo": 38.89,
+      "averageVolume": 78610
+    },
+    "holdingsAnalysis": {
+      "topHoldings": [
+        {
+          "symbol": "CRDO",
+          "name": "Credo Technology",
+          "holdingPct": 3.02,
+          "alignment": "DIRECT",
+          "note": "High-speed AI connectivity chips"
+        },
+        {
+          "symbol": "STMPA.PA",
+          "name": "STMicroelectronics",
+          "holdingPct": 2.74,
+          "alignment": "PARTIAL",
+          "note": "Semiconductor for industrial/robotics"
+        },
+        {
+          "symbol": "IFX.DE",
+          "name": "Infineon Technologies",
+          "holdingPct": 2.59,
+          "alignment": "PARTIAL",
+          "note": "Power semis for motors/drives"
+        },
+        {
+          "symbol": "NXPI",
+          "name": "NXP Semiconductors",
+          "holdingPct": 2.54,
+          "alignment": "PARTIAL",
+          "note": "MCUs for automotive/industrial"
+        },
+        {
+          "symbol": "TXN",
+          "name": "Texas Instruments",
+          "holdingPct": 2.45,
+          "alignment": "TANGENTIAL",
+          "note": "Analog/embedded, broad industrial"
+        },
+        {
+          "symbol": "000150.KS",
+          "name": "Doosan Corp",
+          "holdingPct": 2.4,
+          "alignment": "PARTIAL",
+          "note": "Korean industrial/robotics conglomerate"
+        },
+        {
+          "symbol": "6723.T",
+          "name": "Renesas Electronics",
+          "holdingPct": 2.39,
+          "alignment": "PARTIAL",
+          "note": "MCUs for automotive/robotics"
+        },
+        {
+          "symbol": "MP",
+          "name": "MP Materials",
+          "holdingPct": 2.35,
+          "alignment": "DIRECT",
+          "note": "Rare earth magnets for robot actuators/EVs"
+        },
+        {
+          "symbol": "MELE.BR",
+          "name": "Melexis",
+          "holdingPct": 2.3,
+          "alignment": "TANGENTIAL",
+          "note": "Automotive sensing ICs"
+        },
+        {
+          "symbol": "6324.T",
+          "name": "Harmonic Drive Systems",
+          "holdingPct": 2.3,
+          "alignment": "DIRECT",
+          "note": "Precision gears \u2014 core robot actuator component"
+        }
+      ],
+      "top10Pct": 25.08,
+      "concentration": {
+        "top5Pct": 13.34,
+        "top10Pct": 25.08
+      },
+      "thesisAlignmentScore": 62,
+      "thesisAlignmentNote": "Supply-chain oriented: strongest alignment in precision actuation (Harmonic Drive), connectivity semis (CRDO), and rare earths (MP Materials). Broad semiconductor exposure (TXN, Melexis) is tangential to the physical AI thesis. No pure-play humanoid robot manufacturers in top 10 \u2014 this is an enabler basket, not an operator basket.",
+      "expenseRatioBps": 75,
+      "expenseDragNote": "At 2.66% target weight ($880), annual drag ~$7/yr \u2014 negligible.",
+      "overlapWithDirectHoldings": [],
+      "overlapNote": "No overlap with existing direct portfolio positions in top 10."
+    },
+    "action": "HOLD",
+    "actionRationale": "Hold at current target (2.66%). Near-NAV entry is favorable. Thesis alignment of 62% is acceptable for a diversified robotics supply-chain basket. No overlap with direct holdings. Currently near 52-week high \u2014 do not add here; accumulate on pullbacks toward $35-36 (prior resistance zone). KOID complements HUMN: KOID is the supply-chain layer, HUMN is the operator layer.",
+    "upsideCatalysts": [
+      "Humanoid robot deployment cycle (Tesla Optimus, Figure, Boston Dynamics scale-up)",
+      "Government manufacturing repatriation \u2014 US/EU robotics capex surge",
+      "Rare earth supply chain re-rating (MP Materials)",
+      "CRDO secular growth in AI datacenter connectivity"
+    ],
+    "risks": [
+      "Near 52-week high \u2014 pullback risk if robotics theme cools",
+      "Semiconductor supply chain exposure dilutes pure robotics conviction",
+      "AUM $158M \u2014 reasonable but smaller fund has wider spreads",
+      "Heavy Asian stock weighting (KS, T, PA) adds currency/geopolitical risk",
+      "Robotics adoption timeline risk \u2014 humanoid deployment slower than expected"
+    ],
+    "entryNote": "Accumulate on dips to $35-37. Current near-high entry is full price for this position size.",
+    "agentRationale": "ETF_ANALYSIS: HOLD | THEMATIC_ETF | NAV premium 1.97% (LOW) | alignment 62% (supply-chain semis + precision actuation) | $158M AUM | no overlap with direct holdings | near 52wk high \u2014 hold, accumulate on dips | analyzed 2026-05-13"
+  }
+]

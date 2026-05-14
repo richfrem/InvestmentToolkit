@@ -48,7 +48,7 @@ export default function Dashboard() {
     const loadAIThesis = useCallback(async (ticker: string) => {
         try {
             const saved = await storage.syncProjections(ticker);
-            const aiProjections = saved.filter(p => p.source === 'AI_AGENT');
+            const aiProjections = saved.filter(p => p.source === 'AI_AGENT' || p.source === 'ETF_ANALYSIS');
             
             if (aiProjections.length > 0) {
                 // Sort by date descending

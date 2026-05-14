@@ -1,0 +1,89 @@
+[
+  {
+    "ticker": "DXYZ",
+    "id": "9892b16b-b864-47cd-b5d4-6ff1ffada1f9",
+    "source": "ETF_ANALYSIS",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-14T05:05:31.382885+00:00",
+    "updatedAt": "2026-05-14T05:05:31.382885+00:00",
+    "name": "AI ETF Analysis \u2014 DXYZ \u2014 2026-05-13",
+    "rationale": "Destiny Tech100 is the only publicly traded closed-end fund offering broad exposure to pre-IPO AI leaders \u2014 SpaceX (~28% NAV), Anthropic (~8%), OpenAI (~5%), xAI (~4%), Databricks (~5%), and ~95 other private tech companies. At $54.67, the fund trades at a 277% premium to estimated NAV ($14.5/share) \u2014 a scarcity premium for access that retail investors cannot replicate independently. This is NOT a DCF play: there is no revenue, no earnings, no exit P/E. The investment case is: (1) pay a premium for pre-IPO optionality on the defining companies of the ASI era; (2) accept premium compression risk when major holdings IPO; (3) size small (1\u20131.5%) to reflect the asymmetric risk. INITIATE at current levels; do not exceed 2% at this premium level.",
+    "snapshot": {
+      "price": 54.67,
+      "currency": "USD",
+      "shares": 21976305,
+      "revenue": 0,
+      "lastActualPS": null,
+      "fiscalPeriod": "N/A \u2014 Closed-End Fund",
+      "analystGrowthEstimate": null,
+      "analystMarginEstimate": null
+    },
+    "dataPreferences": {
+      "growthBasis": "N/A",
+      "marginBasis": "N/A"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": -20,
+        "netMargin": 0,
+        "exitPE": 0,
+        "qualityMultiplier": 0.5,
+        "shareChange": 0,
+        "scenarioPrice": 21.75,
+        "rationale": "SpaceX or Anthropic IPO triggers premium compression from 277% to ~50%. NAV also re-rates downward on private market reset. Effective value: NAV \u00d7 1.5x premium = ~$21.75.",
+        "year5Revenue": 0,
+        "year5NetIncome": 0,
+        "year5EPS": 0,
+        "year5Shares": 21976305,
+        "year5PriceUndiscounted": 21.75,
+        "presentValue": 21.75
+      },
+      "base": {
+        "weight": 0.4,
+        "growthRate": 5,
+        "netMargin": 0,
+        "exitPE": 0,
+        "qualityMultiplier": 1.0,
+        "shareChange": 0,
+        "scenarioPrice": 36.25,
+        "rationale": "Premium holds at ~150% as retail demand for pre-IPO access persists. NAV grows as private companies raise at higher valuations. Effective value: NAV \u00d7 2.5x = ~$36.25.",
+        "year5Revenue": 0,
+        "year5NetIncome": 0,
+        "year5EPS": 0,
+        "year5Shares": 21976305,
+        "year5PriceUndiscounted": 36.25,
+        "presentValue": 36.25
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 30,
+        "netMargin": 0,
+        "exitPE": 0,
+        "qualityMultiplier": 1.5,
+        "shareChange": 0,
+        "scenarioPrice": 72.5,
+        "rationale": "SpaceX IPO at $500B+ re-rates NAV dramatically upward. Premium stays elevated pre-IPO as retail demand surges on news flow. Effective value: NAV \u00d7 5.0x = ~$72.50.",
+        "year5Revenue": 0,
+        "year5NetIncome": 0,
+        "year5EPS": 0,
+        "year5Shares": 21976305,
+        "year5PriceUndiscounted": 72.5,
+        "presentValue": 72.5
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "fairValue": 40.24,
+      "action": "INITIATE",
+      "analyzedAt": "2026-05-14T05:05:31.382885+00:00",
+      "rationale": "# DXYZ \u2014 Destiny Tech100 Inc.\n## ETF Analysis \u2014 Closed-End Fund (NOT a DCF)\n\nDestiny Tech100 is the only publicly traded vehicle giving retail investors access to the defining private AI companies of this decade in a single ticker. The top 5 holdings by NAV \u2014 SpaceX (28%), Anthropic (8%), OpenAI (5%), Databricks (5%), xAI (4%) \u2014 are the exact companies at the frontier of the ASI race.\n\n**Why own it**: You cannot buy SpaceX. You cannot buy Anthropic. You cannot buy OpenAI. DXYZ is the only legal, liquid way to hold these companies before they IPO. The scarcity premium (currently 277%) is the cost of that access.\n\n**The Anthropic connection**: Anthropic is an 8% NAV holding. As the AI agent thesis plays out \u2014 Claude agents being assigned Jira tickets, GitHub issues, and enterprise workflows \u2014 Anthropic's valuation will re-rate. DXYZ captures that upside before any public offering.\n\n**Premium risk**: The 277% premium is HIGH by any standard, but within the historical range (80\u2013620%). The primary compression trigger is a major holding IPO \u2014 particularly SpaceX, which would reduce DXYZ's NAV discount dramatically as the premium on that stake collapses. Size accordingly: 1\u20131.5% max.\n\n**Scenarios are modeled on premium \u00d7 NAV, not DCF**:\n- Bear (35%): Premium compresses to 50% on IPO news \u2192 ~$21.75\n- Base (40%): Premium holds at 150% \u2192 ~$36.25\n- Bull (25%): SpaceX IPO re-rates NAV + premium holds \u2192 ~$72.50\n\nWeighted fair value: ~$40.24 vs current $54.67. Current price is above weighted fair value \u2014 this reflects the scarcity premium the market places on pre-IPO access, which is not captured by NAV math alone."
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": []
+  }
+]

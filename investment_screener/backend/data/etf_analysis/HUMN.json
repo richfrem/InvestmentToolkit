@@ -1,0 +1,134 @@
+[
+  {
+    "ticker": "HUMN",
+    "id": "6f03e96c-cae6-4986-a67b-15e4aa2e3d5e",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.0",
+    "schemaType": "ETF_ANALYSIS",
+    "fundType": "THEMATIC_ETF",
+    "version": 1,
+    "savedAt": "2026-05-13T16:11:51.943727+00:00",
+    "updatedAt": "2026-05-13T16:11:51.943727+00:00",
+    "name": "AI ETF Analysis \u2014 HUMN \u2014 2026-05-13",
+    "rationale": "Roundhill Humanoid Robotics ETF is the more direct humanoid robot play vs KOID \u2014 top holdings include Tesla Optimus (8.4%), Ubtech Robotics (7.6%), Rainbow Robotics (4.6%), and Korean/Chinese humanoid manufacturers. Thesis alignment is 74% \u2014 meaningfully higher than KOID's 62%. Trading at a 4.04% NAV premium vs KOID's 2% is manageable. Key risk: NVDA overlap (4.16% of HUMN AUM) with existing direct holding, and $62M AUM is smaller/less liquid than KOID. Currently near 52-week high.",
+    "snapshot": {
+      "price": 38.29,
+      "navPrice": 36.8025,
+      "premiumPct": 4.04,
+      "currency": "USD",
+      "exchange": "BATS",
+      "aum": 62149440,
+      "fundFamily": "Roundhill Investments",
+      "fiftyTwoWeekHigh": 38.3093,
+      "fiftyTwoWeekLow": 23.99,
+      "priceChange6mo": 32.91,
+      "averageVolume": 44255
+    },
+    "holdingsAnalysis": {
+      "topHoldings": [
+        {
+          "symbol": "TSLA",
+          "name": "Tesla Inc",
+          "holdingPct": 8.44,
+          "alignment": "DIRECT",
+          "note": "Optimus humanoid robot + FSD/AI \u2014 already thesis-aligned"
+        },
+        {
+          "symbol": "9880.HK",
+          "name": "Ubtech Robotics",
+          "holdingPct": 7.57,
+          "alignment": "DIRECT",
+          "note": "China humanoid robot manufacturer \u2014 Walker series"
+        },
+        {
+          "symbol": "277810.KS",
+          "name": "Rainbow Robotics",
+          "holdingPct": 4.64,
+          "alignment": "DIRECT",
+          "note": "Samsung-backed Korean humanoid \u2014 RB-Y1"
+        },
+        {
+          "symbol": "NVDA",
+          "name": "NVIDIA Corp",
+          "holdingPct": 4.16,
+          "alignment": "DIRECT",
+          "note": "OVERLAP \u2014 already direct holding in portfolio"
+        },
+        {
+          "symbol": "6324.T",
+          "name": "Harmonic Drive Systems",
+          "holdingPct": 3.66,
+          "alignment": "DIRECT",
+          "note": "Precision gears \u2014 core robot actuator"
+        },
+        {
+          "symbol": "108490.KS",
+          "name": "Robotis Co Ltd",
+          "holdingPct": 3.43,
+          "alignment": "DIRECT",
+          "note": "Korean robotics components + humanoid kits"
+        },
+        {
+          "symbol": "XPEV",
+          "name": "XPeng Inc ADR",
+          "holdingPct": 3.37,
+          "alignment": "PARTIAL",
+          "note": "EV + X-NGBOT humanoid program"
+        },
+        {
+          "symbol": "QCOM",
+          "name": "Qualcomm Inc",
+          "holdingPct": 3.2,
+          "alignment": "PARTIAL",
+          "note": "AI edge chips for robotics"
+        },
+        {
+          "symbol": "2432.HK",
+          "name": "Shenzhen Dobot",
+          "holdingPct": 3.16,
+          "alignment": "DIRECT",
+          "note": "Industrial robot arms + collaborative robots"
+        },
+        {
+          "symbol": "688017.SS",
+          "name": "Leader Harmonious Drive Systems",
+          "holdingPct": 3.06,
+          "alignment": "DIRECT",
+          "note": "Chinese precision drive systems for robotics"
+        }
+      ],
+      "top10Pct": 44.69,
+      "concentration": {
+        "top5Pct": 28.47,
+        "top10Pct": 44.69
+      },
+      "thesisAlignmentScore": 74,
+      "thesisAlignmentNote": "More direct humanoid robot exposure than KOID. Top 7 holdings are pure-play humanoid/robot manufacturers (TSLA Optimus, Ubtech, Rainbow, Harmonic Drive, Robotis, Dobot, Leader). NVDA creates mild redundancy with existing direct holding. Korean/HK/Chinese exposure adds geographic diversification to the robotics thesis.",
+      "expenseRatioBps": 75,
+      "expenseDragNote": "At 3.01% target weight ($992), annual drag ~$7/yr \u2014 negligible.",
+      "overlapWithDirectHoldings": [
+        "NVDA"
+      ],
+      "overlapNote": "NVDA at 4.16% of HUMN creates moderate redundancy with existing 2.83% NVDA target. At current HUMN target weight, effective additional NVDA exposure is ~0.12pp \u2014 immaterial."
+    },
+    "action": "HOLD",
+    "actionRationale": "Hold at current target (2.93%). Higher thesis alignment than KOID (74% vs 62%) but smaller fund ($62M), lower liquidity (44K avg vol), and 4.04% NAV premium vs 2%. Currently at 52-week high \u2014 do not add here. HUMN is the conviction humanoid layer; KOID is the supply-chain layer. Together they provide layered robotics exposure without direct holding overlap (NVDA aside).",
+    "upsideCatalysts": [
+      "Tesla Optimus ramp (8.4% weight \u2014 direct) \u2014 any deployment announcement is a major catalyst",
+      "Rainbow Robotics scale-up (Samsung manufacturing leverage)",
+      "Ubtech Walker series commercial deployment in China",
+      "Korean government humanoid manufacturing push",
+      "Broader physical AI thesis acceleration (NVIDIA GR00T + Isaac platform adoption)"
+    ],
+    "risks": [
+      "NAV premium 4.04% \u2014 higher than KOID, more expensive entry",
+      "AUM $62M \u2014 smaller fund, wider bid-ask spread, potential liquidation risk if theme cools",
+      "Heavy Korean/HK/Chinese exposure \u2014 geopolitical/regulatory risk",
+      "Near 52-week high \u2014 elevated drawdown risk",
+      "TSLA concentration (8.4%) \u2014 TSLA price swings dominate fund returns",
+      "Humanoid robot deployment timeline risk \u2014 2025 pilots could disappoint at scale"
+    ],
+    "entryNote": "Accumulate on dips to $33-35 (closer to NAV). Current near-high entry is fully priced. This is the higher-conviction humanoid play vs KOID; keep it.",
+    "agentRationale": "ETF_ANALYSIS: HOLD | THEMATIC_ETF | NAV premium 4.04% (LOW-MODERATE) | alignment 74% (direct humanoid: TSLA/Ubtech/Rainbow/Harmonic/Robotis) | $62M AUM (less liquid) | NVDA overlap immaterial at target size | near 52wk high \u2014 hold, accumulate on dips to $33-35 | analyzed 2026-05-13"
+  }
+]
