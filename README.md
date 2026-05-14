@@ -169,7 +169,7 @@ Orchestrator for server startup and Questrade token management.
 | Questrade account | https://www.questrade.com/ |
 | TradingView Desktop | https://www.tradingview.com/desktop/ — optional but recommended |
 | TradingView Premium | https://www.tradingview.com/pricing/ — required for real-time prices |
-| browser-harness | https://github.com/browser-use/browser-harness — required for automated Grok sweeps (`/x-news-sweep`) |
+| browser-harness | https://github.com/richfrem/browser-harness — required for automated Grok sweeps (`/x-news-sweep`) |
 
 ### Quick Start
 
@@ -199,7 +199,7 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richf
 
 ```bash
 # Clone into a stable location
-git clone https://github.com/browser-use/browser-harness ~/projects/browser-harness
+git clone https://github.com/richfrem/browser-harness ~/projects/browser-harness
 cd ~/projects/browser-harness && uv sync
 
 # Add to your .env (copy from .env.example)
@@ -286,11 +286,10 @@ This project uses the **Exploration Cycle** architecture to systematize AI agent
 ## Acknowledgements
 
 ### browser-harness (Grok browser automation)
-- **Repository:** https://github.com/browser-use/browser-harness
-- **Author:** browser-use
-- **License:** MIT
+- **Upstream:** https://github.com/browser-use/browser-harness (MIT, browser-use)
+- **Our fork:** https://github.com/richfrem/browser-harness — includes `domain-skills/grok/post.md` (grok.com interaction skill)
 - **What it does:** Thin CDP harness (~600 lines) that gives an LLM direct browser control via Chrome DevTools Protocol. Used by `/x-news-sweep` to post prompts to grok.com and read responses automatically — eliminating the manual copy-paste step.
-- **Our usage:** Runtime dependency — clone separately to `~/projects/browser-harness`. The grok.com interaction skill lives in `domain-skills/grok/post.md` inside that repo.
+- **Our usage:** Runtime dependency — clone the fork to `~/projects/browser-harness`. Pull upstream improvements with `git pull origin main` then push to fork with `git push fork main`.
 
 The TradingView Desktop integration in this project was informed by research into the following open-source projects. Our implementation (`plugins/tradingview/node/`) is an owned, minimal adaptation — not a dependency on either repo at runtime.
 
