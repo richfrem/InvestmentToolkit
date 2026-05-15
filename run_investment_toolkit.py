@@ -6,15 +6,23 @@ run_investment_toolkit.py (CLI)
 Purpose:
     Unified startup script for the Investment Toolkit suite.
     Handles virtual environment setup, dependency installation (Node & Python),
-    backend building, and concurrent service orchestration (Frontend & Backend).
+    backend building, concurrent service orchestration (Frontend & Backend),
+    and TradingView Desktop launch with real-time price access.
 
 Layer: Codify
 
 Usage Examples:
+    # Standard launch — starts backend, frontend, and TradingView with real-time prices:
     python3 run_investment_toolkit.py
 
-Supported Object Types:
-    N/A
+    # TradingView behaviour:
+    #   - If TradingView Desktop is already running WITH --remote-debugging-port=9222 → no action
+    #   - If TradingView Desktop is running WITHOUT the debug port → kills it, relaunches with port
+    #   - If TradingView Desktop is not running → launches it with the debug port
+    #   - If TradingView Desktop is not installed → skipped, yfinance delayed prices used instead
+    #
+    # To relaunch TradingView independently (e.g. after closing it):
+    python3 launch_tradingview_with_debugport.py
 
 CLI Arguments:
     None
@@ -24,20 +32,20 @@ Input Files:
     - investment_screener/backend/data/portfolio.json: User portfolio data
 
 Output:
-    - Running services on localhost:3001 and localhost:5173
-    - Logs to stdout/stderr
+    - Backend API on http://localhost:3001
+    - Frontend dashboard on http://localhost:5173
+    - TradingView CDP on http://localhost:9222 (real-time prices)
 
 Key Functions:
     - main(): Entry point for the startup sequence
     - run_command(): Synchronous command execution helper
     - check_command(): Path-based command existence check
+    - _launch_tradingview(): Delegates to plugins/tradingview/scripts/tv_launch.py
 
 Script Dependencies:
     - Node.js (npm)
     - Python 3.8+
-
-Consumed by:
-    - Developers for local development and testing
+    - TradingView Desktop (optional — https://www.tradingview.com/desktop/)
 """
 
 import os
