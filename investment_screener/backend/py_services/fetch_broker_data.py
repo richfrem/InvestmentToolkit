@@ -324,14 +324,30 @@ def main():
 
     # ── compare ──────────────────────────────────────────────────────────────
     if args.compare or args.source == "compare":
-        print("Fetching TradingView positions via CDP...")
-        # Use positions directly (active account) — getPortfolio() multi-account iterate can fail
-        pos_raw = fetch_tv_positions()
-        tv = {"positions": pos_raw.get("positions", [])} if isinstance(pos_raw, dict) else {"positions": []}
-        if "error" in pos_raw:
-            print(f"❌ TV error: {pos_raw['error']}", file=sys.stderr)
+        print("Fetching TradingView positions across ALL accounts via CDP...")
+        snapshot = fetch_tv_snapshot()
+        if "error" in snapshot:
+            print(f"❌ TV error: {snapshot['error']}", file=sys.stderr)
             sys.exit(1)
-        print(f"   TV: {len(tv.get('positions', []))} positions")
+
+        # Aggregate positions by symbol across all accounts (sum quantities)
+        agg: dict = {}
+        for pos in snapshot.get("positions", []):
+            sym = pos.get("symbol")
+            if not sym:
+                continue
+            if sym not in agg:
+                agg[sym] = dict(pos)
+            else:
+                # Same symbol in multiple accounts — sum qty, keep first avgFillPrice
+                agg[sym]["quantity"] = (agg[sym].get("quantity") or 0) + (pos.get("quantity") or 0)
+
+        tv = {"positions": list(agg.values())}
+        acct_counts = {}
+        for p in snapshot.get("positions", []):
+            at = p.get("accountType", "?")
+            acct_counts[at] = acct_counts.get(at, 0) + 1
+        print(f"   TV: {len(tv['positions'])} unique symbols across {len(snapshot.get('accounts', []))} accounts {acct_counts}")
 
         print("Reading Questrade portfolio.json...")
         qt = fetch_questrade_snapshot()
@@ -376,7 +392,12 @@ def main():
             sys.exit(1)
 
         path = write_snapshot(snapshot, promote=args.promote)
-        print(f"✓ {len(snapshot.get('positions', []))} positions, {len(snapshot.get('accounts', []))} accounts")
+        accts = snapshot.get("accounts", [])
+        snaps = snapshot.get("snapshots", [])
+        for s in snaps:
+            n = len(s.get("positions", []))
+            print(f"   {s.get('accountType','?')} ({s.get('accountId','?')}): {n} positions")
+        print(f"✓ {len(snapshot.get('positions', []))} total positions across {len(accts)} accounts")
         print(f"✓ Written to {path}")
         print()
         print(json.dumps(snapshot, indent=indent))
