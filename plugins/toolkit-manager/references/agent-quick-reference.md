@@ -49,6 +49,24 @@ Outputs:
 
 ---
 
+### `/place-order {ACTION} {N} {TICKER} in {ACCOUNT}`
+**Live order execution via TradingView.** Places buy or sell orders through TradingView's built-in Questrade broker integration using CDP automation. Three-step HITL flow: preflight card (broker check + buying power) → CONFIRM → form filled + submitted → portfolio.json synced.
+
+Requires: TradingView Desktop running with Questrade broker connected (the Questrade panel visible at the bottom of TradingView).
+
+```
+/place-order buy 1 WYFI in TFSA
+/place-order sell 5 NVDA in RRSP
+/place-order buy 10 INTC at $18.50 limit in TFSA
+```
+
+Pre-flight checks every time:
+- Questrade broker connected in TradingView
+- Correct account (TFSA / RRSP / Margin)
+- Sufficient buying power (USD or CAD matched to ticker exchange)
+
+---
+
 ### `/run-advisor`
 **Full lifecycle orchestrator.** Runs the complete Portfolio Advisor loop: drift review → target calibration → rebalance. Good for a full session when you have time to act on recommendations.
 
@@ -162,6 +180,7 @@ python3 launch_tradingview_with_debugport.py
 | Monthly | `/evaluate-stock {TICKER}` | Re-run for stale or missing AI projections |
 | Quarterly | `/strategic-review` | Review MD, approve, apply formula patch |
 | Before buying | `/research-stock {TICKER}` then `/evaluate-stock {TICKER}` | Class C/D findings block buy recommendations |
+| Execute trade | `/place-order buy N {TICKER} in {ACCOUNT}` | Preflight → CONFIRM → TV dialog filled + submitted → portfolio synced |
 | New ETF | `/analyze-etf {TICKER}` | Appears in Dashboard AI Expert Thesis panel automatically |
 
 ---
