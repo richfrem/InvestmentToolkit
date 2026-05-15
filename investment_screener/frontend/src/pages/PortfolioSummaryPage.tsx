@@ -27,6 +27,7 @@ import {
 import PortfolioSummaryCards from '../components/PortfolioSummaryCards';
 import PortfolioBreakdown from '../components/PortfolioBreakdown';
 import StrategyAllocationChart from '../components/StrategyAllocationChart';
+import { PriceSourceBadge } from '../components/PriceSourceBadge';
 
 function PeriodCard({
     label,
@@ -77,10 +78,11 @@ export default function PortfolioSummaryPage() {
     const [allocLoading, setAllocLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
+    const [priceSource, setPriceSource] = useState<string | null>(null);
 
     useEffect(() => {
         fetchPortfolioSummary()
-            .then(d => { setSummary(d); setLastRefreshedAt(new Date()); })
+            .then(d => { setSummary(d); setLastRefreshedAt(new Date()); setPriceSource(d.price_source ?? null); })
             .catch(err => setError(err.message || 'Failed to load portfolio summary'))
             .finally(() => setLoading(false));
 
@@ -122,12 +124,9 @@ export default function PortfolioSummaryPage() {
                         YTD performance and total value across all accounts
                     </p>
                 </div>
-                {lastRefreshedAt && (
-                    <div className="flex items-center gap-1 text-xs text-zinc-500 mt-1">
-                        <span className="w-1.5 h-1.5 rounded-full inline-block bg-zinc-500" />
-                        Refreshed · {lastRefreshedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                    </div>
-                )}
+                <div className="mt-1">
+                    <PriceSourceBadge priceSource={priceSource} lastRefreshedAt={lastRefreshedAt} />
+                </div>
             </div>
 
             {/* Row 1: Original 4 summary cards */}
