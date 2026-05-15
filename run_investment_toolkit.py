@@ -196,103 +196,15 @@ def setup_virtual_env(venv_dir: str, env: Dict[str, str]) -> None:
                      "cryptography", "keyring"], env=env)
 
 def _launch_tradingview() -> None:
-    """
-    Launch TradingView Desktop with CDP remote debugging on port 9222.
-
-    Strategy:
-      1. If CDP port is already reachable → already good, return.
-      2. If TradingView process is running WITHOUT the CDP port → kill it and
-         relaunch with the flag (macOS only; on Windows we just try to launch).
-      3. Launch TradingView with --remote-debugging-port=9222 and wait up to
-         15 s for the port to become reachable.
-      4. Any failure is non-fatal — yfinance fallback takes over silently.
-    """
-    import socket
-
-    TV_PORT = 9222
-    TV_APP_MAC = "/Applications/TradingView.app"
-    TV_BINARY_MAC = "/Applications/TradingView.app/Contents/MacOS/TradingView"
-    TV_APP_WIN = os.path.join(
-        os.environ.get("LOCALAPPDATA", ""), "TradingView", "TradingView.exe"
-    )
-
-    def _port_open() -> bool:
-        try:
-            with socket.create_connection(("localhost", TV_PORT), timeout=1):
-                return True
-        except OSError:
-            return False
-
-    # 1. Already running with CDP port — nothing to do
-    if _port_open():
-        Colors.print(f"  TradingView: CDP port {TV_PORT} already reachable ✓", Colors.CYAN)
+    """Delegate to tv_launch.py — single source of truth for TradingView CDP launch."""
+    tv_launcher = os.path.join(ROOT_DIR, "plugins", "tradingview", "scripts", "tv_launch.py")
+    if not os.path.exists(tv_launcher):
+        Colors.print("  TradingView: launcher not found — skipping.", Colors.YELLOW)
         return
-
-    # 2. On macOS, kill any existing TradingView process so we can relaunch
-    #    with the debug flag (a running instance ignores `open --args`).
-    if not IS_WINDOWS:
-        try:
-            kill_result = subprocess.run(
-                ["pkill", "-x", "TradingView"],
-                capture_output=True
-            )
-            if kill_result.returncode == 0:
-                Colors.print("  TradingView: stopped existing instance to relaunch with CDP port.", Colors.YELLOW)
-                time.sleep(1)  # brief pause before relaunch
-        except Exception:
-            pass
-
-    # 3. Find the app
-    if IS_WINDOWS:
-        tv_path = TV_APP_WIN if os.path.exists(TV_APP_WIN) else None
-    else:
-        tv_path = TV_APP_MAC if os.path.exists(TV_APP_MAC) else None
-
-    if not tv_path:
-        Colors.print(
-            "  TradingView: Desktop app not found — skipping (yfinance prices will be used).\n"
-            "  Install from https://www.tradingview.com/desktop/ for real-time quotes.",
-            Colors.YELLOW,
-        )
-        return
-
-    # 4. Launch with CDP flag
     try:
-        if IS_WINDOWS:
-            subprocess.Popen(
-                [tv_path, f"--remote-debugging-port={TV_PORT}"],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                creationflags=0x00000008,  # DETACHED_PROCESS
-            )
-        else:
-            # Launch the binary directly — more reliable than `open --args` for flag passing
-            binary = TV_BINARY_MAC if os.path.exists(TV_BINARY_MAC) else None
-            if binary:
-                subprocess.Popen(
-                    [binary, f"--remote-debugging-port={TV_PORT}"],
-                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                )
-            else:
-                # Fallback: `open` with --args
-                subprocess.Popen(
-                    ["open", tv_path, "--args", f"--remote-debugging-port={TV_PORT}"],
-                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                )
-        Colors.print(f"  TradingView: launching with CDP port {TV_PORT}...", Colors.CYAN)
+        subprocess.run([sys.executable, tv_launcher], check=False)
     except Exception as e:
-        Colors.print(f"  TradingView: launch failed ({e}) — using yfinance fallback.", Colors.YELLOW)
-        return
-
-    # 5. Wait up to 15 s for the port to come up
-    for i in range(15):
-        time.sleep(1)
-        if _port_open():
-            Colors.print(f"  TradingView: ready on port {TV_PORT} ✓ (real-time prices enabled)", Colors.GREEN)
-            return
-    Colors.print(
-        f"  TradingView: launched but port {TV_PORT} not reachable after 15 s — using yfinance fallback.",
-        Colors.YELLOW,
-    )
+        Colors.print(f"  TradingView: launch failed ({e}) — yfinance fallback active.", Colors.YELLOW)
 
 
 # main function
