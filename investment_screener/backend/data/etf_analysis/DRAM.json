@@ -1,0 +1,113 @@
+[
+  {
+    "ticker": "DRAM",
+    "id": "d7a3c1e2-8f4b-4a9d-b2c5-6e1f7a3d5b9c",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.0",
+    "schemaType": "ETF_ANALYSIS",
+    "fundType": "THEMATIC_ETF",
+    "version": 1,
+    "savedAt": "2026-05-14T16:42:00.000000+00:00",
+    "updatedAt": "2026-05-14T16:42:00.000000+00:00",
+    "name": "AI ETF Analysis \u2014 DRAM \u2014 2026-05-14",
+    "rationale": "Roundhill Memory ETF provides unique US-accessible exposure to SK Hynix (25.9%) and Samsung (21.6%) \u2014 the #1 and #2 global HBM memory suppliers for Nvidia AI chips \u2014 stocks not directly purchasable on US exchanges. Thesis alignment score 53 (HOLD range): DIRECT AI-memory exposure concentrated in two non-US names; remaining holdings are NAND/HDD plays with lower AI relevance. Fund has doubled in 6 months (+94.6%); entry timing matters. Strategic value is the Korean/Japanese memory access, not diversification.",
+    "snapshot": {
+      "price": 54.03,
+      "currency": "USD",
+      "exchange": "BTS",
+      "aum": 2477708032,
+      "expenseRatio": 0.0065,
+      "fiftyTwoWeekHigh": 56.38,
+      "fiftyTwoWeekLow": 26.14
+    },
+    "holdingsAnalysis": {
+      "topHoldings": [
+        {
+          "symbol": "000660.KS",
+          "name": "SK Hynix Inc",
+          "holdingPct": 25.94,
+          "alignment": "DIRECT",
+          "note": "Nvidia's #1 HBM3E supplier \u2014 H100/H200/B200 all use SK Hynix HBM. Only accessible via Korean exchange (KRX) or this ETF on US markets."
+        },
+        {
+          "symbol": "005930.KS",
+          "name": "Samsung Electronics",
+          "holdingPct": 21.62,
+          "alignment": "DIRECT",
+          "note": "HBM3E recently qualified for Nvidia. Dominant DRAM/NAND/logic player. KRX-only for US investors."
+        },
+        {
+          "symbol": "FGXXX",
+          "name": "First American Government Obligs X (Cash/MMF)",
+          "holdingPct": 13.21,
+          "alignment": "NEUTRAL",
+          "note": "Cash drag \u2014 13.2% of fund uninvested."
+        },
+        {
+          "symbol": "285A.T",
+          "name": "Kioxia Holdings",
+          "holdingPct": 6.1,
+          "alignment": "PARTIAL",
+          "note": "NAND flash leader (Japan). Data center storage demand growing but not HBM/AI compute memory."
+        },
+        {
+          "symbol": "SNDK",
+          "name": "SanDisk Corp",
+          "holdingPct": 5.42,
+          "alignment": "PARTIAL",
+          "note": "NAND flash / enterprise SSD. Overlap: already an INITIATE target in direct portfolio."
+        },
+        {
+          "symbol": "STX",
+          "name": "Seagate Technology",
+          "holdingPct": 5.26,
+          "alignment": "TANGENTIAL",
+          "note": "HDD storage \u2014 benefits from data center capacity growth but not AI compute memory."
+        },
+        {
+          "symbol": "WDC",
+          "name": "Western Digital",
+          "holdingPct": 4.97,
+          "alignment": "TANGENTIAL",
+          "note": "HDD + NAND. Similar to STX \u2014 tangential AI data center storage play."
+        }
+      ],
+      "concentration": {
+        "top2Pct": 47.56,
+        "top5Pct": 72.29,
+        "top7Pct": 82.52
+      },
+      "thesisAlignmentScore": 53,
+      "alignmentBreakdown": {
+        "directPct": 47.56,
+        "partialPct": 11.52,
+        "tangentialPct": 10.23,
+        "neutralCashPct": 13.21,
+        "unknownPct": 17.48
+      },
+      "expenseDragBps": 65,
+      "overlapWithDirectHoldings": [
+        "SNDK"
+      ],
+      "uniqueAccessNote": "SK Hynix and Samsung are not listed on any US exchange. DRAM is the only liquid US vehicle for direct HBM supplier exposure without using a Korean brokerage account."
+    },
+    "action": "HOLD",
+    "actionRationale": "Thesis alignment score 53 places this in HOLD territory, but fund has run +94.6% in 6 months \u2014 wait for a pullback before initiating. The unique SK Hynix + Samsung HBM access (47.6% DIRECT alignment) is strategically compelling: these are Nvidia's primary HBM suppliers and are unavailable on US exchanges individually. 13.2% cash drag and 65 bps expense ratio are negatives. Watch for entry on a memory sector pullback or post-earnings dip.",
+    "upsideCatalysts": [
+      "Nvidia HBM demand continues to scale with Blackwell/Rubin GPU generations \u2014 SK Hynix and Samsung are primary beneficiaries",
+      "Samsung HBM3E full qualification ramp at Nvidia \u2192 higher blended ASPs",
+      "Memory pricing cycle recovery \u2014 DRAM spot prices recovering in 2026",
+      "AI inference scaling driving sustained HBM demand beyond training clusters"
+    ],
+    "risks": [
+      "Heavy Korea/Japan FX concentration \u2014 KRW/JPY weakness vs USD reduces USD returns",
+      "13.2% cash drag is a significant return headwind",
+      "Memory sector is cyclical \u2014 any demand air pocket hits this ETF hard",
+      "65 bps expense ratio vs buying MU directly (zero expense) if US exposure is acceptable",
+      "Samsung HBM qualification delays could shift market share assumptions",
+      "Fund has doubled in 6 months \u2014 momentum reversal risk on any negative data point"
+    ],
+    "entryNote": "Add to WATCHLIST at 0.5% target. Wait for 10-15% pullback from current levels ($54) \u2014 entry target ~$46-48 would represent a reset from overbought conditions. Do NOT chase after +94.6% 6-month run. This is the only liquid US vehicle for SK Hynix/Samsung HBM exposure \u2014 the thesis for owning it is strong; the timing is the constraint.",
+    "agentRationale": "ETF_ANALYSIS: WATCHLIST | alignment 53% (DIRECT: SK Hynix 25.9% + Samsung 21.6% HBM) | Only US-listed vehicle for KRX-traded HBM leaders; fund +94.6% 6mo \u2014 wait for pullback to ~$46-48 | analyzed 2026-05-14"
+  }
+]

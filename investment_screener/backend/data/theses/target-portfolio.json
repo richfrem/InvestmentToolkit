@@ -4,7 +4,7 @@
   "schemaVersion": "1.0",
   "version": "9.4",
   "createdAt": "2026-02-14T12:00:00Z",
-  "updatedAt": "2026-05-14T00:00:00.000Z",
+  "updatedAt": "2026-05-15T06:12:14.161771+00:00",
   "description": "Investment thesis focused on the dual infrastructure buildout for ASI Compute (Primary) and Sovereign Finance (Secondary).",
   "pillars": [
     {
@@ -507,6 +507,17 @@
       "pillarId": "frontier",
       "thesisForInclusion": "Only public vehicle for pre-IPO AI basket: SpaceX, Anthropic, OpenAI, xAI, Databricks. Scarcity premium play \u2014 not a value play.",
       "agentRationale": "ETF_ANALYSIS: INITIATE 1.0% | CLOSED_END | price $54.67 | NAV est $14.50 | premium 277% (HIGH, ~40th pct historical range 80-620%) | only public pre-IPO AI basket: SpaceX(28%)/Anthropic(8%)/OpenAI(5%)/xAI(4%)/Databricks(5%) | alignment 82% | compression triggers: SpaceX/Anthropic IPO | size small, do not exceed 2% at this premium | analyzed 2026-05-13"
+    },
+    {
+      "ticker": "DRAM",
+      "name": "Roundhill Memory ETF",
+      "pillarId": "compute",
+      "targetWeight": 0.5,
+      "role": "speculative",
+      "subStrategyId": "sa-asi-race",
+      "thesisForInclusion": "Only US-listed vehicle for SK Hynix (25.9%) and Samsung (21.6%) HBM exposure \u2014 Nvidia's #1 and #2 HBM suppliers, not tradeable directly on US exchanges. Strategic memory play: HBM is the critical scarcity resource in AI compute scaling. Korean/Japanese memory consolidation thesis. Wait for pullback from current levels (+94.6% in 6mo) before initiating.",
+      "agentRationale": "ETF_ANALYSIS: HOLD | alignment 53% (DIRECT: SK Hynix 25.9% + Samsung 21.6% HBM) | Only US-listed vehicle for KRX-traded HBM leaders; fund +94.6% 6mo \u2014 wait for pullback to ~$46-48 | analyzed 2026-05-14",
+      "action": "WATCHLIST"
     }
   ],
   "globalSettings": {
