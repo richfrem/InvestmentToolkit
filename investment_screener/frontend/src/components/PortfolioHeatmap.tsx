@@ -48,6 +48,7 @@ interface HeatmapResponse {
     total_value: number;
     price_source?: string;
     refreshed_at?: string;
+    exchange_rate?: number;
 }
 
 interface TreemapNode {
@@ -560,8 +561,15 @@ export default function PortfolioHeatmap() {
                     <div className="text-xs text-zinc-400">
                         {data.stocks.length} stocks
                     </div>
-                    <div className="text-sm font-bold text-white">
-                        {formatValue(data.total_value)}
+                    <div className="text-right">
+                        <div className="text-sm font-bold text-white leading-tight">
+                            {formatValue(data.total_value)} <span className="text-zinc-500 font-normal text-xs">USD</span>
+                        </div>
+                        {data.exchange_rate && (
+                            <div className="text-xs text-zinc-400 leading-tight">
+                                {formatValue(data.total_value * data.exchange_rate)} <span className="text-zinc-500">CAD</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

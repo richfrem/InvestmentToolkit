@@ -47,6 +47,18 @@ if (!fs.existsSync(PORTFOLIO_FILE) && fs.existsSync(PORTFOLIO_EXAMPLE)) {
     console.log('[Init] Created portfolio.json from .example');
 }
 
+async function getLiveUsdCadRate(): Promise<number> {
+    const apiKey = process.env.EXCHANGE_RATE_API_KEY;
+    if (apiKey) {
+        try {
+            const r = await fetch(`https://v6.exchangerate-api.com/v6/${apiKey}/pair/USD/CAD`);
+            const d = await r.json();
+            if (d.result === 'success') return d.conversion_rate;
+        } catch { /* fall through */ }
+    }
+    return JAN1_USD_CAD_RATE;
+}
+
 function isTradingViewConnected(tvPort = 9222): Promise<boolean> {
     return new Promise((resolve) => {
         const socket = new net.Socket();
@@ -156,12 +168,15 @@ app.post('/api/portfolio-heatmap', async (req, res) => {
             res.status(400).json({ error: `Invalid ticker symbols: ${invalidTickers.map((i: any) => i.symbol).join(', ')} ` });
             return;
         }
-        const data = await spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(items)]);
+        const [data, exchangeRate] = await Promise.all([
+            spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(items)]),
+            getLiveUsdCadRate(),
+        ]);
         if (data.error) {
             res.status(400).json({ error: data.error });
             return;
         }
-        res.json(data);
+        res.json({ ...data, exchange_rate: exchangeRate });
     } catch (error) {
         console.error(`[API] Error fetching heatmap: `, error);
         res.status(500).json({ error: 'Failed to fetch heatmap data' });
@@ -209,22 +224,7 @@ app.get('/api/portfolio/summary', async (_req, res) => {
         }
 
         // Fetch live USD/CAD exchange rate
-        const apiKey = process.env.EXCHANGE_RATE_API_KEY;
-        let liveUsdCadRate = JAN1_USD_CAD_RATE; // fallback
-
-        if (apiKey) {
-            try {
-                const rateResponse = await fetch(
-                    `https://v6.exchangerate-api.com/v6/${apiKey}/pair/USD/CAD`
-                );
-                const rateData = await rateResponse.json();
-                if (rateData.result === 'success') {
-                    liveUsdCadRate = rateData.conversion_rate;
-                }
-            } catch (err) {
-                console.warn('[API] Exchange rate fetch failed, using fallback rate');
-            }
-        }
+        const liveUsdCadRate = await getLiveUsdCadRate();
 
         // Convert to CAD using live rate
         const totalMarketValueCAD = totalMarketValueUSD * liveUsdCadRate;
@@ -391,8 +391,11 @@ app.post('/api/portfolio/refresh-prices', async (_req, res) => {
         // Read current portfolio from disk (gitignored local file)
         const portfolioData = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
 
-        // Fetch updated prices
-        const data = await spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(portfolioData)]);
+        // Fetch updated prices and exchange rate in parallel
+        const [data, exchangeRate] = await Promise.all([
+            spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(portfolioData)]),
+            getLiveUsdCadRate(),
+        ]);
 
         if (data.error) {
             res.status(400).json({ error: data.error });
@@ -418,7 +421,7 @@ app.post('/api/portfolio/refresh-prices', async (_req, res) => {
         res.json({
             success: true,
             updated: updatedItems.length,
-            heatmap: data
+            heatmap: { ...data, exchange_rate: exchangeRate }
         });
     } catch (error) {
         console.error(`[API] Error refreshing prices: `, error);
