@@ -1,12 +1,12 @@
 # Agent Quick Reference — Portfolio Advisor
 
-This guide explains how to trigger AI agent skills directly in the Copilot CLI chat to analyse your portfolio, research stocks, and manage your investment thesis.
+This guide explains how to trigger AI agent skills directly in the Copilot CLI chat (or Claude Code) to analyse your portfolio, research stocks, evaluate ETFs, and manage your investment thesis.
 
 ---
 
 ## How to Use Agent Skills
 
-Open the **GitHub Copilot CLI** (or Claude Code) in the project terminal and type any command below. The agent reads your live portfolio data, investment thesis, and AI valuations — then responds with structured analysis.
+Open **Claude Code** or **GitHub Copilot CLI** in the project terminal and type any command below. The agent reads your live portfolio data, investment thesis, and AI valuations — then responds with structured analysis.
 
 ---
 
@@ -34,10 +34,37 @@ Outputs:
 
 ---
 
+### `/x-news-sweep`
+**Daily Grok/X.com news sweep.** Generates a structured prompt from your live thesis, posts it to Grok, and gates every recommendation against DCF fair values + 8 hard gates before applying changes. Run at the start of each trading day.
+
+---
+
+### `/13f-tracker`
+**SEC 13F filing monitor.** Polls SEC EDGAR for new 13F filings from tracked institutions. Downloads the latest holdings JSON and diffs it quarter-over-quarter to surface new positions, exits, and sizing changes.
+
+---
+
+### `/13f-analyze`
+**Surgical 13F analysis.** Cross-references an institution's 13F holdings against your thesis targets. Outputs gated INITIATE / ACCUMULATE / TRIM / EXIT recommendations and applies approved changes to `target-portfolio.json`.
+
+---
+
+### `/run-advisor`
+**Full lifecycle orchestrator.** Runs the complete Portfolio Advisor loop: drift review → target calibration → rebalance. Good for a full session when you have time to act on recommendations.
+
+---
+
+### `/calibrate-targets`
+**Interactive target-weight calibration.** Guides you through adjusting pillar and holding target weights interactively.
+
+---
+
 ## Stock Research & Valuation Commands
 
 ### `/evaluate-stock {TICKER}`
-**Full DCF valuation.** Fetches live financials, runs Bear / Base / Bull scenario modelling, produces a weighted fair value, and saves a projection JSON. Updates the AI rating (BUY / HOLD / SELL) and price target on the Portfolio Advisor table.
+**Full DCF valuation.** Fetches live financials (yfinance), runs Bear / Base / Bull scenario modelling, produces a weighted fair value, and saves a projection JSON. Uses live price from TradingView Desktop (active chart via CDP) when connected, otherwise yfinance.
+
+Updates the AI rating (BUY / HOLD / SELL) and price target on the Portfolio Advisor table.
 
 ```
 /evaluate-stock NVDA
@@ -58,6 +85,27 @@ Outputs:
 /research-stock INTC
 /research-stock CRCL
 ```
+
+---
+
+### `/analyze-etf {TICKER}`
+**Thematic ETF analysis.** For ETFs that don't fit a standard DCF model. Analyses holdings alignment against your investment thesis, expense ratio, fund type, and produces a BUY / HOLD / AVOID action with entry strategy.
+
+Automatically writes the result to:
+- `data/etf_analysis/{TICKER}.json` — full analysis
+- `data/projections/{TICKER}.json` — so the AI Expert Thesis panel appears in the Dashboard
+
+```
+/analyze-etf DXYZ
+/analyze-etf KOID
+/analyze-etf HUMN
+/analyze-etf DRAM
+```
+
+---
+
+### `/bundle-thesis-review`
+**Package thesis for external LLM.** Bundles your full thesis + DCF projections into a pasteable format for Grok, ChatGPT, or Gemini when you want a second opinion.
 
 ---
 
@@ -96,7 +144,12 @@ python3 investment_screener/backend/py_services/update_thesis.py --list
 ---
 
 ### `/start-screener`
-**Launch the full suite.** Starts backend (port 3001) and frontend (port 5173).
+**Launch the full suite.** Starts backend (port 3001) and frontend (port 5173). TradingView Desktop is auto-launched with `--remote-debugging-port=9222` if installed.
+
+To relaunch TradingView independently:
+```bash
+python3 launch_tradingview_with_debugport.py
+```
 
 ---
 
@@ -104,10 +157,12 @@ python3 investment_screener/backend/py_services/update_thesis.py --list
 
 | Cadence | Command | Follow-up |
 |---|---|---|
+| Daily | `/x-news-sweep` | Gate recs against DCF + 8 hard gates |
 | Weekly | `/review-portfolio` | `/rebalance` if pillar >5pp off target |
 | Monthly | `/evaluate-stock {TICKER}` | Re-run for stale or missing AI projections |
 | Quarterly | `/strategic-review` | Review MD, approve, apply formula patch |
 | Before buying | `/research-stock {TICKER}` then `/evaluate-stock {TICKER}` | Class C/D findings block buy recommendations |
+| New ETF | `/analyze-etf {TICKER}` | Appears in Dashboard AI Expert Thesis panel automatically |
 
 ---
 
@@ -115,8 +170,8 @@ python3 investment_screener/backend/py_services/update_thesis.py --list
 
 | File | Purpose |
 |---|---|
-| `investment_screener/backend/data/theses/target_portfolio.json` | Live thesis — pillar targets and holding weights |
+| `investment_screener/backend/data/theses/target-portfolio.json` | Live thesis — pillar targets and holding weights |
 | `plugins/portfolio-advisor/references/investment_thesis.md` | Thesis narrative — strategy, pillars, conviction logic |
 | `PortfolioAnalysis/strategic-reviews/` | Historical reviews (MD + JSON + patch) |
 | `investment_screener/backend/data/projections/` | AI DCF valuations per stock |
-
+| `investment_screener/backend/data/etf_analysis/` | ETF analysis results (versioned per ticker) |

@@ -273,12 +273,13 @@ export default function ScreenerTable() {
     useEffect(() => {
         const init = async () => {
             // Fetch all data sources in parallel
-            const [healthData, weightsData, reviewData, holdingsData, portData] = await Promise.all([
+            const [healthData, weightsData, reviewData, holdingsData, portData, allProjData] = await Promise.all([
                 fetch('/api/theses/target-portfolio/health').then(r => r.ok ? r.json() : null).catch(() => null),
                 fetch('/api/portfolio/weights').then(r => r.ok ? r.json() : null).catch(() => null),
                 fetch('/api/docs/latest-review-data').then(r => r.ok ? r.json() : null).catch(() => null),
                 fetch('/api/screener/all-holdings').then(r => r.ok ? r.json() : null).catch(() => null),
                 fetch('/api/portfolio').then(r => r.ok ? r.json() : null).catch(() => null),
+                fetch('/api/projections').then(r => r.ok ? r.json() : null).catch(() => null),
             ]);
 
             if (healthData) {
@@ -302,14 +303,22 @@ export default function ScreenerTable() {
             }
             if (holdingsData) setAllHoldings(holdingsData);
 
-            // Build combined heatmap items: owned positions (full data) + watchlist tickers (shares: 0)
-            // This ensures change_1d shows for ALL screener tickers, not just owned ones.
+            // Build combined heatmap items: owned positions + all screener tickers with shares: 0
+            // This ensures change_1d shows for every row including watchlist/projection-only tickers.
             const portfolioItems: any[] = portData?.items ?? [];
-            const portfolioSymbols = new Set(portfolioItems.map((i: any) => i.symbol));
-            const watchlistItems = (holdingsData ?? [])
-                .filter((h: any) => !portfolioSymbols.has(h.ticker))
-                .map((h: any) => ({ symbol: h.ticker, shares: 0 }));
-            const allItems = [...portfolioItems, ...watchlistItems];
+            const coveredSymbols = new Set(portfolioItems.map((i: any) => (i.symbol as string).toUpperCase()));
+
+            // Thesis holdings not in live portfolio
+            const thesisExtras = (holdingsData ?? [])
+                .filter((h: any) => !coveredSymbols.has((h.ticker as string).toUpperCase()))
+                .map((h: any) => { coveredSymbols.add((h.ticker as string).toUpperCase()); return { symbol: h.ticker, shares: 0 }; });
+
+            // Projection tickers not yet covered (e.g. analysed but removed from thesis)
+            const projTickers = (allProjData ?? [])
+                .filter((p: any) => p.source === 'AI_AGENT' && !coveredSymbols.has((p.ticker as string).toUpperCase()))
+                .map((p: any) => { coveredSymbols.add((p.ticker as string).toUpperCase()); return { symbol: p.ticker, shares: 0 }; });
+
+            const allItems = [...portfolioItems, ...thesisExtras, ...projTickers];
 
             if (allItems.length === 0) return;
             const heatmapData = await fetch('/api/portfolio-heatmap', {
