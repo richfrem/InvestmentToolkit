@@ -36,6 +36,9 @@ This workstation is built on a modular plugin architecture. You have access to t
 - **Connection badge**: All portfolio views (Heatmap, Table, Summary) show a "TV Live" / "yfinance" status badge driven by a TCP check on port 9222.
 - `/tv-alert-sync`: Sync DCF targets to TradingView price alerts.
 - `/tv-snapshot`: Capture technical charts.
+- `/place-order {ACTION} {N} {TICKER} in {ACCOUNT}`: **Live order execution** via TradingView's Questrade broker panel. CDP DOM automation fills the order dialog, screenshots the filled form, and submits after HITL CONFIRM. Syncs portfolio.json after fill. Requires TradingView Desktop with Questrade broker connected. Note: Questrade personal API tokens are read-only — order execution goes through TV, not the Questrade REST API.
+  - Script: `investment_screener/backend/py_services/place_order.py`
+  - Core module: `plugins/tradingview/node/core/trading.js`
 
 ## 📜 Agent Guidelines
 - **Agentic OS First**: This project prioritizes CLI-based agent orchestration over UI interactions. Encourage users to use terminal commands for research.
