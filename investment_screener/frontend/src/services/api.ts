@@ -227,6 +227,18 @@ export const syncQuestrade = async (): Promise<{ success: boolean; message: stri
     return data;
 };
 
+// Auto-pick source: TradingView CDP (primary) → Questrade → cache
+export const syncPortfolio = async (): Promise<{ success: boolean; dataSource: string; message: string }> => {
+    const response = await fetch('/api/portfolio/sync', {
+        method: 'POST',
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.details || data.error || 'Sync failed');
+    }
+    return data;
+};
+
 export const seedQuestradeToken = async (refreshToken: string): Promise<{ success: boolean; message: string }> => {
     const response = await fetch('/api/questrade/seed', {
         method: 'POST',

@@ -12,7 +12,7 @@
  *     <Sidebar />
  *
  * Key Functions:
- *     - handleSync() - Triggers a real-time portfolio sync with the Questrade API and reloads the current view
+ *     - handleSync() - Triggers a real-time portfolio sync (TV CDP primary, Questrade fallback) and reloads the current view
  *     - formatLastSync() - Formats the ISO sync timestamp into a human-readable HH:MM display
  */
 import { useState, useEffect } from 'react';
@@ -21,7 +21,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useRecentTickers } from '../hooks/useRecentTickers';
 import { PortfolioModal } from './PortfolioModal';
 import { QuestradeSetupModal } from './QuestradeSetupModal';
-import { syncQuestrade, fetchSyncStatus } from '../services/api';
+import { syncPortfolio, fetchSyncStatus } from '../services/api';
 
 export default function Sidebar() {
     const { recentTickers } = useRecentTickers();
@@ -57,7 +57,7 @@ export default function Sidebar() {
         setIsSyncing(true);
         setSyncFeedback(null);
         try {
-            await syncQuestrade();
+            await syncPortfolio();
             const { lastSync: newSync } = await fetchSyncStatus();
             setLastSync(newSync);
             setSyncFeedback('Sync Complete!');
@@ -137,7 +137,7 @@ export default function Sidebar() {
                     <span className="font-medium">Manual Portfolio</span>
                 </button>
 
-                {/* Questrade Sync Controls */}
+                {/* Portfolio Sync Controls */}
                 <div className="space-y-1">
                     <button
                         onClick={handleSync}
@@ -146,7 +146,7 @@ export default function Sidebar() {
                     >
                         <RefreshCcw size={20} className={`${isSyncing ? 'animate-spin text-amber-500' : 'group-hover:text-amber-500 transition-colors'}`} />
                         <div className="flex flex-col items-start leading-tight">
-                            <span className="font-medium">Questrade Sync</span>
+                            <span className="font-medium">Portfolio Sync</span>
                             <span className="text-[10px] text-slate-500 font-semibold">
                                 {isSyncing ? 'Syncing...' : `Last: ${formatLastSync(lastSync)}`}
                             </span>
