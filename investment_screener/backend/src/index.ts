@@ -38,6 +38,7 @@ app.use(express.json({ limit: '1mb' })); // raised from 50kb — v1.2 projection
 
 const PORTFOLIO_FILE = path.join(__dirname, '../data/portfolio.json');
 const PORTFOLIO_EXAMPLE = PORTFOLIO_FILE + '.example';
+const ETF_ANALYSIS_DIR = path.join(__dirname, '../data/etf_analysis');
 
 // On startup, seed portfolio.json from .example if it doesn't exist (clean clone)
 if (!fs.existsSync(PORTFOLIO_FILE) && fs.existsSync(PORTFOLIO_EXAMPLE)) {
@@ -58,6 +59,64 @@ app.get('/api/stock/:ticker', async (req, res) => {
         res.status(400).json({ error: 'Invalid ticker symbol' });
         return;
     }
+
+    // ETF fast-path: if we have a saved ETF analysis, return it shaped as StockData
+    const etfFile = path.join(ETF_ANALYSIS_DIR, `${ticker}.json`);
+    if (fs.existsSync(etfFile)) {
+        console.log(`[API] ETF analysis found for ${ticker} — returning ETF profile`);
+        try {
+            const parsed = JSON.parse(fs.readFileSync(etfFile, 'utf-8'));
+            // persist_etf_analysis.py stores as an array of versions; take the latest
+            const etf = Array.isArray(parsed) ? parsed[parsed.length - 1] : parsed;
+            const snap = etf.snapshot ?? {};
+            const holdings = etf.holdingsAnalysis?.topHoldings ?? [];
+            const etfResponse = {
+                symbol: ticker,
+                price: snap.price ?? 0,
+                currency: snap.currency ?? 'USD',
+                profile: {
+                    type: 'ETF',
+                    assetType: 'ETF',
+                    sector: 'ETF',
+                    industry: etf.fundType ?? 'THEMATIC_ETF',
+                    description: etf.rationale ?? '',
+                    longName: etf.name ?? ticker,
+                    fundFamily: '',
+                    expenseRatio: snap.expenseRatio ?? null,
+                    aum: snap.aum ?? null,
+                    fiftyTwoWeekHigh: snap.fiftyTwoWeekHigh ?? null,
+                    fiftyTwoWeekLow: snap.fiftyTwoWeekLow ?? null,
+                    topHoldings: holdings,
+                    thesisAlignmentScore: etf.holdingsAnalysis?.thesisAlignmentScore ?? null,
+                    action: etf.action ?? null,
+                    actionRationale: etf.actionRationale ?? null,
+                    upsideCatalysts: etf.upsideCatalysts ?? [],
+                    risks: etf.risks ?? [],
+                    entryNote: etf.entryNote ?? null,
+                    analyzedAt: etf.savedAt ?? null,
+                },
+                metrics: {
+                    pe_ratio: 0, forward_pe: 0, market_cap: snap.aum ?? 0,
+                    beta: 0, revenue: 0, shares_outstanding: 0,
+                },
+                expert_metrics: {
+                    rule_of_40: { score: 0, revenue_growth: 0, ebitda_margin: 0, is_saas: false },
+                    piotroski_f_score: { score: 0, max: 9, details: {} },
+                },
+                financials: {
+                    historical_revenue: [], historical_net_income: [], historical_fcf: [],
+                    historical_gross_margin: [], historical_operating_margin: [],
+                    historical_net_margin: [], historical_eps: [],
+                },
+            };
+            res.json(etfResponse);
+            return;
+        } catch (err) {
+            console.warn(`[API] ETF analysis parse error for ${ticker}:`, err);
+            // fall through to normal fetch
+        }
+    }
+
     console.log(`[API] Fetching data for ${ticker}...`);
     try {
         const data = await spawnPythonScript('fetch_financials.py', [ticker]);
