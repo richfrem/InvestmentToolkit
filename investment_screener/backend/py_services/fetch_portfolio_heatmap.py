@@ -30,18 +30,8 @@ import yfinance as yf
 from history_store import HistoricalPriceStore
 
 # --- Optional TradingView real-time price injection ---
-tv_call = None  # type: ignore[assignment]
-_TV_AVAILABLE = False
-try:
-    _TV_PLUGIN_SCRIPTS = str(
-        Path(__file__).resolve().parent.parent.parent.parent
-        / "plugins" / "tradingview" / "scripts"
-    )
-    sys.path.insert(0, _TV_PLUGIN_SCRIPTS)
-    from tv_client import is_tv_running, tv_call  # type: ignore[import-not-found,assignment]
-    _TV_AVAILABLE = is_tv_running()
-except Exception:
-    pass
+# TradingView CDP is not used for portfolio batch prices — the CLI `quote` command
+# reads only from the active chart, not per-symbol. yfinance is used for all prices.
 
 # --- Caching Configuration ---
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
@@ -189,16 +179,9 @@ def fetch_portfolio_data(items: list) -> dict:
                 change_pct = ((current_price - prev_close) / prev_close * 100) if prev_close else 0
                 hist_changes = history.calc_changes(sym, current_price)
 
-                # Optional TradingView real-time price override
-                if _TV_AVAILABLE and tv_call is not None:
-                    try:
-                        tv_result = tv_call("quote", sym.upper(), timeout=5)
-                        tv_price = tv_result.get("price") if isinstance(tv_result, dict) else None
-                        if tv_price and tv_price > 0:
-                            current_price = tv_price
-                            change_pct = tv_result.get("changePercent", change_pct)
-                    except Exception:
-                        pass
+                # NOTE: TV CLI quote reads from the active chart only — not per-symbol.
+                # Using yfinance for all portfolio prices avoids returning the active
+                # chart's price for every ticker regardless of what symbol was requested.
 
             total_market = round(shares * current_price, 2)
             total_book = round(shares * book_price, 2) if book_price else None
@@ -264,7 +247,7 @@ def fetch_portfolio_data(items: list) -> dict:
             })
 
     result["total_value"] = round(result["total_value"], 2)
-    result["price_source"] = "tradingview" if _TV_AVAILABLE else "yfinance"
+    result["price_source"] = "yfinance"  # TV CLI reads active chart only; not used for batch portfolio prices
     result["refreshed_at"] = datetime.now(timezone.utc).isoformat()
     return result
 
