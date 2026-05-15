@@ -20,6 +20,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
+import net from 'net';
 
 // Initialize environment variables from the project root .env
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
@@ -44,6 +45,17 @@ const ETF_ANALYSIS_DIR = path.join(__dirname, '../data/etf_analysis');
 if (!fs.existsSync(PORTFOLIO_FILE) && fs.existsSync(PORTFOLIO_EXAMPLE)) {
     fs.copyFileSync(PORTFOLIO_EXAMPLE, PORTFOLIO_FILE);
     console.log('[Init] Created portfolio.json from .example');
+}
+
+function isTradingViewConnected(tvPort = 9222): Promise<boolean> {
+    return new Promise((resolve) => {
+        const socket = new net.Socket();
+        socket.setTimeout(300);
+        socket.on('connect', () => { socket.destroy(); resolve(true); });
+        socket.on('timeout', () => { socket.destroy(); resolve(false); });
+        socket.on('error', () => resolve(false));
+        socket.connect(tvPort, 'localhost');
+    });
 }
 
 // Validates ticker symbols: 1-10 uppercase alphanumeric chars, dots, hyphens (e.g. BRK-B, BTC-USD)
@@ -234,6 +246,8 @@ app.get('/api/portfolio/summary', async (_req, res) => {
         const unrealizedGainCAD = totalMarketValueCAD - totalBookValueCAD;
         const unrealizedGainPctCAD = unrealizedGainPctUSD; // same % regardless of currency
 
+        const tvConnected = await isTradingViewConnected();
+
         res.json({
             positionCount: positions.length,
             // Market value
@@ -258,6 +272,7 @@ app.get('/api/portfolio/summary', async (_req, res) => {
             liveUsdCadRate,
             jan1UsdCadRate: JAN1_USD_CAD_RATE,
             lastUpdated: new Date().toISOString(),
+            price_source: tvConnected ? 'tradingview' : 'yfinance',
         });
     } catch (error) {
         console.error(`[API] Error computing portfolio summary: `, error);
