@@ -24,7 +24,6 @@ import json
 import os
 import time
 from datetime import datetime, timezone
-from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import yfinance as yf
 from history_store import HistoricalPriceStore
