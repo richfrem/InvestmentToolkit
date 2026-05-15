@@ -137,8 +137,9 @@ This keeps thesis targets, `agentRationale`, and projection catalyst notes curre
 | `/13f-analyze` | portfolio-advisor | Surgical 13F analysis — cross-references SA LP holdings vs your targets, outputs gated INITIATE/ACCUMULATE/TRIM/EXIT recs, applies approved changes to target-portfolio.json |
 | `/bundle-thesis-review` | portfolio-advisor | Package thesis + DCF projections for paste into external LLM (Grok, ChatGPT, Gemini) |
 | `/run-advisor` | portfolio-advisor | Interactive Portfolio Advisor orchestrator — full review → calibrate → rebalance lifecycle |
+| `/place-order {buy\|sell} {N} {TICKER} in {ACCOUNT}` | portfolio-advisor | **Live order execution** via TradingView CDP broker automation. 3-step HITL: preflight card → CONFIRM → dialog filled + submitted + portfolio.json synced. Requires TradingView Desktop with Questrade broker connected. |
 | `/start-screener` | toolkit-manager | Launch full suite (frontend + backend) |
-| `/setup-questrade` | toolkit-manager | Interactive Questrade token setup |
+| `/setup-questrade` | toolkit-manager | Interactive Questrade token setup (optional — Questrade integration) |
 
 ---
 

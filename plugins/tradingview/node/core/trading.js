@@ -300,9 +300,10 @@ export async function setLimitPrice(price) {
 // ── submit order ─────────────────────────────────────────────────────────────
 
 export async function submitOrder() {
+  // Step 1: click the primary "Buy N TICKER MARKET" button
   const result = await evaluate(`(function() {
     var submitBtn = [...document.querySelectorAll('button')].find(function(b) {
-      return /^(Buy|Sell)\\s+\\d+/i.test(b.textContent.trim()) && b.offsetParent !== null;
+      return /^(Buy|Sell)\\s+/i.test(b.textContent.trim()) && b.offsetParent !== null;
     });
     if (!submitBtn) return JSON.stringify({ error: 'Submit button not found. Is the order dialog open?' });
     var text = submitBtn.textContent.trim();
@@ -311,7 +312,35 @@ export async function submitOrder() {
   })()`).then(JSON.parse);
 
   if (result.error) throw new Error(result.error);
-  await sleep(500);
+
+  // Step 2: wait for secondary TradingView confirmation dialog and click it.
+  // TradingView shows a secondary "Confirm Order" or "Place Order" modal
+  // after the primary button click. We poll for up to 3 seconds.
+  await sleep(600);
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const confirmed = await evaluate(`(function() {
+      // Look for any visible "Confirm", "Place Order", "OK", or "Yes" button
+      // that appeared in a new dialog after the primary click
+      var btn = [...document.querySelectorAll('button')].find(function(b) {
+        if (!b.offsetParent) return false;
+        var text = b.textContent.trim();
+        // Match confirmation patterns — short, affirmative text
+        return /^(Confirm|Place Order|Place order|Send Order|OK|Yes|Submit|Send)$/i.test(text)
+          || /confirm/i.test(b.getAttribute('aria-label') || '');
+      });
+      if (!btn) return JSON.stringify({ found: false });
+      var text = btn.textContent.trim();
+      btn.click();
+      return JSON.stringify({ found: true, clicked: text });
+    })()`).then(JSON.parse);
+
+    if (confirmed.found) {
+      result.secondaryConfirm = confirmed.clicked;
+      break;
+    }
+    await sleep(400);
+  }
+
   return result;
 }
 
