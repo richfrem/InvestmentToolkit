@@ -46,18 +46,27 @@ When a user initiates an onboarding session, guide them through the following ph
 2. Ensure they have run the primary setup script: `python3 run_investment_toolkit.py`.
 3. If they encounter issues, offer to use your `Bash` tool to check versions (`node -v`, `python3 --version`).
 
-### Phase 3: Questrade Synchronization (Optional but Recommended)
-1. Explain that Questrade integration securely bridges their live portfolio to the AI analysis engine.
-2. Ask if they want to set this up now.
-3. If yes, do NOT print the full manual curl commands. Instead, instruct them to trigger the dedicated skill: "Please type `/setup-questrade` to launch the secure, interactive token setup wizard."
-4. Wait for them to confirm completion.
+### Phase 3: TradingView Setup (Primary — Recommended)
+1. Explain that TradingView Desktop with a connected broker is the **primary portfolio sync path** — no separate API credentials needed. The toolkit reads live positions directly from TradingView's broker panel via CDP.
+2. Ask if they have TradingView Desktop installed (Premium/Pro subscription required for broker integration).
+3. If yes, instruct them to:
+   - Open TradingView Desktop
+   - Log in to their broker account via the broker icon (bottom of the screen)
+   - Verify positions appear in the broker panel
+4. Then run the health check and a test sync:
+   ```bash
+   python3 plugins/tradingview/scripts/tv_health_check.py
+   # If connected, sync portfolio from TV:
+   python3 investment_screener/backend/py_services/fetch_broker_data.py --accounts
+   ```
+5. If connected and accounts appear → tell them: "Type `/tv-portfolio-sync` to sync your live positions into portfolio.json."
+6. Wait for confirmation of a successful connection.
 
-### Phase 4: TradingView Setup (Optional)
-1. Explain that TradingView Premium is required for real-time prices via the Chrome DevTools Protocol (CDP).
-2. Ask if they have TradingView Desktop installed and a Premium subscription.
-3. If yes, instruct them to ensure TradingView Desktop is running with the debugging port enabled, then offer to run the health check script for them using your `Bash` tool:
-   `python3 plugins/tradingview/scripts/tv_health_check.py`
-4. Wait for confirmation of a successful connection.
+### Phase 4: Questrade Direct API (Optional — Advanced)
+1. Explain that Questrade direct API integration is **optional**. It's useful for cross-validation or if TradingView is unavailable. TV sync covers all the same data.
+2. Ask if they want to set it up.
+3. If yes, do NOT print the full manual curl commands. Instead, instruct them: "Type `/setup-questrade` to launch the secure, interactive token setup wizard."
+4. Wait for them to confirm completion.
 
 ### Phase 5: The First Run
 1. Congratulate the user on completing the setup.
