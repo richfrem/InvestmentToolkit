@@ -37,12 +37,34 @@ python3 investment_screener/backend/py_services/fetch_broker_data.py --snapshot
 
 Output: JSON to stdout (same schema as `portfolio.json`).
 
-### Data source resolution order (abstraction layer)
+### Abstraction layer interface (canonical functions)
+All consumers call these — the source is resolved underneath:
+
+```
+getAccounts(source?)   → [{ accountId, accountType, currency }]
+getPositions(source?)  → [{ symbol, quantity, avgCost, marketValue, unrealizedPnL }]
+getBalances(source?)   → { totalEquity, buyingPowerUSD, buyingPowerCAD }
+getOrders(source?)     → [{ orderId, symbol, action, qty, status }]
+getPortfolio(source?)  → merged snapshot (same schema as portfolio.json)
+```
+
+`source` is one of `'tv' | 'questrade' | 'auto' | 'compare'`.
+
+### Data source resolution order (auto mode)
 ```
 1. TradingView CDP (primary — works for any connected broker)
-2. Questrade REST API (optional fallback — if .questrade_cache exists and TV unreachable)
+2. Questrade REST API (optional fallback — .questrade_cache exists + TV unreachable)
 3. portfolio.json cache (final fallback — stale but always available)
 ```
+
+### Cross-validation mode (`--source compare`)
+Runs both TV and Questrade in parallel, diffs the results field-by-field:
+```
+python3 fetch_broker_data.py --positions --source compare
+```
+Output shows matched rows (✓), quantity mismatches (⚠ TV:16 QT:15), and symbols only in one source.
+
+**This is the primary validation tool during development** — run compare, fix discrepancies in the TV scraper until it matches Questrade, then TV becomes the trusted primary. Questrade can be dropped from required setup once compare passes.
 
 The backend's `QuestradeSyncService.ts` gets refactored into a generic `BrokerSyncService.ts` that delegates to whichever source is available.
 
@@ -57,10 +79,11 @@ The backend's `QuestradeSyncService.ts` gets refactored into a generic `BrokerSy
 - [ ] Unit-test output shape matches `portfolio.json` schema
 
 ### Phase 2 — Python wrapper script
-- [ ] Create `fetch_broker_data.py` with `--accounts`, `--positions`, `--balances`, `--snapshot` flags
-- [ ] `--snapshot` merges all sources and writes `portfolio.json` (replacing Questrade engine for this path)
-- [ ] Add `--source tv|questrade|auto` flag for explicit override
-- [ ] Error messages clearly guide user to open TradingView with broker connected if CDP unavailable
+- [ ] Create `fetch_broker_data.py` with `--accounts`, `--positions`, `--balances`, `--orders`, `--snapshot` flags
+- [ ] Add `--source tv|questrade|auto|compare` flag for explicit override
+- [ ] `--source compare` runs both sources, diffs field-by-field, prints matched/mismatched rows
+- [ ] `--snapshot` merges all sources and writes `portfolio.json`
+- [ ] Clear error guidance if TV not reachable (open TradingView Desktop with broker connected)
 
 ### Phase 3 — Backend integration
 - [ ] Create `BrokerSyncService.ts` wrapping source resolution logic
