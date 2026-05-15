@@ -129,7 +129,12 @@ An autonomous buy-side analyst. Fetches real-time financial data, builds Bear/Ba
 - `/evaluate-stock {TICKER}` — Full DCF valuation with scenario analysis and persistence to the Valuation Modeler
 - `/research-stock {TICKER}` — Qualitative sweep; classifies findings as Class A/B/C/D and gates re-valuation on confirmation
 
-### 2. Strategic Thesis Suite (`plugins/portfolio-advisor`)
+### 2. ETF Analysis (`plugins/etf-analysis`)
+Purpose-built for thematic ETFs that don't fit a standard DCF model.
+
+- `/analyze-etf {TICKER}` — Holdings alignment analysis against your investment thesis, expense ratio review, BUY/HOLD/AVOID action. Writes to `data/etf_analysis/` and co-writes a projection record to `data/projections/` so the AI Expert Thesis panel appears in the Dashboard automatically.
+
+### 3. Strategic Thesis Suite (`plugins/portfolio-advisor`)
 A multi-skill suite that monitors, challenges, and optimizes your portfolio against your investment thesis.
 
 - `/review-portfolio` — Drift monitor + pillar conviction audit + thesis formula health score (0–100)
@@ -137,19 +142,22 @@ A multi-skill suite that monitors, challenges, and optimizes your portfolio agai
 - `/rebalance` — Valuation-gated trade optimizer; never buys a SELL-rated holding to restore drift
 - `/x-news-sweep` — Daily Grok/X.com news sweep gated against DCF + 8 hard gates
 
-### 3. TradingView Integration (`plugins/tradingview`)
+### 4. TradingView Integration (`plugins/tradingview`)
 Real-time price and alert integration via TradingView Desktop and Chrome DevTools Protocol.
 
 **Requires:** TradingView Desktop + Premium subscription (see [above](#tradingview-premium-real-time-prices)).
 
-- `/tv-price-refresh` — Live prices for all portfolio positions (TV → yfinance fallback per ticker)
+**Auto-launch:** `run_investment_toolkit.py` automatically launches TradingView Desktop with `--remote-debugging-port=9222`. To relaunch independently: `python3 launch_tradingview_with_debugport.py`.
+
+**CDP scope:** The TV CLI `quote` command reads from the **active chart only** — it is used in `/evaluate-stock` when you have that ticker displayed. Portfolio batch prices (Heatmap, Table, Summary) always come from yfinance. All portfolio views show a "TV Live" / "yfinance" connection badge.
+
 - `/tv-alert-sync` — Create TradingView price alerts at DCF bear/base/bull targets for all holdings
 - `/tv-alert-sync CRWV` — Single-ticker alert sync
 - `/tv-snapshot CRWV` — Capture chart screenshot → `PortfolioAnalysis/screenshots/`
 
 See [`plugins/tradingview/README.md`](plugins/tradingview/README.md) for full setup and usage.
 
-### 4. Toolkit Manager (`plugins/toolkit-manager`)
+### 5. Toolkit Manager (`plugins/toolkit-manager`)
 Orchestrator for server startup and Questrade token management.
 
 - `/start-screener` — Launch full suite (frontend + backend)

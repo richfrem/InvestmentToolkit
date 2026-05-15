@@ -77,6 +77,11 @@ app.get('/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+app.get('/api/tv-status', async (_req, res) => {
+    const connected = await isTradingViewConnected();
+    res.json({ price_source: connected ? 'tradingview' : 'yfinance' });
+});
+
 app.get('/api/stock/:ticker', async (req, res) => {
     const { ticker } = req.params;
     if (!isValidTicker(ticker)) {

@@ -23,11 +23,17 @@ This workstation is built on a modular plugin architecture. You have access to t
 - `/x-news-sweep`: Daily news processing via Grok/X.com.
 
 ### 2. Stock Valuation Analyst (`plugins/stock-valuation`)
-- `/evaluate-stock {TICKER}`: Deep-dive Bear/Base/Bull DCF modeling and research report generation.
+- `/evaluate-stock {TICKER}`: Deep-dive Bear/Base/Bull DCF modeling and research report generation. Uses live price from TradingView Desktop (active chart) when CDP port 9222 is reachable, otherwise yfinance.
 - `/research-stock {TICKER}`: Qualitative catalyst and risk sweep.
 
-### 3. TradingView Bridge (`plugins/tradingview`)
-- `/tv-price-refresh`: Live price updates via CDP.
+### 3. ETF Analysis (`plugins/etf-analysis`)
+- `/analyze-etf {TICKER}`: Thematic ETF analysis — holdings alignment against investment thesis, expense ratio, fund type, BUY/HOLD/AVOID action. Writes to `data/etf_analysis/` and co-writes a projection record to `data/projections/` so the Dashboard AI Expert Thesis panel displays automatically.
+- Scripts: `fetch_fund_data.py`, `validate_etf_analysis.py`, `persist_etf_analysis.py`
+
+### 4. TradingView Bridge (`plugins/tradingview`)
+- **CDP Integration**: `run_investment_toolkit.py` auto-launches TradingView Desktop with `--remote-debugging-port=9222`. Use `launch_tradingview_with_debugport.py` (repo root) to relaunch standalone.
+- **Single-ticker only**: The TV CLI `quote` command reads from the **active chart**. It is used in `/evaluate-stock` when you have that ticker displayed. It is **not** used for batch portfolio prices — those always come from yfinance.
+- **Connection badge**: All portfolio views (Heatmap, Table, Summary) show a "TV Live" / "yfinance" status badge driven by a TCP check on port 9222.
 - `/tv-alert-sync`: Sync DCF targets to TradingView price alerts.
 - `/tv-snapshot`: Capture technical charts.
 
