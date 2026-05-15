@@ -1,17 +1,31 @@
 #!/usr/bin/env python3
 """
-tv_launch.py - Launch TradingView Desktop with CDP remote debugging enabled.
+tv_launch.py — Launch TradingView Desktop with CDP remote debugging enabled.
 
-Strategy:
-  1. If CDP port is already reachable → already good, exit 0.
-  2. Kill any existing TradingView process (it ignores --remote-debugging-port
-     if already running without it).
-  3. Launch the TradingView binary directly with --remote-debugging-port=9222.
-  4. Wait up to 20 s for the port to become reachable, print status.
+Purpose:
+    Ensures TradingView Desktop is running with --remote-debugging-port=9222
+    so the Investment Toolkit can connect to it for real-time price quotes.
+    Called automatically by run_investment_toolkit.py at suite startup, and
+    available standalone as launch_tradingview_with_debugport.py at repo root.
+
+What it does (in order):
+    1. Checks if CDP port 9222 is already reachable.
+       → If yes: exits immediately — no restart needed.
+    2. Locates the TradingView Desktop binary
+       (checks /Applications, ~/Applications, then Spotlight).
+       → If not found: prints install instructions and exits.
+    3. Kills any existing TradingView process.
+       A running instance without the debug port ignores the flag on reopen;
+       it must be stopped and relaunched.
+    4. Launches the binary directly with --remote-debugging-port=9222.
+       (Direct binary launch is more reliable than `open --args` on macOS.)
+    5. Waits up to 20 s for port 9222 to become reachable, then reports
+       ready or timeout — either way, yfinance fallback remains active.
 
 Usage:
     python3 plugins/tradingview/scripts/tv_launch.py
     python3 plugins/tradingview/scripts/tv_launch.py --port 9222
+    python3 launch_tradingview_with_debugport.py   # root-level shortcut
 """
 
 import sys
