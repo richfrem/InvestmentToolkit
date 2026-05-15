@@ -218,7 +218,7 @@ class QuestradeAPIClient:
         """
         all_positions = []
         accounts = self.get_accounts()
-        
+
         for account in accounts:
             account_id = account["number"]
             self.logger.info(f"Fetching positions for account {account_id} ({account['type']})")
@@ -228,5 +228,89 @@ class QuestradeAPIClient:
                 pos["_account_id"] = account_id
                 pos["_account_type"] = account["type"]
             all_positions.extend(positions)
-            
+
         return all_positions
+
+    def search_symbol(self, query: str, preferred_currency: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Resolves a ticker string to a Questrade symbolId.
+        Prefers exact symbol match; uses preferred_currency to break ties
+        (e.g. 'USD' picks NASDAQ over TSX for dual-listed stocks).
+
+        Args:
+            query: Ticker string (e.g. 'NVDA', 'SHOP', 'SHOP.TO').
+            preferred_currency: 'USD' or 'CAD' to prefer when multiple matches exist.
+
+        Returns:
+            Best-matching symbol dict with keys: symbol, symbolId, description,
+            listingExchange, currency, isTradable.
+
+        Raises:
+            RuntimeError: If no tradable match is found.
+        """
+        data = self._request("GET", f"v1/symbols/search?prefix={query}")
+        symbols = data.get("symbols", [])
+        tradable = [s for s in symbols if s.get("isTradable", True)]
+
+        if not tradable:
+            raise RuntimeError(f"No tradable symbol found for '{query}'.")
+
+        # Exact match first
+        exact = [s for s in tradable if s.get("symbol", "").upper() == query.upper()]
+        candidates = exact if exact else tradable
+
+        if preferred_currency:
+            currency_match = [s for s in candidates if s.get("currency", "").upper() == preferred_currency.upper()]
+            if currency_match:
+                return currency_match[0]
+
+        return candidates[0]
+
+    def place_order(
+        self,
+        account_id: str,
+        symbol_id: int,
+        action: str,
+        quantity: int,
+        order_type: str,
+        limit_price: Optional[float] = None,
+        time_in_force: str = "Day",
+    ) -> Dict[str, Any]:
+        """
+        Submits a buy or sell order to Questrade.
+
+        Args:
+            account_id: Questrade account number.
+            symbol_id: Questrade internal symbolId (from search_symbol).
+            action: 'Buy' or 'Sell'.
+            quantity: Number of shares.
+            order_type: 'Market' or 'Limit'.
+            limit_price: Required when order_type is 'Limit'.
+            time_in_force: 'Day' (default) or 'GoodTillCanceled'.
+
+        Returns:
+            Questrade order response dict.
+
+        Raises:
+            ValueError: If limit_price missing for a Limit order.
+            RuntimeError: On API error.
+        """
+        if order_type == "Limit" and limit_price is None:
+            raise ValueError("limit_price is required for Limit orders.")
+
+        payload: Dict[str, Any] = {
+            "accountNumber": account_id,
+            "symbolId": symbol_id,
+            "quantity": quantity,
+            "isAllOrNone": False,
+            "isAnonymous": False,
+            "orderType": order_type,
+            "timeInForce": time_in_force,
+            "action": action,
+            "primaryRoute": "AUTO",
+            "secondaryRoute": "AUTO",
+        }
+        if limit_price is not None:
+            payload["limitPrice"] = limit_price
+
+        return self._request("POST", f"v1/accounts/{account_id}/orders", json=payload)
