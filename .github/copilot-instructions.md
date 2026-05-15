@@ -138,8 +138,9 @@ This keeps thesis targets, `agentRationale`, and projection catalyst notes curre
 | `/bundle-thesis-review` | portfolio-advisor | Package thesis + DCF projections for paste into external LLM (Grok, ChatGPT, Gemini) |
 | `/run-advisor` | portfolio-advisor | Interactive Portfolio Advisor orchestrator — full review → calibrate → rebalance lifecycle |
 | `/place-order {buy\|sell} {N} {TICKER} in {ACCOUNT}` | portfolio-advisor | **Live order execution** via TradingView CDP broker automation. 3-step HITL: preflight card → CONFIRM → dialog filled + submitted + portfolio.json synced. Requires TradingView Desktop with Questrade broker connected. |
+| `/tv-portfolio-sync` | portfolio-advisor | **Sync portfolio.json from TradingView** — reads live positions across all accounts (TFSA + RRSP + Cash) via CDP. Shows diff (added/removed/changed) before writing. Works with any TradingView-connected broker; no Questrade credentials required. |
 | `/start-screener` | toolkit-manager | Launch full suite (frontend + backend) |
-| `/setup-questrade` | toolkit-manager | Interactive Questrade token setup (optional — Questrade integration) |
+| `/setup-questrade` | toolkit-manager | Interactive Questrade token setup (optional — TV sync works without it) |
 
 ---
 
