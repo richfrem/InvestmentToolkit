@@ -124,8 +124,9 @@ This keeps thesis targets, `agentRationale`, and projection catalyst notes curre
 
 | Trigger | Plugin | Purpose |
 |---------|--------|---------|
-| `/evaluate-stock {TICKER}` | stock-valuation | Full DCF valuation — Bear/Base/Bull scenarios, fair value, analyticsLog, research report |
+| `/evaluate-stock {TICKER}` | stock-valuation | Full DCF valuation — Bear/Base/Bull scenarios, fair value, analyticsLog, research report. Uses live TV price (active chart via CDP) when TradingView Desktop is running. |
 | `/research-stock {TICKER}` | stock-valuation | Qualitative research sweep — Class A/B/C/D change classification, gates re-valuation |
+| `/analyze-etf {TICKER}` | etf-analysis | Thematic ETF analysis — holdings alignment vs thesis, expense ratio, BUY/HOLD/AVOID. Writes `data/etf_analysis/` + co-writes `data/projections/` so AI Expert Thesis panel appears in Dashboard. |
 | `/review-portfolio` | portfolio-advisor | Drift monitor + pillar conviction audit + thesis formula health score (0–100) |
 | `/strategic-review` | portfolio-advisor | Adversarial thesis challenger — surfaces failing pillars, proposes formula improvements |
 | `/rebalance` | portfolio-advisor | Valuation-gated trade optimizer — skips SELL-rated holdings when restoring drift |

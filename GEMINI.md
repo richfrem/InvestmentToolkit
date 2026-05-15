@@ -50,7 +50,10 @@ Run from repo root:
 ```bash
 python3 run_investment_toolkit.py
 ```
-*Creates the Python venv, installs all dependencies (npm & pip), builds the backend, and launches both services.*
+*Creates the Python venv, installs all dependencies (npm & pip), builds the backend, launches both services, and **auto-launches TradingView Desktop with CDP on port 9222** (if installed). To relaunch TradingView independently after closing it:*
+```bash
+python3 launch_tradingview_with_debugport.py
+```
 
 ### 🤖 Orchestration Command
 You can also use the **Toolkit Manager** plugin to launch the suite:
@@ -137,8 +140,9 @@ This keeps thesis targets, `agentRationale`, and projection catalyst notes curre
 
 | Trigger | Plugin | Purpose |
 |---------|--------|---------|
-| `/evaluate-stock {TICKER}` | stock-valuation | Full DCF valuation — Bear/Base/Bull scenarios, fair value, research report |
+| `/evaluate-stock {TICKER}` | stock-valuation | Full DCF valuation — Bear/Base/Bull scenarios, fair value, research report. Uses live TV price when CDP active. |
 | `/research-stock {TICKER}` | stock-valuation | Qualitative research sweep — classifies findings, gates re-valuation on confirmation |
+| `/analyze-etf {TICKER}` | etf-analysis | Thematic ETF analysis — holdings alignment, expense ratio, BUY/HOLD/AVOID. Writes `data/etf_analysis/` + co-writes `data/projections/` so AI Expert Thesis panel appears in Dashboard. |
 | `/review-portfolio` | portfolio-advisor | Drift monitor + pillar conviction audit + thesis formula health score (0–100) |
 | `/strategic-review` | portfolio-advisor | Adversarial thesis challenger — surfaces failing pillars, proposes formula improvements |
 | `/rebalance` | portfolio-advisor | Valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift |

@@ -13,17 +13,27 @@
  * Key Functions:
  *     - ScreenerPage() - Orchestrates the main layout for the Portfolio Advisor, including quick-access buttons for Thesis, Review, and Guide modals
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ScreenerTable from '../components/ScreenerTable';
 import InvestmentThesisModal from '../components/InvestmentThesisModal';
 import LatestReviewModal from '../components/LatestReviewModal';
 import AgentGuideModal from '../components/AgentGuideModal';
+import { PriceSourceBadge } from '../components/PriceSourceBadge';
 import { BookOpen, FileBarChart2, Terminal } from 'lucide-react';
 
 export default function ScreenerPage() {
     const [showThesis, setShowThesis] = useState(false);
     const [showReview, setShowReview] = useState(false);
     const [showGuide, setShowGuide] = useState(false);
+    const [priceSource, setPriceSource] = useState<string | null>(null);
+    const [loadedAt] = useState<Date>(new Date());
+
+    useEffect(() => {
+        fetch('/api/tv-status')
+            .then(r => r.json())
+            .then(d => setPriceSource(d.price_source ?? null))
+            .catch(() => setPriceSource('yfinance'));
+    }, []);
 
     return (
         <div className="p-6 h-full flex flex-col">
@@ -33,6 +43,9 @@ export default function ScreenerPage() {
                     <p className="text-slate-400 text-sm">
                         AI-powered portfolio intelligence · deep-dive agent analyses
                     </p>
+                    <div className="mt-1">
+                        <PriceSourceBadge priceSource={priceSource} lastRefreshedAt={loadedAt} />
+                    </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     <button
