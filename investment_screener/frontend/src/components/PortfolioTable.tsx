@@ -19,6 +19,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchAllProjections } from '../services/api';
 import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown } from 'lucide-react';
+import { PriceSourceBadge } from './PriceSourceBadge';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -506,12 +507,7 @@ export default function PortfolioTable() {
                     <button onClick={fetchData} className="px-3 py-1 bg-zinc-800 text-zinc-300 rounded text-xs hover:bg-zinc-700 transition-colors">
                         ↻ Refresh
                     </button>
-                    {lastRefreshedAt && (
-                        <div className={`flex items-center gap-1 text-xs ${priceSource === 'tradingview' ? 'text-emerald-400' : 'text-zinc-500'}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full inline-block ${priceSource === 'tradingview' ? 'bg-emerald-400' : 'bg-zinc-500'}`} />
-                            {priceSource === 'tradingview' ? 'TV Live' : 'yfinance'} · {lastRefreshedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                        </div>
-                    )}
+                    <PriceSourceBadge priceSource={priceSource} lastRefreshedAt={lastRefreshedAt} />
                 </div>
             </div>
 

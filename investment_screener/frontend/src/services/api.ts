@@ -137,6 +137,7 @@ export interface PortfolioSummary {
     liveUsdCadRate: number;
     jan1UsdCadRate: number;
     lastUpdated: string;
+    price_source?: string;
 }
 
 export const fetchPortfolioSummary = async (): Promise<PortfolioSummary> => {
