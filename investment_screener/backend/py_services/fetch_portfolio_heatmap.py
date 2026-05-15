@@ -25,12 +25,24 @@ import os
 import time
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
 import yfinance as yf
 from history_store import HistoricalPriceStore
 
-# --- Optional TradingView real-time price injection ---
-# TradingView CDP is not used for portfolio batch prices — the CLI `quote` command
-# reads only from the active chart, not per-symbol. yfinance is used for all prices.
+# --- TradingView connection status (for badge only) ---
+# Prices always come from yfinance — TV CLI `quote` reads the active chart only, not per-symbol.
+# We still check TV availability so the badge shows connection status correctly.
+_TV_AVAILABLE = False
+try:
+    _TV_PLUGIN_SCRIPTS = str(
+        Path(__file__).resolve().parent.parent.parent.parent
+        / "plugins" / "tradingview" / "scripts"
+    )
+    sys.path.insert(0, _TV_PLUGIN_SCRIPTS)
+    from tv_client import is_tv_running  # type: ignore[import-not-found]
+    _TV_AVAILABLE = is_tv_running()
+except Exception:
+    pass
 
 # --- Caching Configuration ---
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
@@ -246,7 +258,7 @@ def fetch_portfolio_data(items: list) -> dict:
             })
 
     result["total_value"] = round(result["total_value"], 2)
-    result["price_source"] = "yfinance"  # TV CLI reads active chart only; not used for batch portfolio prices
+    result["price_source"] = "tradingview" if _TV_AVAILABLE else "yfinance"
     result["refreshed_at"] = datetime.now(timezone.utc).isoformat()
     return result
 
