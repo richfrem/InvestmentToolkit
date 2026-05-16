@@ -23,6 +23,7 @@ import cors from 'cors';
 import { valuationService } from './services/ValuationService';
 import { PORTFOLIO_FILE, PORTFOLIO_EXAMPLE } from './utils/paths';
 import { isTradingViewConnected } from './utils/helpers';
+import { localAuthMiddleware, LOCAL_API_TOKEN } from './middleware/localAuth';
 
 import portfolioRouter from './routes/portfolio';
 import projectionsRouter from './routes/projections';
@@ -40,6 +41,8 @@ const HOST = '127.0.0.1';
 
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
+app.use(localAuthMiddleware);
+console.log(`[Auth] Local API token active — read from .runtime/api-token or env LOCAL_API_TOKEN`);
 
 // On startup, seed portfolio.json from .example if it doesn't exist (clean clone)
 if (!fs.existsSync(PORTFOLIO_FILE) && fs.existsSync(PORTFOLIO_EXAMPLE)) {
