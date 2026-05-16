@@ -1,9 +1,6 @@
 import { z } from 'zod';
 
-// Helper for validating ticker symbols (Unified Regex: 1-5 letters, optional dot + 1-3 letters, OR simple 1-10 alphanumeric for broader compatibility if needed, but keeping strict for now based on previous valid file)
-// Red Team D3: Unify with index.ts which uses /^[A-Z0-9.\-]{1,10}$/
-// Let's use the broader one from index.ts to allow BRK-B, BTC-USD, etc.
-const tickerRegex = /^[A-Z0-9.\-]{1,10}$/;
+const tickerRegex = /^[A-Z0-9.\-_]{1,10}$/;
 
 // Scenario Schema — .passthrough() preserves v1.2 fields (year5Revenue, year5NetIncome,
 // year5EPS, scenarioPrice, risks) without stripping them on save.
@@ -90,7 +87,7 @@ export type Projection = z.infer<typeof ProjectionSchema>;
 // === THESIS SCHEMAS ===
 
 export const ThesisHoldingSchema = z.object({
-    ticker: z.string().regex(/^[A-Z0-9.\-]{1,10}$/),
+    ticker: z.string().regex(tickerRegex),
     name: z.string().max(100),
     pillarId: z.string(),
     targetWeight: z.number().min(0).max(100),

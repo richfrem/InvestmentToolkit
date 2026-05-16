@@ -4,9 +4,16 @@
 **InvestmentToolkit** is a high-end investment analysis suite for sophisticated retail investors. It features a "Luxury Dark Mode" web dashboard, fundamental analysis tools, valuation modeling, and autonomous AI agents for research and thesis management.
 
 ### 🚀 Getting Started (Interactive Onboarding)
-The quickest way to initialize the workstation is to trigger the **Toolkit Onboarding Guide**. 
-Simply type: **"Help me set up the toolkit"** 
-The onboarding agent handles dependency verification, secure Questrade syncing, and TradingView link-up.
+
+Two dedicated setup agents handle onboarding — always route new users here first:
+
+| Trigger | Agent | Purpose |
+|---------|-------|---------|
+| `"Help me set up the toolkit"` | `toolkit-onboarding-guide` | Master coordinator: checks dependencies, runs startup script, routes to TV setup |
+| `"Set up TradingView for me"` | `tradingview-onboarding` | Deep-dive TV setup: install, subscription check, broker panel, CDP verify, first sync |
+| `/setup-questrade` | skill | Optional Questrade API fallback (skip if TV sync works) |
+
+**Quick path for returning users**: `python3 run_investment_toolkit.py` → `/tv-portfolio-sync`
 
 ### 🔐 Prerequisites (Subscription)
 > [!IMPORTANT]
@@ -138,8 +145,9 @@ This keeps thesis targets, `agentRationale`, and projection catalyst notes curre
 | `/bundle-thesis-review` | portfolio-advisor | Package thesis + DCF projections for paste into external LLM (Grok, ChatGPT, Gemini) |
 | `/run-advisor` | portfolio-advisor | Interactive Portfolio Advisor orchestrator — full review → calibrate → rebalance lifecycle |
 | `/place-order {buy\|sell} {N} {TICKER} in {ACCOUNT}` | portfolio-advisor | **Live order execution** via TradingView CDP broker automation. 3-step HITL: preflight card → CONFIRM → dialog filled + submitted + portfolio.json synced. Requires TradingView Desktop with Questrade broker connected. |
+| `/tv-portfolio-sync` | portfolio-advisor | **Sync portfolio.json from TradingView** — reads live positions across all accounts (TFSA + RRSP + Cash) via CDP. Shows diff (added/removed/changed) before writing. Works with any TradingView-connected broker; no Questrade credentials required. |
 | `/start-screener` | toolkit-manager | Launch full suite (frontend + backend) |
-| `/setup-questrade` | toolkit-manager | Interactive Questrade token setup (optional — Questrade integration) |
+| `/setup-questrade` | toolkit-manager | Interactive Questrade token setup (optional — TV sync works without it) |
 
 ---
 

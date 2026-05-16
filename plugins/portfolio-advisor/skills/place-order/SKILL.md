@@ -159,4 +159,4 @@ User: sell 10 WYFI market from TFSA
 | `Order dialog did not open` | Tell user to ensure the chart is on the right ticker and the Questrade panel is visible in TradingView |
 | `Shares input not found` | Dialog may have closed — re-run `--execute` |
 | `Tab not found: Limit` | Order type not available for this symbol — try Market |
-| TradingView not running | Start TradingView Desktop with debug port: `python3 launch_tradingview_with_debugport.py` |
+| TradingView not running | Start TradingView Desktop with debug port: `python3 tools/launch_tradingview_with_debugport.py` |

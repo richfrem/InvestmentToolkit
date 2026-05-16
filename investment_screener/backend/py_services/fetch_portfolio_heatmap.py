@@ -26,8 +26,21 @@ import time
 from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+import numpy as np
 import yfinance as yf
 from history_store import HistoricalPriceStore
+from sector_overrides import SECTOR_OVERRIDES
+
+
+class _NpEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, np.integer):
+            return int(o)
+        if isinstance(o, np.floating):
+            return float(o)
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        return super().default(o)
 
 # --- TradingView connection status (for badge only) ---
 # Prices always come from yfinance — TV CLI `quote` reads the active chart only, not per-symbol.
@@ -48,14 +61,6 @@ except Exception:
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cache")
 CACHE_DURATION = 900  # 15 minutes
 
-SECTOR_OVERRIDES = {
-    "HUMN": {"sector": "Technology", "industry": "Software - Application"},
-    "KOID": {"sector": "Technology", "industry": "Software - Application"},
-    "IBIT": {"sector": "Cryptocurrency", "industry": "Bitcoin ETF"},
-    "SOLZ": {"sector": "Cryptocurrency", "industry": "Crypto Assets"},
-    "ETHA": {"sector": "Cryptocurrency", "industry": "Ethereum ETF"},
-    "COIN": {"sector": "Cryptocurrency", "industry": "Crypto Exchange"},
-}
 
 
 def _cache_path(ticker: str) -> str:
@@ -274,7 +279,7 @@ def main():
         sys.exit(1)
 
     data = fetch_portfolio_data(items)
-    print(json.dumps(data, indent=2))
+    print(json.dumps(data, indent=2, cls=_NpEncoder))
 
 
 if __name__ == "__main__":
