@@ -236,11 +236,19 @@ def _format_card(card: dict) -> str:
     sufficient = coverage.get("sufficient", True)
     flag = "✓ Sufficient" if sufficient else "✗ INSUFFICIENT"
     lines.append(row("Buying Power:", card.get("buyingPowerDisplay", "?"), flag))
+
+    freshness = card.get("dataFreshnessMinutes")
+    if freshness is not None:
+        fresh_flag = "✓ Fresh" if freshness <= 60 else "⚠ STALE"
+        lines.append(row("Data Age:", f"{freshness:.0f} min", fresh_flag))
+
     lines.append("╚══════════════════════════════════════════════════════╝")
     return "\n".join(lines)
 
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
+
+MAX_ORDER_VALUE_DEFAULT = 5_000.0  # USD — refuse orders above this without --allow-large
 
 def main():
     parser = argparse.ArgumentParser(description="TradingView order placement with HITL confirmation")
@@ -251,6 +259,11 @@ def main():
     parser.add_argument("--limit-price", type=float, dest="limit_price")
     parser.add_argument("--account", default=None, help="rrsp, tfsa, margin")
     parser.add_argument("--output-json", default=None, dest="output_json")
+    parser.add_argument("--max-order-value", type=float, default=MAX_ORDER_VALUE_DEFAULT,
+                        dest="max_order_value",
+                        help=f"Refuse orders whose cost estimate exceeds this value (default ${MAX_ORDER_VALUE_DEFAULT:,.0f})")
+    parser.add_argument("--allow-large", action="store_true", dest="allow_large",
+                        help="Bypass the max-order-value cap (requires explicit flag)")
 
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--preflight", action="store_true")
@@ -282,6 +295,27 @@ def main():
             print(json.dumps(card, indent=2))
             sys.exit(1)
 
+        # ── data freshness gate ──────────────────────────────────────────
+        # Warn if portfolio.json was not updated recently (stale prices).
+        portfolio_path = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "data", "portfolio.json"))
+        if os.path.exists(portfolio_path):
+            import time as _time
+            age_minutes = (_time.time() - os.path.getmtime(portfolio_path)) / 60
+            card["dataFreshnessMinutes"] = round(age_minutes, 1)
+            if age_minutes > 60:
+                card["_freshnessWarning"] = (
+                    f"portfolio.json is {age_minutes:.0f} min old — prices may be stale. "
+                    "Run /tv-portfolio-sync before placing orders."
+                )
+
+        # ── max-order-value gate ─────────────────────────────────────────
+        cost = card.get("costEstimate")
+        if cost is not None and cost > args.max_order_value and not args.allow_large:
+            card["_sizeWarning"] = (
+                f"Order cost estimate ${cost:,.2f} exceeds safety cap ${args.max_order_value:,.0f}. "
+                "Re-run with --allow-large to override."
+            )
+
         print(_format_card(card))
         print()
         print(json.dumps(card, indent=2))
@@ -289,6 +323,11 @@ def main():
             with open(args.output_json, "w") as f:
                 json.dump(card, f, indent=2)
 
+        if card.get("_sizeWarning"):
+            print(f"\n🚫 {card['_sizeWarning']}")
+            sys.exit(3)
+        if card.get("_freshnessWarning"):
+            print(f"\n⚠️  {card['_freshnessWarning']}")
         if card.get("_warning"):
             print(f"\n⚠️  {card['_warning']}")
             sys.exit(2)

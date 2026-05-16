@@ -31,6 +31,43 @@ allowed-tools: Bash, Read, Write
 
 ---
 
+## ⚠️ Position Sizing Sanity Checks
+
+Apply before presenting any trade recommendation:
+
+| Check | Rule | Action on Breach |
+|-------|------|-----------------|
+| Max single-position | No holding may exceed **15%** of portfolio after trade | Cap trade size; note in output |
+| Max pillar concentration | No pillar may exceed **40%** after trade | Warn; suggest cross-pillar trim |
+| Min liquidity | Don't recommend trades < $200 (transaction cost not worth it) | Merge with adjacent trade or skip |
+| Cash floor | Maintain ≥ 2% portfolio in cash/USD after all buys | Reduce buy sizes proportionally |
+| Single-session cap | Don't recommend more than **$15,000** total buys in one rebalance session | Split into two sessions; flag to user |
+
+All math for P&L and position sizing must use the **exact values from the data files** — never round or estimate intermediate calculations. Derive size in shares as: `shares = floor(target_value_USD / current_price)`.
+
+---
+
+## ⚠️ No-Trade Conditions
+
+Block rebalance recommendations (surface as `PAUSED` state) when:
+
+- `DATA_STALE` — portfolio.json > 60 min old. State: *"Run `/tv-portfolio-sync` first — rebalance math needs live prices."*
+- `TARGETS_INVALID` — targets don't sum to 100% ± 0.5%. State: *"Run `/calibrate-targets` first — targets sum to {X}%."*
+- `MISSING_VALUATIONS` — more than 30% of thesis tickers have no DCF projection. State: *"Too many holdings unvalued — run `/evaluate-stock` for the missing ones before rebalancing."*
+- `EARNINGS_SEASON` — 3+ holdings have earnings within 7 days. Surface a list; let user decide whether to proceed.
+
+---
+
+## Data Freshness Provenance
+
+Every rebalance output must include a provenance line:
+
+> "Data: portfolio.json at {timestamp} ({source}) · targets from target-portfolio.json v{version} · DCF projections: {N}/{M} holdings"
+
+If source is `cache` (no recent sync): prepend ⚠️ and recommend sync before any trades.
+
+---
+
 ## ⚠️ Verify Targets Before Rebalancing
 Always confirm targets sum to 100% and reflect the latest agreed weights before generating trades.
 If targets need adjustment, use `update_targets.py` first:
