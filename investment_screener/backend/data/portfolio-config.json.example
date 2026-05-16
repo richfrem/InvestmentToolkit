@@ -1,0 +1,5 @@
+{
+  "_comment": "Copy to portfolio-config.json and set your Jan 1 portfolio value and exchange rate. Updated each January.",
+  "ytdStartValueCAD": 0,
+  "jan1UsdCadRate": 1.0
+}

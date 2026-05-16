@@ -44,6 +44,7 @@ temp/
 # Excluded via sparse-checkout or local-only
 .env
 .env.*
+investment_screener/backend/data/portfolio-config.json
 
 # Personal workspace — generated outputs, order screenshots, review artifacts
 PortfolioAnalysis/
