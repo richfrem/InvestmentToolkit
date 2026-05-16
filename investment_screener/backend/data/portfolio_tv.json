@@ -1,6 +1,6 @@
 {
   "dataSource": "tradingview-cdp",
-  "timestamp": "2026-05-15T19:20:55.534Z",
+  "timestamp": "2026-05-15T23:08:11.442Z",
   "accounts": [
     {
       "accountType": "CASH",
@@ -37,13 +37,13 @@
         "cashCADCombined": 6846.12,
         "cashUSDCombined": 4990.06,
         "marketValueCAD": 0,
-        "marketValueUSD": 17775.58,
-        "marketValueCADCombined": 24387.21,
-        "marketValueUSDCombined": 17775.58,
+        "marketValueUSD": 17609.74,
+        "marketValueCADCombined": 24159.68,
+        "marketValueUSDCombined": 17609.74,
         "totalEquityCAD": 3.71,
-        "totalEquityUSD": 22762.94,
-        "totalEquityCADCombined": 31233.32,
-        "totalEquityUSDCombined": 22765.64,
+        "totalEquityUSD": 22597.1,
+        "totalEquityCADCombined": 31005.8,
+        "totalEquityUSDCombined": 22599.8,
         "buyingPowerCAD": 3.71,
         "buyingPowerUSD": 4819.7,
         "buyingPowerCADCombined": 6470.59,
@@ -57,9 +57,9 @@
         "maxBPCADCombined": 6470.59,
         "maxBPUSDCombined": 4822.34,
         "openPnLCAD": 0,
-        "openPnLUSD": 2480.29,
-        "openPnLCADCombined": 3402.83,
-        "openPnLUSDCombined": 2480.29,
+        "openPnLUSD": 2314.45,
+        "openPnLCADCombined": 3175.31,
+        "openPnLUSDCombined": 2314.45,
         "closedPnLCAD": 0,
         "closedPnLUSD": 1308.66,
         "closedPnLCADCombined": 1795.42,
@@ -79,7 +79,7 @@
           "direction": "Long",
           "quantity": 2,
           "avgFillPrice": 273.1995,
-          "profit": null,
+          "profit": 5.5,
           "positionId": "13305251-0f49-4322-01ac-3f5451910a2d"
         },
         {
@@ -87,7 +87,7 @@
           "direction": "Long",
           "quantity": 20,
           "avgFillPrice": 12.2047,
-          "profit": 24.71,
+          "profit": 22.91,
           "positionId": "755a2840-2465-4542-0bf5-c99d111b0f44"
         },
         {
@@ -95,7 +95,7 @@
           "direction": "Long",
           "quantity": 2.3,
           "avgFillPrice": 357.8524,
-          "profit": null,
+          "profit": -208.5,
           "positionId": "7e3a3b11-0204-4e22-0fbd-949b2a5f1b2c"
         },
         {
@@ -103,7 +103,7 @@
           "direction": "Long",
           "quantity": 1,
           "avgFillPrice": 302.4314,
-          "profit": null,
+          "profit": 80.02,
           "positionId": "143a1048-1442-4462-00fe-8a8a1840af6f"
         },
         {
@@ -119,7 +119,7 @@
           "direction": "Long",
           "quantity": 35,
           "avgFillPrice": 18.4601,
-          "profit": null,
+          "profit": 201.25,
           "positionId": "1d331d39-0d55-4d22-05a8-cc9e7e450a29"
         },
         {
@@ -135,7 +135,7 @@
           "direction": "Long",
           "quantity": 3,
           "avgFillPrice": 173.3181,
-          "profit": null,
+          "profit": 0.58,
           "positionId": "1c483846-070a-4c12-0ed3-5b9d425e0d12"
         },
         {
@@ -151,7 +151,7 @@
           "direction": "Long",
           "quantity": 3,
           "avgFillPrice": 59.71,
-          "profit": null,
+          "profit": -10.47,
           "positionId": "0a153a28-0f82-4a72-038d-80809553187c"
         },
         {
@@ -159,7 +159,7 @@
           "direction": "Long",
           "quantity": 2,
           "avgFillPrice": 241.9828,
-          "profit": null,
+          "profit": 302.67,
           "positionId": "22126462-2cb6-4222-0b89-168b266b0828"
         },
         {
@@ -167,7 +167,7 @@
           "direction": "Long",
           "quantity": 16,
           "avgFillPrice": 28.37,
-          "profit": null,
+          "profit": 139.04,
           "positionId": "620a1526-076b-42b2-078d-5191515718bc"
         },
         {
@@ -183,7 +183,7 @@
           "direction": "Long",
           "quantity": 6,
           "avgFillPrice": 47.875,
-          "profit": 28.77,
+          "profit": null,
           "positionId": "1a631a46-189f-4a22-0944-ce881a697425"
         },
         {
@@ -191,7 +191,7 @@
           "direction": "Long",
           "quantity": 10,
           "avgFillPrice": 45.266,
-          "profit": null,
+          "profit": 76.74,
           "positionId": "7217055d-0d69-4242-0979-2a8717190748"
         },
         {
@@ -199,7 +199,7 @@
           "direction": "Long",
           "quantity": 12,
           "avgFillPrice": 30.6004,
-          "profit": null,
+          "profit": 118.44,
           "positionId": "42080b68-4f83-4272-0d1b-1a66b24d117a"
         },
         {
@@ -207,7 +207,7 @@
           "direction": "Long",
           "quantity": 0.5,
           "avgFillPrice": 942.07,
-          "profit": null,
+          "profit": 14.32,
           "positionId": "22555d0e-1075-4282-04a0-a38741440a81"
         },
         {
@@ -223,7 +223,7 @@
           "direction": "Long",
           "quantity": 2,
           "avgFillPrice": 177.4056,
-          "profit": 89.45,
+          "profit": 85.07,
           "positionId": "7d132968-1e79-4d52-029c-866ebd82095d"
         },
         {
@@ -239,7 +239,7 @@
           "direction": "Long",
           "quantity": 2,
           "avgFillPrice": 199.5875,
-          "profit": 55.17,
+          "profit": null,
           "positionId": "1f2c511b-0b83-4f92-0dac-66503e9d0a9d"
         },
         {
@@ -247,7 +247,7 @@
           "direction": "Long",
           "quantity": 8,
           "avgFillPrice": 98.1857,
-          "profit": null,
+          "profit": -287.49,
           "positionId": "6f38565a-2616-4f32-0f29-089a043f1238"
         },
         {
@@ -255,7 +255,7 @@
           "direction": "Long",
           "quantity": 4,
           "avgFillPrice": 198.2391,
-          "profit": null,
+          "profit": 178.36,
           "positionId": "043e164b-0b9d-4492-016f-183f9d61269e"
         },
         {
@@ -263,7 +263,7 @@
           "direction": "Long",
           "quantity": 4,
           "avgFillPrice": 55.45,
-          "profit": -66.12,
+          "profit": -66.8,
           "positionId": "760b5a69-1b93-4652-0389-2e851d231858"
         },
         {
@@ -271,7 +271,7 @@
           "direction": "Long",
           "quantity": 6,
           "avgFillPrice": 84.7136,
-          "profit": 14.56,
+          "profit": 16.48,
           "positionId": "15381b55-1564-4512-03ca-be9116730c1b"
         },
         {
@@ -279,7 +279,7 @@
           "direction": "Long",
           "quantity": 1,
           "avgFillPrice": 131.57,
-          "profit": null,
+          "profit": 239.37,
           "positionId": "316a1034-0f19-4132-0350-578960530531"
         },
         {
@@ -287,7 +287,7 @@
           "direction": "Long",
           "quantity": 3,
           "avgFillPrice": 193.9558,
-          "profit": null,
+          "profit": -162.83,
           "positionId": "0a38054e-066f-4a32-07d8-7a9e2b670d39"
         },
         {
@@ -295,7 +295,7 @@
           "direction": "Long",
           "quantity": 16,
           "avgFillPrice": 17.4587,
-          "profit": 110.42,
+          "profit": 107.86,
           "positionId": "4106187d-5127-4112-0207-258465521016"
         },
         {
@@ -303,7 +303,7 @@
           "direction": "Long",
           "quantity": 6,
           "avgFillPrice": 201.1069,
-          "profit": null,
+          "profit": -240.34,
           "positionId": "1787314f-065f-4772-0392-282589630973"
         }
       ]
@@ -318,13 +318,13 @@
         "cashCADCombined": 1997.63,
         "cashUSDCombined": 1456.05,
         "marketValueCAD": 0,
-        "marketValueUSD": 8565.49,
-        "marketValueCADCombined": 11751.42,
-        "marketValueUSDCombined": 8565.49,
+        "marketValueUSD": 8492.13,
+        "marketValueCADCombined": 11650.77,
+        "marketValueUSDCombined": 8492.13,
         "totalEquityCAD": 0,
-        "totalEquityUSD": 10021.54,
-        "totalEquityCADCombined": 13749.05,
-        "totalEquityUSDCombined": 10021.54,
+        "totalEquityUSD": 9948.18,
+        "totalEquityCADCombined": 13648.41,
+        "totalEquityUSDCombined": 9948.18,
         "buyingPowerCAD": 0,
         "buyingPowerUSD": 1456.05,
         "buyingPowerCADCombined": 1953.67,
@@ -338,9 +338,9 @@
         "maxBPCADCombined": 1953.67,
         "maxBPUSDCombined": 1456.05,
         "openPnLCAD": 0,
-        "openPnLUSD": 1268.52,
-        "openPnLCADCombined": 1740.34,
-        "openPnLUSDCombined": 1268.52,
+        "openPnLUSD": 1195.15,
+        "openPnLCADCombined": 1639.69,
+        "openPnLUSDCombined": 1195.15,
         "closedPnLCAD": 0,
         "closedPnLUSD": 1338.98,
         "closedPnLCADCombined": 1837.02,
@@ -360,7 +360,7 @@
           "direction": "Long",
           "quantity": 0.5,
           "avgFillPrice": 294.13,
-          "profit": -5.07,
+          "profit": -9.09,
           "positionId": "13305251-0f49-4322-01ac-3f5451910a2d"
         },
         {
@@ -368,7 +368,7 @@
           "direction": "Long",
           "quantity": 30,
           "avgFillPrice": 12.2508,
-          "profit": 35.83,
+          "profit": null,
           "positionId": "755a2840-2465-4542-0bf5-c99d111b0f44"
         },
         {
@@ -392,7 +392,7 @@
           "direction": "Long",
           "quantity": 15,
           "avgFillPrice": 21.7853,
-          "profit": 38.77,
+          "profit": 36.37,
           "positionId": "1d331d39-0d55-4d22-05a8-cc9e7e450a29"
         },
         {
@@ -416,7 +416,7 @@
           "direction": "Long",
           "quantity": 3,
           "avgFillPrice": 58.93,
-          "profit": -7.38,
+          "profit": -8.13,
           "positionId": "0a153a28-0f82-4a72-038d-80809553187c"
         },
         {
@@ -456,7 +456,7 @@
           "direction": "Long",
           "quantity": 0.25,
           "avgFillPrice": 925.5971,
-          "profit": 12.41,
+          "profit": 11.28,
           "positionId": "22555d0e-1075-4282-04a0-a38741440a81"
         },
         {
@@ -464,7 +464,7 @@
           "direction": "Long",
           "quantity": 1,
           "avgFillPrice": 604.3963,
-          "profit": 11.95,
+          "profit": null,
           "positionId": "4c0c0b3f-1f4e-4c22-0c9a-a4851d4c092b"
         },
         {
@@ -488,7 +488,7 @@
           "direction": "Long",
           "quantity": 1,
           "avgFillPrice": 204,
-          "profit": 23.14,
+          "profit": 21.32,
           "positionId": "1f2c511b-0b83-4f92-0dac-66503e9d0a9d"
         },
         {
@@ -512,7 +512,7 @@
           "direction": "Long",
           "quantity": 4,
           "avgFillPrice": 54.29,
-          "profit": -61.34,
+          "profit": -62.16,
           "positionId": "760b5a69-1b93-4652-0389-2e851d231858"
         },
         {
@@ -550,7 +550,7 @@
       "direction": "Long",
       "quantity": 2,
       "avgFillPrice": 273.1995,
-      "profit": null,
+      "profit": 5.5,
       "positionId": "13305251-0f49-4322-01ac-3f5451910a2d",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -560,7 +560,7 @@
       "direction": "Long",
       "quantity": 20,
       "avgFillPrice": 12.2047,
-      "profit": 24.71,
+      "profit": 22.91,
       "positionId": "755a2840-2465-4542-0bf5-c99d111b0f44",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -570,7 +570,7 @@
       "direction": "Long",
       "quantity": 2.3,
       "avgFillPrice": 357.8524,
-      "profit": null,
+      "profit": -208.5,
       "positionId": "7e3a3b11-0204-4e22-0fbd-949b2a5f1b2c",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -580,7 +580,7 @@
       "direction": "Long",
       "quantity": 1,
       "avgFillPrice": 302.4314,
-      "profit": null,
+      "profit": 80.02,
       "positionId": "143a1048-1442-4462-00fe-8a8a1840af6f",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -600,7 +600,7 @@
       "direction": "Long",
       "quantity": 35,
       "avgFillPrice": 18.4601,
-      "profit": null,
+      "profit": 201.25,
       "positionId": "1d331d39-0d55-4d22-05a8-cc9e7e450a29",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -620,7 +620,7 @@
       "direction": "Long",
       "quantity": 3,
       "avgFillPrice": 173.3181,
-      "profit": null,
+      "profit": 0.58,
       "positionId": "1c483846-070a-4c12-0ed3-5b9d425e0d12",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -640,7 +640,7 @@
       "direction": "Long",
       "quantity": 3,
       "avgFillPrice": 59.71,
-      "profit": null,
+      "profit": -10.47,
       "positionId": "0a153a28-0f82-4a72-038d-80809553187c",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -650,7 +650,7 @@
       "direction": "Long",
       "quantity": 2,
       "avgFillPrice": 241.9828,
-      "profit": null,
+      "profit": 302.67,
       "positionId": "22126462-2cb6-4222-0b89-168b266b0828",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -660,7 +660,7 @@
       "direction": "Long",
       "quantity": 16,
       "avgFillPrice": 28.37,
-      "profit": null,
+      "profit": 139.04,
       "positionId": "620a1526-076b-42b2-078d-5191515718bc",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -680,7 +680,7 @@
       "direction": "Long",
       "quantity": 6,
       "avgFillPrice": 47.875,
-      "profit": 28.77,
+      "profit": null,
       "positionId": "1a631a46-189f-4a22-0944-ce881a697425",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -690,7 +690,7 @@
       "direction": "Long",
       "quantity": 10,
       "avgFillPrice": 45.266,
-      "profit": null,
+      "profit": 76.74,
       "positionId": "7217055d-0d69-4242-0979-2a8717190748",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -700,7 +700,7 @@
       "direction": "Long",
       "quantity": 12,
       "avgFillPrice": 30.6004,
-      "profit": null,
+      "profit": 118.44,
       "positionId": "42080b68-4f83-4272-0d1b-1a66b24d117a",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -710,7 +710,7 @@
       "direction": "Long",
       "quantity": 0.5,
       "avgFillPrice": 942.07,
-      "profit": null,
+      "profit": 14.32,
       "positionId": "22555d0e-1075-4282-04a0-a38741440a81",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -730,7 +730,7 @@
       "direction": "Long",
       "quantity": 2,
       "avgFillPrice": 177.4056,
-      "profit": 89.45,
+      "profit": 85.07,
       "positionId": "7d132968-1e79-4d52-029c-866ebd82095d",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -750,7 +750,7 @@
       "direction": "Long",
       "quantity": 2,
       "avgFillPrice": 199.5875,
-      "profit": 55.17,
+      "profit": null,
       "positionId": "1f2c511b-0b83-4f92-0dac-66503e9d0a9d",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -760,7 +760,7 @@
       "direction": "Long",
       "quantity": 8,
       "avgFillPrice": 98.1857,
-      "profit": null,
+      "profit": -287.49,
       "positionId": "6f38565a-2616-4f32-0f29-089a043f1238",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -770,7 +770,7 @@
       "direction": "Long",
       "quantity": 4,
       "avgFillPrice": 198.2391,
-      "profit": null,
+      "profit": 178.36,
       "positionId": "043e164b-0b9d-4492-016f-183f9d61269e",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -780,7 +780,7 @@
       "direction": "Long",
       "quantity": 4,
       "avgFillPrice": 55.45,
-      "profit": -66.12,
+      "profit": -66.8,
       "positionId": "760b5a69-1b93-4652-0389-2e851d231858",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -790,7 +790,7 @@
       "direction": "Long",
       "quantity": 6,
       "avgFillPrice": 84.7136,
-      "profit": 14.56,
+      "profit": 16.48,
       "positionId": "15381b55-1564-4512-03ca-be9116730c1b",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -800,7 +800,7 @@
       "direction": "Long",
       "quantity": 1,
       "avgFillPrice": 131.57,
-      "profit": null,
+      "profit": 239.37,
       "positionId": "316a1034-0f19-4132-0350-578960530531",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -810,7 +810,7 @@
       "direction": "Long",
       "quantity": 3,
       "avgFillPrice": 193.9558,
-      "profit": null,
+      "profit": -162.83,
       "positionId": "0a38054e-066f-4a32-07d8-7a9e2b670d39",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -820,7 +820,7 @@
       "direction": "Long",
       "quantity": 16,
       "avgFillPrice": 17.4587,
-      "profit": 110.42,
+      "profit": 107.86,
       "positionId": "4106187d-5127-4112-0207-258465521016",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -830,7 +830,7 @@
       "direction": "Long",
       "quantity": 6,
       "avgFillPrice": 201.1069,
-      "profit": null,
+      "profit": -240.34,
       "positionId": "1787314f-065f-4772-0392-282589630973",
       "accountType": "TFSA",
       "accountId": "53408189"
@@ -850,7 +850,7 @@
       "direction": "Long",
       "quantity": 0.5,
       "avgFillPrice": 294.13,
-      "profit": -5.07,
+      "profit": -9.09,
       "positionId": "13305251-0f49-4322-01ac-3f5451910a2d",
       "accountType": "RRSP",
       "accountId": "53408195"
@@ -860,7 +860,7 @@
       "direction": "Long",
       "quantity": 30,
       "avgFillPrice": 12.2508,
-      "profit": 35.83,
+      "profit": null,
       "positionId": "755a2840-2465-4542-0bf5-c99d111b0f44",
       "accountType": "RRSP",
       "accountId": "53408195"
@@ -890,7 +890,7 @@
       "direction": "Long",
       "quantity": 15,
       "avgFillPrice": 21.7853,
-      "profit": 38.77,
+      "profit": 36.37,
       "positionId": "1d331d39-0d55-4d22-05a8-cc9e7e450a29",
       "accountType": "RRSP",
       "accountId": "53408195"
@@ -920,7 +920,7 @@
       "direction": "Long",
       "quantity": 3,
       "avgFillPrice": 58.93,
-      "profit": -7.38,
+      "profit": -8.13,
       "positionId": "0a153a28-0f82-4a72-038d-80809553187c",
       "accountType": "RRSP",
       "accountId": "53408195"
@@ -970,7 +970,7 @@
       "direction": "Long",
       "quantity": 0.25,
       "avgFillPrice": 925.5971,
-      "profit": 12.41,
+      "profit": 11.28,
       "positionId": "22555d0e-1075-4282-04a0-a38741440a81",
       "accountType": "RRSP",
       "accountId": "53408195"
@@ -980,7 +980,7 @@
       "direction": "Long",
       "quantity": 1,
       "avgFillPrice": 604.3963,
-      "profit": 11.95,
+      "profit": null,
       "positionId": "4c0c0b3f-1f4e-4c22-0c9a-a4851d4c092b",
       "accountType": "RRSP",
       "accountId": "53408195"
@@ -1010,7 +1010,7 @@
       "direction": "Long",
       "quantity": 1,
       "avgFillPrice": 204,
-      "profit": 23.14,
+      "profit": 21.32,
       "positionId": "1f2c511b-0b83-4f92-0dac-66503e9d0a9d",
       "accountType": "RRSP",
       "accountId": "53408195"
@@ -1040,7 +1040,7 @@
       "direction": "Long",
       "quantity": 4,
       "avgFillPrice": 54.29,
-      "profit": -61.34,
+      "profit": -62.16,
       "positionId": "760b5a69-1b93-4652-0389-2e851d231858",
       "accountType": "RRSP",
       "accountId": "53408195"
