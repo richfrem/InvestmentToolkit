@@ -22,7 +22,7 @@ import type { StockData } from '../services/api';
 import { ProjectionsPanel } from './ProjectionsPanel';
 import { storage } from '../services/storage';
 import { HelpTrigger } from './HelpModal';
-import { runAIAnalysis, type ValuationResult, type Projection, type Scenario } from '../services/api';
+import { type ValuationResult, type Projection, type Scenario } from '../services/api';
 import { Sparkles, BrainCircuit, Loader2, FolderOpen } from 'lucide-react';
 import { AIAnalysisModal } from './AIAnalysisModal';
 import { AgentReminderModal } from './AgentReminderModal';
@@ -214,7 +214,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const [savedCount, setSavedCount] = useState(0);
 
     // AI State
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [isAnalyzing] = useState(false);
     const [aiResult, setAiResult] = useState<ValuationResult | null>(null);
     const [aiError, setAiError] = useState<string | null>(null);
     const [activeCoachMetric, setActiveCoachMetric] = useState<string | null>(null);
@@ -461,37 +461,8 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
     // --- Actions ---
 
-    const handleAIAnalysis = useCallback(async (metric?: string) => {
-        // Feature disabled in UI: Redirect users to CLI environment for high-quality Pro-tier analysis
+    const handleAIAnalysis = useCallback(() => {
         setShowAgentReminder(true);
-        return;
-
-        /* Legacy UI-based AI Analysis logic
-        setIsAnalyzing(true);
-        setAiError(null);
-        setActiveCoachMetric(metric || null);
-
-        let userMessage = "";
-        if (metric === "Growth Rate") {
-            userMessage = "Focus on recommending a realistic 5-year revenue growth rate based on historical trends and industry TAM.";
-        } else if (metric === "Net Margin") {
-            userMessage = "Focus on recommending a sustainable 5-year average net profit margin based on operational leverage and peer benchmarks.";
-        } else if (metric === "Exit PE") {
-            userMessage = "Focus on recommending a realistic Terminal Exit P/E multiple based on historical sector averages and growth profile.";
-        }
-
-        try {
-            const result = await runAIAnalysis(stockData.symbol, userMessage);
-            setAiResult(result);
-            if (result.growth_assumption && metric === "Growth Rate") {
-                setGrowthRate(Math.round(result.growth_assumption * 100));
-            }
-        } catch (err: any) {
-            setAiError(err.message || 'Failed to get AI Analysis');
-        } finally {
-            setIsAnalyzing(false);
-        }
-        */
     }, []);
 
     const handleSaveConfirm = useCallback(() => {
@@ -1192,7 +1163,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                 Hard to sustain {'>'}50% CAGR for {timeHorizon} years. Law of large numbers risk.
                             </li>
                         )}
-                        {nextMargin > 50 && (
+                        {netMargin > 50 && (
                             <li className="text-[10px] text-red-300 flex gap-2">
                                 <span className="font-bold">• Net Margin ({netMargin}%):</span>
                                 Extremely high profitability. Attracts competition / Regulatory scrutiny.

@@ -21,7 +21,6 @@ import { fetchAllProjections } from '../services/api';
 import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { PriceSourceBadge } from './PriceSourceBadge';
 import { safeNum, fmtPct, fmtDollar, fmtPrice, changeBgDaily, sortByColumn } from '../utils/formatters';
-import { getActionBadgeClass } from '../utils/actionColors';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
