@@ -363,6 +363,44 @@ export async function closeOrderDialog() {
   })()`).then(JSON.parse);
 }
 
+// ── pre-submission form verification ─────────────────────────────────────────
+
+/**
+ * verifyOrderForm() — reads the dialog state after filling and compares to intended values.
+ * Throws if shares is unreadable or mismatched; warns if limit price deviates by >$0.01.
+ * Call after setShares/setLimitPrice, before screenshot.
+ */
+export async function verifyOrderForm({ intendedShares, intendedLimitPrice = null } = {}) {
+  const state = await getOrderDialogState();
+  if (!state.open) throw new Error('Order dialog closed unexpectedly during form fill.');
+
+  // Find the shares value — look for an input whose value matches or whose label suggests shares
+  const sharesInput = state.inputs.find(i =>
+    /shares|qty|quantity/i.test((i.placeholder || '') + ' ' + (i.ariaLabel || ''))
+  ) || state.inputs[0];
+
+  if (!sharesInput) throw new Error('Could not read shares field from order dialog after fill.');
+
+  const readShares = Number(sharesInput.value);
+  if (!isNaN(readShares) && readShares !== intendedShares) {
+    throw new Error(`Order form mismatch: intended ${intendedShares} shares, dialog shows ${readShares}. Aborting — do not submit.`);
+  }
+
+  if (intendedLimitPrice != null && state.inputs.length > 1) {
+    const priceInput = state.inputs.find(i =>
+      /price|limit/i.test((i.placeholder || '') + ' ' + (i.ariaLabel || ''))
+    ) || state.inputs[1];
+    if (priceInput) {
+      const readPrice = Number(priceInput.value);
+      if (!isNaN(readPrice) && Math.abs(readPrice - intendedLimitPrice) > 0.01) {
+        throw new Error(`Order form mismatch: intended limit $${intendedLimitPrice}, dialog shows $${readPrice}. Aborting.`);
+      }
+    }
+  }
+
+  return state;
+}
+
 // ── full order flow ───────────────────────────────────────────────────────────
 
 /**
@@ -456,12 +494,15 @@ export async function executeOrder({ action, shares, orderType, limitPrice, acco
     await setLimitPrice(limitPrice);
   }
 
-  // 7. Screenshot the filled form for HITL review
+  // 7. Verify form values match intent before screenshotting (throws on mismatch)
+  await verifyOrderForm({ intendedShares: shares, intendedLimitPrice: limitPrice ?? null });
+
+  // 8. Screenshot the filled form for HITL review
   await sleep(300);
   const ts = new Date().toISOString().replace(/[:.]/g, '-');
   const shot = await captureScreenshot({ region: 'full', filename: `order_review_${ts}` });
 
-  // 8. Read the submit button text (shows "Buy 1 WYFI MARKET")
+  // 9. Read the submit button text (shows "Buy 1 WYFI MARKET")
   const state = await getOrderDialogState();
 
   return {

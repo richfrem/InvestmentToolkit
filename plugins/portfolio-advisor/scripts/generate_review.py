@@ -197,7 +197,7 @@ def main():
     print(f"   Holdings: {portfolio_summary['holding_count']} | "
           f"EXIT-flagged: {thesis_summary['exit_count']} | "
           f"INITIATE targets: {thesis_summary['initiate_count']}")
-    print(f"   Opportunity scan: {len(opportunities)} unowned BUY candidates surfaced")
+    print(f"   Opportunity scan: {thesis_summary['initiate_count']} unowned INITIATE targets surfaced")
     print(f"\n→ Open the file, then run /strategic-review in Claude Code to populate it.")
 
 
