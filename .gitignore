@@ -44,6 +44,9 @@ temp/
 # Excluded via sparse-checkout or local-only
 .env
 .env.*
+
+# Personal workspace — generated outputs, order screenshots, review artifacts
+PortfolioAnalysis/
 .questrade_cache
 **/.questrade_cache
 
