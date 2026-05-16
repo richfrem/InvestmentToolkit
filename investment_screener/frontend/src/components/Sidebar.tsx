@@ -16,17 +16,15 @@
  *     - formatLastSync() - Formats the ISO sync timestamp into a human-readable HH:MM display
  */
 import { useState, useEffect } from 'react';
-import { Settings, History, Briefcase, Grid3X3, BarChart3, Search, RefreshCcw, Link2, TableProperties, PieChart } from 'lucide-react';
+import { Settings, History, Grid3X3, BarChart3, Search, RefreshCcw, Link2, TableProperties, PieChart } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useRecentTickers } from '../hooks/useRecentTickers';
-import { PortfolioModal } from './PortfolioModal';
 import { QuestradeSetupModal } from './QuestradeSetupModal';
 import { syncPortfolio, fetchSyncStatus } from '../services/api';
 
 export default function Sidebar() {
     const { recentTickers } = useRecentTickers();
     const navigate = useNavigate();
-    const [isPortfolioOpen, setIsPortfolioOpen] = useState(false);
     const [isQuestradeOpen, setIsQuestradeOpen] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
     const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
@@ -127,15 +125,6 @@ export default function Sidebar() {
                     <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Portfolio</h3>
                 </div>
 
-                {/* Portfolio Management Button */}
-                <button
-                    onClick={() => setIsPortfolioOpen(true)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-secondary hover:bg-slate-800 hover:text-slate-200 w-full"
-                >
-                    <Briefcase size={20} />
-                    <span className="font-medium">Manual Portfolio</span>
-                </button>
-
                 {/* Portfolio Sync Controls */}
                 <div className="space-y-1">
                     <button
@@ -207,7 +196,6 @@ export default function Sidebar() {
                 </NavLink>
             </div>
 
-            <PortfolioModal isOpen={isPortfolioOpen} onClose={() => setIsPortfolioOpen(false)} />
             <QuestradeSetupModal
                 isOpen={isQuestradeOpen}
                 onClose={() => setIsQuestradeOpen(false)}
