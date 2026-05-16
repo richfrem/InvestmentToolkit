@@ -27,6 +27,7 @@ import { LayoutDashboard, BarChart3, Calculator } from 'lucide-react';
 import PerformanceMetrics from '../components/PerformanceMetrics';
 import { AIThesisSummary } from '../components/AIThesisSummary';
 import { AIAnalysisModal } from '../components/AIAnalysisModal';
+import { TradeButtons } from '../components/TradeButtons';
 import { storage } from '../services/storage';
 
 type Tab = 'overview' | 'analysis' | 'valuation';
@@ -199,7 +200,10 @@ export default function Dashboard() {
                             )}
                         </div>
 
-                        {/* Navigation Tabs - No more Heatmap tab */}
+                        {/* Trade buttons + Navigation Tabs */}
+                        <div className="flex items-center gap-3">
+                        <TradeButtons ticker={stockData.symbol} size="md" />
+                        <div className="h-6 w-px bg-slate-800" />
                         <div className="flex bg-slate-900/50 p-1 rounded-lg border border-slate-800">
                             <button
                                 onClick={() => setActiveTab('overview')}
@@ -245,6 +249,7 @@ export default function Dashboard() {
                                 );
                             })()}
                         </div>
+                        </div>{/* end trade+tabs wrapper */}
                     </div>
 
                     {/* Tab Content */}
