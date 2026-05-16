@@ -9,8 +9,14 @@
  *   ORDER_REQUESTED → PREFLIGHT_PASSED → USER_CONFIRMED_PREFLIGHT →
  *   FORM_FILLED → USER_CONFIRMED_SUBMIT → ORDER_SUBMITTED → PORTFOLIO_SYNCED
  *
- * On any abort (error, form mismatch, user cancel):
- *   ORDER_REQUESTED → ... → ORDER_ABORTED  (with reason)
+ * Blocked / failure events:
+ *   PREFLIGHT_BLOCKED   — buying power insufficient or broker not connected
+ *   SIZE_CAP_BLOCKED    — order value exceeds --max-order-value
+ *   DATA_STALE_BLOCKED  — portfolio.json too old for safe trading
+ *   DCF_CONFLICT_BLOCKED — buying a SELL-rated holding without override
+ *   FORM_MISMATCH_ABORTED — verifyOrderForm() detected shares/price mismatch
+ *   USER_CANCELLED      — user declined at CONFIRM prompt
+ *   SUBMIT_FAILED       — order dialog click failed after submission attempt
  */
 
 import fs from 'fs';
