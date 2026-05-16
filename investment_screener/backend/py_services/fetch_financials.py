@@ -35,16 +35,16 @@ CACHE_DURATION = 3600  # 1 hour in seconds
 
 # --- Custom Encoder for Numpy Types (Global) ---
 class NpEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        if isinstance(obj, np.floating):
-            return float(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        if isinstance(obj, np.bool_):
-            return bool(obj)
-        return super(NpEncoder, self).default(obj)
+    def default(self, o):
+        if isinstance(o, np.integer):
+            return int(o)
+        if isinstance(o, np.floating):
+            return float(o)
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        if isinstance(o, np.bool_):
+            return bool(o)
+        return super().default(o)
 
 # --- Caching Functions ---
 def get_cached_data(ticker):
@@ -84,9 +84,9 @@ def save_to_cache(ticker, data):
         # Silently fail on cache write errors to avoid breaking the main output flow
         pass
 
-def fetch_financial_data(ticker_symbol):
+def fetch_financial_data(ticker_symbol, no_cache: bool = False):
     # 1. Try Cache First
-    cached = get_cached_data(ticker_symbol)
+    cached = None if no_cache else get_cached_data(ticker_symbol)
     if cached:
         print(json.dumps(cached, indent=2))
         return
@@ -456,9 +456,9 @@ def fetch_financial_data(ticker_symbol):
         print(json.dumps({"error": str(e)}))
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print(json.dumps({"error": "No ticker provided"}))
-        sys.exit(1)
-        
-    ticker = sys.argv[1]
-    fetch_financial_data(ticker)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("ticker")
+    parser.add_argument("--no-cache", action="store_true", help="Skip cache and fetch fresh data")
+    args = parser.parse_args()
+    fetch_financial_data(args.ticker, no_cache=args.no_cache)
