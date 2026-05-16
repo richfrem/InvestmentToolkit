@@ -2,16 +2,29 @@
 
 Welcome, Agent. You are operating within the **InvestmentToolkit**, a professional-grade "Agentic OS" workstation for sophisticated retail investors.
 
-## 🎯 Primary Entry Point
-If you are assisting a new user or a user who needs setup help, you should immediately delegate to the **Toolkit Onboarding Guide** sub-agent.
+## 🎯 Setup Entry Points (Start Here)
 
-**Trigger Phrase**: `"Help me set up the toolkit"`
+Two dedicated onboarding agents handle setup. Always route new users here first.
 
-This sub-agent will guide the user through:
-1. Dependency verification (Node.js/Python).
-2. TradingView Desktop setup for real-time portfolio sync, prices, and order execution (primary).
-3. Questrade API link (optional — TV sync and place-order work without direct API credentials).
-4. Running their first AI-driven valuations or portfolio reviews.
+### Master Coordinator
+**Trigger**: `"Help me set up the toolkit"`  
+**Agent**: `toolkit-onboarding-guide` — orients new users, checks Node.js/Python dependencies, runs the startup script, then routes to the right specialist below.
+
+### TradingView Setup (Primary — all users)
+**Trigger**: `"Set up TradingView for me"` or `"Help me connect TradingView"`  
+**Agent**: `tradingview-onboarding` — dedicated 8-phase guide covering:
+1. TradingView Desktop install check
+2. Subscription tier verification (Premium recommended)
+3. Plugin one-time npm install
+4. Broker panel connection inside TradingView
+5. CDP health check (`tv_health_check.py`)
+6. Broker data access verification (`fetch_broker_data.py --accounts`)
+7. First `/tv-portfolio-sync`
+8. Ongoing startup and daily use patterns
+
+### Questrade API (Optional — fallback only)
+**Trigger**: `/setup-questrade`  
+**Skill**: Interactive wizard for AES-256-GCM encrypted token setup. Use only if TradingView is unavailable or the user wants cross-validation. TV sync covers all the same data without direct API credentials.
 
 ## 🛠️ Available Agent Capabilities
 This workstation is built on a modular plugin architecture. You have access to the following specialized skills:

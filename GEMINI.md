@@ -4,9 +4,16 @@
 **InvestmentToolkit** is a high-end investment analysis suite designed for sophisticated retail investors. It features a "Luxury Dark Mode" web dashboard, professional fundamental analysis tools, valuation modeling, and autonomous AI agents for research and thesis management.
 
 ### 🚀 Getting Started (Interactive Onboarding)
-The quickest way to initialize the workstation is to trigger the **Toolkit Onboarding Guide**. 
-Type: **"Help me set up the toolkit"** 
-The onboarding agent handles dependency verification, TradingView link-up for real-time portfolio sync and order execution (primary), and optional Questrade API setup (fallback).
+
+Two dedicated setup agents handle onboarding:
+
+| Trigger | Agent | Purpose |
+|---------|-------|---------|
+| `"Help me set up the toolkit"` | `toolkit-onboarding-guide` | Master coordinator: checks dependencies, runs startup script, routes to TV setup |
+| `"Set up TradingView for me"` | `tradingview-onboarding` | Deep-dive TV setup: install, subscription check, broker panel, CDP verify, first sync |
+| `/setup-questrade` | skill | Optional Questrade API fallback (skip if TV sync works) |
+
+**Quick path for returning users**: `python3 run_investment_toolkit.py` → `/tv-portfolio-sync`
 
 ### 🔐 Prerequisites (Subscription)
 > [!IMPORTANT]

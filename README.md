@@ -6,17 +6,27 @@ A premium, "Luxury Dark Mode" investment analysis suite built for sophisticated 
 
 ## 🚀 Getting Started (Start Here)
 
-The easiest way to set up and use this toolkit is to use the **Interactive Onboarding Agent**. 
+Two dedicated AI agents handle setup. Launch your CLI agent (Claude Code, Gemini CLI, or Copilot CLI) and use one of these triggers:
 
-Simply launch your CLI agent (Gemini CLI, Claude Code, or Copilot CLI) and type:
-
+### 1. Master Setup (new users — start here)
 > **"Help me set up the toolkit"**
 
-This will trigger the **Toolkit Onboarding Guide**, a dedicated AI concierge that will:
-1.  **Check Dependencies**: Verify your Node.js and Python versions.
-2.  **Link TradingView**: Connect TradingView Desktop for real-time prices, portfolio sync, and order execution (primary broker layer).
-3.  **Sync Portfolio**: Run `/tv-portfolio-sync` to pull live positions from all accounts — no Questrade credentials needed. Questrade API link is optional for fallback sync.
-4.  **First Run**: Guide you through your first `/evaluate-stock` or `/review-portfolio` command.
+Runs the **Toolkit Onboarding Coordinator** — checks dependencies, runs the startup script, then routes you to the TradingView setup agent below.
+
+### 2. TradingView Setup (primary data + execution layer)
+> **"Set up TradingView for me"**
+
+Runs the **TradingView Onboarding Agent** — an 8-phase guide covering:
+1. TradingView Desktop install check
+2. Subscription tier verification (Premium recommended for real-time data)
+3. Broker panel connection inside TradingView (no separate API credentials needed)
+4. CDP health check and broker data verification
+5. First `/tv-portfolio-sync` — pulls live positions from all accounts (TFSA + RRSP + Cash)
+
+### 3. Questrade API (optional — fallback only)
+> `/setup-questrade`
+
+Launches the interactive Questrade token wizard (AES-256-GCM encrypted). Skip this if TV sync is working — it covers the same data.
 
 ---
 
