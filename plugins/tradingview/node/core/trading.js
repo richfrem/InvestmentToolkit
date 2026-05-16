@@ -17,6 +17,7 @@
 
 import { evaluate, evaluateAsync, getClient } from '../connection.js';
 import { captureScreenshot } from './capture.js';
+import { appendAuditEvent } from './audit.js';
 
 const REACT_INPUT_SETTER = `Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set`;
 
@@ -408,9 +409,12 @@ export async function verifyOrderForm({ intendedShares, intendedLimitPrice = nul
  * Does NOT open any dialog. Returns a confirmation card.
  */
 export async function preflight({ ticker, action, shares, orderType, limitPrice, accountType }) {
+  appendAuditEvent('ORDER_REQUESTED', { ticker, action, shares, orderType, limitPrice, accountType });
+
   const status = await getBrokerStatus();
 
   if (!status.connected) {
+    appendAuditEvent('ORDER_ABORTED', { reason: 'No broker connected', ticker, action, shares });
     throw new Error('No broker connected to TradingView. Log in via the Questrade integration in TradingView first.');
   }
 
@@ -424,7 +428,7 @@ export async function preflight({ ticker, action, shares, orderType, limitPrice,
 
   const sufficient = costEstimate === null || buyingPower === null || (action === 'sell') || (buyingPower >= costEstimate);
 
-  return {
+  const card = {
     ticker: ticker.toUpperCase(),
     action: action.charAt(0).toUpperCase() + action.slice(1).toLowerCase(),
     shares,
@@ -449,6 +453,12 @@ export async function preflight({ ticker, action, shares, orderType, limitPrice,
     broker: status.broker,
     _warning: sufficient ? null : `Insufficient ${currency} buying power.`,
   };
+  appendAuditEvent('PREFLIGHT_PASSED', {
+    ticker: card.ticker, action: card.action, shares, orderType,
+    limitPrice: limitPrice ?? null, accountType: card.accountType,
+    costEstimate, buyingPower, sufficient,
+  });
+  return card;
 }
 
 /**
@@ -505,6 +515,12 @@ export async function executeOrder({ action, shares, orderType, limitPrice, acco
   // 9. Read the submit button text (shows "Buy 1 WYFI MARKET")
   const state = await getOrderDialogState();
 
+  appendAuditEvent('FORM_FILLED', {
+    action, shares, orderType, limitPrice: limitPrice ?? null,
+    submitButtonText: state.submitButtonText,
+    screenshot: shot,
+  });
+
   return {
     screenshot: shot,
     submitButtonText: state.submitButtonText,
@@ -516,7 +532,10 @@ export async function executeOrder({ action, shares, orderType, limitPrice, acco
  * confirmAndSubmit() — clicks the submit button after HITL approval.
  */
 export async function confirmAndSubmit() {
-  return submitOrder();
+  appendAuditEvent('USER_CONFIRMED_SUBMIT', {});
+  const result = await submitOrder();
+  appendAuditEvent('ORDER_SUBMITTED', { clicked: result.clicked, secondaryConfirm: result.secondaryConfirm ?? null });
+  return result;
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────────
