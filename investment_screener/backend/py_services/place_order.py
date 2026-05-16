@@ -55,6 +55,23 @@ sys.path.insert(0, BACKEND_SRC)
 logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
 
+PORTFOLIO_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "data", "portfolio.json"))
+DATA_FRESHNESS_LIMIT_MINUTES = 60
+
+
+def _check_data_freshness(ack_stale: bool = False) -> dict | None:
+    """Returns a freshness warning dict if portfolio.json is stale, else None.
+    If ack_stale is True, logs a warning but does not block."""
+    if not os.path.exists(PORTFOLIO_PATH):
+        return {"stale": True, "reason": "portfolio.json not found — run /tv-portfolio-sync first"}
+    import time as _time
+    age_minutes = (_time.time() - os.path.getmtime(PORTFOLIO_PATH)) / 60
+    if age_minutes > DATA_FRESHNESS_LIMIT_MINUTES and not ack_stale:
+        return {"stale": True, "age_minutes": round(age_minutes, 1),
+                "reason": f"portfolio.json is {age_minutes:.0f} min old (limit {DATA_FRESHNESS_LIMIT_MINUTES} min). "
+                          "Run /tv-portfolio-sync or pass --ack-stale to override."}
+    return None
+
 # ── Node.js runner ───────────────────────────────────────────────────────────
 
 def _run_node(script_js: str, timeout: int = 30) -> dict:
@@ -264,6 +281,8 @@ def main():
                         help=f"Refuse orders whose cost estimate exceeds this value (default ${MAX_ORDER_VALUE_DEFAULT:,.0f})")
     parser.add_argument("--allow-large", action="store_true", dest="allow_large",
                         help="Bypass the max-order-value cap (requires explicit flag)")
+    parser.add_argument("--ack-stale", action="store_true", dest="ack_stale",
+                        help="Acknowledge stale portfolio data and proceed anyway (use with caution)")
 
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--preflight", action="store_true")
@@ -284,6 +303,13 @@ def main():
 
     # ── preflight ──────────────────────────────────────────────────────────
     if args.preflight:
+        # Executable freshness gate — enforced in code, not just SKILL.md
+        freshness = _check_data_freshness(ack_stale=getattr(args, 'ack_stale', False))
+        if freshness and freshness.get("stale") and not getattr(args, 'ack_stale', False):
+            print(json.dumps({"error": "DATA_STALE_BLOCKED", "details": freshness}, indent=2))
+            print(f"\n🚫 {freshness['reason']}")
+            sys.exit(4)
+
         try:
             card = preflight(args.ticker, args.action, args.shares,
                              args.order_type, args.limit_price, args.account)
@@ -335,6 +361,13 @@ def main():
 
     # ── execute (fill form + screenshot) ───────────────────────────────────
     if args.execute:
+        # Re-check freshness at execute time — data may have gone stale since preflight
+        freshness = _check_data_freshness(ack_stale=getattr(args, 'ack_stale', False))
+        if freshness and freshness.get("stale") and not getattr(args, 'ack_stale', False):
+            print(json.dumps({"error": "DATA_STALE_BLOCKED", "details": freshness}, indent=2))
+            print(f"\n🚫 {freshness['reason']}")
+            sys.exit(4)
+
         try:
             result = execute_order(args.ticker, args.action, args.shares,
                                    args.order_type, args.limit_price, args.account)

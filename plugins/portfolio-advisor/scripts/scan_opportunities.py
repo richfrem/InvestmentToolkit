@@ -37,6 +37,9 @@ THESIS_PATH    = REPO_ROOT / "investment_screener/backend/data/theses/target-por
 PROJECTIONS    = REPO_ROOT / "investment_screener/backend/data/projections"
 STALE_DAYS     = 90
 
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from ticker_aliases import is_cash  # noqa: E402
+
 
 # ── Loaders ────────────────────────────────────────────────────────────────────
 
@@ -52,7 +55,7 @@ def load_portfolio(path: Path) -> dict:
     out = {}
     for h in raw:
         ticker = h.get("symbol") or h.get("ticker", "")
-        if not ticker or ticker == "USD_CASH":
+        if not ticker or is_cash(ticker):
             continue
         shares = h.get("shares", 0)
         price  = h.get("price", 0)
@@ -66,7 +69,7 @@ def load_portfolio(path: Path) -> dict:
             "currency":  h.get("currency", "USD"),
         }
     # Also store cash
-    cash = next((h for h in raw if (h.get("symbol") or h.get("ticker","")) == "USD_CASH"), None)
+    cash = next((h for h in raw if is_cash(h.get("symbol") or h.get("ticker", ""))), None)
     cash_value = cash.get("shares", 0) * cash.get("price", 1) if cash else 0
     out["_meta"] = {
         "totalValue": round(total, 2),

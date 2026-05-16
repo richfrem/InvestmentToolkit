@@ -373,18 +373,26 @@ export async function closeOrderDialog() {
  */
 export async function verifyOrderForm({ intendedShares, intendedLimitPrice = null } = {}) {
   const state = await getOrderDialogState();
-  if (!state.open) throw new Error('Order dialog closed unexpectedly during form fill.');
+  if (!state.open) {
+    appendAuditEvent('FORM_MISMATCH_ABORTED', { reason: 'Order dialog closed unexpectedly during form fill.' });
+    throw new Error('Order dialog closed unexpectedly during form fill.');
+  }
 
   // Find the shares value — look for an input whose value matches or whose label suggests shares
   const sharesInput = state.inputs.find(i =>
     /shares|qty|quantity/i.test((i.placeholder || '') + ' ' + (i.ariaLabel || ''))
   ) || state.inputs[0];
 
-  if (!sharesInput) throw new Error('Could not read shares field from order dialog after fill.');
+  if (!sharesInput) {
+    appendAuditEvent('FORM_MISMATCH_ABORTED', { reason: 'Could not read shares field from order dialog after fill.' });
+    throw new Error('Could not read shares field from order dialog after fill.');
+  }
 
   const readShares = Number(sharesInput.value);
   if (!isNaN(readShares) && readShares !== intendedShares) {
-    throw new Error(`Order form mismatch: intended ${intendedShares} shares, dialog shows ${readShares}. Aborting — do not submit.`);
+    const msg = `Order form mismatch: intended ${intendedShares} shares, dialog shows ${readShares}. Aborting — do not submit.`;
+    appendAuditEvent('FORM_MISMATCH_ABORTED', { intendedShares, readShares, reason: msg });
+    throw new Error(msg);
   }
 
   if (intendedLimitPrice != null && state.inputs.length > 1) {

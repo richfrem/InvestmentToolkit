@@ -30,7 +30,6 @@ Usage:
 
 import argparse
 import json
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -40,15 +39,16 @@ TARGET_JSON   = REPO_ROOT / "investment_screener/backend/data/theses/target-port
 VALIDATE_PY   = Path(__file__).parent / "validate_weights.py"
 BLUEPRINT_PY  = Path(__file__).parent / "generate_portfolio_blueprint.py"
 
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from file_lock import locked_write_json  # noqa: E402
+
 
 def load() -> dict:
     return json.loads(TARGET_JSON.read_text())
 
 
 def save(data: dict) -> None:
-    tmp = TARGET_JSON.with_suffix(".tmp")
-    tmp.write_text(json.dumps(data, indent=2))
-    os.replace(tmp, TARGET_JSON)
+    locked_write_json(TARGET_JSON, data)
 
 
 def normalize(data: dict) -> dict:
