@@ -1,0 +1,85 @@
+import express from 'express';
+import fs from 'fs';
+import path from 'path';
+import { spawnPythonScript } from '../services/bridge';
+import { getLiveUsdCadRate } from '../utils/helpers';
+import { isValidTicker } from '../utils/helpers';
+import { ETF_ANALYSIS_DIR } from '../utils/paths';
+
+const router = express.Router();
+
+router.get('/stock/:ticker', async (req, res) => {
+    const { ticker } = req.params;
+    if (!isValidTicker(ticker)) { res.status(400).json({ error: 'Invalid ticker symbol' }); return; }
+
+    // ETF fast-path
+    const etfFile = path.join(ETF_ANALYSIS_DIR, `${ticker}.json`);
+    if (fs.existsSync(etfFile)) {
+        console.log(`[API] ETF analysis found for ${ticker} — returning ETF profile`);
+        try {
+            const parsed = JSON.parse(fs.readFileSync(etfFile, 'utf-8'));
+            const etf = Array.isArray(parsed) ? parsed[parsed.length - 1] : parsed;
+            const snap = etf.snapshot ?? {};
+            const holdings = etf.holdingsAnalysis?.topHoldings ?? [];
+            res.json({
+                symbol: ticker, price: snap.price ?? 0, currency: snap.currency ?? 'USD',
+                profile: {
+                    type: 'ETF', assetType: 'ETF', sector: 'ETF', industry: etf.fundType ?? 'THEMATIC_ETF',
+                    description: etf.rationale ?? '', longName: etf.name ?? ticker, fundFamily: '',
+                    expenseRatio: snap.expenseRatio ?? null, aum: snap.aum ?? null,
+                    fiftyTwoWeekHigh: snap.fiftyTwoWeekHigh ?? null, fiftyTwoWeekLow: snap.fiftyTwoWeekLow ?? null,
+                    topHoldings: holdings, thesisAlignmentScore: etf.holdingsAnalysis?.thesisAlignmentScore ?? null,
+                    action: etf.action ?? null, actionRationale: etf.actionRationale ?? null,
+                    upsideCatalysts: etf.upsideCatalysts ?? [], risks: etf.risks ?? [],
+                    entryNote: etf.entryNote ?? null, analyzedAt: etf.savedAt ?? null,
+                },
+                metrics: { pe_ratio: 0, forward_pe: 0, market_cap: snap.aum ?? 0, beta: 0, revenue: 0, shares_outstanding: 0 },
+                expert_metrics: {
+                    rule_of_40: { score: 0, revenue_growth: 0, ebitda_margin: 0, is_saas: false },
+                    piotroski_f_score: { score: 0, max: 9, details: {} },
+                },
+                financials: {
+                    historical_revenue: [], historical_net_income: [], historical_fcf: [],
+                    historical_gross_margin: [], historical_operating_margin: [],
+                    historical_net_margin: [], historical_eps: [],
+                },
+            });
+            return;
+        } catch (err) { console.warn(`[API] ETF parse error for ${ticker}:`, err); }
+    }
+
+    const fresh = req.query.fresh === 'true';
+    console.log(`[API] Fetching data for ${ticker}${fresh ? ' (fresh)' : ''}...`);
+    try {
+        const data = await spawnPythonScript('fetch_financials.py', fresh ? [ticker, '--no-cache'] : [ticker]);
+        if (data.error) { res.status(400).json({ error: data.error }); return; }
+        res.json(data);
+    } catch (error) {
+        console.error(`[API] Error fetching ${ticker}: `, error);
+        res.status(500).json({ error: 'Failed to fetch financial data' });
+    }
+});
+
+router.post('/portfolio-heatmap', async (req, res) => {
+    const { items } = req.body;
+    console.log(`[API] Fetching heatmap data for ${items?.length || 0} positions...`);
+    try {
+        if (!items || !Array.isArray(items)) { res.status(400).json({ error: 'items array required' }); return; }
+        const invalidTickers = items.filter((item: any) => !isValidTicker(item.symbol));
+        if (invalidTickers.length > 0) {
+            res.status(400).json({ error: `Invalid ticker symbols: ${invalidTickers.map((i: any) => i.symbol).join(', ')}` });
+            return;
+        }
+        const [data, exchangeRate] = await Promise.all([
+            spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(items)]),
+            getLiveUsdCadRate(1.0),
+        ]);
+        if (data.error) { res.status(400).json({ error: data.error }); return; }
+        res.json({ ...data, exchange_rate: exchangeRate });
+    } catch (error) {
+        console.error(`[API] Error fetching heatmap: `, error);
+        res.status(500).json({ error: 'Failed to fetch heatmap data' });
+    }
+});
+
+export default router;
