@@ -22,7 +22,7 @@ Usage Examples:
     #   - If TradingView Desktop is not installed → skipped, yfinance delayed prices used instead
     #
     # To relaunch TradingView independently (e.g. after closing it):
-    python3 launch_tradingview_with_debugport.py
+    python3 tools/launch_tradingview_with_debugport.py
 
 CLI Arguments:
     None

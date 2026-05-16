@@ -6,7 +6,7 @@
 ### 🚀 Getting Started (Interactive Onboarding)
 The quickest way to initialize the workstation is to trigger the **Toolkit Onboarding Guide**. 
 Simply type: **"Help me set up the toolkit"** 
-The onboarding agent handles dependency verification, secure Questrade syncing, and TradingView link-up.
+The onboarding agent handles dependency verification, TradingView link-up for real-time portfolio sync and order execution (primary), and optional Questrade API setup (fallback).
 
 ### 🔐 Prerequisites (Subscription)
 > [!IMPORTANT]

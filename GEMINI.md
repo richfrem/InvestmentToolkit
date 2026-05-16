@@ -6,7 +6,7 @@
 ### 🚀 Getting Started (Interactive Onboarding)
 The quickest way to initialize the workstation is to trigger the **Toolkit Onboarding Guide**. 
 Type: **"Help me set up the toolkit"** 
-The onboarding agent handles dependency verification, secure Questrade syncing, and TradingView link-up.
+The onboarding agent handles dependency verification, TradingView link-up for real-time portfolio sync and order execution (primary), and optional Questrade API setup (fallback).
 
 ### 🔐 Prerequisites (Subscription)
 > [!IMPORTANT]
@@ -52,7 +52,7 @@ python3 run_investment_toolkit.py
 ```
 *Creates the Python venv, installs all dependencies (npm & pip), builds the backend, launches both services, and **auto-launches TradingView Desktop with CDP on port 9222** (if installed). To relaunch TradingView independently after closing it:*
 ```bash
-python3 launch_tradingview_with_debugport.py
+python3 tools/launch_tradingview_with_debugport.py
 ```
 
 ### 🤖 Orchestration Command
