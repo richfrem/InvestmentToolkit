@@ -17,7 +17,7 @@ export async function getLiveUsdCadRate(fallback: number): Promise<number> {
     return fallback;
 }
 
-export function isTradingViewConnected(tvPort = 9222): Promise<boolean> {
+export function isTradingViewConnected(tvPort = parseInt(process.env.TV_CDP_PORT || '9222', 10)): Promise<boolean> {
     return new Promise((resolve) => {
         const socket = new net.Socket();
         socket.setTimeout(300);
