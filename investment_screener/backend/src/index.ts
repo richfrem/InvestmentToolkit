@@ -31,6 +31,7 @@ import thesesRouter from './routes/theses';
 import docsRouter from './routes/docs';
 import screenerRouter from './routes/screener';
 import stockRouter from './routes/stock';
+import tradingRouter from './routes/trading';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -124,6 +125,7 @@ app.use('/api/theses', thesesRouter);
 app.use('/api', docsRouter);                 // /api/docs/**, /api/research/**
 app.use('/api', stockRouter);               // /api/stock/:ticker, /api/portfolio-heatmap
 app.use('/api/screener', screenerRouter);   // /api/screener/all-holdings
+app.use('/api/trading', tradingRouter);     // /api/trading/** (preflight, execute, submit, audit)
 
 app.listen(Number(port), HOST, () => {
     console.log(`Backend server running on http://${HOST}:${port}`);

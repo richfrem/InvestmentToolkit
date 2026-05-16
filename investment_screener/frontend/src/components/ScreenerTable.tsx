@@ -20,6 +20,10 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown, BrainCircuit, ExternalLink, Activity } from 'lucide-react';
 import { fetchAllProjections, type Projection } from '../services/api';
+import { TradePrepModal } from './TradePrepModal';
+
+const BUY_ACTIONS = new Set(['ACCUMULATE', 'BUY', 'INITIATE']);
+const SELL_ACTIONS = new Set(['TRIM', 'EXIT', 'SELL']);
 import { safeNum, fmtPct, fmtDollar, fmtPrice, changeBgUpside, sortByColumn } from '../utils/formatters';
 import { getActionBadgeClass } from '../utils/actionColors';
 
@@ -148,6 +152,8 @@ export default function ScreenerTable() {
     const [projections, setProjections] = useState<Projection[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [tvConnected, setTvConnected] = useState(false);
+    const [tradeModal, setTradeModal] = useState<{ ticker: string; action: 'buy' | 'sell' } | null>(null);
 
     // Load persisted prefs
     const [visible, setVisible] = useState<Set<string>>(new Set());
@@ -224,6 +230,10 @@ export default function ScreenerTable() {
         window.addEventListener('portfolio-synced', fetchData);
         return () => window.removeEventListener('portfolio-synced', fetchData);
     }, [fetchData]);
+
+    useEffect(() => {
+        fetch('/api/tv-status').then(r => r.json()).then(d => setTvConnected(d.price_source === 'tradingview')).catch(() => {});
+    }, []);
 
     const [portfolioWeights, setPortfolioWeights] = useState<Record<string, { actualPct: number; targetPct: number }>>({});
     const [allPortfolioWeights, setAllPortfolioWeights] = useState<Record<string, number>>({});
@@ -484,6 +494,7 @@ export default function ScreenerTable() {
     );
 
     return (
+        <>
         <div className="flex flex-col bg-slate-900/40 rounded-xl border border-slate-800 backdrop-blur-md h-full">
             {/* Header bar */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900/60">
@@ -667,13 +678,42 @@ export default function ScreenerTable() {
                                     } else if (col.id === 'action') {
                                         const cls = getActionBadgeClass(String(val));
                                         const tip = row.portfolioRationale;
+                                        const actionStr = String(val ?? '');
+                                        const showBuy = BUY_ACTIONS.has(actionStr);
+                                        const showSell = SELL_ACTIONS.has(actionStr);
+                                        const isReview = actionStr === 'REVIEW';
                                         cellContent = (
-                                            <span
-                                                className={`inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-black uppercase tracking-wider cursor-default ${cls}`}
-                                                title={tip ?? undefined}
-                                            >
-                                                {val}
-                                            </span>
+                                            <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                                                <span
+                                                    className={`inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-black uppercase tracking-wider cursor-default ${cls}`}
+                                                    title={tip ?? undefined}
+                                                >
+                                                    {val}
+                                                </span>
+                                                {isReview && (
+                                                    <span className="text-[9px] text-slate-600 font-bold" title="Resolve REVIEW action before trading">Locked</span>
+                                                )}
+                                                {showBuy && (
+                                                    <button
+                                                        disabled={!tvConnected}
+                                                        onClick={() => setTradeModal({ ticker: row.symbol, action: 'buy' })}
+                                                        title={tvConnected ? 'Prepare buy order' : 'TradingView not connected'}
+                                                        className={`px-1.5 py-0.5 text-[9px] font-black rounded transition-colors ${tvConnected ? 'bg-emerald-800/40 hover:bg-emerald-700/50 text-emerald-400' : 'bg-slate-800 text-slate-600 cursor-not-allowed'}`}
+                                                    >
+                                                        BUY
+                                                    </button>
+                                                )}
+                                                {showSell && (
+                                                    <button
+                                                        disabled={!tvConnected}
+                                                        onClick={() => setTradeModal({ ticker: row.symbol, action: 'sell' })}
+                                                        title={tvConnected ? 'Prepare sell order' : 'TradingView not connected'}
+                                                        className={`px-1.5 py-0.5 text-[9px] font-black rounded transition-colors ${tvConnected ? 'bg-red-800/40 hover:bg-red-700/50 text-red-400' : 'bg-slate-800 text-slate-600 cursor-not-allowed'}`}
+                                                    >
+                                                        SELL
+                                                    </button>
+                                                )}
+                                            </div>
                                         );
                                     } else if (col.id === 'currentPct' || col.id === 'recommendedPct') {
                                         const pct = val as number | null;
@@ -761,6 +801,15 @@ export default function ScreenerTable() {
                 </table>
             </div>
         </div>
+
+        {tradeModal && (
+            <TradePrepModal
+                ticker={tradeModal.ticker}
+                initialAction={tradeModal.action}
+                onClose={() => setTradeModal(null)}
+            />
+        )}
+        </>
     );
 }
 

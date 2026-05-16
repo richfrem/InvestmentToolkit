@@ -437,3 +437,62 @@ export const fetchAgentGuide = async (): Promise<{ content: string; filename: st
     if (!res.ok) throw new Error('Failed to load agent guide');
     return res.json();
 };
+
+// ─── Trading API ──────────────────────────────────────────────────────────────
+
+export interface TradePreflightRequest {
+    ticker: string;
+    action: 'buy' | 'sell';
+    shares: number;
+    orderType: string;
+    limitPrice?: number;
+    account: string;
+}
+
+export interface TradeSession {
+    sessionId: string;
+    state: string;
+    card?: Record<string, any>;
+    screenshot?: string;
+    error?: string;
+    result?: any;
+}
+
+export const runTradePreflight = async (req: TradePreflightRequest): Promise<TradeSession> => {
+    const res = await fetch('/api/trading/preflight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req),
+    });
+    const data = await res.json();
+    if (!res.ok) return { ...data, sessionId: data.sessionId ?? '' };
+    return data;
+};
+
+export const runTradeExecute = async (sessionId: string): Promise<TradeSession> => {
+    const res = await fetch('/api/trading/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? 'Execute failed');
+    return data;
+};
+
+export const runTradeSubmit = async (sessionId: string): Promise<TradeSession> => {
+    const res = await fetch('/api/trading/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? 'Submit failed');
+    return data;
+};
+
+export const fetchTodayAudit = async (): Promise<{ events: any[]; date: string }> => {
+    const res = await fetch('/api/trading/audit/today');
+    if (!res.ok) throw new Error('Failed to load audit');
+    return res.json();
+};
