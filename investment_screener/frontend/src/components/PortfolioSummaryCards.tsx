@@ -42,7 +42,7 @@ export default function PortfolioSummaryCards({ data }: Props) {
         {
             title: 'YTD Performance',
             icon: data.ytdChangePctCAD >= 0 ? TrendingUp : TrendingDown,
-            primary: formatPct(data.ytdChangePctCAD),
+            primary: fmtPct(data.ytdChangePctCAD),
             primaryColor: deltaColor(data.ytdChangePctCAD),
             rows: [
                 { label: 'CAD', value: `${data.ytdChangeCAD >= 0 ? '+' : ''}${formatCurrency(data.ytdChangeCAD)}`, color: deltaColor(data.ytdChangeCAD) },
@@ -64,7 +64,7 @@ export default function PortfolioSummaryCards({ data }: Props) {
         {
             title: 'Book vs Market',
             icon: BarChart3,
-            primary: formatPct(data.unrealizedGainPctUSD),
+            primary: fmtPct(data.unrealizedGainPctUSD),
             primaryColor: deltaColor(data.unrealizedGainPctUSD),
             rows: [
                 { label: 'USD', value: `${data.unrealizedGainUSD >= 0 ? '+' : ''}${formatCurrency(data.unrealizedGainUSD)}`, color: deltaColor(data.unrealizedGainUSD) },

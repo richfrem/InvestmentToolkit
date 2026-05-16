@@ -9,8 +9,8 @@ If you are assisting a new user or a user who needs setup help, you should immed
 
 This sub-agent will guide the user through:
 1. Dependency verification (Node.js/Python).
-2. Secure Questrade portfolio synchronization.
-3. TradingView Premium integration.
+2. TradingView Desktop setup for real-time portfolio sync, prices, and order execution (primary).
+3. Questrade API link (optional — TV sync and place-order work without direct API credentials).
 4. Running their first AI-driven valuations or portfolio reviews.
 
 ## 🛠️ Available Agent Capabilities
@@ -31,19 +31,24 @@ This workstation is built on a modular plugin architecture. You have access to t
 - Scripts: `fetch_fund_data.py`, `validate_etf_analysis.py`, `persist_etf_analysis.py`
 
 ### 4. TradingView Bridge (`plugins/tradingview`)
-- **CDP Integration**: `run_investment_toolkit.py` auto-launches TradingView Desktop with `--remote-debugging-port=9222`. Use `launch_tradingview_with_debugport.py` (repo root) to relaunch standalone.
-- **Single-ticker only**: The TV CLI `quote` command reads from the **active chart**. It is used in `/evaluate-stock` when you have that ticker displayed. It is **not** used for batch portfolio prices — those always come from yfinance.
-- **Connection badge**: All portfolio views (Heatmap, Table, Summary) show a "TV Live" / "yfinance" status badge driven by a TCP check on port 9222.
-- `/tv-alert-sync`: Sync DCF targets to TradingView price alerts.
-- `/tv-snapshot`: Capture technical charts.
+TradingView Desktop is the **primary source** for portfolio data, live prices, and order execution. Questrade's personal API tokens are read-only and cannot place orders — TV's broker panel is the execution layer.
+
+- **CDP Integration**: `run_investment_toolkit.py` auto-launches TradingView Desktop with `--remote-debugging-port=9222`. To relaunch independently: `python3 tools/launch_tradingview_with_debugport.py`.
+- **Active chart (single-ticker)**: The `quote` command reads from the **active chart only** — used in `/evaluate-stock` when you have that ticker displayed. Not for batch prices.
+- **Broker panel (multi-account)**: CDP also reads the TradingView broker panel — all accounts (TFSA + RRSP + Cash), positions, balances. This is how `/tv-portfolio-sync` works and how `BrokerSyncService.syncAuto()` gets live portfolio state without Questrade credentials.
+- **Batch portfolio prices**: Heatmap, Table, and Summary always use yfinance (not the active chart). All portfolio views show a "TV Live" / "yfinance" connection badge.
+- **Source waterfall**: `POST /api/portfolio/sync` → TV broker panel → Questrade API fallback → cached data.
+- `/tv-portfolio-sync`: HITL skill — reads all accounts via CDP, shows diff, writes to `portfolio.json` on CONFIRM.
 - `/place-order {ACTION} {N} {TICKER} in {ACCOUNT}`: **Live order execution** via TradingView's Questrade broker panel. CDP DOM automation fills the order dialog, screenshots the filled form, and submits after HITL CONFIRM. Syncs portfolio.json after fill. Requires TradingView Desktop with Questrade broker connected. Note: Questrade personal API tokens are read-only — order execution goes through TV, not the Questrade REST API.
   - Script: `investment_screener/backend/py_services/place_order.py`
   - Core module: `plugins/tradingview/node/core/trading.js`
+- `/tv-alert-sync`: Sync DCF targets to TradingView price alerts.
+- `/tv-snapshot`: Capture technical charts.
 
 ## 📜 Agent Guidelines
 - **Agentic OS First**: This project prioritizes CLI-based agent orchestration over UI interactions. Encourage users to use terminal commands for research.
 - **Documentation Sovereignty**: Maintain the standardized usage-focused header (Purpose, Layer, Usage, Key Functions) for all files in `backend/src/services/` and `backend/py_services/`.
-- **State Awareness**: Live brokerage state (accounts, balances, positions, orders) is maintained in `backend/data/*.ts` singletons. Always check these in-memory stores before triggering a full `QuestradeSyncService` refresh.
+- **State Awareness**: Live brokerage state (accounts, balances, positions, orders) is maintained in `backend/data/*.ts` singletons. Always check these in-memory stores before triggering a sync. Prefer `BrokerSyncService.syncAuto()` (TV → Questrade → cache waterfall) over calling `QuestradeSyncService` directly.
 - **The Bridge Pattern**: All Python-based analytical logic (DCF, News Sweeps, Blueprints) must be invoked via the `bridge.ts` service to ensure consistent logging and error handling.
 - **Security**: Never prompt users to paste raw Questrade tokens. Always use the `/setup-questrade` skill for secure AES-256-GCM encrypted rotation.
 - **Objectivity**: When running valuations, adhere to the **Adversarial Objectivity Constraint** (enforced in `stock_valuation` instructions) to prevent sycophancy.
