@@ -20,6 +20,8 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown, BrainCircuit, ExternalLink, Activity } from 'lucide-react';
 import { fetchAllProjections, type Projection } from '../services/api';
+import { safeNum, fmtPct, fmtDollar, fmtPrice, changeBgUpside, sortByColumn } from '../utils/formatters';
+import { getActionBadgeClass } from '../utils/actionColors';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -136,52 +138,8 @@ function savePrefs(prefs: TablePrefs) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function safeNum(v: any): number | null {
-    if (v == null || v === '' || typeof v === 'boolean') return null;
-    const n = Number(v);
-    return isNaN(n) ? null : n;
-}
-
-function fmtPct(v: any): string {
-    const n = safeNum(v);
-    if (n == null) return '—';
-    return `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
-}
-
-function fmtDollar(v: any): string {
-    const n = safeNum(v);
-    if (n == null) return '—';
-    if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
-    if (n >= 1_000)     return `$${(n / 1_000).toFixed(1)}K`;
-    return `$${n.toFixed(0)}`;
-}
-
-function fmtPrice(v: any): string {
-    const n = safeNum(v);
-    return n != null ? `$${n.toFixed(2)}` : '—';
-}
-
-function changeBg(v: number | null): string {
-    if (v == null) return 'transparent';
-    if (v >=  50) return 'rgba(0,102,0,0.85)';
-    if (v >=  25) return 'rgba(0,160,0,0.70)';
-    if (v >=  10) return 'rgba(0,220,0,0.40)';
-    if (v >=   0) return 'rgba(30,180,30,0.20)';
-    if (v >= -10) return 'rgba(200,30,30,0.20)';
-    if (v >= -25) return 'rgba(210,0,0,0.50)';
-    return 'rgba(120,0,0,0.80)';
-}
-
-function sortRows(rows: ScreenerRow[], col: keyof ScreenerRow, dir: 'asc' | 'desc'): ScreenerRow[] {
-    return [...rows].sort((a, b) => {
-        const av = a[col], bv = b[col];
-        if (av == null && bv == null) return 0;
-        if (av == null) return 1;
-        if (bv == null) return -1;
-        const cmp = av < bv ? -1 : av > bv ? 1 : 0;
-        return dir === 'asc' ? cmp : -cmp;
-    });
-}
+const changeBg = changeBgUpside;
+const sortRows = (rows: ScreenerRow[], col: keyof ScreenerRow, dir: 'asc' | 'desc') => sortByColumn(rows, col, dir);
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -261,6 +219,11 @@ export default function ScreenerTable() {
     }, []);
 
     useEffect(() => { fetchData(); }, [fetchData]);
+
+    useEffect(() => {
+        window.addEventListener('portfolio-synced', fetchData);
+        return () => window.removeEventListener('portfolio-synced', fetchData);
+    }, [fetchData]);
 
     const [portfolioWeights, setPortfolioWeights] = useState<Record<string, { actualPct: number; targetPct: number }>>({});
     const [allPortfolioWeights, setAllPortfolioWeights] = useState<Record<string, number>>({});
@@ -702,18 +665,7 @@ export default function ScreenerTable() {
                                             </div>
                                         );
                                     } else if (col.id === 'action') {
-                                        const actionColors: Record<string, string> = {
-                                            INITIATE:   'text-cyan-400 border-cyan-500/40 bg-cyan-500/10',
-                                            ACCUMULATE: 'text-green-400 border-green-500/40 bg-green-500/10',
-                                            MAINTAIN:   'text-slate-300 border-slate-500/40 bg-slate-500/10',
-                                            TRIM:       'text-amber-400 border-amber-500/40 bg-amber-500/10',
-                                            EXIT:       'text-red-400 border-red-500/40 bg-red-500/10',
-                                            WATCHLIST:  'text-purple-400 border-purple-500/40 bg-purple-500/10',
-                                            BUY:        'text-green-400 border-green-500/40 bg-green-500/10',
-                                            HOLD:       'text-slate-300 border-slate-500/40 bg-slate-500/10',
-                                            SELL:       'text-red-400 border-red-500/40 bg-red-500/10',
-                                        };
-                                        const cls = actionColors[String(val)] ?? 'text-slate-400 border-slate-600/40 bg-transparent';
+                                        const cls = getActionBadgeClass(String(val));
                                         const tip = row.portfolioRationale;
                                         cellContent = (
                                             <span

@@ -20,6 +20,8 @@ import { useNavigate } from 'react-router-dom';
 import { fetchAllProjections } from '../services/api';
 import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { PriceSourceBadge } from './PriceSourceBadge';
+import { safeNum, fmtPct, fmtDollar, fmtPrice, changeBgDaily, sortByColumn } from '../utils/formatters';
+import { getActionBadgeClass } from '../utils/actionColors';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -143,59 +145,8 @@ function savePrefs(prefs: TablePrefs) {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function safeNum(v: any): number | null {
-    if (v == null || v === '' || typeof v === 'boolean') return null;
-    const n = Number(v);
-    return isNaN(n) ? null : n;
-}
-
-function fmtPct(v: any): string {
-    const n = safeNum(v);
-    if (n == null) return '—';
-    return `${n >= 0 ? '+' : ''}${n.toFixed(2)}%`;
-}
-
-function fmtDollar(v: any): string {
-    const n = safeNum(v);
-    if (n == null) return '—';
-    if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
-    if (n >= 1_000)     return `$${(n / 1_000).toFixed(1)}K`;
-    return `$${n.toFixed(0)}`;
-}
-
-function fmtPrice(v: any): string {
-    const n = safeNum(v);
-    return n != null ? `$${n.toFixed(2)}` : '—';
-}
-
-function changeBg(v: number | null): string {
-    if (v == null) return 'transparent';
-    if (v >=  8) return 'rgba(0,77,0,0.85)';
-    if (v >=  5) return 'rgba(0,102,0,0.80)';
-    if (v >=  3) return 'rgba(0,128,0,0.75)';
-    if (v >=  2) return 'rgba(0,160,0,0.70)';
-    if (v >=  1) return 'rgba(0,192,0,0.65)';
-    if (v >=  0.5) return 'rgba(0,220,0,0.55)';
-    if (v >=  0) return 'rgba(30,180,30,0.30)';
-    if (v >= -0.5) return 'rgba(200,30,30,0.30)';
-    if (v >= -1) return 'rgba(210,0,0,0.55)';
-    if (v >= -2) return 'rgba(185,0,0,0.65)';
-    if (v >= -3) return 'rgba(160,0,0,0.70)';
-    if (v >= -5) return 'rgba(130,0,0,0.75)';
-    if (v >= -8) return 'rgba(100,0,0,0.80)';
-    return 'rgba(70,0,0,0.85)';
-}
-
-function sortRows(rows: StockRow[], col: keyof StockRow, dir: 'asc' | 'desc'): StockRow[] {
-    return [...rows].sort((a, b) => {
-        const av = a[col], bv = b[col];
-        if (av == null && bv == null) return 0;
-        if (av == null) return 1;
-        if (bv == null) return -1;
-        const cmp = av < bv ? -1 : av > bv ? 1 : 0;
-        return dir === 'asc' ? cmp : -cmp;
-    });
-}
+const changeBg = changeBgDaily;
+const sortRows = (rows: StockRow[], col: keyof StockRow, dir: 'asc' | 'desc') => sortByColumn(rows, col, dir);
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -244,6 +195,12 @@ export default function PortfolioTable() {
 
     useEffect(() => { fetchData(); }, []);
 
+    useEffect(() => {
+        const handler = () => fetchData();
+        window.addEventListener('portfolio-synced', handler);
+        return () => window.removeEventListener('portfolio-synced', handler);
+    }, []);
+
     // Close picker on outside click
     useEffect(() => {
         function handle(e: MouseEvent) {
@@ -287,63 +244,54 @@ export default function PortfolioTable() {
         setLoading(true);
         setError(null);
         try {
-            // 1. Raw portfolio positions from portfolio.json
+            // Fetch portfolio first (allItems needed for heatmap body); run all others in parallel
             const portRes = await fetch('/api/portfolio');
             if (!portRes.ok) throw new Error('Failed to fetch portfolio');
             const portConfig = await portRes.json() as { items?: any[] };
             const allItems = portConfig.items ?? [];
 
-            // 2. Live % weights (source of truth for currentPct) — direct from portfolio.json, no aliasing
-            const weightsRes = await fetch('/api/portfolio/weights');
+            const [weightsRes, heatmapRes, thesisRes, pData, ahRes, rvRes] = await Promise.all([
+                fetch('/api/portfolio/weights'),
+                fetch('/api/portfolio-heatmap', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: allItems }),
+                }),
+                fetch('/api/theses/target-portfolio').catch(() => null),
+                fetchAllProjections().catch(() => []),
+                fetch('/api/screener/all-holdings').catch(() => null),
+                fetch('/api/docs/latest-review-data').catch(() => null),
+            ]);
+
+            if (!heatmapRes.ok) throw new Error('Failed to fetch heatmap data');
             const weightsMap: Record<string, number> = weightsRes.ok ? await weightsRes.json() : {};
+            const heatmapData = await heatmapRes.json() as { stocks: StockRow[]; total_value: number; price_source?: string; refreshed_at?: string };
 
-            // 3. Heatmap for all positions — cash has special case in Python (no yfinance, nulls for changes)
-            const res = await fetch('/api/portfolio-heatmap', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items: allItems }),
-            });
-            if (!res.ok) throw new Error('Failed to fetch heatmap data');
-            const heatmapData = await res.json() as { stocks: StockRow[]; total_value: number; price_source?: string; refreshed_at?: string };
-
-            // 4. Thesis subStrategyId map (best-effort — falls back to null)
             let strategyMap: Record<string, string> = {};
-            try {
-                const thesisRes = await fetch('/api/theses/target-portfolio');
-                if (thesisRes.ok) {
-                    const thesis = await thesisRes.json() as { holdings?: { ticker: string; subStrategyId?: string }[] };
-                    for (const h of thesis.holdings ?? []) {
-                        if (h.ticker && h.subStrategyId) strategyMap[h.ticker] = h.subStrategyId;
-                    }
+            if (thesisRes?.ok) {
+                const thesis = await thesisRes.json() as { holdings?: { ticker: string; subStrategyId?: string }[] };
+                for (const h of thesis.holdings ?? []) {
+                    if (h.ticker && h.subStrategyId) strategyMap[h.ticker] = h.subStrategyId;
                 }
-            } catch { /* proceed without strategy data */ }
+            }
 
-            // 5. AI Data Merge
-            let aiProjs: any[] = [];
-            try {
-                const pData = await fetchAllProjections();
-                const aiOnly = pData.filter((p: any) => p.source === 'AI_AGENT');
-                const latest = aiOnly.reduce((acc: any, curr: any) => {
-                    if (!acc[curr.ticker] || new Date(curr.savedAt) > new Date(acc[curr.ticker].savedAt)) acc[curr.ticker] = curr;
-                    return acc;
-                }, {});
-                aiProjs = Object.values(latest);
-            } catch {}
+            const aiOnly = (pData as any[]).filter((p: any) => p.source === 'AI_AGENT');
+            const latest = aiOnly.reduce((acc: any, curr: any) => {
+                if (!acc[curr.ticker] || new Date(curr.savedAt) > new Date(acc[curr.ticker].savedAt)) acc[curr.ticker] = curr;
+                return acc;
+            }, {});
+            const aiProjs: any[] = Object.values(latest);
 
             let actionsMap: Record<string, any> = {};
             let reviewMap: Record<string, any> = {};
-            try {
-                const ahRes = await fetch('/api/screener/all-holdings');
-                if (ahRes.ok) {
-                    const ahData = await ahRes.json();
-                    for (const h of ahData) actionsMap[h.ticker] = h.action;
-                }
-                const rvRes = await fetch('/api/docs/latest-review-data');
-                if (rvRes.ok) {
-                    const rvData = await rvRes.json();
-                    for (const h of [...(rvData.holdings ?? []), ...(rvData.holdingsUnchanged ?? [])]) reviewMap[h.ticker] = h;
-                }
-            } catch {}
+            if (ahRes?.ok) {
+                const ahData = await ahRes.json();
+                for (const h of ahData) actionsMap[h.ticker] = h.action;
+            }
+            if (rvRes?.ok) {
+                const rvData = await rvRes.json();
+                for (const h of [...(rvData.holdings ?? []), ...(rvData.holdingsUnchanged ?? [])]) reviewMap[h.ticker] = h;
+            }
 
             const projMap: Record<string, any> = aiProjs.reduce((m, p) => { m[p.ticker] = p; return m; }, {});
 

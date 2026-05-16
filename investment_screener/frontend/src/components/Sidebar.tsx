@@ -62,8 +62,7 @@ export default function Sidebar() {
             setLastSync(newSync);
             setSyncFeedback('Sync Complete!');
             setTimeout(() => setSyncFeedback(null), 3000);
-            // Refresh current view if needed (heatmap/analysis will reload on data fetch)
-            window.location.reload();
+            window.dispatchEvent(new CustomEvent('portfolio-synced'));
         } catch (err: any) {
             setSyncFeedback('Sync Failed');
             console.error(err);
