@@ -14,8 +14,8 @@ Simply launch your CLI agent (Gemini CLI, Claude Code, or Copilot CLI) and type:
 
 This will trigger the **Toolkit Onboarding Guide**, a dedicated AI concierge that will:
 1.  **Check Dependencies**: Verify your Node.js and Python versions.
-2.  **Sync Portfolio**: Securely guide you through the Questrade API link process.
-3.  **Link Charts**: Help you connect TradingView Desktop for real-time prices.
+2.  **Link TradingView**: Connect TradingView Desktop for real-time prices, portfolio sync, and order execution (primary broker layer).
+3.  **Sync Portfolio**: Run `/tv-portfolio-sync` to pull live positions from all accounts — no Questrade credentials needed. Questrade API link is optional for fallback sync.
 4.  **First Run**: Guide you through your first `/evaluate-stock` or `/review-portfolio` command.
 
 ---
@@ -42,10 +42,10 @@ This toolkit integrates with two external services that require accounts:
 
 ### Questrade (brokerage)
 
-**Required for live portfolio sync.** The toolkit connects to your Questrade brokerage account to retrieve current holdings, positions, and cost-basis data.
+**Optional — TradingView is the primary portfolio sync layer.** The toolkit can read your live positions and place orders via TradingView's Questrade broker panel (CDP automation) without direct API credentials. The Questrade REST API is read-only and is used as a fallback when TradingView Desktop is not running.
 
 - Account: https://www.questrade.com/
-- The toolkit uses Questrade's OAuth2 API with AES-256-GCM encrypted token storage (macOS Keychain). Your credentials never leave your machine.
+- If you choose to enable direct API sync, the toolkit uses Questrade's OAuth2 API with AES-256-GCM encrypted token storage (macOS Keychain). Your credentials never leave your machine.
 - See [Questrade Setup](#questrade-setup) below.
 
 ### TradingView Premium (real-time prices)
@@ -71,12 +71,12 @@ A web-based financial analysis dashboard featuring:
 - **Valuation Modeler**: Interactive Bear/Base/Bull scenario modeling to project 5-year price targets.
 - **Comparative Analysis**: Side-by-side ticker comparison.
 
-### 2. Questrade Portfolio Integration
-A professional-grade brokerage sync engine featuring:
-- **Dynamic Sync**: Real-time retrieval of account positions and balances.
-- **Secure Token Bridge**: AES-256-GCM encryption with hardware-backed master keys (macOS Keychain).
-- **Metadata Enrichment**: Intelligent fallback to `yfinance` for sector/industry categorization of broker holdings.
-- **Onboarding Flow**: Guided UI for secure account linking and rotation management.
+### 2. Portfolio Sync (TV-Primary, Questrade Fallback)
+A multi-source portfolio sync engine with automatic source selection:
+- **Primary — TradingView CDP**: Reads live positions and balances from all accounts (TFSA + RRSP + Cash) via the TradingView broker panel. No separate API credentials required — works wherever TradingView Desktop runs.
+- **Fallback — Questrade API**: AES-256-GCM encrypted token storage (macOS Keychain). Used when TradingView Desktop is not running.
+- **Source waterfall**: `POST /api/portfolio/sync` auto-selects TV → Questrade → cached data, returning a `dataSource` field so the UI can indicate freshness.
+- **Metadata Enrichment**: `yfinance` fills in sector/industry for any holding the broker doesn't annotate.
 
 ### Portfolio Summary
 ![Portfolio Summary](screenshots/2026-05-08-portfolio-summary.png)
@@ -143,16 +143,21 @@ A multi-skill suite that monitors, challenges, and optimizes your portfolio agai
 - `/x-news-sweep` — Daily Grok/X.com news sweep gated against DCF + 8 hard gates
 
 ### 4. TradingView Integration (`plugins/tradingview`)
-Real-time price and alert integration via TradingView Desktop and Chrome DevTools Protocol.
+TradingView Desktop is the **primary layer** for live prices, portfolio sync, and order execution.
 
 **Requires:** TradingView Desktop + Premium subscription (see [above](#tradingview-premium-real-time-prices)).
 
-**Auto-launch:** `run_investment_toolkit.py` automatically launches TradingView Desktop with `--remote-debugging-port=9222`. To relaunch independently: `python3 launch_tradingview_with_debugport.py`.
+**Auto-launch:** `run_investment_toolkit.py` automatically launches TradingView Desktop with `--remote-debugging-port=9222`. To relaunch independently: `python3 tools/launch_tradingview_with_debugport.py`.
 
-**CDP scope:** The TV CLI `quote` command reads from the **active chart only** — it is used in `/evaluate-stock` when you have that ticker displayed. Portfolio batch prices (Heatmap, Table, Summary) always come from yfinance. All portfolio views show a "TV Live" / "yfinance" connection badge.
+**Two CDP surfaces:**
+- **Active chart** — reads live price for the ticker currently displayed. Used in `/evaluate-stock`. Single-ticker only.
+- **Broker panel** — reads all accounts (TFSA + RRSP + Cash), positions, and balances via the TradingView broker DOM. Used by `/tv-portfolio-sync` and `BrokerSyncService`. No Questrade API credentials required.
 
+**Batch portfolio prices** (Heatmap, Table, Summary) always come from yfinance — not the active chart. All portfolio views show a "TV Live" / "yfinance" connection badge.
+
+- `/tv-portfolio-sync` — Read all broker accounts via CDP, show diff (+ added, − removed, ✎ changed), write to `portfolio.json` on CONFIRM
+- `/place-order {buy|sell} {N} {TICKER} in {ACCOUNT}` — Live order execution via CDP broker panel; 3-step HITL
 - `/tv-alert-sync` — Create TradingView price alerts at DCF bear/base/bull targets for all holdings
-- `/tv-alert-sync CRWV` — Single-ticker alert sync
 - `/tv-snapshot CRWV` — Capture chart screenshot → `PortfolioAnalysis/screenshots/`
 
 See [`plugins/tradingview/README.md`](plugins/tradingview/README.md) for full setup and usage.

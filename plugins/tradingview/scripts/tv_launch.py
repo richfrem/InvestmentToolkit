@@ -25,7 +25,7 @@ What it does (in order):
 Usage:
     python3 plugins/tradingview/scripts/tv_launch.py
     python3 plugins/tradingview/scripts/tv_launch.py --port 9222
-    python3 launch_tradingview_with_debugport.py   # root-level shortcut
+    python3 tools/launch_tradingview_with_debugport.py   # root-level shortcut
 """
 
 import sys
