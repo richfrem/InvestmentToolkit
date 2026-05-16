@@ -18,21 +18,14 @@ Key Functions:
     - resolve_classification() - Implements the hierarchy of classification logic (Overrides -> Yahoo Finance -> Fallbacks)
 """
 
+import sys
+import os
 import logging
 from typing import List, Dict, Any
 import yfinance as yf
 
-# Sector/industry overrides for stocks Yahoo doesn't classify correctly (shared pattern)
-SECTOR_OVERRIDES = {
-    "HUMN": {"sector": "Technology", "industry": "Software - Application"},
-    "KOID": {"sector": "Technology", "industry": "Software - Application"},
-    "IBIT": {"sector": "Cryptocurrency", "industry": "Bitcoin ETF"},
-    "SOLZ": {"sector": "Cryptocurrency", "industry": "Crypto Assets"},
-    "ETHA": {"sector": "Cryptocurrency", "industry": "Ethereum ETF"},
-    "COIN": {"sector": "Cryptocurrency", "industry": "Crypto Exchange"},
-    "CRCL": {"sector": "Cryptocurrency", "industry": "Crypto Infrastructure"},
-    "SOL":  {"sector": "Cryptocurrency", "industry": "Crypto Network"},
-}
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../py_services'))
+from sector_overrides import SECTOR_OVERRIDES
 
 class MetadataEnricher:
     """

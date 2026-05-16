@@ -266,26 +266,21 @@ export class ThesisService {
 
     async listTheses(): Promise<{ id: string; name: string; updatedAt: string }[]> {
         try {
-            const files = fs.readdirSync(THESES_DIR).filter(f => f.endsWith('.json'));
-            const theses = [];
-
-            for (const file of files) {
-                try {
-                    const content = fs.readFileSync(path.join(THESES_DIR, file), 'utf-8');
-                    const thesis = JSON.parse(content);
-                    theses.push({
-                        id: thesis.id,
-                        name: thesis.name,
-                        updatedAt: thesis.updatedAt
-                    });
-                } catch (e) {
-                    console.warn(`[ThesisService] Failed to parse ${file}, skipping.`);
-                }
-            }
-
-            // Sort by most recently updated
+            const files = (await fs.promises.readdir(THESES_DIR)).filter(f => f.endsWith('.json'));
+            const results = await Promise.all(
+                files.map(async file => {
+                    try {
+                        const content = await fs.promises.readFile(path.join(THESES_DIR, file), 'utf-8');
+                        const thesis = JSON.parse(content);
+                        return { id: thesis.id as string, name: thesis.name as string, updatedAt: thesis.updatedAt as string };
+                    } catch {
+                        console.warn(`[ThesisService] Failed to parse ${file}, skipping.`);
+                        return null;
+                    }
+                })
+            );
+            const theses = results.filter((t): t is NonNullable<typeof t> => t !== null);
             return theses.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-
         } catch (error) {
             console.error('[ThesisService] Error listing theses:', error);
             return [];

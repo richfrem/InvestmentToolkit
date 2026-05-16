@@ -22,7 +22,7 @@ Usage Examples:
     #   - If TradingView Desktop is not installed → skipped, yfinance delayed prices used instead
     #
     # To relaunch TradingView independently (e.g. after closing it):
-    python3 launch_tradingview_with_debugport.py
+    python3 tools/launch_tradingview_with_debugport.py
 
 CLI Arguments:
     None
@@ -227,11 +227,12 @@ def main() -> None:
         Colors.print("Error: Node.js is not installed.", Colors.RED)
         sys.exit(1)
     
-    # 2. Environment Check
+    # 2. Environment Check (.env is optional — Questrade is optional; TV sync works without it)
     env_file = os.path.join(ROOT_DIR, ".env")
-    if not os.path.exists(env_file) and "QUESTRADE_REFRESH_TOKEN" not in os.environ:
-        Colors.print("Warning: No .env file found and QUESTRADE_REFRESH_TOKEN not set.", Colors.YELLOW)
-        Colors.print("Please copy .env.example to .env and configure it.", Colors.YELLOW)
+    questrade_cache = os.path.join(ROOT_DIR, "investment_screener", "backend", ".questrade_cache")
+    if not os.path.exists(env_file):
+        Colors.print("Note: No .env file found — copy .env.example to .env to configure optional services.", Colors.YELLOW)
+        Colors.print("Tip: TradingView sync (/tv-portfolio-sync) works without Questrade credentials.", Colors.YELLOW)
     
     # 3. Portfolio Configuration Check
     portfolio_path = os.path.join("frontend", "src", "data", "portfolio.json")
