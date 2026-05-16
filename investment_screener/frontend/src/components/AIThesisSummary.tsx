@@ -19,6 +19,7 @@
  */
 import ReactMarkdown from 'react-markdown';
 import { BrainCircuit, FolderOpen, X, AlertTriangle, Loader2 } from 'lucide-react';
+import { getActionBadgeClass } from '../utils/actionColors';
 
 interface AIThesisSummaryProps {
     aiResult: any;
@@ -46,17 +47,7 @@ export function AIThesisSummary({ aiResult, isAnalyzing, aiError, onViewFullRepo
                             <div className="flex items-center gap-3">
                                 <h3 className="text-base font-bold text-white">AI Expert Thesis</h3>
                                 {aiResult?.action && (
-                                    <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-black tracking-wider border ${
-                                        ['BUY','INITIATE','ACCUMULATE'].includes(aiResult.action)
-                                            ? 'bg-green-500/20 text-green-400 border-green-500/30'
-                                        : ['SELL','EXIT'].includes(aiResult.action)
-                                            ? 'bg-red-500/20 text-red-400 border-red-500/30'
-                                        : ['TRIM'].includes(aiResult.action)
-                                            ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-                                        : ['WATCHLIST'].includes(aiResult.action)
-                                            ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
-                                        : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
-                                    }`}>
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-black tracking-wider border ${getActionBadgeClass(aiResult.action)}`}>
                                         {aiResult.action}
                                     </span>
                                 )}

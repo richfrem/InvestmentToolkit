@@ -315,7 +315,7 @@ export interface Snapshot {
 export interface Projection {
     ticker: string;
     id: string;
-    source: 'USER' | 'SYSTEM' | 'AI_AGENT'; // Added for V2
+    source: 'USER' | 'SYSTEM' | 'AI_AGENT' | 'ETF_ANALYSIS';
     schemaVersion: '1.1';
     version: number;
     savedAt: string;
