@@ -46,10 +46,17 @@ from pathlib import Path
 
 import urllib.request as _urllib
 
+import os as _os
+
+# SEC EDGAR requires a User-Agent identifying the requester (name + contact).
+# Read from env var so personal email stays out of source control.
+# Override: export SEC_EDGAR_USER_AGENT="YourName your@email.com"
+_EDGAR_UA = _os.environ.get("SEC_EDGAR_USER_AGENT", "InvestmentToolkit portfolio-research-tool")
+
 try:
     import requests as _requests
     _SESSION = _requests.Session()
-    _SESSION.headers.update({"User-Agent": "InvestmentToolkit richfrem connect.richfrem@gmail.com"})
+    _SESSION.headers.update({"User-Agent": _EDGAR_UA})
     _USE_REQUESTS = True
 except ImportError:
     _USE_REQUESTS = False
@@ -73,7 +80,7 @@ def fetch_text(url: str) -> str:
         return resp.text
     import ssl
     ctx = ssl.create_default_context()
-    req = _urllib.Request(url, headers={"User-Agent": "InvestmentToolkit richfrem connect.richfrem@gmail.com"})
+    req = _urllib.Request(url, headers={"User-Agent": _EDGAR_UA})
     with _urllib.urlopen(req, timeout=15, context=ctx) as r:  # type: ignore[arg-type]
         return r.read().decode("utf-8")
 
