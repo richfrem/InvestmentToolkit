@@ -20,11 +20,8 @@ import { useNavigate } from 'react-router-dom';
 import { fetchAllProjections } from '../services/api';
 import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { PriceSourceBadge } from './PriceSourceBadge';
-import { TradePrepModal } from './TradePrepModal';
+import { TradeButtons } from './TradeButtons';
 import { safeNum, fmtPct, fmtDollar, fmtPrice, changeBgDaily, sortByColumn } from '../utils/formatters';
-
-const BUY_ACTIONS = new Set(['ACCUMULATE', 'BUY', 'INITIATE']);
-const SELL_ACTIONS = new Set(['TRIM', 'EXIT', 'SELL']);
 
 function computeSuggestedShares(currentPct: number | null, targetPct: number | null, price: number | null, totalValue: number): number {
     if (!currentPct || !targetPct || !price || totalValue <= 0) return 1;
@@ -166,8 +163,6 @@ export default function PortfolioTable() {
     const [error, setError] = useState<string | null>(null);
     const [priceSource, setPriceSource] = useState<string | null>(null);
     const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
-    const [tvConnected, setTvConnected] = useState(false);
-    const [tradeModal, setTradeModal] = useState<{ ticker: string; action: 'buy' | 'sell'; shares: number } | null>(null);
 
     // Load persisted prefs once
     const savedPrefs = useRef<TablePrefs | null>(null);
@@ -212,9 +207,6 @@ export default function PortfolioTable() {
         return () => window.removeEventListener('portfolio-synced', handler);
     }, []);
 
-    useEffect(() => {
-        fetch('/api/tv-status').then(r => r.json()).then(d => setTvConnected(d.price_source === 'tradingview')).catch(() => {});
-    }, []);
 
     // Close picker on outside click
     useEffect(() => {
@@ -536,8 +528,6 @@ export default function PortfolioTable() {
                     </thead>
                     <tbody>
                         {rows.map((row, i) => {
-                            const showBuy = BUY_ACTIONS.has(row.action ?? '');
-                            const showSell = SELL_ACTIONS.has(row.action ?? '');
                             const suggestedShares = computeSuggestedShares(row.currentPct, row.recommendedPct, row.currentPrice, data.total_value);
                             return (
                                 <tr
@@ -573,32 +563,13 @@ export default function PortfolioTable() {
                                         );
                                     })}
                                     {/* Actions column */}
-                                    <td className="px-2 py-2 text-right whitespace-nowrap" onClick={e => e.stopPropagation()}>
+                                    <td className="px-2 py-1.5 whitespace-nowrap" onClick={e => e.stopPropagation()}>
                                         <div className="flex items-center gap-1 justify-end">
-                                            {showBuy && (
-                                                <button
-                                                    disabled={!tvConnected}
-                                                    onClick={() => setTradeModal({ ticker: row.symbol, action: 'buy', shares: suggestedShares })}
-                                                    title={tvConnected ? `Prepare buy order — ${suggestedShares} shares suggested` : 'TradingView not connected'}
-                                                    className={`px-2 py-1 text-[10px] font-semibold rounded transition-colors ${tvConnected ? 'bg-emerald-800/40 hover:bg-emerald-700/50 text-emerald-400 hover:text-emerald-300' : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'}`}
-                                                >
-                                                    Prepare Buy
-                                                </button>
-                                            )}
-                                            {showSell && (
-                                                <button
-                                                    disabled={!tvConnected}
-                                                    onClick={() => setTradeModal({ ticker: row.symbol, action: 'sell', shares: suggestedShares })}
-                                                    title={tvConnected ? `Prepare sell order — ${suggestedShares} shares suggested` : 'TradingView not connected'}
-                                                    className={`px-2 py-1 text-[10px] font-semibold rounded transition-colors ${tvConnected ? 'bg-red-800/40 hover:bg-red-700/50 text-red-400 hover:text-red-300' : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'}`}
-                                                >
-                                                    Prepare Sell
-                                                </button>
-                                            )}
+                                            <TradeButtons ticker={row.symbol} shares={suggestedShares} size="sm" />
                                             <button
                                                 onClick={() => navigate(`/analysis?ticker=${row.symbol}`)}
                                                 title="Analyze in Stock Analysis"
-                                                className="px-2 py-1 text-[10px] font-semibold rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
+                                                className="px-2 py-0.5 text-[10px] font-bold rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
                                             >
                                                 Analyze
                                             </button>
@@ -635,14 +606,6 @@ export default function PortfolioTable() {
             </div>
         </div>
 
-        {tradeModal && (
-            <TradePrepModal
-                ticker={tradeModal.ticker}
-                initialAction={tradeModal.action}
-                initialShares={tradeModal.shares}
-                onClose={() => setTradeModal(null)}
-            />
-        )}
-    </>
+        </>
     );
 }
