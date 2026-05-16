@@ -30,6 +30,7 @@ Usage:
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -45,7 +46,9 @@ def load() -> dict:
 
 
 def save(data: dict) -> None:
-    TARGET_JSON.write_text(json.dumps(data, indent=2))
+    tmp = TARGET_JSON.with_suffix(".tmp")
+    tmp.write_text(json.dumps(data, indent=2))
+    os.replace(tmp, TARGET_JSON)
 
 
 def normalize(data: dict) -> dict:

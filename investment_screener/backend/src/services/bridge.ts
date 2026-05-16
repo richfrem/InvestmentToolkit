@@ -17,8 +17,49 @@
 import { spawn } from 'child_process';
 import path from 'path';
 
-const PYTHON_TIMEOUT_MS = 90_000; // 90 second timeout — cold heatmap load fetches ~32 tickers in parallel (~10-15s)
+const PYTHON_TIMEOUT_MS = 90_000;
+
+// ── Circuit breaker: in-flight deduplication + stale cache ───────────────────
+// If a caller requests the same script+args while a prior call is still running,
+// the second caller waits on the same Promise instead of spawning a second process.
+// On timeout the last successful result is returned (with a `stale: true` flag)
+// so the frontend never hangs indefinitely.
+const _inflight = new Map<string, Promise<any>>();
+const _lastResult = new Map<string, { ts: number; value: any }>();
+
+function _cacheKey(scriptName: string, args: string[]): string {
+    return `${scriptName}|${args.join('|')}`;
+}
+
 export const spawnPythonScript = async (scriptName: string, args: string[]): Promise<any> => {
+    const key = _cacheKey(scriptName, args);
+
+    const existing = _inflight.get(key);
+    if (existing) {
+        console.log(`[Bridge] Deduplicating in-flight call: ${scriptName}`);
+        return existing;
+    }
+
+    const promise = _spawnRaw(scriptName, args)
+        .then(result => {
+            _lastResult.set(key, { ts: Date.now(), value: result });
+            return result;
+        })
+        .catch((err: Error) => {
+            const cached = _lastResult.get(key);
+            if (cached) {
+                console.warn(`[Bridge] ${scriptName} failed (${err.message}) — returning cached result from ${Math.round((Date.now() - cached.ts) / 1000)}s ago`);
+                return { ...cached.value, stale: true, staleReason: err.message };
+            }
+            throw err;
+        })
+        .finally(() => _inflight.delete(key));
+
+    _inflight.set(key, promise);
+    return promise;
+};
+
+const _spawnRaw = async (scriptName: string, args: string[]): Promise<any> => {
     return new Promise((resolve, reject) => {
         const scriptPath = path.resolve(process.cwd(), 'py_services', scriptName);
 
