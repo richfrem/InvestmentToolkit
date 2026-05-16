@@ -13,11 +13,12 @@
  * Key Functions:
  *     - formatCurrency() - Formats numeric values into $ or $M strings
  *     - formatPct() - Formats numeric percentage values with +/- signs
- *     - changeColor() - Utility to determine text color (emerald/red/slate) based on delta
+ *     - deltaColor() - Utility to determine text color (emerald/red/slate) based on delta
  *     - changeBgGlow() - Utility to apply shadow/glow effects based on performance
  */
 import type { PortfolioSummary } from '../services/api';
 import { TrendingUp, TrendingDown, DollarSign, BarChart3, ArrowUpDown } from 'lucide-react';
+import { fmtPct, deltaColor } from '../utils/formatters';
 
 interface Props {
     data: PortfolioSummary;
@@ -28,16 +29,6 @@ function formatCurrency(value: number, decimals = 2): string {
     if (abs >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
     if (abs >= 1_000) return `$${value.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
     return `$${value.toFixed(decimals)}`;
-}
-
-function formatPct(value: number): string {
-    return `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
-}
-
-function changeColor(value: number): string {
-    if (value > 0) return 'text-emerald-400';
-    if (value < 0) return 'text-red-400';
-    return 'text-slate-400';
 }
 
 function changeBgGlow(value: number): string {
@@ -51,11 +42,11 @@ export default function PortfolioSummaryCards({ data }: Props) {
         {
             title: 'YTD Performance',
             icon: data.ytdChangePctCAD >= 0 ? TrendingUp : TrendingDown,
-            primary: formatPct(data.ytdChangePctCAD),
-            primaryColor: changeColor(data.ytdChangePctCAD),
+            primary: fmtPct(data.ytdChangePctCAD),
+            primaryColor: deltaColor(data.ytdChangePctCAD),
             rows: [
-                { label: 'CAD', value: `${data.ytdChangeCAD >= 0 ? '+' : ''}${formatCurrency(data.ytdChangeCAD)}`, color: changeColor(data.ytdChangeCAD) },
-                { label: 'USD', value: `${data.ytdChangeUSD >= 0 ? '+' : ''}${formatCurrency(data.ytdChangeUSD)}`, color: changeColor(data.ytdChangeUSD) },
+                { label: 'CAD', value: `${data.ytdChangeCAD >= 0 ? '+' : ''}${formatCurrency(data.ytdChangeCAD)}`, color: deltaColor(data.ytdChangeCAD) },
+                { label: 'USD', value: `${data.ytdChangeUSD >= 0 ? '+' : ''}${formatCurrency(data.ytdChangeUSD)}`, color: deltaColor(data.ytdChangeUSD) },
             ],
             glow: changeBgGlow(data.ytdChangePctCAD),
         },
@@ -73,11 +64,11 @@ export default function PortfolioSummaryCards({ data }: Props) {
         {
             title: 'Book vs Market',
             icon: BarChart3,
-            primary: formatPct(data.unrealizedGainPctUSD),
-            primaryColor: changeColor(data.unrealizedGainPctUSD),
+            primary: fmtPct(data.unrealizedGainPctUSD),
+            primaryColor: deltaColor(data.unrealizedGainPctUSD),
             rows: [
-                { label: 'USD', value: `${data.unrealizedGainUSD >= 0 ? '+' : ''}${formatCurrency(data.unrealizedGainUSD)}`, color: changeColor(data.unrealizedGainUSD) },
-                { label: 'CAD', value: `${data.unrealizedGainCAD >= 0 ? '+' : ''}${formatCurrency(data.unrealizedGainCAD)}`, color: changeColor(data.unrealizedGainCAD) },
+                { label: 'USD', value: `${data.unrealizedGainUSD >= 0 ? '+' : ''}${formatCurrency(data.unrealizedGainUSD)}`, color: deltaColor(data.unrealizedGainUSD) },
+                { label: 'CAD', value: `${data.unrealizedGainCAD >= 0 ? '+' : ''}${formatCurrency(data.unrealizedGainCAD)}`, color: deltaColor(data.unrealizedGainCAD) },
             ],
             glow: changeBgGlow(data.unrealizedGainPctUSD),
         },

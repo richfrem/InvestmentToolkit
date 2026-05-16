@@ -13,7 +13,7 @@
  * Key Functions:
  *     - AgentReminderModal() - Functional component rendering the UI and the current symbol command
  */
-import { X, Terminal, ExternalLink } from 'lucide-react';
+import { X, Terminal } from 'lucide-react';
 
 interface Props {
     isOpen: boolean;

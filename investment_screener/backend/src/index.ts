@@ -29,6 +29,7 @@ import cors from 'cors';
 import fs from 'fs';
 import { spawnPythonScript } from './services/bridge';
 import { questradeSyncService } from './services/QuestradeSyncService';
+import { brokerSyncService, mergeIntoPortfolio } from './services/BrokerSyncService';
 import { projectionService } from './services/ProjectionService';
 
 const app = express();
@@ -191,11 +192,19 @@ app.post('/api/portfolio-heatmap', async (req, res) => {
 app.get('/api/portfolio', async (_req, res) => {
     try {
         if (!fs.existsSync(PORTFOLIO_FILE)) {
-            res.json({ items: [] });
+            res.json({ items: [], dataSource: 'cache' });
             return;
         }
         const data = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
-        res.json({ items: data });
+        // Determine the source of the last sync (portfolio_tv.json newer = TV sourced)
+        const tvFile = path.join(__dirname, '../data/portfolio_tv.json');
+        let dataSource: string = 'cache';
+        if (fs.existsSync(tvFile)) {
+            const tvMtime  = fs.statSync(tvFile).mtimeMs;
+            const porMtime = fs.statSync(PORTFOLIO_FILE).mtimeMs;
+            dataSource = tvMtime >= porMtime ? 'tradingview-cdp' : 'questrade';
+        }
+        res.json({ items: data, dataSource });
     } catch (error) {
         console.error(`[API] Error reading portfolio: `, error);
         res.status(500).json({ error: 'Failed to read portfolio' });
@@ -448,6 +457,62 @@ app.post('/api/portfolio/sync-questrade', async (_req, res) => {
             error: 'Questrade sync failed',
             details: error.message
         });
+    }
+});
+
+// --- TradingView CDP sync ---
+
+app.post('/api/portfolio/sync-tv', async (_req, res) => {
+    console.log('[API] Triggering TradingView portfolio sync...');
+    try {
+        const snapshot = await brokerSyncService.syncFromTV();
+        const posCount = snapshot.positions?.length ?? 0;
+        if (posCount === 0) {
+            res.status(503).json({ error: 'TradingView returned 0 positions. Is TradingView Desktop running with a broker connected?' });
+            return;
+        }
+        // Merge with existing portfolio.json (preserve thesis/pillar/price fields)
+        const existing = fs.existsSync(PORTFOLIO_FILE)
+            ? JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'))
+            : [];
+        const { merged, added, removed, changed } = mergeIntoPortfolio(snapshot, existing);
+        res.json({
+            success:     true,
+            dataSource:  'tradingview-cdp',
+            positionCount: posCount,
+            diff:        { added, removed, changed },
+            snapshot,
+            merged,
+            message:     `TV sync: ${posCount} positions. ${added.length} added, ${removed.length} removed, ${changed.length} changed. Call POST /api/portfolio/sync-tv/promote to write to portfolio.json.`,
+        });
+    } catch (error: any) {
+        console.error('[API] TV Sync Error:', error);
+        res.status(500).json({ error: 'TradingView sync failed', details: error.message });
+    }
+});
+
+app.post('/api/portfolio/sync-tv/promote', async (req, res) => {
+    // Promote the merged result returned by /sync-tv directly into portfolio.json.
+    // Accepts { merged: [...] } in the request body (from a prior /sync-tv call).
+    const { merged } = req.body;
+    if (!Array.isArray(merged) || merged.length === 0) {
+        res.status(400).json({ error: 'merged array is required in request body. Call /api/portfolio/sync-tv first.' });
+        return;
+    }
+    fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(merged, null, 2));
+    console.log(`[API] portfolio.json promoted from TV snapshot (${merged.length} positions).`);
+    res.json({ success: true, positionCount: merged.length, message: 'portfolio.json updated from TradingView data.' });
+});
+
+// Auto-pick source: TV CDP → Questrade → cache
+app.post('/api/portfolio/sync', async (_req, res) => {
+    console.log('[API] Auto portfolio sync (TV → Questrade → cache)...');
+    try {
+        const result = await brokerSyncService.syncAuto(() => questradeSyncService.runSync());
+        res.json({ success: true, ...result });
+    } catch (error: any) {
+        console.error('[API] Auto sync error:', error);
+        res.status(500).json({ error: 'Auto sync failed', details: error.message });
     }
 });
 
