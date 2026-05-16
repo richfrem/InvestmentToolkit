@@ -20,6 +20,7 @@ import { type Projection, fetchProjections } from '../services/api';
 import { SmartText } from './SmartText';
 import { HelpTrigger } from './HelpModal';
 import { DeepDiveModal } from './DeepDiveModal';
+import { getActionBadgeClass } from '../utils/actionColors';
 
 interface AIAnalysisModalProps {
     symbol: string;
@@ -135,27 +136,20 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
                                     const action = projection.aiThesis?.action ?? '—';
                                     const valuationAction = (projection as any).analyticsLog?.valuationAction as string | undefined;
                                     const portfolioUrgency = (projection as any).analyticsLog?.portfolioUrgency as string | undefined;
-                                    const actionStyles: Record<string, { bg: string; border: string; text: string }> = {
-                                        INITIATE:   { bg: 'bg-cyan-500/10',    border: 'border-cyan-500/30',    text: 'text-cyan-400'    },
-                                        ACCUMULATE: { bg: 'bg-green-500/10',   border: 'border-green-500/30',   text: 'text-green-400'   },
-                                        MAINTAIN:   { bg: 'bg-slate-500/10',   border: 'border-slate-500/30',   text: 'text-slate-300'   },
-                                        TRIM:       { bg: 'bg-amber-500/10',   border: 'border-amber-500/30',   text: 'text-amber-400'   },
-                                        EXIT:       { bg: 'bg-red-500/10',     border: 'border-red-500/30',     text: 'text-red-400'     },
-                                        WATCHLIST:  { bg: 'bg-purple-500/10',  border: 'border-purple-500/30',  text: 'text-purple-400'  },
-                                        BUY:        { bg: 'bg-green-500/10',   border: 'border-green-500/30',   text: 'text-green-400'   },
-                                        HOLD:       { bg: 'bg-slate-500/10',   border: 'border-slate-500/30',   text: 'text-slate-300'   },
-                                        SELL:       { bg: 'bg-red-500/10',     border: 'border-red-500/30',     text: 'text-red-400'     },
-                                    };
                                     const urgencyColors: Record<string, string> = {
                                         URGENT: 'text-red-400 bg-red-500/10 border-red-500/30',
                                         NORMAL: 'text-slate-400 bg-slate-500/10 border-slate-500/30',
                                         LOW:    'text-slate-500 bg-slate-800/40 border-slate-700/30',
                                     };
-                                    const style = actionStyles[action] ?? actionStyles['HOLD'];
+                                    const badgeCls = getActionBadgeClass(action);
+                                    // Split combined badge class into bg+border (for card) and text (for label)
+                                    const cardBg = badgeCls.match(/bg-\S+/)?.[0] ?? 'bg-slate-500/10';
+                                    const cardBorder = badgeCls.match(/border-\S+/)?.[0] ?? 'border-slate-500/30';
+                                    const cardText = badgeCls.match(/text-\S+/)?.[0] ?? 'text-slate-300';
                                     return (
-                                        <div className={`p-4 rounded-xl border flex flex-col items-center justify-center text-center ${style.bg} ${style.border}`}>
+                                        <div className={`p-4 rounded-xl border flex flex-col items-center justify-center text-center ${cardBg} ${cardBorder}`}>
                                             <span className="text-xs font-bold uppercase tracking-wider opacity-70 mb-1">Recommendation</span>
-                                            <span className={`text-3xl font-black ${style.text}`}>{action}</span>
+                                            <span className={`text-3xl font-black ${cardText}`}>{action}</span>
                                             <div className="flex items-center gap-2 mt-2 flex-wrap justify-center">
                                                 {valuationAction && (
                                                     <span className="text-[9px] px-2 py-0.5 rounded-full border border-slate-600/40 bg-slate-800/60 text-slate-400 font-bold uppercase tracking-wider">

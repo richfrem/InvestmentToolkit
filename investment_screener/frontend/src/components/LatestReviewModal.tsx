@@ -16,20 +16,9 @@
 import { useEffect, useState } from 'react';
 import { X, TrendingUp, TrendingDown, Minus, AlertTriangle, Clock, CheckCircle2, Loader2, FileBarChart2 } from 'lucide-react';
 import { fetchLatestReviewData } from '../services/api';
+import { getActionTextClass } from '../utils/actionColors';
 
 interface Props { onClose: () => void; }
-
-const ACTION_COLOR: Record<string, string> = {
-    INITIATE:   'text-cyan-400',
-    ACCUMULATE: 'text-green-400',
-    MAINTAIN:   'text-slate-300',
-    TRIM:       'text-amber-400',
-    EXIT:       'text-red-400',
-    WATCHLIST:  'text-purple-400',
-    BUY:        'text-green-400',
-    HOLD:       'text-slate-300',
-    SELL:       'text-red-400',
-};
 
 function DeltaIcon({ delta }: { delta: number }) {
     if (delta > 0.1) return <TrendingUp size={12} className="text-green-400 shrink-0" />;
@@ -212,7 +201,7 @@ function HoldingTable({ holdings, title }: { holdings: any[]; title: string }) {
                             <tr key={h.ticker} className="border-b border-slate-800/50 hover:bg-white/[0.02]">
                                 <td className="px-3 py-3 font-black text-white tracking-tighter">{h.ticker}</td>
                                 <td className="px-3 py-3">
-                                    <span className={`text-[10px] font-black uppercase ${ACTION_COLOR[h.action] ?? 'text-slate-400'}`}>{h.action}</span>
+                                    <span className={`text-[10px] font-black uppercase ${getActionTextClass(h.action)}`}>{h.action}</span>
                                 </td>
                                 <td className="px-3 py-3 font-mono text-xs text-slate-400">{(h.actualPct ?? 0).toFixed(2)}%</td>
                                 <td className="px-3 py-3 font-mono text-xs text-white">{h.recommendedTarget?.toFixed(2)}%</td>
