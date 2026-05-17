@@ -96,6 +96,25 @@ export async function injectPineScript(client, scriptContent) {
       awaitPromise: false,
     });
 
+    // 4. Handle "unsaved changes" confirmation modal — click "Save and add to chart"
+    await new Promise(r => setTimeout(r, 600));
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        // Modal appears when the editor has unsaved changes.
+        // Button text is "Save and add to chart" — find and click it.
+        var modalBtn = [...document.querySelectorAll('button')].find(function(b) {
+          return b.offsetParent && /save\\s*and\\s*add/i.test(b.textContent);
+        });
+        if (modalBtn) { modalBtn.click(); return 'modal-dismissed'; }
+        return 'no-modal';
+      })()`,
+      returnByValue: true,
+      awaitPromise: false,
+    });
+
+    // 5. Wait for indicator to load onto chart
+    await new Promise(r => setTimeout(r, 1000));
+
     return { success: true };
   } catch (e) {
     return { success: false, error: 'Pine Editor not found' };
