@@ -17,7 +17,7 @@
 - Create: `plugins/tradingview/node/tests/pine.test.js`
 - Create: `plugins/tradingview/node/core/pine.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```javascript
 // plugins/tradingview/node/tests/pine.test.js
@@ -41,12 +41,12 @@ describe('Pine Script Injection', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx jest plugins/tradingview/node/tests/pine.test.js`
 Expected: FAIL because `core/pine.js` does not exist.
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```javascript
 // plugins/tradingview/node/core/pine.js
@@ -65,12 +65,12 @@ async function removePineScript(client, indicatorName) {
 module.exports = { injectPineScript, removePineScript };
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npx jest plugins/tradingview/node/tests/pine.test.js`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ### Task 2: Node CLI Data Window Extraction
 
@@ -94,12 +94,12 @@ describe('Data Window Extraction', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npx jest plugins/tradingview/node/tests/pine.test.js`
 Expected: FAIL (`readIndicatorValues` is not defined).
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```javascript
 // plugins/tradingview/node/core/pine.js
@@ -118,12 +118,12 @@ async function readIndicatorValues(client, indicatorName) {
 module.exports = { injectPineScript, removePineScript, readIndicatorValues };
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `npx jest plugins/tradingview/node/tests/pine.test.js`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ### Task 3: Python Service Wrapper and CLI Router Integration
 
@@ -156,12 +156,12 @@ def test_inject_pine(tmp_path):
         assert "pine inject" in " ".join(mock_run.call_args[0][0])
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest plugins/tradingview/tests/test_tv_pine_manager.py`
 Expected: FAIL (Module `plugins.tradingview.scripts.tv_pine_manager` not found).
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```python
 # plugins/tradingview/scripts/tv_pine_manager.py
@@ -199,12 +199,12 @@ if __name__ == "__main__":
 ```
 *(Also wire up `pine inject`, `pine read`, and `pine remove` commands inside `router.js` and `cli.js` to map to `core/pine.js` functions).*
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest plugins/tradingview/tests/test_tv_pine_manager.py`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ### Task 4: Real CDP Implementation and Live Test Harness
 
@@ -237,12 +237,12 @@ def test_live_pine_cycle():
     assert res_rm.get('success') is True, f"Remove failed: {res_rm}"
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest plugins/tradingview/tests/tv_test_harness.py` (ensure TV Desktop is running on port 9222).
 Expected: FAIL (because the Node logic currently returns hardcoded mock values instead of actually parsing the real TV DOM).
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Update `plugins/tradingview/node/core/pine.js` to perform the actual CDP DOM traversal.
 
@@ -275,12 +275,12 @@ Confirm actual selectors via CDP Section 0.5 pattern in `tv_test_harness.py` bef
 
 **Temp files**: Write to `InvestmentToolkit/temp/` subfolder, not `/tmp/` root (see Task 0003).
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest plugins/tradingview/tests/tv_test_harness.py`
 Expected: PASS (Successfully injects, reads, and removes from the live TV chart).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ### Task 5: AI Agent Skill Scaffold
 
@@ -304,12 +304,12 @@ def test_pine_advisor_skill_exists_and_configured():
         assert "tv_pine_manager.py" in content
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pytest tests/test_pine_advisor_skill.py`
 Expected: FAIL (File does not exist).
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `.agents/skills/tv_pine_advisor/SKILL.md`:
 
@@ -332,10 +332,10 @@ description: Run custom TA on {TICKER} using AI-generated Pine Script
 6. Evaluate the extracted JSON signals against the portfolio thesis and output an actionable advisory rating (Initiate/Accumulate/Trim/Exit).
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_pine_advisor_skill.py`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 ```

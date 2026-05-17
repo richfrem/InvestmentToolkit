@@ -6,6 +6,8 @@ Section 0  — Prerequisites: TV reachable, broker connected, account readable, 
 Section 0.5 — DOM Selector Smoke: critical selectors that all CDP automation depends on.
               ANY missing selector aborts the suite immediately — a missing selector means
               all form-fill tests would fail with cryptic errors, not useful diagnostics.
+Section 1  — Pine Script live cycle: inject / read / remove on the active chart.
+              Requires TradingView Desktop running on port 9222 with a chart open.
 
 TV ships DOM updates 2-4 times/year; Section 0.5 catches regressions before they hide
 in cryptic automation failures downstream.
@@ -13,12 +15,14 @@ in cryptic automation failures downstream.
 Usage:
     python3 plugins/tradingview/tests/tv_test_harness.py --suite prereqs
     python3 plugins/tradingview/tests/tv_test_harness.py --suite selectors
-    python3 plugins/tradingview/tests/tv_test_harness.py           # runs both sections
+    python3 plugins/tradingview/tests/tv_test_harness.py --suite pine
+    python3 plugins/tradingview/tests/tv_test_harness.py           # runs all sections
 
 Exit codes:
     0  — all checks passed
     1  — prerequisite failure (TV unreachable, no broker, etc.)
     2  — DOM selector missing (CRITICAL — suite aborted)
+    3  — Pine cycle failure
 """
 
 import argparse
@@ -29,6 +33,10 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 TV_NODE_DIR = REPO_ROOT / "plugins/tradingview/node"
+TEMP_DIR = REPO_ROOT / "temp"
+TEMP_DIR.mkdir(exist_ok=True)
+
+sys.path.insert(0, str(REPO_ROOT / "plugins" / "tradingview" / "scripts"))
 
 OK = "\033[92m✓\033[0m"
 FAIL = "\033[91m✗\033[0m"
@@ -198,6 +206,33 @@ process.exit(0);
         return False, [(s, d, False) for s, d in DOM_SELECTORS]
 
 
+# ── Section 1: Pine Script Live Cycle ────────────────────────────────────────
+
+def test_live_pine_cycle() -> tuple[bool, str]:
+    """[1.1] Live pine cycle — inject / read / remove on the active chart."""
+    from tv_pine_manager import inject_pine, read_pine, remove_pine
+
+    pine_file = TEMP_DIR / "test_indicator.pine"
+    pine_file.write_text('//@version=5\nindicator("Test_Indicator", overlay=false)\nplot(close)')
+
+    try:
+        res = inject_pine(str(pine_file))
+        if not res.get("success"):
+            return False, f"inject_pine failed: {res}"
+
+        res_data = read_pine("Test_Indicator")
+        if not res_data.get("success"):
+            return False, f"read_pine failed: {res_data}"
+
+        res_rm = remove_pine("Test_Indicator")
+        if not res_rm.get("success"):
+            return False, f"remove_pine failed: {res_rm}"
+
+        return True, "inject → read → remove cycle succeeded"
+    except Exception as e:
+        return False, f"Pine cycle error: {e}"
+
+
 # ── Runner ────────────────────────────────────────────────────────────────────
 
 def run_section_0() -> bool:
@@ -243,11 +278,20 @@ def run_section_05() -> bool:
     return True
 
 
+def run_section_1() -> bool:
+    print(f"\n{HEADER}Section 1 — Pine Script Live Cycle{RESET}")
+    ok, msg = test_live_pine_cycle()
+    icon = OK if ok else FAIL
+    print(f"  [1.1] {icon} live inject / read / remove")
+    print(f"       {msg}")
+    return ok
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="TradingView CDP prerequisite checks")
     parser.add_argument(
         "--suite",
-        choices=["prereqs", "selectors", "all"],
+        choices=["prereqs", "selectors", "pine", "all"],
         default="all",
         help="Which section to run (default: all)",
     )
@@ -266,6 +310,12 @@ def main() -> None:
         if not ok05:
             print(f"\n{CRITICAL} Section 0.5 failed — DOM selectors broken, suite aborted.")
             sys.exit(2)
+
+    if args.suite in ("pine", "all"):
+        ok1 = run_section_1()
+        if not ok1:
+            print(f"\n{FAIL} Section 1 failed — Pine Script cycle broken.")
+            sys.exit(3)
 
     print(f"\n{OK} All prerequisite checks passed.")
 
