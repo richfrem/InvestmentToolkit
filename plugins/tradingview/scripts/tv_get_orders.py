@@ -88,22 +88,23 @@ def _run_node(js: str, timeout: int = 15) -> dict:
 
 def get_orders(ticker: str | None = None) -> dict:
     """
-    Read open orders from TradingView's broker panel via verifyOrderInBrokerPanel.
+    Read all open orders (Working + Inactive) from TradingView's broker panel.
 
     Args:
         ticker: Optional ticker filter — only rows containing this symbol are returned.
 
     Returns:
-        { "found": bool, "orders": [{ "orderId": str, "text": str }, ...] }
+        { "found": bool, "orders": [{ "orderId": str, "ticker": str, "side": str,
+                                      "limitPrice": float, "status": str, "text": str }] }
     """
     js = f"""
-import {{ verifyOrderInBrokerPanel }} from './core/trading.js';
+import {{ listOpenOrders }} from './core/trading.js';
 try {{
-    const result = await verifyOrderInBrokerPanel({{
-        ticker: {json.dumps(ticker)},
-        action: null,
-        limitPrice: null,
-    }});
+    const result = await listOpenOrders();
+    const ticker = {json.dumps(ticker)};
+    if (ticker && result.orders) {{
+        result.orders = result.orders.filter(o => o.ticker && o.ticker.toUpperCase() === ticker.toUpperCase());
+    }}
     process.stdout.write(JSON.stringify(result) + '\\n');
     process.exit(0);
 }} catch(e) {{

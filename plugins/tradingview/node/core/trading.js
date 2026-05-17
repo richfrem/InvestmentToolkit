@@ -994,6 +994,68 @@ export async function submitModify({ ticker, action, limitPrice } = {}) {
   return result;
 }
 
+/**
+ * listOpenOrders() — returns ALL open orders from TradingView broker panel.
+ * Navigates to Orders tab, reads Working + Inactive sub-tabs, returns every
+ * row as { orderId, ticker, side, limitPrice, status, text }.
+ * Used by tv_get_orders.py and the trade-log sync-from-TV endpoint.
+ *
+ * Returns: { found: true, orders: [{orderId, ticker, side, limitPrice, status, text}] }
+ *       or { found: false, error: string }
+ */
+export async function listOpenOrders() {
+  // Click the Orders tab in the broker panel
+  await evaluate(`(function() {
+    var tabs = [...document.querySelectorAll('[role="tab"], button')].filter(function(b) {
+      return b.offsetParent !== null && /^Orders(\\s*\\d+)?$/i.test(b.textContent.trim());
+    });
+    if (tabs.length > 0) tabs[0].click();
+  })()`);
+  await sleep(600);
+
+  const allOrders = [];
+
+  for (const subTab of ['Working', 'Inactive']) {
+    await evaluate(`(function() {
+      var tabs = [...document.querySelectorAll('[role="tab"], button')].filter(function(b) {
+        return b.offsetParent !== null && new RegExp('^${subTab}(\\\\s*\\\\d+)?$', 'i').test(b.textContent.trim());
+      });
+      if (tabs.length > 0) tabs[0].click();
+    })()`);
+    await sleep(500);
+
+    const rows = await evaluate(`(function() {
+      var rows = [...document.querySelectorAll('tr, [class*="row"]')].filter(function(r) {
+        return r.offsetParent !== null && !/Symbol.*Side.*Type/i.test(r.textContent);
+      });
+      return JSON.stringify(rows.map(function(row) {
+        var text = row.textContent.replace(/\\s+/g, ' ').trim();
+        if (!text || text.length < 5) return null;
+        var orderIdMatch = text.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+        var prices = (text.match(/[\\d,]+\\.\\d{2}/g) || []).map(Number);
+        // Extract ticker: first 1-5 uppercase word at start of row text
+        var tickerMatch = text.match(/^([A-Z]{1,6}(?:\\.[A-Z]{1,3})?)/);
+        return {
+          orderId: orderIdMatch ? orderIdMatch[0] : null,
+          ticker: tickerMatch ? tickerMatch[1] : null,
+          side: /\\bBuy\\b/i.test(text) ? 'buy' : /\\bSell\\b/i.test(text) ? 'sell' : null,
+          limitPrice: prices.length > 0 ? prices[0] : null,
+          status: '${subTab.toLowerCase()}',
+          text: text.substring(0, 200),
+        };
+      }).filter(Boolean));
+    })()`).then(JSON.parse);
+
+    for (const row of rows) {
+      if (row.orderId && !allOrders.find(o => o.orderId === row.orderId)) {
+        allOrders.push(row);
+      }
+    }
+  }
+
+  return { found: true, orders: allOrders };
+}
+
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 function sleep(ms) {

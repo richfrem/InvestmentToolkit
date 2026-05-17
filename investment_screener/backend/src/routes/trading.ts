@@ -9,6 +9,7 @@ const router = express.Router();
 
 const REPO_ROOT = path.resolve(__dirname, '../../../..');
 const PLACE_ORDER_PY = path.join(REPO_ROOT, 'investment_screener/backend/py_services/place_order.py');
+const GET_ORDERS_PY  = path.join(REPO_ROOT, 'plugins/tradingview/scripts/tv_get_orders.py');
 
 // ── Session State Machine ────────────────────────────────────────────────────
 
@@ -374,6 +375,66 @@ router.post('/cancel', async (req, res) => {
   }
 
   res.json({ tvCancelled, logCancelled, tvResult });
+});
+
+// ── POST /api/trading/log/sync-from-tv ──────────────────────────────────────
+// Reconcile trade-log against live TV orders. Entries with status inactive/submitted
+// whose tvOrderId is no longer in TV are marked cancelled.
+
+router.post('/log/sync-from-tv', async (_req, res) => {
+  try {
+    const pyResult = await new Promise<PyResult>(resolve => {
+      const proc = spawn('python3', [GET_ORDERS_PY, '--json'], { cwd: REPO_ROOT });
+      let stdout = '';
+      let stderr = '';
+      proc.stdout.on('data', (d: Buffer) => { stdout += d.toString(); });
+      proc.stderr.on('data', (d: Buffer) => { stderr += d.toString(); });
+      const timer = setTimeout(() => {
+        proc.kill('SIGTERM');
+        resolve({ stdout, stderr: stderr + '\n[TIMEOUT]', exitCode: -1 });
+      }, 20_000);
+      proc.on('close', code => { clearTimeout(timer); resolve({ stdout, stderr, exitCode: code ?? -1 }); });
+    });
+
+    const tvData = extractJson(pyResult.stdout);
+    if (!tvData) {
+      res.status(502).json({ error: 'Could not read orders from TradingView', stderr: pyResult.stderr.slice(0, 300) });
+      return;
+    }
+
+    // If TV returned an error or explicitly said found=false, it means CDP failed —
+    // don't reconcile (we'd wrongly cancel all open orders with an empty set).
+    if (tvData.error || tvData.found === false) {
+      res.status(502).json({ error: `TradingView CDP error: ${tvData.error ?? 'not found'}`, details: tvData });
+      return;
+    }
+
+    const tvOrderIds = new Set<string>(
+      (tvData.orders ?? []).map((o: any) => String(o.orderId))
+    );
+
+    const entries = readLog();
+    let cancelled = 0;
+    const updated = entries.map((e: any) => {
+      if (e.tvOrderId && (e.status === 'inactive' || e.status === 'submitted')) {
+        if (!tvOrderIds.has(String(e.tvOrderId))) {
+          cancelled++;
+          return { ...e, status: 'cancelled', notes: (e.notes ? e.notes + ' ' : '') + '[sync: not in TV]' };
+        }
+      }
+      return e;
+    });
+
+    writeLog(updated);
+    res.json({
+      success: true,
+      tvOrders: tvData.orders?.length ?? 0,
+      cancelled,
+      message: `Reconciled against ${tvData.orders?.length ?? 0} live TV order(s) — ${cancelled} entr${cancelled === 1 ? 'y' : 'ies'} marked cancelled`,
+    });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // ── GET /api/trading/audit/today ─────────────────────────────────────────────
