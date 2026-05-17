@@ -23,7 +23,7 @@ export default function MainLayout() {
             <Sidebar />
 
             {/* Main Content Area */}
-            <main className="flex-1 ml-64 p-8 overflow-y-auto">
+            <main className="flex-1 ml-60 p-8 overflow-y-auto">
                 {/* Minimal Header (optional, usually title per page) */}
 
                 <Outlet />

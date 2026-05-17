@@ -31,12 +31,17 @@ Key Functions:
 import argparse
 import datetime
 import json
+import os
 import sys
 from pathlib import Path
+
 
 REPO_ROOT   = Path(__file__).resolve().parents[3]
 PROJ_DIR    = REPO_ROOT / "investment_screener/backend/data/projections"
 THESIS_JSON = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
+
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from file_lock import locked_write_json  # noqa: E402
 
 PRESETS: dict[str, dict[str, float] | None] = {
     "design_win":      {"bull": +10, "bear": -5},
@@ -133,7 +138,7 @@ def main() -> None:
         entry["lastGrokSweep"] = args.date
         data[idx] = entry
         out = data if isinstance(raw, list) else data[0]
-        proj_path.write_text(json.dumps(out, indent=2) + "\n")
+        locked_write_json(proj_path, out)
         print(f"✅ {args.ticker}: lastGrokSweep stamped {args.date} (no catalyst applied)")
         return
 
@@ -234,7 +239,7 @@ def main() -> None:
     data[idx] = entry
 
     out = data if isinstance(raw, list) else data[0]
-    proj_path.write_text(json.dumps(out, indent=2) + "\n")
+    locked_write_json(proj_path, out)
     print(f"\n✅ {proj_path.name} updated  FV ${old_fv:.2f}→${new_fv:.2f}  action {old_action}→{new_action}")
 
     if args.update_thesis:
@@ -246,7 +251,7 @@ def main() -> None:
                 if args.note not in old_rat:
                     h["agentRationale"] = old_rat + "." + suffix
                 break
-        THESIS_JSON.write_text(json.dumps(thesis, indent=2) + "\n")
+        locked_write_json(THESIS_JSON, thesis)
         print(f"✅ agentRationale updated in target-portfolio.json for {args.ticker}")
 
 

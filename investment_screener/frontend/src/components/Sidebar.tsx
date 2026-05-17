@@ -3,54 +3,37 @@
  * =====================================
  *
  * Purpose:
- *     Main navigation sidebar for the application, providing access to different 
- *     views and core tool configurations.
+ *     Main navigation sidebar. Primary nav items + compact Portfolio Sync utility.
+ *     Link Account and Manual Portfolio are in Settings.
  *
  * Layer: Frontend / UI / Layout
- *
- * Usage Examples:
- *     <Sidebar />
- *
- * Key Functions:
- *     - handleSync() - Triggers a real-time portfolio sync (TV CDP primary, Questrade fallback) and reloads the current view
- *     - formatLastSync() - Formats the ISO sync timestamp into a human-readable HH:MM display
  */
 import { useState, useEffect } from 'react';
-import { Settings, History, Briefcase, Grid3X3, BarChart3, Search, RefreshCcw, Link2, TableProperties, PieChart } from 'lucide-react';
+import { Settings, History, Grid3X3, BarChart3, Search, RefreshCcw, TableProperties, PieChart, ScrollText } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useRecentTickers } from '../hooks/useRecentTickers';
-import { PortfolioModal } from './PortfolioModal';
-import { QuestradeSetupModal } from './QuestradeSetupModal';
 import { syncPortfolio, fetchSyncStatus } from '../services/api';
+
+const NAV_ITEMS = [
+    { name: 'Heatmap',          icon: Grid3X3,        path: '/' },
+    { name: 'Portfolio Summary', icon: PieChart,       path: '/portfolio-summary' },
+    { name: 'Portfolio Table',   icon: TableProperties, path: '/portfolio-table' },
+    { name: 'Portfolio Advisor', icon: Search,          path: '/screener' },
+    { name: 'Stock Analysis',    icon: BarChart3,       path: '/analysis' },
+    { name: 'Trade Log',         icon: ScrollText,      path: '/trade-log' },
+];
 
 export default function Sidebar() {
     const { recentTickers } = useRecentTickers();
     const navigate = useNavigate();
-    const [isPortfolioOpen, setIsPortfolioOpen] = useState(false);
-    const [isQuestradeOpen, setIsQuestradeOpen] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
     const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
     const [lastSync, setLastSync] = useState<string | null>(null);
 
-    // Main nav items (excluding Settings)
-    const navItems = [
-        { name: 'Heatmap', icon: Grid3X3, path: '/' },
-        { name: 'Portfolio Summary', icon: PieChart, path: '/portfolio-summary' },
-        { name: 'Portfolio Table', icon: TableProperties, path: '/portfolio-table' },
-        { name: 'Portfolio Advisor', icon: Search, path: '/screener' },
-        { name: 'Stock Analysis', icon: BarChart3, path: '/analysis' },
-    ];
-
     useEffect(() => {
-        const getStatus = async () => {
-            try {
-                const { lastSync } = await fetchSyncStatus();
-                setLastSync(lastSync);
-            } catch (err) {
-                console.error("Failed to fetch initial sync status");
-            }
-        };
-        getStatus();
+        fetchSyncStatus()
+            .then(({ lastSync }) => setLastSync(lastSync))
+            .catch(() => {});
     }, []);
 
     const handleSync = async () => {
@@ -58,164 +41,119 @@ export default function Sidebar() {
         setSyncFeedback(null);
         try {
             await syncPortfolio();
-            const { lastSync: newSync } = await fetchSyncStatus();
-            setLastSync(newSync);
-            setSyncFeedback('Sync Complete!');
-            setTimeout(() => setSyncFeedback(null), 3000);
+            const { lastSync: ts } = await fetchSyncStatus();
+            setLastSync(ts);
+            setSyncFeedback('Synced');
             window.dispatchEvent(new CustomEvent('portfolio-synced'));
-        } catch (err: any) {
-            setSyncFeedback('Sync Failed');
-            console.error(err);
-            setTimeout(() => setSyncFeedback(null), 5000);
+        } catch {
+            setSyncFeedback('Failed');
         } finally {
             setIsSyncing(false);
+            setTimeout(() => setSyncFeedback(null), 3000);
         }
     };
 
-    const formatLastSync = (iso: string | null) => {
+    const formatTime = (iso: string | null) => {
         if (!iso) return 'Never';
-        const date = new Date(iso);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
+    const navCls = ({ isActive }: { isActive: boolean }) =>
+        `flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors text-sm font-medium ${
+            isActive ? 'bg-slate-800 text-primary' : 'text-secondary hover:bg-slate-800 hover:text-slate-200'
+        }`;
+
     return (
-        <aside className="w-64 h-screen bg-surface border-r border-slate-800 flex flex-col fixed left-0 top-0 z-[40]">
-            {/* Header with Logo */}
-            <div className="p-6 pb-4">
-                <h1 className="text-xl font-bold text-primary flex items-center gap-2">
-                    <span className="text-2xl">⚡</span> Investment Toolkit
+        <aside className="w-60 h-screen bg-surface border-r border-slate-800 flex flex-col fixed left-0 top-0 z-[40]">
+
+            {/* Logo */}
+            <div className="px-5 pt-5 pb-3">
+                <h1 className="text-lg font-bold text-primary flex items-center gap-2">
+                    <span className="text-xl">⚡</span> Investment Toolkit
                 </h1>
             </div>
 
-            {/* Search - Prominent at Top */}
-            <div className="px-6 pb-4">
+            {/* Search */}
+            <div className="px-4 pb-3">
                 <div className="relative">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                     <input
                         type="text"
-                        placeholder="Search ticker (e.g. NVDA)"
+                        placeholder="Search ticker…"
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 const val = e.currentTarget.value.trim().toUpperCase();
                                 if (val) navigate(`/analysis?ticker=${val}`);
                             }
                         }}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-3 py-2.5 text-sm text-white focus:border-primary focus:outline-none placeholder:text-slate-500"
+                        className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-3 py-2 text-sm text-white focus:border-primary focus:outline-none placeholder:text-slate-500"
                     />
                 </div>
             </div>
 
-            {/* Main Navigation */}
-            <nav className="flex-1 px-4 space-y-1">
-                {navItems.map((item) => (
-                    <NavLink
-                        key={item.name}
-                        to={item.path}
-                        className={({ isActive }) =>
-                            `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
-                                ? 'bg-slate-800 text-primary'
-                                : 'text-secondary hover:bg-slate-800 hover:text-slate-200'
-                            }`
-                        }
-                    >
-                        <item.icon size={20} />
-                        <span className="font-medium">{item.name}</span>
+            {/* Primary Navigation */}
+            <nav className="flex-1 px-3 space-y-0.5 overflow-y-auto">
+                {NAV_ITEMS.map(item => (
+                    <NavLink key={item.name} to={item.path} className={navCls}>
+                        <item.icon size={18} />
+                        <span>{item.name}</span>
                     </NavLink>
                 ))}
 
-                <div className="pt-4 pb-2 px-2">
-                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Portfolio</h3>
+                {/* Thin divider */}
+                <div className="pt-3 pb-1 px-1">
+                    <div className="h-px bg-slate-800" />
                 </div>
 
-                {/* Portfolio Management Button */}
+                {/* Portfolio Sync — compact single-line utility */}
                 <button
-                    onClick={() => setIsPortfolioOpen(true)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-secondary hover:bg-slate-800 hover:text-slate-200 w-full"
+                    onClick={handleSync}
+                    disabled={isSyncing}
+                    className="flex items-center gap-2.5 px-4 py-2 rounded-lg w-full transition-colors text-slate-500 hover:text-slate-300 hover:bg-slate-800/60 group relative"
                 >
-                    <Briefcase size={20} />
-                    <span className="font-medium">Manual Portfolio</span>
+                    <RefreshCcw
+                        size={15}
+                        className={isSyncing ? 'animate-spin text-amber-500' : 'group-hover:text-amber-400 transition-colors'}
+                    />
+                    <span className="text-xs font-medium">
+                        {isSyncing ? 'Syncing…' : `Sync  ·  ${formatTime(lastSync)}`}
+                    </span>
+                    {syncFeedback && (
+                        <span className={`absolute right-3 text-[10px] font-bold ${syncFeedback === 'Failed' ? 'text-red-500' : 'text-emerald-500'}`}>
+                            {syncFeedback}
+                        </span>
+                    )}
                 </button>
-
-                {/* Portfolio Sync Controls */}
-                <div className="space-y-1">
-                    <button
-                        onClick={handleSync}
-                        disabled={isSyncing}
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-secondary hover:bg-slate-800 hover:text-slate-200 w-full relative group"
-                    >
-                        <RefreshCcw size={20} className={`${isSyncing ? 'animate-spin text-amber-500' : 'group-hover:text-amber-500 transition-colors'}`} />
-                        <div className="flex flex-col items-start leading-tight">
-                            <span className="font-medium">Portfolio Sync</span>
-                            <span className="text-[10px] text-slate-500 font-semibold">
-                                {isSyncing ? 'Syncing...' : `Last: ${formatLastSync(lastSync)}`}
-                            </span>
-                        </div>
-                        {syncFeedback && (
-                            <span className={`absolute right-4 text-[10px] font-bold uppercase transition-all ${syncFeedback.includes('Failed') ? 'text-red-500' : 'text-green-500'}`}>
-                                {syncFeedback}
-                            </span>
-                        )}
-                    </button>
-                    <button
-                        onClick={() => setIsQuestradeOpen(true)}
-                        className="flex items-center gap-3 px-4 py-2 rounded-lg transition-colors text-slate-500 hover:text-amber-400 w-full text-xs"
-                    >
-                        <Link2 size={14} />
-                        <span className="font-semibold italic">Link Account...</span>
-                    </button>
-                </div>
             </nav>
 
             {/* Recent Tickers */}
-            <div className="px-4 py-4 border-t border-slate-800">
-                <h3 className="text-xs font-semibold text-secondary uppercase tracking-wider mb-3 flex items-center gap-2 px-2">
-                    <History size={14} /> Recent
-                </h3>
-                {recentTickers.length === 0 ? (
-                    <div className="text-sm text-slate-500 italic px-2">
-                        No history yet...
+            {recentTickers.length > 0 && (
+                <div className="px-3 py-3 border-t border-slate-800">
+                    <div className="flex items-center gap-1.5 px-2 mb-2">
+                        <History size={11} className="text-slate-600" />
+                        <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Recent</span>
                     </div>
-                ) : (
-                    <ul className="space-y-1">
-                        {recentTickers.map((ticker) => (
-                            <li key={ticker}>
-                                <button
-                                    onClick={() => navigate(`/analysis?ticker=${ticker}`)}
-                                    className="block w-full text-left px-3 py-2 text-sm text-slate-400 hover:text-primary hover:bg-slate-800/50 rounded transition-colors"
-                                >
-                                    {ticker}
-                                </button>
-                            </li>
+                    <div className="flex flex-wrap gap-1 px-1">
+                        {recentTickers.slice(0, 6).map(ticker => (
+                            <button
+                                key={ticker}
+                                onClick={() => navigate(`/analysis?ticker=${ticker}`)}
+                                className="px-2 py-0.5 text-xs text-slate-400 hover:text-primary hover:bg-slate-800 rounded transition-colors font-mono"
+                            >
+                                {ticker}
+                            </button>
                         ))}
-                    </ul>
-                )}
-            </div>
+                    </div>
+                </div>
+            )}
 
-            {/* Settings - Bottom */}
-            <div className="px-4 pb-4 border-t border-slate-800 pt-2">
-                <NavLink
-                    to="/settings"
-                    className={({ isActive }) =>
-                        `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
-                            ? 'bg-slate-800 text-primary'
-                            : 'text-secondary hover:bg-slate-800 hover:text-slate-200'
-                        }`
-                    }
-                >
-                    <Settings size={20} />
-                    <span className="font-medium">Settings</span>
+            {/* Settings — bottom */}
+            <div className="px-3 pb-3 border-t border-slate-800 pt-2">
+                <NavLink to="/settings" className={navCls}>
+                    <Settings size={18} />
+                    <span>Settings</span>
                 </NavLink>
             </div>
-
-            <PortfolioModal isOpen={isPortfolioOpen} onClose={() => setIsPortfolioOpen(false)} />
-            <QuestradeSetupModal
-                isOpen={isQuestradeOpen}
-                onClose={() => setIsQuestradeOpen(false)}
-                onSyncComplete={() => {
-                    setSyncFeedback('Sync Complete!');
-                    setTimeout(() => setSyncFeedback(null), 3000);
-                }}
-            />
         </aside>
     );
 }

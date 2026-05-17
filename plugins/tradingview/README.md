@@ -77,6 +77,11 @@ TradingView adds a real-time price layer **only for current price and 1d change%
 | Alert Sync (single) | `/tv-alert-sync CRWV` | Alert sync for one ticker |
 | Chart Snapshot | `/tv-snapshot CRWV` | Capture chart screenshot → `PortfolioAnalysis/screenshots/` |
 | TA Snapshot | `/tv-ta CRWV` | Screenshot + visual technical analysis — trend, S/R levels, indicator readings, buy/sell zones |
+| **Portfolio Sync** | **`/tv-portfolio-sync`** | **Sync portfolio.json from live TV broker panel (TFSA + RRSP + Cash). Shows diff before writing. No Questrade API needed.** |
+| **Place Order** | **`/place-order buy\|sell N TICKER in ACCOUNT`** | **Live order execution via TradingView CDP automation. 3-step HITL: preflight → fill dialog + screenshot → CONFIRM. Records `tvOrderId` on trade log entry.** |
+| **Cancel Order** | **`/cancel-order {tvOrderId}`** | **Cancel a Working/Inactive order by UUID — clicks × in TV broker panel, handles secondary confirmation dialog, marks trade log cancelled.** |
+| **Modify Order** | **`/modify-order {tvOrderId} {newPrice}`** | **Modify limit price on a Working/Inactive order — clicks ✏, fills price via CDP keyboard events (React-safe), clicks Confirm/Send Order.** |
+| **Get Orders** | **`/get-orders`** | **List open Working/Inactive orders from TradingView broker panel, including order UUIDs.** |
 
 ### `/tv-ta` — Technical Analysis Snapshot
 
@@ -125,6 +130,27 @@ python3 plugins/tradingview/scripts/tv_health_check.py --json
 
 # Launch TradingView manually (also done automatically at startup)
 python3 plugins/tradingview/scripts/tv_launch.py
+
+# --- Order Management (requires TradingView Desktop + broker connected) ---
+
+# List open Working/Inactive orders with UUIDs
+python3 plugins/tradingview/scripts/tv_get_orders.py
+python3 plugins/tradingview/scripts/tv_get_orders.py --ticker INTC --json
+
+# Modify a limit order price (finds row by UUID, fills form via keyboard events)
+python3 plugins/tradingview/scripts/tv_modify_order.py \
+    --order-id 292b5304-0c3d-42c2-02c0-290f6d322c12 \
+    --new-price 47.00 --ticker INTC --action buy
+
+# Cancel an order (clicks × row button, handles secondary confirmation dialog)
+python3 plugins/tradingview/scripts/tv_cancel_order.py \
+    --order-id 292b5304-0c3d-42c2-02c0-290f6d322c12 \
+    --ticker INTC --action buy
+
+# Place an order (full HITL flow — use place_order.py for preflight/execute/submit)
+python3 investment_screener/backend/py_services/place_order.py \
+    --ticker INTC --action buy --shares 1 --order-type limit --limit-price 45.00 \
+    --account tfsa --preflight
 ```
 
 ---
@@ -151,8 +177,24 @@ plugins/tradingview/node/
     ├── data.js      ← getQuote, getOhlcv, getStudyValues
     ├── alerts.js    ← create, list, delete
     ├── health.js    ← healthCheck
-    └── capture.js   ← captureScreenshot → PortfolioAnalysis/screenshots/
+    ├── capture.js   ← captureScreenshot → PortfolioAnalysis/screenshots/
+    ├── audit.js     ← appendAuditEvent → audit/orders-YYYY-MM-DD.jsonl
+    ├── broker_data.js ← readBrokerPositions, readBrokerAccounts (for /tv-portfolio-sync)
+    └── trading.js   ← full order automation:
+                         preflight, executeOrder, confirmAndSubmit,
+                         cancelOrder, modifyOrder, submitModify,
+                         verifyOrderInBrokerPanel, _findOrderRowAndAct
 ```
+
+### Order Automation Key Implementation Notes
+
+**`cancelOrder`** — uses search-first approach (no tab navigation). Tab navigation was toggling the broker panel closed. Finds the order row by UUID directly in the current DOM, clicks `buttonIndex: -1` (last button = ×). Handles secondary "Cancel order / Keep order" dialog.
+
+**`modifyOrder`** — clicks `buttonIndex: -2` (pencil ✏). Uses CDP keyboard events (`Input.insertText`) to fill the price field — **not** React property setter. Setting `input.value` directly shows the value visually but doesn't fire `onChange`, so TV submits the original price. Keyboard events properly trigger React's event chain.
+
+**`submitModify`** — looks for "Confirm" / "Send Order" / "Save" / "Modify" / "Apply" buttons. Also handles secondary TV confirmation dialogs. Calls `verifyOrderInBrokerPanel` afterwards to confirm the new price.
+
+**`tvOrderId`** — extracted from `verifyOrderInBrokerPanel` after submission and stored on the trade-log entry. Used by cancel/modify to locate the exact order row.
 
 ---
 

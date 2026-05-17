@@ -39,13 +39,16 @@ TARGET_JSON   = REPO_ROOT / "investment_screener/backend/data/theses/target-port
 VALIDATE_PY   = Path(__file__).parent / "validate_weights.py"
 BLUEPRINT_PY  = Path(__file__).parent / "generate_portfolio_blueprint.py"
 
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from file_lock import locked_write_json  # noqa: E402
+
 
 def load() -> dict:
     return json.loads(TARGET_JSON.read_text())
 
 
 def save(data: dict) -> None:
-    TARGET_JSON.write_text(json.dumps(data, indent=2))
+    locked_write_json(TARGET_JSON, data)
 
 
 def normalize(data: dict) -> dict:

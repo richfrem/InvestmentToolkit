@@ -20,7 +20,15 @@ import { useNavigate } from 'react-router-dom';
 import { fetchAllProjections } from '../services/api';
 import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { PriceSourceBadge } from './PriceSourceBadge';
+import { TradeButtons } from './TradeButtons';
+import { TradeLogModal } from './TradeLogModal';
 import { safeNum, fmtPct, fmtDollar, fmtPrice, changeBgDaily, sortByColumn } from '../utils/formatters';
+
+function computeSuggestedShares(currentPct: number | null, targetPct: number | null, price: number | null, totalValue: number): number {
+    if (!currentPct || !targetPct || !price || totalValue <= 0) return 1;
+    const dollarGap = Math.abs((targetPct - currentPct) * totalValue) / 100;
+    return Math.max(1, Math.floor(dollarGap / price));
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -156,6 +164,7 @@ export default function PortfolioTable() {
     const [error, setError] = useState<string | null>(null);
     const [priceSource, setPriceSource] = useState<string | null>(null);
     const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
+    const [logModal, setLogModal] = useState<{ ticker: string } | null>(null);
 
     // Load persisted prefs once
     const savedPrefs = useRef<TablePrefs | null>(null);
@@ -199,6 +208,7 @@ export default function PortfolioTable() {
         window.addEventListener('portfolio-synced', handler);
         return () => window.removeEventListener('portfolio-synced', handler);
     }, []);
+
 
     // Close picker on outside click
     useEffect(() => {
@@ -392,6 +402,7 @@ export default function PortfolioTable() {
     // ── Render ───────────────────────────────────────────────────────────────
 
     return (
+        <>
         <div className="flex flex-col bg-zinc-900 rounded-lg border border-zinc-800">
 
             {/* Header bar */}
@@ -460,11 +471,12 @@ export default function PortfolioTable() {
 
             {/* Table */}
             <div className="overflow-auto rounded-b-lg">
-                <table className="text-sm border-collapse" style={{ tableLayout: 'fixed', width: '100%', minWidth: visibleCols.reduce((sum, c) => sum + (columnWidths[c.id] ?? DEFAULT_WIDTHS[c.id] ?? 100), 0) }}>
+                <table className="text-sm border-collapse" style={{ tableLayout: 'fixed', width: '100%', minWidth: visibleCols.reduce((sum, c) => sum + (columnWidths[c.id] ?? DEFAULT_WIDTHS[c.id] ?? 100), 0) + 195 }}>
                     <colgroup>
                         {visibleCols.map(col => (
                             <col key={col.id} style={{ width: columnWidths[col.id] ?? DEFAULT_WIDTHS[col.id] ?? 100 }} />
                         ))}
+                        <col style={{ width: 195 }} />
                     </colgroup>
                     <thead>
                         <tr className="bg-zinc-800/60 border-b border-zinc-700">
@@ -496,6 +508,7 @@ export default function PortfolioTable() {
                                     </th>
                                 );
                             })}
+                            <th className="px-2 py-2.5 text-right text-xs font-semibold uppercase tracking-wider text-zinc-500">Actions</th>
                         </tr>
                         {showFilters && (
                             <tr className="bg-zinc-800/40 border-b border-zinc-700">
@@ -511,45 +524,69 @@ export default function PortfolioTable() {
                                         />
                                     </th>
                                 ))}
+                                <th className="px-2 py-1.5" />
                             </tr>
                         )}
                     </thead>
                     <tbody>
-                        {rows.map((row, i) => (
-                            <tr
-                                key={row.symbol}
-                                onClick={() => navigate(`/analysis?ticker=${row.symbol}`)}
-                                className={`border-b border-zinc-800 cursor-pointer transition-colors
-                                    ${i % 2 === 0 ? 'bg-zinc-900' : 'bg-zinc-900/50'}
-                                    hover:bg-zinc-800/70`}
-                            >
-                                {visibleCols.map(col => {
-                                    const val = row[col.id];
-                                    const numVal = typeof val === 'number' ? val : null;
-                                    const isPctCol = col.id === 'currentPct';
-                                    const pctBg = isPctCol && numVal != null
-                                        ? `rgba(34,197,94,${Math.min(numVal / 15, 1) * 0.55 + (numVal > 0 ? 0.08 : 0)})`
-                                        : undefined;
-                                    return (
-                                        <td
-                                            key={col.id}
-                                            className={`px-3 py-2.5 whitespace-nowrap overflow-hidden text-ellipsis ${col.align === 'right' ? 'text-right' : 'text-left'}`}
-                                            style={col.isChange ? { backgroundColor: changeBg(numVal) } : isPctCol ? { backgroundColor: pctBg } : undefined}
-                                        >
-                                            {col.id === 'symbol' ? (
-                                                <span className="font-bold text-white">{val}</span>
-                                            ) : col.id === 'name' ? (
-                                                <span className="text-zinc-300 text-xs">{val}</span>
-                                            ) : col.isChange ? (
-                                                <span className="font-semibold text-xs text-white">{col.format(val)}</span>
-                                            ) : (
-                                                <span className="text-zinc-300">{col.format(val)}</span>
-                                            )}
-                                        </td>
-                                    );
-                                })}
-                            </tr>
-                        ))}
+                        {rows.map((row, i) => {
+                            const suggestedShares = computeSuggestedShares(row.currentPct, row.recommendedPct, row.currentPrice, data.total_value);
+                            return (
+                                <tr
+                                    key={row.symbol}
+                                    onClick={() => navigate(`/analysis?ticker=${row.symbol}`)}
+                                    className={`border-b border-zinc-800 cursor-pointer transition-colors
+                                        ${i % 2 === 0 ? 'bg-zinc-900' : 'bg-zinc-900/50'}
+                                        hover:bg-zinc-800/70`}
+                                >
+                                    {visibleCols.map(col => {
+                                        const val = row[col.id];
+                                        const numVal = typeof val === 'number' ? val : null;
+                                        const isPctCol = col.id === 'currentPct';
+                                        const pctBg = isPctCol && numVal != null
+                                            ? `rgba(34,197,94,${Math.min(numVal / 15, 1) * 0.55 + (numVal > 0 ? 0.08 : 0)})`
+                                            : undefined;
+                                        return (
+                                            <td
+                                                key={col.id}
+                                                className={`px-3 py-2.5 whitespace-nowrap overflow-hidden text-ellipsis ${col.align === 'right' ? 'text-right' : 'text-left'}`}
+                                                style={col.isChange ? { backgroundColor: changeBg(numVal) } : isPctCol ? { backgroundColor: pctBg } : undefined}
+                                            >
+                                                {col.id === 'symbol' ? (
+                                                    <span className="font-bold text-white">{val}</span>
+                                                ) : col.id === 'name' ? (
+                                                    <span className="text-zinc-300 text-xs">{val}</span>
+                                                ) : col.isChange ? (
+                                                    <span className="font-semibold text-xs text-white">{col.format(val)}</span>
+                                                ) : (
+                                                    <span className="text-zinc-300">{col.format(val)}</span>
+                                                )}
+                                            </td>
+                                        );
+                                    })}
+                                    {/* Actions column */}
+                                    <td className="px-2 py-1.5 whitespace-nowrap" onClick={e => e.stopPropagation()}>
+                                        <div className="flex items-center gap-1 justify-end">
+                                            <TradeButtons ticker={row.symbol} shares={suggestedShares} size="sm" />
+                                            <button
+                                                onClick={() => setLogModal({ ticker: row.symbol })}
+                                                title="Log a trade to journal"
+                                                className="px-2 py-0.5 text-[10px] font-bold rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-amber-400 transition-colors"
+                                            >
+                                                Log
+                                            </button>
+                                            <button
+                                                onClick={() => navigate(`/analysis?ticker=${row.symbol}`)}
+                                                title="Analyze in Stock Analysis"
+                                                className="px-2 py-0.5 text-[10px] font-bold rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
+                                            >
+                                                Analyze
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
 
                     <tfoot>
@@ -571,10 +608,19 @@ export default function PortfolioTable() {
                                     </td>
                                 );
                             })}
+                            <td className="px-2 py-2" />
                         </tr>
                     </tfoot>
                 </table>
             </div>
         </div>
+
+        {logModal && (
+            <TradeLogModal
+                ticker={logModal.ticker}
+                onClose={() => setLogModal(null)}
+            />
+        )}
+        </>
     );
 }

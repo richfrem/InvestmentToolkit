@@ -30,6 +30,9 @@ export class QuestradeSyncService {
      * @returns Promise<void> resolves on success, rejects on failure.
      */
     public async runSync(): Promise<void> {
+        console.log(`[QuestradeSync] Sync engine is currently DISABLED (Pure TradingView Mode).`);
+        return;
+        /*
         return new Promise((resolve, reject) => {
             console.log(`[QuestradeSync] Starting sync engine...`);
             console.log(`[QuestradeSync] Script: ${QuestradeSyncService.PYTHON_SCRIPT_PATH}`);
@@ -72,6 +75,7 @@ export class QuestradeSyncService {
                 reject(err);
             });
         });
+        */
     }
 }
 

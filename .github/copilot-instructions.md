@@ -182,6 +182,45 @@ If you find yourself computing the same formula more than once across sessions �
 
 ---
 
+## 🧪 Test-Driven Development — Mandatory
+
+> **Rule**: No production code is written before a failing test exists. This applies to every Python service, Express route, TradingView CDP function, and plugin script.
+> **Full rule**: `.agent/rules/test-driven-development.md`
+
+### The Iron Law
+```
+NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.
+```
+
+### Where tests live
+
+| What you're building | Test location |
+|---|---|
+| Python service in `py_services/` | `investment_screener/backend/tests/py_services/` |
+| Express route | `investment_screener/backend/tests/api/` |
+| TradingView CDP function | `plugins/tradingview/tests/tv_test_harness.py` |
+| Plugin script | `plugins/<plugin>/tests/` |
+| React component | `investment_screener/frontend/tests/` |
+
+### Before writing any implementation
+Check `.agent/rules/test-driven-development.md`. Write the test. Watch it fail. Then write minimal code to pass it.
+
+**Why this rule exists**: A one-line import path bug (`validate_weights` not found in `py_services/`) broke `getPythonActions()` silently. A unit test would have caught it in 30 seconds. See the test suite vision: `docs/superpowers/specs/2026-05-17-test-suite-vision-design.md`
+
+---
+
+## 📋 Trade Log UI
+
+The Trade Log (`/trade-log`) mirrors TradingView's order panel. Tabs: **All | Working | Inactive | Suggested | Filled | Cancelled**.
+
+- **Inactive tab** = limit orders placed in TV waiting for price trigger (`status: 'inactive'`)
+- **Suggested tab** = AI-proposed trades + manually logged entries (`suggested` / `logged`)
+- **Avg Fill / Total** only show values when `status === 'filled'`; all other rows show `—`
+- Trades are auto-logged by `TradePrepModal` on submission — no separate "Log Trade" button
+- Buy/Sell buttons are just "Buy" / "Sell" everywhere (TradeButtons.tsx)
+
+---
+
 ## ⚠️ Known Pitfalls — Read Before Touching These Areas
 
 ### 1. Python `__dirname` path in TypeScript backend

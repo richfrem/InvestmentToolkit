@@ -199,9 +199,9 @@ export function mergeIntoPortfolio(tvSnapshot: TVSnapshot, existing: any[]): {
 
 /**
  * Auto-pick source and sync portfolio.json.
- * Priority: TV CDP → Questrade → no-op (return cache info).
+ * Priority: TV CDP → cache (Questrade fallback disabled for pure TV mode).
  */
-export async function syncAuto(questradeSyncFn?: () => Promise<void>): Promise<SyncResult> {
+export async function syncAuto(_questradeSyncFn?: () => Promise<void>): Promise<SyncResult> {
     const tvReachable = await isTVReachable();
 
     if (tvReachable) {
@@ -221,25 +221,19 @@ export async function syncAuto(questradeSyncFn?: () => Promise<void>): Promise<S
                 };
             }
         } catch (err: any) {
-            console.warn(`[BrokerSync] TV sync failed: ${err.message} — falling back to Questrade`);
+            console.warn(`[BrokerSync] TV sync failed: ${err.message}`);
         }
     }
 
+    // Questrade fallback disabled per user request (pure TradingView mode)
+    /*
     if (questradeSyncFn) {
         try {
             await questradeSyncFn();
-            const existing = fs.existsSync(PORTFOLIO_FILE)
-                ? JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'))
-                : [];
-            return {
-                dataSource:    'questrade',
-                positionCount: Array.isArray(existing) ? existing.length : 0,
-                message:       'Synced from Questrade (TradingView not reachable).',
-            };
-        } catch (err: any) {
-            console.warn(`[BrokerSync] Questrade sync failed: ${err.message} — returning cache`);
+            ...
         }
     }
+    */
 
     const existing = fs.existsSync(PORTFOLIO_FILE)
         ? JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'))
@@ -247,7 +241,9 @@ export async function syncAuto(questradeSyncFn?: () => Promise<void>): Promise<S
     return {
         dataSource:    'cache',
         positionCount: Array.isArray(existing) ? existing.length : 0,
-        message:       'Neither TradingView nor Questrade reachable — returning cached portfolio.',
+        message:       tvReachable 
+            ? 'TradingView connected but returned no positions — returning cached portfolio.'
+            : 'TradingView not reachable — returning cached portfolio.',
     };
 }
 
