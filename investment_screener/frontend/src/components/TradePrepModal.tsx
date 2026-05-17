@@ -200,6 +200,10 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
             // Auto-log to trade journal
             // Limit/stop orders are "inactive" until filled — don't populate fill price
             const isLimitOrder = orderType === 'limit' || orderType === 'stop' || orderType === 'stop_limit';
+            const tvOrderId: string | null =
+                (result as any).tvOrderId ??
+                result.result?.brokerVerification?.best?.orderId ??
+                null;
             logTrade({
                 ticker,
                 action,
@@ -212,6 +216,7 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                 notes: 'Auto-logged from TradingView CDP execution',
                 status: isLimitOrder ? 'inactive' : 'submitted',
                 source: 'cdp_execution',
+                tvOrderId,
             }).catch(() => {});
         } catch (e: any) {
             setSubmitError(e.message ?? 'Submit failed');

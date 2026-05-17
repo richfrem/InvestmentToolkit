@@ -707,6 +707,293 @@ export async function confirmAndSubmit({ ticker, action, limitPrice } = {}) {
   return result;
 }
 
+// ── cancel order ─────────────────────────────────────────────────────────────
+
+/**
+ * cancelOrder({ orderId, ticker, action, limitPrice }) — locates an order in
+ * TradingView's Inactive or Working sub-tab by UUID and clicks its cancel ×
+ * button. Handles a secondary confirmation dialog if TV shows one.
+ * Returns { cancelled, verified, orderId, ticker, reason }.
+ */
+// Shared helper: find an order row and click its cancel (×) or edit (✏) button.
+// Returns the CDP evaluate result JSON.
+async function _findOrderRowAndAct({ orderId, ticker, buttonIndex }) {
+  return evaluate(`(function() {
+    var targetId = ${JSON.stringify(orderId || '')};
+    var tickerUp = ${JSON.stringify((ticker || '').toUpperCase())};
+    var btnIdx   = ${JSON.stringify(buttonIndex)}; // -1 = last (cancel), -2 = second-to-last (edit)
+
+    var rows = [...document.querySelectorAll('tr, [class*="row"]')].filter(function(r) {
+      if (!r.offsetParent) return false;
+      var text = r.textContent;
+      if (targetId && text.includes(targetId)) return true;
+      if (!targetId && tickerUp && text.includes(tickerUp)) return true;
+      return false;
+    });
+
+    if (rows.length === 0) return JSON.stringify({ found: false });
+
+    var row = rows[0];
+    var extractedId = (row.textContent.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i) || [])[0] || targetId;
+
+    var btns = [...row.querySelectorAll('button, [role="button"], svg')].filter(function(b) {
+      return b.offsetParent !== null && (b.tagName === 'BUTTON' || b.getAttribute('role') === 'button');
+    });
+
+    var idx = btnIdx < 0 ? btns.length + btnIdx : btnIdx;
+    var btn = btns[idx];
+    if (!btn) {
+      // Fallback: search by aria-label
+      if (btnIdx === -1) btn = btns.find(function(b) { return /cancel|dismiss|close|remove/i.test(b.getAttribute('aria-label') || ''); });
+      if (btnIdx === -2) btn = btns.find(function(b) { return /edit|modify|pencil/i.test(b.getAttribute('aria-label') || ''); });
+    }
+
+    if (!btn) return JSON.stringify({ found: true, orderId: extractedId, clickable: false, reason: 'Button not found (idx=' + idx + ', total=' + btns.length + ')' });
+
+    btn.click();
+    return JSON.stringify({ found: true, orderId: extractedId, clickable: true, btnLabel: btn.getAttribute('aria-label') || btn.textContent.trim().substring(0, 10) });
+  })()`).then(JSON.parse);
+}
+
+export async function cancelOrder({ orderId, ticker, action, limitPrice } = {}) {
+  // Strategy 1: find the row directly without navigating tabs.
+  // Rows may already be visible if the broker panel is open.
+  // Navigating to "Orders" tab can TOGGLE the panel closed — so try without first.
+  let result = await _findOrderRowAndAct({ orderId, ticker, buttonIndex: -1 });
+
+  // Strategy 2: try clicking Orders tab, then Inactive / Working sub-tabs
+  if (!result.found) {
+    await evaluate(`(function() {
+      var tabs = [...document.querySelectorAll('[role="tab"], button')].filter(function(b) {
+        return b.offsetParent !== null && /^Orders(\\s*\\d+)?$/i.test(b.textContent.trim());
+      });
+      if (tabs.length > 0) tabs[0].click();
+    })()`);
+    await sleep(700);
+
+    for (const subTab of ['Inactive', 'Working']) {
+      await evaluate(`(function() {
+        var tabs = [...document.querySelectorAll('[role="tab"], button')].filter(function(b) {
+          return b.offsetParent !== null && /^(${subTab})(\\s*\\d+)?$/i.test(b.textContent.trim());
+        });
+        if (tabs.length > 0) tabs[0].click();
+      })()`);
+      await sleep(500);
+
+      result = await _findOrderRowAndAct({ orderId, ticker, buttonIndex: -1 });
+      if (result.found) break;
+    }
+  }
+
+  if (!result.found) {
+    appendAuditEvent('CANCEL_ORDER_NOT_FOUND', { orderId, ticker });
+    return { cancelled: false, orderId, ticker, reason: 'Order row not found in broker panel' };
+  }
+
+  if (!result.clickable) {
+    appendAuditEvent('CANCEL_BUTTON_MISSING', { orderId, ticker, reason: result.reason });
+    return { cancelled: false, orderId: result.orderId, ticker, reason: result.reason };
+  }
+
+  appendAuditEvent('CANCEL_CLICKED', { orderId: result.orderId, ticker });
+
+  // Poll for a secondary confirmation dialog ("Cancel this order? Yes / No")
+  await sleep(400);
+  for (let i = 0; i < 5; i++) {
+    const confirmed = await evaluate(`(function() {
+      var btn = [...document.querySelectorAll('button')].find(function(b) {
+        if (!b.offsetParent) return false;
+        return /^(Yes|Confirm|Cancel Order|OK)$/i.test(b.textContent.trim());
+      });
+      if (!btn) return JSON.stringify({ found: false });
+      btn.click();
+      return JSON.stringify({ found: true, clicked: btn.textContent.trim() });
+    })()`).then(JSON.parse);
+    if (confirmed.found) { appendAuditEvent('CANCEL_CONFIRMED', { clicked: confirmed.clicked }); break; }
+    await sleep(300);
+  }
+
+  // Verify the row is gone
+  await sleep(1000);
+  const gone = await evaluate(`(function() {
+    var targetId = ${JSON.stringify(result.orderId || orderId || '')};
+    var rows = [...document.querySelectorAll('tr, [class*="row"]')].filter(function(r) {
+      return r.offsetParent !== null && targetId && r.textContent.includes(targetId);
+    });
+    return JSON.stringify({ remaining: rows.length });
+  })()`).then(JSON.parse);
+
+  const verified = gone.remaining === 0;
+  appendAuditEvent(verified ? 'ORDER_CANCELLED' : 'CANCEL_UNVERIFIED', { orderId: result.orderId, ticker, verified });
+  return { cancelled: true, verified, orderId: result.orderId, ticker, action };
+}
+
+// ── modify order ─────────────────────────────────────────────────────────────
+
+/**
+ * modifyOrder({ orderId, ticker, newLimitPrice, newShares }) — clicks the pencil
+ * edit button on an existing Working/Inactive order, updates price/qty via
+ * React-safe input injection, and screenshots the filled edit form.
+ * Caller must invoke submitModify() to confirm the change.
+ */
+export async function modifyOrder({ orderId, ticker, action, newLimitPrice, newShares } = {}) {
+  // Strategy 1: find row directly without nav (same fix as cancelOrder)
+  let clickResult = await _findOrderRowAndAct({ orderId, ticker, buttonIndex: -2 });
+
+  // Strategy 2: navigate to Orders tab → Inactive/Working if not found directly
+  if (!clickResult.found) {
+    await evaluate(`(function() {
+      var tabs = [...document.querySelectorAll('[role="tab"], button')].filter(function(b) {
+        return b.offsetParent !== null && /^Orders(\\s*\\d+)?$/i.test(b.textContent.trim());
+      });
+      if (tabs.length > 0) tabs[0].click();
+    })()`);
+    await sleep(700);
+
+    for (const subTab of ['Inactive', 'Working']) {
+      await evaluate(`(function() {
+        var tabs = [...document.querySelectorAll('[role="tab"], button')].filter(function(b) {
+          return b.offsetParent !== null && /^(${subTab})(\\s*\\d+)?$/i.test(b.textContent.trim());
+        });
+        if (tabs.length > 0) tabs[0].click();
+      })()`);
+      await sleep(500);
+      clickResult = await _findOrderRowAndAct({ orderId, ticker, buttonIndex: -2 });
+      if (clickResult.found) break;
+    }
+  }
+
+  if (!clickResult.found) return { modified: false, orderId, ticker, reason: 'Order row not found in broker panel' };
+  if (!clickResult.clickable) return { modified: false, orderId: clickResult.orderId, ticker, reason: clickResult.reason };
+
+  appendAuditEvent('MODIFY_PENCIL_CLICKED', { orderId: clickResult.orderId, ticker });
+  await sleep(900); // wait for edit form to open
+
+  const c = await getClient();
+
+  // Snapshot inputs before filling
+  const formBefore = await evaluate(`(function() {
+    var inputs = [...document.querySelectorAll('input')].filter(function(i) { return i.offsetParent !== null; });
+    return JSON.stringify(inputs.map(function(i) { return { placeholder: i.placeholder, value: i.value, label: i.getAttribute('aria-label') || '' }; }));
+  })()`).then(s => { try { return JSON.parse(s); } catch { return []; } });
+
+  // Helper: focus an input and type a value using real keyboard events.
+  // This is more reliable than the React property setter for modify dialogs
+  // because TV's modify form may use different React state bindings.
+  async function typeIntoInput(inputFinder, valueStr) {
+    // Focus the target input
+    await evaluate(`(function() {
+      var inputs = [...document.querySelectorAll('input')].filter(function(i) { return i.offsetParent !== null; });
+      var inp = ${inputFinder};
+      if (inp) { inp.focus(); inp.click(); }
+    })()`);
+    await sleep(80);
+
+    // Select all existing text (Ctrl+A)
+    await c.Input.dispatchKeyEvent({ type: 'keyDown', key: 'a', code: 'KeyA', modifiers: 2, windowsVirtualKeyCode: 65, nativeVirtualKeyCode: 65 });
+    await sleep(30);
+    await c.Input.dispatchKeyEvent({ type: 'keyUp',   key: 'a', code: 'KeyA', modifiers: 2, windowsVirtualKeyCode: 65, nativeVirtualKeyCode: 65 });
+    await sleep(50);
+
+    // Type the new value character by character
+    await c.Input.insertText({ text: valueStr });
+    await sleep(80);
+
+    // Tab out to trigger blur/change
+    await c.Input.dispatchKeyEvent({ type: 'keyDown', key: 'Tab', code: 'Tab', windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9 });
+    await sleep(50);
+    await c.Input.dispatchKeyEvent({ type: 'keyUp',   key: 'Tab', code: 'Tab', windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9 });
+    await sleep(100);
+  }
+
+  // Fill limit price
+  if (newLimitPrice != null) {
+    await typeIntoInput(
+      `inputs.find(function(i) { return /price|limit/i.test((i.placeholder||'')+(i.getAttribute('aria-label')||'')); }) || inputs[0]`,
+      String(newLimitPrice)
+    );
+  }
+
+  // Fill shares if needed
+  if (newShares != null) {
+    await typeIntoInput(
+      `inputs.find(function(i) { return /shares|qty|quantity/i.test((i.placeholder||'')+(i.getAttribute('aria-label')||'')); }) || inputs[inputs.length - 1]`,
+      String(newShares)
+    );
+  }
+
+  const ts = new Date().toISOString().replace(/[:.]/g, '-');
+  const shot = await captureScreenshot({ region: 'full', filename: `order_modify_${ts}` });
+  appendAuditEvent('ORDER_MODIFY_FORM_FILLED', { orderId: clickResult.orderId, ticker, newLimitPrice, newShares });
+
+  return {
+    modified: true,
+    needsSubmit: true,
+    orderId: clickResult.orderId,
+    ticker,
+    screenshot: shot,
+    formBefore,
+  };
+}
+
+/**
+ * submitModify() — clicks the submit/save button after the modify form is filled.
+ * TV reuses the same order dialog for modifications; the button patterns are
+ * the same as submitOrder() but also matches "Save", "Modify", "Apply".
+ */
+export async function submitModify({ ticker, action, limitPrice } = {}) {
+  // Primary button — same pattern as initial order form
+  const result = await evaluate(`(function() {
+    // Try "Buy/Sell N TICKER TYPE" pattern (TV reuses initial dialog)
+    var btn = [...document.querySelectorAll('button')].find(function(b) {
+      return /^(Buy|Sell)\\s+/i.test(b.textContent.trim()) && b.offsetParent !== null;
+    });
+    // Fallback: Save / Modify / Apply / Change / Confirm
+    if (!btn) btn = [...document.querySelectorAll('button')].find(function(b) {
+      if (!b.offsetParent) return false;
+      return /^(Save|Modify|Apply|Change|Confirm|Place Order|Place)$/i.test(b.textContent.trim());
+    });
+    if (!btn) return JSON.stringify({ error: 'No submit button found for modify' });
+    var text = btn.textContent.trim();
+    btn.click();
+    return JSON.stringify({ clicked: text });
+  })()`).then(JSON.parse);
+
+  if (result.error) throw new Error(result.error);
+
+  // Poll for secondary confirmation dialog
+  await sleep(600);
+  for (let i = 0; i < 6; i++) {
+    const confirmed = await evaluate(`(function() {
+      var btn = [...document.querySelectorAll('button')].find(function(b) {
+        if (!b.offsetParent) return false;
+        return /^(Confirm|Place Order|Place|OK|Yes|Modify|Save|Change|Apply)$/i.test(b.textContent.trim());
+      });
+      if (!btn) return JSON.stringify({ found: false });
+      btn.click();
+      return JSON.stringify({ found: true, clicked: btn.textContent.trim() });
+    })()`).then(JSON.parse);
+    if (confirmed.found) { result.secondaryConfirm = confirmed.clicked; break; }
+    await sleep(400);
+  }
+
+  appendAuditEvent('ORDER_MODIFY_SUBMITTED', { ticker, action, limitPrice, ...result });
+  await sleep(1500);
+
+  // Verify new price appears in broker panel
+  try {
+    const verification = await verifyOrderInBrokerPanel({ ticker, action, limitPrice });
+    result.brokerVerification = verification;
+    if (verification.found) {
+      appendAuditEvent('ORDER_MODIFY_CONFIRMED', { priceMatch: verification.best?.priceMatch });
+    }
+  } catch (e) {
+    result.brokerVerification = { found: false, reason: e.message };
+  }
+
+  return result;
+}
+
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 function sleep(ms) {

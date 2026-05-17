@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { RefreshCcw, Zap, X, Filter } from 'lucide-react';
+import { RefreshCcw, Zap, X, Filter, Pencil } from 'lucide-react';
 import {
-    fetchTradeLog, updateTradeLogEntry, fetchMarketQuotes,
+    fetchTradeLog, updateTradeLogEntry, fetchMarketQuotes, cancelTrade,
     type TradeLogEntry, type TradeLogStatus, type MarketQuote,
 } from '../services/api';
 import { TradePrepModal } from '../components/TradePrepModal';
@@ -36,24 +36,7 @@ function ActionChip({ action }: { action: string }) {
     );
 }
 
-// ── Quote cells ───────────────────────────────────────────────────────────────
-
-function QuoteCell({ value, digits = 2, prefix = '$' }: { value: number | null | undefined; digits?: number; prefix?: string }) {
-    if (value == null) return <span className="text-slate-700">—</span>;
-    return <span className="text-sky-300 font-mono">{prefix}{value.toFixed(digits)}</span>;
-}
-
-function ChangeCell({ pct }: { pct: number | null | undefined }) {
-    if (pct == null) return <span className="text-slate-700">—</span>;
-    const pos = pct >= 0;
-    return (
-        <span className={`font-mono text-[11px] font-semibold ${pos ? 'text-emerald-400' : 'text-red-400'}`}>
-            {pos ? '+' : ''}{pct.toFixed(2)}%
-        </span>
-    );
-}
-
-// ── TV-style tabs ─────────────────────────────────────────────────────────────
+// ── Tabs ──────────────────────────────────────────────────────────────────────
 
 type TabId = 'all' | 'working' | 'inactive' | 'planned' | 'filled' | 'cancelled';
 type ActionFilter = 'buy' | 'sell' | 'all';
@@ -67,7 +50,6 @@ const TAB_STATUS_MAP: Record<TabId, TradeLogStatus[]> = {
     cancelled: ['cancelled'],
 };
 
-// Limit/stop orders logged as 'submitted' (legacy) should display and filter as 'inactive'
 function resolvedStatus(e: TradeLogEntry): TradeLogStatus {
     if (e.status === 'submitted' && (e.orderType === 'limit' || e.orderType === 'stop' || e.orderType === 'stop_limit')) {
         return 'inactive';
@@ -75,20 +57,195 @@ function resolvedStatus(e: TradeLogEntry): TradeLogStatus {
     return e.status;
 }
 
+// ── Modify Modal ──────────────────────────────────────────────────────────────
+
+function ModifyModal({ entry, onSave, onClose }: {
+    entry: TradeLogEntry;
+    onSave: (id: string, updates: Partial<TradeLogEntry>) => Promise<void>;
+    onClose: () => void;
+}) {
+    const [quote, setQuote]           = useState<MarketQuote | null>(null);
+    const [shares, setShares]         = useState(String(entry.shares));
+    const [orderType, setOrderType]   = useState(entry.orderType ?? 'market');
+    const [limitPrice, setLimitPrice] = useState(entry.limitPrice != null ? String(entry.limitPrice) : '');
+    const [notes, setNotes]           = useState(entry.notes ?? '');
+    const [saving, setSaving]         = useState(false);
+
+    useEffect(() => {
+        fetchMarketQuotes([entry.ticker]).then(q => setQuote(q[entry.ticker] ?? null)).catch(() => {});
+    }, [entry.ticker]);
+
+    const isLimit  = orderType === 'limit' || orderType === 'stop' || orderType === 'stop_limit';
+    const isBuy    = entry.action === 'buy';
+    const refPrice = isLimit && limitPrice ? Number(limitPrice) : (quote?.price ?? null);
+    const cost     = refPrice != null && shares ? Number(shares) * refPrice : null;
+    const rs = resolvedStatus(entry);
+    const isTvOrder = rs === 'submitted' || rs === 'inactive';
+
+    const save = async () => {
+        setSaving(true);
+        try {
+            await onSave(entry.id, {
+                shares: Number(shares),
+                orderType,
+                limitPrice: isLimit && limitPrice ? Number(limitPrice) : null,
+                notes,
+            });
+            onClose();
+        } finally { setSaving(false); }
+    };
+
+    const actionColor = isBuy
+        ? 'border-emerald-500/30 bg-emerald-500/5 text-emerald-400'
+        : 'border-red-500/30 bg-red-500/5 text-red-400';
+
+    return (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
+
+                {/* Header */}
+                <div className={`flex items-center justify-between px-5 py-4 border-b border-slate-800`}>
+                    <div className="flex items-center gap-3">
+                        <span className={`px-3 py-1 rounded-lg border text-sm font-black uppercase ${actionColor}`}>
+                            {entry.action}
+                        </span>
+                        <div>
+                            <div className="text-base font-bold text-white">{entry.ticker}</div>
+                            <div className="text-[11px] text-slate-500">{entry.account} · {isTvOrder ? 'Modify in TradingView' : 'Edit planned trade'}</div>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="text-slate-500 hover:text-white p-1 rounded"><X size={16} /></button>
+                </div>
+
+                {/* Live price strip */}
+                {quote && (
+                    <div className="px-5 py-3 bg-slate-800/40 border-b border-slate-800 flex items-center justify-between">
+                        <div className="text-xs text-slate-400">Current price</div>
+                        <div className="flex items-baseline gap-3">
+                            <span className="text-white font-mono font-semibold">
+                                ${quote.price?.toFixed(2) ?? '—'}
+                            </span>
+                            {quote.dayChangePct != null && (
+                                <span className={`text-xs font-semibold ${quote.dayChangePct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                    {quote.dayChangePct >= 0 ? '+' : ''}{quote.dayChangePct.toFixed(2)}%
+                                </span>
+                            )}
+                            {quote.bid != null && quote.ask != null && (
+                                <span className="text-[11px] text-slate-500 font-mono">
+                                    {quote.bid.toFixed(2)} / {quote.ask.toFixed(2)}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Form */}
+                <div className="px-5 py-4 space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                        <label className="block">
+                            <span className="text-[11px] text-slate-400 uppercase tracking-wide">Shares</span>
+                            <input
+                                type="number" min="1" value={shares}
+                                onChange={e => setShares(e.target.value)}
+                                className="mt-1.5 w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-indigo-500"
+                            />
+                        </label>
+                        <label className="block">
+                            <span className="text-[11px] text-slate-400 uppercase tracking-wide">Order Type</span>
+                            <select
+                                value={orderType} onChange={e => setOrderType(e.target.value)}
+                                className="mt-1.5 w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-indigo-500"
+                            >
+                                <option value="market">Market</option>
+                                <option value="limit">Limit</option>
+                                <option value="stop">Stop</option>
+                                <option value="stop_limit">Stop Limit</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    {isLimit && (
+                        <label className="block">
+                            <span className="text-[11px] text-slate-400 uppercase tracking-wide">Limit Price</span>
+                            <div className="relative mt-1.5">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
+                                <input
+                                    type="number" step="0.01" value={limitPrice}
+                                    onChange={e => setLimitPrice(e.target.value)}
+                                    className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-7 pr-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-indigo-500"
+                                    placeholder="0.00"
+                                />
+                            </div>
+                        </label>
+                    )}
+
+                    <label className="block">
+                        <span className="text-[11px] text-slate-400 uppercase tracking-wide">Notes</span>
+                        <input
+                            type="text" value={notes} onChange={e => setNotes(e.target.value)}
+                            className="mt-1.5 w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                            placeholder="Optional note…"
+                        />
+                    </label>
+
+                    {/* Cost estimate */}
+                    {cost != null && (
+                        <div className="bg-slate-800/60 rounded-lg px-4 py-3 border border-slate-700/50">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-slate-400">{shares} shares × ${refPrice?.toFixed(2)}</span>
+                                <span className="font-mono font-semibold text-white">≈ ${cost.toFixed(2)}</span>
+                            </div>
+                            {isLimit && quote?.price && (
+                                <div className="text-[11px] text-slate-500 mt-1">
+                                    {Number(limitPrice) < quote.price
+                                        ? `$${(quote.price - Number(limitPrice)).toFixed(2)} below market`
+                                        : `$${(Number(limitPrice) - quote.price).toFixed(2)} above market`}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {isTvOrder && (
+                        <p className="text-[11px] text-amber-500/80 bg-amber-900/10 border border-amber-700/20 rounded-lg px-3 py-2">
+                            ⚠️ This order is live in TradingView. Updates here only change the log record — modify the order directly in TradingView to change the execution parameters.
+                        </p>
+                    )}
+                </div>
+
+                {/* Footer */}
+                <div className="px-5 py-4 border-t border-slate-800 flex gap-3">
+                    <button onClick={onClose} className="flex-1 py-2 rounded-lg text-sm text-slate-400 hover:text-white border border-slate-700 hover:border-slate-600 transition-colors">
+                        Cancel
+                    </button>
+                    <button
+                        onClick={save} disabled={saving}
+                        className="flex-1 py-2 rounded-lg text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50 transition-colors"
+                    >
+                        {saving ? 'Saving…' : 'Update Trade'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function TradeLog() {
-    const [entries, setEntries]   = useState<TradeLogEntry[]>([]);
-    const [loading, setLoading]   = useState(true);
-    const [quotes, setQuotes]     = useState<Record<string, MarketQuote>>({});
+    const [entries, setEntries]             = useState<TradeLogEntry[]>([]);
+    const [loading, setLoading]             = useState(true);
+    const [quotes, setQuotes]               = useState<Record<string, MarketQuote>>({});
     const [quotesLoading, setQuotesLoading] = useState(false);
-    const [execModal, setExecModal] = useState<{ ticker: string; action: 'buy' | 'sell'; shares: number } | null>(null);
-    const [priceSource, setPriceSource]       = useState<string | null>(null);
+    const [execModal, setExecModal]         = useState<{ ticker: string; action: 'buy' | 'sell'; shares: number } | null>(null);
+    const [editModal, setEditModal]         = useState<TradeLogEntry | null>(null);
+    const [priceSource, setPriceSource]     = useState<string | null>(null);
     const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
+    const [cancelling, setCancelling]       = useState<Set<string>>(new Set());
 
-    const [tab, setTab]               = useState<TabId>('all');
+    const [tab, setTab]                   = useState<TabId>('all');
     const [tickerFilter, setTickerFilter] = useState('');
     const [actionFilter, setActionFilter] = useState<ActionFilter>('all');
+    const [selectedIds, setSelectedIds]   = useState<Set<string>>(new Set());
 
     const loadQuotes = useCallback(async (data: TradeLogEntry[]) => {
         const unique = [...new Set(data.filter(e => e.status !== 'cancelled').map(e => e.ticker))];
@@ -117,15 +274,40 @@ export default function TradeLog() {
     }, [loadQuotes]);
 
     useEffect(() => { load(); }, [load]);
+    useEffect(() => { setSelectedIds(new Set()); }, [tab]);
 
-    const cancelEntry = async (id: string) => {
+    // ── Cancel ───────────────────────────────────────────────────────────────
+
+    const doCancel = async (entry: TradeLogEntry) => {
+        if (cancelling.has(entry.id)) return;
+        setCancelling(prev => new Set(prev).add(entry.id));
         try {
-            await updateTradeLogEntry(id, { status: 'cancelled' });
-            setEntries(prev => prev.map(e => e.id === id ? { ...e, status: 'cancelled' as TradeLogStatus } : e));
+            const rs = resolvedStatus(entry);
+            if (rs === 'submitted' || rs === 'inactive') {
+                await cancelTrade({ entryId: entry.id, tvOrderId: entry.tvOrderId, ticker: entry.ticker, action: entry.action, limitPrice: entry.limitPrice });
+            } else {
+                await updateTradeLogEntry(entry.id, { status: 'cancelled' });
+            }
+            setEntries(prev => prev.map(e => e.id === entry.id ? { ...e, status: 'cancelled' as TradeLogStatus } : e));
+            setSelectedIds(prev => { const s = new Set(prev); s.delete(entry.id); return s; });
         } catch { /* ignore */ }
+        finally { setCancelling(prev => { const s = new Set(prev); s.delete(entry.id); return s; }); }
     };
 
-    // Tab counts (use resolvedStatus so legacy 'submitted' limit orders count as 'inactive')
+    const doBulkCancel = async () => {
+        for (const id of selectedIds) {
+            const entry = entries.find(e => e.id === id);
+            if (entry) await doCancel(entry);
+        }
+    };
+
+    const doEdit = async (id: string, updates: Partial<TradeLogEntry>) => {
+        await updateTradeLogEntry(id, updates as any);
+        setEntries(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
+    };
+
+    // ── Counts / filters ──────────────────────────────────────────────────────
+
     const counts: Record<TabId, number> = {
         all:       entries.length,
         working:   entries.filter(e => resolvedStatus(e) === 'submitted').length,
@@ -142,12 +324,27 @@ export default function TradeLog() {
         return true;
     });
 
+    const showOrderIdCol = tab === 'working' || tab === 'inactive';
+    const showFillCols   = tab === 'filled';
+
+    // ── Selection ─────────────────────────────────────────────────────────────
+
+    const toggleSelect = (id: string) => setSelectedIds(prev => {
+        const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s;
+    });
+
+    const selectableFiltered = filtered.filter(e => {
+        const rs = resolvedStatus(e);
+        return rs !== 'filled' && rs !== 'cancelled';
+    });
+    const allSelected = selectableFiltered.length > 0 && selectableFiltered.every(e => selectedIds.has(e.id));
+
     const TABS: { id: TabId; label: string }[] = [
-        { id: 'all',       label: 'All' },
-        { id: 'working',   label: 'Working' },
-        { id: 'inactive',  label: 'Inactive' },
-        { id: 'planned',   label: 'Planned' },
-        { id: 'filled',    label: 'Filled' },
+        { id: 'all', label: 'All' },
+        { id: 'working', label: 'Working' },
+        { id: 'inactive', label: 'Inactive' },
+        { id: 'planned', label: 'Planned' },
+        { id: 'filled', label: 'Filled' },
         { id: 'cancelled', label: 'Cancelled' },
     ];
 
@@ -160,66 +357,53 @@ export default function TradeLog() {
                     <h2 className="text-2xl font-bold text-text">Trade Log</h2>
                     <p className="text-xs text-slate-500 mt-0.5">
                         {entries.length} entries
-                        {quotesLoading && <span className="ml-2 text-sky-500">· fetching live quotes…</span>}
+                        {quotesLoading && <span className="ml-2 text-sky-500">· fetching quotes…</span>}
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
+                    {selectedIds.size > 0 && (
+                        <button onClick={doBulkCancel}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-900/30 hover:bg-red-800/40 border border-red-700/40 text-red-400 hover:text-red-300 text-xs font-semibold transition-colors">
+                            <X size={12} /> Cancel {selectedIds.size} selected
+                        </button>
+                    )}
                     <PriceSourceBadge priceSource={priceSource} lastRefreshedAt={lastRefreshedAt} />
-                    <button
-                        onClick={load}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-400 hover:text-white text-xs font-semibold transition-colors"
-                    >
+                    <button onClick={load}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-400 hover:text-white text-xs font-semibold transition-colors">
                         <RefreshCcw size={12} /> Refresh
                     </button>
                 </div>
             </div>
 
-            {/* TV-style tabs + filter bar */}
+            {/* Tabs + filters */}
             <div className="flex items-end justify-between border-b border-slate-800">
-                {/* Tabs */}
                 <div className="flex">
                     {TABS.map(t => (
-                        <button
-                            key={t.id}
-                            onClick={() => setTab(t.id)}
+                        <button key={t.id} onClick={() => setTab(t.id)}
                             className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold transition-colors border-b-2 -mb-px ${
-                                tab === t.id
-                                    ? 'text-white border-white'
-                                    : 'text-slate-500 border-transparent hover:text-slate-300'
-                            }`}
-                        >
+                                tab === t.id ? 'text-white border-white' : 'text-slate-500 border-transparent hover:text-slate-300'
+                            }`}>
                             {t.label}
                             {counts[t.id] > 0 && (
-                                <span className={`text-[10px] font-bold px-1.5 py-px rounded-full ${
-                                    tab === t.id ? 'bg-white/15 text-white' : 'bg-slate-800 text-slate-500'
-                                }`}>
+                                <span className={`text-[10px] font-bold px-1.5 py-px rounded-full ${tab === t.id ? 'bg-white/15 text-white' : 'bg-slate-800 text-slate-500'}`}>
                                     {counts[t.id]}
                                 </span>
                             )}
                         </button>
                     ))}
                 </div>
-
-                {/* Compact filters */}
                 <div className="flex items-center gap-2 pb-2">
                     <div className="relative">
                         <Filter size={11} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500" />
-                        <input
-                            type="text"
-                            placeholder="Ticker…"
-                            value={tickerFilter}
+                        <input type="text" placeholder="Ticker…" value={tickerFilter}
                             onChange={e => setTickerFilter(e.target.value)}
-                            className="bg-slate-900 border border-slate-700 rounded-lg pl-6 pr-2 py-1 text-xs text-white focus:outline-none focus:border-indigo-500 w-24 placeholder:text-slate-600"
-                        />
+                            className="bg-slate-900 border border-slate-700 rounded-lg pl-6 pr-2 py-1 text-xs text-white focus:outline-none focus:border-indigo-500 w-24 placeholder:text-slate-600" />
                     </div>
-                    <select
-                        value={actionFilter}
-                        onChange={e => setActionFilter(e.target.value as ActionFilter)}
-                        className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
-                    >
+                    <select value={actionFilter} onChange={e => setActionFilter(e.target.value as ActionFilter)}
+                        className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-300 focus:outline-none focus:border-indigo-500">
                         <option value="all">All sides</option>
-                        <option value="buy">Buy only</option>
-                        <option value="sell">Sell only</option>
+                        <option value="buy">Buy</option>
+                        <option value="sell">Sell</option>
                     </select>
                 </div>
             </div>
@@ -235,112 +419,175 @@ export default function TradeLog() {
                         <span className="text-sm">No trades in this tab</span>
                         {entries.length === 0 && (
                             <span className="text-xs text-slate-600 text-center max-w-sm">
-                                Use "Log Trade" from Portfolio Table or Stock Analysis to add entries.
-                                The <code className="px-1 bg-slate-800 rounded">/rebalance</code> skill writes suggested trades here automatically.
+                                Use Buy/Sell from the Portfolio or Stock Analysis pages.
+                                The <code className="px-1 bg-slate-800 rounded">/rebalance</code> skill writes planned trades here automatically.
                             </span>
                         )}
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
-                            <thead>
-                                <tr className="border-b border-slate-800 text-[10px] uppercase tracking-wider">
-                                    <th className="px-4 py-3 text-left text-slate-500 font-semibold">Date</th>
-                                    <th className="px-3 py-3 text-left text-slate-500 font-semibold">Ticker</th>
-                                    <th className="px-3 py-3 text-left text-slate-500 font-semibold">Side</th>
-                                    <th className="px-3 py-3 text-right text-slate-500 font-semibold">Qty</th>
-                                    <th className="px-3 py-3 text-right text-slate-500 font-semibold">Limit Price</th>
-                                    <th className="px-3 py-3 text-right text-slate-500 font-semibold">Avg Fill</th>
-                                    <th className="px-3 py-3 text-right text-slate-500 font-semibold">Total</th>
-                                    <th className="px-3 py-3 text-left text-slate-500 font-semibold">Account</th>
-                                    <th className="px-3 py-3 text-left text-slate-500 font-semibold">Type</th>
-                                    <th className="px-3 py-3 text-right text-sky-500/70 font-semibold border-l border-slate-800">Last</th>
-                                    <th className="px-3 py-3 text-right text-sky-500/70 font-semibold">Bid</th>
-                                    <th className="px-3 py-3 text-right text-sky-500/70 font-semibold">Ask</th>
-                                    <th className="px-3 py-3 text-right text-sky-500/70 font-semibold">Chg%</th>
-                                    <th className="px-3 py-3 text-right text-sky-500/70 font-semibold border-r border-slate-800">Vol</th>
-                                    <th className="px-3 py-3 text-left text-slate-500 font-semibold">Status</th>
-                                    <th className="px-3 py-3 text-left text-slate-500 font-semibold">Source</th>
-                                    <th className="px-3 py-3 text-left text-slate-500 font-semibold">Notes</th>
-                                    <th className="px-3 py-3 text-right text-slate-500 font-semibold">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-800/60">
-                                {filtered.map(e => {
-                                    const q = quotes[e.ticker];
-                                    const rs = resolvedStatus(e);
-                                    const isFilled = rs === 'filled';
-                                    return (
-                                        <tr
-                                            key={e.id}
-                                            className={`hover:bg-slate-800/30 transition-colors ${rs === 'cancelled' ? 'opacity-40' : ''}`}
-                                        >
-                                            <td className="px-4 py-2.5 text-slate-400 whitespace-nowrap">{e.date}</td>
-                                            <td className="px-3 py-2.5 font-mono font-bold text-white">{e.ticker}</td>
-                                            <td className="px-3 py-2.5"><ActionChip action={e.action} /></td>
-                                            <td className="px-3 py-2.5 text-right font-mono text-slate-200">{e.shares.toLocaleString()}</td>
-                                            <td className="px-3 py-2.5 text-right font-mono text-slate-400">
-                                                {e.limitPrice != null ? `$${e.limitPrice.toFixed(2)}` : <span className="text-slate-700">—</span>}
-                                            </td>
+                    <table className="w-full text-xs table-fixed">
+                        <colgroup>
+                            <col style={{ width: '2.5rem' }} />   {/* ☐ */}
+                            <col style={{ width: '9rem' }} />     {/* Ticker + date */}
+                            <col style={{ width: '4.5rem' }} />   {/* Side */}
+                            <col style={{ width: '4rem' }} />     {/* Qty */}
+                            <col style={{ width: '5rem' }} />     {/* Type */}
+                            <col style={{ width: '5.5rem' }} />   {/* Limit */}
+                            {showFillCols && <col style={{ width: '5.5rem' }} />} {/* Fill */}
+                            {showFillCols && <col style={{ width: '5.5rem' }} />} {/* Total */}
+                            <col style={{ width: '5rem' }} />     {/* Account */}
+                            {showOrderIdCol && <col style={{ width: '8rem' }} />} {/* Order ID */}
+                            <col style={{ width: '6.5rem' }} />   {/* Last / Chg% */}
+                            <col style={{ width: '6rem' }} />     {/* Status */}
+                            <col style={{ width: '8rem' }} />     {/* Actions */}
+                            <col />                                {/* Notes (fills rest) */}
+                        </colgroup>
+                        <thead>
+                            <tr className="border-b border-slate-800 text-[10px] uppercase tracking-wider">
+                                <th className="px-3 py-3">
+                                    <input type="checkbox" checked={allSelected} onChange={() => {
+                                        if (allSelected) setSelectedIds(new Set());
+                                        else setSelectedIds(new Set(selectableFiltered.map(e => e.id)));
+                                    }} className="accent-indigo-500 cursor-pointer" />
+                                </th>
+                                <th className="px-3 py-3 text-left text-slate-500 font-semibold">Ticker</th>
+                                <th className="px-3 py-3 text-left text-slate-500 font-semibold">Side</th>
+                                <th className="px-3 py-3 text-right text-slate-500 font-semibold">Qty</th>
+                                <th className="px-3 py-3 text-left text-slate-500 font-semibold">Type</th>
+                                <th className="px-3 py-3 text-right text-slate-500 font-semibold">Limit</th>
+                                {showFillCols && <th className="px-3 py-3 text-right text-slate-500 font-semibold">Fill</th>}
+                                {showFillCols && <th className="px-3 py-3 text-right text-slate-500 font-semibold">Total</th>}
+                                <th className="px-3 py-3 text-left text-slate-500 font-semibold">Acct</th>
+                                {showOrderIdCol && <th className="px-3 py-3 text-left text-slate-500 font-semibold">Order ID</th>}
+                                <th className="px-3 py-3 text-right text-sky-500/70 font-semibold">Last / Chg%</th>
+                                <th className="px-3 py-3 text-left text-slate-500 font-semibold">Status</th>
+                                <th className="px-3 py-3 text-right text-slate-500 font-semibold">Actions</th>
+                                <th className="px-3 py-3 text-left text-slate-500 font-semibold">Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800/60">
+                            {filtered.map(e => {
+                                const q           = quotes[e.ticker];
+                                const rs          = resolvedStatus(e);
+                                const isFilled    = rs === 'filled';
+                                const isCancelled = rs === 'cancelled';
+                                const isPlanned   = rs === 'suggested' || rs === 'logged';
+                                const isActive    = rs === 'submitted' || rs === 'inactive';
+                                const isCanc      = cancelling.has(e.id);
+                                const isSelectable = !isFilled && !isCancelled;
+
+                                return (
+                                    <tr key={e.id} className={`hover:bg-slate-800/30 transition-colors ${isCancelled ? 'opacity-40' : ''} ${selectedIds.has(e.id) ? 'bg-indigo-900/10' : ''}`}>
+
+                                        {/* Checkbox */}
+                                        <td className="px-3 py-2.5">
+                                            {isSelectable && (
+                                                <input type="checkbox" checked={selectedIds.has(e.id)} onChange={() => toggleSelect(e.id)}
+                                                    className="accent-indigo-500 cursor-pointer" />
+                                            )}
+                                        </td>
+
+                                        {/* Ticker + date (stacked) */}
+                                        <td className="px-3 py-2.5">
+                                            <div className="font-mono font-bold text-white text-[13px]">{e.ticker}</div>
+                                            <div className="text-[10px] text-slate-600 mt-0.5">{e.date}</div>
+                                        </td>
+
+                                        {/* Side */}
+                                        <td className="px-3 py-2.5"><ActionChip action={e.action} /></td>
+
+                                        {/* Qty */}
+                                        <td className="px-3 py-2.5 text-right font-mono text-slate-200">{e.shares.toLocaleString()}</td>
+
+                                        {/* Type */}
+                                        <td className="px-3 py-2.5 text-slate-400 uppercase text-[10px] tracking-wide">{e.orderType ?? 'market'}</td>
+
+                                        {/* Limit */}
+                                        <td className="px-3 py-2.5 text-right font-mono text-slate-400">
+                                            {e.limitPrice != null ? `$${e.limitPrice.toFixed(2)}` : <span className="text-slate-700">—</span>}
+                                        </td>
+
+                                        {/* Fill + Total (filled tab only) */}
+                                        {showFillCols && (
                                             <td className="px-3 py-2.5 text-right font-mono text-slate-300">
-                                                {isFilled && e.price > 0 ? `$${e.price.toFixed(2)}` : <span className="text-slate-700">—</span>}
+                                                {e.price > 0 ? `$${e.price.toFixed(2)}` : <span className="text-slate-700">—</span>}
                                             </td>
+                                        )}
+                                        {showFillCols && (
                                             <td className="px-3 py-2.5 text-right font-mono text-slate-300">
-                                                {isFilled && e.totalCost > 0 ? `$${e.totalCost.toFixed(2)}` : <span className="text-slate-700">—</span>}
+                                                {e.totalCost > 0 ? `$${e.totalCost.toFixed(2)}` : <span className="text-slate-700">—</span>}
                                             </td>
-                                            <td className="px-3 py-2.5 text-slate-300 font-mono text-[11px]">{e.account}</td>
-                                            <td className="px-3 py-2.5 text-slate-400 uppercase text-[10px] tracking-wide">{e.orderType ?? 'market'}</td>
-                                            {/* Live market */}
-                                            <td className="px-3 py-2.5 text-right border-l border-slate-800/60"><QuoteCell value={q?.price} /></td>
-                                            <td className="px-3 py-2.5 text-right">
-                                                <div className="flex flex-col items-end">
-                                                    <QuoteCell value={q?.bid} />
-                                                    {q?.bidSize != null && <span className="text-[9px] text-slate-600">×{q.bidSize}</span>}
+                                        )}
+
+                                        {/* Account */}
+                                        <td className="px-3 py-2.5 text-slate-300 font-mono text-[11px]">{e.account}</td>
+
+                                        {/* Order ID (working/inactive only) */}
+                                        {showOrderIdCol && (
+                                            <td className="px-3 py-2.5 font-mono text-[10px] text-slate-500 overflow-hidden">
+                                                {e.tvOrderId
+                                                    ? <span title={e.tvOrderId} className="cursor-default select-all truncate block">{e.tvOrderId.substring(0, 8)}…</span>
+                                                    : <span className="text-slate-700">—</span>}
+                                            </td>
+                                        )}
+
+                                        {/* Last + Chg% stacked */}
+                                        <td className="px-3 py-2.5 text-right">
+                                            {q?.price != null ? (
+                                                <div>
+                                                    <div className="font-mono text-sky-300 text-[12px]">${q.price.toFixed(2)}</div>
+                                                    {q.dayChangePct != null && (
+                                                        <div className={`text-[10px] font-semibold ${q.dayChangePct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                            {q.dayChangePct >= 0 ? '+' : ''}{q.dayChangePct.toFixed(2)}%
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            </td>
-                                            <td className="px-3 py-2.5 text-right">
-                                                <div className="flex flex-col items-end">
-                                                    <QuoteCell value={q?.ask} />
-                                                    {q?.askSize != null && <span className="text-[9px] text-slate-600">×{q.askSize}</span>}
-                                                </div>
-                                            </td>
-                                            <td className="px-3 py-2.5 text-right"><ChangeCell pct={q?.dayChangePct} /></td>
-                                            <td className="px-3 py-2.5 text-right font-mono text-slate-500 text-[10px] border-r border-slate-800/60">
-                                                {q?.volume != null ? (q.volume >= 1_000_000 ? `${(q.volume / 1_000_000).toFixed(1)}M` : `${(q.volume / 1_000).toFixed(0)}K`) : <span className="text-slate-700">—</span>}
-                                            </td>
-                                            <td className="px-3 py-2.5"><StatusChip status={rs} /></td>
-                                            <td className="px-3 py-2.5 text-slate-600 text-[10px] uppercase tracking-wide">{e.source ?? 'manual'}</td>
-                                            <td className="px-3 py-2.5 text-slate-500 max-w-[160px] truncate" title={e.notes}>
+                                            ) : <span className="text-slate-700">—</span>}
+                                        </td>
+
+                                        {/* Status */}
+                                        <td className="px-3 py-2.5"><StatusChip status={rs} /></td>
+
+                                        {/* Actions */}
+                                        <td className="px-3 py-2.5">
+                                            <div className="flex items-center gap-1 justify-end">
+                                                {isPlanned && (
+                                                    <button
+                                                        onClick={() => setExecModal({ ticker: e.ticker, action: e.action as 'buy' | 'sell', shares: e.shares })}
+                                                        title="Submit to TradingView"
+                                                        className="flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-900/30 hover:bg-emerald-800/40 border border-emerald-700/30 text-emerald-500 hover:text-emerald-300 text-[10px] font-bold transition-colors"
+                                                    >
+                                                        <Zap size={10} /> Submit
+                                                    </button>
+                                                )}
+                                                {!isFilled && !isCancelled && (
+                                                    <button onClick={() => setEditModal(e)}
+                                                        title={isActive ? 'Modify order' : 'Edit trade'}
+                                                        className="p-1 rounded text-slate-500 hover:text-slate-200 hover:bg-slate-700/40 transition-colors">
+                                                        <Pencil size={12} />
+                                                    </button>
+                                                )}
+                                                {!isFilled && !isCancelled && (
+                                                    <button onClick={() => doCancel(e)} disabled={isCanc}
+                                                        title={isActive ? 'Cancel in TradingView + log' : 'Remove from plan'}
+                                                        className={`p-1 rounded transition-colors disabled:opacity-40 ${isActive ? 'text-amber-600 hover:text-red-400 hover:bg-red-900/20' : 'text-slate-600 hover:text-red-400 hover:bg-red-900/20'}`}>
+                                                        {isCanc ? <RefreshCcw size={12} className="animate-spin" /> : <X size={12} />}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
+
+                                        {/* Notes — last column */}
+                                        <td className="px-3 py-2.5 text-slate-500 text-[11px] overflow-hidden">
+                                            <span className="truncate block max-w-full" title={e.notes}>
                                                 {e.notes || <span className="text-slate-700">—</span>}
-                                            </td>
-                                            <td className="px-3 py-2.5 whitespace-nowrap text-right">
-                                                <div className="flex items-center gap-1 justify-end">
-                                                    {(rs === 'suggested' || rs === 'logged') && (
-                                                        <button
-                                                            onClick={() => setExecModal({ ticker: e.ticker, action: e.action as 'buy' | 'sell', shares: e.shares })}
-                                                            title="Execute in TradingView"
-                                                            className="flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-900/30 hover:bg-emerald-800/40 border border-emerald-700/30 text-emerald-500 hover:text-emerald-300 text-[10px] font-bold transition-colors"
-                                                        >
-                                                            <Zap size={10} /> Execute
-                                                        </button>
-                                                    )}
-                                                    {rs !== 'cancelled' && rs !== 'filled' && (
-                                                        <button
-                                                            onClick={() => cancelEntry(e.id)}
-                                                            title={rs === 'submitted' || rs === 'inactive' ? 'Cancel order (also cancel in TradingView)' : 'Cancel planned trade'}
-                                                            className={`p-0.5 rounded transition-colors ${rs === 'submitted' || rs === 'inactive' ? 'text-amber-700 hover:text-red-400' : 'text-slate-600 hover:text-red-400'}`}
-                                                        >
-                                                            <X size={12} />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
                 )}
             </div>
 
@@ -350,6 +597,14 @@ export default function TradeLog() {
                     initialAction={execModal.action}
                     initialShares={execModal.shares}
                     onClose={() => { setExecModal(null); load(); }}
+                />
+            )}
+
+            {editModal && (
+                <ModifyModal
+                    entry={editModal}
+                    onSave={doEdit}
+                    onClose={() => setEditModal(null)}
                 />
             )}
         </div>
