@@ -531,6 +531,7 @@ export interface TradeLogEntry {
     notes: string;
     status: TradeLogStatus;
     source: TradeLogSource;
+    tvOrderId: string | null;
     loggedAt: string;
 }
 
@@ -546,6 +547,7 @@ export interface LogTradeRequest {
     notes?: string;
     status?: TradeLogStatus;
     source?: TradeLogSource;
+    tvOrderId?: string | null;
 }
 
 export interface SuggestTradeRequest {
@@ -611,7 +613,7 @@ export const fetchMarketQuotes = async (tickers: string[]): Promise<Record<strin
     return res.json();
 };
 
-export const updateTradeLogEntry = async (id: string, updates: Partial<Pick<TradeLogEntry, 'status' | 'notes' | 'price' | 'shares' | 'orderType' | 'limitPrice' | 'account' | 'date'>>): Promise<{ success: boolean; entry: TradeLogEntry }> => {
+export const updateTradeLogEntry = async (id: string, updates: Partial<Pick<TradeLogEntry, 'status' | 'notes' | 'price' | 'shares' | 'orderType' | 'limitPrice' | 'account' | 'date' | 'tvOrderId'>>): Promise<{ success: boolean; entry: TradeLogEntry }> => {
     const res = await fetch(`/api/trading/log/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -620,4 +622,19 @@ export const updateTradeLogEntry = async (id: string, updates: Partial<Pick<Trad
     const data = await res.json();
     if (!res.ok) throw new Error(data.error ?? 'Failed to update entry');
     return data;
+};
+
+export const cancelTrade = async (params: {
+    entryId: string;
+    tvOrderId?: string | null;
+    ticker?: string;
+    action?: string;
+    limitPrice?: number | null;
+}): Promise<{ tvCancelled: boolean; logCancelled: boolean; tvResult?: any }> => {
+    const res = await fetch('/api/trading/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+    });
+    return res.json();
 };

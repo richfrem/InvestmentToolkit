@@ -193,8 +193,9 @@ router.post('/submit', async (req, res) => {
     res.status(422).json({ error: result?.error ?? 'Submit failed' }); return;
   }
 
+  const tvOrderId: string | null = result?.tvOrderId ?? result?.result?.brokerVerification?.best?.orderId ?? null;
   patchSession(sessionId, { state: 'SUBMITTED', submitResult: result ?? undefined });
-  res.json({ sessionId, state: 'SUBMITTED', result });
+  res.json({ sessionId, state: 'SUBMITTED', result, tvOrderId });
 });
 
 // ── GET /api/trading/session/:id ─────────────────────────────────────────────
@@ -220,7 +221,7 @@ function writeLog(entries: any[]): void {
 }
 
 function makeLogEntry(fields: Record<string, any>): Record<string, any> {
-  const { ticker, action, shares, price, account, orderType, limitPrice, date, notes, status, source } = fields;
+  const { ticker, action, shares, price, account, orderType, limitPrice, date, notes, status, source, tvOrderId } = fields;
   return {
     id: crypto.randomBytes(6).toString('hex'),
     ticker: String(ticker).toUpperCase(),
@@ -235,6 +236,7 @@ function makeLogEntry(fields: Record<string, any>): Record<string, any> {
     notes: String(notes ?? ''),
     status: String(status ?? 'logged'),
     source: String(source ?? 'manual'),
+    tvOrderId: tvOrderId != null ? String(tvOrderId) : null,
     loggedAt: new Date().toISOString(),
   };
 }
@@ -279,7 +281,7 @@ router.post('/log/suggest', (req, res) => {
 
 router.patch('/log/:id', (req, res) => {
   const { id } = req.params;
-  const allowed = ['status', 'notes', 'price', 'shares', 'orderType', 'limitPrice', 'account', 'date'];
+  const allowed = ['status', 'notes', 'price', 'shares', 'orderType', 'limitPrice', 'account', 'date', 'tvOrderId'];
   try {
     const entries = readLog();
     const idx = entries.findIndex((e: any) => e.id === id);
@@ -296,6 +298,43 @@ router.patch('/log/:id', (req, res) => {
     res.json({ success: true, entry: entries[idx] });
   } catch (e: any) { res.status(500).json({ error: e.message }); }
 });
+
+// ── POST /api/trading/cancel ─────────────────────────────────────────────────
+
+router.post('/cancel', async (req, res) => {
+  const { entryId, tvOrderId, ticker, action, limitPrice } = req.body;
+
+  let tvResult: Record<string, any> | null = null;
+  let tvCancelled = false;
+
+  if (tvOrderId) {
+    const args = ['--cancel', '--order-id', String(tvOrderId)];
+    if (ticker) args.push('--ticker', ticker);
+    if (action) args.push('--action', action);
+    if (limitPrice != null) args.push('--limit-price', String(limitPrice));
+    const { stdout, exitCode } = await runPy(args, 20_000);
+    tvResult = extractJson(stdout);
+    tvCancelled = exitCode === 0 && (tvResult?.cancelled === true);
+  }
+
+  // Update trade-log entry status regardless of TV result
+  let logCancelled = false;
+  if (entryId) {
+    try {
+      const entries = readLog();
+      const idx = entries.findIndex((e: any) => e.id === entryId);
+      if (idx !== -1) {
+        entries[idx] = { ...entries[idx], status: 'cancelled' };
+        writeLog(entries);
+        logCancelled = true;
+      }
+    } catch { /* non-fatal */ }
+  }
+
+  res.json({ tvCancelled, logCancelled, tvResult });
+});
+
+// ── GET /api/trading/audit/today ─────────────────────────────────────────────
 
 router.get('/audit/today', (_req, res) => {
   const auditDir = path.join(REPO_ROOT, 'plugins/tradingview/audit');
