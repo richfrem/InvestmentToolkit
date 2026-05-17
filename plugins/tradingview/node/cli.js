@@ -19,6 +19,7 @@ import * as data from './core/data.js';
 import * as alerts from './core/alerts.js';
 import * as capture from './core/capture.js';
 import * as pine from './core/pine.js';
+import * as chart from './core/chart.js';
 
 // --- status ---
 register('status', {
@@ -115,6 +116,34 @@ register('pine', {
         const { getClient } = await import('./connection.js');
         const client = await getClient();
         return pine.removePineScript(client, opts.indicator);
+      },
+    }],
+  ]),
+});
+
+// --- chart ---
+register('chart', {
+  description: 'Chart control — change timeframe, read Data Window',
+  subcommands: new Map([
+    ['timeframe', {
+      description: 'Change the active chart timeframe (e.g. 1D, 60, 240, W)',
+      options: {
+        resolution: { type: 'string', short: 'r', description: 'Resolution: 1D, D, W, 60, 240, 15, ...' },
+      },
+      handler: async (opts, positionals) => {
+        const resolution = opts.resolution || positionals[0];
+        if (!resolution) throw new Error('Resolution required — e.g. chart timeframe 1D or -r 1D');
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return chart.changeTimeframe(client, resolution);
+      },
+    }],
+    ['read', {
+      description: 'Read all active indicator values from the Data Window panel',
+      handler: async () => {
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return chart.readDataWindow(client);
       },
     }],
   ]),
