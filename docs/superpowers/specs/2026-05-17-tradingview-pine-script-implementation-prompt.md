@@ -65,7 +65,12 @@ Write subprocess-based pytest test first (mock `subprocess.run`). Watch fail. Th
 - `plugins/tradingview/tests/tv_test_harness.py` (add Section 1: live inject/read/remove cycle)
 
 Write `test_live_pine_cycle()` in the harness first. Watch it fail (stubs return hardcoded values). Then implement:
-- `injectPineScript`: click `.js-pine-editor-tab`, focus Monaco, `Input.insertText`, click "Add to chart"
+
+**Use React fiber traversal for Monaco editor** (learned from [tradesdontlie/tradingview-mcp](https://github.com/tradesdontlie/tradingview-mcp) — their `pine.js` is the reference implementation):
+- CSS selectors like `.js-pine-editor-tab` change with TradingView deployments. Scan DOM nodes for the `__reactFiber` key prefix and walk the React fiber tree to find the Monaco editor instance. This is significantly more resilient.
+- Before writing the real implementation, use the Section 0.5 pattern in `tv_test_harness.py` to confirm the live selector for the Pine Editor tab. Update `broker_data.js` comments with confirmed selectors.
+
+- `injectPineScript`: find Pine Editor tab (confirm selector live), focus Monaco via fiber traversal, `Input.insertText`, click "Add to chart"
 - `readIndicatorValues`: open Data Window via CDP, scrape key-value pairs for the indicator
 - `removePineScript`: find indicator in legend, click remove icon
 

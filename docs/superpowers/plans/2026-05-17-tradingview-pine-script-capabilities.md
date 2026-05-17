@@ -245,9 +245,35 @@ Expected: FAIL (because the Node logic currently returns hardcoded mock values i
 - [ ] **Step 3: Write minimal implementation**
 
 Update `plugins/tradingview/node/core/pine.js` to perform the actual CDP DOM traversal.
-- `injectPineScript`: Click `.js-pine-editor-tab`, focus Monaco editor, send CDP `Input.insertText` with script content, and click "Add to chart" button.
+
+**Critical — React fiber traversal for Monaco (from tradesdontlie/tradingview-mcp code review):**
+CSS class selectors like `.js-pine-editor-tab` are fragile and change with TV deployments. Use React fiber tree traversal instead:
+```javascript
+// Find Monaco editor via React fiber — scan for __reactFiber prefix on DOM nodes
+const monacoNode = await client.Runtime.evaluate({
+    expression: `(function() {
+        const nodes = document.querySelectorAll('*');
+        for (const node of nodes) {
+            const fiberKey = Object.keys(node).find(k => k.startsWith('__reactFiber'));
+            if (fiberKey) {
+                // Walk fiber to find Monaco editor instance
+                let fiber = node[fiberKey];
+                // ... traverse to Monaco props
+            }
+        }
+    })()`,
+    returnByValue: true
+});
+```
+Confirm actual selectors via CDP Section 0.5 pattern in `tv_test_harness.py` before hardcoding.
+
+- `injectPineScript`: Click Pine Editor tab (confirm selector live), focus Monaco via fiber traversal, send CDP `Input.insertText` with script content, click "Add to chart".
 - `readIndicatorValues`: Open Data Window via CDP, evaluate script in context to scrape current values for the given indicator name.
 - `removePineScript`: Find indicator in chart legend, click remove icon.
+
+**All Node snippets MUST end with `process.exit(0)` / `process.exit(1)`** — without it the CDP WebSocket holds the event loop open indefinitely and the Python subprocess call never returns. This was the root cause of all Section 0 timeout failures during Phase 1.
+
+**Temp files**: Write to `InvestmentToolkit/temp/` subfolder, not `/tmp/` root (see Task 0003).
 
 - [ ] **Step 4: Run test to verify it passes**
 
