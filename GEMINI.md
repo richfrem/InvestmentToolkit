@@ -160,8 +160,12 @@ This keeps thesis targets, `agentRationale`, and projection catalyst notes curre
 | `/13f-analyze` | portfolio-advisor | Surgical 13F analysis — cross-references SA LP holdings vs your targets, outputs gated INITIATE/ACCUMULATE/TRIM/EXIT recs, applies approved changes to target-portfolio.json |
 | `/bundle-thesis-review` | portfolio-advisor | Package thesis + DCF projections for paste into external LLM (Grok, ChatGPT, Gemini) |
 | `/run-advisor` | portfolio-advisor | Interactive Portfolio Advisor orchestrator — full review → calibrate → rebalance lifecycle |
-| `/place-order {buy\|sell} {N} {TICKER} in {ACCOUNT}` | portfolio-advisor | **Live order execution** via TradingView CDP broker automation. 3-step HITL: preflight card → CONFIRM → dialog filled + submitted + portfolio.json synced. Requires TradingView Desktop with Questrade broker connected. |
-| `/tv-portfolio-sync` | portfolio-advisor | **Sync portfolio.json from TradingView** — reads live positions across all accounts (TFSA + RRSP + Cash) via CDP. Shows diff (added/removed/changed) before writing. Works with any TradingView-connected broker; no Questrade credentials required. |
+| `/place-order {buy\|sell} {N} {TICKER} in {ACCOUNT}` | **tradingview** | **Live order execution** via TradingView CDP broker automation. 3-step HITL: preflight card → CONFIRM → dialog filled + submitted + portfolio.json synced. Requires TradingView Desktop with Questrade broker connected. |
+| `/cancel-order {tvOrderId}` | **tradingview** | **Cancel a Working/Inactive order** via CDP — finds order by UUID, clicks ×, handles TV confirmation dialog, marks trade-log entry cancelled. |
+| `/modify-order {tvOrderId} {newPrice}` | **tradingview** | **Modify a limit price** on a Working/Inactive order via CDP keyboard events. |
+| `/get-orders` | **tradingview** | **List open orders** (Working + Inactive) from TV broker panel — returns orderId UUIDs and raw row text. |
+| `/tv-portfolio-sync` | **tradingview** | **Sync portfolio.json from TradingView** — reads live positions across all accounts (TFSA + RRSP + Cash) via CDP. Shows diff before writing. Works with any TV-connected broker; no Questrade credentials required. |
+| `/pine-analyze {TICKER}` | **tradingview** | *(Phase 2 — planned)* Generate custom Pine Script v5 TA, inject via CDP, read indicator values from Data Window, synthesize into Initiate/Accumulate/Trim/Exit advisory. |
 | `/start-screener` | toolkit-manager | Launch full suite (frontend + backend) |
 | `/setup-questrade` | toolkit-manager | Interactive Questrade token setup (optional — TV sync works without it) |
 
@@ -279,6 +283,31 @@ The `/api/questrade/seed` endpoint accepts a raw **One-Week App Token** from the
 
 ### 5. `lastActualPS` nullable in Zod schema
 `investment_screener/backend/src/utils/zod-schemas.ts`: `lastActualPS` is `.nullable().transform(v => v ?? 0)`. Pre-revenue stocks and some mining companies return `null` from yfinance for this field. If adding similar numeric fields, use the same nullable pattern — strict `z.number()` causes 400 validation errors.
+
+### 6. TradingView CDP — Node snippets MUST call process.exit()
+All Node.js snippets in `plugins/tradingview/node/` **must** end with `.then(() => process.exit(0)).catch(() => process.exit(1))`. Without it, the CDP WebSocket holds the event loop open indefinitely — `subprocess.run()` from Python never returns. This caused all Phase 1 harness timeouts.
+
+### 7. TradingView CDP — Use React fiber traversal for Pine Editor / Monaco
+Do **not** rely solely on CSS class selectors for Pine Editor / Monaco editor — TV class names change. Scan DOM nodes for the `__reactFiber` key prefix and walk the fiber tree to find Monaco internals. Reference: [tradesdontlie/tradingview-mcp](https://github.com/tradesdontlie/tradingview-mcp) `pine.js`.
+
+### 8. Temp files: use InvestmentToolkit/temp/ subfolder, not /tmp/ root
+All scripts writing temp artifacts must use `InvestmentToolkit/temp/<artifact>` (gitignored), not `/tmp/<artifact>`. Task #0003 tracks legacy migration.
+
+---
+
+## 🙏 Acknowledgements & Prior Art
+
+### TradingView CDP Community
+| Project | What It Does |
+|---------|-------------|
+| [tradesdontlie/tradingview-mcp](https://github.com/tradesdontlie/tradingview-mcp) | Most complete CDP TradingView library — 5,000+ lines, 15+ namespaces. React fiber traversal technique for Monaco editor. No live broker execution. |
+| [atilaahmettaner/tradingview-mcp](https://github.com/atilaahmettaner/tradingview-mcp) | TV screener/scanner via REST API (`tradingview-screener` library). No CDP, no live orders. |
+
+**Our differentiator:** InvestmentToolkit is a **live broker execution layer** — places, modifies, and cancels real Questrade orders through TradingView's broker panel via CDP, with HITL confirmation, safety gates, multi-account support, and portfolio sync after fills.
+
+### AI Agent Infrastructure
+- **[orba/superpowers](https://github.com/orba/superpowers)** — TDD Iron Law, brainstorming, and sub-agent driven development skills used throughout this project.
+- **[richfrem/agent-plugins-skills](https://github.com/richfrem/agent-plugins-skills)** — Exploration Workflow (4-phase) and all project-local AI agent plugins and skills.
 
 ---
 

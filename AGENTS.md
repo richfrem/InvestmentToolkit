@@ -56,6 +56,7 @@ This workstation is built on a modular plugin architecture. You have access to t
 - `/tv-alert-sync`: Sync DCF targets to TradingView price alerts.
 - `/tv-price-refresh`: Pulls real-time prices.
 - `/tv-snapshot` & `/tv-ta`: Capture technical charts and perform technical analysis.
+- `/pine-analyze {TICKER}` *(Phase 2 — planned)*: Generate custom Pine Script v5 TA via AI, inject via CDP, read indicator values from Data Window, synthesize signals into Initiate/Accumulate/Trim/Exit advisory.
 
 ### 5. Toolkit Manager (`plugins/toolkit-manager`)
 *Orchestrator.*
@@ -90,6 +91,25 @@ As an AI agent operating in this repository, you **MUST** adhere to the followin
 ### 5. Security & Objectivity
 - **Security**: Never prompt users to paste raw Questrade tokens or API keys. Always use built-in wizards that handle secure encryption.
 - **Objectivity**: When running valuations, adhere to the **Adversarial Objectivity Constraint** to prevent sycophancy. Challenge the user's assumptions and ensure reports remain fiercely objective.
+
+### 6. TradingView CDP — Critical Node.js Rules
+- **process.exit() required**: Every Node.js CDP snippet in `plugins/tradingview/node/` MUST end with `.then(() => process.exit(0)).catch(() => process.exit(1))`. Without it, the CDP WebSocket holds the event loop open and `subprocess.run()` from Python never returns.
+- **React fiber traversal for Monaco**: Do not rely solely on CSS selectors for Pine Editor / Monaco. Scan DOM nodes for the `__reactFiber` key prefix and walk the fiber tree. Reference: [tradesdontlie/tradingview-mcp](https://github.com/tradesdontlie/tradingview-mcp).
+- **Temp files**: Use `InvestmentToolkit/temp/` subfolder (gitignored), not `/tmp/` root. Task #0003 tracks legacy migration.
+
+---
+
+## 🙏 Acknowledgements & Prior Art
+
+### TradingView CDP Community
+- **[tradesdontlie/tradingview-mcp](https://github.com/tradesdontlie/tradingview-mcp)** — Most complete open-source TradingView CDP library. React fiber traversal technique for Monaco editor. No live broker execution.
+- **[atilaahmettaner/tradingview-mcp](https://github.com/atilaahmettaner/tradingview-mcp)** — TradingView screener/scanner via REST API. No CDP, no live orders.
+
+**Our differentiator:** InvestmentToolkit is a **live broker execution layer** — places, modifies, and cancels real orders through TradingView's Questrade broker panel via CDP, with HITL confirmation, safety gates, multi-account support, and portfolio sync.
+
+### AI Agent Infrastructure
+- **[orba/superpowers](https://github.com/orba/superpowers)** — TDD Iron Law, brainstorming, and sub-agent driven development skills used throughout this project.
+- **[richfrem/agent-plugins-skills](https://github.com/richfrem/agent-plugins-skills)** — Exploration Workflow (4-phase) and all project-local AI agent plugins and skills.
 
 ---
 *For human-readable documentation, please direct the user to [README.md](README.md).*
