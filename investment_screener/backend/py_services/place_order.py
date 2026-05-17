@@ -148,6 +148,28 @@ try {{
     return _run_node(exec_js, timeout=45)
 
 
+def cancel_order(tv_order_id: str, ticker: Optional[str] = None,
+                 action: Optional[str] = None, limit_price: Optional[float] = None) -> dict:
+    """Cancel a Working/Inactive order in TradingView via CDP."""
+    js = f"""
+import {{ cancelOrder }} from './core/trading.js';
+try {{
+    const result = await cancelOrder({{
+        orderId: {json.dumps(tv_order_id)},
+        ticker: {json.dumps(ticker)},
+        action: {json.dumps(action)},
+        limitPrice: {json.dumps(limit_price)},
+    }});
+    process.stdout.write(JSON.stringify(result) + '\\n');
+    process.exit(result.cancelled ? 0 : 1);
+}} catch(e) {{
+    process.stdout.write(JSON.stringify({{ error: e.message, cancelled: false }}) + '\\n');
+    process.exit(1);
+}}
+"""
+    return _run_node(js, timeout=15)
+
+
 def submit_order(ticker: Optional[str] = None, action: Optional[str] = None,
                  limit_price: Optional[float] = None) -> dict:
     """Click the submit button — call only after HITL approval.
@@ -246,16 +268,21 @@ def main():
     parser.add_argument("--ack-stale", action="store_true", dest="ack_stale",
                         help="Acknowledge stale portfolio data and proceed anyway (use with caution)")
 
+    parser.add_argument("--order-id", default=None, dest="order_id",
+                        help="TradingView order UUID (required for --cancel)")
+
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--preflight", action="store_true")
     mode.add_argument("--execute", action="store_true")
     mode.add_argument("--submit", action="store_true",
                       help="Re-opens dialog if needed, fills form, then clicks submit")
+    mode.add_argument("--cancel", action="store_true",
+                      help="Cancel an order in TradingView by order UUID")
 
     args = parser.parse_args()
 
     # --preflight and --execute require the full set; --submit re-fills so also needs them
-    if not args.submit:
+    if not args.submit and not args.cancel:
         for req in ("ticker", "action", "shares", "order_type", "account"):
             if getattr(args, req) is None:
                 parser.error(f"--{req.replace('_','-')} is required for --preflight/--execute")
@@ -383,9 +410,11 @@ def main():
             print(json.dumps(result, indent=2))
             sys.exit(1)
 
+        tv_order_id = (result.get("brokerVerification") or {}).get("best", {}).get("orderId") or None
         output = {
             "status": "submitted",
             "timestamp": datetime.now(timezone.utc).isoformat(),
+            "tvOrderId": tv_order_id,
             "result": result,
         }
         print(json.dumps(output, indent=2))
@@ -396,6 +425,27 @@ def main():
         else:
             print("⚠️  Portfolio sync failed — retry manually.")
         sys.exit(0)
+
+
+    # ── cancel ─────────────────────────────────────────────────────────────
+    if args.cancel:
+        if not args.order_id:
+            parser.error("--order-id is required for --cancel")
+        try:
+            result = cancel_order(args.order_id, ticker=args.ticker,
+                                  action=args.action, limit_price=args.limit_price)
+        except RuntimeError as e:
+            print(json.dumps({"error": str(e), "cancelled": False}, indent=2))
+            sys.exit(1)
+
+        print(json.dumps(result, indent=2))
+        if result.get("cancelled"):
+            verified = "✓ verified" if result.get("verified") else "⚠ unverified (check TV manually)"
+            print(f"\n✅ Order cancelled in TradingView: {result.get('orderId')} [{verified}]")
+            sys.exit(0)
+        else:
+            print(f"\n⚠️  Cancel failed: {result.get('reason', 'Unknown error')}")
+            sys.exit(1)
 
 
 if __name__ == "__main__":

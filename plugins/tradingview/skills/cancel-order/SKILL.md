@@ -2,75 +2,84 @@
 name: cancel-order
 plugin: tradingview
 description: >
-  Cancel a Working or Inactive order in TradingView via CDP, then mark it
-  cancelled in the Trade Log. Triggered when user cancels a Working or Inactive
-  entry in the Trade Log UI. Requires TradingView Desktop with --remote-debugging-port=9222.
+  Cancel a Working or Inactive order in TradingView via CDP (clicks the × button
+  on the order row), then marks it cancelled in the Trade Log. Requires TradingView
+  Desktop with --remote-debugging-port=9222.
 allowed-tools: Bash, Read, Write
 ---
 
 ## Trigger
 
-This skill is called when a trade-log entry with status `submitted` or `inactive`
-is cancelled from the Trade Log UI. Planned (`suggested`/`logged`) entries are
-cancelled in JSON only — no TV action needed.
+Called when a trade-log entry with status `submitted` or `inactive` is cancelled
+from the Trade Log UI, or invoked directly by the user.
+
+Planned (`suggested`/`logged`) entries are cancelled in JSON only — no TV action needed.
 
 ## Prerequisites
 
 - TradingView Desktop running with `--remote-debugging-port=9222`
 - Order must be visible in TV's broker panel (Working or Inactive tab)
-- The trade-log entry should ideally have a `tvOrderId` field (populated when
-  `verifyOrderInBrokerPanel` runs after submission). If missing, match by ticker + side + price.
+- Trade-log entry should have a `tvOrderId` field (populated on submission)
 
-## Step 1: Locate the Order in TradingView
+## Method 1: Via Backend API (Trade Log UI)
 
-```javascript
-// In plugins/tradingview/node/core/trading.js
-// Call via: python3 investment_screener/backend/py_services/place_order.py --cancel --order-id <tvOrderId>
+The Trade Log × button calls `POST /api/trading/cancel`:
 
-async function cancelOrder({ ticker, action, limitPrice, tvOrderId }) {
-    // Navigate to Orders tab in broker panel
-    // Click Working or Inactive sub-tab
-    // Find row matching tvOrderId (preferred) OR ticker+action+limitPrice
-    // Click the × cancel button on that row
-    // Wait 1000ms, verify the row is gone
-    // Return: { cancelled: true/false, orderId, ticker, action }
-}
-```
-
-## Step 2: Mark Cancelled in Trade Log
-
-After successful TV cancellation, PATCH the trade-log entry:
 ```bash
-curl -s -X PATCH http://localhost:3001/api/trading/log/{entry_id} \
+curl -s -X POST http://localhost:3001/api/trading/cancel \
   -H 'Content-Type: application/json' \
-  -H "Authorization: Bearer $TOKEN" \
-  -d '{"status": "cancelled"}'
+  -d '{
+    "entryId": "1c96b4ce4b70",
+    "tvOrderId": "292b5304-0c3d-42c2-02c0-290f6d322c12",
+    "ticker": "INTC",
+    "action": "Buy",
+    "limitPrice": 47.00
+  }'
 ```
 
-## Step 3: Report Result
+The backend:
+1. Calls `place_order.py --cancel --order-id <tvOrderId>`
+2. PATCHes the log entry to `cancelled` regardless of TV result
 
+## Method 2: Python script (direct)
+
+```bash
+python3 plugins/tradingview/scripts/tv_cancel_order.py \
+    --order-id 292b5304-0c3d-42c2-02c0-290f6d322c12 \
+    --ticker INTC --action buy --limit-price 47.00
 ```
-✅ Order cancelled in TradingView: {ACTION} {SHARES} {TICKER}
-   Trade Log entry updated → CANCELLED
+
+## Method 3: place_order.py CLI
+
+```bash
+python3 investment_screener/backend/py_services/place_order.py \
+    --cancel --order-id <tvOrderId> \
+    --ticker INTC --action buy --limit-price 47.00
 ```
+
+## How It Works
+
+`cancelOrder()` in `plugins/tradingview/node/core/trading.js`:
+
+1. Searches the current DOM for an order row containing the UUID — **without navigating tabs** (tab navigation was toggling the broker panel closed)
+2. Falls back to tab navigation only if the row is not found directly
+3. Clicks the × button (`buttonIndex: -1`, last button in the row)
+4. Waits for a secondary TV confirmation dialog ("Cancel order" / "Keep order") and clicks "Cancel order"
+5. Waits 1 s, verifies the row is gone from the DOM
+6. Returns `{ cancelled: true, verified: true, orderId, ticker, action }`
 
 ## Error Handling
 
-- **TV not connected**: Warn user that TV is offline. Still allow cancelling in Trade Log only (local cancel).
-- **Order not found in TV**: Warn "Order may have already filled or been cancelled in TV." Still mark Trade Log as cancelled.
-- **Multiple matches**: If no tvOrderId and multiple rows match, present list to user and ask which to cancel.
-
-## Future Work
-
-- Store `tvOrderId` on the trade-log entry when `verifyOrderInBrokerPanel` succeeds after submission
-- Add a `tvOrderId` field to `TradeLogEntry` in api.ts
-- Pass `tvOrderId` from the audit log entry written in `confirmAndSubmit()`
+- **TV not connected**: Backend still marks log entry as cancelled
+- **Order not found**: Returns `{ cancelled: false }` — order may have already filled/expired
+- **Tab navigation toggling panel**: Solved by search-first approach (never navigates tabs)
 
 ## Implementation Status
 
-⚠️ **STUB** — CDP cancel automation not yet implemented in `trading.js`.
-The skill design is complete. Implementation needed:
-1. `cancelOrder()` function in `plugins/tradingview/node/core/trading.js`
-2. `--cancel` flag in `investment_screener/backend/py_services/place_order.py`
-3. Backend route `POST /api/trading/cancel` that calls place_order.py --cancel
-4. Trade Log UI calls this route when user cancels a Working/Inactive entry
+✅ **FULLY IMPLEMENTED**
+
+- `cancelOrder()` — `plugins/tradingview/node/core/trading.js`
+- `--cancel` flag — `investment_screener/backend/py_services/place_order.py`
+- `tv_cancel_order.py` — `plugins/tradingview/scripts/tv_cancel_order.py`
+- Backend route — `POST /api/trading/cancel` in `investment_screener/backend/src/routes/trading.ts`
+- Trade Log UI — × button on Working/Inactive rows calls backend cancel endpoint
