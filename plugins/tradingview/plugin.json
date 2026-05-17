@@ -56,6 +56,13 @@
       "purpose": "DCF projection JSONs — source of bear/base/bull alert prices"
     }
   ],
+  "agents": [
+    {
+      "name": "ta-guide",
+      "path": "agents/ta-guide.md",
+      "trigger": "Guide me through a technical analysis"
+    }
+  ],
   "related_plugins": ["portfolio-advisor", "stock-valuation"],
   "tags": ["finance", "tradingview", "real-time", "alerts", "prices"]
 }
