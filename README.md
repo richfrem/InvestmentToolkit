@@ -132,4 +132,27 @@ The project leverages the **Exploration Cycle** architecture to systematize AI a
 
 ---
 
+---
+
+## 🙏 Acknowledgements & Prior Art
+
+### TradingView CDP Community
+
+The TradingView CDP automation layer was informed by studying the following open-source projects:
+
+| Project | GitHub | What It Does |
+|---------|--------|--------------|
+| **tradingview-mcp** (tradesdontlie) | https://github.com/tradesdontlie/tradingview-mcp | The most complete CDP-based TradingView automation library available. 5,000+ lines, 15+ command namespaces. Its `pine.js` uses **React fiber tree traversal** (`__reactFiber` prefix) to locate Monaco editor internals — more resilient than CSS selectors alone. No live broker order execution. |
+| **tradingview-mcp** (atilaahmettaner) | https://github.com/atilaahmettaner/tradingview-mcp | TradingView screener/scanner using the `tradingview-screener` Python library (REST API). 30+ tools for market scanning and symbol filtering. No CDP, no live orders. |
+
+**Our key architectural difference:** Both reference projects are chart analysis and research tools. InvestmentToolkit is a **live broker execution layer** — it navigates TradingView's built-in Questrade broker panel via CDP to place, modify, and cancel real orders, with 3-step HITL confirmation, safety gates (stale portfolio exit 4, size cap exit 3), multi-account support, `tvOrderId` tracking, and automatic portfolio sync after fills. The Pine Script work planned in Phase 2 will adopt the React fiber traversal technique from tradesdontlie's implementation.
+
+### AI Agent Infrastructure
+
+- **[orba/superpowers](https://github.com/orba/superpowers)** — The TDD (Iron Law: no production code without a failing test first), brainstorming, and sub-agent driven development skills used throughout this project come from the superpowers plugin library. These skills enforce rigorous Red-Green-Refactor discipline and orchestrate parallel multi-agent task execution.
+
+- **[richfrem/agent-plugins-skills](https://github.com/richfrem/agent-plugins-skills)** — The Exploration Workflow (4-phase: Discovery Planning → Visual Blueprinting → Prototyping → Handoff & Specs) and all project-local AI agent plugins and skills are organized and distributed through this repository.
+
+---
+
 *Personal use only. Data from TradingView is subject to their Terms of Use: https://www.tradingview.com/policies/*
