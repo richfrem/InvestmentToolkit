@@ -32,7 +32,7 @@
         },
         {
             "name": "tradingview",
-            "description": "TradingView Desktop integration for real-time prices, DCF alerts, chart snapshots, portfolio sync, and live order execution. Skills: /tv-price-refresh, /tv-alert-sync, /tv-snapshot, /tv-ta, /tv-portfolio-sync, /place-order, /modify-order, /cancel-order, /get-orders. Requires TV Desktop running with --remote-debugging-port=9222.",
+            "description": "TradingView Desktop integration for real-time prices, DCF alerts, chart snapshots, portfolio sync, live order execution, and automated Pine Script technical analysis. Skills: /tv-price-refresh, /tv-alert-sync, /tv-snapshot, /tv-ta, /tv-portfolio-sync, /place-order, /modify-order, /cancel-order, /get-orders, /pine-inject, /tv-ta-deep. Requires TV Desktop running with --remote-debugging-port=9222.",
             "source": "./plugins/tradingview",
             "strict": true
         }
