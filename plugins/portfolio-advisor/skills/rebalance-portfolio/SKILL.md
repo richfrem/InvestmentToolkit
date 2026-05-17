@@ -251,7 +251,24 @@ Ready to execute? Confirm each trade before I generate order details.
 
 ## Step 5b: Post Suggestions to Trade Log
 
-After presenting the trade plan (Step 5), immediately post all proposed trades to the trade log as `suggested` entries so they appear in the Trade Log page (`/trade-log`) for later execution:
+After presenting the trade plan (Step 5), immediately post ALL proposed trades to the trade log as `suggested` entries. The endpoint accepts a batch — create **one entry per account per ticker**.
+
+### Multi-Account Rules
+
+**SELLS**: Check `portfolio.json` — if the ticker is held in multiple accounts (e.g., ZS in both TFSA and RRSP), create a separate entry for each account using that account's actual share count.
+
+**BUYS**: Create two entries — one per account. The user mirrors buys across both accounts with proportional sizing:
+- **TFSA** (main, larger account): full proposed share count
+- **RRSP** (smaller account): approximately 1/3 the TFSA share count (round down, minimum 1)
+- Use the TFSA/RRSP heuristic table to pick which account is "primary" for the asset type, but always create both entries.
+
+Example — buying 6 shares of NVDA:
+```json
+{ "ticker": "NVDA", "action": "buy", "shares": 6, "account": "TFSA", ... },
+{ "ticker": "NVDA", "action": "buy", "shares": 2, "account": "RRSP", ... }
+```
+
+### API Call
 
 ```bash
 curl -s -X POST http://localhost:3001/api/trading/log/suggest \
@@ -268,21 +285,41 @@ curl -s -X POST http://localhost:3001/api/trading/log/suggest \
         "date": "'"$(date +%Y-%m-%d)"'",
         "notes": "Drift: +3.8% overweight · SELL-rated (−66% FV gap)",
         "source": "rebalance"
+      },
+      {
+        "ticker": "NVDA",
+        "action": "buy",
+        "shares": 6,
+        "price": 0,
+        "account": "TFSA",
+        "orderType": "market",
+        "date": "'"$(date +%Y-%m-%d)"'",
+        "notes": "Underweight +1.2% · BUY-rated (+82% upside)",
+        "source": "rebalance"
+      },
+      {
+        "ticker": "NVDA",
+        "action": "buy",
+        "shares": 2,
+        "price": 0,
+        "account": "RRSP",
+        "orderType": "market",
+        "date": "'"$(date +%Y-%m-%d)"'",
+        "notes": "Underweight +1.2% · BUY-rated (+82% upside) — RRSP mirror (1/3)",
+        "source": "rebalance"
       }
     ]
   }'
 ```
 
-Rules:
-- Post ALL proposed trades (including skipped restores? No — only actionable buys/sells)
-- Set `price: 0` for market orders (fill price unknown at planning time)
-- Set `limitPrice` for limit-order suggestions
+### Rules
+- Post ALL proposed trades (only actionable buys/sells — not drift-skips)
+- Set `price: 0` (fill price unknown at planning time); set `limitPrice` if suggesting a limit order
 - Set `source: "rebalance"` always
-- Use `account` from the TFSA/RRSP heuristic table above
 - If the endpoint is unreachable (backend offline), proceed silently — do not block the recommendation
 
 After posting, tell the user:
-> "These trades have been added to your Trade Log as suggested entries. Open **Trade Log** in the sidebar to review and execute them."
+> "These trades have been added to your Trade Log (**Planned** tab) — {N} entries across {A} accounts. Open **Trade Log** in the sidebar to review and execute them one at a time."
 
 ---
 
