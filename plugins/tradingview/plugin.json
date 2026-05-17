@@ -14,7 +14,8 @@
     { "name": "place_order", "path": "skills/place-order/SKILL.md", "trigger": "/place-order" },
     { "name": "modify_order", "path": "skills/modify-order/SKILL.md", "trigger": "/modify-order" },
     { "name": "cancel_order", "path": "skills/cancel-order/SKILL.md", "trigger": "/cancel-order" },
-    { "name": "get_orders", "path": "skills/get-orders/SKILL.md", "trigger": "/get-orders" }
+    { "name": "get_orders", "path": "skills/get-orders/SKILL.md", "trigger": "/get-orders" },
+    { "name": "pine_inject", "path": "skills/pine-inject/SKILL.md", "trigger": "/pine-inject" }
   ],
   "commands": [
     { "name": "tv-alert-sync", "path": "commands/tv-alert-sync.md", "trigger": "/tv-alert-sync" },
