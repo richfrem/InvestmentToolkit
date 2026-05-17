@@ -18,6 +18,7 @@ import * as health from './core/health.js';
 import * as data from './core/data.js';
 import * as alerts from './core/alerts.js';
 import * as capture from './core/capture.js';
+import * as pine from './core/pine.js';
 
 // --- status ---
 register('status', {
@@ -73,6 +74,46 @@ register('screenshot', {
     region: opts.region,
     filename: opts.output,
   }),
+});
+
+// --- pine ---
+register('pine', {
+  description: 'Pine Script editor automation (inject, read, remove)',
+  subcommands: new Map([
+    ['inject', {
+      description: 'Inject a Pine Script file into the active chart',
+      options: {
+        file: { type: 'string', short: 'f', description: 'Path to .pine script file' },
+      },
+      handler: async (opts) => {
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return pine.injectPineScript(client, opts.file);
+      },
+    }],
+    ['read', {
+      description: 'Read indicator values from the Data Window',
+      options: {
+        indicator: { type: 'string', short: 'i', description: 'Indicator display name' },
+      },
+      handler: async (opts) => {
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return pine.readIndicatorValues(client, opts.indicator);
+      },
+    }],
+    ['remove', {
+      description: 'Remove a named indicator from the chart',
+      options: {
+        indicator: { type: 'string', short: 'i', description: 'Indicator display name' },
+      },
+      handler: async (opts) => {
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return pine.removePineScript(client, opts.indicator);
+      },
+    }],
+  ]),
 });
 
 await run(process.argv);
