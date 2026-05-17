@@ -1,0 +1,57 @@
+graph LR
+    %% CLI Environments
+    subgraph "CLI Environments"
+        Claude[Claude Code]
+        Gemini[Gemini CLI]
+        Copilot[Copilot CLI]
+    end
+
+    %% Universal Marketplace
+    Marketplace[[.claude-plugin/marketplace.json]]
+    
+    %% Exploration Workflow
+    Orchestrator((Exploration Workflow\nOrchestrator))
+    Dashboard[(exploration-dashboard.md)]
+
+    %% Plugins Layer
+    subgraph "Plugin Ecosystem (plugins/)"
+        StockValuation[stock-valuation\n- /evaluate-stock\n- /research-stock]
+        PortfolioAdvisor[portfolio-advisor\n- /strategic-review\n- /rebalance\n- /x-news-sweep]
+        TradingViewBridge[tradingview\n- /tv-portfolio-sync\n- /place-order]
+        ETFAnalysis[etf-analysis\n- /analyze-etf]
+        ToolkitManager[toolkit-manager\n- /setup-questrade\n- /start-screener]
+    end
+
+    %% File System
+    SKILL_MD[SKILL.md / agents.md\n(Instructions & Triggers)]
+    PyScripts[Canonical .py Scripts\n(Execution Logic)]
+
+    %% Connections
+    Claude --> Marketplace
+    Gemini --> Marketplace
+    Copilot --> Marketplace
+
+    Marketplace --> StockValuation
+    Marketplace --> PortfolioAdvisor
+    Marketplace --> TradingViewBridge
+    Marketplace --> ETFAnalysis
+    Marketplace --> ToolkitManager
+
+    %% Internal Plugin Structure
+    StockValuation -.-> SKILL_MD
+    StockValuation -.-> PyScripts
+
+    %% Exploration Workflow routing
+    Claude --> Orchestrator
+    Gemini --> Orchestrator
+    Orchestrator <--> Dashboard
+    Orchestrator -->|Delegates Tasks| PortfolioAdvisor
+    Orchestrator -->|Delegates Tasks| StockValuation
+
+    classDef cli fill:#1e1b4b,stroke:#6366f1,stroke-width:2px,color:#fff;
+    classDef plugin fill:#0f172a,stroke:#10b981,stroke-width:2px,color:#fff;
+    classDef orchestrator fill:#312e81,stroke:#a855f7,stroke-width:2px,color:#fff;
+
+    class Claude,Gemini,Copilot cli;
+    class StockValuation,PortfolioAdvisor,TradingViewBridge,ETFAnalysis,ToolkitManager plugin;
+    class Orchestrator orchestrator;

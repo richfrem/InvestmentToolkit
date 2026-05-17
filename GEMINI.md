@@ -208,7 +208,7 @@ If you find yourself computing the same formula more than once across sessions �
 - ❌ Financial ratio derivations that appear in multiple valuations
 - ❌ Any calculation where a bug would silently affect multiple outputs
 
-**ADR**: `docs/architecture/stock-valuation/ADR-dcf-calculator.md`
+**ADR**: `plugins/stock-valuation/references/ADR-dcf-calculator.md`
 
 ---
 
@@ -289,6 +289,6 @@ The `/api/questrade/seed` endpoint accepts a raw **One-Week App Token** from the
 | `GEMINI.md` | Primary context file for Gemini agents (this file) |
 | `.claude/CLAUDE.md` | Primary context file for Claude agents |
 | `.github/copilot-instructions.md` | Primary context for GitHub Copilot |
-| `docs/architecture/Questrade/questrade_token_setup.md` | Full Questrade token protocol |
+| `plugins/toolkit-manager/references/Questrade/questrade_token_setup.md` | Full Questrade token protocol |
 | `investment_screener/backend/src/utils/QuestradeAPIClient.py` | Core OAuth2 client |
 | `investment_screener/backend/src/services/QuestradeSyncService.ts` | Node→Python sync bridge |

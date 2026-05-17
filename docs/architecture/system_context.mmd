@@ -1,0 +1,63 @@
+graph TD
+    %% Core Users
+    User((Retail Investor))
+    AIAgent((CLI AI Agent\nClaude/Gemini/Copilot))
+
+    %% Frontend & Backend
+    subgraph "Investment Screener App"
+        UI[Frontend: React 19 + Vite]
+        Backend[Backend: Node.js Express]
+        PyLayer[Analytical Engine: Python 3.11]
+        
+        UI <-->|REST API| Backend
+        Backend <-->|Subprocess Spawn| PyLayer
+    end
+
+    %% Data & Execution Sources
+    subgraph "External Providers & Brokers"
+        TV[TradingView Desktop\nPremium]
+        YF[yfinance API]
+        QT[Questrade REST API]
+    end
+
+    %% State & Data
+    subgraph "Local Persistence"
+        PortfolioDB[(portfolio.json)]
+        TargetDB[(target-portfolio.json)]
+        ProjectionsDB[(projections/)]
+        Cache[(.questrade_cache)]
+    end
+
+    %% Interactions
+    User -->|Views & Interacts| UI
+    User -->|Issues Commands| AIAgent
+
+    %% TV Integration
+    Backend <-->|CDP WebSocket port 9222| TV
+    PyLayer <-->|CDP DOM Automation| TV
+
+    %% External Data
+    PyLayer -->|Fetch fundamentals/delayed| YF
+    PyLayer -->|Fallback Sync| QT
+    Backend -->|Refresh Token| QT
+    Backend <-->|Read/Write| Cache
+
+    %% Local DB access
+    Backend <-->|Read/Write| PortfolioDB
+    Backend <-->|Read/Write| TargetDB
+    Backend <-->|Read/Write| ProjectionsDB
+
+    %% Agent Interactions
+    AIAgent <-->|Triggers Scripts/Bridge| Backend
+    AIAgent <-->|Analyzes| TargetDB
+    AIAgent <-->|Generates| ProjectionsDB
+
+    classDef core fill:#1e293b,stroke:#eab308,stroke-width:2px,color:#fff;
+    classDef agent fill:#0f172a,stroke:#3b82f6,stroke-width:2px,color:#fff;
+    classDef external fill:#334155,stroke:#94a3b8,stroke-width:1px,color:#fff;
+    classDef db fill:#020617,stroke:#10b981,stroke-width:1px,color:#fff;
+
+    class UI,Backend,PyLayer core;
+    class AIAgent agent;
+    class TV,YF,QT external;
+    class PortfolioDB,TargetDB,ProjectionsDB,Cache db;
