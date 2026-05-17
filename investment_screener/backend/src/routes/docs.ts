@@ -1,9 +1,9 @@
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
-import { spawn } from 'child_process';
 import { thesisService } from '../services/ThesisService';
 import { RESEARCH_DIR, PORTFOLIO_REVIEWS_DIR, THESIS_DOC_PATH, AGENT_GUIDE_PATH } from '../utils/paths';
+import { spawnPythonScript } from '../services/bridge';
 
 const router = express.Router();
 
@@ -49,7 +49,7 @@ router.get('/research', async (_req, res) => {
 
 router.get('/docs/investment-thesis', async (_req, res) => {
     try {
-        const content = await fs.promises.readFile(THESIS_DOC_PATH, 'utf-8');
+        const content = await fs.promises.readFile( THESIS_DOC_PATH, 'utf-8');
         let thesisName = 'Investment Thesis';
         let thesisDescription = '';
         try {
@@ -74,23 +74,8 @@ router.get('/docs/latest-review', async (_req, res) => {
 });
 
 router.get('/docs/latest-review-data', async (_req, res) => {
-    const scriptPath = path.resolve(__dirname, '../../../../../plugins/portfolio-advisor/scripts/generate_review_json.py');
-    const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
     try {
-        const review = await new Promise<any>((resolve, reject) => {
-            const proc = spawn(pythonCmd, [scriptPath, '--dry-run']);
-            let out = '';
-            let err = '';
-            const timer = setTimeout(() => { proc.kill(); reject(new Error('Review generation timed out')); }, 20_000);
-            proc.stdout.on('data', (d: Buffer) => { out += d.toString(); });
-            proc.stderr.on('data', (d: Buffer) => { err += d.toString(); });
-            proc.on('close', (code: number) => {
-                clearTimeout(timer);
-                if (code !== 0) return reject(new Error(`generate_review_json exited ${code}: ${err}`));
-                try { resolve(JSON.parse(out)); } catch { reject(new Error('Failed to parse review JSON')); }
-            });
-            proc.on('error', (e: Error) => { clearTimeout(timer); reject(e); });
-        });
+        const review = await spawnPythonScript('generate_review_json.py', ['--dry-run']);
         res.json(review);
     } catch (err: any) {
         console.error('[API] latest-review-data error:', err.message);

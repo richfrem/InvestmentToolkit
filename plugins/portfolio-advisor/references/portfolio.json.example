@@ -1,0 +1,32 @@
+[
+  {
+    "symbol": "AAPL",
+    "shares": 5.0,
+    "price": 150.00,
+    "book_price": 140.00,
+    "sector": "Technology",
+    "industry": "Consumer Electronics",
+    "last_updated": "2026-01-01T00:00:00.000000",
+    "name": "Apple Inc."
+  },
+  {
+    "symbol": "MSFT",
+    "shares": 3.0,
+    "price": 300.00,
+    "book_price": 275.00,
+    "sector": "Technology",
+    "industry": "Software - Infrastructure",
+    "last_updated": "2026-01-01T00:00:00.000000",
+    "name": "Microsoft Corporation"
+  },
+  {
+    "symbol": "NVDA",
+    "shares": 2.0,
+    "price": 450.00,
+    "book_price": 400.00,
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "last_updated": "2026-01-01T00:00:00.000000",
+    "name": "NVIDIA Corporation"
+  }
+]
