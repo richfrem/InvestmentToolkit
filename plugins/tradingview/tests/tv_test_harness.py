@@ -233,6 +233,51 @@ def test_live_pine_cycle() -> tuple[bool, str]:
         return False, f"Pine cycle error: {e}"
 
 
+# ── Section 2: Chart Command Tests ───────────────────────────────────────────
+
+def test_chart_timeframe_known() -> tuple[bool, str]:
+    """chart timeframe 1D — should succeed (no error key in result)."""
+    r = subprocess.run(
+        ["node", "cli.js", "chart", "timeframe", "1D"],
+        capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=15,
+    )
+    if r.returncode != 0:
+        return False, f"cli.js exited {r.returncode}: {r.stderr.strip()[:200]}"
+    try:
+        out = json.loads(r.stdout.strip())
+        if isinstance(out, dict) and out.get("error"):
+            return False, f"Returned error: {out['error']}"
+        return True, "timeframe 1D set successfully"
+    except (json.JSONDecodeError, ValueError):
+        if r.stdout.strip():
+            return True, "timeframe 1D set (plain text output)"
+        return False, "No output from chart timeframe command"
+
+
+def test_chart_read_structure() -> tuple[bool, str]:
+    """chart read — should return a dict or list, or a known 'not visible' error."""
+    r = subprocess.run(
+        ["node", "cli.js", "chart", "read"],
+        capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=15,
+    )
+    if r.returncode != 0:
+        return False, f"cli.js exited {r.returncode}: {r.stderr.strip()[:200]}"
+    raw = r.stdout.strip()
+    if not raw:
+        return False, "No output from chart read command"
+    try:
+        out = json.loads(raw)
+        if isinstance(out, dict) and out.get("error"):
+            err = str(out["error"]).lower()
+            if "not visible" in err or "data window" in err:
+                return True, f"chart read responded correctly (Data Window not open): {out['error']}"
+            return False, f"Unexpected error: {out['error']}"
+        entry_count = len(out) if hasattr(out, "__len__") else "?"
+        return True, f"chart read returned {type(out).__name__} with {entry_count} entries"
+    except (json.JSONDecodeError, ValueError):
+        return False, f"Non-JSON output: {raw[:100]}"
+
+
 # ── Runner ────────────────────────────────────────────────────────────────────
 
 def run_section_0() -> bool:
@@ -287,11 +332,31 @@ def run_section_1() -> bool:
     return ok
 
 
+def run_section_2() -> bool:
+    print(f"\n{HEADER}Section 2 — Chart Command Tests{RESET}")
+    checks = [
+        ("2.1", "chart timeframe 1D", test_chart_timeframe_known),
+        ("2.2", "chart read structure", test_chart_read_structure),
+    ]
+    all_ok = True
+    for num, label, fn in checks:
+        try:
+            ok, msg = fn()
+        except Exception as e:
+            ok, msg = False, str(e)
+        icon = OK if ok else FAIL
+        print(f"  [{num}] {icon} {label}")
+        print(f"       {msg}")
+        if not ok:
+            all_ok = False
+    return all_ok
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="TradingView CDP prerequisite checks")
     parser.add_argument(
         "--suite",
-        choices=["prereqs", "selectors", "pine", "all"],
+        choices=["prereqs", "selectors", "pine", "chart", "all"],
         default="all",
         help="Which section to run (default: all)",
     )
@@ -316,6 +381,12 @@ def main() -> None:
         if not ok1:
             print(f"\n{FAIL} Section 1 failed — Pine Script cycle broken.")
             sys.exit(3)
+
+    if args.suite in ("chart", "all"):
+        ok2 = run_section_2()
+        if not ok2:
+            print(f"\n{FAIL} Section 2 failed — chart command regression.")
+            sys.exit(4)
 
     print(f"\n{OK} All prerequisite checks passed.")
 
