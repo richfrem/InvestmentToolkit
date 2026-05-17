@@ -50,8 +50,8 @@ Purpose-built for thematic, closed-end, and cash fund ETFs.
 - **Commands/Skills**: `/analyze-etf`
 
 ### 4. TradingView Integration (`plugins/tradingview`)
-TradingView Desktop is the primary layer for live prices, portfolio sync, and order execution via CDP (Chrome DevTools Protocol) automation.
-- **Commands/Skills**: `/tv-portfolio-sync`, `/place-order`, `/modify-order`, `/cancel-order`, `/get-orders`, `/tv-alert-sync`, `/tv-price-refresh`, `/tv-snapshot`, `/tv-ta`
+TradingView Desktop is the primary layer for live prices, portfolio sync, order execution, and deep technical analysis via CDP (Chrome DevTools Protocol) automation.
+- **Commands/Skills**: `/tv-portfolio-sync`, `/place-order`, `/modify-order`, `/cancel-order`, `/get-orders`, `/tv-alert-sync`, `/tv-price-refresh`, `/tv-snapshot`, `/tv-ta`, `/pine-inject`, `/tv-ta-deep`
 
 ### 5. Toolkit Manager (`plugins/toolkit-manager`)
 Orchestrator for managing server startup and fallback API token seeding.
