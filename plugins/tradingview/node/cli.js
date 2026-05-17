@@ -86,9 +86,13 @@ register('pine', {
         file: { type: 'string', short: 'f', description: 'Path to .pine script file' },
       },
       handler: async (opts) => {
+        const { readFileSync, existsSync } = await import('fs');
         const { getClient } = await import('./connection.js');
         const client = await getClient();
-        return pine.injectPineScript(client, opts.file);
+        const scriptContent = opts.file && existsSync(opts.file)
+          ? readFileSync(opts.file, 'utf8')
+          : opts.file;
+        return pine.injectPineScript(client, scriptContent);
       },
     }],
     ['read', {
