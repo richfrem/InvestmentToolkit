@@ -13,9 +13,12 @@ The goal is to build a robust, TDD-compliant pipeline that allows the agent to:
 
 ### Approach A: Full CDP DOM Automation (Recommended)
 **Mechanism:** Use CDP to interact directly with the Pine Editor DOM elements. The script clicks the "Pine Editor" tab, clears the editor, pastes the AI-generated script, clicks "Add to chart", and then reads the resulting values from the "Data Window" or indicator legend on the chart.
+
+**Implementation note (from code review of [tradesdontlie/tradingview-mcp](https://github.com/tradesdontlie/tradingview-mcp)):** Rather than relying solely on CSS class selectors (which change with TradingView deployments), the Monaco editor should be located via **React fiber tree traversal** — scanning DOM nodes for the `__reactFiber` property prefix and walking the fiber to find the Monaco editor instance. This technique is significantly more resilient to class name obfuscation and is the approach used in the most battle-tested open-source TradingView CDP library available.
+
 **Trade-offs:** 
-- *Pros:* Fully headless-capable, reliable DOM selectors, integrates perfectly with our existing `tv_client.py` and Node CLI architecture.
-- *Cons:* Susceptible to TradingView DOM structure changes.
+- *Pros:* Fully headless-capable, integrates perfectly with our existing `tv_client.py` and Node CLI architecture. React fiber traversal adds resilience beyond raw CSS selectors.
+- *Cons:* Fiber traversal adds implementation complexity; Monaco internals could still change across TV releases.
 
 ### Approach B: OS-Level Keyboard/Mouse Automation (PyAutoGUI/RobotJS)
 **Mechanism:** Use OS-level macros to send keyboard shortcuts (e.g., `Ctrl+E` or `Cmd+E` to open Pine Editor, `Ctrl+A`, `Ctrl+V` to paste, `Tab` navigation).
@@ -56,7 +59,7 @@ A new AI skill will be scaffolded.
 
 ## 4. Data Flow
 
-1. **Generation:** AI Agent generates Pine Script text and writes it to a temporary file `/tmp/ai_indicator.pine`.
+1. **Generation:** AI Agent generates Pine Script text and writes it to a temporary file `InvestmentToolkit/temp/ai_indicator.pine` (use the repo-local `temp/` subfolder — **not** `/tmp/` root — so temp artifacts are namespaced and easy to gitignore; see Task 0003).
 2. **Injection:** Agent executes `python3 tv_pine_manager.py inject /tmp/ai_indicator.pine`.
 3. **CDP Execution:** Node CLI finds the `.js-pine-editor-tab` button, clicks it, focuses the Monaco editor canvas, sends CDP `Input.insertText` to inject the code, and clicks the "Add to chart" button.
 4. **Signal Extraction:** Agent executes `python3 tv_pine_manager.py read "AI_Custom_TA"`. Node CLI ensures the Data Window is open, parses the key-value pairs for the indicator, and returns JSON: `{"MACD": 1.25, "Signal": "BUY"}`.
