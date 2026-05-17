@@ -40,6 +40,16 @@
             "name": "thesis_challenge_bundler",
             "path": "skills/thesis-challenge-bundler/SKILL.md",
             "trigger": "/bundle-thesis-review"
+        },
+        {
+            "name": "13f_tracker",
+            "path": "skills/13f-tracker/SKILL.md",
+            "trigger": "/13f-tracker"
+        },
+        {
+            "name": "13f_analyze",
+            "path": "skills/13f-analyze/SKILL.md",
+            "trigger": "/13f-analyze"
         }
     ],
     "commands": [
@@ -67,6 +77,16 @@
             "name": "bundle-thesis-review",
             "path": "commands/bundle-thesis-review.md",
             "trigger": "/bundle-thesis-review"
+        },
+        {
+            "name": "13f-tracker",
+            "path": "commands/13f-tracker.md",
+            "trigger": "/13f-tracker"
+        },
+        {
+            "name": "13f-analyze",
+            "path": "commands/13f-analyze.md",
+            "trigger": "/13f-analyze"
         }
     ],
     "connectors": "CONNECTORS.md",

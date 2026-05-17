@@ -11,13 +11,7 @@
       "src": "plugins/portfolio-advisor/scripts/update_thesis.py",
       "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/scripts/update_thesis.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
-    },
-    {
-      "src": "docs/architecture/thesis-alignment-and-portfolio-valuation/thesis_alignment_sequence.mmd",
-      "dst": "plugins/portfolio-advisor/references/thesis_alignment_sequence.mmd",
-      "strategy": "symlink",
-      "description": ""
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "investment_screener/backend/data/portfolio.json",
@@ -41,133 +35,133 @@
       "src": "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md",
       "dst": "plugins/portfolio-advisor/skills/strategic-review/assets/templates/PortfolioAnalysisRecommendations.md",
       "strategy": "symlink",
-      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+      "description": "ADR-003: skill assets/templates/ symlink → plugin root assets/templates/"
     },
     {
       "src": "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md",
       "dst": "plugins/portfolio-advisor/skills/calibrate-targets/assets/templates/PortfolioAnalysisRecommendations.md",
       "strategy": "symlink",
-      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+      "description": "ADR-003: skill assets/templates/ symlink → plugin root assets/templates/"
     },
     {
       "src": "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md",
       "dst": "plugins/portfolio-advisor/skills/portfolio-health/assets/templates/PortfolioAnalysisRecommendations.md",
       "strategy": "symlink",
-      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+      "description": "ADR-003: skill assets/templates/ symlink → plugin root assets/templates/"
     },
     {
       "src": "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md",
       "dst": "plugins/portfolio-advisor/skills/rebalance-portfolio/assets/templates/PortfolioAnalysisRecommendations.md",
       "strategy": "symlink",
-      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+      "description": "ADR-003: skill assets/templates/ symlink → plugin root assets/templates/"
     },
     {
       "src": "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md",
       "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/assets/templates/PortfolioAnalysisRecommendations.md",
       "strategy": "symlink",
-      "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+      "description": "ADR-003: skill assets/templates/ symlink → plugin root assets/templates/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/generate_review.py",
       "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/generate_review.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/generate_review.py",
       "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/generate_review.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/validate_weights.py",
       "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/validate_weights.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py",
       "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/generate_portfolio_blueprint.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py",
       "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/generate_portfolio_blueprint.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill references/ symlink \u2192 plugin root canonical"
+      "description": "ADR-003: skill references/ symlink → plugin root canonical"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/relabel_actions.py",
       "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/relabel_actions.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/validate_weights.py",
       "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/validate_weights.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/portfolio_action.py",
       "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/portfolio_action.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/portfolio_action.py",
       "dst": "plugins/portfolio-advisor/skills/rebalance-portfolio/scripts/portfolio_action.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/relabel_actions.py",
       "dst": "plugins/portfolio-advisor/skills/rebalance-portfolio/scripts/relabel_actions.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/validate_weights.py",
       "dst": "plugins/portfolio-advisor/skills/rebalance-portfolio/scripts/validate_weights.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/validate_weights.py",
       "dst": "plugins/portfolio-advisor/skills/calibrate-targets/scripts/validate_weights.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/update_thesis.py",
       "dst": "plugins/portfolio-advisor/skills/calibrate-targets/scripts/update_thesis.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/portfolio_action.py",
       "dst": "plugins/portfolio-advisor/skills/calibrate-targets/scripts/portfolio_action.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/portfolio_action.py",
       "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/portfolio_action.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/validate_weights.py",
       "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/scripts/validate_weights.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/references/portfolio.json",
       "dst": "plugins/portfolio-advisor/skills/strategic-review/references/portfolio.json",
       "strategy": "symlink",
-      "description": "ADR-003: relative symlink to plugin root references/ \u2014 NOT pointing outside plugin tree"
+      "description": "ADR-003: relative symlink to plugin root references/ — NOT pointing outside plugin tree"
     },
     {
       "src": "plugins/portfolio-advisor/references/investment_thesis.md",
@@ -197,55 +191,55 @@
       "src": "plugins/portfolio-advisor/scripts/scan_opportunities.py",
       "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/scan_opportunities.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/scan_opportunities.py",
       "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/scan_opportunities.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/update_targets.py",
       "dst": "plugins/portfolio-advisor/skills/calibrate-targets/scripts/update_targets.py",
       "strategy": "symlink",
-      "description": "Precision target-weight editor \u2014 set/add/remove weights, auto-normalizes to 100%, optional blueprint regen"
+      "description": "Precision target-weight editor — set/add/remove weights, auto-normalizes to 100%, optional blueprint regen"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/update_targets.py",
       "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/scripts/update_targets.py",
       "strategy": "symlink",
-      "description": "Precision target-weight editor \u2014 set/add/remove weights, auto-normalizes to 100%, optional blueprint regen"
+      "description": "Precision target-weight editor — set/add/remove weights, auto-normalizes to 100%, optional blueprint regen"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/update_targets.py",
       "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/update_targets.py",
       "strategy": "symlink",
-      "description": "Precision target-weight editor \u2014 set/add/remove weights, auto-normalizes to 100%, optional blueprint regen"
+      "description": "Precision target-weight editor — set/add/remove weights, auto-normalizes to 100%, optional blueprint regen"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/update_targets.py",
       "dst": "plugins/portfolio-advisor/skills/rebalance-portfolio/scripts/update_targets.py",
       "strategy": "symlink",
-      "description": "Precision target-weight editor \u2014 set/add/remove weights, auto-normalizes to 100%, optional blueprint regen"
+      "description": "Precision target-weight editor — set/add/remove weights, auto-normalizes to 100%, optional blueprint regen"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
       "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/generate_review_json.py",
       "strategy": "symlink",
-      "description": "ADR-003: generates dated review JSON for Portfolio Analysis modal \u2014 skill scripts/ symlink"
+      "description": "ADR-003: generates dated review JSON for Portfolio Analysis modal — skill scripts/ symlink"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
       "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/generate_review_json.py",
       "strategy": "symlink",
-      "description": "ADR-003: generates dated review JSON for Portfolio Analysis modal \u2014 skill scripts/ symlink"
+      "description": "ADR-003: generates dated review JSON for Portfolio Analysis modal — skill scripts/ symlink"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
       "dst": "plugins/portfolio-advisor/skills/calibrate-targets/scripts/generate_review_json.py",
       "strategy": "symlink",
-      "description": "ADR-003: generates dated review JSON for Portfolio Analysis modal \u2014 skill scripts/ symlink"
+      "description": "ADR-003: generates dated review JSON for Portfolio Analysis modal — skill scripts/ symlink"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
@@ -257,67 +251,67 @@
       "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
       "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/verify_refresh.py",
       "strategy": "symlink",
-      "description": "ADR-003: post-change integrity checker \u2014 mandatory final step in refresh chain"
+      "description": "ADR-003: post-change integrity checker — mandatory final step in refresh chain"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
       "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/verify_refresh.py",
       "strategy": "symlink",
-      "description": "ADR-003: post-change integrity checker \u2014 mandatory final step in refresh chain"
+      "description": "ADR-003: post-change integrity checker — mandatory final step in refresh chain"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
       "dst": "plugins/portfolio-advisor/skills/calibrate-targets/scripts/verify_refresh.py",
       "strategy": "symlink",
-      "description": "ADR-003: post-change integrity checker \u2014 mandatory final step in refresh chain"
+      "description": "ADR-003: post-change integrity checker — mandatory final step in refresh chain"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
       "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/scripts/verify_refresh.py",
       "strategy": "symlink",
-      "description": "ADR-003: post-change integrity checker \u2014 mandatory final step in refresh chain"
+      "description": "ADR-003: post-change integrity checker — mandatory final step in refresh chain"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/generate_grok_prompt.py",
       "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_grok_prompt.py",
       "strategy": "symlink",
-      "description": "ADR-003: x-news-sweep canonical script \u2014 generates live Grok prompt from target-portfolio.json"
+      "description": "ADR-003: x-news-sweep canonical script — generates live Grok prompt from target-portfolio.json"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/portfolio_action.py",
       "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/portfolio_action.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/validate_weights.py",
       "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/validate_weights.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/update_targets.py",
       "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/update_targets.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/generate_review_json.py",
       "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_review_json.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/verify_refresh.py",
       "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py",
       "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
       "strategy": "symlink",
-      "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/generate_grok_prompt.py",
@@ -329,19 +323,19 @@
       "src": "plugins/portfolio-advisor/scripts/apply_catalyst.py",
       "dst": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/apply_catalyst.py",
       "strategy": "symlink",
-      "description": "ADR-003: catalyst weight-shift script \u2014 skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: catalyst weight-shift script — skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/apply_catalyst.py",
       "dst": "plugins/portfolio-advisor/skills/strategic-review/scripts/apply_catalyst.py",
       "strategy": "symlink",
-      "description": "ADR-003: catalyst weight-shift script \u2014 skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: catalyst weight-shift script — skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/apply_catalyst.py",
       "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/apply_catalyst.py",
       "strategy": "symlink",
-      "description": "ADR-003: catalyst weight-shift script \u2014 skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: catalyst weight-shift script — skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/portfolio-advisor/scripts/apply_catalyst.py",
@@ -407,91 +401,91 @@
       "src": "plugins/tradingview/scripts/tv_cancel_order.py",
       "dst": "plugins/tradingview/skills/cancel-order/scripts/tv_cancel_order.py",
       "strategy": "symlink",
-      "description": "ADR-003: cancel-order skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: cancel-order skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/tradingview/scripts/tv_modify_order.py",
       "dst": "plugins/tradingview/skills/modify-order/scripts/tv_modify_order.py",
       "strategy": "symlink",
-      "description": "ADR-003: modify-order skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: modify-order skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/tradingview/scripts/tv_get_orders.py",
       "dst": "plugins/tradingview/skills/get-orders/scripts/tv_get_orders.py",
       "strategy": "symlink",
-      "description": "ADR-003: get-orders skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: get-orders skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/tradingview/scripts/tv_create_alerts.py",
       "dst": "plugins/tradingview/skills/alert-sync/scripts/tv_create_alerts.py",
       "strategy": "symlink",
-      "description": "ADR-003: alert-sync skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: alert-sync skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/tradingview/scripts/tv_health_check.py",
       "dst": "plugins/tradingview/skills/alert-sync/scripts/tv_health_check.py",
       "strategy": "symlink",
-      "description": "ADR-003: alert-sync skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: alert-sync skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/tradingview/scripts/tv_launch.py",
       "dst": "plugins/tradingview/skills/alert-sync/scripts/tv_launch.py",
       "strategy": "symlink",
-      "description": "ADR-003: alert-sync skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: alert-sync skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/tradingview/scripts/tv_health_check.py",
       "dst": "plugins/tradingview/skills/chart-snapshot/scripts/tv_health_check.py",
       "strategy": "symlink",
-      "description": "ADR-003: chart-snapshot skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: chart-snapshot skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/tradingview/scripts/tv_launch.py",
       "dst": "plugins/tradingview/skills/chart-snapshot/scripts/tv_launch.py",
       "strategy": "symlink",
-      "description": "ADR-003: chart-snapshot skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: chart-snapshot skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/tradingview/scripts/tv_health_check.py",
       "dst": "plugins/tradingview/skills/ta-snapshot/scripts/tv_health_check.py",
       "strategy": "symlink",
-      "description": "ADR-003: ta-snapshot skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: ta-snapshot skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/tradingview/scripts/tv_launch.py",
       "dst": "plugins/tradingview/skills/ta-snapshot/scripts/tv_launch.py",
       "strategy": "symlink",
-      "description": "ADR-003: ta-snapshot skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: ta-snapshot skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/tradingview/scripts/tv_batch_quotes.py",
       "dst": "plugins/tradingview/skills/price-refresh/scripts/tv_batch_quotes.py",
       "strategy": "symlink",
-      "description": "ADR-003: price-refresh skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: price-refresh skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "plugins/tradingview/scripts/tv_health_check.py",
       "dst": "plugins/tradingview/skills/price-refresh/scripts/tv_health_check.py",
       "strategy": "symlink",
-      "description": "ADR-003: price-refresh skill scripts/ symlink \u2192 plugin root scripts/"
+      "description": "ADR-003: price-refresh skill scripts/ symlink → plugin root scripts/"
     },
     {
       "src": "investment_screener/backend/py_services/place_order.py",
       "dst": "plugins/tradingview/skills/place-order/scripts/place_order.py",
       "strategy": "symlink",
-      "description": "ADR-001 cross-repo symlink: place-order skill \u2192 py_services canonical (source repo only)"
+      "description": "ADR-001 cross-repo symlink: place-order skill → py_services canonical (source repo only)"
     },
     {
       "src": "investment_screener/backend/py_services/place_order.py",
       "dst": "plugins/tradingview/skills/cancel-order/scripts/place_order.py",
       "strategy": "symlink",
-      "description": "ADR-001 cross-repo symlink: cancel-order skill \u2192 py_services canonical (source repo only)"
+      "description": "ADR-001 cross-repo symlink: cancel-order skill → py_services canonical (source repo only)"
     },
     {
       "src": "investment_screener/backend/py_services/fetch_broker_data.py",
       "dst": "plugins/tradingview/skills/tv-portfolio-sync/scripts/fetch_broker_data.py",
       "strategy": "symlink",
-      "description": "ADR-001 cross-repo symlink: tv-portfolio-sync skill \u2192 py_services canonical (source repo only)"
+      "description": "ADR-001 cross-repo symlink: tv-portfolio-sync skill → py_services canonical (source repo only)"
     }
   ]
 }

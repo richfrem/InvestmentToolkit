@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, CheckCircle, Loader2, TrendingUp, TrendingDown } from 'lucide-react';
+import { X, CheckCircle, Loader2 } from 'lucide-react';
 import { fetchPosition, logTrade, type PositionData, type TradeLogEntry } from '../services/api';
 import { TradePrepModal } from './TradePrepModal';
 
@@ -10,11 +10,6 @@ interface TradeLogModalProps {
 }
 
 const ACCOUNTS = ['TFSA', 'RRSP', 'CASH', 'MARGIN'];
-
-function fmt$(n: number | null, digits = 2) {
-    if (n == null) return '—';
-    return `$${Math.abs(n).toFixed(digits)}`;
-}
 
 function fmtPct(n: number | null) {
     if (n == null) return '—';
@@ -173,7 +168,7 @@ export function TradeLogModal({ ticker, initialAction = 'buy', onClose }: TradeL
                                                         {gainPositive ? '+' : '−'}${Math.abs(gain).toFixed(2)}
                                                     </span>
                                                     <span className={`font-mono text-[11px] font-semibold px-1.5 py-0.5 rounded ${gainPositive ? 'bg-emerald-500/15 text-emerald-300' : 'bg-red-500/15 text-red-300'}`}>
-                                                        {fmtPct(gainPct)}
+                                                        {fmtPct(gainPct ?? null)}
                                                     </span>
                                                 </div>
                                             </div>

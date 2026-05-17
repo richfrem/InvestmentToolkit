@@ -97,7 +97,7 @@ if __name__ == "__main__":
     parser.add_argument("--target", required=True)
     args = parser.parse_args()
 
-    sys.path.insert(0, str(Path(__file__).parent))
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
     from validate_weights import compute_current, compute_target
 
     ch = compute_current(args.portfolio)["holdings"]
