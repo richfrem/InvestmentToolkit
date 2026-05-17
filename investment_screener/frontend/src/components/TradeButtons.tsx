@@ -41,30 +41,28 @@ export function TradeButtons({ ticker, shares = 1, size = 'md', rating, classNam
         : 'bg-slate-800 text-slate-600 border border-slate-700 cursor-not-allowed';
 
     return (
-        <>
-            <div className={`flex items-center gap-1.5 ${className}`}>
-                <button
-                    disabled={!tvConnected}
-                    onClick={() => setModal({ action: 'buy' })}
-                    title={tvConnected ? `Prepare buy order for ${ticker}` : offlineTip}
-                    className={`${cls} transition-colors ${buyStyle}`}
-                >
-                    Buy
-                </button>
-                <button
-                    disabled={!tvConnected}
-                    onClick={() => setModal({ action: 'sell' })}
-                    title={tvConnected ? `Prepare sell order for ${ticker}` : offlineTip}
-                    className={`${cls} transition-colors ${sellStyle}`}
-                >
-                    Sell
-                </button>
-                {!tvConnected && !sm && (
-                    <span className="text-[10px] text-slate-600 font-medium" title={offlineTip}>
-                        TV Offline
-                    </span>
-                )}
-            </div>
+        <div className={`inline-flex items-center gap-1.5 ${className}`} onClick={e => e.stopPropagation()}>
+            <button
+                disabled={!tvConnected}
+                onClick={() => setModal({ action: 'buy' })}
+                title={tvConnected ? `Prepare buy order for ${ticker}` : offlineTip}
+                className={`${cls} transition-colors ${buyStyle}`}
+            >
+                Buy
+            </button>
+            <button
+                disabled={!tvConnected}
+                onClick={() => setModal({ action: 'sell' })}
+                title={tvConnected ? `Prepare sell order for ${ticker}` : offlineTip}
+                className={`${cls} transition-colors ${sellStyle}`}
+            >
+                Sell
+            </button>
+            {!tvConnected && !sm && (
+                <span className="text-[10px] text-slate-600 font-medium" title={offlineTip}>
+                    TV Offline
+                </span>
+            )}
 
             {modal && (
                 <TradePrepModal
@@ -74,6 +72,6 @@ export function TradeButtons({ ticker, shares = 1, size = 'md', rating, classNam
                     onClose={() => setModal(null)}
                 />
             )}
-        </>
+        </div>
     );
 }

@@ -638,3 +638,19 @@ export const cancelTrade = async (params: {
     });
     return res.json();
 };
+
+export const modifyTrade = async (params: {
+    entryId: string;
+    tvOrderId: string;
+    ticker: string;
+    action: string;
+    newPrice: number;
+    newShares?: number | null;
+}): Promise<{ tvModified: boolean; logUpdated: boolean; tvResult?: any }> => {
+    const res = await fetch('/api/trading/modify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+    });
+    return res.json();
+};

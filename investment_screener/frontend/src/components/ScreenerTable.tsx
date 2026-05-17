@@ -247,6 +247,19 @@ export default function ScreenerTable() {
                 fetch('/api/projections').then(r => r.ok ? r.json() : null).catch(() => null),
             ]);
 
+            if (allProjData) {
+                // Filter only AI projections and deduplicate by latest savedAt
+                const aiOnly = (allProjData as Projection[]).filter(p => p.source === 'AI_AGENT');
+                const latestByTicker = aiOnly.reduce((acc, curr) => {
+                    if (!acc[curr.ticker] || new Date(curr.savedAt) > new Date(acc[curr.ticker].savedAt)) {
+                        acc[curr.ticker] = curr;
+                    }
+                    return acc;
+                }, {} as Record<string, Projection>);
+                setProjections(Object.values(latestByTicker));
+                setLoading(false);
+            }
+
             if (healthData) {
                 const map: Record<string, { actualPct: number; targetPct: number }> = {};
                 for (const h of healthData.holdingHealth ?? []) {
