@@ -231,7 +231,7 @@ function makeLogEntry(fields: Record<string, any>): Record<string, any> {
     account: String(account).toUpperCase(),
     orderType: String(orderType ?? 'market').toLowerCase(),
     limitPrice: limitPrice != null ? Number(limitPrice) : null,
-    date: String(date),
+    date: date && date !== 'undefined' ? String(date) : new Date().toLocaleDateString('en-CA'),
     notes: String(notes ?? ''),
     status: String(status ?? 'logged'),
     source: String(source ?? 'manual'),

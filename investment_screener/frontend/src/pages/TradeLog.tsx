@@ -324,11 +324,11 @@ export default function TradeLog() {
                                                             <Zap size={10} /> Execute
                                                         </button>
                                                     )}
-                                                    {rs !== 'cancelled' && rs !== 'submitted' && rs !== 'filled' && (
+                                                    {rs !== 'cancelled' && rs !== 'filled' && (
                                                         <button
                                                             onClick={() => cancelEntry(e.id)}
-                                                            title="Cancel entry"
-                                                            className="p-0.5 rounded text-slate-600 hover:text-red-400 transition-colors"
+                                                            title={rs === 'submitted' || rs === 'inactive' ? 'Cancel order (also cancel in TradingView)' : 'Cancel planned trade'}
+                                                            className={`p-0.5 rounded transition-colors ${rs === 'submitted' || rs === 'inactive' ? 'text-amber-700 hover:text-red-400' : 'text-slate-600 hover:text-red-400'}`}
                                                         >
                                                             <X size={12} />
                                                         </button>
