@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { RefreshCcw, Zap, X, Filter, Pencil } from 'lucide-react';
+import { RefreshCcw, Zap, X, Filter, Pencil, RefreshCw } from 'lucide-react';
 import {
-    fetchTradeLog, updateTradeLogEntry, fetchMarketQuotes, cancelTrade, modifyTrade,
+    fetchTradeLog, updateTradeLogEntry, fetchMarketQuotes, cancelTrade, modifyTrade, syncTradeLogFromTV,
     type TradeLogEntry, type TradeLogStatus, type MarketQuote,
 } from '../services/api';
 import { TradePrepModal } from '../components/TradePrepModal';
@@ -261,6 +261,8 @@ export default function TradeLog() {
     const [priceSource, setPriceSource]     = useState<string | null>(null);
     const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
     const [cancelling, setCancelling]       = useState<Set<string>>(new Set());
+    const [syncing, setSyncing]             = useState(false);
+    const [syncMsg, setSyncMsg]             = useState<string | null>(null);
 
     const [tab, setTab]                   = useState<TabId>('all');
     const [tickerFilter, setTickerFilter] = useState('');
@@ -293,8 +295,28 @@ export default function TradeLog() {
         finally { setLoading(false); }
     }, [loadQuotes]);
 
-    useEffect(() => { load(); }, [load]);
+    useEffect(() => {
+        load();
+        // Auto-reconcile against TV on page load — silently, TV may not always be running
+        syncTradeLogFromTV()
+            .then(r => { if (r.success && r.cancelled > 0) { setSyncMsg(r.message); load(); } })
+            .catch(() => {});
+    }, [load]);
     useEffect(() => { setSelectedIds(new Set()); }, [tab]);
+
+    const doSyncFromTV = async () => {
+        setSyncing(true);
+        setSyncMsg(null);
+        try {
+            const r = await syncTradeLogFromTV();
+            setSyncMsg(r.error ? `Error: ${r.error}` : r.message);
+            if (r.success) load();
+        } catch (e: any) {
+            setSyncMsg(`Error: ${e.message}`);
+        } finally {
+            setSyncing(false);
+        }
+    };
 
     // ── Cancel ───────────────────────────────────────────────────────────────
 
@@ -388,12 +410,25 @@ export default function TradeLog() {
                         </button>
                     )}
                     <PriceSourceBadge priceSource={priceSource} lastRefreshedAt={lastRefreshedAt} />
+                    <button onClick={doSyncFromTV} disabled={syncing}
+                        title="Reconcile trade log against live TradingView orders (source of truth)"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-900/40 hover:bg-indigo-800/50 border border-indigo-700/50 text-indigo-400 hover:text-indigo-300 text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        <RefreshCw size={12} className={syncing ? 'animate-spin' : ''} /> Sync from TV
+                    </button>
                     <button onClick={load}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-400 hover:text-white text-xs font-semibold transition-colors">
                         <RefreshCcw size={12} /> Refresh
                     </button>
                 </div>
             </div>
+
+            {/* Sync status message */}
+            {syncMsg && (
+                <div className={`flex items-center justify-between px-4 py-2 text-xs border-b ${syncMsg.startsWith('Error') ? 'bg-red-900/20 border-red-700/30 text-red-400' : 'bg-indigo-900/20 border-indigo-700/30 text-indigo-300'}`}>
+                    <span>{syncMsg}</span>
+                    <button onClick={() => setSyncMsg(null)} className="text-slate-500 hover:text-white ml-4"><X size={11} /></button>
+                </div>
+            )}
 
             {/* Tabs + filters */}
             <div className="flex items-end justify-between border-b border-slate-800">

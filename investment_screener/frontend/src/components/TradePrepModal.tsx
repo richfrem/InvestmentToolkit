@@ -8,7 +8,6 @@ type ModalStep =
     | 'running_preflight'
     | 'preflight_result'
     | 'running_execute'
-    | 'form_filled'
     | 'submitting'
     | 'done';
 
@@ -76,6 +75,7 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
     const [stopPrice, setStopPrice] = useState('');
     const [timeInForce, setTimeInForce] = useState('day');
     const [account, setAccount] = useState('tfsa');
+    const [ackStale, setAckStale] = useState(false);
 
     const [provenance, setProvenance] = useState<Provenance | null>(null);
     const [holdings, setHoldings] = useState<HoldingsData | null>(null);
@@ -143,7 +143,7 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
         load().catch(() => {});
     }, [ticker]);
 
-    const runPreflight = async (ackStale = false) => {
+    const runPreflight = async () => {
         setStep('running_preflight');
         setPreflightError(null);
         try {
@@ -174,37 +174,21 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
         setStep('running_execute');
         setExecuteError(null);
         try {
-            const result = await runTradeExecute(sessionId);
-            setScreenshot(result.screenshot ?? null);
-            setStep('form_filled');
-        } catch (e: any) {
-            setExecuteError(e.message ?? 'Execute failed');
-            setStep('preflight_result');
-        }
-    };
-
-    const runSubmit = async () => {
-        if (!sessionId) return;
-        setStep('submitting');
-        setSubmitError(null);
-        try {
+            const executeResult = await runTradeExecute(sessionId);
+            setScreenshot(executeResult.screenshot ?? null);
+            // Auto-submit — no intermediate "review in TV" screen
+            setStep('submitting');
+            setSubmitError(null);
             const result = await runTradeSubmit(sessionId);
             setSubmitResult(result.result ?? result);
             setStep('done');
-            // Auto-log to trade journal
-            // Limit/stop orders are "inactive" until filled — don't populate fill price
             const isLimitOrder = orderType === 'limit' || orderType === 'stop' || orderType === 'stop_limit';
             const tvOrderId: string | null =
                 (result as any).tvOrderId ??
                 result.result?.brokerVerification?.best?.orderId ??
                 null;
             logTrade({
-                ticker,
-                action,
-                shares,
-                price: 0,           // fill price unknown until order executes
-                account,
-                orderType,
+                ticker, action, shares, price: 0, account, orderType,
                 limitPrice: limitPrice ? parseFloat(limitPrice) : undefined,
                 date: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })(),
                 notes: 'Auto-logged from TradingView CDP execution',
@@ -213,8 +197,13 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                 tvOrderId,
             }).catch(() => {});
         } catch (e: any) {
-            setSubmitError(e.message ?? 'Submit failed');
-            setStep('form_filled');
+            const isExecutePhase = step === 'running_execute';
+            if (isExecutePhase) {
+                setExecuteError(e.message ?? 'Execute failed');
+            } else {
+                setSubmitError(e.message ?? 'Submit failed');
+            }
+            setStep('preflight_result');
         }
     };
 
@@ -223,7 +212,7 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
         : 'text-red-400 border-red-500/30 bg-red-500/10';
     const headerLabel = (step === 'preflight_result' && preflightState === 'PREFLIGHT_PASSED')
         ? 'Order Confirmation'
-        : (step === 'form_filled' || step === 'submitting')
+        : step === 'submitting'
         ? `Submit ${action.toUpperCase()}`
         : action === 'buy' ? 'Prepare Buy' : 'Prepare Sell';
 
@@ -324,9 +313,16 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                                 </div>
                             )}
                             {isDataStale && (
-                                <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
-                                    <AlertTriangle size={13} className="text-amber-400 mt-0.5 shrink-0" />
-                                    <p className="text-amber-300 text-xs">Portfolio data is stale ({provenance?.portfolioSyncAgeMin} min old). Run <strong>/tv-portfolio-sync</strong> first.</p>
+                                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 space-y-2">
+                                    <div className="flex items-start gap-2">
+                                        <AlertTriangle size={13} className="text-amber-400 mt-0.5 shrink-0" />
+                                        <p className="text-amber-300 text-xs">Portfolio data is stale ({provenance?.portfolioSyncAgeMin} min old). Run <strong>/tv-portfolio-sync</strong> to refresh.</p>
+                                    </div>
+                                    <label className="flex items-center gap-2 cursor-pointer pl-5">
+                                        <input type="checkbox" checked={ackStale} onChange={e => setAckStale(e.target.checked)}
+                                            className="w-3.5 h-3.5 rounded accent-amber-500" />
+                                        <span className="text-amber-400/80 text-xs">Proceed anyway with stale data</span>
+                                    </label>
                                 </div>
                             )}
 
@@ -588,31 +584,6 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                         </div>
                     )}
 
-                    {/* Step: Form filled */}
-                    {step === 'form_filled' && (
-                        <div className="p-5 space-y-4">
-                            <div className="flex items-center gap-2">
-                                <CheckCircle size={18} className="text-emerald-400" />
-                                <span className="text-emerald-400 font-bold">Order Dialog Filled</span>
-                            </div>
-                            <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-2">
-                                <p className="text-slate-300 text-sm">The TradingView order form has been filled. Review it in the TradingView window before confirming.</p>
-                                {screenshot && (
-                                    <p className="text-slate-500 text-xs font-mono break-all">Screenshot: {screenshot}</p>
-                                )}
-                            </div>
-                            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
-                                <p className="text-amber-300 text-xs font-semibold">Submitting will immediately place a {action.toUpperCase()} order for {shares} {ticker} via TradingView. This action cannot be undone.</p>
-                            </div>
-                            {submitError && (
-                                <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/30 rounded-xl p-3">
-                                    <AlertTriangle size={14} className="text-red-400 mt-0.5 shrink-0" />
-                                    <p className="text-red-300 text-xs">{submitError}</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
                     {/* Step: Submitting */}
                     {step === 'submitting' && (
                         <div className="p-8 flex flex-col items-center gap-4 text-center">
@@ -655,8 +626,8 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                             </button>
                                 <button
                                 onClick={() => runPreflight()}
-                                disabled={!isBrokerReady || !provenance}
-                                title={!isBrokerReady ? 'TradingView must be connected' : undefined}
+                                disabled={!isBrokerReady || !provenance || (isDataStale && !ackStale)}
+                                title={!isBrokerReady ? 'TradingView must be connected' : (isDataStale && !ackStale) ? 'Check the box to proceed with stale data' : undefined}
                                 className={`flex-1 px-4 py-2 rounded-lg text-sm font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed text-white flex flex-col items-center leading-tight py-2.5 ${
                                     action === 'sell'
                                         ? 'bg-red-700 hover:bg-red-600 shadow-lg shadow-red-900/20'
@@ -695,32 +666,8 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                             <button onClick={() => setStep('configure')} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition-colors">
                                 ← Back
                             </button>
-                            {preflightState === 'DATA_STALE_BLOCKED' && (
-                                <button
-                                    onClick={() => runPreflight(true)}
-                                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-bold transition-colors shadow-lg shadow-indigo-900/20"
-                                >
-                                    Acknowledge Staleness & Proceed
-                                </button>
-                            )}
                             <button onClick={onClose} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition-colors">
                                 Close
-                            </button>
-                        </>
-                    ) : step === 'form_filled' ? (
-                        <>
-                            <button onClick={onClose} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition-colors">
-                                Cancel
-                            </button>
-                            <button
-                                onClick={runSubmit}
-                                className={`flex-1 px-4 py-2 text-white rounded-lg text-sm font-bold transition-colors ${
-                                    action === 'sell'
-                                        ? 'bg-red-700 hover:bg-red-600'
-                                        : 'bg-emerald-700 hover:bg-emerald-600'
-                                }`}
-                            >
-                                Submit {action.toUpperCase()} to TradingView →
                             </button>
                         </>
                     ) : (
