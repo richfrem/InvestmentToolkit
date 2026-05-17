@@ -47,6 +47,44 @@ All math for P&L and position sizing must use the **exact values from the data f
 
 ---
 
+## ⚠️ Audit Log Awareness — Check Before Recommending
+
+Before generating any trade recommendations, check today's order audit log to avoid double-recommending trades already placed this session:
+
+```bash
+curl -s http://localhost:3001/api/trading/audit/today | python3 -m json.tool
+```
+
+For each ticker that already has a `ORDER_SUBMITTED` event today:
+- Suppress the rebalance recommendation for that ticker
+- Add a note: `"Order placed today — verify fill before adding more"`
+
+If the audit endpoint is unreachable, proceed but prepend a warning:
+> ⚠️ Could not check today's audit log — verify no duplicate orders before executing.
+
+---
+
+## 🇨🇦 Account Selection Heuristics (TFSA vs RRSP)
+
+When surfacing trade recommendations, include an account suggestion based on Canadian tax optimization rules:
+
+| Holding Type | Preferred Account | Reason |
+|-------------|-------------------|--------|
+| **High-growth equities** (tech, AI, speculative) | **TFSA** | Tax-free compounding on capital gains |
+| **USD dividend payers** (REITs, ETFs with US dividends) | **RRSP** | IRS/CRA treaty exempts RRSP from 15% US withholding tax |
+| **Canadian dividend stocks** | TFSA or non-reg | Dividend tax credit applies outside RRSP; TFSA shelters growth |
+| **Bond ETFs / income funds** | **RRSP** | Shields interest income (fully taxable) from annual tax |
+| **Speculative / high-volatility** | **TFSA** | Losses in TFSA don't reduce contribution room (unlike RRSP) |
+
+Format the suggestion as a one-line note per trade:
+```
+→ Suggested: TFSA (growth equity — tax-free compounding on gains)
+```
+
+If the current portfolio.json account data shows the holding is already in the "wrong" account, surface it as a soft advisory — never block the trade.
+
+---
+
 ## ⚠️ No-Trade Conditions
 
 Block rebalance recommendations (surface as `PAUSED` state) when:
@@ -208,6 +246,43 @@ Ready to execute? Confirm each trade before I generate order details.
 
 > ⚠️ **Recap Before Execute**: Always confirm individual trades with the user before finalizing.
 > Never output "execute all" language. Each trade confirmation is explicit.
+
+---
+
+## Step 5b: Post Suggestions to Trade Log
+
+After presenting the trade plan (Step 5), immediately post all proposed trades to the trade log as `suggested` entries so they appear in the Trade Log page (`/trade-log`) for later execution:
+
+```bash
+curl -s -X POST http://localhost:3001/api/trading/log/suggest \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "suggestions": [
+      {
+        "ticker": "CRWD",
+        "action": "sell",
+        "shares": 15,
+        "price": 0,
+        "account": "TFSA",
+        "orderType": "market",
+        "date": "'"$(date +%Y-%m-%d)"'",
+        "notes": "Drift: +3.8% overweight · SELL-rated (−66% FV gap)",
+        "source": "rebalance"
+      }
+    ]
+  }'
+```
+
+Rules:
+- Post ALL proposed trades (including skipped restores? No — only actionable buys/sells)
+- Set `price: 0` for market orders (fill price unknown at planning time)
+- Set `limitPrice` for limit-order suggestions
+- Set `source: "rebalance"` always
+- Use `account` from the TFSA/RRSP heuristic table above
+- If the endpoint is unreachable (backend offline), proceed silently — do not block the recommendation
+
+After posting, tell the user:
+> "These trades have been added to your Trade Log as suggested entries. Open **Trade Log** in the sidebar to review and execute them."
 
 ---
 

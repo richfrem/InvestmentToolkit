@@ -82,4 +82,17 @@ router.post('/portfolio-heatmap', async (req, res) => {
     }
 });
 
+// Batch quote: bid/ask/price/change for a comma-separated list of tickers
+router.get('/market/quotes', async (req, res) => {
+    const raw = String(req.query.tickers ?? '').trim();
+    if (!raw) { res.json({}); return; }
+    const tickers = raw.split(',').map(t => t.trim().toUpperCase()).filter(Boolean).slice(0, 30);
+    try {
+        const data = await spawnPythonScript('fetch_quotes.py', [tickers.join(',')]);
+        res.json(data);
+    } catch (e: any) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 export default router;

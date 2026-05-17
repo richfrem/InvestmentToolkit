@@ -126,57 +126,12 @@ try {{
 
 def execute_order(ticker: str, action: str, shares: int, order_type: str,
                   limit_price: Optional[float], account_type: str) -> dict:
-    """Open TV order dialog, fill it, screenshot it, then submit."""
-    # Step 1: Navigate chart to the ticker so the overlay shows the right Buy/Sell
-    nav_js = f"""
-import {{ evaluate, connect }} from './connection.js';
-await connect();
-const result = await evaluate(`(function() {{
-    try {{
-        var api = window.TradingViewApi;
-        if (!api || !api._activeChartWidgetWV) return JSON.stringify({{ switched: false, reason: 'API not available' }});
-        var widget = api._activeChartWidgetWV.value();
-        // Try _chartWidget.model().mainSeries().setChartSymbol()
-        if (widget && widget._chartWidget) {{
-            var model = widget._chartWidget.model && widget._chartWidget.model();
-            if (model && model.mainSeries) {{
-                var series = model.mainSeries();
-                if (series && series.setChartSymbol) {{
-                    series.setChartSymbol({json.dumps(ticker)});
-                    return JSON.stringify({{ switched: true, method: 'setChartSymbol' }});
-                }}
-            }}
-        }}
-        // Fallback: use _activateChart or symbol input field
-        var symbolInput = document.querySelector('[class*="symbolInput"], [data-name*="symbol"]');
-        if (symbolInput) {{
-            symbolInput.value = {json.dumps(ticker)};
-            symbolInput.dispatchEvent(new Event('input', {{bubbles: true}}));
-            return JSON.stringify({{ switched: true, method: 'input-field' }});
-        }}
-        return JSON.stringify({{ switched: false, reason: 'No usable setSymbol method found' }});
-    }} catch(e) {{
-        return JSON.stringify({{ switched: false, error: e.message }});
-    }}
-}})()`);
-process.stdout.write(result + '\\n');
-process.exit(0);
-"""
-    try:
-        nav = _run_node(nav_js, timeout=10)
-        if isinstance(nav, dict) and nav.get("error"):
-            log.warning(f"Chart navigation: {nav['error']}")
-    except Exception as e:
-        log.warning(f"Chart nav failed (non-fatal): {e}")
-
-    # Brief pause after symbol switch
-    import time; time.sleep(1.5)
-
-    # Step 2: Open dialog, fill form, screenshot
+    """Switch TV chart to ticker, open order dialog, fill it, screenshot."""
     exec_js = f"""
 import {{ executeOrder }} from './core/trading.js';
 try {{
     const result = await executeOrder({{
+        ticker: {json.dumps(ticker)},
         action: {json.dumps(action)},
         shares: {shares},
         orderType: {json.dumps(order_type)},
@@ -190,23 +145,30 @@ try {{
     process.exit(1);
 }}
 """
-    return _run_node(exec_js, timeout=30)
+    return _run_node(exec_js, timeout=45)
 
 
-def submit_order() -> dict:
-    """Click the submit button — call only after HITL approval."""
-    js = """
-import { confirmAndSubmit } from './core/trading.js';
-try {
-    const result = await confirmAndSubmit();
+def submit_order(ticker: Optional[str] = None, action: Optional[str] = None,
+                 limit_price: Optional[float] = None) -> dict:
+    """Click the submit button — call only after HITL approval.
+    Passes ticker/action/limitPrice to confirmAndSubmit so it can read the
+    broker panel afterward and verify the order was registered."""
+    js = f"""
+import {{ confirmAndSubmit }} from './core/trading.js';
+try {{
+    const result = await confirmAndSubmit({{
+        ticker: {json.dumps(ticker)},
+        action: {json.dumps(action)},
+        limitPrice: {json.dumps(limit_price)},
+    }});
     process.stdout.write(JSON.stringify(result) + '\\n');
     process.exit(0);
-} catch(e) {
-    process.stdout.write(JSON.stringify({ error: e.message }) + '\\n');
+}} catch(e) {{
+    process.stdout.write(JSON.stringify({{ error: e.message }}) + '\\n');
     process.exit(1);
-}
+}}
 """
-    return _run_node(js, timeout=15)
+    return _run_node(js, timeout=20)
 
 
 # ── portfolio sync ────────────────────────────────────────────────────────────
@@ -408,7 +370,11 @@ def main():
             except RuntimeError as e:
                 print(f"⚠️  Re-open failed: {e} — attempting submit anyway")
         try:
-            result = submit_order()
+            result = submit_order(
+                ticker=args.ticker,
+                action=args.action,
+                limit_price=args.limit_price,
+            )
         except RuntimeError as e:
             print(json.dumps({"error": str(e)}, indent=2))
             sys.exit(1)
