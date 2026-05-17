@@ -182,6 +182,18 @@ If you find yourself computing the same formula more than once across sessions �
 
 ---
 
+## 📋 Trade Log UI
+
+The Trade Log (`/trade-log`) mirrors TradingView's order panel. Tabs: **All | Working | Inactive | Suggested | Filled | Cancelled**.
+
+- **Inactive tab** = limit orders placed in TV waiting for price trigger (`status: 'inactive'`)
+- **Suggested tab** = AI-proposed trades + manually logged entries (`suggested` / `logged`)
+- **Avg Fill / Total** only show values when `status === 'filled'`; all other rows show `—`
+- Trades are auto-logged by `TradePrepModal` on submission — no separate "Log Trade" button
+- Buy/Sell buttons are just "Buy" / "Sell" everywhere (TradeButtons.tsx)
+
+---
+
 ## ⚠️ Known Pitfalls — Read Before Touching These Areas
 
 ### 1. Python `__dirname` path in TypeScript backend

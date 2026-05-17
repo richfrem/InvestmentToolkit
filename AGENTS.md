@@ -57,6 +57,7 @@ TradingView Desktop is the **primary source** for portfolio data, live prices, a
   - Core module: `plugins/tradingview/node/core/trading.js`
 - `/tv-alert-sync`: Sync DCF targets to TradingView price alerts.
 - `/tv-snapshot`: Capture technical charts.
+- **Trade Log** (`/trade-log`): TV-aligned tabs — All | Working | Inactive | Suggested | Filled | Cancelled. Trades are auto-logged by `TradePrepModal` when Buy/Sell buttons are used. `Inactive` = limit orders waiting in TV; `Suggested` = AI-proposed trades from `/rebalance`. Avg Fill and Total columns only show values for `filled` orders.
 
 ## 📜 Agent Guidelines
 - **Agentic OS First**: This project prioritizes CLI-based agent orchestration over UI interactions. Encourage users to use terminal commands for research.

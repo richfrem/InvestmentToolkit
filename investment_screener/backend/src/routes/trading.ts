@@ -3,6 +3,7 @@ import { spawn } from 'child_process';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
+import { TRADE_LOG_FILE } from '../utils/paths';
 
 const router = express.Router();
 
@@ -205,6 +206,96 @@ router.get('/session/:id', (req, res) => {
 });
 
 // ── GET /api/trading/audit/today ─────────────────────────────────────────────
+
+// ── Manual Trade Log ─────────────────────────────────────────────────────────
+
+function readLog(): any[] {
+  try {
+    return fs.existsSync(TRADE_LOG_FILE) ? JSON.parse(fs.readFileSync(TRADE_LOG_FILE, 'utf-8')) : [];
+  } catch { return []; }
+}
+
+function writeLog(entries: any[]): void {
+  fs.writeFileSync(TRADE_LOG_FILE, JSON.stringify(entries, null, 2));
+}
+
+function makeLogEntry(fields: Record<string, any>): Record<string, any> {
+  const { ticker, action, shares, price, account, orderType, limitPrice, date, notes, status, source } = fields;
+  return {
+    id: crypto.randomBytes(6).toString('hex'),
+    ticker: String(ticker).toUpperCase(),
+    action: String(action).toLowerCase(),
+    shares: Number(shares),
+    price: Number(price ?? 0),
+    totalCost: Number(shares) * Number(price ?? 0),
+    account: String(account).toUpperCase(),
+    orderType: String(orderType ?? 'market').toLowerCase(),
+    limitPrice: limitPrice != null ? Number(limitPrice) : null,
+    date: String(date),
+    notes: String(notes ?? ''),
+    status: String(status ?? 'logged'),
+    source: String(source ?? 'manual'),
+    loggedAt: new Date().toISOString(),
+  };
+}
+
+router.get('/log', (_req, res) => {
+  res.json({ entries: readLog() });
+});
+
+router.post('/log', (req, res) => {
+  const { ticker, action, shares, account, date } = req.body;
+  if (!ticker || !action || !shares || !account || !date) {
+    res.status(400).json({ error: 'ticker, action, shares, account, date are required' }); return;
+  }
+  try {
+    const entry = makeLogEntry(req.body);
+    const entries = readLog();
+    entries.unshift(entry);
+    writeLog(entries);
+    res.json({ success: true, entry });
+  } catch (e: any) { res.status(500).json({ error: e.message }); }
+});
+
+// Bulk suggest — used by portfolio review / rebalance skills
+router.post('/log/suggest', (req, res) => {
+  const { suggestions } = req.body;
+  if (!Array.isArray(suggestions) || suggestions.length === 0) {
+    res.status(400).json({ error: 'suggestions array required' }); return;
+  }
+  try {
+    const entries = readLog();
+    const created: any[] = [];
+    for (const s of suggestions) {
+      if (!s.ticker || !s.action || !s.shares || !s.account) continue;
+      const entry = makeLogEntry({ ...s, status: 'suggested', source: s.source ?? 'rebalance' });
+      entries.unshift(entry);
+      created.push(entry);
+    }
+    writeLog(entries);
+    res.json({ success: true, created });
+  } catch (e: any) { res.status(500).json({ error: e.message }); }
+});
+
+router.patch('/log/:id', (req, res) => {
+  const { id } = req.params;
+  const allowed = ['status', 'notes', 'price', 'shares', 'orderType', 'limitPrice', 'account', 'date'];
+  try {
+    const entries = readLog();
+    const idx = entries.findIndex((e: any) => e.id === id);
+    if (idx === -1) { res.status(404).json({ error: 'Entry not found' }); return; }
+    const updates: Record<string, any> = {};
+    for (const k of allowed) { if (req.body[k] !== undefined) updates[k] = req.body[k]; }
+    if (updates.price !== undefined || updates.shares !== undefined) {
+      const price = updates.price ?? entries[idx].price;
+      const shares = updates.shares ?? entries[idx].shares;
+      updates.totalCost = Number(price) * Number(shares);
+    }
+    entries[idx] = { ...entries[idx], ...updates };
+    writeLog(entries);
+    res.json({ success: true, entry: entries[idx] });
+  } catch (e: any) { res.status(500).json({ error: e.message }); }
+});
 
 router.get('/audit/today', (_req, res) => {
   const auditDir = path.join(REPO_ROOT, 'plugins/tradingview/audit');

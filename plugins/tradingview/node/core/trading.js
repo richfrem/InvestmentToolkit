@@ -19,6 +19,70 @@ import { evaluate, evaluateAsync, getClient } from '../connection.js';
 import { captureScreenshot } from './capture.js';
 import { appendAuditEvent } from './audit.js';
 
+// ── symbol switching ──────────────────────────────────────────────────────────
+
+/**
+ * switchChartSymbol(ticker) — navigates the active TradingView chart to the
+ * specified ticker before opening the order dialog. The order dialog always
+ * opens for whatever symbol is currently displayed on the chart, so this must
+ * run before openOrderDialog(). Uses CDP Input events to type into TV's symbol
+ * search and confirm with Enter.
+ */
+export async function switchChartSymbol(ticker) {
+  const client = await getClient();
+  const tickerUpper = ticker.toUpperCase();
+
+  // Step 1: Try clicking the ticker title in the chart legend to open symbol search
+  await evaluate(`(function() {
+    var selectors = [
+      '[data-name="legend-source-title"]',
+      '[class*="pane-legend"] [class*="title-"]',
+      '[class*="chart-markup-table"] [class*="title-"]',
+    ];
+    for (var i = 0; i < selectors.length; i++) {
+      var els = document.querySelectorAll(selectors[i]);
+      for (var j = 0; j < els.length; j++) {
+        var el = els[j];
+        if (el.offsetParent !== null && /^[A-Z0-9]{1,10}/.test(el.textContent.trim())) {
+          el.click();
+          return;
+        }
+      }
+    }
+    // No ticker element found — click chart body to focus it, then typing will open search
+    var chart = document.querySelector('[class*="chart-markup-table"]') || document.body;
+    chart.click();
+  })()`);
+
+  await sleep(400);
+
+  // Step 2: Type the ticker via CDP Input events (reliable cross-platform key injection)
+  for (const char of tickerUpper) {
+    let code;
+    if (/[A-Z]/.test(char)) code = 'Key' + char;
+    else if (/[0-9]/.test(char)) code = 'Digit' + char;
+    else if (char === '-') code = 'Minus';
+    else if (char === '.') code = 'Period';
+    else code = char;
+
+    const keyCode = char.charCodeAt(0);
+    await client.Input.dispatchKeyEvent({ type: 'keyDown', key: char, code, text: char, windowsVirtualKeyCode: keyCode, nativeVirtualKeyCode: keyCode });
+    await sleep(40);
+    await client.Input.dispatchKeyEvent({ type: 'keyUp', key: char, code, windowsVirtualKeyCode: keyCode, nativeVirtualKeyCode: keyCode });
+    await sleep(40);
+  }
+
+  await sleep(800); // wait for search suggestions to load
+
+  // Step 3: Confirm selection with Enter
+  await client.Input.dispatchKeyEvent({ type: 'keyDown', key: 'Enter', code: 'Enter', keyCode: 13, windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 });
+  await sleep(100);
+  await client.Input.dispatchKeyEvent({ type: 'keyUp', key: 'Enter', code: 'Enter', keyCode: 13, windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 });
+
+  await sleep(1500); // wait for chart to fully render the new symbol
+  return { switched: true, ticker: tickerUpper };
+}
+
 const REACT_INPUT_SETTER = `Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set`;
 
 // ── broker status ────────────────────────────────────────────────────────────
@@ -227,34 +291,35 @@ export async function setShares(shares) {
     var val = ${JSON.stringify(String(shares))};
     var setter = ${REACT_INPUT_SETTER};
 
-    // Find the shares input — look for visible number inputs in the order dialog
-    var inputs = [...document.querySelectorAll('input[type="number"], input[type="text"]')].filter(function(i) {
-      return i.offsetParent !== null && (
-        /shares|qty|quantity/i.test(i.placeholder + ' ' + (i.getAttribute('aria-label') || '') + ' ' + i.name)
-        || (i.type === 'number' && !i.getAttribute('aria-label'))
-      );
+    // Anchor search to the order dialog panel using the submit button
+    var submitBtn = [...document.querySelectorAll('button')].find(function(b) {
+      return /^(Buy|Sell)\\s+/i.test(b.textContent.trim()) && b.offsetParent !== null;
+    });
+    var root = submitBtn
+      ? (submitBtn.closest('[class*="dialog"], [class*="entry"], [class*="panel"], [class*="widget"], [class*="order"]') || document)
+      : document;
+
+    var inputs = [...root.querySelectorAll('input')].filter(function(i) {
+      return i.offsetParent !== null;
     });
 
-    // Fallback: find the first visible numeric input that's in the order panel area
-    if (inputs.length === 0) {
-      var submitBtn = [...document.querySelectorAll('button')].find(function(b) {
-        return /^(Buy|Sell)\\s+\\d+/i.test(b.textContent.trim());
-      });
-      if (submitBtn) {
-        var panel = submitBtn.closest('[class*="dialog"], [class*="entry"], [class*="panel"], [class*="widget"]');
-        if (panel) inputs = [...panel.querySelectorAll('input')].filter(function(i) { return i.offsetParent !== null; });
-      }
-    }
+    // Prefer an input explicitly labelled as qty/shares
+    var sharesInput = inputs.find(function(i) {
+      var label = (i.placeholder || '') + ' ' + (i.getAttribute('aria-label') || '') + ' ' + (i.name || '');
+      return /shares|qty|quantity|amount/i.test(label);
+    });
 
-    if (inputs.length === 0) return JSON.stringify({ error: 'Shares input not found' });
+    // In TV's order form the qty field is always LAST (price inputs come first)
+    if (!sharesInput && inputs.length > 0) sharesInput = inputs[inputs.length - 1];
 
-    var input = inputs[0];
-    input.focus();
-    input.select();
-    setter.call(input, val);
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    input.dispatchEvent(new Event('change', { bubbles: true }));
-    return JSON.stringify({ set: val, inputClass: input.className.substring(0,60) });
+    if (!sharesInput) return JSON.stringify({ error: 'Shares input not found' });
+
+    sharesInput.focus();
+    sharesInput.select();
+    setter.call(sharesInput, val);
+    sharesInput.dispatchEvent(new Event('input', { bubbles: true }));
+    sharesInput.dispatchEvent(new Event('change', { bubbles: true }));
+    return JSON.stringify({ set: val, placeholder: sharesInput.placeholder, ariaLabel: sharesInput.getAttribute('aria-label') });
   })()`).then(JSON.parse);
 
   if (result.error) throw new Error(result.error);
@@ -269,19 +334,26 @@ export async function setLimitPrice(price) {
     var val = ${JSON.stringify(String(price))};
     var setter = ${REACT_INPUT_SETTER};
 
-    // The limit price input appears after selecting "Limit" order type
-    // It's typically the second numeric input (first is shares, second is limit price)
-    var inputs = [...document.querySelectorAll('input')].filter(function(i) {
-      return i.offsetParent !== null && (
-        /price|limit/i.test(i.placeholder + ' ' + (i.getAttribute('aria-label') || '') + ' ' + i.name)
-        || i.type === 'number'
-      );
+    // Anchor search to the order dialog panel using the submit button
+    var submitBtn = [...document.querySelectorAll('button')].find(function(b) {
+      return /^(Buy|Sell)\\s+/i.test(b.textContent.trim()) && b.offsetParent !== null;
+    });
+    var root = submitBtn
+      ? (submitBtn.closest('[class*="dialog"], [class*="entry"], [class*="panel"], [class*="widget"], [class*="order"]') || document)
+      : document;
+
+    var inputs = [...root.querySelectorAll('input')].filter(function(i) {
+      return i.offsetParent !== null;
     });
 
-    // For the limit price, skip the shares input (first one) and use the next
+    // Prefer an input explicitly labelled as price/limit
     var priceInput = inputs.find(function(i) {
-      return /price|limit/i.test(i.placeholder + ' ' + (i.getAttribute('aria-label') || ''));
-    }) || inputs[1]; // fallback to second input
+      var label = (i.placeholder || '') + ' ' + (i.getAttribute('aria-label') || '') + ' ' + (i.name || '');
+      return /limit\\s*price|price|limit/i.test(label);
+    });
+
+    // In TV's Limit order form the price field is always FIRST (qty comes after)
+    if (!priceInput && inputs.length > 0) priceInput = inputs[0];
 
     if (!priceInput) return JSON.stringify({ error: 'Limit price input not found' });
 
@@ -290,7 +362,7 @@ export async function setLimitPrice(price) {
     setter.call(priceInput, val);
     priceInput.dispatchEvent(new Event('input', { bubbles: true }));
     priceInput.dispatchEvent(new Event('change', { bubbles: true }));
-    return JSON.stringify({ set: val });
+    return JSON.stringify({ set: val, placeholder: priceInput.placeholder, ariaLabel: priceInput.getAttribute('aria-label') });
   })()`).then(JSON.parse);
 
   if (result.error) throw new Error(result.error);
@@ -378,10 +450,10 @@ export async function verifyOrderForm({ intendedShares, intendedLimitPrice = nul
     throw new Error('Order dialog closed unexpectedly during form fill.');
   }
 
-  // Find the shares value — look for an input whose value matches or whose label suggests shares
+  // Shares is always the LAST input in TV's order form (price inputs come first)
   const sharesInput = state.inputs.find(i =>
-    /shares|qty|quantity/i.test((i.placeholder || '') + ' ' + (i.ariaLabel || ''))
-  ) || state.inputs[0];
+    /shares|qty|quantity|amount/i.test((i.placeholder || '') + ' ' + (i.ariaLabel || ''))
+  ) || state.inputs[state.inputs.length - 1];
 
   if (!sharesInput) {
     appendAuditEvent('FORM_MISMATCH_ABORTED', { reason: 'Could not read shares field from order dialog after fill.' });
@@ -396,9 +468,10 @@ export async function verifyOrderForm({ intendedShares, intendedLimitPrice = nul
   }
 
   if (intendedLimitPrice != null && state.inputs.length > 1) {
+    // Price is always the FIRST input in TV's Limit order form
     const priceInput = state.inputs.find(i =>
-      /price|limit/i.test((i.placeholder || '') + ' ' + (i.ariaLabel || ''))
-    ) || state.inputs[1];
+      /limit\s*price|price|limit/i.test((i.placeholder || '') + ' ' + (i.ariaLabel || ''))
+    ) || state.inputs[0];
     if (priceInput) {
       const readPrice = Number(priceInput.value);
       if (!isNaN(readPrice) && Math.abs(readPrice - intendedLimitPrice) > 0.01) {
@@ -470,10 +543,17 @@ export async function preflight({ ticker, action, shares, orderType, limitPrice,
 }
 
 /**
- * executeOrder() — opens dialog, fills form, screenshots, submits.
+ * executeOrder() — switches chart to ticker, opens dialog, fills form, screenshots.
  * Returns { screenshot, submitText, status }.
  */
-export async function executeOrder({ action, shares, orderType, limitPrice, accountType }) {
+export async function executeOrder({ ticker, action, shares, orderType, limitPrice, accountType }) {
+  // 0. Switch chart to the target ticker — the order dialog opens for the active chart symbol,
+  //    so this must happen before openOrderDialog().
+  if (ticker) {
+    appendAuditEvent('CHART_SWITCH', { ticker });
+    await switchChartSymbol(ticker);
+  }
+
   // 1. Switch account if needed
   const status = await getBrokerStatus();
   if (accountType && status.accountType && status.accountType.toUpperCase() !== accountType.toUpperCase()) {
@@ -504,13 +584,13 @@ export async function executeOrder({ action, shares, orderType, limitPrice, acco
     : orderTypeLabel;
   await selectOrderType(tabLabel);
 
-  // 5. Set shares
-  await setShares(shares);
-
-  // 6. Set limit price if applicable
+  // 5. Set limit price first — it's the first input in TV's form (price above qty)
   if ((orderType.toLowerCase() === 'limit' || orderType.toLowerCase() === 'stop_limit') && limitPrice != null) {
     await setLimitPrice(limitPrice);
   }
+
+  // 6. Set shares — always the last input in TV's form
+  await setShares(shares);
 
   // 7. Verify form values match intent before screenshotting (throws on mismatch)
   await verifyOrderForm({ intendedShares: shares, intendedLimitPrice: limitPrice ?? null });
@@ -537,12 +617,93 @@ export async function executeOrder({ action, shares, orderType, limitPrice, acco
 }
 
 /**
- * confirmAndSubmit() — clicks the submit button after HITL approval.
+ * verifyOrderInBrokerPanel() — reads the Questrade Orders panel in TradingView
+ * after submission to confirm the order appears. Navigates to the Orders tab,
+ * clicks the Inactive/Working sub-tab, and searches for the most recent matching row.
  */
-export async function confirmAndSubmit() {
+export async function verifyOrderInBrokerPanel({ ticker, action, limitPrice } = {}) {
+  // Navigate to the Orders tab in the broker panel
+  await evaluate(`(function() {
+    var tabs = [...document.querySelectorAll('[role="tab"], button')].filter(function(b) {
+      return b.offsetParent !== null && /^Orders(\\s*\\d+)?$/i.test(b.textContent.trim());
+    });
+    if (tabs.length > 0) tabs[0].click();
+  })()`);
+  await sleep(600);
+
+  // Click Inactive sub-tab — new limit orders land here before they fill
+  await evaluate(`(function() {
+    var tabs = [...document.querySelectorAll('[role="tab"], button')].filter(function(b) {
+      return b.offsetParent !== null && /^(Inactive|Working)(\\s*\\d+)?$/i.test(b.textContent.trim());
+    });
+    if (tabs.length > 0) tabs[0].click();
+  })()`);
+  await sleep(500);
+
+  return evaluate(`(function() {
+    var tickerUpper = ${JSON.stringify((ticker || '').toUpperCase())};
+    var actionUpper = ${JSON.stringify((action || 'buy').toUpperCase())};
+    var targetPrice = ${JSON.stringify(limitPrice ?? null)};
+
+    // Find all visible rows that contain the ticker symbol
+    var rows = [...document.querySelectorAll('tr, [class*="row"]')].filter(function(r) {
+      return r.offsetParent !== null && r.textContent.includes(tickerUpper)
+        && !/Symbol.*Side.*Type/i.test(r.textContent); // skip header rows
+    });
+
+    if (rows.length === 0) return JSON.stringify({ found: false, reason: 'No rows for ' + tickerUpper + ' in Inactive tab' });
+
+    var parsed = rows.map(function(row) {
+      var text = row.textContent.replace(/\\s+/g, ' ').trim();
+      var orderIdMatch = text.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+      var prices = (text.match(/[\\d,]+\\.\\d{2}/g) || []).map(Number);
+      var timeMatch = text.match(/\\d{4}-\\d{2}-\\d{2}\\s+\\d{2}:\\d{2}:\\d{2}/);
+      return {
+        text: text.substring(0, 200),
+        orderId: orderIdMatch ? orderIdMatch[0] : null,
+        prices: prices,
+        time: timeMatch ? timeMatch[0] : null,
+        hasSide: text.toUpperCase().includes(actionUpper),
+        priceMatch: targetPrice != null ? prices.some(function(p) { return Math.abs(p - targetPrice) < 0.05; }) : true,
+      };
+    });
+
+    // Prefer a row that matches both side and price; fall back to first with side match
+    var best = parsed.find(function(r) { return r.hasSide && r.priceMatch; })
+      || parsed.find(function(r) { return r.hasSide; })
+      || parsed[0];
+
+    return JSON.stringify({ found: true, best: best, totalRows: parsed.length });
+  })()`).then(JSON.parse);
+}
+
+/**
+ * confirmAndSubmit() — clicks the submit button after HITL approval,
+ * then reads the broker panel to confirm the order was registered.
+ */
+export async function confirmAndSubmit({ ticker, action, limitPrice } = {}) {
   appendAuditEvent('USER_CONFIRMED_SUBMIT', {});
   const result = await submitOrder();
   appendAuditEvent('ORDER_SUBMITTED', { clicked: result.clicked, secondaryConfirm: result.secondaryConfirm ?? null });
+
+  // Give TV a moment to register the order before reading the panel
+  await sleep(1500);
+  try {
+    const verification = await verifyOrderInBrokerPanel({ ticker, action, limitPrice });
+    result.brokerVerification = verification;
+    if (verification.found && verification.best?.orderId) {
+      appendAuditEvent('ORDER_CONFIRMED_IN_BROKER_PANEL', {
+        orderId: verification.best.orderId,
+        time: verification.best.time,
+        priceMatch: verification.best.priceMatch,
+      });
+    } else {
+      appendAuditEvent('ORDER_BROKER_PANEL_NOT_FOUND', { reason: verification.reason ?? 'No matching row' });
+    }
+  } catch (e) {
+    result.brokerVerification = { found: false, reason: e.message };
+  }
+
   return result;
 }
 

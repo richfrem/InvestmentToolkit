@@ -24,6 +24,7 @@ import PortfolioSummaryPage from './pages/PortfolioSummaryPage';
 import { HelpModalProvider } from './components/HelpModal';
 
 import ScreenerPage from './pages/ScreenerPage';
+import TradeLog from './pages/TradeLog';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
             <Route path="portfolio-table" element={<PortfolioTablePage />} />
             <Route path="screener" element={<ScreenerPage />} />
             <Route path="analysis" element={<Dashboard />} />
+            <Route path="trade-log" element={<TradeLog />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>

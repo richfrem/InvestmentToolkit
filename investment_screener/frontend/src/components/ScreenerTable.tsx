@@ -108,7 +108,7 @@ const COLUMNS: ColDef[] = [
 ];
 
 const DEFAULT_WIDTHS: Record<string, number> = {
-    symbol: 80, action: 115, fairValue: 95, currentPrice: 80, gainLoss: 85,
+    symbol: 80, action: 185, fairValue: 95, currentPrice: 80, gainLoss: 85,
     change_1d: 65, change_overall: 80, change_1w: 65, change_1m: 65, change_ytd: 65, change_1y: 65, sector: 115, shares: 60, book_price: 72, total_book: 80, total_market: 80, 
     upside: 85, ruleOf40: 70, growth: 80, model: 130, base: 80,
     bear: 80, bull: 80, qualityMultiplier: 80, subStrategyId: 140, lastAnalyzed: 90,
@@ -117,7 +117,7 @@ const DEFAULT_WIDTHS: Record<string, number> = {
 
 // ─── Persistence ──────────────────────────────────────────────────────────────
 
-const STORAGE_KEY = 'ai-screener-table-prefs-v2';
+const STORAGE_KEY = 'ai-screener-table-prefs-v3';
 
 interface TablePrefs {
     visible: string[];
@@ -717,7 +717,7 @@ export default function ScreenerTable() {
                                     return (
                                         <td
                                             key={col.id}
-                                            className={`px-4 py-4 overflow-hidden text-ellipsis ${col.id === 'rationale' ? 'whitespace-normal align-top' : 'whitespace-nowrap'} ${col.align === 'right' ? 'text-right' : 'text-left'}`}
+                                            className={`px-4 py-4 text-ellipsis ${col.id === 'action' ? 'relative z-10' : 'overflow-hidden'} ${col.id === 'rationale' ? 'whitespace-normal align-top' : 'whitespace-nowrap'} ${col.align === 'right' ? 'text-right' : 'text-left'}`}
                                             style={{
                                                 ...(col.isChange ? { backgroundColor: changeBg(numVal) } : {}),
                                                 ...(col.id === 'currentPct' ? { backgroundColor: pctHeatBg(row.currentPct, 'current') } : {}),

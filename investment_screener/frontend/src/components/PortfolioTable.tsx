@@ -21,6 +21,7 @@ import { fetchAllProjections } from '../services/api';
 import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { PriceSourceBadge } from './PriceSourceBadge';
 import { TradeButtons } from './TradeButtons';
+import { TradeLogModal } from './TradeLogModal';
 import { safeNum, fmtPct, fmtDollar, fmtPrice, changeBgDaily, sortByColumn } from '../utils/formatters';
 
 function computeSuggestedShares(currentPct: number | null, targetPct: number | null, price: number | null, totalValue: number): number {
@@ -163,6 +164,7 @@ export default function PortfolioTable() {
     const [error, setError] = useState<string | null>(null);
     const [priceSource, setPriceSource] = useState<string | null>(null);
     const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
+    const [logModal, setLogModal] = useState<{ ticker: string } | null>(null);
 
     // Load persisted prefs once
     const savedPrefs = useRef<TablePrefs | null>(null);
@@ -469,12 +471,12 @@ export default function PortfolioTable() {
 
             {/* Table */}
             <div className="overflow-auto rounded-b-lg">
-                <table className="text-sm border-collapse" style={{ tableLayout: 'fixed', width: '100%', minWidth: visibleCols.reduce((sum, c) => sum + (columnWidths[c.id] ?? DEFAULT_WIDTHS[c.id] ?? 100), 0) + 155 }}>
+                <table className="text-sm border-collapse" style={{ tableLayout: 'fixed', width: '100%', minWidth: visibleCols.reduce((sum, c) => sum + (columnWidths[c.id] ?? DEFAULT_WIDTHS[c.id] ?? 100), 0) + 195 }}>
                     <colgroup>
                         {visibleCols.map(col => (
                             <col key={col.id} style={{ width: columnWidths[col.id] ?? DEFAULT_WIDTHS[col.id] ?? 100 }} />
                         ))}
-                        <col style={{ width: 155 }} />
+                        <col style={{ width: 195 }} />
                     </colgroup>
                     <thead>
                         <tr className="bg-zinc-800/60 border-b border-zinc-700">
@@ -567,6 +569,13 @@ export default function PortfolioTable() {
                                         <div className="flex items-center gap-1 justify-end">
                                             <TradeButtons ticker={row.symbol} shares={suggestedShares} size="sm" />
                                             <button
+                                                onClick={() => setLogModal({ ticker: row.symbol })}
+                                                title="Log a trade to journal"
+                                                className="px-2 py-0.5 text-[10px] font-bold rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-amber-400 transition-colors"
+                                            >
+                                                Log
+                                            </button>
+                                            <button
                                                 onClick={() => navigate(`/analysis?ticker=${row.symbol}`)}
                                                 title="Analyze in Stock Analysis"
                                                 className="px-2 py-0.5 text-[10px] font-bold rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors"
@@ -606,6 +615,12 @@ export default function PortfolioTable() {
             </div>
         </div>
 
+        {logModal && (
+            <TradeLogModal
+                ticker={logModal.ticker}
+                onClose={() => setLogModal(null)}
+            />
+        )}
         </>
     );
 }
