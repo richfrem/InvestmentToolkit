@@ -84,10 +84,10 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
     const [preflightCard, setPreflightCard] = useState<Record<string, any> | null>(null);
     const [preflightState, setPreflightState] = useState<string | null>(null);
     const [preflightError, setPreflightError] = useState<string | null>(null);
-    const [screenshot, setScreenshot] = useState<string | null>(null);
+    const [, setScreenshot] = useState<string | null>(null);
     const [submitResult, setSubmitResult] = useState<any>(null);
     const [executeError, setExecuteError] = useState<string | null>(null);
-    const [submitError, setSubmitError] = useState<string | null>(null);
+    const [, setSubmitError] = useState<string | null>(null);
 
     // Load provenance + holdings on mount
     useEffect(() => {
