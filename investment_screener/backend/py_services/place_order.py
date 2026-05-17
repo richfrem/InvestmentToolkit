@@ -55,7 +55,10 @@ sys.path.insert(0, BACKEND_SRC)
 logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
 
-PORTFOLIO_PATH = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "data", "portfolio.json"))
+PORTFOLIO_PATH = os.environ.get(
+    "PLACE_ORDER_PORTFOLIO_PATH",
+    os.path.abspath(os.path.join(SCRIPT_DIR, "..", "data", "portfolio.json")),
+)
 DATA_FRESHNESS_LIMIT_MINUTES = 60
 
 

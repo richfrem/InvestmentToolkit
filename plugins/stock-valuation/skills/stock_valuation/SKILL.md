@@ -158,7 +158,7 @@ This is a **live working document** — add to it throughout Steps 2 and 3, not 
 > ⚠️ **NEVER compute DCF math by hand or inline.** After deciding scenario parameters,
 > write them to `/tmp/{TICKER}_scenarios.json` and run the canonical calculator.
 > The script validates constraints, computes all intermediates, and outputs `presentValue`
-> for each scenario. See `docs/architecture/stock-valuation/ADR-dcf-calculator.md`.
+> for each scenario. See `plugins/stock-valuation/references/ADR-dcf-calculator.md`.
 
 Use `references/analysis_prompt.md` for full methodology. Key constraints for choosing parameters:
 

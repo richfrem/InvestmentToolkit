@@ -91,6 +91,6 @@ The user asked: *"UI or Chat?"* -> **The answer is BOTH.**
 
 **Approve Strategy**: Does this "Hybrid" approach match your mental model?
 **Select Pilot**: We are starting with **Stock Valuation** as the pilot implementation.
-    *   *Docs*: `docs/architecture/stock-valuation/`
+    *   *Docs*: `plugins/stock-valuation/references/`
 **Next Phase**: **Thesis Alignment & Portfolio Evaluation** will follow.
-    *   *Docs*: `docs/architecture/thesis-alignment-and-portfolio-valuation/`
+    *   *Docs*: `plugins/portfolio-advisor/references/`

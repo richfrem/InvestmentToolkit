@@ -1,0 +1,4 @@
+[
+  {"symbol": "AAPL", "shares": 10, "price": 150.0},
+  {"symbol": "MSFT", "shares": 5,  "price": 400.0}
+]

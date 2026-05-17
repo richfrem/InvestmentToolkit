@@ -447,6 +447,7 @@ export interface TradePreflightRequest {
     orderType: string;
     limitPrice?: number;
     account: string;
+    ackStale?: boolean;
 }
 
 export interface TradeSession {
