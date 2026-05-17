@@ -123,9 +123,52 @@ and any DCF fair value from `investment_screener/backend/data/projections/{TICKE
 
 ---
 
-## Phase 7 — Cleanup (Optional)
+## Phase 7 — Compile Draft Thesis
 
-If a custom indicator was injected in Phase 5, offer to remove it:
+Using the structure in `assets/templates/ta_thesis_template.md` as a guide, populate
+all fields with the data and analysis from Phases 3–6. Save the completed draft to:
+
+```
+temp/ta_thesis_draft.md
+```
+
+Replace every `{{placeholder}}` with real values. Set **Review Status** to `[DRAFT]`.
+
+---
+
+## Phase 8 — Adversarial Red Team Review
+
+Dispatch the `ta-red-team` skill to challenge the draft:
+
+> "Please act as the `ta_red_team` skill and review `temp/ta_thesis_draft.md`."
+
+The red team will respond with `[APPROVED]` or `[REJECTED]` plus specific feedback.
+
+**If `[REJECTED]`:**
+1. Read the feedback carefully
+2. Re-examine the chart data that was challenged
+3. Revise `temp/ta_thesis_draft.md` to address every flagged issue
+4. Update **Review Status** to `[REVISED]`
+5. Return to Phase 8 and repeat
+
+Retry up to **3 times**. If still rejected after 3 rounds, present the draft to
+the user with the unresolved red team objections clearly noted.
+
+**If `[APPROVED]`:** proceed to Phase 9.
+
+---
+
+## Phase 9 — Present Vetted Thesis & Cleanup
+
+Present the approved thesis to the user with a brief summary:
+
+> "**TA Analysis — {TICKER} ({TIMEFRAME}) — APPROVED by red team review**
+>
+> [Paste the final draft content here]
+>
+> Red team summary: [One sentence on what was challenged and resolved]"
+
+Then offer cleanup if a custom indicator was injected in Phase 5:
 
 ```bash
 node plugins/tradingview/node/cli.js pine remove -i AI_Custom_TA
