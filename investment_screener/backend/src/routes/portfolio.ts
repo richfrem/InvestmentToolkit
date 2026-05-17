@@ -139,6 +139,80 @@ router.get('/status', (_req, res) => {
     } catch { res.status(500).json({ error: 'Failed to get status' }); }
 });
 
+// ── Position (price + book + per-account holdings) ───────────────────────────
+
+router.get('/position/:ticker', (req, res) => {
+    const ticker = req.params.ticker.toUpperCase();
+    const tvFile = path.join(path.dirname(PORTFOLIO_FILE), 'portfolio_tv.json');
+    try {
+        // From portfolio.json: price and book_price
+        let price: number | null = null;
+        let book_price: number | null = null;
+        let portfolioShares: number = 0;
+        if (fs.existsSync(PORTFOLIO_FILE)) {
+            const portfolio: any[] = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+            const entry = portfolio.find((p: any) => (p.symbol ?? '').toUpperCase() === ticker);
+            if (entry) {
+                price = typeof entry.price === 'number' ? entry.price : null;
+                book_price = typeof entry.book_price === 'number' ? entry.book_price : null;
+                portfolioShares = typeof entry.shares === 'number' ? entry.shares : 0;
+            }
+        }
+        // From portfolio_tv.json: per-account quantities
+        const byAccount: Record<string, number> = {};
+        if (fs.existsSync(tvFile)) {
+            const tv = JSON.parse(fs.readFileSync(tvFile, 'utf-8'));
+            for (const p of (tv.positions ?? [])) {
+                if ((p.symbol ?? '').toUpperCase() === ticker) {
+                    const acct = (p.accountType ?? 'UNKNOWN').toUpperCase();
+                    byAccount[acct] = (byAccount[acct] ?? 0) + (p.quantity ?? 0);
+                }
+            }
+        }
+        const accounts = Object.entries(byAccount).map(([account, shares]) => ({ account, shares }));
+        const accountTotal = accounts.reduce((s, a) => s + a.shares, 0);
+        const totalShares = accountTotal || portfolioShares;
+        const unrealizedGain = (price !== null && book_price !== null && totalShares > 0)
+            ? (price - book_price) * totalShares : null;
+        const unrealizedGainPct = (price !== null && book_price !== null && book_price > 0)
+            ? ((price - book_price) / book_price) * 100 : null;
+        res.json({ ticker, price, book_price, shares: totalShares, unrealizedGain, unrealizedGainPct, accounts, accountTotal });
+    } catch { res.json({ ticker, price: null, book_price: null, shares: 0, unrealizedGain: null, unrealizedGainPct: null, accounts: [], accountTotal: 0 }); }
+});
+
+// ── Holdings by Account ───────────────────────────────────────────────────────
+
+router.get('/holdings/:ticker', (req, res) => {
+    const ticker = req.params.ticker.toUpperCase();
+    const tvFile = path.join(path.dirname(PORTFOLIO_FILE), 'portfolio_tv.json');
+    try {
+        if (!fs.existsSync(tvFile)) { res.json({ ticker, accounts: [], total: 0, avgFillPrice: null, dataSource: 'none' }); return; }
+        const tv = JSON.parse(fs.readFileSync(tvFile, 'utf-8'));
+        const positions: any[] = tv.positions ?? [];
+        const matches = positions.filter((p: any) => (p.symbol ?? '').toUpperCase() === ticker);
+
+        // Aggregate per-account: weighted average fill price
+        const byAccount: Record<string, { shares: number; costBasis: number }> = {};
+        for (const p of matches) {
+            const acct = (p.accountType ?? 'UNKNOWN').toUpperCase();
+            const qty = p.quantity ?? 0;
+            const fill = p.avgFillPrice ?? 0;
+            if (!byAccount[acct]) byAccount[acct] = { shares: 0, costBasis: 0 };
+            byAccount[acct].shares += qty;
+            byAccount[acct].costBasis += qty * fill;
+        }
+        const accounts = Object.entries(byAccount).map(([account, { shares, costBasis }]) => ({
+            account,
+            shares,
+            avgFillPrice: shares > 0 ? Math.round((costBasis / shares) * 100) / 100 : null,
+        }));
+        const total = accounts.reduce((s, a) => s + a.shares, 0);
+        const totalCost = accounts.reduce((s, a) => s + (a.avgFillPrice ?? 0) * a.shares, 0);
+        const avgFillPrice = total > 0 ? Math.round((totalCost / total) * 100) / 100 : null;
+        res.json({ ticker, accounts, total, avgFillPrice, dataSource: 'tradingview-cdp', timestamp: tv.timestamp ?? null });
+    } catch { res.json({ ticker, accounts: [], total: 0, avgFillPrice: null, dataSource: 'error' }); }
+});
+
 // ── Refresh & Sync ────────────────────────────────────────────────────────────
 
 router.post('/refresh-prices', async (_req, res) => {

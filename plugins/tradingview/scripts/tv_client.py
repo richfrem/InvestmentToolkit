@@ -14,6 +14,7 @@ Path layout:
 """
 
 import json
+import os
 import subprocess
 import urllib.request
 from pathlib import Path
@@ -22,7 +23,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 # Owned Node.js CDP client — no dependency on temp/tradingview-mcp
 TV_CLI = REPO_ROOT / "plugins" / "tradingview" / "node" / "cli.js"
 TV_NODE_MODULES = REPO_ROOT / "plugins" / "tradingview" / "node" / "node_modules"
-TV_PORT = 9222
+TV_PORT = int(os.environ.get("TV_CDP_PORT", "9222"))
 
 
 def is_tv_running() -> bool:

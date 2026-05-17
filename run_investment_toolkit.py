@@ -142,8 +142,16 @@ def clear_ports(ports: List[int]) -> None:
                 pids = result.stdout.strip().split()
                 for pid in pids:
                     if pid:
-                        os.kill(int(pid), signal.SIGKILL)
-                        Colors.print(f"  Cleared stale process on :{port} (PID {pid})", Colors.YELLOW)
+                        try:
+                            # Graceful shutdown first — give the process a chance to exit cleanly
+                            os.kill(int(pid), signal.SIGTERM)
+                            time.sleep(1.0)
+                            # Only escalate to SIGKILL if the process is still alive
+                            os.kill(int(pid), 0)  # raises OSError if already dead
+                            os.kill(int(pid), signal.SIGKILL)
+                            Colors.print(f"  Force-killed stale process on :{port} (PID {pid})", Colors.YELLOW)
+                        except ProcessLookupError:
+                            Colors.print(f"  Cleared stale process on :{port} (PID {pid})", Colors.YELLOW)
             else:
                 # Windows port clearing
                 result = subprocess.run(

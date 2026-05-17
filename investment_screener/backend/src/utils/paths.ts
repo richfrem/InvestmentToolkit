@@ -10,3 +10,4 @@ export const PORTFOLIO_REVIEWS_DIR = path.resolve(__dirname, '../../../../Portfo
 export const THESIS_DOC_PATH       = path.resolve(__dirname, '../../../../plugins/portfolio-advisor/references/investment_thesis.md');
 export const AGENT_GUIDE_PATH      = path.resolve(__dirname, '../../../../plugins/toolkit-manager/references/agent-quick-reference.md');
 export const PORTFOLIO_CONFIG_FILE = path.join(__dirname, '../../data/portfolio-config.json');
+export const TRADE_LOG_FILE        = path.join(__dirname, '../../data/trade-log.json');
