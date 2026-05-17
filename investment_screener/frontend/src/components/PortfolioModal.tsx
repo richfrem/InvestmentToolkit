@@ -37,11 +37,21 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
 
     useEffect(() => {
         if (isOpen) {
-            // Load from localStorage (synced with backend on save)
-            const saved = localStorage.getItem('portfolio_items');
-            if (saved) {
-                setItems(JSON.parse(saved));
-            }
+            const loadPortfolio = async () => {
+                try {
+                    const response = await fetch('/api/portfolio');
+                    const data = await response.json();
+                    const portfolioItems = Array.isArray(data) ? data : (data.items || []);
+                    setItems(portfolioItems);
+                    localStorage.setItem('portfolio_items', JSON.stringify(portfolioItems));
+                } catch (error) {
+                    console.error('Failed to fetch portfolio:', error);
+                    // Fallback to localStorage if API fails
+                    const saved = localStorage.getItem('portfolio_items');
+                    if (saved) setItems(JSON.parse(saved));
+                }
+            };
+            loadPortfolio();
         }
     }, [isOpen]);
 

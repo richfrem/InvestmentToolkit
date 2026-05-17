@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, CheckCircle, AlertTriangle, Loader2, ShieldCheck, Clock, Wifi, TrendingUp } from 'lucide-react';
-import { runTradePreflight, runTradeExecute, runTradeSubmit } from '../services/api';
+import { runTradePreflight, runTradeExecute, runTradeSubmit, logTrade, fetchMarketQuotes, type MarketQuote } from '../services/api';
 
 type ModalStep =
     | 'configure'
@@ -20,6 +20,9 @@ interface Provenance {
     dcfTimestamp: string | null;
 }
 
+interface AccountHolding { account: string; shares: number; avgFillPrice: number | null; }
+interface HoldingsData { accounts: AccountHolding[]; total: number; avgFillPrice: number | null; dataSource: string; }
+
 interface TradePrepModalProps {
     ticker: string;
     initialAction: 'buy' | 'sell';
@@ -27,8 +30,19 @@ interface TradePrepModalProps {
     onClose: () => void;
 }
 
-const ORDER_TYPES = ['market', 'limit', 'stop', 'stop_limit'];
+const ORDER_TYPES = [
+    { value: 'market', label: 'Market' },
+    { value: 'limit', label: 'Limit' },
+    { value: 'stop', label: 'Stop' },
+    { value: 'stop_limit', label: 'Stop Limit' },
+];
 const ACCOUNTS = ['tfsa', 'rrsp', 'margin'];
+const TIME_IN_FORCE = [
+    { value: 'day', label: 'Day' },
+    { value: 'good_till_cancelled', label: 'Good till cancelled' },
+    { value: 'good_till_date', label: 'Good till date' },
+    { value: 'good_til_extended_market', label: 'Good til extended market' },
+];
 
 function ProvenanceRow({ icon, label, value, warn }: { icon: React.ReactNode; label: string; value: string; warn?: boolean }) {
     return (
@@ -50,15 +64,31 @@ function CardRow({ label, value, flag, warn }: { label: string; value: string; f
     );
 }
 
+function ConfRow({ label, value, flag, warn, valueClass }: { label: string; value: string; flag?: string; warn?: boolean; valueClass?: string }) {
+    return (
+        <div className="flex items-center justify-between px-4 py-2">
+            <span className="text-slate-500 text-xs">{label}</span>
+            <div className="flex items-center gap-2">
+                <span className={`text-xs font-mono font-medium ${valueClass ?? 'text-slate-200'}`}>{value}</span>
+                {flag && <span className={`text-[10px] font-bold ${warn ? 'text-amber-400' : 'text-emerald-400'}`}>{flag}</span>}
+            </div>
+        </div>
+    );
+}
+
 export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClose }: TradePrepModalProps) {
     const [step, setStep] = useState<ModalStep>('configure');
     const [action] = useState<'buy' | 'sell'>(initialAction);
     const [shares, setShares] = useState(initialShares);
     const [orderType, setOrderType] = useState('market');
     const [limitPrice, setLimitPrice] = useState('');
+    const [stopPrice, setStopPrice] = useState('');
+    const [timeInForce, setTimeInForce] = useState('day');
     const [account, setAccount] = useState('tfsa');
 
     const [provenance, setProvenance] = useState<Provenance | null>(null);
+    const [holdings, setHoldings] = useState<HoldingsData | null>(null);
+    const [quote, setQuote] = useState<MarketQuote | null>(null);
     const [sessionId, setSessionId] = useState<string | null>(null);
     const [preflightCard, setPreflightCard] = useState<Record<string, any> | null>(null);
     const [preflightState, setPreflightState] = useState<string | null>(null);
@@ -68,18 +98,36 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
     const [executeError, setExecuteError] = useState<string | null>(null);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
-    // Load provenance on mount
+    // Load provenance + holdings on mount
     useEffect(() => {
         const load = async () => {
-            const [tvRes, syncRes, projRes] = await Promise.allSettled([
+            const [tvRes, syncRes, projRes, holdingsRes, quoteRes] = await Promise.allSettled([
                 fetch('/api/tv-status').then(r => r.json()),
                 fetch('/api/portfolio/status').then(r => r.json()),
                 fetch(`/api/projections/${ticker}`).then(r => r.ok ? r.json() : null),
+                fetch(`/api/portfolio/holdings/${ticker}`).then(r => r.json()),
+                fetchMarketQuotes([ticker]),
             ]);
 
             const tv = tvRes.status === 'fulfilled' ? tvRes.value : null;
             const sync = syncRes.status === 'fulfilled' ? syncRes.value : null;
             const projs = projRes.status === 'fulfilled' ? projRes.value : null;
+            const holdingsData = holdingsRes.status === 'fulfilled' ? holdingsRes.value : null;
+            if (holdingsData) setHoldings(holdingsData);
+            const quotesMap = quoteRes.status === 'fulfilled' ? quoteRes.value : null;
+            if (quotesMap?.[ticker]) {
+                const q = quotesMap[ticker];
+                setQuote(q);
+                const defaultPrice = action === 'sell' ? q.bid : q.ask;
+                if (defaultPrice != null) {
+                    setLimitPrice(defaultPrice.toFixed(2));
+                    setStopPrice(defaultPrice.toFixed(2));
+                }
+                // Outside regular hours, Day orders expire immediately — default to GTC
+                if (q.marketState && q.marketState !== 'REGULAR') {
+                    setTimeInForce('good_till_cancelled');
+                }
+            }
 
             let syncAgeMin: number | null = null;
             if (sync?.lastSync) {
@@ -149,6 +197,22 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
             const result = await runTradeSubmit(sessionId);
             setSubmitResult(result.result ?? result);
             setStep('done');
+            // Auto-log to trade journal
+            // Limit/stop orders are "inactive" until filled — don't populate fill price
+            const isLimitOrder = orderType === 'limit' || orderType === 'stop' || orderType === 'stop_limit';
+            logTrade({
+                ticker,
+                action,
+                shares,
+                price: 0,           // fill price unknown until order executes
+                account,
+                orderType,
+                limitPrice: limitPrice ? parseFloat(limitPrice) : undefined,
+                date: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })(),
+                notes: 'Auto-logged from TradingView CDP execution',
+                status: isLimitOrder ? 'inactive' : 'submitted',
+                source: 'cdp_execution',
+            }).catch(() => {});
         } catch (e: any) {
             setSubmitError(e.message ?? 'Submit failed');
             setStep('form_filled');
@@ -158,20 +222,24 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
     const actionColor = action === 'buy'
         ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
         : 'text-red-400 border-red-500/30 bg-red-500/10';
-    const actionLabel = action === 'buy' ? 'Prepare Buy' : 'Prepare Sell';
+    const headerLabel = (step === 'preflight_result' && preflightState === 'PREFLIGHT_PASSED')
+        ? 'Order Confirmation'
+        : (step === 'form_filled' || step === 'submitting')
+        ? `Submit ${action.toUpperCase()}`
+        : action === 'buy' ? 'Prepare Buy' : 'Prepare Sell';
 
     const isBrokerReady = provenance?.tvConnected;
     const isDataStale = provenance?.portfolioSyncAgeMin != null && provenance.portfolioSyncAgeMin > 60;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-            <div className="w-full max-w-lg bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+            <div className="w-full max-w-2xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
 
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
                     <div className="flex items-center gap-3">
                         <span className={`px-2.5 py-0.5 rounded border text-xs font-black uppercase tracking-wider ${actionColor}`}>
-                            {actionLabel}
+                            {headerLabel}
                         </span>
                         <span className="text-white font-bold text-lg">{ticker}</span>
                     </div>
@@ -184,99 +252,229 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
 
                     {/* Step: Configure */}
                     {step === 'configure' && (
-                        <div className="p-5 space-y-5">
-                            {/* Data Provenance */}
-                            {provenance && (
-                                <div className="bg-slate-800/40 rounded-xl border border-slate-700/50 p-4 space-y-2">
-                                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">Data Provenance</div>
-                                    <ProvenanceRow
-                                        icon={<Clock size={12} />}
-                                        label="Portfolio sync"
-                                        value={provenance.portfolioSyncAgeMin != null ? `${provenance.portfolioSyncAgeMin} min ago` : 'Unknown'}
-                                        warn={isDataStale}
-                                    />
-                                    <ProvenanceRow
-                                        icon={<Wifi size={12} />}
-                                        label="Price source"
-                                        value={provenance.priceSource === 'tradingview' ? 'TradingView Live' : 'yfinance'}
-                                    />
-                                    <ProvenanceRow
-                                        icon={<ShieldCheck size={12} />}
-                                        label="Broker"
-                                        value={provenance.tvConnected ? 'Connected (Questrade via TV)' : 'Not connected'}
-                                        warn={!provenance.tvConnected}
-                                    />
-                                    {provenance.dcfAction && (
-                                        <ProvenanceRow
-                                            icon={<TrendingUp size={12} />}
-                                            label="DCF signal"
-                                            value={`${provenance.dcfAction}${provenance.dcfFairValue ? ` · Fair value: $${provenance.dcfFairValue.toFixed(2)}` : ''}`}
-                                        />
+                        <div className="p-5 space-y-4">
+
+                            {/* ── Top row: Provenance (left) + Holdings (right) ── */}
+                            <div className="grid grid-cols-2 gap-3">
+
+                                {/* Data Provenance */}
+                                <div className="bg-slate-800/40 rounded-xl border border-slate-700/50 p-3 space-y-1.5">
+                                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Data Provenance</div>
+                                    {provenance ? (
+                                        <>
+                                            <ProvenanceRow icon={<Clock size={11} />} label="Portfolio sync"
+                                                value={provenance.portfolioSyncAgeMin != null ? `${provenance.portfolioSyncAgeMin} min ago` : 'Unknown'}
+                                                warn={isDataStale} />
+                                            <ProvenanceRow icon={<Wifi size={11} />} label="Price source"
+                                                value={provenance.priceSource === 'tradingview' ? 'TradingView Live' : 'yfinance'} />
+                                            <ProvenanceRow icon={<ShieldCheck size={11} />} label="Broker"
+                                                value={provenance.tvConnected ? 'Connected (Questrade via TV)' : 'Not connected'}
+                                                warn={!provenance.tvConnected} />
+                                            {provenance.dcfAction && (
+                                                <ProvenanceRow icon={<TrendingUp size={11} />} label="DCF signal"
+                                                    value={`${provenance.dcfAction}${provenance.dcfFairValue ? ` · $${provenance.dcfFairValue.toFixed(2)}` : ''}`} />
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="flex items-center gap-2 text-slate-500 text-xs">
+                                            <Loader2 size={11} className="animate-spin" /> Loading...
+                                        </div>
                                     )}
                                 </div>
-                            )}
-                            {!provenance && (
-                                <div className="bg-slate-800/40 rounded-xl border border-slate-700/50 p-4 flex items-center gap-2 text-slate-500 text-sm">
-                                    <Loader2 size={14} className="animate-spin" /> Loading data provenance...
+
+                                {/* Current Holdings */}
+                                <div className="bg-slate-800/40 rounded-xl border border-slate-700/50 p-3">
+                                    <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Current Holdings</div>
+                                    {holdings === null ? (
+                                        <div className="flex items-center gap-2 text-slate-500 text-xs">
+                                            <Loader2 size={11} className="animate-spin" /> Loading...
+                                        </div>
+                                    ) : holdings.total === 0 ? (
+                                        <div className="text-xs text-slate-500 italic">No position in {ticker}</div>
+                                    ) : (
+                                        <div className="space-y-1">
+                                            <div className="grid grid-cols-3 text-[10px] text-slate-600 uppercase tracking-wide pb-1">
+                                                <span>Acct</span><span className="text-right">Shares</span><span className="text-right">Avg $</span>
+                                            </div>
+                                            {holdings.accounts.map(({ account: acct, shares: s, avgFillPrice }) => (
+                                                <div key={acct} className="grid grid-cols-3 text-xs">
+                                                    <span className="text-slate-400">{acct}</span>
+                                                    <span className="text-right text-slate-200 font-mono">{s.toLocaleString()}</span>
+                                                    <span className="text-right text-slate-400 font-mono">
+                                                        {avgFillPrice != null ? `$${avgFillPrice.toFixed(2)}` : '—'}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                            <div className="grid grid-cols-3 text-xs pt-1 border-t border-slate-700/60">
+                                                <span className="text-slate-400 font-semibold">Total</span>
+                                                <span className="text-right text-white font-mono font-bold">{holdings.total.toLocaleString()}</span>
+                                                <span className="text-right text-slate-300 font-mono">
+                                                    {holdings.avgFillPrice != null ? `$${holdings.avgFillPrice.toFixed(2)}` : '—'}
+                                                </span>
+                                            </div>
+                                            {/* P&L */}
+                                            {(() => {
+                                                const mp = quote?.price, bp = holdings.avgFillPrice, sh = holdings.total;
+                                                if (!mp || !bp || sh === 0) return null;
+                                                const g = (mp - bp) * sh, gp = ((mp - bp) / bp) * 100, pos = g >= 0;
+                                                return (
+                                                    <div className={`flex items-center justify-between rounded border px-2 py-1 mt-1 text-[10px] ${pos ? 'bg-emerald-500/8 border-emerald-500/20' : 'bg-red-500/8 border-red-500/20'}`}>
+                                                        <span className="text-slate-500 uppercase tracking-wide">P&amp;L</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className={`font-mono font-bold ${pos ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                                {pos ? '+' : '−'}${Math.abs(g).toFixed(2)}
+                                                            </span>
+                                                            <span className={`font-mono px-1 rounded text-[10px] ${pos ? 'bg-emerald-500/15 text-emerald-300' : 'bg-red-500/15 text-red-300'}`}>
+                                                                {pos ? '+' : ''}{gp.toFixed(2)}%
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+                            </div>
 
                             {/* Warnings */}
                             {!isBrokerReady && (
                                 <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
-                                    <AlertTriangle size={14} className="text-amber-400 mt-0.5 shrink-0" />
-                                    <p className="text-amber-300 text-xs">TradingView is not connected. Open TradingView Desktop with <code className="bg-slate-800 px-1 rounded">--remote-debugging-port=9222</code> and ensure Questrade is connected.</p>
+                                    <AlertTriangle size={13} className="text-amber-400 mt-0.5 shrink-0" />
+                                    <p className="text-amber-300 text-xs">TradingView not connected — open TV Desktop with <code className="bg-slate-800 px-1 rounded">--remote-debugging-port=9222</code> and ensure Questrade is connected.</p>
                                 </div>
                             )}
                             {isDataStale && (
                                 <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
-                                    <AlertTriangle size={14} className="text-amber-400 mt-0.5 shrink-0" />
-                                    <p className="text-amber-300 text-xs">Portfolio data is stale ({provenance?.portfolioSyncAgeMin} min old). Run <strong>/tv-portfolio-sync</strong> before placing orders.</p>
+                                    <AlertTriangle size={13} className="text-amber-400 mt-0.5 shrink-0" />
+                                    <p className="text-amber-300 text-xs">Portfolio data is stale ({provenance?.portfolioSyncAgeMin} min old). Run <strong>/tv-portfolio-sync</strong> first.</p>
                                 </div>
                             )}
 
-                            {/* Order Form */}
+                            {/* ── Order Details — TV-style ── */}
                             <div className="space-y-3">
                                 <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Order Details</div>
+
+                                {/* Bid/Ask bar — active side highlighted based on action */}
+                                {quote && (quote.bid != null || quote.ask != null) && (() => {
+                                    const isBuyAction = action === 'buy';
+                                    return (
+                                        <div className="flex rounded-lg overflow-hidden border border-slate-700">
+                                            <div className={`flex-1 flex flex-col items-center py-2.5 transition-colors ${!isBuyAction ? 'bg-red-950/60' : 'bg-slate-800/40'}`}>
+                                                <span className={`text-[10px] uppercase tracking-widest mb-0.5 ${!isBuyAction ? 'text-red-400/80' : 'text-slate-600'}`}>Sell / Bid</span>
+                                                <span className={`font-mono font-bold text-lg leading-none ${!isBuyAction ? 'text-red-300' : 'text-slate-500'}`}>
+                                                    {quote.bid != null ? quote.bid.toFixed(2) : '—'}
+                                                </span>
+                                            </div>
+                                            {quote.bid != null && quote.ask != null && (
+                                                <div className="flex items-center justify-center px-3 text-slate-600 text-[10px] font-mono border-x border-slate-700/60 min-w-[48px]">
+                                                    {(quote.ask - quote.bid).toFixed(2)}
+                                                </div>
+                                            )}
+                                            <div className={`flex-1 flex flex-col items-center py-2.5 transition-colors ${isBuyAction ? 'bg-emerald-950/60' : 'bg-slate-800/40'}`}>
+                                                <span className={`text-[10px] uppercase tracking-widest mb-0.5 ${isBuyAction ? 'text-emerald-400/80' : 'text-slate-600'}`}>Ask / Buy</span>
+                                                <span className={`font-mono font-bold text-lg leading-none ${isBuyAction ? 'text-emerald-300' : 'text-slate-500'}`}>
+                                                    {quote.ask != null ? quote.ask.toFixed(2) : '—'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+
+                                {/* Order type — horizontal tabs, TV underline style */}
+                                <div className="flex border-b border-slate-700">
+                                    {ORDER_TYPES.map(t => (
+                                        <button key={t.value} onClick={() => setOrderType(t.value)}
+                                            className={`flex-1 py-1.5 text-xs font-semibold transition-colors border-b-2 -mb-px ${
+                                                orderType === t.value
+                                                    ? 'text-white border-white'
+                                                    : 'text-slate-500 border-transparent hover:text-slate-300'
+                                            }`}>
+                                            {t.label}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Price fields (before Shares, matching TV layout) */}
+                                <div className="grid grid-cols-2 gap-3">
+                                    {/* Stop Price — Stop and Stop Limit */}
+                                    {(orderType === 'stop' || orderType === 'stop_limit') && (
+                                        <label className="flex flex-col gap-1">
+                                            <span className="text-xs text-slate-500">Stop Price</span>
+                                            <div className="relative">
+                                                <input type="number" step="0.01" value={stopPrice}
+                                                    onChange={e => setStopPrice(e.target.value)}
+                                                    className="w-full bg-slate-800 border border-indigo-500/50 rounded-lg px-3 py-2 pr-10 text-white text-sm focus:outline-none focus:border-indigo-400"
+                                                />
+                                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 font-mono">
+                                                    {action === 'sell' ? 'Bid' : 'Ask'}
+                                                </span>
+                                            </div>
+                                        </label>
+                                    )}
+                                    {/* Limit Price — Limit and Stop Limit */}
+                                    {(orderType === 'limit' || orderType === 'stop_limit') && (
+                                        <label className="flex flex-col gap-1">
+                                            <span className="text-xs text-slate-500">{orderType === 'stop_limit' ? 'Limit Price' : 'Price'}</span>
+                                            <div className="relative">
+                                                <input type="number" step="0.01" value={limitPrice}
+                                                    onChange={e => setLimitPrice(e.target.value)}
+                                                    placeholder={action === 'sell' ? quote?.bid?.toFixed(2) : quote?.ask?.toFixed(2)}
+                                                    className="w-full bg-slate-800 border border-indigo-500/50 rounded-lg px-3 py-2 pr-10 text-white text-sm focus:outline-none focus:border-indigo-400"
+                                                />
+                                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-500 font-mono">
+                                                    {orderType === 'stop_limit' ? 'Stop+1' : action === 'sell' ? 'Bid' : 'Ask'}
+                                                </span>
+                                            </div>
+                                        </label>
+                                    )}
+                                </div>
+
+                                {/* Shares + Account in a row */}
                                 <div className="grid grid-cols-2 gap-3">
                                     <label className="flex flex-col gap-1">
                                         <span className="text-xs text-slate-500">Shares</span>
-                                        <input
-                                            type="number" min={1} value={shares}
+                                        <input type="number" min={1} value={shares}
                                             onChange={e => setShares(Math.max(1, parseInt(e.target.value) || 1))}
-                                            className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+                                            className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-slate-500"
                                         />
                                     </label>
                                     <label className="flex flex-col gap-1">
-                                        <span className="text-xs text-slate-500">Order Type</span>
-                                        <select
-                                            value={orderType} onChange={e => setOrderType(e.target.value)}
-                                            className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
-                                        >
-                                            {ORDER_TYPES.map(t => <option key={t} value={t}>{t.replace('_', ' ').toUpperCase()}</option>)}
+                                        <span className="text-xs text-slate-500">Account</span>
+                                        <select value={account} onChange={e => setAccount(e.target.value)}
+                                            className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-slate-500">
+                                            {ACCOUNTS.map(a => <option key={a} value={a}>{a.toUpperCase()}</option>)}
                                         </select>
                                     </label>
                                 </div>
-                                {(orderType === 'limit' || orderType === 'stop_limit') && (
-                                    <label className="flex flex-col gap-1">
-                                        <span className="text-xs text-slate-500">Limit Price (USD)</span>
-                                        <input
-                                            type="number" step="0.01" value={limitPrice}
-                                            onChange={e => setLimitPrice(e.target.value)}
-                                            placeholder="e.g. 142.50"
-                                            className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
-                                        />
-                                    </label>
-                                )}
-                                <label className="flex flex-col gap-1">
-                                    <span className="text-xs text-slate-500">Account</span>
-                                    <select
-                                        value={account} onChange={e => setAccount(e.target.value)}
-                                        className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
-                                    >
-                                        {ACCOUNTS.map(a => <option key={a} value={a}>{a.toUpperCase()}</option>)}
+
+                                {/* Time in Force — shown for all order types; market state badge */}
+                                <div className="space-y-1.5">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-slate-500">Time in Force</span>
+                                        {quote?.marketState && (() => {
+                                            const ms = quote.marketState;
+                                            const cfg: Record<string, { label: string; cls: string }> = {
+                                                REGULAR: { label: 'Market Open', cls: 'bg-emerald-500/15 text-emerald-400' },
+                                                PRE:     { label: 'Pre-Market',  cls: 'bg-sky-500/15 text-sky-400' },
+                                                POST:    { label: 'After Hours', cls: 'bg-amber-500/15 text-amber-400' },
+                                                CLOSED:  { label: 'Closed',      cls: 'bg-slate-700 text-slate-400' },
+                                            };
+                                            const c = cfg[ms] ?? cfg.CLOSED;
+                                            return <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${c.cls}`}>{c.label}</span>;
+                                        })()}
+                                    </div>
+                                    <select value={timeInForce} onChange={e => setTimeInForce(e.target.value)}
+                                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-slate-500">
+                                        {TIME_IN_FORCE.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                                     </select>
-                                </label>
+                                    {/* Warn if Day selected outside regular hours */}
+                                    {timeInForce === 'day' && quote?.marketState && quote.marketState !== 'REGULAR' && (
+                                        <div className="flex items-start gap-1.5 text-amber-400/90 text-[10px]">
+                                            <AlertTriangle size={11} className="shrink-0 mt-0.5" />
+                                            <span>Day orders expire at market close — use <strong>Good till cancelled</strong> or <strong>Good til extended market</strong> for {quote.marketState === 'PRE' ? 'pre-market' : 'after-hours'} execution.</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}
@@ -292,49 +490,95 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                         </div>
                     )}
 
-                    {/* Step: Preflight result */}
+                    {/* Step: Preflight result — TV "Order confirmation" style */}
                     {step === 'preflight_result' && (
                         <div className="p-5 space-y-4">
-                            {preflightState === 'PREFLIGHT_PASSED' && preflightCard ? (
-                                <>
-                                    <div className="flex items-center gap-2">
-                                        <CheckCircle size={18} className="text-emerald-400" />
-                                        <span className="text-emerald-400 font-bold">Preflight Passed</span>
-                                    </div>
-                                    <div className="bg-slate-800/60 rounded-xl border border-slate-700/50 p-4 space-y-0">
-                                        <CardRow label="Via" value="TradingView (Questrade)" />
-                                        <CardRow label="Ticker" value={preflightCard.ticker ?? ticker} />
-                                        <CardRow label="Action" value={String(preflightCard.action ?? action).toUpperCase()} />
-                                        <CardRow label="Shares" value={String(preflightCard.shares ?? shares)} />
-                                        <CardRow label="Order Type" value={preflightCard.priceDisplay ?? orderType} />
-                                        <CardRow
-                                            label="Account"
-                                            value={`${preflightCard.accountType ?? account.toUpperCase()} ${preflightCard.accountId ? `(#${preflightCard.accountId})` : ''}`}
-                                        />
-                                        <CardRow label="Cost Estimate" value={preflightCard.costEstimateDisplay ?? '—'} />
-                                        <CardRow
-                                            label="Buying Power"
-                                            value={preflightCard.buyingPowerDisplay ?? '—'}
-                                            flag={preflightCard.coverage?.sufficient ? '✓ Sufficient' : '✗ Insufficient'}
-                                            warn={!preflightCard.coverage?.sufficient}
-                                        />
-                                        {preflightCard.dataFreshnessMinutes != null && (
-                                            <CardRow
-                                                label="Data Age"
-                                                value={`${preflightCard.dataFreshnessMinutes} min`}
-                                                flag={preflightCard.dataFreshnessMinutes <= 60 ? '✓ Fresh' : '⚠ Stale'}
-                                                warn={preflightCard.dataFreshnessMinutes > 60}
-                                            />
-                                        )}
-                                    </div>
-                                    {executeError && (
-                                        <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/30 rounded-xl p-3">
-                                            <AlertTriangle size={14} className="text-red-400 mt-0.5 shrink-0" />
-                                            <p className="text-red-300 text-xs">{executeError}</p>
+                            {preflightState === 'PREFLIGHT_PASSED' && preflightCard ? (() => {
+                                const isSell = action === 'sell';
+                                const tif = TIME_IN_FORCE.find(t => t.value === timeInForce)?.label ?? timeInForce;
+                                const orderSummary = (() => {
+                                    const side = isSell ? 'Sell' : 'Buy';
+                                    const qty = preflightCard.shares ?? shares;
+                                    const sym = preflightCard.ticker ?? ticker;
+                                    if (orderType === 'market') return `${side} ${qty} ${sym} Market`;
+                                    if (orderType === 'limit') return `${side} ${qty} ${sym} @ $${limitPrice} Limit ${tif}`;
+                                    if (orderType === 'stop') return `${side} ${qty} ${sym} @ $${stopPrice} Stop ${tif}`;
+                                    return `${side} ${qty} ${sym} @ $${stopPrice} Stop $${limitPrice} Limit ${tif}`;
+                                })();
+                                const tradeValue = preflightCard.costEstimate != null
+                                    ? `${preflightCard.shares ?? shares} × $${(orderType === 'limit' || orderType === 'stop_limit') ? limitPrice : (quote?.price?.toFixed(2) ?? '—')} = ${isSell ? 'CR' : 'DR'} ${preflightCard.costEstimateDisplay}`
+                                    : '—';
+                                return (
+                                    <>
+                                        {/* Order summary callout — like TV's amber banner */}
+                                        <div className="flex items-start gap-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3">
+                                            <AlertTriangle size={15} className="text-amber-400 shrink-0 mt-0.5" />
+                                            <div>
+                                                <p className={`text-sm font-bold ${isSell ? 'text-red-300' : 'text-emerald-300'}`}>{orderSummary}</p>
+                                                <p className="text-amber-400/70 text-[10px] mt-0.5">Exchange and ECN fees, SEC fees may apply for US securities.</p>
+                                            </div>
                                         </div>
-                                    )}
-                                </>
-                            ) : (
+
+                                        {/* Market snapshot */}
+                                        <div className="rounded-xl border border-slate-700/50 overflow-hidden">
+                                            <div className="bg-slate-800/30 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500">Market</div>
+                                            <div className="divide-y divide-slate-800/60">
+                                                <ConfRow label="Symbol" value={`NASDAQ:${preflightCard.ticker ?? ticker}`} />
+                                                {quote?.ask != null && <ConfRow label="Ask" value={`${quote.ask.toFixed(2)}`} />}
+                                                {quote?.bid != null && <ConfRow label="Bid" value={`${quote.bid.toFixed(2)}`} />}
+                                                {quote?.price != null && <ConfRow label="Last" value={`${quote.price.toFixed(2)}`} />}
+                                            </div>
+                                        </div>
+
+                                        {/* Order details */}
+                                        <div className="rounded-xl border border-slate-700/50 overflow-hidden">
+                                            <div className="bg-slate-800/30 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500">Order</div>
+                                            <div className="divide-y divide-slate-800/60">
+                                                <ConfRow label="Type" value={preflightCard.priceDisplay ?? orderType} />
+                                                <ConfRow label="Side" value={String(preflightCard.action ?? action).toUpperCase()}
+                                                    valueClass={isSell ? 'text-red-400' : 'text-emerald-400'} />
+                                                <ConfRow label="Quantity" value={String(preflightCard.shares ?? shares)} />
+                                                {(orderType === 'limit' || orderType === 'stop_limit') && limitPrice &&
+                                                    <ConfRow label="Limit Price" value={`$${limitPrice}`} />}
+                                                {(orderType === 'stop' || orderType === 'stop_limit') && stopPrice &&
+                                                    <ConfRow label="Stop Price" value={`$${stopPrice}`} />}
+                                                <ConfRow label="Account"
+                                                    value={`${preflightCard.accountType ?? account.toUpperCase()}${preflightCard.accountId ? ` (#${preflightCard.accountId})` : ''}`} />
+                                                <ConfRow label="Time in Force" value={tif} />
+                                            </div>
+                                        </div>
+
+                                        {/* Estimated + Buying power */}
+                                        <div className="rounded-xl border border-slate-700/50 overflow-hidden">
+                                            <div className="bg-slate-800/30 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500">Estimated</div>
+                                            <div className="divide-y divide-slate-800/60">
+                                                <ConfRow label="Commission & fees*" value="$0.00" />
+                                                <ConfRow label="Trade value" value={tradeValue} />
+                                            </div>
+                                            <div className="bg-slate-800/30 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-500 border-t border-slate-700/50">Buying Power</div>
+                                            <div className="divide-y divide-slate-800/60">
+                                                <ConfRow label="Available"
+                                                    value={preflightCard.buyingPowerDisplay ?? '—'}
+                                                    flag={preflightCard.coverage?.sufficient ? '✓ Sufficient' : '✗ Insufficient'}
+                                                    warn={!preflightCard.coverage?.sufficient} />
+                                                {preflightCard.dataFreshnessMinutes != null && (
+                                                    <ConfRow label="Data age"
+                                                        value={`${preflightCard.dataFreshnessMinutes} min`}
+                                                        flag={preflightCard.dataFreshnessMinutes <= 60 ? '✓ Fresh' : '⚠ Stale'}
+                                                        warn={preflightCard.dataFreshnessMinutes > 60} />
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {executeError && (
+                                            <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/30 rounded-xl p-3">
+                                                <AlertTriangle size={14} className="text-red-400 mt-0.5 shrink-0" />
+                                                <p className="text-red-300 text-xs">{executeError}</p>
+                                            </div>
+                                        )}
+                                    </>
+                                );
+                            })() : (
                                 <div className="space-y-3">
                                     <div className="flex items-center gap-2">
                                         <AlertTriangle size={18} className="text-red-400" />
@@ -378,7 +622,7 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                                 )}
                             </div>
                             <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
-                                <p className="text-amber-300 text-xs font-semibold">Clicking "Confirm & Submit" will immediately submit the order through TradingView. This action cannot be undone.</p>
+                                <p className="text-amber-300 text-xs font-semibold">Submitting will immediately place a {action.toUpperCase()} order for {shares} {ticker} via TradingView. This action cannot be undone.</p>
                             </div>
                             {submitError && (
                                 <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/30 rounded-xl p-3">
@@ -432,10 +676,22 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                             <button
                                 onClick={runPreflight}
                                 disabled={!isBrokerReady || !provenance}
-                                title={!isBrokerReady ? 'TradingView must be connected to run preflight' : undefined}
-                                className="flex-1 px-4 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-indigo-600 hover:bg-indigo-500 text-white"
+                                title={!isBrokerReady ? 'TradingView must be connected' : undefined}
+                                className={`flex-1 px-4 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-white flex flex-col items-center leading-tight py-2.5 ${
+                                    action === 'sell'
+                                        ? 'bg-red-700 hover:bg-red-600'
+                                        : 'bg-emerald-700 hover:bg-emerald-600'
+                                }`}
                             >
-                                Run Preflight →
+                                <span className="text-base font-black">{action === 'sell' ? 'Sell' : 'Buy'}</span>
+                                <span className="text-[10px] opacity-80 font-normal">
+                                    {shares} {ticker}
+                                    {orderType === 'market' ? ' MARKET'
+                                        : orderType === 'limit' && limitPrice ? ` @ $${limitPrice} LIMIT`
+                                        : orderType === 'stop' && stopPrice ? ` @ $${stopPrice} STOP`
+                                        : orderType === 'stop_limit' && stopPrice ? ` @ $${stopPrice} STOP $${limitPrice} LIMIT`
+                                        : ` ${orderType.toUpperCase()}`}
+                                </span>
                             </button>
                         </>
                     ) : step === 'preflight_result' && preflightState === 'PREFLIGHT_PASSED' ? (
@@ -445,9 +701,13 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                             </button>
                             <button
                                 onClick={runExecute}
-                                className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-bold transition-colors"
+                                className={`flex-1 px-4 py-2 text-white rounded-lg text-sm font-bold transition-colors ${
+                                    action === 'sell'
+                                        ? 'bg-red-700 hover:bg-red-600'
+                                        : 'bg-emerald-700 hover:bg-emerald-600'
+                                }`}
                             >
-                                Open Order Dialog →
+                                {action === 'sell' ? 'Sell' : 'Buy'} via TradingView →
                             </button>
                         </>
                     ) : step === 'preflight_result' ? (
@@ -466,9 +726,13 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                             </button>
                             <button
                                 onClick={runSubmit}
-                                className="flex-1 px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-sm font-bold transition-colors"
+                                className={`flex-1 px-4 py-2 text-white rounded-lg text-sm font-bold transition-colors ${
+                                    action === 'sell'
+                                        ? 'bg-red-700 hover:bg-red-600'
+                                        : 'bg-emerald-700 hover:bg-emerald-600'
+                                }`}
                             >
-                                Confirm &amp; Submit →
+                                Submit {action.toUpperCase()} to TradingView →
                             </button>
                         </>
                     ) : (

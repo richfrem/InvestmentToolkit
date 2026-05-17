@@ -202,7 +202,7 @@ export default function Dashboard() {
 
                         {/* Trade buttons + Navigation Tabs */}
                         <div className="flex items-center gap-3">
-                        <TradeButtons ticker={stockData.symbol} size="md" />
+                        <TradeButtons ticker={stockData.symbol} size="md" rating={aiResult?.action as any} />
                         <div className="h-6 w-px bg-slate-800" />
                         <div className="flex bg-slate-900/50 p-1 rounded-lg border border-slate-800">
                             <button

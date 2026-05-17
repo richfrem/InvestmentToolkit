@@ -81,3 +81,14 @@ investment_screener/backend/py_services/cache/
 
 # Runtime secrets (generated at startup, never committed)
 .runtime/
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Personal trading data (user-specific, cannot be recovered from git)
+investment_screener/backend/data/trade-log.json
+
+# TradingView order audit logs (runtime output, rotated daily)
+plugins/tradingview/audit/
