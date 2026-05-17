@@ -655,3 +655,8 @@ export const modifyTrade = async (params: {
     });
     return res.json();
 };
+
+export const syncTradeLogFromTV = async (): Promise<{ success: boolean; tvOrders: number; cancelled: number; message: string; error?: string }> => {
+    const res = await fetch('/api/trading/log/sync-from-tv', { method: 'POST' });
+    return res.json();
+};
