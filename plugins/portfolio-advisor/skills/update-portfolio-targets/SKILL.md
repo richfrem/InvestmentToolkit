@@ -20,7 +20,7 @@ allowed-tools: Bash, Read, Write
 - **Thesis doc**: `plugins/portfolio-advisor/references/investment_thesis.md`
 - **Canonical edit script**: `plugins/portfolio-advisor/scripts/update_targets.py` ← **use this**
 - **Legacy update script**: `investment_screener/backend/py_services/update_thesis.py` (older, per-holding patch style)
-- **ADR reference**: `docs/architecture/` — cross-plugin script conventions
+- **ADR reference**: `docs/adrs/` — cross-plugin script conventions
 - **Chains from**: `strategic-review` skill (after formula proposals are approved by user)
 - **Chains into**: `rebalance-portfolio` skill (to execute trades aligned with new targets)
 

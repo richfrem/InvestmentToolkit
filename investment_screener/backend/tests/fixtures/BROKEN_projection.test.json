@@ -1,0 +1,22 @@
+[
+  {
+    "ticker": "BROKEN",
+    "id": "test-fixture-broken",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-01T00:00:00.000Z",
+    "snapshot": {
+      "price": 100.0
+    },
+    "scenarios": {
+      "bear": {"weight": 0.2, "scenarioPrice": 50.0},
+      "base": {"weight": 0.5, "scenarioPrice": 80.0},
+      "bull": {"weight": 0.2, "scenarioPrice": 120.0}
+    },
+    "aiThesis": {
+      "action": "BUY",
+      "fairValue": 82.0
+    }
+  }
+]
