@@ -1,0 +1,121 @@
+{
+  "dataSource": "tradingview-cdp",
+  "timestamp": "2026-01-01T00:00:00.000Z",
+  "accounts": [
+    {
+      "accountType": "CASH",
+      "accountId": "XXXXXXXX",
+      "displayText": "Cash - XXXXXXXX"
+    },
+    {
+      "accountType": "TFSA",
+      "accountId": "XXXXXXXX",
+      "displayText": "TFSA - XXXXXXXX"
+    },
+    {
+      "accountType": "RRSP",
+      "accountId": "XXXXXXXX",
+      "displayText": "RRSP - XXXXXXXX"
+    }
+  ],
+  "snapshots": [
+    {
+      "accountType": "CASH",
+      "accountId": "XXXXXXXX",
+      "displayText": "Cash - XXXXXXXX",
+      "error": null,
+      "positions": [],
+      "balances": {}
+    },
+    {
+      "accountType": "TFSA",
+      "accountId": "XXXXXXXX",
+      "displayText": "TFSA - XXXXXXXX",
+      "balances": {
+        "cashCAD": 0,
+        "cashUSD": 0,
+        "cashCADCombined": 0,
+        "cashUSDCombined": 0,
+        "marketValueCAD": 0,
+        "marketValueUSD": 0,
+        "marketValueCADCombined": 0,
+        "marketValueUSDCombined": 0,
+        "totalEquityCAD": 0,
+        "totalEquityUSD": 0,
+        "totalEquityCADCombined": 0,
+        "totalEquityUSDCombined": 0,
+        "buyingPowerCAD": 0,
+        "buyingPowerUSD": 0,
+        "buyingPowerCADCombined": 0,
+        "buyingPowerUSDCombined": 0,
+        "totalBPCAD": 0,
+        "totalBPUSD": 0,
+        "totalBPCADCombined": 0,
+        "totalBPUSDCombined": 0,
+        "maxBPCAD": 0,
+        "maxBPUSD": 0,
+        "maxBPCADCombined": 0,
+        "maxBPUSDCombined": 0,
+        "openPnLCAD": 0,
+        "openPnLUSD": 0,
+        "openPnLCADCombined": 0,
+        "openPnLUSDCombined": 0,
+        "closedPnLCAD": 0,
+        "closedPnLUSD": 0,
+        "closedPnLCADCombined": 0,
+        "closedPnLUSDCombined": 0
+      },
+      "positions": [
+        {
+          "symbol": "AAPL",
+          "direction": "Long",
+          "quantity": 5,
+          "avgFillPrice": 150.00,
+          "profit": null,
+          "positionId": "00000000-0000-0000-0000-000000000001"
+        },
+        {
+          "symbol": "MSFT",
+          "direction": "Long",
+          "quantity": 3,
+          "avgFillPrice": 300.00,
+          "profit": 25.50,
+          "positionId": "00000000-0000-0000-0000-000000000002"
+        }
+      ]
+    },
+    {
+      "accountType": "RRSP",
+      "accountId": "XXXXXXXX",
+      "displayText": "RRSP - XXXXXXXX",
+      "balances": {
+        "cashCAD": 0,
+        "cashUSD": 0,
+        "cashCADCombined": 0,
+        "cashUSDCombined": 0,
+        "marketValueCAD": 0,
+        "marketValueUSD": 0,
+        "marketValueCADCombined": 0,
+        "marketValueUSDCombined": 0,
+        "totalEquityCAD": 0,
+        "totalEquityUSD": 0,
+        "totalEquityCADCombined": 0,
+        "totalEquityUSDCombined": 0,
+        "buyingPowerCAD": 0,
+        "buyingPowerUSD": 0,
+        "buyingPowerCADCombined": 0,
+        "buyingPowerUSDCombined": 0
+      },
+      "positions": [
+        {
+          "symbol": "AAPL",
+          "direction": "Long",
+          "quantity": 2,
+          "avgFillPrice": 150.00,
+          "profit": null,
+          "positionId": "00000000-0000-0000-0000-000000000003"
+        }
+      ]
+    }
+  ]
+}

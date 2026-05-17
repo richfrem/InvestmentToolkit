@@ -45,6 +45,8 @@ temp/
 .env
 .env.*
 investment_screener/backend/data/portfolio-config.json
+investment_screener/backend/data/portfolio_tv.json
+plugins/portfolio-advisor/references/portfolio.json
 
 # Personal workspace — generated outputs, order screenshots, review artifacts
 PortfolioAnalysis/
@@ -78,3 +80,17 @@ kitty-specs/**/tasks/*.md
 
 # Backend cache
 investment_screener/backend/py_services/cache/
+
+# Runtime secrets (generated at startup, never committed)
+.runtime/
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Personal trading data (user-specific, cannot be recovered from git)
+investment_screener/backend/data/trade-log.json
+
+# TradingView order audit logs (runtime output, rotated daily)
+plugins/tradingview/audit/

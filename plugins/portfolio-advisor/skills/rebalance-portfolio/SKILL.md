@@ -31,6 +31,81 @@ allowed-tools: Bash, Read, Write
 
 ---
 
+## ⚠️ Position Sizing Sanity Checks
+
+Apply before presenting any trade recommendation:
+
+| Check | Rule | Action on Breach |
+|-------|------|-----------------|
+| Max single-position | No holding may exceed **15%** of portfolio after trade | Cap trade size; note in output |
+| Max pillar concentration | No pillar may exceed **40%** after trade | Warn; suggest cross-pillar trim |
+| Min liquidity | Don't recommend trades < $200 (transaction cost not worth it) | Merge with adjacent trade or skip |
+| Cash floor | Maintain ≥ 2% portfolio in cash/USD after all buys | Reduce buy sizes proportionally |
+| Single-session cap | Don't recommend more than **$15,000** total buys in one rebalance session | Split into two sessions; flag to user |
+
+All math for P&L and position sizing must use the **exact values from the data files** — never round or estimate intermediate calculations. Derive size in shares as: `shares = floor(target_value_USD / current_price)`.
+
+---
+
+## ⚠️ Audit Log Awareness — Check Before Recommending
+
+Before generating any trade recommendations, check today's order audit log to avoid double-recommending trades already placed this session:
+
+```bash
+curl -s http://localhost:3001/api/trading/audit/today | python3 -m json.tool
+```
+
+For each ticker that already has a `ORDER_SUBMITTED` event today:
+- Suppress the rebalance recommendation for that ticker
+- Add a note: `"Order placed today — verify fill before adding more"`
+
+If the audit endpoint is unreachable, proceed but prepend a warning:
+> ⚠️ Could not check today's audit log — verify no duplicate orders before executing.
+
+---
+
+## 🇨🇦 Account Selection Heuristics (TFSA vs RRSP)
+
+When surfacing trade recommendations, include an account suggestion based on Canadian tax optimization rules:
+
+| Holding Type | Preferred Account | Reason |
+|-------------|-------------------|--------|
+| **High-growth equities** (tech, AI, speculative) | **TFSA** | Tax-free compounding on capital gains |
+| **USD dividend payers** (REITs, ETFs with US dividends) | **RRSP** | IRS/CRA treaty exempts RRSP from 15% US withholding tax |
+| **Canadian dividend stocks** | TFSA or non-reg | Dividend tax credit applies outside RRSP; TFSA shelters growth |
+| **Bond ETFs / income funds** | **RRSP** | Shields interest income (fully taxable) from annual tax |
+| **Speculative / high-volatility** | **TFSA** | Losses in TFSA don't reduce contribution room (unlike RRSP) |
+
+Format the suggestion as a one-line note per trade:
+```
+→ Suggested: TFSA (growth equity — tax-free compounding on gains)
+```
+
+If the current portfolio.json account data shows the holding is already in the "wrong" account, surface it as a soft advisory — never block the trade.
+
+---
+
+## ⚠️ No-Trade Conditions
+
+Block rebalance recommendations (surface as `PAUSED` state) when:
+
+- `DATA_STALE` — portfolio.json > 60 min old. State: *"Run `/tv-portfolio-sync` first — rebalance math needs live prices."*
+- `TARGETS_INVALID` — targets don't sum to 100% ± 0.5%. State: *"Run `/calibrate-targets` first — targets sum to {X}%."*
+- `MISSING_VALUATIONS` — more than 30% of thesis tickers have no DCF projection. State: *"Too many holdings unvalued — run `/evaluate-stock` for the missing ones before rebalancing."*
+- `EARNINGS_SEASON` — 3+ holdings have earnings within 7 days. Surface a list; let user decide whether to proceed.
+
+---
+
+## Data Freshness Provenance
+
+Every rebalance output must include a provenance line:
+
+> "Data: portfolio.json at {timestamp} ({source}) · targets from target-portfolio.json v{version} · DCF projections: {N}/{M} holdings"
+
+If source is `cache` (no recent sync): prepend ⚠️ and recommend sync before any trades.
+
+---
+
 ## ⚠️ Verify Targets Before Rebalancing
 Always confirm targets sum to 100% and reflect the latest agreed weights before generating trades.
 If targets need adjustment, use `update_targets.py` first:
@@ -103,17 +178,29 @@ For each holding with `|driftPct| > 1%`, classify by combining drift direction w
 ---
 
 ## Step 3: Assess Available Capital
+
 ```python
-# Estimate trade capacity
+# Assess capital per account — sells and buys must be sequenced within each account
 cash_holding = get_holding_by_pillar('cash')
 capital_from_trims = sum(trim_trades_value)
 available_capital = cash_holding.value + capital_from_trims
+
+# Per-account breakdown (use portfolio.json account field if present)
+# If account field is missing/unknown, default to TFSA for all tech/AI holdings
+tfsa_cash  = cash_held_in_tfsa   # from portfolio.json USD_CASH + TFSA sell proceeds
+rrsp_cash  = cash_held_in_rrsp   # from portfolio.json RRSP cash + RRSP sell proceeds
 ```
 
+**Capital sequencing rule**: Sells in account X fund buys in account X.
+- TFSA sells → available for TFSA buys
+- RRSP sells → available for RRSP buys
+- Do NOT assume proceeds from one account fund buys in another
+
 If insufficient capital to restore all underweights → prioritize by:
-1. BUY-rated + largest negative drift first
+1. BUY-rated + largest negative drift first (per account)
 2. HOLD-rated second
 3. Leave SELL-rated underweights as `skippedRestores`
+4. If still over budget per account → defer lowest-upside buys and tell the user explicitly
 
 ---
 
@@ -171,6 +258,113 @@ Ready to execute? Confirm each trade before I generate order details.
 
 > ⚠️ **Recap Before Execute**: Always confirm individual trades with the user before finalizing.
 > Never output "execute all" language. Each trade confirmation is explicit.
+
+---
+
+## Step 5b: Post Suggestions to Trade Log
+
+After presenting the trade plan (Step 5), immediately post ALL proposed trades to the trade log as `suggested` entries. The endpoint accepts a batch — create **one entry per account per ticker**.
+
+### ⚠️ Sequencing Rule — Sells Before Buys
+
+**ALWAYS post sells before buys in the `suggestions` array.** The Trade Log displays entries in order, and the user executes them top-to-bottom. Buys that depend on sell proceeds will fail if submitted first.
+
+**Per-account capital check (run before building the suggestions array):**
+
+```python
+# Compute available buying power per account separately
+# Available = current cash in account + proceeds from all sells in that account
+
+account_cash = {}  # populated from portfolio.json — USD_CASH split proportionally
+                   # If account data unavailable, treat all cash as TFSA
+
+for account in ['TFSA', 'RRSP']:
+    cash = account_cash.get(account, 0)
+    sell_proceeds = sum(s['shares'] * s['price'] for s in sells if s['account'] == account)
+    total_available = cash + sell_proceeds
+    buy_cost = sum(b['shares'] * b['price'] for b in buys if b['account'] == account)
+    
+    if buy_cost > total_available:
+        # Flag which buys to defer — prioritize by DCF upside descending
+        # Remove lowest-priority buys until buy_cost <= total_available
+        # Mention deferred buys explicitly to user:
+        print(f"⚠️ {account}: buys (${buy_cost:.0f}) exceed available capital (${total_available:.0f}). "
+              f"Deferred: {[b['ticker'] for b in deferred]}")
+```
+
+**Settlement note**: Canadian equities on Questrade settle T+1. If you're selling today to fund a buy today, confirm the account has sufficient *settled* buying power before submitting the buy. If in doubt, submit the sell first and wait for settlement confirmation before submitting buys.
+
+**Array ordering rule**: `suggestions` array must be ordered:
+1. All SELL entries first (sorted by account: TFSA sells → RRSP sells)
+2. All BUY entries second (sorted by DCF upside descending — highest-conviction buys first)
+
+### Multi-Account Rules
+
+**SELLS**: Check `portfolio.json` — if the ticker is held in multiple accounts (e.g., ZS in both TFSA and RRSP), create a separate entry for each account using that account's actual share count.
+
+**BUYS**: Create two entries — one per account. The user mirrors buys across both accounts with proportional sizing:
+- **TFSA** (main, larger account): full proposed share count
+- **RRSP** (smaller account): approximately 1/3 the TFSA share count (round down, minimum 1)
+- Use the TFSA/RRSP heuristic table to pick which account is "primary" for the asset type, but always create both entries.
+
+Example — buying 6 shares of NVDA:
+```json
+{ "ticker": "NVDA", "action": "buy", "shares": 6, "account": "TFSA", ... },
+{ "ticker": "NVDA", "action": "buy", "shares": 2, "account": "RRSP", ... }
+```
+
+### API Call
+
+```bash
+curl -s -X POST http://localhost:3001/api/trading/log/suggest \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "suggestions": [
+      {
+        "ticker": "CRWD",
+        "action": "sell",
+        "shares": 15,
+        "price": 0,
+        "account": "TFSA",
+        "orderType": "market",
+        "date": "'"$(date +%Y-%m-%d)"'",
+        "notes": "Drift: +3.8% overweight · SELL-rated (−66% FV gap)",
+        "source": "rebalance"
+      },
+      {
+        "ticker": "NVDA",
+        "action": "buy",
+        "shares": 6,
+        "price": 0,
+        "account": "TFSA",
+        "orderType": "market",
+        "date": "'"$(date +%Y-%m-%d)"'",
+        "notes": "Underweight +1.2% · BUY-rated (+82% upside)",
+        "source": "rebalance"
+      },
+      {
+        "ticker": "NVDA",
+        "action": "buy",
+        "shares": 2,
+        "price": 0,
+        "account": "RRSP",
+        "orderType": "market",
+        "date": "'"$(date +%Y-%m-%d)"'",
+        "notes": "Underweight +1.2% · BUY-rated (+82% upside) — RRSP mirror (1/3)",
+        "source": "rebalance"
+      }
+    ]
+  }'
+```
+
+### Rules
+- Post ALL proposed trades (only actionable buys/sells — not drift-skips)
+- Set `price: 0` (fill price unknown at planning time); set `limitPrice` if suggesting a limit order
+- Set `source: "rebalance"` always
+- If the endpoint is unreachable (backend offline), proceed silently — do not block the recommendation
+
+After posting, tell the user:
+> "These trades have been added to your Trade Log (**Planned** tab) — {N} entries across {A} accounts. Open **Trade Log** in the sidebar to review and execute them one at a time."
 
 ---
 

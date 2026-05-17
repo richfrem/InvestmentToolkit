@@ -1,7 +1,6 @@
 import net from 'net';
-import path from 'path';
-import { spawn } from 'child_process';
 import { PORTFOLIO_FILE, TARGET_PORTFOLIO_FILE } from './paths';
+import { spawnPythonScript } from '../services/bridge';
 
 export const isValidTicker = (ticker: string): boolean => /^[A-Z0-9.\-_]{1,10}$/.test(ticker);
 
@@ -17,7 +16,7 @@ export async function getLiveUsdCadRate(fallback: number): Promise<number> {
     return fallback;
 }
 
-export function isTradingViewConnected(tvPort = 9222): Promise<boolean> {
+export function isTradingViewConnected(tvPort = parseInt(process.env.TV_CDP_PORT || '9222', 10)): Promise<boolean> {
     return new Promise((resolve) => {
         const socket = new net.Socket();
         socket.setTimeout(300);
@@ -29,17 +28,15 @@ export function isTradingViewConnected(tvPort = 9222): Promise<boolean> {
 }
 
 export async function getPythonActions(): Promise<Record<string, string>> {
-    const scriptPath = path.resolve(__dirname, '../../../../plugins/portfolio-advisor/scripts/portfolio_action.py');
-    const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
-    return new Promise((resolve) => {
-        const proc = spawn(pythonCmd, [scriptPath, '--all', '--portfolio', PORTFOLIO_FILE, '--target', TARGET_PORTFOLIO_FILE]);
-        let out = '';
-        let err = '';
-        proc.stdout.on('data', (d: Buffer) => out += d.toString());
-        proc.stderr.on('data', (d: Buffer) => err += d.toString());
-        proc.on('close', (code: number) => {
-            if (code !== 0) { console.error('[Actions] portfolio_action.py failed:', err); resolve({}); }
-            else { try { resolve(JSON.parse(out)); } catch { resolve({}); } }
-        });
-    });
+    try {
+        const data = await spawnPythonScript('portfolio_action.py', [
+            '--all',
+            '--portfolio', PORTFOLIO_FILE,
+            '--target', TARGET_PORTFOLIO_FILE
+        ]);
+        return data || {};
+    } catch (err) {
+        console.error('[Actions] Failed to fetch python actions:', err);
+        return {};
+    }
 }

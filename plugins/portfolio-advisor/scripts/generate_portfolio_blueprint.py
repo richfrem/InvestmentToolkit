@@ -39,6 +39,9 @@ THESIS_JSON   = REPO_ROOT / "investment_screener/backend/data/theses/target-port
 PORTFOLIO_JSON = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 THESIS_MD     = REPO_ROOT / "plugins/portfolio-advisor/references/investment_thesis.md"
 
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from ticker_aliases import is_cash  # noqa: E402
+
 SUB_STRATEGY_NAMES = {
     "sa-asi-race":       "Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)",
     "cybersecurity":     "Sub-Strategy 2 — AI-Native Cybersecurity",
@@ -108,7 +111,7 @@ def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> 
         groups.setdefault(sid, []).append(ticker)
 
     # Untracked: held but not in thesis
-    untracked = [s for s in actual_map if s not in thesis_map and s not in ("USD_CASH",)]
+    untracked = [s for s in actual_map if s not in thesis_map and not is_cash(s)]
     if untracked:
         groups.setdefault("untracked", []).extend(untracked)
 

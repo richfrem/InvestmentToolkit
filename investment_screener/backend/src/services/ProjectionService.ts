@@ -42,7 +42,7 @@ export class ProjectionService {
             return [];
         }
         try {
-            const data = fs.readFileSync(filePath, 'utf-8');
+            const data = await fs.promises.readFile(filePath, 'utf-8');
             const json = JSON.parse(data);
             return Array.isArray(json) ? json : [];
         } catch (error) {
@@ -52,16 +52,22 @@ export class ProjectionService {
     }
 
     async getAllProjections(): Promise<Projection[]> {
-        const files = fs.readdirSync(PROJECTIONS_DIR).filter(f => f.endsWith('.json'));
+        const files = (await fs.promises.readdir(PROJECTIONS_DIR)).filter(f => f.endsWith('.json'));
         let all: Projection[] = [];
-        for (const f of files) {
+        
+        // Use Promise.all to read files in parallel for better performance
+        const results = await Promise.all(files.map(async (f) => {
             try {
-                const data = fs.readFileSync(path.join(PROJECTIONS_DIR, f), 'utf-8');
-                const json = JSON.parse(data);
-                if (Array.isArray(json)) all.push(...json);
+                const data = await fs.promises.readFile(path.join(PROJECTIONS_DIR, f), 'utf-8');
+                return JSON.parse(data);
             } catch (e) {
                 console.error(`[ProjectionService] Error loading ${f}`, e);
+                return null;
             }
+        }));
+
+        for (const json of results) {
+            if (Array.isArray(json)) all.push(...json);
         }
         return all;
     }
@@ -79,7 +85,7 @@ export class ProjectionService {
         const filePath = this.getFilePath(ticker);
 
         if (!fs.existsSync(filePath)) {
-            fs.writeFileSync(filePath, '[]');
+            await fs.promises.writeFile(filePath, '[]');
         }
 
         let release: () => Promise<void>;
@@ -90,7 +96,7 @@ export class ProjectionService {
         }
 
         try {
-            const fileContent = fs.readFileSync(filePath, 'utf-8');
+            const fileContent = await fs.promises.readFile(filePath, 'utf-8');
             let projections: Projection[] = [];
             try {
                 projections = JSON.parse(fileContent);
@@ -118,8 +124,8 @@ export class ProjectionService {
 
             // Atomic write
             const tempPath = `${filePath}.tmp`;
-            fs.writeFileSync(tempPath, JSON.stringify(projections, null, 2));
-            fs.renameSync(tempPath, filePath);
+            await fs.promises.writeFile(tempPath, JSON.stringify(projections, null, 2));
+            await fs.promises.rename(tempPath, filePath);
         } finally {
             await release();
         }
@@ -137,7 +143,7 @@ export class ProjectionService {
         }
 
         try {
-            const fileContent = fs.readFileSync(filePath, 'utf-8');
+            const fileContent = await fs.promises.readFile(filePath, 'utf-8');
             let projections: Projection[] = JSON.parse(fileContent);
 
             const initialLength = projections.length;
@@ -145,8 +151,8 @@ export class ProjectionService {
 
             if (projections.length !== initialLength) {
                 const tempPath = `${filePath}.tmp`;
-                fs.writeFileSync(tempPath, JSON.stringify(projections, null, 2));
-                fs.renameSync(tempPath, filePath);
+                await fs.promises.writeFile(tempPath, JSON.stringify(projections, null, 2));
+                await fs.promises.rename(tempPath, filePath);
                 return true;
             }
             return false;

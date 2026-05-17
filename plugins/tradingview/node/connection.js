@@ -3,7 +3,10 @@ import CDP from 'chrome-remote-interface';
 let client = null;
 let targetInfo = null;
 const CDP_HOST = 'localhost';
-const CDP_PORT = 9222;
+// Read port from env var so the port can be randomized without editing source.
+// Launch TradingView with a non-standard port: TV_CDP_PORT=9333 python3 run_investment_toolkit.py
+// connection.js and the launch scripts both honour this variable.
+const CDP_PORT = parseInt(process.env.TV_CDP_PORT || '9222', 10);
 const MAX_RETRIES = 5;
 const BASE_DELAY = 500;
 

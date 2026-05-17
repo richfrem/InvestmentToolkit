@@ -437,3 +437,220 @@ export const fetchAgentGuide = async (): Promise<{ content: string; filename: st
     if (!res.ok) throw new Error('Failed to load agent guide');
     return res.json();
 };
+
+// ─── Trading API ──────────────────────────────────────────────────────────────
+
+export interface TradePreflightRequest {
+    ticker: string;
+    action: 'buy' | 'sell';
+    shares: number;
+    orderType: string;
+    limitPrice?: number;
+    account: string;
+}
+
+export interface TradeSession {
+    sessionId: string;
+    state: string;
+    card?: Record<string, any>;
+    screenshot?: string;
+    error?: string;
+    result?: any;
+}
+
+export const runTradePreflight = async (req: TradePreflightRequest): Promise<TradeSession> => {
+    const res = await fetch('/api/trading/preflight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req),
+    });
+    const data = await res.json();
+    if (!res.ok) return { ...data, sessionId: data.sessionId ?? '' };
+    return data;
+};
+
+export const runTradeExecute = async (sessionId: string): Promise<TradeSession> => {
+    const res = await fetch('/api/trading/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? 'Execute failed');
+    return data;
+};
+
+export const runTradeSubmit = async (sessionId: string): Promise<TradeSession> => {
+    const res = await fetch('/api/trading/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? 'Submit failed');
+    return data;
+};
+
+export const fetchTodayAudit = async (): Promise<{ events: any[]; date: string }> => {
+    const res = await fetch('/api/trading/audit/today');
+    if (!res.ok) throw new Error('Failed to load audit');
+    return res.json();
+};
+
+export interface PositionData {
+    ticker: string;
+    price: number | null;
+    book_price: number | null;
+    shares: number;
+    unrealizedGain: number | null;
+    unrealizedGainPct: number | null;
+    accounts: { account: string; shares: number }[];
+    accountTotal: number;
+}
+
+export const fetchPosition = async (ticker: string): Promise<PositionData> => {
+    const res = await fetch(`/api/portfolio/position/${ticker}`);
+    if (!res.ok) throw new Error('Failed to load position');
+    return res.json();
+};
+
+export type TradeLogStatus = 'suggested' | 'logged' | 'submitted' | 'inactive' | 'filled' | 'cancelled';
+export type TradeLogSource = 'manual' | 'cdp_execution' | 'rebalance' | 'portfolio_review';
+
+export interface TradeLogEntry {
+    id: string;
+    ticker: string;
+    action: 'buy' | 'sell';
+    shares: number;
+    price: number;
+    totalCost: number;
+    account: string;
+    orderType: string;
+    limitPrice: number | null;
+    date: string;
+    notes: string;
+    status: TradeLogStatus;
+    source: TradeLogSource;
+    tvOrderId: string | null;
+    loggedAt: string;
+}
+
+export interface LogTradeRequest {
+    ticker: string;
+    action: 'buy' | 'sell';
+    shares: number;
+    price?: number;
+    account: string;
+    orderType?: string;
+    limitPrice?: number;
+    date: string;
+    notes?: string;
+    status?: TradeLogStatus;
+    source?: TradeLogSource;
+    tvOrderId?: string | null;
+}
+
+export interface SuggestTradeRequest {
+    ticker: string;
+    action: 'buy' | 'sell';
+    shares: number;
+    price?: number;
+    account: string;
+    orderType?: string;
+    limitPrice?: number;
+    date: string;
+    notes?: string;
+    source?: TradeLogSource;
+}
+
+export const fetchTradeLog = async (): Promise<{ entries: TradeLogEntry[] }> => {
+    const res = await fetch('/api/trading/log');
+    if (!res.ok) throw new Error('Failed to load trade log');
+    return res.json();
+};
+
+export const logTrade = async (req: LogTradeRequest): Promise<{ success: boolean; entry: TradeLogEntry }> => {
+    const res = await fetch('/api/trading/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? 'Failed to log trade');
+    return data;
+};
+
+export const suggestTrades = async (suggestions: SuggestTradeRequest[]): Promise<{ success: boolean; created: TradeLogEntry[] }> => {
+    const res = await fetch('/api/trading/log/suggest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ suggestions }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? 'Failed to suggest trades');
+    return data;
+};
+
+export interface MarketQuote {
+    ticker: string;
+    price: number | null;
+    bid: number | null;
+    ask: number | null;
+    bidSize: number | null;
+    askSize: number | null;
+    dayChangePct: number | null;
+    dayChangeAbs: number | null;
+    volume: number | null;
+    currency: string;
+    marketState: string | null;
+    error?: string;
+}
+
+export const fetchMarketQuotes = async (tickers: string[]): Promise<Record<string, MarketQuote>> => {
+    if (tickers.length === 0) return {};
+    const res = await fetch(`/api/market/quotes?tickers=${tickers.join(',')}`);
+    if (!res.ok) throw new Error('Failed to fetch quotes');
+    return res.json();
+};
+
+export const updateTradeLogEntry = async (id: string, updates: Partial<Pick<TradeLogEntry, 'status' | 'notes' | 'price' | 'shares' | 'orderType' | 'limitPrice' | 'account' | 'date' | 'tvOrderId'>>): Promise<{ success: boolean; entry: TradeLogEntry }> => {
+    const res = await fetch(`/api/trading/log/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? 'Failed to update entry');
+    return data;
+};
+
+export const cancelTrade = async (params: {
+    entryId: string;
+    tvOrderId?: string | null;
+    ticker?: string;
+    action?: string;
+    limitPrice?: number | null;
+}): Promise<{ tvCancelled: boolean; logCancelled: boolean; tvResult?: any }> => {
+    const res = await fetch('/api/trading/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+    });
+    return res.json();
+};
+
+export const modifyTrade = async (params: {
+    entryId: string;
+    tvOrderId: string;
+    ticker: string;
+    action: string;
+    newPrice: number;
+    newShares?: number | null;
+}): Promise<{ tvModified: boolean; logUpdated: boolean; tvResult?: any }> => {
+    const res = await fetch('/api/trading/modify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(params),
+    });
+    return res.json();
+};

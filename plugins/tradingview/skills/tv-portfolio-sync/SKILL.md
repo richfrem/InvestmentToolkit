@@ -1,6 +1,6 @@
 ---
 name: tv_portfolio_sync
-plugin: portfolio-advisor
+plugin: tradingview
 description: >
   Sync portfolio.json from TradingView's live broker panel (all accounts: TFSA,
   RRSP, Cash) via CDP. Scrapes positions and balances, shows a diff vs the

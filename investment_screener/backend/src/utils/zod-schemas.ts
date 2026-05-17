@@ -40,7 +40,7 @@ export const ProjectionSchema = z.object({
     ticker: z.string().regex(tickerRegex),
     id: z.string().uuid(),
     source: z.enum(['USER', 'SYSTEM', 'AI_AGENT']).default('USER'),
-    schemaVersion: z.union([z.literal('1.1'), z.literal('1.2')]),
+    schemaVersion: z.string().regex(/^1\.\d+$/),
     version: z.number().int().nonnegative(),
     savedAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
