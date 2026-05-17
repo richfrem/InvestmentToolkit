@@ -486,6 +486,18 @@
       "dst": "plugins/tradingview/skills/tv-portfolio-sync/scripts/fetch_broker_data.py",
       "strategy": "symlink",
       "description": "ADR-001 cross-repo symlink: tv-portfolio-sync skill → py_services canonical (source repo only)"
+    },
+    {
+      "src": "plugins/tradingview/assets/templates/ta_thesis_template.md",
+      "dst": "plugins/tradingview/skills/technical-analysis-expert/assets/templates/ta_thesis_template.md",
+      "strategy": "symlink",
+      "description": "ADR-003: skill assets/templates/ symlink → plugin root assets/templates/"
+    },
+    {
+      "src": "plugins/tradingview/assets/templates/ta_thesis_template.md",
+      "dst": "plugins/tradingview/skills/ta-red-team/assets/templates/ta_thesis_template.md",
+      "strategy": "symlink",
+      "description": "ADR-003: skill assets/templates/ symlink → plugin root assets/templates/"
     }
   ]
 }
