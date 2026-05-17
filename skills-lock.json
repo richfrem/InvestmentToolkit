@@ -64,6 +64,13 @@
       "installedAt": "2026-04-10T14:54:19.196680Z",
       "updatedAt": "2026-05-03T14:58:37.882146Z"
     },
+    "brainstorming": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-05-17T17:40:31.643629Z",
+      "updatedAt": "2026-05-17T17:40:31.643629Z"
+    },
     "business-requirements-capture": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
@@ -225,6 +232,13 @@
       "installedAt": "2026-04-10T14:54:20.983472Z",
       "updatedAt": "2026-05-03T14:58:38.285041Z"
     },
+    "dispatching-parallel-agents": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-05-17T17:40:31.643629Z",
+      "updatedAt": "2026-05-17T17:40:31.643629Z"
+    },
     "dual-loop": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
@@ -267,6 +281,13 @@
       "installedAt": "2026-04-10T14:54:20.804043Z",
       "updatedAt": "2026-04-10T14:54:20.804043Z"
     },
+    "executing-plans": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-05-17T17:40:31.643629Z",
+      "updatedAt": "2026-05-17T17:40:31.643629Z"
+    },
     "exploration-handoff": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
@@ -296,11 +317,11 @@
       "updatedAt": "2026-05-03T14:58:38.285041Z"
     },
     "finishing-a-development-branch": {
-      "source": "agent-execution-disciplines",
+      "source": "https://github.com/obra/superpowers",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-14T05:33:35.483578Z",
-      "updatedAt": "2026-04-14T05:33:35.483578Z"
+      "updatedAt": "2026-05-17T17:40:31.643629Z"
     },
     "fix-plugin-paths": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -554,6 +575,13 @@
       "installedAt": "2026-05-02T22:24:56.857430Z",
       "updatedAt": "2026-05-17T06:30:25.623967Z"
     },
+    "receiving-code-review": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-05-17T17:40:31.643629Z",
+      "updatedAt": "2026-05-17T17:40:31.643629Z"
+    },
     "red-team-bundler": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
@@ -569,11 +597,11 @@
       "updatedAt": "2026-05-03T14:58:37.319209Z"
     },
     "requesting-code-review": {
-      "source": "agent-execution-disciplines",
+      "source": "https://github.com/obra/superpowers",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-14T05:33:35.483578Z",
-      "updatedAt": "2026-04-14T05:33:35.483578Z"
+      "updatedAt": "2026-05-17T17:40:31.643629Z"
     },
     "run-screener": {
       "source": "toolkit-manager",
@@ -610,6 +638,13 @@
       "installedAt": "2026-05-02T22:24:56.857430Z",
       "updatedAt": "2026-05-17T06:30:25.623967Z"
     },
+    "subagent-driven-development": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-05-17T17:40:31.643629Z",
+      "updatedAt": "2026-05-17T17:40:31.643629Z"
+    },
     "subagent-driven-prototyping": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
@@ -632,11 +667,11 @@
       "updatedAt": "2026-05-03T14:58:37.882146Z"
     },
     "systematic-debugging": {
-      "source": "agent-execution-disciplines",
+      "source": "https://github.com/obra/superpowers",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-14T05:33:35.483578Z",
-      "updatedAt": "2026-04-14T05:33:35.483578Z"
+      "updatedAt": "2026-05-17T17:40:31.643629Z"
     },
     "ta-snapshot": {
       "source": "tradingview",
@@ -653,11 +688,11 @@
       "updatedAt": "2026-05-03T14:58:38.430981Z"
     },
     "test-driven-development": {
-      "source": "agent-execution-disciplines",
+      "source": "https://github.com/obra/superpowers",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-14T05:33:35.483578Z",
-      "updatedAt": "2026-04-14T05:33:35.483578Z"
+      "updatedAt": "2026-05-17T17:40:31.643629Z"
     },
     "thesis-challenge-bundler": {
       "source": "portfolio-advisor",
@@ -702,18 +737,25 @@
       "updatedAt": "2026-05-03T14:58:38.285041Z"
     },
     "using-git-worktrees": {
-      "source": "agent-execution-disciplines",
+      "source": "https://github.com/obra/superpowers",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-14T05:33:35.483578Z",
-      "updatedAt": "2026-04-14T05:33:35.483578Z"
+      "updatedAt": "2026-05-17T17:40:31.643629Z"
+    },
+    "using-superpowers": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-05-17T17:40:31.643629Z",
+      "updatedAt": "2026-05-17T17:40:31.643629Z"
     },
     "verification-before-completion": {
-      "source": "agent-execution-disciplines",
+      "source": "https://github.com/obra/superpowers",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-14T05:33:35.483578Z",
-      "updatedAt": "2026-04-14T05:33:35.483578Z"
+      "updatedAt": "2026-05-17T17:40:31.643629Z"
     },
     "visual-companion": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -721,6 +763,20 @@
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.983472Z",
       "updatedAt": "2026-05-03T14:58:38.285041Z"
+    },
+    "writing-plans": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-05-17T17:40:31.643629Z",
+      "updatedAt": "2026-05-17T17:40:31.643629Z"
+    },
+    "writing-skills": {
+      "source": "https://github.com/obra/superpowers",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-05-17T17:40:31.643629Z",
+      "updatedAt": "2026-05-17T17:40:31.643629Z"
     },
     "x-news-sweep": {
       "source": "portfolio-advisor",

@@ -14,7 +14,7 @@
         },
         {
             "name": "portfolio-advisor",
-            "description": "Investment portfolio advisor suite. Skills: /review-portfolio (quick health check — drift monitor, pillar conviction audit, thesis formula score), /strategic-review (adversarial thesis challenger with valuation-grounded formula improvement proposals), /rebalance (valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift), /calibrate-targets (interactive target-weight session), /update-portfolio-targets (apply formula changes), /x-news-sweep (daily Grok sweep via browser automation — gates recommendations against DCF + 8 hard gates), /13f-tracker (SEC EDGAR 13F polling — download holdings, parse JSON, diff quarter-over-quarter, integrates with x-news-sweep Gate 5 SA LP cross-check).",
+            "description": "Investment portfolio advisor suite. Skills: /review-portfolio, /strategic-review, /rebalance, /calibrate-targets, /update-portfolio-targets, /x-news-sweep, /bundle-thesis-review, /13f-tracker, /13f-analyze.",
             "source": "./plugins/portfolio-advisor",
             "strict": true
         },
@@ -26,13 +26,13 @@
         },
         {
             "name": "etf-analysis",
-            "description": "AI-driven ETF and fund analysis engine. Three fund types: CLOSED_END (NAV premium analysis, private holdings valuation — e.g. DXYZ), THEMATIC_ETF (holdings alignment score, expense drag, overlap check — e.g. KOID, HUMN), CASH_FUND (yield, dividend cycle timing — e.g. PSU-U.TO). Saves structured JSON to data/etf_analysis/ and updates agentRationale in target-portfolio.json. Trigger: /analyze-etf {TICKER}.",
+            "description": "AI-driven ETF and fund analysis engine. Three fund types: CLOSED_END, THEMATIC_ETF, CASH_FUND. Trigger: /analyze-etf {TICKER}.",
             "source": "./plugins/etf-analysis",
             "strict": true
         },
         {
             "name": "tradingview",
-            "description": "TradingView Desktop integration for real-time prices, DCF price alerts, and chart snapshots. Skills: /tv-price-refresh (live quotes for all positions via TradingView Premium, falls back to yfinance), /tv-alert-sync (create TradingView price alerts at DCF bear/base/bull targets), /tv-snapshot TICKER (capture chart screenshot). Requires TradingView Desktop running with --remote-debugging-port=9222.",
+            "description": "TradingView Desktop integration for real-time prices, DCF alerts, chart snapshots, portfolio sync, and live order execution. Skills: /tv-price-refresh, /tv-alert-sync, /tv-snapshot, /tv-ta, /tv-portfolio-sync, /place-order, /modify-order, /cancel-order, /get-orders. Requires TV Desktop running with --remote-debugging-port=9222.",
             "source": "./plugins/tradingview",
             "strict": true
         }

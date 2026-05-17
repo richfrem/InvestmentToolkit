@@ -1,0 +1,6 @@
+{
+  "holdings": [
+    {"ticker": "AAPL", "targetWeight": 60},
+    {"ticker": "MSFT", "targetWeight": 40}
+  ]
+}
