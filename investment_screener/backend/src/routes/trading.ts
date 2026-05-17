@@ -30,6 +30,7 @@ interface TradeSession {
   orderType: string;
   limitPrice?: number;
   account: string;
+  ackStale?: boolean;
   state: TradeState;
   preflightCard?: Record<string, any>;
   screenshot?: string;
@@ -102,13 +103,13 @@ function extractJson(stdout: string): Record<string, any> | null {
 // ── POST /api/trading/preflight ──────────────────────────────────────────────
 
 router.post('/preflight', async (req, res) => {
-  const { ticker, action, shares, orderType, limitPrice, account } = req.body;
+  const { ticker, action, shares, orderType, limitPrice, account, ackStale } = req.body;
   if (!ticker || !action || !shares || !orderType || !account) {
     res.status(400).json({ error: 'ticker, action, shares, orderType, and account are required' });
     return;
   }
 
-  const session = makeSession({ ticker, action, shares, orderType, limitPrice, account });
+  const session = makeSession({ ticker, action, shares, orderType, limitPrice, account, ackStale });
 
   const args = [
     '--ticker', ticker, '--action', action,
@@ -116,6 +117,7 @@ router.post('/preflight', async (req, res) => {
     '--account', account, '--preflight',
   ];
   if (limitPrice) args.push('--limit-price', String(limitPrice));
+  if (ackStale) args.push('--ack-stale');
 
   const { stdout, exitCode } = await runPy(args, 30_000);
   const card = extractJson(stdout);
@@ -157,6 +159,7 @@ router.post('/execute', async (req, res) => {
     '--account', session.account, '--execute',
   ];
   if (session.limitPrice) args.push('--limit-price', String(session.limitPrice));
+  if (session.ackStale) args.push('--ack-stale');
 
   const { stdout, exitCode } = await runPy(args, 60_000);
   const result = extractJson(stdout);
@@ -297,6 +300,45 @@ router.patch('/log/:id', (req, res) => {
     writeLog(entries);
     res.json({ success: true, entry: entries[idx] });
   } catch (e: any) { res.status(500).json({ error: e.message }); }
+});
+
+// ── POST /api/trading/modify ─────────────────────────────────────────────────
+
+router.post('/modify', async (req, res) => {
+  const { entryId, tvOrderId, ticker, action, newPrice, newShares } = req.body;
+
+  if (!tvOrderId) {
+    res.status(400).json({ error: 'tvOrderId is required' }); return;
+  }
+  if (newPrice == null) {
+    res.status(400).json({ error: 'newPrice is required' }); return;
+  }
+
+  const args = ['--modify', '--order-id', String(tvOrderId), '--new-price', String(newPrice)];
+  if (newShares != null) args.push('--new-shares', String(newShares));
+  if (ticker)  args.push('--ticker', ticker);
+  if (action)  args.push('--action', action);
+
+  const { stdout, exitCode } = await runPy(args, 30_000);
+  const tvResult = extractJson(stdout);
+  const tvModified = exitCode === 0 && (tvResult?.modified === true);
+
+  // Patch trade-log entry with new limit price on success
+  let logUpdated = false;
+  if (tvModified && entryId) {
+    try {
+      const entries = readLog();
+      const idx = entries.findIndex((e: any) => e.id === entryId);
+      if (idx !== -1) {
+        entries[idx] = { ...entries[idx], limitPrice: newPrice,
+                         ...(newShares != null ? { shares: newShares } : {}) };
+        writeLog(entries);
+        logUpdated = true;
+      }
+    } catch { /* non-fatal */ }
+  }
+
+  res.json({ tvModified, logUpdated, tvResult });
 });
 
 // ── POST /api/trading/cancel ─────────────────────────────────────────────────

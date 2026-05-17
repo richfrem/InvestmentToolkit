@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { RefreshCcw, Zap, X, Filter, Pencil } from 'lucide-react';
 import {
-    fetchTradeLog, updateTradeLogEntry, fetchMarketQuotes, cancelTrade,
+    fetchTradeLog, updateTradeLogEntry, fetchMarketQuotes, cancelTrade, modifyTrade,
     type TradeLogEntry, type TradeLogStatus, type MarketQuote,
 } from '../services/api';
 import { TradePrepModal } from '../components/TradePrepModal';
@@ -66,52 +66,75 @@ function ModifyModal({ entry, onSave, onClose }: {
 }) {
     const [quote, setQuote]           = useState<MarketQuote | null>(null);
     const [shares, setShares]         = useState(String(entry.shares));
-    const [orderType, setOrderType]   = useState(entry.orderType ?? 'market');
     const [limitPrice, setLimitPrice] = useState(entry.limitPrice != null ? String(entry.limitPrice) : '');
     const [notes, setNotes]           = useState(entry.notes ?? '');
     const [saving, setSaving]         = useState(false);
+    const [tvError, setTvError]       = useState<string | null>(null);
 
     useEffect(() => {
         fetchMarketQuotes([entry.ticker]).then(q => setQuote(q[entry.ticker] ?? null)).catch(() => {});
     }, [entry.ticker]);
 
-    const isLimit  = orderType === 'limit' || orderType === 'stop' || orderType === 'stop_limit';
-    const isBuy    = entry.action === 'buy';
-    const refPrice = isLimit && limitPrice ? Number(limitPrice) : (quote?.price ?? null);
-    const cost     = refPrice != null && shares ? Number(shares) * refPrice : null;
-    const rs = resolvedStatus(entry);
-    const isTvOrder = rs === 'submitted' || rs === 'inactive';
+    const isBuy     = entry.action === 'buy';
+    const rs        = resolvedStatus(entry);
+    const isTvOrder = (rs === 'submitted' || rs === 'inactive') && !!entry.tvOrderId;
+    const newPrice  = limitPrice ? Number(limitPrice) : null;
+    const cost      = newPrice != null && shares ? Number(shares) * newPrice : null;
 
-    const save = async () => {
+    const actionColor = isBuy
+        ? 'border-emerald-500/30 bg-emerald-500/5 text-emerald-400'
+        : 'border-red-500/30 bg-red-500/5 text-red-400';
+
+    const savePlan = async () => {
         setSaving(true);
         try {
             await onSave(entry.id, {
                 shares: Number(shares),
-                orderType,
-                limitPrice: isLimit && limitPrice ? Number(limitPrice) : null,
+                limitPrice: newPrice,
                 notes,
             });
             onClose();
         } finally { setSaving(false); }
     };
 
-    const actionColor = isBuy
-        ? 'border-emerald-500/30 bg-emerald-500/5 text-emerald-400'
-        : 'border-red-500/30 bg-red-500/5 text-red-400';
+    const saveTv = async () => {
+        if (!newPrice || !entry.tvOrderId) return;
+        setSaving(true);
+        setTvError(null);
+        try {
+            const result = await modifyTrade({
+                entryId: entry.id,
+                tvOrderId: entry.tvOrderId,
+                ticker: entry.ticker,
+                action: entry.action,
+                newPrice,
+                newShares: Number(shares) !== entry.shares ? Number(shares) : null,
+            });
+            if (result.tvModified) {
+                onClose();
+            } else {
+                setTvError(result.tvResult?.error ?? 'TradingView modify failed — check TV is running and order is visible.');
+            }
+        } catch (e: any) {
+            setTvError(e.message ?? 'Network error');
+        } finally { setSaving(false); }
+    };
 
     return (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
             <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md shadow-2xl">
 
                 {/* Header */}
-                <div className={`flex items-center justify-between px-5 py-4 border-b border-slate-800`}>
+                <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
                     <div className="flex items-center gap-3">
                         <span className={`px-3 py-1 rounded-lg border text-sm font-black uppercase ${actionColor}`}>
                             {entry.action}
                         </span>
                         <div>
                             <div className="text-base font-bold text-white">{entry.ticker}</div>
-                            <div className="text-[11px] text-slate-500">{entry.account} · {isTvOrder ? 'Modify in TradingView' : 'Edit planned trade'}</div>
+                            <div className="text-[11px] text-slate-500">
+                                {entry.account} · {isTvOrder ? 'Live order — modifies in TradingView via CDP' : 'Planned trade'}
+                            </div>
                         </div>
                     </div>
                     <button onClick={onClose} className="text-slate-500 hover:text-white p-1 rounded"><X size={16} /></button>
@@ -151,21 +174,6 @@ function ModifyModal({ entry, onSave, onClose }: {
                             />
                         </label>
                         <label className="block">
-                            <span className="text-[11px] text-slate-400 uppercase tracking-wide">Order Type</span>
-                            <select
-                                value={orderType} onChange={e => setOrderType(e.target.value)}
-                                className="mt-1.5 w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-indigo-500"
-                            >
-                                <option value="market">Market</option>
-                                <option value="limit">Limit</option>
-                                <option value="stop">Stop</option>
-                                <option value="stop_limit">Stop Limit</option>
-                            </select>
-                        </label>
-                    </div>
-
-                    {isLimit && (
-                        <label className="block">
                             <span className="text-[11px] text-slate-400 uppercase tracking-wide">Limit Price</span>
                             <div className="relative mt-1.5">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">$</span>
@@ -177,37 +185,38 @@ function ModifyModal({ entry, onSave, onClose }: {
                                 />
                             </div>
                         </label>
+                    </div>
+
+                    {!isTvOrder && (
+                        <label className="block">
+                            <span className="text-[11px] text-slate-400 uppercase tracking-wide">Notes</span>
+                            <input
+                                type="text" value={notes} onChange={e => setNotes(e.target.value)}
+                                className="mt-1.5 w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                                placeholder="Optional note…"
+                            />
+                        </label>
                     )}
 
-                    <label className="block">
-                        <span className="text-[11px] text-slate-400 uppercase tracking-wide">Notes</span>
-                        <input
-                            type="text" value={notes} onChange={e => setNotes(e.target.value)}
-                            className="mt-1.5 w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
-                            placeholder="Optional note…"
-                        />
-                    </label>
-
-                    {/* Cost estimate */}
                     {cost != null && (
                         <div className="bg-slate-800/60 rounded-lg px-4 py-3 border border-slate-700/50">
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-slate-400">{shares} shares × ${refPrice?.toFixed(2)}</span>
+                                <span className="text-slate-400">{shares} × ${newPrice?.toFixed(2)}</span>
                                 <span className="font-mono font-semibold text-white">≈ ${cost.toFixed(2)}</span>
                             </div>
-                            {isLimit && quote?.price && (
+                            {newPrice != null && quote?.price && (
                                 <div className="text-[11px] text-slate-500 mt-1">
-                                    {Number(limitPrice) < quote.price
-                                        ? `$${(quote.price - Number(limitPrice)).toFixed(2)} below market`
-                                        : `$${(Number(limitPrice) - quote.price).toFixed(2)} above market`}
+                                    {newPrice < quote.price
+                                        ? `$${(quote.price - newPrice).toFixed(2)} below market`
+                                        : `$${(newPrice - quote.price).toFixed(2)} above market`}
                                 </div>
                             )}
                         </div>
                     )}
 
-                    {isTvOrder && (
-                        <p className="text-[11px] text-amber-500/80 bg-amber-900/10 border border-amber-700/20 rounded-lg px-3 py-2">
-                            ⚠️ This order is live in TradingView. Updates here only change the log record — modify the order directly in TradingView to change the execution parameters.
+                    {tvError && (
+                        <p className="text-[11px] text-red-400 bg-red-900/10 border border-red-700/20 rounded-lg px-3 py-2">
+                            {tvError}
                         </p>
                     )}
                 </div>
@@ -217,12 +226,23 @@ function ModifyModal({ entry, onSave, onClose }: {
                     <button onClick={onClose} className="flex-1 py-2 rounded-lg text-sm text-slate-400 hover:text-white border border-slate-700 hover:border-slate-600 transition-colors">
                         Cancel
                     </button>
-                    <button
-                        onClick={save} disabled={saving}
-                        className="flex-1 py-2 rounded-lg text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50 transition-colors"
-                    >
-                        {saving ? 'Saving…' : 'Update Trade'}
-                    </button>
+                    {isTvOrder ? (
+                        <button
+                            onClick={saveTv}
+                            disabled={saving || !newPrice}
+                            className="flex-1 py-2 rounded-lg text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50 transition-colors"
+                        >
+                            {saving ? 'Modifying in TV…' : 'Modify Order'}
+                        </button>
+                    ) : (
+                        <button
+                            onClick={savePlan}
+                            disabled={saving}
+                            className="flex-1 py-2 rounded-lg text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50 transition-colors"
+                        >
+                            {saving ? 'Saving…' : 'Update Trade'}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

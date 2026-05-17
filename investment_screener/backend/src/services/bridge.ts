@@ -18,6 +18,8 @@ import { spawn } from 'child_process';
 import path from 'path';
 
 const PYTHON_TIMEOUT_MS = 90_000;
+// __dirname is backend/src/services/ in dev, backend/dist/services/ in built.
+const PY_SERVICES_DIR = path.resolve(__dirname, '../../py_services');
 
 // ── Circuit breaker: in-flight deduplication + stale cache ───────────────────
 // If a caller requests the same script+args while a prior call is still running,
@@ -61,7 +63,7 @@ export const spawnPythonScript = async (scriptName: string, args: string[]): Pro
 
 const _spawnRaw = async (scriptName: string, args: string[]): Promise<any> => {
     return new Promise((resolve, reject) => {
-        const scriptPath = path.resolve(process.cwd(), 'py_services', scriptName);
+        const scriptPath = path.join(PY_SERVICES_DIR, scriptName);
 
         const pythonCommand = process.platform === 'win32' ? 'python' : 'python3';
         console.log(`[Bridge] Spawning: ${pythonCommand} ${scriptPath} ${args.join(' ')}`);

@@ -45,6 +45,8 @@ temp/
 .env
 .env.*
 investment_screener/backend/data/portfolio-config.json
+investment_screener/backend/data/portfolio_tv.json
+plugins/portfolio-advisor/references/portfolio.json
 
 # Personal workspace — generated outputs, order screenshots, review artifacts
 PortfolioAnalysis/

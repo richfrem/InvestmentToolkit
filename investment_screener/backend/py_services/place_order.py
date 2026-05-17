@@ -148,6 +148,47 @@ try {{
     return _run_node(exec_js, timeout=45)
 
 
+def modify_order(tv_order_id: str, new_price: float, new_shares: Optional[int] = None,
+                 ticker: Optional[str] = None, action: Optional[str] = None) -> dict:
+    """
+    Modify a Working/Inactive order's limit price (and optionally quantity) via CDP.
+
+    Args:
+        tv_order_id: TradingView order UUID.
+        new_price:   New limit price.
+        new_shares:  New quantity (None = leave unchanged).
+        ticker:      Ticker hint for row matching.
+        action:      Side hint ("Buy" or "Sell").
+
+    Returns:
+        { "modified": bool, "modifyResult": dict, "submitResult": dict }
+    """
+    js = f"""
+import {{ modifyOrder, submitModify }} from './core/trading.js';
+try {{
+    const modify = await modifyOrder({{
+        orderId: {json.dumps(tv_order_id)},
+        ticker: {json.dumps(ticker)},
+        action: {json.dumps(action)},
+        newLimitPrice: {json.dumps(new_price)},
+        newShares: {json.dumps(new_shares)},
+    }});
+    const submit = await submitModify({{
+        ticker: {json.dumps(ticker)},
+        action: {json.dumps(action)},
+        newPrice: {json.dumps(new_price)},
+        orderId: {json.dumps(tv_order_id)},
+    }});
+    process.stdout.write(JSON.stringify({{ modified: true, modifyResult: modify, submitResult: submit }}) + '\\n');
+    process.exit(0);
+}} catch(e) {{
+    process.stdout.write(JSON.stringify({{ modified: false, error: e.message }}) + '\\n');
+    process.exit(1);
+}}
+"""
+    return _run_node(js, timeout=30)
+
+
 def cancel_order(tv_order_id: str, ticker: Optional[str] = None,
                  action: Optional[str] = None, limit_price: Optional[float] = None) -> dict:
     """Cancel a Working/Inactive order in TradingView via CDP."""
@@ -269,7 +310,11 @@ def main():
                         help="Acknowledge stale portfolio data and proceed anyway (use with caution)")
 
     parser.add_argument("--order-id", default=None, dest="order_id",
-                        help="TradingView order UUID (required for --cancel)")
+                        help="TradingView order UUID (required for --cancel / --modify)")
+    parser.add_argument("--new-price", type=float, default=None, dest="new_price",
+                        help="New limit price (required for --modify)")
+    parser.add_argument("--new-shares", type=int, default=None, dest="new_shares",
+                        help="New share quantity (optional for --modify)")
 
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--preflight", action="store_true")
@@ -278,11 +323,13 @@ def main():
                       help="Re-opens dialog if needed, fills form, then clicks submit")
     mode.add_argument("--cancel", action="store_true",
                       help="Cancel an order in TradingView by order UUID")
+    mode.add_argument("--modify", action="store_true",
+                      help="Modify limit price of a Working/Inactive order by UUID")
 
     args = parser.parse_args()
 
     # --preflight and --execute require the full set; --submit re-fills so also needs them
-    if not args.submit and not args.cancel:
+    if not args.submit and not args.cancel and not args.modify:
         for req in ("ticker", "action", "shares", "order_type", "account"):
             if getattr(args, req) is None:
                 parser.error(f"--{req.replace('_','-')} is required for --preflight/--execute")
@@ -312,16 +359,16 @@ def main():
 
         # ── data freshness gate ──────────────────────────────────────────
         # Warn if portfolio.json was not updated recently (stale prices).
-        portfolio_path = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "data", "portfolio.json"))
-        if os.path.exists(portfolio_path):
-            import time as _time
-            age_minutes = (_time.time() - os.path.getmtime(portfolio_path)) / 60
-            card["dataFreshnessMinutes"] = round(age_minutes, 1)
-            if age_minutes > 60:
-                card["_freshnessWarning"] = (
-                    f"portfolio.json is {age_minutes:.0f} min old — prices may be stale. "
-                    "Run /tv-portfolio-sync before placing orders."
-                )
+        freshness = _check_data_freshness(ack_stale=args.ack_stale)
+        card["stale"] = False
+        if freshness and freshness.get("stale"):
+            card["stale"] = True
+            card["dataFreshnessMinutes"] = freshness.get("age_minutes")
+            card["_freshnessWarning"] = freshness["reason"]
+            if not args.ack_stale:
+                print(json.dumps(card, indent=2))
+                print(f"\n🚫 {freshness['reason']}")
+                sys.exit(4)
 
         # ── max-order-value gate ─────────────────────────────────────────
         cost = card.get("costEstimate")
@@ -426,6 +473,29 @@ def main():
             print("⚠️  Portfolio sync failed — retry manually.")
         sys.exit(0)
 
+
+    # ── modify ─────────────────────────────────────────────────────────────
+    if args.modify:
+        if not args.order_id:
+            parser.error("--order-id is required for --modify")
+        if args.new_price is None:
+            parser.error("--new-price is required for --modify")
+        action = args.action.capitalize() if args.action else None
+        try:
+            result = modify_order(args.order_id, args.new_price,
+                                  new_shares=args.new_shares,
+                                  ticker=args.ticker, action=action)
+        except RuntimeError as e:
+            print(json.dumps({"error": str(e), "modified": False}, indent=2))
+            sys.exit(1)
+
+        print(json.dumps(result, indent=2))
+        if result.get("modified"):
+            print(f"\n✅ Order modified in TradingView: {args.order_id[:8]}… → ${args.new_price:.2f}")
+            sys.exit(0)
+        else:
+            print(f"\n⚠️  Modify failed: {result.get('error', 'Unknown error')}")
+            sys.exit(1)
 
     # ── cancel ─────────────────────────────────────────────────────────────
     if args.cancel:

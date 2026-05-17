@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, CheckCircle, AlertTriangle, Loader2, ShieldCheck, Clock, Wifi, TrendingUp } from 'lucide-react';
 import { runTradePreflight, runTradeExecute, runTradeSubmit, logTrade, fetchMarketQuotes, type MarketQuote } from '../services/api';
 
@@ -50,16 +51,6 @@ function ProvenanceRow({ icon, label, value, warn }: { icon: React.ReactNode; la
             <span className="text-slate-500 shrink-0">{icon}</span>
             <span className="text-slate-500 w-28 shrink-0">{label}</span>
             <span className={`font-medium ${warn ? 'text-amber-400' : 'text-slate-200'}`}>{value}</span>
-        </div>
-    );
-}
-
-function CardRow({ label, value, flag, warn }: { label: string; value: string; flag?: string; warn?: boolean }) {
-    return (
-        <div className="flex items-center justify-between py-1 border-b border-slate-800/60 last:border-0">
-            <span className="text-slate-500 text-xs w-32 shrink-0">{label}</span>
-            <span className="text-slate-200 text-xs font-mono font-medium">{value}</span>
-            {flag && <span className={`text-[10px] font-bold ml-2 ${warn ? 'text-amber-400' : 'text-emerald-400'}`}>{flag}</span>}
         </div>
     );
 }
@@ -152,7 +143,7 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
         load().catch(() => {});
     }, [ticker]);
 
-    const runPreflight = async () => {
+    const runPreflight = async (ackStale = false) => {
         setStep('running_preflight');
         setPreflightError(null);
         try {
@@ -163,11 +154,14 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                 orderType,
                 limitPrice: limitPrice ? parseFloat(limitPrice) : undefined,
                 account,
+                ackStale,
             });
             setSessionId(result.sessionId);
             setPreflightCard(result.card ?? null);
             setPreflightState(result.state);
-            if (result.error) setPreflightError(result.error);
+            if (result.error && result.state !== 'DATA_STALE_BLOCKED') {
+                setPreflightError(result.error);
+            }
             setStep('preflight_result');
         } catch (e: any) {
             setPreflightError(e.message ?? 'Preflight failed');
@@ -236,8 +230,8 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
     const isBrokerReady = provenance?.tvConnected;
     const isDataStale = provenance?.portfolioSyncAgeMin != null && provenance.portfolioSyncAgeMin > 60;
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+    return createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm">
             <div className="w-full max-w-2xl bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
 
                 {/* Header */}
@@ -317,25 +311,6 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                                                     {holdings.avgFillPrice != null ? `$${holdings.avgFillPrice.toFixed(2)}` : '—'}
                                                 </span>
                                             </div>
-                                            {/* P&L */}
-                                            {(() => {
-                                                const mp = quote?.price, bp = holdings.avgFillPrice, sh = holdings.total;
-                                                if (!mp || !bp || sh === 0) return null;
-                                                const g = (mp - bp) * sh, gp = ((mp - bp) / bp) * 100, pos = g >= 0;
-                                                return (
-                                                    <div className={`flex items-center justify-between rounded border px-2 py-1 mt-1 text-[10px] ${pos ? 'bg-emerald-500/8 border-emerald-500/20' : 'bg-red-500/8 border-red-500/20'}`}>
-                                                        <span className="text-slate-500 uppercase tracking-wide">P&amp;L</span>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className={`font-mono font-bold ${pos ? 'text-emerald-400' : 'text-red-400'}`}>
-                                                                {pos ? '+' : '−'}${Math.abs(g).toFixed(2)}
-                                                            </span>
-                                                            <span className={`font-mono px-1 rounded text-[10px] ${pos ? 'bg-emerald-500/15 text-emerald-300' : 'bg-red-500/15 text-red-300'}`}>
-                                                                {pos ? '+' : ''}{gp.toFixed(2)}%
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })()}
                                         </div>
                                     )}
                                 </div>
@@ -593,7 +568,7 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                                                 : 'Preflight Failed'}
                                         </span>
                                     </div>
-                                    <p className="text-slate-300 text-sm">{preflightError}</p>
+                                    <p className="text-slate-300 text-sm">{preflightError || preflightCard?._freshnessWarning}</p>
                                     {preflightCard?._sizeWarning && (
                                         <p className="text-amber-300 text-xs">{preflightCard._sizeWarning}</p>
                                     )}
@@ -678,14 +653,14 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                             <button onClick={onClose} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition-colors">
                                 Cancel
                             </button>
-                            <button
-                                onClick={runPreflight}
+                                <button
+                                onClick={() => runPreflight()}
                                 disabled={!isBrokerReady || !provenance}
                                 title={!isBrokerReady ? 'TradingView must be connected' : undefined}
-                                className={`flex-1 px-4 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-white flex flex-col items-center leading-tight py-2.5 ${
+                                className={`flex-1 px-4 py-2 rounded-lg text-sm font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed text-white flex flex-col items-center leading-tight py-2.5 ${
                                     action === 'sell'
-                                        ? 'bg-red-700 hover:bg-red-600'
-                                        : 'bg-emerald-700 hover:bg-emerald-600'
+                                        ? 'bg-red-700 hover:bg-red-600 shadow-lg shadow-red-900/20'
+                                        : 'bg-emerald-700 hover:bg-emerald-600 shadow-lg shadow-emerald-900/20'
                                 }`}
                             >
                                 <span className="text-base font-black">{action === 'sell' ? 'Sell' : 'Buy'}</span>
@@ -720,6 +695,14 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                             <button onClick={() => setStep('configure')} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition-colors">
                                 ← Back
                             </button>
+                            {preflightState === 'DATA_STALE_BLOCKED' && (
+                                <button
+                                    onClick={() => runPreflight(true)}
+                                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-bold transition-colors shadow-lg shadow-indigo-900/20"
+                                >
+                                    Acknowledge Staleness & Proceed
+                                </button>
+                            )}
                             <button onClick={onClose} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition-colors">
                                 Close
                             </button>
@@ -746,6 +729,7 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                     )}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
