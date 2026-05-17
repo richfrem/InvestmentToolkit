@@ -32,8 +32,12 @@ import subprocess
 import sys
 import urllib.request
 
-DEFAULT_PROMPT_FILE = "/tmp/grok_sweep_prompt.md"
-DEFAULT_OUTPUT_FILE = "/tmp/grok_sweep_response.md"
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+_TEMP_DIR = os.path.join(_REPO_ROOT, "temp")
+os.makedirs(_TEMP_DIR, exist_ok=True)
+
+DEFAULT_PROMPT_FILE = os.path.join(_TEMP_DIR, "grok_sweep_prompt.md")
+DEFAULT_OUTPUT_FILE = os.path.join(_TEMP_DIR, "grok_sweep_response.md")
 DEFAULT_CDP_PORT = 9223
 
 # The automation code piped into browser-harness stdin
@@ -161,7 +165,7 @@ def main():
 
     if not os.path.exists(args.prompt):
         print(f"Error: prompt file not found: {args.prompt}", file=sys.stderr)
-        print("Run first: python3 generate_grok_prompt.py --output /tmp/grok_sweep_prompt.md", file=sys.stderr)
+        print(f"Run first: python3 generate_grok_prompt.py --output {DEFAULT_PROMPT_FILE}", file=sys.stderr)
         sys.exit(1)
 
     print(f"CDP port:    {args.cdp_port}")
