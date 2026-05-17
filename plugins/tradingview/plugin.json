@@ -16,7 +16,8 @@
     { "name": "cancel_order", "path": "skills/cancel-order/SKILL.md", "trigger": "/cancel-order" },
     { "name": "get_orders", "path": "skills/get-orders/SKILL.md", "trigger": "/get-orders" },
     { "name": "pine_inject", "path": "skills/pine-inject/SKILL.md", "trigger": "/pine-inject" },
-    { "name": "technical_analysis_expert", "path": "skills/technical-analysis-expert/SKILL.md", "trigger": "/tv-ta-deep" }
+    { "name": "technical_analysis_expert", "path": "skills/technical-analysis-expert/SKILL.md", "trigger": "/tv-ta-deep" },
+    { "name": "ta_red_team", "path": "skills/ta-red-team/SKILL.md", "trigger": null }
   ],
   "commands": [
     { "name": "tv-alert-sync", "path": "commands/tv-alert-sync.md", "trigger": "/tv-alert-sync" },
