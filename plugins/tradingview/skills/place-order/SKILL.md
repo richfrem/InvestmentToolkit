@@ -13,6 +13,13 @@ allowed-tools: Bash, Read, Write
 
 # Place Order Skill — TradingView Broker Integration
 
+## 🎨 Self-Evolving & Self-Healing Architecture
+This skill follows the **browser-harness** paradigm:
+1.  **Self-Healing Helpers:** If the order placement fails due to a stale DOM selector or a UI change in TradingView, you are authorized and encouraged to **patch the source code** in `tradingview-cdp/core/trading.js` before retrying.
+2.  **The Map, Not the Diary:** If you discover a non-obvious timing wait, a weird broker-panel behavior, or a new account-switching selector, **update the references folder** or `README.md` to teach your future self.
+
+---
+
 ## Quick Reference
 - **Trigger**: `/place-order` or natural language ("buy 5 NVDA in TFSA", "sell 10 WYFI")
 - **Execution path**: Python `place_order.py` → Node.js `trading.js` → CDP → TradingView order dialog
@@ -21,7 +28,15 @@ allowed-tools: Bash, Read, Write
 
 ---
 
+## Phase 0: Research & Preparation
+Before any trade execution:
+1.  **Check Audit Trail:** Review recent logs in `plugins/tradingview/audit/` to see if there are persistent failures or successes with similar orders.
+2.  **Verify Environment:** Ensure the `tradingview-cdp` engine is ready and you have the latest `references/` context.
+
+---
+
 ## ⚠️ Hard Rules
+... (rest of the file)
 
 - **NEVER call `--submit` without explicit "CONFIRM" from the user**
 - **NEVER skip the preflight step** — it checks broker login and buying power

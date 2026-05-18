@@ -1,0 +1,1 @@
+../../../scripts/pine_linter.py
