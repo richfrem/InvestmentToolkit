@@ -229,7 +229,7 @@ export const syncQuestrade = async (): Promise<{ success: boolean; message: stri
 
 // Auto-pick source: TradingView CDP (primary) → Questrade → cache
 export const syncPortfolio = async (): Promise<{ success: boolean; dataSource: string; message: string }> => {
-    const response = await fetch('/api/portfolio/sync', {
+    const response = await fetch('/api/portfolio/sync-tv/apply', {
         method: 'POST',
     });
     const data = await response.json();

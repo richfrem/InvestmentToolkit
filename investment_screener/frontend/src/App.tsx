@@ -25,6 +25,7 @@ import { HelpModalProvider } from './components/HelpModal';
 
 import ScreenerPage from './pages/ScreenerPage';
 import TradeLog from './pages/TradeLog';
+import ThirteenFPage from './pages/ThirteenFPage';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
             <Route path="screener" element={<ScreenerPage />} />
             <Route path="analysis" element={<Dashboard />} />
             <Route path="trade-log" element={<TradeLog />} />
+            <Route path="13f" element={<ThirteenFPage />} />
             <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>
