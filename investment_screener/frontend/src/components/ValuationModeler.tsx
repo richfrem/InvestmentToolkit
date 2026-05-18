@@ -421,7 +421,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
             setActiveScenario('base');
         }
         setShowPresetModal(false);
-    }, [resetToYahoo, calculateScenarioPrice]);
+    }, [resetToYahoo]);
 
     const handleSaveAsPreset = useCallback(() => {
         const presetName = prompt('Name this preset:');
