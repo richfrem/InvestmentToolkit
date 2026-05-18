@@ -304,3 +304,92 @@ export async function removePineScript(client, indicatorName) {
     return { success: false, error: e.message };
   }
 }
+
+/**
+ * Save the current Pine Script to TradingView's personal library.
+ *
+ * Sends Cmd+S / Ctrl+S within the Pine Editor context. Handles the "Save as"
+ * naming dialog if the script has never been saved before.
+ *
+ * Args:
+ *   client: CDP client instance
+ *   scriptName: display name to save under (used if naming dialog appears)
+ *
+ * Returns:
+ *   { success: true, name: string, action: 'saved' | 'named-and-saved' }
+ *   { success: false, error: string }
+ */
+export async function savePineToLibrary(client, scriptName) {
+  try {
+    const safeName = JSON.stringify(String(scriptName || 'Untitled Script').trim());
+
+    // 1. Ensure Pine Editor is open/focused
+    const edCheck = await client.Runtime.evaluate({
+      expression: `(function() {
+        var ed = document.querySelector('.pine-editor-monaco');
+        if (ed && ed.offsetParent) return JSON.stringify({ open: true });
+        var btn = document.querySelector('[data-name="pine-dialog-button"]');
+        if (btn) { btn.click(); return JSON.stringify({ opened: true }); }
+        return JSON.stringify({ open: false });
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    const edData = JSON.parse(edCheck.result.value);
+    if (edData.opened) await new Promise(r => setTimeout(r, 800));
+
+    // 2. Send Cmd+S / Ctrl+S to save
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        var edEl = document.querySelector('.pine-editor-monaco');
+        if (edEl) edEl.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+        var isMac = /mac/i.test(navigator.platform);
+        document.dispatchEvent(new KeyboardEvent('keydown', {
+          key: 's', code: 'KeyS', metaKey: isMac, ctrlKey: !isMac, bubbles: true, cancelable: true,
+        }));
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 700));
+
+    // 3. Handle "Save as" naming dialog if it appeared
+    const dialogResult = await client.Runtime.evaluate({
+      expression: `(function() {
+        var input = [...document.querySelectorAll('input')].find(function(i) {
+          return i.offsetParent && (i.placeholder || '').toLowerCase().includes('name');
+        });
+        if (!input) return JSON.stringify({ dialog: false });
+        input.focus(); input.select();
+        var setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        setter.call(input, ${safeName});
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        return JSON.stringify({ dialog: true });
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    const dialogData = JSON.parse(dialogResult.result.value);
+
+    if (dialogData.dialog) {
+      await new Promise(r => setTimeout(r, 300));
+      // Confirm with Save/OK button
+      await client.Runtime.evaluate({
+        expression: `(function() {
+          var btn = [...document.querySelectorAll('button')].find(function(b) {
+            if (!b.offsetParent) return false;
+            var t = b.textContent.trim().toLowerCase();
+            return t === 'save' || t === 'ok';
+          });
+          if (btn) { btn.click(); return; }
+          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+        })()`,
+        returnByValue: true, awaitPromise: false,
+      });
+      await new Promise(r => setTimeout(r, 600));
+      return { success: true, name: scriptName, action: 'named-and-saved' };
+    }
+
+    return { success: true, name: scriptName, action: 'saved' };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
