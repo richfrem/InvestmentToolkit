@@ -206,6 +206,34 @@ process.exit(0);
         return False, [(s, d, False) for s, d in DOM_SELECTORS]
 
 
+# ── Section 0.6: Agent Workspace ─────────────────────────────────────────────
+
+AGENT_LAYOUT = "agent-layout"
+
+
+def ensure_agent_layout() -> tuple[bool, str]:
+    """[0.6] Switch to agent-layout workspace (creates it on first run).
+
+    Must pass before any Pine test runs — guarantees the agent never touches
+    the user's main layout.
+    """
+    try:
+        r = subprocess.run(
+            ["node", "cli.js", "chart", "saveLayout", "--name", AGENT_LAYOUT],
+            capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=25,
+        )
+        out = json.loads(r.stdout.strip()) if r.stdout.strip() else {}
+        if not out.get("success"):
+            return False, (
+                f"Could not switch to {AGENT_LAYOUT!r}: {out}\n"
+                "  Run: node tradingview-cdp/cli.js chart saveLayout --name agent-layout"
+            )
+        action = out.get("action", "unknown")
+        return True, f"{AGENT_LAYOUT!r} active (action: {action})"
+    except Exception as e:
+        return False, str(e)
+
+
 # ── Section 1: Pine Script Live Cycle ────────────────────────────────────────
 
 def test_live_pine_cycle() -> tuple[bool, str]:
@@ -348,7 +376,7 @@ def test_pine_save_layout() -> tuple[bool, str]:
         import time; time.sleep(1)
 
         r2 = subprocess.run(
-            ["node", "cli.js", "chart", "saveLayout", "--name", "Test_HelloWorld_Layout"],
+            ["node", "cli.js", "chart", "saveLayout", "--name", "agent-layout"],
             capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=20,
         )
         save_out = json.loads(r2.stdout.strip()) if r2.stdout.strip() else {}
@@ -458,6 +486,16 @@ def run_section_05() -> bool:
 
 def run_section_1() -> bool:
     print(f"\n{HEADER}Section 1 — Pine Script Live Cycle{RESET}")
+
+    # Pre-flight: switch to agent-layout before any Pine work
+    ok_ws, msg_ws = ensure_agent_layout()
+    icon_ws = OK if ok_ws else FAIL
+    print(f"  [0.6] {icon_ws} agent-layout workspace")
+    print(f"       {msg_ws}")
+    if not ok_ws:
+        print(f"       ⛔ Pine sections skipped — cannot risk modifying user's main layout")
+        return False
+
     ok, msg = test_live_pine_cycle()
     icon = OK if ok else FAIL
     print(f"  [1.1] {icon} live inject / read / remove")
