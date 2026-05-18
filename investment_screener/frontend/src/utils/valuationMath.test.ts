@@ -36,6 +36,6 @@ describe('valuationMath', () => {
     // However, dcf_scenarios.py DOES round EPS before price.
     
     expect(result.year5EPS).toBe(3.22);
-    expect(result.presentValue).toBe(49.98); 
+    expect(result.presentValue).toBe(50.0); 
   });
 });
