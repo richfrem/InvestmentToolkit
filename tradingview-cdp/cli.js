@@ -85,14 +85,21 @@ register('pine', {
       description: 'Inject a Pine Script file into the active chart',
       options: {
         file: { type: 'string', short: 'f', description: 'Path to .pine script file' },
+        content: { type: 'string', short: 'c', description: 'Inline Pine Script content string' },
       },
       handler: async (opts) => {
         const { readFileSync, existsSync } = await import('fs');
         const { getClient } = await import('./connection.js');
         const client = await getClient();
-        const scriptContent = opts.file && existsSync(opts.file)
-          ? readFileSync(opts.file, 'utf8')
-          : opts.file;
+        let scriptContent;
+        if (opts.content) {
+          scriptContent = opts.content;
+        } else if (opts.file) {
+          if (!existsSync(opts.file)) throw new Error(`Script file not found: ${opts.file}`);
+          scriptContent = readFileSync(opts.file, 'utf8');
+        } else {
+          throw new Error('Provide --file (-f) or --content (-c)');
+        }
         return pine.injectPineScript(client, scriptContent);
       },
     }],

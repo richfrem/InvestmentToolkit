@@ -56,7 +56,7 @@ This workstation is built on a modular plugin architecture. You have access to t
 - `/tv-alert-sync`: Sync DCF targets to TradingView price alerts.
 - `/tv-price-refresh`: Pulls real-time prices.
 - `/tv-snapshot` & `/tv-ta`: Capture technical charts and perform technical analysis.
-- `/pine-analyze {TICKER}` *(Phase 2 — planned)*: Generate custom Pine Script v5 TA via AI, inject via CDP, read indicator values from Data Window, synthesize signals into Initiate/Accumulate/Trim/Exit advisory.
+- `/pine-inject {description}`: Generate a custom Pine Script v6 indicator from a description and inject it into TradingView via CDP. Preflight validates structure before hitting TV. Script: `tv_pine_inject.py`.
 
 ### 5. Toolkit Manager (`plugins/toolkit-manager`)
 *Orchestrator.*
@@ -93,8 +93,10 @@ As an AI agent operating in this repository, you **MUST** adhere to the followin
 - **Objectivity**: When running valuations, adhere to the **Adversarial Objectivity Constraint** to prevent sycophancy. Challenge the user's assumptions and ensure reports remain fiercely objective.
 
 ### 6. TradingView CDP — Critical Node.js Rules
+- **Shared runtime at `tradingview-cdp/`**: The Node.js CDP engine lives at `tradingview-cdp/` (repo root), NOT inside `plugins/`. Installed once via `cd tradingview-cdp && npm ci`. Always import via `from tv_client import tv_call` — never hardcode the path. ADR-024.
 - **process.exit() required**: Every Node.js CDP snippet in `tradingview-cdp/` MUST end with `.then(() => process.exit(0)).catch(() => process.exit(1))`. Without it, the CDP WebSocket holds the event loop open and `subprocess.run()` from Python never returns.
 - **React fiber traversal for Monaco**: Do not rely solely on CSS selectors for Pine Editor / Monaco. Scan DOM nodes for the `__reactFiber` key prefix and walk the fiber tree. Reference: [tradesdontlie/tradingview-mcp](https://github.com/tradesdontlie/tradingview-mcp).
+- **Pine inject uses `--content`, not `--file`**: `tv_pine_inject.py` reads the file in Python (correct cwd), then passes content via `--content` to Node. Node's cwd is `tradingview-cdp/` — passing a relative path would inject the path string as Pine Script.
 - **Temp files**: Use `InvestmentToolkit/temp/` subfolder (gitignored), not `/tmp/` root. Task #0003 tracks legacy migration.
 
 ---
