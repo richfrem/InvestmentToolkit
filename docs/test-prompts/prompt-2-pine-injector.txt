@@ -1,0 +1,10 @@
+/pine-inject "Create a custom 'Momentum Squeeze' indicator using Pine Script v6."
+
+Please build an indicator that combines the Bollinger Bands width and a Keltner Channel to detect a 'squeeze' (when volatility drops abnormally low), and plots a histogram showing the momentum direction using a smoothed momentum oscillator. 
+
+Requirements:
+1. Must use Pine Script v6 syntax strictly (e.g., proper tuple unpacking for built-ins).
+2. Use `ta.kc()` and `ta.bb()` if possible, or calculate them efficiently.
+3. Plot the histogram in Green for positive momentum and Red for negative momentum.
+4. Inject it into my current TradingView chart.
+5. Once injected, read the Data Window to confirm it successfully calculated values for the current bar, and then tell me what those values are.

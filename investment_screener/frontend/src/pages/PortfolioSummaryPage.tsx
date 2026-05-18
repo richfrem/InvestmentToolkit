@@ -79,25 +79,37 @@ export default function PortfolioSummaryPage() {
     const [error, setError] = useState<string | null>(null);
     const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
     const [priceSource, setPriceSource] = useState<string | null>(null);
+    const [syncing, setSyncing] = useState(false);
 
-    useEffect(() => {
+    function loadAll() {
+        setLoading(true);
+        setAllocLoading(true);
+        setPerfLoading(true);
         fetchPortfolioSummary()
             .then(d => { setSummary(d); setLastRefreshedAt(new Date()); setPriceSource(d.price_source ?? null); })
             .catch(err => setError(err.message || 'Failed to load portfolio summary'))
             .finally(() => setLoading(false));
-
-        // Strategy allocation is fast (pure Node.js file read)
         fetchStrategyAllocation()
             .then(setAllocation)
             .catch(() => setAllocation(null))
             .finally(() => setAllocLoading(false));
-
-        // Performance is slow (yfinance) — load independently so it doesn't block the page
         fetchPortfolioPerformance()
             .then(setPerf)
             .catch(() => setPerf(null))
             .finally(() => setPerfLoading(false));
-    }, []);
+    }
+
+    async function syncAndRefresh() {
+        setSyncing(true);
+        try {
+            await fetch('/api/portfolio/sync-tv/apply', { method: 'POST' });
+        } catch { /* TV not available */ }
+        setSyncing(false);
+        loadAll();
+        window.dispatchEvent(new CustomEvent('portfolio-synced'));
+    }
+
+    useEffect(() => { loadAll(); }, []);
 
     if (loading) {
         return (
@@ -124,7 +136,14 @@ export default function PortfolioSummaryPage() {
                         YTD performance and total value across all accounts
                     </p>
                 </div>
-                <div className="mt-1">
+                <div className="mt-1 flex items-center gap-3">
+                    <button
+                        onClick={syncAndRefresh}
+                        disabled={syncing}
+                        className="px-3 py-1 bg-zinc-800 text-zinc-300 rounded text-xs hover:bg-zinc-700 disabled:opacity-50 transition-colors"
+                    >
+                        {syncing ? '⟳ Syncing…' : '↻ Refresh'}
+                    </button>
                     <PriceSourceBadge priceSource={priceSource} lastRefreshedAt={lastRefreshedAt} />
                 </div>
             </div>

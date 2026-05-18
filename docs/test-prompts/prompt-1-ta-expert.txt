@@ -1,0 +1,10 @@
+/tv-ta-deep AMD
+
+I'd like you to do a deep technical analysis on my AMD position to help me decide if I should take profits or reduce my position, and at what limit prices.
+
+Please follow these steps:
+1. **Workspace Safety:** Please do not permanently alter my primary chart layout. Either create a new temporary layout if you know how, or ensure you meticulously remove any indicators you add once you are done reading their values from the Data Window.
+2. **Multi-Timeframe Analysis:** Switch between the 1D, 4H, and 1H timeframes.
+3. **Indicator Management:** At each timeframe, enable standard momentum and trend indicators (e.g., RSI, MACD, and a 50/200 EMA). 
+4. **Data Extraction:** Read the Data Window at each timeframe to capture the exact values.
+5. **Synthesis & Recommendation:** Based on the data across these timeframes, tell me if AMD is overextended. Give me specific limit sell prices for where I should trim or exit my position based on technical resistance levels.

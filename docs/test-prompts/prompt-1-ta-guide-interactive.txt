@@ -1,0 +1,37 @@
+SKILL UNDER TEST: ta-guide agent (interactive guided TA session)
+REPLACES: prompt-1-ta-expert.txt (was a direct /tv-ta-deep — skipped the agent entirely)
+
+---
+
+/ta-guide NVDA 1D
+
+I already hold NVDA in my TFSA and I'm deciding whether to add to the position
+or start trimming. My thesis is long-term AI infrastructure; I'm not a short-term
+trader.
+
+Walk me through the analysis step by step. I want to understand what each indicator
+is telling me, not just get a conclusion. Specifically:
+
+1. I know what RSI and MACD are in textbook terms — tell me what the CURRENT values
+   mean for NVDA right now, in context, not the definition.
+
+2. I have roughly 50 shares in TFSA. If the TA says "accumulate", give me a specific
+   limit price and share count that makes sense for a position this size.
+   If it says "trim", give me a limit sell price and how many shares.
+
+3. If the standard EMA/RSI/MACD bundle isn't enough for a stock like NVDA (high beta,
+   momentum-driven), tell me what indicator you'd add or author to get a cleaner read
+   on momentum exhaustion. Then add it.
+
+4. Cross-reference your TA levels against the DCF fair value in
+   data/projections/NVDA.json if it exists.
+
+WHAT THIS TESTS:
+- ta-guide Phase 1 (intake: ticker/timeframe/intent)
+- ta-guide Phase 4 (indicator education with actual values, not textbook definitions)
+- ta-guide Phase 4b (evaluates indicator set, decides whether to inject bundle or add built-ins)
+- ta-guide Phase 5 (dispatches technical-analysis-expert for structured synthesis)
+- ta-guide Phase 6 (plain-language commentary tailored to "I already hold it" intent frame)
+- ta-guide Phase 7 (interactive follow-up with position sizing)
+- Self-evolution: if any CDP call fails during the session, the agent should
+  classify and self-heal before asking the user to restart TradingView

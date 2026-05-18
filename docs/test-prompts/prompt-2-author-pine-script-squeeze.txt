@@ -1,0 +1,45 @@
+SKILL UNDER TEST: /author-pine-script (full 7-phase authoring workflow)
+REPLACES: prompt-2-pine-injector.txt (was /pine-inject — skipped Phase 0 source
+research, lint gate, library save, and the "teach yourself first" pattern entirely)
+
+---
+
+/author-pine-script "Pine Script v6 Squeeze Momentum — rebuilt from LazyBear source"
+
+Before you write a single line of code, I want you to fully research the original:
+
+1. RESEARCH FIRST: Use pine_source_reader.py to fetch the live source of
+   "Squeeze Momentum Indicator [LazyBear]" directly from TradingView's Indicators
+   dialog. Read the source carefully. Note exactly which functions are v1/v4 syntax
+   that need migration to v6 (sma→ta.sma, linreg→ta.linreg, highest→ta.highest, etc.)
+   and note any nz() patterns.
+
+2. AUTHOR: Build a clean Pine Script v6 recreation with these requirements:
+   - //@version=6 mandatory
+   - Squeeze detection: Bollinger Bands inside Keltner Channels = squeeze (plot a
+     dot: red = in squeeze, green = squeeze fired, grey = no squeeze)
+   - Momentum histogram: colour-coded bars (lime = positive+rising, green = positive+falling,
+     red = negative+falling, maroon = negative+rising)
+   - All values visible in the Data Window
+   - No repainting: use barstate.isconfirmed for signal logic
+   - Name: "AI_Squeeze_v6"
+
+3. LINT: Run pine_linter.py before injecting. Fix any errors. Do not inject if
+   the linter exits with code 1.
+
+4. INJECT: Push to the active chart. If injection fails due to a stale selector
+   or CDP error, invoke the self-evolution skill — classify the failure, patch
+   the helper, and retry. Do not ask me to restart TradingView.
+
+5. VERIFY: Read the Data Window to confirm the indicator calculated values on the
+   current bar. Tell me the squeeze state and momentum direction for the current bar.
+
+6. SAVE: Save the script to the TradingView library as "AI_Squeeze_v6".
+
+WHAT THIS TESTS:
+- author-pine-script Phase 0 (pine_source_reader.py live source fetch from TV dialog)
+- v5→v6 migration pattern recognition (linreg, sma, highest, nz)
+- author-pine-script Phase 2.5 (pine_linter.py lint gate — exit code check)
+- author-pine-script Phase 3 (inject + self-heal loop with self-evolution on CDP failure)
+- author-pine-script Phase 4 (save to TV library)
+- Data Window read to verify values

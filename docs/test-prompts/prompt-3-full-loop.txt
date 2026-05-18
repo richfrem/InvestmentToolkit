@@ -1,0 +1,9 @@
+/tv-ta-deep AMD
+
+I need to analyze AMD. Instead of just using the built-in indicators, I want you to first use your Pine Script generation skill to create and inject a custom v6 "Support/Resistance Cluster" indicator that dynamically calculates the top 3 high-volume nodes over the last 100 bars. 
+
+Once you have injected that custom indicator:
+1. Switch to the 1D timeframe.
+2. Read the Data Window to extract those dynamic support/resistance levels.
+3. Remove the custom indicator so my chart stays clean.
+4. Tell me exactly where I should place limit buy orders to accumulate more AMD based on those custom levels.

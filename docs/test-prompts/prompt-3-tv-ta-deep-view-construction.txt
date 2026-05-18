@@ -1,0 +1,50 @@
+SKILL UNDER TEST: /tv-ta-deep with custom view construction + multi-timeframe
+REPLACES: prompt-3-full-loop.txt (was a good idea but didn't test view construction,
+multi-timeframe macro context, or the community indicator source research path)
+
+---
+
+/tv-ta-deep AMD 1D
+
+Context: AMD is a high-volatility semiconductor stock. I want a serious entry
+analysis — not just "RSI is 60." I need specific limit buy prices where I'd
+accumulate based on technical structure, with multi-timeframe confirmation.
+
+REQUIREMENTS FOR THIS ANALYSIS:
+
+1. BUILD THE RIGHT VIEW — don't just read whatever is on the chart now:
+   - First check what indicators are already loaded (chart indicators command)
+   - If the standard bundle (EMA20/50/200, RSI, MACD) isn't there, inject it
+   - For AMD specifically, I also want Squeeze Momentum on the chart — if
+     AI_Squeeze_v6 exists in the TV library from a prior session, add it;
+     otherwise fetch the SuperTrend source via pine_source_reader.py and
+     author a v6 ATR-based trend filter
+
+2. MULTI-TIMEFRAME CONTEXT — read weekly first:
+   - Read 1W to establish the macro trend and EMA alignment
+   - Then switch to 1D for entry precision
+   - Note whether daily and weekly are aligned or in conflict
+
+3. SYNTHESIZE: Give me a structured output with:
+   - Macro trend (1W): bullish / bearish / contested
+   - Daily structure: key support/resistance levels with basis
+   - Momentum state: RSI + Squeeze reading
+   - Three limit buy prices (aggressive / base / conservative) with the
+     technical rationale for each level
+
+4. CLEANUP: Remove any injected indicators when done. My chart should be
+   identical to how it started.
+
+5. SELF-HEAL: If any CDP call fails (timeframe switch, chart read, inject),
+   classify it via self-evolution, patch the helper, and continue.
+   Do not stop the analysis for a fixable CDP error.
+
+WHAT THIS TESTS:
+- technical-analysis-expert Phase 4a (chart indicators check)
+- technical-analysis-expert Phase 4b (evaluate indicator set, decide what to add)
+- technical-analysis-expert Phase 4c (pine_source_reader.py for community indicators)
+- technical-analysis-expert Phase 4d (multi-timeframe: 1W macro before 1D entry)
+- technical-analysis-expert Phase 4e (re-read with complete view)
+- technical-analysis-expert Phase 5 (synthesis with entry/accumulate/trim/exit)
+- Cleanup via pine remove command
+- Self-evolution on any CDP failure during the workflow

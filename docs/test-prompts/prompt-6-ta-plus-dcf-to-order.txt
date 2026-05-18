@@ -1,0 +1,55 @@
+SKILL UNDER TEST: ta-guide → /tv-ta-deep → /place-order full pipeline
+NEW PROMPT — end-to-end: TA synthesis → DCF cross-reference → order decision
+
+---
+
+/ta-guide PSU-U.TO 1D
+
+Context: PSU-U.TO is a monthly dividend fund I hold in both TFSA and RRSP.
+I'm thinking about adding shares but I need to respect the dividend timing rule:
+buy 1-2 days AFTER the ex-dividend date (last Tuesday of the month), never
+mid-cycle. Today is 2026-05-18 — the next entry window opens ~May 29.
+
+I want a complete analysis that ends in a concrete order decision:
+
+1. RUN THE FULL TA:
+   - Set the chart to PSU-U.TO on 1D
+   - Build the indicator view: EMA20/50/200, RSI, and for a monthly dividend fund
+     I care about mean-reversion more than momentum — if you have a Bollinger Band
+     or Nadaraya-Watson Envelope available (check the TV library or author one),
+     add it to see if price is extended from the mean
+   - Read 1W for macro context, then 1D for entry precision
+
+2. DCF CROSS-REFERENCE:
+   - Check data/projections/PSU-U.TO.json for fair value if it exists
+   - If TA says buy but DCF says overvalued, explain the conflict and which takes
+     precedence for a yield-focused position like this
+
+3. ENTRY DECISION:
+   Based on the TA + DCF, tell me:
+   - Is May 29 still a good entry target or has the price moved too much?
+   - What is your recommended limit buy price for 5 shares TFSA + 2 shares RRSP?
+   - What would make you NOT place the order (e.g., RSI > 70, price above upper BB)?
+
+4. ORDER PREP (do NOT submit — stop at preflight):
+   If the TA + DCF both support buying, use /place-order to prepare (but not
+   confirm) the following:
+     buy 5 PSU-U.TO in TFSA at [your recommended limit price]
+   Show me the preflight card and stop. I'll review it tomorrow after the ex-date.
+
+5. CLEANUP: Remove any injected indicators.
+
+WHAT THIS TESTS:
+- ta-guide full pipeline on a real portfolio position
+- Non-obvious indicator selection: mean-reversion tool for a yield fund vs
+  momentum tools for a growth stock (different indicator logic per asset class)
+- DCF vs TA conflict resolution
+- /place-order preflight card generation (HITL — stops at confirmation step)
+- Dividend timing rule awareness (tests whether the agent respects domain knowledge
+  from memory/CLAUDE.md)
+- Multi-account order sizing (TFSA + RRSP separate entries)
+
+DIVIDEND TIMING REMINDER TO AGENT:
+PSU-U.TO ex-date is the last Tuesday of each month. Buy 1-2 days AFTER (Wednesday
+or Thursday). Never buy before or on the ex-date — you pay full price for a
+distribution that reduces NAV. Next entry window: ~May 29, 2026.

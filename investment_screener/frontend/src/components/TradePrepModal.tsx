@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, CheckCircle, AlertTriangle, Loader2, ShieldCheck, Clock, Wifi, TrendingUp } from 'lucide-react';
+import { X, CheckCircle, AlertTriangle, Loader2, ShieldCheck, Clock, Wifi, TrendingUp, RefreshCw } from 'lucide-react';
 import { runTradePreflight, runTradeExecute, runTradeSubmit, logTrade, fetchMarketQuotes, type MarketQuote } from '../services/api';
 
 type ModalStep =
@@ -88,8 +88,27 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
     const [submitResult, setSubmitResult] = useState<any>(null);
     const [executeError, setExecuteError] = useState<string | null>(null);
     const [, setSubmitError] = useState<string | null>(null);
+    const [quoteRefreshing, setQuoteRefreshing] = useState(false);
 
-    // Load provenance + holdings on mount
+    const refreshQuote = async () => {
+        setQuoteRefreshing(true);
+        try {
+            const quotesMap = await fetchMarketQuotes([ticker]);
+            if (quotesMap?.[ticker]) {
+                const q = quotesMap[ticker];
+                setQuote(q);
+                const defaultPrice = action === 'sell' ? q.bid : q.ask;
+                if (defaultPrice != null) {
+                    setLimitPrice(defaultPrice.toFixed(2));
+                    setStopPrice(defaultPrice.toFixed(2));
+                }
+            }
+        } catch { /* silently fail */ }
+        setQuoteRefreshing(false);
+    };
+
+    // Load provenance + holdings on mount — also triggers a live TV position refresh
+    // when TV is connected so "Current Holdings" always reflects the latest positions.
     useEffect(() => {
         const load = async () => {
             const [tvRes, syncRes, projRes, holdingsRes, quoteRes] = await Promise.allSettled([
@@ -99,6 +118,16 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                 fetch(`/api/portfolio/holdings/${ticker}`).then(r => r.json()),
                 fetchMarketQuotes([ticker]),
             ]);
+
+            // If TV is connected, silently refresh positions in the background then
+            // re-fetch holdings so "Current Holdings" is always current.
+            const tvData = tvRes.status === 'fulfilled' ? tvRes.value : null;
+            if (tvData?.price_source === 'tradingview') {
+                fetch('/api/portfolio/sync-tv', { method: 'POST' })
+                    .then(() => fetch(`/api/portfolio/holdings/${ticker}`).then(r => r.json()))
+                    .then(fresh => { if (fresh) setHoldings(fresh); })
+                    .catch(() => {});
+            }
 
             const tv = tvRes.status === 'fulfilled' ? tvRes.value : null;
             const sync = syncRes.status === 'fulfilled' ? syncRes.value : null;
@@ -217,7 +246,8 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
         : action === 'buy' ? 'Prepare Buy' : 'Prepare Sell';
 
     const isBrokerReady = provenance?.tvConnected;
-    const isDataStale = provenance?.portfolioSyncAgeMin != null && provenance.portfolioSyncAgeMin > 60;
+    // When TV is live, prices are always current — only warn if NOT connected AND data is old.
+    const isDataStale = !provenance?.tvConnected && provenance?.portfolioSyncAgeMin != null && provenance.portfolioSyncAgeMin > 60;
 
     return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm">
@@ -331,6 +361,14 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                                 <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Order Details</div>
 
                                 {/* Bid/Ask bar — active side highlighted based on action */}
+                                <div className="flex items-center justify-between mb-1">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Bid / Ask</span>
+                                    <button onClick={refreshQuote} disabled={quoteRefreshing}
+                                        className="flex items-center gap-1 text-[10px] text-slate-500 hover:text-slate-300 transition-colors disabled:opacity-40">
+                                        <RefreshCw size={10} className={quoteRefreshing ? 'animate-spin' : ''} />
+                                        {quoteRefreshing ? 'Refreshing…' : 'Refresh'}
+                                    </button>
+                                </div>
                                 {quote && (quote.bid != null || quote.ask != null) && (() => {
                                     const isBuyAction = action === 'buy';
                                     return (
