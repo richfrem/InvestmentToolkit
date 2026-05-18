@@ -516,6 +516,36 @@
       "dst": "plugins/tradingview/skills/pine-inject/scripts/tv_pine_inject.py",
       "strategy": "symlink",
       "description": "ADR-003: pine-inject script symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/references/pinescript_overview.md",
+      "dst": "plugins/tradingview/skills/author-pine-script/references/pinescript_overview.md",
+      "strategy": "symlink",
+      "description": "ADR-003: author-pine-script reference symlink -> plugin root references/"
+    },
+    {
+      "src": "plugins/tradingview/references/PineScript_Agent_Skill_Rules.md",
+      "dst": "plugins/tradingview/skills/author-pine-script/references/PineScript_Agent_Skill_Rules.md",
+      "strategy": "symlink",
+      "description": "ADR-003: author-pine-script agent rules symlink -> plugin root references/"
+    },
+    {
+      "src": "plugins/tradingview/references/Top_TradingView_Indicators_Reference.md",
+      "dst": "plugins/tradingview/skills/author-pine-script/references/Top_TradingView_Indicators_Reference.md",
+      "strategy": "symlink",
+      "description": "ADR-003: author-pine-script indicators reference symlink -> plugin root references/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/pine_linter.py",
+      "dst": "plugins/tradingview/skills/author-pine-script/scripts/pine_linter.py",
+      "strategy": "symlink",
+      "description": "ADR-003: author-pine-script linter symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/pine_source_reader.py",
+      "dst": "plugins/tradingview/skills/author-pine-script/scripts/pine_source_reader.py",
+      "strategy": "symlink",
+      "description": "ADR-003: author-pine-script review loop symlink -> plugin root scripts/"
     }
   ]
 }

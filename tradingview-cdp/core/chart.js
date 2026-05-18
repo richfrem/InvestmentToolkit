@@ -552,47 +552,91 @@ export async function addIndicator(client, name) {
   try {
     const safeName = JSON.stringify(name);
 
-    // 1. Open Indicators dialog
-    await client.Runtime.evaluate({
-      expression: `document.querySelector('[data-name="open-indicators-dialog"]').click()`,
+    // 1. Snapshot existing item- elements so we can exclude them later.
+    //    The chart legend uses [class*="item-"] too; new elements after the
+    //    search are the dialog results, not the legend entries.
+    const snapshotResult = await client.Runtime.evaluate({
+      expression: `JSON.stringify(
+        [...document.querySelectorAll('[class*="item-"]')]
+          .filter(function(e){ return e.offsetParent; })
+          .map(function(e){ return e.textContent.trim().substring(0,80); })
+      )`,
       returnByValue: true, awaitPromise: false,
     });
-    await new Promise(r => setTimeout(r, 700));
+    const existingTexts = new Set(JSON.parse(snapshotResult.result.value));
 
-    // 2. Search for indicator
+    // 2. Open Indicators dialog — prefer the button with visible "Indicators" text
     await client.Runtime.evaluate({
       expression: `(function() {
+        var btns = [...document.querySelectorAll('[data-name="open-indicators-dialog"]')];
+        var visible = btns.filter(function(b){ return b.offsetParent; });
+        var withText = visible.find(function(b){ return b.textContent.trim() === 'Indicators'; });
+        (withText || visible[0] || btns[0]).click();
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 1000));
+
+    // 3. Type search term
+    const typeResult = await client.Runtime.evaluate({
+      expression: `(function() {
         var input = [...document.querySelectorAll('input')].find(function(i) {
-          return i.offsetParent && i.placeholder === 'Search';
+          return i.offsetParent && (i.placeholder === 'Search' || i.placeholder === 'Find indicator...');
         });
-        if (!input) return;
+        if (!input) return 'no-input';
         input.focus();
         var setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
         setter.call(input, ${safeName});
         input.dispatchEvent(new Event('input', { bubbles: true }));
+        return 'typed';
       })()`,
       returnByValue: true, awaitPromise: false,
     });
-    await new Promise(r => setTimeout(r, 900));
+    if (typeResult.result.value === 'no-input') {
+      return { success: false, error: `Indicators dialog did not open (no search input found for "${name}")` };
+    }
+    await new Promise(r => setTimeout(r, 1400));
 
-    // 3. Click first result
+    // 4. Click first NEW result — exclude items that existed before dialog opened.
+    //    Also skip items whose class includes 'series-' or 'study-' (chart legend classes).
+    const existingJson = JSON.stringify([...existingTexts]);
     const clickResult = await client.Runtime.evaluate({
       expression: `(function() {
-        // Results appear as list items — find the first visible one
-        var item = [...document.querySelectorAll('[role="option"], [class*="listItem"], [class*="item-"]')]
-          .find(function(el) { return el.offsetParent && el.textContent.trim().length > 0; });
+        var existing = new Set(${existingJson});
+        var searchTerm = ${safeName}.toLowerCase();
+        var items = [...document.querySelectorAll('[class*="item-"]')]
+          .filter(function(el) {
+            if (!el.offsetParent) return false;
+            var txt = el.textContent.trim();
+            if (!txt) return false;
+            // Skip chart-legend-specific classes (series / study items)
+            if (/\\bseries-|\\bstudy-/.test(el.className)) return false;
+            // Prefer items that were not in the pre-dialog snapshot
+            if (existing.has(txt.substring(0, 80))) return false;
+            return true;
+          });
+        // Fallback: if no new items found, allow any item matching search term
+        if (items.length === 0) {
+          items = [...document.querySelectorAll('[class*="item-"]')]
+            .filter(function(el) {
+              return el.offsetParent &&
+                     el.textContent.toLowerCase().includes(searchTerm) &&
+                     !/\\bseries-|\\bstudy-/.test(el.className);
+            });
+        }
+        var item = items[0];
         if (item) {
           item.click();
-          return JSON.stringify({ clicked: true, text: item.textContent.trim().substring(0, 50) });
+          return JSON.stringify({ clicked: true, text: item.textContent.trim().substring(0, 60) });
         }
         return JSON.stringify({ clicked: false });
       })()`,
       returnByValue: true, awaitPromise: false,
     });
     const data = JSON.parse(clickResult.result.value);
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 600));
 
-    // 4. Close dialog
+    // 5. Close dialog
     await client.Runtime.evaluate({
       expression: `document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`,
       returnByValue: true, awaitPromise: false,

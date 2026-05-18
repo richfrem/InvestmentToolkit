@@ -137,6 +137,18 @@ register('pine', {
         return pine.savePineToLibrary(client, name);
       },
     }],
+    ['sourceRead', {
+      description: 'Open an indicator source in the Pine Editor and return its code',
+      options: {
+        name: { type: 'string', short: 'n', description: 'Indicator name to search (omit to read current editor)' },
+      },
+      handler: async (opts, positionals) => {
+        const name = opts.name || positionals[0] || null;
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return pine.readSourceFromDialog(client, name);
+      },
+    }],
   ]),
 });
 
