@@ -24,6 +24,96 @@ function backupPortfolio(): void {
     if (fs.existsSync(PORTFOLIO_FILE)) fs.copyFileSync(PORTFOLIO_FILE, PORTFOLIO_FILE + '.bak');
 }
 
+/**
+ * Keep thesis holdings[].shares in sync with actual portfolio positions.
+ * Called after any write to portfolio.json that may change share quantities.
+ * - Updates shares on existing thesis holdings.
+ * - Removes the shares field when a position is closed.
+ * - Adds a stub holding for new tickers not yet in the thesis.
+ */
+function syncThesisShares(positions: any[]): void {
+    if (!fs.existsSync(THESIS_FILE)) return;
+    try {
+        const thesis = JSON.parse(fs.readFileSync(THESIS_FILE, 'utf-8'));
+        const holdings: any[] = thesis.holdings ?? [];
+
+        // ticker → total shares from portfolio.json (skip virtual cash)
+        const portfolioMap = new Map<string, number>();
+        for (const pos of positions) {
+            const sym: string = pos.symbol || pos.ticker;
+            if (sym && sym !== 'USD_CASH') portfolioMap.set(sym, pos.shares ?? 0);
+        }
+
+        let dirty = false;
+
+        for (const h of holdings) {
+            const ticker: string = h.ticker;
+            if (!ticker || ticker === 'USD_CASH') continue;
+
+            if (portfolioMap.has(ticker)) {
+                const newShares = portfolioMap.get(ticker)!;
+                if (h.shares !== newShares) { h.shares = newShares; dirty = true; }
+                portfolioMap.delete(ticker);
+            } else if (h.shares !== undefined) {
+                // Position closed — drop the field so the holding stays as a thesis target
+                delete h.shares;
+                dirty = true;
+            }
+        }
+
+        // New tickers not yet tracked in thesis — add minimal stub
+        for (const [ticker, shares] of portfolioMap) {
+            holdings.push({
+                ticker,
+                name: ticker,
+                pillarId: 'other',
+                targetWeight: 0,
+                role: 'watchlist',
+                thesisForInclusion: '',
+                agentRationale: `Added automatically on ${new Date().toISOString().slice(0, 10)}.`,
+                shares,
+            });
+            dirty = true;
+            console.log(`[Thesis] New position ${ticker} (${shares} shares) — added stub holding.`);
+        }
+
+        if (dirty) {
+            thesis.holdings = holdings;
+            thesis.updatedAt = new Date().toISOString();
+            fs.writeFileSync(THESIS_FILE, JSON.stringify(thesis, null, 2));
+            console.log(`[Thesis] Synced shares across ${holdings.length} holdings.`);
+        }
+    } catch (err: any) {
+        console.error('[Thesis] Failed to sync shares:', err.message);
+    }
+}
+
+/**
+ * Reconciliation gate: compare our computed portfolio value vs TV broker total.
+ * holdings = portfolio.json positions (with stored prices)
+ * tvSnapshot = raw TV snapshot object (has snapshots[].balances)
+ */
+function verifyPortfolioTotals(holdings: any[], tvSnapshot: any): {
+    holdingsTotal: number; totalCash: number; computedTotal: number;
+    brokerTotal: number; diff: number; pct: number; isValid: boolean;
+} {
+    const holdingsTotal = holdings
+        .filter(p => (p.symbol || p.ticker) !== 'USD_CASH')
+        .reduce((sum, p) => sum + (p.shares || 0) * (p.price ?? p.book_price ?? 0), 0);
+    const totalCash = (tvSnapshot.snapshots ?? []).reduce((sum: number, snap: any) => {
+        return sum + (snap?.balances?.cashUSD ?? 0);
+    }, 0);
+    const computedTotal = holdingsTotal + totalCash;
+    const brokerTotal = (tvSnapshot.snapshots ?? []).reduce((sum: number, snap: any) => {
+        const equity = snap?.balances?.totalEquityUSDCombined ?? snap?.balances?.totalEquityUSD ?? 0;
+        return sum + (typeof equity === 'number' && equity > 0 ? equity : 0);
+    }, 0);
+    const diff = computedTotal - brokerTotal;
+    const pct = brokerTotal > 0 ? (diff / brokerTotal) * 100 : 0;
+    const isValid = Math.abs(diff) <= 200 || Math.abs(pct) <= 0.5;
+    return { holdingsTotal, totalCash, computedTotal, brokerTotal, diff, pct, isValid };
+}
+
 // ── Portfolio CRUD ────────────────────────────────────────────────────────────
 
 router.get('/', async (_req, res) => {
@@ -64,17 +154,45 @@ router.get('/summary', async (_req, res) => {
     try {
         if (!fs.existsSync(PORTFOLIO_FILE)) { res.status(404).json({ error: 'No portfolio data found' }); return; }
         const positions = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+
+        // ── Total market value: TV snapshot is the authoritative source ──────
+        // Read totalEquityUSD per account from the last TV sync (portfolio_tv.json).
+        // Falls back to computed prices if TV snapshot is absent.
         let totalMarketValueUSD = 0;
+        let priceSource = 'yfinance';
+        const tvFile = path.join(path.dirname(PORTFOLIO_FILE), 'portfolio_tv.json');
+        if (fs.existsSync(tvFile)) {
+            try {
+                const tvSnapshot = JSON.parse(fs.readFileSync(tvFile, 'utf-8'));
+                // Use totalEquityUSDCombined — includes CAD positions converted to USD, matches TV UI
+                const tvTotal = (tvSnapshot.snapshots ?? []).reduce((sum: number, snap: any) => {
+                    const equity = snap?.balances?.totalEquityUSDCombined ?? snap?.balances?.totalEquityUSD;
+                    return sum + (typeof equity === 'number' && equity > 0 ? equity : 0);
+                }, 0);
+                if (tvTotal > 0) {
+                    totalMarketValueUSD = tvTotal;
+                    priceSource = 'tradingview';
+                    console.log(`[Summary] Using TV snapshot total (Combined): $${tvTotal.toFixed(2)} USD`);
+                }
+            } catch { /* fall through to computed */ }
+        }
+        // Fallback: compute from stored prices (yfinance)
+        if (totalMarketValueUSD === 0) {
+            for (const pos of positions) {
+                totalMarketValueUSD += (pos.shares || 0) * (pos.price ?? pos.book_price ?? 0);
+            }
+        }
+
+        // Book value always from portfolio.json (fill prices don't change)
         let totalBookValueUSD = 0;
         for (const pos of positions) {
-            totalMarketValueUSD += (pos.shares || 0) * (pos.price || 0);
             totalBookValueUSD += (pos.shares || 0) * (pos.book_price || 0);
         }
+
         const liveUsdCadRate = await getLiveUsdCadRate(JAN1_USD_CAD_RATE);
         const totalMarketValueCAD = totalMarketValueUSD * liveUsdCadRate;
         const totalBookValueCAD = totalBookValueUSD * liveUsdCadRate;
         const ytdStartValueUSD = YTD_START_VALUE_CAD / JAN1_USD_CAD_RATE;
-        const tvConnected = await isTradingViewConnected();
         res.json({
             positionCount: positions.length,
             totalMarketValueUSD, totalMarketValueCAD,
@@ -91,7 +209,7 @@ router.get('/summary', async (_req, res) => {
             unrealizedGainPctCAD: totalBookValueUSD > 0 ? ((totalMarketValueUSD - totalBookValueUSD) / totalBookValueUSD) * 100 : 0,
             liveUsdCadRate, jan1UsdCadRate: JAN1_USD_CAD_RATE,
             lastUpdated: new Date().toISOString(),
-            price_source: tvConnected ? 'tradingview' : 'yfinance',
+            price_source: priceSource,
         });
     } catch (error) {
         console.error(`[API] Error computing portfolio summary: `, error);
@@ -219,8 +337,10 @@ router.post('/refresh-prices', async (_req, res) => {
     console.log(`[API] Refreshing portfolio prices from Yahoo...`);
     try {
         const portfolioData = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+        // Strip stored price so fetch_portfolio_heatmap.py uses live yfinance prices
+        const itemsForFetch = portfolioData.map((item: any) => { const { price, ...rest } = item; return rest; });
         const [data, exchangeRate] = await Promise.all([
-            spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(portfolioData)]),
+            spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(itemsForFetch)]),
             getLiveUsdCadRate(JAN1_USD_CAD_RATE),
         ]);
         if (data.error) { res.status(400).json({ error: data.error }); return; }
@@ -278,8 +398,42 @@ router.post('/sync-tv/promote', async (req, res) => {
     }
     backupPortfolio();
     fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(merged, null, 2));
+    syncThesisShares(merged);
     console.log(`[API] portfolio.json promoted from TV snapshot (${merged.length} positions).`);
     res.json({ success: true, positionCount: merged.length, message: 'portfolio.json updated from TradingView data.' });
+});
+
+// One-shot: fetch TV snapshot → merge → write portfolio.json immediately (no HITL gate)
+router.post('/sync-tv/apply', async (_req, res) => {
+    console.log('[API] TV sync + auto-apply to portfolio.json...');
+    try {
+        const snapshot = await brokerSyncService.syncFromTV();
+        const posCount = snapshot.positions?.length ?? 0;
+        if (posCount === 0) {
+            console.warn('[API] TradingView returned 0 positions — portfolio.json unchanged.');
+            res.json({ success: true, positionCount: 0, tvAvailable: false, message: 'TradingView not available or returned 0 positions — portfolio unchanged.' });
+            return;
+        }
+        const existing = fs.existsSync(PORTFOLIO_FILE) ? JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8')) : [];
+        const { merged, added, removed, changed } = mergeIntoPortfolio(snapshot, existing);
+        backupPortfolio();
+        fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(merged, null, 2));
+        syncThesisShares(merged);
+
+        // Reconciliation gate — compare stored prices vs TV broker total
+        const recon = verifyPortfolioTotals(merged, snapshot);
+        if (recon.isValid) {
+            console.log(`[Recon] ✅ PASS  computed=$${recon.computedTotal.toFixed(2)} broker=$${recon.brokerTotal.toFixed(2)} diff=$${recon.diff.toFixed(2)} (${recon.pct.toFixed(2)}%)`);
+        } else {
+            console.error(`[Recon] ❌ MISMATCH  computed=$${recon.computedTotal.toFixed(2)} broker=$${recon.brokerTotal.toFixed(2)} diff=$${recon.diff.toFixed(2)} (${recon.pct.toFixed(2)}%)  — run ↻ Refresh to update stored prices`);
+        }
+
+        console.log(`[API] portfolio.json auto-applied from TV (${merged.length} positions).`);
+        res.json({ success: true, positionCount: merged.length, tvAvailable: true, diff: { added, removed, changed }, reconciliation: recon });
+    } catch (error: any) {
+        console.error('[API] TV sync/apply error:', error);
+        res.status(500).json({ error: 'TV sync failed', details: error.message });
+    }
 });
 
 router.post('/sync', async (_req, res) => {
