@@ -153,6 +153,25 @@ register('chart', {
         return chart.readDataWindow(client);
       },
     }],
+    ['openDataWindow', {
+      description: 'Open the Data Window panel if not already visible',
+      handler: async () => {
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return chart.openDataWindow(client);
+      },
+    }],
+    ['saveLayout', {
+      description: 'Save the current chart layout (optional --name)',
+      options: {
+        name: { type: 'string', short: 'n', description: 'Layout name (used if a naming dialog appears)' },
+      },
+      handler: async (opts) => {
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return chart.saveLayout(client, opts.name);
+      },
+    }],
   ]),
 });
 
