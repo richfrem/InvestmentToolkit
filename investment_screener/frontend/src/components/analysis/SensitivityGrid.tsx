@@ -60,11 +60,14 @@ export function SensitivityGrid({ peRatio, growthRate, stockPrice, calculateYear
                                         colorClass += ' ring-1 ring-primary relative z-10';
                                     }
 
+                                    const displayPrice = y5Price > 100 ? Math.round(y5Price).toString() : y5Price.toFixed(2);
+                                    const displayPV = pv > 100 ? Math.round(pv).toString() : pv.toFixed(2);
+
                                     return (
                                         <td key={pe} className={`p-1 text-right rounded-sm ${colorClass} group/cell relative`}>
                                             <div className="flex flex-col items-end">
-                                                <span className="font-bold">${Math.round(y5Price)}</span>
-                                                <span className="text-[7px] opacity-40 group-hover/cell:opacity-100 transition-opacity">PV: ${Math.round(pv)}</span>
+                                                <span className="font-bold">${displayPrice}</span>
+                                                <span className="text-[7px] opacity-40 group-hover/cell:opacity-100 transition-opacity whitespace-nowrap">PV: ${displayPV}</span>
                                             </div>
                                         </td>
                                     );
