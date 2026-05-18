@@ -140,14 +140,19 @@ export function mergeIntoPortfolio(tvSnapshot: TVSnapshot, existing: any[]): {
         if (sym && sym !== 'USD_CASH') existingMap.set(sym, item);
     }
 
-    // Aggregate TV positions by symbol (sum quantities across accounts)
-    const tvMap = new Map<string, { quantity: number; avgFillPrice: number; accountType: string }>();
+    // Aggregate TV positions by symbol (sum quantities across accounts, weighted avg fill price)
+    const tvMap = new Map<string, { quantity: number; avgFillPrice: number; accountType: string; costBasis: number }>();
     for (const pos of tvSnapshot.positions) {
         if (!pos.symbol) continue;
+        const qty = pos.quantity ?? 0;
+        const fill = pos.avgFillPrice ?? 0;
         if (tvMap.has(pos.symbol)) {
-            tvMap.get(pos.symbol)!.quantity += pos.quantity;
+            const existing = tvMap.get(pos.symbol)!;
+            existing.costBasis += qty * fill;
+            existing.quantity += qty;
+            existing.avgFillPrice = existing.quantity > 0 ? existing.costBasis / existing.quantity : fill;
         } else {
-            tvMap.set(pos.symbol, { quantity: pos.quantity, avgFillPrice: pos.avgFillPrice, accountType: pos.accountType });
+            tvMap.set(pos.symbol, { quantity: qty, avgFillPrice: fill, accountType: pos.accountType, costBasis: qty * fill });
         }
     }
 
