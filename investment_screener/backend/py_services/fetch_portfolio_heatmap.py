@@ -139,16 +139,18 @@ def fetch_portfolio_data(items: list) -> dict:
     to_fetch = []
     for item in items:
         if isinstance(item, str):
-            sym, shares, item_sector, item_industry, book_price = item, 1, None, None, None
+            sym, shares, item_sector, item_industry, book_price, stored_price = item, 1, None, None, None, None
         else:
             sym = item.get("symbol", "")
             shares = item.get("shares", 1)
             item_sector = item.get("sector")
             item_industry = item.get("industry")
             book_price = item.get("book_price")
+            # "price" is the TV-synced current price; use it instead of yfinance when present
+            stored_price = item.get("price") or None
         if not sym:
             continue
-        normalized.append((sym, shares, item_sector, item_industry, book_price))
+        normalized.append((sym, shares, item_sector, item_industry, book_price, stored_price))
         if sym != "USD_CASH":
             to_fetch.append(sym)
 
@@ -159,8 +161,11 @@ def fetch_portfolio_data(items: list) -> dict:
     if to_fetch:
         prefetch_history(to_fetch, history)
 
+    # Track whether any stock used a TV-synced stored price (vs yfinance)
+    used_stored_prices = False
+
     # --- Build result from pre-fetched data ---
-    for sym, shares, item_sector, item_industry, book_price in normalized:
+    for sym, shares, item_sector, item_industry, book_price, stored_price in normalized:
         try:
             if sym == "USD_CASH":
                 name = "USD Cash"
@@ -190,14 +195,17 @@ def fetch_portfolio_data(items: list) -> dict:
                     sector = yahoo_sector
                     industry = yahoo_industry
 
-                current_price = info.get("currentPrice") or info.get("regularMarketPrice", 0)
+                yf_price = info.get("currentPrice") or info.get("regularMarketPrice", 0)
                 prev_close = info.get("regularMarketPreviousClose", 0)
+                # Use TV-synced stored price when available (portfolio.json.price set on last TV sync).
+                # Fall back to yfinance only when no stored price exists.
+                if stored_price and stored_price > 0:
+                    current_price = stored_price
+                    used_stored_prices = True
+                else:
+                    current_price = yf_price
                 change_pct = ((current_price - prev_close) / prev_close * 100) if prev_close else 0
                 hist_changes = history.calc_changes(sym, current_price)
-
-                # NOTE: TV CLI quote reads from the active chart only — not per-symbol.
-                # Using yfinance for all portfolio prices avoids returning the active
-                # chart's price for every ticker regardless of what symbol was requested.
 
             total_market = round(shares * current_price, 2)
             total_book = round(shares * book_price, 2) if book_price else None
@@ -263,7 +271,7 @@ def fetch_portfolio_data(items: list) -> dict:
             })
 
     result["total_value"] = round(result["total_value"], 2)
-    result["price_source"] = "tradingview" if _TV_AVAILABLE else "yfinance"
+    result["price_source"] = "tradingview" if (_TV_AVAILABLE or used_stored_prices) else "yfinance"
     result["refreshed_at"] = datetime.now(timezone.utc).isoformat()
     return result
 
