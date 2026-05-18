@@ -32,7 +32,7 @@
         },
         {
             "name": "tradingview",
-            "description": "TradingView Desktop integration for real-time prices, DCF alerts, chart snapshots, portfolio sync, live order execution, and automated Pine Script technical analysis. Skills: /tv-price-refresh, /tv-alert-sync, /tv-snapshot, /tv-ta, /tv-portfolio-sync, /place-order, /modify-order, /cancel-order, /get-orders, /pine-inject, /tv-ta-deep. Requires TV Desktop running with --remote-debugging-port=9222.",
+            "description": "TradingView Desktop integration for real-time prices, DCF alerts, chart snapshots, portfolio sync, live order execution, Pine Script authoring, and deep technical analysis via CDP. Skills: /tv-portfolio-sync, /place-order, /modify-order, /cancel-order, /get-orders, /tv-price-refresh, /tv-alert-sync, /tv-snapshot, /pine-inject, /author-pine-script, /tv-ta-deep. Agents: ta-guide (interactive TA tutor + Pine Script architect). Pine tools: pine_linter.py (static v6 linter, 13 checks), pine_source_reader.py (fetch community indicator source from TV Indicators dialog). Requires TV Desktop running with --remote-debugging-port=9222.",
             "source": "./plugins/tradingview",
             "strict": true
         }
