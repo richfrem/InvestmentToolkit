@@ -125,9 +125,12 @@ export async function getBrokerStatus() {
 // ── account selection ────────────────────────────────────────────────────────
 
 export async function selectAccount(targetType) {
-  // Click the account dropdown button
+  // Click the account dropdown button — must be the one showing TFSA/RRSP/Cash,
+  // not the broker selector. Use same heuristic as getBrokerStatus.
   const opened = await evaluate(`(function() {
-    var btn = document.querySelector('[class*="dropdownButton"]');
+    var btn = [...document.querySelectorAll('[class*="dropdownButton"]')].find(function(b) {
+      return /TFSA|RRSP|Margin|Individual|Cash/i.test(b.textContent);
+    }) || document.querySelector('[class*="dropdownButton"]');
     if (!btn) return JSON.stringify({ error: 'Account dropdown not found' });
     btn.click();
     return JSON.stringify({ opened: true, current: btn.textContent.trim().substring(0,40) });
@@ -309,8 +312,13 @@ export async function setShares(shares) {
       return /shares|qty|quantity|amount/i.test(label);
     });
 
-    // In TV's order form the qty field is always LAST (price inputs come first)
-    if (!sharesInput && inputs.length > 0) sharesInput = inputs[inputs.length - 1];
+    // For Market orders qty is FIRST; for Limit orders qty is LAST (price comes first).
+    // Prefer the first input with a small positive numeric value (the default qty = 1).
+    // Fall back to first input if nothing else matches.
+    if (!sharesInput && inputs.length > 0) {
+      sharesInput = inputs.find(function(i) { return /^\d+(\.\d+)?$/.test((i.value||'').trim()); })
+                    || inputs[0];
+    }
 
     if (!sharesInput) return JSON.stringify({ error: 'Shares input not found' });
 
