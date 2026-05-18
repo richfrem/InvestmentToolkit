@@ -254,87 +254,116 @@ export async function openDataWindow(client) {
 }
 
 /**
- * Save the current TradingView chart layout.
+ * Save (create or switch to) a named TradingView chart layout.
  *
- * Strategy: look for a toolbar "Save" button, fall back to Meta+S / Ctrl+S.
- * If a naming modal appears (first-time save), fill the name and confirm.
+ * Idempotent: if already on the named layout, saves in-place and returns.
+ * If the layout exists in the dropdown's recently-used list, switches to it.
+ * Otherwise creates it via Manage layouts → "Create new layout…" → dialog.
  *
  * @param {object} client - CDP client instance
- * @param {string} [name] - optional layout name (used if a naming modal appears)
- * @returns {{ success: true, layoutName: string } | { success: false, error: string }}
+ * @param {string} [name] - layout name (default: 'agent-layout')
+ * @returns {{ success: true, layoutName: string, action: string } | { success: false, error: string }}
  */
 export async function saveLayout(client, name) {
   try {
     const targetName = name || 'agent-layout';
     const safeName = JSON.stringify(targetName);
 
-    // 1. Open layout dropdown (chevron button whose aria-label includes "Active layout")
-    await client.Runtime.evaluate({
+    // 0. Already on this layout? — just Cmd+S and return
+    const activeCheck = await client.Runtime.evaluate({
       expression: `(function() {
         var btn = [...document.querySelectorAll('button')].find(function(b) {
-          if (!b.offsetParent) return false;
-          var t = b.getAttribute('aria-label') || b.getAttribute('data-tooltip') || '';
-          return t.includes('Active layout');
+          return (b.getAttribute('aria-label') || '').includes('Active layout:');
         });
+        if (!btn) return JSON.stringify({ activeLayout: null });
+        var m = (btn.getAttribute('aria-label') || '').match(/Active layout:\\s*(.+)/);
+        return JSON.stringify({ activeLayout: m ? m[1].trim() : null });
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    const { activeLayout } = JSON.parse(activeCheck.result.value);
+    if (activeLayout === targetName) {
+      await client.Runtime.evaluate({
+        expression: `(function() {
+          var isMac = /mac/i.test(navigator.platform);
+          document.body.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 's', code: 'KeyS', metaKey: isMac, ctrlKey: !isMac, bubbles: true, cancelable: true,
+          }));
+        })()`,
+        returnByValue: true, awaitPromise: false,
+      });
+      await new Promise(r => setTimeout(r, 500));
+      return { success: true, layoutName: targetName, action: 'saved' };
+    }
+
+    // 1. Open "Manage layouts" dropdown
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        var btn = document.querySelector('[data-name="save-load-menu"]') ||
+          [...document.querySelectorAll('button')].find(function(b) {
+            return b.offsetParent && (b.getAttribute('aria-label') || '').includes('Manage layouts');
+          });
         if (btn) btn.click();
       })()`,
-      returnByValue: true,
-      awaitPromise: false,
+      returnByValue: true, awaitPromise: false,
     });
     await new Promise(r => setTimeout(r, 700));
 
-    // 2. Check if named layout already exists — any visible <A> whose text starts with targetName
-    const switchResult = await client.Runtime.evaluate({
+    // 2+3. In a single eval (dropdown may close between calls):
+    //      switch if exists, otherwise click "Create new layout…"
+    const menuResult = await client.Runtime.evaluate({
       expression: `(function() {
         var target = ${safeName};
-        var link = [...document.querySelectorAll('a')].find(function(a) {
-          return a.offsetParent && a.textContent.trim().startsWith(target);
-        });
-        if (link) { link.click(); return JSON.stringify({ switched: true }); }
-        return JSON.stringify({ switched: false });
-      })()`,
-      returnByValue: true,
-      awaitPromise: false,
-    });
 
-    if (JSON.parse(switchResult.result.value).switched) {
+        // Switch if the layout exists in recently-used
+        var link = [...document.querySelectorAll('a')].find(function(a) {
+          return a.isConnected && a.textContent.trim().startsWith(target);
+        });
+        if (link) { link.click(); return JSON.stringify({ action: 'switched' }); }
+
+        // Not found — click "Create new layout…"
+        var el = document.querySelector('[aria-label="Create new layout"]') ||
+                 document.querySelector('[aria-label="Create new layout\\u2026"]') ||
+                 [...document.querySelectorAll('*')].find(function(e) {
+                   var t = e.textContent.trim();
+                   return e.isConnected && (t === 'Create new layout…' || t === 'Create new layout...');
+                 });
+        if (!el) return JSON.stringify({ action: 'notFound' });
+        (el.closest('button') || el.closest('a') || el).click();
+        return JSON.stringify({ action: 'create' });
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    const { action: menuAction } = JSON.parse(menuResult.result.value);
+
+    if (menuAction === 'switched') {
       await new Promise(r => setTimeout(r, 800));
       return { success: true, layoutName: targetName, action: 'switched' };
     }
-
-    // 3. Layout not found — click "Create new layout…" menu item
-    await client.Runtime.evaluate({
-      expression: `(function() {
-        var item = [...document.querySelectorAll('*')].find(function(el) {
-          if (!el.offsetParent) return false;
-          var t = el.textContent.trim();
-          return t === 'Create new layout…' || t === 'Create new layout...';
-        });
-        if (item) { (item.closest('button') || item.closest('a') || item).click(); }
-      })()`,
-      returnByValue: true,
-      awaitPromise: false,
-    });
+    if (menuAction === 'notFound') {
+      return { success: false, error: 'Could not find "Create new layout" in the Manage layouts menu' };
+    }
+    // menuAction === 'create' — dialog should now be open
     await new Promise(r => setTimeout(r, 800));
 
-    // 4. Fill name input in the "Create layout" dialog — React setter required
+    // 4. Fill name in "Create layout" dialog (React setter required)
     await client.Runtime.evaluate({
       expression: `(function() {
-        var input = [...document.querySelectorAll('input')].find(function(i) { return i.offsetParent; });
+        var input = [...document.querySelectorAll('input')].find(function(i) {
+          return i.isConnected && i.offsetParent;
+        });
         if (!input) return;
-        input.focus();
-        input.select();
+        input.focus(); input.select();
         var setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
         setter.call(input, ${safeName});
         input.dispatchEvent(new Event('input', { bubbles: true }));
         input.dispatchEvent(new Event('change', { bubbles: true }));
       })()`,
-      returnByValue: true,
-      awaitPromise: false,
+      returnByValue: true, awaitPromise: false,
     });
     await new Promise(r => setTimeout(r, 400));
 
-    // 5. Click the "Create" button (exact text match)
+    // 5. Click "Create" button
     await client.Runtime.evaluate({
       expression: `(function() {
         var btn = [...document.querySelectorAll('button')].find(function(b) {
@@ -343,25 +372,9 @@ export async function saveLayout(client, name) {
         if (btn) { btn.click(); return; }
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
       })()`,
-      returnByValue: true,
-      awaitPromise: false,
+      returnByValue: true, awaitPromise: false,
     });
     await new Promise(r => setTimeout(r, 1000));
-
-    // 6. Cmd+S / Ctrl+S to save content to the newly active layout
-    await client.Runtime.evaluate({
-      expression: `(function() {
-        var isMac = /mac/i.test(navigator.platform);
-        document.body.dispatchEvent(new KeyboardEvent('keydown', {
-          key: 's', code: 'KeyS',
-          metaKey: isMac, ctrlKey: !isMac,
-          bubbles: true, cancelable: true,
-        }));
-      })()`,
-      returnByValue: true,
-      awaitPromise: false,
-    });
-    await new Promise(r => setTimeout(r, 500));
 
     return { success: true, layoutName: targetName, action: 'created' };
   } catch (e) {
