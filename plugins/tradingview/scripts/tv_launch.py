@@ -36,7 +36,7 @@ import platform
 import argparse
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from tv_client import TV_PORT, is_tv_running
 
 IS_WINDOWS = platform.system() == "Windows"

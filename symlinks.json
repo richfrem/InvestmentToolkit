@@ -470,19 +470,19 @@
       "description": "ADR-003: price-refresh skill scripts/ symlink \u2192 plugin root scripts/"
     },
     {
-      "src": "investment_screener/backend/py_services/place_order.py",
+      "src": "plugins/tradingview/scripts/place_order.py",
       "dst": "plugins/tradingview/skills/place-order/scripts/place_order.py",
       "strategy": "symlink",
       "description": "ADR-001 cross-repo symlink: place-order skill \u2192 py_services canonical (source repo only)"
     },
     {
-      "src": "investment_screener/backend/py_services/place_order.py",
+      "src": "plugins/tradingview/scripts/place_order.py",
       "dst": "plugins/tradingview/skills/cancel-order/scripts/place_order.py",
       "strategy": "symlink",
       "description": "ADR-001 cross-repo symlink: cancel-order skill \u2192 py_services canonical (source repo only)"
     },
     {
-      "src": "investment_screener/backend/py_services/fetch_broker_data.py",
+      "src": "plugins/tradingview/scripts/fetch_broker_data.py",
       "dst": "plugins/tradingview/skills/tv-portfolio-sync/scripts/fetch_broker_data.py",
       "strategy": "symlink",
       "description": "ADR-001 cross-repo symlink: tv-portfolio-sync skill \u2192 py_services canonical (source repo only)"
@@ -498,6 +498,24 @@
       "dst": "plugins/tradingview/skills/ta-red-team/assets/templates/ta_thesis_template.md",
       "strategy": "symlink",
       "description": "ADR-003: skill assets/templates/ symlink \u2192 plugin root assets/templates/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/place_order.py",
+      "dst": "investment_screener/backend/py_services/place_order.py",
+      "strategy": "symlink",
+      "description": "ADR-001 cross-repo symlink: tradingview script -> py_services"
+    },
+    {
+      "src": "plugins/tradingview/scripts/fetch_broker_data.py",
+      "dst": "investment_screener/backend/py_services/fetch_broker_data.py",
+      "strategy": "symlink",
+      "description": "ADR-001 cross-repo symlink: tradingview script -> py_services"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_pine_inject.py",
+      "dst": "plugins/tradingview/skills/pine-inject/scripts/tv_pine_inject.py",
+      "strategy": "symlink",
+      "description": "ADR-003: pine-inject script symlink -> plugin root scripts/"
     }
   ]
 }

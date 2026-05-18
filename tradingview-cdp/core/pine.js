@@ -31,47 +31,60 @@ export async function injectPineScript(client, scriptContent) {
   try {
     const safeContent = JSON.stringify(scriptContent);
 
-    // 1. Click the Pine Editor toggle button in the bottom bar
+    // 1. Ensure Pine Editor is open
     const openResult = await client.Runtime.evaluate({
       expression: `(function() {
+        var ed = document.querySelector('.pine-editor-monaco');
+        if (ed && ed.offsetParent) return JSON.stringify({ clicked: false, open: true });
+        
         var btn = document.querySelector('[data-name="pine-dialog-button"]');
-        if (!btn) return JSON.stringify({ clicked: false, reason: 'button not found' });
+        if (!btn) return JSON.stringify({ clicked: false, open: false, reason: 'button not found' });
         btn.click();
-        return JSON.stringify({ clicked: true });
+        return JSON.stringify({ clicked: true, open: true });
       })()`,
       returnByValue: true,
       awaitPromise: false,
     });
 
     const openData = JSON.parse(openResult.result.value);
-    if (!openData.clicked) throw new Error('Pine Editor tab not found');
+    if (!openData.open) throw new Error('Pine Editor tab not found');
 
-    // Wait for Pine Editor panel to open and Monaco to initialize
     await new Promise(r => setTimeout(r, 900));
 
-    // 2. Access Monaco editor via React fiber traversal
-    //    Path: .pine-editor-monaco parent → __reactFiber → .return (depth 1)
-    //          → memoizedState.memoizedState.current (state[0] ref = TV controller)
-    //          → ._editor (Monaco ICodeEditor instance)
+    // 3. Access Monaco editor via React fiber traversal and inject script content.
+    //    Walk up from .pine-editor-monaco until a node with __reactFiber is found,
+    //    then traverse to the controller → ._editor (Monaco ICodeEditor).
     const injectResult = await client.Runtime.evaluate({
       expression: `(function() {
         var script = ${safeContent};
         var edEl = document.querySelector('.pine-editor-monaco');
         if (!edEl) return JSON.stringify({ success: false, error: 'pine-editor-monaco not found' });
 
-        var parent = edEl.parentElement;
-        var fk = Object.keys(parent).find(function(k) { return k.startsWith('__reactFiber'); });
-        if (!fk) return JSON.stringify({ success: false, error: 'React fiber not found on editor parent' });
+        // Walk up the DOM tree to find the React fiber — TV may attach it at different depths
+        var el = edEl;
+        var fk = null;
+        for (var depth = 0; depth < 5; depth++) {
+          el = el.parentElement;
+          if (!el) break;
+          fk = Object.keys(el).find(function(k) { return k.startsWith('__reactFiber'); });
+          if (fk) break;
+        }
+        if (!fk) return JSON.stringify({ success: false, error: 'React fiber not found within 5 ancestors' });
 
         try {
-          var fiber = parent[fk].return;
+          var fiber = el[fk].return;
           var controller = fiber.memoizedState.memoizedState.current;
           var editor = controller._editor;
           if (!editor || typeof editor.setValue !== 'function') {
             return JSON.stringify({ success: false, error: 'Monaco editor._editor missing setValue' });
           }
-          editor.setValue(script);
-          return JSON.stringify({ success: true, method: 'fiber-controller-editor' });
+          // Use executeEdits instead of setValue — fires proper onDidChangeModelContent
+          // events that TV's compile listener watches, unlike the silent setValue() path.
+          var model = editor.getModel();
+          var fullRange = model.getFullModelRange();
+          editor.focus();
+          editor.executeEdits('pine-inject', [{ range: fullRange, text: script, forceMoveMarkers: true }]);
+          return JSON.stringify({ success: true, method: 'executeEdits', preview: editor.getValue().substring(0, 40) });
         } catch (e) {
           return JSON.stringify({ success: false, error: e.message });
         }
@@ -83,7 +96,7 @@ export async function injectPineScript(client, scriptContent) {
     const injectData = JSON.parse(injectResult.result.value);
     if (!injectData.success) throw new Error(injectData.error || 'Monaco injection failed');
 
-    // 3. Click "Add to chart"
+    // 4. Click "Add to chart" — new tab scripts have no saved version so no modal appears
     await new Promise(r => setTimeout(r, 400));
     await client.Runtime.evaluate({
       expression: `(function() {
@@ -96,28 +109,27 @@ export async function injectPineScript(client, scriptContent) {
       awaitPromise: false,
     });
 
-    // 4. Handle "unsaved changes" confirmation modal — click "Save and add to chart"
+    // 5. If a save modal still appears (e.g. TV auto-populated content), click "No" to discard
+    //    the suggested save and add the script to chart as-is.
     await new Promise(r => setTimeout(r, 600));
     await client.Runtime.evaluate({
       expression: `(function() {
-        // Modal appears when the editor has unsaved changes.
-        // Button text is "Save and add to chart" — find and click it.
-        var modalBtn = [...document.querySelectorAll('button')].find(function(b) {
-          return b.offsetParent && /save\\s*and\\s*add/i.test(b.textContent);
+        var noBtn = [...document.querySelectorAll('button')].find(function(b) {
+          return b.offsetParent && b.textContent.trim() === 'No';
         });
-        if (modalBtn) { modalBtn.click(); return 'modal-dismissed'; }
+        if (noBtn) { noBtn.click(); return 'modal-discarded'; }
         return 'no-modal';
       })()`,
       returnByValue: true,
       awaitPromise: false,
     });
 
-    // 5. Wait for indicator to load onto chart
+    // 6. Wait for indicator to load onto chart
     await new Promise(r => setTimeout(r, 1000));
 
     return { success: true };
   } catch (e) {
-    return { success: false, error: 'Pine Editor not found' };
+    return { success: false, error: e.message || 'Pine Editor error' };
   }
 }
 

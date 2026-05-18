@@ -285,7 +285,7 @@ The `/api/questrade/seed` endpoint accepts a raw **One-Week App Token** from the
 `investment_screener/backend/src/utils/zod-schemas.ts`: `lastActualPS` is `.nullable().transform(v => v ?? 0)`. Pre-revenue stocks and some mining companies return `null` from yfinance for this field. If adding similar numeric fields, use the same nullable pattern — strict `z.number()` causes 400 validation errors.
 
 ### 6. TradingView CDP — Node snippets MUST call process.exit()
-All Node.js snippets in `plugins/tradingview/node/` **must** end with `.then(() => process.exit(0)).catch(() => process.exit(1))`. Without it, the CDP WebSocket holds the event loop open indefinitely — `subprocess.run()` from Python never returns. This caused all Phase 1 harness timeouts.
+All Node.js snippets in `tradingview-cdp/` **must** end with `.then(() => process.exit(0)).catch(() => process.exit(1))`. Without it, the CDP WebSocket holds the event loop open indefinitely — `subprocess.run()` from Python never returns. This caused all Phase 1 harness timeouts.
 
 ### 7. TradingView CDP — Use React fiber traversal for Pine Editor / Monaco
 Do **not** rely solely on CSS class selectors for Pine Editor / Monaco editor — TV class names change. Scan DOM nodes for the `__reactFiber` key prefix and walk the fiber tree to find Monaco internals. Reference: [tradesdontlie/tradingview-mcp](https://github.com/tradesdontlie/tradingview-mcp) `pine.js`.

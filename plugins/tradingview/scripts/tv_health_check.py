@@ -9,7 +9,7 @@ Usage:
 Checks:
     1. Is port 9222 reachable? (socket test)
     2. Does `node ... status` return success?
-    3. Is npm installed in temp/tradingview-mcp/ (node_modules exists)?
+    3. Is npm cied in tradingview-cdp/ (node_modules exists)?
 
 Exit code 0 if all checks pass, 1 otherwise.
 """
@@ -19,8 +19,8 @@ import json
 import argparse
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
-from tv_client import REPO_ROOT, TV_CLI, TV_NODE_MODULES, TV_PORT, is_tv_running, tv_call
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from tv_client import TV_CLI, TV_NODE_MODULES, TV_PORT, TV_NODE_DIR, is_tv_running, tv_call, validate_cdp_installation
 
 
 def run_checks() -> dict:
@@ -34,7 +34,7 @@ def run_checks() -> dict:
     if port_ok:
         try:
             result = tv_call("status", timeout=5)
-            cli_ok = result.get("success", False) or result.get("connected", False)
+            cli_ok = result.get("success", False) or result.get("cdp_connected", False)
             cli_message = result.get("message", str(result))
         except Exception as e:
             cli_message = str(e)
@@ -42,11 +42,12 @@ def run_checks() -> dict:
         cli_message = "Skipped — port not reachable"
 
     # Check 3 — node_modules exists
-    npm_ok = TV_NODE_MODULES.exists()
+    cdp_status = validate_cdp_installation()
+    npm_ok = cdp_status["installed"]
     npm_message = (
         "node_modules found"
         if npm_ok
-        else f"Missing! Run: cd {REPO_ROOT / 'plugins' / 'tradingview' / 'node'} && npm install"
+        else "; ".join(cdp_status["issues"])
     )
 
     all_ok = port_ok and cli_ok and npm_ok
@@ -61,7 +62,7 @@ def run_checks() -> dict:
             if all_ok
             else (
                 "TradingView Desktop not detected. "
-                "Launch with: python3 plugins/tradingview/scripts/tv_launch.py"
+                "Launch with: python3 tools/launch_tradingview_with_debugport.py"
                 if not port_ok
                 else f"CLI check failed: {cli_message}"
             )
@@ -83,7 +84,11 @@ def main():
                         help="Output JSON instead of human-readable table")
     args = parser.parse_args()
 
-    checks = run_checks()
+    try:
+        checks = run_checks()
+    except Exception as e:
+        print(f"\nTradingView Health Check [ERROR]\n=============================================\n  Exception: {e}")
+        sys.exit(1)
 
     if args.json_out:
         print(json.dumps(checks, indent=2))
@@ -105,12 +110,12 @@ def main():
 
         if not checks["npm"]:
             print(
-                f"  Fix: cd {REPO_ROOT / 'plugins' / 'tradingview' / 'node'} && npm install\n"
+                f"  Fix: cd {TV_NODE_DIR} && npm ci\n"
             )
         if not checks["port"]:
             print(
                 "  Launch TradingView:\n"
-                "    python3 plugins/tradingview/scripts/tv_launch.py\n"
+                "    python3 tools/launch_tradingview_with_debugport.py\n"
                 "  Or manually:\n"
                 "    open -a TradingView --args --remote-debugging-port=9222\n"
             )

@@ -35,7 +35,7 @@ If no ticker provided, ask: `"Which ticker would you like to analyze?"`
 ## Phase 2 — Health Check
 
 ```bash
-node plugins/tradingview/node/cli.js status
+node tradingview-cdp/cli.js status
 ```
 
 If TradingView Desktop is not reachable, stop immediately:
@@ -46,7 +46,7 @@ If TradingView Desktop is not reachable, stop immediately:
 ## Phase 3 — Set Timeframe
 
 ```bash
-node plugins/tradingview/node/cli.js chart timeframe {TIMEFRAME}
+node tradingview-cdp/cli.js chart timeframe {TIMEFRAME}
 ```
 
 On failure, note the error and continue with whatever timeframe is currently active.
@@ -56,7 +56,7 @@ On failure, note the error and continue with whatever timeframe is currently act
 ## Phase 4 — Read Data Window
 
 ```bash
-node plugins/tradingview/node/cli.js chart read
+node tradingview-cdp/cli.js chart read
 ```
 
 If the Data Window returns empty or errors, prompt the user:
@@ -77,7 +77,7 @@ If the user confirms or requests custom indicators, use the `/pine-inject` skill
 Then re-read the Data Window:
 
 ```bash
-node plugins/tradingview/node/cli.js chart read
+node tradingview-cdp/cli.js chart read
 ```
 
 ---
@@ -171,7 +171,7 @@ Present the approved thesis to the user with a brief summary:
 Then offer cleanup if a custom indicator was injected in Phase 5:
 
 ```bash
-node plugins/tradingview/node/cli.js pine remove -i AI_Custom_TA
+node tradingview-cdp/cli.js pine remove -i AI_Custom_TA
 ```
 
 > "Custom TA indicator removed. Your chart is clean."

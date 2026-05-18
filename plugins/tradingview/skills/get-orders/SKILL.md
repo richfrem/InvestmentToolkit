@@ -44,7 +44,7 @@ Order ID                                Text
 
 ## How It Works
 
-Calls `verifyOrderInBrokerPanel()` in `trading.js` which reads order rows directly
+Calls `listOpenOrders()` in `trading.js` which reads order rows directly
 from the broker panel DOM. Returns an array of `{ orderId, text }` objects where
 `orderId` is the UUID extracted from the row text, and `text` is the full raw row.
 
@@ -53,4 +53,4 @@ from the broker panel DOM. Returns an array of `{ orderId, text }` objects where
 ✅ **FULLY IMPLEMENTED**
 
 - `tv_get_orders.py` — `scripts/tv_get_orders.py` (symlink → plugin root)
-- `verifyOrderInBrokerPanel()` — `plugins/tradingview/node/core/trading.js`
+- `listOpenOrders()` — `tradingview-cdp/core/trading.js`

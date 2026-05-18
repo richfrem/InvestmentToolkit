@@ -94,3 +94,4 @@ investment_screener/backend/data/trade-log.json
 
 # TradingView order audit logs (runtime output, rotated daily)
 plugins/tradingview/audit/
+\n.pytest_cache/\n**/.pytest_cache/

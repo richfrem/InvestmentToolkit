@@ -3,8 +3,10 @@
 tv_batch_quotes.py - Get real-time quotes for a list of tickers via yfinance bulk download.
 
 NOTE: TradingView CDP reads only the *active chart* symbol — it cannot batch-query multiple
-tickers. This script always uses yfinance for batch operations. Use tv_quote.py for a single
-ticker when that ticker is currently displayed on the active TradingView chart.
+tickers without significant delay. Therefore, this script exclusively uses yfinance for batch
+operations by design. The summary output still includes `"tradingview": 0` to maintain the
+API contract with existing consumers. Use tv_quote.py for a single ticker when that ticker
+is currently displayed on the active TradingView chart.
 
 Usage:
     python3 tv_batch_quotes.py '["CRWV", "NVDA", "INTC"]'

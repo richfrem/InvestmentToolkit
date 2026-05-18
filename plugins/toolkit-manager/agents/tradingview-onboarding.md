@@ -74,7 +74,7 @@ If they are on Free tier, strongly recommend upgrading before continuing. The to
 
 Run once to install the Node.js CDP client:
 ```bash
-cd plugins/tradingview/node
+cd tradingview-cdp
 npm install
 cd ../../..
 ```

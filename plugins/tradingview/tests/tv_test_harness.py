@@ -32,11 +32,11 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-TV_NODE_DIR = REPO_ROOT / "plugins/tradingview/node"
 TEMP_DIR = REPO_ROOT / "temp"
 TEMP_DIR.mkdir(exist_ok=True)
 
 sys.path.insert(0, str(REPO_ROOT / "plugins" / "tradingview" / "scripts"))
+from tv_client import TV_NODE_DIR
 
 OK = "\033[92m✓\033[0m"
 FAIL = "\033[91m✗\033[0m"
@@ -347,8 +347,8 @@ def run_section_05() -> bool:
         for sel in missing:
             print(f"    {sel}")
         print("\n  TV ships DOM updates 2-4x/year. Update selectors in:")
-        print("  plugins/tradingview/node/core/broker_data.js")
-        print("  plugins/tradingview/node/core/trading.js")
+        print("  tradingview-cdp/core/broker_data.js")
+        print("  tradingview-cdp/core/trading.js")
         return False
 
     return True

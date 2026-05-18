@@ -59,7 +59,7 @@ python3 investment_screener/backend/py_services/place_order.py \
 
 ## How It Works
 
-`cancelOrder()` in `plugins/tradingview/node/core/trading.js`:
+`cancelOrder()` in `tradingview-cdp/core/trading.js`:
 
 1. Searches the current DOM for an order row containing the UUID — **without navigating tabs** (tab navigation was toggling the broker panel closed)
 2. Falls back to tab navigation only if the row is not found directly
@@ -78,7 +78,7 @@ python3 investment_screener/backend/py_services/place_order.py \
 
 ✅ **FULLY IMPLEMENTED**
 
-- `cancelOrder()` — `plugins/tradingview/node/core/trading.js`
+- `cancelOrder()` — `tradingview-cdp/core/trading.js`
 - `--cancel` flag — `investment_screener/backend/py_services/place_order.py`
 - `tv_cancel_order.py` — `plugins/tradingview/scripts/tv_cancel_order.py`
 - Backend route — `POST /api/trading/cancel` in `investment_screener/backend/src/routes/trading.ts`

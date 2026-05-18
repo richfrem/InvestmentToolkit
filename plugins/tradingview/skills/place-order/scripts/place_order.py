@@ -1,1 +1,1 @@
-../../../../../investment_screener/backend/py_services/place_order.py
+../../../scripts/place_order.py
