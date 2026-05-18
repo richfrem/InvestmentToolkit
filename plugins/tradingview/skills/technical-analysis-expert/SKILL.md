@@ -235,3 +235,21 @@ node tradingview-cdp/cli.js pine remove -i AI_Custom_TA
 ```
 
 > "Custom TA indicator(s) removed. Your chart is clean."
+
+---
+
+## Self-Evolution Protocol
+
+If any CDP command fails during this skill (chart read, timeframe change, addIndicator,
+pine inject, Data Window open), invoke the `self-evolution` skill before retrying:
+
+1. Read `plugins/tradingview/references/self-evolution-profile.md` for the allowed
+   edit directories and error pattern classification table.
+2. Classify the failure as Gap / Failure / Regression using the table.
+3. Follow the full `self-evolution` protocol (evidence → plan → patch → verify → update map).
+
+**Standing permission:** This skill has permission to patch any file inside
+`tradingview-cdp/core/` and `plugins/tradingview/scripts/` when a CDP failure is
+classified as Regression or Gap. Modifications to existing functions require a
+`git diff` appended to `plugins/tradingview/references/evolution-log.md`.
+Deletions always require user confirmation.
