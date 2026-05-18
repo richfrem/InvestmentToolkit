@@ -264,6 +264,108 @@ def test_live_pine_cycle() -> tuple[bool, str]:
         return False, f"Pine cycle error: {e}"
 
 
+# ── Section 1.2 & 1.3: Extended Pine Script Tests ────────────────────────────
+
+def test_pine_data_window_readable() -> tuple[bool, str]:
+    """[1.2] openDataWindow → inject hello-world → assert bar_idx key in DW."""
+    pine_file = TEMP_DIR / "test_hello_world.pine"
+    pine_file.write_text(
+        '//@version=6\nindicator("Test_HelloWorld", overlay=false)\nplot(bar_index, title="bar_idx")'
+    )
+    try:
+        # Step A: open Data Window
+        r = subprocess.run(
+            ["node", "cli.js", "chart", "openDataWindow"],
+            capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=15,
+        )
+        dw_open = json.loads(r.stdout.strip()) if r.stdout.strip() else {}
+        if not dw_open.get("success"):
+            return False, (
+                f"openDataWindow failed: {dw_open}\n"
+                "  → chart openDataWindow subcommand not yet implemented (expected at this TDD stage)"
+            )
+
+        # Step B: inject hello-world
+        r2 = subprocess.run(
+            ["node", "cli.js", "pine", "inject", "-f", str(pine_file)],
+            capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=20,
+        )
+        inject_out = json.loads(r2.stdout.strip()) if r2.stdout.strip() else {}
+        if not inject_out.get("success"):
+            return False, f"inject failed: {inject_out}"
+
+        import time; time.sleep(2)
+
+        # Re-open DW — inject animation closes the right sidebar panel
+        subprocess.run(
+            ["node", "cli.js", "chart", "openDataWindow"],
+            capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=15,
+        )
+        time.sleep(1)
+
+        # Step C: read DW and assert bar_idx present
+        r3 = subprocess.run(
+            ["node", "cli.js", "chart", "read"],
+            capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=15,
+        )
+        dw_out = json.loads(r3.stdout.strip()) if r3.stdout.strip() else {}
+        if not dw_out.get("success"):
+            return False, (
+                f"readDataWindow failed: {dw_out}\n"
+                "  Hint: Is Data Window visible in TV? Ask user to confirm."
+            )
+        data = dw_out.get("data", {})
+        matching = [k for k in data if "bar_idx" in k.lower() or "bar index" in k.lower()]
+        if not matching:
+            return False, (
+                f"'bar_idx' not found in DW. Actual keys: {list(data.keys())[:15]}\n"
+                "  ⚠️ USER GATE: Ask the user what labels appear in the TV Data Window for 'Test_HelloWorld'. "
+                "Update the key check below to match the exact label TV shows."
+            )
+        return True, f"DW readable — found key '{matching[0]}' = {data[matching[0]]}"
+    finally:
+        subprocess.run(
+            ["node", "cli.js", "pine", "remove", "-i", "Test_HelloWorld"],
+            capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=15,
+        )
+
+
+def test_pine_save_layout() -> tuple[bool, str]:
+    """[1.3] Inject hello-world → saveLayout → assert success."""
+    pine_file = TEMP_DIR / "test_hello_world.pine"
+    pine_file.write_text(
+        '//@version=6\nindicator("Test_HelloWorld", overlay=false)\nplot(bar_index, title="bar_idx")'
+    )
+    try:
+        r = subprocess.run(
+            ["node", "cli.js", "pine", "inject", "-f", str(pine_file)],
+            capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=20,
+        )
+        inject_out = json.loads(r.stdout.strip()) if r.stdout.strip() else {}
+        if not inject_out.get("success"):
+            return False, f"inject failed: {inject_out}"
+
+        import time; time.sleep(1)
+
+        r2 = subprocess.run(
+            ["node", "cli.js", "chart", "saveLayout", "--name", "Test_HelloWorld_Layout"],
+            capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=20,
+        )
+        save_out = json.loads(r2.stdout.strip()) if r2.stdout.strip() else {}
+        if not save_out.get("success"):
+            return False, (
+                f"saveLayout failed: {save_out}\n"
+                "  → chart saveLayout subcommand not yet implemented (expected at this TDD stage)\n"
+                "  ⚠️ USER GATE if unexpected: Ask user if a dialog appeared in TV after running this."
+            )
+        return True, f"Layout saved: {save_out}"
+    finally:
+        subprocess.run(
+            ["node", "cli.js", "pine", "remove", "-i", "Test_HelloWorld"],
+            capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=15,
+        )
+
+
 # ── Section 2: Chart Command Tests ───────────────────────────────────────────
 
 def test_chart_timeframe_known() -> tuple[bool, str]:
@@ -409,8 +511,24 @@ def main() -> None:
 
     if args.suite in ("pine", "all"):
         ok1 = run_section_1()
-        if not ok1:
-            print(f"\n{FAIL} Section 1 failed — Pine Script cycle broken.")
+        pine_ok = ok1
+
+        print(f"\n{HEADER}Section 1.2 — Data Window Readable{RESET}")
+        ok12, msg12 = test_pine_data_window_readable()
+        icon12 = OK if ok12 else FAIL
+        print(f"  {icon12} [1.2] {msg12}")
+        if not ok12:
+            pine_ok = False
+
+        print(f"\n{HEADER}Section 1.3 — Save Chart Layout{RESET}")
+        ok13, msg13 = test_pine_save_layout()
+        icon13 = OK if ok13 else FAIL
+        print(f"  {icon13} [1.3] {msg13}")
+        if not ok13:
+            pine_ok = False
+
+        if not pine_ok:
+            print(f"\n{FAIL} Section 1 (or 1.2/1.3) failed — Pine Script cycle broken.")
             sys.exit(3)
 
     if args.suite in ("chart", "all"):
