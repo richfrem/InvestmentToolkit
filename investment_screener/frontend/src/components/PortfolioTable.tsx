@@ -72,6 +72,7 @@ interface HeatmapResponse {
     total_value: number;
     price_source?: string;
     refreshed_at?: string;
+    exchange_rate?: number;
 }
 
 // ─── Column Definitions ───────────────────────────────────────────────────────
@@ -164,6 +165,7 @@ export default function PortfolioTable() {
     const [error, setError] = useState<string | null>(null);
     const [priceSource, setPriceSource] = useState<string | null>(null);
     const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
+    const [exchangeRate, setExchangeRate] = useState<number>(1.38);
     const [logModal, setLogModal] = useState<{ ticker: string } | null>(null);
 
     // Load persisted prefs once
@@ -350,6 +352,7 @@ export default function PortfolioTable() {
             setData({ stocks: stocksWithPct, total_value: heatmapData.total_value });
             if (heatmapData.price_source) setPriceSource(heatmapData.price_source);
             if (heatmapData.refreshed_at) setLastRefreshedAt(new Date(heatmapData.refreshed_at));
+            if (heatmapData.exchange_rate && heatmapData.exchange_rate > 0) setExchangeRate(heatmapData.exchange_rate);
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : 'Failed to load');
         } finally {
@@ -428,7 +431,13 @@ export default function PortfolioTable() {
                     <span className="text-zinc-500 text-xs">{rows.length} positions</span>
                 </div>
                 <div className="flex items-center gap-3">
-                    <span className="text-zinc-300 text-sm font-bold">{fmtDollar(data.total_value)}</span>
+                    <div className="flex items-baseline gap-2 mr-1">
+                        <span className="text-white text-sm font-bold">${Math.round(data.total_value).toLocaleString()}</span>
+                        <span className="text-zinc-500 text-xs font-medium">USD</span>
+                        <span className="text-zinc-600 text-xs">/</span>
+                        <span className="text-zinc-400 text-sm font-semibold">${Math.round(data.total_value * exchangeRate).toLocaleString()}</span>
+                        <span className="text-zinc-500 text-xs font-medium">CAD</span>
+                    </div>
 
                     <button
                         onClick={() => setShowFilters(s => !s)}
