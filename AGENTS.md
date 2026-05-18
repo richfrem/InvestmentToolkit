@@ -55,8 +55,10 @@ This workstation is built on a modular plugin architecture. You have access to t
 - `/get-orders`: Fetch current working/inactive orders.
 - `/tv-alert-sync`: Sync DCF targets to TradingView price alerts.
 - `/tv-price-refresh`: Pulls real-time prices.
-- `/tv-snapshot` & `/tv-ta`: Capture technical charts and perform technical analysis.
-- `/pine-inject {description}`: Generate a custom Pine Script v6 indicator from a description and inject it into TradingView via CDP. Preflight validates structure before hitting TV. Script: `tv_pine_inject.py`.
+- `/tv-snapshot` & `/tv-ta`: Capture technical charts and perform basic technical analysis.
+- `/pine-inject {description}`: Generate a custom Pine Script v6 indicator from a description and inject it via CDP. Preflight validates version/indicator declarations.
+- `/author-pine-script {description}`: **Full Pine Script v6 authoring workflow.** Phase 0 source research (reads community indicator source via `pine_source_reader.py` directly from TV Indicators dialog), Phase 2.5 lint gate (`pine_linter.py`), inject, and save to TV library. Studies top-10 indicators before writing.
+- `/tv-ta-deep {TICKER} [TIMEFRAME]`: **Deep TA with custom view construction.** Builds the optimal indicator set for the analysis (adds built-ins, injects custom bundle, or authors Pine Script), multi-timeframe macro context check, synthesizes entry/accumulate/trim/exit levels, adversarial red-team review. Use `ta-guide` agent for an interactive guided session.
 
 ### 5. Toolkit Manager (`plugins/toolkit-manager`)
 *Orchestrator.*
