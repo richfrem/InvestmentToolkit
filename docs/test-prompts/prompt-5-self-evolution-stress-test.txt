@@ -1,0 +1,54 @@
+SKILL UNDER TEST: self-evolution skill — Gap / Failure / Regression classification
+and autonomous repair
+NEW PROMPT — deliberately exercises the self-healing protocol
+
+---
+
+This prompt is a stress test for the self-evolution skill. Run through all three
+tiers in sequence so I can verify each path works before I rely on them in production.
+
+SCENARIO A — REGRESSION TEST (stale selector simulation):
+Run this CDP command and treat the result as a regression if it fails:
+  node tradingview-cdp/cli.js chart openDataWindow
+
+If it succeeds: note which selector opened it and record it in the evolution log.
+If it fails with a selector/element error: invoke self-evolution, classify as
+Regression, collect a DOM snapshot of the panel area, find the current working
+selector, patch tradingview-cdp/core/chart.js, verify the fix, and update the
+domain playbook at plugins/tradingview/references/playbooks/.
+
+SCENARIO B — GAP TEST (capability boundary):
+Attempt to run a CDP command that does NOT exist yet:
+  node tradingview-cdp/cli.js chart getVisibleRange
+
+This command is not implemented. When it fails with "unknown command" or similar:
+  1. Classify as Gap
+  2. Read tradingview-cdp/core/chart.js to understand the pattern for existing commands
+  3. Implement getVisibleRange() — it should return the first and last visible
+     bar's timestamp and price range from the chart
+  4. Register it in tradingview-cdp/cli.js
+  5. Verify it returns valid data
+  6. Append a row to plugins/tradingview/references/evolution-log.md
+
+SCENARIO C — VERIFY THE LOG:
+After both scenarios complete, read evolution-log.md and confirm both events
+are recorded with the correct tier, patch description, and outcome.
+
+Then give me a one-paragraph summary of:
+  - What was patched and why it was classified the way it was
+  - Whether the Map (playbooks/ or reference files) was updated
+  - Any surprises — did the self-evolution protocol have gaps itself?
+
+WHAT THIS TESTS:
+- self-evolution Phase 1: correct tier classification
+- self-evolution Phase 2: DOM snapshot evidence collection (Regression path)
+- self-evolution Phase 4: permission gate (modifying chart.js = modify-existing → auto + log diff)
+- self-evolution Phase 4: new function addition (Gap path = add-new → auto-approved)
+- self-evolution Phase 6: Map update (domain playbook or reference file)
+- self-evolution Phase 7: evolution-log.md append-only record
+- The bootstrap path: if the log doesn't exist yet, Phase 0.1 creates it
+
+NOTE: If Scenario B's getVisibleRange implementation requires reading the TV
+Data Window or chart state in a non-obvious way, create a domain playbook at
+plugins/tradingview/references/playbooks/chart-visible-range-playbook.md
+documenting how you solved it.

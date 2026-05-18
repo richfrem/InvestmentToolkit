@@ -1,0 +1,49 @@
+SKILL UNDER TEST: pine_source_reader.py direct + author-pine-script deep research path
+NEW PROMPT — tests the "research before writing" pattern in isolation
+
+---
+
+I want you to study how the top TradingView community indicators actually work under
+the hood, then build me something better.
+
+STEP 1 — FETCH AND STUDY TWO SOURCES:
+Run pine_source_reader.py to fetch the live source for both:
+  - "Smart Money Concepts [LuxAlgo]"   (rank #1 by popularity)
+  - "SuperTrend"                        (rank #4 by popularity)
+
+Save both to temp/indicator_sources/. Read both files carefully.
+
+For each one, extract and tell me:
+  a) Which Pine Script version it uses (v1/v4/v5/v6)
+  b) The 2-3 core calculation patterns (e.g., how SMC detects Order Blocks,
+     how SuperTrend builds its ATR band)
+  c) Any v5→v6 migration work that would be needed
+
+STEP 2 — AUTHOR A HYBRID:
+Using what you learned, author a Pine Script v6 indicator named "AI_SmartTrend_v6"
+that combines:
+  - SuperTrend's ATR-based trend direction (the trailing stop flip logic)
+  - A simplified Order Block detector: mark the last confirmed bearish OB (high-volume
+    down candle before a bullish impulse) and the last bullish OB (high-volume up candle
+    before a bearish impulse) as boxes on the chart
+  - Plot the SuperTrend line in green (uptrend) / red (downtrend)
+  - All values visible in Data Window
+
+STEP 3 — LINT, INJECT, VERIFY:
+  - Run pine_linter.py. Fix any errors before injecting.
+  - Inject onto the active chart.
+  - Read the Data Window and report: current trend direction and the price levels
+    of the most recent bullish and bearish Order Blocks.
+
+STEP 4 — UPDATE THE MAP:
+If you discovered anything non-obvious about the SMC or SuperTrend source
+(a selector quirk, a v4 pattern you had to work around, a timing issue during
+inject), update plugins/tradingview/references/Top_TradingView_Indicators_Reference.md
+with the finding under the relevant indicator section.
+
+WHAT THIS TESTS:
+- pine_source_reader.py --name with two different indicators
+- Cross-indicator pattern synthesis before writing
+- v5→v6 migration in practice (SMC uses v5 array patterns, SuperTrend uses v4 ATR)
+- Full lint → inject → verify pipeline
+- "Map not Diary" update: agent writes back to references after learning something
