@@ -393,3 +393,138 @@ export async function savePineToLibrary(client, scriptName) {
     return { success: false, error: e.message };
   }
 }
+
+/**
+ * Open an indicator's Pine Script source code in the Pine Editor via the
+ * Indicators dialog.  Navigates to the "Top" list (or searches by name),
+ * hovers the matching row to expose the "Source code" { } button, clicks it,
+ * then reads and returns the full source from the Monaco editor.
+ *
+ * Args:
+ *   client: CDP client
+ *   name:   Indicator name to search for (partial match).  Pass null / ""
+ *           to read whatever is currently open in the Pine Editor.
+ *
+ * Returns:
+ *   { success: true, name: string, source: string, version: string }
+ *   { success: false, error: string }
+ */
+export async function readSourceFromDialog(client, name) {
+  try {
+    const delay = (ms) => new Promise(r => setTimeout(r, ms));
+
+    // Helper: read Monaco editor content via React fiber traversal
+    const readEditor = async () => {
+      const r = await client.Runtime.evaluate({
+        expression: `(function() {
+          var edEl = document.querySelector('.pine-editor-monaco');
+          if (!edEl) return null;
+          var el = edEl, fk = null;
+          for (var d = 0; d < 10; d++) {
+            el = el.parentElement; if (!el) break;
+            fk = Object.keys(el).find(function(k) { return k.startsWith('__reactFiber'); });
+            if (fk) break;
+          }
+          if (!fk) return null;
+          try { return el[fk].return.memoizedState.memoizedState.current._editor.getValue(); }
+          catch(e) { return null; }
+        })()`,
+        returnByValue: true, awaitPromise: false,
+      });
+      return r.result.value;
+    };
+
+    // If no name given, read what is currently open
+    if (!name) {
+      const src = await readEditor();
+      if (!src) return { success: false, error: 'Pine Editor not open or empty' };
+      const ver = (src.match(/\/\/@version=\d+/) || ['unknown'])[0];
+      return { success: true, name: '(current)', source: src, version: ver };
+    }
+
+    const safeName = JSON.stringify(name);
+
+    // 1. Open Indicators dialog
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        var btns = [...document.querySelectorAll('[data-name="open-indicators-dialog"]')];
+        var visible = btns.filter(function(b) { return b.offsetParent; });
+        (visible[0] || btns[0]).click();
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    await delay(1200);
+
+    // 2. Click "Top" sidebar item for popularity sort
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        var dialog = document.querySelector('[data-name="indicators-dialog"]');
+        if (!dialog) return;
+        var top = [...dialog.querySelectorAll('*')].find(function(el) {
+          return el.offsetParent && el.textContent.trim() === 'Top' && el.children.length === 0;
+        });
+        if (top) top.click();
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    await delay(800);
+
+    // 3. Type search term to filter results
+    const typeRes = await client.Runtime.evaluate({
+      expression: `(function() {
+        var dialog = document.querySelector('[data-name="indicators-dialog"]');
+        if (!dialog) return 'no-dialog';
+        var input = dialog.querySelector('input[placeholder="Search"]') || dialog.querySelector('input');
+        if (!input) return 'no-input';
+        var setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        setter.call(input, ${safeName});
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        return 'typed';
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    if (typeRes.result.value !== 'typed') {
+      return { success: false, error: `Could not type search term: ${typeRes.result.value}` };
+    }
+    await delay(1800);
+
+    // 4. Hover over the first result row and click its "Source code" button
+    const clickRes = await client.Runtime.evaluate({
+      expression: `(function() {
+        var dialog = document.querySelector('[data-name="indicators-dialog"]');
+        if (!dialog) return JSON.stringify({ error: 'no-dialog' });
+
+        // Hover over first row to make action icons visible
+        var rows = [...dialog.querySelectorAll('[class*="container-WeNdU0sq"]')]
+          .filter(function(e) { return e.offsetParent; });
+        if (rows.length === 0) return JSON.stringify({ error: 'no-rows' });
+        var row = rows[0];
+        row.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+        row.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+
+        // Click the "Source code" { } button (title attribute is stable)
+        var srcBtn = row.querySelector('[title="Source code"]') ||
+          [...dialog.querySelectorAll('[title="Source code"]')].filter(function(e){ return e.offsetParent; })[0];
+        if (!srcBtn) return JSON.stringify({ error: 'no-source-btn' });
+
+        var nameEl = row.querySelector('[class*="title-cIIj4HrJ"]');
+        var rowName = nameEl ? nameEl.textContent.trim() : 'unknown';
+        srcBtn.click();
+        return JSON.stringify({ clicked: true, rowName: rowName });
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    const click = JSON.parse(clickRes.result.value);
+    if (!click.clicked) return { success: false, error: click.error || 'Source code button not found' };
+    await delay(2000);
+
+    // 5. Read Pine Editor
+    const source = await readEditor();
+    if (!source) return { success: false, error: 'Pine Editor did not open after clicking source code' };
+
+    const ver = (source.match(/\/\/@version=\d+/) || ['unknown'])[0];
+    return { success: true, name: click.rowName, source, version: ver };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
