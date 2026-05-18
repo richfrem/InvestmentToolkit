@@ -26,7 +26,7 @@ Without a Premium subscription the plugin still works (it reads from your active
 
 ### Node.js 18+ (required)
 
-The owned CDP client (`node/cli.js`) runs on Node.js.
+The owned CDP client (`tradingview-cdp/cli.js`) runs on Node.js.
 
 ```bash
 node --version   # must be 18+
@@ -35,9 +35,9 @@ node --version   # must be 18+
 ### One-time setup
 
 ```bash
-cd plugins/tradingview/node
-npm install
-cd ../../..
+cd tradingview-cdp
+npm ci
+cd ..
 
 # Verify
 python3 plugins/tradingview/scripts/tv_health_check.py
@@ -49,7 +49,7 @@ python3 plugins/tradingview/scripts/tv_health_check.py
 
 ```
 Python script
-  └─ subprocess → plugins/tradingview/node/cli.js  (owned, no external MCP server)
+  └─ subprocess → tradingview-cdp/cli.js  (owned, no external MCP server)
         └─ Chrome DevTools Protocol (localhost:9222)
               └─ TradingView Desktop
                     └─ Your Premium real-time feed
@@ -165,10 +165,10 @@ Port 9222 is the standard Chrome DevTools remote debugging port. If Google Chrom
 
 ## Node.js CDP Client
 
-The plugin owns its Node.js CDP code at `plugins/tradingview/node/`. There is no runtime dependency on `temp/tradingview-mcp` or any external MCP server.
+The plugin owns its Node.js CDP code at `tradingview-cdp/`. There is no runtime dependency on `tradingview-cdp` or any external MCP server.
 
 ```
-plugins/tradingview/node/
+tradingview-cdp/
 ├── cli.js           ← entry point (status, quote, alert, screenshot)
 ├── router.js        ← command dispatcher
 ├── connection.js    ← CDP connect / evaluate helpers

@@ -61,7 +61,7 @@ Store: TICKER, TIMEFRAME (default 1D), USER_INTENT.
 ## Phase 2 — Health Check
 
 ```bash
-node plugins/tradingview/node/cli.js status
+node tradingview-cdp/cli.js status
 ```
 
 If TradingView Desktop is not reachable (non-zero exit or error in output):
@@ -78,7 +78,7 @@ Wait for user confirmation before proceeding.
 ## Phase 3 — Set Timeframe
 
 ```bash
-node plugins/tradingview/node/cli.js chart timeframe {TIMEFRAME}
+node tradingview-cdp/cli.js chart timeframe {TIMEFRAME}
 ```
 
 Tell the user:
@@ -92,7 +92,7 @@ If this fails, note the error and continue:
 ## Phase 4 — Live Data Window Read + Indicator Education
 
 ```bash
-node plugins/tradingview/node/cli.js chart read
+node tradingview-cdp/cli.js chart read
 ```
 
 ### If the Data Window is empty or returns an error:
@@ -121,7 +121,7 @@ If yes, use the pine-inject skill to generate and inject (read `plugins/tradingv
 
 Then re-read:
 ```bash
-node plugins/tradingview/node/cli.js chart read
+node tradingview-cdp/cli.js chart read
 ```
 
 ### Reading and explaining the indicators
@@ -216,7 +216,7 @@ Handle follow-up questions conversationally. If the user asks for a different ti
 If a Pine Script bundle was injected in Phase 4, offer to remove it:
 
 ```bash
-node plugins/tradingview/node/cli.js pine remove -i AI_TA_Bundle
+node tradingview-cdp/cli.js pine remove -i AI_TA_Bundle
 ```
 
 > "Custom TA bundle removed. Your chart is back to its original state."

@@ -25,7 +25,7 @@ import argparse
 from pathlib import Path
 
 # Ensure tv_client is importable from this directory
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from tv_client import tv_call_or_fallback
 
 

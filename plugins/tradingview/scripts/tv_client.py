@@ -2,37 +2,106 @@
 """
 tv_client.py - Core TradingView CLI client.
 
-This is the single source of truth for the path to the Node.js CLI.
-All other scripts import tv_call / is_tv_running / tv_call_or_fallback from here.
+The Node.js CDP engine lives at PROJECT_ROOT/tradingview-cdp/.
 
-Path layout:
-  plugins/tradingview/scripts/tv_client.py
-  parents[0] = scripts/
-  parents[1] = tradingview/
-  parents[2] = plugins/
-  parents[3] = repo root
+Resolution order:
+  1. TV_CDP_DIR environment variable (explicit override -- works in CI, Docker, post-install)
+  2. Walk up from this file's real location looking for tradingview-cdp/cli.js
+  3. Fail with clear, actionable setup instructions
+
+This module is the SINGLE SOURCE OF TRUTH for Node.js path resolution.
+All other TradingView Python scripts MUST import TV_NODE_DIR and TV_CLI from here.
 """
 
 import json
 import os
+import sys
 import subprocess
 import urllib.request
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-# Owned Node.js CDP client — no dependency on temp/tradingview-mcp
-TV_CLI = REPO_ROOT / "plugins" / "tradingview" / "node" / "cli.js"
-TV_NODE_MODULES = REPO_ROOT / "plugins" / "tradingview" / "node" / "node_modules"
-TV_PORT = int(os.environ.get("TV_CDP_PORT", "9222"))
 
+def _find_cdp_dir() -> Path:
+    """
+    Locate the tradingview-cdp Node.js package.
+    """
+    env_path = os.environ.get("TV_CDP_DIR")
+    if env_path:
+        p = Path(env_path).resolve()
+        if (p / "cli.js").exists():
+            return p
+        print(
+            f"WARNING: TV_CDP_DIR={env_path} is set but cli.js not found there. "
+            f"Falling back to directory walk-up.",
+            file=sys.stderr
+        )
+
+    current = Path(__file__).resolve().parent
+    for _ in range(10):
+        candidate = current / "tradingview-cdp"
+        if (candidate / "cli.js").exists():
+            return candidate
+        if current == current.parent:
+            break
+        current = current.parent
+
+    raise FileNotFoundError(
+        "\n"
+        "+============================================================+\n"
+        "|  TradingView CDP Engine Not Found                          |\n"
+        "+============================================================+\n"
+        "|                                                            |\n"
+        "|  Expected at: <project-root>/tradingview-cdp/              |\n"
+        "|                                                            |\n"
+        "|  Setup:                                                    |\n"
+        "|    cd <project-root>/tradingview-cdp                       |\n"
+        "|    npm ci                                             |\n"
+        "|                                                            |\n"
+        "|  Or set the environment variable:                          |\n"
+        "|    export TV_CDP_DIR=/path/to/tradingview-cdp              |\n"
+        "|                                                            |\n"
+        "|  See: plugins/tradingview/README.md for full setup guide   |\n"
+        "+============================================================+\n"
+    )
+
+TV_NODE_DIR = _find_cdp_dir()
+TV_CLI = TV_NODE_DIR / "cli.js"
+TV_NODE_MODULES = TV_NODE_DIR / "node_modules"
+TV_PORT = int(os.environ.get("TV_CDP_PORT", "9222"))
+REPO_ROOT = TV_NODE_DIR.parent
+
+
+def validate_cdp_installation() -> dict:
+    """
+    Validate that the CDP engine is properly installed and ready.
+    Returns a status dict. Call this from health checks.
+    """
+    issues = []
+
+    if not TV_CLI.exists():
+        issues.append(f"cli.js not found at {TV_CLI}")
+
+    if not TV_NODE_MODULES.exists():
+        issues.append(
+            f"node_modules/ not found at {TV_NODE_MODULES}. "
+            f"Run: cd {TV_NODE_DIR} && npm ci"
+        )
+    elif not (TV_NODE_MODULES / "chrome-remote-interface").exists():
+        issues.append(
+            f"chrome-remote-interface not installed. "
+            f"Run: cd {TV_NODE_DIR} && npm ci"
+        )
+
+    return {
+        "cdp_engine_path": str(TV_NODE_DIR),
+        "cli_path": str(TV_CLI),
+        "installed": len(issues) == 0,
+        "issues": issues
+    }
 
 def is_tv_running() -> bool:
     """
     Return True only if TradingView Desktop is on port 9222.
-
-    A plain socket check is insufficient — Chrome DevTools also binds 9222.
-    This queries the CDP /json/list endpoint and looks for a page target
-    whose URL contains 'tradingview', which only matches TradingView Desktop.
     """
     try:
         req = urllib.request.urlopen(
@@ -50,23 +119,11 @@ def is_tv_running() -> bool:
 def tv_call(*args, timeout: int = 10):
     """
     Call the TradingView CLI with the given arguments and return parsed JSON.
-
-    Args:
-        *args: CLI arguments passed after `node <TV_CLI>`.
-        timeout: Subprocess timeout in seconds (default 10).
-
-    Returns:
-        Parsed JSON output (dict or list).
-
-    Raises:
-        FileNotFoundError: If node or the CLI script is not found.
-        RuntimeError: If the CLI exits with a non-zero return code.
-        json.JSONDecodeError: If stdout is not valid JSON.
     """
     if not TV_CLI.exists():
         raise FileNotFoundError(
             f"TradingView CLI not found at {TV_CLI}. "
-            "Run: cd plugins/tradingview/node && npm install"
+            f"Run: cd {TV_NODE_DIR} && npm ci"
         )
 
     cmd = ["node", str(TV_CLI)] + [str(a) for a in args]
@@ -75,6 +132,7 @@ def tv_call(*args, timeout: int = 10):
         capture_output=True,
         text=True,
         timeout=timeout,
+        cwd=str(TV_NODE_DIR)
     )
 
     if result.returncode != 0:
@@ -85,13 +143,35 @@ def tv_call(*args, timeout: int = 10):
     return json.loads(result.stdout)
 
 
+def run_node_module_raw(js_code: str, timeout: int = 30) -> subprocess.CompletedProcess:
+    """
+    Execute inline ES module code with the CDP engine's node_modules in scope.
+    """
+    return subprocess.run(
+        ["node", "--input-type=module"],
+        input=js_code,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        cwd=str(TV_NODE_DIR)
+    )
+
+def run_node_module(js_code: str, timeout: int = 30) -> dict:
+    """
+    Execute inline ES module code and parse the returned JSON.
+    """
+    result = run_node_module_raw(js_code, timeout=timeout)
+    if result.returncode != 0 and not result.stdout.strip():
+        raise RuntimeError(f"Node.js error (exit {result.returncode}): {result.stderr.strip()[:500]}")
+    try:
+        return json.loads(result.stdout.strip())
+    except json.JSONDecodeError:
+        return {"raw": result.stdout.strip(), "stderr": result.stderr.strip()}
+
 def tv_call_or_fallback(*args, fallback_fn, timeout: int = 10):
     """
     Try tv_call(*args). If TradingView is unavailable or any error occurs,
     call fallback_fn() instead.
-
-    Returns:
-        (result, source) where source is 'tradingview' or 'fallback'.
     """
     if not is_tv_running():
         return fallback_fn(), "fallback"

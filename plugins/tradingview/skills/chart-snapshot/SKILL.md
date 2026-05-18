@@ -55,7 +55,7 @@ Stop if TradingView is not available — screenshots cannot be taken without it.
 ## Phase 3 — Switch Chart to Ticker
 
 ```bash
-node plugins/tradingview/node/cli.js quote TICKER
+node tradingview-cdp/cli.js quote TICKER
 ```
 
 This verifies the ticker is accessible. The screenshot will capture whatever chart is currently active in TradingView Desktop — switch to the ticker manually in TradingView before running if needed.
@@ -71,7 +71,7 @@ SAVE_DIR="PortfolioAnalysis/screenshots/$DATE"
 mkdir -p "$SAVE_DIR"
 
 # Capture screenshot — saved to PortfolioAnalysis/screenshots/{date}/{TICKER}.png automatically
-node plugins/tradingview/node/cli.js screenshot --output "$SAVE_DIR/$TICKER"
+node tradingview-cdp/cli.js screenshot --output "$SAVE_DIR/$TICKER"
 ```
 
 ---
