@@ -30,79 +30,7 @@ import { PresetSelectorModal } from './PresetSelectorModal';
 import { saveUserPreset } from '../services/presets';
 import { ScenarioEditor } from './analysis/ScenarioEditor';
 import { SliderInput } from './analysis/SliderInput';
-
-// --- Extracted Components (defined outside render to avoid remounting) ---
-
-interface SensitivityMatrixProps {
-    peRatio: number;
-    growthRate: number;
-    stockPrice: number;
-    calculatePrice: (g: number, pe: number) => number;
-}
-
-function SensitivityMatrix({ peRatio, growthRate, stockPrice, calculatePrice }: SensitivityMatrixProps) {
-    const currentPe = Math.max(5, Math.round(peRatio / 5) * 5);
-    const currentGrowth = Math.round(growthRate / 5) * 5;
-
-    const peRange = useMemo(() =>
-        [currentPe - 10, currentPe - 5, currentPe, currentPe + 5, currentPe + 10].filter(p => p > 0),
-        [currentPe]
-    );
-
-    const growthRange = useMemo(() =>
-        [currentGrowth - 10, currentGrowth - 5, currentGrowth, currentGrowth + 5, currentGrowth + 10],
-        [currentGrowth]
-    );
-
-    return (
-        <div className="h-full flex flex-col">
-            <div className="flex-1 overflow-auto">
-                <table className="w-full text-[9px] border-collapse min-w-[280px]">
-                    <thead>
-                        <tr>
-                            <th className="p-1 text-slate-500 font-medium text-left border-b border-slate-800">G \ PE</th>
-                            {peRange.map(pe => (
-                                <th key={pe} className={`p-1 border-b border-slate-800 text-center transition-colors duration-300 ${pe === currentPe ? 'text-white font-bold bg-purple-500/20' : 'text-slate-600'}`}>
-                                    {pe}x
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {growthRange.map(g => (
-                            <tr key={g} className="hover:bg-slate-800/30 transition-colors">
-                                <td className={`p-1 font-bold border-r border-slate-800/50 ${g === currentGrowth ? 'text-primary' : 'text-slate-500'}`}>
-                                    {g}%
-                                </td>
-                                {peRange.map(pe => {
-                                    const price = calculatePrice(g, pe);
-                                    const mxUpside = stockPrice > 0 ? ((price - stockPrice) / stockPrice) * 100 : 0;
-
-                                    let colorClass = 'text-slate-600';
-                                    if (mxUpside > 50) colorClass = 'bg-green-500/20 text-green-400 font-bold';
-                                    else if (mxUpside > 20) colorClass = 'bg-green-500/10 text-green-500';
-                                    else if (mxUpside > 0) colorClass = 'text-green-600';
-                                    else if (mxUpside > -20) colorClass = 'text-red-400';
-                                    else colorClass = 'bg-red-500/10 text-red-500 font-bold';
-
-                                    if (g === currentGrowth && pe === currentPe) {
-                                        colorClass += ' ring-1 ring-primary relative z-10';
-                                    }
-
-                                    return (
-                                        <td key={pe} className={`p-1 text-right rounded-sm ${colorClass}`}>
-                                            ${Math.round(price)}
-                                        </td>
-                                    );
-                                })}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    );
-}
+import { SensitivityGrid } from './analysis/SensitivityGrid';
 
 // --- Normalization helper (extracted to avoid duplication) ---
 
@@ -924,11 +852,18 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                 Sensitivity Matrix
                             </span>
                         </div>
-                        <SensitivityMatrix
+                        <SensitivityGrid
                             peRatio={peRatio}
                             growthRate={growthRate}
                             stockPrice={stockData.price}
-                            calculatePrice={calculatePrice}
+                            calculateYear5Price={(g, pe) => {
+                                const tempScenario = { ...current, growthRate: g, exitPE: pe };
+                                return computeScenario(stockData.metrics.revenue, stockData.metrics.market_cap / stockData.price, discountRate / 100, timeHorizon, tempScenario).year5PriceUndiscounted;
+                            }}
+                            calculatePresentValue={(g, pe) => {
+                                const tempScenario = { ...current, growthRate: g, exitPE: pe };
+                                return computeScenario(stockData.metrics.revenue, stockData.metrics.market_cap / stockData.price, discountRate / 100, timeHorizon, tempScenario).presentValue;
+                            }}
                         />
                     </div>
                 </div>
