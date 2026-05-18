@@ -265,121 +265,92 @@ export async function openDataWindow(client) {
  */
 export async function saveLayout(client, name) {
   try {
-    const safeName = JSON.stringify(String(name || 'InvestmentToolkit'));
+    const targetName = name || 'agent-layout';
+    const safeName = JSON.stringify(targetName);
 
-    if (name) {
-      // When a name is given: switch to that named layout if it already exists,
-      // or create it via "Make a copy…" — never overwrite the active layout.
-
-      // 1. Open layout dropdown (button whose tooltip includes "Active layout")
-      await client.Runtime.evaluate({
-        expression: `(function() {
-          var btn = [...document.querySelectorAll('button')].find(function(b) {
-            var t = b.getAttribute('aria-label') || b.getAttribute('data-tooltip') || '';
-            return b.offsetParent && t.includes('Active layout');
-          });
-          if (btn) btn.click();
-        })()`,
-        returnByValue: true,
-        awaitPromise: false,
-      });
-      await new Promise(r => setTimeout(r, 700));
-
-      // 2. Check if named layout already exists — layout items are <A class*="button-fOp9u5tE">
-      const switchResult = await client.Runtime.evaluate({
-        expression: `(function() {
-          var target = ${safeName};
-          // Layout links: <A> tags that contain the layout name as text
-          var link = [...document.querySelectorAll('a[class*="button-fOp9u5tE"], a[class*="fOp9u5tE"]')]
-            .find(function(a) {
-              return a.offsetParent && a.textContent.includes(target);
-            });
-          if (link) { link.click(); return JSON.stringify({ switched: true }); }
-          // Fallback: any span with exact text match
-          var span = [...document.querySelectorAll('[class*="ellipsis"]')]
-            .find(function(el) { return el.offsetParent && el.textContent.trim() === target; });
-          if (span) {
-            var clickable = span.closest('a') || span.closest('button') || span.parentElement;
-            if (clickable) { clickable.click(); return JSON.stringify({ switched: true }); }
-          }
-          return JSON.stringify({ switched: false });
-        })()`,
-        returnByValue: true,
-        awaitPromise: false,
-      });
-      const switchData = JSON.parse(switchResult.result.value);
-
-      if (switchData.switched) {
-        await new Promise(r => setTimeout(r, 800));
-        return { success: true, layoutName: name, action: 'switched' };
-      }
-
-      // 3. Layout not found — create it via "Make a copy…"
-      await client.Runtime.evaluate({
-        expression: `(function() {
-          var item = [...document.querySelectorAll('[class*="ellipsis"]')]
-            .find(function(el) { return el.offsetParent && el.textContent.trim() === 'Make a copy…'; });
-          if (item) { (item.closest('button') || item.closest('a') || item).click(); return; }
-          var alt = [...document.querySelectorAll('*')].find(function(el) {
-            return el.offsetParent && el.textContent.trim().toLowerCase().includes('create new layout');
-          });
-          if (alt) alt.click();
-        })()`,
-        returnByValue: true,
-        awaitPromise: false,
-      });
-      await new Promise(r => setTimeout(r, 700));
-
-      // 4. Fill name in the dialog input that appeared — select-all first to replace default text
-      await client.Runtime.evaluate({
-        expression: `(function() {
-          var input = [...document.querySelectorAll('input[type="text"], input:not([type])')].find(function(i) {
-            return i.offsetParent;
-          });
-          if (!input) return;
-          input.focus();
-          // Select all existing text then replace via React setter
-          input.select();
-          var setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-          setter.call(input, ${safeName});
-          input.dispatchEvent(new Event('input', { bubbles: true }));
-          input.dispatchEvent(new Event('change', { bubbles: true }));
-          // Also send keyboard events to ensure React picks up the value
-          input.dispatchEvent(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true, bubbles: true }));
-        })()`,
-        returnByValue: true,
-        awaitPromise: false,
-      });
-      await new Promise(r => setTimeout(r, 400));
-
-      // 4. Confirm (Save / OK button in dialog)
-      await client.Runtime.evaluate({
-        expression: `(function() {
-          var confirmBtn = [...document.querySelectorAll('button')].find(function(b) {
-            if (!b.offsetParent) return false;
-            var t = b.textContent.trim().toLowerCase();
-            return t === 'save' || t === 'ok' || t === 'create' || t === 'copy';
-          });
-          if (confirmBtn) { confirmBtn.click(); return; }
-          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-        })()`,
-        returnByValue: true,
-        awaitPromise: false,
-      });
-      await new Promise(r => setTimeout(r, 600));
-
-      return { success: true, layoutName: name, action: 'created' };
-    }
-
-    // No name given: save (overwrite) the active layout via the Save button
+    // 1. Open layout dropdown (chevron button whose aria-label includes "Active layout")
     await client.Runtime.evaluate({
       expression: `(function() {
-        var saveBtn = [...document.querySelectorAll('button')].find(function(b) {
+        var btn = [...document.querySelectorAll('button')].find(function(b) {
           if (!b.offsetParent) return false;
-          var t = (b.getAttribute('aria-label') || b.getAttribute('data-tooltip') || '').toLowerCase();
-          return t.includes('save') && t.includes('layout');
+          var t = b.getAttribute('aria-label') || b.getAttribute('data-tooltip') || '';
+          return t.includes('Active layout');
         });
-        if (saveBtn) { saveBtn.click(); return; }
+        if (btn) btn.click();
+      })()`,
+      returnByValue: true,
+      awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 700));
+
+    // 2. Check if named layout already exists — any visible <A> whose text starts with targetName
+    const switchResult = await client.Runtime.evaluate({
+      expression: `(function() {
+        var target = ${safeName};
+        var link = [...document.querySelectorAll('a')].find(function(a) {
+          return a.offsetParent && a.textContent.trim().startsWith(target);
+        });
+        if (link) { link.click(); return JSON.stringify({ switched: true }); }
+        return JSON.stringify({ switched: false });
+      })()`,
+      returnByValue: true,
+      awaitPromise: false,
+    });
+
+    if (JSON.parse(switchResult.result.value).switched) {
+      await new Promise(r => setTimeout(r, 800));
+      return { success: true, layoutName: targetName, action: 'switched' };
+    }
+
+    // 3. Layout not found — click "Create new layout…" menu item
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        var item = [...document.querySelectorAll('*')].find(function(el) {
+          if (!el.offsetParent) return false;
+          var t = el.textContent.trim();
+          return t === 'Create new layout…' || t === 'Create new layout...';
+        });
+        if (item) { (item.closest('button') || item.closest('a') || item).click(); }
+      })()`,
+      returnByValue: true,
+      awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 800));
+
+    // 4. Fill name input in the "Create layout" dialog — React setter required
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        var input = [...document.querySelectorAll('input')].find(function(i) { return i.offsetParent; });
+        if (!input) return;
+        input.focus();
+        input.select();
+        var setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        setter.call(input, ${safeName});
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      })()`,
+      returnByValue: true,
+      awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 400));
+
+    // 5. Click the "Create" button (exact text match)
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        var btn = [...document.querySelectorAll('button')].find(function(b) {
+          return b.offsetParent && b.textContent.trim() === 'Create';
+        });
+        if (btn) { btn.click(); return; }
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      })()`,
+      returnByValue: true,
+      awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 1000));
+
+    // 6. Cmd+S / Ctrl+S to save content to the newly active layout
+    await client.Runtime.evaluate({
+      expression: `(function() {
         var isMac = /mac/i.test(navigator.platform);
         document.body.dispatchEvent(new KeyboardEvent('keydown', {
           key: 's', code: 'KeyS',
@@ -392,7 +363,7 @@ export async function saveLayout(client, name) {
     });
     await new Promise(r => setTimeout(r, 500));
 
-    return { success: true, layoutName: 'saved' };
+    return { success: true, layoutName: targetName, action: 'created' };
   } catch (e) {
     return { success: false, error: e.message };
   }
