@@ -47,7 +47,17 @@ export async function changeTimeframe(client, resolution) {
           var candidates = Array.from(document.querySelectorAll(toolbarSelectors[si]));
           btn = candidates.find(function(b) {
             var text = b.textContent.trim().toUpperCase();
-            return text === res || text === res.replace('1', '') || b.getAttribute('data-value') === res;
+            var label = (b.getAttribute('aria-label') || '').toUpperCase();
+            var dataVal = (b.getAttribute('data-value') || '').toUpperCase();
+            
+            // Match text ("1D", "D", "1H", "H")
+            if (text === res || text === res.replace('1', '')) return true;
+            // Match label ("1 DAY", "1 HOUR", "4 HOURS")
+            if (label.includes(res)) return true;
+            // Match data-value
+            if (dataVal === res) return true;
+            
+            return false;
           });
           if (btn && btn.offsetParent) break;
         }
@@ -151,7 +161,10 @@ export async function readDataWindow(client) {
         }
 
         // Read items via stable data-test-id-value-title attribute (TV's semantic hook)
+        // or fallback to all visible rows
         var items = {};
+        
+        // Strategy 1: Data-test-id (Semantic)
         dw.querySelectorAll('[data-test-id-value-title]').forEach(function(el) {
           var key = el.getAttribute('data-test-id-value-title') || el.textContent.trim();
           var itemEl = el.closest('[class]');
@@ -160,6 +173,19 @@ export async function readDataWindow(client) {
           var val = valueEl ? valueEl.textContent.trim() : '';
           if (key) items[key] = val;
         });
+
+        // Strategy 2: Label/Value list (Structural Fallback)
+        if (Object.keys(items).length < 5) {
+           var rows = dw.querySelectorAll('[class*="item"]');
+           rows.forEach(function(row) {
+              var spans = row.querySelectorAll('span');
+              if (spans.length >= 2) {
+                 var key = spans[0].textContent.trim().replace(':', '');
+                 var val = spans[1].textContent.trim();
+                 if (key && !items[key]) items[key] = val;
+              }
+           });
+        }
         return JSON.stringify({ success: true, data: items });
       })()`,
       returnByValue: true,
@@ -487,9 +513,11 @@ export async function changeSymbol(client, symbol) {
     // 1. Click the symbol display button to open search
     const btnResult = await client.Runtime.evaluate({
       expression: `(function() {
-        var btn = document.querySelector('button[aria-label="Change symbol"]') ||
+        var btn = document.querySelector('#header-toolbar-symbol-search') ||
+          document.querySelector('button[aria-label="Change symbol"]') ||
           [...document.querySelectorAll('button')].find(function(b) {
-            return b.offsetParent && (b.getAttribute('aria-label') || '').includes('Change symbol');
+            var label = (b.getAttribute('aria-label') || '').toLowerCase();
+            return b.offsetParent && (label.includes('change symbol') || label.includes('symbol search'));
           });
         if (btn) { btn.click(); return JSON.stringify({ found: true }); }
         return JSON.stringify({ found: false });
@@ -507,6 +535,8 @@ export async function changeSymbol(client, symbol) {
         var sym = ${safeSymbol};
         // TV symbol search input — try multiple selectors
         var input = document.querySelector('input[data-role="search"]') ||
+          document.querySelector('input[placeholder*="Symbol"]') ||
+          document.querySelector('input[placeholder*="ISIN"]') ||
           document.querySelector('[class*="search"] input') ||
           [...document.querySelectorAll('input')].find(function(i) {
             return i.offsetParent && i.type !== 'checkbox' && i.type !== 'radio';
@@ -524,7 +554,16 @@ export async function changeSymbol(client, symbol) {
 
     // 3. Press Enter to confirm first result
     await client.Runtime.evaluate({
-      expression: `document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))`,
+      expression: `(function() {
+        var input = document.querySelector('input[placeholder*="Symbol"]') || 
+                    document.querySelector('input[data-role="search"]');
+        if (input) {
+            input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, which: 13, bubbles: true }));
+            input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', keyCode: 13, which: 13, bubbles: true }));
+        } else {
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', keyCode: 13, which: 13, bubbles: true }));
+        }
+      })()`,
       returnByValue: true, awaitPromise: false,
     });
     await new Promise(r => setTimeout(r, 800));
