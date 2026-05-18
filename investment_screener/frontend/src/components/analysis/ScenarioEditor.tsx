@@ -1,5 +1,5 @@
 import { SliderInput } from './SliderInput';
-import { Scenario } from '../../services/api';
+import { type Scenario } from '../../services/api';
 
 interface ScenarioEditorProps {
     scenario: Scenario & { weight: number };
