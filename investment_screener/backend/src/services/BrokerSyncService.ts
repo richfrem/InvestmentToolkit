@@ -22,7 +22,7 @@ import fs from 'fs';
 
 const PORTFOLIO_FILE    = path.resolve(__dirname, '../../data/portfolio.json');
 const PORTFOLIO_TV_FILE = path.resolve(__dirname, '../../data/portfolio_tv.json');
-const PY_SERVICES_DIR   = path.resolve(process.cwd(), 'py_services');
+const PY_SERVICES_DIR   = path.resolve(__dirname, '../../py_services');
 const FETCH_BROKER_PY   = path.join(PY_SERVICES_DIR, 'fetch_broker_data.py');
 
 function isTVReachable(port = 9222): Promise<boolean> {
@@ -55,26 +55,16 @@ function spawnFetchBroker(args: string[], timeoutMs = 120_000): Promise<any> {
         proc.on('close', (code) => {
             clearTimeout(timer);
             if (killed) return;
-            // stderr has informational progress lines — only fail on non-zero exit with no stdout
-            if (code !== 0 && !stdout.trim()) {
+            if (code !== 0) {
                 reject(new Error(`fetch_broker_data.py failed (exit ${code}): ${stderr.trim().slice(0, 400)}`));
                 return;
             }
+            // The script writes portfolio_tv.json — read from there (stdout has progress messages mixed in)
             try {
-                // stdout may have progress lines before the final JSON — find last JSON block
-                const lines = stdout.trim().split('\n');
-                let json: any = null;
-                for (let i = lines.length - 1; i >= 0; i--) {
-                    const line = lines[i].trim();
-                    if (line.startsWith('{') || line.startsWith('[')) {
-                        json = JSON.parse(line);
-                        break;
-                    }
-                }
-                if (json === null) json = JSON.parse(stdout.trim());
-                resolve(json);
+                const data = JSON.parse(fs.readFileSync(PORTFOLIO_TV_FILE, 'utf-8'));
+                resolve(data);
             } catch {
-                reject(new Error(`Failed to parse fetch_broker_data.py output: ${stdout.trim().slice(0, 200)}`));
+                reject(new Error(`fetch_broker_data.py ran but portfolio_tv.json is missing or invalid`));
             }
         });
 
@@ -134,6 +124,9 @@ export function mergeIntoPortfolio(tvSnapshot: TVSnapshot, existing: any[]): {
     removed:  string[];
     changed:  Array<{ symbol: string; field: string; from: any; to: any }>;
 } {
+    // Capture USD_CASH before building existingMap (TV tracks cash as balance, not position)
+    const existingCash = existing.find(item => (item.symbol || item.ticker) === 'USD_CASH') ?? null;
+
     const existingMap = new Map<string, any>();
     for (const item of existing) {
         const sym = item.symbol || item.ticker;
@@ -151,6 +144,13 @@ export function mergeIntoPortfolio(tvSnapshot: TVSnapshot, existing: any[]): {
         }
     }
 
+    // Derive cash balance from TV account snapshots
+    let tvCashUSD = 0;
+    for (const snap of (tvSnapshot as any).snapshots ?? []) {
+        const b = snap.balances ?? {};
+        if (b.cashUSD) tvCashUSD += b.cashUSD;
+    }
+
     const merged: any[] = [];
     const added: string[] = [];
     const removed: string[] = [];
@@ -160,16 +160,15 @@ export function mergeIntoPortfolio(tvSnapshot: TVSnapshot, existing: any[]): {
     for (const [symbol, tv] of tvMap) {
         const ex = existingMap.get(symbol);
         if (!ex) {
-            // New position — add with TV data only (no thesis/price yet)
             added.push(symbol);
             merged.push({
                 symbol,
-                shares:     tv.quantity,
-                book_price: tv.avgFillPrice,
+                shares:      tv.quantity,
+                book_price:  tv.avgFillPrice,
+                price:       tv.avgFillPrice,  // seed from fill price until next price refresh
                 accountType: tv.accountType,
             });
         } else {
-            // Existing — update shares and book_price, preserve everything else
             const updated = { ...ex };
             if (Math.abs((ex.shares ?? 0) - tv.quantity) > 0.001) {
                 changed.push({ symbol, field: 'shares', from: ex.shares, to: tv.quantity });
@@ -185,13 +184,20 @@ export function mergeIntoPortfolio(tvSnapshot: TVSnapshot, existing: any[]): {
     }
 
     // Positions in portfolio.json but not in TV → closed/removed
-    // Keep USD_CASH if present (TV tracks it as a balance, not a position)
     for (const [symbol, item] of existingMap) {
-        if (symbol === 'USD_CASH') {
-            merged.push(item);
-        } else {
-            removed.push(symbol);
-        }
+        removed.push(symbol);
+        void item;
+    }
+
+    // Always preserve USD_CASH — update from TV balance if available, else keep existing
+    if (tvCashUSD > 0) {
+        merged.push({
+            ...(existingCash ?? { symbol: 'USD_CASH', book_price: 1.0, price: 1.0, name: 'USD Cash', sector: 'Cash', industry: 'Cash' }),
+            symbol: 'USD_CASH',
+            shares: Math.round(tvCashUSD * 100) / 100,
+        });
+    } else if (existingCash) {
+        merged.push(existingCash);
     }
 
     return { merged, added, removed, changed };
