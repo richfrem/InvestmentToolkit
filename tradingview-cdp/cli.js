@@ -125,6 +125,18 @@ register('pine', {
         return pine.removePineScript(client, opts.indicator);
       },
     }],
+    ['save', {
+      description: 'Save current Pine Script to TV personal library',
+      options: {
+        name: { type: 'string', short: 'n', description: 'Script name for the naming dialog' },
+      },
+      handler: async (opts, positionals) => {
+        const name = opts.name || positionals[0];
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return pine.savePineToLibrary(client, name);
+      },
+    }],
   ]),
 });
 
@@ -170,6 +182,53 @@ register('chart', {
         const { getClient } = await import('./connection.js');
         const client = await getClient();
         return chart.saveLayout(client, opts.name);
+      },
+    }],
+    ['type', {
+      description: 'Change chart type — e.g. heikin-ashi, line, area, renko, bars',
+      options: {
+        type: { type: 'string', short: 't', description: 'Chart type alias or exact TV label' },
+      },
+      handler: async (opts, positionals) => {
+        const type = opts.type || positionals[0];
+        if (!type) throw new Error('Chart type required — e.g. chart type heikin-ashi');
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return chart.changeChartType(client, type);
+      },
+    }],
+    ['symbol', {
+      description: 'Change the active chart symbol — e.g. chart symbol AAPL',
+      options: {
+        symbol: { type: 'string', short: 's', description: 'Ticker symbol' },
+      },
+      handler: async (opts, positionals) => {
+        const symbol = opts.symbol || positionals[0];
+        if (!symbol) throw new Error('Symbol required — e.g. chart symbol AAPL');
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return chart.changeSymbol(client, symbol);
+      },
+    }],
+    ['addIndicator', {
+      description: 'Add a built-in indicator to the chart — e.g. chart addIndicator RSI',
+      options: {
+        name: { type: 'string', short: 'n', description: 'Indicator name (TV built-in or personal script)' },
+      },
+      handler: async (opts, positionals) => {
+        const name = opts.name || positionals[0];
+        if (!name) throw new Error('Indicator name required — e.g. chart addIndicator RSI');
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return chart.addIndicator(client, name);
+      },
+    }],
+    ['indicators', {
+      description: 'List indicators currently loaded on the chart',
+      handler: async () => {
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return chart.listIndicators(client);
       },
     }],
   ]),
