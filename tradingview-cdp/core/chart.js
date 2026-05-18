@@ -381,3 +381,275 @@ export async function saveLayout(client, name) {
     return { success: false, error: e.message };
   }
 }
+
+// ── Chart type map — friendly alias → TV aria-label ───────────────────────
+// Note: TV Desktop has no "Candlestick" button — it is the default type.
+// Use alias 'candle'/'candlestick' to trigger the "Undo change series style" button,
+// which reverts to the last known default (candlestick).
+const CHART_TYPE_LABELS = {
+  candle: '__undo__',
+  candlestick: '__undo__',
+  bars: 'Bars',
+  hollow: 'Hollow candles',
+  'hollow-candle': 'Hollow candles',
+  'volume-candle': 'Volume candles',
+  line: 'Line',
+  'line-markers': 'Line with markers',
+  step: 'Step line',
+  area: 'Area',
+  hlc: 'HLC area',
+  baseline: 'Baseline',
+  columns: 'Columns',
+  'high-low': 'High-low',
+  renko: 'Renko',
+  'line-break': 'Line break',
+  kagi: 'Kagi',
+  'point-figure': 'Point & figure',
+  range: 'Range',
+  'heikin-ashi': 'Heikin Ashi',
+  ha: 'Heikin Ashi',
+};
+
+/**
+ * Change the active chart type (candle style).
+ *
+ * Args:
+ *   client: CDP client instance
+ *   type: friendly name — e.g. "heikin-ashi", "line", "area", "renko",
+ *         or any TV aria-label like "Hollow candles"
+ *
+ * Returns:
+ *   { success: true, type: string }
+ *   { success: false, error: string }
+ */
+export async function changeChartType(client, type) {
+  try {
+    const key = String(type).trim().toLowerCase().replace(/\s+/g, '-');
+    const label = CHART_TYPE_LABELS[key] || String(type).trim();
+    const safeLabel = JSON.stringify(label);
+
+    // 'candle'/'candlestick': TV has no explicit button — revert via Undo
+    if (label === '__undo__') {
+      await client.Runtime.evaluate({
+        expression: `(function() {
+          var btn = document.querySelector('button[aria-label="Undo change series style"]') ||
+            [...document.querySelectorAll('button')].find(function(b) {
+              return b.offsetParent && (b.getAttribute('aria-label') || '').includes('Undo change series');
+            });
+          if (btn) btn.click();
+        })()`,
+        returnByValue: true, awaitPromise: false,
+      });
+      await new Promise(r => setTimeout(r, 500));
+      return { success: true, type: 'Candlestick (reverted)' };
+    }
+
+    const result = await client.Runtime.evaluate({
+      expression: `(function() {
+        var label = ${safeLabel};
+        var btn = document.querySelector('button[aria-label="' + label + '"]') ||
+          [...document.querySelectorAll('button')].find(function(b) {
+            return b.offsetParent && (b.getAttribute('aria-label') || '').toLowerCase() === label.toLowerCase();
+          });
+        if (!btn) return JSON.stringify({ success: false, error: 'Chart type button not found: ' + label });
+        btn.click();
+        return JSON.stringify({ success: true, type: label });
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+
+    const data = JSON.parse(result.result.value);
+    if (data.success) await new Promise(r => setTimeout(r, 500));
+    return data;
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * Change the active chart symbol.
+ *
+ * Strategy: click the "Change symbol" button in the chart header, type the
+ * symbol in the search box that appears, then confirm with Enter.
+ *
+ * Args:
+ *   client: CDP client instance
+ *   symbol: ticker string — e.g. "AAPL", "TSLA", "NVDA"
+ *
+ * Returns:
+ *   { success: true, symbol: string }
+ *   { success: false, error: string }
+ */
+export async function changeSymbol(client, symbol) {
+  try {
+    const safeSymbol = JSON.stringify(String(symbol).trim().toUpperCase());
+
+    // 1. Click the symbol display button to open search
+    const btnResult = await client.Runtime.evaluate({
+      expression: `(function() {
+        var btn = document.querySelector('button[aria-label="Change symbol"]') ||
+          [...document.querySelectorAll('button')].find(function(b) {
+            return b.offsetParent && (b.getAttribute('aria-label') || '').includes('Change symbol');
+          });
+        if (btn) { btn.click(); return JSON.stringify({ found: true }); }
+        return JSON.stringify({ found: false });
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    if (!JSON.parse(btnResult.result.value).found) {
+      return { success: false, error: 'Symbol button not found in chart header' };
+    }
+    await new Promise(r => setTimeout(r, 700));
+
+    // 2. Type symbol into search input
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        var sym = ${safeSymbol};
+        // TV symbol search input — try multiple selectors
+        var input = document.querySelector('input[data-role="search"]') ||
+          document.querySelector('[class*="search"] input') ||
+          [...document.querySelectorAll('input')].find(function(i) {
+            return i.offsetParent && i.type !== 'checkbox' && i.type !== 'radio';
+          });
+        if (!input) return;
+        input.focus();
+        var setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        setter.call(input, sym);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 900));
+
+    // 3. Press Enter to confirm first result
+    await client.Runtime.evaluate({
+      expression: `document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))`,
+      returnByValue: true, awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 800));
+
+    return { success: true, symbol: String(symbol).trim().toUpperCase() };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * Add a built-in TradingView indicator to the active chart.
+ *
+ * Opens the Indicators dialog, searches by name, and clicks the first result.
+ *
+ * Args:
+ *   client: CDP client instance
+ *   name: indicator name — e.g. "RSI", "MACD", "Bollinger Bands", "Volume"
+ *
+ * Returns:
+ *   { success: true, added: string }
+ *   { success: false, error: string }
+ */
+export async function addIndicator(client, name) {
+  try {
+    const safeName = JSON.stringify(name);
+
+    // 1. Open Indicators dialog
+    await client.Runtime.evaluate({
+      expression: `document.querySelector('[data-name="open-indicators-dialog"]').click()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 700));
+
+    // 2. Search for indicator
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        var input = [...document.querySelectorAll('input')].find(function(i) {
+          return i.offsetParent && i.placeholder === 'Search';
+        });
+        if (!input) return;
+        input.focus();
+        var setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+        setter.call(input, ${safeName});
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 900));
+
+    // 3. Click first result
+    const clickResult = await client.Runtime.evaluate({
+      expression: `(function() {
+        // Results appear as list items — find the first visible one
+        var item = [...document.querySelectorAll('[role="option"], [class*="listItem"], [class*="item-"]')]
+          .find(function(el) { return el.offsetParent && el.textContent.trim().length > 0; });
+        if (item) {
+          item.click();
+          return JSON.stringify({ clicked: true, text: item.textContent.trim().substring(0, 50) });
+        }
+        return JSON.stringify({ clicked: false });
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    const data = JSON.parse(clickResult.result.value);
+    await new Promise(r => setTimeout(r, 500));
+
+    // 4. Close dialog
+    await client.Runtime.evaluate({
+      expression: `document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`,
+      returnByValue: true, awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 300));
+
+    if (!data.clicked) return { success: false, error: `No results found for "${name}"` };
+    return { success: true, added: data.text };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * List currently loaded indicators on the active chart.
+ *
+ * Reads indicator names from the chart legend (top-left overlay).
+ *
+ * Args:
+ *   client: CDP client instance
+ *
+ * Returns:
+ *   { success: true, indicators: string[] }
+ */
+export async function listIndicators(client) {
+  try {
+    const result = await client.Runtime.evaluate({
+      expression: `(function() {
+        var dw = document.querySelector('[class*="widgetbar-widget-object_tree"]');
+        if (dw && dw.offsetParent) {
+          var keys = [];
+          dw.querySelectorAll('[data-test-id-value-title]').forEach(function(el) {
+            var k = el.getAttribute('data-test-id-value-title') || el.textContent.trim();
+            if (k) keys.push(k);
+          });
+          return JSON.stringify({ success: true, indicators: [...new Set(keys)], source: 'data-window' });
+        }
+        // Data Window not open — read from chart legend aria-labels
+        var hideBtn = [...document.querySelectorAll('button[aria-label="Hide indicator legend"]')]
+          .filter(b => b.offsetParent);
+        var count = hideBtn.length;
+        // Walk each hide-btn's parent to find the indicator name span
+        var names = [];
+        hideBtn.forEach(function(btn) {
+          var row = btn.parentElement;
+          if (!row) return;
+          var spans = [...row.querySelectorAll('span, div')].filter(function(el) {
+            return el.childElementCount === 0 && el.textContent.trim().length > 1;
+          });
+          if (spans.length > 0) names.push(spans[0].textContent.trim());
+        });
+        return JSON.stringify({ success: true, indicators: [...new Set(names)], count, source: 'legend', hint: 'Open Data Window for richer names' });
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    return JSON.parse(result.result.value);
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
