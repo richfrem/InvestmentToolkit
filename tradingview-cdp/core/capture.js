@@ -7,8 +7,8 @@ import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-// core/capture.js → node/ → tradingview/ → plugins/ → repo root → PortfolioAnalysis/screenshots
-const SCREENSHOT_DIR = resolve(__dirname, '../../../../PortfolioAnalysis/screenshots');
+// core/capture.js → tradingview-cdp/ → repo root → PortfolioAnalysis/screenshots
+const SCREENSHOT_DIR = resolve(__dirname, '../../PortfolioAnalysis/screenshots');
 
 export async function captureScreenshot({ region, filename } = {}) {
   mkdirSync(SCREENSHOT_DIR, { recursive: true });

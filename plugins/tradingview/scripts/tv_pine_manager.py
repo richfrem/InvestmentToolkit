@@ -1,7 +1,7 @@
 """
 tv_pine_manager.py — Python wrapper around the Node CLI pine commands.
 
-Delegates to `node cli.js pine <subcommand>` in the tradingview/node directory.
+Delegates to `node cli.js pine <subcommand>` in the tradingview-cdp directory.
 Output is always JSON parsed from stdout.
 
 Usage (CLI):
@@ -17,11 +17,14 @@ Args (module):
 
 import argparse
 import json
-import subprocess
+import sys
 from pathlib import Path
 
-_REPO_ROOT = Path(__file__).resolve().parents[3]
-_NODE_DIR = _REPO_ROOT / "plugins" / "tradingview" / "node"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from tv_client import tv_call
+
+_SCRIPT_DIR = Path(__file__).resolve().parent
+_REPO_ROOT = _SCRIPT_DIR.parent.parent.parent
 TEMP_DIR = _REPO_ROOT / "temp"
 TEMP_DIR.mkdir(exist_ok=True)
 
@@ -34,25 +37,11 @@ def _run_node_cli(*args: str) -> dict:
 
     Returns:
         Parsed JSON dict from stdout.
-
-    Raises:
-        RuntimeError: If the subprocess exits non-zero with no parseable JSON.
     """
-    cmd = ["node", str(_NODE_DIR / "cli.js"), "pine"] + list(args)
-    result = subprocess.run(
-        cmd,
-        capture_output=True,
-        text=True,
-        cwd=str(_NODE_DIR),
-    )
-    stdout = result.stdout.strip()
-    if stdout:
-        try:
-            return json.loads(stdout)
-        except json.JSONDecodeError:
-            pass
-    stderr = result.stderr.strip()
-    return {"success": False, "error": stderr or "No output from Node CLI"}
+    try:
+        return tv_call("pine", *args)
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 def inject_pine(file_path: str) -> dict:

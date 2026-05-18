@@ -1,1 +1,1 @@
-../../../../../investment_screener/backend/py_services/fetch_broker_data.py
+../../../scripts/fetch_broker_data.py

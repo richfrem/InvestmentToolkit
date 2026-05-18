@@ -87,7 +87,7 @@ DATE=$(python3 -c "from datetime import date; print(date.today().isoformat())")
 SAVE_DIR="PortfolioAnalysis/screenshots/$DATE"
 mkdir -p "$SAVE_DIR"
 
-node plugins/tradingview/node/cli.js screenshot --output "$SAVE_DIR/${TICKER}_ta"
+node tradingview-cdp/cli.js screenshot --output "$SAVE_DIR/${TICKER}_ta"
 ```
 
 The saved path will be: `PortfolioAnalysis/screenshots/{YYYY-MM-DD}/{TICKER}_ta.png`
