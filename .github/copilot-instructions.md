@@ -149,7 +149,9 @@ This keeps thesis targets, `agentRationale`, and projection catalyst notes curre
 | `/modify-order {tvOrderId} {newPrice}` | **tradingview** | **Modify a limit price** on a Working/Inactive order via CDP keyboard events. |
 | `/get-orders` | **tradingview** | **List open orders** (Working + Inactive) from TV broker panel — returns orderId UUIDs and raw row text. |
 | `/tv-portfolio-sync` | **tradingview** | **Sync portfolio.json from TradingView** — reads live positions across all accounts (TFSA + RRSP + Cash) via CDP. Shows diff before writing. Works with any TV-connected broker; no Questrade credentials required. |
-| `/pine-inject {description}` | **tradingview** | Generate a custom Pine Script v6 indicator from a description and inject it into TradingView via CDP. Auto-corrects compilation errors (3 attempts). Preflight validates version/indicator declarations before hitting TV. Script: `tv_pine_inject.py`. Skill: `pine_inject`. |
+| `/pine-inject {description}` | **tradingview** | Generate a custom Pine Script v6 indicator from a description and inject it into TradingView via CDP. Auto-corrects compilation errors (3 attempts). Preflight validates version/indicator declarations before hitting TV. Script: `tv_pine_inject.py`. |
+| `/author-pine-script {description}` | **tradingview** | Full Pine Script v6 authoring workflow: Phase 0 source research (reads community indicator source via `pine_source_reader.py`), lint gate (`pine_linter.py`), inject, and save to TV library. Teaches itself from top-10 indicators before writing. |
+| `/tv-ta-deep {TICKER} [TIMEFRAME]` | **tradingview** | Deep Technical Analysis: builds the optimal indicator view for the job (adds built-ins, injects custom bundle, or authors indicators), multi-timeframe context check, synthesizes entry/accumulate/trim/exit levels, adversarial red-team review. Agent: `ta-guide` for interactive guided session. |
 | `/start-screener` | toolkit-manager | Launch full suite (frontend + backend) |
 | `/setup-questrade` | toolkit-manager | Interactive Questrade token setup (optional — TV sync works without it) |
 
