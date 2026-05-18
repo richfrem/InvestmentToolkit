@@ -22,7 +22,7 @@ import type { StockData } from '../services/api';
 import { ProjectionsPanel } from './ProjectionsPanel';
 import { storage } from '../services/storage';
 import { HelpTrigger } from './HelpModal';
-import { type ValuationResult, type Projection, type Scenario } from '../services/api';
+import { computeScenario } from '../utils/valuationMath';
 import { Sparkles, BrainCircuit, Loader2, FolderOpen } from 'lucide-react';
 import { AIAnalysisModal } from './AIAnalysisModal';
 import { AgentReminderModal } from './AgentReminderModal';
@@ -281,43 +281,33 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
     // --- Calculations ---
 
-    const calculateScenarioPrice = useCallback((s: Scenario, horizon: number = timeHorizon, discount: number = discountRate) => {
-        const currentRevenue = stockData.metrics.revenue || 0;
-        const futureRevenue = currentRevenue * Math.pow(1 + s.growthRate / 100, horizon);
-        const futureNetIncome = futureRevenue * (s.netMargin / 100);
-        const futureMarketCap = futureNetIncome * s.exitPE * s.qualityMultiplier;
-        const currentShares = stockData.metrics.shares_outstanding || 1;
-        const futureShares = currentShares * Math.pow(1 + s.shareChange / 100, horizon);
-        let futurePrice = futureShares > 0 ? futureMarketCap / futureShares : 0;
+    // Derived Prices
+    const bearResult = useMemo(() => computeScenario(stockData.metrics.revenue, stockData.metrics.market_cap / stockData.price, discountRate/100, timeHorizon, scenarios.bear), [stockData, discountRate, timeHorizon, scenarios.bear]);
+    const baseResult = useMemo(() => computeScenario(stockData.metrics.revenue, stockData.metrics.market_cap / stockData.price, discountRate/100, timeHorizon, scenarios.base), [stockData, discountRate, timeHorizon, scenarios.base]);
+    const bullResult = useMemo(() => computeScenario(stockData.metrics.revenue, stockData.metrics.market_cap / stockData.price, discountRate/100, timeHorizon, scenarios.bull), [stockData, discountRate, timeHorizon, scenarios.bull]);
 
-        const moatPremium = (s.moatScore ?? 0) * 0.05;
-        const mgmtPremium = (s.managementScore ?? 0) * 0.05;
-        futurePrice = futurePrice * (1 + moatPremium + mgmtPremium);
+    const bearPrice = bearResult.presentValue;
+    const basePrice = baseResult.presentValue;
+    const bullPrice = bullResult.presentValue;
 
-        return futurePrice / Math.pow(1 + discount / 100, horizon);
-    }, [stockData.metrics.revenue, stockData.metrics.shares_outstanding, timeHorizon, discountRate]);
+    const weightedPrice = (bearPrice * scenarios.bear.weight) + (basePrice * scenarios.base.weight) + (bullPrice * scenarios.bull.weight);
+    const targetPrice = Math.round(weightedPrice * 100) / 100;
 
-    // Used by Sensitivity Matrix
+    const activePrice = activeScenario === 'bull' ? bullPrice : activeScenario === 'bear' ? bearPrice : basePrice;
+    const activeResult = activeScenario === 'bull' ? bullResult : activeScenario === 'bear' ? bearResult : baseResult;
+    
+    const activeUpside = stockData.price > 0 ? ((activePrice - stockData.price) / stockData.price) * 100 : 0;
+    const upside = stockData.price > 0 ? ((targetPrice - stockData.price) / stockData.price) * 100 : 0;
+
+    // Helper used by Sensitivity Matrix (now using shared logic)
     const calculatePrice = useCallback((g: number, pe: number) => {
-        const tempScenario: Scenario = {
+        const tempScenario = {
             ...current,
             growthRate: g,
             exitPE: pe,
         };
-        return calculateScenarioPrice(tempScenario);
-    }, [current, calculateScenarioPrice]);
-
-    // Derived Prices
-    const bearPrice = calculateScenarioPrice(scenarios.bear);
-    const basePrice = calculateScenarioPrice(scenarios.base);
-    const bullPrice = calculateScenarioPrice(scenarios.bull);
-
-    const weightedPrice = (bearPrice * scenarios.bear.weight) + (basePrice * scenarios.base.weight) + (bullPrice * scenarios.bull.weight);
-    const targetPrice = weightedPrice;
-
-    const activePrice = activeScenario === 'bull' ? bullPrice : activeScenario === 'bear' ? bearPrice : basePrice;
-    const activeUpside = stockData.price > 0 ? ((activePrice - stockData.price) / stockData.price) * 100 : 0;
-    const upside = stockData.price > 0 ? ((targetPrice - stockData.price) / stockData.price) * 100 : 0;
+        return computeScenario(stockData.metrics.revenue, stockData.metrics.market_cap / stockData.price, discountRate/100, timeHorizon, tempScenario).presentValue;
+    }, [stockData, discountRate, timeHorizon, current]);
 
     // --- resetToYahoo ---
     const resetToYahoo = useCallback(() => {
@@ -525,27 +515,6 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                     base: { ...aiProjection.scenarios.base },
                     bull: { ...aiProjection.scenarios.bull }
                 };
-
-                if (aiProjection.aiThesis && aiProjection.aiThesis.fairValue) {
-                    const targetFV = aiProjection.aiThesis.fairValue;
-
-                    const bearP = calculateScenarioPrice(newScenarios.bear, newSettings.timeHorizon, newSettings.discountRate);
-                    const baseP = calculateScenarioPrice(newScenarios.base, newSettings.timeHorizon, newSettings.discountRate);
-                    const bullP = calculateScenarioPrice(newScenarios.bull, newSettings.timeHorizon, newSettings.discountRate);
-
-                    const impliedWeighted = (bearP * newScenarios.bear.weight) +
-                        (baseP * newScenarios.base.weight) +
-                        (bullP * newScenarios.bull.weight);
-
-                    if (targetFV > 0 && impliedWeighted > 0 && Math.abs(impliedWeighted - targetFV) / targetFV > 0.02) {
-                        const ratio = targetFV / impliedWeighted;
-                        const safeRatio = Math.min(3.0, Math.max(0.3, ratio));
-
-                        newScenarios.bear.qualityMultiplier *= safeRatio;
-                        newScenarios.base.qualityMultiplier *= safeRatio;
-                        newScenarios.bull.qualityMultiplier *= safeRatio;
-                    }
-                }
 
                 setScenarios(newScenarios);
                 setDiscountRate(newSettings.discountRate);
