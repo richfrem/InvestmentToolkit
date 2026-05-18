@@ -12,6 +12,8 @@ The web-based financial analysis dashboard.
 - **Backend**: Node.js (Express) with TypeScript. Manages state, coordinates data syncing, and serves API endpoints.
 - **Analytical Engine**: Python 3.11 scripts (`py_services/`) spawned as subprocesses by the Node backend. Handles complex financial math (e.g., `dcf_scenarios.py`) and data fetching (`yfinance`). 
   > **Rule**: All math is fixed in these canonical scripts; AI agents never compute inline.
+  > **The Canonical Mirror**: To ensure UI responsiveness without logic drift, the Frontend implements a line-for-line mirror of the Python math in `valuationMath.ts`.
+  > **Math Parity Gate**: A cross-language parity test (`tests/test_math_parity.py`) enforces that both Python and TypeScript engines return identical results within $0.01 tolerance.
 
 ### B. The Data & Execution Layer
 - **TradingView Desktop (Primary)**: Connected via Chrome DevTools Protocol (CDP) on port 9222. Used for real-time prices (Premium), portfolio sync, and live order execution directly through the TV DOM.
