@@ -167,22 +167,61 @@ export async function injectPineScript(client, scriptContent) {
     const injectData = JSON.parse(injectResult.result.value);
     if (!injectData.success) throw new Error(injectData.error || 'Monaco injection failed');
 
-    // 4. Wait for TV to recompile the injected script, then click "Add to chart".
-    //    New/blank tabs show "Add to chart" (no save prefix) so no modal appears.
+    // 4. Wait for TV to recompile, then click "Add to chart" OR "Update on chart".
+    //    New/blank tabs show "Add to chart"; user-owned tabs that had a prior script
+    //    show "Update on chart". Both mean "put this script on the chart now".
     await new Promise(r => setTimeout(r, 1200));
-    await client.Runtime.evaluate({
+    const clickResult = await client.Runtime.evaluate({
       expression: `(function() {
         var btn = [...document.querySelectorAll('button')].find(function(b) {
-          return b.offsetParent && /add\\s*to\\s*chart/i.test(b.textContent);
+          return b.offsetParent && /(?:add|update).*(?:to|on).*chart/i.test(b.textContent + b.title);
         });
-        if (btn) btn.click();
+        if (btn) { btn.click(); return JSON.stringify({ clicked: true, text: btn.textContent.trim() }); }
+        return JSON.stringify({ clicked: false });
+      })()`,
+      returnByValue: true,
+      awaitPromise: false,
+    });
+    const clickData = JSON.parse(clickResult.result.value);
+    if (!clickData.clicked) {
+      // Fallback: try title-based match
+      await client.Runtime.evaluate({
+        expression: `(function() {
+          var btn = document.querySelector('[title="Update on chart"], [title="Add to chart"]');
+          if (btn && btn.offsetParent) btn.click();
+        })()`,
+        returnByValue: true,
+        awaitPromise: false,
+      });
+    }
+
+    // 4.5. Handle "Cannot add a script with unsaved changes to chart" save modal.
+    //      Appears when a user-owned tab already has prior unsaved content.
+    //      Click "Save and add to chart" to save the new script and add it.
+    await new Promise(r => setTimeout(r, 700));
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        // Primary: "Save and add to chart" button
+        var confirmBtn = [...document.querySelectorAll('button')].find(function(b) {
+          return b.offsetParent && /save.*and.*add|save.*chart/i.test(b.textContent);
+        });
+        if (confirmBtn) { confirmBtn.click(); return; }
+        // Fallback: any visible dialog with a Save/OK button
+        var modal = [...document.querySelectorAll('[class*="dialog"], [role="dialog"]')]
+          .find(function(m) { return m.offsetParent; });
+        if (!modal) return;
+        var saveBtn = [...modal.querySelectorAll('button')].find(function(b) {
+          var t = b.textContent.trim().toLowerCase();
+          return t.includes('save') || t === 'ok';
+        });
+        if (saveBtn) saveBtn.click();
       })()`,
       returnByValue: true,
       awaitPromise: false,
     });
 
     // 5. Wait for indicator to load onto chart
-    await new Promise(r => setTimeout(r, 1200));
+    await new Promise(r => setTimeout(r, 1500));
 
     return { success: true };
   } catch (e) {
@@ -205,27 +244,17 @@ export async function readIndicatorValues(client, indicatorName) {
   try {
     const result = await client.Runtime.evaluate({
       expression: `(function() {
-        var selectors = [
-          '[class*="data-window"]',
-          '[class*="dataWindow"]',
-          '[class*="DataWindow"]',
-        ];
-        var dw = null;
-        for (var i = 0; i < selectors.length; i++) {
-          dw = document.querySelector(selectors[i]);
-          if (dw && dw.offsetParent) break;
-        }
-
+        // TradingView "Object tree and data window" panel — data-name="object_tree"
+        var dw = document.querySelector('[class*="widgetbar-widget-object_tree"]');
         var items = {};
-        if (dw) {
-          var rows = dw.querySelectorAll('tr, [class*="row"]');
-          rows.forEach(function(row) {
-            var cells = row.querySelectorAll('td, [class*="cell"], [class*="value"]');
-            if (cells.length >= 2) {
-              var key = cells[0].textContent.trim();
-              var val = cells[1].textContent.trim();
-              if (key) items[key] = val;
-            }
+        if (dw && dw.offsetParent) {
+          dw.querySelectorAll('[data-test-id-value-title]').forEach(function(el) {
+            var key = el.getAttribute('data-test-id-value-title') || el.textContent.trim();
+            var itemEl = el.closest('[class]');
+            var valueEl = itemEl ? itemEl.nextElementSibling : null;
+            if (!valueEl) valueEl = el.parentElement ? el.parentElement.querySelector('span') : null;
+            var val = valueEl ? valueEl.textContent.trim() : '';
+            if (key) items[key] = val;
           });
         }
         return JSON.stringify(items);
