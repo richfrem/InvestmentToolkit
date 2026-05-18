@@ -9,7 +9,7 @@
  * Layer: Frontend / UI / Layout
  */
 import { useState, useEffect } from 'react';
-import { Settings, History, Grid3X3, BarChart3, Search, RefreshCcw, TableProperties, PieChart, ScrollText } from 'lucide-react';
+import { Settings, History, Grid3X3, BarChart3, Search, RefreshCcw, TableProperties, PieChart, ScrollText, FileText } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useRecentTickers } from '../hooks/useRecentTickers';
 import { syncPortfolio, fetchSyncStatus } from '../services/api';
@@ -21,6 +21,7 @@ const NAV_ITEMS = [
     { name: 'Portfolio Advisor', icon: Search,          path: '/screener' },
     { name: 'Stock Analysis',    icon: BarChart3,       path: '/analysis' },
     { name: 'Trade Log',         icon: ScrollText,      path: '/trade-log' },
+    { name: '13F — SA LP',       icon: FileText,        path: '/13f' },
 ];
 
 export default function Sidebar() {
@@ -40,14 +41,15 @@ export default function Sidebar() {
         setIsSyncing(true);
         setSyncFeedback(null);
         try {
-            await syncPortfolio();
+            const result = await syncPortfolio();
             const { lastSync: ts } = await fetchSyncStatus();
             setLastSync(ts);
-            setSyncFeedback('Synced');
-            window.dispatchEvent(new CustomEvent('portfolio-synced'));
+            setSyncFeedback((result as any).tvAvailable === false ? 'No TV' : 'Synced');
         } catch {
             setSyncFeedback('Failed');
         } finally {
+            // Always broadcast so pages refresh from existing portfolio.json
+            window.dispatchEvent(new CustomEvent('portfolio-synced'));
             setIsSyncing(false);
             setTimeout(() => setSyncFeedback(null), 3000);
         }

@@ -140,6 +140,7 @@ router.post('/', async (req, res) => {
         if (!items || !Array.isArray(items)) { res.status(400).json({ error: 'items array required' }); return; }
         backupPortfolio();
         fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(items, null, 2));
+        syncThesisShares(items);
         res.json({ success: true, count: items.length });
     } catch (error) {
         console.error(`[API] Error saving portfolio: `, error);
@@ -233,11 +234,12 @@ router.get('/weights', (_req, res) => {
     try {
         if (!fs.existsSync(PORTFOLIO_FILE)) { res.json({}); return; }
         const positions: any[] = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
-        const total = positions.reduce((s, p) => s + (p.shares || 0) * (p.price || 0), 0);
+        const marketPrice = (p: any) => p.price ?? p.book_price ?? 0;
+        const total = positions.reduce((s, p) => s + (p.shares || 0) * marketPrice(p), 0);
         const map: Record<string, number> = {};
         for (const p of positions) {
             const ticker = p.symbol ?? p.ticker;
-            if (ticker && total > 0) map[ticker] = ((p.shares || 0) * (p.price || 0) / total) * 100;
+            if (ticker && total > 0) map[ticker] = ((p.shares || 0) * marketPrice(p) / total) * 100;
         }
         res.json(map);
     } catch (err: any) { res.status(500).json({ error: err.message }); }

@@ -38,14 +38,17 @@ def compute_current(portfolio_path: Path) -> dict:
     with open(portfolio_path) as f:
         holdings = json.load(f)
 
-    total_value = sum(h["shares"] * h["price"] for h in holdings)
+    total_value = sum(h.get("shares", 0) * h.get("price", 0) for h in holdings)
     if total_value == 0:
         return {"total": 0.0, "holdings": {}, "total_value": 0.0}
 
     result = {}
     for h in holdings:
-        value = h["shares"] * h["price"]
-        result[h["symbol"]] = round(value / total_value * 100, 4)
+        sym = h.get("symbol") or h.get("ticker")
+        if not sym:
+            continue
+        value = h.get("shares", 0) * h.get("price", 0)
+        result[sym] = round(value / total_value * 100, 4)
 
     total = round(sum(result.values()), 4)
     return {"total": total, "holdings": result, "total_value": round(total_value, 2)}
@@ -72,7 +75,7 @@ def compute_target(target_path: Path) -> dict:
 # ---------------------------------------------------------------------------
 # Normalise target weights so they sum to exactly 100%
 # ---------------------------------------------------------------------------
-def normalize_target(target_path: Path) -> dict:
+def normalize_target(target_path: Path) -> tuple:
     with open(target_path) as f:
         data = json.load(f)
 
