@@ -26,6 +26,7 @@ temp/logs/
 # IDE
 .vscode/
 .idea/
+*.bak
 
 # OS
 .DS_Store

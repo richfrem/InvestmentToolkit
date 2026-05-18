@@ -66,7 +66,7 @@ log = logging.getLogger(__name__)
 
 PORTFOLIO_PATH = os.environ.get(
     "PLACE_ORDER_PORTFOLIO_PATH",
-    os.path.abspath(os.path.join(SCRIPT_DIR, "..", "data", "portfolio.json")),
+    os.path.join(DATA_DIR, "portfolio.json"),
 )
 DATA_FRESHNESS_LIMIT_MINUTES = 60
 
