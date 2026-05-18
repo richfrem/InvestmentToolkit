@@ -49,8 +49,8 @@ An autonomous buy-side analyst. Fetches real-time financial data, builds Bear/Ba
 Purpose-built for thematic, closed-end, and cash fund ETFs.
 - **Commands/Skills**: `/analyze-etf`
 
-### 4. TradingView Integration (`plugins/tradingview`)
-TradingView Desktop is the primary layer for live prices, portfolio sync, order execution, and deep technical analysis via CDP (Chrome DevTools Protocol) automation.
+### 4. TradingView Integration (`plugins/tradingview` + `tradingview-cdp/`)
+TradingView Desktop is the primary layer for live prices, portfolio sync, order execution, Pine Script injection, and deep technical analysis via CDP (Chrome DevTools Protocol) automation. The Node.js CDP engine lives at `tradingview-cdp/` (repo root) as a shared runtime installed once via `cd tradingview-cdp && npm ci`.
 - **Commands/Skills**: `/tv-portfolio-sync`, `/place-order`, `/modify-order`, `/cancel-order`, `/get-orders`, `/tv-alert-sync`, `/tv-price-refresh`, `/tv-snapshot`, `/tv-ta`, `/pine-inject`, `/tv-ta-deep`
 
 ### 5. Toolkit Manager (`plugins/toolkit-manager`)
@@ -145,7 +145,7 @@ The TradingView CDP automation layer was informed by studying the following open
 | **tradingview-mcp** (tradesdontlie) | https://github.com/tradesdontlie/tradingview-mcp | The most complete CDP-based TradingView automation library available. 5,000+ lines, 15+ command namespaces. Its `pine.js` uses **React fiber tree traversal** (`__reactFiber` prefix) to locate Monaco editor internals — more resilient than CSS selectors alone. No live broker order execution. |
 | **tradingview-mcp** (atilaahmettaner) | https://github.com/atilaahmettaner/tradingview-mcp | TradingView screener/scanner using the `tradingview-screener` Python library (REST API). 30+ tools for market scanning and symbol filtering. No CDP, no live orders. |
 
-**Our key architectural difference:** Both reference projects are chart analysis and research tools. InvestmentToolkit is a **live broker execution layer** — it navigates TradingView's built-in Questrade broker panel via CDP to place, modify, and cancel real orders, with 3-step HITL confirmation, safety gates (stale portfolio exit 4, size cap exit 3), multi-account support, `tvOrderId` tracking, and automatic portfolio sync after fills. The Pine Script work planned in Phase 2 will adopt the React fiber traversal technique from tradesdontlie's implementation.
+**Our key architectural difference:** Both reference projects are chart analysis and research tools. InvestmentToolkit is a **live broker execution layer** — it navigates TradingView's built-in Questrade broker panel via CDP to place, modify, and cancel real orders, with 3-step HITL confirmation, safety gates (stale portfolio exit 4, size cap exit 3), multi-account support, `tvOrderId` tracking, and automatic portfolio sync after fills. Pine Script injection (via `/pine-inject`) uses the React fiber traversal technique from tradesdontlie's implementation to locate Monaco editor internals without relying on fragile CSS class selectors.
 
 ### AI Agent Infrastructure
 
