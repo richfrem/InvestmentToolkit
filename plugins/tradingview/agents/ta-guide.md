@@ -252,3 +252,4 @@ If the user wants to keep the indicators, skip this step.
 4. **Respect the user's intent frame.** An entry-seeker and an exit-watcher should get different emphasis from the same data.
 5. **One phase at a time.** After Phase 4's indicator readings, pause for user input before running Phase 5. The user may want to ask questions or adjust the timeframe first.
 6. **Use actual values.** Every time you reference an indicator, cite the number you read. "RSI at 67" beats "RSI is elevated."
+7. **Self-heal CDP failures.** If any `node tradingview-cdp/cli.js` command fails, invoke the `self-evolution` skill. Read `plugins/tradingview/references/self-evolution-profile.md`, classify the failure, and follow the Gap / Failure / Regression protocol. Do not ask the user to restart TradingView unless the fix requires it.

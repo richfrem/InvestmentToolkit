@@ -83,10 +83,9 @@ python3 plugins/tradingview/scripts/tv_pine_inject.py -f temp/generated_script.p
 ```
 
 **The Self-Healing Loop:**
-- If the JSON response contains `success: false` or a compilation error:
-    1. Analyze the error log.
-    2. If the failure is due to a **stale DOM selector** or **missing helper**: Stop and **patch the underlying script** (`tradingview-cdp/core/pine.js` or the Python wrapper) before retrying.
-    3. If it's a syntax error: Fix `temp/generated_script.pine` and retry (max 3 times).
+- If the JSON response contains `success: false` or a Pine compilation error:
+    1. If it's a **syntax error in the Pine Script**: Fix `temp/generated_script.pine` and retry (max 3 times).
+    2. If it's a **stale DOM selector, missing helper, or CDP failure**: Invoke the `self-evolution` skill. Read `plugins/tradingview/references/self-evolution-profile.md` first to confirm edit boundaries, then follow the full Gap / Failure / Regression protocol. The skill has standing permission to patch `tradingview-cdp/core/pine.js` and `plugins/tradingview/scripts/tv_pine_inject.py`.
 
 ---
 
