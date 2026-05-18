@@ -93,12 +93,14 @@ graph TD
 
 ## 2. TradingView CDP Integration
 Rather than relying entirely on broker APIs, the toolkit uses TradingView Desktop as the primary data and execution environment.
-- **How it works**: A Node-to-Python bridge connects to TradingView Desktop via Chrome DevTools Protocol (CDP).
+- **How it works**: A Node.js CDP engine (`tradingview-cdp/` at repo root) connects to TradingView Desktop via Chrome DevTools Protocol (CDP). Python skills communicate with it via `tv_client.py` which calls `tradingview-cdp/cli.js`. Install once with `cd tradingview-cdp && npm ci`.
 - **Capabilities**:
   - **Portfolio Sync**: Scrapes the broker panel DOM for positions and balances across all accounts.
   - **Order Execution**: Fills the order dialog, captures a screenshot for human-in-the-loop (HITL) confirmation, and clicks submit.
   - **Data Fetching**: Reads the active chart's live quote.
-- **See**: `plugins/tradingview/`
+  - **Pine Script Injection** (`/pine-inject`): Generates a Pine Script v6 indicator from a description, validates structure, injects via Monaco `executeEdits` (fires TV's compile listener), and clicks "Add to chart". Uses React fiber tree traversal to locate Monaco editor internals robustly across TV deployments.
+- **Architecture**: ADR-024 "Thin Skill + Thick Engine" — CDP engine extracted from `plugins/tradingview/node/` to `tradingview-cdp/` as a shared standalone runtime. Skills remain thin Python wrappers.
+- **See**: `plugins/tradingview/` (skills + scripts), `tradingview-cdp/` (shared Node.js CDP engine)
 
 ---
 
