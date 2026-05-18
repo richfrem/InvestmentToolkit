@@ -51,18 +51,24 @@
     }
   ],
   "skills": [
+    { "name": "tv_chart_setup", "path": "skills/tv-chart-setup/SKILL.md", "trigger": "/tv-chart-setup" },
+    { "name": "tv_change_symbol", "path": "skills/tv-change-symbol/SKILL.md", "trigger": "/change-symbol" },
+    { "name": "tv_change_type", "path": "skills/tv-change-type/SKILL.md", "trigger": "/change-chart-type" },
+    { "name": "tv_add_indicator", "path": "skills/tv-add-indicator/SKILL.md", "trigger": "/add-indicator" },
+    { "name": "tv_save_indicator", "path": "skills/tv-save-indicator/SKILL.md", "trigger": "/save-indicator" },
+    { "name": "author_pine_script", "path": "skills/author-pine-script/SKILL.md", "trigger": "/author-pine" },
+    { "name": "pine_inject", "path": "skills/pine-inject/SKILL.md", "trigger": "/pine-inject" },
+    { "name": "tv_portfolio_sync", "path": "skills/tv-portfolio-sync/SKILL.md", "trigger": "/tv-portfolio-sync" },
     { "name": "tv_alert_sync", "path": "skills/alert-sync/SKILL.md", "trigger": "/tv-alert-sync" },
     { "name": "tv_price_refresh", "path": "skills/price-refresh/SKILL.md", "trigger": "/tv-price-refresh" },
     { "name": "tv_chart_snapshot", "path": "skills/chart-snapshot/SKILL.md", "trigger": "/tv-snapshot" },
     { "name": "tv_ta_snapshot", "path": "skills/ta-snapshot/SKILL.md", "trigger": "/tv-ta" },
-    { "name": "tv_portfolio_sync", "path": "skills/tv-portfolio-sync/SKILL.md", "trigger": "/tv-portfolio-sync" },
+    { "name": "technical_analysis_expert", "path": "skills/technical-analysis-expert/SKILL.md", "trigger": "/tv-ta-deep" },
+    { "name": "ta_red_team", "path": "skills/ta-red-team/SKILL.md", "trigger": null },
     { "name": "place_order", "path": "skills/place-order/SKILL.md", "trigger": "/place-order" },
     { "name": "modify_order", "path": "skills/modify-order/SKILL.md", "trigger": "/modify-order" },
     { "name": "cancel_order", "path": "skills/cancel-order/SKILL.md", "trigger": "/cancel-order" },
-    { "name": "get_orders", "path": "skills/get-orders/SKILL.md", "trigger": "/get-orders" },
-    { "name": "pine_inject", "path": "skills/pine-inject/SKILL.md", "trigger": "/pine-inject" },
-    { "name": "technical_analysis_expert", "path": "skills/technical-analysis-expert/SKILL.md", "trigger": "/tv-ta-deep" },
-    { "name": "ta_red_team", "path": "skills/ta-red-team/SKILL.md", "trigger": null }
+    { "name": "get_orders", "path": "skills/get-orders/SKILL.md", "trigger": "/get-orders" }
   ],
   "commands": [
     { "name": "tv-alert-sync", "path": "commands/tv-alert-sync.md", "trigger": "/tv-alert-sync" },
