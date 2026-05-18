@@ -133,6 +133,9 @@ export default function PortfolioHeatmap() {
         setError(null);
 
         try {
+            // Sync positions from TradingView first, then refresh prices
+            await fetch('/api/portfolio/sync-tv/apply', { method: 'POST' }).catch(() => {});
+
             const response = await fetch('/api/portfolio/refresh-prices', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' }

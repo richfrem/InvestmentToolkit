@@ -249,6 +249,15 @@ export default function PortfolioTable() {
         document.body.style.userSelect = 'none';
     }, [columnWidths]);
 
+    async function syncAndRefresh() {
+        setLoading(true);
+        setError(null);
+        try {
+            await fetch('/api/portfolio/sync-tv/apply', { method: 'POST' });
+        } catch { /* TV not available — fall through to regular load */ }
+        await fetchData();
+    }
+
     async function fetchData() {
         setLoading(true);
         setError(null);
@@ -304,15 +313,22 @@ export default function PortfolioTable() {
 
             const projMap: Record<string, any> = aiProjs.reduce((m, p) => { m[p.ticker] = p; return m; }, {});
 
+            const totalValue = heatmapData.total_value ?? 0;
             const stocksWithPct: StockRow[] = heatmapData.stocks.map(s => {
                 const p = projMap[s.symbol];
                 const rev = reviewMap[s.symbol];
                 const fairValue = p?.aiThesis?.fairValue ?? null;
                 const base = p?.scenarios?.base;
-                
+                // Use heatmap-derived weight (live prices) — avoids stale portfolio.json prices
+                const hmPct = (s.total_market != null && totalValue > 0)
+                    ? (s.total_market / totalValue) * 100
+                    : null;
+                const wPct = weightsMap[s.symbol];
+                const currentPct = (hmPct != null) ? hmPct : (wPct != null && wPct > 0 ? wPct : null);
+
                 return {
                     ...s,
-                    currentPct: weightsMap[s.symbol] ?? null,
+                    currentPct,
                     subStrategyId: strategyMap[s.symbol] ?? null,
                     action: actionsMap[s.symbol] ?? 'WATCHLIST',
                     recommendedPct: rev?.recommendedTarget ?? null,
@@ -462,7 +478,7 @@ export default function PortfolioTable() {
                         )}
                     </div>
 
-                    <button onClick={fetchData} className="px-3 py-1 bg-zinc-800 text-zinc-300 rounded text-xs hover:bg-zinc-700 transition-colors">
+                    <button onClick={syncAndRefresh} className="px-3 py-1 bg-zinc-800 text-zinc-300 rounded text-xs hover:bg-zinc-700 transition-colors">
                         ↻ Refresh
                     </button>
                     <PriceSourceBadge priceSource={priceSource} lastRefreshedAt={lastRefreshedAt} />
