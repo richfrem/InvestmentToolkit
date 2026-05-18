@@ -165,7 +165,7 @@ This keeps thesis targets, `agentRationale`, and projection catalyst notes curre
 | `/modify-order {tvOrderId} {newPrice}` | **tradingview** | **Modify a limit price** on a Working/Inactive order via CDP keyboard events. |
 | `/get-orders` | **tradingview** | **List open orders** (Working + Inactive) from TV broker panel — returns orderId UUIDs and raw row text. |
 | `/tv-portfolio-sync` | **tradingview** | **Sync portfolio.json from TradingView** — reads live positions across all accounts (TFSA + RRSP + Cash) via CDP. Shows diff before writing. Works with any TV-connected broker; no Questrade credentials required. |
-| `/pine-analyze {TICKER}` | **tradingview** | *(Phase 2 — planned)* Generate custom Pine Script v5 TA, inject via CDP, read indicator values from Data Window, synthesize into Initiate/Accumulate/Trim/Exit advisory. |
+| `/pine-inject {description}` | **tradingview** | Generate a custom Pine Script v6 indicator from a description and inject it into TradingView via CDP. Auto-corrects compilation errors (3 attempts). Preflight validates version/indicator declarations before hitting TV. Script: `tv_pine_inject.py`. Skill: `pine_inject`. |
 | `/start-screener` | toolkit-manager | Launch full suite (frontend + backend) |
 | `/setup-questrade` | toolkit-manager | Interactive Questrade token setup (optional — TV sync works without it) |
 
@@ -292,6 +292,16 @@ Do **not** rely solely on CSS class selectors for Pine Editor / Monaco editor �
 
 ### 8. Temp files: use InvestmentToolkit/temp/ subfolder, not /tmp/ root
 All scripts writing temp artifacts must use `InvestmentToolkit/temp/<artifact>` (gitignored), not `/tmp/<artifact>`. Task #0003 tracks legacy migration.
+
+### 9. TradingView CDP — shared runtime lives at `tradingview-cdp/`, NOT inside `plugins/`
+The Node.js CDP engine was extracted from `plugins/tradingview/node/` to `tradingview-cdp/` at the project root (ADR-024 "Thin Skill + Thick Engine"). This directory is a standalone runtime, installed once via `cd tradingview-cdp && npm ci`. **Never create new scripts that hardcode this path** — always import from `tv_client.py`:
+```python
+from tv_client import tv_call, TV_NODE_DIR, REPO_ROOT
+```
+`tv_client.py` locates `tradingview-cdp/cli.js` via `TV_CDP_DIR` env var or directory walk-up (10 levels).
+
+### 10. TradingView Pine inject — pass content, not file path
+`tv_pine_inject.py` reads the script file in Python (correct cwd) then passes the **content** via `--content` to Node — not the file path. Node's cwd is `tradingview-cdp/` so relative paths from Node would silently fail (Node would inject the path string as Pine Script). If you create a new inject wrapper, always resolve absolute paths before passing to `tv_call`. The preflight check in `tv_pine_inject.py` catches missing `//@version=` and `indicator()` declarations before the CDP round-trip.
 
 ---
 
