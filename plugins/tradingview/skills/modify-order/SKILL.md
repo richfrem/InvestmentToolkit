@@ -37,7 +37,7 @@ The ✏ button on Working/Inactive rows opens the ModifyModal, which calls
 
 ## How It Works
 
-Two-step process in `plugins/tradingview/node/core/trading.js`:
+Two-step process in `tradingview-cdp/core/trading.js`:
 
 ### Step 1: `modifyOrder({ orderId, ticker, action, newPrice, newShares })`
 
@@ -71,6 +71,6 @@ the old price and submits it on Confirm. Keyboard events properly fire `onChange
 
 ✅ **FULLY IMPLEMENTED**
 
-- `modifyOrder()` — `plugins/tradingview/node/core/trading.js`
-- `submitModify()` — `plugins/tradingview/node/core/trading.js`
+- `modifyOrder()` — `tradingview-cdp/core/trading.js`
+- `submitModify()` — `tradingview-cdp/core/trading.js`
 - `tv_modify_order.py` — `plugins/tradingview/scripts/tv_modify_order.py`

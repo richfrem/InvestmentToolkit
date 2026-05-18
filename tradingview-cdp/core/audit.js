@@ -26,7 +26,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
-const AUDIT_DIR = path.resolve(__dirname, '../../audit');
+const AUDIT_DIR = process.env.TV_AUDIT_DIR ? path.resolve(process.env.TV_AUDIT_DIR) : path.resolve(__dirname, '../../plugins/tradingview/audit');
 
 function _auditPath() {
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD

@@ -8,6 +8,7 @@
         "agent-loops",
         "agent-scaffolders",
         "claude-cli",
+        "coding-conventions",
         "context-bundler",
         "copilot-cli",
         "dependency-management",
@@ -25,12 +26,6 @@
         "stock-valuation",
         "toolkit-manager",
         "tradingview"
-      ]
-    },
-    {
-      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills",
-      "plugins": [
-        "coding-conventions"
       ]
     },
     {

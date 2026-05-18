@@ -11,7 +11,7 @@ For each ticker, reads the latest AI_AGENT entry in the projection JSON and
 creates alerts at the bear / base / bull scenarioPrice levels plus the
 weighted fair value (aiThesis.fairValue).
 
-CLI syntax (plugins/tradingview/node/cli.js):
+CLI syntax (tradingview-cdp/cli.js):
     node <CLI> alert create --price PRICE --condition crossing --message MESSAGE
 
 Requires TradingView Desktop running with --remote-debugging-port=9222.
@@ -23,9 +23,10 @@ import json
 import argparse
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
-from tv_client import REPO_ROOT, tv_call, is_tv_running
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from tv_client import TV_NODE_DIR, tv_call, is_tv_running
 
+REPO_ROOT = TV_NODE_DIR.parent
 PROJECTIONS_DIR = REPO_ROOT / "investment_screener" / "backend" / "data" / "projections"
 
 
