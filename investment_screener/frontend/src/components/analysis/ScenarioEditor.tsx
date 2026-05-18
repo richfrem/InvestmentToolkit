@@ -1,15 +1,21 @@
 import { SliderInput } from './SliderInput';
 import { type Scenario } from '../../services/api';
+import { type ComputedScenario } from '../../utils/valuationMath';
 
 interface ScenarioEditorProps {
     scenario: Scenario & { weight: number };
+    computed?: ComputedScenario;
     onChange: (updates: Partial<Scenario & { weight: number }>) => void;
     title: string;
     totalWeight: number;
     forwardPE?: number;
+    baseMetrics?: {
+        revenue: number;
+        shares: number;
+    };
 }
 
-export function ScenarioEditor({ scenario, onChange, title, totalWeight, forwardPE }: ScenarioEditorProps) {
+export function ScenarioEditor({ scenario, computed, onChange, title, totalWeight, forwardPE, baseMetrics }: ScenarioEditorProps) {
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center mb-2">
@@ -19,6 +25,32 @@ export function ScenarioEditor({ scenario, onChange, title, totalWeight, forward
                 </div>
             </div>
 
+            {/* Quick Result Summary */}
+            {computed && (
+                <div className="grid grid-cols-3 gap-2 mb-2 bg-slate-900/60 p-2 rounded-lg border border-slate-800/50">
+                    <div className="text-center">
+                        <div className="text-[7px] text-slate-500 uppercase">Y5 Rev</div>
+                        <div className="text-xs font-bold text-white">${(computed.year5Revenue / 1000).toFixed(1)}B</div>
+                    </div>
+                    <div className="text-center border-x border-slate-800/50">
+                        <div className="text-[7px] text-slate-500 uppercase">Y5 EPS</div>
+                        <div className="text-xs font-bold text-white">${computed.year5EPS.toFixed(2)}</div>
+                    </div>
+                    <div className="text-center">
+                        <div className="text-[7px] text-slate-500 uppercase">Y5 Price</div>
+                        <div className="text-xs font-bold text-indigo-400">${Math.round(computed.year5PriceUndiscounted)}</div>
+                    </div>
+                </div>
+            )}
+
+            {/* Foundation Audit */}
+            {baseMetrics && (
+                <div className="flex justify-between px-2 mb-4 text-[8px] text-slate-600 font-mono italic">
+                    <span>Base Rev: ${(baseMetrics.revenue / 1e9).toFixed(2)}B</span>
+                    <span>Base Shares: {(baseMetrics.shares / 1e6).toFixed(0)}M</span>
+                </div>
+            )}
+
             <SliderInput
                 label="Growth"
                 value={scenario.growthRate}
@@ -27,7 +59,7 @@ export function ScenarioEditor({ scenario, onChange, title, totalWeight, forward
                 impact="High"
                 helpTopic="growthRate"
             />
-
+...
             <SliderInput
                 label="Margin"
                 value={scenario.netMargin}

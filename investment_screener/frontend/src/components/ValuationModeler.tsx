@@ -137,10 +137,17 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
 
     // --- Calculations ---
 
+    const baseRevenue = stockData.metrics.revenue || 0;
+    const baseShares = stockData.metrics.shares_diluted > 0 
+        ? stockData.metrics.shares_diluted 
+        : (stockData.metrics.market_cap && stockData.price > 0 
+            ? stockData.metrics.market_cap / stockData.price 
+            : (stockData.metrics.shares_outstanding || 1));
+
     // Derived Prices
-    const bearResult = useMemo(() => computeScenario(stockData.metrics.revenue, stockData.metrics.market_cap / stockData.price, discountRate/100, timeHorizon, scenarios.bear), [stockData, discountRate, timeHorizon, scenarios.bear]);
-    const baseResult = useMemo(() => computeScenario(stockData.metrics.revenue, stockData.metrics.market_cap / stockData.price, discountRate/100, timeHorizon, scenarios.base), [stockData, discountRate, timeHorizon, scenarios.base]);
-    const bullResult = useMemo(() => computeScenario(stockData.metrics.revenue, stockData.metrics.market_cap / stockData.price, discountRate/100, timeHorizon, scenarios.bull), [stockData, discountRate, timeHorizon, scenarios.bull]);
+    const bearResult = useMemo(() => computeScenario(baseRevenue, baseShares, discountRate/100, timeHorizon, scenarios.bear), [baseRevenue, baseShares, discountRate, timeHorizon, scenarios.bear]);
+    const baseResult = useMemo(() => computeScenario(baseRevenue, baseShares, discountRate/100, timeHorizon, scenarios.base), [baseRevenue, baseShares, discountRate, timeHorizon, scenarios.base]);
+    const bullResult = useMemo(() => computeScenario(baseRevenue, baseShares, discountRate/100, timeHorizon, scenarios.bull), [baseRevenue, baseShares, discountRate, timeHorizon, scenarios.bull]);
 
     const bearPrice = bearResult.presentValue;
     const basePrice = baseResult.presentValue;
@@ -751,9 +758,11 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                 <ScenarioEditor
                                     title={activeScenario}
                                     scenario={current}
+                                    computed={activeResult}
                                     onChange={updateCurrent}
                                     totalWeight={totalWeight}
                                     forwardPE={stockData.analyst_estimates?.forward_pe || stockData.metrics?.forward_pe}
+                                    baseMetrics={{ revenue: baseRevenue, shares: baseShares }}
                                 />
                             </div>
 
@@ -858,11 +867,11 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                             stockPrice={stockData.price}
                             calculateYear5Price={(g, pe) => {
                                 const tempScenario = { ...current, growthRate: g, exitPE: pe };
-                                return computeScenario(stockData.metrics.revenue, stockData.metrics.market_cap / stockData.price, discountRate / 100, timeHorizon, tempScenario).year5PriceUndiscounted;
+                                return computeScenario(baseRevenue, baseShares, discountRate / 100, timeHorizon, tempScenario).year5PriceUndiscounted;
                             }}
                             calculatePresentValue={(g, pe) => {
                                 const tempScenario = { ...current, growthRate: g, exitPE: pe };
-                                return computeScenario(stockData.metrics.revenue, stockData.metrics.market_cap / stockData.price, discountRate / 100, timeHorizon, tempScenario).presentValue;
+                                return computeScenario(baseRevenue, baseShares, discountRate / 100, timeHorizon, tempScenario).presentValue;
                             }}
                         />
                     </div>
