@@ -383,6 +383,43 @@ export async function getPortfolio() {
   };
 }
 
+// ── account totals ────────────────────────────────────────────────────────────
+
+/**
+ * getAccountTotals() — reads Total Equity USD from each account's Account Summary tab.
+ * Returns per-account breakdown and grand total in USD.
+ * Used by the portfolio summary endpoint and the verify_portfolio_total.py audit script.
+ */
+export async function getAccountTotals() {
+  const accounts = await getAccounts();
+  const results = [];
+  let grandTotalUSD = 0;
+  let grandMarketValueUSD = 0;
+  let grandCashUSD = 0;
+
+  for (const acct of accounts) {
+    const switched = await switchAccount(acct.accountType);
+    if (switched.error) {
+      results.push({ accountType: acct.accountType, accountId: acct.accountId, error: switched.error });
+      continue;
+    }
+    const balances = await getBalances();
+    const equity  = balances.totalEquityUSD  ?? 0;
+    const mktVal  = balances.marketValueUSD  ?? 0;
+    const cash    = balances.cashUSD         ?? 0;
+    results.push({ accountType: acct.accountType, accountId: acct.accountId,
+                   totalEquityUSD: equity, marketValueUSD: mktVal, cashUSD: cash });
+    grandTotalUSD       += equity;
+    grandMarketValueUSD += mktVal;
+    grandCashUSD        += cash;
+  }
+
+  if (accounts.length > 0) await switchAccount(accounts[0].accountType).catch(() => {});
+
+  return { accounts: results, grandTotalUSD, grandMarketValueUSD, grandCashUSD,
+           timestamp: new Date().toISOString() };
+}
+
 // ── inspectors ────────────────────────────────────────────────────────────────
 
 export async function inspectBrokerPanel() {
