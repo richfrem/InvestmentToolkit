@@ -72,7 +72,7 @@ router.post('/portfolio-heatmap', async (req, res) => {
         }
         const [data, exchangeRate] = await Promise.all([
             spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(items)]),
-            getLiveUsdCadRate(1.0),
+            getLiveUsdCadRate(1.38),
         ]);
         if (data.error) { res.status(400).json({ error: data.error }); return; }
         res.json({ ...data, exchange_rate: exchangeRate });
