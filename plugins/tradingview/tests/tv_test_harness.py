@@ -348,7 +348,7 @@ def test_pine_save_layout() -> tuple[bool, str]:
         import time; time.sleep(1)
 
         r2 = subprocess.run(
-            ["node", "cli.js", "chart", "saveLayout", "--name", "Test_HelloWorld_Layout"],
+            ["node", "cli.js", "chart", "saveLayout", "--name", "agent-layout"],
             capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=20,
         )
         save_out = json.loads(r2.stdout.strip()) if r2.stdout.strip() else {}
