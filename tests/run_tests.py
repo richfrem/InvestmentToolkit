@@ -17,6 +17,7 @@ import argparse
 import json
 import subprocess
 import sys
+import os
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -55,13 +56,13 @@ def t0_typescript() -> bool:
 
 def t0_python_syntax() -> bool:
     print(f"\n{HEADER}T0 — Python syntax checks{RESET}")
+    import glob
     scripts = [
-        REPO_ROOT / "investment_screener/backend/py_services/place_order.py",
         REPO_ROOT / "investment_screener/backend/py_services/portfolio_action.py",
-        REPO_ROOT / "plugins/tradingview/scripts/tv_cancel_order.py",
-        REPO_ROOT / "plugins/tradingview/scripts/tv_modify_order.py",
-        REPO_ROOT / "plugins/tradingview/scripts/tv_get_orders.py",
     ]
+    for s in glob.glob(str(REPO_ROOT / "plugins/tradingview/scripts/*.py")):
+        scripts.append(Path(s))
+        
     ok = True
     for script in scripts:
         ok &= run(
@@ -70,12 +71,92 @@ def t0_python_syntax() -> bool:
         )
     return ok
 
+def t0_path_regression() -> bool:
+    print(f"\n{HEADER}T0 — Stale Path Regression{RESET}")
+    forbidden = [
+        "plugins/tradingview/node",
+        "temp/tradingview-mcp",
+    ]
+    allowed = {
+        "docs/adrs/024-tradingview-cdp-shared-runtime-dependency.md",
+        "docs/adrs/023-tradingview-test-harness.md",
+        "temp/bundles/tradingview-symlink-review/post-implementation/payload.md",
+        "temp/bundles/tradingview-symlink-review/payload.md",
+        "tests/run_tests.py", # This file itself
+    }
+    
+    ok = True
+    import os
+    for root, dirs, files in os.walk(str(REPO_ROOT)):
+        if ".git" in root or "node_modules" in root or "venv" in root or "temp" in root or ".agents" in root or "docs/superpowers" in root or "tasks/done" in root:
+            continue
+        for f in files:
+            if f.endswith(".png") or f.endswith(".svg"):
+                continue
+            path = Path(root) / f
+            rel_path = str(path.relative_to(REPO_ROOT))
+            if rel_path in allowed:
+                continue
+            try:
+                text = path.read_text(errors="ignore")
+                for s in forbidden:
+                    if s in text:
+                        print(f"  {CRITICAL} {rel_path} still references stale path: {s}")
+                        ok = False
+            except Exception:
+                pass
+    if ok:
+        print(f"  {OK} No stale runtime paths found")
+    return ok
+
+def t0_symlink_cwd_invariance() -> bool:
+    print(f"\n{HEADER}T0 — CWD / Symlink Invariance{RESET}")
+    ok = True
+    
+    def check_health(cwd, label):
+        result = subprocess.run(["python3", str(REPO_ROOT / "plugins/tradingview/scripts/tv_health_check.py"), "--json"], capture_output=True, text=True, cwd=str(cwd))
+        try:
+            data = json.loads(result.stdout.strip())
+            if data.get("npm") is True:
+                print(f"  {OK} {label}")
+                return True
+            else:
+                print(f"  {CRITICAL} {label} - npm not resolved to true")
+                return False
+        except Exception as e:
+            print(f"  {CRITICAL} {label} - output not valid JSON: {result.stdout[:100]} Error: {result.stderr[:100]}")
+            return False
+
+    # Run from arbitrary cwd
+    ok &= check_health(Path("/"), "tv_health_check.py from root (/)")
+    
+    # Run from repo root
+    ok &= check_health(REPO_ROOT, "tv_health_check.py from repo root")
+    
+    # Run from symlink path
+    skill_dir = REPO_ROOT / "plugins/tradingview/skills/get-orders"
+    if skill_dir.exists():
+        ok &= check_health(skill_dir, "tv_health_check.py from skill dir")
+    
+    # TV_CDP_DIR override test
+    env = os.environ.copy()
+    env["TV_CDP_DIR"] = "/tmp/fake-tradingview-cdp"
+    result = subprocess.run(["python3", str(REPO_ROOT / "plugins/tradingview/scripts/tv_health_check.py"), "--json"], capture_output=True, text=True, cwd=str(REPO_ROOT), env=env)
+    if result.returncode != 0 and "not found" in result.stderr:
+        print(f"  {OK} TV_CDP_DIR override test passed (failed correctly with bad path)")
+    else:
+        print(f"  {CRITICAL} TV_CDP_DIR override test failed. Output: {result.stderr[:200]}")
+        ok = False
+        
+    return ok
+
+
 
 def t0_node_syntax() -> bool:
     print(f"\n{HEADER}T0 — Node.js syntax checks{RESET}")
     files = [
-        REPO_ROOT / "plugins/tradingview/node/core/trading.js",
-        REPO_ROOT / "plugins/tradingview/node/core/broker_data.js",
+        REPO_ROOT / "tradingview-cdp/core/trading.js",
+        REPO_ROOT / "tradingview-cdp/core/broker_data.js",
     ]
     ok = True
     for f in files:
@@ -124,6 +205,8 @@ def main() -> None:
         ("T0 TypeScript",     t0_typescript),
         ("T0 Python syntax",  t0_python_syntax),
         ("T0 Node syntax",    t0_node_syntax),
+        ("T0 Path regression", t0_path_regression),
+        ("T0 Invariance",      t0_symlink_cwd_invariance),
     ]:
         if not fn():
             failed.append(tier)

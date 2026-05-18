@@ -38,7 +38,7 @@ Key Functions:
     - main()        - CLI entry point; parses args, prints results
 
 Script Dependencies:
-    - plugins/tradingview/node/core/trading.js (verifyOrderInBrokerPanel export)
+    - tradingview-cdp/core/trading.js (verifyOrderInBrokerPanel export)
     - TradingView Desktop running with --remote-debugging-port=9222
 
 Consumed by:
@@ -51,39 +51,8 @@ import json
 import argparse
 import subprocess
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-REPO_ROOT   = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", ".."))
-TV_NODE_DIR = os.path.join(REPO_ROOT, "plugins", "tradingview", "node")
+from tv_client import run_node_module
 
-
-def _run_node(js: str, timeout: int = 15) -> dict:
-    """
-    Run inline Node.js ES module code in the tradingview/node context.
-
-    Args:
-        js:      ES module source code (run via --input-type=module).
-        timeout: Seconds before subprocess is killed.
-
-    Returns:
-        Parsed JSON dict from stdout, or { "raw": ..., "stderr": ... } on decode failure.
-
-    Raises:
-        RuntimeError: If Node exits non-zero with no stdout.
-    """
-    result = subprocess.run(
-        ["node", "--input-type=module"],
-        input=js,
-        capture_output=True,
-        text=True,
-        timeout=timeout,
-        cwd=TV_NODE_DIR,
-    )
-    if result.returncode != 0 and not result.stdout.strip():
-        raise RuntimeError(f"Node error: {result.stderr.strip()[:500]}")
-    try:
-        return json.loads(result.stdout.strip())
-    except json.JSONDecodeError:
-        return {"raw": result.stdout.strip(), "stderr": result.stderr.strip()}
 
 
 def get_orders(ticker: str | None = None) -> dict:
@@ -112,7 +81,7 @@ try {{
     process.exit(1);
 }}
 """
-    return _run_node(js)
+    return run_node_module(js)
 
 
 def main() -> None:

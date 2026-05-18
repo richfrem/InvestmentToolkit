@@ -42,7 +42,7 @@ If npm node_modules are missing, print:
 
 ```
 TradingView CLI dependencies not installed.
-Run: cd temp/tradingview-mcp && npm install
+Run: cd tradingview-cdp && npm ci
 Then re-run /tv-alert-sync.
 ```
 
