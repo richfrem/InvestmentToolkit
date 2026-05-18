@@ -267,7 +267,7 @@ The original DCF valuation signal (BUY/HOLD/SELL) is preserved in `analyticsLog.
 **Frontend:** The AI screener table shows action as a colour-coded pill (cyan=INITIATE, green=ACCUMULATE, slate=MAINTAIN, amber=TRIM, red=EXIT, purple=WATCHLIST). Hovering shows the full rationale. The AIAnalysisModal shows the DCF signal as a sub-badge alongside the portfolio action.
 
 ### 7. TradingView CDP — Node snippets MUST call process.exit()
-All Node.js snippets in `plugins/tradingview/node/` **must** end with `.then(() => process.exit(0)).catch(() => process.exit(1))`. Without it, the CDP WebSocket holds the event loop open indefinitely — Python `subprocess.run()` never returns. Root cause of all Phase 1 harness timeouts.
+All Node.js snippets in `tradingview-cdp/` **must** end with `.then(() => process.exit(0)).catch(() => process.exit(1))`. Without it, the CDP WebSocket holds the event loop open indefinitely — Python `subprocess.run()` never returns. Root cause of all Phase 1 harness timeouts.
 
 ### 8. TradingView CDP — Use React fiber traversal for Pine Editor / Monaco
 Do **not** rely solely on CSS class selectors — TV class names change across deployments. Scan DOM nodes for the `__reactFiber` key prefix and walk the React fiber tree to locate Monaco internals. Reference: [tradesdontlie/tradingview-mcp](https://github.com/tradesdontlie/tradingview-mcp) `pine.js`.

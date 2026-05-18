@@ -5,6 +5,51 @@
   "author": "InvestmentToolkit",
   "maturity": "L3",
   "architecture": "standard",
+  "runtime_dependencies": [
+    {
+      "name": "tradingview-cdp",
+      "description": "Node.js CDP engine for browser automation of TradingView Desktop",
+      "type": "node-package",
+      "expected_path": "tradingview-cdp/",
+      "relative_to": "project_root",
+      "marker_file": "cli.js",
+      "setup_command": "cd tradingview-cdp && npm ci",
+      "env_override": "TV_CDP_DIR",
+      "health_check": "node tradingview-cdp/cli.js health",
+      "required": true,
+      "required_by_skills": [
+        "price-refresh",
+        "cancel-order",
+        "place-order",
+        "modify-order",
+        "get-orders",
+        "chart-snapshot",
+        "pine-inject",
+        "alert-sync",
+        "ta-snapshot",
+        "ta-red-team",
+        "technical-analysis-expert",
+        "tv-portfolio-sync"
+      ],
+      "notes": [
+        "TradingView Desktop must be running with --remote-debugging-port=9222",
+        "Node.js 18+ required",
+        "See plugins/tradingview/README.md for full setup instructions"
+      ]
+    }
+  ],
+  "system_dependencies": [
+    {
+      "name": "node",
+      "minimum_version": "18.0.0",
+      "check_command": "node --version"
+    },
+    {
+      "name": "TradingView Desktop",
+      "launch_flag": "--remote-debugging-port=9222",
+      "default_port": 9222
+    }
+  ],
   "skills": [
     { "name": "tv_alert_sync", "path": "skills/alert-sync/SKILL.md", "trigger": "/tv-alert-sync" },
     { "name": "tv_price_refresh", "path": "skills/price-refresh/SKILL.md", "trigger": "/tv-price-refresh" },
@@ -31,12 +76,6 @@
     { "name": "get-orders", "path": "commands/get-orders.md", "trigger": "/get-orders" }
   ],
   "external_dependencies": [
-    {
-      "name": "tradingview-mcp-cli",
-      "canonical_path": "temp/tradingview-mcp/src/cli/index.js",
-      "owned_by": "community",
-      "purpose": "Node.js CLI that connects to TradingView Desktop via CDP"
-    },
     {
       "name": "portfolio-json",
       "canonical_path": "investment_screener/backend/data/portfolio.json",
