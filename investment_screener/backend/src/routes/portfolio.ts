@@ -5,8 +5,8 @@ import { spawnPythonScript } from '../services/bridge';
 import { questradeSyncService } from '../services/QuestradeSyncService';
 import { brokerSyncService, mergeIntoPortfolio } from '../services/BrokerSyncService';
 import { getLiveUsdCadRate, isTradingViewConnected } from '../utils/helpers';
-import { PORTFOLIO_FILE, PORTFOLIO_CONFIG_FILE, THESIS_FILE, PORTFOLIO_SNAPSHOT_FILE } from '../utils/paths';
-import { buildPortfolioSnapshot } from '../utils/portfolioSnapshot';
+import { PORTFOLIO_FILE, PORTFOLIO_CONFIG_FILE, THESIS_FILE } from '../utils/paths';
+import { buildPortfolioSnapshot, PortfolioTotals } from '../utils/portfolioSnapshot';
 
 const router = express.Router();
 
@@ -23,6 +23,14 @@ try {
 
 function backupPortfolio(): void {
     if (fs.existsSync(PORTFOLIO_FILE)) fs.copyFileSync(PORTFOLIO_FILE, PORTFOLIO_FILE + '.bak');
+}
+
+/** Read portfolio.json — handles both legacy array format and new { holdings, totals } format. */
+function readPortfolio(): { holdings: any[]; totals: PortfolioTotals | null } {
+    if (!fs.existsSync(PORTFOLIO_FILE)) return { holdings: [], totals: null };
+    const raw = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+    if (Array.isArray(raw)) return { holdings: raw, totals: null };
+    return { holdings: raw.holdings ?? [], totals: raw.totals ?? null };
 }
 
 /**
@@ -116,9 +124,8 @@ function verifyPortfolioTotals(holdings: any[], tvSnapshot: any): {
 }
 
 /**
- * Single write path: enriches items with market_value, writes portfolio.json,
- * then writes portfolio_snapshot.json with pre-computed totals.
- * All routes that need total USD/CAD read from the snapshot — never recompute.
+ * Single write path — everything goes to portfolio.json as { holdings, totals }.
+ * No other file is written. All routes read from this one file.
  */
 async function persistPortfolioWithSnapshot(items: any[], tvSnapshot?: any): Promise<void> {
     const tvSnap = tvSnapshot ?? (() => {
@@ -127,24 +134,34 @@ async function persistPortfolioWithSnapshot(items: any[], tvSnapshot?: any): Pro
     })();
     const exchangeRate = await getLiveUsdCadRate(JAN1_USD_CAD_RATE);
     const { holdings: enriched, totals } = buildPortfolioSnapshot(items, tvSnap, exchangeRate);
-    fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(enriched, null, 2));
-    fs.writeFileSync(PORTFOLIO_SNAPSHOT_FILE, JSON.stringify({ totals }, null, 2));
-    console.log(`[Snapshot] Wrote totals — totalUSD=$${totals.totalUSD.toFixed(2)} totalCAD=$${totals.totalCAD.toFixed(2)} rate=${totals.exchangeRate}`);
+
+    // TV broker equity is authoritative — use it instead of our recomputed sum.
+    const tvBrokerTotal = (tvSnap?.snapshots ?? []).reduce((sum: number, snap: any) => {
+        const eq = snap?.balances?.totalEquityUSDCombined ?? snap?.balances?.totalEquityUSD ?? 0;
+        return sum + (typeof eq === 'number' && eq > 0 ? eq : 0);
+    }, 0);
+    if (tvBrokerTotal > 0) {
+        console.log(`[Portfolio] TV equity=$${tvBrokerTotal.toFixed(2)} computed=$${(totals.holdingsUSD + totals.cashUSD).toFixed(2)} diff=$${(tvBrokerTotal - totals.holdingsUSD - totals.cashUSD).toFixed(2)}`);
+        totals.totalUSD = tvBrokerTotal;
+        totals.totalCAD = tvBrokerTotal * exchangeRate;
+    }
+
+    fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify({ holdings: enriched, totals }, null, 2));
+    console.log(`[Portfolio] Wrote portfolio.json — totalUSD=$${totals.totalUSD.toFixed(2)} totalCAD=$${totals.totalCAD.toFixed(2)}`);
 }
 
 // ── Portfolio CRUD ────────────────────────────────────────────────────────────
 
 router.get('/', async (_req, res) => {
     try {
-        if (!fs.existsSync(PORTFOLIO_FILE)) { res.json({ items: [], dataSource: 'cache' }); return; }
-        const data = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+        const { holdings } = readPortfolio();
         const tvFile = path.join(path.dirname(PORTFOLIO_FILE), 'portfolio_tv.json');
         let dataSource = 'cache';
-        if (fs.existsSync(tvFile)) {
+        if (fs.existsSync(tvFile) && fs.existsSync(PORTFOLIO_FILE)) {
             dataSource = fs.statSync(tvFile).mtimeMs >= fs.statSync(PORTFOLIO_FILE).mtimeMs
                 ? 'tradingview-cdp' : 'questrade';
         }
-        res.json({ items: data, dataSource });
+        res.json({ items: holdings, dataSource });
     } catch (error) {
         console.error(`[API] Error reading portfolio: `, error);
         res.status(500).json({ error: 'Failed to read portfolio' });
@@ -157,7 +174,8 @@ router.post('/', async (req, res) => {
     try {
         if (!items || !Array.isArray(items)) { res.status(400).json({ error: 'items array required' }); return; }
         backupPortfolio();
-        fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(items, null, 2));
+        const { totals } = readPortfolio();
+        fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify({ holdings: items, totals }, null, 2));
         syncThesisShares(items);
         res.json({ success: true, count: items.length });
     } catch (error) {
@@ -172,38 +190,31 @@ router.get('/summary', async (_req, res) => {
     console.log(`[API] Computing portfolio summary...`);
     try {
         if (!fs.existsSync(PORTFOLIO_FILE)) { res.status(404).json({ error: 'No portfolio data found' }); return; }
-        const positions: any[] = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+        const { holdings: positions, totals } = readPortfolio();
 
-        // ── Market value: read from pre-computed snapshot (single source of truth) ──
+        // ── Market value: read from portfolio.json totals (single source of truth) ──
         let totalMarketValueUSD = 0;
         let totalMarketValueCAD = 0;
         let liveUsdCadRate = JAN1_USD_CAD_RATE;
         let priceSource = 'yfinance';
 
-        if (fs.existsSync(PORTFOLIO_SNAPSHOT_FILE)) {
-            try {
-                const snap = JSON.parse(fs.readFileSync(PORTFOLIO_SNAPSHOT_FILE, 'utf-8'));
-                if (snap?.totals?.totalUSD > 0) {
-                    totalMarketValueUSD = snap.totals.totalUSD;
-                    totalMarketValueCAD = snap.totals.totalCAD;
-                    liveUsdCadRate = snap.totals.exchangeRate ?? JAN1_USD_CAD_RATE;
-                    priceSource = 'tradingview';
-                    console.log(`[Summary] Read from snapshot — $${totalMarketValueUSD.toFixed(2)} USD`);
-                }
-            } catch { /* fall through to fallback */ }
-        }
-
-        // Fallback: compute from stored prices when no snapshot exists yet
-        if (totalMarketValueUSD === 0) {
+        if (totals != null && (totals.totalUSD ?? 0) > 0) {
+            totalMarketValueUSD = totals.totalUSD!;
+            totalMarketValueCAD = totals.totalCAD!;
+            liveUsdCadRate = totals.exchangeRate ?? JAN1_USD_CAD_RATE;
+            priceSource = 'tradingview';
+            console.log(`[Summary] totalUSD=$${totalMarketValueUSD.toFixed(2)} totalCAD=$${totalMarketValueCAD.toFixed(2)}`);
+        } else {
+            // Fallback: compute from stored prices (before first sync)
             liveUsdCadRate = await getLiveUsdCadRate(JAN1_USD_CAD_RATE);
             for (const pos of positions) {
                 totalMarketValueUSD += (pos.shares || 0) * (pos.price ?? pos.book_price ?? 0);
             }
             totalMarketValueCAD = totalMarketValueUSD * liveUsdCadRate;
-            console.log(`[Summary] Snapshot absent — computed $${totalMarketValueUSD.toFixed(2)} USD (fallback)`);
+            console.log(`[Summary] No totals in portfolio.json — computed $${totalMarketValueUSD.toFixed(2)} (fallback)`);
         }
 
-        // Book value always from portfolio.json fill prices (never changes on price refresh)
+        // Book value from fill prices — never changes on price refresh
         let totalBookValueUSD = 0;
         for (const pos of positions) {
             totalBookValueUSD += (pos.shares || 0) * (pos.book_price || 0);
@@ -249,12 +260,11 @@ router.get('/performance', async (_req, res) => {
 
 router.get('/weights', (_req, res) => {
     try {
-        if (!fs.existsSync(PORTFOLIO_FILE)) { res.json({}); return; }
-        const positions: any[] = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+        const { holdings } = readPortfolio();
         const marketPrice = (p: any) => p.price ?? p.book_price ?? 0;
-        const total = positions.reduce((s, p) => s + (p.shares || 0) * marketPrice(p), 0);
+        const total = holdings.reduce((s, p) => s + (p.shares || 0) * marketPrice(p), 0);
         const map: Record<string, number> = {};
-        for (const p of positions) {
+        for (const p of holdings) {
             const ticker = p.symbol ?? p.ticker;
             if (ticker && total > 0) map[ticker] = ((p.shares || 0) * marketPrice(p) / total) * 100;
         }
@@ -264,15 +274,15 @@ router.get('/weights', (_req, res) => {
 
 router.get('/status', (_req, res) => {
     try {
-        if (!fs.existsSync(PORTFOLIO_FILE)) { res.json({ lastSync: null }); return; }
-        const data = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
-        if (Array.isArray(data) && data.length > 0) {
-            const lastSync = data.reduce((latest: string, item: any) => {
-                if (!item.last_updated) return latest;
-                return !latest || new Date(item.last_updated) > new Date(latest) ? item.last_updated : latest;
-            }, '');
-            res.json({ lastSync: lastSync || null });
-        } else { res.json({ lastSync: null }); }
+        const { holdings, totals } = readPortfolio();
+        // totals.timestamp is written on every sync — prefer it over per-holding last_updated
+        const fromTotals = totals?.timestamp ?? null;
+        const fromHoldings = holdings.reduce((latest: string, item: any) => {
+            if (!item.last_updated) return latest;
+            return !latest || new Date(item.last_updated) > new Date(latest) ? item.last_updated : latest;
+        }, '');
+        const lastSync = fromTotals ?? fromHoldings ?? null;
+        res.json({ lastSync });
     } catch { res.status(500).json({ error: 'Failed to get status' }); }
 });
 
@@ -286,14 +296,12 @@ router.get('/position/:ticker', (req, res) => {
         let price: number | null = null;
         let book_price: number | null = null;
         let portfolioShares: number = 0;
-        if (fs.existsSync(PORTFOLIO_FILE)) {
-            const portfolio: any[] = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
-            const entry = portfolio.find((p: any) => (p.symbol ?? '').toUpperCase() === ticker);
-            if (entry) {
-                price = typeof entry.price === 'number' ? entry.price : null;
-                book_price = typeof entry.book_price === 'number' ? entry.book_price : null;
-                portfolioShares = typeof entry.shares === 'number' ? entry.shares : 0;
-            }
+        const { holdings: portfolio } = readPortfolio();
+        const entry = portfolio.find((p: any) => (p.symbol ?? '').toUpperCase() === ticker);
+        if (entry) {
+            price = typeof entry.price === 'number' ? entry.price : null;
+            book_price = typeof entry.book_price === 'number' ? entry.book_price : null;
+            portfolioShares = typeof entry.shares === 'number' ? entry.shares : 0;
         }
         // From portfolio_tv.json: per-account quantities
         const byAccount: Record<string, number> = {};
@@ -355,7 +363,7 @@ router.get('/holdings/:ticker', (req, res) => {
 router.post('/refresh-prices', async (_req, res) => {
     console.log(`[API] Refreshing portfolio prices from Yahoo...`);
     try {
-        const portfolioData = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+        const { holdings: portfolioData } = readPortfolio();
         // Strip stored price so fetch_portfolio_heatmap.py uses live yfinance prices
         const itemsForFetch = portfolioData.map((item: any) => { const { price, ...rest } = item; return rest; });
         const [data, exchangeRate] = await Promise.all([
@@ -396,7 +404,7 @@ router.post('/sync-tv', async (_req, res) => {
             res.status(503).json({ error: 'TradingView returned 0 positions. Is TradingView Desktop running with a broker connected?' });
             return;
         }
-        const existing = fs.existsSync(PORTFOLIO_FILE) ? JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8')) : [];
+        const { holdings: existing } = readPortfolio();
         const { merged, added, removed, changed } = mergeIntoPortfolio(snapshot, existing);
         res.json({
             success: true, dataSource: 'tradingview-cdp', positionCount: posCount,
@@ -433,7 +441,7 @@ router.post('/sync-tv/apply', async (_req, res) => {
             res.json({ success: true, positionCount: 0, tvAvailable: false, message: 'TradingView not available or returned 0 positions — portfolio unchanged.' });
             return;
         }
-        const existing = fs.existsSync(PORTFOLIO_FILE) ? JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8')) : [];
+        const { holdings: existing } = readPortfolio();
         const { merged, added, removed, changed } = mergeIntoPortfolio(snapshot, existing);
         backupPortfolio();
         await persistPortfolioWithSnapshot(merged, snapshot);
@@ -472,7 +480,7 @@ router.get('/strategy-allocation', async (_req, res) => {
     console.log(`[API] Computing strategy allocation...`);
     try {
         if (!fs.existsSync(PORTFOLIO_FILE)) { res.status(404).json({ error: 'No portfolio data found' }); return; }
-        const positions: any[] = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+        const { holdings: positions } = readPortfolio();
         let pillarMap: Record<string, string> = {};
         let subStrategyMap: Record<string, string> = {};
         let pillars: Array<{ id: string; name: string }> = [];

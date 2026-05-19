@@ -11,8 +11,9 @@ router.get('/all-holdings', async (_req, res) => {
     try {
         const targetPortfolio = JSON.parse(await fs.promises.readFile(TARGET_PORTFOLIO_FILE, 'utf-8'));
         const thesisHoldings: any[] = targetPortfolio.holdings ?? [];
-        const positions: any[] = fs.existsSync(PORTFOLIO_FILE)
+        const rawPortfolio = fs.existsSync(PORTFOLIO_FILE)
             ? JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8')) : [];
+        const positions: any[] = Array.isArray(rawPortfolio) ? rawPortfolio : (rawPortfolio.holdings ?? []);
         const totalValue = positions.reduce((s, p) => s + (p.shares || 0) * (p.price || 0), 0);
         const actualMap: Record<string, { pct: number; price: number }> = {};
         for (const p of positions) {
