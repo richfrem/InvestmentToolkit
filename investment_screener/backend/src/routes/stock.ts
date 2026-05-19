@@ -4,7 +4,7 @@ import path from 'path';
 import { spawnPythonScript } from '../services/bridge';
 import { getLiveUsdCadRate } from '../utils/helpers';
 import { isValidTicker } from '../utils/helpers';
-import { ETF_ANALYSIS_DIR, PORTFOLIO_SNAPSHOT_FILE } from '../utils/paths';
+import { ETF_ANALYSIS_DIR, PORTFOLIO_FILE } from '../utils/paths';
 
 const router = express.Router();
 
@@ -70,16 +70,17 @@ router.post('/portfolio-heatmap', async (req, res) => {
             res.status(400).json({ error: `Invalid ticker symbols: ${invalidTickers.map((i: any) => i.symbol).join(', ')}` });
             return;
         }
-        // Read totals from snapshot — same source as /summary so all pages agree.
+        // Read totals from portfolio.json — same source as /summary so all pages agree.
         let exchangeRate = 1.38;
         let snapshotTotalUSD = 0;
         let snapshotTotalCAD = 0;
         try {
-            if (fs.existsSync(PORTFOLIO_SNAPSHOT_FILE)) {
-                const snap = JSON.parse(fs.readFileSync(PORTFOLIO_SNAPSHOT_FILE, 'utf-8'));
-                if (snap?.totals?.exchangeRate > 0) exchangeRate = snap.totals.exchangeRate;
-                if (snap?.totals?.totalUSD > 0) snapshotTotalUSD = snap.totals.totalUSD;
-                if (snap?.totals?.totalCAD > 0) snapshotTotalCAD = snap.totals.totalCAD;
+            if (fs.existsSync(PORTFOLIO_FILE)) {
+                const raw = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+                const totals = Array.isArray(raw) ? null : raw.totals;
+                if (totals?.exchangeRate > 0) exchangeRate = totals.exchangeRate;
+                if (totals?.totalUSD > 0) snapshotTotalUSD = totals.totalUSD;
+                if (totals?.totalCAD > 0) snapshotTotalCAD = totals.totalCAD;
             } else {
                 exchangeRate = await getLiveUsdCadRate(1.38);
             }
