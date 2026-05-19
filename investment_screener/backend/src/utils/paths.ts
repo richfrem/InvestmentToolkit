@@ -11,3 +11,4 @@ export const THESIS_DOC_PATH       = path.resolve(__dirname, '../../../../plugin
 export const AGENT_GUIDE_PATH      = path.resolve(__dirname, '../../../../plugins/toolkit-manager/references/agent-quick-reference.md');
 export const PORTFOLIO_CONFIG_FILE = path.join(__dirname, '../../data/portfolio-config.json');
 export const TRADE_LOG_FILE        = path.join(__dirname, '../../data/trade-log.json');
+export const PORTFOLIO_SNAPSHOT_FILE = path.join(__dirname, '../../data/portfolio_snapshot.json');

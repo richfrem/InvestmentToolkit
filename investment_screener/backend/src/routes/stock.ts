@@ -4,7 +4,7 @@ import path from 'path';
 import { spawnPythonScript } from '../services/bridge';
 import { getLiveUsdCadRate } from '../utils/helpers';
 import { isValidTicker } from '../utils/helpers';
-import { ETF_ANALYSIS_DIR } from '../utils/paths';
+import { ETF_ANALYSIS_DIR, PORTFOLIO_SNAPSHOT_FILE } from '../utils/paths';
 
 const router = express.Router();
 
@@ -70,12 +70,21 @@ router.post('/portfolio-heatmap', async (req, res) => {
             res.status(400).json({ error: `Invalid ticker symbols: ${invalidTickers.map((i: any) => i.symbol).join(', ')}` });
             return;
         }
-        const [data, exchangeRate] = await Promise.all([
-            spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(items)]),
-            getLiveUsdCadRate(1.0),
-        ]);
+        // Read exchange rate from snapshot so all pages use the same rate as /summary.
+        // Fall back to live fetch only when no snapshot exists yet (before first sync).
+        let exchangeRate: number;
+        try {
+            const snap = fs.existsSync(PORTFOLIO_SNAPSHOT_FILE)
+                ? JSON.parse(fs.readFileSync(PORTFOLIO_SNAPSHOT_FILE, 'utf-8'))
+                : null;
+            exchangeRate = (snap?.totals?.exchangeRate > 0) ? snap.totals.exchangeRate : await getLiveUsdCadRate(1.38);
+        } catch {
+            exchangeRate = await getLiveUsdCadRate(1.38);
+        }
+        const data = await spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(items)]);
         if (data.error) { res.status(400).json({ error: data.error }); return; }
-        res.json({ ...data, exchange_rate: exchangeRate });
+        const total_value_cad = Math.round((data.total_value ?? 0) * exchangeRate);
+        res.json({ ...data, exchange_rate: exchangeRate, total_value_cad });
     } catch (error) {
         console.error(`[API] Error fetching heatmap: `, error);
         res.status(500).json({ error: 'Failed to fetch heatmap data' });

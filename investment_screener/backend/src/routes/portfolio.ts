@@ -5,7 +5,8 @@ import { spawnPythonScript } from '../services/bridge';
 import { questradeSyncService } from '../services/QuestradeSyncService';
 import { brokerSyncService, mergeIntoPortfolio } from '../services/BrokerSyncService';
 import { getLiveUsdCadRate, isTradingViewConnected } from '../utils/helpers';
-import { PORTFOLIO_FILE, PORTFOLIO_CONFIG_FILE, THESIS_FILE } from '../utils/paths';
+import { PORTFOLIO_FILE, PORTFOLIO_CONFIG_FILE, THESIS_FILE, PORTFOLIO_SNAPSHOT_FILE } from '../utils/paths';
+import { buildPortfolioSnapshot } from '../utils/portfolioSnapshot';
 
 const router = express.Router();
 
@@ -114,6 +115,23 @@ function verifyPortfolioTotals(holdings: any[], tvSnapshot: any): {
     return { holdingsTotal, totalCash, computedTotal, brokerTotal, diff, pct, isValid };
 }
 
+/**
+ * Single write path: enriches items with market_value, writes portfolio.json,
+ * then writes portfolio_snapshot.json with pre-computed totals.
+ * All routes that need total USD/CAD read from the snapshot — never recompute.
+ */
+async function persistPortfolioWithSnapshot(items: any[], tvSnapshot?: any): Promise<void> {
+    const tvSnap = tvSnapshot ?? (() => {
+        const tvFile = path.join(path.dirname(PORTFOLIO_FILE), 'portfolio_tv.json');
+        return fs.existsSync(tvFile) ? JSON.parse(fs.readFileSync(tvFile, 'utf-8')) : { snapshots: [] };
+    })();
+    const exchangeRate = await getLiveUsdCadRate(JAN1_USD_CAD_RATE);
+    const { holdings: enriched, totals } = buildPortfolioSnapshot(items, tvSnap, exchangeRate);
+    fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(enriched, null, 2));
+    fs.writeFileSync(PORTFOLIO_SNAPSHOT_FILE, JSON.stringify({ totals }, null, 2));
+    console.log(`[Snapshot] Wrote totals — totalUSD=$${totals.totalUSD.toFixed(2)} totalCAD=$${totals.totalCAD.toFixed(2)} rate=${totals.exchangeRate}`);
+}
+
 // ── Portfolio CRUD ────────────────────────────────────────────────────────────
 
 router.get('/', async (_req, res) => {
@@ -154,45 +172,44 @@ router.get('/summary', async (_req, res) => {
     console.log(`[API] Computing portfolio summary...`);
     try {
         if (!fs.existsSync(PORTFOLIO_FILE)) { res.status(404).json({ error: 'No portfolio data found' }); return; }
-        const positions = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+        const positions: any[] = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
 
-        // ── Total market value: TV snapshot is the authoritative source ──────
-        // Read totalEquityUSD per account from the last TV sync (portfolio_tv.json).
-        // Falls back to computed prices if TV snapshot is absent.
+        // ── Market value: read from pre-computed snapshot (single source of truth) ──
         let totalMarketValueUSD = 0;
+        let totalMarketValueCAD = 0;
+        let liveUsdCadRate = JAN1_USD_CAD_RATE;
         let priceSource = 'yfinance';
-        const tvFile = path.join(path.dirname(PORTFOLIO_FILE), 'portfolio_tv.json');
-        if (fs.existsSync(tvFile)) {
+
+        if (fs.existsSync(PORTFOLIO_SNAPSHOT_FILE)) {
             try {
-                const tvSnapshot = JSON.parse(fs.readFileSync(tvFile, 'utf-8'));
-                // Use totalEquityUSDCombined — includes CAD positions converted to USD, matches TV UI
-                const tvTotal = (tvSnapshot.snapshots ?? []).reduce((sum: number, snap: any) => {
-                    const equity = snap?.balances?.totalEquityUSDCombined ?? snap?.balances?.totalEquityUSD;
-                    return sum + (typeof equity === 'number' && equity > 0 ? equity : 0);
-                }, 0);
-                if (tvTotal > 0) {
-                    totalMarketValueUSD = tvTotal;
+                const snap = JSON.parse(fs.readFileSync(PORTFOLIO_SNAPSHOT_FILE, 'utf-8'));
+                if (snap?.totals?.totalUSD > 0) {
+                    totalMarketValueUSD = snap.totals.totalUSD;
+                    totalMarketValueCAD = snap.totals.totalCAD;
+                    liveUsdCadRate = snap.totals.exchangeRate ?? JAN1_USD_CAD_RATE;
                     priceSource = 'tradingview';
-                    console.log(`[Summary] Using TV snapshot total (Combined): $${tvTotal.toFixed(2)} USD`);
+                    console.log(`[Summary] Read from snapshot — $${totalMarketValueUSD.toFixed(2)} USD`);
                 }
-            } catch { /* fall through to computed */ }
+            } catch { /* fall through to fallback */ }
         }
-        // Fallback: compute from stored prices (yfinance)
+
+        // Fallback: compute from stored prices when no snapshot exists yet
         if (totalMarketValueUSD === 0) {
+            liveUsdCadRate = await getLiveUsdCadRate(JAN1_USD_CAD_RATE);
             for (const pos of positions) {
                 totalMarketValueUSD += (pos.shares || 0) * (pos.price ?? pos.book_price ?? 0);
             }
+            totalMarketValueCAD = totalMarketValueUSD * liveUsdCadRate;
+            console.log(`[Summary] Snapshot absent — computed $${totalMarketValueUSD.toFixed(2)} USD (fallback)`);
         }
 
-        // Book value always from portfolio.json (fill prices don't change)
+        // Book value always from portfolio.json fill prices (never changes on price refresh)
         let totalBookValueUSD = 0;
         for (const pos of positions) {
             totalBookValueUSD += (pos.shares || 0) * (pos.book_price || 0);
         }
-
-        const liveUsdCadRate = await getLiveUsdCadRate(JAN1_USD_CAD_RATE);
-        const totalMarketValueCAD = totalMarketValueUSD * liveUsdCadRate;
         const totalBookValueCAD = totalBookValueUSD * liveUsdCadRate;
+
         const ytdStartValueUSD = YTD_START_VALUE_CAD / JAN1_USD_CAD_RATE;
         res.json({
             positionCount: positions.length,
@@ -351,7 +368,7 @@ router.post('/refresh-prices', async (_req, res) => {
             return stockData ? { ...item, price: stockData.price, last_updated: new Date().toISOString() } : item;
         });
         backupPortfolio();
-        fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(updatedItems, null, 2));
+        await persistPortfolioWithSnapshot(updatedItems);
         res.json({ success: true, updated: updatedItems.length, heatmap: { ...data, exchange_rate: exchangeRate } });
     } catch (error) {
         console.error(`[API] Error refreshing prices: `, error);
@@ -399,7 +416,7 @@ router.post('/sync-tv/promote', async (req, res) => {
         return;
     }
     backupPortfolio();
-    fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(merged, null, 2));
+    await persistPortfolioWithSnapshot(merged);
     syncThesisShares(merged);
     console.log(`[API] portfolio.json promoted from TV snapshot (${merged.length} positions).`);
     res.json({ success: true, positionCount: merged.length, message: 'portfolio.json updated from TradingView data.' });
@@ -419,7 +436,7 @@ router.post('/sync-tv/apply', async (_req, res) => {
         const existing = fs.existsSync(PORTFOLIO_FILE) ? JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8')) : [];
         const { merged, added, removed, changed } = mergeIntoPortfolio(snapshot, existing);
         backupPortfolio();
-        fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(merged, null, 2));
+        await persistPortfolioWithSnapshot(merged, snapshot);
         syncThesisShares(merged);
 
         // Reconciliation gate — compare stored prices vs TV broker total
