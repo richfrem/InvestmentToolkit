@@ -274,12 +274,15 @@ router.get('/weights', (_req, res) => {
 
 router.get('/status', (_req, res) => {
     try {
-        const { holdings } = readPortfolio();
-        const lastSync = holdings.reduce((latest: string, item: any) => {
+        const { holdings, totals } = readPortfolio();
+        // totals.timestamp is written on every sync — prefer it over per-holding last_updated
+        const fromTotals = totals?.timestamp ?? null;
+        const fromHoldings = holdings.reduce((latest: string, item: any) => {
             if (!item.last_updated) return latest;
             return !latest || new Date(item.last_updated) > new Date(latest) ? item.last_updated : latest;
         }, '');
-        res.json({ lastSync: lastSync || null });
+        const lastSync = fromTotals ?? fromHoldings ?? null;
+        res.json({ lastSync });
     } catch { res.status(500).json({ error: 'Failed to get status' }); }
 });
 
