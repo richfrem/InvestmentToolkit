@@ -70,21 +70,28 @@ router.post('/portfolio-heatmap', async (req, res) => {
             res.status(400).json({ error: `Invalid ticker symbols: ${invalidTickers.map((i: any) => i.symbol).join(', ')}` });
             return;
         }
-        // Read exchange rate from snapshot so all pages use the same rate as /summary.
-        // Fall back to live fetch only when no snapshot exists yet (before first sync).
-        let exchangeRate: number;
+        // Read totals from snapshot — same source as /summary so all pages agree.
+        let exchangeRate = 1.38;
+        let snapshotTotalUSD = 0;
+        let snapshotTotalCAD = 0;
         try {
-            const snap = fs.existsSync(PORTFOLIO_SNAPSHOT_FILE)
-                ? JSON.parse(fs.readFileSync(PORTFOLIO_SNAPSHOT_FILE, 'utf-8'))
-                : null;
-            exchangeRate = (snap?.totals?.exchangeRate > 0) ? snap.totals.exchangeRate : await getLiveUsdCadRate(1.38);
+            if (fs.existsSync(PORTFOLIO_SNAPSHOT_FILE)) {
+                const snap = JSON.parse(fs.readFileSync(PORTFOLIO_SNAPSHOT_FILE, 'utf-8'));
+                if (snap?.totals?.exchangeRate > 0) exchangeRate = snap.totals.exchangeRate;
+                if (snap?.totals?.totalUSD > 0) snapshotTotalUSD = snap.totals.totalUSD;
+                if (snap?.totals?.totalCAD > 0) snapshotTotalCAD = snap.totals.totalCAD;
+            } else {
+                exchangeRate = await getLiveUsdCadRate(1.38);
+            }
         } catch {
             exchangeRate = await getLiveUsdCadRate(1.38);
         }
         const data = await spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(items)]);
         if (data.error) { res.status(400).json({ error: data.error }); return; }
-        const total_value_cad = Math.round((data.total_value ?? 0) * exchangeRate);
-        res.json({ ...data, exchange_rate: exchangeRate, total_value_cad });
+        // Use snapshot total (TV broker equity) for header display; heatmap's computed total for % math
+        const total_value_usd = snapshotTotalUSD > 0 ? snapshotTotalUSD : data.total_value;
+        const total_value_cad = snapshotTotalCAD > 0 ? snapshotTotalCAD : Math.round((data.total_value ?? 0) * exchangeRate);
+        res.json({ ...data, exchange_rate: exchangeRate, total_value_usd, total_value_cad });
     } catch (error) {
         console.error(`[API] Error fetching heatmap: `, error);
         res.status(500).json({ error: 'Failed to fetch heatmap data' });
