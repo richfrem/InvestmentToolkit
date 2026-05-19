@@ -44,12 +44,18 @@ def compute_scenario(
     horizon: int,
     params: dict[str, Any],
 ) -> dict[str, Any]:
-    """Compute all derived values for one scenario."""
+    """Compute all derived values for one scenario.
+    
+    Supports 'optionalityAdjustment' ($ in dollars) which is added after the 
+    DCF terminal value calculation to account for massive committed but 
+    unrealized projects (e.g. data center buildouts).
+    """
     growth = params["growthRate"] / 100.0
     margin = params["netMargin"] / 100.0
     sc = params["shareChange"] / 100.0
     pe = params["exitPE"]
     qm = params["qualityMultiplier"]
+    optionality = params.get("optionalityAdjustment", 0.0)
 
     divisor = (1 + discount_rate) ** horizon
 
@@ -57,7 +63,10 @@ def compute_scenario(
     y5_net_income = y5_revenue * margin
     y5_shares = base_shares * (1 + sc) ** horizon
     y5_eps = y5_net_income / y5_shares if y5_shares > 0 else 0.0
-    y5_price_undiscounted = y5_eps * pe * qm
+    
+    # Core Valuation Mirror logic
+    # Note: Optionality is added to the undiscounted price (future value)
+    y5_price_undiscounted = (y5_eps * pe * qm) + (optionality / y5_shares if y5_shares > 0 else 0.0)
     present_value = y5_price_undiscounted / divisor
 
     return {
