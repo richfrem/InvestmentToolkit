@@ -26,3 +26,6 @@ yarn-error.log*
 .vscode/
 frontend/src/data/portfolio.json
 backend/data/portfolio.json
+backend/data/portfolio_snapshot.json
+backend/data/portfolio_tv.json
+backend/data/portfolio.json.bak
