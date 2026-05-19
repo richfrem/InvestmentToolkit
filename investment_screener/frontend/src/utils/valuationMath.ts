@@ -50,7 +50,12 @@ export function computeScenario(
     const y5Shares = baseShares * Math.pow(1 + sc, horizon);
     
     const rawEPS = y5Shares > 0 ? y5NetIncome / y5Shares : 0;
-    const rawPriceUndiscounted = (rawEPS * pe * qm) + optionality;
+    
+    // logic mirrored from dcf_scenarios.py: calculate all, then round for output
+    // Note: optionalityAdjustment is an absolute dollar value ($ in dollars) 
+    // for future projects (e.g. data centers) added to terminal value.
+    const perShareOptionality = y5Shares > 0 ? optionality / y5Shares : 0;
+    const rawPriceUndiscounted = (rawEPS * pe * qm) + perShareOptionality;
     const rawPresentValue = rawPriceUndiscounted / divisor;
 
     return {
