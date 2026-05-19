@@ -246,12 +246,13 @@ export async function syncAuto(_questradeSyncFn?: () => Promise<void>): Promise<
     }
     */
 
-    const existing = fs.existsSync(PORTFOLIO_FILE)
+    const rawExisting = fs.existsSync(PORTFOLIO_FILE)
         ? JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'))
         : [];
+    const existing = Array.isArray(rawExisting) ? rawExisting : (rawExisting.holdings ?? []);
     return {
         dataSource:    'cache',
-        positionCount: Array.isArray(existing) ? existing.length : 0,
+        positionCount: existing.length,
         message:       tvReachable 
             ? 'TradingView connected but returned no positions — returning cached portfolio.'
             : 'TradingView not reachable — returning cached portfolio.',
