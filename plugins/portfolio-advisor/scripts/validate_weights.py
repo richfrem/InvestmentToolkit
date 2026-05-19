@@ -36,13 +36,14 @@ TARGET_JSON      = REPO_ROOT / "investment_screener/backend/data/theses/target-p
 # ---------------------------------------------------------------------------
 def compute_current(portfolio_path: Path) -> dict:
     with open(portfolio_path) as f:
-        holdings = json.load(f)
+        raw = json.load(f)
+    holdings = raw if isinstance(raw, list) else raw.get("holdings", [])
 
     total_value = sum(h.get("shares", 0) * h.get("price", 0) for h in holdings)
     if total_value == 0:
         return {"total": 0.0, "holdings": {}, "total_value": 0.0}
 
-    result = {}
+    result: dict[str, float] = {}
     for h in holdings:
         sym = h.get("symbol") or h.get("ticker")
         if not sym:

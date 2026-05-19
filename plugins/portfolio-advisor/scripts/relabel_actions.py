@@ -80,7 +80,8 @@ def main():
     with open(recs_path) as f:
         recs = json.load(f)
     with open(port_path) as f:
-        raw_port = json.load(f)
+        _raw_port = json.load(f)
+    raw_port = _raw_port if isinstance(_raw_port, list) else _raw_port.get("holdings", [])
 
     # Build actual pct map
     total_value = sum(h["shares"] * h["price"] for h in raw_port)
