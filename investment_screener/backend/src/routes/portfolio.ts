@@ -127,6 +127,19 @@ async function persistPortfolioWithSnapshot(items: any[], tvSnapshot?: any): Pro
     })();
     const exchangeRate = await getLiveUsdCadRate(JAN1_USD_CAD_RATE);
     const { holdings: enriched, totals } = buildPortfolioSnapshot(items, tvSnap, exchangeRate);
+
+    // TV broker equity is more accurate than our recomputed sum — use it as the authoritative total.
+    // totalEquityUSDCombined converts CAD positions to USD using TV's own rate, matching what TV Desktop shows.
+    const tvBrokerTotal = (tvSnap?.snapshots ?? []).reduce((sum: number, snap: any) => {
+        const eq = snap?.balances?.totalEquityUSDCombined ?? snap?.balances?.totalEquityUSD ?? 0;
+        return sum + (typeof eq === 'number' && eq > 0 ? eq : 0);
+    }, 0);
+    if (tvBrokerTotal > 0) {
+        console.log(`[Snapshot] TV broker equity=$${tvBrokerTotal.toFixed(2)} vs computed sum=$${(totals.holdingsUSD + totals.cashUSD).toFixed(2)} (diff=$${(tvBrokerTotal - totals.holdingsUSD - totals.cashUSD).toFixed(2)})`);
+        totals.totalUSD = tvBrokerTotal;
+        totals.totalCAD = tvBrokerTotal * exchangeRate;
+    }
+
     fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(enriched, null, 2));
     fs.writeFileSync(PORTFOLIO_SNAPSHOT_FILE, JSON.stringify({ totals }, null, 2));
     console.log(`[Snapshot] Wrote totals — totalUSD=$${totals.totalUSD.toFixed(2)} totalCAD=$${totals.totalCAD.toFixed(2)} rate=${totals.exchangeRate}`);
