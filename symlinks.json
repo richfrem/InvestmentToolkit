@@ -546,6 +546,48 @@
       "dst": "plugins/tradingview/skills/author-pine-script/scripts/pine_source_reader.py",
       "strategy": "symlink",
       "description": "ADR-003: author-pine-script review loop symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/dcf_scenarios.py",
+      "dst": "investment_screener/backend/py_services/dcf_scenarios.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/dcf_scenarios.py",
+      "dst": "plugins/stock-valuation/skills/stock_valuation/scripts/dcf_scenarios.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/fetch_financials.py",
+      "dst": "investment_screener/backend/py_services/fetch_financials.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/fetch_financials.py",
+      "dst": "plugins/stock-valuation/skills/stock_valuation/scripts/fetch_financials.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/validate_projection.py",
+      "dst": "plugins/stock-valuation/skills/stock_valuation/scripts/validate_projection.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/standardize_metrics.py",
+      "dst": "investment_screener/backend/py_services/standardize_metrics.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/standardize_metrics.py",
+      "dst": "plugins/stock-valuation/skills/stock_valuation/scripts/standardize_metrics.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

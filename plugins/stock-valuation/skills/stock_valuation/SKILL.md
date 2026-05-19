@@ -129,27 +129,19 @@ python3 investment_screener/backend/py_services/fetch_financials.py {TICKER} > /
 **If fetch fails** → invoke **FB-01** from `references/fallback-tree.md`. Do NOT hallucinate data.
 
 ## Step 2: Build Snapshot Object + Seed analyticsLog
-Read `/tmp/{TICKER}_raw.json` and extract:
-```json
-{
-  "price": <metrics.price>,
-  "currency": <metrics.currency>,
-  "shares": <metrics.shares_diluted>,
-  "revenue": <metrics.revenue>,
-  "lastActualPS": <metrics.last_actual_ps>,
-  "fiscalPeriod": "TTM",
-  "analystGrowthEstimate": <estimates.revenue_growth or null>,
-  "analystMarginEstimate": <estimates.profit_margin or null>
-}
+```bash
+# Standardize metrics using the canonical calculation engine
+cat /tmp/{TICKER}_raw.json | python3 plugins/stock-valuation/skills/stock_valuation/scripts/standardize_metrics.py > /tmp/{TICKER}_metrics.json
 ```
+Read `/tmp/{TICKER}_metrics.json` and use the `snapshot` and `ratios` blocks. 
 
-> ⚠️ **Always use `metrics.shares_diluted`** (not `metrics.shares_outstanding`) for all EPS calculations. The script now derives effective diluted share count from `net_income / eps` to handle multi-class share structures (e.g. GOOG returns 5.4B Class C shares vs 12.1B actual diluted — a 2.2× EPS error if wrong field used). Note any discrepancy >15% in `dataQualityFlags`.
+> ⚠️ **The Canonical Calculation Policy**: Never compute P/E, P/S, CAGR, or Share Count derivations inline. Use the outputs from `standardize_metrics.py` to ensure consistency with the web dashboard.
 
 **Also, begin building `analyticsLog` now** — record these facts as you read them so nothing is lost:
-- `shareCountMethod`: which field used and why; note any API vs mktcap-implied discrepancy
-- `analystInputs`: capture Y1/Y2 revenue estimates, Y1/Y2 growth %, blended consensus, target mean, analyst count
-- `historicalRevenue` + `historicalNetMargins` + `historicalEPS`: copy raw arrays from `financials.*` for durable record
-- `dataQualityFlags`: begin flagging anomalies immediately (outlier years, declining EPS estimates, zero-gap years, etc.)
+- `shareCountMethod`: copy from `snapshot.share_source` in the metrics JSON.
+- `analystInputs`: capture Y1/Y2 revenue estimates, Y1/Y2 growth %, blended consensus, target mean, analyst count from the raw JSON.
+- `historicalRevenue` + `historicalNetMargins` + `historicalEPS`: copy raw arrays from `financials.*` for durable record.
+- `dataQualityFlags`: begin flagging anomalies immediately (outlier years, declining EPS estimates, zero-gap years, etc.).
 
 This is a **live working document** — add to it throughout Steps 2 and 3, not just at the end.
 
