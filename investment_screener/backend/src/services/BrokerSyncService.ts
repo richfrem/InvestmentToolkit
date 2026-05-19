@@ -170,7 +170,7 @@ export function mergeIntoPortfolio(tvSnapshot: TVSnapshot, existing: any[]): {
                 symbol,
                 shares:      tv.quantity,
                 book_price:  tv.avgFillPrice,
-                price:       tv.avgFillPrice,  // seed from fill price until next price refresh
+                price:       null,  // no live price yet — heatmap/quotes will fetch from yfinance
                 accountType: tv.accountType,
             });
         } else {
