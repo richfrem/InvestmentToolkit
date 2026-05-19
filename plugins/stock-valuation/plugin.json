@@ -15,6 +15,16 @@
             "name": "stock_research",
             "path": "skills/stock-research/SKILL.md",
             "trigger": "/research-stock"
+        },
+        {
+            "name": "forward_valuation_challenge",
+            "path": "skills/forward-valuation-challenge/SKILL.md",
+            "trigger": "/forward-valuation-challenge"
+        },
+        {
+            "name": "valuation_math_validation",
+            "path": "skills/valuation-math-validation/SKILL.md",
+            "trigger": "/valuation-math-validation"
         }
     ],
     "commands": [

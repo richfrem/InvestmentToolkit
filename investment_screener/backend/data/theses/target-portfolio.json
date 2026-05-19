@@ -328,7 +328,7 @@
       "targetWeight": 5.1657,
       "role": "speculative",
       "thesisForInclusion": "Bloom Energy fuel cells.",
-      "agentRationale": "2026-05-13 Grok sweep: Oracle 2.8GW deal (1.2GW contracted, April 2026 equity warrant alignment confirmed). SA LP large position intact — no post-Q4 trim reported. Target bumped 4.95% → 5.23% (post-normalize). DCF: SELL -63.5%; Gate 8 waived (allowlist). SA 13F expected 2026-05-14/15.",
+      "agentRationale": "2026-05-19: Forward-Looking Valuation Challenge & Math Validation applied. Accounted for the Oracle 2.8GW, Brookfield, and AEP deals ($20B backlog) and clean energy/AI P/E re-rating. Standardized on outstanding share count. Intrinsic fair value: $158.55 vs $258.71 price (SELL, -38.7% upside).",
       "shares": 8
     },
     {
@@ -447,7 +447,7 @@
       "subStrategyId": "sa-asi-race",
       "pillarId": "datainfra",
       "thesisForInclusion": "NAND storage infrastructure play.",
-      "agentRationale": "DCF: BUY | FV $32 vs $25 price | +26.4% upside.",
+      "agentRationale": "2026-05-19: Agentic Swarm Memory Thesis applied. Spawning parallel sub-agents multiplies active KV context caching & state log persistence requirements. De-risked Bear to 15% & raised Bull to 35%. Reconciled intrinsic value: $1,982.18 vs $1,333.01 price (BUY, +48.7% upside).",
       "shares": 1.5
     },
     {
