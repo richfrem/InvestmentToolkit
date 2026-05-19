@@ -1,13 +1,13 @@
-# Investment Thesis v9.4
+# Investment Thesis v9.5
 
 | Field | Value |
 | :--- | :--- |
 | **Current Theme** | ASI Buildout (Primary) + Sovereign Finance (Secondary) |
 | **Edition** | "The Compute Sovereign" |
 | **Status** | ACTIVE |
-| **Last Updated** | 2026-05-14 |
+| **Last Updated** | 2026-05-18 |
 | **Portfolio Data** | Live — synced from Questrade via app or `python3 investment_screener/backend/src/QuestradeDataEngine.py` |
-| **Latest Review** | `PortfolioAnalysis/strategic-reviews/2026-05-05-PortfolioAnalysisRecommendations.md` |
+| **Latest Review** | SA LP Q1 2026 13F filed 2026-05-18 — **BARBELL STRATEGY**: ~62% semiconductor puts (SHORT chip sector) + ~25% AI infrastructure equity longs (BE, CRWV, IREN, CORZ, APLD). Portfolio nearly tripled $5.5B→$13.7B. Full filing: `investment_screener/backend/data/13f/000204572426000008.json` |
 
 > **Living document.** The framework and sub-strategies persist across versions. Holdings, weights, and conviction details evolve. Only update this doc when conviction, structure, or macro narrative materially shifts.
 
@@ -17,6 +17,7 @@
 
 | Version | Date | Edition | Key Change |
 | :--- | :--- | :--- | :--- |
+| 9.5 | 2026-05-18 | The Compute Sovereign | SA LP Q1 2026 13F filed: **MAJOR SIGNAL SHIFT** — portfolio nearly tripled ($5.5B→$13.7B). Barbell strategy: ~62% puts on semiconductor sector (SMH $2.04B, NVDA $1.57B, ORCL $1.07B, AVGO $1.01B, AMD $969M, MU $584M, TSM $535M, ASML $494M, INTC $159M) + ~25% AI infrastructure equity longs (BE $878M #1 long, CRWV $697M, IREN $401M, CORZ $389M, APLD $320M). SNDK: $1.11B total ($724M shares + $388M calls — NOT puts). Key Validators updated. Exchange rate fallback corrected (1.0→1.38). |
 | 9.4 | 2026-05-13 | The Compute Sovereign | Grok sweep: PSIX 0.5%→1.71% (user doubled on 40% earnings selloff; SA LP intact; H2 ramp thesis); BE 4.95%→5.23% (Oracle 2.8GW confirmed + equity warrants); NBIS 2.55%→2.85% (AI cloud momentum); IREN 1.90%→2.09% (NVIDIA deal); INTC trimmed 8.19%→7.81% (Q1 beat, still DCF SELL); IONQ catalyst: Q1 +755% YoY + SkyWater merger shareholder approval. SA LP 13F expected 2026-05-14/15. |
 | 9.3 | 2026-05-08 | The Compute Sovereign | IREN MAINTAIN→ACCUMULATE: NVIDIA $3.4B 5-year AI cloud contract + 5GW partnership; COIN Q1 miss (-$394M GAAP loss) — FV $185, MAINTAIN confirmed. IREN DCF snapshot stale — fresh eval warranted. |
 | 9.2 | 2026-05-07 | The Compute Sovereign | Exit reversals: COHR/EQT/IREN returned to MAINTAIN (~1% each) on fresh AI tailwinds; NVDA target reduced 7.8%→3% (conviction trim); COIN SELL→MAINTAIN (FV $162→$193, subscription/services maturation); 7 catalyst updates: INTC/AMD/MSFT earnings beats, BE/CORZ major contracts, OKLO NRC regulatory, CRWV RPO $99.4B backlog. |
@@ -61,7 +62,9 @@ Both layers derive from the same root conviction. They are not separate theses.
 
 **Thesis Breaker:** US-China technological de-escalation removes national security urgency for sovereign compute. Algorithmic efficiency breakthrough (Chinchilla-scale) collapses compute demand. Room-temperature superconductors eliminate cooling bottlenecks.
 
-**Key Validators:** Aschenbrenner SA LP 13F positions (Q4 2025: INTC $746M calls, CRWV $1.21B). Pentagon AI executive orders. Hyperscaler capex reports. IEA data centre power demand forecasts.
+**Key Validators:** Aschenbrenner SA LP 13F positions — Q1 2026 (filed 2026-05-18): **BARBELL SHIFT** — portfolio tripled to $13.7B. SA LP is now net SHORT the chip sector via massive puts (SMH $2.04B 14.94%, NVDA $1.57B 11.47%, ORCL $1.07B 7.84%, AVGO $1.01B 7.36%, AMD $969M 7.09%, MU $584M 4.27%, TSM $535M 3.91%, ASML $494M 3.61%, INTC $159M 1.16%) and net LONG AI infrastructure equity (BE $878M #1 long, CRWV $697M, IREN $401M, CORZ $389M, APLD $320M). SNDK $1.11B is equity long (shares + calls, NOT puts). Q4 2025 reference: INTC $746M calls, CRWV $1.21B. Pentagon AI executive orders. Hyperscaler capex reports. IEA data centre power demand forecasts.
+
+> ⚠️ **SA LP Divergence Signal (Q1 2026):** SA LP holds puts against NVDA, AMD, INTC, AVGO, MU, TSM, and ASML — all chips in this thesis. Their longs (BE, IREN, CORZ, APLD, CRWV) align with our AI infrastructure sub-strategy. Interpretation: SA LP is NOT bearish on AI buildout — they are bearish on near-term chip sector valuations while maintaining maximum conviction in the physical infrastructure layer. This is a valuation hedge, not a thesis reversal. INTC puts ($159M) alongside their prior INTC calls ($746M Q4) suggests they see valuation risk even in sovereign foundry plays at current prices.
 
 ---
 
