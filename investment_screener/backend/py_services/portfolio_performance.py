@@ -42,7 +42,8 @@ def main():
         sys.exit(1)
 
     with open(sys.argv[1]) as f:
-        portfolio = json.load(f)
+        raw = json.load(f)
+    portfolio = raw if isinstance(raw, list) else raw.get("holdings", [])
 
     equity_positions = [
         p for p in portfolio
