@@ -162,8 +162,12 @@ This is a **live working document** — add to it throughout Steps 2 and 3, not 
 
 Use `references/analysis_prompt.md` for full methodology. Key constraints for choosing parameters:
 
-1. **Weights**: `bear.weight + base.weight + bull.weight` MUST equal **1.0** (±0.01)
-2. **Growth ordering**: `bear.growthRate < base.growthRate < bull.growthRate`
+1. **Forward Run-Rate Anchoring**: For stocks with massive committed but unrealized growth (e.g. data center buildouts, contracted backlog), do NOT anchor `base.growthRate` to trailing revenue (TTM). Instead:
+   - Identify the "Locked-In" project value (e.g. $1B GPU cluster deployment).
+   - Use the `optionalityAdjustment` field in the scenario JSON to represent the terminal value of these projects.
+   - Set growth rates based on the *execution of the backlog*, not historical performance.
+2. **Weights**: `bear.weight + base.weight + bull.weight` MUST equal **1.0** (±0.01)
+3. **Growth ordering**: `bear.growthRate < base.growthRate < bull.growthRate`
 3. **Price ordering**: `bear.scenarioPrice < base.scenarioPrice < bull.scenarioPrice`
 4. **Margins**: Realistic (-100% to 100%); see sector benchmarks in `references/valuation-benchmarks.md`
 5. **Large caps** (>$50B revenue): growth >30% requires named catalyst citation
