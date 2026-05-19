@@ -70,6 +70,7 @@ interface StockRow {
 interface HeatmapResponse {
     stocks: StockRow[];
     total_value: number;
+    total_value_cad?: number;
     price_source?: string;
     refreshed_at?: string;
     exchange_rate?: number;
@@ -349,7 +350,7 @@ export default function PortfolioTable() {
                 };
             });
 
-            setData({ stocks: stocksWithPct, total_value: heatmapData.total_value });
+            setData({ stocks: stocksWithPct, total_value: heatmapData.total_value, total_value_cad: heatmapData.total_value_cad });
             if (heatmapData.price_source) setPriceSource(heatmapData.price_source);
             if (heatmapData.refreshed_at) setLastRefreshedAt(new Date(heatmapData.refreshed_at));
             if (heatmapData.exchange_rate && heatmapData.exchange_rate > 0) setExchangeRate(heatmapData.exchange_rate);
@@ -435,7 +436,7 @@ export default function PortfolioTable() {
                         <span className="text-white text-sm font-bold">${Math.round(data.total_value).toLocaleString()}</span>
                         <span className="text-zinc-500 text-xs font-medium">USD</span>
                         <span className="text-zinc-600 text-xs">/</span>
-                        <span className="text-zinc-400 text-sm font-semibold">${Math.round(data.total_value * exchangeRate).toLocaleString()}</span>
+                        <span className="text-zinc-400 text-sm font-semibold">${(data.total_value_cad ?? Math.round(data.total_value * exchangeRate)).toLocaleString()}</span>
                         <span className="text-zinc-500 text-xs font-medium">CAD</span>
                     </div>
 
