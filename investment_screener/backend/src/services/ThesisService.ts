@@ -83,8 +83,8 @@ export class ThesisService {
     async getPortfolioItems(): Promise<any[]> {
         if (!fs.existsSync(PORTFOLIO_FILE)) return [];
         try {
-            const content = fs.readFileSync(PORTFOLIO_FILE, 'utf-8');
-            return JSON.parse(content) || [];
+            const raw = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+            return Array.isArray(raw) ? raw : (raw.holdings ?? []);
         } catch (e) {
             console.error(`[ThesisService] Error reading portfolio file:`, e);
             return [];
