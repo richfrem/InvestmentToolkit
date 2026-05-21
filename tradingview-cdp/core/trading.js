@@ -237,7 +237,8 @@ export async function getOrderDialogState() {
     if (!dialog) {
       // Try finding by the submit button "Buy N TICKER MARKET"
       var submitBtn = [...document.querySelectorAll('button')].find(function(b) {
-        return /^(Buy|Sell)\\s+\\d+/i.test(b.textContent.trim());
+        var txt = b.textContent.trim().replace(/[\\s\\xa0]+/g, ' ');
+        return /^(Buy|Sell)(?:[\\s\\xa0/]*\\d+|[\\s\\xa0]+)/i.test(txt);
       });
       if (submitBtn) dialog = submitBtn.closest('[class*="dialog"], [class*="panel"], [class*="widget"], [class*="entry"]') || submitBtn.parentElement;
     }
@@ -252,7 +253,8 @@ export async function getOrderDialogState() {
       return t.getAttribute('aria-selected') === 'true' || /active|selected/i.test(t.className);
     }).map(function(t) { return t.textContent.trim(); });
     var submitBtn2 = [...dialog.querySelectorAll('button')].find(function(b) {
-      return /^(Buy|Sell)\\s+\\d+/i.test(b.textContent.trim());
+      var txt = b.textContent.trim().replace(/[\\s\\xa0]+/g, ' ');
+      return /^(Buy|Sell)(?:[\\s\\xa0/]*\\d+|[\\s\\xa0]+)/i.test(txt);
     });
     var submitText = submitBtn2 ? submitBtn2.textContent.trim() : null;
     var ticker = dialog.textContent.match(/^([A-Z]{1,6})/)?.[1] || null;
@@ -296,7 +298,8 @@ export async function setShares(shares) {
 
     // Anchor search to the order dialog panel using the submit button
     var submitBtn = [...document.querySelectorAll('button')].find(function(b) {
-      return /^(Buy|Sell)\\s+/i.test(b.textContent.trim()) && b.offsetParent !== null;
+      var txt = b.textContent.trim().replace(/[\\s\\xa0]+/g, ' ');
+      return /^(Buy|Sell)(?:[\\s\\xa0/]*\\d+|[\\s\\xa0]+)/i.test(txt) && b.offsetParent !== null;
     });
     var root = submitBtn
       ? (submitBtn.closest('[class*="dialog"], [class*="entry"], [class*="panel"], [class*="widget"], [class*="order"]') || document)
@@ -344,7 +347,8 @@ export async function setLimitPrice(price) {
 
     // Anchor search to the order dialog panel using the submit button
     var submitBtn = [...document.querySelectorAll('button')].find(function(b) {
-      return /^(Buy|Sell)\\s+/i.test(b.textContent.trim()) && b.offsetParent !== null;
+      var txt = b.textContent.trim().replace(/[\\s\\xa0]+/g, ' ');
+      return /^(Buy|Sell)(?:[\\s\\xa0/]*\\d+|[\\s\\xa0]+)/i.test(txt) && b.offsetParent !== null;
     });
     var root = submitBtn
       ? (submitBtn.closest('[class*="dialog"], [class*="entry"], [class*="panel"], [class*="widget"], [class*="order"]') || document)
@@ -384,7 +388,8 @@ export async function submitOrder() {
   // Step 1: click the primary "Buy N TICKER MARKET" button
   const result = await evaluate(`(function() {
     var submitBtn = [...document.querySelectorAll('button')].find(function(b) {
-      return /^(Buy|Sell)\\s+/i.test(b.textContent.trim()) && b.offsetParent !== null;
+      var txt = b.textContent.trim().replace(/[\\s\\xa0]+/g, ' ');
+      return /^(Buy|Sell)(?:[\\s\\xa0/]*\\d+|[\\s\\xa0]+)/i.test(txt) && b.offsetParent !== null;
     });
     if (!submitBtn) return JSON.stringify({ error: 'Submit button not found. Is the order dialog open?' });
     var text = submitBtn.textContent.trim();
@@ -949,12 +954,17 @@ export async function modifyOrder({ orderId, ticker, action, newLimitPrice, newS
  * TV reuses the same order dialog for modifications; the button patterns are
  * the same as submitOrder() but also matches "Save", "Modify", "Apply".
  */
-export async function submitModify({ ticker, action, limitPrice } = {}) {
+export async function submitModify({ ticker, action, limitPrice, newPrice } = {}) {
+  // Support both newPrice and limitPrice parameters for backward compatibility
+  if (limitPrice === undefined && newPrice !== undefined) {
+    limitPrice = newPrice;
+  }
   // Primary button — same pattern as initial order form
   const result = await evaluate(`(function() {
     // Try "Buy/Sell N TICKER TYPE" pattern (TV reuses initial dialog)
     var btn = [...document.querySelectorAll('button')].find(function(b) {
-      return /^(Buy|Sell)\\s+/i.test(b.textContent.trim()) && b.offsetParent !== null;
+      var txt = b.textContent.trim().replace(/[\\s\\xa0]+/g, ' ');
+      return /^(Buy|Sell)(?:[\\s\\xa0/]*\\d+|[\\s\\xa0]+)/i.test(txt) && b.offsetParent !== null;
     });
     // Fallback: Save / Modify / Apply / Change / Confirm
     if (!btn) btn = [...document.querySelectorAll('button')].find(function(b) {

@@ -17,6 +17,7 @@ interface Holding {
 interface DiffEntry {
     ticker: string;
     name: string;
+    cusip: string;
     value_usd: number;
     shares: number;
     put_call: 'Put' | 'Call' | null;
@@ -65,9 +66,9 @@ function typeBadge(putCall: 'Put' | 'Call' | null) {
     return <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-emerald-900/60 text-emerald-300">LONG</span>;
 }
 
-function changeBadge(label: string, color: string) {
-    return <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${color}`}>{label}</span>;
-}
+// function changeBadge(label: string, color: string) {
+//     return <span className={`px-1.5 py-0.5 rounded text-xs font-bold ${color}`}>{label}</span>;
+// }
 
 export default function ThirteenFPage() {
     const [data, setData] = useState<Summary | null>(null);
