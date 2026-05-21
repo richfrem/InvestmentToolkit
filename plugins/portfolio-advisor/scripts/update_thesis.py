@@ -51,8 +51,8 @@ from pathlib import Path
 
 # ── Paths ──────────────────────────────────────────────────────────────────────
 REPO_ROOT = Path(__file__).resolve().parents[3]
-THESIS_PATH = REPO_ROOT / "investment_screener" / "backend" / "data" / "theses" / "target_portfolio.json"
-THESIS_DOC  = REPO_ROOT / "docs" / "InvestmentThesis" / "investment_thesis.md"
+THESIS_PATH = REPO_ROOT / "investment_screener" / "backend" / "data" / "theses" / "target-portfolio.json"
+THESIS_DOC  = REPO_ROOT / "plugins" / "portfolio-advisor" / "references" / "investment_thesis.md"
 
 VALID_ROLES = {"core", "hedge", "speculative", "reserve"}
 
@@ -116,10 +116,10 @@ def print_diff(before: dict, after: dict) -> None:
         changes = []
         if bh.get("targetWeight") != h["targetWeight"]:
             changes.append(f"weight {bh.get('targetWeight', '—')} → {h['targetWeight']} %")
-        if bh.get("pillarId") != h["pillarId"]:
-            changes.append(f"pillar {bh.get('pillarId', '—')} → {h['pillarId']}")
-        if bh.get("role") != h["role"]:
-            changes.append(f"role {bh.get('role', '—')} → {h['role']}")
+        if bh.get("pillarId") != h.get("pillarId"):
+            changes.append(f"pillar {bh.get('pillarId', '—')} → {h.get('pillarId', '—')}")
+        if bh.get("role") != h.get("role"):
+            changes.append(f"role {bh.get('role', '—')} → {h.get('role', '—')}")
         if bh.get("thesisForInclusion") != h.get("thesisForInclusion"):
             changes.append("thesis updated")
         if changes:
@@ -226,7 +226,7 @@ Patch file format (JSON):
         print(f"{'TICKER':<12} {'PILLAR':<22} {'ROLE':<14} {'TARGET':>7}")
         print("─" * 58)
         for h in sorted(data["holdings"], key=lambda x: -x["targetWeight"]):
-            print(f"  {h['ticker']:<10} {h['pillarId']:<22} {h.get('role','core'):<14} {h['targetWeight']:>6.2f}%")
+            print(f"  {h['ticker']:<10} {h.get('pillarId', 'other'):<22} {h.get('role','core'):<14} {h['targetWeight']:>6.2f}%")
         print()
         return
 

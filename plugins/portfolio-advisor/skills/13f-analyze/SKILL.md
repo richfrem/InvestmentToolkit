@@ -170,6 +170,7 @@ python3 scripts/update_targets.py \
 # Generate review JSON and verify
 python3 scripts/generate_review_json.py
 python3 scripts/verify_refresh.py
+python3 investment_screener/backend/py_services/verify_thesis_sync.py
 ```
 
 ---
@@ -185,6 +186,7 @@ Print summary:
 ✅ {N} targets updated  (Investment Thesis v{version})
 ✅ agentRationale updated for {N} tickers
 ✅ verify_refresh.py: All checks passed
+✅ verify_thesis_sync.py: All synchronization checks passed
 
 Changes applied:
   VST    2.1% → 0.0%   EXIT   (SA closed)
@@ -204,7 +206,8 @@ Deferred (confirm required):
 2. **SA calls ≠ equity signal** — distinguish options vs common stock positions
 3. **Never blindly follow SA** — if your thesis contradicts SA, flag as CONFLICT, not auto-apply
 4. **Always update agentRationale** — future sessions need to know why targets changed
-5. **Run verify_refresh.py** — final gate before reporting done
+5. **Run verify_refresh.py and verify_thesis_sync.py** — final gates before reporting done
+6. **Always verify synchronization** — never leave target-portfolio.json, investment_thesis.md, or projections/ out of sync
 
 ---
 
