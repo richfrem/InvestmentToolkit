@@ -81,4 +81,15 @@ describe('buildPortfolioSnapshot', () => {
         const result = buildPortfolioSnapshot(baseHoldings, snapshotEmpty, exchangeRate);
         expect(result.totals.cashUSD).to.equal(0);
     });
+
+    it('falls back to USD_CASH entry in holdings when TV snapshot has no cash or is empty', () => {
+        const holdingsWithCash = [
+            ...baseHoldings,
+            { symbol: 'USD_CASH', shares: 5261.52, price: 1 }
+        ];
+        const snapshotEmpty = { snapshots: [] };
+        const result = buildPortfolioSnapshot(holdingsWithCash, snapshotEmpty, exchangeRate);
+        expect(result.totals.cashUSD).to.equal(5261.52);
+        expect(result.totals.totalUSD).to.equal(2500 + 5261.52);
+    });
 });

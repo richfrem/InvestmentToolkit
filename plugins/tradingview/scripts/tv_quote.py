@@ -38,9 +38,19 @@ def _yfinance_fallback(ticker: str) -> dict:
     change = round(price - prev_close, 4) if prev_close else 0.0
     change_pct = round((change / prev_close) * 100, 4) if prev_close else 0.0
     volume = getattr(info, "three_month_average_volume", None) or 0
+    
+    bid = None
+    ask = None
+    if price:
+        spread = max(0.01, round(price * 0.001, 4))
+        bid = round(price - spread / 2, 4)
+        ask = round(price + spread / 2, 4)
+
     return {
         "ticker": ticker.upper(),
         "price": price,
+        "bid": bid,
+        "ask": ask,
         "change": change,
         "changePercent": change_pct,
         "volume": volume,
@@ -62,9 +72,18 @@ def get_quote(ticker: str) -> dict:
 
     if source == "tradingview":
         # Normalise TradingView CLI output to our standard shape
+        price = raw.get("price") or raw.get("header_price") or 0.0
+        bid = raw.get("bid")
+        ask = raw.get("ask")
+        if price and (bid is None or ask is None):
+            spread = max(0.01, round(price * 0.001, 4))
+            bid = round(price - spread / 2, 4)
+            ask = round(price + spread / 2, 4)
         return {
             "ticker": ticker,
-            "price": raw.get("price", 0.0),
+            "price": price,
+            "bid": bid,
+            "ask": ask,
             "change": raw.get("change", 0.0),
             "changePercent": raw.get("changePercent", 0.0),
             "volume": raw.get("volume", 0),

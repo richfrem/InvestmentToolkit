@@ -20,6 +20,7 @@ import {
     fetchPortfolioSummary,
     fetchPortfolioPerformance,
     fetchStrategyAllocation,
+    syncAndRefreshPortfolio,
     type PortfolioSummary,
     type PortfolioPerformance,
     type StrategyAllocation,
@@ -86,7 +87,7 @@ export default function PortfolioSummaryPage() {
         setAllocLoading(true);
         setPerfLoading(true);
         fetchPortfolioSummary()
-            .then(d => { setSummary(d); setLastRefreshedAt(new Date()); setPriceSource(d.price_source ?? null); })
+            .then(d => { setSummary(d); setLastRefreshedAt(new Date(d.lastUpdated)); setPriceSource(d.price_source ?? null); })
             .catch(err => setError(err.message || 'Failed to load portfolio summary'))
             .finally(() => setLoading(false));
         fetchStrategyAllocation()
@@ -102,14 +103,25 @@ export default function PortfolioSummaryPage() {
     async function syncAndRefresh() {
         setSyncing(true);
         try {
-            await fetch('/api/portfolio/sync-tv/apply', { method: 'POST' });
-        } catch { /* TV not available */ }
-        setSyncing(false);
-        loadAll();
-        window.dispatchEvent(new CustomEvent('portfolio-synced'));
+            await syncAndRefreshPortfolio();
+        } catch (e) {
+            console.error('Unified sync failed', e);
+        } finally {
+            setSyncing(false);
+            loadAll();
+            window.dispatchEvent(new CustomEvent('portfolio-synced'));
+        }
     }
 
-    useEffect(() => { loadAll(); }, []);
+    useEffect(() => {
+        loadAll();
+
+        const handleSyncEvent = () => {
+            loadAll();
+        };
+        window.addEventListener('portfolio-synced', handleSyncEvent);
+        return () => window.removeEventListener('portfolio-synced', handleSyncEvent);
+    }, []);
 
     if (loading) {
         return (

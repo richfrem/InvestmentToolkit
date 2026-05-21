@@ -17,7 +17,7 @@
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchAllProjections } from '../services/api';
+import { fetchAllProjections, syncAndRefreshPortfolio } from '../services/api';
 import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { PriceSourceBadge } from './PriceSourceBadge';
 import { TradeButtons } from './TradeButtons';
@@ -257,9 +257,13 @@ export default function PortfolioTable() {
         setLoading(true);
         setError(null);
         try {
-            await fetch('/api/portfolio/sync-tv/apply', { method: 'POST' });
-        } catch { /* TV not available — fall through to regular load */ }
-        await fetchData();
+            await syncAndRefreshPortfolio();
+        } catch (e) {
+            console.error('Unified sync failed', e);
+        } finally {
+            await fetchData();
+            window.dispatchEvent(new CustomEvent('portfolio-synced'));
+        }
     }
 
     async function fetchData() {
@@ -287,7 +291,7 @@ export default function PortfolioTable() {
 
             if (!heatmapRes.ok) throw new Error('Failed to fetch heatmap data');
             const weightsMap: Record<string, number> = weightsRes.ok ? await weightsRes.json() : {};
-            const heatmapData = await heatmapRes.json() as { stocks: StockRow[]; total_value: number; price_source?: string; refreshed_at?: string };
+            const heatmapData = await heatmapRes.json() as HeatmapResponse;
 
             let strategyMap: Record<string, string> = {};
             if (thesisRes?.ok) {

@@ -12,7 +12,7 @@ import { useState, useEffect } from 'react';
 import { Settings, History, Grid3X3, BarChart3, Search, RefreshCcw, TableProperties, PieChart, ScrollText, FileText } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useRecentTickers } from '../hooks/useRecentTickers';
-import { syncPortfolio, fetchSyncStatus } from '../services/api';
+import { syncAndRefreshPortfolio, fetchSyncStatus } from '../services/api';
 
 const NAV_ITEMS = [
     { name: 'Heatmap',          icon: Grid3X3,        path: '/' },
@@ -32,19 +32,26 @@ export default function Sidebar() {
     const [lastSync, setLastSync] = useState<string | null>(null);
 
     useEffect(() => {
-        fetchSyncStatus()
-            .then(({ lastSync }) => setLastSync(lastSync))
-            .catch(() => {});
+        const updateSyncTime = () => {
+            fetchSyncStatus()
+                .then(({ lastSync }) => setLastSync(lastSync))
+                .catch(() => {});
+        };
+
+        updateSyncTime();
+
+        window.addEventListener('portfolio-synced', updateSyncTime);
+        return () => window.removeEventListener('portfolio-synced', updateSyncTime);
     }, []);
 
     const handleSync = async () => {
         setIsSyncing(true);
         setSyncFeedback(null);
         try {
-            const result = await syncPortfolio();
+            const result = await syncAndRefreshPortfolio();
             const { lastSync: ts } = await fetchSyncStatus();
             setLastSync(ts);
-            setSyncFeedback((result as any).tvAvailable === false ? 'No TV' : 'Synced');
+            setSyncFeedback(result.success ? 'Synced' : 'Failed');
         } catch {
             setSyncFeedback('Failed');
         } finally {
