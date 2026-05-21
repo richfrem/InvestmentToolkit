@@ -34,6 +34,7 @@ export interface StockData {
         beta: number;
         revenue: number;
         shares_outstanding: number;
+        shares_diluted?: number;
         peg_ratio?: number;
         revenue_growth?: number;
         profit_margin?: number;
@@ -237,6 +238,39 @@ export const syncPortfolio = async (): Promise<{ success: boolean; dataSource: s
         throw new Error(data.details || data.error || 'Sync failed');
     }
     return data;
+};
+
+export const refreshPrices = async (): Promise<{ success: boolean; updated: number; heatmap: any }> => {
+    const response = await fetch('/api/portfolio/refresh-prices', {
+        method: 'POST',
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.details || data.error || 'Price refresh failed');
+    }
+    return data;
+};
+
+export const syncAndRefreshPortfolio = async (): Promise<{ success: boolean; dataSource: string; message: string }> => {
+    let syncResult: { success: boolean; dataSource: string; message: string } | null = null;
+    try {
+        syncResult = await syncPortfolio();
+    } catch (e) {
+        console.warn('TradingView CDP sync failed or not available, proceeding with price refresh', e);
+    }
+
+    let refreshResult: { success: boolean; updated: number; heatmap: any } | null = null;
+    try {
+        refreshResult = await refreshPrices();
+    } catch (e) {
+        console.warn('Yahoo price refresh failed', e);
+    }
+
+    return {
+        success: (syncResult?.success || refreshResult?.success) ?? false,
+        dataSource: syncResult?.dataSource ?? 'questrade',
+        message: `Sync completed (TV CDP: ${syncResult?.success ? 'Success' : 'Failed/Unavailable'}, Prices: ${refreshResult?.success ? 'Success' : 'Failed'})`
+    };
 };
 
 export const seedQuestradeToken = async (refreshToken: string): Promise<{ success: boolean; message: string }> => {
@@ -604,6 +638,7 @@ export interface MarketQuote {
     volume: number | null;
     currency: string;
     marketState: string | null;
+    source?: string;
     error?: string;
 }
 
@@ -660,3 +695,10 @@ export const syncTradeLogFromTV = async (): Promise<{ success: boolean; tvOrders
     const res = await fetch('/api/trading/log/sync-from-tv', { method: 'POST' });
     return res.json();
 };
+
+export const fetchTVQuote = async (ticker: string): Promise<MarketQuote> => {
+    const res = await fetch(`/api/trading/tv-quote?ticker=${ticker}`);
+    if (!res.ok) throw new Error('Failed to fetch TradingView quote');
+    return res.json();
+};
+

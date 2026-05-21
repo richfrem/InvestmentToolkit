@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, CheckCircle, AlertTriangle, Loader2, ShieldCheck, Clock, Wifi, TrendingUp, RefreshCw } from 'lucide-react';
-import { runTradePreflight, runTradeExecute, runTradeSubmit, logTrade, fetchMarketQuotes, type MarketQuote } from '../services/api';
+import { runTradePreflight, runTradeExecute, runTradeSubmit, logTrade, fetchMarketQuotes, fetchTVQuote, type MarketQuote } from '../services/api';
 
 type ModalStep =
     | 'configure'
@@ -87,15 +87,28 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
     const [, setScreenshot] = useState<string | null>(null);
     const [submitResult, setSubmitResult] = useState<any>(null);
     const [executeError, setExecuteError] = useState<string | null>(null);
-    const [, setSubmitError] = useState<string | null>(null);
+    const [submitError, setSubmitError] = useState<string | null>(null);
     const [quoteRefreshing, setQuoteRefreshing] = useState(false);
 
     const refreshQuote = async () => {
         setQuoteRefreshing(true);
         try {
-            const quotesMap = await fetchMarketQuotes([ticker]);
-            if (quotesMap?.[ticker]) {
-                const q = quotesMap[ticker];
+            let q: MarketQuote | null = null;
+            if (provenance?.tvConnected) {
+                try {
+                    q = await fetchTVQuote(ticker);
+                } catch {
+                    // Fall back to batch quotes (yfinance) on any TV failure
+                    q = null;
+                }
+            }
+            
+            if (!q) {
+                const quotesMap = await fetchMarketQuotes([ticker]);
+                q = quotesMap?.[ticker] ?? null;
+            }
+
+            if (q) {
                 setQuote(q);
                 const defaultPrice = action === 'sell' ? q.bid : q.ask;
                 if (defaultPrice != null) {
@@ -362,7 +375,18 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
 
                                 {/* Bid/Ask bar — active side highlighted based on action */}
                                 <div className="flex items-center justify-between mb-1">
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Bid / Ask</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Bid / Ask</span>
+                                        {quote?.source && (
+                                            <span className={`text-[9px] font-black px-1.5 py-0.5 rounded font-mono ${
+                                                quote.source === 'tradingview'
+                                                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                                    : 'bg-slate-800 text-slate-400 border border-slate-700'
+                                            }`}>
+                                                {quote.source === 'tradingview' ? 'TV LIVE' : 'YFINANCE'}
+                                            </span>
+                                        )}
+                                    </div>
                                     <button onClick={refreshQuote} disabled={quoteRefreshing}
                                         className="flex items-center gap-1 text-[10px] text-slate-500 hover:text-slate-300 transition-colors disabled:opacity-40">
                                         <RefreshCw size={10} className={quoteRefreshing ? 'animate-spin' : ''} />
