@@ -259,6 +259,9 @@ python3 plugins/portfolio-advisor/scripts/update_targets.py \
 python3 plugins/portfolio-advisor/scripts/portfolio_action.py --all \
   --portfolio investment_screener/backend/data/portfolio.json \
   --target investment_screener/backend/data/theses/target-portfolio.json
+
+# Run automated sync verification
+python3 investment_screener/backend/py_services/verify_thesis_sync.py
 ```
 
 The `--blueprint` flag runs `generate_portfolio_blueprint.py --write` which updates **all** table formats in `investment_thesis.md` (Section IV + all enriched early-section tables). No separate blueprint step is needed.
@@ -275,6 +278,7 @@ The `--blueprint` flag runs `generate_portfolio_blueprint.py --write` which upda
 ✅ {N} targets updated in target-portfolio.json (v{new_version})
 ✅ Actions regenerated via portfolio_action.py
 ✅ investment_thesis.md rebuilt
+✅ verify_thesis_sync.py: All synchronization checks passed
 
 Session notes:
   • {N_agreed} agreed with recommendation
@@ -319,4 +323,5 @@ At session end:
 - update_thesis.py dry run:            [✅ Passed / ❌ Failed]
 - target-portfolio.json written:       [✅ v{N+1} / ❌ Skipped]
 - investment_thesis.md rebuilt:        [✅ / ❌]
+- verify_thesis_sync.py sync check:    [✅ Passed / ❌ Failed]
 ```
