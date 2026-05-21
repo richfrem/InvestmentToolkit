@@ -10,6 +10,7 @@ const router = express.Router();
 const REPO_ROOT = path.resolve(__dirname, '../../../..');
 const PLACE_ORDER_PY = path.join(REPO_ROOT, 'investment_screener/backend/py_services/place_order.py');
 const GET_ORDERS_PY  = path.join(REPO_ROOT, 'plugins/tradingview/scripts/tv_get_orders.py');
+const TV_QUOTE_PY    = path.join(REPO_ROOT, 'plugins/tradingview/scripts/tv_quote.py');
 
 // ── Session State Machine ────────────────────────────────────────────────────
 
@@ -452,6 +453,40 @@ router.get('/audit/today', (_req, res) => {
       .map(l => { try { return JSON.parse(l); } catch { return null; } })
       .filter(Boolean);
     res.json({ events, date: today });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── GET /api/trading/tv-quote ────────────────────────────────────────────────
+
+router.get('/tv-quote', async (req, res) => {
+  const ticker = String(req.query.ticker ?? '').trim().toUpperCase();
+  if (!ticker) {
+    res.status(400).json({ error: 'ticker is required' }); return;
+  }
+
+  try {
+    const pyResult = await new Promise<PyResult>(resolve => {
+      const proc = spawn('python3', [TV_QUOTE_PY, ticker, '--json'], { cwd: REPO_ROOT });
+      let stdout = '';
+      let stderr = '';
+      proc.stdout.on('data', (d: Buffer) => { stdout += d.toString(); });
+      proc.stderr.on('data', (d: Buffer) => { stderr += d.toString(); });
+      const timer = setTimeout(() => {
+        proc.kill('SIGTERM');
+        resolve({ stdout, stderr: stderr + '\n[TIMEOUT]', exitCode: -1 });
+      }, 15_000);
+      proc.on('close', code => { clearTimeout(timer); resolve({ stdout, stderr, exitCode: code ?? -1 }); });
+    });
+
+    const quoteData = extractJson(pyResult.stdout);
+    if (!quoteData || pyResult.exitCode !== 0) {
+      res.status(502).json({ error: 'Could not read quote from TradingView', stderr: pyResult.stderr.slice(0, 300) });
+      return;
+    }
+
+    res.json(quoteData);
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
