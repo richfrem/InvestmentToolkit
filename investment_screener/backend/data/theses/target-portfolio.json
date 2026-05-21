@@ -563,6 +563,16 @@
       "thesisForInclusion": "",
       "agentRationale": "Added automatically on 2026-05-18.",
       "shares": 24
+    },
+    {
+      "ticker": "CBRS",
+      "name": "Cerebras Systems Inc.",
+      "pillarId": "compute",
+      "targetWeight": 0.0,
+      "role": "core",
+      "subStrategyId": "sa-asi-race",
+      "thesisForInclusion": "Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference.",
+      "agentRationale": "INITIATE post-IPO. Weighted fair value $342.80 vs $287.30 current price (+19.3% upside), rating the stock a BUY. Outstanding inference speeds (2,500 tokens/sec on Llama 3) provide a formidable technological moat. OpenAI ($20B backlog) and AWS Bedrock agreements validate commercial scaling, though lockup expiration in November 2026 and G42 revenue concentration (86%) represent structural near-term risks. Model uses Class A float shares count of 34.5M."
     }
   ],
   "globalSettings": {
