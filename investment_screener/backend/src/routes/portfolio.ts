@@ -221,6 +221,14 @@ router.get('/summary', async (_req, res) => {
         }
         const totalBookValueCAD = totalBookValueUSD * liveUsdCadRate;
 
+        // Derive the actual server-side sync timestamp matching `/status` logic
+        const fromTotals = totals?.timestamp ?? null;
+        const fromHoldings = positions.reduce((latest: string, item: any) => {
+            if (!item.last_updated) return latest;
+            return !latest || new Date(item.last_updated) > new Date(latest) ? item.last_updated : latest;
+        }, '');
+        const lastUpdated = fromTotals ?? fromHoldings ?? new Date().toISOString();
+
         const ytdStartValueUSD = YTD_START_VALUE_CAD / JAN1_USD_CAD_RATE;
         res.json({
             positionCount: positions.length,
@@ -237,7 +245,7 @@ router.get('/summary', async (_req, res) => {
             unrealizedGainCAD: totalMarketValueCAD - totalBookValueCAD,
             unrealizedGainPctCAD: totalBookValueUSD > 0 ? ((totalMarketValueUSD - totalBookValueUSD) / totalBookValueUSD) * 100 : 0,
             liveUsdCadRate, jan1UsdCadRate: JAN1_USD_CAD_RATE,
-            lastUpdated: new Date().toISOString(),
+            lastUpdated,
             price_source: priceSource,
         });
     } catch (error) {

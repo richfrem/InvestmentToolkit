@@ -18,10 +18,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Save, RotateCcw, Info, X, AlertTriangle, Table2, SlidersHorizontal, ChevronUp, ChevronDown } from 'lucide-react';
-import { type StockData, type Scenario, type Projection } from '../services/api';
+import { type StockData, type Scenario, type Projection, type ValuationResult } from '../services/api';
 import { ProjectionsPanel } from './ProjectionsPanel';
 import { storage } from '../services/storage';
-import { HelpTrigger } from './HelpModal';
+// import { HelpTrigger } from './HelpModal';
 import { computeScenario } from '../utils/valuationMath';
 import { Sparkles, BrainCircuit, Loader2, FolderOpen } from 'lucide-react';
 import { AIAnalysisModal } from './AIAnalysisModal';
@@ -118,18 +118,18 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const growthRate = current.growthRate;
     const netMargin = current.netMargin;
     const peRatio = current.exitPE;
-    const qualityMultiplier = current.qualityMultiplier;
-    const shareChange = current.shareChange;
+    // const qualityMultiplier = current.qualityMultiplier;
+    // const shareChange = current.shareChange;
 
     const totalWeight = scenarios.bear.weight + scenarios.base.weight + scenarios.bull.weight;
-    const currentWeight = Math.round(current.weight * 100);
+    // const currentWeight = Math.round(current.weight * 100);
 
-    const setGrowthRate = useCallback((v: number) => updateCurrent({ growthRate: v }), [updateCurrent]);
-    const setNetMargin = useCallback((v: number) => updateCurrent({ netMargin: v }), [updateCurrent]);
-    const setPeRatio = useCallback((v: number) => updateCurrent({ exitPE: v }), [updateCurrent]);
-    const setQualityMultiplier = useCallback((v: number) => updateCurrent({ qualityMultiplier: v }), [updateCurrent]);
-    const setShareChange = useCallback((v: number) => updateCurrent({ shareChange: v }), [updateCurrent]);
-    const setWeight = useCallback((v: number) => updateCurrent({ weight: v / 100 }), [updateCurrent]);
+    // const setGrowthRate = useCallback((v: number) => updateCurrent({ growthRate: v }), [updateCurrent]);
+    // const setNetMargin = useCallback((v: number) => updateCurrent({ netMargin: v }), [updateCurrent]);
+    // const setPeRatio = useCallback((v: number) => updateCurrent({ exitPE: v }), [updateCurrent]);
+    // const setQualityMultiplier = useCallback((v: number) => updateCurrent({ qualityMultiplier: v }), [updateCurrent]);
+    // const setShareChange = useCallback((v: number) => updateCurrent({ shareChange: v }), [updateCurrent]);
+    // const setWeight = useCallback((v: number) => updateCurrent({ weight: v / 100 }), [updateCurrent]);
 
     // Data preferences
     const [growthBasis, setGrowthBasis] = useState<'current' | 'next'>('next');
@@ -138,8 +138,8 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     // --- Calculations ---
 
     const baseRevenue = stockData.metrics.revenue || 0;
-    const baseShares = stockData.metrics.shares_diluted > 0 
-        ? stockData.metrics.shares_diluted 
+    const baseShares = (stockData.metrics.shares_diluted ?? 0) > 0 
+        ? (stockData.metrics.shares_diluted ?? 0) 
         : (stockData.metrics.market_cap && stockData.price > 0 
             ? stockData.metrics.market_cap / stockData.price 
             : (stockData.metrics.shares_outstanding || 1));
@@ -163,14 +163,14 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const upside = stockData.price > 0 ? ((targetPrice - stockData.price) / stockData.price) * 100 : 0;
 
     // Helper used by Sensitivity Matrix (now using shared logic)
-    const calculatePrice = useCallback((g: number, pe: number) => {
-        const tempScenario = {
-            ...current,
-            growthRate: g,
-            exitPE: pe,
-        };
-        return computeScenario(stockData.metrics.revenue, stockData.metrics.market_cap / stockData.price, discountRate/100, timeHorizon, tempScenario).presentValue;
-    }, [stockData, discountRate, timeHorizon, current]);
+    // const calculatePrice = useCallback((g: number, pe: number) => {
+    //     const tempScenario = {
+    //         ...current,
+    //         growthRate: g,
+    //         exitPE: pe,
+    //     };
+    //     return computeScenario(stockData.metrics.revenue, stockData.metrics.market_cap / stockData.price, discountRate/100, timeHorizon, tempScenario).presentValue;
+    // }, [stockData, discountRate, timeHorizon, current]);
 
     // --- resetToYahoo ---
     const resetToYahoo = useCallback(() => {
@@ -492,22 +492,22 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     }, [aiResult, targetPrice]);
 
     // Memoized growth estimate display values
-    const currentYearGrowth = useMemo(() => {
-        const val = stockData.growth_estimates?.stockTrend['0y'];
-        if (val === undefined) return 'N/A';
-        return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
-    }, [stockData.growth_estimates]);
+    // const currentYearGrowth = useMemo(() => {
+    //     const val = stockData.growth_estimates?.stockTrend['0y'];
+    //     if (val === undefined) return 'N/A';
+    //     return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
+    // }, [stockData.growth_estimates]);
 
-    const nextYearGrowth = useMemo(() => {
-        const val = stockData.growth_estimates?.stockTrend['+1y'];
-        if (val === undefined) return 'N/A';
-        return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
-    }, [stockData.growth_estimates]);
+    // const nextYearGrowth = useMemo(() => {
+    //     const val = stockData.growth_estimates?.stockTrend['+1y'];
+    //     if (val === undefined) return 'N/A';
+    //     return (Math.abs(val) > 1 ? val : val * 100).toFixed(1) + '%';
+    // }, [stockData.growth_estimates]);
 
-    const ttmMarginDisplay = useMemo(() => {
-        const val = stockData.metrics?.profit_margin ?? 0;
-        return (Math.abs(val) > 1 ? val : val * 100).toFixed(1);
-    }, [stockData.metrics?.profit_margin]);
+    // const ttmMarginDisplay = useMemo(() => {
+    //     const val = stockData.metrics?.profit_margin ?? 0;
+    //     return (Math.abs(val) > 1 ? val : val * 100).toFixed(1);
+    // }, [stockData.metrics?.profit_margin]);
 
     return (
         <div className="flex flex-col h-full overflow-hidden relative p-1">

@@ -190,7 +190,7 @@ We use the **Exploration Workflow** (a modification of the orba/superpowers plug
 - Python deps tracked in root `requirements.in`
 - Sub-services inherit via `-r ../../requirements.in`
 - Always run `pip-compile requirements.in -o requirements.txt` after modifying `.in` files
-- The startup script installs from `requirements.txt` — new Python imports **must** be in `requirements.in` or the venv will be missing them at runtime
+- The startup script (`run_investment_toolkit.py`) installs from `requirements.txt` — new Python imports **must** be in `requirements.in` or the venv will be missing them at runtime
 
 ---
 
@@ -327,6 +327,7 @@ from tv_client import tv_call, TV_NODE_DIR, REPO_ROOT
 
 | File | Purpose |
 |------|---------|
+| `run_investment_toolkit.py` | Unified toolkit startup and orchestration script |
 | `GEMINI.md` | Primary context file for Gemini agents (this file) |
 | `.claude/CLAUDE.md` | Primary context file for Claude agents |
 | `.github/copilot-instructions.md` | Primary context for GitHub Copilot |

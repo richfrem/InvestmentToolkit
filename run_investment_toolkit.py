@@ -255,6 +255,11 @@ def main() -> None:
 
     # 4. Setup venv
     process_env = os.environ.copy()
+    
+    # Suppress third-party Node.js deprecation warnings (e.g. from Vite or ts-node-dev under Node 26)
+    process_env["NODE_OPTIONS"] = (process_env.get("NODE_OPTIONS", "") + " --no-deprecation").strip()
+    process_env["NODE_NO_WARNINGS"] = "1"
+    
     setup_virtual_env(os.path.join(ROOT_DIR, "venv"), process_env)
 
     # 5. Pre-flight: fix root-owned node_modules (caused by accidental sudo npm/rm)

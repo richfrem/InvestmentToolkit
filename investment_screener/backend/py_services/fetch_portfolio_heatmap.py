@@ -197,13 +197,10 @@ def fetch_portfolio_data(items: list) -> dict:
 
                 yf_price = info.get("currentPrice") or info.get("regularMarketPrice", 0)
                 prev_close = info.get("regularMarketPreviousClose", 0)
-                # Use TV-synced stored price when available (portfolio.json.price set on last TV sync).
-                # Fall back to yfinance only when no stored price exists.
-                if stored_price and stored_price > 0:
-                    current_price = stored_price
-                    used_stored_prices = True
-                else:
-                    current_price = yf_price
+                # Always use live yfinance price for display and change calculations.
+                # stored_price may equal book_price (avg fill cost seeded at TV sync) and must
+                # NOT be used as current market price — that would give wildly wrong 1D%.
+                current_price = yf_price if yf_price and yf_price > 0 else (stored_price or 0)
                 change_pct = ((current_price - prev_close) / prev_close * 100) if prev_close else 0
                 hist_changes = history.calc_changes(sym, current_price)
 
