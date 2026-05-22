@@ -1,0 +1,160 @@
+[
+  {
+    "ticker": "CBRS",
+    "id": "582fae2f-bb67-4221-a3f2-ef4fb1e6878b",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-21T14:42:33Z",
+    "updatedAt": "2026-05-21T14:42:33Z",
+    "name": "AI Deep Dive — CBRS — 2026-05-21",
+    "rationale": "Cerebras (CBRS) is a pioneer in wafer-scale AI processors, leveraging monolithic dinner-plate-sized chip designs to eliminate physical GPU interconnect and memory bandwidth bottlenecks. By packaging 44GB of ultra-fast SRAM on-chip, it achieves unprecedented inference speeds (2,100 to 2,500 tokens/sec on Llama 3) that outpace standard NVIDIA architectures by 15-20x. While customer concentration has historically been high, recent partnerships with OpenAI and AWS provide structural diversification. At $287.30, the stock offers a compelling entry point for high-conviction AI infrastructure exposure.",
+    "snapshot": {
+      "price": 287.3,
+      "currency": "USD",
+      "shares": 34500000,
+      "revenue": 509991000,
+      "lastActualPS": 123.72,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": null,
+      "analystMarginEstimate": null
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": 15,
+        "netMargin": 12,
+        "exitPE": 18,
+        "qualityMultiplier": 1,
+        "shareChange": 2,
+        "rationale": "High customer concentration remains unmitigated, custom silicon from hyperscalers and NVIDIA's next-gen Blackwell/Rubin architectures commoditize mid-tier inference, and yields on wafer scale engine remain low, leading to low base of 15% revenue CAGR and margins compressing to utility semiconductor levels (12%). Exit PE of 18 is close to industry standard conservative PE benchmark.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 1025.8,
+        "year5NetIncome": 123.1,
+        "year5EPS": 3.23,
+        "scenarioPrice": 36.12,
+        "risks": [
+          "Extreme customer concentration with G42/MBZUAI accounting for 86% of revenue",
+          "NVIDIA Blackwell/Rubin architectures and hyperscaler ASICs commoditize high-throughput inference",
+          "Low manufacturing yields of monolithic wafer-scale chips at TSMC limit gross margins"
+        ],
+        "year5Shares": 38.1,
+        "year5PriceUndiscounted": 58.17,
+        "presentValue": 36.12
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 35,
+        "netMargin": 25,
+        "exitPE": 30,
+        "qualityMultiplier": 1.1,
+        "shareChange": 1,
+        "rationale": "OpenAI and AWS partnerships successfully diversify the customer base. Wafer-Scale Engine design win momentum sustains in high-throughput enterprise and cloud inference deployments. Growth rates decelerate naturally from current TTM 76% to a 5-year CAGR of 35%, while net margin stabilizes at 25% (typical high-growth fabless semi). Exit PE of 30 reflects a modest premium above sector median of 25x, supported by structural switching costs.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 2286.8,
+        "year5NetIncome": 571.7,
+        "year5EPS": 15.77,
+        "scenarioPrice": 323.07,
+        "risks": [
+          "Warrant dilutive overhang (10% to OpenAI, 2.7M shares to AWS) dilutes common shareholders",
+          "Lockup expiry in November 2026 unleashes massive insider selling pressure",
+          "High R&D and Capex burn ($400M capex) requires ongoing capital injection if backlog delays"
+        ],
+        "year5Shares": 36.3,
+        "year5PriceUndiscounted": 520.31,
+        "presentValue": 323.07
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 45,
+        "netMargin": 35,
+        "exitPE": 40,
+        "qualityMultiplier": 1.15,
+        "shareChange": 0.5,
+        "rationale": "Cerebras becomes the absolute benchmark for trillion-parameter inference platforms. Monolithic wafer-scale integration creates a formidable technological moat with 21 PB/s memory bandwidth, lock-in via software ecosystem, and strategic partnerships. Growth sustains at 45% CAGR with best-in-class operating leverage driving 35% net margin. Quality multiplier of 1.15 is justified by rare pricing power and technological leadership in wafer-scale engineering.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 3268.9,
+        "year5NetIncome": 1144.1,
+        "year5EPS": 32.35,
+        "scenarioPrice": 923.88,
+        "risks": [
+          "TSMC wafer-scale packaging capacity constraints restrict aggregate volume shipments",
+          "CUDA developer lock-in prevents broad adoption by traditional enterprise dev teams"
+        ],
+        "year5Shares": 35.4,
+        "year5PriceUndiscounted": 1487.92,
+        "presentValue": 923.88
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "# Cerebras Systems (CBRS) — Deep-Dive Investment Thesis\n\nCerebras Systems Inc. represents one of the most radical architectural departures in the semiconductor industry since the advent of the GPU. By leveraging a single, monolithic, plate-sized silicon wafer (the Wafer-Scale Engine, or WSE), Cerebras physically bypasses the interconnect and packaging bottlenecks that limit traditional GPU clusters. With 44GB of on-chip SRAM delivering an astonishing 21 petabytes per second of memory bandwidth, Cerebras is structurally optimized for high-performance AI inference, demonstrating token-per-second throughput that is 15-20x faster than comparable NVIDIA installations on open weights like Llama 3.\n\n### The Strategic Bet Against the 1 Giant Wafer\nTraditional chips are cut from 12-inch silicon wafers, leaving gaps, packaging interfaces, and massive communication delay lanes between GPUs. Cerebras's bet is that AI workloads require such high interconnect speeds that the physical scaling limits of GPU boards are the actual bottleneck. By keeping the entire compute array on a single piece of silicon, they achieve zero interconnect overhead. While yielding and manufacturing a wafer of this size at TSMC is incredibly complex and requires proprietary structural bypass routing for minor silicon defects, they have successfully commercialized the WSE-3.\n\n### Financial Transition & Customer Diversification\nCerebras's financials are highly promising, shifting from a large net loss of -$481.6M in 2024 to a profitable +$237.8M in 2025, driven by $510M in revenue (TTM growth of 75.7%). However, they face extreme customer concentration with UAE-based MBZUAI and G42 accounting for 86% of total revenue. The central catalyst for the base and bull cases is the recent signing of milestone agreements with OpenAI (December 2025) and Amazon Web Services (AWS) (March 2026). If these major model labs and hyperscalers successfully deploy WSE-3 arrays, Cerebras will dramatically shift its multiple from a speculative single-buyer asset to a foundational element of the global AI inference layer.",
+      "fairValue": 342.8,
+      "action": "BUY",
+      "analyzedAt": "2026-05-21T14:42:33Z",
+      "researchReport": "CBRS_2026-05-21.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Used yfinance-provided Class A share count of 34.5M. Diluted share count from post-IPO fully diluted reports (312.2M) indicates significant multi-class voting/conversion overhang (Class A, B, N common shares, OpenAI warrants, G42 warrants) which was flagged. We used the float 34.5M for the per-share modeling.",
+      "marginAnchor": "TTM 46.63% margin used as anchor for trending expansion. Cerebras is highly trending given the massive shift from -165% net margin in FY2024 to +46.6% net margin in FY2025. Projections conservatively moderate margin to 25% base to account for mature fabless scaling.",
+      "growthDerivation": "TTM revenue growth is 75.7% (290M -> 510M). Projected 35% base 5-year CAGR reflects reasonable deceleration as base scales, avoiding hypergrowth over-optimism while recognizing Cerebras's massive inference technological lead.",
+      "sectorBenchmarkRow": "Technology — Semiconductors benchmark used. Conservative P/E 15, Median P/E 25, Growth P/E 40. Typical net margin 15-30%, best-in-class 40%+.",
+      "dataQualityFlags": [
+        "No historical revenue beyond 4 years",
+        "High concentration and MBZUAI/G42 related-party revenue overhang",
+        "Significant multi-class voting share share-count variance (34.5M float vs 312.2M fully-diluted)"
+      ],
+      "analystInputs": {
+        "y1RevEstimate": null,
+        "y2RevEstimate": null,
+        "y1GrowthPct": 75.7,
+        "y2GrowthPct": 35,
+        "blendedConsensusPct": 35,
+        "analystTargetMean": null,
+        "analystCount": 0
+      },
+      "historicalRevenue": [
+        24619000,
+        78744000,
+        290252000,
+        509991000
+      ],
+      "historicalNetMargins": [
+        -721.87,
+        -161.47,
+        -165.92,
+        46.63
+      ],
+      "historicalEPS": [
+        -0.98,
+        -0.7,
+        -2.68,
+        0
+      ],
+      "priorAnalysisReview": {
+        "priorModel": "None",
+        "priorDate": "",
+        "priorPrice": 0,
+        "priorFairValue": 0,
+        "priorAction": "HOLD",
+        "priceDelta": "0%",
+        "assumptionAudit": "No prior analysis exists.",
+        "modelQualityFlag": "UNVALIDATED",
+        "thesisOutcome": "N/A",
+        "fundamentalChanges": "Initial Public Offering in May 2026. Shift to net profitability in 2025."
+      },
+      "confidenceBreakdown": "0.75 - Base 1.0. -0.10 customer concentration, -0.05 short history, -0.05 share count complexity, -0.05 fab capacity reliance on TSMC."
+    }
+  }
+]

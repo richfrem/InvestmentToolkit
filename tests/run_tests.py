@@ -78,8 +78,10 @@ def t0_path_regression() -> bool:
         "temp/tradingview-mcp",
     ]
     allowed = {
-        "docs/adrs/024-tradingview-cdp-shared-runtime-dependency.md",
-        "docs/adrs/023-tradingview-test-harness.md",
+        "ADRs/024-tradingview-cdp-shared-runtime-dependency.md",
+        "ADRs/023-tradingview-test-harness.md",
+        "adrs/024-tradingview-cdp-shared-runtime-dependency.md",
+        "adrs/023-tradingview-test-harness.md",
         "temp/bundles/tradingview-symlink-review/post-implementation/payload.md",
         "temp/bundles/tradingview-symlink-review/payload.md",
         "tests/run_tests.py", # This file itself

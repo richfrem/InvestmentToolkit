@@ -129,6 +129,27 @@ def test_stale_with_ack_stale_proceeds(tmp_path):
 
 
 @pytest.mark.skipif(not TV_AVAILABLE, reason="TradingView not reachable on port 9222")
+def test_tradingview_connection_and_broker_login(tmp_path):
+    """Verify that TradingView Desktop is running and a broker connection is active.
+    This is the primary sanity check for live brokerage automation."""
+    # 1. TradingView is open (since TV_AVAILABLE is True, otherwise this test is skipped)
+    assert TV_AVAILABLE, "TradingView Desktop must be open and running with remote debugging on port 9222."
+
+    # 2. Check if broker is logged in by executing a dry-run preflight check
+    portfolio = _make_portfolio(tmp_path, age_minutes=0)
+    r = _run(
+        "--ticker", "AAPL", "--action", "buy", "--shares", "1",
+        "--order-type", "market", "--account", "tfsa", "--preflight",
+        env_overrides={"PLACE_ORDER_PORTFOLIO_PATH": str(portfolio)},
+    )
+    combined = r.stdout + r.stderr
+    assert "No broker connected" not in combined, (
+        "Broker panel not connected! Please open TradingView, connect your broker panel "
+        "(e.g., Questrade), and log in first before running live integration tests."
+    )
+
+
+@pytest.mark.skipif(not TV_AVAILABLE, reason="TradingView not reachable on port 9222")
 def test_fresh_portfolio_exits_0(tmp_path):
     """A fresh portfolio.json (under 60 min old) must produce exit 0."""
     portfolio = _make_portfolio(tmp_path, age_minutes=0)
@@ -137,11 +158,13 @@ def test_fresh_portfolio_exits_0(tmp_path):
         "--order-type", "market", "--account", "tfsa", "--preflight",
         env_overrides={"PLACE_ORDER_PORTFOLIO_PATH": str(portfolio)},
     )
+    combined = r.stdout + r.stderr
+    if r.returncode == 1 and "No broker connected" in combined:
+        pytest.skip("Skipping because TradingView is reachable but no broker is connected.")
     assert r.returncode == 0, (
         f"Expected exit 0 for fresh portfolio, got {r.returncode}.\n"
         f"stdout: {r.stdout[:300]}\nstderr: {r.stderr[:300]}"
     )
-    combined = r.stdout + r.stderr
     assert "freshnessWarning" not in combined, "Should not have freshness warning for fresh portfolio"
 
 
@@ -157,6 +180,9 @@ def test_size_cap_exits_3(tmp_path):
         "--max-order-value", "100",   # $100 cap — $10,000 order will exceed it
         env_overrides={"PLACE_ORDER_PORTFOLIO_PATH": str(portfolio)},
     )
+    combined = r.stdout + r.stderr
+    if r.returncode == 1 and "No broker connected" in combined:
+        pytest.skip("Skipping because TradingView is reachable but no broker is connected.")
     assert r.returncode == 3, (
         f"Expected exit 3 for oversized order, got {r.returncode}.\n"
         f"stdout: {r.stdout[:300]}\nstderr: {r.stderr[:300]}"
@@ -164,3 +190,4 @@ def test_size_cap_exits_3(tmp_path):
     assert "_sizeWarning" in r.stdout or "sizeWarning" in r.stdout.lower(), (
         "Expected _sizeWarning in card output"
     )
+

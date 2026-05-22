@@ -101,7 +101,7 @@ Rather than relying entirely on broker APIs, the toolkit uses TradingView Deskto
   - **Order Execution**: Fills the order dialog, captures a screenshot for human-in-the-loop (HITL) confirmation, and clicks submit.
   - **Data Fetching**: Reads the active chart's live quote.
   - **Pine Script Injection** (`/pine-inject`): Generates a Pine Script v6 indicator from a description, validates structure, injects via Monaco `executeEdits` (fires TV's compile listener), and clicks "Add to chart". Uses React fiber tree traversal to locate Monaco editor internals robustly across TV deployments.
-- **Architecture**: ADR-024 "Thin Skill + Thick Engine" — CDP engine extracted from `plugins/tradingview/node/` to `tradingview-cdp/` as a shared standalone runtime. Skills remain thin Python wrappers.
+- **Architecture**: ADR-024 "Thin Skill + Thick Engine" — CDP engine extracted from the legacy plugins directory to `tradingview-cdp/` as a shared standalone runtime. Skills remain thin Python wrappers.
 - **See**: `plugins/tradingview/` (skills + scripts), `tradingview-cdp/` (shared Node.js CDP engine)
 
 ---
@@ -196,7 +196,7 @@ The test harness is designed around **Subprocess-First** execution to mirror exa
 
 For detailed design decisions and component-specific architecture, refer to the following documents:
 
-*   **Architecture Decision Records (ADRs)**: [docs/adrs/](../adrs/) - Immutable records of significant design choices (e.g., `020-robust-valuation-persistence.md`).
+*   **Architecture Decision Records (ADRs)**: [ADRs/](../../ADRs/) - Immutable records of significant design choices (e.g., `020-robust-valuation-persistence.md`).
 *   **Stock Valuation**: [plugins/stock-valuation/references/](../../plugins/stock-valuation/references/) - Details on DCF calculation methodology, persistence, and the AI analyst interaction flow.
 *   **Questrade Authentication**: [plugins/toolkit-manager/references/Questrade/](../../plugins/toolkit-manager/references/Questrade/) - Details the AES-256-GCM encryption and stateful token rotation process.
 *   **Agent Guidelines**: [AGENTS.md](../../AGENTS.md) - Operating rules for AI agents.

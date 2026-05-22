@@ -360,6 +360,15 @@ Remain in analyst mode. Handle:
 
 ---
 
+## Step 10: Target Portfolio and Thesis Sync Gate
+After completing any valuation and saving the projection, run the automated synchronization verification suite to ensure that target-portfolio.json, the investment_thesis.md, and all active projections are in perfect alignment.
+```bash
+python3 investment_screener/backend/py_services/verify_thesis_sync.py
+```
+If this check fails, resolve any missing ticker entries, mismatched weights, or missing projection JSON files before concluding the session.
+
+---
+
 ## Error Handling
 | Condition | Action |
 |:---|:---|
@@ -382,7 +391,9 @@ Remain in analyst mode. Handle:
 - Research report: [✅ Saved to {path} / ❌ Failed]
 - Valuation benchmarks: [✅ references/valuation-benchmarks.md]
 - Analysis prompt: [✅ references/analysis_prompt.md]
+- Thesis synchronization: [✅ verify_thesis_sync.py passed / ❌ Failed]
 
 ## Sources Unavailable
 - [any that failed or were skipped and why]
 ```
+
