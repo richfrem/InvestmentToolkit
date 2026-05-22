@@ -8,16 +8,16 @@
 ---
 
 ## Context
-The TradingView CDP automation layer requires a heavy, multi-file Node.js execution environment (`chrome-remote-interface` and other dependencies). Previously, this environment lived inside the `plugins/tradingview/node/` directory.
+The TradingView CDP automation layer requires a heavy, multi-file Node.js execution environment (`chrome-remote-interface` and other dependencies). Previously, this environment lived inside the legacy plugins directory.
 
-However, our plugin installation tools (`npx skills add` and `uvx plugin-add`) strictly enforce file-level symlinks and silently drop directory-level symlinks to maintain plugin portability and decoupling. As a result, when a TradingView skill (like `pine-inject` or `place-order`) was installed elsewhere, it lacked the massive `node/` directory required for execution, breaking its functionality. Manually creating file-level symlinks for every file in a `node_modules` structure is brittle, unmaintainable, and defeats the purpose of modular skills.
+However, our plugin installation tools (`npx skills add` and `uvx plugin-add`) strictly enforce file-level symlinks and silently drop directory-level symlinks to maintain plugin portability and decoupling. As a result, when a TradingView skill (like `pine-inject` or `place-order`) was installed elsewhere, it lacked the massive Node environment required for execution, breaking its functionality. Manually creating file-level symlinks for every file in a `node_modules` structure is brittle, unmaintainable, and defeats the purpose of modular skills.
 
 We needed a way for skills to depend on a multi-file Node execution environment without violating the symlink rules or forcing complex setups inside individual skills.
 
 ## Decision
 We decided to adopt a **"Thin Skill + Thick Engine"** approach, conceptually similar to Model Context Protocol (MCP) servers:
 
-1. **Extract to Root:** Move the entire `plugins/tradingview/node/` directory to the project root and rename it to `tradingview-cdp/`. This establishes it as a standalone, shared runtime dependency.
+1. **Extract to Root:** Move the entire legacy CDP directory to the project root and rename it to `tradingview-cdp/`. This establishes it as a standalone, shared runtime dependency.
 2. **Install Once:** The `tradingview-cdp` package is initialized once (`npm ci`) at the project root, rather than being distributed inside individual skills via symlinks.
 3. **Robust Path Resolution:** Rewrite the Python wrappers (like `tv_client.py`) to act as the single source of truth for locating the engine. Rather than relying on fragile relative paths (`parents[3]`), the client will:
    - Check the `TV_CDP_DIR` environment variable.

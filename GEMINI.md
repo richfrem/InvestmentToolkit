@@ -296,7 +296,7 @@ Do **not** rely solely on CSS class selectors for Pine Editor / Monaco editor �
 All scripts writing temp artifacts must use `InvestmentToolkit/temp/<artifact>` (gitignored), not `/tmp/<artifact>`. Task #0003 tracks legacy migration.
 
 ### 9. TradingView CDP — shared runtime lives at `tradingview-cdp/`, NOT inside `plugins/`
-The Node.js CDP engine was extracted from `plugins/tradingview/node/` to `tradingview-cdp/` at the project root (ADR-024 "Thin Skill + Thick Engine"). This directory is a standalone runtime, installed once via `cd tradingview-cdp && npm ci`. **Never create new scripts that hardcode this path** — always import from `tv_client.py`:
+The Node.js CDP engine was extracted from the legacy plugins directory to `tradingview-cdp/` at the project root (ADR-024 "Thin Skill + Thick Engine"). This directory is a standalone runtime, installed once via `cd tradingview-cdp && npm ci`. **Never create new scripts that hardcode this path** — always import from `tv_client.py`:
 ```python
 from tv_client import tv_call, TV_NODE_DIR, REPO_ROOT
 ```
