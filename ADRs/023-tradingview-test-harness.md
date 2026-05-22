@@ -14,7 +14,7 @@ The TradingView CDP automation layer (place-order, modify-order, cancel-order, g
 ```
 Skill (SKILL.md)
   → plugins/tradingview/scripts/tv_*.py  (or place_order.py for compound flows)
-    → plugins/tradingview/node/core/trading.js
+    → tradingview-cdp/core/trading.js
       → Chrome DevTools Protocol (port 9222)
         → TradingView Desktop → Questrade broker panel
 ```
@@ -121,4 +121,4 @@ Section 5: Error Paths (TV offline, bad order IDs)
 - ADR 021 — Direct Plugin Execution
 - `docs/superpowers/specs/2026-05-17-test-suite-vision-design.md` — Full test suite vision
 - `investment_screener/backend/py_services/place_order.py` — TV order wrapper
-- `plugins/tradingview/node/core/trading.js` — CDP automation core
+- `tradingview-cdp/core/trading.js` — CDP automation core

@@ -177,6 +177,11 @@ Examples:
 - KOID: `ETF_ANALYSIS: HOLD | alignment 68% | Humanoid robotics index; low NAV premium; CRDO/NXPI top holdings | analyzed 2026-05-13`
 - HUMN: `ETF_ANALYSIS: ACCUMULATE | alignment 74% | Roundhill humanoid; TSLA/NVDA/Korean robotics; higher premium than KOID | analyzed 2026-05-13`
 
+After updating `target-portfolio.json`, run the automated sync verification script to guarantee target weight, thesis, and projection integrity:
+```bash
+python3 investment_screener/backend/py_services/verify_thesis_sync.py
+```
+
 ---
 
 ## Hard Rules

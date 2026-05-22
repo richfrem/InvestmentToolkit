@@ -93,6 +93,7 @@ Block rebalance recommendations (surface as `PAUSED` state) when:
 - `TARGETS_INVALID` — targets don't sum to 100% ± 0.5%. State: *"Run `/calibrate-targets` first — targets sum to {X}%."*
 - `MISSING_VALUATIONS` — more than 30% of thesis tickers have no DCF projection. State: *"Too many holdings unvalued — run `/evaluate-stock` for the missing ones before rebalancing."*
 - `EARNINGS_SEASON` — 3+ holdings have earnings within 7 days. Surface a list; let user decide whether to proceed.
+- `THESIS_OUT_OF_SYNC` — target-portfolio.json, investment_thesis.md, or active projections are not in synchronization. State: *"Run `verify_thesis_sync.py` to check for and fix synchronization errors before rebalancing."*
 
 ---
 
@@ -115,6 +116,9 @@ python3 plugins/portfolio-advisor/scripts/update_targets.py --show
 
 # Adjust if needed (normalizes + regenerates blueprint automatically):
 python3 plugins/portfolio-advisor/scripts/update_targets.py --set TICKER=X.X --write --blueprint
+
+# Run automated sync verification:
+python3 investment_screener/backend/py_services/verify_thesis_sync.py
 ```
 
 ---
@@ -389,6 +393,7 @@ For each proposed trade:
 - Drift Classifications: [✅ Completed]
 - Rebalance Prompt: [✅ references/rebalance_prompt.md]
 - Capital Assessment: [✅ Available: ${X} / ⚠️ Estimated]
+- Thesis synchronization: [✅ verify_thesis_sync.py passed / ❌ Failed/Out of sync]
 
 ## Sources Unavailable
 - [any failures or missing data]

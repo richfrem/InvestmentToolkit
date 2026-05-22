@@ -30,10 +30,8 @@ def _find_cdp_dir() -> Path:
         p = Path(env_path).resolve()
         if (p / "cli.js").exists():
             return p
-        print(
-            f"WARNING: TV_CDP_DIR={env_path} is set but cli.js not found there. "
-            f"Falling back to directory walk-up.",
-            file=sys.stderr
+        raise FileNotFoundError(
+            f"TV_CDP_DIR is set to '{env_path}' but 'cli.js' was not found there."
         )
 
     current = Path(__file__).resolve().parent

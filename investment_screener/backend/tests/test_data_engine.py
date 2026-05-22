@@ -20,8 +20,9 @@ class TestQuestradeDataEngine(unittest.TestCase):
 
     @patch('utils.QuestradeAPIClient.QuestradeAPIClient.get_accounts')
     @patch('utils.QuestradeAPIClient.QuestradeAPIClient.get_positions')
+    @patch('utils.QuestradeAPIClient.QuestradeAPIClient.get_balances')
     @patch('utils.QuestradeTokenManager.QuestradeTokenManager.load_tokens')
-    def test_end_to_end_sync(self, mock_load, mock_positions, mock_accounts):
+    def test_end_to_end_sync(self, mock_load, mock_balances, mock_positions, mock_accounts):
         # Setup Mocks
         mock_load.return_value = {"access_token": "valid", "api_server": "https://api.test"}
         mock_accounts.return_value = [{"number": "123", "type": "TFSA"}, {"number": "456", "type": "RRSP"}]
@@ -37,6 +38,21 @@ class TestQuestradeDataEngine(unittest.TestCase):
             ]
         ]
 
+        # Mock balances
+        mock_balances.side_effect = [
+            {
+                "perCurrencyBalances": [
+                    {"currency": "USD", "cash": 1000.0},
+                    {"currency": "CAD", "cash": 500.0}
+                ]
+            },
+            {
+                "perCurrencyBalances": [
+                    {"currency": "USD", "cash": 2000.0}
+                ]
+            }
+        ]
+
         # Run Sync
         success = self.engine.run_sync()
         self.assertTrue(success)
@@ -46,8 +62,8 @@ class TestQuestradeDataEngine(unittest.TestCase):
         with open(self.output_file, "r") as f:
             data = json.load(f)
 
-        # Should have 2 unique symbols
-        self.assertEqual(len(data), 2)
+        # Should have 3 unique holdings (AAPL, MSFT, and USD_CASH)
+        self.assertEqual(len(data), 3)
         
         # Verify aggregation (10 + 5 = 15 AAPL)
         aapl = next(p for p in data if p["symbol"] == "AAPL")
@@ -57,6 +73,9 @@ class TestQuestradeDataEngine(unittest.TestCase):
         
         msft = next(p for p in data if p["symbol"] == "MSFT")
         self.assertEqual(msft["shares"], 5)
+
+        usd_cash = next(p for p in data if p["symbol"] == "USD_CASH")
+        self.assertEqual(usd_cash["shares"], 3000.0) # 1000.0 + 2000.0
 
 if __name__ == "__main__":
     unittest.main()

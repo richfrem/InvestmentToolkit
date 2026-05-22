@@ -4,9 +4,26 @@ import path from 'path';
 import { spawnPythonScript } from '../services/bridge';
 import { getLiveUsdCadRate } from '../utils/helpers';
 import { isValidTicker } from '../utils/helpers';
-import { ETF_ANALYSIS_DIR, PORTFOLIO_FILE } from '../utils/paths';
+import { ETF_ANALYSIS_DIR, PORTFOLIO_FILE, TARGET_PORTFOLIO_FILE } from '../utils/paths';
+import { buildLookupDictionary } from '../utils/stockLookup';
 
 const router = express.Router();
+
+router.get('/stock/lookup', async (req, res) => {
+    try {
+        if (!fs.existsSync(TARGET_PORTFOLIO_FILE)) {
+            res.json({});
+            return;
+        }
+        const raw = fs.readFileSync(TARGET_PORTFOLIO_FILE, 'utf-8');
+        const target = JSON.parse(raw);
+        const dict = buildLookupDictionary(target.holdings ?? []);
+        res.json(dict);
+    } catch (e: any) {
+        console.error(`[API] Error building stock lookup: `, e);
+        res.status(500).json({ error: 'Failed to build stock lookup' });
+    }
+});
 
 router.get('/stock/:ticker', async (req, res) => {
     const { ticker } = req.params;

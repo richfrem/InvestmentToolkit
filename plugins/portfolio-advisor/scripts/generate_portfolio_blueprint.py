@@ -60,7 +60,9 @@ def load_json(path: Path) -> dict | list:
         return json.load(f)
 
 
-def build_actual_map(portfolio: list) -> tuple[dict, float]:
+def build_actual_map(portfolio: list | dict) -> tuple[dict, float]:
+    if isinstance(portfolio, dict) and "holdings" in portfolio:
+        portfolio = portfolio["holdings"]
     total = sum(h["shares"] * h["price"] for h in portfolio)
     actual = {}
     for h in portfolio:
@@ -81,8 +83,15 @@ def build_thesis_map(thesis: dict) -> dict:
     holdings = {}
     for h in thesis.get("holdings", []):
         ticker = h["ticker"]
+        sid = h.get("subStrategyId", h.get("pillarId", "untracked"))
+        # Map sub-strategies to avoid orphan sections or omissions
+        if sid in ("preipo-access", "quantum-compute", "frontier-bets"):
+            sid = "frontier-bets"
+        elif sid == "other":
+            sid = "untracked"
+        
         holdings[ticker] = {
-            "subStrategyId": h.get("subStrategyId", h.get("pillarId", "untracked")),
+            "subStrategyId": sid,
             "targetPct":     h.get("targetWeight", h.get("targetPct", 0)),
             "role":          h.get("role", ""),
             "thesisNote":    h.get("thesisForInclusion", h.get("thesisNote", "")),

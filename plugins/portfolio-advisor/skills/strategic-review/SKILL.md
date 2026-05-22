@@ -58,6 +58,7 @@ python3 plugins/portfolio-advisor/scripts/generate_review_json.py
 
 # 4. Self-check — catches inconsistencies before committing
 python3 plugins/portfolio-advisor/scripts/verify_refresh.py
+python3 investment_screener/backend/py_services/verify_thesis_sync.py
 ```
 
 What `--blueprint` updates:
@@ -912,6 +913,7 @@ recommendation using the updated weights?
 - Thesis Formula Score: [✅ {X}/100]
 - Strategic Review Prompt: [✅ references/strategic_review_prompt.md]
 - Valuation Gap Ranking: [✅ Completed]
+- Thesis synchronization: [✅ verify_thesis_sync.py passed / ❌ Failed]
 
 ## Sources Unavailable
 - [any failures]

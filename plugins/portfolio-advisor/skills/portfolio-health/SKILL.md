@@ -37,6 +37,9 @@ curl -s http://localhost:3001/api/theses | python3 -m json.tool
 ```bash
 # Run drift health check
 curl -s "http://localhost:3001/api/theses/{THESIS_ID}/health" | python3 -m json.tool
+
+# Run automated synchronization verification
+python3 investment_screener/backend/py_services/verify_thesis_sync.py
 ```
 
 **Also, immediately load AI valuations for all thesis holdings:**
@@ -186,6 +189,7 @@ Present full findings in this structure:
 - {N} strategic conflicts requiring resolution
 - {N} pillar conviction signals: {N} ALIGNED / {N} UNDER PRESSURE / {N} CRITICAL
 - Missing valuations: {N} holdings (run /evaluate-stock for each)
+- Thesis synchronization check: [✅ verify_thesis_sync.py passed / ❌ Out of sync (run verify_thesis_sync.py for details)]
 
 🏛️ Pillar Conviction Audit:
 | Pillar | Target% | Signal | BUY | HOLD | SELL | No Data |
@@ -249,6 +253,7 @@ If user indicates conviction change:
 - AI Valuations: [✅ Available for {N}/{M} holdings / ⚠️ Missing for: {list} / ❌ Failed]
 - Pillar Conviction Audit: [✅ Completed / ⚠️ Partial ({N} missing) / ❌ Skipped]
 - Thesis Formula Score: [✅ Computed: {X}/100 / ❌ Skipped]
+- Thesis synchronization: [✅ verify_thesis_sync.py passed / ❌ Failed/Out of sync]
 - Fallback tree: [✅ references/fallback-tree.md consulted / ❌ Not needed]
 
 ## Sources Unavailable
