@@ -608,10 +608,10 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                                             </div>
                                         </div>
 
-                                        {executeError && (
+                                        {(executeError || submitError) && (
                                             <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/30 rounded-xl p-3">
                                                 <AlertTriangle size={14} className="text-red-400 mt-0.5 shrink-0" />
-                                                <p className="text-red-300 text-xs">{executeError}</p>
+                                                <p className="text-red-300 text-xs">{executeError || submitError}</p>
                                             </div>
                                         )}
                                     </>
