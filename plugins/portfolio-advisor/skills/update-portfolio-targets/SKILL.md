@@ -20,7 +20,7 @@ allowed-tools: Bash, Read, Write
 - **Thesis doc**: `plugins/portfolio-advisor/references/investment_thesis.md`
 - **Canonical edit script**: `plugins/portfolio-advisor/scripts/update_targets.py` ← **use this**
 - **Legacy update script**: `investment_screener/backend/py_services/update_thesis.py` (older, per-holding patch style)
-- **ADR reference**: `docs/adrs/` — cross-plugin script conventions
+- **ADR reference**: `ADRs/` — cross-plugin script conventions
 - **Chains from**: `strategic-review` skill (after formula proposals are approved by user)
 - **Chains into**: `rebalance-portfolio` skill (to execute trades aligned with new targets)
 
@@ -58,6 +58,7 @@ python3 plugins/portfolio-advisor/scripts/generate_review_json.py
 
 # Step 4: Self-check — catches inconsistencies before committing
 python3 plugins/portfolio-advisor/scripts/verify_refresh.py
+python3 investment_screener/backend/py_services/verify_thesis_sync.py
 ```
 
 `generate_portfolio_blueprint.py --write` now refreshes all 3 table formats (6-col early sections, 7-col enriched, and Section IV). Never run blueprint separately — always use `--blueprint` flag on `update_targets.py` so targets and thesis.md stay atomic.
@@ -279,5 +280,6 @@ When adding:
 - Dry run validation:        [✅ Passed / ❌ Failed — weights don't sum to 100%]
 - Applied changes:           [✅ Written v{N+1} / ❌ Skipped (dry run only)]
 - API health check:          [✅ Verified / ⚠️ Backend not running]
+- Thesis synchronization: [✅ verify_thesis_sync.py passed / ❌ Failed/Out of sync]
 - Thesis doc updated:        [✅ Yes / ⚠️ No strategic shift, doc unchanged]
 ```

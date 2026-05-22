@@ -225,6 +225,7 @@ python3 scripts/generate_review_json.py
 
 # 4. Self-check — must pass before committing
 python3 scripts/verify_refresh.py
+python3 investment_screener/backend/py_services/verify_thesis_sync.py
 ```
 
 ---
@@ -298,6 +299,7 @@ Then print:
 ✅ investment_thesis.md rebuilt + Version History updated
 ✅ Review JSON generated: PortfolioAnalysis/strategic-reviews/{date}-*.json
 ✅ verify_refresh.py: All checks passed ({N} warnings)
+✅ verify_thesis_sync.py: All synchronization checks passed
 
 Changes:
   CRWV   3.32% → 5.50%   (+2.18pp)  Meta $21B deal
@@ -372,4 +374,5 @@ At session end:
 - update_targets.py:           [✅ {N} targets written]
 - generate_review_json.py:     [✅ Review JSON updated]
 - verify_refresh.py:           [✅ All checks passed]
+- verify_thesis_sync.py:       [✅ All synchronization checks passed]
 ```
