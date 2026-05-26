@@ -226,7 +226,22 @@ try {{
 # ── portfolio sync ────────────────────────────────────────────────────────────
 
 def sync_portfolio() -> bool:
-    """Run QuestradeDataEngine to refresh portfolio.json after order fill."""
+    """Reconcile and refresh portfolio.json after order fill.
+    Tries hitting the Express server's TV sync/apply route first (authoritative TV CDP),
+    then falls back to local Questrade REST API engine."""
+    import urllib.request
+    try:
+        req = urllib.request.Request("http://localhost:3001/api/portfolio/sync-tv/apply", data=b"{}")
+        req.add_header("Content-Type", "application/json")
+        with urllib.request.urlopen(req, timeout=30) as response:
+            res_data = json.loads(response.read().decode())
+            if res_data.get("success") and res_data.get("tvAvailable"):
+                print("✓ Sync complete: portfolio.json auto-applied from TradingView CDP via Express.")
+                return True
+    except Exception as e:
+        print(f"⚠️  TV sync via Express API failed or not running ({e}). Falling back to Questrade...")
+
+    # Fallback to legacy Questrade REST API
     engine_path = os.path.abspath(os.path.join(BACKEND_SRC, "QuestradeDataEngine.py"))
     cache_dir   = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
     portfolio_path = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "data", "portfolio.json"))
@@ -236,6 +251,7 @@ def sync_portfolio() -> bool:
         capture_output=True, text=True,
     )
     return result.returncode == 0
+
 
 
 # ── terminal card ─────────────────────────────────────────────────────────────

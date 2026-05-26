@@ -50,7 +50,8 @@ def load_json(path: Path) -> dict | list:
 
 def load_portfolio(path: Path) -> dict:
     """Returns {TICKER: {shares, price, value, actualPct, bookPL}}"""
-    raw = load_json(path)
+    portfolio_data = load_json(path)
+    raw = portfolio_data.get("holdings", []) if isinstance(portfolio_data, dict) else portfolio_data
     total = sum(h.get("shares", 0) * h.get("price", 0) for h in raw)
     out = {}
     for h in raw:

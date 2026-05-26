@@ -3,7 +3,10 @@
 verify_portfolio_total.py — Audit script: TV live account totals vs our computed total.
 
 Fetches Total Equity USD from every TradingView account via CDP (live, authoritative),
-then computes what our portfolio.json / price data says, and shows the diff.
+then computes what our single portfolio database (portfolio.json) says, and shows the diff.
+Note: portfolio.json is the sole portfolio database for the web app and analytics,
+and it stores the raw account-level breakdowns (TFSA vs RRSP vs Cash balances) inside
+the tvSnapshot root key.
 
 Usage:
     python3 verify_portfolio_total.py            # live TV + stored prices
@@ -25,7 +28,6 @@ from tv_client import run_node_module
 
 DATA_DIR      = SCRIPT_DIR.parent / "data"
 PORTFOLIO_FILE = DATA_DIR / "portfolio.json"
-TV_FILE        = DATA_DIR / "portfolio_tv.json"
 
 
 # ── TV live totals ────────────────────────────────────────────────────────────
@@ -46,11 +48,15 @@ try {
 
 
 def get_tv_totals_cached() -> dict:
-    """Read totals from last TV sync snapshot (portfolio_tv.json)."""
-    if not TV_FILE.exists():
-        return {"error": "portfolio_tv.json not found — run a TV sync first."}
-    with open(TV_FILE) as f:
-        tv = json.load(f)
+    """Read totals from last TV sync raw cache inside portfolio.json."""
+    if not PORTFOLIO_FILE.exists():
+        return {"error": "Portfolio database (portfolio.json) not found — run a TV sync first."}
+    with open(PORTFOLIO_FILE) as f:
+        data = json.load(f)
+    if not isinstance(data, dict) or "tvSnapshot" not in data:
+        return {"error": "Raw TradingView sync cache (tvSnapshot) not found inside portfolio.json — run a TV sync first."}
+    
+    tv = data["tvSnapshot"]
     accounts = []
     grand_total = grand_mkt = grand_cash = 0
     for snap in tv.get("snapshots", []):
@@ -81,7 +87,12 @@ def compute_our_total(use_live_prices: bool = False) -> tuple:
         return 0.0, []
 
     with open(PORTFOLIO_FILE) as f:
-        positions = json.load(f)
+        data = json.load(f)
+
+    if isinstance(data, dict):
+        positions = data.get("holdings", [])
+    else:
+        positions = data
 
     live_quotes: dict = {}
     if use_live_prices:
@@ -131,7 +142,7 @@ def main():
         print("Fetching LIVE account totals from TradingView via CDP…")
         tv = get_tv_totals_live()
     else:
-        print("Reading cached TV totals from last sync (portfolio_tv.json)…")
+        print("Reading cached TV totals from last sync (portfolio.json tvSnapshot)…")
         tv = get_tv_totals_cached()
 
     if "error" in tv:

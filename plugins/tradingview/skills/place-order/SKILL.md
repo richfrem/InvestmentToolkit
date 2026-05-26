@@ -24,7 +24,7 @@ This skill follows the **browser-harness** paradigm:
 - **Trigger**: `/place-order` or natural language ("buy 5 NVDA in TFSA", "sell 10 WYFI")
 - **Execution path**: Python `place_order.py` → Node.js `trading.js` → CDP → TradingView order dialog
 - **HITL Gate**: 3-step — preflight card → form-fill + screenshot → CONFIRM to submit
-- **Post-execution**: Auto-syncs portfolio.json via QuestradeDataEngine
+- **Post-execution**: Auto-syncs portfolio.json via live TradingView CDP sync (or Questrade REST API fallback)
 
 ---
 

@@ -8,9 +8,10 @@ Purpose:
     and orders from TradingView's broker panel via CDP DOM (primary), with optional
     Questrade REST API as a secondary source for cross-validation.
 
-    During the transition period, TV data writes to portfolio_tv.json and Questrade
-    data stays in portfolio.json. Use --source compare to diff them side-by-side and
-    verify the TV scraper is accurate before making TV the canonical source.
+    Note: The portfolio transition period is complete. TradingView CDP is now the
+    canonical runtime source of truth. All positions are consolidated across accounts
+    and written to the single portfolio database, portfolio.json. The raw account-specific
+    broker telemetry is stored inside the tvSnapshot root key of portfolio.json.
 
 Layer: Backend / py_services / Broker
 
@@ -24,20 +25,20 @@ Usage Examples:
     python3 investment_screener/backend/py_services/fetch_broker_data.py --accounts --source tv
     python3 investment_screener/backend/py_services/fetch_broker_data.py --snapshot --source tv
 
-    # Full snapshot written to portfolio_tv.json (safe — does not overwrite portfolio.json):
+    # Consolidated snapshot written to portfolio.json tvSnapshot key:
     python3 investment_screener/backend/py_services/fetch_broker_data.py --snapshot
 
     # Cross-validate TV vs Questrade (diff side-by-side):
     python3 investment_screener/backend/py_services/fetch_broker_data.py --compare
 
-    # Once validated, promote TV snapshot to portfolio.json:
+    # Once validated, promote consolidated TV snapshot directly into portfolio.json holdings:
     python3 investment_screener/backend/py_services/fetch_broker_data.py --snapshot --promote
 
 Key Functions:
     - fetch_tv()        - Reads all data from TradingView broker panel via CDP
     - fetch_questrade() - Reads from Questrade REST API (requires .questrade_cache)
     - compare()         - Diffs TV vs Questrade positions and balances
-    - write_snapshot()  - Writes portfolio_tv.json (or portfolio.json with --promote)
+    - write_snapshot()  - Writes tvSnapshot inside portfolio.json (or promotes positions with --promote)
 """
 
 import sys
@@ -273,16 +274,42 @@ def print_compare_report(report: dict):
 # ── snapshot writer ───────────────────────────────────────────────────────────
 
 def write_snapshot(snapshot: dict, promote: bool = False) -> str:
-    """Write snapshot to portfolio_tv.json (or portfolio.json with --promote)."""
-    if promote:
-        path = os.path.join(DATA_DIR, "portfolio.json")
-        print(f"⚠  Writing to portfolio.json (promoted).")
-    else:
-        path = os.path.join(DATA_DIR, "portfolio_tv.json")
-
+    """Write snapshot to portfolio.json under tvSnapshot key (or promoted)."""
+    path = os.path.join(DATA_DIR, "portfolio.json")
     os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    data = {}
+    if os.path.exists(path):
+        try:
+            with open(path) as f:
+                data = json.load(f)
+        except Exception:
+            pass
+
+    if not isinstance(data, dict):
+        data = {"holdings": data}
+
+    if promote:
+        print(f"⚠  Promoting TV snapshot directly to portfolio.json holdings.")
+        tv_pos = snapshot.get("positions", [])
+        # Aggregate by symbol
+        agg = {}
+        for p in tv_pos:
+            sym = p.get("symbol")
+            if not sym:
+                continue
+            if sym not in agg:
+                agg[sym] = {"symbol": sym, "shares": p.get("quantity", 0), "book_price": p.get("avgFillPrice", 0)}
+            else:
+                agg[sym]["shares"] += p.get("quantity", 0)
+        data["holdings"] = list(agg.values())
+        data["tvSnapshot"] = snapshot
+    else:
+        print(f"✓ Saving raw TradingView snapshot to portfolio.json under tvSnapshot key.")
+        data["tvSnapshot"] = snapshot
+
     with open(path, "w") as f:
-        json.dump(snapshot, f, indent=2)
+        json.dump(data, f, indent=2)
     return path
 
 
@@ -295,10 +322,10 @@ def main():
     parser.add_argument("--balances",  action="store_true")
     parser.add_argument("--positions", action="store_true")
     parser.add_argument("--orders",    action="store_true")
-    parser.add_argument("--snapshot",  action="store_true", help="Full snapshot → portfolio_tv.json")
+    parser.add_argument("--snapshot",  action="store_true", help="Full snapshot → portfolio.json tvSnapshot")
     parser.add_argument("--compare",   action="store_true", help="Diff TV vs Questrade positions")
     parser.add_argument("--inspect",   action="store_true", help="Dump broker panel DOM for debugging")
-    parser.add_argument("--promote",   action="store_true", help="Write to portfolio.json instead of portfolio_tv.json")
+    parser.add_argument("--promote",   action="store_true", help="Promote TV positions to portfolio.json holdings list")
     parser.add_argument("--pretty",    action="store_true", default=True)
     args = parser.parse_args()
 
