@@ -7,6 +7,7 @@ import { brokerSyncService, mergeIntoPortfolio } from '../services/BrokerSyncSer
 import { getLiveUsdCadRate, isTradingViewConnected } from '../utils/helpers';
 import { PORTFOLIO_FILE, PORTFOLIO_CONFIG_FILE, THESIS_FILE } from '../utils/paths';
 import { buildPortfolioSnapshot, PortfolioTotals } from '../utils/portfolioSnapshot';
+import { computeStrategyAllocation } from '../utils/strategyAllocation';
 
 const router = express.Router();
 
@@ -25,12 +26,12 @@ function backupPortfolio(): void {
     if (fs.existsSync(PORTFOLIO_FILE)) fs.copyFileSync(PORTFOLIO_FILE, PORTFOLIO_FILE + '.bak');
 }
 
-/** Read portfolio.json — handles both legacy array format and new { holdings, totals } format. */
-function readPortfolio(): { holdings: any[]; totals: PortfolioTotals | null } {
-    if (!fs.existsSync(PORTFOLIO_FILE)) return { holdings: [], totals: null };
+/** Read portfolio.json — handles both legacy array format and new { holdings, totals, tvSnapshot } format. */
+function readPortfolio(): { holdings: any[]; totals: PortfolioTotals | null; tvSnapshot: any | null } {
+    if (!fs.existsSync(PORTFOLIO_FILE)) return { holdings: [], totals: null, tvSnapshot: null };
     const raw = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
-    if (Array.isArray(raw)) return { holdings: raw, totals: null };
-    return { holdings: raw.holdings ?? [], totals: raw.totals ?? null };
+    if (Array.isArray(raw)) return { holdings: raw, totals: null, tvSnapshot: null };
+    return { holdings: raw.holdings ?? [], totals: raw.totals ?? null, tvSnapshot: raw.tvSnapshot ?? null };
 }
 
 /**
@@ -129,8 +130,17 @@ function verifyPortfolioTotals(holdings: any[], tvSnapshot: any): {
  */
 async function persistPortfolioWithSnapshot(items: any[], tvSnapshot?: any): Promise<void> {
     const tvSnap = tvSnapshot ?? (() => {
-        const tvFile = path.join(path.dirname(PORTFOLIO_FILE), 'portfolio_tv.json');
-        return fs.existsSync(tvFile) ? JSON.parse(fs.readFileSync(tvFile, 'utf-8')) : { snapshots: [] };
+        if (fs.existsSync(PORTFOLIO_FILE)) {
+            try {
+                const raw = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+                if (raw && !Array.isArray(raw) && raw.tvSnapshot) {
+                    return raw.tvSnapshot;
+                }
+            } catch (err: any) {
+                console.warn(`[Portfolio] Failed to load cached tvSnapshot:`, err.message);
+            }
+        }
+        return { snapshots: [] };
     })();
     const exchangeRate = await getLiveUsdCadRate(JAN1_USD_CAD_RATE);
     const { holdings: enriched, totals } = buildPortfolioSnapshot(items, tvSnap, exchangeRate);
@@ -146,7 +156,7 @@ async function persistPortfolioWithSnapshot(items: any[], tvSnapshot?: any): Pro
         totals.totalCAD = tvBrokerTotal * exchangeRate;
     }
 
-    fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify({ holdings: enriched, totals }, null, 2));
+    fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify({ holdings: enriched, totals, tvSnapshot: tvSnap }, null, 2));
     console.log(`[Portfolio] Wrote portfolio.json — totalUSD=$${totals.totalUSD.toFixed(2)} totalCAD=$${totals.totalCAD.toFixed(2)}`);
 }
 
@@ -154,13 +164,8 @@ async function persistPortfolioWithSnapshot(items: any[], tvSnapshot?: any): Pro
 
 router.get('/', async (_req, res) => {
     try {
-        const { holdings } = readPortfolio();
-        const tvFile = path.join(path.dirname(PORTFOLIO_FILE), 'portfolio_tv.json');
-        let dataSource = 'cache';
-        if (fs.existsSync(tvFile) && fs.existsSync(PORTFOLIO_FILE)) {
-            dataSource = fs.statSync(tvFile).mtimeMs >= fs.statSync(PORTFOLIO_FILE).mtimeMs
-                ? 'tradingview-cdp' : 'questrade';
-        }
+        const { holdings, tvSnapshot } = readPortfolio();
+        const dataSource = tvSnapshot?.dataSource ?? 'cache';
         res.json({ items: holdings, dataSource });
     } catch (error) {
         console.error(`[API] Error reading portfolio: `, error);
@@ -174,8 +179,8 @@ router.post('/', async (req, res) => {
     try {
         if (!items || !Array.isArray(items)) { res.status(400).json({ error: 'items array required' }); return; }
         backupPortfolio();
-        const { totals } = readPortfolio();
-        fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify({ holdings: items, totals }, null, 2));
+        const { totals, tvSnapshot } = readPortfolio();
+        fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify({ holdings: items, totals, tvSnapshot }, null, 2));
         syncThesisShares(items);
         res.json({ success: true, count: items.length });
     } catch (error) {
@@ -298,24 +303,22 @@ router.get('/status', (_req, res) => {
 
 router.get('/position/:ticker', (req, res) => {
     const ticker = req.params.ticker.toUpperCase();
-    const tvFile = path.join(path.dirname(PORTFOLIO_FILE), 'portfolio_tv.json');
     try {
         // From portfolio.json: price and book_price
         let price: number | null = null;
         let book_price: number | null = null;
         let portfolioShares: number = 0;
-        const { holdings: portfolio } = readPortfolio();
+        const { holdings: portfolio, tvSnapshot } = readPortfolio();
         const entry = portfolio.find((p: any) => (p.symbol ?? '').toUpperCase() === ticker);
         if (entry) {
             price = typeof entry.price === 'number' ? entry.price : null;
             book_price = typeof entry.book_price === 'number' ? entry.book_price : null;
             portfolioShares = typeof entry.shares === 'number' ? entry.shares : 0;
         }
-        // From portfolio_tv.json: per-account quantities
+        // From tvSnapshot: per-account quantities
         const byAccount: Record<string, number> = {};
-        if (fs.existsSync(tvFile)) {
-            const tv = JSON.parse(fs.readFileSync(tvFile, 'utf-8'));
-            for (const p of (tv.positions ?? [])) {
+        if (tvSnapshot) {
+            for (const p of (tvSnapshot.positions ?? [])) {
                 if ((p.symbol ?? '').toUpperCase() === ticker) {
                     const acct = (p.accountType ?? 'UNKNOWN').toUpperCase();
                     byAccount[acct] = (byAccount[acct] ?? 0) + (p.quantity ?? 0);
@@ -337,11 +340,10 @@ router.get('/position/:ticker', (req, res) => {
 
 router.get('/holdings/:ticker', (req, res) => {
     const ticker = req.params.ticker.toUpperCase();
-    const tvFile = path.join(path.dirname(PORTFOLIO_FILE), 'portfolio_tv.json');
     try {
-        if (!fs.existsSync(tvFile)) { res.json({ ticker, accounts: [], total: 0, avgFillPrice: null, dataSource: 'none' }); return; }
-        const tv = JSON.parse(fs.readFileSync(tvFile, 'utf-8'));
-        const positions: any[] = tv.positions ?? [];
+        const { tvSnapshot } = readPortfolio();
+        if (!tvSnapshot) { res.json({ ticker, accounts: [], total: 0, avgFillPrice: null, dataSource: 'none' }); return; }
+        const positions: any[] = tvSnapshot.positions ?? [];
         const matches = positions.filter((p: any) => (p.symbol ?? '').toUpperCase() === ticker);
 
         // Aggregate per-account: weighted average fill price
@@ -362,7 +364,7 @@ router.get('/holdings/:ticker', (req, res) => {
         const total = accounts.reduce((s, a) => s + a.shares, 0);
         const totalCost = accounts.reduce((s, a) => s + (a.avgFillPrice ?? 0) * a.shares, 0);
         const avgFillPrice = total > 0 ? Math.round((totalCost / total) * 100) / 100 : null;
-        res.json({ ticker, accounts, total, avgFillPrice, dataSource: 'tradingview-cdp', timestamp: tv.timestamp ?? null });
+        res.json({ ticker, accounts, total, avgFillPrice, dataSource: tvSnapshot.dataSource ?? 'tradingview-cdp', timestamp: tvSnapshot.timestamp ?? null });
     } catch { res.json({ ticker, accounts: [], total: 0, avgFillPrice: null, dataSource: 'error' }); }
 });
 
@@ -488,48 +490,13 @@ router.get('/strategy-allocation', async (_req, res) => {
     console.log(`[API] Computing strategy allocation...`);
     try {
         if (!fs.existsSync(PORTFOLIO_FILE)) { res.status(404).json({ error: 'No portfolio data found' }); return; }
-        const { holdings: positions } = readPortfolio();
-        let pillarMap: Record<string, string> = {};
-        let subStrategyMap: Record<string, string> = {};
-        let pillars: Array<{ id: string; name: string }> = [];
+        const { holdings: positions, totals } = readPortfolio();
+        let thesis: any = null;
         if (fs.existsSync(THESIS_FILE)) {
-            const thesis = JSON.parse(fs.readFileSync(THESIS_FILE, 'utf-8'));
-            pillars = thesis.pillars ?? [];
-            for (const h of (thesis.holdings ?? [])) {
-                if (h.ticker && h.pillarId) pillarMap[h.ticker] = h.pillarId;
-                if (h.ticker && h.subStrategyId) subStrategyMap[h.ticker] = h.subStrategyId;
-            }
+            thesis = JSON.parse(fs.readFileSync(THESIS_FILE, 'utf-8'));
         }
-        const pillarValues: Record<string, number> = {};
-        const pillarPositions: Record<string, any[]> = {};
-        for (const pos of positions) {
-            const value = (pos.shares ?? 0) * (pos.price ?? 0);
-            const pillarId = (pos.symbol === 'USD_CASH' || pos.sector === 'CASH') ? 'cash' : (pillarMap[pos.symbol] ?? 'other');
-            pillarValues[pillarId] = (pillarValues[pillarId] ?? 0) + value;
-            (pillarPositions[pillarId] ??= []).push(pos);
-        }
-        const totalUSD = Object.values(pillarValues).reduce((a, b) => a + b, 0);
-        const pillarNameMap: Record<string, string> = { other: 'Other' };
-        for (const p of pillars) pillarNameMap[p.id] = p.name;
-        const allocation = Object.entries(pillarValues)
-            .map(([id, value]) => ({
-                id, name: pillarNameMap[id] ?? id,
-                valueUSD: Math.round(value * 100) / 100,
-                pct: totalUSD > 0 ? Math.round((value / totalUSD) * 10000) / 100 : 0,
-                holdings: (pillarPositions[id] ?? [])
-                    .map((pos: any) => ({
-                        symbol: pos.symbol as string, name: (pos.name ?? pos.symbol) as string,
-                        sector: (pos.sector ?? 'Other') as string,
-                        subStrategyId: (subStrategyMap[pos.symbol] ?? (pos.symbol === 'USD_CASH' ? 'cash' : null)) as string | null,
-                        shares: (pos.shares ?? 0) as number, price: (pos.price ?? 0) as number,
-                        valueUSD: Math.round((pos.shares ?? 0) * (pos.price ?? 0) * 100) / 100,
-                        pct: totalUSD > 0 ? Math.round(((pos.shares ?? 0) * (pos.price ?? 0) / totalUSD) * 10000) / 100 : 0,
-                    }))
-                    .sort((a: any, b: any) => b.valueUSD - a.valueUSD),
-            }))
-            .filter(a => a.valueUSD > 0)
-            .sort((a, b) => b.valueUSD - a.valueUSD);
-        res.json({ allocation, totalUSD: Math.round(totalUSD * 100) / 100 });
+        const result = computeStrategyAllocation(positions, totals, thesis);
+        res.json(result);
     } catch (error) {
         console.error(`[API] Error computing strategy allocation: `, error);
         res.status(500).json({ error: 'Failed to compute strategy allocation' });
