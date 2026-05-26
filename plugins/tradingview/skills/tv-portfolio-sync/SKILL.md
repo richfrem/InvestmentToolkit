@@ -15,13 +15,14 @@ allowed-tools: Bash, Read, Write
 ## Quick Reference
 - **Trigger**: `/tv-portfolio-sync`, "sync portfolio from TradingView", "update portfolio from TV"
 - **Execution**: `fetch_broker_data.py --snapshot` → all accounts → diff → HITL → merge
-- **Output**: Updates `portfolio.json` (preserves thesis/pillar/price fields)
+- **Output**: Updates `portfolio.json` (the sole, canonical database for actual holdings and totals)
 - **Requires**: TradingView Desktop running, broker panel connected
 
 ---
 
 ## Hard Rules
 
+- **`portfolio.json` is the sole database and single source of truth** for all dashboard metrics, allocation charts, and valuation scripts.
 - **NEVER write to `portfolio.json` without explicit CONFIRM from the user**
 - If TV returns 0 positions, stop and tell the user TradingView is not connected
 - Show the full diff before asking for CONFIRM — never skip the review step
@@ -35,8 +36,9 @@ allowed-tools: Bash, Read, Write
 python3 investment_screener/backend/py_services/fetch_broker_data.py --snapshot
 ```
 
-This reads ALL accounts (TFSA, RRSP, Cash) from TradingView's broker panel.
-Output is written to `portfolio_tv.json` and also printed as JSON.
+This reads ALL accounts (TFSA, RRSP, Cash) from TradingView's broker panel via the CDP browser automation.
+> [!NOTE]
+> All raw per-account broker telemetry is saved inside the **`tvSnapshot`** root key of **`portfolio.json`**. The single `portfolio.json` database serves as the sole source of truth for holdings, totals, and transient broker allocations.
 
 Check the output:
 - `positions` array length > 0 — TV data is live

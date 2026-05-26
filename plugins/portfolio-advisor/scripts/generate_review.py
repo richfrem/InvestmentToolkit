@@ -169,7 +169,8 @@ def main():
         sys.exit(1)
 
     template = TEMPLATE_PATH.read_text()
-    portfolio = load_json(PORTFOLIO_PATH)
+    portfolio_data = load_json(PORTFOLIO_PATH)
+    portfolio = portfolio_data.get("holdings", []) if isinstance(portfolio_data, dict) else portfolio_data
     thesis = load_json(THESIS_PATH) if THESIS_PATH.exists() else {}
 
     portfolio_summary = compute_portfolio_summary(portfolio)

@@ -21,7 +21,6 @@ import net from 'net';
 import fs from 'fs';
 
 const PORTFOLIO_FILE    = path.resolve(__dirname, '../../data/portfolio.json');
-const PORTFOLIO_TV_FILE = path.resolve(__dirname, '../../data/portfolio_tv.json');
 const PY_SERVICES_DIR   = path.resolve(__dirname, '../../py_services');
 const FETCH_BROKER_PY   = path.join(PY_SERVICES_DIR, 'fetch_broker_data.py');
 
@@ -59,12 +58,16 @@ function spawnFetchBroker(args: string[], timeoutMs = 120_000): Promise<any> {
                 reject(new Error(`fetch_broker_data.py failed (exit ${code}): ${stderr.trim().slice(0, 400)}`));
                 return;
             }
-            // The script writes portfolio_tv.json — read from there (stdout has progress messages mixed in)
+            // The script writes to portfolio.json's tvSnapshot key — read from there
             try {
-                const data = JSON.parse(fs.readFileSync(PORTFOLIO_TV_FILE, 'utf-8'));
-                resolve(data);
+                const data = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+                if (data && data.tvSnapshot) {
+                    resolve(data.tvSnapshot);
+                } else {
+                    reject(new Error(`fetch_broker_data.py ran but tvSnapshot is missing in portfolio.json`));
+                }
             } catch {
-                reject(new Error(`fetch_broker_data.py ran but portfolio_tv.json is missing or invalid`));
+                reject(new Error(`fetch_broker_data.py ran but portfolio.json is missing or invalid`));
             }
         });
 
@@ -220,14 +223,19 @@ export async function syncAuto(_questradeSyncFn?: () => Promise<void>): Promise<
             const snapshot = await syncFromTV();
             const posCount = snapshot.positions?.length ?? 0;
             if (posCount > 0) {
-                // Write portfolio_tv.json (safe staging file — never overwrites portfolio.json directly)
-                fs.mkdirSync(path.dirname(PORTFOLIO_TV_FILE), { recursive: true });
-                fs.writeFileSync(PORTFOLIO_TV_FILE, JSON.stringify(snapshot, null, 2));
-                console.log(`[BrokerSync] TV sync complete: ${posCount} positions → portfolio_tv.json`);
+                // Write tvSnapshot inside portfolio.json
+                fs.mkdirSync(path.dirname(PORTFOLIO_FILE), { recursive: true });
+                const existing = fs.existsSync(PORTFOLIO_FILE)
+                    ? JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'))
+                    : {};
+                const data = Array.isArray(existing) ? { holdings: existing } : existing;
+                data.tvSnapshot = snapshot;
+                fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(data, null, 2));
+                console.log(`[BrokerSync] TV sync complete: ${posCount} positions → portfolio.json (tvSnapshot key)`);
                 return {
                     dataSource:    'tradingview-cdp',
                     positionCount: posCount,
-                    message:       `Synced ${posCount} positions from TradingView CDP. Written to portfolio_tv.json. Use /tv-portfolio-sync to review and promote.`,
+                    message:       `Synced ${posCount} positions from TradingView CDP. Written to portfolio.json under tvSnapshot. Use /tv-portfolio-sync to review and promote.`,
                     tvSnapshot:    snapshot,
                 };
             }

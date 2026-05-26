@@ -151,23 +151,36 @@ Type "apply" to proceed, or adjust individual items.
 
 ---
 
-## Phase 5 — Apply Approved Changes
+## Phase 5 — Apply Approved Changes & Strategy Refactoring
 
 ```bash
-# Apply target weight changes
+# 1. Update target weights in target-portfolio.json
+# For standard adjustments:
 python3 scripts/update_targets.py \
   --set TICKER1=X.XX TICKER2=Y.YY \
   --write --blueprint
 
-# Re-lock no-change positions
-python3 scripts/update_targets.py \
-  --set GOOG={actual} HUMN={actual} KOID={actual} COIN={actual} CRCL={actual} \
-  --write --blueprint
+# For complex structural shifts (e.g. zeroing out exited sectors, locking actual weights, and auto-scaling):
+# Use the precision target sizing service:
+python3 investment_screener/backend/py_services/lock_and_normalize_targets.py \
+  --target-file investment_screener/backend/data/theses/target-portfolio.json \
+  --zeros INTC,NVDA,AMD,TSM,ASML,MU,LITE,COHR,EQT,DRAM \
+  --locks GOOG=4.4451,HUMN=2.8284,KOID=2.6500,COIN=2.8060,CRCL=3.3855,ETHA=0.0,IBIT=0.0 \
+  --adjusts BE=5.0,IREN=1.8,SNDK=0.5 \
+  --write
 
-# Update agentRationale for each changed ticker
+# 2. Update metadata in investment_thesis.md
+# Update the metadata table at the top of plugins/portfolio-advisor/references/investment_thesis.md to record:
+#   | **Thesis Last Analyzed** | YYYY-MM-DD (Note) |
+#   | **13F Last Refactored**  | YYYY-MM-DD (Refactored SA LP Q{N} {year} filed {filing_date} into target-portfolio.json) |
+
+# 3. Synchronize the qualitative thesis layout with the new targets
+python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write
+
+# 4. Update agentRationale for each changed ticker
 # Format: "SA LP Q{N} {year}: {specific signal — closed/new/+X%}. {action taken}."
 
-# Generate review JSON and verify
+# 5. Generate review JSON, refresh, and run the automated verification suite
 python3 scripts/generate_review_json.py
 python3 scripts/verify_refresh.py
 python3 investment_screener/backend/py_services/verify_thesis_sync.py
@@ -198,16 +211,28 @@ Deferred (confirm required):
   LITE — target increase pending your decision
 ```
 
+### Chaining Instructions (Unified Investment Loop)
+> [!IMPORTANT]
+> After completing the 13F Analysis, explicitly prompt the user to trigger `/run-advisor` to run the **Portfolio Advisor Orchestrator** (`portfolio-advisor-orchestrator.md`). Explain that the orchestrator will:
+> 1. Run the interactive stock-by-stock Q&A for high-impact decisions (exits, initiations, adjusts > 1.5%).
+> 2. Coordinate **Precision Target Sizing & Normalization** (zeros, locks actual weights, normalizes to 100%, updates blueprints).
+> 3. Run the **Strategic Portfolio Review** (`/strategic-review`) to verify conviction alignment.
+> 4. Generate the **Rebalance** recommendations (`/rebalance`) to compute drift trades.
+> 5. Draft the automated **TradingView execution orders** (`/place-order`) with correct sequencing and accounts.
+
 ---
 
 ## Hard Rules
 
-1. **Never apply** without Phase 3 gates
-2. **SA calls ≠ equity signal** — distinguish options vs common stock positions
-3. **Never blindly follow SA** — if your thesis contradicts SA, flag as CONFLICT, not auto-apply
-4. **Always update agentRationale** — future sessions need to know why targets changed
-5. **Run verify_refresh.py and verify_thesis_sync.py** — final gates before reporting done
-6. **Always verify synchronization** — never leave target-portfolio.json, investment_thesis.md, or projections/ out of sync
+1. **Never apply** without Phase 3 gates.
+2. **SA calls ≠ equity signal** — distinguish options vs common stock positions.
+3. **Never blindly follow SA** — if your thesis contradicts SA, flag as CONFLICT, not auto-apply.
+4. **Always update agentRationale** — future sessions need to know why targets changed.
+5. **Run verify_refresh.py and verify_thesis_sync.py** — final gates before reporting done.
+6. **Always verify synchronization** — never leave target-portfolio.json, investment_thesis.md, or projections/ out of sync.
+7. **Lock Gate 7 / Actual Weights** — when sector liquidations occur, lock core and thematic holdings to exact actual broker weights to prevent unintended drift during normalization.
+8. **Log Thesis Analysis & 13F Refactor Dates** — always update the `Thesis Last Analyzed` and `13F Last Refactored` metadata keys in `investment_thesis.md` to guarantee visibility of active strategy updates.
+9. **Chaining MANDATE** — Never end a 13F analysis session without explicitly prompting the user to run `/run-advisor` to execute target calibration, strategic review, rebalancing, and TradingView order drafting.
 
 ---
 
