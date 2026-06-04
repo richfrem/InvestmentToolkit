@@ -1,9 +1,76 @@
 import express from 'express';
 import fs from 'fs';
+import path from 'path';
 import { thesisService } from '../services/ThesisService';
 import { THESIS_FILE } from '../utils/paths';
 
 const router = express.Router();
+const SUB_STRATEGIES_DIR = path.resolve(__dirname, '../../data/theses/sub_strategies');
+
+interface SubStrategySummary {
+    id: string;
+    title: string;
+    status: string;
+    date: string;
+    targetWeight: string;
+}
+
+// Helper to parse basic metadata from the markdown file
+function parseMetadata(content: string, filename: string): SubStrategySummary {
+    const titleMatch = content.match(/^# Investment Thesis Proposal:\s*(.+)$/m) || content.match(/^#\s*(.+)$/m);
+    const statusMatch = content.match(/\*\*Status\*\*:\s*(.+)$/m);
+    const dateMatch = content.match(/\*\*Date\*\*:\s*(.+)$/m);
+    const weightMatch = content.match(/\*\*Target Weight\*\*:\s*(.+)$/m);
+
+    return {
+        id: filename.replace('.md', ''),
+        title: titleMatch ? titleMatch[1].trim() : filename,
+        status: statusMatch ? statusMatch[1].trim() : 'UNKNOWN',
+        date: dateMatch ? dateMatch[1].trim() : '',
+        targetWeight: weightMatch ? weightMatch[1].trim() : 'N/A'
+    };
+}
+
+// GET /api/theses/sub-strategies
+router.get('/sub-strategies', (req, res) => {
+    try {
+        if (!fs.existsSync(SUB_STRATEGIES_DIR)) {
+            return res.json([]);
+        }
+
+        const files = fs.readdirSync(SUB_STRATEGIES_DIR).filter(f => f.endsWith('.md'));
+        const strategies: SubStrategySummary[] = files.map(file => {
+            const content = fs.readFileSync(path.join(SUB_STRATEGIES_DIR, file), 'utf-8');
+            return parseMetadata(content, file);
+        });
+
+        // Sort by id for consistency
+        strategies.sort((a, b) => a.id.localeCompare(b.id));
+
+        res.json(strategies);
+    } catch (error) {
+        console.error('Error reading sub-strategies:', error);
+        res.status(500).json({ error: 'Failed to read sub-strategies' });
+    }
+});
+
+// GET /api/theses/sub-strategies/:id
+router.get('/sub-strategies/:id', (req, res) => {
+    try {
+        const id = req.params.id;
+        const filePath = path.join(SUB_STRATEGIES_DIR, `${id}.md`);
+        
+        if (!fs.existsSync(filePath)) {
+            return res.status(404).json({ error: 'Sub-strategy not found' });
+        }
+
+        const content = fs.readFileSync(filePath, 'utf-8');
+        res.json({ id, content });
+    } catch (error) {
+        console.error('Error reading sub-strategy detail:', error);
+        res.status(500).json({ error: 'Failed to read sub-strategy' });
+    }
+});
 
 router.get('/', async (_req, res) => {
     const theses = await thesisService.listTheses();

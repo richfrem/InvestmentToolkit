@@ -17,7 +17,7 @@ allowed-tools: Bash, Read, Write
 ## Quick Reference
 - **Trigger**: "update target weights", "apply formula changes from strategic review", `/update-portfolio-targets`
 - **Thesis file**: `investment_screener/backend/data/theses/target-portfolio.json`  (id: `"target-portfolio"`)
-- **Thesis doc**: `plugins/portfolio-advisor/references/investment_thesis.md`
+- **Thesis doc**: `investment_screener/backend/data/theses/investment_thesis.md`
 - **Canonical edit script**: `plugins/portfolio-advisor/scripts/update_targets.py` ← **use this**
 - **Legacy update script**: `investment_screener/backend/py_services/update_thesis.py` (older, per-holding patch style)
 - **ADR reference**: `ADRs/` — cross-plugin script conventions
@@ -87,7 +87,7 @@ python3 investment_screener/backend/py_services/update_thesis.py --list
 
 Also read the investment thesis document for strategic context:
 ```bash
-head -100 plugins/portfolio-advisor/references/investment_thesis.md
+head -100 investment_screener/backend/data/theses/investment_thesis.md
 ```
 
 Note: The filename `investment_thesis.md` is the canonical thesis doc.
@@ -223,7 +223,7 @@ If the formula change represents a meaningful strategic shift, update the thesis
 ```bash
 # The thesis doc is the human-readable narrative behind the numbers
 # Edit the relevant section in:
-#   plugins/portfolio-advisor/references/investment_thesis.md
+#   investment_screener/backend/data/theses/investment_thesis.md
 #
 # Typical updates:
 # - Pillar weight rationale (why X% to AI Compute vs Y% to Sovereign Finance)

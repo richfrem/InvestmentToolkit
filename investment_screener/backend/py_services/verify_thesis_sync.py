@@ -21,7 +21,7 @@ PY_SERVICES_DIR = Path(__file__).resolve().parent
 REPO_ROOT       = PY_SERVICES_DIR.parents[2]
 
 THESIS_JSON = REPO_ROOT / "investment_screener" / "backend" / "data" / "theses" / "target-portfolio.json"
-THESIS_MD   = REPO_ROOT / "plugins" / "portfolio-advisor" / "references" / "investment_thesis.md"
+THESIS_MD   = REPO_ROOT / "investment_screener" / "backend" / "data" / "theses" / "investment_thesis.md"
 PROJ_DIR    = REPO_ROOT / "investment_screener" / "backend" / "data" / "projections"
 
 ACTIVE_ROLES = {"core", "hedge", "speculative", "reserve"}
@@ -84,28 +84,39 @@ def main():
         log_ok(f"Total target weight sums to {total_weight:.4f}% (within acceptable range)")
 
     # ── 2. Validate investment_thesis.md Mention ──────────────────────────────
-    print("\nChecking investment_thesis.md ticker alignment...")
+    print("\nChecking investment_thesis.md and sub-strategies ticker alignment...")
     if not thesis_md_path.exists():
         log_fail(f"investment_thesis.md not found at {thesis_md_path}")
     else:
         try:
             md_text = thesis_md_path.read_text()
-            log_ok("Successfully loaded investment_thesis.md")
+            
+            # Optionally aggregate all sub-strategy markdown texts if directory exists
+            sub_strategies_dir = thesis_md_path.parent / "sub_strategies"
+            if sub_strategies_dir.exists() and sub_strategies_dir.is_dir():
+                for sub_file in sub_strategies_dir.glob("*.md"):
+                    try:
+                        md_text += "\n\n" + sub_file.read_text()
+                    except Exception:
+                        pass
+
+            log_ok("Successfully loaded investment_thesis.md and sub-strategy files")
 
             missing_tickers = []
             for h in holdings:
                 ticker = h["ticker"]
-                # Use regex with word boundary check
-                pattern = rf"\b{re.escape(ticker)}\b"
+                # Match dots and dashes interchangeably (e.g. PSU.U.TO or PSU-U.TO)
+                ticker_pattern = re.escape(ticker).replace(r"\.", r"[\.-]")
+                pattern = rf"\b{ticker_pattern}\b"
                 if not re.search(pattern, md_text):
                     missing_tickers.append(ticker)
 
             if missing_tickers:
-                log_fail(f"The following tickers exist in target portfolio but are missing in investment_thesis.md: {missing_tickers}")
+                log_fail(f"The following tickers exist in target portfolio but are missing in thesis documentation: {missing_tickers}")
             else:
-                log_ok("All portfolio tickers are successfully documented in the thesis markdown.")
+                log_ok("All portfolio tickers are successfully documented in the thesis/sub-strategy markdown files.")
         except Exception as e:
-            log_fail(f"Failed to read/verify investment_thesis.md: {e}")
+            log_fail(f"Failed to read/verify thesis markdown files: {e}")
 
     # ── 3. Validate Valuation Projections ──────────────────────────────────────
     print("\nChecking valuation projections for active tickers...")

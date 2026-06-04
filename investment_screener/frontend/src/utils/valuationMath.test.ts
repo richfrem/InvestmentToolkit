@@ -38,4 +38,26 @@ describe('valuationMath', () => {
     expect(result.year5EPS).toBe(3.22);
     expect(result.presentValue).toBe(50.0); 
   });
+
+  it('should compute CACI scenario with raw absolute numbers correctly', () => {
+    const baseRevenue = 8627824000;
+    const baseShares = 22091305;
+    const discountRate = 0.10;
+    const horizon = 5;
+    const params = {
+      growthRate: 9.5,
+      netMargin: 5.8,
+      exitPE: 18,
+      qualityMultiplier: 1.05,
+      shareChange: -0.5,
+      weight: 0.6
+    };
+
+    const result = computeScenario(baseRevenue, baseShares, discountRate, horizon, params);
+    expect(result.year5Revenue).toBe(13582.3);
+    expect(result.year5NetIncome).toBe(787.8);
+    expect(result.year5EPS).toBe(36.56);
+    expect(result.presentValue).toBe(429.1);
+  });
 });
+

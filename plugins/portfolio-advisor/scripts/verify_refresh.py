@@ -20,7 +20,7 @@ from pathlib import Path
 
 REPO_ROOT   = Path(__file__).resolve().parents[3]
 THESIS_JSON = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
-THESIS_MD   = REPO_ROOT / "plugins/portfolio-advisor/references/investment_thesis.md"
+THESIS_MD   = REPO_ROOT / "investment_screener/backend/data/theses/investment_thesis.md"
 PORTFOLIO   = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 REVIEWS_DIR = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
 PROJ_DIR    = REPO_ROOT / "investment_screener/backend/data/projections"

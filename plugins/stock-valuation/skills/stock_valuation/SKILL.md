@@ -23,6 +23,7 @@ allowed-tools: Bash, Read, Write
   - `example_PANW_2026-05-02.json` — SaaS/cybersecurity, volatile GAAP margins, one-time item handling, SELL result
   - `example_NVDA_placeholder.json` — **⚠️ DO NOT use as reference** (legacy placeholder, missing fields)
 - **Benchmarks**: `references/valuation-benchmarks.md` ← Load for P/E + margin anchoring
+- **Templates**: `assets/templates/projection_template.json` ← Official output schema
 - **Fallbacks**: `references/fallback-tree.md` ← Load on ANY step failure
 - **API Docs**: `references/api_reference.md`
 
@@ -45,7 +46,7 @@ See `CONNECTORS.md` for full degradation contract.
 | Mode | Condition | Action |
 |------|-----------|--------|
 | **Full** | `~~financial-data-fetcher` + `~~projection-store` available | Full pipeline below |
-| **Standalone** | Backend down or data unavailable | Announce degraded mode → request raw JSON paste → complete analysis → write to `/tmp/` → skip persistence |
+| **Standalone** | Backend down or data unavailable | Announce degraded mode → request raw JSON paste → complete analysis → write to `temp/evaluations/` → skip persistence |
 
 If health check fails → immediately invoke **FB-02** from `references/fallback-tree.md`.
 
@@ -124,16 +125,16 @@ Record findings in `analyticsLog.priorAnalysisReview`. Then fetch fresh data and
 curl -sf http://localhost:3001/health || echo "DEGRADED — invoke FB-02"
 
 # Fetch data
-python3 investment_screener/backend/py_services/fetch_financials.py {TICKER} > /tmp/{TICKER}_raw.json
+python3 investment_screener/backend/py_services/fetch_financials.py {TICKER} > temp/evaluations/{TICKER}_raw.json
 ```
 **If fetch fails** → invoke **FB-01** from `references/fallback-tree.md`. Do NOT hallucinate data.
 
 ## Step 2: Build Snapshot Object + Seed analyticsLog
 ```bash
 # Standardize metrics using the canonical calculation engine
-cat /tmp/{TICKER}_raw.json | python3 plugins/stock-valuation/skills/stock_valuation/scripts/standardize_metrics.py > /tmp/{TICKER}_metrics.json
+cat temp/evaluations/{TICKER}_raw.json | python3 plugins/stock-valuation/skills/stock_valuation/scripts/standardize_metrics.py > temp/evaluations/{TICKER}_metrics.json
 ```
-Read `/tmp/{TICKER}_metrics.json` and use the `snapshot` and `ratios` blocks. 
+Read `temp/evaluations/{TICKER}_metrics.json` and use the `snapshot` and `ratios` blocks. 
 
 > ⚠️ **The Canonical Calculation Policy**: Never compute P/E, P/S, CAGR, or Share Count derivations inline. Use the outputs from `standardize_metrics.py` to ensure consistency with the web dashboard.
 
@@ -148,7 +149,7 @@ This is a **live working document** — add to it throughout Steps 2 and 3, not 
 ## Step 3: Cognitive Analysis — Define Scenarios, Then Run DCF Calculator
 
 > ⚠️ **NEVER compute DCF math by hand or inline.** After deciding scenario parameters,
-> write them to `/tmp/{TICKER}_scenarios.json` and run the canonical calculator.
+> write them to `temp/evaluations/{TICKER}_scenarios.json` and run the canonical calculator.
 > The script validates constraints, computes all intermediates, and outputs `presentValue`
 > for each scenario. See `plugins/stock-valuation/references/ADR-dcf-calculator.md`.
 
@@ -180,7 +181,7 @@ Use `references/analysis_prompt.md` for full methodology. Key constraints for ch
 **After deciding parameters, run the calculator:**
 ```bash
 # Write scenario params to temp file
-cat > /tmp/{TICKER}_scenarios.json << 'EOF'
+cat > temp/evaluations/{TICKER}_scenarios.json << 'EOF'
 {
   "bear": { "weight": 0.XX, "growthRate": X, "netMargin": X, "exitPE": X, "qualityMultiplier": X.XX, "shareChange": X.X },
   "base": { "weight": 0.XX, "growthRate": X, "netMargin": X, "exitPE": X, "qualityMultiplier": X.XX, "shareChange": X.X },
@@ -190,9 +191,9 @@ EOF
 
 # Run canonical DCF calculator — validates + computes all intermediates
 python3 investment_screener/backend/py_services/dcf_scenarios.py \
-  --raw /tmp/{TICKER}_raw.json \
-  --scenarios /tmp/{TICKER}_scenarios.json \
-  --pretty | tee /tmp/{TICKER}_dcf_result.json
+  --raw temp/evaluations/{TICKER}_raw.json \
+  --scenarios temp/evaluations/{TICKER}_scenarios.json \
+  --pretty | tee temp/evaluations/{TICKER}_dcf_result.json
 ```
 - If exit code 1 → fix the validation errors reported to stderr before proceeding
 - Use `year5Revenue`, `year5NetIncome`, `year5EPS`, `presentValue` from output to populate the projection JSON in Step 5
@@ -207,7 +208,7 @@ python3 investment_screener/backend/py_services/dcf_scenarios.py \
 ## Step 4: Validate & Repair
 ```bash
 # Run pre-persistence validator
-cat /tmp/{TICKER}_projection.json | python3 plugins/stock-valuation/skills/stock_valuation/scripts/validate_projection.py --verbose
+cat temp/evaluations/{TICKER}_projection.json | python3 plugins/stock-valuation/skills/stock_valuation/scripts/validate_projection.py --verbose
 # Exit 0 = valid | Exit 1 = errors to fix
 ```
 Fix all reported errors before proceeding. If math inconsistency detected → invoke **FB-05** from `references/fallback-tree.md`.
@@ -215,79 +216,24 @@ Fix all reported errors before proceeding. If math inconsistency detected → in
 Normalize weights if sum ≠ 1.0. Cast string numbers to actual numbers. Clamp out-of-range values.
 
 ## Step 5: Assemble Projection Object
-```json
-{
-  "ticker": "{TICKER}",
-  "id": "<UUID>",
-  "source": "AI_AGENT",
-  "schemaVersion": "1.2",
-  "version": 1,
-  "savedAt": "<ISO timestamp>",
-  "updatedAt": "<ISO timestamp>",
-  "name": "AI Deep Dive — {TICKER} — <date>",
-  "rationale": "<3-5 sentence thesis>",
-  "snapshot": { "...from Step 2..." },
-  "dataPreferences": { "growthBasis": "next", "marginBasis": "ttm" },
-  "scenarios": { "bear": {...}, "base": {...}, "bull": {...} },
-  "analyticsLog": {
-    "shareCountMethod": "<which field used: shares_outstanding vs shares_diluted (NI/EPS derived). Note any discrepancy >15% and resolution. E.g.: 'Used 811M (mktcap-implied); NI/EPS derived 663M flagged as period mismatch — chose mktcap value for consistency'>",
-    "marginAnchor": "<TTM or 4yr avg — exact value chosen and rule applied. E.g.: 'TTM 12.3% used; 4yr avg 4.6% distorted by FY2024 deferred tax benefit outlier (32.1%) — excluded per mean-reverting Rule #9'>",
-    "growthDerivation": "<blended consensus and CAGR path. E.g.: 'Y1 +22.5% / Y2 +20.0% blended 21.2%; base 19% (deceleration yrs 3-5); within ±3pp consensus ✓; no hypergrowth exception (Y1 <40%)'>",
-    "sectorBenchmarkRow": "<exact row from valuation-benchmarks.md. E.g.: 'Technology — Software (SaaS): conservative P/E 20, median 30, growth 50+; net margin typical 15–25%, best-in-class 30%+'>",
-    "dataQualityFlags": [
-      "<anomaly 1 — e.g. 'FY2024 net margin 32.1% = one-time deferred tax benefit — excluded from margin anchor'>",
-      "<anomaly 2 — e.g. 'Analyst EPS Y1 ($3.69) > Y2 ($2.30) — unusual declining trend; suspected fiscal year period misalignment in API'>"
-    ],
-    "analystInputs": {
-      "y1RevEstimate": "<number in $ or null>",
-      "y2RevEstimate": "<number in $ or null>",
-      "y1GrowthPct": "<number>",
-      "y2GrowthPct": "<number>",
-      "blendedConsensusPct": "<number>",
-      "analystTargetMean": "<number or null>",
-      "analystCount": "<number or null>"
-    },
-    "historicalRevenue": ["<array of last 4-5 fiscal years in $M, oldest→newest>"],
-    "historicalNetMargins": ["<array of last 4-5 fiscal years as % floats, oldest→newest>"],
-    "historicalEPS": ["<array of last 4-5 fiscal years, oldest→newest; post-split equivalent>"],
-    "priorAnalysisReview": {
-      "priorModel": "<model name from prior projection, e.g. 'Gemini 3 Pro'>",
-      "priorDate": "<YYYY-MM-DD>",
-      "priorPrice": "<price when prior analysis was done>",
-      "priorFairValue": "<prior weighted fair value>",
-      "priorAction": "<BUY/HOLD/SELL>",
-      "priceDelta": "<e.g. '+113% since prior analysis — prior BUY thesis played out'>",
-      "assumptionAudit": "<e.g. 'Prior base netMargin 22% had no grounding — semiconductor median is 15-30% but INTC was -0.5% TTM at the time; inflated. Prior QM 1.15 on bull unjustified — Intel has no durable pricing power across cycles per benchmark rule.'>",
-      "modelQualityFlag": "<VALIDATED if prior was Claude Sonnet 4.6, UNVALIDATED if GPT-5 mini/Gemini/Antigravity/other>",
-      "thesisOutcome": "<e.g. 'Thesis was correct directionally (BUY at $46 → now $99) but current price has exceeded prior base case $64 — full re-evaluation required at new entry point'>",
-      "fundamentalChanges": "<list key changes since prior analysis: new earnings data, competitive shifts, management changes, macro events>"
-    },
-    "confidenceBreakdown": "<score>/1.0 — Base: 1.0. [+ for moat/quality signals, - for data anomalies/uncertainty]. E.g.: '0.72 — -0.08 volatile GAAP margins, -0.05 share count ambiguity, -0.05 EPS anomaly, -0.10 unproven platformization strategy'"
-  },
-  "aiThesis": {
-    "model": "<human-readable model name e.g. 'Claude Sonnet 4.6'>",
-    "rationale": "<full markdown analysis>",
-    "fairValue": "<weighted value>",
-    "action": "BUY/HOLD/SELL",
-    "analyzedAt": "<ISO timestamp>",
-    "researchReport": "{TICKER}_{YYYY-MM-DD}.md"
-  },
-  "globalSettings": { "discountRate": 10.0, "timeHorizon": 5 }
-}
-```
+Construct the projection object using the official template provided in:
+`assets/templates/projection_template.json`
+
+Read this template, fill in the fields based on your analysis, and use the exact schema structure.
+
 > **Model name**: Use human-readable names (`"Claude Sonnet 4.6"` not `"claude-sonnet-4-6"`).
 > **analyticsLog is mandatory** in schemaVersion 1.2+. Every field must be populated — no null strings. `dataQualityFlags` must be a non-empty array (at minimum note "No anomalies detected" if clean).
 
 ## Step 6: Persist Projection JSON
 ```bash
-cat > /tmp/{TICKER}_projection.json << 'EOF'
+cat > temp/evaluations/{TICKER}_projection.json << 'EOF'
 <JSON_PAYLOAD>
 EOF
 
 # Persist via REST API (persist_projection.py does not exist — use the API)
 curl -s -X POST http://localhost:3001/api/projections \
   -H 'Content-Type: application/json' \
-  -d @/tmp/{TICKER}_projection.json
+  -d @temp/evaluations/{TICKER}_projection.json
 ```
 - Success response: `{"success":true,"message":"Projection saved successfully"}`
 - If 409 conflict → increment `version` field and retry once

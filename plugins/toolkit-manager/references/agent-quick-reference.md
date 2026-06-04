@@ -190,7 +190,7 @@ python3 tools/launch_tradingview_with_debugport.py
 | File | Purpose |
 |---|---|
 | `investment_screener/backend/data/theses/target-portfolio.json` | Live thesis — pillar targets and holding weights |
-| `plugins/portfolio-advisor/references/investment_thesis.md` | Thesis narrative — strategy, pillars, conviction logic |
+| `investment_screener/backend/data/theses/investment_thesis.md` | Thesis narrative — strategy, pillars, conviction logic |
 | `PortfolioAnalysis/strategic-reviews/` | Historical reviews (MD + JSON + patch) |
 | `investment_screener/backend/data/projections/` | AI DCF valuations per stock |
 | `investment_screener/backend/data/etf_analysis/` | ETF analysis results (versioned per ticker) |

@@ -195,12 +195,15 @@ Approved:  {N}  |  Warned:  {N}  |  Blocked:  {N}  |  Needs confirm:  {N}
 Total weight delta if all approved: {delta:+.2f}pp
 ```
 
-Then ask:
-```
-Apply all APPROVED changes?
-Confirm any WARN/CONFIRM items above, or say "skip [TICKER]" to exclude.
-Type "apply" to proceed, or adjust individual items.
-```
+**Auto-proceed rule (fixes stale modal gap):**
+
+| Condition | Behavior |
+|-----------|----------|
+| All items are APPROVED or WARN (allowlisted) | **Auto-apply immediately** — no "apply" prompt needed. State "Applying N approved changes..." and proceed to Phase 5. |
+| Any item is CONFIRM (Gate 2 new position, Gate 8 non-allowlisted) | **Gate**: ask user to confirm or skip before proceeding. |
+| Any item is BLOCKED | Never apply. State the block reason and stop. |
+
+When auto-applying, print one line: `"Applying {N} approved changes (+ {N} warned/allowlisted)..."` then run Phase 5 immediately. Do NOT wait for user input unless CONFIRM or BLOCKED items are present. This prevents the modal from remaining in PROPOSED state after every sweep.
 
 ---
 

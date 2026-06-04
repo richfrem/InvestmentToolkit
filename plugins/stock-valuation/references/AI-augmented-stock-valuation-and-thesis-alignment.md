@@ -11,7 +11,7 @@
 The system will not just "chat"; it will perform **Retrieval Augmented Generation (RAG)** specifically tuned for financial logic.
 
 *   **The Brain (Logic):**
-    *   *Thesis:* Investment Thesis (`plugins/portfolio-advisor/references/investment_thesis.md`)
+    *   *Thesis:* Investment Thesis (`investment_screener/backend/data/theses/investment_thesis.md`)
     *   *Framework:* "Professional Investment Framework v3.1" (`docs/InvestmentFramework/...`)
 *   **The Facts (Data):**
     *   *Portfolio:* Real-time holdings via Questrade Sync.

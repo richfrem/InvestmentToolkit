@@ -7,7 +7,7 @@
     "version": 3,
     "savedAt": "2026-05-02T17:35:00.000Z",
     "updatedAt": "2026-05-02T19:01:05.097Z",
-    "name": "AI Deep Dive — BE — 2026-05-02",
+    "name": "AI Deep Dive \u2014 BE \u2014 2026-05-02",
     "rationale": "Bloom Energy (BE) is experiencing a massive hyper-growth cycle (130% YoY) driven by AI data center power demands, propelling its valuation to $82.6B. While its solid oxide fuel cells are uniquely positioned to solve grid bottlenecks, pricing perfection is assumed at 40x trailing sales. My weighted fair value of $257 indicates mild downside risk. Strong execution is required to justify the current $290 share price.",
     "snapshot": {
       "price": 290.52,
@@ -118,8 +118,8 @@
     "version": 1,
     "savedAt": "2026-05-02T20:15:00Z",
     "updatedAt": "2026-05-04T05:21:25Z",
-    "name": "AI Deep Dive — BE — 2026-05-02",
-    "rationale": "Bloom Energy is a compelling technology story — solid oxide fuel cells are uniquely suited for AI datacenter baseload power — but at $290.52 the stock trades at 40.8x TTM revenue with negative GAAP net margins. Even the bull-case DCF ($323) barely clears the current price, meaning the market is assigning near-certainty to a scenario requiring 60% CAGR and 16% net margins over 5 years from a company that has never been GAAP profitable. A first-principles DCF yields a weighted fair value of $105.92, implying 63.5% downside. SELL: transformational story, terminal valuation.",
+    "name": "AI Deep Dive \u2014 BE \u2014 2026-05-02",
+    "rationale": "Bloom Energy is a compelling technology story \u2014 solid oxide fuel cells are uniquely suited for AI datacenter baseload power \u2014 but at $290.52 the stock trades at 40.8x TTM revenue with negative GAAP net margins. Even the bull-case DCF ($323) barely clears the current price, meaning the market is assigning near-certainty to a scenario requiring 60% CAGR and 16% net margins over 5 years from a company that has never been GAAP profitable. A first-principles DCF yields a weighted fair value of $105.92, implying 63.5% downside. SELL: transformational story, terminal valuation.",
     "snapshot": {
       "price": 290.52,
       "currency": "USD",
@@ -142,7 +142,7 @@
         "exitPE": 15,
         "qualityMultiplier": 0.85,
         "shareChange": 4,
-        "rationale": "AI datacenter capex peaks in 2026-2027; distributed solar+battery costs drop below fuel cell economics by 2028. Chinese SOFC manufacturers (Siemens Energy JVs, domestic players) enter at lower cost. Natural gas fuel cells face regulatory headwinds as methane emissions scrutiny intensifies. BE growth reverts toward 3-yr historical CAGR (19%) — using 15% to reflect competitive stress. Net margin barely 4%: gross margin expansion stalls at 30-32% as pricing pressure competes with scale benefits; SG&A/R&D remain elevated relative to revenue. Exit PE 15 = industrials conservative, below median (18) given unproven profitability. Q=0.85: no demonstrated pricing power, commodity risk to key SOFC stack components.",
+        "rationale": "AI datacenter capex peaks in 2026-2027; distributed solar+battery costs drop below fuel cell economics by 2028. Chinese SOFC manufacturers (Siemens Energy JVs, domestic players) enter at lower cost. Natural gas fuel cells face regulatory headwinds as methane emissions scrutiny intensifies. BE growth reverts toward 3-yr historical CAGR (19%) \u2014 using 15% to reflect competitive stress. Net margin barely 4%: gross margin expansion stalls at 30-32% as pricing pressure competes with scale benefits; SG&A/R&D remain elevated relative to revenue. Exit PE 15 = industrials conservative, below median (18) given unproven profitability. Q=0.85: no demonstrated pricing power, commodity risk to key SOFC stack components.",
         "moatScore": 2,
         "managementScore": 2,
         "year5Revenue": 4071,
@@ -161,7 +161,7 @@
         "exitPE": 25,
         "qualityMultiplier": 1,
         "shareChange": 2,
-        "rationale": "AI datacenter adoption of on-site fuel cells sustains strong growth. BE wins contracts with 2-3 major hyperscalers for 100-500MW deployments. Enterprise and telecom customers continue adoption for reliability. Revenue CAGR 35% reflects continuation of recent 37.3% annual growth with slight moderation. Net margin 9% = achievable at $9B revenue scale with operating leverage: gross margin 34-36%, SG&A 10%, R&D 7%, operating 19%, net after interest/tax ~9%. Comparable to Cummins (8%) and Generac (13%) at maturity. Exit PE 25 = above industrials median (18) with clean-energy premium; below renewables median (35). Q=1.0: improving technology but no dominant moat established yet. APIs empty — growth anchored to recent YoY (37.3%) and 3-yr CAGR (19.1%), using 35% as base (AI structural tailwind sustaining recent acceleration).",
+        "rationale": "AI datacenter adoption of on-site fuel cells sustains strong growth. BE wins contracts with 2-3 major hyperscalers for 100-500MW deployments. Enterprise and telecom customers continue adoption for reliability. Revenue CAGR 35% reflects continuation of recent 37.3% annual growth with slight moderation. Net margin 9% = achievable at $9B revenue scale with operating leverage: gross margin 34-36%, SG&A 10%, R&D 7%, operating 19%, net after interest/tax ~9%. Comparable to Cummins (8%) and Generac (13%) at maturity. Exit PE 25 = above industrials median (18) with clean-energy premium; below renewables median (35). Q=1.0: improving technology but no dominant moat established yet. APIs empty \u2014 growth anchored to recent YoY (37.3%) and 3-yr CAGR (19.1%), using 35% as base (AI structural tailwind sustaining recent acceleration).",
         "moatScore": 3,
         "managementScore": 3,
         "year5Revenue": 9075.7,
@@ -170,7 +170,7 @@
         "scenarioPrice": 48.05,
         "risks": [
           "Path to 9% net margin requires operating leverage that has not been demonstrated; SG&A heavy model may persist",
-          "Large project revenue recognition is lumpy — quarterly misses against consensus create severe multiple compression"
+          "Large project revenue recognition is lumpy \u2014 quarterly misses against consensus create severe multiple compression"
         ]
       },
       "bull": {
@@ -180,7 +180,7 @@
         "exitPE": 35,
         "qualityMultiplier": 1.1,
         "shareChange": 1,
-        "rationale": "Catalyst: Bloom Energy becomes the dominant on-site power standard for hyperscaler AI datacenters. Microsoft Azure, Google, Amazon collectively commit to multi-GW fuel cell deployments as the preferred solution for on-site reliable clean power. Bloom Electrolyzer revenues begin scaling as green hydrogen demand grows. Revenue CAGR 60% requires reaching $21B by Y5 from $2B base — extraordinary, assumes BE captures 30-40% of the estimated $50-70B AI datacenter power market. Net margin 16%: high-margin 10yr service contracts (fuel supply + maintenance) become majority of revenue mix; comparable to best-in-class industrial energy companies. Exit PE 35 = Energy Renewables median, fully applied as clean/AI thesis materialises. Q=1.1: SOFC technology with >65% electrical efficiency (vs ~35% for combustion grid) creates genuine thermodynamic moat; hyperscaler certification creates 2-3yr requalification switching cost.",
+        "rationale": "Catalyst: Bloom Energy becomes the dominant on-site power standard for hyperscaler AI datacenters. Microsoft Azure, Google, Amazon collectively commit to multi-GW fuel cell deployments as the preferred solution for on-site reliable clean power. Bloom Electrolyzer revenues begin scaling as green hydrogen demand grows. Revenue CAGR 60% requires reaching $21B by Y5 from $2B base \u2014 extraordinary, assumes BE captures 30-40% of the estimated $50-70B AI datacenter power market. Net margin 16%: high-margin 10yr service contracts (fuel supply + maintenance) become majority of revenue mix; comparable to best-in-class industrial energy companies. Exit PE 35 = Energy Renewables median, fully applied as clean/AI thesis materialises. Q=1.1: SOFC technology with >65% electrical efficiency (vs ~35% for combustion grid) creates genuine thermodynamic moat; hyperscaler certification creates 2-3yr requalification switching cost.",
         "moatScore": 4,
         "managementScore": 4,
         "year5Revenue": 21223.1,
@@ -188,8 +188,8 @@
         "year5EPS": 13.52,
         "scenarioPrice": 323.15,
         "risks": [
-          "Even bull case barely exceeds current price — the stock is priced for this scenario already",
-          "Reaching $21B revenue requires adding ~$19B in new revenue — unprecedented scale for an industrial equipment company in 5 years"
+          "Even bull case barely exceeds current price \u2014 the stock is priced for this scenario already",
+          "Reaching $21B revenue requires adding ~$19B in new revenue \u2014 unprecedented scale for an industrial equipment company in 5 years"
         ]
       }
     },
@@ -207,7 +207,7 @@
           "Strong Q1 2026 earnings results",
           "SA LP holds 10.1M shares as top power position in Q4 2025 13F"
         ],
-        "thesisImpact": "Oracle 2.8 GW is the single largest fuel cell AI data center contract ever announced. This directly validates the hyperscaler power-to-fuel-cell thesis. DCF FV of $106 likely understates enterprise power contract value. Target lifted 3.19%→3.43%. Bear case (no enterprise adoption) significantly de-risked."
+        "thesisImpact": "Oracle 2.8 GW is the single largest fuel cell AI data center contract ever announced. This directly validates the hyperscaler power-to-fuel-cell thesis. DCF FV of $106 likely understates enterprise power contract value. Target lifted 3.19%\u21923.43%. Bear case (no enterprise adoption) significantly de-risked."
       }
     },
     "globalSettings": {
@@ -215,16 +215,16 @@
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "DISCREPANCY FLAGGED (16.0% — above 15% threshold): shares_diluted (API) = 239,010,811; shares_outstanding = 284,443,868; mktcap-implied = 284,443,852. The discrepancy is standard for loss-reporting companies: per GAAP, diluted share count = basic share count when earnings are negative (anti-dilutive securities excluded). DCF calculator used API shares_diluted = 239M as the base — this slightly OVERSTATES per-share value relative to true fully diluted count (284M). Impact: if 284M used, all EPS figures decrease by ~15.9%, and all scenarioPrices decrease by ~15.9%. Resolution: used 239M for DCF consistency with EPS denominators, but noted in all scenario rationales.",
-      "marginAnchor": "All four historical net margins are negative (-25.1%, -22.7%, -2.0%, -4.4%). Mean-reversion anchor is inapplicable — forward profitability requires a structural inflection that has not yet occurred. Gross margin trend IS positive and strong (12.4%→14.8%→27.5%→29.0%), a +16.6pp improvement in 3 years — genuine manufacturing efficiency gains. Operating margin turned positive in TTM (+3.6%). Base case net margin 9% anchored to industrials peers (Cummins 8%, Generac 13%) at comparable revenue scale. Bear 4% = barely profitable. Bull 16% = above industrial peers, justified only if high-margin service contracts dominate revenue mix. metrics.profit_margin=0.25% appears to be a data anomaly (API field) — actual TTM GAAP net margin = -4.37% ($-88.4M / $2.024B).",
-      "growthDerivation": "API estimates field empty. Revenue growth anomaly: API reports revenue_growth=130.4% but historical annual data shows $1.474B→$2.024B = +37.3% YoY. The 130.4% figure is likely a recent quarterly YoY comparison (Q1 2026 vs Q1 2025), suggesting a significant revenue acceleration in the most recent quarter — possibly from a large AI datacenter contract delivery. Annualized run-rate from a 130% quarterly acceleration would be ~$3.2B vs $2.024B TTM — a material gap. Cannot confirm without quarterly breakdown. Base CAGR 35% anchored to recent annual YoY (37.3%), representing modest deceleration as base grows. 3-yr historical CAGR 19.1% serves as the structural floor. Bear 15% = reversion toward historical norm. Bull 60% = sustained near-quarterly-peak growth.",
-      "sectorBenchmarkRow": "Industrials — Electrical Equipment & Parts: conservative P/E 14, median P/E 18, growth P/E 24. Note: BE's clean energy/AI narrative warrants blending with Energy Renewables (conservative 20, median 35, growth 55). Bear exitPE=15 = industrials conservative floor. Base exitPE=25 = between industrials median (18) and renewables median (35), reflecting dual-narrative company. Bull exitPE=35 = renewables median, fully applied if AI/clean energy thesis materialises.",
+      "shareCountMethod": "DISCREPANCY FLAGGED (16.0% \u2014 above 15% threshold): shares_diluted (API) = 239,010,811; shares_outstanding = 284,443,868; mktcap-implied = 284,443,852. The discrepancy is standard for loss-reporting companies: per GAAP, diluted share count = basic share count when earnings are negative (anti-dilutive securities excluded). DCF calculator used API shares_diluted = 239M as the base \u2014 this slightly OVERSTATES per-share value relative to true fully diluted count (284M). Impact: if 284M used, all EPS figures decrease by ~15.9%, and all scenarioPrices decrease by ~15.9%. Resolution: used 239M for DCF consistency with EPS denominators, but noted in all scenario rationales.",
+      "marginAnchor": "All four historical net margins are negative (-25.1%, -22.7%, -2.0%, -4.4%). Mean-reversion anchor is inapplicable \u2014 forward profitability requires a structural inflection that has not yet occurred. Gross margin trend IS positive and strong (12.4%\u219214.8%\u219227.5%\u219229.0%), a +16.6pp improvement in 3 years \u2014 genuine manufacturing efficiency gains. Operating margin turned positive in TTM (+3.6%). Base case net margin 9% anchored to industrials peers (Cummins 8%, Generac 13%) at comparable revenue scale. Bear 4% = barely profitable. Bull 16% = above industrial peers, justified only if high-margin service contracts dominate revenue mix. metrics.profit_margin=0.25% appears to be a data anomaly (API field) \u2014 actual TTM GAAP net margin = -4.37% ($-88.4M / $2.024B).",
+      "growthDerivation": "API estimates field empty. Revenue growth anomaly: API reports revenue_growth=130.4% but historical annual data shows $1.474B\u2192$2.024B = +37.3% YoY. The 130.4% figure is likely a recent quarterly YoY comparison (Q1 2026 vs Q1 2025), suggesting a significant revenue acceleration in the most recent quarter \u2014 possibly from a large AI datacenter contract delivery. Annualized run-rate from a 130% quarterly acceleration would be ~$3.2B vs $2.024B TTM \u2014 a material gap. Cannot confirm without quarterly breakdown. Base CAGR 35% anchored to recent annual YoY (37.3%), representing modest deceleration as base grows. 3-yr historical CAGR 19.1% serves as the structural floor. Bear 15% = reversion toward historical norm. Bull 60% = sustained near-quarterly-peak growth.",
+      "sectorBenchmarkRow": "Industrials \u2014 Electrical Equipment & Parts: conservative P/E 14, median P/E 18, growth P/E 24. Note: BE's clean energy/AI narrative warrants blending with Energy Renewables (conservative 20, median 35, growth 55). Bear exitPE=15 = industrials conservative floor. Base exitPE=25 = between industrials median (18) and renewables median (35), reflecting dual-narrative company. Bull exitPE=35 = renewables median, fully applied if AI/clean energy thesis materialises.",
       "dataQualityFlags": [
-        "SHARE COUNT DISCREPANCY 16%: shares_diluted (239M) vs shares_outstanding/mktcap-implied (284M). Loss company standard — basic shares used for EPS per GAAP when anti-dilutive. DCF used 239M; true diluted count 284M means per-share DCF values are overstated by ~15.9%.",
-        "REVENUE GROWTH ANOMALY: API reports 130.4% growth vs historical annual data showing 37.3% YoY ($1.474B→$2.024B). Likely a quarterly YoY metric reflecting recent AI datacenter contract acceleration. TTM base of $2.024B used for DCF — if run-rate is $3.2B (as 130% quarterly implies), all scenario revenues and fair values are understated by ~58%. Flagged as the single largest uncertainty in this analysis.",
+        "SHARE COUNT DISCREPANCY 16%: shares_diluted (239M) vs shares_outstanding/mktcap-implied (284M). Loss company standard \u2014 basic shares used for EPS per GAAP when anti-dilutive. DCF used 239M; true diluted count 284M means per-share DCF values are overstated by ~15.9%.",
+        "REVENUE GROWTH ANOMALY: API reports 130.4% growth vs historical annual data showing 37.3% YoY ($1.474B\u2192$2.024B). Likely a quarterly YoY metric reflecting recent AI datacenter contract acceleration. TTM base of $2.024B used for DCF \u2014 if run-rate is $3.2B (as 130% quarterly implies), all scenario revenues and fair values are understated by ~58%. Flagged as the single largest uncertainty in this analysis.",
         "PROFIT_MARGIN API ANOMALY: metrics.profit_margin=0.25% (near-zero positive) contradicts historical_net_margin latest = -4.37% and TTM net income = -$88.4M. Likely a forward non-GAAP adjusted metric or data error. GAAP net margin is -4.37%; used -4.4% as the actual anchor.",
-        "ESTIMATES FIELD EMPTY: No analyst revenue or EPS estimates available. All growth assumptions derived from historical CAGR and TTM YoY. Forward P/E of 70.4x likely on non-GAAP basis — GAAP EPS remains -$0.37.",
-        "PIOTROSKI SCORE UNAVAILABLE: API returned empty. Based on available data: ROA negative (score 0), positive FCF (score 1), FCF > NI (quality score 1), improving gross margins (score 1), revenue growth positive (score 1). Estimated 5-6/9 — moderate, improving."
+        "ESTIMATES FIELD EMPTY: No analyst revenue or EPS estimates available. All growth assumptions derived from historical CAGR and TTM YoY. Forward P/E of 70.4x likely on non-GAAP basis \u2014 GAAP EPS remains -$0.37.",
+        "PIOTROSKI SCORE UNAVAILABLE: API returned empty. Based on available data: ROA negative (score 0), positive FCF (score 1), FCF > NI (quality score 1), improving gross margins (score 1), revenue growth positive (score 1). Estimated 5-6/9 \u2014 moderate, improving."
       ],
       "analystInputs": {
         "y1RevEstimate": null,
@@ -253,7 +253,7 @@
         -0.13,
         -0.37
       ],
-      "confidenceBreakdown": "0.61/1.0 — Base: 1.0. +0.08 genuine gross margin improvement trend (12→29% in 3yr, structural not one-time). +0.03 FCF positive ($57M TTM) — no longer burning cash. -0.15 negative GAAP net margins with no demonstrated path to scale profitability. -0.10 revenue growth anomaly — 130.4% API vs 37.3% annual creates material base uncertainty. -0.10 extreme valuation (40x revenue) makes any DCF highly sensitive to growth; small assumption changes = large fair value swings. -0.05 share count discrepancy 16%. -0.05 estimates API empty — no sell-side cross-validation. -0.05 metrics.profit_margin anomaly. Final: 0.61."
+      "confidenceBreakdown": "0.61/1.0 \u2014 Base: 1.0. +0.08 genuine gross margin improvement trend (12\u219229% in 3yr, structural not one-time). +0.03 FCF positive ($57M TTM) \u2014 no longer burning cash. -0.15 negative GAAP net margins with no demonstrated path to scale profitability. -0.10 revenue growth anomaly \u2014 130.4% API vs 37.3% annual creates material base uncertainty. -0.10 extreme valuation (40x revenue) makes any DCF highly sensitive to growth; small assumption changes = large fair value swings. -0.05 share count discrepancy 16%. -0.05 estimates API empty \u2014 no sell-side cross-validation. -0.05 metrics.profit_margin anomaly. Final: 0.61."
     },
     "catalystUpdates": [
       {
@@ -267,7 +267,7 @@
           "bull": 8,
           "bear": -5
         },
-        "thesisImpact": "Bull probability +8pp; bear -5pp. FV $105.92→$130.11. Action: SELL→SELL."
+        "thesisImpact": "Bull probability +8pp; bear -5pp. FV $105.92\u2192$130.11. Action: SELL\u2192SELL."
       }
     ],
     "lastGrokSweep": "2026-05-07"
@@ -280,7 +280,7 @@
     "version": 4,
     "savedAt": "2026-05-19T01:13:00Z",
     "updatedAt": "2026-05-19T01:13:00Z",
-    "name": "Forward-Looking Valuation Challenge — BE — 2026-05-19",
+    "name": "Forward-Looking Valuation Challenge \u2014 BE \u2014 2026-05-19",
     "rationale": "Applied the forward-looking valuation challenge skill to reflect the $20B total backlog (including the Oracle 2.8GW, AEP 2.65GW, and Brookfield 5GW deals) and clean energy/AI infrastructure P/E re-rating. We also ran full math validation: used actual outstanding shares (284.44M) as a clean fully diluted base, confirming a healthy 22.5x scenario spread (avoiding buggy near-zero bear pricing) and ensuring no double-discounting. Even with backlog support generating a $158.55 weighted fair value, the stock remains overvalued relative to its $258.71 market price. SELL.",
     "snapshot": {
       "price": 258.71,
@@ -298,7 +298,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.30,
+        "weight": 0.25,
         "growthRate": 25,
         "netMargin": 8,
         "exitPE": 20,
@@ -308,7 +308,7 @@
         "rationale": "Slower delivery of the 2.8GW Oracle and Brookfield deals due to persistent grid bottleneck extensions, but the contracted product backlog provides a robust revenue floor. TTM revenue CAGR of 25% represents backlog monetization. Operating margins normalize to 8% at a mature $6.1B scale. Exit P/E of 20x reflects standard green renewables floor. Dilution matches a conservative +10% over 5 years (2% annual)."
       },
       "base": {
-        "weight": 0.45,
+        "weight": 0.42,
         "growthRate": 50,
         "netMargin": 12,
         "exitPE": 30,
@@ -318,7 +318,7 @@
         "rationale": "Smooth execution and rapid behind-the-meter delivery of the Oracle 2.8GW, Brookfield 5GW, and AEP deals. Revenue CAGR of 50% matches consensus expectations of scaling to $6.2B in 2 years and sustains high growth. Net margins expand to 12% via operating leverage on solid oxide manufacturing scale (gross margin 36%). Exit P/E of 30x represents a blended clean energy & AI infrastructure multiple. Quality multiplier of 1.05 captures switching cost barriers."
       },
       "bull": {
-        "weight": 0.25,
+        "weight": 0.33,
         "growthRate": 65,
         "netMargin": 16,
         "exitPE": 40,
@@ -330,9 +330,9 @@
     },
     "aiThesis": {
       "model": "Gemini 1.5 Pro (Forward Challenge & Math Validation)",
-      "fairValue": 158.55,
+      "fairValue": 185.72,
       "action": "SELL",
-      "analyzedAt": "2026-05-19T01:13:00Z",
+      "analyzedAt": "2026-06-03T13:24:56Z",
       "researchReport": "BE_2026-05-19.md"
     },
     "globalSettings": {
@@ -341,7 +341,7 @@
     },
     "analyticsLog": {
       "shareCountMethod": "Dilution check: Used actual outstanding shares (284,443,868) as the baseline for all scenarios rather than the anti-dilutive GAAP count (239M) to prevent per-share price inflation. Dilution rate explicitly modeled via shareChange per scenario.",
-      "marginAnchor": "Inflection anchor: Trailing gross margin improvement (12%→29%) and positive FCF ($57M TTM) support margins scaling to 8% (Bear), 12% (Base), and 16% (Bull) on maturity operating leverage.",
+      "marginAnchor": "Inflection anchor: Trailing gross margin improvement (12%\u219229%) and positive FCF ($57M TTM) support margins scaling to 8% (Bear), 12% (Base), and 16% (Bull) on maturity operating leverage.",
       "growthDerivation": "TAM & Backlog: 2026-2027 analyst forecasts ($3.7B and $6.2B) translate to a near-term 75% growth rate, validating a 5-year CAGR of 50% in the base case, supported by the $20B total backlog (including Oracle 2.8GW, AEP, and Brookfield).",
       "sectorBenchmarkRow": "Electrical Equipment & Parts / Clean Energy blending. Multiples adjusted to 20x (Bear), 30x (Base), and 40x (Bull) to reflect the AI infrastructure re-rating.",
       "dataQualityFlags": [
@@ -381,6 +381,22 @@
         -0.37
       ],
       "confidenceBreakdown": "0.85/1.0 - Elevated confidence. Positive backlog visibility, signed hyperscaler deals, and positive FCF de-risk structural scaling. High-quality inputs and strict validation ensure highly reliable outputs."
-    }
+    },
+    "catalystUpdates": [
+      {
+        "date": "2026-06-03",
+        "source": "apply_catalyst.py",
+        "type": "major_contract",
+        "events": [
+          "$2.6B fuel cell deal with NBIS validates solid oxide tech for AI power demand"
+        ],
+        "weightShifts": {
+          "bull": 8,
+          "bear": -5
+        },
+        "thesisImpact": "Bull probability +8pp; bear -5pp. FV $158.55\u2192$185.72. Action: SELL\u2192SELL."
+      }
+    ],
+    "lastGrokSweep": "2026-06-03"
   }
 ]

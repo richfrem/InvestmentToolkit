@@ -9,4 +9,7 @@ SECTOR_OVERRIDES: dict[str, dict[str, str]] = {
     "COIN": {"sector": "Cryptocurrency", "industry": "Crypto Exchange"},
     "CRCL": {"sector": "Cryptocurrency", "industry": "Crypto Infrastructure"},
     "SOL":  {"sector": "Cryptocurrency", "industry": "Crypto Network"},
+    "PSU-U.TO": {"sector": "CASH", "industry": "CASH"},
+    "PSU.U.TO": {"sector": "CASH", "industry": "CASH"},
+    "PSU.U":    {"sector": "CASH", "industry": "CASH"},
 }

@@ -105,7 +105,7 @@ Create `temp/thesis-challenge-{YYYY-MM-DD}/file-manifest.json`.
       "note": "PRIMARY INSTRUCTIONS — read this first before any other file"
     },
     {
-      "path": "plugins/portfolio-advisor/references/investment_thesis.md",
+      "path": "investment_screener/backend/data/theses/investment_thesis.md",
       "note": "Full investment thesis with version history, sub-strategies, holdings tables"
     },
     {

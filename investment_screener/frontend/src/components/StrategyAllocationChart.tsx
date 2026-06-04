@@ -337,7 +337,7 @@ export default function StrategyAllocationChart({ data, totalUSD, usdCadRate }: 
         const col      = color(pillar.id, groupBy);
 
         const ROW_H    = 34;
-        const LABEL_W  = 54;
+        const LABEL_W  = 78;
         const VAL_W    = 78;
         const TOP      = 58;
         const PAD      = 5;

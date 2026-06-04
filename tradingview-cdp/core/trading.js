@@ -32,6 +32,18 @@ export async function switchChartSymbol(ticker) {
   const client = await getClient();
   const tickerUpper = ticker.toUpperCase();
 
+  // Check if we are already on this symbol by checking document.title
+  const alreadyActive = await evaluate(`(function() {
+    var title = document.title || '';
+    var ticker = ${JSON.stringify(tickerUpper)};
+    var words = title.trim().split(/\\s+/);
+    return words.length > 0 && words[0].toUpperCase().replace(/[-_]/g, '.') === ticker.replace(/[-_]/g, '.');
+  })()`);
+
+  if (alreadyActive) {
+    return { switched: false, reason: 'Already on symbol ' + tickerUpper };
+  }
+
   // Step 1: Try clicking the ticker title in the chart legend to open symbol search
   await evaluate(`(function() {
     var selectors = [
@@ -59,16 +71,27 @@ export async function switchChartSymbol(ticker) {
   // Step 2: Type the ticker via CDP Input events (reliable cross-platform key injection)
   for (const char of tickerUpper) {
     let code;
-    if (/[A-Z]/.test(char)) code = 'Key' + char;
-    else if (/[0-9]/.test(char)) code = 'Digit' + char;
-    else if (char === '-') code = 'Minus';
-    else if (char === '.') code = 'Period';
-    else code = char;
+    let vkey = char.charCodeAt(0);
+    if (/[A-Z]/.test(char)) {
+      code = 'Key' + char;
+    } else if (/[0-9]/.test(char)) {
+      code = 'Digit' + char;
+    } else if (char === '-') {
+      code = 'Minus';
+      vkey = 189;
+    } else if (char === '.') {
+      code = 'Period';
+      vkey = 190;
+    } else if (char === '/') {
+      code = 'Slash';
+      vkey = 191;
+    } else {
+      code = char;
+    }
 
-    const keyCode = char.charCodeAt(0);
-    await client.Input.dispatchKeyEvent({ type: 'keyDown', key: char, code, text: char, windowsVirtualKeyCode: keyCode, nativeVirtualKeyCode: keyCode });
+    await client.Input.dispatchKeyEvent({ type: 'keyDown', key: char, code, text: char, windowsVirtualKeyCode: vkey, nativeVirtualKeyCode: vkey });
     await sleep(40);
-    await client.Input.dispatchKeyEvent({ type: 'keyUp', key: char, code, windowsVirtualKeyCode: keyCode, nativeVirtualKeyCode: keyCode });
+    await client.Input.dispatchKeyEvent({ type: 'keyUp', key: char, code, windowsVirtualKeyCode: vkey, nativeVirtualKeyCode: vkey });
     await sleep(40);
   }
 
@@ -102,12 +125,12 @@ export async function getBrokerStatus() {
     var cadBP = cadMatch ? parseFloat(cadMatch[1].replace(/,/g,'')) : null;
     var usdBP = usdMatch ? parseFloat(usdMatch[1].replace(/,/g,'')) : null;
 
-    // Account dropdown — find the one showing TFSA/RRSP (not the broker dropdown)
+    // Account dropdown — find the one showing TFSA/RRSP/Cash (not the broker dropdown)
     var accountBtn = [...document.querySelectorAll('[class*="dropdownButton"]')].find(function(b) {
-      return /TFSA|RRSP|Margin|Individual/i.test(b.textContent);
+      return /TFSA|RRSP|Margin|Individual|Cash/i.test(b.textContent);
     });
     var accountText = accountBtn ? accountBtn.textContent.trim() : null;
-    var accountMatch = accountText && accountText.match(/(TFSA|RRSP|Margin|Individual)[\\s\\-]+(\\d{4,})/i);
+    var accountMatch = accountText && accountText.match(/(TFSA|RRSP|Margin|Individual|Cash)[\\s\\-]+(\\d{4,})/i);
     var accountType = accountMatch ? accountMatch[1].toUpperCase() : null;
     var accountId   = accountMatch ? accountMatch[2] : null;
 
@@ -132,7 +155,9 @@ export async function selectAccount(targetType) {
       return /TFSA|RRSP|Margin|Individual|Cash/i.test(b.textContent);
     }) || document.querySelector('[class*="dropdownButton"]');
     if (!btn) return JSON.stringify({ error: 'Account dropdown not found' });
-    btn.click();
+    ['mousedown', 'mouseup', 'click'].forEach(function(t) {
+      btn.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true }));
+    });
     return JSON.stringify({ opened: true, current: btn.textContent.trim().substring(0,40) });
   })()`).then(JSON.parse);
 
@@ -144,16 +169,26 @@ export async function selectAccount(targetType) {
   // Find and click the target account option
   const selected = await evaluate(`(function() {
     var target = ${JSON.stringify(targetType.toUpperCase())};
-    var items = [...document.querySelectorAll('[class*="item"], [role="option"], [class*="option"]')].filter(function(el) {
-      return el.textContent.trim().toUpperCase().indexOf(target) !== -1;
+    var pattern = /^(TFSA|RRSP|Cash|Margin|Individual)[\\s\\S]*\\d{4,}/i;
+    var spans = [...document.querySelectorAll('span')].filter(function(s) {
+      return s.className === '' && pattern.test(s.textContent.trim());
     });
-    if (items.length === 0) {
+    var match = spans.find(function(s) {
+      return s.textContent.trim().toUpperCase().startsWith(target);
+    });
+    if (!match) {
       // Try closing dropdown and check if already on the right account
       document.querySelector('[class*="dropdownButton"]')?.click();
       return JSON.stringify({ error: 'Account type not found: ' + target });
     }
-    items[0].click();
-    return JSON.stringify({ selected: items[0].textContent.trim().substring(0,40) });
+    // Dispatch full MouseEvent sequence for both match and parentElement
+    ['mousedown', 'mouseup', 'click'].forEach(function(t) {
+      match.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true }));
+      if (match.parentElement) {
+        match.parentElement.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true }));
+      }
+    });
+    return JSON.stringify({ selected: match.textContent.trim().substring(0,40) });
   })()`).then(JSON.parse);
 
   if (selected.error) throw new Error(selected.error);
@@ -164,9 +199,15 @@ export async function selectAccount(targetType) {
 // ── open order dialog ────────────────────────────────────────────────────────
 
 export async function openOrderDialog(action) {
+  // If the dialog is already open, skip trying to click the overlay button
+  const state = await getOrderDialogState();
+  if (state.open) {
+    return { method: 'already-open', clicked: state.submitButtonText };
+  }
+
   // The Buy/Sell overlay buttons on the chart left margin trigger the floating
   // order dialog. They have classes buyButton-* and sellButton-* (hashed suffix).
-  // They are NOT standard <button> elements — they are clickable divs/spans.
+  // They are NOT standard <button> elements — spans.
   const isBuy = /buy/i.test(action);
 
   const result = await evaluate(`(function() {
@@ -183,7 +224,7 @@ export async function openOrderDialog(action) {
     // Strategy 2: title-SXMXfs_Z spans labeled "Buy" or "Sell" at the top of the overlay
     var label = isBuy ? 'Buy' : 'Sell';
     var spans = [...document.querySelectorAll('[class*="title-"]')].filter(function(el) {
-      return el.textContent.trim() === label && el.offsetParent !== null;
+      return el.textContent.trim().toUpperCase().indexOf(label.toUpperCase()) !== -1 && el.offsetParent !== null;
     });
     if (spans.length > 0) {
       // Click the clickable parent (the button wrapper)
@@ -194,7 +235,7 @@ export async function openOrderDialog(action) {
 
     // Strategy 3: any visible element with exactly "Buy" or "Sell" text that is clickable
     var el = [...document.querySelectorAll('[class*="buy"], [class*="sell"]')].find(function(el) {
-      return el.textContent.trim() === label && el.offsetParent !== null;
+      return el.textContent.trim().toUpperCase().indexOf(label.toUpperCase()) !== -1 && el.offsetParent !== null;
     });
     if (el) {
       el.click();
@@ -382,6 +423,75 @@ export async function setLimitPrice(price) {
   return result;
 }
 
+// ── set Good Till Cancelled duration ─────────────────────────────────────────
+
+export async function setGoodTillCancelled() {
+  // TV order form has an "Extra settings" collapsible section containing a
+  // "Time in force" dropdown (default: Day). Steps:
+  //   1. Expand "Extra settings" if collapsed
+  //   2. Click the "Day" TIF dropdown button
+  //   3. Click "Good till cancelled" from the popup menu
+
+  // Step 1: expand "Extra settings" accordion if the TIF field isn't visible yet
+  await evaluate(`(function() {
+    var btns = [...document.querySelectorAll('button, [role="button"], [class*="title"], [class*="header"]')].filter(function(b) {
+      return b.offsetParent !== null && /extra.settings/i.test(b.textContent);
+    });
+    if (btns.length > 0) btns[0].click();
+    return 'done';
+  })()`);
+  await sleep(300);
+
+  // Step 2: click the TIF dropdown (div.middleSlot-* near "Time in force" label = the current value div)
+  const openResult = await evaluate(`(function() {
+    var tifLabel = [...document.querySelectorAll('*')].find(function(el) {
+      return el.offsetParent !== null && /^time.in.force$/i.test(el.textContent.trim());
+    });
+    if (!tifLabel) return JSON.stringify({ method: 'none', note: 'TIF label not found' });
+    // Walk up to find a common row/container, then find the value cell (middleSlot or similar)
+    var parent = tifLabel.parentElement;
+    for (var i = 0; i < 6; i++) {
+      if (!parent) break;
+      // The value cell is a div whose direct text content is 'Day' (not nested deeply)
+      var valueEl = [...parent.children].find(function(ch) {
+        return ch.offsetParent !== null && ch.textContent.trim() === 'Day';
+      });
+      if (!valueEl) {
+        // Try one level deeper (middleSlot pattern)
+        valueEl = [...parent.querySelectorAll('[class*="middleSlot"], [class*="value"], [class*="selected"]')]
+          .find(function(el) { return el.offsetParent !== null && el.textContent.trim() === 'Day'; });
+      }
+      if (valueEl) {
+        valueEl.click();
+        return JSON.stringify({ method: 'middleSlot', tag: valueEl.tagName, cls: valueEl.className.substring(0, 80) });
+      }
+      parent = parent.parentElement;
+    }
+    return JSON.stringify({ method: 'none', note: 'Day value element not found near TIF label' });
+  })()`).then(JSON.parse);
+
+  await sleep(500);
+
+  if (openResult.method === 'none') return openResult;
+
+  // Step 3: click "Good till cancelled" from the open dropdown/menu
+  // TV uses a popup list; items may have no special role — match by text content
+  const selectResult = await evaluate(`(function() {
+    // Prefer shortest matching element to avoid clicking a container
+    var candidates = [...document.querySelectorAll('*')].filter(function(el) {
+      return el.offsetParent !== null && /good.till.cancel/i.test(el.textContent.trim()) && el.textContent.trim().length < 30;
+    });
+    if (candidates.length === 0) return JSON.stringify({ error: 'GTC option not found in open menu' });
+    // Pick the deepest (most specific) node
+    var target = candidates.reduce(function(a, b) { return a.children.length <= b.children.length ? a : b; });
+    target.click();
+    return JSON.stringify({ clicked: target.textContent.trim(), tag: target.tagName, cls: target.className.substring(0, 60) });
+  })()`).then(JSON.parse);
+
+  await sleep(300);
+  return { open: openResult, select: selectResult };
+}
+
 // ── submit order ─────────────────────────────────────────────────────────────
 
 export async function submitOrder() {
@@ -560,6 +670,11 @@ export async function preflight({ ticker, action, shares, orderType, limitPrice,
  * Returns { screenshot, submitText, status }.
  */
 export async function executeOrder({ ticker, action, shares, orderType, limitPrice, accountType }) {
+  // Ensure any existing order dialog is closed first to guarantee a clean state
+  // and prevent stale accounts from leaking between orders
+  await closeOrderDialog().catch(() => {});
+  await sleep(400);
+
   // 0. Switch chart to the target ticker — the order dialog opens for the active chart symbol,
   //    so this must happen before openOrderDialog().
   if (ticker) {
@@ -597,13 +712,20 @@ export async function executeOrder({ ticker, action, shares, orderType, limitPri
     : orderTypeLabel;
   await selectOrderType(tabLabel);
 
-  // 5. Set limit price first — it's the first input in TV's form (price above qty)
+  // 5. Set shares first — must happen before setLimitPrice so the fallback selector
+  //    in setShares finds the qty field (value=1) rather than the price field once
+  //    it has been filled (both are numeric; first-match would pick the price field).
+  await setShares(shares);
+
+  // 6. Set limit price after shares — it's the first input in TV's Limit form
   if ((orderType.toLowerCase() === 'limit' || orderType.toLowerCase() === 'stop_limit') && limitPrice != null) {
     await setLimitPrice(limitPrice);
   }
 
-  // 6. Set shares — always the last input in TV's form
-  await setShares(shares);
+  // 6b. Set Good Till Cancelled duration for limit/stop orders
+  if (orderType.toLowerCase() === 'limit' || orderType.toLowerCase() === 'stop_limit' || orderType.toLowerCase() === 'stop') {
+    await setGoodTillCancelled();
+  }
 
   // 7. Verify form values match intent before screenshotting (throws on mismatch)
   await verifyOrderForm({ intendedShares: shares, intendedLimitPrice: limitPrice ?? null });
@@ -1072,6 +1194,64 @@ export async function listOpenOrders() {
   }
 
   return { found: true, orders: allOrders };
+}
+
+/** sniffDropdownOptions — opens TIF dropdown and reads all option texts (for diagnostics) */
+export async function sniffDropdownOptions() {
+  // First click the Day button to open the dropdown
+  await evaluate(`(function() {
+    var tifLabel = [...document.querySelectorAll('*')].find(function(el) {
+      return el.offsetParent !== null && /^time.in.force$/i.test(el.textContent.trim());
+    });
+    if (!tifLabel) return;
+    var parent = tifLabel.parentElement;
+    for (var i = 0; i < 6; i++) {
+      if (!parent) break;
+      var valueEl = [...parent.querySelectorAll('[class*="middleSlot"], [class*="value"], [class*="selected"]')]
+        .find(function(el) { return el.offsetParent !== null && el.textContent.trim() === 'Day'; });
+      if (valueEl) { valueEl.click(); return; }
+      parent = parent.parentElement;
+    }
+  })()`);
+  await sleep(600);
+  // Read all visible short text elements — includes dropdown options even if position:fixed
+  return evaluate(`(function() {
+    var all = [...document.querySelectorAll('*')].filter(function(el) {
+      var rect = el.getBoundingClientRect();
+      var visible = rect.width > 0 && rect.height > 0 && rect.top >= 0;
+      var shortText = el.childElementCount === 0 && el.textContent.trim().length > 3 && el.textContent.trim().length < 50;
+      return visible && shortText;
+    }).map(function(el) { return el.textContent.trim(); });
+    // Deduplicate
+    return JSON.stringify([...new Set(all)].filter(function(t) { return /good|till|cancel|date|extended|day|GTC/i.test(t); }));
+  })()`).then(JSON.parse);
+}
+
+/** clickDayAndSnapshot — diagnostic: clicks the Day TIF button, screenshots the open menu */
+export async function clickDayAndSnapshot() {
+  const clickResult = await evaluate(`(function() {
+    var tifLabel = [...document.querySelectorAll('*')].find(function(el) {
+      return el.offsetParent !== null && /^time.in.force$/i.test(el.textContent.trim());
+    });
+    if (!tifLabel) return JSON.stringify({ error: 'no TIF label found' });
+    var parent = tifLabel.parentElement;
+    for (var i = 0; i < 6; i++) {
+      if (!parent) break;
+      var dayEl = [...parent.querySelectorAll('*')].filter(function(el) {
+        return el.offsetParent !== null && el.textContent.trim() === 'Day';
+      });
+      if (dayEl.length > 0) {
+        var el = dayEl[dayEl.length - 1];
+        el.click();
+        return JSON.stringify({ found: true, tag: el.tagName, cls: el.className.substring(0, 100) });
+      }
+      parent = parent.parentElement;
+    }
+    return JSON.stringify({ error: 'Day button not found near TIF label' });
+  })()`).then(JSON.parse);
+  await sleep(600);
+  const shot = await captureScreenshot({ region: 'full', filename: 'cbrs_tif_menu' });
+  return { clickResult, screenshot: shot.file_path };
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────────
