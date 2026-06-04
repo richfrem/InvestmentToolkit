@@ -28,6 +28,13 @@ export interface StrategyAllocation {
  * - Uses pos.price ?? pos.book_price ?? 0 to match total summary and prevent new synced positions from being zeroed out.
  * - Uses authoritative totals.totalUSD if available to align with the summary card total.
  */
+function normalizeTicker(sym: string): string {
+    const s = (sym || '').toUpperCase();
+    if (s === 'PSU.U' || s === 'PSU.U.TO' || s === 'PSU-U.TO') return 'PSU-U.TO';
+    if (s === 'ETH.U' || s === 'ETH.U.TO' || s === 'ETH-U.TO') return 'ETH-U.TO';
+    return sym;
+}
+
 export function computeStrategyAllocation(
     positions: any[],
     totals: any | null,
@@ -51,7 +58,8 @@ export function computeStrategyAllocation(
     for (const pos of positions) {
         const price = pos.price ?? pos.book_price ?? 0;
         const value = (pos.shares ?? 0) * price;
-        const pillarId = (pos.symbol === 'USD_CASH' || pos.sector === 'CASH') ? 'cash' : (pillarMap[pos.symbol] ?? 'other');
+        const normSym = normalizeTicker(pos.symbol);
+        const pillarId = (pos.symbol === 'USD_CASH' || pos.sector === 'CASH') ? 'cash' : (pillarMap[normSym] ?? 'other');
         pillarValues[pillarId] = (pillarValues[pillarId] ?? 0) + value;
         (pillarPositions[pillarId] ??= []).push(pos);
     }
@@ -79,11 +87,12 @@ export function computeStrategyAllocation(
                 .map((pos: any) => {
                     const price = pos.price ?? pos.book_price ?? 0;
                     const valueUSD = (pos.shares ?? 0) * price;
+                    const normSym = normalizeTicker(pos.symbol);
                     return {
                         symbol: pos.symbol as string,
                         name: (pos.name ?? pos.symbol) as string,
                         sector: (pos.sector ?? 'Other') as string,
-                        subStrategyId: (subStrategyMap[pos.symbol] ?? (pos.symbol === 'USD_CASH' ? 'cash' : null)) as string | null,
+                        subStrategyId: (subStrategyMap[normSym] ?? (pos.symbol === 'USD_CASH' ? 'cash' : null)) as string | null,
                         shares: (pos.shares ?? 0) as number,
                         price: price as number,
                         valueUSD: Math.round(valueUSD * 100) / 100,

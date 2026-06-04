@@ -4,20 +4,20 @@
     "id": "82abd305-bac7-4311-a4ec-39776a0cfee1",
     "source": "AI_AGENT",
     "schemaVersion": "1.2",
-    "version": 1,
-    "savedAt": "2026-05-02T19:35:00Z",
-    "updatedAt": "2026-05-02T19:35:00Z",
-    "name": "AI Deep Dive — NBIS — 2026-05-02",
-    "rationale": "Nebius Group (formerly Yandex N.V.) is building full-stack AI infrastructure — GPU clusters, cloud platforms, and developer tooling — with a strategic NVIDIA alliance and a clean-slate architecture optimized for AI workloads. Analyst consensus projects explosive revenue growth from $117M TTM to $3.3B in 2026 and $10.1B in 2027, reflecting GPU cluster capacity coming online. The company is deeply pre-profitable (analyst EPS -$3.95 in 2026, -$4.14 in 2027), and all historical margins are distorted by the 2023-2024 Yandex→Nebius corporate restructuring. Our probability-weighted fair value of $441.17 implies 186% upside from $154.49, driven by the base and bull scenarios where Nebius achieves significant revenue scale with improving unit economics by 2030 — offset by a bear case where growth dramatically misses expectations.",
+    "version": 2,
+    "savedAt": "2026-05-31T08:58:00Z",
+    "updatedAt": "2026-05-31T08:58:00Z",
+    "name": "AI Deep Dive \u2014 NBIS \u2014 2026-05-31",
+    "rationale": "Nebius Group is building full-stack AI infrastructure with GPU clusters, cloud platforms, and developer tooling. TTM revenue has updated to $529.8M, representing rapid capacity expansion. Recalibrating forward growth rates using this higher baseline yields a weighted fair value of $462.75, representing a spec BUY target.",
     "snapshot": {
-      "price": 154.49,
+      "price": 231.09,
       "currency": "USD",
-      "shares": 219465088,
-      "revenue": 117500000,
-      "lastActualPS": 332.67,
+      "shares": 220406311,
+      "revenue": 529800000,
+      "lastActualPS": 110.75,
       "fiscalPeriod": "TTM",
-      "analystGrowthEstimate": 500.8,
-      "analystMarginEstimate": 19.2
+      "analystGrowthEstimate": 683.9,
+      "analystMarginEstimate": 15.57
     },
     "dataPreferences": {
       "growthBasis": "next",
@@ -25,70 +25,69 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.3,
-        "growthRate": 100,
+        "weight": 0.27,
+        "growthRate": 70,
         "netMargin": 2,
         "exitPE": 15,
         "qualityMultiplier": 0.85,
         "shareChange": 5,
-        "rationale": "Historical reference: Nebius effectively has no relevant operating history — TTM revenue of $117.5M is from a company that barely existed 18 months ago. Bear case projects 100% CAGR (doubling each year) reaching only $3.76B by Y5 — a severe shortfall vs. analyst 2027 consensus of $10.1B alone. This scenario represents a world where AI GPU cloud commoditizes quickly, hyperscalers capture enterprise demand, and Nebius becomes a niche provider. Net margin of 2% reflects barely reaching breakeven on a smaller revenue base. Exit P/E of 15x is below Internet/Platforms median (28x) justified by commodity cloud characteristics with no demonstrated pricing power. Quality multiplier 0.85 reflects failure to establish defensible moat against hyperscaler competition. Annual dilution of 5%/yr reflects continued equity raises to fund capex on a subscale business.",
+        "rationale": "Bear case assumes revenue CAGR decelerates to 70%, reaching $7.5B by Y5, due to GPU cloud commoditization. Dilution of 5%/yr to fund capex, resulting in $4.23 PV target.",
         "moatScore": 1,
         "managementScore": 2,
-        "year5Revenue": 3760,
-        "year5NetIncome": 75.2,
-        "year5EPS": 0.27,
-        "scenarioPrice": 2.13,
+        "year5Revenue": 7522.3,
+        "year5NetIncome": 150.4,
+        "year5EPS": 0.54,
+        "scenarioPrice": 4.23,
         "risks": [
-          "Revenue dramatically misses analyst expectations as GPU cloud demand concentrates with hyperscalers (AWS, Azure, GCP) leaving NBIS with marginal demand",
-          "Continued capital raises at dilutive prices to fund GPU capex, crushing per-share value as unit economics fail to materialize",
-          "Competitive GPU supply normalization erodes NVIDIA alliance pricing advantage; CoreWeave and other pure-play GPU clouds capture premium customers"
+          "Hyperscaler concentration squeezes independent GPU cloud pricing power.",
+          "High capital requirements lead to dilutive financing packages."
         ]
       },
       "base": {
-        "weight": 0.45,
-        "growthRate": 209,
+        "weight": 0.43,
+        "growthRate": 133,
         "netMargin": 12,
         "exitPE": 30,
         "qualityMultiplier": 1.1,
         "shareChange": 3,
-        "rationale": "Hypergrowth CAGR of 209% derived from analyst trajectory (Y1: $3.3B, Y2: $10.1B consensus), then applying natural deceleration: Y3 +75% (~$17.7B), Y4 +50% (~$26.5B), Y5 +25% (~$33.1B). This path is broadly consistent with analyst estimates through 2027 followed by modeled deceleration as the business matures. Base CAGR of 209% is within the spirit of the hypergrowth exception rule — derived from the analyst 5-year revenue path, not fabricated. Net margin of 12% at Y5 is anchored to Internet/Platforms sector typical range (20-30%) discounted significantly for: (1) capital-intensive GPU infrastructure vs. software platforms, (2) early-stage business without proven unit economics, and (3) ongoing competition. Exit P/E of 30x aligns with Internet/Platforms sector median (28x) with slight premium for growth trajectory; deviation of 7% within ±30% tolerance. Quality multiplier of 1.10 justified by NVIDIA strategic alliance (early GPU supply access = structural supply chain moat) and clean-slate AI-native architecture. Share dilution 3%/yr reflects continued equity raises tapering as revenue scales.",
+        "rationale": "Base case projects a CAGR of 133% from the current $529.8M base to reach $36.4B in Year 5. Margin of 12% is sector-discounted. Dilution of 3%/yr yields $350.80 scenario price.",
         "moatScore": 3,
         "managementScore": 3,
-        "year5Revenue": 33100.2,
-        "year5NetIncome": 3972,
-        "year5EPS": 15.61,
-        "scenarioPrice": 319.9,
+        "year5Revenue": 36444.1,
+        "year5NetIncome": 4373.3,
+        "year5EPS": 17.12,
+        "scenarioPrice": 350.8,
         "risks": [
-          "AI infrastructure demand plateau in 2027-2028 slows revenue growth below modeled deceleration trajectory",
-          "Margin expansion delayed by continued GPU capex requirements and competitive pricing pressure"
+          "AI infrastructure demand levels off after initial buildout phase.",
+          "High operational complexity scaling large GPU footprints."
         ]
       },
       "bull": {
-        "weight": 0.25,
-        "growthRate": 236,
+        "weight": 0.3,
+        "growthRate": 150,
         "netMargin": 20,
         "exitPE": 40,
         "qualityMultiplier": 1.15,
         "shareChange": 2,
-        "rationale": "Catalyst: NVIDIA physical AI partnership drives Nebius to become the default platform for robotics simulation, training, and deployment — a category-defining position similar to AWS in the cloud era. Bull case growth of 236% CAGR implies Y5 revenue of ~$50B (vs. base $33B), achievable if Nebius captures a meaningful share of the global AI training and inference market alongside continued European sovereign AI tailwinds. Net margin of 20% reflects best-in-class cloud-adjacent economics as GPU utilization rates exceed 80% and software services (Toloka, TripleTen, Avride platform revenue) add higher-margin revenue streams. Exit P/E of 40x represents 43% premium to sector median (28x), justified by category-defining AI infrastructure positioning comparable to early AWS — requires explicit citation: NVIDIA Omniverse/physical AI partnership providing proprietary workload advantage. Quality multiplier 1.15 reflects two structural moats: (1) NVIDIA strategic alliance providing preferential GPU supply and co-development access, (2) purpose-built AI infrastructure architecture with no legacy retrofit overhead.",
+        "rationale": "Bull case assumes physical AI/robotics and sovereign cloud tailwinds expand CAGR to 150%, reaching $51.7B by Y5 with 20% net margin. Dilution of 2%/yr yields $1214.47 scenario price.",
         "moatScore": 4,
         "managementScore": 4,
-        "year5Revenue": 50319.3,
-        "year5NetIncome": 10063.9,
-        "year5EPS": 41.53,
-        "scenarioPrice": 1186.29,
+        "year5Revenue": 51738.3,
+        "year5NetIncome": 10347.7,
+        "year5EPS": 42.52,
+        "scenarioPrice": 1214.47,
         "risks": [
-          "Valuation re-rates sharply downward if growth disappoints vs. premium bull multiple embedded at 40x exit P/E",
-          "Geopolitical/regulatory risk: Netherlands-incorporated company with Russian asset origin faces ongoing scrutiny"
+          "NVIDIA alliance allocation constraints limit deployment velocity.",
+          "Geopolitical regulatory risk from European sovereign entities."
         ]
       }
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "Nebius Group is a high-conviction speculative BUY for investors with a multi-year horizon and high risk tolerance. The company is essentially a startup with institutional backing and a world-class NVIDIA alliance, building the AI cloud infrastructure stack from scratch. At $39B market cap vs. $117M TTM revenue, the market is paying 332x current P/S — entirely justified only if the analyst trajectory of $3.3B in 2026 and $10.1B in 2027 materializes. Our base case, anchored to that analyst trajectory with natural deceleration, produces a fair value of ~$320 discounted at 10%. With a probability-weighted fair value of $441.17 reflecting the bull case optionality, the stock offers 186% upside — but with extreme binary risk: the bear case (revenue misses, hyperscalers dominate) produces essentially zero value. This is not suitable for risk-averse investors. Position sizing should reflect the 0.35 confidence score.",
-      "fairValue": 441.17,
+      "rationale": "Nebius is a high-conviction speculative BUY. Recalibrating the model to the updated $529.8M live TTM baseline yields a weighted fair value of $462.75 (99% upside from $231.09). Suitability remains capped for high risk tolerance due to massive capex and execution risks.",
+      "fairValue": 516.33,
       "action": "BUY",
-      "analyzedAt": "2026-05-02T19:35:00Z",
+      "analyzedAt": "2026-06-03T13:24:56Z",
       "researchReport": "NBIS_2026-05-02.md"
     },
     "globalSettings": {
@@ -96,46 +95,60 @@
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "shares_outstanding = shares_diluted = 219,465,088 per API (no discrepancy between fields). Note: significant future dilution is anticipated as company raises equity capital for GPU cluster buildout; share change modeled at +2% to +5%/yr across scenarios.",
-      "marginAnchor": "Historical margins CANNOT be used — all values are restructuring artifacts (ranging from -1,567% to +5,523%). Using Internet/Platforms sector benchmark (typical 20-30%, bear trough 10%) as forward anchor per valuation-benchmarks.md. Bear set at 2% (minimal viability), base at 12% (discounted from sector typical for hardware intensity), bull at 20% (sector typical for mature AI platform).",
-      "growthDerivation": "Y1 analyst revenue $3.30B (+2,709% from TTM $117.5M); Y2 analyst revenue $10.08B (+206% from Y1). Hypergrowth exception applies (Y1 consensus far exceeds 40% threshold). 5-yr CAGR derivation for base: Y1=+2709%, Y2=+206%, Y3 modeled +75% ($17.7B), Y4 modeled +50% ($26.5B), Y5 modeled +25% ($33.1B) → 5-yr base CAGR = 209% from TTM. Bull: extended deceleration curve to $50B → CAGR 236%. Bear: catastrophic miss scenario with 100% CAGR yielding only $3.76B at Y5 (below 2027 analyst estimate alone).",
-      "sectorBenchmarkRow": "Technology — Internet / Platforms: conservative P/E 18, median P/E 28, growth P/E 45. Net margin bear trough 10%, typical 20-30%, best-in-class 35%+. Sector classification: profile.industry='Internet Content & Information' under Communication Services → maps to Internet/Platforms row per skill Step 3 Rule #10.",
+      "shareCountMethod": "shares_outstanding = shares_diluted = 220,406,311 per API.",
+      "marginAnchor": "Margin target 12% anchored on sector average and adjusted for capital intensity.",
+      "growthDerivation": "Base case CAGR set to 133% from the current $529.8M base to align with consensus targets.",
+      "sectorBenchmarkRow": "Technology \u2014 Internet / Platforms: conservative P/E 18, median P/E 28, growth P/E 45.",
       "dataQualityFlags": [
-        "ALL historical financial metrics distorted by Yandex→Nebius corporate restructuring (2023-2024) — historical net margins ranging from -1,567% to +5,523% are meaningless restructuring artifacts; historical revenue includes $4.78B Yandex-era figure that represents an entirely different business",
-        "TTM revenue of $117.5M severely understates current run-rate: 2026 analyst consensus is $3.3B (28x TTM), suggesting Q1-Q2 2026 revenue is already dramatically higher than TTM denominator",
-        "Company pre-profitable through at least 2027: analyst EPS consensus -$3.95 in 2026 and -$4.14 in 2027 — declining EPS estimates despite 3x revenue growth reflects accelerating GPU capex investment phase; P/E DCF has limited applicability",
-        "profit_margin: 19.2% in raw API data is inconsistent with analyst EPS consensus of -$3.95 for 2026; likely artifact of one-time items or partial-period reporting during restructuring — treated as unreliable and excluded from margin anchor",
-        "Piotroski F-score 7/9 is a positive signal but must be interpreted cautiously given restructuring distortions in the underlying financial statements",
-        "Analyst target mean price $170.29 (14 analysts) is broadly consistent with current market price $154.49 but well below our model fair value — reflects wide analyst dispersion (low $85, high $291) and uncertainty about timing of profitability"
+        "Corporate restructuring historical statements remain distorted; forward guidance prioritized."
       ],
       "analystInputs": {
-        "y1RevEstimate": 3298314010,
-        "y2RevEstimate": 10081422800,
-        "y1GrowthPct": 2709,
-        "y2GrowthPct": 206,
-        "blendedConsensusPct": 206,
-        "analystTargetMean": 170.29,
-        "analystCount": 14
+        "y1RevEstimate": 3441387170,
+        "y2RevEstimate": 10992720680,
+        "y1GrowthPct": 550,
+        "y2GrowthPct": 219,
+        "blendedConsensusPct": 219,
+        "analystTargetMean": 237.62,
+        "analystCount": 13
       },
       "historicalRevenue": [
-        4776.25,
-        13.5,
-        20.9,
-        117.5
+        0,
+        13500000,
+        9800000,
+        91500000,
+        529800000
       ],
       "historicalNetMargins": [
-        -4.12,
+        0,
         5522.96,
-        1154.55,
-        -545.87
+        2462.24,
+        -700.98,
+        15.57
       ],
       "historicalEPS": [
-        -0.54,
+        0,
         1.44,
-        0.61,
-        -2.74
+        0.65,
+        -2.28,
+        0.34
       ],
-      "confidenceBreakdown": "0.35/1.0 — Base: 1.0. -0.20 no usable historical operating data (full restructuring noise, meaningless margins/EPS). -0.10 pre-profitable company through 2027+ (P/E DCF limited applicability). -0.10 extreme growth uncertainty (28x revenue expansion from TTM to 2026 alone). -0.10 opaque capital structure with significant dilution risk. -0.05 political/regulatory risk (Netherlands-incorporated, former Russian asset origin under sanctions backdrop). -0.10 unproven competitive positioning against hyperscalers and CoreWeave in GPU cloud."
-    }
+      "confidenceBreakdown": "0.35/1.0"
+    },
+    "catalystUpdates": [
+      {
+        "date": "2026-06-03",
+        "source": "apply_catalyst.py",
+        "type": "partnership",
+        "events": [
+          "SA LP 5.6% passive stake + explosive Q1 growth validates AI cloud capacity thesis"
+        ],
+        "weightShifts": {
+          "bull": 5,
+          "bear": -3
+        },
+        "thesisImpact": "Bull probability +5pp; bear -3pp. FV $462.75\u2192$516.33. Action: BUY\u2192BUY."
+      }
+    ],
+    "lastGrokSweep": "2026-06-03"
   }
 ]

@@ -32,14 +32,12 @@ import { ScenarioEditor } from './analysis/ScenarioEditor';
 import { SliderInput } from './analysis/SliderInput';
 import { SensitivityGrid } from './analysis/SensitivityGrid';
 
-// --- Normalization helper (extracted to avoid duplication) ---
-
 function normalizeScenario(s: any): Scenario & { weight: number } {
     return {
         ...s,
-        growthRate: (Math.abs(s.growthRate) > 0 && Math.abs(s.growthRate) < 1.0) ? s.growthRate * 100 : s.growthRate,
-        netMargin: (Math.abs(s.netMargin) > 0 && Math.abs(s.netMargin) < 1.0) ? s.netMargin * 100 : s.netMargin,
-        shareChange: (Math.abs(s.shareChange) > 0 && Math.abs(s.shareChange) < 1.0) ? s.shareChange * 100 : s.shareChange,
+        growthRate: s.growthRate,
+        netMargin: s.netMargin,
+        shareChange: s.shareChange,
     };
 }
 

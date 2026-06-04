@@ -1,0 +1,1 @@
+../../../../assets/templates/thesis_proposal_template.md

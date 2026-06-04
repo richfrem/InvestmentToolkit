@@ -17,6 +17,7 @@ import { useEffect, useState } from 'react';
 import { X, BookOpen, Loader2 } from 'lucide-react';
 import { fetchInvestmentThesis } from '../services/api';
 import MarkdownContent from './MarkdownContent';
+import ThesisViewModal from './ThesisViewModal';
 
 
 interface Props { onClose: () => void; }
@@ -27,6 +28,7 @@ export default function InvestmentThesisModal({ onClose }: Props) {
     const [thesisDescription, setThesisDescription] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedSubStrategyId, setSelectedSubStrategyId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchInvestmentThesis()
@@ -45,6 +47,12 @@ export default function InvestmentThesisModal({ onClose }: Props) {
         document.addEventListener('keydown', handler);
         return () => document.removeEventListener('keydown', handler);
     }, [onClose]);
+
+    const handleLinkClick = (href: string) => {
+        // Extract the strategy ID from paths like 'sub_strategies/asi_race.md' or similar
+        const filename = href.split('/').pop()?.replace('.md', '') || href;
+        setSelectedSubStrategyId(filename);
+    };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={onClose}>
@@ -77,9 +85,15 @@ export default function InvestmentThesisModal({ onClose }: Props) {
                         </div>
                     )}
                     {error && <div className="text-red-400 text-sm p-4 bg-red-500/10 rounded-lg">{error}</div>}
-                    {content && <MarkdownContent content={content} accentColor="indigo" />}
+                    {content && <MarkdownContent content={content} accentColor="indigo" onLinkClick={handleLinkClick} />}
                 </div>
             </div>
+
+            <ThesisViewModal
+                isOpen={!!selectedSubStrategyId}
+                onClose={() => setSelectedSubStrategyId(null)}
+                thesisId={selectedSubStrategyId}
+            />
         </div>
     );
 }

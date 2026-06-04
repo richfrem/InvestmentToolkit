@@ -143,40 +143,67 @@ def build_prompt(date_str: str) -> str:
     portfolio_val  = thesis.get("globalSettings", {}).get("portfolioValueUSD", 0)
 
     lines = []
-    lines.append(f"# Portfolio X.com / Grok News Sweep — {date_str}")
+    lines.append(f"# Portfolio News Sweep — {date_str}")
     lines.append(f"**Thesis:** {thesis_name}  |  **Portfolio value:** ~${portfolio_val:,}  |  **Date:** {date_str}")
     lines.append("")
     lines.append("You are reviewing a concentrated AI/ASI infrastructure portfolio.")
-    lines.append("Search X.com (recent posts, news, earnings, filings, analyst notes) for the")
-    lines.append("latest on **each ticker listed below**.")
+    lines.append("Search X posts, earnings releases, filings, and analyst notes for **material updates only**")
+    lines.append("from the **last 7–14 days**. Skip filler — only report developments that change conviction,")
+    lines.append("sizing, or thesis alignment. Flag SA LP (Situational Awareness LP / Aschenbrenner fund) moves.")
     lines.append("")
-    lines.append("Return your response in **three parts**:")
+
+    num_parts = 3 + (1 if initiate_list else 0)
+    lines.append(f"Return your response in **{num_parts} parts**:")
     lines.append("")
     lines.append("---")
     lines.append("")
+
+    # ── Part 1 header ─────────────────────────────────────────────────────
     lines.append("### Part 1 — Sweep Table (every position)")
     lines.append("")
-    lines.append("| Ticker | Current% | Target% | News | Thesis Impact | Action | Target Change | Deep Dive? |")
-    lines.append("|--------|----------|---------|------|---------------|--------|---------------|------------|")
+    lines.append("| Ticker | Current% | Target% | Key Catalyst/News (last 7–14 days) | Thesis Impact | Conviction (1–10) | Action | Target Change | Entry Price | Deep Dive? |")
+    lines.append("|--------|----------|---------|------------------------------------|---------------|-------------------|--------|---------------|-------------|------------|")
     lines.append("")
-    lines.append("Mark `[DD]` in the **Deep Dive?** column for any position with material news in the")
-    lines.append("last 7 days: earnings beat/miss, major contract, regulatory event, SA LP position change,")
-    lines.append("or potential thesis breaker. Leave blank if no material development.")
-    lines.append("For target changes, give a specific % (e.g. '↑ to 5.5%'), not just 'add more'.")
-    lines.append("")
-    lines.append("---")
-    lines.append("")
-    lines.append("### Part 2 — INITIATE Target Deep Dives (always include all)")
-    lines.append("")
-    lines.append("For **every INITIATE target** listed below, provide a 3–5 sentence deep dive covering:")
-    lines.append("recent news, current thesis alignment, key risks, and your conviction on initiating now.")
+    lines.append("**Conviction scale**: 1–3 = bearish / thesis challenged, 4–6 = neutral / hold, 7–10 = high conviction / add.")
+    lines.append("**Entry Price**: for any ACCUMULATE/INITIATE action, suggest a GTC limit buy price (support level or DCF-based).")
+    lines.append("Mark `[DD]` only for: earnings beat/miss >10%, major contract, regulatory shift, SA LP position change, or thesis breaker.")
+    lines.append("For target changes give a specific % (e.g. `↑ to 5.5%`) — not just 'add more'.")
     lines.append("")
     lines.append("---")
     lines.append("")
-    lines.append("### Part 3 — Active Holdings Deep Dives (only [DD]-flagged positions)")
+
+    # ── Part 2 — INITIATE (only when targets exist) ───────────────────────
+    if initiate_list:
+        lines.append("### Part 2 — INITIATE Target Deep Dives")
+        lines.append("")
+        lines.append("For **every INITIATE target** below, provide 3–5 sentences: recent momentum, valuation context")
+        lines.append("(current EV/EBITDA or P/S vs. historical), thesis fit, key risks, and conviction on initiating now.")
+        lines.append("")
+        lines.append("---")
+        lines.append("")
+        deep_dive_part = 3
+    else:
+        deep_dive_part = 2
+
+    # ── Deep dives header ─────────────────────────────────────────────────
+    lines.append(f"### Part {deep_dive_part} — Active Holdings Deep Dives (only [DD]-flagged)")
     lines.append("")
-    lines.append("For each position you marked `[DD]` in Part 1, provide a 3–5 sentence deep dive covering:")
-    lines.append("the specific catalyst, thesis impact, and any change to conviction or sizing.")
+    lines.append("For each `[DD]` position: catalyst + thesis impact + conviction change + sizing recommendation.")
+    lines.append("Include current valuation context (price vs. analyst PT range) where available.")
+    lines.append("")
+    lines.append("---")
+    lines.append("")
+
+    # ── Portfolio-level questions (always Part last) ──────────────────────
+    lines.append(f"### Part {deep_dive_part + 1} — Portfolio-Level Questions")
+    lines.append("")
+    lines.append("Answer these for the portfolio as a whole:")
+    lines.append("")
+    lines.append("1. **Biggest risk right now** — what single development could most damage this portfolio?")
+    lines.append("2. **Most mispriced position** — which holding looks most over- or under-valued vs. current thesis?")
+    lines.append("3. **Top trim / add priorities this month** — 2–3 highest-conviction actions.")
+    lines.append("4. **Macro pulse** — any developments in AI capex trends, power capacity, or rate sensitivity")
+    lines.append("   that materially affect this portfolio's positioning?")
     lines.append("")
     lines.append("---")
     lines.append("")
@@ -184,14 +211,22 @@ def build_prompt(date_str: str) -> str:
     # ── Active held positions ──────────────────────────────────────────────
     lines.append("## 🔵 Active Holdings (currently owned + targeted)")
     lines.append("")
-    lines.append("| Ticker | Actual% | Target% | Action | DCF Signal | Watch For |")
-    lines.append("|--------|---------|---------|--------|------------|-----------|")
+    lines.append("| Ticker | Actual% | Target% | Action | DCF Signal | Entry Price | Sizing context |")
+    lines.append("|--------|---------|---------|--------|------------|-------------|----------------|")
     for r in active_held:
         dcf_label = _dcf_label(r["dcf"])
-        watch = r["watch"]
+        gap = round(r["target"] - r["actual"], 1)
+        if gap > 1.0:
+            sizing = f"Under by {gap:.1f}pp — room to add"
+        elif gap < -1.0:
+            sizing = f"Over by {abs(gap):.1f}pp — trim candidate"
+        else:
+            sizing = "Near target"
+        entry = holdings_map[r["ticker"]].get("targetEntryPrice")
+        entry_label = f"${entry:,.0f}" if entry else "—"
         lines.append(
             f"| **{r['ticker']}** | {r['actual']:.1f}% | {r['target']:.1f}% "
-            f"| {_action_emoji(r['action'])} | {dcf_label} | {watch} |"
+            f"| {_action_emoji(r['action'])} | {dcf_label} | {entry_label} | {sizing} |"
         )
     lines.append("")
 
@@ -205,10 +240,8 @@ def build_prompt(date_str: str) -> str:
             dcf_label = _dcf_label(r["dcf"])
             lines.append(
                 f"| **{r['ticker']}** | {r['target']:.1f}% | {dcf_label} "
-                f"| Confirm still want to initiate |"
+                f"| Deep dive required — initiate now or wait? |"
             )
-        lines.append("")
-        lines.append("**Deep dive required for each INITIATE target (Part 2 above) — include regardless of recent news.**")
         lines.append("")
 
     # ── Exit positions ──────────────────────────────────────────────────
@@ -221,31 +254,26 @@ def build_prompt(date_str: str) -> str:
             dcf_label = _dcf_label(r["dcf"])
             lines.append(
                 f"| **{r['ticker']}** | {r['actual']:.1f}% | {dcf_label} "
-                f"| Flagged for exit — check for any positive reversal |"
+                f"| Flagged for exit — any positive reversal? |"
             )
         lines.append("")
 
-    # ── SA LP cross-check & output summary ───────────────────────────────
+    # ── SA LP cross-check ─────────────────────────────────────────────────
     lines.append("---")
     lines.append("")
     lines.append("## SA LP Cross-Check")
     lines.append("")
-    lines.append("Also check: any new **Situational Awareness LP** (Aschenbrenner fund) disclosures,")
-    lines.append("13F filings, or position changes posted on X. Their top Q4 2025 positions were:")
-    lines.append("INTC (calls), CRWV (calls + common), CORZ, BE, LITE, SNDK, PSIX, IREN.")
-    lines.append("Flag any position changes that conflict with or reinforce the portfolio above.")
+    lines.append("Check for new **Situational Awareness LP** (Aschenbrenner fund) disclosures,")
+    lines.append("13F filings, or X posts. Q4 2025 top positions: INTC (calls), CRWV (calls + common),")
+    lines.append("CORZ, BE, LITE, SNDK, PSIX, IREN. Flag any changes that conflict with or reinforce the portfolio.")
     lines.append("")
     lines.append("---")
     lines.append("")
-    lines.append("## Output Format Reminder")
+    lines.append("## Output Format")
     lines.append("")
-    lines.append("Structure your full response as:")
-    lines.append("1. **Part 1** — Sweep table (all positions, `[DD]` flags where material)")
-    lines.append("2. **Part 2** — INITIATE deep dives (all INITIATE targets, always)")
-    lines.append("3. **Part 3** — Active holdings deep dives (only `[DD]`-flagged positions)")
-    lines.append("")
-    lines.append("Prioritize: earnings surprises, tier-1 contracts, regulatory decisions, SA LP changes, thesis breakers.")
-    lines.append("Flag SA/DCF conflicts explicitly. Keep deep dives to 3–5 sentences each.")
+    lines.append(f"Structure your response as Part 1 → Part {deep_dive_part + 1}.")
+    lines.append("Prioritize signal over completeness — if nothing material happened for a ticker, one line is enough.")
+    lines.append("Flag SA/DCF conflicts and valuation stretches explicitly.")
     lines.append("")
     lines.append(f"_Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')} from {thesis_name}_")
 

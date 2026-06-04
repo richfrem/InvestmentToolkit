@@ -1,0 +1,46 @@
+{
+  "ticker": "<TICKER>",
+  "id": "<uuid4>",
+  "source": "AI_AGENT",
+  "schemaVersion": "1.0",
+  "schemaType": "ETF_ANALYSIS",
+  "fundType": "<CLOSED_END | THEMATIC_ETF | CASH_FUND>",
+  "version": 1,
+  "savedAt": "<ISO8601>",
+  "updatedAt": "<ISO8601>",
+  "name": "AI ETF Analysis — <TICKER> — <DATE>",
+  "rationale": "<2-3 sentence summary of key finding>",
+  "snapshot": {
+    "price": 0.0,
+    "currency": "USD",
+    "exchange": "NYSE",
+    "aum": null,
+    "expenseRatio": null,
+    "fiftyTwoWeekHigh": 0.0,
+    "fiftyTwoWeekLow": 0.0
+  },
+  "navAnalysis": {
+    "navPerShare": 0.0,
+    "navEstimateMethod": "<private_stake_sum | last_known_filing | etc.>",
+    "premiumPct": 0.0,
+    "premiumRisk": "<HIGH | MODERATE | LOW>",
+    "historicalPremiumRange": { "low": 0, "high": 0 },
+    "premiumPercentile": 0,
+    "compressionTriggers": []
+  },
+  "holdingsAnalysis": {
+    "topHoldings": [
+      { "symbol": "...", "name": "...", "holdingPct": 0.0, "alignment": "<DIRECT | PARTIAL | TANGENTIAL>" }
+    ],
+    "concentration": { "top5Pct": 0.0, "top10Pct": 0.0 },
+    "thesisAlignmentScore": 0,
+    "expenseDragBps": 0,
+    "overlapWithDirectHoldings": []
+  },
+  "action": "<BUY | ACCUMULATE | HOLD | TRIM | AVOID>",
+  "actionRationale": "<why>",
+  "upsideCatalysts": ["..."],
+  "risks": ["..."],
+  "entryNote": "<any timing or sizing note>",
+  "agentRationale": "<one-liner for target-portfolio.json>"
+}

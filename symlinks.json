@@ -164,7 +164,7 @@
       "description": "ADR-003: relative symlink to plugin root references/ \u2014 NOT pointing outside plugin tree"
     },
     {
-      "src": "plugins/portfolio-advisor/references/investment_thesis.md",
+      "src": "investment_screener/backend/data/theses/investment_thesis.md",
       "dst": "plugins/portfolio-advisor/skills/strategic-review/references/investment_thesis.md",
       "strategy": "symlink",
       "description": "ADR-003: relative symlink to plugin root references/"
@@ -176,13 +176,13 @@
       "description": "ADR-003: relative symlink to plugin root references/"
     },
     {
-      "src": "plugins/portfolio-advisor/references/investment_thesis.md",
+      "src": "investment_screener/backend/data/theses/investment_thesis.md",
       "dst": "plugins/portfolio-advisor/skills/portfolio-health/references/investment_thesis.md",
       "strategy": "symlink",
       "description": "ADR-003: relative symlink to plugin root references/"
     },
     {
-      "src": "plugins/portfolio-advisor/references/investment_thesis.md",
+      "src": "investment_screener/backend/data/theses/investment_thesis.md",
       "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/references/investment_thesis.md",
       "strategy": "symlink",
       "description": "ADR-003: relative symlink to plugin root references/"
@@ -588,6 +588,66 @@
       "dst": "plugins/stock-valuation/skills/stock_valuation/scripts/standardize_metrics.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/update_targets.py",
+      "dst": "plugins/portfolio-advisor/skills/thesis-review/scripts/update_targets.py",
+      "strategy": "symlink",
+      "description": "update target portfolio weights"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/validate_weights.py",
+      "dst": "plugins/portfolio-advisor/skills/thesis-review/scripts/validate_weights.py",
+      "strategy": "symlink",
+      "description": "validate target portfolio weights"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py",
+      "dst": "plugins/portfolio-advisor/skills/thesis-review/scripts/generate_portfolio_blueprint.py",
+      "strategy": "symlink",
+      "description": "generate markdown tables for thesis"
+    },
+    {
+      "src": "investment_screener/backend/data/theses/investment_thesis.md",
+      "dst": "plugins/portfolio-advisor/skills/thesis-review/references/investment_thesis.md",
+      "strategy": "symlink",
+      "description": "canonical thesis doc"
+    },
+    {
+      "src": "plugins/etf-analysis/assets/templates/etf_analysis_template.json",
+      "dst": "plugins/etf-analysis/skills/etf_analysis/assets/templates/etf_analysis_template.json",
+      "strategy": "symlink",
+      "description": "Official ETF analysis output JSON template"
+    },
+    {
+      "src": "plugins/stock-valuation/assets/templates/projection_template.json",
+      "dst": "plugins/stock-valuation/skills/stock_valuation/assets/templates/projection_template.json",
+      "strategy": "symlink",
+      "description": "Official projection JSON template"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/target_portfolio_template.json",
+      "dst": "plugins/portfolio-advisor/skills/update-portfolio-targets/assets/templates/target_portfolio_template.json",
+      "strategy": "symlink",
+      "description": "Target portfolio JSON template"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/target_portfolio_template.json",
+      "dst": "plugins/portfolio-advisor/skills/thesis-review/assets/templates/target_portfolio_template.json",
+      "strategy": "symlink",
+      "description": "Target portfolio JSON template"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/portfolio_analysis_recommendations_template.json",
+      "dst": "plugins/portfolio-advisor/skills/strategic-review/assets/templates/portfolio_analysis_recommendations_template.json",
+      "strategy": "symlink",
+      "description": "Strategic review JSON template"
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/thesis_proposal_template.md",
+      "dst": "plugins/portfolio-advisor/skills/thesis-review/assets/templates/thesis_proposal_template.md",
+      "strategy": "symlink",
+      "description": "Thesis proposal markdown template"
     }
   ]
 }

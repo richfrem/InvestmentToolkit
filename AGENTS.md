@@ -67,16 +67,17 @@ This workstation is built on a modular plugin architecture. You have access to t
 
 ## 📜 Agent Operating Guidelines
 
-As an AI agent operating in this repository, you **MUST** adhere to the following directives:
+As an AI agent operating in this repository, you **MUST** adhere to the following directives from `.agent/rules/`:
 
-### 1. The Iron Law of TDD
-**NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST.**
-- The primary test harnesses must shell out via subprocess to exactly mirror the execution paths of the AI plugins and the Express bridge.
-- Mocking is strictly prohibited on critical runtime paths.
-- Read `.agent/rules/test-driven-development.md` before making any code changes.
+### 1. Mandatory Rules & Conventions
+- **TDD (`test-driven-development.md`)**: NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST. Mocking is strictly prohibited on critical runtime paths.
+- **No Inline Python (`no-inline-python.md`)**: Never perform financial/analytical calculations inline. Always use or create versioned `.py` scripts.
+- **Coding Conventions (`coding-conventions.md`)**: Dual-layer docs, type hints, proper casing, and strict refactoring thresholds.
+- **Dependency Management (`dependency-management.md`)**: No manual `pip install`. Edit `.in` files and use `pip-compile`.
+- **Plugin Architecture (`plugin-architecture.md` & `symlink-cross-platform.md`)**: File-level symlinks ONLY via `symlink_manager.py`. No cross-plugin script execution.
+- **Self-Evolution (`self-evolution-policy.md`)**: Classify failures, max 3 repair attempts, update playbooks. Deletions are strictly forbidden.
 
 ### 2. Agent Calculation Policy
-- **Never perform financial or analytical calculations inline** (using ad-hoc bash/python snippets).
 - Always use or create versioned `.py` scripts in `investment_screener/backend/py_services/`.
 - Fix bugs once in the script; every future run benefits automatically.
 
@@ -100,6 +101,11 @@ As an AI agent operating in this repository, you **MUST** adhere to the followin
 - **React fiber traversal for Monaco**: Do not rely solely on CSS selectors for Pine Editor / Monaco. Scan DOM nodes for the `__reactFiber` key prefix and walk the fiber tree. Reference: [tradesdontlie/tradingview-mcp](https://github.com/tradesdontlie/tradingview-mcp).
 - **Pine inject uses `--content`, not `--file`**: `tv_pine_inject.py` reads the file in Python (correct cwd), then passes content via `--content` to Node. Node's cwd is `tradingview-cdp/` — passing a relative path would inject the path string as Pine Script.
 - **Temp files**: Use `InvestmentToolkit/temp/` subfolder (gitignored), not `/tmp/` root. Task #0003 tracks legacy migration.
+- **PSU.U.TO = PSU-U.TO**: Same fund (Purpose US Cash Fund). Broker panel returns `PSU.U.TO` (dot); canonical thesis uses `PSU-U.TO` (hyphen). Alias hardcoded in `fetch_broker_data.py`. Never create a duplicate thesis entry for `PSU.U.TO`.
+- **targetEntryPrice field**: `target-portfolio.json` holdings have an optional `targetEntryPrice` float — the GTC limit order price for accumulating. Set via `update_targets.py --set-entry TICKER=PRICE --write`. The Grok prompt surfaces existing entry prices and asks for suggestions on ACCUMULATE rows.
+- **Limit orders are Day by default**: CDP order automation does not yet set GTC. After placing a long-dated limit via `/place-order`, manually change it to "Good till cancelled" in TradingView broker panel → Orders tab.
+- **Portfolio sync fallback**: After fills, tries (1) Express API, (2) `fetch_broker_data.py --snapshot` (direct CDP — updates cash + holdings without the backend running), (3) Questrade REST.
+- **Fractional shares**: `place_order.py --shares` accepts float (e.g. `0.2`). TradingView/Questrade supports fractional orders.
 
 ---
 

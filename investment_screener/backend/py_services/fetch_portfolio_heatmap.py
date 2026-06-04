@@ -30,6 +30,7 @@ import numpy as np
 import yfinance as yf
 from history_store import HistoricalPriceStore
 from sector_overrides import SECTOR_OVERRIDES
+from ticker_aliases import normalize_ticker
 
 
 class _NpEncoder(json.JSONEncoder):
@@ -152,7 +153,7 @@ def fetch_portfolio_data(items: list) -> dict:
             continue
         normalized.append((sym, shares, item_sector, item_industry, book_price, stored_price))
         if sym != "USD_CASH":
-            to_fetch.append(sym)
+            to_fetch.append(normalize_ticker(sym))
 
     # --- Parallel pre-fetch: all yfinance calls batched before the main loop ---
     # prefetch_info and prefetch_history each use ThreadPoolExecutor(max_workers=10)
@@ -176,7 +177,8 @@ def fetch_portfolio_data(items: list) -> dict:
                 hist_changes: dict = {}
                 book_price = 1.0
             else:
-                info = info_map.get(sym, {})
+                norm_sym = normalize_ticker(sym)
+                info = info_map.get(norm_sym, {})
                 if "_error" in info:
                     raise RuntimeError(info["_error"])
 
@@ -191,6 +193,10 @@ def fetch_portfolio_data(items: list) -> dict:
                     override = SECTOR_OVERRIDES[sym.upper()]
                     sector = override.get("sector", yahoo_sector)
                     industry = override.get("industry", yahoo_industry)
+                elif norm_sym.upper() in SECTOR_OVERRIDES:
+                    override = SECTOR_OVERRIDES[norm_sym.upper()]
+                    sector = override.get("sector", yahoo_sector)
+                    industry = override.get("industry", yahoo_industry)
                 else:
                     sector = yahoo_sector
                     industry = yahoo_industry
@@ -202,7 +208,7 @@ def fetch_portfolio_data(items: list) -> dict:
                 # NOT be used as current market price — that would give wildly wrong 1D%.
                 current_price = yf_price if yf_price and yf_price > 0 else (stored_price or 0)
                 change_pct = ((current_price - prev_close) / prev_close * 100) if prev_close else 0
-                hist_changes = history.calc_changes(sym, current_price)
+                hist_changes = history.calc_changes(norm_sym, current_price)
 
             total_market = round(shares * current_price, 2)
             total_book = round(shares * book_price, 2) if book_price else None

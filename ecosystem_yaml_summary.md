@@ -1,0 +1,188 @@
+# Ecosystem YAML Summary
+
+## PLUGINS
+- **etf-analysis**
+- **portfolio-advisor**
+- **stock-valuation**
+- **toolkit-manager**
+- **tradingview**
+
+## SKILLS
+- **13f-analyze**: 13f_analyze | >
+- **13f-tracker**: 13f_tracker | >
+- **adr-management**: adr-management | >
+- **agent-swarm**: agent-swarm | "(Industry standard: Parallel Agent) Primary Use Case: Work that can be partitioned into independent sub-tasks running concurrently across multiple ag...
+- **alert-sync**: tv_alert_sync | >
+- **analyze-plugin**: analyze-plugin | >
+- **antigravity-project-setup**: antigravity-project-setup | >-
+- **audit-plugin-l5**: audit-plugin-l5 | Triggers the L5 Red Team Sub-Agent to rigorously audit a plugin against the 39-point L4 pattern matrix.
+- **audit-plugin**: audit-plugin | >
+- **author-pine-script**: author_pine_script | >
+- **brainstorming**: brainstorming | "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user inten...
+- **business-requirements-capture**: business-requirements-capture | >
+- **business-workflow-doc**: business-workflow-doc | >
+- **calibrate-targets**: calibrate_targets | >
+- **cancel-order**: cancel-order | >
+- **chart-snapshot**: tv_chart_snapshot | >
+- **claude-cli-agent**: claude-cli-agent | >
+- **claude-project-setup**: claude-project-setup | >-
+- **coding-conventions-agent**: coding-conventions-agent | >
+- **compile-apm-package**: compile-apm-package | >-
+- **context-bundler**: context-bundler | Interactively creates technical bundles of code, design, and documentation for external review or context sharing. It conducts a brief discovery phase...
+- **convert-plugin-to-apm**: convert-plugin-to-apm | >-
+- **copilot-cli-agent**: copilot-cli-agent | >
+- **create-agentic-workflow**: create-agentic-workflow | Scaffold a GitHub agentic workflow from an existing skill
+- **create-apm-package**: create-apm-package | >-
+- **create-azure-agent**: create-azure-agent | Deploy a skill as an Azure AI Foundry hosted agent
+- **create-command**: create-command | >
+- **create-docker-skill**: create-docker-skill | Scaffold an agent skill with Docker runtime support
+- **create-github-action**: create-github-action | Scaffold a deterministic GitHub Actions CI/CD workflow
+- **create-hook**: create-hook | Design and scaffold an event-driven Claude Code hook
+- **create-mcp-integration**: create-mcp-integration | Add an MCP server integration to a plugin
+- **create-plugin**: create-plugin | Scaffold a complete Claude Code plugin from scratch
+- **create-skill**: create-skill | >
+- **create-stateful-skill**: create-stateful-skill | Scaffold an advanced stateful agent skill with L4 patterns
+- **create-sub-agent**: create-sub-agent | Design and scaffold a Claude Code sub-agent
+- **dependency-management**: dependency-management | >
+- **discovery-planning**: discovery-planning | >
+- **dispatching-parallel-agents**: dispatching-parallel-agents | Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies
+- **dual-loop**: dual-loop | "(Industry standard: Sequential Agent / Agent as a Tool) Primary Use Case: Delegating a well-defined task to a worker agent, verifying its execution, ...
+- **ecosystem-authoritative-sources**: ecosystem-authoritative-sources | Provides information about how to create, structure, install, and audit Agent Skills, Plugins, Antigravity Workflows, and Sub-agents. Trigger this whe...
+- **ecosystem-standards**: ecosystem-standards | Provides active execution protocols to rigorously audit how code, directory structures, and agent actions comply with the authoritative ecosystem spec...
+- **etf_analysis**: etf_analysis | >
+- **eval-autoresearch-fit**: eval-autoresearch-fit | >
+- **executing-plans**: executing-plans | Use when you have a written implementation plan to execute in a separate session with review checkpoints
+- **exploration-handoff**: exploration-handoff | >
+- **exploration-optimizer**: exploration-optimizer | Evaluates and improves the exploration-cycle skills, prompts, routing, and artifact quality using baseline-first, one-hypothesis iteration loops with ...
+- **exploration-session-brief**: exploration-session-brief | >
+- **exploration-workflow**: exploration-workflow | >
+- **finishing-a-development-branch**: finishing-a-development-branch | Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by prese...
+- **fix-plugin-paths**: fix-plugin-paths | >
+- **forward-valuation-challenge**: forward_valuation_challenge | >
+- **gemini-cli-agent**: gemini-cli-agent | >
+- **get-orders**: get-orders | >
+- **install-apm-package**: install-apm-package | >-
+- **l5-red-team-auditor**: l5-red-team-auditor | >
+- **learning-loop**: learning-loop | "(Industry standard: Loop Agent / Single Agent) Primary Use Case: Self-contained research, content generation, and exploration where no inner delegati...
+- **link-checker-agent**: link-checker-agent | >
+- **manage-marketplace**: manage-marketplace | >
+- **mine-plugins**: mine-plugins | >
+- **mine-skill**: mine-skill | >
+- **modify-order**: modify-order | >
+- **optimize-agent-instructions**: optimize-agent-instructions | >
+- **optimize-context**: optimize-context | >-
+- **orchestrator**: orchestrator | "(Industry standard: Routing Agent / Orchestrator Pattern) Primary Use Case: Analyzing an ambiguous trigger and routing it to one of the specific spec...
+- **os-architect**: os-architect | >
+- **os-clean-locks**: os-clean-locks | >
+- **os-environment-probe**: os-environment-probe | >
+- **os-eval-backport**: os-eval-backport | >
+- **os-eval-lab-setup**: os-eval-lab-setup | >
+- **os-eval-runner**: os-eval-runner | >
+- **os-evolution-planner**: os-evolution-planner | >
+- **os-evolution-verifier**: os-evolution-verifier | >
+- **os-experiment-log**: os-experiment-log | >
+- **os-guide**: os-guide | >
+- **os-improvement-loop**: os-improvement-loop | >
+- **os-improvement-report**: os-improvement-report | >
+- **os-init**: os-init | >
+- **os-memory-manager**: os-memory-manager | >
+- **path-reference-auditor**: path-reference-auditor | >
+- **pine-inject**: pine_inject | >
+- **place-order**: place_order | >
+- **plugin-installer**: plugin-installer | >-
+- **plugin-remover**: plugin-remover | Interactively select and uninstall agent plugins and skills from the local .agents/ environment.
+- **plugin-syncer**: plugin-syncer | >
+- **portfolio-health**: portfolio_health | "Quick portfolio health check: drift monitor, pillar conviction audit, and thesis formula score. For full adversarial thesis challenge with formula im...
+- **price-refresh**: tv_price_refresh | >
+- **prototype-builder**: prototype-builder | >
+- **questrade-token-setup**: questrade_token_setup | >
+- **rebalance-portfolio**: rebalance_portfolio | >
+- **receiving-code-review**: receiving-code-review | Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires ...
+- **red-team-bundler**: red-team-bundler | Interactively prepares a targeted Red Team Review package. It conducts a brief discovery interview to determine the threat model, generates a strict s...
+- **red-team-review**: red-team-review | "(Industry standard: Review and Critique Pattern) Primary Use Case: Iterative generation paired with adversarial review, continuing until an 'Approved...
+- **requesting-code-review**: requesting-code-review | Use when completing tasks, implementing major features, or before merging to verify work meets requirements
+- **run-screener**: run_screener | >
+- **self-audit**: self-audit | >
+- **self-evolution**: self-evolution | >
+- **stock-research**: stock_research | >
+- **stock_valuation**: stock_valuation | >
+- **strategic-review**: strategic_review | >
+- **subagent-driven-development**: subagent-driven-development | Use when executing implementation plans with independent tasks in the current session
+- **subagent-driven-prototyping**: subagent-driven-prototyping | >
+- **symlink-manager**: symlink-manager | >
+- **synthesize-learnings**: synthesize-learnings | >
+- **systematic-debugging**: systematic-debugging | Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
+- **ta-red-team**: ta_red_team | >
+- **ta-snapshot**: tv_ta_snapshot | >
+- **task-agent**: task-agent | >
+- **technical-analysis-expert**: technical_analysis_expert | >
+- **test-driven-development**: test-driven-development | Use when implementing any feature or bugfix, before writing implementation code
+- **thesis-challenge-bundler**: thesis_challenge_bundler | >
+- **todo-check**: todo-check | >
+- **triple-loop-learning**: triple-loop-learning | "(Industry standard: Meta-Learning System / Automated Autoresearch) Primary Use Case: Continuous, self-improving orchestration of an agentic system ov...
+- **tv-add-indicator**: tv_add_indicator | >
+- **tv-change-symbol**: tv_change_symbol | >
+- **tv-change-type**: tv_change_type | >
+- **tv-chart-setup**: tv_chart_setup | >
+- **tv-portfolio-sync**: tv_portfolio_sync | >
+- **tv-save-indicator**: tv_save_indicator | >
+- **tv_pine_advisor**: tv_pine_advisor | Generate, inject, and read a custom Pine Script v5 indicator on the active TradingView chart to produce a technical analysis advisory for a given tick...
+- **update-ecosystem-index**: update-ecosystem-index | Automatically updates the plugin/skill/agent counts in README.md based on the current plugins/ directory.
+- **update-portfolio-targets**: update-portfolio-targets | >
+- **user-story-capture**: user-story-capture | >
+- **using-git-worktrees**: using-git-worktrees | Use when starting feature work that needs isolation from current workspace or before executing implementation plans - ensures an isolated workspace ex...
+- **using-superpowers**: using-superpowers | Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying ...
+- **valuation-math-validation**: valuation_math_validation | >
+- **verification-before-completion**: verification-before-completion | Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming...
+- **vibe-behavioral-test-capture**: vibe-behavioral-test-capture | Builds an executable safety net of characterization tests by integrating browser flow recording, API payload snapshotting, DOM state captures, network...
+- **vibe-browser-audit**: vibe-browser-audit | A visual & functional crawler operation utilizing Chrome DevTools Protocol (CDP) or Playwright/Puppeteer to audit prototype UI/UX and behavior.
+- **vibe-domain-extractor**: vibe-domain-extractor | Extracts pure, framework-free, IO-free domain models and deterministic business rules from a rapid prototype with strict preservation vs replacement c...
+- **vibe-reengineer**: vibe-reengineer | Top-level orchestration skill coordinating the entire 7-step surgical vibe-to-enterprise reengineering pipeline with automated safety and economic opt...
+- **vibe-slice-migrator**: vibe-slice-migrator | Progressively migrates legacy prototype routes and features to a clean architecture layer slice-by-slice, verifying them against characterization test...
+- **vibe-spec-packager**: vibe-spec-packager | A package builder skill that compiles specs/ documents into standard spec-kits and scaffolds the clean target codebase sandbox.
+- **vibe-to-speckit-superpowers**: vibe-to-speckit-superpowers | >
+- **vibe-togaf-architect**: vibe-togaf-architect | A system architecture scaffolder designed to synthesize visual discoveries and interactive Q&A responses into comprehensive C4 and TOGAF specs.
+- **visual-companion**: visual-companion | >
+- **writing-plans**: writing-plans | Use when you have a spec or requirements for a multi-step task, before touching code
+- **writing-skills**: writing-skills | Use when creating new skills, editing existing skills, or verifying skills work before deployment
+- **x-news-sweep**: x_news_sweep | >
+
+## AGENTS
+- **agent-agentic-os-agentic-os-setup.md**: agentic-os-setup | >
+- **agent-agentic-os-improvement-intake-agent.md**: improvement-intake-agent | >
+- **agent-agentic-os-os-architect-agent.md**: os-architect | >
+- **agent-agentic-os-os-architect-tester-agent.md**: os-architect-tester | >
+- **agent-agentic-os-os-health-check.md**: os-health-check | >
+- **agent-loops-orchestrator.md**: None | 
+- **agent-scaffolders-ecosystem-index-agent.agent.md**: ecosystem-index-agent | Repository hygiene agent that maintains the Plugin Ecosystem index in README.md.
+- **claude-cli-architect-review.md**: architect-review | "Assesses system design, modularity, and overall complexity."
+- **claude-cli-refactor-expert.md**: refactor-expert | "Specializes in optimizing Python code for readability and performance."
+- **claude-cli-security-auditor.md**: security-auditor | "Specializes in finding security vulnerabilities and exploits."
+- **coding-conventions-coding-conventions-agent.md**: None | 
+- **copilot-cli-architect-review.md**: architect-review | "Assesses system design, modularity, and overall complexity."
+- **copilot-cli-refactor-expert.md**: refactor-expert | "Specializes in optimizing Python code for readability and performance."
+- **copilot-cli-security-auditor.md**: security-auditor | "Specializes in finding security vulnerabilities and exploits."
+- **exploration-cycle-plugin-business-rule-audit-agent.md**: business-rule-audit-agent | >
+- **exploration-cycle-plugin-certification-verifier.md**: certification-verifier | >
+- **exploration-cycle-plugin-discovery-planning-agent.md**: discovery-planning | >
+- **exploration-cycle-plugin-domain-purity-auditor.md**: domain-purity-auditor | >
+- **exploration-cycle-plugin-exploration-cycle-orchestrator-agent.md**: exploration-cycle-orchestrator | >
+- **exploration-cycle-plugin-handoff-preparer-agent.md**: handoff-preparer-agent | |
+- **exploration-cycle-plugin-intake-agent.md**: intake-agent | >
+- **exploration-cycle-plugin-planning-doc-agent.md**: planning-doc-agent | >
+- **exploration-cycle-plugin-problem-framing-agent.md**: problem-framing-agent | |
+- **exploration-cycle-plugin-prototype-builder-agent.md**: prototype-builder | >
+- **exploration-cycle-plugin-prototype-companion-agent.md**: prototype-companion-agent | |
+- **exploration-cycle-plugin-requirements-doc-agent.md**: requirements-doc-agent | >
+- **exploration-cycle-plugin-requirements-scribe-agent.md**: requirements-scribe-agent | |
+- **exploration-cycle-plugin-runtime-observer-agent.md**: runtime-observer | >
+- **exploration-cycle-plugin-semantic-drift-auditor.md**: semantic-drift-auditor | >
+- **exploration-cycle-plugin-vibe-orchestrator-agent.md**: vibe-orchestrator | |
+- **gemini-cli-architect-review.md**: architect-review | "Assesses system design, modularity, and overall complexity."
+- **gemini-cli-refactor-expert.md**: refactor-expert | "Specializes in optimizing Python code for readability and performance."
+- **gemini-cli-security-auditor.md**: security-auditor | "Specializes in finding security vulnerabilities and exploits."
+- **link-checker-link-checker-agent.md**: None | 
+- **portfolio-advisor-portfolio-advisor-orchestrator.md**: portfolio-advisor-orchestrator | Interactive sub-agent that guides the user through the full Portfolio Advisor workflow (Ingest -> Calibrate -> Review -> Rebalance -> Execution).
+- **toolkit-manager-toolkit-onboarding-guide.md**: toolkit-onboarding-guide | |
+- **toolkit-manager-tradingview-onboarding.md**: tradingview-onboarding | |
+- **tradingview-ta-guide.md**: ta-guide | |

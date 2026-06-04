@@ -20,6 +20,8 @@ allowed-tools: Bash, Read, Write
   - `fetch_fund_data.py {TICKER}` — yfinance metadata + holdings
   - `validate_etf_analysis.py` — pre-persistence schema check
   - `persist_etf_analysis.py` — write to etf_analysis/ with versioning
+- `assets/templates/`:
+  - `etf_analysis_template.json` — The official schema template for your output
 
 ## Fund Type Detection
 
@@ -34,8 +36,8 @@ allowed-tools: Bash, Read, Write
 ## Step 1 — Fetch Market Data
 
 ```bash
-python3 plugins/etf-analysis/skills/etf_analysis/scripts/fetch_fund_data.py {TICKER} > /tmp/{TICKER}_raw.json
-cat /tmp/{TICKER}_raw.json
+python3 plugins/etf-analysis/skills/etf_analysis/scripts/fetch_fund_data.py {TICKER} > temp/evaluations/{TICKER}_raw.json
+cat temp/evaluations/{TICKER}_raw.json
 ```
 
 Use `snapshot.quoteType` and fund name to classify fund type.
@@ -95,72 +97,23 @@ DCF does not apply. Key outputs:
 
 ## Step 3 — Build the JSON
 
-Construct the analysis object. Required fields per schema:
+Construct the analysis object using the official template provided in:
+`assets/templates/etf_analysis_template.json`
 
-```json
-{
-  "ticker": "DXYZ",
-  "id": "<uuid4>",
-  "source": "AI_AGENT",
-  "schemaVersion": "1.0",
-  "schemaType": "ETF_ANALYSIS",
-  "fundType": "CLOSED_END",
-  "version": 1,
-  "savedAt": "<ISO8601>",
-  "updatedAt": "<ISO8601>",
-  "name": "AI ETF Analysis — DXYZ — <DATE>",
-  "rationale": "<2-3 sentence summary of key finding>",
-  "snapshot": {
-    "price": 55.20,
-    "currency": "USD",
-    "exchange": "NYSE",
-    "aum": null,
-    "expenseRatio": null,
-    "fiftyTwoWeekHigh": 71.24,
-    "fiftyTwoWeekLow": 19.71
-  },
+Read this template, fill in the fields based on your analysis, and use the exact schema structure.
 
-  // CLOSED_END only:
-  "navAnalysis": {
-    "navPerShare": 12.50,
-    "navEstimateMethod": "private_stake_sum",
-    "premiumPct": 341.6,
-    "premiumRisk": "HIGH",
-    "historicalPremiumRange": { "low": 80, "high": 620 },
-    "premiumPercentile": 45,
-    "compressionTriggers": ["SpaceX IPO", "Anthropic IPO"]
-  },
-
-  // THEMATIC_ETF only:
-  "holdingsAnalysis": {
-    "topHoldings": [
-      { "symbol": "TSLA", "name": "Tesla", "holdingPct": 8.4, "alignment": "PARTIAL" }
-    ],
-    "concentration": { "top5Pct": 28.0, "top10Pct": 42.0 },
-    "thesisAlignmentScore": 72,
-    "expenseDragBps": 75,
-    "overlapWithDirectHoldings": ["NVDA"]
-  },
-
-  "action": "HOLD",
-  "actionRationale": "<why>",
-  "upsideCatalysts": ["..."],
-  "risks": ["..."],
-  "entryNote": "<any timing or sizing note>",
-  "agentRationale": "<one-liner for target-portfolio.json>"
-}
-```
-
----
+**Important Note on Fields**:
+- For CLOSED_END funds, `holdingsAnalysis` is optional.
+- For THEMATIC_ETF funds, `navAnalysis` is optional.
 
 ## Step 4 — Validate and Persist
 
 ```bash
 # Validate
-cat /tmp/{TICKER}_etf.json | python3 plugins/etf-analysis/skills/etf_analysis/scripts/validate_etf_analysis.py --verbose
+cat temp/evaluations/{TICKER}_etf.json | python3 plugins/etf-analysis/skills/etf_analysis/scripts/validate_etf_analysis.py --verbose
 
 # Persist (only if validation passes)
-python3 plugins/etf-analysis/skills/etf_analysis/scripts/persist_etf_analysis.py --input /tmp/{TICKER}_etf.json
+python3 plugins/etf-analysis/skills/etf_analysis/scripts/persist_etf_analysis.py --input temp/evaluations/{TICKER}_etf.json
 ```
 
 ---
