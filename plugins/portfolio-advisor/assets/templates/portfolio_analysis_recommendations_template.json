@@ -1,0 +1,62 @@
+{
+  "reviewDate": "<YYYY-MM-DD>",
+  "reviewId": "<YYYY-MM-DD>-PortfolioAnalysisRecommendations",
+  "reviewFile": "PortfolioAnalysis/strategic-reviews/<YYYY-MM-DD>-PortfolioAnalysisRecommendations.md",
+  "thesisName": "<Name of target portfolio>",
+  "targetPortfolioVersion": 1,
+  "targetPortfolioFile": "investment_screener/backend/data/theses/target-portfolio.json",
+  "status": "<PROPOSED | APPROVED | APPLIED>",
+  "approvedAt": null,
+  "appliedAt": null,
+  "applyCommand": "python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write",
+  "summary": {
+    "holdingsWithChanges": 0,
+    "holdingsUnchanged": 0,
+    "urgentActions": 0,
+    "normalActions": 0,
+    "lowActions": 0,
+    "totalWeightShifted": 0.0
+  },
+  "pillars": [
+    {
+      "id": "<Pillar ID>",
+      "name": "<Pillar Name>",
+      "currentTarget": 0.0,
+      "recommendedTarget": 0.0,
+      "delta": 0.0,
+      "note": "Current target from <Thesis Name>"
+    }
+  ],
+  "holdings": [
+    {
+      "ticker": "<TICKER>",
+      "pillarId": "<Pillar ID>",
+      "role": "<core | speculative | etc>",
+      "currentTarget": 0.0,
+      "recommendedTarget": 0.0,
+      "delta": 0.0,
+      "action": "<ACCUMULATE | TRIM | INITIATE | EXIT>",
+      "actualPct": 0.0,
+      "actualDelta": 0.0,
+      "rationale": "<Agent rationale from target-portfolio.json>",
+      "urgency": "<URGENT | NORMAL | LOW>"
+    }
+  ],
+  "holdingsUnchanged": [
+    {
+      "ticker": "<TICKER>",
+      "pillarId": "<Pillar ID>",
+      "role": "<core | speculative | etc>",
+      "currentTarget": 0.0,
+      "recommendedTarget": 0.0,
+      "delta": 0.0,
+      "action": "MAINTAIN",
+      "actualPct": 0.0,
+      "actualDelta": 0.0,
+      "rationale": "<Agent rationale from target-portfolio.json>",
+      "urgency": "LOW"
+    }
+  ],
+  "generatedAt": "<ISO8601>",
+  "recommendations": []
+}

@@ -133,8 +133,8 @@ def clear_ports(ports: List[int]) -> None:
         ports: List of port numbers to clear.
     """
     for port in ports:
-        try:
-            if not IS_WINDOWS:
+        if not IS_WINDOWS:
+            try:
                 result = subprocess.run(
                     ["lsof", "-ti", f":{port}"],
                     capture_output=True, text=True
@@ -152,7 +152,13 @@ def clear_ports(ports: List[int]) -> None:
                             Colors.print(f"  Force-killed stale process on :{port} (PID {pid})", Colors.YELLOW)
                         except ProcessLookupError:
                             Colors.print(f"  Cleared stale process on :{port} (PID {pid})", Colors.YELLOW)
-            else:
+                        except Exception as e:
+                            # Catch permission or other OS errors individually for each PID
+                            pass
+            except Exception:
+                pass
+        else:
+            try:
                 # Windows port clearing
                 result = subprocess.run(
                     ["netstat", "-ano"],
@@ -164,7 +170,9 @@ def clear_ports(ports: List[int]) -> None:
                         pid = parts[-1]
                         subprocess.run(["taskkill", "/F", "/PID", pid], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                         Colors.print(f"  Cleared stale process on :{port} (PID {pid})", Colors.YELLOW)
-            
+            except Exception:
+                pass
+        try:
             time.sleep(0.5)
         except Exception:
             pass

@@ -20,9 +20,10 @@ import type { Components } from 'react-markdown';
 interface Props {
     content: string;
     accentColor?: 'indigo' | 'amber' | 'emerald';
+    onLinkClick?: (href: string) => void;
 }
 
-export default function MarkdownContent({ content, accentColor = 'indigo' }: Props) {
+export default function MarkdownContent({ content, accentColor = 'indigo', onLinkClick }: Props) {
     const cleaned = content.replace(/<!--[\s\S]*?-->/g, '').replace(/\n{3,}/g, '\n\n').trim();
 
     const accent = {
@@ -69,11 +70,24 @@ export default function MarkdownContent({ content, accentColor = 'indigo' }: Pro
         ol: ({ children }) => <ol className="my-3 space-y-1 list-decimal list-inside">{children}</ol>,
         li: ({ children }) => <li className="text-slate-300 text-sm leading-relaxed">{children}</li>,
         hr: () => <hr className="border-slate-700/60 my-6" />,
-        a: ({ href, children }) => (
-            <a href={href} className={`${accent.link} underline-offset-2 hover:underline transition-colors`} target="_blank" rel="noopener noreferrer">
-                {children}
-            </a>
-        ),
+        a: ({ href, children }) => {
+            const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+                if (onLinkClick && href && (href.startsWith('sub_strategies/') || href.includes('sub_strategies/') || href.endsWith('.md'))) {
+                    e.preventDefault();
+                    onLinkClick(href);
+                }
+            };
+            return (
+                <a
+                    href={href}
+                    onClick={handleLinkClick}
+                    className={`${accent.link} underline-offset-2 hover:underline transition-colors`}
+                    {...(!href?.startsWith('sub_strategies/') && !href?.includes('sub_strategies/') && !href?.endsWith('.md') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                >
+                    {children}
+                </a>
+            );
+        },
         code: ({ className, children, ...props }) => {
             const isBlock = !!className;
             return isBlock ? (

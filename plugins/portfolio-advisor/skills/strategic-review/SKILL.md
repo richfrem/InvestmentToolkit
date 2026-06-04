@@ -266,7 +266,7 @@ Strategic Reserve     | 13.0%         | 16.8%        | +3.8pp   | 1
 - **Persona**: Adversarial Thesis Challenger — objective, data-grounded, does not protect user bias
 - **Strategic Prompt**: `references/strategic_review_prompt.md` ← LLM prompt for structured output
   - **Fallback path** (if not installed alongside skill): `.agents/skills/portfolio-advisor/references/strategic_review_prompt.md`
-- **Thesis Doc**: `plugins/portfolio-advisor/references/investment_thesis.md`
+- **Thesis Doc**: `investment_screener/backend/data/theses/investment_thesis.md`
 - **Output Dir**: `PortfolioAnalysis/strategic-reviews/` ← persisted review files for human feedback loop
 - **Output Template**: `plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md` ← canonical structure for all review files
 - **Report Bootstrap Script**: `plugins/portfolio-advisor/scripts/generate_review.py` ← scaffolds a dated review file from the template with live portfolio metadata and opportunity scan pre-populated
@@ -723,7 +723,7 @@ This script:
 - Reads `investment_screener/backend/data/theses/target-portfolio.json` (thesis targets + subStrategyId)
 - Groups holdings by sub-strategy
 - Assigns INITIATE / ACCUMULATE / MAINTAIN / TRIM / EXIT per holding
-- Writes the updportfolio-advisor directly into `plugins/portfolio-advisor/references/investment_thesis.md`
+- Writes the updportfolio-advisor directly into `investment_screener/backend/data/theses/investment_thesis.md`
 
 The web app modal reads this file — the Portfolio Blueprint section will be live-accurate after each review.
 portfolio-advisor

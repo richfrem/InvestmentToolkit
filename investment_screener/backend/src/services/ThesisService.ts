@@ -316,7 +316,7 @@ export class ThesisService {
                 }
 
                 // Server-side increment
-                thesis.version = existingThesis.version + 1;
+                thesis.version = Number(existingThesis.version || 0) + 1;
                 thesis.updatedAt = new Date().toISOString();
 
                 // Atomic write (MOVED INSIDE LOCK)
@@ -369,7 +369,7 @@ export class ThesisService {
             }
 
             // Save
-            thesis.version++;
+            thesis.version = Number(thesis.version || 0) + 1;
             thesis.updatedAt = new Date().toISOString();
             const tempPath = `${filePath}.tmp`;
             fs.writeFileSync(tempPath, JSON.stringify(thesis, null, 2));
@@ -408,7 +408,7 @@ export class ThesisService {
             }
 
             // Save
-            thesis.version++;
+            thesis.version = Number(thesis.version || 0) + 1;
             thesis.updatedAt = new Date().toISOString();
             const tempPath = `${filePath}.tmp`;
             fs.writeFileSync(tempPath, JSON.stringify(thesis, null, 2));
@@ -446,7 +446,7 @@ export class ThesisService {
             }
 
             // Save
-            thesis.version++;
+            thesis.version = Number(thesis.version || 0) + 1;
             thesis.updatedAt = new Date().toISOString();
             const tempPath = `${filePath}.tmp`;
             fs.writeFileSync(tempPath, JSON.stringify(thesis, null, 2));
@@ -483,7 +483,7 @@ export class ThesisService {
             }
 
             // Save
-            thesis.version++;
+            thesis.version = Number(thesis.version || 0) + 1;
             thesis.updatedAt = new Date().toISOString();
             const tempPath = `${filePath}.tmp`;
             fs.writeFileSync(tempPath, JSON.stringify(thesis, null, 2));

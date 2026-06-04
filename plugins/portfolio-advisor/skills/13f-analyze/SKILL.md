@@ -142,12 +142,7 @@ PANW    5.5% → 4.8%    TRIM        ✅ APPROVED   Not in SA LP; own DCF confir
 Approved: {N} | Conflicts: {N} | Blocked: {N} | Confirm: {N}
 ```
 
-Then ask:
-```
-Apply all APPROVED changes?
-Confirm CONFLICT and CONFIRM items above, or say "skip [TICKER]".
-Type "apply" to proceed, or adjust individual items.
-```
+**Auto-proceed rule:** If all items are APPROVED or WARN (allowlisted SA/DCF conflicts), apply immediately without waiting for "apply" — state "Applying N approved changes..." and proceed to Phase 5. Only gate if any item is CONFIRM (new position needing approval) or BLOCKED. This prevents stale modal state after every 13F analysis.
 
 ---
 
@@ -170,7 +165,7 @@ python3 investment_screener/backend/py_services/lock_and_normalize_targets.py \
   --write
 
 # 2. Update metadata in investment_thesis.md
-# Update the metadata table at the top of plugins/portfolio-advisor/references/investment_thesis.md to record:
+# Update the metadata table at the top of investment_screener/backend/data/theses/investment_thesis.md to record:
 #   | **Thesis Last Analyzed** | YYYY-MM-DD (Note) |
 #   | **13F Last Refactored**  | YYYY-MM-DD (Refactored SA LP Q{N} {year} filed {filing_date} into target-portfolio.json) |
 

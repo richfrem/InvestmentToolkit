@@ -12,6 +12,7 @@ Import this module instead of scattering inline `if ticker == "USD_CASH"` checks
 # Add entries here when a new broker alias is discovered.
 TICKER_ALIASES: dict[str, str] = {
     "PSU.U": "PSU-U.TO",
+    "PSU.U.TO": "PSU-U.TO",
 }
 
 # Tickers that represent cash/liquidity reserves, not tradeable equities.

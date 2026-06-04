@@ -1,0 +1,158 @@
+[
+  {
+    "ticker": "ASTS",
+    "id": "00d724ad-7574-415a-bf1c-c580c9249dea",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-31T17:00:00.000Z",
+    "updatedAt": "2026-05-31T17:00:00.000Z",
+    "name": "AI Deep Dive — ASTS — 2026-05-31",
+    "rationale": "AST SpaceMobile is building a constellation of BlueBird satellites that beam 4G/5G broadband directly to standard smartphones — no special hardware required. Commercial agreements with AT&T and Verizon are signed; the technology works in tests. The addressable market (~5.3B unconnected people plus coverage gap filling for existing carriers) is genuinely enormous. However, at $44B market cap on $70.9M TTM revenue (620x P/S), the stock has run far past any reasonable 5-year fundamental valuation. The weighted DCF fair value of $23.00 uses 80-117% revenue CAGRs over five years and satellite-carrier-appropriate P/E multiples (22-50x) with a 13% discount rate reflecting the company's extreme risk profile (-$1.19B FCF burn, beta=2.598, pre-commercial at scale). Even the most optimistic bull scenario yields only $71.37 present value — 37% below today's price. Analyst consensus confirms the overvaluation: 9 analysts carry a Hold recommendation with a mean target of $82.24 and a high target of $108, both below the current $113.41 after a 53% 1-month rally. This is a classic 'technology works but valuation is priced for perfection' situation. SELL by every measurable framework.",
+    "snapshot": {
+      "price": 113.41,
+      "currency": "USD",
+      "shares": 298746383,
+      "revenue": 70918000,
+      "lastActualPS": 620.68
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": 80,
+        "netMargin": 8,
+        "exitPE": 22,
+        "qualityMultiplier": 0.8,
+        "shareChange": 5,
+        "rationale": "Bear anchored to slower-than-expected constellation deployment. 80% CAGR brings Y5 revenue to $1.34B — still 19x current but far below the analyst trajectory. This requires only Y1-Y2 analyst estimates to hold but Y3-Y5 growth to decelerate sharply to 20-25%/year (capacity constraints, slower adoption). Net margin of 8% reflects: 50% gross margins at scale minus elevated satellite depreciation (~$600M/year on ~$3.5B of assets) and operating overhead. Exit P/E 22 is below Industrials median, reflecting below-expectations growth. Quality multiplier 0.80 = structurally challenged at this stage: $1.2B FCF burn/year, no demonstrated at-scale economics, SpaceX competing in adjacent segments. Bear historical trough: revenue history shows $0 in 2024 (missed recognition — early commercial hiccups). Maximum allowed +5% dilution/yr for ongoing capital needs.",
+        "moatScore": 2,
+        "managementScore": 2,
+        "year5Revenue": 1340,
+        "year5NetIncome": 107.2,
+        "year5EPS": 0.28,
+        "scenarioPrice": 2.69,
+        "risks": [
+          "Satellite launches fall behind schedule — Block 2 constellation deployment delayed 18-24 months",
+          "AT&T/Verizon renegotiate commercial terms downward once coverage proves limited vs terrestrial",
+          "Ongoing $1B+/year capex forces continuous equity dilution; share count approaches 500M+"
+        ],
+        "year5Shares": 381.3
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 97,
+        "netMargin": 15,
+        "exitPE": 35,
+        "qualityMultiplier": 1,
+        "shareChange": 3,
+        "rationale": "Base CAGR of 97% derived from analyst trajectory: Y1=$170M (+140%), Y2=$759M (+347%), Y3=$1,200M (+58%), Y4=$1,700M (+42%), Y5=$2,100M (+24%) — CAGR=(2100/70.9)^0.2-1=97.4%. Hypergrowth exception applies (both Y1 and Y2 consensus >40%). The Y2 step-change reflects Block 2 BlueBird constellation (60+ satellites) coming fully online in 2027, covering North America, Europe, and Japan. Net margin of 15% reflects: at $2.1B revenue, satellite depreciation ($800M-1B/year on maturing Block 1+2 fleet) is offset by high-margin service revenue; assumes operating leverage drives EBITDA margins to 40%+ and depreciation is manageable. Exit P/E 35 = Technology/Internet-Platforms growth benchmark, above median (28x) for a company still growing 20%+/year in Y5. Quality multiplier 1.0 = average. Moat exists (exclusive carrier deals, FCC spectrum licenses) but is not yet proven at commercial scale.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 2104.2,
+        "year5NetIncome": 315.6,
+        "year5EPS": 0.91,
+        "scenarioPrice": 17.31,
+        "risks": [
+          "Revenue recognition remains lumpy — large one-time carrier payments distort quarterly visibility",
+          "Operating costs higher than modeled as company scales global ground station infrastructure"
+        ],
+        "year5Shares": 346.3
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 117,
+        "netMargin": 22,
+        "exitPE": 50,
+        "qualityMultiplier": 1.1,
+        "shareChange": 1,
+        "rationale": "Bull catalyst: AT&T and Verizon roll out commercial SpaceMobile service to all subscribers as a premium add-on ($5-15/month), generating $3B+ ARR from just 2% penetration of their combined 200M+ US subscribers alone. Additional revenue from Vodafone (Europe/UK), Rakuten (Japan), and government contracts (DoD/LEO comms). 117% CAGR brings revenue to $3.41B by Y5. Net margin 22% = Iridium (IRDM)-like steady-state margin at mature satellite carrier scale, achievable with >60% gross margins and fully amortized constellation. Exit P/E 50x reflects growth compounder premium (company still growing 30%+/year in Y5 with $750M net income — PEG ~1.7x). Quality multiplier 1.10 reflects one specific structural moat: exclusive direct-to-cell agreements with AT&T and Verizon that are embedded in carrier network planning (switching costs very high once carrier infrastructure is updated). NOTE: Even this exceptional outcome is worth only $71.37 today — 37% below current $113.41.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 3412.4,
+        "year5NetIncome": 750.7,
+        "year5EPS": 2.39,
+        "scenarioPrice": 71.37,
+        "risks": [
+          "Multiple expansion requires continued 25%+ revenue growth in Y6+; any deceleration below 20% triggers de-rating",
+          "Even at 50x P/E, the undiscounted Y5 price of $131.50 must overcome the 13% annual discount — requires exceptional execution"
+        ],
+        "year5Shares": 314
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "AST SpaceMobile is building genuine space infrastructure — BlueBird satellites that deliver 4G/5G broadband directly to standard phones, with commercial agreements from AT&T and Verizon already signed. The technology works. The TAM is real. This is not a fiction. But at $44B market cap on $70.9M revenue (620x P/S), the stock is priced for a future that requires perfect execution over a decade, and it has already run 381% in the past year and 53% in the past month to trade above every analyst's price target. The weighted DCF fair value of $23 uses aggressive growth assumptions (80-117% revenue CAGR over 5 years, meaning revenue reaches $1.3B-$3.4B from $70.9M today) combined with satellite-carrier margins (8-22% net) and tech-appropriate multiples (22-50x P/E). Even the most generous bull case — $3.4B revenue, 22% net margins, 50x P/E — produces only $71.37 in present value, 37% below today's price. The 5-year DCF inherently undersells this company if the constellation succeeds (the real value is in years 6-15), but that cuts both ways: you are paying today for a decade of execution that has not yet happened, on a technology that has never been deployed at commercial scale. SELL on fundamentals; this is a venture-stage bet wearing public-market clothing.",
+      "fairValue": 23,
+      "action": "SELL",
+      "analyzedAt": "2026-05-31T17:00:00.000Z",
+      "researchReport": "ASTS_2026-05-31.md"
+    },
+    "globalSettings": {
+      "discountRate": 0.13,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "shares_diluted = shares_outstanding = 298.7M (no discrepancy — consistent post-IPO/SPAC structure). Used as-is.",
+      "marginAnchor": "Cannot use 4-year average (extreme distortion: 4 years have near-zero revenue, making margins meaningless). Revenue history: 0, $13.8M, $0, $4.4M, $70.9M. Anchor = TTM gross margin 50.3% as proxy for unit economics; net margin targets (8%, 15%, 22%) derived from scratch benchmarked against Iridium (IRDM, ~20% net margin at maturity) as the closest comparable scaled satellite service company.",
+      "growthDerivation": "Hypergrowth exception applies to BOTH Y1 (+140%) and Y2 (+347%). Analyst path: Y1=$170M (+140%), Y2=$759M (+347%). Deceleration path for base: Y3=+58% ($1,200M), Y4=+42% ($1,700M), Y5=+24% ($2,100M). Base 5-yr CAGR=(2100/70.9)^0.2-1=97.4%. Bear=80% (Y5=$1,340M — slow deployment). Bull=117% (Y5=$3,412M — full constellation + premium pricing). NOTE: High absolute CAGRs reflect starting from near-zero TTM revenue of $70.9M, not organic business acceleration.",
+      "sectorBenchmarkRow": "Technology — Internet/Platforms (best fit for satellite service provider): Conservative P/E 18, Median P/E 28, Growth P/E 45. Net margin typical range 20-30%. ASTS uses growth P/E+ given 20-30% revenue growth still expected in Y5. Bear 22x justifies below-median on growth disappointment. Base 35x above median for residual growth. Bull 50x at top of range.",
+      "dataQualityFlags": [
+        "Revenue history is deeply unreliable: 0, $13.8M, $0, $4.4M, $70.9M — zero-gap years and near-zero revenue make any historical CAGR or margin calculation meaningless. Forward estimates are the only reliable anchor.",
+        "FCF burn accelerated from -$300M to -$1.19B in TTM — massive satellite capex phase. This is expected but the magnitude creates extreme dilution/financing risk.",
+        "Standard 5-year DCF systematically understates ASTS value — bulk of value accrues beyond Y5 if constellation succeeds. A 10-year DCF would be more appropriate; this analysis is inherently conservative by design.",
+        "Analyst consensus (9 analysts, Hold, mean $82) is BELOW current price $113.41 and below analyst high $108 — stock already above all analyst targets after 53% 1-month rally.",
+        "Revenue recognition is lumpy — large carrier prepayments or milestone-based contracts can distort quarterly/annual reported numbers vs economic progress.",
+        "Beta = 2.598 — extreme volatility; stock moved -14.8% in a single day during the data fetch period.",
+        "Shares outstanding = shares diluted = 298.7M. No current discrepancy. But cumulative dilution at +3-5%/year will push toward 350-380M+ shares by Y5.",
+        "Forward P/E = -381.7x — company expected to remain deeply unprofitable through at least 2027E per analyst models."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 169974530,
+        "y2RevEstimate": 758852500,
+        "y1GrowthPct": 140,
+        "y2GrowthPct": 347,
+        "blendedConsensusPct": 97.4,
+        "analystTargetMean": 82.24,
+        "analystCount": 9
+      },
+      "historicalRevenue": [
+        0,
+        13825000,
+        0,
+        4418000,
+        70918000
+      ],
+      "historicalNetMargins": [
+        0,
+        -228.9,
+        0,
+        -6792.3,
+        -482.2
+      ],
+      "historicalEPS": [
+        0,
+        -0.58,
+        -1.07,
+        -1.94,
+        -1.34
+      ],
+      "priorAnalysisReview": {
+        "priorModel": "N/A",
+        "priorDate": "N/A",
+        "priorPrice": "N/A",
+        "priorFairValue": "N/A",
+        "priorAction": "N/A",
+        "priceDelta": "N/A — first analysis",
+        "assumptionAudit": "N/A — no prior projection",
+        "modelQualityFlag": "N/A",
+        "thesisOutcome": "N/A — first analysis",
+        "fundamentalChanges": "N/A — establishing baseline"
+      },
+      "confidenceBreakdown": "0.38/1.0 — Base: 1.0. +0.05 technology genuinely works (tested, operational satellites). +0.05 signed commercial agreements with AT&T and Verizon (not speculative LOIs). -0.15 revenue history unreliable (zero-gap years, near-zero base makes any trend analysis impossible). -0.15 5-year DCF structurally ill-suited for this company (value accrues in years 6-15). -0.10 $1.19B FCF burn with only $70M revenue creates extreme financing risk. -0.10 stock trading above ALL analyst targets ($113 vs $108 high) after 53% 1-month rally. -0.07 forward P/E -381x (losses expected indefinitely per consensus). -0.05 Starlink and SpaceX competing in adjacent space. +0.05 TAM is real and enormous."
+    }
+  }
+]

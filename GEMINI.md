@@ -173,6 +173,18 @@ This keeps thesis targets, `agentRationale`, and projection catalyst notes curre
 
 ---
 
+## 📜 Agent Rules & Conventions (MANDATORY)
+
+You must read and strictly adhere to all rules defined in `.agent/rules/`:
+- **TDD (`test-driven-development.md`)**: NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST. Mocking is strictly prohibited on critical runtime paths.
+- **No Inline Python (`no-inline-python.md`)**: Never perform financial or analytical calculations inline using ad-hoc bash/python snippets. Always extract to versioned scripts.
+- **Coding Conventions (`coding-conventions.md`)**: Dual-layer docs, type hints, proper casing, and strict refactoring thresholds.
+- **Dependency Management (`dependency-management.md`)**: No manual `pip install`. Edit `.in` files and use `pip-compile`.
+- **Plugin Architecture (`plugin-architecture.md` & `symlink-cross-platform.md`)**: Use file-level symlinks ONLY via `symlink_manager.py`. Never raw `ln -s`. No cross-plugin script execution.
+- **Self-Evolution (`self-evolution-policy.md`)**: Classify failures, max 3 repair attempts, update playbooks. Deletions are strictly forbidden.
+
+---
+
 ## 🤖 AI Development: Exploration Workflow
 We use the **Exploration Workflow** (a modification of the orba/superpowers plugin) for building and discovery.
 
@@ -304,6 +316,25 @@ from tv_client import tv_call, TV_NODE_DIR, REPO_ROOT
 
 ### 10. TradingView Pine inject — pass content, not file path
 `tv_pine_inject.py` reads the script file in Python (correct cwd) then passes the **content** via `--content` to Node — not the file path. Node's cwd is `tradingview-cdp/` so relative paths from Node would silently fail (Node would inject the path string as Pine Script). If you create a new inject wrapper, always resolve absolute paths before passing to `tv_call`. The preflight check in `tv_pine_inject.py` catches missing `//@version=` and `indicator()` declarations before the CDP round-trip.
+
+### 11. TradingView CDP — Account Dropdown Selection Events
+Standard `.click()` method fails on the account dropdown options inside the order ticket and broker panel because TradingView relies on specific React and DOM MouseEvents. You MUST dispatch a sequence of `mousedown`, `mouseup`, and `click` MouseEvents to both the option span (matching `s.className === ''` + text match) and its `parentElement` to reliably switch accounts.
+
+### 12. PSU.U.TO and PSU-U.TO are the same fund
+`PSU.U.TO` (dot — Questrade/TradingView broker panel) and `PSU-U.TO` (hyphen — Yahoo Finance / TSX canonical) refer to the **same ETF**: Purpose US Cash Fund. The alias is hardcoded in `fetch_broker_data.py` `write_snapshot()`. Canonical thesis entry is always `PSU-U.TO`. Never create a second entry for `PSU.U.TO`.
+
+### 13. targetEntryPrice — GTC limit buy price field
+`target-portfolio.json` holdings support a `targetEntryPrice` (optional float) — the GTC limit order price for adding to a position. Set via:
+```bash
+python3 plugins/portfolio-advisor/scripts/update_targets.py --set-entry TICKER=PRICE --write
+```
+Never add to a position above its `targetEntryPrice`. The Grok sweep prompt surfaces this field and asks for entry price suggestions on ACCUMULATE recommendations.
+
+### 14. Limit orders default to Day — GTC requires manual TV change
+CDP order automation does NOT yet set "Good till cancelled". Limit orders from `/place-order` are **Day orders**. For long-dated GTC entries, manually change the duration in TradingView → broker panel → Orders → edit → "Good till cancelled" after placing.
+
+### 15. Portfolio sync fallback chain
+After order fills: (1) Express API `POST /api/portfolio/sync-tv/apply`, (2) direct `fetch_broker_data.py --snapshot` (works without backend, updates cash + holdings from live TV), (3) Questrade REST. Run `fetch_broker_data.py --snapshot` directly when the backend is down.
 
 ---
 

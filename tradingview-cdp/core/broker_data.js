@@ -261,7 +261,7 @@ export async function getPositions() {
       var texts = tds.map(function(t) { return t.textContent.trim(); });
 
       var symbol = texts[0];
-      if (!symbol || !/^[A-Z]{1,6}(\\.[A-Z]{1,3})?$/.test(symbol)) return null;
+      if (!symbol || !/^[A-Z0-9_]{1,8}(\.[A-Z0-9_]{1,4})*$/.test(symbol)) return null;
 
       function parseNum(s) {
         if (!s) return null;

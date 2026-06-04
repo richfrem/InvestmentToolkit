@@ -1,0 +1,65 @@
+{
+  "ticker": "{TICKER}",
+  "id": "<UUID>",
+  "source": "AI_AGENT",
+  "schemaVersion": "1.2",
+  "version": 1,
+  "savedAt": "<ISO timestamp>",
+  "updatedAt": "<ISO timestamp>",
+  "name": "AI Deep Dive — {TICKER} — <date>",
+  "rationale": "<3-5 sentence thesis>",
+  "snapshot": { 
+    "price": 0.0,
+    "currency": "USD",
+    "exchange": "NYSE"
+  },
+  "dataPreferences": { "growthBasis": "next", "marginBasis": "ttm" },
+  "scenarios": { 
+    "bear": { "weight": 0.0, "growthRate": 0, "netMargin": 0, "exitPE": 0, "qualityMultiplier": 1.0, "shareChange": 0.0, "scenarioPrice": 0.0 },
+    "base": { "weight": 0.0, "growthRate": 0, "netMargin": 0, "exitPE": 0, "qualityMultiplier": 1.0, "shareChange": 0.0, "scenarioPrice": 0.0 },
+    "bull": { "weight": 0.0, "growthRate": 0, "netMargin": 0, "exitPE": 0, "qualityMultiplier": 1.0, "shareChange": 0.0, "scenarioPrice": 0.0 }
+  },
+  "analyticsLog": {
+    "shareCountMethod": "<which field used: shares_outstanding vs shares_diluted>",
+    "marginAnchor": "<TTM or 4yr avg>",
+    "growthDerivation": "<blended consensus and CAGR path>",
+    "sectorBenchmarkRow": "<exact row from valuation-benchmarks.md>",
+    "dataQualityFlags": [
+      "<anomaly 1>"
+    ],
+    "analystInputs": {
+      "y1RevEstimate": null,
+      "y2RevEstimate": null,
+      "y1GrowthPct": null,
+      "y2GrowthPct": null,
+      "blendedConsensusPct": null,
+      "analystTargetMean": null,
+      "analystCount": null
+    },
+    "historicalRevenue": [],
+    "historicalNetMargins": [],
+    "historicalEPS": [],
+    "priorAnalysisReview": {
+      "priorModel": "",
+      "priorDate": "",
+      "priorPrice": "",
+      "priorFairValue": "",
+      "priorAction": "",
+      "priceDelta": "",
+      "assumptionAudit": "",
+      "modelQualityFlag": "",
+      "thesisOutcome": "",
+      "fundamentalChanges": ""
+    },
+    "confidenceBreakdown": "<score>/1.0 — Base: 1.0. [+ for moat, - for anomalies]"
+  },
+  "aiThesis": {
+    "model": "<human-readable model name e.g. 'Claude Sonnet 4.6'>",
+    "rationale": "<full markdown analysis>",
+    "fairValue": 0.0,
+    "action": "<BUY/HOLD/SELL>",
+    "analyzedAt": "<ISO timestamp>",
+    "researchReport": "{TICKER}_{YYYY-MM-DD}.md"
+  },
+  "globalSettings": { "discountRate": 10.0, "timeHorizon": 5 }
+}

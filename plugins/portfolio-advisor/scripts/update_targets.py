@@ -195,6 +195,35 @@ def run_blueprint() -> None:
         print(result.stdout.strip())
 
 
+def apply_entry_prices(data: dict, pairs: list[str], dry_run: bool) -> dict:
+    """Set targetEntryPrice on holdings. Format: TICKER=PRICE or TICKER=null to clear."""
+    holdings = {h["ticker"]: h for h in data["holdings"]}
+    for pair in pairs:
+        if "=" not in pair:
+            print(f"⚠  Skipping malformed entry: {pair}", file=sys.stderr)
+            continue
+        ticker, raw = pair.split("=", 1)
+        ticker = ticker.strip().upper()
+        if ticker not in holdings:
+            print(f"⚠  {ticker} not in thesis — skipping", file=sys.stderr)
+            continue
+        if raw.strip().lower() == "null":
+            holdings[ticker].pop("targetEntryPrice", None)
+            label = "cleared"
+        else:
+            try:
+                price = float(raw.strip())
+            except ValueError:
+                print(f"⚠  Invalid price for {ticker}: {raw}", file=sys.stderr)
+                continue
+            holdings[ticker]["targetEntryPrice"] = price
+            label = f"${price:,.2f}"
+        if not dry_run:
+            print(f"  {ticker}: targetEntryPrice → {label}")
+    data["holdings"] = list(holdings.values())
+    return data
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Precision target-weight editor for target-portfolio.json"
@@ -215,6 +244,11 @@ def main():
     parser.add_argument("--strategy", default="sa-asi-race", help="SubStrategyId for --add")
     parser.add_argument("--note",     default="", help="thesisForInclusion for --add")
 
+    # Entry price (GTC limit target)
+    parser.add_argument("--set-entry", nargs="+", metavar="TICKER=PRICE",
+                        help="Set GTC target entry price: SNDK=1350 NBIS=210. "
+                             "Use TICKER=null to clear.")
+
     # Output control
     parser.add_argument("--write",     action="store_true",
                         help="Write changes to target-portfolio.json (auto-normalizes)")
@@ -231,7 +265,7 @@ def main():
         show_weights(data)
         return
 
-    if not any([args.set, args.add, args.remove]):
+    if not any([args.set, args.add, args.remove, args.set_entry]):
         parser.print_help()
         return
 
@@ -242,6 +276,9 @@ def main():
                          args.strategy, args.note, args.dry_run)
     elif args.remove:
         data = apply_remove(data, args.remove, args.dry_run)
+
+    if args.set_entry:
+        data = apply_entry_prices(data, args.set_entry, args.dry_run)
 
     if args.dry_run:
         show_weights(normalize(dict(holdings=list(data["holdings"]))), "Projected targets after normalize")

@@ -9,7 +9,7 @@ allowed-tools: Bash, Read, Write
 ## Quick Reference
 - **Trigger**: `/review-portfolio` — quick health check. For full adversarial review: `/strategic-review`
 - **Persona**: Portfolio Health Monitor — objective, fast, surfaces drift and conviction signals without formula improvement
-- **Thesis Doc**: `plugins/portfolio-advisor/references/investment_thesis.md`
+- **Thesis Doc**: `investment_screener/backend/data/theses/investment_thesis.md`
 - **Fallbacks**: `references/fallback-tree.md` ← load on any API failure
 - **Acceptance**: `references/acceptance-criteria.md`
 - **Rebalance Prompt**: `references/rebalance_prompt.md`
@@ -223,8 +223,7 @@ If user indicates conviction change:
 1. Show current Pillar Conviction Audit summary
 2. Propose specific updated target weights grounded in valuation evidence
 3. Show impact on drift scores AND Thesis Formula Score **before** applying
-4. Ask: *"Want me to update the thesis with these new targets?"* — wait for explicit confirmation
-5. Only update after "yes/proceed/go"
+4. **Auto-apply if targets are conviction-grounded** (no new positions, no BLOCKED items) — state the proposed changes and apply immediately. Only wait for explicit confirmation if adding a new position (Gate 2) or user has flagged uncertainty. Waiting for "yes" on every health review leaves the modal permanently in PROPOSED state.
 
 ---
 

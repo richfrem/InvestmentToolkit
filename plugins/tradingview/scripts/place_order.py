@@ -227,21 +227,38 @@ try {{
 
 def sync_portfolio() -> bool:
     """Reconcile and refresh portfolio.json after order fill.
-    Tries hitting the Express server's TV sync/apply route first (authoritative TV CDP),
-    then falls back to local Questrade REST API engine."""
+    Priority:
+      1. Express API  /api/portfolio/sync-tv/apply  (backend running)
+      2. fetch_broker_data.py --snapshot             (direct CDP — always available)
+      3. QuestradeDataEngine.py                      (legacy REST fallback)
+    """
     import urllib.request
+
+    # 1. Express API (authoritative when backend is up)
     try:
         req = urllib.request.Request("http://localhost:3001/api/portfolio/sync-tv/apply", data=b"{}")
         req.add_header("Content-Type", "application/json")
         with urllib.request.urlopen(req, timeout=30) as response:
             res_data = json.loads(response.read().decode())
             if res_data.get("success") and res_data.get("tvAvailable"):
-                print("✓ Sync complete: portfolio.json auto-applied from TradingView CDP via Express.")
+                print("✓ Sync complete: portfolio.json updated via Express API.")
                 return True
     except Exception as e:
-        print(f"⚠️  TV sync via Express API failed or not running ({e}). Falling back to Questrade...")
+        print(f"⚠️  Express API unavailable ({e}). Falling back to direct CDP snapshot...")
 
-    # Fallback to legacy Questrade REST API
+    # 2. Direct fetch_broker_data.py --snapshot (works without backend, uses live TV CDP)
+    snapshot_script = os.path.abspath(os.path.join(SCRIPT_DIR, "fetch_broker_data.py"))
+    if os.path.exists(snapshot_script):
+        result = subprocess.run(
+            [sys.executable, snapshot_script, "--snapshot"],
+            capture_output=True, text=True, timeout=90,
+        )
+        if result.returncode == 0:
+            print("✓ Sync complete: portfolio.json updated via direct CDP snapshot (cash + holdings refreshed).")
+            return True
+        print(f"⚠️  Direct CDP snapshot failed ({result.stderr.strip()[:120]}). Falling back to Questrade...")
+
+    # 3. Legacy Questrade REST API
     engine_path = os.path.abspath(os.path.join(BACKEND_SRC, "QuestradeDataEngine.py"))
     cache_dir   = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
     portfolio_path = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "data", "portfolio.json"))
@@ -250,7 +267,11 @@ def sync_portfolio() -> bool:
          os.path.join(cache_dir, "backend"), "--output", portfolio_path],
         capture_output=True, text=True,
     )
-    return result.returncode == 0
+    if result.returncode == 0:
+        print("✓ Sync complete: portfolio.json updated via Questrade REST API.")
+        return True
+    print("⚠️  Portfolio sync failed — retry manually with /tv-portfolio-sync.")
+    return False
 
 
 
@@ -301,7 +322,7 @@ def main():
     parser = argparse.ArgumentParser(description="TradingView order placement with HITL confirmation")
     parser.add_argument("--ticker", default=None)
     parser.add_argument("--action", default=None, choices=["buy", "sell"])
-    parser.add_argument("--shares", default=None, type=int)
+    parser.add_argument("--shares", default=None, type=float)
     parser.add_argument("--order-type", default=None, choices=["market", "limit", "stop", "stop_limit"], dest="order_type")
     parser.add_argument("--limit-price", type=float, dest="limit_price")
     parser.add_argument("--account", default=None, help="rrsp, tfsa, margin")

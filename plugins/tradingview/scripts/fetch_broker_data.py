@@ -85,10 +85,22 @@ try {
 
 
 def fetch_tv_balances() -> dict:
+    # Use getAccountTotals() which switches to each account explicitly — unlike getBalances()
+    # which reads whatever account is currently active and returns partial data when CASH is selected.
     js = """
-import { getBalances } from './core/broker_data.js';
+import { getAccountTotals } from './core/broker_data.js';
 try {
-    const data = await getBalances();
+    const t = await getAccountTotals();
+    const data = {
+        cashUSD:                t.grandCashUSD,
+        cashUSDCombined:        t.grandCashUSD,
+        marketValueUSD:         t.grandMarketValueUSD,
+        marketValueUSDCombined: t.grandMarketValueUSD,
+        totalEquityUSD:         t.grandTotalUSD,
+        totalEquityUSDCombined: t.grandTotalUSD,
+        _perAccount:            t.accounts,
+        timestamp:              t.timestamp,
+    };
     process.stdout.write(JSON.stringify(data) + '\\n');
     process.exit(0);
 } catch(e) {
@@ -96,7 +108,7 @@ try {
     process.exit(1);
 }
 """
-    return run_node_module(js, timeout=15)
+    return run_node_module(js, timeout=45)
 
 
 def fetch_tv_positions() -> dict:
@@ -273,12 +285,12 @@ def print_compare_report(report: dict):
 
 # ── snapshot writer ───────────────────────────────────────────────────────────
 
-def write_snapshot(snapshot: dict, promote: bool = False) -> str:
-    """Write snapshot to portfolio.json under tvSnapshot key (or promoted)."""
+def write_snapshot(snapshot: dict, promote: bool = False, balances: Optional[dict] = None) -> str:
+    """Write snapshot to portfolio.json — merges RRSP+TFSA positions and updates totals from live balances."""
     path = os.path.join(DATA_DIR, "portfolio.json")
     os.makedirs(os.path.dirname(path), exist_ok=True)
 
-    data = {}
+    data: dict = {}
     if os.path.exists(path):
         try:
             with open(path) as f:
@@ -289,24 +301,79 @@ def write_snapshot(snapshot: dict, promote: bool = False) -> str:
     if not isinstance(data, dict):
         data = {"holdings": data}
 
-    if promote:
-        print(f"⚠  Promoting TV snapshot directly to portfolio.json holdings.")
-        tv_pos = snapshot.get("positions", [])
-        # Aggregate by symbol
-        agg = {}
+    data["tvSnapshot"] = snapshot
+
+    # Smart-merge TV positions into holdings: aggregate RRSP + TFSA by symbol using
+    # weighted-avg fill price, preserving all existing metadata (thesis, pillar, sector, etc.)
+    tv_pos = snapshot.get("positions", [])
+    if tv_pos:
+        # Hardcoded alias map — broker returns PSU.U.TO, canonical thesis uses PSU-U.TO.
+        # Same fund (Purpose US Cash Fund), different display conventions.
+        _ALIASES: dict = {"PSU.U.TO": "PSU-U.TO", "PSU.U": "PSU-U.TO"}
+        _normalize = lambda x: _ALIASES.get(x, x)  # noqa: E731
+
+        agg: dict = {}
         for p in tv_pos:
             sym = p.get("symbol")
             if not sym:
                 continue
+            sym = _normalize(sym)  # resolve broker alias (e.g. PSU.U.TO → PSU-U.TO)
+            qty = p.get("quantity") or 0
+            price = p.get("avgFillPrice") or 0
             if sym not in agg:
-                agg[sym] = {"symbol": sym, "shares": p.get("quantity", 0), "book_price": p.get("avgFillPrice", 0)}
+                agg[sym] = {"quantity": qty, "total_cost": qty * price}
             else:
-                agg[sym]["shares"] += p.get("quantity", 0)
-        data["holdings"] = list(agg.values())
-        data["tvSnapshot"] = snapshot
-    else:
-        print(f"✓ Saving raw TradingView snapshot to portfolio.json under tvSnapshot key.")
-        data["tvSnapshot"] = snapshot
+                agg[sym]["quantity"] += qty
+                agg[sym]["total_cost"] += qty * price
+
+        tv_map = {
+            sym: {"shares": v["quantity"], "book_price": round(v["total_cost"] / v["quantity"], 4) if v["quantity"] > 0 else 0}
+            for sym, v in agg.items()
+        }
+
+        existing_holdings = data.get("holdings", [])
+        existing_map = {h.get("symbol") or h.get("ticker", ""): h for h in existing_holdings}
+        usd_cash = existing_map.pop("USD_CASH", None)
+
+        merged = []
+        for sym, tv in tv_map.items():
+            if sym in existing_map:
+                item = dict(existing_map[sym])
+                item["shares"] = tv["shares"]
+                item["book_price"] = tv["book_price"]
+            else:
+                item = {"symbol": sym, "shares": tv["shares"], "book_price": tv["book_price"]}
+            merged.append(item)
+
+        # Preserve USD_CASH, updating its value from live balances when available
+        if usd_cash:
+            cash_item = dict(usd_cash)
+            if balances and not balances.get("error"):
+                cash_item["shares"] = balances.get("cashUSDCombined") or balances.get("cashUSD") or usd_cash.get("shares", 0)
+            merged.append(cash_item)
+
+        data["holdings"] = merged
+        print(f"✓ Holdings merged: {len(merged)} symbols (RRSP + TFSA combined).")
+
+    # Update totals from live balances — standalone getBalances() is reliable;
+    # the embedded call inside getPortfolio() fails due to tab-switching state conflicts.
+    if balances and not balances.get("error"):
+        cash_usd = balances.get("cashUSDCombined") or balances.get("cashUSD") or 0
+        total_usd = balances.get("totalEquityUSDCombined") or balances.get("totalEquityUSD") or 0
+        market_usd = balances.get("marketValueUSDCombined") or balances.get("marketValueUSD") or 0
+        # CAD not available from getAccountTotals() — derive from stored exchange rate
+        stored_fx = (data.get("totals") or {}).get("exchangeRate") or 1.3795
+        fx = stored_fx if stored_fx > 0 else 1.3795
+        total_cad = round(total_usd * fx, 4)
+        data["totals"] = {
+            "holdingsUSD": market_usd,
+            "cashUSD": cash_usd,
+            "totalUSD": total_usd,
+            "totalCAD": total_cad,
+            "exchangeRate": fx,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+        print(f"✓ Totals updated: totalUSD=${total_usd:,.2f}  cashUSD=${cash_usd:,.2f}")
 
     with open(path, "w") as f:
         json.dump(data, f, indent=2)
@@ -399,6 +466,13 @@ def main():
 
     # ── snapshot ─────────────────────────────────────────────────────────────
     if args.snapshot or not any([args.accounts, args.balances, args.positions, args.orders, args.compare, args.inspect]):
+        # Fetch balances first — getBalances() is unreliable after account-switching in getPortfolio()
+        print("Fetching live balances from TradingView Account Summary...")
+        balances: Optional[dict] = fetch_tv_balances()
+        if balances.get("error"):
+            print(f"⚠  Balance fetch failed: {balances['error']} — totals will not be updated.", file=sys.stderr)
+            balances = None
+
         print("Fetching full portfolio snapshot from TradingView...")
         snapshot = fetch_tv_snapshot()
         if "error" in snapshot:
@@ -406,7 +480,7 @@ def main():
             print("   Is TradingView Desktop running with a broker connected?", file=sys.stderr)
             sys.exit(1)
 
-        path = write_snapshot(snapshot, promote=args.promote)
+        path = write_snapshot(snapshot, promote=args.promote, balances=balances)
         accts = snapshot.get("accounts", [])
         snaps = snapshot.get("snapshots", [])
         for s in snaps:

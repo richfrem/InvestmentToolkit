@@ -1,0 +1,150 @@
+[
+  {
+    "ticker": "CACI",
+    "id": "68e2540a-509d-477f-94fa-b8a8963fc210",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-05-31T15:46:25Z",
+    "updatedAt": "2026-05-31T15:46:25Z",
+    "name": "AI Deep Dive — CACI — 2026-05-31",
+    "rationale": "CACI is a highly resilient defense IT services provider with strong government backing and a massive backlog. However, at a current multiple of 22.8x TTM earnings, the stock trades at a premium to its peer medians (18x) and historical averages, offering limited margin of safety. While its cyber, space, and electronic warfare divisions are high-growth catalysts, the base DCF valuation indicates a fair value of $454.94, leading to a SELL recommendation.",
+    "snapshot": {
+      "price": 513.51,
+      "currency": "USD",
+      "shares": 22091305,
+      "revenue": 8627824000,
+      "lastActualPS": 1.31,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 10.74,
+      "analystMarginEstimate": 5.79
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 6,
+        "netMargin": 5.5,
+        "exitPE": 14,
+        "qualityMultiplier": 0.95,
+        "shareChange": 0.5,
+        "rationale": "Bear case assumes federal budget constraints and loss of major incumbent contracts. Revenue CAGR slows to 6.0%, and net margin compresses to 5.5% as labor inflation eats into fixed-price contracts. Exit P/E is compressed to 14.0x, representing the sector conservative multiple.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 11546,
+        "year5NetIncome": 635,
+        "year5EPS": 28.04,
+        "scenarioPrice": 231.54,
+        "risks": [
+          "Federal defense budget cuts or funding freezes (CRs) delay contract awards and billing.",
+          "Intense competition from larger defense prime contractors leads to pricing pressure and margin contraction.",
+          "Difficulty in recruiting and retaining top-tier cleared technical talent increases labor costs."
+        ]
+      },
+      "base": {
+        "weight": 0.6,
+        "growthRate": 9.5,
+        "netMargin": 5.8,
+        "exitPE": 18,
+        "qualityMultiplier": 1.05,
+        "shareChange": -0.5,
+        "rationale": "Base case represents steady execution of the massive $28B+ backlog, with a revenue CAGR of 9.5% and a net margin of 5.8% (anchored to TTM 5.79%). Exit P/E of 18.0x matches the sector median. Quality multiplier of 1.05 reflects strong customer retention and high switching costs.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 13582.3,
+        "year5NetIncome": 787.8,
+        "year5EPS": 36.56,
+        "scenarioPrice": 429.1,
+        "risks": [
+          "Rising labor costs for high-level cleared personnel.",
+          "Transition from higher-margin cost-plus contracts to lower-margin fixed-price contracts.",
+          "Regulatory shifts in federal procurement policies."
+        ]
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 13,
+        "netMargin": 6.2,
+        "exitPE": 22,
+        "qualityMultiplier": 1.15,
+        "shareChange": -1.5,
+        "rationale": "Bull case assumes accelerated adoption of CACI's proprietary defense technologies, including free-space optical communications (photonics), cyber solutions, and electronic warfare suites. Revenue CAGR accelerates to 13.0%, with net margin expanding to 6.2% due to higher software and IP mix. Exit P/E is 22.0x, reflecting a premium valuation for defense-tech excellence. Quality multiplier of 1.15 is supported by deep proprietary IP and absolute lock-in on national security contracts.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 15896.2,
+        "year5NetIncome": 985.6,
+        "year5EPS": 48.12,
+        "scenarioPrice": 755.86,
+        "risks": [
+          "Integration risks associated with large M&A transactions.",
+          "Supply chain disruptions for specialized photonics and space payloads."
+        ]
+      }
+    },
+    "aiThesis": {
+      "model": "Gemini 3.5 Flash (Low)",
+      "rationale": "CACI is a premier government IT contractor with a strong competitive advantage stemming from its highly cleared workforce, deep customer incumbency, and a massive $28B+ backlog (approx. 3.2x TTM revenue). The company is successfully transitioning from commoditized IT services to high-value national security technologies, such as free-space optical communications (photonics), cyber warfare, and signals intelligence. This high-margin tech mix is expected to sustain net margins near 5.8% to 6.2%. However, the market has fully priced in these tailwinds, with the stock trading at 22.8x TTM earnings, a significant premium to its sector median of 18x. Our multi-scenario DCF model yields a weighted fair value of $454.94, representing an 11.4% downside from the current price of $513.51. Thus, we recommend a SELL/HOLD stance, advising investors to wait for a more attractive entry point closer to the $450 range.",
+      "fairValue": 454.94,
+      "action": "SELL",
+      "analyzedAt": "2026-05-31T15:46:25Z",
+      "researchReport": "CACI_2026-05-31.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "shares_diluted",
+      "marginAnchor": "TTM (5.79% vs 4yr average of 5.73%) - Trending/Stable",
+      "growthDerivation": "Blended consensus of 11.3% for Y1/Y2, decelerating to 7.5% by Y5, yielding a 9.5% 5-year CAGR base.",
+      "sectorBenchmarkRow": "Industrials (Median P/E 18x, Typical Margin 6-12%)",
+      "dataQualityFlags": [
+        "Piotroski F-Score is 8/9 showing strong fundamentals",
+        "No other anomalies detected"
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 9554626810,
+        "y2RevEstimate": 10684742590,
+        "y1GrowthPct": 10.74,
+        "y2GrowthPct": 11.83,
+        "blendedConsensusPct": 11.28,
+        "analystTargetMean": 680.64,
+        "analystCount": 14
+      },
+      "historicalRevenue": [
+        6202917000,
+        6702546000,
+        7659832000,
+        8627824000
+      ],
+      "historicalNetMargins": [
+        5.91,
+        5.74,
+        5.48,
+        5.79
+      ],
+      "historicalEPS": [
+        15.64,
+        16.59,
+        18.76,
+        22.47
+      ],
+      "priorAnalysisReview": {
+        "priorModel": "N/A",
+        "priorDate": "N/A",
+        "priorPrice": "",
+        "priorFairValue": "",
+        "priorAction": "",
+        "priceDelta": "N/A",
+        "assumptionAudit": "N/A",
+        "modelQualityFlag": "N/A",
+        "thesisOutcome": "N/A",
+        "fundamentalChanges": "N/A"
+      },
+      "confidenceBreakdown": "0.85/1.0 — Base: 1.0. [+0.05 for strong backlog & Piotroski F-score 8/9, -0.20 for government spending uncertainties and low operating margins]"
+    }
+  }
+]

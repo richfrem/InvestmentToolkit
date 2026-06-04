@@ -37,7 +37,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 
 THESIS_JSON   = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 PORTFOLIO_JSON = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
-THESIS_MD     = REPO_ROOT / "plugins/portfolio-advisor/references/investment_thesis.md"
+THESIS_MD     = REPO_ROOT / "investment_screener/backend/data/theses/investment_thesis.md"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from ticker_aliases import is_cash  # noqa: E402

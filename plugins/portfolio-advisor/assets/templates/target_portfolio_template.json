@@ -1,0 +1,34 @@
+{
+  "id": "target-portfolio",
+  "name": "Investment Thesis v<VERSION>",
+  "schemaVersion": "1.0",
+  "version": "<VERSION>",
+  "createdAt": "<ISO8601>",
+  "updatedAt": "<ISO8601>",
+  "description": "<High-level description of portfolio strategy>",
+  "pillars": [
+    {
+      "id": "<Pillar ID, e.g. compute>",
+      "name": "<Human readable name>",
+      "targetWeight": 0.0
+    }
+  ],
+  "holdings": [
+    {
+      "ticker": "<TICKER>",
+      "name": "<Company Name>",
+      "pillarId": "<Pillar ID>",
+      "targetWeight": 0.0,
+      "role": "<core | speculative | reserve | untracked | watchlist>",
+      "subStrategyId": "<Sub-strategy ID>",
+      "thesisForInclusion": "<Original reason for inclusion>",
+      "agentRationale": "<Latest agent assessment, e.g. DCF: BUY | FV $X vs $Y>"
+    }
+  ],
+  "globalSettings": {
+    "driftThresholdPct": 3.0,
+    "criticalDriftPct": 5.0,
+    "rebalanceFrequency": "quarterly",
+    "portfolioValueUSD": 0.0
+  }
+}

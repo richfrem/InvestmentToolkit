@@ -89,11 +89,12 @@ export type Projection = z.infer<typeof ProjectionSchema>;
 export const ThesisHoldingSchema = z.object({
     ticker: z.string().regex(tickerRegex),
     name: z.string().max(100),
-    pillarId: z.string(),
+    pillarId: z.string().optional().default('other'),
     targetWeight: z.number().min(0).max(100),
+    targetEntryPrice: z.number().positive().nullable().optional(),
     thesisForInclusion: z.string().max(2000).optional(),
     thesisBreakers: z.array(z.string().max(500)).max(5).optional(),
-    role: z.enum(['core', 'hedge', 'speculative', 'reserve']).default('core'),
+    role: z.enum(['core', 'hedge', 'speculative', 'reserve', 'watchlist', 'untracked', 'satellite', 'monitor']).default('core'),
 });
 
 export const ThesisPillarSchema = z.object({
@@ -109,15 +110,11 @@ export const ThesisSchema = z.object({
     id: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, 'id must be lowercase letters, digits or hyphens'),
     name: z.string().min(1).max(100),
     schemaVersion: z.literal('1.0'),
-    version: z.number().int().nonnegative(),
+    version: z.union([z.number(), z.string()]),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
     description: z.string().max(5000).optional(),
-    pillars: z.array(ThesisPillarSchema).min(1).max(20)
-        .refine((pillars) => {
-            const sum = pillars.reduce((s, p) => s + p.targetWeight, 0);
-            return Math.abs(sum - 100) < 0.5;
-        }, { message: "Pillar target weights must sum to 100%" }),
+    pillars: z.array(ThesisPillarSchema).min(1).max(20),
     holdings: z.array(ThesisHoldingSchema).min(1).max(100)
         .refine((holdings) => {
             const sum = holdings.reduce((s, h) => s + h.targetWeight, 0);
@@ -151,7 +148,7 @@ export const HoldingHealthSchema = DriftEntrySchema.extend({
     pillarId: z.string(),
     currentPrice: z.number().optional(),
     marketValue: z.number().optional(),
-    role: z.enum(['core', 'hedge', 'speculative', 'reserve']),
+    role: z.enum(['core', 'hedge', 'speculative', 'reserve', 'watchlist', 'untracked', 'satellite', 'monitor']),
     hasValuation: z.boolean(),
     latestAction: z.enum(['BUY', 'HOLD', 'SELL', 'INITIATE', 'ACCUMULATE', 'MAINTAIN', 'TRIM', 'EXIT', 'WATCHLIST']).optional(),
     latestFairValue: z.number().optional(),
