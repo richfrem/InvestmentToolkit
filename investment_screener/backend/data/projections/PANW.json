@@ -165,7 +165,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.2,
+        "weight": 0.17,
         "growthRate": 11,
         "netMargin": 9,
         "exitPE": 20,
@@ -185,7 +185,7 @@
         ]
       },
       "base": {
-        "weight": 0.55,
+        "weight": 0.53,
         "growthRate": 19,
         "netMargin": 21,
         "exitPE": 30,
@@ -204,7 +204,7 @@
         ]
       },
       "bull": {
-        "weight": 0.25,
+        "weight": 0.3,
         "growthRate": 24,
         "netMargin": 27,
         "exitPE": 42,
@@ -226,9 +226,9 @@
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
       "rationale": "## PANW Investment Thesis\n\n### Summary\nPalo Alto Networks (PANW) trades at $181.08 against a probability-weighted fair value of $154.91, implying -14.5% downside \u2014 a SELL. The company is a genuine cybersecurity leader executing a bold but high-risk platform consolidation strategy. At current prices, the market is pricing in near-bull-case execution, leaving limited margin of safety.\n\n### The Platformization Bet\nIn February 2024, PANW unveiled its 'platformization' strategy: offering customers a bundled security platform at a significant near-term discount in exchange for committing to consolidate their security stack onto PANW. This is strategically sound \u2014 security buyers are exhausted by managing 30+ point solutions \u2014 but it has two consequences: (1) near-term revenue recognition is deferred as free deal periods run off, causing the current growth deceleration from 22% to 14.9%, and (2) the success of the strategy will not be visible for 18-24 months, creating a window of maximum uncertainty at today's prices.\n\n### Moat Assessment\nPANW has one confirmed structural moat: platform switching costs. An enterprise that has integrated PANW's SASE (Prisma Access), cloud security (Prisma Cloud/CNAPP), and SOC platform (Cortex XSIAM) has made multi-year investments in training, integration, and workflow automation. Migration back to best-of-breed solutions takes 12-18 months and requires significant IT resources \u2014 a genuine barrier. A second emerging moat \u2014 the security data flywheel from 85K+ customer telemetry feeding Cortex AI models \u2014 is real but not yet proven at scale.\n\n### Valuation Reality Check\nThe SELL verdict reflects a straightforward DCF reality: even in the base case (19% CAGR, 21% Year-5 GAAP margins, 30x SaaS median P/E), the 5-year present value is only $129. To justify today's $181 price, PANW must execute closer to the bull case \u2014 24% CAGR, 27% margins, 42x multiple \u2014 which requires perfect platformization execution AND AI security becoming a major growth driver. The forward P/E of 45.6x embeds exactly this optimism.\n\n### GAAP vs Non-GAAP Gap\nPANW's non-GAAP net margin is ~25%, substantially above the 12.3% GAAP figure. The gap is primarily stock-based compensation (~$1.8B/yr = ~19% of TTM revenue). As revenue scales, SBC as a % of revenue should decline, closing the GAAP/non-GAAP gap. By Year 5 at $22B revenue (base case), if SBC stays near $2.0B, the drag falls to ~9% \u2014 enabling 21% GAAP margins from a 30% non-GAAP base. This is the core margin expansion thesis and is achievable, but requires revenue growth to outpace SBC growth substantially.\n\n### Key Risks\nThe primary risk is platformization conversion failure: if customers do not consolidate at the end of their free-deal periods, PANW faces a simultaneous revenue disappointment and strategic credibility problem, likely causing a significant de-rating. The secondary risk is that CrowdStrike, having navigated its July 2024 outage, continues to dominate endpoint (PANW's weakest area) and limits PANW's platform penetration in the largest enterprise segment.",
-      "fairValue": 154.91,
+      "fairValue": 167.72,
       "action": "TRIM",
-      "analyzedAt": "2026-05-02T22:00:00Z",
+      "analyzedAt": "2026-06-05T18:23:40Z",
       "researchReport": "PANW_2026-05-02.md"
     },
     "globalSettings": {
@@ -280,6 +280,22 @@
       "valuationAction": "SELL",
       "portfolioRationale": "SELL-rated at $154.91 FV vs price $181.08 (\u221214.5%). Minor overvaluation; platform consolidation thesis intact but margin compression from bundling is real. Reduce from 3.77% to 2.0%. Not urgent \u2014 trim opportunistically.",
       "portfolioUrgency": "LOW"
-    }
+    },
+    "catalystUpdates": [
+      {
+        "date": "2026-06-05",
+        "source": "apply_catalyst.py",
+        "type": "earnings_beat",
+        "events": [
+          "Q3 FY26 beat/raise (June 2); AI-driven cyber demand tailwind; guidance raised"
+        ],
+        "weightShifts": {
+          "bull": 5,
+          "bear": -3
+        },
+        "thesisImpact": "Bull probability +5pp; bear -3pp. FV $154.91\u2192$167.72. Action: TRIM\u2192TRIM."
+      }
+    ],
+    "lastGrokSweep": "2026-06-05"
   }
 ]
