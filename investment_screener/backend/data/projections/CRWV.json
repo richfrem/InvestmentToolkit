@@ -332,7 +332,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.27,
+        "weight": 0.23,
         "growthRate": 30,
         "netMargin": 5,
         "exitPE": 15,
@@ -352,7 +352,7 @@
         ]
       },
       "base": {
-        "weight": 0.43,
+        "weight": 0.4,
         "growthRate": 38,
         "netMargin": 15,
         "exitPE": 28,
@@ -371,7 +371,7 @@
         ]
       },
       "bull": {
-        "weight": 0.3,
+        "weight": 0.37,
         "growthRate": 48,
         "netMargin": 22,
         "exitPE": 35,
@@ -393,9 +393,9 @@
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
       "rationale": "CoreWeave is the highest-conviction AI infrastructure pure-play in the portfolio \u2014 and the highest-risk. Revenue has compounded from $16M to $5.1B in four years, with 71.7% gross margins proving that GPU cloud pricing power is real. The path to $162 fair value runs through the base case (45% probability): 38% revenue CAGR over 5 years, gradually reaching 15% net margins as the GPU fleet's depreciation stabilizes relative to revenue, exiting at a reasonable 28x P/E. The bull case ($393 PV, 25% weight) requires CoreWeave to become the 'fourth hyperscaler' for GPU workloads \u2014 a real possibility given Weights & Biases as a platform layer and enterprise contract momentum. The bear case ($14 PV, 30% weight) is the scenario where AWS/Azure/GCP close the GPU availability gap faster than expected, commoditizing CoreWeave's core offering and leaving it with $20B in debt and a collapsing revenue trajectory. The critical risk to monitor is the FCF trajectory: burning -$7.25B/yr is sustainable only as long as the revenue growth story holds and lenders remain supportive. At $119/share, there is asymmetric upside in our probability weighting, but this is not a defensive holding \u2014 it is a high-conviction, high-volatility bet on the GenAI infrastructure supercycle continuing. [2026-05-02 13F Update: Situational Awareness LP holds CRWV as the #2 position overall (calls $774M + stock $436M = $1.21B, ~21.9% of portfolio) as of Q4 2025. This is the highest-conviction SA position alongside INTC. BUY r...]",
-      "fairValue": 179.1,
+      "fairValue": 202.03,
       "action": "BUY",
-      "analyzedAt": "2026-05-08T05:22:31Z",
+      "analyzedAt": "2026-06-05T18:23:38Z",
       "researchReport": "CRWV_2026-05-02.md",
       "catalystUpdate": {
         "date": "2026-05-03",
@@ -489,8 +489,21 @@
           "bear": -3
         },
         "thesisImpact": "Bull probability +5pp; bear -3pp. FV $162.55\u2192$179.10. Action: ACCUMULATE\u2192BUY."
+      },
+      {
+        "date": "2026-06-05",
+        "source": "apply_catalyst.py",
+        "type": "funding_secured",
+        "events": [
+          "$8.5B IG GPU-backed financing; total ~$28B capital stack; backlog scale reinforced"
+        ],
+        "weightShifts": {
+          "bull": 7,
+          "bear": -4
+        },
+        "thesisImpact": "Bull probability +7pp; bear -4pp. FV $179.10\u2192$202.03. Action: BUY\u2192BUY."
       }
     ],
-    "lastGrokSweep": "2026-05-07"
+    "lastGrokSweep": "2026-06-05"
   }
 ]

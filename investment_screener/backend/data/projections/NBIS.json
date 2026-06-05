@@ -25,7 +25,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.27,
+        "weight": 0.24000000000000002,
         "growthRate": 70,
         "netMargin": 2,
         "exitPE": 15,
@@ -44,7 +44,7 @@
         ]
       },
       "base": {
-        "weight": 0.43,
+        "weight": 0.41,
         "growthRate": 133,
         "netMargin": 12,
         "exitPE": 30,
@@ -63,7 +63,7 @@
         ]
       },
       "bull": {
-        "weight": 0.3,
+        "weight": 0.35,
         "growthRate": 150,
         "netMargin": 20,
         "exitPE": 40,
@@ -85,9 +85,9 @@
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
       "rationale": "Nebius is a high-conviction speculative BUY. Recalibrating the model to the updated $529.8M live TTM baseline yields a weighted fair value of $462.75 (99% upside from $231.09). Suitability remains capped for high risk tolerance due to massive capex and execution risks.",
-      "fairValue": 516.33,
+      "fairValue": 569.91,
       "action": "BUY",
-      "analyzedAt": "2026-06-03T13:24:56Z",
+      "analyzedAt": "2026-06-05T18:23:45Z",
       "researchReport": "NBIS_2026-05-02.md"
     },
     "globalSettings": {
@@ -147,8 +147,21 @@
           "bear": -3
         },
         "thesisImpact": "Bull probability +5pp; bear -3pp. FV $462.75\u2192$516.33. Action: BUY\u2192BUY."
+      },
+      {
+        "date": "2026-06-05",
+        "source": "apply_catalyst.py",
+        "type": "partnership",
+        "events": [
+          "SA LP new 5.6% stake established May 2026; Q1 hyper-growth continuation; power deals (Bloom Energy)"
+        ],
+        "weightShifts": {
+          "bull": 5,
+          "bear": -3
+        },
+        "thesisImpact": "Bull probability +5pp; bear -3pp. FV $516.33\u2192$569.91. Action: BUY\u2192BUY."
       }
     ],
-    "lastGrokSweep": "2026-06-03"
+    "lastGrokSweep": "2026-06-05"
   }
 ]
