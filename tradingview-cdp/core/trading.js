@@ -356,12 +356,16 @@ export async function setShares(shares) {
       return /shares|qty|quantity|amount/i.test(label);
     });
 
-    // For Market orders qty is FIRST; for Limit orders qty is LAST (price comes first).
-    // Prefer the first input with a small positive numeric value (the default qty = 1).
-    // Fall back to first input if nothing else matches.
+    // TV Limit order form: inputs[0]=price (class contains "priceInput"), inputs[1]=qty.
+    // Exclude price inputs by class, then prefer a whole-number value (qty default=1).
+    // Final fallback: inputs[1] which is qty for both Limit and Market forms.
     if (!sharesInput && inputs.length > 0) {
-      sharesInput = inputs.find(function(i) { return /^\d+(\.\d+)?$/.test((i.value||'').trim()); })
-                    || inputs[0];
+      var nonPriceInputs = inputs.filter(function(i) {
+        return !/priceInput/i.test(i.className || '');
+      });
+      sharesInput = nonPriceInputs.find(function(i) {
+        return /^\d+$/.test((i.value || '').trim()); // whole number = qty field
+      }) || nonPriceInputs[0] || inputs[1] || inputs[0];
     }
 
     if (!sharesInput) return JSON.stringify({ error: 'Shares input not found' });
@@ -573,10 +577,12 @@ export async function verifyOrderForm({ intendedShares, intendedLimitPrice = nul
     throw new Error('Order dialog closed unexpectedly during form fill.');
   }
 
-  // Shares is always the LAST input in TV's order form (price inputs come first)
+  // Find shares input: prefer labeled, then non-priceInput whole-number, then inputs[1].
   const sharesInput = state.inputs.find(i =>
     /shares|qty|quantity|amount/i.test((i.placeholder || '') + ' ' + (i.ariaLabel || ''))
-  ) || state.inputs[state.inputs.length - 1];
+  ) || state.inputs.filter(i => !/priceInput/i.test(i.class || '')).find(i =>
+    /^\d+$/.test((i.value || '').trim())
+  ) || state.inputs[1];
 
   if (!sharesInput) {
     appendAuditEvent('FORM_MISMATCH_ABORTED', { reason: 'Could not read shares field from order dialog after fill.' });

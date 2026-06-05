@@ -276,7 +276,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.21,
+        "weight": 0.18,
         "growthRate": 15,
         "netMargin": 1,
         "exitPE": 12,
@@ -292,7 +292,7 @@
         "presentValue": 0.09
       },
       "base": {
-        "weight": 0.39,
+        "weight": 0.37,
         "growthRate": 35,
         "netMargin": 12,
         "exitPE": 25,
@@ -308,7 +308,7 @@
         "presentValue": 6.92
       },
       "bull": {
-        "weight": 0.4,
+        "weight": 0.45,
         "growthRate": 50,
         "netMargin": 18,
         "exitPE": 35,
@@ -327,9 +327,9 @@
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
       "rationale": "## CORZ Investment Thesis\n\nCore Scientific is betting its entire identity on becoming the picks-and-shovels play for AI compute infrastructure. The thesis is simple and compelling: power is the scarce resource for AI, CORZ has 800 MW of it with long-term PPAs at sub-market rates, and AI hyperscalers are desperate for power. CoreWeave-type contracts worth billions validate this demand.\n\nThe problem is the execution gap between thesis and reality. Today: $319M revenue declining -16% YoY, -90.47% net margins, and a $6.4B market cap that prices in flawless execution. The $20 price represents the market already paying for the base case to succeed.\n\n**Bear ($0.09, 30%)**: Pivot stalls. Bitcoin mining economics worsen, AI hosting contracts face delays (grid interconnection issues, permitting, equipment delays). Revenue grows slowly at 15% CAGR but margins barely reach 1% by Y5 under double-running cost pressure. Heavy dilution (+4%/yr) for ongoing capex. Present value: $0.09.\n\n**Base ($6.92, 45%)**: Execution proceeds. 35% CAGR, $1.43B revenue by Y5, 12% GAAP margins as AI hosting mix dominates. Real power moat (long-term PPAs at $0.03-0.05/kWh) provides durable competitive advantage. Present value: $6.92.\n\n**Bull ($30.00, 25%)**: AI compute shortage persists through 2028+. CORZ's power capacity commands premium pricing. Revenue to $2.42B at 18% margins. Long-term PPA rates become an insurmountable structural advantage. Present value: $30.00.\n\n**Weighted Fair Value: $10.64 \u2014 SELL at $20.35 (-48%)**\n\nAt $20.35, you're paying for bull case execution at base case probability. The real bet is whether AI hosting demand stays supply-constrained long enough for CORZ to complete the transition. That's a valid macro bet \u2014 but at $10.64 fair value, you're paying a 91% premium to fundamental value today. Wait for re-entry at $8-10. [2026-05-02 13F Update: Situational Awareness LP tripled CORZ position Q2\u2192Q4 2025 (7.9M\u219228.8M shares, $136M\u2192$418M). Despite SELL rating at -47.7% FV gap, Aschenbrenner's fund is making a contrarian bet. Rationale likely: HPC...]",
-      "fairValue": 14.72,
+      "fairValue": 16.08,
       "action": "SELL",
-      "analyzedAt": "2026-06-03T13:24:56Z",
+      "analyzedAt": "2026-06-05T18:23:36Z",
       "researchReport": "CORZ_2026-05-02.md",
       "catalystUpdate": {
         "date": "2026-05-03",
@@ -417,8 +417,21 @@
           "bear": -4
         },
         "thesisImpact": "Bull probability +7pp; bear -4pp. FV $12.83\u2192$14.72. Action: SELL\u2192SELL."
+      },
+      {
+        "date": "2026-06-05",
+        "source": "apply_catalyst.py",
+        "type": "earnings_beat",
+        "events": [
+          "Q1 colocation pivot rev +45% YoY; $3.3B bond financing; AI MW delivery on track"
+        ],
+        "weightShifts": {
+          "bull": 5,
+          "bear": -3
+        },
+        "thesisImpact": "Bull probability +5pp; bear -3pp. FV $14.72\u2192$16.08. Action: SELL\u2192SELL."
       }
     ],
-    "lastGrokSweep": "2026-06-03"
+    "lastGrokSweep": "2026-06-05"
   }
 ]
