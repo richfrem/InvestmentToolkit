@@ -82,6 +82,9 @@ TradingView adds a real-time price layer **only for current price and 1d change%
 | **Cancel Order** | **`/cancel-order {tvOrderId}`** | **Cancel a Working/Inactive order by UUID — clicks × in TV broker panel, handles secondary confirmation dialog, marks trade log cancelled.** |
 | **Modify Order** | **`/modify-order {tvOrderId} {newPrice}`** | **Modify limit price on a Working/Inactive order — clicks ✏, fills price via CDP keyboard events (React-safe), clicks Confirm/Send Order.** |
 | **Get Orders** | **`/get-orders`** | **List open Working/Inactive orders from TradingView broker panel, including order UUIDs.** |
+| Pine Inject | `/pine-inject {description}` | Generate a Pine Script v6 indicator from description and inject via CDP. Preflight validates `//@version=6` and `indicator()`. |
+| Author Pine Script | `/author-pine-script {description}` | Full authoring workflow: source research → `pine_linter.py` lint gate → inject → save to TV library. |
+| **Deep TA** | **`/tv-ta-deep {TICKER} [TIMEFRAME]`** | **Deep TA with custom indicator view construction, multi-timeframe context, synthesized entry/trim/exit levels, red-team review. `ta-guide` agent for interactive session.** |
 
 ### `/tv-ta` — Technical Analysis Snapshot
 
@@ -101,6 +104,52 @@ Captures a live chart screenshot and runs a full visual TA analysis using Claude
 - DCF cross-reference: if a projection exists for the ticker, the TA levels are mapped against bear/base/bull scenarios
 
 **Setup tip:** Configure your TradingView chart with the indicators you want before running `/tv-ta`. The skill reads whatever is on screen — add RSI, MACD, volume, moving averages in TradingView Desktop first for richer analysis.
+
+---
+
+### CDP Chart Control Commands (direct CLI)
+
+These low-level commands are used by skills to prepare the chart before analysis:
+
+```bash
+# Add/remove indicators
+node tradingview-cdp/cli.js chart addIndicator "RSI"
+node tradingview-cdp/cli.js chart addIndicator "AI TA Levels"   # personal library script
+node tradingview-cdp/cli.js chart removeIndicator "RSI"
+node tradingview-cdp/cli.js chart indicators     # list all on chart
+
+# Timeframe and symbol
+node tradingview-cdp/cli.js chart timeframe 1D   # daily
+node tradingview-cdp/cli.js chart timeframe W    # weekly
+node tradingview-cdp/cli.js chart timeframe 240  # 4-hour
+node tradingview-cdp/cli.js chart symbol NVDA
+
+# Data Window — read numeric indicator values
+node tradingview-cdp/cli.js chart openDataWindow  # open panel + switch tab
+node tradingview-cdp/cli.js chart read            # returns JSON of all indicator values
+
+# Pine Script
+node tradingview-cdp/cli.js pine inject --file plugins/tradingview/assets/pinescript-indicators/ai-ta-levels.pine
+node tradingview-cdp/cli.js pine save "AI TA Levels"
+node tradingview-cdp/cli.js pine read             # read current Pine Editor content
+```
+
+**Critical**: `addIndicator` uses `Input.dispatchMouseEvent` at the button's `getBoundingClientRect()` center — not `.click()`, which opens the timezone dropdown instead. Result selector: `div[class*="container-WeNdU0sq"]`. **Close the Pine Editor before calling `addIndicator`** — when the Pine Editor panel is open the Indicators dialog search input is not found.
+
+**Source code viewing**: Open the Indicators dialog (Indicators toolbar button) → search for any indicator → view source for any open-source script from the result row. Also accessible via chart legend More menu → "Source code…" (unicode `…`). PA Toolkit Lite [UAlgo] IS open source (CC BY-NC-SA 4.0) and source is accessible this way.
+
+---
+
+### Custom Pine Script Indicators
+
+Indicator files live at `plugins/tradingview/assets/pinescript-indicators/`:
+
+| File | Purpose |
+|------|---------|
+| `ai-ta-levels.pine` | Multi-EMA (21/50/200) + volume bias % — designed to give AI precise numeric levels from the Data Window without relying on screenshot OCR |
+| `community-reference/pa-toolkit-lite-ualgo.pine` | PA Toolkit Lite source (CC BY-NC-SA 4.0) — reference for `type` UDTs, `box.new()` order blocks, `ta.pivothigh`/`ta.pivotlow` liquidity detection patterns |
+
+Lint before injecting: `python3 plugins/tradingview/skills/author-pine-script/scripts/pine_linter.py <file.pine>`
 
 ---
 
@@ -169,7 +218,7 @@ The plugin owns its Node.js CDP code at `tradingview-cdp/`. There is no runtime 
 
 ```
 tradingview-cdp/
-├── cli.js           ← entry point (status, quote, alert, screenshot)
+├── cli.js           ← entry point — all commands registered here
 ├── router.js        ← command dispatcher
 ├── connection.js    ← CDP connect / evaluate helpers
 ├── package.json     ← single dep: chrome-remote-interface
@@ -180,10 +229,18 @@ tradingview-cdp/
     ├── capture.js   ← captureScreenshot → PortfolioAnalysis/screenshots/
     ├── audit.js     ← appendAuditEvent → audit/orders-YYYY-MM-DD.jsonl
     ├── broker_data.js ← readBrokerPositions, readBrokerAccounts (for /tv-portfolio-sync)
-    └── trading.js   ← full order automation:
-                         preflight, executeOrder, confirmAndSubmit,
-                         cancelOrder, modifyOrder, submitModify,
-                         verifyOrderInBrokerPanel, _findOrderRowAndAct
+    ├── trading.js   ← full order automation:
+    │                   preflight, executeOrder, confirmAndSubmit,
+    │                   cancelOrder, modifyOrder, submitModify,
+    │                   verifyOrderInBrokerPanel, _findOrderRowAndAct
+    ├── chart.js     ← chart control:
+    │                   changeTimeframe, changeSymbol, changeChartType,
+    │                   addIndicator, removeIndicator, listIndicators,
+    │                   readDataWindow, openDataWindow, saveLayout
+    └── pine.js      ← Pine Script editor:
+                        injectPineScript, savePineToLibrary,
+                        readIndicatorValues, removePineScript,
+                        readSourceFromDialog
 ```
 
 ### Order Automation Key Implementation Notes

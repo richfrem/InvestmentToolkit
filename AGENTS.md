@@ -48,7 +48,7 @@ This workstation is built on a modular plugin architecture. You have access to t
 - `/analyze-etf {TICKER}`: Holdings alignment against investment thesis, expense ratio review, BUY/HOLD/AVOID action. Co-writes to `data/projections/`.
 
 ### 4. TradingView Integration (`plugins/tradingview`)
-*Execution and live pricing layer via CDP.*
+*Execution, live pricing, chart control, and Pine Script layer via CDP.*
 - `/tv-portfolio-sync`: Syncs all accounts (TFSA + RRSP + Cash) from TV broker panel via CDP.
 - `/place-order`: Live order execution via CDP DOM automation. 3-step HITL confirmation.
 - `/modify-order` & `/cancel-order`: Order management via CDP.
@@ -59,6 +59,27 @@ This workstation is built on a modular plugin architecture. You have access to t
 - `/pine-inject {description}`: Generate a custom Pine Script v6 indicator from a description and inject it via CDP. Preflight validates version/indicator declarations.
 - `/author-pine-script {description}`: **Full Pine Script v6 authoring workflow.** Phase 0 source research (reads community indicator source via `pine_source_reader.py` directly from TV Indicators dialog), Phase 2.5 lint gate (`pine_linter.py`), inject, and save to TV library. Studies top-10 indicators before writing.
 - `/tv-ta-deep {TICKER} [TIMEFRAME]`: **Deep TA with custom view construction.** Builds the optimal indicator set for the analysis (adds built-ins, injects custom bundle, or authors Pine Script), multi-timeframe macro context check, synthesizes entry/accumulate/trim/exit levels, adversarial red-team review. Use `ta-guide` agent for an interactive guided session.
+
+**CDP chart control (low-level, used by skills):**
+```bash
+node tradingview-cdp/cli.js chart addIndicator "Name"   # add built-in or personal library script
+node tradingview-cdp/cli.js chart removeIndicator "Name"
+node tradingview-cdp/cli.js chart timeframe 1D | W | 240
+node tradingview-cdp/cli.js chart symbol NVDA
+node tradingview-cdp/cli.js chart openDataWindow
+node tradingview-cdp/cli.js chart read                  # returns JSON of all indicator values
+node tradingview-cdp/cli.js pine inject --file <path>   # inject Pine Script from file
+node tradingview-cdp/cli.js pine save "Name"            # save to TV personal library
+```
+
+**Custom indicator library**: `plugins/tradingview/assets/pinescript-indicators/`
+- `ai-ta-levels.pine` — Multi-EMA (21/50/200) + volume bias %, saved in TV library as "AI TA Levels"
+- `community-reference/pa-toolkit-lite-ualgo.pine` — PA Toolkit source (CC BY-NC-SA 4.0), reference for order blocks + liquidity sweep patterns
+
+**Critical CDP rules:**
+- Close Pine Editor before calling `addIndicator` — Pine Editor panel blocks the Indicators dialog search input
+- `addIndicator` uses `Input.dispatchMouseEvent` at `getBoundingClientRect()` center (not `.click()`, which opens timezone dropdown). Result selector: `div[class*="container-WeNdU0sq"]`
+- Source code accessible from Indicators dialog full list for any open-source script. PA Toolkit IS open source (CC BY-NC-SA 4.0) — source in community-reference folder
 
 ### 5. Toolkit Manager (`plugins/toolkit-manager`)
 *Orchestrator.*
@@ -100,6 +121,9 @@ As an AI agent operating in this repository, you **MUST** adhere to the followin
 - **process.exit() required**: Every Node.js CDP snippet in `tradingview-cdp/` MUST end with `.then(() => process.exit(0)).catch(() => process.exit(1))`. Without it, the CDP WebSocket holds the event loop open and `subprocess.run()` from Python never returns.
 - **React fiber traversal for Monaco**: Do not rely solely on CSS selectors for Pine Editor / Monaco. Scan DOM nodes for the `__reactFiber` key prefix and walk the fiber tree. Reference: [tradesdontlie/tradingview-mcp](https://github.com/tradesdontlie/tradingview-mcp).
 - **Pine inject uses `--content`, not `--file`**: `tv_pine_inject.py` reads the file in Python (correct cwd), then passes content via `--content` to Node. Node's cwd is `tradingview-cdp/` — passing a relative path would inject the path string as Pine Script.
+- **Pine Editor must be closed before `addIndicator`**: When the Pine Editor panel is open, `chart addIndicator` fails — the Indicators dialog search input is not reachable. Close the Pine Editor first.
+- **`addIndicator` uses mouse events, not `.click()`**: Must use `Input.dispatchMouseEvent` at the button's `getBoundingClientRect()` center. `.click()` opens the timezone dropdown instead. Result rows: `div[class*="container-WeNdU0sq"]`.
+- **Source code from Indicators dialog**: Open the Indicators toolbar button → search → source icon on result row (open-source scripts only). Also via chart legend More → `"Source code…"` (unicode `…`). PA Toolkit IS open source (CC BY-NC-SA 4.0) — source at `plugins/tradingview/assets/pinescript-indicators/community-reference/`.
 - **Temp files**: Use `InvestmentToolkit/temp/` subfolder (gitignored), not `/tmp/` root. Task #0003 tracks legacy migration.
 - **PSU.U.TO = PSU-U.TO**: Same fund (Purpose US Cash Fund). Broker panel returns `PSU.U.TO` (dot); canonical thesis uses `PSU-U.TO` (hyphen). Alias hardcoded in `fetch_broker_data.py`. Never create a duplicate thesis entry for `PSU.U.TO`.
 - **targetEntryPrice field**: `target-portfolio.json` holdings have an optional `targetEntryPrice` float — the GTC limit order price for accumulating. Set via `update_targets.py --set-entry TICKER=PRICE --write`. The Grok prompt surfaces existing entry prices and asks for suggestions on ACCUMULATE rows.
