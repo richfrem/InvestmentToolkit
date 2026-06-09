@@ -307,6 +307,18 @@ Do **not** rely solely on CSS class selectors for Pine Editor / Monaco editor �
 ### 8. Temp files: use InvestmentToolkit/temp/ subfolder, not /tmp/ root
 All scripts writing temp artifacts must use `InvestmentToolkit/temp/<artifact>` (gitignored), not `/tmp/<artifact>`. Task #0003 tracks legacy migration.
 
+### 9. TradingView CDP — close Pine Editor before `addIndicator`
+When the Pine Editor panel is open, `chart addIndicator` fails — the Indicators dialog search input is not reachable with the panel overlapping. Close the Pine Editor first. Implementation: `Input.dispatchMouseEvent` at the button's `getBoundingClientRect()` center (not `.click()`, which opens the timezone dropdown). Result rows: `div[class*="container-WeNdU0sq"]`. Match priority: exact → first result (TV's ranking) → contains.
+
+### 10. TradingView CDP — source code viewing from Indicators dialog
+Source code for open-source indicators is accessible two ways: (1) chart legend More menu → `"Source code…"` (unicode `…` not `...`), (2) Indicators toolbar button → search → source icon on result. **PA Toolkit Lite [UAlgo] IS open source** (CC BY-NC-SA 4.0) — source saved at `plugins/tradingview/assets/pinescript-indicators/community-reference/pa-toolkit-lite-ualgo.pine`. Closed-source (paid/private) scripts show neither option.
+
+### 11. Custom Pine Script indicator library
+Agent-authored indicators: `plugins/tradingview/assets/pinescript-indicators/`
+- `ai-ta-levels.pine` — Multi-EMA (21/50/200) + volume bias %, saved in TV personal library as "AI TA Levels"
+- `community-reference/pa-toolkit-lite-ualgo.pine` — PA Toolkit source for learning order block, liquidity, ZigZag patterns
+Always lint before injecting: `python3 plugins/tradingview/skills/author-pine-script/scripts/pine_linter.py <file>`
+
 ### 9. TradingView CDP — shared runtime lives at `tradingview-cdp/`, NOT inside `plugins/`
 The Node.js CDP engine was extracted from the legacy plugins directory to `tradingview-cdp/` at the project root (ADR-024 "Thin Skill + Thick Engine"). This directory is a standalone runtime, installed once via `cd tradingview-cdp && npm ci`. **Never create new scripts that hardcode this path** — always import from `tv_client.py`:
 ```python

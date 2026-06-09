@@ -18,8 +18,16 @@
         "exploration-cycle-plugin",
         "gemini-cli",
         "link-checker",
+        "obsidian-wiki-engine",
         "plugin-manager",
+        "spec-kitty",
         "task-manager"
+      ]
+    },
+    {
+      "source": "obra/superpowers",
+      "plugins": [
+        "superpowers"
       ]
     },
     {
@@ -30,12 +38,6 @@
         "stock-valuation",
         "toolkit-manager",
         "tradingview"
-      ]
-    },
-    {
-      "source": "obra/superpowers",
-      "plugins": [
-        "superpowers"
       ]
     }
   ]

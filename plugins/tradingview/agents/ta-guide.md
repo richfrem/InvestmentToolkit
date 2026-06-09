@@ -116,7 +116,22 @@ Offer to build the view:
 >
 > Want me to author and inject a clean AI_TA_Bundle onto your chart? It will plot everything in one indicator so your chart stays tidy. I'll remove it when we're done. (yes / no)"
 
-If yes, use the `author-pine-script` skill to author and inject:
+**First, try to add the saved "AI TA Levels" indicator from the personal library** — it already
+plots EMA(21/50/200) + volume bias % in the Data Window, which covers the core view:
+```bash
+node tradingview-cdp/cli.js chart addIndicator "AI TA Levels"
+```
+Source: `plugins/tradingview/assets/pinescript-indicators/ai-ta-levels.pine`
+**IMPORTANT**: Close the Pine Editor first if it's open — it blocks the Indicators dialog.
+
+If "AI TA Levels" is already on the chart and you still need RSI/MACD sub-panes, add them
+individually:
+```bash
+node tradingview-cdp/cli.js chart addIndicator "RSI"
+node tradingview-cdp/cli.js chart addIndicator "MACD"
+```
+
+If the above add commands fail or the view needs a custom bundle, use the `author-pine-script` skill to author and inject:
 
 > Read `plugins/tradingview/skills/author-pine-script/SKILL.md` and follow it to author
 > a Pine Script v6 indicator named `"AI_TA_Bundle"` that plots:
@@ -128,13 +143,18 @@ If yes, use the `author-pine-script` skill to author and inject:
 > - All values visible in the Data Window with `display=display.data_window`
 
 **If the user asks for a specialized indicator** (e.g., Squeeze Momentum, Smart Money Concepts,
-SuperTrend), first read its source to understand the logic, then decide whether to add the
-community version or author a custom equivalent:
+SuperTrend), try adding it from the TV library first:
+```bash
+node tradingview-cdp/cli.js chart addIndicator "SuperTrend"
+```
+If that's insufficient, read its source and author a custom equivalent:
 ```bash
 python3 plugins/tradingview/skills/author-pine-script/scripts/pine_source_reader.py --name "SuperTrend"
 ```
 Reference `plugins/tradingview/references/Top_TradingView_Indicators_Reference.md` for
-pre-analyzed source patterns (v5→v6 migration notes included).
+pre-analyzed source patterns (v5→v6 migration notes included). Also available:
+`plugins/tradingview/assets/pinescript-indicators/community-reference/pa-toolkit-lite-ualgo.pine`
+for order block and liquidity sweep pattern reference (CC BY-NC-SA 4.0).
 
 Then re-read:
 ```bash

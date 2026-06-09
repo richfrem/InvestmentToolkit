@@ -591,30 +591,26 @@ export async function addIndicator(client, name) {
   try {
     const safeName = JSON.stringify(name);
 
-    // 1. Snapshot existing item- elements so we can exclude them later.
-    //    The chart legend uses [class*="item-"] too; new elements after the
-    //    search are the dialog results, not the legend entries.
-    const snapshotResult = await client.Runtime.evaluate({
-      expression: `JSON.stringify(
-        [...document.querySelectorAll('[class*="item-"]')]
-          .filter(function(e){ return e.offsetParent; })
-          .map(function(e){ return e.textContent.trim().substring(0,80); })
-      )`,
+    // 1. Get the Indicators button bounding rect for a reliable mouse-event click.
+    //    JavaScript .click() doesn't always fire TradingView's React handler for this button;
+    //    Input.dispatchMouseEvent at the computed center coordinates is the reliable path.
+    const btnRect = await client.Runtime.evaluate({
+      expression: `JSON.stringify((function() {
+        var btn = [...document.querySelectorAll('button[data-name="open-indicators-dialog"]')]
+          .find(function(b) { return b.offsetParent && b.textContent.trim() === 'Indicators'; });
+        if (!btn) return null;
+        var r = btn.getBoundingClientRect();
+        return { cx: Math.round(r.x + r.width / 2), cy: Math.round(r.y + r.height / 2) };
+      })())`,
       returnByValue: true, awaitPromise: false,
     });
-    const existingTexts = new Set(JSON.parse(snapshotResult.result.value));
+    const btnPos = JSON.parse(btnRect.result.value);
+    if (!btnPos) return { success: false, error: 'Indicators button not found in toolbar' };
 
-    // 2. Open Indicators dialog — prefer the button with visible "Indicators" text
-    await client.Runtime.evaluate({
-      expression: `(function() {
-        var btns = [...document.querySelectorAll('[data-name="open-indicators-dialog"]')];
-        var visible = btns.filter(function(b){ return b.offsetParent; });
-        var withText = visible.find(function(b){ return b.textContent.trim() === 'Indicators'; });
-        (withText || visible[0] || btns[0]).click();
-      })()`,
-      returnByValue: true, awaitPromise: false,
-    });
-    await new Promise(r => setTimeout(r, 1000));
+    // 2. Open Indicators dialog via mouse event (reliable; .click() is flaky on this button)
+    await client.Input.dispatchMouseEvent({ type: 'mousePressed', x: btnPos.cx, y: btnPos.cy, button: 'left', clickCount: 1 });
+    await client.Input.dispatchMouseEvent({ type: 'mouseReleased', x: btnPos.cx, y: btnPos.cy, button: 'left', clickCount: 1 });
+    await new Promise(r => setTimeout(r, 1500));
 
     // 3. Type search term
     const typeResult = await client.Runtime.evaluate({
@@ -636,37 +632,24 @@ export async function addIndicator(client, name) {
     }
     await new Promise(r => setTimeout(r, 1400));
 
-    // 4. Click first NEW result — exclude items that existed before dialog opened.
-    //    Also skip items whose class includes 'series-' or 'study-' (chart legend classes).
-    const existingJson = JSON.stringify([...existingTexts]);
+    // 4. Click the best-matching result in the Indicators dialog.
+    //    TV search ranks the most relevant indicator first — that is usually the right pick.
+    //    Priority: (a) exact name match, (b) first result (TV's top match), (c) contains match.
+    //    NOTE: all result rows share platform-WeNdU0sq so that class cannot distinguish built-in vs community.
     const clickResult = await client.Runtime.evaluate({
       expression: `(function() {
-        var existing = new Set(${existingJson});
         var searchTerm = ${safeName}.toLowerCase();
-        var items = [...document.querySelectorAll('[class*="item-"]')]
-          .filter(function(el) {
-            if (!el.offsetParent) return false;
-            var txt = el.textContent.trim();
-            if (!txt) return false;
-            // Skip chart-legend-specific classes (series / study items)
-            if (/\\bseries-|\\bstudy-/.test(el.className)) return false;
-            // Prefer items that were not in the pre-dialog snapshot
-            if (existing.has(txt.substring(0, 80))) return false;
-            return true;
-          });
-        // Fallback: if no new items found, allow any item matching search term
-        if (items.length === 0) {
-          items = [...document.querySelectorAll('[class*="item-"]')]
-            .filter(function(el) {
-              return el.offsetParent &&
-                     el.textContent.toLowerCase().includes(searchTerm) &&
-                     !/\\bseries-|\\bstudy-/.test(el.className);
-            });
-        }
-        var item = items[0];
-        if (item) {
-          item.click();
-          return JSON.stringify({ clicked: true, text: item.textContent.trim().substring(0, 60) });
+        var all = [...document.querySelectorAll('div[class*="container-WeNdU0sq"]')]
+          .filter(function(el) { return el.offsetParent && el.textContent.trim().length > 0; });
+        // (a) exact text match (indicator name only — strip author/count suffix by checking start)
+        var match = all.find(function(el) { return el.textContent.trim().toLowerCase() === searchTerm; })
+          // (b) first result — TV ranks most relevant first
+          || all[0]
+          // (c) contains match as last resort
+          || all.find(function(el) { return el.textContent.trim().toLowerCase().includes(searchTerm); });
+        if (match) {
+          match.click();
+          return JSON.stringify({ clicked: true, text: match.textContent.trim().substring(0, 60) });
         }
         return JSON.stringify({ clicked: false });
       })()`,
@@ -684,6 +667,74 @@ export async function addIndicator(client, name) {
 
     if (!data.clicked) return { success: false, error: `No results found for "${name}"` };
     return { success: true, added: data.text };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * Remove a named indicator from the active chart by clicking the legend Remove button.
+ *
+ * Strategy:
+ *   1. Find the legend title element whose text matches `name` (class titleWrapper-l31H9iuA).
+ *   2. Dispatch a synthetic mouseover to reveal the legend action buttons.
+ *   3. Find the button with aria-label="Remove" in the same vertical band and click it.
+ *
+ * Args:
+ *   client: CDP client instance
+ *   name:   Indicator name as shown in the chart legend (e.g. "RSI")
+ *
+ * Returns:
+ *   { success: true, removed: string } | { success: false, error: string }
+ */
+export async function removeIndicator(client, name) {
+  try {
+    const safeName = JSON.stringify(name.toLowerCase());
+
+    // 1. Find the legend title element matching the indicator name
+    const findResult = await client.Runtime.evaluate({
+      expression: `(function() {
+        var target = [...document.querySelectorAll('[class*="titleWrapper-l31H9iuA"]')]
+          .find(function(el) {
+            return el.offsetParent && el.textContent.trim().toLowerCase().includes(${safeName});
+          });
+        if (!target) return JSON.stringify({ found: false });
+        var r = target.getBoundingClientRect();
+        return JSON.stringify({ found: true, x: r.x, y: r.y, cx: r.x + r.width / 2, cy: r.y + r.height / 2, text: target.textContent.trim() });
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    const pos = JSON.parse(findResult.result.value);
+    if (!pos.found) return { success: false, error: `Indicator "${name}" not found in chart legend` };
+
+    // 2. Physical mousemove to legend row — programmatic mouseover doesn't trigger TV's React hover
+    await client.Input.dispatchMouseEvent({ type: 'mouseMoved', x: pos.cx, y: pos.cy });
+    await new Promise(r => setTimeout(r, 600));
+
+    // 3. Find Remove button in same vertical band — use Input.dispatchMouseEvent (TV ignores .click())
+    const cy = pos.cy;
+    const removeBtnPos = await client.Runtime.evaluate({
+      expression: `(function() {
+        var band = 25; // px tolerance above/below
+        var btn = [...document.querySelectorAll('button[aria-label="Remove"]')]
+          .find(function(el) {
+            if (!el.offsetParent) return false;
+            var r = el.getBoundingClientRect();
+            return Math.abs((r.y + r.height / 2) - ${cy}) < band;
+          });
+        if (!btn) return JSON.stringify({ found: false });
+        var r = btn.getBoundingClientRect();
+        return JSON.stringify({ found: true, cx: Math.round(r.x + r.width / 2), cy: Math.round(r.y + r.height / 2) });
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    const removeBtn = JSON.parse(removeBtnPos.result.value);
+    if (!removeBtn.found) return { success: false, error: `Remove button not found for "${name}" — try hovering the chart legend manually` };
+    await client.Input.dispatchMouseEvent({ type: 'mousePressed', x: removeBtn.cx, y: removeBtn.cy, button: 'left', clickCount: 1 });
+    await client.Input.dispatchMouseEvent({ type: 'mouseReleased', x: removeBtn.cx, y: removeBtn.cy, button: 'left', clickCount: 1 });
+    const removeData = { clicked: true };
+
+    return { success: true, removed: pos.text };
   } catch (e) {
     return { success: false, error: e.message };
   }
