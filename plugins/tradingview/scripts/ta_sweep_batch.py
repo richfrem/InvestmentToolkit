@@ -21,6 +21,7 @@ import argparse
 import json
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +31,9 @@ PORTFOLIO_PATH  = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 TARGET_PATH     = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 PROJECTIONS_DIR = REPO_ROOT / "investment_screener/backend/data/projections"
 TV_CLI          = REPO_ROOT / "tradingview-cdp/cli.js"
+
+# Default output path — served by backend as /api/ta-sweep/results
+TA_SWEEP_RESULTS_PATH = REPO_ROOT / "investment_screener/backend/data/ta-sweep-results.json"
 
 # Always skip — cash / non-equity entries
 DEFAULT_SKIP: set[str] = {"PSU.U.TO", "PSU-U.TO", "USD_CASH"}
@@ -170,13 +174,71 @@ def derive_action(result: dict[str, Any], _target: dict[str, Any] | None) -> str
     return "HOLD"
 
 
+# ── Post-processing ────────────────────────────────────────────────────────────
+
+def validate_adx(result: dict[str, Any]) -> dict[str, Any]:
+    """Null out ADX values outside the valid 0–100 range and remove stale ADX flags.
+
+    ADX from ta.dmi() is always 0–100. Negative or >100 values indicate a Data Window
+    field collision (another indicator using the same 'ADX' key). Until the Pine Script
+    is updated to use a unique key ('AI-ADX'), this guards against false ADX_WEAK /
+    ADX_STRONG flags.
+
+    Args:
+        result: Per-ticker sweep result dict (mutated in-place copy).
+
+    Returns:
+        Result dict with adx=None and ADX flags removed when value is out of range.
+    """
+    adx = result.get("adx")
+    if adx is not None and not (0 <= adx <= 100):
+        result = {**result}  # shallow copy — don't mutate caller's dict
+        result["adx"] = None
+        result["flags"] = [f for f in result.get("flags", []) if not f.startswith("ADX_")]
+    return result
+
+
+def save_sweep_results(results: list[dict[str, Any]], output_path: Path) -> None:
+    """Persist sweep results to a timestamped JSON file for backend/frontend consumption.
+
+    Writes {timestamp, scan_date, count, results} — overwrites any prior file.
+    Consumed by the backend /api/ta-sweep/results endpoint and the TA Summary panel.
+
+    Args:
+        results:     Enriched per-ticker sweep results from main sweep loop.
+        output_path: Destination file path (default: ta-sweep-results.json in backend/data/).
+    """
+    now = datetime.now(timezone.utc)
+    payload: dict[str, Any] = {
+        "timestamp": now.isoformat(),
+        "scan_date": now.strftime("%Y-%m-%d"),
+        "count":     len(results),
+        "results":   results,
+    }
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w") as f:
+        json.dump(payload, f, indent=2)
+
+
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    """Entry point — run sweep and print enriched JSON to stdout."""
+    """Entry point — run sweep, enrich results, print JSON to stdout, and optionally persist."""
     parser = argparse.ArgumentParser(description="Daily TA sweep across portfolio holdings")
     parser.add_argument("--skip",  default="", help="Extra comma-separated tickers to skip")
     parser.add_argument("--delay", default="1500", help="CDP wait ms per ticker (default 1500)")
+    parser.add_argument(
+        "--save-results",
+        nargs="?",
+        const=str(TA_SWEEP_RESULTS_PATH),
+        metavar="PATH",
+        help="Save results to ta-sweep-results.json (default path) or a custom PATH",
+    )
+    parser.add_argument(
+        "--no-save",
+        action="store_true",
+        help="Suppress auto-save (overrides default auto-save behaviour)",
+    )
     args = parser.parse_args()
 
     extra_skip: set[str] = set(args.skip.upper().split(",")) if args.skip else set()
@@ -196,11 +258,18 @@ def main() -> None:
         dcf    = load_dcf(ticker)
         target = target_map.get(ticker)
         add_dcf_flags(res, dcf)
+        res          = validate_adx(res)
         res["action"]       = derive_action(res, target)
         res["targetAction"] = (target or {}).get("action")
         res["targetWeight"] = (target or {}).get("targetWeight")
 
     print(json.dumps(scan_results, indent=2))
+
+    # Auto-save to backend/data/ unless suppressed — enables /api/ta-sweep/results endpoint
+    if not args.no_save:
+        save_path = Path(args.save_results) if args.save_results else TA_SWEEP_RESULTS_PATH
+        save_sweep_results(scan_results, save_path)
+        print(f"Results saved → {save_path}", file=sys.stderr)
 
 
 if __name__ == "__main__":

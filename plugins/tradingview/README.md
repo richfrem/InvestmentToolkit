@@ -181,6 +181,13 @@ python3 plugins/tradingview/scripts/tv_health_check.py --json
 # Launch TradingView manually (also done automatically at startup)
 python3 plugins/tradingview/scripts/tv_launch.py
 
+# Daily portfolio TA sweep — scans all holdings, saves ta-sweep-results.json
+python3 plugins/tradingview/scripts/ta_sweep_batch.py
+python3 plugins/tradingview/scripts/ta_sweep_batch.py --skip HUMN,WYFI    # skip specific tickers
+python3 plugins/tradingview/scripts/ta_sweep_batch.py --delay 1200         # faster scan (~1.2s/ticker)
+python3 plugins/tradingview/scripts/ta_sweep_batch.py --no-save            # stdout only, no file write
+# Results saved to: investment_screener/backend/data/ta-sweep-results.json
+
 # --- Order Management (requires TradingView Desktop + broker connected) ---
 
 # List open Working/Inactive orders with UUIDs
