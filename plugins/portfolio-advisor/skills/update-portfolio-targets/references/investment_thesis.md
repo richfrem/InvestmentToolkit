@@ -1,1 +1,1 @@
-../../../references/investment_thesis.md
+../../../../../investment_screener/backend/data/theses/investment_thesis.md

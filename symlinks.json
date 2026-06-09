@@ -648,6 +648,18 @@
       "dst": "plugins/portfolio-advisor/skills/thesis-review/assets/templates/thesis_proposal_template.md",
       "strategy": "symlink",
       "description": "Thesis proposal markdown template"
+    },
+    {
+      "src": "plugins/tradingview/scripts/ta_sweep_batch.py",
+      "dst": "plugins/tradingview/skills/ta-daily-sweep/scripts/ta_sweep_batch.py",
+      "strategy": "symlink",
+      "description": "ADR-003: ta-daily-sweep skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_health_check.py",
+      "dst": "plugins/tradingview/skills/ta-daily-sweep/scripts/tv_health_check.py",
+      "strategy": "symlink",
+      "description": "ADR-003: ta-daily-sweep skill scripts/ symlink \u2192 plugin root scripts/"
     }
   ]
 }
