@@ -259,4 +259,26 @@ register('chart', {
   ]),
 });
 
+// --- sweep ---
+register('sweep', {
+  description: 'Batch TA scan — reads Data Window for each ticker in one CDP session',
+  options: {
+    tickers: { type: 'string', short: 't', description: 'Comma-separated ticker list, e.g. AAPL,MSFT,GOOG' },
+    delay:   { type: 'string', short: 'd', description: 'Ms to wait per ticker after symbol switch (default 1500)' },
+  },
+  handler: async (opts, positionals) => {
+    const tickerStr = opts.tickers || positionals[0];
+    if (!tickerStr) throw new Error('Tickers required — e.g. sweep --tickers AAPL,MSFT,GOOG');
+    const tickers  = tickerStr.split(',').map(t => t.trim()).filter(Boolean);
+    const delayMs  = opts.delay ? parseInt(opts.delay, 10) : 1500;
+    const { getClient } = await import('./connection.js');
+    const { scanPortfolio } = await import('./core/sweep.js');
+    const client = await getClient();
+    return scanPortfolio(client, tickers, {
+      delayMs,
+      onProgress: (ticker, i, total) => process.stderr.write(`  [${i}/${total}] ${ticker}\n`),
+    });
+  },
+});
+
 await run(process.argv);

@@ -29,7 +29,8 @@
         "ta-snapshot",
         "ta-red-team",
         "technical-analysis-expert",
-        "tv-portfolio-sync"
+        "tv-portfolio-sync",
+        "ta-daily-sweep"
       ],
       "notes": [
         "TradingView Desktop must be running with --remote-debugging-port=9222",
@@ -68,7 +69,8 @@
     { "name": "place_order", "path": "skills/place-order/SKILL.md", "trigger": "/place-order" },
     { "name": "modify_order", "path": "skills/modify-order/SKILL.md", "trigger": "/modify-order" },
     { "name": "cancel_order", "path": "skills/cancel-order/SKILL.md", "trigger": "/cancel-order" },
-    { "name": "get_orders", "path": "skills/get-orders/SKILL.md", "trigger": "/get-orders" }
+    { "name": "get_orders", "path": "skills/get-orders/SKILL.md", "trigger": "/get-orders" },
+    { "name": "ta_daily_sweep", "path": "skills/ta-daily-sweep/SKILL.md", "trigger": "/ta-daily-sweep" }
   ],
   "commands": [
     { "name": "tv-alert-sync", "path": "commands/tv-alert-sync.md", "trigger": "/tv-alert-sync" },
@@ -79,7 +81,8 @@
     { "name": "place-order", "path": "commands/place-order.md", "trigger": "/place-order" },
     { "name": "modify-order", "path": "commands/modify-order.md", "trigger": "/modify-order" },
     { "name": "cancel-order", "path": "commands/cancel-order.md", "trigger": "/cancel-order" },
-    { "name": "get-orders", "path": "commands/get-orders.md", "trigger": "/get-orders" }
+    { "name": "get-orders", "path": "commands/get-orders.md", "trigger": "/get-orders" },
+    { "name": "ta-daily-sweep", "path": "commands/ta-daily-sweep.md", "trigger": "/ta-daily-sweep" }
   ],
   "external_dependencies": [
     {

@@ -85,6 +85,7 @@ TradingView adds a real-time price layer **only for current price and 1d change%
 | Pine Inject | `/pine-inject {description}` | Generate a Pine Script v6 indicator from description and inject via CDP. Preflight validates `//@version=6` and `indicator()`. |
 | Author Pine Script | `/author-pine-script {description}` | Full authoring workflow: source research → `pine_linter.py` lint gate → inject → save to TV library. |
 | **Deep TA** | **`/tv-ta-deep {TICKER} [TIMEFRAME]`** | **Deep TA with custom indicator view construction, multi-timeframe context, synthesized entry/trim/exit levels, red-team review. `ta-guide` agent for interactive session.** |
+| **Daily TA Sweep** | **`/ta-daily-sweep`** | **Batch TA scan of all portfolio holdings in one CDP session. Reads Data Window (RSI, ADX, Vol Bias, Squeeze, Volume) per ticker. Flags abnormal volume, momentum extremes, squeeze setups. Cross-references DCF projections. Outputs ranked report: REDUCE / MONITOR / ACCUMULATE / HOLD.** |
 
 ### `/tv-ta` — Technical Analysis Snapshot
 
