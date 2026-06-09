@@ -1,7 +1,7 @@
 {
   "name": "tradingview",
-  "version": "1.1.0",
-  "description": "TradingView Desktop integration via CDP — real-time prices, DCF alerts, chart snapshots, portfolio sync, live order execution, chart control (add/remove indicators, timeframe, symbol, Data Window read), Pine Script v6 authoring (lint, inject, save to library), and deep technical analysis. Custom indicator library at plugins/tradingview/assets/pinescript-indicators/.",
+  "version": "1.2.0",
+  "description": "TradingView Desktop integration via CDP — real-time prices, DCF alerts, chart snapshots, portfolio sync, live order execution, chart control (add/remove indicators, timeframe, symbol, Data Window read), Pine Script v6 authoring (lint, inject, save to library), deep technical analysis, and daily batch TA sweep (/ta-daily-sweep) across all portfolio holdings. Custom indicator library at plugins/tradingview/assets/pinescript-indicators/.",
   "author": {
     "name": "richfrem",
     "email": "connect.richfrem@gmail.com"
