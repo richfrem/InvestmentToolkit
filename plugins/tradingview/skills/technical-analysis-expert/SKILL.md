@@ -7,6 +7,8 @@ description: >
   indicator view (reading existing indicators or authoring custom ones via
   author-pine-script), reads the Data Window, and synthesizes entry,
   accumulate, trim, and exit price levels with adversarial red-team review.
+  Has access to validated CDP chart commands, the AI TA Levels indicator,
+  and the /ta-daily-sweep portfolio batch scan.
 allowed-tools: Bash, Read, Write
 ---
 
@@ -26,6 +28,72 @@ architect. You do not just read whatever indicators happen to be on the chart �
 you **build the right view** for the job. If the chart lacks the indicators you
 need, you add them or author custom ones. You read across multiple timeframes
 when necessary to confirm trend context.
+
+---
+
+## Validated CDP Capabilities
+
+All commands run from the repo root. These have been integration-tested against live TradingView Desktop.
+
+### Chart Control
+```bash
+node tradingview-cdp/cli.js chart symbol NVDA          # switch active chart ticker
+node tradingview-cdp/cli.js chart timeframe 1D         # 1D | W | 240 | 60 | 15
+node tradingview-cdp/cli.js chart indicators           # list all loaded indicators
+node tradingview-cdp/cli.js chart openDataWindow       # open panel + switch to Data Window tab
+node tradingview-cdp/cli.js chart read                 # read all Data Window values as JSON
+node tradingview-cdp/cli.js chart saveLayout           # save current layout to TV
+```
+
+### Indicator Management
+```bash
+node tradingview-cdp/cli.js chart addIndicator "RSI"           # add built-in indicator
+node tradingview-cdp/cli.js chart addIndicator "AI TA Levels"  # add from personal library
+node tradingview-cdp/cli.js chart removeIndicator "RSI"        # remove by legend name
+```
+
+**Known constraint:** When the Pine Editor dialog is open, `addIndicator` fails with
+`"Indicators dialog did not open"`. Use `"Update on chart"` button instead (see Pitfall 23 in CLAUDE.md).
+
+### Pine Script
+```bash
+node tradingview-cdp/cli.js pine inject --file path/to/script.pine  # inject Pine Script v6
+node tradingview-cdp/cli.js pine save "Script Name"                 # save to TV personal library
+node tradingview-cdp/cli.js pine read                               # read current editor content
+```
+
+Python wrappers (preferred over direct Node invocation):
+```bash
+python3 plugins/tradingview/scripts/tv_pine_inject.py --file path/to/script.pine
+python3 plugins/tradingview/skills/author-pine-script/scripts/pine_linter.py script.pine
+python3 plugins/tradingview/skills/author-pine-script/scripts/pine_source_reader.py --name "Indicator Name"
+```
+
+### Portfolio Batch Scan
+```bash
+python3 plugins/tradingview/scripts/ta_sweep_batch.py              # scan all holdings
+python3 plugins/tradingview/scripts/ta_sweep_batch.py --skip HUMN  # skip specific tickers
+python3 plugins/tradingview/scripts/ta_sweep_batch.py --no-save    # skip file persistence
+```
+Results auto-saved to `investment_screener/backend/data/ta-sweep-results.json`.
+Use `/ta-daily-sweep` for the full batch sweep with ranked report and action items.
+
+### AI TA Levels Indicator
+The `"AI TA Levels"` indicator (personal library) is the preferred indicator for AI-readable
+numeric values. It exposes these fields in the Data Window:
+- `Vol Bias %` — signed %, positive = accumulation, negative = distribution (> ±50 = signal)
+- `ADX` — trend strength 0–100 (> 30 = trending, < 20 = ranging); **note: field collision bug
+  under investigation — values outside 0–100 are auto-nulled. Use Pine Script title `"AI-ADX"`
+  in next indicator version to avoid collision.**
+- `ATR` — average true range (stop-sizing context)
+- `Squeeze` — 1 = compression active (big move pending), 0 = off
+- `DI+` / `DI-` — directional movement components
+
+Also reads RSI / RSI-based MA from the built-in RSI indicator (must be on chart separately).
+
+Source: `plugins/tradingview/assets/pinescript-indicators/ai-ta-levels.pine`
+
+---
 
 ---
 

@@ -1,7 +1,7 @@
 {
   "name": "tradingview",
-  "version": "1.0.0",
-  "description": "TradingView Desktop integration for real-time prices, DCF price alerts, and chart snapshots. Calls TradingView Desktop CLI via CDP — requires Desktop running with --remote-debugging-port=9222. Falls back to yfinance when unavailable.",
+  "version": "1.2.0",
+  "description": "TradingView Desktop integration via CDP — real-time prices, DCF alerts, chart snapshots, portfolio sync, live order execution, chart control (add/remove indicators, timeframe, symbol, Data Window read), Pine Script v6 authoring (lint, inject, save), deep TA, and daily batch TA sweep (/ta-daily-sweep) across all portfolio holdings. Results auto-saved to ta-sweep-results.json.",
   "author": "InvestmentToolkit",
   "maturity": "L3",
   "architecture": "standard",
@@ -102,6 +102,12 @@
       "canonical_path": "investment_screener/backend/data/projections/",
       "owned_by": "stock-valuation",
       "purpose": "DCF projection JSONs — source of bear/base/bull alert prices"
+    },
+    {
+      "name": "ta-sweep-results-json",
+      "canonical_path": "investment_screener/backend/data/ta-sweep-results.json",
+      "owned_by": "tradingview",
+      "purpose": "Latest batch TA sweep output — served by backend /api/ta-sweep/results, consumed by TA Summary panel"
     }
   ],
   "agents": [
