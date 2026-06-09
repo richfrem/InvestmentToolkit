@@ -232,3 +232,91 @@ Screenshot saved: PortfolioAnalysis/screenshots/{date}/{TICKER}_ta.png
 3. **Flag indicator absence** — if RSI isn't on the chart, don't report RSI readings
 4. **Always provide invalidation** — every buy zone recommendation must include a stop level
 5. **DCF is context, not override** — TA analysis is independent; DCF is an add-on cross-check
+
+---
+
+## CDP Chart Control Reference
+
+These commands are available via `node tradingview-cdp/cli.js` for pre-analysis chart setup:
+
+### Indicator Management
+```bash
+# Add a built-in or saved personal indicator
+node tradingview-cdp/cli.js chart addIndicator "RSI"
+node tradingview-cdp/cli.js chart addIndicator "AI TA Levels"   # personal library script
+
+# Remove an indicator by legend display name
+node tradingview-cdp/cli.js chart removeIndicator "RSI"
+
+# List all indicators currently on chart (reads Data Window)
+node tradingview-cdp/cli.js chart indicators
+```
+
+**Critical**: `addIndicator` opens the Indicators dialog via `Input.dispatchMouseEvent` at the button's computed `getBoundingClientRect()` center — not `.click()`, which is unreliable on this button.
+
+**Pine Editor blocking `addIndicator`**: When the Pine Editor dialog (`editorBaseLayoutContainer-dialog-z_CXxRZA`) is open, it blocks the Indicators search input. The `pine-dialog-button` `aria-pressed` attribute does NOT reliably reflect dialog visibility — check DOM presence instead. **Preferred fix**: after `pine inject` + `pine save`, click the "Update on chart" / "Add to chart" button directly (match by title: `/(?:add|update).*(?:to|on).*chart/i`). This works without closing the editor:
+```javascript
+// Via CDP evaluate:
+const btn = [...document.querySelectorAll('button')].find(b =>
+  /(?:add|update).*(?:to|on).*chart/i.test(b.title));
+// Then Input.dispatchMouseEvent at btn.getBoundingClientRect() center
+```
+
+Result row selector: `div[class*="container-WeNdU0sq"]` — all result rows (built-in and community) share `platform-WeNdU0sq` which is NOT useful for filtering. Match priority: (a) exact text match, (b) first result (TV's top-ranked), (c) contains match.
+
+### Timeframe & Symbol
+```bash
+node tradingview-cdp/cli.js chart timeframe 1D    # daily
+node tradingview-cdp/cli.js chart timeframe W     # weekly
+node tradingview-cdp/cli.js chart timeframe 240   # 4-hour
+node tradingview-cdp/cli.js chart symbol NVDA
+```
+
+### Data Window Read
+```bash
+node tradingview-cdp/cli.js chart openDataWindow   # open panel + switch to Data Window tab
+node tradingview-cdp/cli.js chart read             # read all visible indicator values as JSON
+```
+Data Window provides numeric EMA, RSI, volume readings for precise analysis without screenshot guessing. The stable selector is `[data-test-id-value-title]`.
+
+### Pine Script (Custom Indicators)
+```bash
+# Inject and add to chart (also saves to TV library on first use)
+node tradingview-cdp/cli.js pine inject --file plugins/tradingview/assets/pinescript-indicators/ai-ta-levels.pine
+
+# Save current Pine Editor script to TV personal library
+node tradingview-cdp/cli.js pine save "AI TA Levels"
+
+# Add saved personal script to chart via Indicators dialog
+node tradingview-cdp/cli.js chart addIndicator "AI TA Levels"
+```
+
+### Viewing Indicator Source
+Two paths to view open-source indicator source:
+1. **Chart legend More menu**: hover legend row → `button[aria-label="More"]` → `"Source code…"` (unicode `…` not `...`). Only appears for open-source community scripts.
+2. **Indicators dialog full list**: open via Indicators toolbar button → search → source icon on result row. Accessible for any open-source script (including PA Toolkit Lite [UAlgo] — CC BY-NC-SA 4.0).
+
+Closed-source scripts (e.g., paid/private) do not show either option.
+
+---
+
+## Custom Indicator: AI TA Levels
+
+**File**: `plugins/tradingview/assets/pinescript-indicators/ai-ta-levels.pine`
+
+A custom overlay indicator built for AI-assisted TA snapshots. Plots:
+- **EMA stack** (21/50/200) — precise numeric levels readable from Data Window
+- **Volume bias %** — bull vs bear volume MA ratio, shown in Data Window and as a last-bar label
+- **Trend state label** — `BULL X%` / `BEAR X%` / `NEUT X%` on the last bar
+
+Use before `/tv-ta` snapshots when the chart doesn't have EMA levels visible, so Data Window read gives precise support/resistance numbers without relying on screenshot OCR.
+
+---
+
+## Community Reference Indicators
+
+Saved to `plugins/tradingview/assets/pinescript-indicators/community-reference/`:
+
+| File | What to borrow |
+|------|---------------|
+| `pa-toolkit-lite-ualgo.pine` | `type` UDT pattern, `box.new()` order blocks with `xloc.bar_time`, `ta.pivothigh`/`ta.pivotlow` for liquidity levels, `ta.change(trend)` ZigZag pattern, max-size array shift |

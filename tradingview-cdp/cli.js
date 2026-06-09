@@ -235,6 +235,19 @@ register('chart', {
         return chart.addIndicator(client, name);
       },
     }],
+    ['removeIndicator', {
+      description: 'Remove a named indicator from the chart — e.g. chart removeIndicator RSI',
+      options: {
+        name: { type: 'string', short: 'n', description: 'Indicator name as shown in chart legend' },
+      },
+      handler: async (opts, positionals) => {
+        const name = opts.name || positionals[0];
+        if (!name) throw new Error('Indicator name required — e.g. chart removeIndicator RSI');
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return chart.removeIndicator(client, name);
+      },
+    }],
     ['indicators', {
       description: 'List indicators currently loaded on the chart',
       handler: async () => {

@@ -32,7 +32,7 @@
         },
         {
             "name": "tradingview",
-            "description": "TradingView Desktop integration for real-time prices, DCF alerts, chart snapshots, portfolio sync, live order execution, Pine Script authoring, and deep technical analysis via CDP. Skills: /tv-portfolio-sync, /place-order, /modify-order, /cancel-order, /get-orders, /tv-price-refresh, /tv-alert-sync, /tv-snapshot, /pine-inject, /author-pine-script, /tv-ta-deep. Agents: ta-guide (interactive TA tutor + Pine Script architect). Pine tools: pine_linter.py (static v6 linter, 13 checks), pine_source_reader.py (fetch community indicator source from TV Indicators dialog). Requires TV Desktop running with --remote-debugging-port=9222.",
+            "description": "TradingView Desktop integration via CDP. Skills: /tv-portfolio-sync, /place-order, /modify-order, /cancel-order, /get-orders, /tv-price-refresh, /tv-alert-sync, /tv-snapshot, /pine-inject, /author-pine-script, /tv-ta-deep. Agents: ta-guide (interactive TA tutor + Pine Script architect). Chart control: addIndicator (Input.dispatchMouseEvent, container-WeNdU0sq selector), removeIndicator, changeTimeframe, changeSymbol, readDataWindow, openDataWindow. Pine: lint (pine_linter.py), inject, save to TV library, read source from Indicators dialog (open-source scripts only — PA Toolkit IS open source CC BY-NC-SA 4.0). Custom indicators: plugins/tradingview/assets/pinescript-indicators/. Close Pine Editor before calling addIndicator. Requires TV Desktop with --remote-debugging-port=9222.",
             "source": "./plugins/tradingview",
             "strict": true
         }
