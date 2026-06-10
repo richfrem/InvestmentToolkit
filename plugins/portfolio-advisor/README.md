@@ -46,10 +46,16 @@ portfolio-advisor/
 
 | Trigger | Skill | Purpose |
 |:---|:---|:---|
+| `/daily` | `daily-loop` | The one daily command: portfolio sync, morning brief, triage cards, order execution, evolution log |
+| `/adversarial-review` | `adversarial-review` | Prepares a comprehensive adversarial review bundle of the thesis, targets, and daily recommendations |
+| `/bundle-thesis-review` | `thesis-challenge-bundler` | Packages the thesis and DCF projections for a general external review |
 | `/review-portfolio` | `portfolio-health` | Drift monitor + pillar conviction audit + thesis formula health score (0–100) |
 | `/strategic-review` | `strategic-review` | Adversarial thesis challenger — surfaces failing pillars, proposes formula improvements |
 | `/rebalance` | `rebalance-portfolio` | Valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift |
 | `/calibrate-targets` | `calibrate-targets` | Interactive target-weight negotiation per sub-strategy |
+| `/x-news-sweep` | `x-news-sweep` | Daily news sweep via Grok/X.com to surface catalysts and sentiment |
+| `/13f-tracker` | `13f-tracker` | Polls and diffs SEC 13F EDGAR filings for super-investors |
+| `/13f-analyze` | `13f-analyze` | Cross-references super-investor 13F changes against target portfolio |
 | `apply formula changes` | `update-portfolio-targets` | Mechanical write of agreed target changes (chains from strategic-review or calibrate-targets) |
 
 ### `portfolio-health` — Quick Health Check

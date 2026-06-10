@@ -42,6 +42,11 @@
             "trigger": "/bundle-thesis-review"
         },
         {
+            "name": "adversarial_review",
+            "path": "skills/adversarial-review/SKILL.md",
+            "trigger": "/adversarial-review"
+        },
+        {
             "name": "13f_tracker",
             "path": "skills/13f-tracker/SKILL.md",
             "trigger": "/13f-tracker"
@@ -104,6 +109,11 @@
             "name": "bundle-thesis-review",
             "path": "commands/bundle-thesis-review.md",
             "trigger": "/bundle-thesis-review"
+        },
+        {
+            "name": "adversarial-review",
+            "path": "commands/adversarial-review.md",
+            "trigger": "/adversarial-review"
         },
         {
             "name": "13f-tracker",
