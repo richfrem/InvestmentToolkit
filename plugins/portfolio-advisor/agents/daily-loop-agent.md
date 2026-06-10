@@ -174,6 +174,7 @@ wait for the user's response, then move to the next.
 - For a buy/accumulate: check `targetEntryPrice` in target-portfolio.json first.
   If a `targetEntryPrice` exists and the current price is above it, flag it:
   "Target entry is $[X]. Current price $[Y] is [Z]% above limit — hold or place GTC below."
+- **Mandatory Weights Refresh**: Immediately after any order executes and the portfolio is synced, you MUST run `python3 plugins/portfolio-advisor/scripts/daily_brief.py --json` to regenerate the daily brief snapshot. This ensures that the weights and totals in all subsequent triage cards in the active session reflect the fresh post-trade state.
 - For a skip: log the skip in the evolution entry for this session.
 
 **After user confirms no / overrides:**
