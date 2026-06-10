@@ -131,7 +131,10 @@ def add_dcf_flags(result: dict[str, Any], dcf: dict[str, Any] | None) -> None:
 
     result["dcf"] = {
         "fairValue": round(fv, 2),
-        "pctToFV":   round((fv - price) / fv * 100, 1),
+        # % move from current price to fair value — denominator must be price.
+        # (fv − price) / fv understates upside and can print impossible values
+        # like −742% on deep-SELL names (a price-relative gap floors at −100%).
+        "pctToFV":   round((fv - price) / price * 100, 1),
         "base":      dcf.get("base"),
         "action":    dcf.get("action"),
     }
@@ -198,6 +201,41 @@ def validate_adx(result: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
+def enrich_results(
+    scan_results: list[dict[str, Any]],
+    target_map: dict[str, dict[str, Any]],
+    dcf_loader: Any = None,
+) -> list[dict[str, Any]]:
+    """Apply DCF flags, ADX validation, and action derivation to sweep rows.
+
+    validate_adx returns a shallow copy when it nulls an out-of-range ADX —
+    all enrichment must be applied to (and returned from) that copy, otherwise
+    the persisted output silently keeps the invalid ADX and loses the derived
+    action/target fields.
+
+    Args:
+        scan_results: Raw per-ticker rows from sweep.js.
+        target_map:   target-portfolio holdings keyed by ticker.
+        dcf_loader:   Callable ticker → DCF dict or None (defaults to load_dcf).
+
+    Returns:
+        New list of fully enriched rows.
+    """
+    if dcf_loader is None:
+        dcf_loader = load_dcf
+    enriched: list[dict[str, Any]] = []
+    for res in scan_results:
+        ticker = res["ticker"]
+        target = target_map.get(ticker)
+        add_dcf_flags(res, dcf_loader(ticker))
+        res = validate_adx(res)
+        res["action"]       = derive_action(res, target)
+        res["targetAction"] = (target or {}).get("action")
+        res["targetWeight"] = (target or {}).get("targetWeight")
+        enriched.append(res)
+    return enriched
+
+
 def save_sweep_results(results: list[dict[str, Any]], output_path: Path) -> None:
     """Persist sweep results to a timestamped JSON file for backend/frontend consumption.
 
@@ -252,16 +290,7 @@ def main() -> None:
 
     scan_results = run_sweep(tickers, delay_ms=delay_ms)
     target_map   = load_target_portfolio()
-
-    for res in scan_results:
-        ticker = res["ticker"]
-        dcf    = load_dcf(ticker)
-        target = target_map.get(ticker)
-        add_dcf_flags(res, dcf)
-        res          = validate_adx(res)
-        res["action"]       = derive_action(res, target)
-        res["targetAction"] = (target or {}).get("action")
-        res["targetWeight"] = (target or {}).get("targetWeight")
+    scan_results = enrich_results(scan_results, target_map)
 
     print(json.dumps(scan_results, indent=2))
 

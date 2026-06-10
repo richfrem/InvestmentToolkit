@@ -1,0 +1,770 @@
+{
+  "timestamp": "2026-06-10T14:21:41.796686+00:00",
+  "scan_date": "2026-06-10",
+  "count": 29,
+  "results": [
+    {
+      "ticker": "APLD",
+      "close": 40.92,
+      "changePct": null,
+      "rsi": 48,
+      "rsima": 56.8,
+      "volBias": -21.4,
+      "adx": 22.4,
+      "squeezeOn": false,
+      "vol": 5.14,
+      "volMA": 21,
+      "volumeRatio": 0.24,
+      "flags": [
+        "DEEP_VALUE"
+      ],
+      "dcf": {
+        "fairValue": 58.35,
+        "pctToFV": 29.9,
+        "base": null,
+        "action": "BUY"
+      },
+      "action": "HOLD",
+      "targetAction": null,
+      "targetWeight": 2.0214
+    },
+    {
+      "ticker": "BE",
+      "close": 252.73,
+      "changePct": null,
+      "rsi": 44.7,
+      "rsima": 55,
+      "volBias": -9.9,
+      "adx": 18.9,
+      "squeezeOn": false,
+      "vol": 2.48,
+      "volMA": 9.89,
+      "volumeRatio": 0.25,
+      "flags": [
+        "ADX_WEAK",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 185.72,
+        "pctToFV": -36.1,
+        "base": 120.68,
+        "action": "SELL"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 5.7285
+    },
+    {
+      "ticker": "BTDR",
+      "close": 17.59,
+      "changePct": 1.03,
+      "rsi": 58.3,
+      "rsima": 65.9,
+      "volBias": 38.5,
+      "adx": 45.9,
+      "squeezeOn": false,
+      "vol": 1.08,
+      "volMA": 11.63,
+      "volumeRatio": 0.09,
+      "flags": [
+        "RSI_COOLING",
+        "ADX_STRONG",
+        "DEEP_VALUE"
+      ],
+      "dcf": {
+        "fairValue": 24.09,
+        "pctToFV": 27.0,
+        "base": 29.42,
+        "action": "BUY"
+      },
+      "action": "HOLD",
+      "targetAction": null,
+      "targetWeight": 2.0036
+    },
+    {
+      "ticker": "CBRS",
+      "close": 247.25,
+      "changePct": 9.01,
+      "rsi": 42,
+      "rsima": null,
+      "volBias": null,
+      "adx": null,
+      "squeezeOn": false,
+      "vol": 2.02,
+      "volMA": null,
+      "volumeRatio": null,
+      "flags": [
+        "BIG_DAY",
+        "DEEP_VALUE"
+      ],
+      "dcf": {
+        "fairValue": 342.8,
+        "pctToFV": 27.9,
+        "base": 323.07,
+        "action": "BUY"
+      },
+      "action": "MONITOR",
+      "targetAction": null,
+      "targetWeight": 2.743
+    },
+    {
+      "ticker": "CEG",
+      "close": 244.3,
+      "changePct": null,
+      "rsi": 32.9,
+      "rsima": 43.1,
+      "volBias": -18.9,
+      "adx": 22.5,
+      "squeezeOn": false,
+      "vol": 784.03,
+      "volMA": 4.09,
+      "volumeRatio": 191.69,
+      "flags": [
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 174.96,
+        "pctToFV": -39.6,
+        "base": 135.03,
+        "action": "TRIM"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 2.6434
+    },
+    {
+      "ticker": "CLSK",
+      "close": 15.91,
+      "changePct": null,
+      "rsi": 52.8,
+      "rsima": 66.6,
+      "volBias": 20.7,
+      "adx": 31.6,
+      "squeezeOn": false,
+      "vol": 4.47,
+      "volMA": 23.74,
+      "volumeRatio": 0.19,
+      "flags": [
+        "RSI_COOLING",
+        "ADX_STRONG",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 8.25,
+        "pctToFV": -92.8,
+        "base": 9.39,
+        "action": "SELL"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 2.1768
+    },
+    {
+      "ticker": "COIN",
+      "close": 157.99,
+      "changePct": 1.6,
+      "rsi": 38.5,
+      "rsima": 41.2,
+      "volBias": -26.3,
+      "adx": 16.5,
+      "squeezeOn": false,
+      "vol": 1.78,
+      "volMA": 9.27,
+      "volumeRatio": 0.19,
+      "flags": [
+        "ADX_WEAK"
+      ],
+      "dcf": {
+        "fairValue": 185.06,
+        "pctToFV": 14.6,
+        "base": 98.16,
+        "action": "MAINTAIN"
+      },
+      "action": "HOLD",
+      "targetAction": null,
+      "targetWeight": 2.445
+    },
+    {
+      "ticker": "CORZ",
+      "close": 27.05,
+      "changePct": 0.15,
+      "rsi": 58.8,
+      "rsima": 66.5,
+      "volBias": 18.5,
+      "adx": 26.8,
+      "squeezeOn": false,
+      "vol": 1.66,
+      "volMA": 12.98,
+      "volumeRatio": 0.13,
+      "flags": [
+        "RSI_COOLING",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 16.08,
+        "pctToFV": -68.2,
+        "base": 6.92,
+        "action": "SELL"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 3.7781
+    },
+    {
+      "ticker": "CRCL",
+      "close": 82.79,
+      "changePct": 2.08,
+      "rsi": 36,
+      "rsima": 42.9,
+      "volBias": -21.3,
+      "adx": 23,
+      "squeezeOn": false,
+      "vol": 2.61,
+      "volMA": 14.08,
+      "volumeRatio": 0.19,
+      "flags": [
+        "VOLUME_DRY",
+        "DEEP_VALUE"
+      ],
+      "dcf": {
+        "fairValue": 142.29,
+        "pctToFV": 41.8,
+        "base": 88.63,
+        "action": "MAINTAIN"
+      },
+      "action": "HOLD",
+      "targetAction": null,
+      "targetWeight": 2.8343
+    },
+    {
+      "ticker": "CRM",
+      "close": 173.84,
+      "changePct": null,
+      "rsi": 43.2,
+      "rsima": 52.3,
+      "volBias": -3,
+      "adx": 13.5,
+      "squeezeOn": false,
+      "vol": 2.39,
+      "volMA": 15.36,
+      "volumeRatio": 0.16,
+      "flags": [
+        "ADX_WEAK",
+        "DEEP_VALUE"
+      ],
+      "dcf": {
+        "fairValue": 281.49,
+        "pctToFV": 38.2,
+        "base": 260.09,
+        "action": "BUY"
+      },
+      "action": "HOLD",
+      "targetAction": null,
+      "targetWeight": 2.0034
+    },
+    {
+      "ticker": "CRWV",
+      "close": 99.19,
+      "changePct": 0.75,
+      "rsi": 43,
+      "rsima": 48.6,
+      "volBias": -15.6,
+      "adx": 13.8,
+      "squeezeOn": false,
+      "vol": 4.26,
+      "volMA": 27.29,
+      "volumeRatio": 0.16,
+      "flags": [
+        "ADX_WEAK",
+        "DEEP_VALUE"
+      ],
+      "dcf": {
+        "fairValue": 202.03,
+        "pctToFV": 50.9,
+        "base": 133.63,
+        "action": "BUY"
+      },
+      "action": "HOLD",
+      "targetAction": null,
+      "targetWeight": 5.9194
+    },
+    {
+      "ticker": "DRAM",
+      "close": 59.88,
+      "changePct": 0.03,
+      "rsi": 56.7,
+      "rsima": 69.2,
+      "volBias": -1.5,
+      "adx": 38.4,
+      "squeezeOn": false,
+      "vol": 15.13,
+      "volMA": 38.53,
+      "volumeRatio": 0.39,
+      "flags": [
+        "RSI_COOLING",
+        "ADX_STRONG",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 58.8,
+        "pctToFV": -1.8,
+        "base": 62.0,
+        "action": "HOLD"
+      },
+      "action": "REDUCE",
+      "targetAction": "WATCHLIST",
+      "targetWeight": 4.7737
+    },
+    {
+      "ticker": "GOOG",
+      "close": 364.42,
+      "changePct": 0.59,
+      "rsi": 46.6,
+      "rsima": 50.9,
+      "volBias": 0.3,
+      "adx": 24.6,
+      "squeezeOn": false,
+      "vol": 3.58,
+      "volMA": 22.03,
+      "volumeRatio": 0.16,
+      "flags": [
+        "DEEP_VALUE"
+      ],
+      "dcf": {
+        "fairValue": 517.98,
+        "pctToFV": 29.6,
+        "base": 475.52,
+        "action": "ACCUMULATE"
+      },
+      "action": "HOLD",
+      "targetAction": null,
+      "targetWeight": 4.6645
+    },
+    {
+      "ticker": "HUMN",
+      "close": 34.77,
+      "changePct": null,
+      "rsi": 43.7,
+      "rsima": 57.6,
+      "volBias": 15.4,
+      "adx": 19.5,
+      "squeezeOn": false,
+      "vol": 71,
+      "volMA": 130.26,
+      "volumeRatio": 0.55,
+      "flags": [
+        "ADX_WEAK",
+        "DEEP_VALUE"
+      ],
+      "dcf": {
+        "fairValue": 46.65,
+        "pctToFV": 25.5,
+        "base": 46.0,
+        "action": "HOLD"
+      },
+      "action": "HOLD",
+      "targetAction": null,
+      "targetWeight": 2.8438
+    },
+    {
+      "ticker": "IONQ",
+      "close": 59.3,
+      "changePct": 4.6,
+      "rsi": 51.4,
+      "rsima": 64.1,
+      "volBias": 9.8,
+      "adx": 32.3,
+      "squeezeOn": false,
+      "vol": 7.55,
+      "volMA": 31.03,
+      "volumeRatio": 0.24,
+      "flags": [
+        "RSI_COOLING",
+        "ADX_STRONG",
+        "VOLUME_DRY",
+        "BIG_DAY",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 8.54,
+        "pctToFV": -594.4,
+        "base": 4.06,
+        "action": "SELL"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 1.2589
+    },
+    {
+      "ticker": "IREN",
+      "close": 54.97,
+      "changePct": 1.76,
+      "rsi": 47.9,
+      "rsima": 57.1,
+      "volBias": -10.4,
+      "adx": 22.1,
+      "squeezeOn": false,
+      "vol": 8.97,
+      "volMA": 48.95,
+      "volumeRatio": 0.18,
+      "flags": [],
+      "dcf": {
+        "fairValue": 61.85,
+        "pctToFV": 11.1,
+        "base": 27,
+        "action": "BUY"
+      },
+      "action": "HOLD",
+      "targetAction": null,
+      "targetWeight": 2.4449
+    },
+    {
+      "ticker": "KOID",
+      "close": 40.69,
+      "changePct": null,
+      "rsi": 51.9,
+      "rsima": 63.9,
+      "volBias": 2,
+      "adx": 25.1,
+      "squeezeOn": false,
+      "vol": 44.66,
+      "volMA": 202.13,
+      "volumeRatio": 0.22,
+      "flags": [
+        "RSI_COOLING"
+      ],
+      "dcf": {
+        "fairValue": 45.4,
+        "pctToFV": 10.4,
+        "base": 48.0,
+        "action": "HOLD"
+      },
+      "action": "HOLD",
+      "targetAction": null,
+      "targetWeight": 2.6434
+    },
+    {
+      "ticker": "MSFT",
+      "close": 402.74,
+      "changePct": null,
+      "rsi": 41.7,
+      "rsima": 54.3,
+      "volBias": -6.4,
+      "adx": 17.2,
+      "squeezeOn": false,
+      "vol": 6.96,
+      "volMA": 35.34,
+      "volumeRatio": 0.2,
+      "flags": [
+        "ADX_WEAK",
+        "DEEP_VALUE"
+      ],
+      "dcf": {
+        "fairValue": 648.6,
+        "pctToFV": 37.9,
+        "base": 580.59,
+        "action": "BUY"
+      },
+      "action": "HOLD",
+      "targetAction": null,
+      "targetWeight": 2.5256
+    },
+    {
+      "ticker": "NBIS",
+      "close": 227.08,
+      "changePct": 3.16,
+      "rsi": 55.6,
+      "rsima": 63.1,
+      "volBias": 11.9,
+      "adx": 29.5,
+      "squeezeOn": false,
+      "vol": 4.07,
+      "volMA": 18.74,
+      "volumeRatio": 0.22,
+      "flags": [
+        "RSI_COOLING",
+        "VOLUME_DRY",
+        "DEEP_VALUE"
+      ],
+      "dcf": {
+        "fairValue": 569.91,
+        "pctToFV": 60.2,
+        "base": 350.8,
+        "action": "BUY"
+      },
+      "action": "HOLD",
+      "targetAction": null,
+      "targetWeight": 5.8675
+    },
+    {
+      "ticker": "NOW",
+      "close": 107.91,
+      "changePct": 0.88,
+      "rsi": 50.7,
+      "rsima": 60,
+      "volBias": 7.1,
+      "adx": 24.5,
+      "squeezeOn": false,
+      "vol": 6.19,
+      "volMA": 34.73,
+      "volumeRatio": 0.18,
+      "flags": [],
+      "dcf": {
+        "fairValue": 132.32,
+        "pctToFV": 18.4,
+        "base": 109.21,
+        "action": "BUY"
+      },
+      "action": "HOLD",
+      "targetAction": null,
+      "targetWeight": 1.6022
+    },
+    {
+      "ticker": "OKLO",
+      "close": 56.03,
+      "changePct": null,
+      "rsi": 39.9,
+      "rsima": 48.3,
+      "volBias": -36,
+      "adx": 17.8,
+      "squeezeOn": false,
+      "vol": 1.85,
+      "volMA": 14.58,
+      "volumeRatio": 0.13,
+      "flags": [
+        "ADX_WEAK",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 6.65,
+        "pctToFV": -742.6,
+        "base": 3.25,
+        "action": "SELL"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 1.8703
+    },
+    {
+      "ticker": "PANW",
+      "close": 265.11,
+      "changePct": 1.76,
+      "rsi": 59.4,
+      "rsima": 72.6,
+      "volBias": 42.2,
+      "adx": 43.1,
+      "squeezeOn": false,
+      "vol": 1.3,
+      "volMA": 9.58,
+      "volumeRatio": 0.14,
+      "flags": [
+        "RSI_COOLING",
+        "ADX_STRONG",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 167.72,
+        "pctToFV": -58.1,
+        "base": 129.17,
+        "action": "TRIM"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 6.3369
+    },
+    {
+      "ticker": "PSIX",
+      "close": 39,
+      "changePct": null,
+      "rsi": 37.9,
+      "rsima": 37.3,
+      "volBias": -16,
+      "adx": 24.9,
+      "squeezeOn": false,
+      "vol": 65.66,
+      "volMA": 832.6,
+      "volumeRatio": 0.08,
+      "flags": [
+        "DEEP_VALUE"
+      ],
+      "dcf": {
+        "fairValue": 107.09,
+        "pctToFV": 63.6,
+        "base": 84.26,
+        "action": "BUY"
+      },
+      "action": "HOLD",
+      "targetAction": null,
+      "targetWeight": 2.2649
+    },
+    {
+      "ticker": "SNDK",
+      "close": 1719.34,
+      "changePct": 4.42,
+      "rsi": 61.8,
+      "rsima": 66.7,
+      "volBias": 6.4,
+      "adx": 41.8,
+      "squeezeOn": false,
+      "vol": 3.53,
+      "volMA": 10.95,
+      "volumeRatio": 0.32,
+      "flags": [
+        "RSI_COOLING",
+        "ADX_STRONG",
+        "VOLUME_DRY",
+        "BIG_DAY"
+      ],
+      "dcf": {
+        "fairValue": 1982.18,
+        "pctToFV": 13.3,
+        "base": 2236.54,
+        "action": "BUY"
+      },
+      "action": "MONITOR",
+      "targetAction": null,
+      "targetWeight": 3.883
+    },
+    {
+      "ticker": "TEAM",
+      "close": 94.62,
+      "changePct": null,
+      "rsi": 52.7,
+      "rsima": 59.8,
+      "volBias": 38.5,
+      "adx": 26.9,
+      "squeezeOn": false,
+      "vol": 689.12,
+      "volMA": 5.58,
+      "volumeRatio": 123.5,
+      "flags": [
+        "VOLUME_SPIKE"
+      ],
+      "dcf": {
+        "fairValue": 105.33,
+        "pctToFV": 10.2,
+        "base": 71.55,
+        "action": "BUY"
+      },
+      "action": "MONITOR",
+      "targetAction": null,
+      "targetWeight": 1.7319
+    },
+    {
+      "ticker": "VRT",
+      "close": 289.63,
+      "changePct": 0.04,
+      "rsi": 36.3,
+      "rsima": 45.7,
+      "volBias": -40.7,
+      "adx": 17.5,
+      "squeezeOn": false,
+      "vol": 1.36,
+      "volMA": 5.82,
+      "volumeRatio": 0.23,
+      "flags": [
+        "ADX_WEAK",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 223.43,
+        "pctToFV": -29.6,
+        "base": 202.65,
+        "action": "TRIM"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 0.942
+    },
+    {
+      "ticker": "VST",
+      "close": 140.78,
+      "changePct": null,
+      "rsi": 38.2,
+      "rsima": 50.7,
+      "volBias": -1.2,
+      "adx": 14.7,
+      "squeezeOn": false,
+      "vol": 910.5,
+      "volMA": 4.97,
+      "volumeRatio": 183.2,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "DEEP_VALUE"
+      ],
+      "dcf": {
+        "fairValue": 196.47,
+        "pctToFV": 28.3,
+        "base": 148.76,
+        "action": "ACCUMULATE"
+      },
+      "action": "MONITOR",
+      "targetAction": null,
+      "targetWeight": 2.2704
+    },
+    {
+      "ticker": "WYFI",
+      "close": 24.04,
+      "changePct": 3.2,
+      "rsi": 47.1,
+      "rsima": 59.3,
+      "volBias": -10.3,
+      "adx": 35,
+      "squeezeOn": false,
+      "vol": 128.92,
+      "volMA": 1.81,
+      "volumeRatio": 71.23,
+      "flags": [
+        "ADX_STRONG",
+        "VOLUME_SPIKE"
+      ],
+      "dcf": {
+        "fairValue": 32,
+        "pctToFV": 24.9,
+        "base": 23.8,
+        "action": "BUY"
+      },
+      "action": "MONITOR",
+      "targetAction": null,
+      "targetWeight": 1.2088
+    },
+    {
+      "ticker": "ZS",
+      "close": 127.54,
+      "changePct": 1.35,
+      "rsi": 41.1,
+      "rsima": 49,
+      "volBias": -12.7,
+      "adx": 18.8,
+      "squeezeOn": false,
+      "vol": 785.55,
+      "volMA": 7.36,
+      "volumeRatio": 106.73,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "DEEP_VALUE"
+      ],
+      "dcf": {
+        "fairValue": 233.02,
+        "pctToFV": 45.3,
+        "base": 201.63,
+        "action": "ACCUMULATE"
+      },
+      "action": "MONITOR",
+      "targetAction": null,
+      "targetWeight": 4.0064
+    }
+  ]
+}

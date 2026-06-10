@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "updated": "2026-06-10",
+  "_comment": "User's documented standing decisions. Consumed by brief_recommendations.py — these ANNOTATE signals (never mute them) and downgrade proposed actions so the daily loop never recommends trades against settled calls. Edit via conversation with the agent; every change should cite a source/date.",
+  "decisions": {
+    "CORZ": {
+      "type": "ALLOWLISTED_CONFLICT",
+      "reason": "SA LP holds CORZ long but DCF rates SELL — user allowlisted this conflict; thesis target is ACCUMULATE 8.4%. Do not propose EXIT without explicit user direction.",
+      "source": "x-news-sweep allowlist, start_here.md 2026-06",
+      "review": "Re-challenge at next /strategic-review or if SA LP exits the position."
+    },
+    "PANW": {
+      "type": "NO_ADD_AT_MARKET",
+      "reason": "Standing call is ACCUMULATE (Q3 FY2026 beat) but post-catalyst FV $168 sits ~37% below market — hold what is owned, add only on weakness once a targetEntryPrice is set.",
+      "source": "daily loop 2026-06-10",
+      "review": "Set targetEntryPrice (~$185-200 zone), then convert to NO_ADD_ABOVE_ENTRY."
+    },
+    "OKLO": {
+      "type": "SELL_ONLY_WHEN_GREEN",
+      "reason": "Underwater −37%, break-even ~$101. User discipline: hold, trim on strength only — never sell red.",
+      "source": "start_here.md key principles 2026-06-04"
+    },
+    "CEG": {
+      "type": "SELL_ONLY_WHEN_GREEN",
+      "reason": "Underwater −27%, break-even ~$364. User discipline: hold, trim on strength only — never sell red.",
+      "source": "start_here.md key principles 2026-06-04"
+    },
+    "SNDK": {
+      "type": "NO_ADD_ABOVE_ENTRY",
+      "maxEntryPrice": 1350.0,
+      "reason": "DCF FV $1,982 was computed at $1,333 — real upside at current prices is only ~14%. Never add above $1,350 (targetEntryPrice).",
+      "source": "update_targets --set-entry SNDK=1350, 2026-06-04"
+    },
+    "APLD": {
+      "type": "CORE_HOLDING",
+      "reason": "SA LP core holding — MAINTAIN, not an exit candidate regardless of DCF signal.",
+      "source": "thesis v9.7 / start_here.md 2026-06-04"
+    },
+    "BE": {
+      "type": "ALLOWLISTED_CONFLICT",
+      "reason": "DCF rates SELL but BE is SA LP's #1 equity long ($878M) with the $2.6B NBIS fuel-cell deal — hold, no add, no exit without user direction.",
+      "source": "13F Q1 2026 + thesis v9.4-9.7"
+    }
+  }
+}

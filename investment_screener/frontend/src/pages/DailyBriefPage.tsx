@@ -11,7 +11,9 @@
  * Layer: Frontend / Pages
  */
 import { useState, useEffect } from 'react';
-import { AlertTriangle, TrendingUp, TrendingDown, Minus, Calendar, Shield, Activity, RefreshCw } from 'lucide-react';
+import { AlertTriangle, TrendingUp, TrendingDown, Minus, Calendar, Shield, Activity, RefreshCw, Target, Lock } from 'lucide-react';
+import { TradeButtons } from '../components/TradeButtons';
+import { tradeIntent, REC_CHIP_STYLES } from '../utils/recommendationPresentation';
 
 interface MacroRegime {
     regime: 'RISK-ON' | 'NEUTRAL' | 'RISK-OFF';
@@ -59,12 +61,41 @@ interface PillarHealth {
     max: number;
 }
 
+interface StandingDecision {
+    type: string;
+    reason: string;
+    source?: string;
+    maxEntryPrice?: number;
+}
+
+interface ProposedTrade {
+    side: 'buy' | 'sell';
+    ticker: string;
+    approxValueUSD: number;
+}
+
+interface Recommendation {
+    ticker: string;
+    signal: string;
+    score: number;
+    held: boolean;
+    recommendation: string;
+    rationale: string;
+    actionable: boolean;
+    urgency: number;
+    standingDecision: StandingDecision | null;
+    earnings: EarningsEntry | null;
+    proposedTrade: ProposedTrade | null;
+}
+
 interface DailyBrief {
     date: string;
     timestamp: string;
     macro_regime: MacroRegime;
     ta_refreshed: boolean;
     conviction_scores: ConvictionScore[];
+    recommendations?: Recommendation[];
+    total_equity?: number;
     score_deltas: Record<string, number>;
     pillar_health: PillarHealth[];
     pillar_deltas: Record<string, number>;
@@ -237,6 +268,76 @@ export default function DailyBriefPage() {
                     )}
                 </div>
             </div>
+
+            {/* Recommendations — summarized actions with rationales */}
+            {(brief.recommendations ?? []).length > 0 && (
+                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                            <Target size={16} className="text-zinc-400" />
+                            <h2 className="text-sm font-semibold text-zinc-300 uppercase tracking-wide">
+                                Recommendations ({(brief.recommendations ?? []).length})
+                            </h2>
+                        </div>
+                        <p className="text-xs text-zinc-600">
+                            Review each rationale — buttons open the order prep flow, nothing executes without your confirm.
+                        </p>
+                    </div>
+                    <div className="space-y-3">
+                        {(brief.recommendations ?? []).map(rec => {
+                            const chip = REC_CHIP_STYLES[rec.recommendation] ?? REC_CHIP_STYLES.HOLD;
+                            const sigStyle = BAND_STYLES[rec.signal] ?? BAND_STYLES.HOLD;
+                            const intent = tradeIntent(rec.recommendation);
+                            return (
+                                <div key={rec.ticker}
+                                     className="flex flex-col md:flex-row md:items-center gap-3 bg-zinc-800/60 border border-zinc-700/60 rounded-lg px-4 py-3">
+                                    {/* Left: ticker + chips */}
+                                    <div className="flex items-center gap-2 md:w-64 shrink-0 flex-wrap">
+                                        <span className="text-zinc-600 text-xs font-mono w-5">{rec.urgency}.</span>
+                                        <span className="font-mono font-bold text-white text-base">{rec.ticker}</span>
+                                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium border ${sigStyle.bg} ${sigStyle.text} ${sigStyle.border}`}>
+                                            {rec.signal} <ScoreBadge score={rec.score} />
+                                        </span>
+                                        <span className={`px-2 py-0.5 rounded text-xs font-bold border ${chip.bg} ${chip.text} ${chip.border}`}>
+                                            {rec.recommendation.replace('_', ' ')}
+                                        </span>
+                                    </div>
+
+                                    {/* Middle: rationale + standing decision */}
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm text-zinc-300 leading-snug">{rec.rationale}</p>
+                                        {rec.standingDecision && (
+                                            <p className="mt-1 flex items-center gap-1.5 text-xs text-amber-400/90">
+                                                <Lock size={11} className="shrink-0" />
+                                                Standing decision · {rec.standingDecision.type.replace(/_/g, ' ')}
+                                                {rec.standingDecision.source && (
+                                                    <span className="text-zinc-600">— {rec.standingDecision.source}</span>
+                                                )}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Right: proposed value + action buttons */}
+                                    <div className="flex items-center gap-3 shrink-0">
+                                        {rec.proposedTrade && (
+                                            <span className="text-sm font-mono text-zinc-400">
+                                                ~${rec.proposedTrade.approxValueUSD.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                                            </span>
+                                        )}
+                                        {rec.actionable && intent ? (
+                                            <TradeButtons ticker={rec.ticker} rating={intent.rating} size="md" />
+                                        ) : (
+                                            <span className="text-xs text-zinc-600 italic px-2">
+                                                {rec.recommendation === 'QUEUED' ? 'macro-gated' : 'no trade without your direction'}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             {/* Pillar health */}
             {pillars.length > 0 && (
