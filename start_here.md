@@ -1,8 +1,30 @@
 # Session Start Briefing — InvestmentToolkit
-_Last updated: 2026-06-04 | Thesis v9.4 | Portfolio ~$34,643 USD_
+_Last updated: 2026-06-10 | Thesis v9.4 | Portfolio ~$34,643 USD_
 
 > **Read this first at the start of every new session.**
-> Run `/tv-portfolio-sync` to refresh portfolio.json, then `/x-news-sweep` if it's a new trading day.
+
+## ⚡ Start Every Day With One Command
+
+```
+/daily
+```
+
+The `daily-loop-agent` handles everything interactively — no checklist to follow manually:
+1. Checks portfolio.json freshness → auto-syncs from TradingView if stale
+2. Runs the morning brief: macro regime (VIX + SPY 200D + HYG/LQD), TA sweep, conviction scores, earnings calendar
+3. Ranks holdings by urgency: IMMINENT events → EXIT signals → REDUCE → ACCUMULATE
+4. Walks through each as a card — proposes a trade, waits for your yes/no
+5. Offers `/x-news-sweep` on news/catalyst days
+6. Logs the session to `plugins/portfolio-advisor/references/evolution-log.md`
+
+**After 7+ daily runs**, the agent surfaces multi-day patterns: consecutive EXIT signals, deteriorating pillars, repeated score drops. It auto-recommends `/strategic-review` when pillar stress is detected — the loop compounds.
+
+**Cadence:**
+| Situation | Command |
+|-----------|---------|
+| Every session | `/daily` |
+| After 13F filing or major catalyst | `/run-advisor` |
+| Evaluating a new stock or thesis change | `thesis-review-agent` |
 
 ---
 
@@ -110,14 +132,16 @@ TradingView broker panel → Orders tab.
 
 ---
 
-## 🚀 Next Session Checklist
+## 🚀 Next Session
 
-1. **Start of day**: `/tv-portfolio-sync` → `/x-news-sweep`
-2. **Priority build**: Wire `targetEntryPrice` into review JSON + dashboard modal (see item #1 above)
-3. **Set entry prices** for all ACCUMULATE positions once dashboard shows them
-4. **GTC automation fix** in `trading.js` → `setGoodTillCancelled()` (see item #2 above)
-5. **SNDK**: Do not add unless price drops to $1,350 or below
-6. **CEG/OKLO**: Hold, only trim when back in profit ($364 / $101 respectively)
+**Start with `/daily` — it handles the rest.**
+
+Open items to pick up:
+1. **Priority build**: Wire `targetEntryPrice` into review JSON + dashboard modal (see item #1 above)
+2. **Set entry prices** for all ACCUMULATE positions once dashboard shows them
+3. **GTC automation fix** in `trading.js` → `setGoodTillCancelled()` (see item #2 above)
+4. **SNDK**: Do not add unless price drops to $1,350 or below
+5. **CEG/OKLO**: Hold, only trim when back in profit ($364 / $101 respectively)
 
 ---
 
