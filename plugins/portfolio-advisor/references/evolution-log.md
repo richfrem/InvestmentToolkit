@@ -7,3 +7,81 @@ regressions. This is the memory that makes the loop smarter over time.
 ---
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
+
+## 2026-06-10 — System Audit & Engine Hardening Session
+
+**Macro:** NEUTRAL at session start (live brief run below)
+**TA Sweep:** fresh (ran 2026-06-10 14:21 UTC, 29 holdings)
+**Actions taken:** 0 trades — engineering session (full-system audit + 3 engine fixes)
+**User overrides:** none this session
+**Tool failures:** 4 found via audit, 4 fixed, all Tier 2/3, all under 3 attempts
+
+### Evolution entries
+
+1. **Tier 2 — `ta_sweep_batch.py` pctToFV denominator bug (FIXED)**
+   - `add_dcf_flags()` computed `(FV − price) / FV` instead of `(FV − price) / price`.
+   - Evidence: OKLO showed −742.6% and IONQ −594.4% "to fair value" — mathematically
+     impossible for a price-relative gap (floors at −100%). APLD showed +29.9% when true
+     upside at price was +42.6%. SNDK showed stale +49% while the user had manually noted
+     real upside was ~14% — engine now computes +15.3%.
+   - Fix: denominator corrected at the source; `compute_conviction_scores.py` gained
+     `_resolve_pct_to_fv()` which always recomputes from the sweep's live close + FV,
+     so historical sweep files with the bad values are corrected at read time.
+   - Tests: `TestPctToFVDenominator` (tv), `TestResolvePctToFV` (py_services).
+
+2. **Tier 2 — `compute_conviction_scores.py` directionless momentum bonus (FIXED)**
+   - `_score_momentum()` awarded +1 for ADX≥30 with no RSI_COOLING — but ADX measures
+     trend *strength*, not direction. A stock in free-fall (ADX 45, RSI 30, no cooling
+     flag because RSI never peaked) earned +1 "momentum intact" — a falling-knife
+     amplifier feeding the ACCUMULATE queue.
+   - Fix: direction gate via RSI. +1 only when RSI>55; −1 when RSI<45 (strong downtrend)
+     or cooling; 0 when ambiguous (45–55) or RSI missing.
+   - Observed effect on live data: WYFI dropped from ACCUMULATE(+3) to HOLD(+2) — its
+     ADX-35 trend has no clear direction (RSI 47.1). Correct demotion.
+   - Tests: `TestScoreMomentumDirection`.
+
+3. **Tier 3 — `macro_regime.py` fail-open on data blackout (FIXED)**
+   - With yfinance unavailable (rate limits cluster during volatility spikes — exactly
+     when the gate matters), all components silently scored 0 → regime defaulted NEUTRAL
+     → +4 ACCUMULATE actions permitted on zero data.
+   - Fix: `_classify_regime(score, unavailable)` — 2+ of 3 signals unavailable forces
+     RISK-OFF with `degraded: true` and an explicit details line. ImportError path also
+     now fails safe. One missing signal is tolerated (remaining two still gate).
+   - Tests: `TestClassifyRegime`, `TestDegradedField`.
+
+4. **Tier 2 — `ta_sweep_batch.py` enrichment lost after ADX validation (FIXED)**
+   - `main()` did `res = validate_adx(res)` inside `for res in scan_results:` —
+     `validate_adx` returns a shallow copy when nulling out-of-range ADX, so the nulled
+     value AND all subsequent action/targetWeight enrichment landed on a discarded copy.
+     The persisted JSON silently kept the invalid ADX and lacked the action fields.
+   - Fix: extracted `enrich_results()` which builds and returns the enriched list;
+     `main()` persists its output. Tests: `TestEnrichmentPreservedAfterAdxValidation`.
+
+5. **Tier 3 — stale test expectation in `test_verify_thesis_sync.py` (FIXED, attempt 1)**
+   - Test asserted the old error string "missing in investment_thesis.md"; production
+     script now prints "missing in thesis documentation". Behavior (exit 1 + error
+     listed) was correct; expectation aligned to current message.
+
+### Audit findings deferred (next sessions, in leverage order)
+- **No standing-decisions layer:** CORZ (user-allowlisted SA/DCF conflict, ACCUMULATE),
+  PANW (Q3 beat, ACCUMULATE), CEG/OKLO ("sell only when green") all rank as EXIT in the
+  scorer — the daily loop's top triage cards directly contradict documented user
+  decisions every single day. Needs a versioned `conviction-overrides.json` consumed by
+  `compute_conviction_scores.py` that ANNOTATES (never mutes — no-sycophancy rule) each
+  scored row with the standing decision + reason + expiry.
+- **DCF staleness invisible to the score:** 54/73 projections >30 days old; a 60-day-old
+  BUY counts the same +2 as a fresh one. Add `dcf_age_days` + decay/flag.
+- **Score deltas only exist for tickers present in both snapshots** — new positions
+  never show as "new signal".
+- **investment_thesis.md blueprint is stale** (header says v9.4, history says v9.7;
+  PSU.U.TO duplicate EXIT row at 17.08% from before the alias fix) — regenerate via
+  `generate_portfolio_blueprint.py --write` after next target change.
+- **7 zero-byte `.pylock` files** in `data/projections/` (BE, CORZ, CRWV, IREN, NBIS,
+  PANW, RKLB — May 31–Jun 5) — stale locks from crashed processes. Deletion requires
+  user permission per self-evolution policy; flagged here instead.
+
+**Score improvements vs yesterday:** n/a — first logged session (this is entry #1 in the log)
+**Consecutive EXIT signals (3+ days):** unknown — no prior session history; CORZ/OKLO/PANW/CLSK/IONQ are at EXIT today; track from tomorrow
+**Notes:** First session where the evolution log is actually written. The daily-loop-agent
+spec mandates an entry every session — before today the log was empty despite the system
+being live since June 1. The loop only compounds if this file grows.

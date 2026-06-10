@@ -28,6 +28,32 @@ class MacroRegimeResult:
     hyg_lqd_ratio: float | None
     credit_signal: str   # HEALTHY | NEUTRAL | STRESSED | UNAVAILABLE
     details: list[str]
+    degraded: bool = False   # True when regime was forced RISK-OFF by missing data
+
+
+def _classify_regime(score: int, unavailable: int) -> tuple[str, bool]:
+    """Map composite score to regime, with a degraded-data fail-safe.
+
+    The macro gate is the only systemic risk control in the daily loop, and
+    yfinance outages cluster during volatility spikes — exactly when the gate
+    matters. With 2+ of the 3 component signals unavailable, a score near 0 is
+    ignorance, not neutrality: fail SAFE to RISK-OFF rather than open to
+    NEUTRAL (which permits high-conviction ACCUMULATE actions).
+
+    Args:
+        score: Sum of component score contributions.
+        unavailable: How many of the 3 component signals failed to fetch.
+
+    Returns:
+        Tuple of (regime_label, degraded_flag).
+    """
+    if unavailable >= 2:
+        return "RISK-OFF", True
+    if score >= 2:
+        return "RISK-ON", False
+    if score >= 0:
+        return "NEUTRAL", False
+    return "RISK-OFF", False
 
 
 def _classify_vix(vix: float) -> tuple[str, int]:
@@ -95,11 +121,13 @@ def get_macro_regime() -> MacroRegimeResult:
         import yfinance as yf
     except ImportError:
         return MacroRegimeResult(
-            regime="NEUTRAL", score=0, vix=20.0,
+            regime="RISK-OFF", score=0, vix=20.0,
             vix_signal="UNAVAILABLE", spy_vs_200d=0.0,
             spy_signal="UNAVAILABLE", hyg_lqd_ratio=None,
             credit_signal="UNAVAILABLE",
-            details=["yfinance not installed — run: pip install yfinance"],
+            details=["yfinance not installed — run: pip install yfinance",
+                     "⚠️ DEGRADED DATA — regime forced RISK-OFF (fail-safe)"],
+            degraded=True,
         )
 
     score = 0
@@ -145,12 +173,16 @@ def get_macro_regime() -> MacroRegimeResult:
         details.append(f"Credit data unavailable: {exc}")
 
     # ── Regime classification ─────────────────────────────────────────────────
-    if score >= 2:
-        regime = "RISK-ON"
-    elif score >= 0:
-        regime = "NEUTRAL"
-    else:
-        regime = "RISK-OFF"
+    unavailable = sum(
+        1 for sig in (vix_signal, spy_signal, credit_signal)
+        if sig == "UNAVAILABLE"
+    )
+    regime, degraded = _classify_regime(score, unavailable)
+    if degraded:
+        details.append(
+            f"⚠️ DEGRADED DATA — {unavailable}/3 macro signals unavailable; "
+            f"regime forced RISK-OFF (fail-safe)"
+        )
 
     return MacroRegimeResult(
         regime=regime,
@@ -162,6 +194,7 @@ def get_macro_regime() -> MacroRegimeResult:
         hyg_lqd_ratio=round(ratio, 4) if ratio is not None else None,
         credit_signal=credit_signal,
         details=details,
+        degraded=degraded,
     )
 
 

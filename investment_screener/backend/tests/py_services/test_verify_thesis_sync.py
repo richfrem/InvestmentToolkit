@@ -95,7 +95,7 @@ def test_verify_thesis_sync_fail_missing_md_mention(tmp_path):
     # Run check
     r = run_sync_checker(thesis_json, thesis_md, proj_dir)
     assert r.returncode == 1
-    assert "The following tickers exist in target portfolio but are missing in investment_thesis.md: ['TSLA']" in r.stdout
+    assert "The following tickers exist in target portfolio but are missing in thesis documentation: ['TSLA']" in r.stdout
     assert "Sync Verification FAILED" in r.stdout
 
 def test_verify_thesis_sync_fail_missing_projection(tmp_path):
