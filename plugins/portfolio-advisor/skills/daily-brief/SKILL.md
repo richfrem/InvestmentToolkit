@@ -65,7 +65,10 @@ total = dcf_pts + ta_pts + weight_gap_pts + momentum_pts
 dcf_pts       : +2 (BUY/ACCUMULATE) | +1 (MAINTAIN/HOLD) | -1 (TRIM) | -2 (SELL)
 ta_pts        : +1 (RSI<35) | -1 (RSI>70 or RSI_COOLING) | -1 (vol_bias<-25%) [max +1]
 weight_gap_pts: +1 (underweight + BUY) | -1 (overweight + SELL)
-momentum_pts  : +1 (ADX≥30 + no cooling) | -1 (ADX≥30 + RSI_COOLING)
+momentum_pts  : ADX≥30 required, then direction-gated by RSI:
+                +1 (RSI>55, no cooling — strong UPtrend intact)
+                -1 (RSI_COOLING, or RSI<45 — fading top or strong DOWNtrend)
+                 0 (RSI 45–55 or RSI missing — direction ambiguous, no bonus)
 
 Bands:
   ≥ +3 : ACCUMULATE
@@ -74,6 +77,14 @@ Bands:
   -1–-2: REDUCE
   ≤ -3 : EXIT
 ```
+
+**Why momentum is direction-gated:** ADX measures trend *strength* only — it reads
+identically for a strong rally and a free-fall. A strong downtrend must never earn the
++1 "momentum intact" bonus (falling-knife amplifier).
+
+**% to fair value is always price-denominated:** `pct_to_fv = (FV − price) / price`,
+recomputed from the sweep's live close at score time. Never trust a stored pctToFV
+below −100% — that is the signature of the old FV-denominated math.
 
 ---
 
@@ -84,6 +95,7 @@ Bands:
 | RISK-ON  | All signals valid. ACCUMULATE candidates are actionable. |
 | NEUTRAL  | Only score ≥ +4 ACCUMULATE candidates. Hold cash otherwise. |
 | RISK-OFF | No new buys. Execute REDUCE/EXIT list only. Cash is the position. |
+| RISK-OFF (degraded) | Forced when 2+ of 3 macro signals are unavailable (`degraded: true`). Data blackout is ignorance, not neutrality — fail safe, no new buys. Surface the degradation to the user. |
 
 **Never accumulate into a RISK-OFF environment**, regardless of DCF upside. Undervalued
 growth stocks stay cheap for 12–18 months during risk-off regimes.

@@ -19,6 +19,7 @@ import { spawn } from 'child_process';
 import path from 'path';
 import net from 'net';
 import fs from 'fs';
+import { normalizeTicker } from '../utils/tickerAliases';
 
 const PORTFOLIO_FILE    = path.resolve(__dirname, '../../data/portfolio.json');
 const PY_SERVICES_DIR   = path.resolve(__dirname, '../../py_services');
@@ -136,19 +137,22 @@ export function mergeIntoPortfolio(tvSnapshot: TVSnapshot, existing: any[]): {
         if (sym && sym !== 'USD_CASH') existingMap.set(sym, item);
     }
 
-    // Aggregate TV positions by symbol (sum quantities across accounts, weighted avg fill price)
+    // Aggregate TV positions by symbol (sum quantities across accounts, weighted avg fill price).
+    // Symbols are normalized through the broker alias map (PSU.U.TO → PSU-U.TO) —
+    // skipping this re-creates the duplicate PSU row in portfolio.json and the thesis.
     const tvMap = new Map<string, { quantity: number; avgFillPrice: number; accountType: string; costBasis: number }>();
     for (const pos of tvSnapshot.positions) {
         if (!pos.symbol) continue;
+        const symbol = normalizeTicker(pos.symbol);
         const qty = pos.quantity ?? 0;
         const fill = pos.avgFillPrice ?? 0;
-        if (tvMap.has(pos.symbol)) {
-            const existing = tvMap.get(pos.symbol)!;
+        if (tvMap.has(symbol)) {
+            const existing = tvMap.get(symbol)!;
             existing.costBasis += qty * fill;
             existing.quantity += qty;
             existing.avgFillPrice = existing.quantity > 0 ? existing.costBasis / existing.quantity : fill;
         } else {
-            tvMap.set(pos.symbol, { quantity: qty, avgFillPrice: fill, accountType: pos.accountType, costBasis: qty * fill });
+            tvMap.set(symbol, { quantity: qty, avgFillPrice: fill, accountType: pos.accountType, costBasis: qty * fill });
         }
     }
 

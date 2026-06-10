@@ -173,6 +173,7 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     from macro_regime import get_macro_regime
     from earnings_calendar import get_earnings_calendar
     from compute_conviction_scores import compute_all
+    from brief_recommendations import build_recommendations, load_standing_decisions
 
     # ── 1. Macro regime ───────────────────────────────────────────────────────
     print("▶ Macro regime...", file=sys.stderr)
@@ -241,6 +242,22 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     deltas = _score_deltas(scores_raw, yesterday)
     pillar_deltas = _pillar_trends(pillars, yesterday)
 
+    # ── 6b. Actionable recommendations (standing-decision aware) ─────────────
+    print("▶ Recommendations...", file=sys.stderr)
+    portfolio_path = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
+    total_equity = 0.0
+    if portfolio_path.exists():
+        with open(portfolio_path) as f:
+            # Live broker total — never computed from shares × price
+            total_equity = json.load(f).get("totals", {}).get("totalUSD", 0.0)
+    recommendations = build_recommendations(
+        scores=scores_raw,
+        standing=load_standing_decisions(),
+        earnings=earnings_raw,
+        macro=asdict(macro),
+        total_equity=total_equity,
+    )
+
     brief: dict[str, Any] = {
         "date": date.today().isoformat(),
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -248,6 +265,8 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
         "ta_refreshed": ran_ta,
         "ta_skip_reason": ta_skip_reason,
         "conviction_scores": scores_raw,
+        "recommendations": recommendations,
+        "total_equity": total_equity,
         "score_deltas": deltas,
         "pillar_health": pillars,
         "pillar_deltas": pillar_deltas,

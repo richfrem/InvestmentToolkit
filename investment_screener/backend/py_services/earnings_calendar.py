@@ -21,6 +21,13 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 PORTFOLIO_PATH = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 SKIP_TICKERS: frozenset[str] = frozenset({"PSU-U.TO", "PSU.U.TO", "USD_CASH"})
 
+# ETFs and funds — no earnings dates exist; excluding them avoids yfinance 404s
+# and prevents them being misreported as earnings-calendar "blind spots".
+# DRAM = HBM/memory ETF · HUMN = humanoid robotics ETF · KOID = robotics ETF
+ETF_TICKERS: frozenset[str] = frozenset({
+    "DRAM", "HUMN", "KOID", "ETHA", "IBIT", "SOLZ", "DXYZ",
+})
+
 
 @dataclass
 class EarningsEntry:
@@ -42,7 +49,9 @@ def _load_tickers() -> list[str]:
         data = json.load(f)
     return sorted(
         h["symbol"] for h in data.get("holdings", [])
-        if h.get("symbol") and h["symbol"] not in SKIP_TICKERS
+        if h.get("symbol")
+        and h["symbol"] not in SKIP_TICKERS
+        and h["symbol"] not in ETF_TICKERS
     )
 
 

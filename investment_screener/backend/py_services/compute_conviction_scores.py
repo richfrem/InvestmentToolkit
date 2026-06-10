@@ -149,30 +149,66 @@ def _score_weight_gap(gap: float | None, dcf_action: str | None) -> int:
 
 # ── Momentum scoring ───────────────────────────────────────────────────────────
 
-def _score_momentum(adx: float | None, flags: list[str]) -> int:
-    """Score trend quality via ADX and momentum flags.
+def _score_momentum(
+    adx: float | None,
+    flags: list[str],
+    rsi: float | None = None,
+) -> int:
+    """Score trend quality via ADX, trend direction, and momentum flags.
 
-    Strong trend without cooling = conviction intact.
-    Strong ADX + RSI cooling = trend fading — reduces conviction to add.
-    Weak ADX = no directional evidence.
+    ADX measures trend STRENGTH only — it is identical for a strong rally and
+    a free-fall. The +1 bonus therefore requires directional evidence that the
+    trend is up (RSI > 55). A strong trend that is fading (RSI_COOLING) or
+    pointing down (RSI < 45) reduces conviction to add. Ambiguous direction
+    (RSI 45–55, or RSI missing) earns no bonus.
 
     Args:
         adx: Average Directional Index value.
         flags: TA flag list from sweep result.
+        rsi: Current RSI — used as the trend-direction proxy.
 
     Returns:
         Score contribution in range −1 to +1.
     """
-    if adx is None:
+    if adx is None or adx < 30:
         return 0
-    strong = adx >= 30
-    cooling = "RSI_COOLING" in flags
-
-    if strong and not cooling:
-        return +1    # strong trend, momentum intact
-    if strong and cooling:
+    if "RSI_COOLING" in flags:
         return -1    # fading strong trend — often marks a top
-    return 0
+    if rsi is None:
+        return 0     # strong trend but direction unknowable — no bonus
+    if rsi < 45:
+        return -1    # strong DOWNTREND — never reward a falling knife
+    if rsi > 55:
+        return +1    # strong uptrend, momentum intact
+    return 0         # direction ambiguous
+
+
+# ── % to fair value resolution ─────────────────────────────────────────────────
+
+def _resolve_pct_to_fv(
+    ta: dict[str, Any],
+    dcf: dict[str, Any],
+) -> float | None:
+    """Resolve % distance from current price to DCF fair value.
+
+    Always recomputes from the sweep's live close and fair value when both are
+    present — the enriched pctToFV stored in older sweep files was
+    FV-denominated (wrong) and must not be trusted. Falls back to the
+    projection-file value (price-denominated at save time) otherwise.
+
+    Args:
+        ta: Per-ticker TA sweep row (may contain close + dcf.fairValue).
+        dcf: Projection-derived dict (may contain pctToFV).
+
+    Returns:
+        Percentage gap (positive = upside to fair value), or None.
+    """
+    close = ta.get("close")
+    fv = ta.get("dcf", {}).get("fairValue")
+    if close and fv:
+        return round((fv - close) / close * 100, 1)
+    pct = dcf.get("pctToFV")
+    return pct if pct is not None else None
 
 
 # ── Band classification ────────────────────────────────────────────────────────
@@ -309,7 +345,7 @@ def compute_all() -> list[ConvictionScore]:
 
         # Prefer TA sweep's enriched DCF over raw projection file when available
         dcf_action = ta.get("dcf", {}).get("action") or dcf.get("action")
-        pct_to_fv  = ta.get("dcf", {}).get("pctToFV") or dcf.get("pctToFV")
+        pct_to_fv  = _resolve_pct_to_fv(ta, dcf)
         rsi        = ta.get("rsi")
         adx        = ta.get("adx")
         vol_bias   = ta.get("volBias")
@@ -317,7 +353,7 @@ def compute_all() -> list[ConvictionScore]:
         dcf_pts  = _score_dcf(dcf_action)
         ta_pts   = _score_ta(rsi, vol_bias, flags)
         gap_pts  = _score_weight_gap(gap, dcf_action)
-        mom_pts  = _score_momentum(adx, flags)
+        mom_pts  = _score_momentum(adx, flags, rsi)
         total    = dcf_pts + ta_pts + gap_pts + mom_pts
 
         scores.append(ConvictionScore(

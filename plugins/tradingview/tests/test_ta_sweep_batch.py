@@ -178,6 +178,75 @@ class TestSweepResultsPersistence:
         assert data["count"] == 2, "Second write must overwrite — not append"
 
 
+# ── pctToFV denominator tests ─────────────────────────────────────────────────
+
+class TestPctToFVDenominator:
+    """pctToFV must be (FV − price) / price — the % move from HERE to fair value.
+
+    Regression: the enrichment used (FV − price) / FV, which produced impossible
+    values like −742% for OKLO and understated upside for BUY names (APLD showed
+    +29.9% when the true upside at price was +42.6%).
+    """
+
+    def test_upside_uses_price_denominator(self):
+        """APLD: FV 58.35 vs close 40.92 → +42.6% upside, not +29.9%."""
+        sys.path.insert(0, str(SCRIPT.parent))
+        from ta_sweep_batch import add_dcf_flags  # noqa: PLC0415
+        result = {"ticker": "APLD", "close": 40.92, "flags": []}
+        add_dcf_flags(result, {"fairValue": 58.35, "action": "BUY", "base": None})
+        assert result["dcf"]["pctToFV"] == 42.6, (
+            f"Expected (58.35-40.92)/40.92*100 = 42.6, got {result['dcf']['pctToFV']}"
+        )
+
+    def test_downside_never_below_minus_100(self):
+        """OKLO: FV 6.65 vs close 56.03 → −88.1%. A price-denominated ratio
+        can never be below −100%; the old FV-denominated math gave −742%."""
+        sys.path.insert(0, str(SCRIPT.parent))
+        from ta_sweep_batch import add_dcf_flags  # noqa: PLC0415
+        result = {"ticker": "OKLO", "close": 56.03, "flags": []}
+        add_dcf_flags(result, {"fairValue": 6.65, "action": "SELL", "base": None})
+        pct = result["dcf"]["pctToFV"]
+        assert pct >= -100, f"pctToFV below -100% is mathematically impossible: {pct}"
+        assert pct == -88.1, f"Expected (6.65-56.03)/56.03*100 = -88.1, got {pct}"
+
+
+# ── Enrichment preservation after ADX validation ──────────────────────────────
+
+class TestEnrichmentPreservedAfterAdxValidation:
+    """validate_adx returns a copy — the main loop must keep enriching THAT copy.
+
+    Regression: main() called `res = validate_adx(res)` inside `for res in
+    scan_results`, so when ADX was out of range the nulled copy (and all
+    subsequent action/targetWeight enrichment) was silently discarded — the
+    persisted JSON kept the invalid ADX and lacked the action fields.
+    """
+
+    def test_invalid_adx_row_keeps_enrichment_and_nulled_adx(self):
+        sys.path.insert(0, str(SCRIPT.parent))
+        from ta_sweep_batch import enrich_results  # noqa: PLC0415
+        rows = [{"ticker": "CLSK", "close": 10.0, "adx": 161.9,
+                 "flags": ["ADX_STRONG"]}]
+        out = enrich_results(
+            rows,
+            target_map={"CLSK": {"action": "MAINTAIN", "targetWeight": 2.2}},
+            dcf_loader=lambda t: None,
+        )
+        row = out[0]
+        assert row["adx"] is None, "Out-of-range ADX must be nulled in the OUTPUT rows"
+        assert "ADX_STRONG" not in row["flags"]
+        assert row["action"] == "HOLD", "Derived action must survive ADX validation"
+        assert row["targetWeight"] == 2.2, "Target enrichment must survive ADX validation"
+
+    def test_valid_adx_row_enriched_normally(self):
+        sys.path.insert(0, str(SCRIPT.parent))
+        from ta_sweep_batch import enrich_results  # noqa: PLC0415
+        rows = [{"ticker": "AAPL", "close": 195.5, "adx": 22.0, "flags": []}]
+        out = enrich_results(rows, target_map={}, dcf_loader=lambda t: None)
+        assert out[0]["adx"] == 22.0
+        assert out[0]["action"] == "HOLD"
+        assert out[0]["targetAction"] is None
+
+
 # ── ADX range validation tests ────────────────────────────────────────────────
 
 class TestAdxValidation:
