@@ -660,6 +660,18 @@
       "dst": "plugins/tradingview/skills/ta-daily-sweep/scripts/tv_health_check.py",
       "strategy": "symlink",
       "description": "ADR-003: ta-daily-sweep skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/daily_brief.py",
+      "dst": "investment_screener/backend/py_services/daily_brief.py",
+      "strategy": "symlink",
+      "description": "daily_brief.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/daily_brief.py",
+      "dst": "plugins/portfolio-advisor/skills/daily-brief/scripts/daily_brief.py",
+      "strategy": "symlink",
+      "description": "ADR-003: daily-brief skill scripts/ symlink \u2192 plugin root scripts/"
     }
   ]
 }

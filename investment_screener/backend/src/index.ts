@@ -33,6 +33,7 @@ import screenerRouter from './routes/screener';
 import stockRouter from './routes/stock';
 import tradingRouter from './routes/trading';
 import thirteenfRouter from './routes/thirteenf';
+import dailybriefRouter from './routes/dailybrief';
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -128,6 +129,7 @@ app.use('/api', stockRouter);               // /api/stock/:ticker, /api/portfoli
 app.use('/api/screener', screenerRouter);   // /api/screener/all-holdings
 app.use('/api/trading', tradingRouter);     // /api/trading/** (preflight, execute, submit, audit)
 app.use('/api/13f', thirteenfRouter);       // /api/13f/summary
+app.use('/api/daily-brief', dailybriefRouter); // /api/daily-brief/latest, /history, /conviction/:ticker
 
 app.listen(Number(port), HOST, () => {
     console.log(`Backend server running on http://${HOST}:${port}`);

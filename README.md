@@ -39,7 +39,8 @@ All agent tooling is organized as portable plugins inside the `plugins/` directo
 
 ### 1. Portfolio Advisor (`plugins/portfolio-advisor`)
 An adversarial suite that acts as a hedge fund auditor. It challenges your bull cases, flags failing investment pillars, and proposes weight changes based on real-time drift.
-- **Commands/Skills**: `/review-portfolio`, `/strategic-review`, `/rebalance`, `/calibrate-targets`, `/update-portfolio-targets`, `/x-news-sweep`, `/bundle-thesis-review`, `/13f-tracker`, `/13f-analyze`
+- **Daily command**: `/daily` — one interactive loop: portfolio sync → morning brief (macro + TA + DCF + earnings) → ranked triage cards → trade execution → self-evolution log. Replaces the 10-step manual checklist.
+- **Other skills**: `/review-portfolio`, `/strategic-review`, `/rebalance`, `/calibrate-targets`, `/update-portfolio-targets`, `/x-news-sweep`, `/bundle-thesis-review`, `/13f-tracker`, `/13f-analyze`, `/run-advisor` (post-catalyst orchestrator)
 
 ### 2. Stock Valuation Analyst (`plugins/stock-valuation`)
 An autonomous buy-side analyst. Fetches real-time financial data, builds Bear/Base/Bull DCF scenarios, and generates fair value recommendations (BUY/HOLD/SELL).
