@@ -1,7 +1,7 @@
 {
     "name": "portfolio-advisor",
-    "version": "2.0.0",
-    "description": "Investment portfolio advisor suite. Skills: /review-portfolio (quick health check — drift monitor, pillar conviction audit, thesis formula score), /strategic-review (adversarial thesis challenger with valuation-grounded formula improvement proposals), /rebalance (valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift), /calibrate-targets (interactive target-weight session), /update-portfolio-targets (apply formula changes).",
+    "version": "2.1.0",
+    "description": "Investment portfolio advisor suite. /daily — one interactive daily command: sync check, morning brief (macro + TA + DCF + earnings), ranked triage cards, trade execution, self-evolution log. Additional skills: /review-portfolio, /strategic-review, /rebalance, /calibrate-targets, /update-portfolio-targets, /x-news-sweep, /bundle-thesis-review, /13f-tracker, /13f-analyze, /run-advisor (post-catalyst orchestrator).",
     "author": "InvestmentToolkit",
     "maturity": "L5",
     "architecture": "supercharged",
@@ -50,6 +50,33 @@
             "name": "13f_analyze",
             "path": "skills/13f-analyze/SKILL.md",
             "trigger": "/13f-analyze"
+        },
+        {
+            "name": "daily_brief",
+            "path": "skills/daily-brief/SKILL.md",
+            "trigger": "/daily-brief"
+        },
+        {
+            "name": "daily_loop",
+            "path": "skills/daily-loop/SKILL.md",
+            "trigger": "/daily"
+        }
+    ],
+    "agents": [
+        {
+            "name": "daily_loop_agent",
+            "path": "agents/daily-loop-agent.md",
+            "trigger": "/daily"
+        },
+        {
+            "name": "portfolio_advisor_orchestrator",
+            "path": "agents/portfolio-advisor-orchestrator.md",
+            "trigger": "/run-advisor"
+        },
+        {
+            "name": "thesis_review_agent",
+            "path": "agents/thesis-review-agent.md",
+            "trigger": "thesis-review"
         }
     ],
     "commands": [

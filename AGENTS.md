@@ -29,14 +29,16 @@ This workstation is built on a modular plugin architecture. You have access to t
 
 ### 1. Portfolio Advisor (`plugins/portfolio-advisor`)
 *Adversarial thesis challenger and portfolio manager.*
+- **`/daily`**: **The one daily command.** Interactive loop agent — portfolio freshness check → morning brief (macro regime, TA sweep, conviction scores, earnings) → ranked triage cards (one per holding, in urgency order) → trade execution → evolution log. Replaces the manual 10-step checklist. Agent: `plugins/portfolio-advisor/agents/daily-loop-agent.md`.
 - `/review-portfolio`: Audit drift, pillar conviction, and thesis health.
 - `/strategic-review`: Adversarial challenge of investment pillars. Proposes weight changes based on real-time drift.
 - `/rebalance`: Valuation-gated trade recommendations (never buys SELL-rated holdings).
 - `/calibrate-targets`: Interactive target-weight calibration session.
 - `/update-portfolio-targets`: Apply formula/weight changes.
-- `/x-news-sweep`: Daily news processing via Grok/X.com.
+- `/x-news-sweep`: Daily news processing via Grok/X.com. Called by `/daily` agent on news days.
 - `/bundle-thesis-review`: Package thesis/DCF for external LLMs.
 - `/13f-tracker` & `/13f-analyze`: Poll and analyze SEC 13F EDGAR filings.
+- `/run-advisor`: Full 5-phase orchestrator — use post-catalyst (after 13F or news sweep), not daily.
 
 ### 2. Stock Valuation Analyst (`plugins/stock-valuation`)
 *Autonomous buy-side analyst.*

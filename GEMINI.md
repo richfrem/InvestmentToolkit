@@ -130,12 +130,24 @@ Questrade refresh tokens can expire. **If you (as an agent) encounter `Token rot
 
 ## 🔄 Daily Session Protocol
 
-At the start of each new trading day session, run `/x-news-sweep`:
+**One command starts the day:**
+```
+/daily
+```
+The `daily-loop-agent` interactively guides through every step. No checklist.
+
+**What `/daily` does (in order):**
+1. Checks portfolio.json freshness — syncs from TradingView if stale
+2. Runs morning brief: macro regime (VIX + SPY 200D + HYG/LQD), TA sweep, conviction scores, earnings calendar
+3. Ranked triage: IMMINENT events → EXIT signals → REDUCE → ACCUMULATE
+4. Interactive action cards — one per holding, proposes trade, waits for approval
+5. Offers `/x-news-sweep` on news days
+6. Logs session to `plugins/portfolio-advisor/references/evolution-log.md`
+
+**x-news-sweep (when agent prompts or catalyst day):**
 1. Generates a fresh Grok prompt from live `target-portfolio.json`
 2. Paste into [x.com/i/grok](https://x.com/i/grok) and submit
-3. Paste Grok's response back — the skill gates every recommendation against DCF + 8 hard gates before applying anything
-
-This keeps thesis targets, `agentRationale`, and projection catalyst notes current with market developments.
+3. Paste Grok's response back — the skill gates every recommendation against DCF + 8 hard gates
 
 ---
 
@@ -150,6 +162,7 @@ This keeps thesis targets, `agentRationale`, and projection catalyst notes curre
 | `/evaluate-stock {TICKER}` | stock-valuation | Full DCF valuation — Bear/Base/Bull scenarios, fair value, research report. Uses live TV price when CDP active. |
 | `/research-stock {TICKER}` | stock-valuation | Qualitative research sweep — classifies findings, gates re-valuation on confirmation |
 | `/analyze-etf {TICKER}` | etf-analysis | Thematic ETF analysis — holdings alignment, expense ratio, BUY/HOLD/AVOID. Writes `data/etf_analysis/` + co-writes `data/projections/` so AI Expert Thesis panel appears in Dashboard. |
+| **`/daily`** | **portfolio-advisor** | **The one daily command.** Interactive loop: sync check → brief → triage cards → execution → evolution log. |
 | `/review-portfolio` | portfolio-advisor | Drift monitor + pillar conviction audit + thesis formula health score (0–100) |
 | `/strategic-review` | portfolio-advisor | Adversarial thesis challenger — surfaces failing pillars, proposes formula improvements |
 | `/rebalance` | portfolio-advisor | Valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift |
@@ -159,7 +172,7 @@ This keeps thesis targets, `agentRationale`, and projection catalyst notes curre
 | `/13f-tracker` | portfolio-advisor | Poll SEC EDGAR for new 13F filings, download holdings JSON, diff quarter-over-quarter |
 | `/13f-analyze` | portfolio-advisor | Surgical 13F analysis — cross-references SA LP holdings vs your targets, outputs gated INITIATE/ACCUMULATE/TRIM/EXIT recs, applies approved changes to target-portfolio.json |
 | `/bundle-thesis-review` | portfolio-advisor | Package thesis + DCF projections for paste into external LLM (Grok, ChatGPT, Gemini) |
-| `/run-advisor` | portfolio-advisor | Interactive Portfolio Advisor orchestrator — full review → calibrate → rebalance lifecycle |
+| `/run-advisor` | portfolio-advisor | Interactive Portfolio Advisor orchestrator — full review → calibrate → rebalance lifecycle (post-catalyst) |
 | `/place-order {buy\|sell} {N} {TICKER} in {ACCOUNT}` | **tradingview** | **Live order execution** via TradingView CDP broker automation. 3-step HITL: preflight card → CONFIRM → dialog filled + submitted + portfolio.json synced. Requires TradingView Desktop with Questrade broker connected. |
 | `/cancel-order {tvOrderId}` | **tradingview** | **Cancel a Working/Inactive order** via CDP — finds order by UUID, clicks ×, handles TV confirmation dialog, marks trade-log entry cancelled. |
 | `/modify-order {tvOrderId} {newPrice}` | **tradingview** | **Modify a limit price** on a Working/Inactive order via CDP keyboard events. |
