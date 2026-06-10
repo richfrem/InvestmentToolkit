@@ -93,6 +93,9 @@ __pycache__/
 # Personal trading data (user-specific, cannot be recovered from git)
 investment_screener/backend/data/trade-log.json
 
+# Daily brief snapshots (personal — generated daily, not for version control)
+investment_screener/backend/data/daily-briefs/
+
 # TradingView order audit logs (runtime output, rotated daily)
 plugins/tradingview/audit/
 

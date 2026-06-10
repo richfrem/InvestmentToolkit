@@ -1,7 +1,7 @@
 {
     "name": "portfolio-advisor",
-    "version": "2.0.0",
-    "description": "Investment portfolio advisor suite. Adversarial thesis challenge, drift monitoring, valuation-gated rebalancing, and target calibration.",
+    "version": "2.1.0",
+    "description": "Investment portfolio advisor suite. /daily — one interactive daily command: portfolio sync, morning brief (macro+TA+DCF+earnings), triage cards, trade execution, self-evolution log. Plus: adversarial thesis challenge, drift monitoring, valuation-gated rebalancing, 13F tracking, and target calibration.",
     "author": {
         "name": "richfrem",
         "email": "connect.richfrem@gmail.com"
@@ -10,6 +10,9 @@
         "finance",
         "portfolio",
         "portfolio-advisor",
+        "daily-loop",
+        "conviction-scores",
+        "macro-regime",
         "thesis",
         "rebalancing",
         "drift-detection"
