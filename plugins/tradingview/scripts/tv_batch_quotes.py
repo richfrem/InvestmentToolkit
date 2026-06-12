@@ -33,7 +33,8 @@ from pathlib import Path
 
 
 def batch_quotes(tickers: list[str]) -> dict:
-    """Fetch quotes for multiple tickers via yfinance bulk download.
+    """Fetch quotes for multiple tickers. Uses TradingView for the active chart symbol,
+    and yfinance for the rest.
 
     Args:
         tickers: List of ticker symbols.
@@ -42,42 +43,78 @@ def batch_quotes(tickers: list[str]) -> dict:
         Dict with 'quotes', 'errors', and 'summary' keys.
     """
     import yfinance as yf
+    
+    # Ensure tv_client is importable from this directory
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from tv_client import tv_call, is_tv_running
 
     quotes: dict = {}
     errors: dict = {}
+    active_ticker = None
+    tv_quote = None
+    tv_count = 0
 
-    # yfinance download fetches all tickers in one HTTP round-trip
-    data = yf.download(tickers, period="2d", interval="1d",
-                       progress=False, auto_adjust=True)
-
-    close_df = data["Close"]
-    closes = close_df.iloc[-1] if len(close_df) >= 1 else {}
-    prev_closes = close_df.iloc[-2] if len(close_df) >= 2 else {}
-
-    for ticker in tickers:
+    if is_tv_running():
         try:
-            price = float(closes[ticker])  # type: ignore[index]
-            prev_val = prev_closes.get(ticker) if hasattr(prev_closes, "get") else None
-            prev = float(prev_val) if prev_val is not None else price
-            change = round(price - prev, 4)
-            change_pct = round((change / prev) * 100, 4) if prev else 0.0
-            quotes[ticker] = {
-                "price": round(price, 4),
-                "change": change,
-                "changePercent": change_pct,
-                "volume": 0,
-                "source": "yfinance",
-            }
+            status_res = tv_call("status")
+            if status_res.get("success") and status_res.get("chart_symbol"):
+                active_ticker = status_res["chart_symbol"].split(":")[-1].upper()
+                # Remove alias mappings if applicable (e.g. PSU-U.TO / PSU.U.TO)
+                if active_ticker == "PSU.U.TO" and "PSU-U.TO" in tickers:
+                    active_ticker = "PSU-U.TO"
+                if active_ticker in tickers:
+                    tv_raw = tv_call("quote", active_ticker)
+                    if tv_raw.get("success"):
+                        tv_quote = {
+                            "price": tv_raw.get("price") or tv_raw.get("header_price") or 0.0,
+                            "change": tv_raw.get("change", 0.0),
+                            "changePercent": tv_raw.get("changePercent", 0.0),
+                            "volume": tv_raw.get("volume", 0),
+                            "source": "tradingview",
+                        }
+                        quotes[active_ticker] = tv_quote
+                        tv_count = 1
+        except Exception:
+            pass
+
+    yf_tickers = [t for t in tickers if t != active_ticker] if tv_quote else tickers
+
+    if yf_tickers:
+        try:
+            data = yf.download(yf_tickers, period="2d", interval="1d",
+                               progress=False, auto_adjust=True)
+
+            close_df = data["Close"]
+            closes = close_df.iloc[-1] if len(close_df) >= 1 else {}
+            prev_closes = close_df.iloc[-2] if len(close_df) >= 2 else {}
+
+            for ticker in yf_tickers:
+                try:
+                    price = float(closes[ticker]) if len(yf_tickers) > 1 else float(close_df.iloc[-1])
+                    prev_val = prev_closes[ticker] if len(yf_tickers) > 1 else float(close_df.iloc[-2]) if len(close_df) >= 2 else None
+                    prev = float(prev_val) if prev_val is not None else price
+                    change = round(price - prev, 4)
+                    change_pct = round((change / prev) * 100, 4) if prev else 0.0
+                    quotes[ticker] = {
+                        "price": round(price, 4),
+                        "change": change,
+                        "changePercent": change_pct,
+                        "volume": 0,
+                        "source": "yfinance",
+                    }
+                except Exception as e:
+                    errors[ticker] = str(e)
         except Exception as e:
-            errors[ticker] = str(e)
+            for ticker in yf_tickers:
+                errors[ticker] = f"Bulk yfinance failed: {e}"
 
     return {
         "quotes": quotes,
         "errors": errors,
         "summary": {
             "total": len(tickers),
-            "tradingview": 0,
-            "fallback": len(quotes),
+            "tradingview": tv_count,
+            "fallback": len(quotes) - tv_count,
             "errors": len(errors),
         },
     }
