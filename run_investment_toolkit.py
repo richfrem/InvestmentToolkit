@@ -12,16 +12,17 @@ Purpose:
 Layer: Codify
 
 Usage Examples:
-    # Standard launch — starts backend, frontend, and TradingView with real-time prices:
+    # 1. Standard launch — starts backend, frontend, and TradingView with real-time prices:
     python3 run_investment_toolkit.py
 
-    # TradingView behaviour:
-    #   - If TradingView Desktop is already running WITH --remote-debugging-port=9222 → no action
-    #   - If TradingView Desktop is running WITHOUT the debug port → kills it, relaunches with port
-    #   - If TradingView Desktop is not running → launches it with the debug port
-    #   - If TradingView Desktop is not installed → skipped, yfinance delayed prices used instead
+    # 2. To ensure TradingView is opened with the required debug port (9222):
+    # The run_investment_toolkit.py script automatically handles the port check:
+    #   - If TradingView Desktop is already running WITH --remote-debugging-port=9222 → no action is taken.
+    #   - If TradingView Desktop is running WITHOUT the debug port → the script kills it and relaunches it with the port.
+    #   - If TradingView Desktop is not running → the script launches it with the debug port.
+    #   - If TradingView Desktop is not installed → it is skipped, and yfinance fallback is used.
     #
-    # To relaunch TradingView independently (e.g. after closing it):
+    # 3. To relaunch or start TradingView Desktop independently with the debugging port (9222):
     python3 tools/launch_tradingview_with_debugport.py
 
 CLI Arguments:
