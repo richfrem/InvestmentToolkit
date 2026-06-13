@@ -431,6 +431,36 @@ export const deleteProjection = async (ticker: string, id: string): Promise<{ su
     return data;
 };
 
+// ─── Watchlist API ────────────────────────────────────────────────────────────
+
+export const fetchWatchlist = async (): Promise<Array<{ ticker: string; addedAt: string }>> => {
+    const res = await fetch('/api/screener/watchlist');
+    if (!res.ok) throw new Error('Failed to fetch watchlist');
+    return res.json();
+};
+
+export const addToWatchlist = async (ticker: string): Promise<{ success: boolean; message: string }> => {
+    const res = await fetch('/api/screener/watchlist/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticker }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to add to watchlist');
+    return data;
+};
+
+export const removeFromWatchlist = async (ticker: string): Promise<{ success: boolean; message: string }> => {
+    const res = await fetch('/api/screener/watchlist/remove', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticker }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to remove from watchlist');
+    return data;
+};
+
 // ─── Docs API ─────────────────────────────────────────────────────────────────
 
 export const fetchInvestmentThesis = async (): Promise<{ content: string; filename: string; thesisName: string; thesisDescription: string }> => {

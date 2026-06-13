@@ -439,7 +439,98 @@ def test_chart_read_structure() -> tuple[bool, str]:
         return False, f"Non-JSON output: {raw[:100]}"
 
 
-# ── Runner ────────────────────────────────────────────────────────────────────
+
+# ── Section 3: Watchlist Command Tests ───────────────────────────────────────
+
+def test_watchlist_cycle() -> tuple[bool, str]:
+    """Test the full watchlist lifecycle end-to-end:
+    create -> open -> add -> get -> remove symbol -> delete list
+    """
+    temp_list = "IT_TDD_Temp"
+    test_symbol = "AMD"
+    try:
+        # 1. Create watchlist
+        r_create = subprocess.run(
+            ["node", "cli.js", "watchlist", "create", temp_list],
+            capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=25,
+        )
+        if r_create.returncode != 0:
+            return False, f"watchlist create failed: {r_create.stderr.strip()[:200]}"
+        create_out = json.loads(r_create.stdout.strip())
+        if not create_out.get("success"):
+            return False, f"create returned error: {create_out}"
+
+        # 2. Open watchlist
+        r_open = subprocess.run(
+            ["node", "cli.js", "watchlist", "open", temp_list],
+            capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=20,
+        )
+        open_out = json.loads(r_open.stdout.strip())
+        if not open_out.get("success"):
+            return False, f"open returned error: {open_out}"
+
+        # 3. Add symbol
+        r_add = subprocess.run(
+            ["node", "cli.js", "watchlist", "add", temp_list, test_symbol],
+            capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=20,
+        )
+        add_out = json.loads(r_add.stdout.strip())
+        if not add_out.get("success"):
+            return False, f"add symbol returned error: {add_out}"
+
+        # 4. Get watchlist items and verify symbol is present
+        r_get = subprocess.run(
+            ["node", "cli.js", "watchlist", "get"],
+            capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=15,
+        )
+        get_out = json.loads(r_get.stdout.strip())
+        if not get_out.get("success"):
+            return False, f"get watchlist returned error: {get_out}"
+        
+        symbols = [item["symbol"] for item in get_out.get("items", [])]
+        if test_symbol not in symbols:
+            return False, f"Added symbol '{test_symbol}' not found in watchlist. Active items: {symbols}"
+
+        # 5. Remove symbol
+        r_remove = subprocess.run(
+            ["node", "cli.js", "watchlist", "remove", temp_list, test_symbol],
+            capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=20,
+        )
+        remove_out = json.loads(r_remove.stdout.strip())
+        if not remove_out.get("success"):
+            return False, f"remove symbol returned error: {remove_out}"
+
+        # 6. Delete watchlist
+        r_delete = subprocess.run(
+            ["node", "cli.js", "watchlist", "delete", temp_list],
+            capture_output=True, text=True, cwd=str(TV_NODE_DIR), timeout=25,
+        )
+        delete_out = json.loads(r_delete.stdout.strip())
+        if not delete_out.get("success"):
+            return False, f"delete watchlist returned error: {delete_out}"
+
+        return True, "watchlist create -> open -> add -> get -> remove -> delete cycle succeeded"
+    except Exception as e:
+        return False, f"Watchlist cycle exception: {e}"
+
+
+def run_section_3() -> bool:
+    print(f"\n{HEADER}Section 3 — Watchlist Command Tests{RESET}")
+    
+    # Pre-flight check: ensure workspace is active
+    ok_ws, msg_ws = ensure_agent_layout()
+    icon_ws = OK if ok_ws else FAIL
+    print(f"  [0.6] {icon_ws} agent-layout workspace")
+    print(f"       {msg_ws}")
+    if not ok_ws:
+         print(f"       ⛔ Watchlist tests skipped — cannot switch to agent-layout")
+         return False
+
+    ok, msg = test_watchlist_cycle()
+    icon = OK if ok else FAIL
+    print(f"  [3.1] {icon} live watchlist cycle")
+    print(f"       {msg}")
+    return ok
 
 def run_section_0() -> bool:
     print(f"\n{HEADER}Section 0 — Prerequisites{RESET}")
@@ -527,7 +618,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="TradingView CDP prerequisite checks")
     parser.add_argument(
         "--suite",
-        choices=["prereqs", "selectors", "pine", "chart", "all"],
+        choices=["prereqs", "selectors", "pine", "chart", "watchlist", "all"],
         default="all",
         help="Which section to run (default: all)",
     )
@@ -574,6 +665,12 @@ def main() -> None:
         if not ok2:
             print(f"\n{FAIL} Section 2 failed — chart command regression.")
             sys.exit(4)
+
+    if args.suite in ("watchlist", "all"):
+        ok3 = run_section_3()
+        if not ok3:
+            print(f"\n{FAIL} Section 3 failed — watchlist cycle regression.")
+            sys.exit(5)
 
     print(f"\n{OK} All prerequisite checks passed.")
 

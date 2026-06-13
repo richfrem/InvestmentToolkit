@@ -56,7 +56,17 @@ import sys
 from pathlib import Path
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+def _find_scripts_dir() -> Path:
+    here = Path(__file__).resolve().parent
+    for candidate in [here] + [here.parents[i] for i in range(9)]:
+        if (candidate / "tv_client.py").exists():
+            return candidate
+        if (candidate / "scripts" / "tv_client.py").exists():
+            return candidate / "scripts"
+    raise ImportError("tv_client.py not found — check plugin installation or set TV_CDP_DIR.")
+
+sys.path.insert(0, str(_find_scripts_dir()))
 from tv_client import run_node_module
 
 REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", ".."))

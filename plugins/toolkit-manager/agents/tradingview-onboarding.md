@@ -72,14 +72,15 @@ If they are on Free tier, strongly recommend upgrading before continuing. The to
 
 ## Phase 3: Plugin One-Time Setup
 
-Run once to install the Node.js CDP client:
+Run once to install the Node.js CDP client dependencies. Note that the `tradingview-cdp` engine is bundled with the [InvestmentToolkit GitHub repository](https://github.com/richfrem/InvestmentToolkit). If you are running an isolated install, ensure you have cloned or copied this folder to your project root first.
+
 ```bash
 cd tradingview-cdp
-npm install
-cd ../../..
+npm ci
+cd ..
 ```
 
-Confirm `npm install` succeeded before continuing.
+Confirm `npm ci` succeeded before continuing.
 
 ---
 
@@ -113,9 +114,18 @@ python3 plugins/tradingview/scripts/tv_health_check.py
 
 If it shows `❌ Not reachable`:
 1. Try launching TradingView manually with the debug port:
-   ```bash
-   python3 tools/launch_tradingview_with_debugport.py
-   ```
+   - On macOS:
+     ```bash
+     open -a TradingView --args --remote-debugging-port=9222
+     ```
+   - On Windows:
+     ```cmd
+     "C:\Program Files\TradingView\TradingView.exe" --remote-debugging-port=9222
+     ```
+   - In the monorepo:
+     ```bash
+     python3 tools/launch_tradingview_with_debugport.py
+     ```
 2. Wait ~10 seconds for it to fully start, then re-run the health check.
 3. If still failing, check that port 9222 isn't blocked: `lsof -i :9222`
 
@@ -125,7 +135,7 @@ If it shows `❌ Not reachable`:
 
 Once the health check passes, verify the broker panel data is readable:
 ```bash
-python3 investment_screener/backend/py_services/fetch_broker_data.py --accounts
+python3 plugins/tradingview/scripts/fetch_broker_data.py --accounts
 ```
 
 **Expected output:** A list of accounts like:
@@ -156,8 +166,20 @@ The skill will:
 ## Phase 8: Ongoing Use
 
 Explain these key points:
-- **Daily startup**: `python3 run_investment_toolkit.py` — launches TradingView with CDP + backend + frontend automatically.
-- **After closing TV**: run `python3 tools/launch_tradingview_with_debugport.py` to relaunch with the debug port.
+- **Daily startup**: In the monorepo, run `python3 run_investment_toolkit.py` — launches TradingView with CDP + backend + frontend automatically.
+- **After closing TV**: Relaunch TradingView with the debug port flag:
+  - On macOS:
+    ```bash
+    open -a TradingView --args --remote-debugging-port=9222
+    ```
+  - On Windows:
+    ```cmd
+    "C:\Program Files\TradingView\TradingView.exe" --remote-debugging-port=9222
+    ```
+  - In the monorepo:
+    ```bash
+    python3 tools/launch_tradingview_with_debugport.py
+    ```
 - **Price source badge**: the dashboard shows "TV Live" when CDP is active, "yfinance" when it isn't.
 - **Order execution**: `/place-order buy 10 AAPL in TFSA` — fills through TradingView's broker panel with a 3-step HITL confirmation.
 

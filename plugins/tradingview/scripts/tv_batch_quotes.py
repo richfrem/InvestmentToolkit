@@ -32,6 +32,16 @@ import argparse
 from pathlib import Path
 
 
+def _find_scripts_dir() -> Path:
+    here = Path(__file__).resolve().parent
+    for candidate in [here] + [here.parents[i] for i in range(9)]:
+        if (candidate / "tv_client.py").exists():
+            return candidate
+        if (candidate / "scripts" / "tv_client.py").exists():
+            return candidate / "scripts"
+    raise ImportError("tv_client.py not found — check plugin installation or set TV_CDP_DIR.")
+
+
 def batch_quotes(tickers: list[str]) -> dict:
     """Fetch quotes for multiple tickers. Uses TradingView for the active chart symbol,
     and yfinance for the rest.
@@ -44,8 +54,7 @@ def batch_quotes(tickers: list[str]) -> dict:
     """
     import yfinance as yf
     
-    # Ensure tv_client is importable from this directory
-    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    sys.path.insert(0, str(_find_scripts_dir()))
     from tv_client import tv_call, is_tv_running
 
     quotes: dict = {}

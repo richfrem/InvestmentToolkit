@@ -24,8 +24,16 @@ import json
 import argparse
 from pathlib import Path
 
-# Ensure tv_client is importable from this directory
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+def _find_scripts_dir() -> Path:
+    here = Path(__file__).resolve().parent
+    for candidate in [here] + [here.parents[i] for i in range(9)]:
+        if (candidate / "tv_client.py").exists():
+            return candidate
+        if (candidate / "scripts" / "tv_client.py").exists():
+            return candidate / "scripts"
+    raise ImportError("tv_client.py not found — check plugin installation or set TV_CDP_DIR.")
+
+sys.path.insert(0, str(_find_scripts_dir()))
 from tv_client import tv_call_or_fallback
 
 
