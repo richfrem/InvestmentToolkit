@@ -19,6 +19,8 @@ Two dedicated onboarding agents handle setup. Always route new users here first.
 4. CDP health check and broker data verification
 5. First `/tv-portfolio-sync`
 
+**Programmatic Check**: Run `/setup-tradingview` to trigger the `tv_setup` skill, which programmatically checks port `9222` health and `tradingview-cdp` node module dependencies.
+
 ### Questrade API (Optional — fallback only)
 **Trigger**: `/setup-questrade`  
 **Skill**: Interactive wizard for AES-256-GCM encrypted token setup. Use only if TradingView is unavailable.
@@ -51,7 +53,9 @@ This workstation is built on a modular plugin architecture. You have access to t
 
 ### 4. TradingView Integration (`plugins/tradingview`)
 *Execution, live pricing, chart control, and Pine Script layer via CDP.*
+- `/setup-tradingview`: Programmatic diagnostics check for `tradingview-cdp` installation and Port 9222 health.
 - `/tv-portfolio-sync`: Syncs all accounts (TFSA + RRSP + Cash) from TV broker panel via CDP.
+- `/tv-watchlist-sync`: Syncs and aligns TradingView watchlists (`TA-Full Watchlist` and `TA-Current Holdings`) with `watchlist.json` / projections and `portfolio.json`. Direct script: `watchlist_manager.py`.
 - `/place-order`: Live order execution via CDP DOM automation. 3-step HITL confirmation.
 - `/modify-order` & `/cancel-order`: Order management via CDP.
 - `/get-orders`: Fetch current working/inactive orders.
