@@ -20,6 +20,7 @@ import * as alerts from './core/alerts.js';
 import * as capture from './core/capture.js';
 import * as pine from './core/pine.js';
 import * as chart from './core/chart.js';
+import * as watchlist from './core/watchlist.js';
 
 // --- status ---
 register('status', {
@@ -279,6 +280,73 @@ register('sweep', {
       onProgress: (ticker, i, total) => process.stderr.write(`  [${i}/${total}] ${ticker}\n`),
     });
   },
+});
+
+// --- watchlist ---
+register('watchlist', {
+  description: 'TradingView Watchlist management',
+  subcommands: new Map([
+    ['open', {
+      description: 'Open a watchlist by name',
+      handler: async (opts, positionals) => {
+        const name = positionals[0];
+        if (!name) throw new Error('Watchlist name required — e.g. watchlist open "Name"');
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return watchlist.openWatchlist(client, name);
+      },
+    }],
+    ['get', {
+      description: 'Read symbols and prices from the active or named watchlist',
+      handler: async () => {
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return watchlist.getWatchlist(client);
+      },
+    }],
+    ['add', {
+      description: 'Add a symbol to a watchlist',
+      handler: async (opts, positionals) => {
+        const wName = positionals[0];
+        const symbol = positionals[1];
+        if (!wName || !symbol) throw new Error('Watchlist name and symbol required — e.g. watchlist add "Name" "SYMBOL"');
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return watchlist.addWatchlistItem(client, wName, symbol);
+      },
+    }],
+    ['remove', {
+      description: 'Remove a symbol from a watchlist',
+      handler: async (opts, positionals) => {
+        const wName = positionals[0];
+        const symbol = positionals[1];
+        if (!wName || !symbol) throw new Error('Watchlist name and symbol required — e.g. watchlist remove "Name" "SYMBOL"');
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return watchlist.removeWatchlistItem(client, wName, symbol);
+      },
+    }],
+    ['create', {
+      description: 'Create a new watchlist',
+      handler: async (opts, positionals) => {
+        const name = positionals[0];
+        if (!name) throw new Error('Watchlist name required — e.g. watchlist create "Name"');
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return watchlist.createWatchlist(client, name);
+      },
+    }],
+    ['delete', {
+      description: 'Delete a watchlist',
+      handler: async (opts, positionals) => {
+        const name = positionals[0];
+        if (!name) throw new Error('Watchlist name required — e.g. watchlist delete "Name"');
+        const { getClient } = await import('./connection.js');
+        const client = await getClient();
+        return watchlist.deleteWatchlist(client, name);
+      },
+    }],
+  ]),
 });
 
 await run(process.argv);

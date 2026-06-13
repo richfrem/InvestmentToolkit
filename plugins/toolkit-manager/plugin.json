@@ -23,6 +23,11 @@
             "name": "toolkit-onboarding-guide",
             "path": "agents/toolkit-onboarding-guide.md",
             "trigger": "Help me set up the toolkit"
+        },
+        {
+            "name": "tradingview-onboarding",
+            "path": "agents/tradingview-onboarding.md",
+            "trigger": "Set up TradingView for me"
         }
     ],
     "tags": [

@@ -25,7 +25,7 @@ allowed-tools: Bash, Read
 ## Phase 1 — Health Check
 
 ```bash
-python3 plugins/tradingview/scripts/tv_health_check.py --json
+python3 "$(find plugins/tradingview/scripts ~/.claude/plugins/cache -name tv_health_check.py -path "*/tradingview/*" 2>/dev/null | sort | tail -1)" --json
 ```
 
 If TradingView is **not** running, print the following and stop:

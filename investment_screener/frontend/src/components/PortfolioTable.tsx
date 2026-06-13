@@ -17,8 +17,8 @@
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchAllProjections, syncAndRefreshPortfolio } from '../services/api';
-import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown } from 'lucide-react';
+import { fetchAllProjections, syncAndRefreshPortfolio, addToWatchlist, removeFromWatchlist } from '../services/api';
+import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown, Star } from 'lucide-react';
 import { PriceSourceBadge } from './PriceSourceBadge';
 import { TradeButtons } from './TradeButtons';
 import { TradeLogModal } from './TradeLogModal';
@@ -169,6 +169,7 @@ export default function PortfolioTable() {
     const [lastRefreshedAt, setLastRefreshedAt] = useState<Date | null>(null);
     const [exchangeRate, setExchangeRate] = useState<number>(1.38);
     const [logModal, setLogModal] = useState<{ ticker: string } | null>(null);
+    const [watchedTickers, setWatchedTickers] = useState<Set<string>>(new Set());
 
     // Load persisted prefs once
     const savedPrefs = useRef<TablePrefs | null>(null);
@@ -266,6 +267,20 @@ export default function PortfolioTable() {
         }
     }
 
+    const toggleWatch = useCallback(async (e: React.MouseEvent, ticker: string, currentlyWatched: boolean) => {
+        e.stopPropagation();
+        try {
+            if (currentlyWatched) {
+                await removeFromWatchlist(ticker);
+            } else {
+                await addToWatchlist(ticker);
+            }
+            fetchData();
+        } catch (err) {
+            console.error('Error toggling watchlist:', err);
+        }
+    }, []);
+
     async function fetchData() {
         setLoading(true);
         setError(null);
@@ -310,10 +325,17 @@ export default function PortfolioTable() {
 
             let actionsMap: Record<string, any> = {};
             let reviewMap: Record<string, any> = {};
+            const watched = new Set<string>();
             if (ahRes?.ok) {
                 const ahData = await ahRes.json();
-                for (const h of ahData) actionsMap[h.ticker] = h.action;
+                for (const h of ahData) {
+                    actionsMap[h.ticker] = h.action;
+                    if (h.isWatched) {
+                        watched.add(h.ticker);
+                    }
+                }
             }
+            setWatchedTickers(watched);
             if (rvRes?.ok) {
                 const rvData = await rvRes.json();
                 for (const h of [...(rvData.holdings ?? []), ...(rvData.holdingsUnchanged ?? [])]) reviewMap[h.ticker] = h;
@@ -584,7 +606,19 @@ export default function PortfolioTable() {
                                                 style={col.isChange ? { backgroundColor: changeBg(numVal) } : isPctCol ? { backgroundColor: pctBg } : undefined}
                                             >
                                                 {col.id === 'symbol' ? (
-                                                    <span className="font-bold text-white">{val}</span>
+                                                     <div className="flex items-center gap-1.5">
+                                                         <button
+                                                             onClick={(e) => toggleWatch(e, row.symbol, watchedTickers.has(row.symbol))}
+                                                             className="text-slate-600 hover:text-yellow-400 active:scale-95 transition-all p-0.5 focus:outline-none"
+                                                             title={watchedTickers.has(row.symbol) ? "Remove from watchlist" : "Add to watchlist"}
+                                                         >
+                                                             <Star
+                                                                 size={13}
+                                                                 className={watchedTickers.has(row.symbol) ? "fill-yellow-400 text-yellow-400" : "text-zinc-600"}
+                                                             />
+                                                         </button>
+                                                         <span className="font-bold text-white">{val}</span>
+                                                     </div>
                                                 ) : col.id === 'name' ? (
                                                     <span className="text-zinc-300 text-xs">{val}</span>
                                                 ) : col.isChange ? (

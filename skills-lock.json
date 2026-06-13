@@ -6,84 +6,91 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-17T06:30:25.623967Z",
-      "updatedAt": "2026-06-10T16:13:44.545695Z"
+      "updatedAt": "2026-06-13T16:28:49.076111Z"
     },
     "13f-tracker": {
       "source": "portfolio-advisor",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-17T06:30:25.623967Z",
-      "updatedAt": "2026-06-10T16:13:44.545695Z"
+      "updatedAt": "2026-06-13T16:28:49.076111Z"
     },
     "adr-management": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:18.824848Z",
-      "updatedAt": "2026-06-10T16:14:06.382653Z"
+      "updatedAt": "2026-06-13T16:28:38.189225Z"
+    },
+    "adversarial-review": {
+      "source": "portfolio-advisor",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-13T16:28:49.076111Z",
+      "updatedAt": "2026-06-13T16:28:49.076111Z"
     },
     "agent-swarm": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:19.035030Z",
-      "updatedAt": "2026-06-10T16:14:05.385564Z"
+      "updatedAt": "2026-06-13T16:28:37.060530Z"
     },
     "agt-security": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:49.486164Z",
-      "updatedAt": "2026-06-10T16:14:06.225642Z"
+      "updatedAt": "2026-06-13T16:28:38.010142Z"
     },
     "agy-cli-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:49.486164Z",
-      "updatedAt": "2026-06-10T16:14:06.225642Z"
+      "updatedAt": "2026-06-13T16:28:38.010142Z"
     },
     "alert-sync": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-08T15:26:54.011807Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "analyze-plugin": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:19.196680Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "antigravity-project-setup": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:21.101524Z",
-      "updatedAt": "2026-06-10T16:14:06.225642Z"
+      "updatedAt": "2026-06-13T16:28:38.010142Z"
     },
     "audit-plugin": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:19.196680Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "audit-plugin-l5": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:19.196680Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "author-pine-script": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-18T06:35:26.656959Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "brainstorming": {
       "source": "https://github.com/obra/superpowers",
@@ -97,210 +104,210 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.983472Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "business-workflow-doc": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.983472Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "calibrate-targets": {
       "source": "portfolio-advisor",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-03T02:39:20.203477Z",
-      "updatedAt": "2026-06-10T16:13:44.545695Z"
+      "updatedAt": "2026-06-13T16:28:49.076111Z"
     },
     "cancel-order": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-17T06:30:25.791437Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "chart-snapshot": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-08T15:26:54.011807Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "claude-cli-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-14T05:33:36.857323Z",
-      "updatedAt": "2026-06-10T16:14:06.225642Z"
+      "updatedAt": "2026-06-13T16:28:38.010142Z"
     },
     "claude-project-setup": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-14T05:33:36.857323Z",
-      "updatedAt": "2026-06-10T16:14:06.225642Z"
+      "updatedAt": "2026-06-13T16:28:38.010142Z"
     },
     "codex-cli-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-09T04:01:40.256128Z",
-      "updatedAt": "2026-06-10T16:14:06.225642Z"
+      "updatedAt": "2026-06-13T16:28:38.010142Z"
     },
     "coding-conventions-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-25T01:24:06.709534Z",
-      "updatedAt": "2026-06-10T16:14:06.382653Z"
+      "updatedAt": "2026-06-13T16:28:38.189225Z"
     },
     "compile-apm-package": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-18T02:01:16.078468Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "context-bundler": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.355119Z",
-      "updatedAt": "2026-06-10T16:14:06.382653Z"
+      "updatedAt": "2026-06-13T16:28:38.189225Z"
     },
     "convert-mermaid": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:50.244531Z",
-      "updatedAt": "2026-06-10T16:14:06.382653Z"
+      "updatedAt": "2026-06-13T16:28:38.189225Z"
     },
     "convert-plugin-to-apm": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-18T02:01:16.078468Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "copilot-cli-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.504398Z",
-      "updatedAt": "2026-06-10T16:14:06.225642Z"
+      "updatedAt": "2026-06-13T16:28:38.010142Z"
     },
     "create-agentic-workflow": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.270463Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "create-apm-package": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-18T02:01:16.078468Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "create-azure-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.270463Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "create-command": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.270463Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "create-docker-skill": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.270463Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "create-github-action": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.270463Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "create-hook": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.270463Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "create-mcp-integration": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.270463Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "create-plugin": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.270463Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "create-skill": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.270463Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "create-stateful-skill": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.270463Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "create-sub-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.270463Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "daily-brief": {
       "source": "portfolio-advisor",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-10T16:13:44.545695Z",
-      "updatedAt": "2026-06-10T16:13:44.545695Z"
+      "updatedAt": "2026-06-13T16:28:49.076111Z"
     },
     "daily-loop": {
       "source": "portfolio-advisor",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-10T16:13:44.545695Z",
-      "updatedAt": "2026-06-10T16:13:44.545695Z"
+      "updatedAt": "2026-06-13T16:28:49.076111Z"
     },
     "dependency-management": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.643373Z",
-      "updatedAt": "2026-06-10T16:14:06.271328Z"
+      "updatedAt": "2026-06-13T16:28:38.057218Z"
     },
     "discovery-planning": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.983472Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "dispatching-parallel-agents": {
       "source": "https://github.com/obra/superpowers",
@@ -314,35 +321,35 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:19.035030Z",
-      "updatedAt": "2026-06-10T16:14:05.385564Z"
+      "updatedAt": "2026-06-13T16:28:37.060530Z"
     },
     "ecosystem-authoritative-sources": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-14T05:33:36.785483Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "ecosystem-standards": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-14T05:33:36.785483Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "etf_analysis": {
       "source": "etf-analysis",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-14T06:41:49.025961Z",
-      "updatedAt": "2026-06-10T16:13:44.456648Z"
+      "updatedAt": "2026-06-13T16:28:48.989856Z"
     },
     "eval-autoresearch-fit": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:19.196680Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "excel-to-csv": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -363,28 +370,28 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.983472Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "exploration-optimizer": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.983472Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "exploration-session-brief": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.983472Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "exploration-workflow": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.983472Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "finishing-a-development-branch": {
       "source": "https://github.com/obra/superpowers",
@@ -398,140 +405,140 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:19.196680Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "forward-valuation-challenge": {
       "source": "stock-valuation",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-22T14:16:48.390460Z",
-      "updatedAt": "2026-06-10T16:13:44.597995Z"
+      "updatedAt": "2026-06-13T16:28:49.129827Z"
     },
     "gemini-cli-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:21.101524Z",
-      "updatedAt": "2026-06-10T16:14:06.225642Z"
+      "updatedAt": "2026-06-13T16:28:38.010142Z"
     },
     "get-orders": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-17T06:30:25.791437Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "hf-download": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-09T04:01:40.404477Z",
-      "updatedAt": "2026-06-10T16:14:06.382653Z"
+      "updatedAt": "2026-06-13T16:28:38.189225Z"
     },
     "hf-init": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:50.244531Z",
-      "updatedAt": "2026-06-10T16:14:06.382653Z"
+      "updatedAt": "2026-06-13T16:28:38.189225Z"
     },
     "hf-upload": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:50.244531Z",
-      "updatedAt": "2026-06-10T16:14:06.382653Z"
+      "updatedAt": "2026-06-13T16:28:38.189225Z"
     },
     "humanize": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:50.244531Z",
-      "updatedAt": "2026-06-10T16:14:06.382653Z"
+      "updatedAt": "2026-06-13T16:28:38.189225Z"
     },
     "install-apm-package": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-18T02:01:16.078468Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "l5-red-team-auditor": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:19.196680Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "learning-loop": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:19.035030Z",
-      "updatedAt": "2026-06-10T16:14:05.385564Z"
+      "updatedAt": "2026-06-13T16:28:37.060530Z"
     },
     "link-checker-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:21.227680Z",
-      "updatedAt": "2026-06-10T16:14:06.382653Z"
+      "updatedAt": "2026-06-13T16:28:38.189225Z"
     },
     "local-llm-bridge": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-09T04:01:40.256128Z",
-      "updatedAt": "2026-06-10T16:14:06.225642Z"
+      "updatedAt": "2026-06-13T16:28:38.010142Z"
     },
     "local-llm-setup": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-09T04:01:40.256128Z",
-      "updatedAt": "2026-06-10T16:14:06.225642Z"
+      "updatedAt": "2026-06-13T16:28:38.010142Z"
     },
     "maf-adapter": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:49.486164Z",
-      "updatedAt": "2026-06-10T16:14:06.225642Z"
+      "updatedAt": "2026-06-13T16:28:38.010142Z"
     },
     "manage-marketplace": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.270463Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "memory-management": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:48.007431Z",
-      "updatedAt": "2026-06-10T16:14:05.574936Z"
+      "updatedAt": "2026-06-13T16:28:37.261611Z"
     },
     "mine-plugins": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:19.196680Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "mine-skill": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:19.196680Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "modify-order": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-17T06:30:25.791437Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "obsidian-bases-manager": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -608,168 +615,168 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-25T01:24:05.571085Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "optimize-context": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-14T05:33:36.857323Z",
-      "updatedAt": "2026-06-10T16:14:06.382653Z"
+      "updatedAt": "2026-06-13T16:28:38.189225Z"
     },
     "orchestrator": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:19.035030Z",
-      "updatedAt": "2026-06-10T16:14:05.385564Z"
+      "updatedAt": "2026-06-13T16:28:37.060530Z"
     },
     "os-architect": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-01T04:01:17.356052Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "os-clean-locks": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:18.958538Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "os-environment-probe": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-01T04:01:17.356052Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "os-eval-backport": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:18.958538Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "os-eval-lab-setup": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:18.958538Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "os-eval-runner": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:18.958538Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "os-evolution-planner": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-01T04:01:17.356052Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "os-evolution-verifier": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-01T04:01:17.356052Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "os-experiment-log": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-01T04:01:17.356052Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "os-guide": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:18.958538Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "os-improvement-loop": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:18.958538Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "os-improvement-report": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:18.958538Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "os-init": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:18.958538Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "os-memory-manager": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:18.958538Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "os-skill-improvement": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:18.958538Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "path-reference-auditor": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:19.196680Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "pine-inject": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-17T22:00:44.152259Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "place-order": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-17T06:30:25.791437Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "plugin-installer": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-31T14:36:11.857224Z",
-      "updatedAt": "2026-06-09T04:01:40.621490Z"
+      "updatedAt": "2026-06-13T16:28:38.366647Z"
     },
     "plugin-remover": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-31T14:36:11.857224Z",
-      "updatedAt": "2026-06-09T04:01:40.621490Z"
+      "updatedAt": "2026-06-13T16:28:38.366647Z"
     },
     "plugin-syncer": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-31T14:36:11.857224Z",
-      "updatedAt": "2026-06-09T04:01:40.621490Z"
+      "updatedAt": "2026-06-13T16:28:38.366647Z"
     },
     "portfolio-advisor": {
       "source": "portfolio-advisor",
@@ -783,42 +790,42 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-03T15:16:12.401761Z",
-      "updatedAt": "2026-06-10T16:13:44.545695Z"
+      "updatedAt": "2026-06-13T16:28:49.076111Z"
     },
     "price-refresh": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-08T15:26:54.011807Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "project-setup": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:49.486164Z",
-      "updatedAt": "2026-06-10T16:14:06.225642Z"
+      "updatedAt": "2026-06-13T16:28:38.010142Z"
     },
     "prototype-builder": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.983472Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "questrade-token-setup": {
       "source": "toolkit-manager",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-01T14:56:49.314940Z",
-      "updatedAt": "2026-06-10T16:13:44.642001Z"
+      "updatedAt": "2026-06-13T16:28:49.173806Z"
     },
     "rebalance-portfolio": {
       "source": "portfolio-advisor",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-02T22:24:56.857430Z",
-      "updatedAt": "2026-06-10T16:13:44.545695Z"
+      "updatedAt": "2026-06-13T16:28:49.076111Z"
     },
     "receiving-code-review": {
       "source": "https://github.com/obra/superpowers",
@@ -832,14 +839,14 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.355119Z",
-      "updatedAt": "2026-06-10T16:14:06.382653Z"
+      "updatedAt": "2026-06-13T16:28:38.189225Z"
     },
     "red-team-review": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:19.035030Z",
-      "updatedAt": "2026-06-10T16:14:05.385564Z"
+      "updatedAt": "2026-06-13T16:28:37.060530Z"
     },
     "requesting-code-review": {
       "source": "https://github.com/obra/superpowers",
@@ -853,70 +860,70 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:48.007431Z",
-      "updatedAt": "2026-06-10T16:14:05.574936Z"
+      "updatedAt": "2026-06-13T16:28:37.261611Z"
     },
     "rlm-audit": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:48.007431Z",
-      "updatedAt": "2026-06-10T16:14:05.574936Z"
+      "updatedAt": "2026-06-13T16:28:37.261611Z"
     },
     "rlm-cleanup-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:48.007431Z",
-      "updatedAt": "2026-06-10T16:14:05.574936Z"
+      "updatedAt": "2026-06-13T16:28:37.261611Z"
     },
     "rlm-curator": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:48.007431Z",
-      "updatedAt": "2026-06-10T16:14:05.574936Z"
+      "updatedAt": "2026-06-13T16:28:37.261611Z"
     },
     "rlm-distill-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:48.007431Z",
-      "updatedAt": "2026-06-10T16:14:05.574936Z"
+      "updatedAt": "2026-06-13T16:28:37.261611Z"
     },
     "rlm-init": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:48.007431Z",
-      "updatedAt": "2026-06-10T16:14:05.574936Z"
+      "updatedAt": "2026-06-13T16:28:37.261611Z"
     },
     "rlm-search": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:48.007431Z",
-      "updatedAt": "2026-06-10T16:14:05.574936Z"
+      "updatedAt": "2026-06-13T16:28:37.261611Z"
     },
     "run-screener": {
       "source": "toolkit-manager",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-01T14:56:49.314940Z",
-      "updatedAt": "2026-06-10T16:13:44.642001Z"
+      "updatedAt": "2026-06-13T16:28:49.173806Z"
     },
     "self-audit": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:19.196680Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "self-evolution": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-18T08:10:08.421538Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "spec-kitty-accept": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
@@ -1056,21 +1063,21 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-02T22:24:56.807421Z",
-      "updatedAt": "2026-06-10T16:13:44.597995Z"
+      "updatedAt": "2026-06-13T16:28:49.129827Z"
     },
     "stock_valuation": {
       "source": "stock-valuation",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T15:53:47.497060Z",
-      "updatedAt": "2026-06-10T16:13:44.597995Z"
+      "updatedAt": "2026-06-13T16:28:49.129827Z"
     },
     "strategic-review": {
       "source": "portfolio-advisor",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-02T22:24:56.857430Z",
-      "updatedAt": "2026-06-10T16:13:44.545695Z"
+      "updatedAt": "2026-06-13T16:28:49.076111Z"
     },
     "subagent-driven-development": {
       "source": "https://github.com/obra/superpowers",
@@ -1084,21 +1091,21 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.983472Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "symlink-manager": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:21.227680Z",
-      "updatedAt": "2026-06-10T16:14:06.382653Z"
+      "updatedAt": "2026-06-13T16:28:38.189225Z"
     },
     "synthesize-learnings": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:19.196680Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "systematic-debugging": {
       "source": "https://github.com/obra/superpowers",
@@ -1112,35 +1119,35 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-10T16:13:44.709826Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "ta-red-team": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-17T22:31:14.832511Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "ta-snapshot": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-08T15:26:54.011807Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "task-agent": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:21.315922Z",
-      "updatedAt": "2026-06-10T16:14:06.382653Z"
+      "updatedAt": "2026-06-13T16:28:38.189225Z"
     },
     "technical-analysis-expert": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-17T22:00:44.152259Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "test-driven-development": {
       "source": "https://github.com/obra/superpowers",
@@ -1154,98 +1161,112 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-08T15:26:53.795824Z",
-      "updatedAt": "2026-06-10T16:13:44.545695Z"
+      "updatedAt": "2026-06-13T16:28:49.076111Z"
     },
     "thesis-review": {
       "source": "portfolio-advisor",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-31T15:15:25.139235Z",
-      "updatedAt": "2026-06-10T16:13:44.545695Z"
+      "updatedAt": "2026-06-13T16:28:49.076111Z"
     },
     "todo-check": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:18.958538Z",
-      "updatedAt": "2026-06-10T16:14:05.320071Z"
+      "updatedAt": "2026-06-13T16:28:36.993117Z"
     },
     "triple-loop-learning": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:19.035030Z",
-      "updatedAt": "2026-06-10T16:14:05.385564Z"
+      "updatedAt": "2026-06-13T16:28:37.060530Z"
     },
     "tv-add-indicator": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-18T06:35:26.656959Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "tv-change-symbol": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-18T06:35:26.656959Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "tv-change-type": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-18T06:35:26.656959Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "tv-chart-setup": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-18T06:35:26.656959Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
+    },
+    "tv-manage-watchlists": {
+      "source": "tradingview",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-13T16:28:49.243198Z",
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "tv-portfolio-sync": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-17T06:30:25.791437Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "tv-save-indicator": {
       "source": "tradingview",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-18T06:35:26.656959Z",
-      "updatedAt": "2026-06-10T16:13:44.709826Z"
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
+    },
+    "tv-setup": {
+      "source": "tradingview",
+      "sourceType": "local",
+      "computedHash": "",
+      "installedAt": "2026-06-13T16:28:49.243198Z",
+      "updatedAt": "2026-06-13T16:28:49.243198Z"
     },
     "update-ecosystem-index": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-18T02:01:16.078468Z",
-      "updatedAt": "2026-06-10T16:14:06.147285Z"
+      "updatedAt": "2026-06-13T16:28:37.914381Z"
     },
     "update-portfolio-targets": {
       "source": "portfolio-advisor",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-03T02:39:20.203477Z",
-      "updatedAt": "2026-06-10T16:13:44.545695Z"
+      "updatedAt": "2026-06-13T16:28:49.076111Z"
     },
     "user-story-capture": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.983472Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "using-exploration-cycle": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-09T04:01:40.492138Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "using-git-worktrees": {
       "source": "https://github.com/obra/superpowers",
@@ -1266,49 +1287,49 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-22T14:16:48.390460Z",
-      "updatedAt": "2026-06-10T16:13:44.597995Z"
+      "updatedAt": "2026-06-13T16:28:49.129827Z"
     },
     "vector-db-audit": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:48.007431Z",
-      "updatedAt": "2026-06-10T16:14:05.574936Z"
+      "updatedAt": "2026-06-13T16:28:37.261611Z"
     },
     "vector-db-cleanup": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:48.007431Z",
-      "updatedAt": "2026-06-10T16:14:05.574936Z"
+      "updatedAt": "2026-06-13T16:28:37.261611Z"
     },
     "vector-db-ingest": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:48.007431Z",
-      "updatedAt": "2026-06-10T16:14:05.574936Z"
+      "updatedAt": "2026-06-13T16:28:37.261611Z"
     },
     "vector-db-init": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:48.007431Z",
-      "updatedAt": "2026-06-10T16:14:05.574936Z"
+      "updatedAt": "2026-06-13T16:28:37.261611Z"
     },
     "vector-db-launch": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:48.007431Z",
-      "updatedAt": "2026-06-10T16:14:05.574936Z"
+      "updatedAt": "2026-06-13T16:28:37.261611Z"
     },
     "vector-db-search": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-06-01T01:49:48.007431Z",
-      "updatedAt": "2026-06-10T16:14:05.574936Z"
+      "updatedAt": "2026-06-13T16:28:37.261611Z"
     },
     "verification-before-completion": {
       "source": "https://github.com/obra/superpowers",
@@ -1322,63 +1343,63 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-23T17:32:42.299654Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "vibe-browser-audit": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-23T17:32:42.299654Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "vibe-domain-extractor": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-23T17:32:42.299654Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "vibe-reengineer": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-23T17:32:42.299654Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "vibe-slice-migrator": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-23T17:32:42.299654Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "vibe-spec-packager": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-23T17:32:42.299654Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "vibe-to-speckit-superpowers": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-23T17:32:42.299654Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "vibe-togaf-architect": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-23T17:32:42.299654Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "visual-companion": {
       "source": "https://github.com/richfrem/agent-plugins-skills",
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-04-10T14:54:20.983472Z",
-      "updatedAt": "2026-06-10T16:14:06.490906Z"
+      "updatedAt": "2026-06-13T16:28:38.306084Z"
     },
     "writing-plans": {
       "source": "https://github.com/obra/superpowers",
@@ -1399,7 +1420,7 @@
       "sourceType": "local",
       "computedHash": "",
       "installedAt": "2026-05-04T05:31:08.316771Z",
-      "updatedAt": "2026-06-10T16:13:44.545695Z"
+      "updatedAt": "2026-06-13T16:28:49.076111Z"
     }
   }
 }

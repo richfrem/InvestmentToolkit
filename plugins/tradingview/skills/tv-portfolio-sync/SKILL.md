@@ -12,6 +12,13 @@ allowed-tools: Bash, Read, Write
 
 # TV Portfolio Sync Skill
 
+## ⚠️ Pre-flight Check
+Before running this skill, verify the TradingView CDP connection is active and debug port 9222 is open:
+```bash
+python3 "$(find plugins/tradingview/scripts ~/.claude/plugins/cache -name tv_health_check.py -path "*/tradingview/*" 2>/dev/null | sort | tail -1)"
+```
+*If this check fails, run `/setup-tradingview` first. If using a non-standard install path, set `export TV_CDP_DIR=/path/to/tradingview-cdp` before executing.*
+
 ## Quick Reference
 - **Trigger**: `/tv-portfolio-sync`, "sync portfolio from TradingView", "update portfolio from TV"
 - **Execution**: `fetch_broker_data.py --snapshot` → all accounts → diff → HITL → merge
@@ -33,7 +40,7 @@ allowed-tools: Bash, Read, Write
 ## Step 1: Fetch TV Snapshot (All Accounts)
 
 ```bash
-python3 investment_screener/backend/py_services/fetch_broker_data.py --snapshot
+python3 plugins/tradingview/scripts/fetch_broker_data.py --snapshot
 ```
 
 This reads ALL accounts (TFSA, RRSP, Cash) from TradingView's broker panel via the CDP browser automation.

@@ -18,8 +18,8 @@
  */
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown, BrainCircuit, ExternalLink, Activity } from 'lucide-react';
-import { fetchAllProjections, type Projection } from '../services/api';
+import { SlidersHorizontal, ChevronUp, ChevronDown, ChevronsUpDown, Filter, ArrowUp, ArrowDown, BrainCircuit, ExternalLink, Activity, Star } from 'lucide-react';
+import { type Projection, addToWatchlist, removeFromWatchlist } from '../services/api';
 import { TradeButtons } from './TradeButtons';
 import { safeNum, fmtPct, fmtDollar, fmtPrice, changeBgUpside, sortByColumn } from '../utils/formatters';
 import { getActionBadgeClass } from '../utils/actionColors';
@@ -60,6 +60,7 @@ interface ScreenerRow {
     change_1m: number | null;
     change_ytd: number | null;
     change_1y: number | null;
+    isWatched: boolean;
 }
 
 // ─── Column Definitions ───────────────────────────────────────────────────────
@@ -196,48 +197,17 @@ export default function ScreenerTable() {
         }
     }, [visible, columnOrder, columnWidths]);
 
-    const fetchData = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const data = await fetchAllProjections();
-            // Filter only AI projections
-            const aiOnly = data.filter(p => p.source === 'AI_AGENT');
-            // Group by ticker and take latest
-            const latestByTicker = aiOnly.reduce((acc, curr) => {
-                if (!acc[curr.ticker] || new Date(curr.savedAt) > new Date(acc[curr.ticker].savedAt)) {
-                    acc[curr.ticker] = curr;
-                }
-                return acc;
-            }, {} as Record<string, Projection>);
-
-            setProjections(Object.values(latestByTicker));
-        } catch (err: any) {
-            setError(err.message || 'Failed to load screener data');
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => { fetchData(); }, [fetchData]);
-
-    useEffect(() => {
-        window.addEventListener('portfolio-synced', fetchData);
-        return () => window.removeEventListener('portfolio-synced', fetchData);
-    }, [fetchData]);
-
-
     const [portfolioWeights, setPortfolioWeights] = useState<Record<string, { actualPct: number; targetPct: number }>>({});
     const [allPortfolioWeights, setAllPortfolioWeights] = useState<Record<string, number>>({});
     const [reviewRecommendations, setReviewRecommendations] = useState<Record<string, { target: number; rationale: string; actualPct: number; action?: string }>>({});
     const [allHoldings, setAllHoldings] = useState<any[]>([]);
     const [heatmapMap, setHeatmapMap] = useState<Record<string, any>>({});
-    // Index of allHoldings by ticker for O(1) action lookup
-    const allHoldingsMap = allHoldings.reduce((m, h) => { m[h.ticker] = h; return m; }, {} as Record<string, any>);
+    const allHoldingsMap = useMemo(() => allHoldings.reduce((m, h) => { m[h.ticker] = h; return m; }, {} as Record<string, any>), [allHoldings]);
 
-    useEffect(() => {
-        const init = async () => {
-            // Fetch all data sources in parallel
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
             const [healthData, weightsData, reviewData, holdingsData, portData, allProjData] = await Promise.all([
                 fetch('/api/theses/target-portfolio/health').then(r => r.ok ? r.json() : null).catch(() => null),
                 fetch('/api/portfolio/weights').then(r => r.ok ? r.json() : null).catch(() => null),
@@ -248,7 +218,6 @@ export default function ScreenerTable() {
             ]);
 
             if (allProjData) {
-                // Filter only AI projections and deduplicate by latest savedAt
                 const aiOnly = (allProjData as Projection[]).filter(p => p.source === 'AI_AGENT');
                 const latestByTicker = aiOnly.reduce((acc, curr) => {
                     if (!acc[curr.ticker] || new Date(curr.savedAt) > new Date(acc[curr.ticker].savedAt)) {
@@ -257,7 +226,6 @@ export default function ScreenerTable() {
                     return acc;
                 }, {} as Record<string, Projection>);
                 setProjections(Object.values(latestByTicker));
-                setLoading(false);
             }
 
             if (healthData) {
@@ -281,38 +249,59 @@ export default function ScreenerTable() {
             }
             if (holdingsData) setAllHoldings(holdingsData);
 
-            // Build combined heatmap items: owned positions + all screener tickers with shares: 0
-            // This ensures change_1d shows for every row including watchlist/projection-only tickers.
             const portfolioItems: any[] = portData?.items ?? [];
             const coveredSymbols = new Set(portfolioItems.map((i: any) => (i.symbol as string).toUpperCase()));
 
-            // Thesis holdings not in live portfolio
             const thesisExtras = (holdingsData ?? [])
                 .filter((h: any) => !coveredSymbols.has((h.ticker as string).toUpperCase()))
                 .map((h: any) => { coveredSymbols.add((h.ticker as string).toUpperCase()); return { symbol: h.ticker, shares: 0 }; });
 
-            // Projection tickers not yet covered (e.g. analysed but removed from thesis)
             const projTickers = (allProjData ?? [])
                 .filter((p: any) => p.source === 'AI_AGENT' && !coveredSymbols.has((p.ticker as string).toUpperCase()))
                 .map((p: any) => { coveredSymbols.add((p.ticker as string).toUpperCase()); return { symbol: p.ticker, shares: 0 }; });
 
             const allItems = [...portfolioItems, ...thesisExtras, ...projTickers];
 
-            if (allItems.length === 0) return;
-            const heatmapData = await fetch('/api/portfolio-heatmap', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items: allItems }),
-            }).then(r => r.ok ? r.json() : null).catch(() => null);
+            if (allItems.length > 0) {
+                const heatmapData = await fetch('/api/portfolio-heatmap', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: allItems }),
+                }).then(r => r.ok ? r.json() : null).catch(() => null);
 
-            if (heatmapData?.stocks) {
-                const map: Record<string, any> = {};
-                for (const s of heatmapData.stocks) map[s.symbol] = s;
-                setHeatmapMap(map);
+                if (heatmapData?.stocks) {
+                    const map: Record<string, any> = {};
+                    for (const s of heatmapData.stocks) map[s.symbol] = s;
+                    setHeatmapMap(map);
+                }
             }
-        };
-        init();
+        } catch (err: any) {
+            setError(err.message || 'Failed to load screener data');
+        } finally {
+            setLoading(false);
+        }
     }, []);
+
+    useEffect(() => { fetchData(); }, [fetchData]);
+
+    useEffect(() => {
+        window.addEventListener('portfolio-synced', fetchData);
+        return () => window.removeEventListener('portfolio-synced', fetchData);
+    }, [fetchData]);
+
+    const toggleWatch = useCallback(async (e: React.MouseEvent, ticker: string, currentlyWatched: boolean) => {
+        e.stopPropagation();
+        try {
+            if (currentlyWatched) {
+                await removeFromWatchlist(ticker);
+            } else {
+                await addToWatchlist(ticker);
+            }
+            fetchData();
+        } catch (err) {
+            console.error('Error toggling watchlist:', err);
+        }
+    }, [fetchData]);
 
     // Close picker on outside click
     useEffect(() => {
@@ -409,6 +398,7 @@ export default function ScreenerTable() {
                 change_1m: heatmapMap[p.ticker]?.change_1m ?? null,
                 change_ytd: heatmapMap[p.ticker]?.change_ytd ?? null,
                 change_1y: heatmapMap[p.ticker]?.change_1y ?? null,
+                isWatched: allHoldingsMap[p.ticker]?.isWatched ?? false,
             };
         });
 
@@ -452,6 +442,7 @@ export default function ScreenerTable() {
                     change_1m: heatmapMap[h.ticker]?.change_1m ?? null,
                     change_ytd: heatmapMap[h.ticker]?.change_ytd ?? null,
                     change_1y: heatmapMap[h.ticker]?.change_1y ?? null,
+                    isWatched: h.isWatched ?? false,
                 };
             });
 
@@ -514,6 +505,32 @@ export default function ScreenerTable() {
                 </div>
                 
                 <div className="flex items-center gap-2">
+                    <form onSubmit={async (e) => {
+                        e.preventDefault();
+                        const form = e.currentTarget;
+                        const input = form.elements.namedItem('watchlistTicker') as HTMLInputElement;
+                        const ticker = input.value.trim().toUpperCase();
+                        if (ticker) {
+                            try {
+                                await addToWatchlist(ticker);
+                                input.value = '';
+                                fetchData();
+                            } catch (err) {
+                                console.error('Error adding to watchlist:', err);
+                            }
+                        }
+                    }} className="flex items-center bg-slate-800 border border-slate-700 rounded-lg overflow-hidden focus-within:border-indigo-500/50 transition-all px-2 py-1 mr-2">
+                        <input
+                            name="watchlistTicker"
+                            type="text"
+                            placeholder="Add Ticker..."
+                            className="bg-transparent text-xs font-bold text-white w-24 focus:outline-none placeholder:text-slate-500 px-1 py-0.5"
+                        />
+                        <button type="submit" className="text-indigo-400 hover:text-indigo-300 px-2 py-0.5 rounded text-xs font-black transition-colors">
+                            + Add
+                        </button>
+                    </form>
+
                     <button
                         onClick={() => setShowFilters(s => !s)}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${showFilters ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-800 text-slate-400 hover:text-white border border-slate-700'}`}
@@ -673,6 +690,16 @@ export default function ScreenerTable() {
                                     if (col.id === 'symbol') {
                                         cellContent = (
                                             <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={(e) => toggleWatch(e, row.symbol, row.isWatched)}
+                                                    className="text-slate-600 hover:text-yellow-400 active:scale-95 transition-all p-0.5 focus:outline-none"
+                                                    title={row.isWatched ? "Remove from watchlist" : "Add to watchlist"}
+                                                >
+                                                    <Star
+                                                        size={14}
+                                                        className={row.isWatched ? "fill-yellow-400 text-yellow-400" : "text-slate-600/70"}
+                                                    />
+                                                </button>
                                                 <span className="font-black text-white text-base tracking-tighter group-hover:text-indigo-300 transition-colors">{val}</span>
                                                 {row.rowKind === 'holding'
                                                     ? <span className="text-[8px] font-black uppercase tracking-widest text-slate-600 border border-slate-700/50 rounded px-1 py-px">FUND</span>

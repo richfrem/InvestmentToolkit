@@ -62,11 +62,20 @@ def _find_cdp_dir() -> Path:
         "+============================================================+\n"
     )
 
-TV_NODE_DIR = _find_cdp_dir()
-TV_CLI = TV_NODE_DIR / "cli.js"
-TV_NODE_MODULES = TV_NODE_DIR / "node_modules"
+_CDP_MISSING_MSG = None
+try:
+    TV_NODE_DIR = _find_cdp_dir()
+    TV_CLI = TV_NODE_DIR / "cli.js"
+    TV_NODE_MODULES = TV_NODE_DIR / "node_modules"
+    REPO_ROOT = TV_NODE_DIR.parent
+except FileNotFoundError as e:
+    TV_NODE_DIR = Path(".")
+    TV_CLI = Path("./cli.js")
+    TV_NODE_MODULES = Path("./node_modules")
+    REPO_ROOT = Path(".")
+    _CDP_MISSING_MSG = str(e)
+
 TV_PORT = int(os.environ.get("TV_CDP_PORT", "9222"))
-REPO_ROOT = TV_NODE_DIR.parent
 
 
 def validate_cdp_installation() -> dict:
@@ -75,6 +84,15 @@ def validate_cdp_installation() -> dict:
     Returns a status dict. Call this from health checks.
     """
     issues = []
+
+    if _CDP_MISSING_MSG:
+        issues.append(_CDP_MISSING_MSG)
+        return {
+            "cdp_engine_path": "Not Found",
+            "cli_path": "Not Found",
+            "installed": False,
+            "issues": issues
+        }
 
     if not TV_CLI.exists():
         issues.append(f"cli.js not found at {TV_CLI}")
@@ -118,7 +136,10 @@ def tv_call(*args, timeout: int = 10):
     """
     Call the TradingView CLI with the given arguments and return parsed JSON.
     """
-    if not TV_CLI.exists():
+    if _CDP_MISSING_MSG:
+        raise FileNotFoundError(_CDP_MISSING_MSG)
+
+    if not TV_CLI or not TV_CLI.exists():
         raise FileNotFoundError(
             f"TradingView CLI not found at {TV_CLI}. "
             f"Run: cd {TV_NODE_DIR} && npm ci"
@@ -145,6 +166,9 @@ def run_node_module_raw(js_code: str, timeout: int = 30) -> subprocess.Completed
     """
     Execute inline ES module code with the CDP engine's node_modules in scope.
     """
+    if _CDP_MISSING_MSG:
+        raise FileNotFoundError(_CDP_MISSING_MSG)
+
     return subprocess.run(
         ["node", "--input-type=module"],
         input=js_code,
