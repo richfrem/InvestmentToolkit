@@ -8,6 +8,48 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-06-15 — Share Count Integrity Failure + Hardening
+
+**Macro:** RISK-ON (score=2) — massive broad market rally day
+**TA Sweep:** fresh (ran at session start)
+**Actions taken:** User trimmed DRAM and SNDK based on incorrect weight recommendations
+**User overrides:** N/A — trades executed before data integrity issue was discovered
+**Tool failures:** 2 critical, both Tier 2, fixed this session
+
+### Root Cause
+`portfolio.json` file mtime was 0.1h old (looked fresh) because yfinance refreshes prices
+continuously. However `tvSnapshot.positions` was empty (0) — the TV broker sync had silently
+failed because TradingView's Questrade panel was showing a reconnect dialog, not live positions.
+`write_snapshot()` did not abort on 0 positions; it silently preserved stale share counts.
+The daily-loop Step 0 only checked file age, not tvSnapshot integrity. Triage ran with wrong
+share counts → wrong weights → user over-sold DRAM and SNDK.
+
+### Fixes Applied
+
+**Fix 1 — Tier 2 — `fetch_broker_data.py` silent pass on empty positions**
+- `write_snapshot()` now aborts holdings merge and prints explicit error when TV returns 0 positions
+- File: `plugins/tradingview/scripts/fetch_broker_data.py`
+
+**Fix 2 — Tier 3 — `broker_data.js` getAccounts() MutationObserver miss**
+- `getAccounts()` now retries up to 3 times (800ms apart) before returning empty
+- Extracted `_getAccountsOnce()` helper; public `getAccounts()` wraps with retry loop
+- File: `tradingview-cdp/core/broker_data.js`
+
+**Fix 3 — Tier 1 — daily-loop Step 0 missing tvSnapshot integrity gate**
+- Step 0 now reads `tvSnapshot.positions` count alongside file age
+- Hard gate added: if positions == 0, loop stops and requires user confirmation before triage
+- All weight-based recommendations flagged [UNVERIFIED WEIGHTS] if user overrides the gate
+- File: `plugins/portfolio-advisor/agents/daily-loop-agent.md`
+
+### Consecutive EXIT signals (3+ days)
+CORZ, OKLO, PANW — all have standing decisions, no action required
+
+### Notes
+- TV Questrade session can drop silently; broker panel shows reconnect dialog without any CDP-visible error
+- File mtime is NOT a reliable proxy for share count freshness — only tvSnapshot.positions > 0 confirms shares are current
+- User manually confirmed correct cash balance from TV screenshots: TFSA $3,461.76 + RRSP $1,715.19 = $5,176.95 USD
+- VRT removed from portfolio (position closed, stale entry persisted from earlier sync)
+
 ## 2026-06-10 — System Audit & Engine Hardening Session
 
 **Macro:** NEUTRAL at session start (live brief run below)

@@ -37,7 +37,7 @@ Run these steps in order. Never skip a step. Never ask multiple questions at onc
 Run silently. Show a one-line status block at the end.
 
 ```bash
-# Check portfolio.json age
+# Check portfolio.json age AND tvSnapshot integrity
 python3 -c "
 import json, os
 from datetime import datetime, timezone
@@ -45,8 +45,17 @@ p = 'investment_screener/backend/data/portfolio.json'
 if os.path.exists(p):
     age = (datetime.now(timezone.utc) - datetime.fromtimestamp(os.path.getmtime(p), tz=timezone.utc)).total_seconds() / 3600
     print(f'portfolio_age_hours={age:.1f}')
+    with open(p) as f:
+        data = json.load(f)
+    snap = data.get('tvSnapshot', {})
+    pos_count = len(snap.get('positions', []))
+    snap_ts = snap.get('timestamp', '')
+    print(f'tv_snapshot_positions={pos_count}')
+    print(f'tv_snapshot_timestamp={snap_ts}')
 else:
     print('portfolio_age_hours=999')
+    print('tv_snapshot_positions=0')
+    print('tv_snapshot_timestamp=none')
 "
 
 # Check TradingView CDP
@@ -63,19 +72,35 @@ except:
 **Present this readiness card before anything else:**
 ```
 ─── Daily Loop — [DATE] ──────────────────────────────────
-  Portfolio:  [X.Xh old — CURRENT / STALE]
-  TradingView: [CONNECTED / OFFLINE]
+  Portfolio:    [X.Xh old — CURRENT / STALE]
+  TV Snapshot:  [N positions · last synced TIMESTAMP — VERIFIED / ⚠ UNVERIFIED]
+  TradingView:  [CONNECTED / OFFLINE]
 ─────────────────────────────────────────────────────────
 ```
 
-If portfolio is > 8h old AND TradingView is connected:
-> "Portfolio data is [X]h old. Syncing from TradingView now."
-> Run: `node tradingview-cdp/cli.js portfolio sync` or invoke `/tv-portfolio-sync`
-> Wait for confirmation before proceeding.
+**⚠ HARD GATE — Share Count Integrity:**
+`portfolio.json` is refreshed continuously by yfinance (prices), but share counts
+only update via a successful TV broker sync. A fresh file timestamp does NOT mean
+share counts are current. Always check `tvSnapshot.positions`.
 
-If portfolio is > 8h old AND TradingView is offline:
-> "Portfolio data is stale and TradingView isn't running. Proceeding with last known positions."
-> Note the staleness in the brief heading.
+- If `tv_snapshot_positions == 0`: Share counts are UNVERIFIED. The last TV sync
+  returned no positions (broker panel may be disconnected or showing a login dialog).
+  **DO NOT proceed to triage.** Tell the user:
+  > "⚠ Portfolio share counts are UNVERIFIED — the last TV sync returned 0 positions.
+  > Weight-based recommendations will be wrong and could cause over/under-trading.
+  > Please reconnect Questrade in TradingView's broker panel and run `/tv-portfolio-sync`,
+  > or confirm your current share counts manually before I proceed."
+  Wait for explicit user confirmation before continuing. If they confirm to proceed anyway,
+  prefix every triage card with **[UNVERIFIED WEIGHTS]** and do not propose specific share
+  quantities to buy or sell.
+
+- If `tv_snapshot_positions > 0` AND portfolio is > 8h old AND TradingView is connected:
+  > "Portfolio data is [X]h old. Syncing from TradingView now."
+  > Run `/tv-portfolio-sync` and wait for confirmation before proceeding.
+
+- If portfolio is > 8h old AND TradingView is offline:
+  > "Portfolio data is stale and TradingView isn't running. Proceeding with last known positions."
+  > Note the staleness in the brief heading.
 
 ---
 
