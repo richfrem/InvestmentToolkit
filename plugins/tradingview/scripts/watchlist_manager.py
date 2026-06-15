@@ -16,18 +16,40 @@ PORTFOLIO_PATH = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 TARGET_WATCHLIST_PATH = REPO_ROOT / "investment_screener/backend/data/watchlist.json"
 PROJECTIONS_DIR = REPO_ROOT / "investment_screener/backend/data/projections"
 
+# BOATS ATS eligibility — US equities only (no Canadian, no futures)
+_BOATS_SKIP_SUFFIXES = (".TO", ".V")
+_BOATS_SKIP_PATTERNS = ("!",)
+
 sys.path.insert(0, str(REPO_ROOT / "plugins/tradingview/scripts"))
 from tv_client import tv_call, is_tv_running
 
+_BOATS_EXCLUDE = {"USD_CASH"}
+
+
+def _is_boats_eligible(ticker: str) -> bool:
+    """Return True if ticker is a US equity eligible for BOATS ATS trading."""
+    upper = ticker.upper()
+    if upper in _BOATS_EXCLUDE:
+        return False
+    if any(upper.endswith(s) for s in _BOATS_SKIP_SUFFIXES):
+        return False
+    if any(p in upper for p in _BOATS_SKIP_PATTERNS):
+        return False
+    return True
+
+
 def load_researched_watchlist() -> list[str]:
     """Retrieve full list of researched symbols."""
-    # 1. Fallback to reading projections dir if watchlist.json doesn't exist yet
     if TARGET_WATCHLIST_PATH.exists():
         try:
             with open(TARGET_WATCHLIST_PATH) as f:
                 data = json.load(f)
                 if isinstance(data, list):
                     return [str(s).upper() for s in data if s and s != "USD_CASH"]
+                elif isinstance(data, dict) and "watchlist" in data:
+                    # Current schema: {"watchlist": [{"ticker": "...", "addedAt": "..."}, ...]}
+                    return [e["ticker"].upper() for e in data["watchlist"]
+                            if isinstance(e, dict) and e.get("ticker") and e["ticker"] != "USD_CASH"]
                 elif isinstance(data, dict) and "tickers" in data:
                     return [str(s).upper() for s in data["tickers"] if s and s != "USD_CASH"]
         except Exception:
@@ -42,6 +64,47 @@ def load_researched_watchlist() -> list[str]:
                 tickers.append(name.upper())
         return sorted(tickers)
     return []
+
+
+def load_boats_watchlist() -> list[str]:
+    """US equities from portfolio + watchlist eligible for BOATS ATS after-hours trading.
+
+    Excludes Canadian tickers (.TO, .V) and futures contracts (!).
+    Source: union of active holdings and researched watchlist, deduped and sorted.
+    """
+    seen: set[str] = set()
+    tickers: list[str] = []
+
+    if PORTFOLIO_PATH.exists():
+        try:
+            with open(PORTFOLIO_PATH) as f:
+                for h in json.load(f).get("holdings", []):
+                    sym = h.get("symbol", "").upper()
+                    if sym and _is_boats_eligible(sym) and sym not in seen:
+                        seen.add(sym)
+                        tickers.append(sym)
+        except Exception:
+            pass
+
+    if TARGET_WATCHLIST_PATH.exists():
+        try:
+            with open(TARGET_WATCHLIST_PATH) as f:
+                data = json.load(f)
+                if isinstance(data, dict) and "watchlist" in data:
+                    entries = data["watchlist"]
+                elif isinstance(data, list):
+                    entries = [{"ticker": s} for s in data]
+                else:
+                    entries = []
+                for entry in entries:
+                    sym = (entry.get("ticker", "") if isinstance(entry, dict) else str(entry)).upper()
+                    if sym and _is_boats_eligible(sym) and sym not in seen:
+                        seen.add(sym)
+                        tickers.append(sym)
+        except Exception:
+            pass
+
+    return sorted(tickers)
 
 def load_holdings_watchlist() -> list[str]:
     """Retrieve symbols representing active portfolio holdings."""
@@ -67,6 +130,8 @@ def run_sync(dry_run: bool = False) -> dict:
     researched_list = sorted(list(set(normalize(s) for s in researched_list)))
     holdings_list = sorted(list(set(normalize(s) for s in holdings_list)))
 
+    boats_list = load_boats_watchlist()
+
     actions = {
         "TA-Full Watchlist": {
             "target_count": len(researched_list),
@@ -75,7 +140,11 @@ def run_sync(dry_run: bool = False) -> dict:
         "TA-Current Holdings": {
             "target_count": len(holdings_list),
             "tickers": holdings_list
-        }
+        },
+        "TA-BOATS-Watchlist": {
+            "target_count": len(boats_list),
+            "tickers": boats_list
+        },
     }
 
     if dry_run:
