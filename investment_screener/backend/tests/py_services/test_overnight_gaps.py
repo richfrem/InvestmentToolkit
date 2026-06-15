@@ -135,7 +135,7 @@ class TestGetOvernightGaps:
         assert "NVDA" in called
 
     def test_none_from_fetch_excluded(self, monkeypatch):
-        monkeypatch.setattr(overnight_gaps, "_fetch_gap", lambda t: None)
+        monkeypatch.setattr(overnight_gaps, "_fetch_gap", lambda _: None)
         result = overnight_gaps.get_overnight_gaps(["NVDA"], threshold_pct=2.0)
         assert result == []
 
