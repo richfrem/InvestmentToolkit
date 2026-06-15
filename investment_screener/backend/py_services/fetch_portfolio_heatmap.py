@@ -96,7 +96,15 @@ def _fetch_one(symbol: str) -> tuple[str, dict]:
     cached = get_cached_info(symbol)
     if cached is not None:
         return symbol, cached
-    info = yf.Ticker(symbol).info
+    t = yf.Ticker(symbol)
+    info = t.info
+    # Augment with fast_info so callers get extended-hours price when market is closed.
+    try:
+        fi = t.fast_info
+        info["_fastLastPrice"] = getattr(fi, "last_price", None)
+        info["_fastPrevClose"] = getattr(fi, "previous_close", None)
+    except Exception:
+        pass
     save_info_to_cache(symbol, info)
     return symbol, info
 
@@ -201,8 +209,12 @@ def fetch_portfolio_data(items: list) -> dict:
                     sector = yahoo_sector
                     industry = yahoo_industry
 
-                yf_price = info.get("currentPrice") or info.get("regularMarketPrice", 0)
-                prev_close = info.get("regularMarketPreviousClose", 0)
+                # fast_info.last_price reflects extended-hours (BOATS/pre-market) price.
+                # Falls back to regularMarketPrice when fast_info is unavailable.
+                yf_price = (info.get("_fastLastPrice")
+                            or info.get("currentPrice")
+                            or info.get("regularMarketPrice", 0))
+                prev_close = info.get("_fastPrevClose") or info.get("regularMarketPreviousClose", 0)
                 # Always use live yfinance price for display and change calculations.
                 # stored_price may equal book_price (avg fill cost seeded at TV sync) and must
                 # NOT be used as current market price — that would give wildly wrong 1D%.
