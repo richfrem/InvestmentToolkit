@@ -21,3 +21,17 @@ class TestImport:
         assert hasattr(overnight_gaps, "_load_tickers")
         assert hasattr(overnight_gaps, "_fetch_gap")
         assert hasattr(overnight_gaps, "_is_scannable")
+
+
+class TestIsScannable:
+    def test_us_equity_passes(self):
+        assert overnight_gaps._is_scannable("NVDA") is True
+
+    def test_canadian_to_blocked(self):
+        assert overnight_gaps._is_scannable("SHOP.TO") is False
+
+    def test_futures_blocked(self):
+        assert overnight_gaps._is_scannable("NQ1!") is False
+
+    def test_lowercase_us_passes(self):
+        assert overnight_gaps._is_scannable("aapl") is True
