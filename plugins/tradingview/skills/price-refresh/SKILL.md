@@ -10,11 +10,23 @@ allowed-tools: Bash, Read
 
 # TradingView Price Refresh Skill
 
+## Price Source Priority (enforced in tv_batch_quotes.py)
+
+| Priority | Source | When used |
+|----------|--------|-----------|
+| **1 (primary)** | TradingView watchlist via CDP | TradingView running (port 9222) |
+| **2 (fallback)** | yfinance `fast_info.last_price` | TV unreachable, or ticker not in watchlist |
+
+**BOATS session auto-detection**: during 8:00 PM – 4:00 AM ET (Sun–Thu), `tv_batch_quotes.py`
+opens `TA-BOATS-Watchlist` (BOATS:TICKER symbols) to serve overnight BOATS prices.
+All other hours it reads `TA-Full Watchlist` (NYSE/NASDAQ + extended hours).
+yfinance is **only** used when TradingView is not running.
+
 ## What This Skill Does
 
 1. **Checks** TradingView Desktop status (non-blocking — uses fallback if unavailable)
 2. **Loads** all tickers from `portfolio.json` and `target-portfolio.json`
-3. **Fetches** real-time quotes for all tickers in parallel (ThreadPoolExecutor)
+3. **Fetches** live quotes — TV watchlist first (BOATS or Full), yfinance only for misses
 4. **Prints** a price table with live data, 1d change%, and source indicator
 5. **Summarises** how many quotes came from TradingView vs. yfinance fallback
 

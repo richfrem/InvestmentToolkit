@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-tv_batch_quotes.py - Get real-time quotes for a list of tickers via yfinance bulk download.
+tv_batch_quotes.py — Batch price resolver: TradingView first, yfinance fallback.
 
-NOTE: TradingView CDP reads only the *active chart* symbol — it cannot batch-query multiple
-tickers without significant delay. Therefore, this script exclusively uses yfinance for batch
-operations by design. The summary output still includes `"tradingview": 0` to maintain the
-API contract with existing consumers. Use tv_quote.py for a single ticker when that ticker
-is currently displayed on the active TradingView chart.
+Price source priority (in order):
+  1. TradingView watchlist DOM via CDP — live prices including BOATS extended-hours feed.
+     During BOATS session (8PM–4AM ET, Sun–Thu): reads TA-BOATS-Watchlist (BOATS:TICKER).
+     All other hours: reads TA-Full Watchlist (NYSE/NASDAQ/extended).
+  2. yfinance fast_info.last_price — reflects extended-hours prices when market is closed.
+     Used when TradingView is not running (port 9222 unreachable) or ticker not in watchlist.
 
 Usage:
     python3 tv_batch_quotes.py '["CRWV", "NVDA", "INTC"]'
@@ -14,22 +15,31 @@ Usage:
 Output (JSON):
     {
       "quotes": {
-        "CRWV": { "price": 115.26, "changePercent": -6.07, "source": "yfinance" },
-        "NVDA":  { "price": 497.32, "changePercent":  1.23, "source": "yfinance" }
+        "CRWV": { "price": 115.26, "changePercent": -6.07, "source": "tradingview" },
+        "NVDA":  { "price": 205.19, "changePercent":  1.23, "source": "tradingview" },
+        "INTC":  { "price":  22.14, "changePercent": -0.41, "source": "yfinance" }
       },
       "summary": {
-        "total": 2,
-        "tradingview": 0,
-        "fallback": 2,
-        "errors": 0
+        "total": 3,
+        "tradingview": 2,
+        "fallback": 1,
+        "errors": 0,
+        "boats_session": false
       }
     }
 """
+from __future__ import annotations
 
-import sys
 import json
-import argparse
+import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
 from pathlib import Path
+from typing import Optional
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports.zoneinfo import ZoneInfo  # type: ignore[no-redef]
 
 
 def _find_scripts_dir() -> Path:
@@ -42,80 +52,134 @@ def _find_scripts_dir() -> Path:
     raise ImportError("tv_client.py not found — check plugin installation or set TV_CDP_DIR.")
 
 
-def batch_quotes(tickers: list[str]) -> dict:
-    """Fetch quotes for multiple tickers. Uses TradingView for the active chart symbol,
-    and yfinance for the rest.
+def is_boats_active() -> bool:
+    """Return True when Blue Ocean ATS (BOATS) session is live.
+
+    BOATS hours: 8:00 PM – 4:00 AM ET, Sunday through Thursday only.
+    Friday and Saturday nights have no BOATS session.
+    """
+    et = ZoneInfo("America/New_York")
+    now = datetime.now(et)
+    hour = now.hour
+    weekday = now.weekday()  # Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6
+
+    if hour >= 20:
+        # Evening leg (8PM–midnight): valid Sun(6)–Thu(3)
+        return weekday in (0, 1, 2, 3, 6)
+    elif hour < 4:
+        # Overnight leg (midnight–4AM): valid Mon(0)–Fri(4) early morning
+        # (the previous night's session rolling over)
+        return weekday in (0, 1, 2, 3, 4)
+    return False
+
+
+def _tv_watchlist_prices() -> dict[str, dict]:
+    """Read live prices from the active TradingView watchlist via CDP.
+
+    Opens TA-BOATS-Watchlist during BOATS hours, TA-Full Watchlist otherwise.
+    Strips exchange prefixes (BOATS:, NASDAQ:) when building the lookup dict
+    so callers can match against plain ticker symbols.
+
+    Returns:
+        Dict mapping plain ticker → {price, changePercent}.
+        Empty dict if TradingView is unreachable or watchlist read fails.
+    """
+    sys.path.insert(0, str(_find_scripts_dir()))
+    from tv_client import tv_call, is_tv_running  # type: ignore[import]
+
+    if not is_tv_running():
+        return {}
+
+    boats = is_boats_active()
+    watchlist_name = "TA-BOATS-Watchlist" if boats else "TA-Full Watchlist"
+
+    try:
+        open_res = tv_call("watchlist", "open", watchlist_name)
+        if not open_res.get("success"):
+            # Fallback: try the other watchlist
+            alt = "TA-Full Watchlist" if boats else "TA-BOATS-Watchlist"
+            tv_call("watchlist", "open", alt)
+
+        get_res = tv_call("watchlist", "get")
+        if not get_res.get("success"):
+            return {}
+
+        prices: dict[str, dict] = {}
+        for item in get_res.get("items", []):
+            raw_sym = item.get("symbol", "")
+            # Strip exchange prefix: "BOATS:NVDA" → "NVDA", "NASDAQ:AAPL" → "AAPL"
+            sym = raw_sym.split(":")[-1].upper() if ":" in raw_sym else raw_sym.upper()
+            price = item.get("price", 0.0)
+            change_pct = item.get("changePercent", 0.0)
+            if sym and price:
+                prices[sym] = {"price": price, "changePercent": change_pct}
+        return prices
+
+    except Exception:
+        return {}
+
+
+def _yf_fast_quote(ticker: str) -> Optional[dict]:
+    """Fetch single-ticker quote via yfinance fast_info (extended-hours aware).
 
     Args:
-        tickers: List of ticker symbols.
+        ticker: Plain ticker symbol (no exchange prefix).
+
+    Returns:
+        Dict with price, changePercent, or None on failure.
+    """
+    try:
+        import yfinance as yf
+        t = yf.Ticker(ticker)
+        fi = t.fast_info
+        price = getattr(fi, "last_price", None)
+        prev = getattr(fi, "previous_close", None)
+        if not price or not prev or prev <= 0:
+            return None
+        change_pct = round((price - prev) / prev * 100, 4)
+        return {"price": round(price, 4), "changePercent": change_pct}
+    except Exception:
+        return None
+
+
+def batch_quotes(tickers: list[str]) -> dict:
+    """Resolve prices for multiple tickers: TradingView first, yfinance fallback.
+
+    Args:
+        tickers: List of plain ticker symbols (no exchange prefix).
 
     Returns:
         Dict with 'quotes', 'errors', and 'summary' keys.
     """
-    import yfinance as yf
-    
-    sys.path.insert(0, str(_find_scripts_dir()))
-    from tv_client import tv_call, is_tv_running
+    boats = is_boats_active()
+    tv_prices = _tv_watchlist_prices()
 
-    quotes: dict = {}
-    errors: dict = {}
-    active_ticker = None
-    tv_quote = None
+    quotes: dict[str, dict] = {}
+    errors: dict[str, str] = {}
     tv_count = 0
+    yf_tickers: list[str] = []
 
-    if is_tv_running():
-        try:
-            status_res = tv_call("status")
-            if status_res.get("success") and status_res.get("chart_symbol"):
-                active_ticker = status_res["chart_symbol"].split(":")[-1].upper()
-                # Remove alias mappings if applicable (e.g. PSU-U.TO / PSU.U.TO)
-                if active_ticker == "PSU.U.TO" and "PSU-U.TO" in tickers:
-                    active_ticker = "PSU-U.TO"
-                if active_ticker in tickers:
-                    tv_raw = tv_call("quote", active_ticker)
-                    if tv_raw.get("success"):
-                        tv_quote = {
-                            "price": tv_raw.get("price") or tv_raw.get("header_price") or 0.0,
-                            "change": tv_raw.get("change", 0.0),
-                            "changePercent": tv_raw.get("changePercent", 0.0),
-                            "volume": tv_raw.get("volume", 0),
-                            "source": "tradingview",
-                        }
-                        quotes[active_ticker] = tv_quote
-                        tv_count = 1
-        except Exception:
-            pass
+    for t in tickers:
+        if t in tv_prices:
+            quotes[t] = {**tv_prices[t], "source": "tradingview"}
+            tv_count += 1
+        else:
+            yf_tickers.append(t)
 
-    yf_tickers = [t for t in tickers if t != active_ticker] if tv_quote else tickers
-
+    # Parallel yfinance fallback for tickers not in TV watchlist
     if yf_tickers:
-        try:
-            data = yf.download(yf_tickers, period="2d", interval="1d",
-                               progress=False, auto_adjust=True)
-
-            close_df = data["Close"]
-            closes = close_df.iloc[-1] if len(close_df) >= 1 else {}
-            prev_closes = close_df.iloc[-2] if len(close_df) >= 2 else {}
-
-            for ticker in yf_tickers:
+        with ThreadPoolExecutor(max_workers=min(len(yf_tickers), 8)) as pool:
+            futures = {pool.submit(_yf_fast_quote, t): t for t in yf_tickers}
+            for future in as_completed(futures, timeout=30):
+                sym = futures[future]
                 try:
-                    price = float(closes[ticker]) if len(yf_tickers) > 1 else float(close_df.iloc[-1])
-                    prev_val = prev_closes[ticker] if len(yf_tickers) > 1 else float(close_df.iloc[-2]) if len(close_df) >= 2 else None
-                    prev = float(prev_val) if prev_val is not None else price
-                    change = round(price - prev, 4)
-                    change_pct = round((change / prev) * 100, 4) if prev else 0.0
-                    quotes[ticker] = {
-                        "price": round(price, 4),
-                        "change": change,
-                        "changePercent": change_pct,
-                        "volume": 0,
-                        "source": "yfinance",
-                    }
+                    result = future.result()
+                    if result:
+                        quotes[sym] = {**result, "source": "yfinance"}
+                    else:
+                        errors[sym] = "no price data"
                 except Exception as e:
-                    errors[ticker] = str(e)
-        except Exception as e:
-            for ticker in yf_tickers:
-                errors[ticker] = f"Bulk yfinance failed: {e}"
+                    errors[sym] = str(e)
 
     return {
         "quotes": quotes,
@@ -125,32 +189,25 @@ def batch_quotes(tickers: list[str]) -> dict:
             "tradingview": tv_count,
             "fallback": len(quotes) - tv_count,
             "errors": len(errors),
+            "boats_session": boats,
         },
     }
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="Get real-time quotes for a list of tickers."
-    )
-    parser.add_argument(
-        "tickers",
-        help='JSON array of ticker symbols, e.g. \'["CRWV","NVDA"]\'',
-    )
+def main() -> None:
+    import argparse
+    parser = argparse.ArgumentParser(description="Batch price resolver — TV first, yfinance fallback.")
+    parser.add_argument("tickers", help='JSON array e.g. \'["NVDA","AAPL"]\'')
     args = parser.parse_args()
-
     try:
         tickers = json.loads(args.tickers)
     except json.JSONDecodeError as e:
         print(json.dumps({"error": f"Invalid JSON: {e}"}), file=sys.stderr)
         sys.exit(1)
-
     if not isinstance(tickers, list):
         print(json.dumps({"error": "Input must be a JSON array"}), file=sys.stderr)
         sys.exit(1)
-
-    result = batch_quotes(tickers)
-    print(json.dumps(result, indent=2))
+    print(json.dumps(batch_quotes(tickers), indent=2))
 
 
 if __name__ == "__main__":
