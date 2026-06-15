@@ -140,12 +140,11 @@ class TestGetOvernightGaps:
         assert result == []
 
     def test_empty_tickers_returns_empty(self, monkeypatch):
-        called = []
-        monkeypatch.setattr(overnight_gaps, "_fetch_gap",
-                            lambda t: called.append(t) or self._make_gap(t, 3.0))
+        def _should_not_call(t):
+            raise AssertionError(f"_fetch_gap called unexpectedly with: {t}")
+        monkeypatch.setattr(overnight_gaps, "_fetch_gap", _should_not_call)
         result = overnight_gaps.get_overnight_gaps([], threshold_pct=2.0)
         assert result == []
-        assert called == []
 
     def test_explicit_tickers_override_load(self, monkeypatch, tmp_path):
         # Patch PORTFOLIO_PATH to a missing file so _load_tickers would return []
