@@ -20,9 +20,10 @@ python3 "$(find plugins/tradingview/scripts ~/.claude/plugins/cache -name tv_hea
 
 1. **Loads** active holdings from `investment_screener/backend/data/portfolio.json`
 2. **Loads** researched watchlists from `investment_screener/backend/data/watchlist.json` (falling back to scanning the projections directory if not found)
-3. **Translates** them into two standard watchlists in TradingView:
-   - `TA-Full Watchlist` (Researched deep dives)
-   - `TA-Current Holdings` (Active portfolio holdings)
+3. **Translates** them into three standard watchlists in TradingView:
+   - `TA-Full Watchlist` — All researched tickers (includes Canadian)
+   - `TA-Current Holdings` — Active portfolio holdings
+   - `TA-BOATS-Watchlist` — US equities only as `BOATS:TICKER` (Blue Ocean ATS after-hours feed, excludes .TO/.V/futures)
 4. **Maintains** alignment by adding missing tickers and pruning retired tickers dynamically.
 
 ---
