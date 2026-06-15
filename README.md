@@ -52,7 +52,7 @@ Purpose-built for thematic, closed-end, and cash fund ETFs.
 
 ### 4. TradingView Integration (`plugins/tradingview` + `tradingview-cdp/`)
 TradingView Desktop is the primary layer for live prices, portfolio sync, order execution, Pine Script authoring, and deep technical analysis via CDP (Chrome DevTools Protocol) automation. The Node.js CDP engine lives at `tradingview-cdp/` (repo root) as a shared runtime installed once via `cd tradingview-cdp && npm ci`.
-- **Commands/Skills**: `/tv-portfolio-sync`, `/place-order`, `/modify-order`, `/cancel-order`, `/get-orders`, `/tv-alert-sync`, `/tv-price-refresh`, `/tv-snapshot`, `/pine-inject`, `/author-pine-script`, `/tv-ta-deep`
+- **Commands/Skills**: `/setup-tradingview`, `/tv-portfolio-sync`, `/tv-watchlist-sync`, `/place-order`, `/modify-order`, `/cancel-order`, `/get-orders`, `/tv-alert-sync`, `/tv-price-refresh`, `/tv-snapshot`, `/pine-inject`, `/author-pine-script`, `/tv-ta-deep`
 - **Agents**: `ta-guide` — interactive TA tutor and Pine Script architect; walks users through live chart analysis step-by-step, builds the required indicator view, authors custom Pine Script v6 indicators, and submits recommendations through adversarial red-team review
 - **Pine Script tools**: `pine_linter.py` (static v6 linter — version, declaration, lookahead, drawing-var checks), `pine_source_reader.py` (fetch any community indicator's source directly from TV's Indicators dialog)
 

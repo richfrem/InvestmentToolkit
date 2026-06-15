@@ -316,6 +316,15 @@ def write_snapshot(snapshot: dict, promote: bool = False, balances: Optional[dic
     # Smart-merge TV positions into holdings: aggregate RRSP + TFSA by symbol using
     # weighted-avg fill price, preserving all existing metadata (thesis, pillar, sector, etc.)
     tv_pos = snapshot.get("positions", [])
+    if not tv_pos:
+        # getPortfolio() returned no positions — likely getAccounts() failed (MutationObserver miss).
+        # Abort the holdings merge entirely rather than silently preserving stale data.
+        print("⚠  TV returned 0 positions — accounts dropdown may not have opened.", file=sys.stderr)
+        print("   Holdings NOT updated. Re-run /tv-portfolio-sync or check TradingView broker panel.", file=sys.stderr)
+        # Still write the tvSnapshot and updated totals, but skip holdings merge.
+        with open(path, "w") as f:
+            json.dump(data, f, indent=2)
+        return path
     if tv_pos:
         # Hardcoded alias map — broker returns PSU.U.TO, canonical thesis uses PSU-U.TO.
         # Same fund (Purpose US Cash Fund), different display conventions.
