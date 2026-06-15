@@ -26,7 +26,8 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 async function clickTab(tabLabel) {
   const result = await evaluate(`(function() {
     var label = ${JSON.stringify(tabLabel)};
-    var tabs = [...document.querySelectorAll('[class*="underline-tab"][class*="size-xsmall"]')]
+    // TV updated tab class from underline-tab/size-xsmall → roundTabButton-* (2026-06 UI update)
+    var tabs = [...document.querySelectorAll('[class*="roundTabButton"], [class*="underline-tab"]')]
       .filter(function(t) {
         if (!t.offsetParent) return false;
         var text = t.textContent.replace(/[\\u00A0\\u2007\\u202F]/g, ' ').trim();
@@ -51,14 +52,20 @@ async function _getAccountsOnce() {
     var found = [];
     var pattern = /^(TFSA|RRSP|Cash|Margin|Individual)[\\s\\S]*\\d{4,}/i;
 
+    var settleTimer = null;
     var observer = new MutationObserver(function() {
       var spans = [...document.querySelectorAll('span')].filter(function(s) {
-        return s.className === '' && pattern.test(s.textContent.trim());
+        // TV updated: account name spans now have class "accountName-*" not empty className (2026-06)
+        return (s.className === '' || /accountName/i.test(s.className)) && pattern.test(s.textContent.trim());
       });
       if (spans.length > 0) {
         found = spans.map(function(s) { return s.textContent.trim(); });
-        observer.disconnect();
-        resolve(JSON.stringify(found));
+        // Don't resolve immediately — wait 400ms for all accounts to render before settling
+        if (settleTimer) clearTimeout(settleTimer);
+        settleTimer = setTimeout(function() {
+          observer.disconnect();
+          resolve(JSON.stringify(found));
+        }, 400);
       }
     });
     observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
@@ -118,7 +125,8 @@ export async function switchAccount(accountType) {
 
     var observer = new MutationObserver(function() {
       var spans = [...document.querySelectorAll('span')].filter(function(s) {
-        return s.className === '' && pattern.test(s.textContent.trim());
+        // TV updated: account name spans now have class "accountName-*" not empty className (2026-06)
+        return (s.className === '' || /accountName/i.test(s.className)) && pattern.test(s.textContent.trim());
       });
       var match = spans.find(function(s) {
         return s.textContent.trim().toUpperCase().startsWith(target);
@@ -436,7 +444,8 @@ export async function getAccountTotals() {
 
 export async function inspectBrokerPanel() {
   return evaluate(`(function() {
-    var tabs = [...document.querySelectorAll('[class*="underline-tab"][class*="size-xsmall"]')]
+    // TV updated tab class from underline-tab/size-xsmall → roundTabButton-* (2026-06 UI update)
+    var tabs = [...document.querySelectorAll('[class*="roundTabButton"], [class*="underline-tab"]')]
       .filter(function(t) { return t.offsetParent !== null; })
       .map(function(t) { return { text: t.textContent.trim(), cls: t.className.substring(0, 80) }; });
 
