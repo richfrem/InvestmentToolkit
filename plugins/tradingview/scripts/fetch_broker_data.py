@@ -59,7 +59,7 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 def _find_scripts_dir() -> Path:
     here = Path(__file__).resolve().parent
-    for candidate in [here] + [here.parents[i] for i in range(9)]:
+    for candidate in [here, *here.parents]:
         if (candidate / "tv_client.py").exists():
             return candidate
         if (candidate / "scripts" / "tv_client.py").exists():
