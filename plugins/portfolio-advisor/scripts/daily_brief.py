@@ -316,6 +316,18 @@ def render(brief: dict[str, Any]) -> str:
     W = 72
     lines += [f"\n{'═' * W}", f"  DAILY PORTFOLIO BRIEF — {today}  (prev: {yesterday})", f"{'═' * W}"]
 
+    # ── Overnight gaps ────────────────────────────────────────────────────────
+    gaps = brief.get("overnight_gaps", [])
+    if gaps:
+        lines.append(f"\n🌙  OVERNIGHT GAPS — {len(gaps)} mover(s) ≥2%:")
+        for g in gaps:
+            icon  = "🟢" if g["direction"] == "UP" else "🔴"
+            state = g.get("market_state", "")
+            lines.append(
+                f"    {icon} {g['ticker']:<8}  {g['change_pct']:>+6.1f}%"
+                f"  (${g['current']:.2f} vs ${g['prev_close']:.2f})  {state}"
+            )
+
     # ── Macro ─────────────────────────────────────────────────────────────────
     regime = macro["regime"]
     icon   = {"RISK-ON": "✅", "NEUTRAL": "⚠️", "RISK-OFF": "🔴"}.get(regime, "")
