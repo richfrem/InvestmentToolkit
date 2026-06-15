@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 import sys
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError, as_completed
 from pathlib import Path
 from typing import Optional
 
@@ -105,7 +105,8 @@ def _fetch_gap(ticker: str) -> Optional[dict]:
             "direction":    "UP" if change_pct > 0 else "DOWN",
             "market_state": market_state,
         }
-    except Exception:
+    except Exception as e:
+        print(f"[overnight_gaps] {ticker}: {e}", file=sys.stderr)
         return None
 
 
@@ -130,10 +131,13 @@ def get_overnight_gaps(
     results: list[dict] = []
     with ThreadPoolExecutor(max_workers=min(len(us_tickers), 8)) as pool:
         futures = {pool.submit(_fetch_gap, t): t for t in us_tickers}
-        for future in as_completed(futures, timeout=20):
-            result = future.result()
-            if result and abs(result["change_pct"]) >= threshold_pct:
-                results.append(result)
+        try:
+            for future in as_completed(futures, timeout=30):
+                result = future.result()
+                if result and abs(result["change_pct"]) >= threshold_pct:
+                    results.append(result)
+        except FuturesTimeoutError:
+            print("[overnight_gaps] Timeout fetching gap data — returning partial results", file=sys.stderr)
     return sorted(results, key=lambda x: abs(x["change_pct"]), reverse=True)
 
 
