@@ -167,6 +167,23 @@ def fetch_portfolio_data(items: list) -> dict:
     # prefetch_info and prefetch_history each use ThreadPoolExecutor(max_workers=10)
     # internally, so cold-start fetches for all 30+ tickers complete in ~5-10s total.
     info_map = prefetch_info(to_fetch) if to_fetch else {}
+
+    # --- TradingView price overlay (primary source) ---
+    # Reads live prices from TradingView watchlist via CDP — includes BOATS extended-hours
+    # feed during the 8PM–4AM ET overnight session. Overrides yfinance price in info_map.
+    try:
+        import sys as _sys
+        _tv_scripts = str(Path(__file__).resolve().parents[3] / "plugins/tradingview/scripts")
+        if _tv_scripts not in _sys.path:
+            _sys.path.insert(0, _tv_scripts)
+        from tv_batch_quotes import batch_quotes as _tv_batch  # type: ignore[import]
+        tv_result = _tv_batch(to_fetch)
+        for sym, q in tv_result.get("quotes", {}).items():
+            if q.get("source") == "tradingview" and sym in info_map:
+                info_map[sym]["_fastLastPrice"] = q["price"]
+                info_map[sym]["_fastChangePct"] = q.get("changePercent")
+    except Exception:
+        pass
     if to_fetch:
         prefetch_history(to_fetch, history)
 
@@ -209,17 +226,20 @@ def fetch_portfolio_data(items: list) -> dict:
                     sector = yahoo_sector
                     industry = yahoo_industry
 
-                # fast_info.last_price reflects extended-hours (BOATS/pre-market) price.
-                # Falls back to regularMarketPrice when fast_info is unavailable.
+                # Price priority: TradingView live (incl. BOATS) → yfinance fast_info → regularMarket
                 yf_price = (info.get("_fastLastPrice")
                             or info.get("currentPrice")
                             or info.get("regularMarketPrice", 0))
                 prev_close = info.get("_fastPrevClose") or info.get("regularMarketPreviousClose", 0)
-                # Always use live yfinance price for display and change calculations.
+                # Always use live price for display and change calculations.
                 # stored_price may equal book_price (avg fill cost seeded at TV sync) and must
                 # NOT be used as current market price — that would give wildly wrong 1D%.
                 current_price = yf_price if yf_price and yf_price > 0 else (stored_price or 0)
-                change_pct = ((current_price - prev_close) / prev_close * 100) if prev_close else 0
+                # Use TV-provided change% when available (reflects BOATS session accurately)
+                tv_change_pct = info.get("_fastChangePct")
+                change_pct = tv_change_pct if tv_change_pct is not None else (
+                    ((current_price - prev_close) / prev_close * 100) if prev_close else 0
+                )
                 hist_changes = history.calc_changes(norm_sym, current_price)
 
             total_market = round(shares * current_price, 2)
