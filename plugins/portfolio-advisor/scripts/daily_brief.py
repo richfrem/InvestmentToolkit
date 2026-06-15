@@ -174,6 +174,14 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     from earnings_calendar import get_earnings_calendar
     from compute_conviction_scores import compute_all
     from brief_recommendations import build_recommendations, load_standing_decisions
+    from overnight_gaps import get_overnight_gaps
+
+    # ── 0. Overnight gap scan ─────────────────────────────────────────────────
+    print("▶ Overnight gap scan...", file=sys.stderr)
+    try:
+        gaps = get_overnight_gaps()
+    except Exception:
+        gaps = []
 
     # ── 1. Macro regime ───────────────────────────────────────────────────────
     print("▶ Macro regime...", file=sys.stderr)
@@ -259,6 +267,7 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     )
 
     brief: dict[str, Any] = {
+        "overnight_gaps": gaps,
         "date": date.today().isoformat(),
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "macro_regime": asdict(macro),
