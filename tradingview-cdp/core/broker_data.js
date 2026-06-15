@@ -46,7 +46,7 @@ async function clickTab(tabLabel) {
  * getAccounts() — enumerates all broker accounts.
  * Uses MutationObserver to capture dropdown items before the blur event closes the popup.
  */
-export async function getAccounts() {
+async function _getAccountsOnce() {
   const raw = await evaluateAsync(`new Promise(function(resolve) {
     var found = [];
     var pattern = /^(TFSA|RRSP|Cash|Margin|Individual)[\\s\\S]*\\d{4,}/i;
@@ -80,6 +80,18 @@ export async function getAccounts() {
   // Close dropdown
   await evaluate(`document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`);
   await sleep(200);
+  return raw;
+}
+
+export async function getAccounts() {
+  // Retry up to 3 times — MutationObserver can miss the dropdown on the first attempt
+  // if the broker panel is mid-render or switching tabs.
+  let raw = [];
+  for (let attempt = 0; attempt < 3; attempt++) {
+    raw = await _getAccountsOnce();
+    if (raw.length > 0) break;
+    await sleep(800);
+  }
 
   function parseAccount(text) {
     var m = text.match(/^(TFSA|RRSP|Cash|Margin|Individual)\s*[-–]\s*(\d+)/i);
