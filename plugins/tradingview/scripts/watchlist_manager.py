@@ -82,7 +82,7 @@ def load_boats_watchlist() -> list[str]:
                     sym = h.get("symbol", "").upper()
                     if sym and _is_boats_eligible(sym) and sym not in seen:
                         seen.add(sym)
-                        tickers.append(sym)
+                        tickers.append(f"BOATS:{sym}")
         except Exception:
             pass
 
@@ -100,7 +100,7 @@ def load_boats_watchlist() -> list[str]:
                     sym = (entry.get("ticker", "") if isinstance(entry, dict) else str(entry)).upper()
                     if sym and _is_boats_eligible(sym) and sym not in seen:
                         seen.add(sym)
-                        tickers.append(sym)
+                        tickers.append(f"BOATS:{sym}")
         except Exception:
             pass
 
