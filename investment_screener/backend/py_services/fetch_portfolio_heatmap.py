@@ -91,11 +91,17 @@ def save_info_to_cache(ticker: str, data: dict) -> None:
         pass
 
 
-def _fetch_one(symbol: str) -> tuple[str, dict]:
-    """Fetch yfinance info for one symbol, using cache when fresh."""
-    cached = get_cached_info(symbol)
-    if cached is not None:
-        return symbol, cached
+def _fetch_one(symbol: str, bust_cache: bool = False) -> tuple[str, dict]:
+    """Fetch yfinance info for one symbol, using cache when fresh.
+
+    Args:
+        symbol: The ticker symbol to fetch.
+        bust_cache: When True, bypass the cache and force a live yfinance fetch.
+    """
+    if not bust_cache:
+        cached = get_cached_info(symbol)
+        if cached is not None:
+            return symbol, cached
     t = yf.Ticker(symbol)
     info = t.info
     # Augment with fast_info so callers get extended-hours price when market is closed.
@@ -109,11 +115,17 @@ def _fetch_one(symbol: str) -> tuple[str, dict]:
     return symbol, info
 
 
-def prefetch_info(symbols: list[str], max_workers: int = 10) -> dict[str, dict]:
-    """Fetch yfinance info for all symbols in parallel. Returns symbol→info map."""
+def prefetch_info(symbols: list[str], max_workers: int = 10, bust_cache: bool = False) -> dict[str, dict]:
+    """Fetch yfinance info for all symbols in parallel. Returns symbol→info map.
+
+    Args:
+        symbols: List of ticker symbols to fetch.
+        max_workers: Thread pool size.
+        bust_cache: When True, bypass the 15-minute cache and force live yfinance fetches.
+    """
     result: dict[str, dict] = {}
     with ThreadPoolExecutor(max_workers=max_workers) as pool:
-        futures = {pool.submit(_fetch_one, sym): sym for sym in symbols}
+        futures = {pool.submit(_fetch_one, sym, bust_cache): sym for sym in symbols}
         for future in as_completed(futures):
             try:
                 sym, info = future.result()
@@ -136,9 +148,14 @@ def prefetch_history(symbols: list[str], history: HistoricalPriceStore, max_work
         list(pool.map(_warm, symbols))
 
 
-def fetch_portfolio_data(items: list) -> dict:
-    """Fetch heatmap data for portfolio items with shares."""
+def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
+    """Fetch heatmap data for portfolio items with shares.
 
+    Args:
+        items: List of portfolio holding dicts (symbol, shares, book_price, …).
+        bust_cache: When True, bypass the 15-minute yfinance cache. Use for
+            explicit user-triggered refreshes so prices are always live.
+    """
     history = HistoricalPriceStore()
 
     result: dict = {"sectors": {}, "stocks": [], "total_value": 0}
@@ -166,7 +183,7 @@ def fetch_portfolio_data(items: list) -> dict:
     # --- Parallel pre-fetch: all yfinance calls batched before the main loop ---
     # prefetch_info and prefetch_history each use ThreadPoolExecutor(max_workers=10)
     # internally, so cold-start fetches for all 30+ tickers complete in ~5-10s total.
-    info_map = prefetch_info(to_fetch) if to_fetch else {}
+    info_map = prefetch_info(to_fetch, bust_cache=bust_cache) if to_fetch else {}
 
     # --- TradingView price overlay (primary source) ---
     # Reads live prices from TradingView watchlist via CDP — includes BOATS extended-hours
@@ -321,7 +338,8 @@ def main():
         print(json.dumps({"error": "Invalid JSON input"}))
         sys.exit(1)
 
-    data = fetch_portfolio_data(items)
+    bust_cache = "--bust-cache" in sys.argv[2:]
+    data = fetch_portfolio_data(items, bust_cache=bust_cache)
     print(json.dumps(data, indent=2, cls=_NpEncoder))
 
 
