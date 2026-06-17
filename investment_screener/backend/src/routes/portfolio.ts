@@ -377,7 +377,7 @@ router.post('/refresh-prices', async (_req, res) => {
         // Strip stored price so fetch_portfolio_heatmap.py uses live yfinance prices
         const itemsForFetch = portfolioData.map((item: any) => { const { price, ...rest } = item; return rest; });
         const [data, exchangeRate] = await Promise.all([
-            spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(itemsForFetch)]),
+            spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(itemsForFetch), '--bust-cache']),
             getLiveUsdCadRate(JAN1_USD_CAD_RATE),
         ]);
         if (data.error) { res.status(400).json({ error: data.error }); return; }
