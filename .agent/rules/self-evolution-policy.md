@@ -25,3 +25,5 @@ This policy governs how agents must respond when a tool call, subprocess, web au
    * **Explicit Confirmation Gated**: Renaming or moving files.
    * **Hard Gated**: **Deletions of any file or function are strictly forbidden** without explicit human permission.
 6. **One Logical Fix at a Time**: Apply one clean fix per execution pass. Never bundle multiple refactoring changes or unrelated patches together.
+
+7. **Fix Forward, Never Skip**: When a tool, script, or automation step fails, fix it at the source immediately and update the relevant playbook. Do NOT work around failures, add retries without understanding the root cause, or leave the fix for later. Every session must end with the same capabilities working as reliably as they started. The goal is smooth, issue-free runs in every future session — compound the fixes, not the workarounds.

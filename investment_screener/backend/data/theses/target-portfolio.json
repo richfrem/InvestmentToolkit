@@ -294,12 +294,12 @@
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Data center thermal management.",
-      "agentRationale": "DCF: TRIM | FV $223 vs $328 price | -31.9% upside. 2026-06-19: Position fully closed per user. Do not recommend as buy.",
+      "agentRationale": "DCF: TRIM | FV $223 vs $328 price | -31.9% upside. 2026-06-19: Position fully closed per user. Do not recommend as buy. 2026-06-19: User confirmed wants re-entry on pullback \u2014 REENTRY_ON_PULLBACK standing decision active.",
       "standingDecision": {
-        "type": "POSITION_CLOSED",
-        "reason": "User sold entire VRT position. Target 0.94% remains as re-entry placeholder only. Do NOT show as INITIATE without explicit user confirmation to re-open.",
-        "source": "user confirmed position closed 2026-06-17",
-        "review": "Ask user before re-initiating \u2014 confirm thesis still valid after ThermoKey acquisition integrates."
+        "type": "REENTRY_ON_PULLBACK",
+        "reason": "Position fully closed. User intends to re-enter VRT on a meaningful pullback. Target 0.94% is the re-entry placeholder. Do NOT initiate at market \u2014 wait for a defined pullback entry.",
+        "source": "user confirmed 2026-06-19",
+        "review": "Trigger re-entry when VRT pulls back to support (~10-15% from recent high) or TA shows reversal. Confirm ThermoKey acquisition integration thesis is still intact at that time."
       }
     },
     {
