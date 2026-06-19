@@ -163,15 +163,16 @@ export async function selectAccount(targetType) {
 
   if (opened.error) throw new Error(opened.error);
 
-  // Wait briefly for dropdown to render
-  await sleep(300);
+  // Wait 800ms for TV to CSS-show dropdown items (not DOM insertion — offsetParent is unreliable here)
+  await sleep(800);
 
   // Find and click the target account option
   const selected = await evaluate(`(function() {
     var target = ${JSON.stringify(targetType.toUpperCase())};
     var pattern = /^(TFSA|RRSP|Cash|Margin|Individual)[\\s\\S]*\\d{4,}/i;
     var spans = [...document.querySelectorAll('span')].filter(function(s) {
-      return s.className === '' && pattern.test(s.textContent.trim());
+      // TV updated: account spans now have class "accountName-*" not empty className (2026-06)
+      return (s.className === '' || /accountName/i.test(s.className)) && pattern.test(s.textContent.trim());
     });
     var match = spans.find(function(s) {
       return s.textContent.trim().toUpperCase().startsWith(target);
