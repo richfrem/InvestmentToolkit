@@ -865,8 +865,8 @@ async function _findOrderRowAndAct({ orderId, ticker, buttonIndex }) {
     var tickerUp = ${JSON.stringify((ticker || '').toUpperCase())};
     var btnIdx   = ${JSON.stringify(buttonIndex)}; // -1 = last (cancel), -2 = second-to-last (edit)
 
+    // offsetParent is null on TV broker rows/buttons — do not use as visibility guard
     var rows = [...document.querySelectorAll('tr, [class*="row"]')].filter(function(r) {
-      if (!r.offsetParent) return false;
       var text = r.textContent;
       if (targetId && text.includes(targetId)) return true;
       if (!targetId && tickerUp && text.includes(tickerUp)) return true;
@@ -879,7 +879,7 @@ async function _findOrderRowAndAct({ orderId, ticker, buttonIndex }) {
     var extractedId = (row.textContent.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i) || [])[0] || targetId;
 
     var btns = [...row.querySelectorAll('button, [role="button"], svg')].filter(function(b) {
-      return b.offsetParent !== null && (b.tagName === 'BUTTON' || b.getAttribute('role') === 'button');
+      return b.tagName === 'BUTTON' || b.getAttribute('role') === 'button';
     });
 
     var idx = btnIdx < 0 ? btns.length + btnIdx : btnIdx;
