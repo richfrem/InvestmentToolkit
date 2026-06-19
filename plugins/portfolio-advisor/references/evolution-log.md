@@ -8,6 +8,49 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-06-19 — Standing Decision Gap: VST and VRT recommended incorrectly
+
+**Macro:** RISK-OFF (score=-2) — VIX neutral, SPY below 200D, credit unavailable
+**TA Sweep:** fresh (ran at session start)
+**Actions taken:** 0 trades — session interrupted by standing-decision failures
+**User overrides:** N/A
+**Tool failures:** 1 systemic, Tier 2
+
+### Root Cause — Standing Decision Not Surfaced in Scorer
+
+VST's `agentRationale` contained a documented override ("SA LP CLOSED entire $252M position — Grok ACCUMULATE BLOCKED 2026-06-08") but no formal `standingDecision` object. The conviction scorer returned score=+3 (ACCUMULATE) from pure TA/DCF data, and I presented VST as "Fine to add" — directly contradicting the documented guidance the user had received days earlier.
+
+VRT was similarly presented as an INITIATE target despite the user having fully closed the position.
+
+The system's `standingDecision` field IS read by the scorer (it correctly blocked BE, CORZ, CEG, OKLO today). The gap is that informal guidance written into `agentRationale` text is NOT parsed by the scorer — only the structured `standingDecision` object is.
+
+### Fix Applied
+
+**Fix 1 — VST standing decision formalized**
+- Added `standingDecision: { type: SA_LP_EXIT_OVERRIDE }` to VST in `target-portfolio.json`
+- SA LP exit overrides DCF ACCUMULATE. No adds until user lifts explicitly.
+- File: `investment_screener/backend/data/theses/target-portfolio.json`
+
+**Fix 2 — VRT position closed flag**
+- Added `standingDecision: { type: POSITION_CLOSED }` to VRT
+- Will not surface as INITIATE until user confirms re-entry
+- File: `investment_screener/backend/data/theses/target-portfolio.json`
+
+### Process Rule Added
+
+**Any time a Grok sweep or user action results in "DO NOT ADD / BLOCKED" — MUST write a formal `standingDecision` object immediately, not just text in agentRationale.** The scorer reads objects, not prose.
+
+### Overnight Gaps (notable)
+BE +13.3%, WYFI +11.2%, SNDK +8.7%, CBRS +7.2%, DRAM +6.0%
+
+### Consecutive EXIT signals (3+ days)
+CEG, OKLO — both underwater, standing SELL_ONLY_WHEN_GREEN
+
+### Notes
+- User correctly called out that VST was recommended as EXIT/REDUCE in a prior session, and today I said ACCUMULATE. This is a trust-degrading failure.
+- User also confirmed VRT position fully closed.
+- ACCUMULATE queue (NBIS, PSIX, CRWV) gated by RISK-OFF macro — valid entries on macro improvement.
+
 ## 2026-06-15 — Share Count Integrity Failure + Hardening
 
 **Macro:** RISK-ON (score=2) — massive broad market rally day
