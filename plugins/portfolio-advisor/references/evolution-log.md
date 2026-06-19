@@ -8,6 +8,30 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-06-19 (addendum) — BE Double-Reduce: Trade History Not Cross-Checked
+
+**Tier: 2 (Failure)** — System recommended reducing BE when user had already reduced BE in a prior session. User missed subsequent +13.3% gap because position was smaller than intended.
+
+### Root Cause
+The daily loop triage computes TRIM/EXIT recommendations from current-weight-vs-target comparison only. It does NOT cross-check `trade-log.json` for recent user actions on the same ticker. A prior-session BE trim moved actual weight closer to target, but this was not visible to the scorer in the current session — so the same TRIM signal fired again.
+
+The trade log has a cancelled BE buy from 2026-05-18 but the manual sells were not logged (done outside the system or logged with a different flow). This means even a trade-log check would have missed it unless we require all trades to be logged.
+
+### Required Fix (Tier 2 — to implement next session)
+**Step 1**: Before any TRIM/REDUCE/EXIT recommendation is presented in the triage card, the daily loop MUST check `trade-log.json` for filled/submitted sells of that ticker in the last 14 days. If found, annotate: `[RECENTLY TRIMMED {date} — verify current weight before acting again]`.
+
+**Step 2**: If the ticker's actual weight has moved ≥0.5pp closer to target since the last session brief, add a note: `[Weight improved — confirm triage action still needed]`.
+
+**Step 3**: Make it easy for users to say "I already trimmed X" and have that recorded immediately — add a `standingDecision: { type: RECENTLY_ACTED, date: ... }` that expires after 14 days.
+
+### VRT Update (same session)
+User confirmed intent to re-enter VRT on a meaningful pullback. Updated `standingDecision` from `POSITION_CLOSED` to `REENTRY_ON_PULLBACK`. Target 0.94% remains as re-entry placeholder.
+
+### Process Rule Added
+The daily loop must read the last 14 days of `trade-log.json` sells as Step 0.5, before presenting any TRIM/EXIT triage cards. If a sell for that ticker is found in that window, escalate to user with "already trimmed recently" context before recommending again.
+
+---
+
 ## 2026-06-19 — Standing Decision Gap: VST and VRT recommended incorrectly
 
 **Macro:** RISK-OFF (score=-2) — VIX neutral, SPY below 200D, credit unavailable

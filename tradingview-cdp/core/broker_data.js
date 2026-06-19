@@ -27,9 +27,9 @@ async function clickTab(tabLabel) {
   const result = await evaluate(`(function() {
     var label = ${JSON.stringify(tabLabel)};
     // TV updated tab class from underline-tab/size-xsmall → roundTabButton-* (2026-06 UI update)
+    // offsetParent is null on TV broker tabs even when visible — do not use it as visibility guard
     var tabs = [...document.querySelectorAll('[class*="roundTabButton"], [class*="underline-tab"]')]
       .filter(function(t) {
-        if (!t.offsetParent) return false;
         var text = t.textContent.replace(/[\\u00A0\\u2007\\u202F]/g, ' ').trim();
         return text === label || text.startsWith(label + ' ') || text.startsWith(label + '\\u00A0');
       });
@@ -45,44 +45,37 @@ async function clickTab(tabLabel) {
 
 /**
  * getAccounts() — enumerates all broker accounts.
- * Uses MutationObserver to capture dropdown items before the blur event closes the popup.
+ *
+ * TV CSS-toggles dropdown visibility (no DOM insertion) so MutationObserver childList/attribute
+ * events fire before items are queryable. Proven fix (2026-06-19): click → fixed wait → query,
+ * mirroring the pattern from debug_spans.js which reliably finds all three accounts.
+ * Also removed offsetParent guard — broker panel layout can set offsetParent null on the button
+ * even when the panel is visible, causing the button to be skipped.
  */
 async function _getAccountsOnce() {
-  const raw = await evaluateAsync(`new Promise(function(resolve) {
-    var found = [];
-    var pattern = /^(TFSA|RRSP|Cash|Margin|Individual)[\\s\\S]*\\d{4,}/i;
-
-    var settleTimer = null;
-    var observer = new MutationObserver(function() {
-      var spans = [...document.querySelectorAll('span')].filter(function(s) {
-        // TV updated: account name spans now have class "accountName-*" not empty className (2026-06)
-        return (s.className === '' || /accountName/i.test(s.className)) && pattern.test(s.textContent.trim());
-      });
-      if (spans.length > 0) {
-        found = spans.map(function(s) { return s.textContent.trim(); });
-        // Don't resolve immediately — wait 400ms for all accounts to render before settling
-        if (settleTimer) clearTimeout(settleTimer);
-        settleTimer = setTimeout(function() {
-          observer.disconnect();
-          resolve(JSON.stringify(found));
-        }, 400);
-      }
-    });
-    observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
-
+  // Open dropdown
+  await evaluate(`(function() {
     var btn = [...document.querySelectorAll('[class*="dropdownButton"]')].find(function(b) {
-      return b.offsetParent !== null && /TFSA|RRSP|Cash|\\d{6,}/i.test(b.textContent);
-    });
+      return /TFSA|RRSP|Cash|Margin|Individual|\\d{6,}/i.test(b.textContent);
+    }) || document.querySelector('[class*="dropdownButton"]');
     if (btn) {
       ['mousedown', 'mouseup', 'click'].forEach(function(t) {
         btn.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true }));
       });
-    } else {
-      resolve(JSON.stringify([]));
     }
+  })()`);
 
-    setTimeout(function() { observer.disconnect(); resolve(JSON.stringify(found)); }, 3000);
-  })`).then(JSON.parse);
+  // Wait for TV to render dropdown items via CSS show (not DOM insertion)
+  await sleep(800);
+
+  // Query account spans while dropdown is open
+  const raw = await evaluate(`(function() {
+    var pattern = /^(TFSA|RRSP|Cash|Margin|Individual)[\\s\\S]*\\d{4,}/i;
+    var spans = [...document.querySelectorAll('span')].filter(function(s) {
+      return (s.className === '' || /accountName/i.test(s.className)) && pattern.test(s.textContent.trim());
+    });
+    return JSON.stringify(spans.map(function(s) { return s.textContent.trim(); }));
+  })()`).then(JSON.parse);
 
   // Close dropdown
   await evaluate(`document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`);
@@ -116,44 +109,47 @@ export async function getAccounts() {
 
 /**
  * switchAccount(accountType) — switches the broker panel to a specific account.
- * Uses MutationObserver to capture items and click the target before blur closes the popup.
+ *
+ * TV CSS-toggles dropdown visibility so MutationObserver misses items. Same fix as
+ * _getAccountsOnce: click → wait 800ms → query spans → click match → wait for reload.
+ * Also removed offsetParent guard on button (can be null even when panel is visible).
  */
 export async function switchAccount(accountType) {
-  const result = await evaluateAsync(`new Promise(function(resolve) {
-    var target = ${JSON.stringify(accountType.toUpperCase())};
-    var pattern = /^(TFSA|RRSP|Cash|Margin|Individual)[\\s\\S]*\\d{4,}/i;
+  const target = accountType.toUpperCase();
 
-    var observer = new MutationObserver(function() {
-      var spans = [...document.querySelectorAll('span')].filter(function(s) {
-        // TV updated: account name spans now have class "accountName-*" not empty className (2026-06)
-        return (s.className === '' || /accountName/i.test(s.className)) && pattern.test(s.textContent.trim());
-      });
-      var match = spans.find(function(s) {
-        return s.textContent.trim().toUpperCase().startsWith(target);
-      });
-      if (match) {
-        observer.disconnect();
-        // Click the span and its parent (one of them is the actual clickable row)
-        match.click();
-        if (match.parentElement) match.parentElement.click();
-        resolve(JSON.stringify({ switched: match.textContent.trim() }));
-      }
-    });
-    observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
-
+  // Open dropdown
+  await evaluate(`(function() {
     var btn = [...document.querySelectorAll('[class*="dropdownButton"]')].find(function(b) {
-      return b.offsetParent !== null && /TFSA|RRSP|Cash|\\d{6,}/i.test(b.textContent);
-    });
+      return /TFSA|RRSP|Cash|Margin|Individual|\\d{6,}/i.test(b.textContent);
+    }) || document.querySelector('[class*="dropdownButton"]');
     if (btn) {
       ['mousedown', 'mouseup', 'click'].forEach(function(t) {
         btn.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true }));
       });
-    } else {
-      resolve(JSON.stringify({ error: 'Account button not found' }));
     }
+  })()`);
 
-    setTimeout(function() { observer.disconnect(); resolve(JSON.stringify({ error: 'timeout switching to ' + target })); }, 3000);
-  })`).then(JSON.parse);
+  await sleep(800);
+
+  // Find and click the target account span
+  const result = await evaluate(`(function() {
+    var target = ${JSON.stringify(target)};
+    var pattern = /^(TFSA|RRSP|Cash|Margin|Individual)[\\s\\S]*\\d{4,}/i;
+    var spans = [...document.querySelectorAll('span')].filter(function(s) {
+      return (s.className === '' || /accountName/i.test(s.className)) && pattern.test(s.textContent.trim());
+    });
+    var match = spans.find(function(s) {
+      return s.textContent.trim().toUpperCase().startsWith(target);
+    });
+    if (!match) return JSON.stringify({ error: 'Account not found in dropdown: ' + target });
+    // Dispatch mouse events to span and parent — .click() is unreliable on TV dropdown rows
+    [match, match.parentElement].filter(Boolean).forEach(function(el) {
+      ['mousedown', 'mouseup', 'click'].forEach(function(t) {
+        el.dispatchEvent(new MouseEvent(t, { bubbles: true, cancelable: true }));
+      });
+    });
+    return JSON.stringify({ switched: match.textContent.trim() });
+  })()`).then(JSON.parse);
 
   await sleep(1200); // wait for account data to reload
   return result;
@@ -189,8 +185,8 @@ export async function getBalances() {
   const detail = await evaluate(`(function() {
     var result = {};
 
+    // offsetParent is null on TV broker rows — do not use as visibility guard
     var rows = [...document.querySelectorAll('[class*="ka-row"]')].filter(function(r) {
-      if (!r.offsetParent) return false;
       var firstTd = r.querySelector('td');
       return firstTd && !firstTd.className.includes('leftFixedColumn');
     });
@@ -258,7 +254,7 @@ export async function getPositions() {
   for (let i = 0; i < 15; i++) {
     const more = await evaluate(`(function() {
       var btn = [...document.querySelectorAll('button, [role="button"]')].find(function(b) {
-        return b.offsetParent !== null && /show more/i.test(b.textContent);
+        return /show more/i.test(b.textContent);
       });
       if (!btn) return JSON.stringify({ found: false });
       btn.click();
@@ -269,8 +265,8 @@ export async function getPositions() {
   }
 
   return evaluate(`(function() {
+    // offsetParent is null on TV broker rows — do not use as visibility guard
     var rows = [...document.querySelectorAll('[class*="ka-row"]')].filter(function(r) {
-      if (!r.offsetParent) return false;
       var firstTd = r.querySelector('td');
       return firstTd && firstTd.className.includes('leftFixedColumn');
     });
@@ -317,8 +313,8 @@ export async function getOrders() {
   await sleep(300);
 
   const result = await evaluate(`(function() {
+    // offsetParent is null on TV broker rows — do not use as visibility guard
     var rows = [...document.querySelectorAll('[class*="ka-row"]')].filter(function(r) {
-      if (!r.offsetParent) return false;
       var firstTd = r.querySelector('td');
       return firstTd && firstTd.className.includes('leftFixedColumn');
     });
@@ -445,12 +441,11 @@ export async function getAccountTotals() {
 export async function inspectBrokerPanel() {
   return evaluate(`(function() {
     // TV updated tab class from underline-tab/size-xsmall → roundTabButton-* (2026-06 UI update)
+    // offsetParent is null on TV broker elements — do not use as visibility guard
     var tabs = [...document.querySelectorAll('[class*="roundTabButton"], [class*="underline-tab"]')]
-      .filter(function(t) { return t.offsetParent !== null; })
       .map(function(t) { return { text: t.textContent.trim(), cls: t.className.substring(0, 80) }; });
 
     var rows = [...document.querySelectorAll('[class*="ka-row"]')]
-      .filter(function(r) { return r.offsetParent !== null; })
       .slice(0, 6)
       .map(function(r) {
         var tds = [...r.querySelectorAll('td')];
