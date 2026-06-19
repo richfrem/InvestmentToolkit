@@ -4,12 +4,12 @@
   "schemaVersion": "1.0",
   "version": "9.4111",
   "createdAt": "2026-02-14T12:00:00Z",
-  "updatedAt": "2026-06-11T05:31:51.888Z",
+  "updatedAt": "2026-06-19T15:07:25.309784+00:00",
   "description": "Investment thesis focused on the dual infrastructure buildout for ASI Compute (Primary) and Sovereign Finance (Secondary).",
   "pillars": [
     {
       "id": "compute",
-      "name": "ASI / Compute — Chips",
+      "name": "ASI / Compute \u2014 Chips",
       "targetWeight": 9.5207
     },
     {
@@ -66,8 +66,8 @@
       "targetWeight": 12.564,
       "role": "reserve",
       "subStrategyId": "cash",
-      "thesisForInclusion": "USD cash reserve (Purpose US Cash Fund) — holds short-term USD treasuries on TSX. Primary purpose: USD currency exposure + interest income while awaiting deployment into thesis positions. Monthly dividend ~$0.31-0.33/share (~$3.68-3.90 USD annualized). ENTRY RULE: always buy 1-2 days AFTER the ex-dividend date (typically last Tuesday of month) to get the cycle-low reset price and capture the full next month of accrual. Buying mid-cycle or just before ex-date overpays for already-accrued dividend. Ex-dates: ~Jan 28, Feb 25, Mar 31, Apr 28, May 28, Jun 30 pattern. Next planned entry: May 29, 2026 (post May 28 ex-date).",
-      "agentRationale": "MAINTAIN. 56 shares held (PSU.U.TO in broker = same fund, hyphen/dot notation only). Purpose US Cash Fund — USD HISA equivalent, monthly dividend ~$0.31-0.33/share. Core cash reserve position. Entry rule: buy 1-2 days after ex-dividend date (last Tuesday of month).",
+      "thesisForInclusion": "USD cash reserve (Purpose US Cash Fund) \u2014 holds short-term USD treasuries on TSX. Primary purpose: USD currency exposure + interest income while awaiting deployment into thesis positions. Monthly dividend ~$0.31-0.33/share (~$3.68-3.90 USD annualized). ENTRY RULE: always buy 1-2 days AFTER the ex-dividend date (typically last Tuesday of month) to get the cycle-low reset price and capture the full next month of accrual. Buying mid-cycle or just before ex-date overpays for already-accrued dividend. Ex-dates: ~Jan 28, Feb 25, Mar 31, Apr 28, May 28, Jun 30 pattern. Next planned entry: May 29, 2026 (post May 28 ex-date).",
+      "agentRationale": "MAINTAIN. 56 shares held (PSU.U.TO in broker = same fund, hyphen/dot notation only). Purpose US Cash Fund \u2014 USD HISA equivalent, monthly dividend ~$0.31-0.33/share. Core cash reserve position. Entry rule: buy 1-2 days after ex-dividend date (last Tuesday of month).",
       "shares": 53
     },
     {
@@ -98,7 +98,7 @@
       "role": "untracked",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Highest-conviction BUY. Target increased to absorb freed capital from IREN, COHR, and EQT exits.",
-      "agentRationale": "DCF: INITIATE | FV $445 vs $198 price | +124.3% upside. 2026-06-08: Computex highlights — new chips, PC market AI push, AI supercomputing demand strong. INITIATE position on dips to $180-200 technical support."
+      "agentRationale": "DCF: INITIATE | FV $445 vs $198 price | +124.3% upside. 2026-06-08: Computex highlights \u2014 new chips, PC market AI push, AI supercomputing demand strong. INITIATE position on dips to $180-200 technical support."
     },
     {
       "ticker": "AMD",
@@ -149,7 +149,7 @@
       "role": "speculative",
       "subStrategyId": "sovereign-finance",
       "thesisForInclusion": "Regulated crypto exchange + Base L2 growth. Settlement rail for AI Agents.",
-      "agentRationale": "GENIUS Act play. Primary infrastructure for AI agent autonomous settlement. 2026-05-07: Subscription/services revenue ~25% of total and growing (USDC, Base ecosystem, Coinbase One); 14% headcount layoffs signal cost discipline + margin floor; analyst consensus -305; regulatory moat solidified post-SEC dismissal. 2026-05-08: Q1 2026 miss: revenue $1.41B vs $1.49-1.52B est, GAAP net loss $394M (-$1.49/share). Subscription/services held up; positive adj. EBITDA. Cyclical trading volume weakness confirms bear scenario weighting. Structural thesis intact — MAINTAIN..",
+      "agentRationale": "GENIUS Act play. Primary infrastructure for AI agent autonomous settlement. 2026-05-07: Subscription/services revenue ~25% of total and growing (USDC, Base ecosystem, Coinbase One); 14% headcount layoffs signal cost discipline + margin floor; analyst consensus -305; regulatory moat solidified post-SEC dismissal. 2026-05-08: Q1 2026 miss: revenue $1.41B vs $1.49-1.52B est, GAAP net loss $394M (-$1.49/share). Subscription/services held up; positive adj. EBITDA. Cyclical trading volume weakness confirms bear scenario weighting. Structural thesis intact \u2014 MAINTAIN..",
       "shares": 6.5
     },
     {
@@ -181,8 +181,14 @@
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Nuclear + natgas power merchant.",
-      "agentRationale": "2026-05-14: Trimmed. SA LP CLOSED entire $252M position in Q4 2025. Still at 1.7% vs 1.2% target — continue reducing toward target or consider full exit. DCF: ACCUMULATE +26.5% (conflicts with SA signal). SA exit overrides DCF here given portfolio focus. 2026-06-08: Grok ACCUMULATE BLOCKED — SA LP exit remains override. Continue trimming toward target.",
-      "shares": 4
+      "agentRationale": "2026-05-14: Trimmed. SA LP CLOSED entire $252M position in Q4 2025. Still at 1.7% vs 1.2% target \u2014 continue reducing toward target or consider full exit. DCF: ACCUMULATE +26.5% (conflicts with SA signal). SA exit overrides DCF here given portfolio focus. 2026-06-08: Grok ACCUMULATE BLOCKED \u2014 SA LP exit remains override. Continue trimming toward target. 2026-06-19: standingDecision added \u2014 SA_LP_EXIT_OVERRIDE blocks all ACCUMULATE signals until further notice.",
+      "shares": 4,
+      "standingDecision": {
+        "type": "SA_LP_EXIT_OVERRIDE",
+        "reason": "SA LP closed entire $252M VST position Q4 2025. Override: DO NOT ADD. Continue trimming toward target (2.27%) or exit. DCF ACCUMULATE +20% is overridden by smart-money exit signal.",
+        "source": "agentRationale 2026-05-14 + Grok sweep 2026-06-08",
+        "review": "Remove override only if SA LP re-enters or user explicitly lifts it at /strategic-review."
+      }
     },
     {
       "ticker": "CEG",
@@ -192,7 +198,7 @@
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Largest US nuclear operator.",
-      "agentRationale": "HOLD — do not accumulate. Trim on strength when position returns to green (break-even ~$364). CEG entered at avg $363.97; currently -27%. Nuclear/AI power thesis intact long-term. DCF -43% (stretched valuation). No new buys until profit recovery.",
+      "agentRationale": "HOLD \u2014 do not accumulate. Trim on strength when position returns to green (break-even ~$364). CEG entered at avg $363.97; currently -27%. Nuclear/AI power thesis intact long-term. DCF -43% (stretched valuation). No new buys until profit recovery.",
       "shares": 3.3
     },
     {
@@ -203,7 +209,7 @@
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Micro-nuclear reactor commercialization.",
-      "agentRationale": "HOLD — do not accumulate. Trim on strength when position returns to green (break-even ~$101). OKLO entered at avg $101.23; currently -37%. Nuclear/AI power long-term play; high execution risk. DCF SELL -91%. No new buys until profit recovery. 2026-06-08: Acquired ARMEC for manufacturing capability; DOE plutonium fuel selection positive. Execution milestones improving but valuation concerns persist. HOLD.",
+      "agentRationale": "HOLD \u2014 do not accumulate. Trim on strength when position returns to green (break-even ~$101). OKLO entered at avg $101.23; currently -37%. Nuclear/AI power long-term play; high execution risk. DCF SELL -91%. No new buys until profit recovery. 2026-06-08: Acquired ARMEC for manufacturing capability; DOE plutonium fuel selection positive. Execution milestones improving but valuation concerns persist. HOLD.",
       "shares": 10
     },
     {
@@ -214,7 +220,7 @@
       "role": "core",
       "subStrategyId": "cybersecurity",
       "thesisForInclusion": "AI-native platform consolidation leader.",
-      "agentRationale": "2026-05-14: Trimmed from ~5.5% → 4.3% (below 4.8% target). SA LP: not in portfolio — no smart-money validation. DCF: TRIM -14.5%. Action: allow to drift up naturally or hold at current weight. Not a core AI-infrastructure holding. 2026-06-05: Q3 FY26 beat/raise (June 2); AI-driven cyber demand tailwind; guidance raised.",
+      "agentRationale": "2026-05-14: Trimmed from ~5.5% \u2192 4.3% (below 4.8% target). SA LP: not in portfolio \u2014 no smart-money validation. DCF: TRIM -14.5%. Action: allow to drift up naturally or hold at current weight. Not a core AI-infrastructure holding. 2026-06-05: Q3 FY26 beat/raise (June 2); AI-driven cyber demand tailwind; guidance raised.",
       "shares": 5
     },
     {
@@ -245,7 +251,7 @@
       "targetWeight": 3.7781,
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "BTC→AI data center conversion thesis.",
+      "thesisForInclusion": "BTC\u2192AI data center conversion thesis.",
       "agentRationale": "DCF: TRIM | FV $11 vs $20 price | -47.7% upside. 2026-05-07: Q1 2026 strong; .3B financing secured; CoreWeave co-location margins raised to 85%+; hyperscaler demand pipeline growing; AI compute hosting converting from mining. 2026-06-03: $3.3B notes raise secures 1.5GW AI colocation buildout; derisks execution. 2026-06-05: Q1 colocation pivot rev +45% YoY; $3.3B bond financing; AI MW delivery on track.",
       "shares": 46
     },
@@ -267,7 +273,7 @@
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "GPU cloud provider.",
-      "agentRationale": "DCF: ACCUMULATE | FV $163 vs $119 price | +36.6% upside. 2026-05-07: Q1 2026: revenue $2.08B +112% YoY; RPO backlog $42.4B +50% QoQ demand de-risked; NVIDIA confirmed top customer; losses wider but demand trajectory offsets. 2026-06-05: $8.5B IG GPU-backed financing; total ~$28B capital stack; backlog scale reinforced. 2026-06-08: NVIDIA Vera Rubin NVL72 bring-up/validation complete — confirms cutting-edge GPU deployment on latest architecture. ACCUMULATE on pullbacks.",
+      "agentRationale": "DCF: ACCUMULATE | FV $163 vs $119 price | +36.6% upside. 2026-05-07: Q1 2026: revenue $2.08B +112% YoY; RPO backlog $42.4B +50% QoQ demand de-risked; NVIDIA confirmed top customer; losses wider but demand trajectory offsets. 2026-06-05: $8.5B IG GPU-backed financing; total ~$28B capital stack; backlog scale reinforced. 2026-06-08: NVIDIA Vera Rubin NVL72 bring-up/validation complete \u2014 confirms cutting-edge GPU deployment on latest architecture. ACCUMULATE on pullbacks.",
       "shares": 12
     },
     {
@@ -288,8 +294,13 @@
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Data center thermal management.",
-      "agentRationale": "DCF: TRIM | FV $223 vs $328 price | -31.9% upside.",
-      "shares": 1
+      "agentRationale": "DCF: TRIM | FV $223 vs $328 price | -31.9% upside. 2026-06-19: Position fully closed per user. Do not recommend as buy.",
+      "standingDecision": {
+        "type": "POSITION_CLOSED",
+        "reason": "User sold entire VRT position. Target 0.94% remains as re-entry placeholder only. Do NOT show as INITIATE without explicit user confirmation to re-open.",
+        "source": "user confirmed position closed 2026-06-17",
+        "review": "Ask user before re-initiating \u2014 confirm thesis still valid after ThermoKey acquisition integrates."
+      }
     },
     {
       "ticker": "HUMN",
@@ -299,7 +310,7 @@
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Physical embodiment of ASI thesis.",
-      "agentRationale": "ETF_ANALYSIS: HOLD | THEMATIC_ETF | NAV premium 4.04% (LOW-MOD) | alignment 74% (direct humanoid: TSLA/Ubtech/Rainbow/Harmonic/Robotis) | $62M AUM (less liquid) | NVDA overlap immaterial at target size | near 52wk high — hold, accumulate on dips to $33-35 | analyzed 2026-05-13",
+      "agentRationale": "ETF_ANALYSIS: HOLD | THEMATIC_ETF | NAV premium 4.04% (LOW-MOD) | alignment 74% (direct humanoid: TSLA/Ubtech/Rainbow/Harmonic/Robotis) | $62M AUM (less liquid) | NVDA overlap immaterial at target size | near 52wk high \u2014 hold, accumulate on dips to $33-35 | analyzed 2026-05-13",
       "shares": 26
     },
     {
@@ -310,7 +321,7 @@
       "role": "core",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Automation and robotics revolution.",
-      "agentRationale": "ETF_ANALYSIS: HOLD | THEMATIC_ETF | NAV premium 1.97% (LOW) | alignment 62% (supply-chain semis + precision actuation: CRDO/Harmonic Drive/MP Materials/IFX/NXPI) | $158M AUM | no overlap with direct holdings | near 52wk high — hold, accumulate on dips to $35-37 | analyzed 2026-05-13",
+      "agentRationale": "ETF_ANALYSIS: HOLD | THEMATIC_ETF | NAV premium 1.97% (LOW) | alignment 62% (supply-chain semis + precision actuation: CRDO/Harmonic Drive/MP Materials/IFX/NXPI) | $158M AUM | no overlap with direct holdings | near 52wk high \u2014 hold, accumulate on dips to $35-37 | analyzed 2026-05-13",
       "shares": 22
     },
     {
@@ -331,7 +342,7 @@
       "role": "speculative",
       "thesisForInclusion": "Bloom Energy fuel cells.",
       "agentRationale": "2026-05-19: Forward-Looking Valuation Challenge & Math Validation applied. Accounted for the Oracle 2.8GW, Brookfield, and AEP deals ($20B backlog) and clean energy/AI P/E re-rating. Standardized on outstanding share count. Intrinsic fair value: $158.55 vs $258.71 price (SELL, -38.7% upside). 2026-06-03: $2.6B fuel cell deal with NBIS validates solid oxide tech for AI power demand. 2026-06-08: Record Q1 revenue +130% YoY; raised FY guidance; Oracle partnership expansion. Operational beats conflict with DCF SELL. HOLD; do not add; monitor for valuation re-rate.",
-      "shares": 6,
+      "shares": 3,
       "pillarId": "power"
     },
     {
@@ -342,7 +353,7 @@
       "role": "speculative",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "European AI infrastructure.",
-      "agentRationale": "2026-05-13 Grok sweep: MSFT/NVIDIA deals intact; strong AI cloud momentum; DCF BUY +185.6%. Target bumped 2.55% → 2.85% (post-normalize). High conviction AI-native cloud infrastructure. 2026-06-03: SA LP 5.6% passive stake + explosive Q1 growth validates AI cloud capacity thesis. 2026-06-05: SA LP new 5.6% stake established May 2026; Q1 hyper-growth continuation; power deals (Bloom Energy). 2026-06-08: UK infrastructure expansion underway; AI cloud momentum continues. ACCUMULATE thesis confirmed.",
+      "agentRationale": "2026-05-13 Grok sweep: MSFT/NVIDIA deals intact; strong AI cloud momentum; DCF BUY +185.6%. Target bumped 2.55% \u2192 2.85% (post-normalize). High conviction AI-native cloud infrastructure. 2026-06-03: SA LP 5.6% passive stake + explosive Q1 growth validates AI cloud capacity thesis. 2026-06-05: SA LP new 5.6% stake established May 2026; Q1 hyper-growth continuation; power deals (Bloom Energy). 2026-06-08: UK infrastructure expansion underway; AI cloud momentum continues. ACCUMULATE thesis confirmed.",
       "shares": 3
     },
     {
@@ -352,9 +363,9 @@
       "targetWeight": 2.0034,
       "role": "speculative",
       "thesisForInclusion": "Agentforce AI platform.",
-      "agentRationale": "2026-05-14: Trimmed. At 1.5% vs 1.2% target — near target. SA LP: not a holding. DCF: BUY +53.1% (conflicts with trim direction). Trim driven by thesis focus not DCF. Continue light trimming or hold at current weight.",
+      "agentRationale": "2026-05-14: Trimmed. At 1.5% vs 1.2% target \u2014 near target. SA LP: not a holding. DCF: BUY +53.1% (conflicts with trim direction). Trim driven by thesis focus not DCF. Continue light trimming or hold at current weight.",
       "pillarId": "applied",
-      "shares": 3
+      "shares": 4
     },
     {
       "ticker": "NOW",
@@ -365,7 +376,7 @@
       "thesisForInclusion": "AI workflow automation.",
       "agentRationale": "DCF: BUY | FV $132 vs $91 price | +45.2% upside.",
       "pillarId": "applied",
-      "shares": 5
+      "shares": 6
     },
     {
       "ticker": "SOLZ",
@@ -384,7 +395,7 @@
       "targetWeight": 2.4449,
       "role": "untracked",
       "thesisForInclusion": "EXIT: Liquidation finalized.",
-      "agentRationale": "2026-05-13 Grok sweep: exit flag reversed 2026-05-07; $3.4B 5yr AI cloud contract + NVIDIA partnership + 480MW Sweetwater expansion on track. Target bumped 1.90% → 2.09% (post-normalize). SA LP aligned. 2026-06-03: 800MW Australia campus + $3.65B GPU financing confirms global AI pivot execution. 2026-06-08: Awaken acquisition closed; $4.4B ARR target set with Blackwell GPU deployment. ACCUMULATE confirmed.",
+      "agentRationale": "2026-05-13 Grok sweep: exit flag reversed 2026-05-07; $3.4B 5yr AI cloud contract + NVIDIA partnership + 480MW Sweetwater expansion on track. Target bumped 1.90% \u2192 2.09% (post-normalize). SA LP aligned. 2026-06-03: 800MW Australia campus + $3.65B GPU financing confirms global AI pivot execution. 2026-06-08: Awaken acquisition closed; $4.4B ARR target set with Blackwell GPU deployment. ACCUMULATE confirmed.",
       "shares": 22,
       "pillarId": "compute"
     },
@@ -405,7 +416,7 @@
       "targetWeight": 0,
       "role": "untracked",
       "thesisForInclusion": "EXIT: Liquidation finalized.",
-      "agentRationale": "MAINTAIN ~1.0%. Exit flag reversed 2026-05-07: Q3 FY2026 beat rev $1.81B +21% YoY, EPS $1.41; Q4 guide $1.91B–$2.05B raised; NVIDIA partnership; data center optics ~75% of sales; 800G/1.6T transceiver ramp aligned with AI buildout. Analyst consensus $300–$340. AI photonics structural play. Hold at current weight.",
+      "agentRationale": "MAINTAIN ~1.0%. Exit flag reversed 2026-05-07: Q3 FY2026 beat rev $1.81B +21% YoY, EPS $1.41; Q4 guide $1.91B\u2013$2.05B raised; NVIDIA partnership; data center optics ~75% of sales; 800G/1.6T transceiver ramp aligned with AI buildout. Analyst consensus $300\u2013$340. AI photonics structural play. Hold at current weight.",
       "pillarId": "compute"
     },
     {
@@ -415,7 +426,7 @@
       "targetWeight": 0,
       "role": "untracked",
       "thesisForInclusion": "EXIT: Liquidation finalized.",
-      "agentRationale": "MAINTAIN ~1.05%. Exit flag reversed 2026-05-07: Direct AI power beneficiary — natural gas supply to data centers in PA; hyperscaler demand contracts secured; Q1 2026 record FCF $1.83B, production 618 Bcfe above guide. AI power bottleneck plays into gas as bridge fuel. Aligned with BE/CEG/VST/OKLO power theme. Hold at current weight.",
+      "agentRationale": "MAINTAIN ~1.05%. Exit flag reversed 2026-05-07: Direct AI power beneficiary \u2014 natural gas supply to data centers in PA; hyperscaler demand contracts secured; Q1 2026 record FCF $1.83B, production 618 Bcfe above guide. AI power bottleneck plays into gas as bridge fuel. Aligned with BE/CEG/VST/OKLO power theme. Hold at current weight.",
       "pillarId": "power"
     },
     {
@@ -458,8 +469,8 @@
       "subStrategyId": "sa-asi-race",
       "pillarId": "datainfra",
       "thesisForInclusion": "NAND storage infrastructure play.",
-      "agentRationale": "2026-05-19: Agentic Swarm Memory Thesis applied. Spawning parallel sub-agents multiplies active KV context caching & state log persistence requirements. De-risked Bear to 15% & raised Bull to 35%. Reconciled intrinsic value: $1,982.18 vs $1,333.01 price (BUY, +48.7% upside). 2026-06-08: Multiple analyst PT raises; design awards confirm AI memory demand cycle. GTC limit $1,350 — only accumulate at or below entry price.",
-      "shares": 1.2,
+      "agentRationale": "2026-05-19: Agentic Swarm Memory Thesis applied. Spawning parallel sub-agents multiplies active KV context caching & state log persistence requirements. De-risked Bear to 15% & raised Bull to 35%. Reconciled intrinsic value: $1,982.18 vs $1,333.01 price (BUY, +48.7% upside). 2026-06-08: Multiple analyst PT raises; design awards confirm AI memory demand cycle. GTC limit $1,350 \u2014 only accumulate at or below entry price.",
+      "shares": 0.7,
       "targetEntryPrice": 1350
     },
     {
@@ -470,8 +481,8 @@
       "subStrategyId": "sa-asi-race",
       "pillarId": "power",
       "thesisForInclusion": "AI power infrastructure.",
-      "agentRationale": "2026-05-13: User doubled position on 40% earnings selloff. Q1 miss: rev $128.6M vs $160M+ est (-5% YoY); net income -62%; gross margin 22.9% vs 29.7% prior. Cause: oil/gas softness + datacenter power shipment timing + Wisconsin ramp costs. Mgmt reaffirmed H2 datacenter acceleration; no FY guidance cut. SA LP position intact. DCF: BUY +51.9%. Target 0.50% → 1.71% (post-normalize). Review post-H2 ramp.",
-      "shares": 9
+      "agentRationale": "2026-05-13: User doubled position on 40% earnings selloff. Q1 miss: rev $128.6M vs $160M+ est (-5% YoY); net income -62%; gross margin 22.9% vs 29.7% prior. Cause: oil/gas softness + datacenter power shipment timing + Wisconsin ramp costs. Mgmt reaffirmed H2 datacenter acceleration; no FY guidance cut. SA LP position intact. DCF: BUY +51.9%. Target 0.50% \u2192 1.71% (post-normalize). Review post-H2 ramp.",
+      "shares": 11
     },
     {
       "ticker": "IONQ",
@@ -491,7 +502,7 @@
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Human-agentic collaboration platform.",
       "agentRationale": "DCF: BUY | FV $105 vs $86 price | +22.5% upside.",
-      "shares": 6
+      "shares": 8
     },
     {
       "ticker": "TSM",
@@ -530,8 +541,8 @@
       "role": "watchlist",
       "subStrategyId": "preipo-access",
       "pillarId": "applied",
-      "thesisForInclusion": "Only public vehicle for pre-IPO AI basket: SpaceX, Anthropic, OpenAI, xAI, Databricks. Scarcity premium play — not a value play.",
-      "agentRationale": "EXIT 2026-06-03. Fully sold — small loss accepted. Reason: SpaceX IPO uncertainty creates unpredictable NAV premium compression timeline; scarcity premium thesis valid but risk/reward unfavorable when SpaceX IPO catalyst timeline unclear. Proceeds to be redeployed."
+      "thesisForInclusion": "Only public vehicle for pre-IPO AI basket: SpaceX, Anthropic, OpenAI, xAI, Databricks. Scarcity premium play \u2014 not a value play.",
+      "agentRationale": "EXIT 2026-06-03. Fully sold \u2014 small loss accepted. Reason: SpaceX IPO uncertainty creates unpredictable NAV premium compression timeline; scarcity premium thesis valid but risk/reward unfavorable when SpaceX IPO catalyst timeline unclear. Proceeds to be redeployed."
     },
     {
       "ticker": "DRAM",
@@ -540,10 +551,10 @@
       "targetWeight": 4.7737,
       "role": "satellite",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Only US-listed vehicle for SK Hynix (25.9%) and Samsung (21.6%) HBM exposure — Nvidia's #1 and #2 HBM suppliers, not tradeable directly on US exchanges. Strategic memory play: HBM is the critical scarcity resource in AI compute scaling. Korean/Japanese memory consolidation thesis. Wait for pullback from current levels (+94.6% in 6mo) before initiating.",
-      "agentRationale": "ETF_ANALYSIS: HOLD | alignment 53% (DIRECT: SK Hynix 25.9% + Samsung 21.6% HBM) | Only US-listed vehicle for KRX-traded HBM leaders; fund +94.6% 6mo — wait for pullback to ~$46-48 | analyzed 2026-05-14",
+      "thesisForInclusion": "Only US-listed vehicle for SK Hynix (25.9%) and Samsung (21.6%) HBM exposure \u2014 Nvidia's #1 and #2 HBM suppliers, not tradeable directly on US exchanges. Strategic memory play: HBM is the critical scarcity resource in AI compute scaling. Korean/Japanese memory consolidation thesis. Wait for pullback from current levels (+94.6% in 6mo) before initiating.",
+      "agentRationale": "ETF_ANALYSIS: HOLD | alignment 53% (DIRECT: SK Hynix 25.9% + Samsung 21.6% HBM) | Only US-listed vehicle for KRX-traded HBM leaders; fund +94.6% 6mo \u2014 wait for pullback to ~$46-48 | analyzed 2026-05-14",
       "action": "WATCHLIST",
-      "shares": 28
+      "shares": 21
     },
     {
       "ticker": "MSFT",
@@ -552,7 +563,7 @@
       "targetWeight": 2.5256,
       "role": "core",
       "thesisForInclusion": "Core large-cap AI platform compounder. Azure AI dominant enterprise cloud. 34-37% net margins, 18% TTM revenue growth. DCF BUY +50% (FV ).",
-      "agentRationale": "MAINTAIN at 2 shares. No accumulate, no trim — hold current level. DCF BUY +50% upside. EXIT flag was an auto-add error on 2026-05-18, corrected 2026-06-03.",
+      "agentRationale": "MAINTAIN at 2 shares. No accumulate, no trim \u2014 hold current level. DCF BUY +50% upside. EXIT flag was an auto-add error on 2026-05-18, corrected 2026-06-03.",
       "shares": 2
     },
     {
@@ -572,7 +583,7 @@
       "targetWeight": 2.0214,
       "role": "core",
       "thesisForInclusion": "Situational Awareness LP core holding. AI data center infrastructure play aligned with SA fund thesis on ASI race build-out.",
-      "agentRationale": "MAINTAIN. Core SA LP holding at 2% target. DCF BUY +49%. Position auto-flagged EXIT in error on 2026-05-18 — corrected 2026-06-03. Do not exit without explicit user instruction. 2026-06-08: $550M revolving credit facility secured; >1GW contracted capacity milestone with major hyperscaler; cloud business separation complete. Thesis strongly confirmed — light ACCUMULATE on dips.",
+      "agentRationale": "MAINTAIN. Core SA LP holding at 2% target. DCF BUY +49%. Position auto-flagged EXIT in error on 2026-05-18 \u2014 corrected 2026-06-03. Do not exit without explicit user instruction. 2026-06-08: $550M revolving credit facility secured; >1GW contracted capacity milestone with major hyperscaler; cloud business separation complete. Thesis strongly confirmed \u2014 light ACCUMULATE on dips.",
       "shares": 20,
       "subStrategyId": "sa-asi-race"
     },
@@ -584,8 +595,8 @@
       "role": "untracked",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference.",
-      "agentRationale": "INITIATE post-IPO. Weighted fair value $342.80 vs $287.30 current price (+19.3% upside), rating the stock a BUY. Outstanding inference speeds (2,500 tokens/sec on Llama 3) provide a formidable technological moat. OpenAI ($20B backlog) and AWS Bedrock agreements validate commercial scaling, though lockup expiration in November 2026 and G42 revenue concentration (86%) represent structural near-term risks. Model uses Class A float shares count of 34.5M. 2026-06-08: IPO priced $185, opened ~$350, pulled back; analyst consensus Buy with ~$290 avg PT. Post-IPO volatility normal — HOLD at current 4.5 shares; lockup Nov 2026 is key near-term risk.",
-      "shares": 4.5
+      "agentRationale": "INITIATE post-IPO. Weighted fair value $342.80 vs $287.30 current price (+19.3% upside), rating the stock a BUY. Outstanding inference speeds (2,500 tokens/sec on Llama 3) provide a formidable technological moat. OpenAI ($20B backlog) and AWS Bedrock agreements validate commercial scaling, though lockup expiration in November 2026 and G42 revenue concentration (86%) represent structural near-term risks. Model uses Class A float shares count of 34.5M. 2026-06-08: IPO priced $185, opened ~$350, pulled back; analyst consensus Buy with ~$290 avg PT. Post-IPO volatility normal \u2014 HOLD at current 4.5 shares; lockup Nov 2026 is key near-term risk.",
+      "shares": 3
     },
     {
       "ticker": "PSU.U.TO",
