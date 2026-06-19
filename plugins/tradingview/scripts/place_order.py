@@ -81,6 +81,67 @@ PORTFOLIO_PATH = os.environ.get(
 DATA_FRESHNESS_LIMIT_MINUTES = 60
 
 
+def _check_market_hours() -> dict | None:
+    """Returns a warning dict if NYSE is closed (holiday or outside hours), else None.
+
+    Uses pandas_market_calendars when available; falls back to weekday + rough ET hours.
+    """
+    from datetime import datetime, timezone, timedelta
+    now_utc = datetime.now(timezone.utc)
+    # Approximate EDT offset (UTC-4). Close enough for an advisory gate.
+    now_et = now_utc + timedelta(hours=-4)
+
+    try:
+        import pandas_market_calendars as mcal  # type: ignore
+        nyse = mcal.get_calendar("NYSE")
+        schedule = nyse.schedule(
+            start_date=now_et.strftime("%Y-%m-%d"),
+            end_date=now_et.strftime("%Y-%m-%d"),
+        )
+        if schedule.empty:
+            return {
+                "marketClosed": True,
+                "reason": (
+                    f"NYSE is closed today ({now_et.strftime('%Y-%m-%d')}) — holiday or weekend. "
+                    "Day orders will queue as Inactive and attempt to fill at the next regular session open. "
+                    "Pass --ack-closed to place anyway."
+                ),
+            }
+        market_open = schedule.iloc[0]["market_open"].to_pydatetime()
+        market_close = schedule.iloc[0]["market_close"].to_pydatetime()
+        if not (market_open <= now_utc <= market_close):
+            return {
+                "marketClosed": True,
+                "reason": (
+                    f"NYSE is currently closed (now {now_et.strftime('%H:%M')} ET; hours 09:30–16:00 ET). "
+                    "Day orders placed now will queue as Inactive for the next session open. "
+                    "Pass --ack-closed to place anyway."
+                ),
+            }
+        return None
+    except ImportError:
+        # Fallback: weekday + rough ET hours only (no holiday detection)
+        if now_et.weekday() >= 5:
+            return {
+                "marketClosed": True,
+                "reason": (
+                    f"Weekend — NYSE is closed. Day orders will queue for Monday's open. "
+                    "Pass --ack-closed to place anyway."
+                ),
+            }
+        now_h = now_et.hour + now_et.minute / 60.0
+        if not (9.5 <= now_h <= 16.0):
+            return {
+                "marketClosed": True,
+                "reason": (
+                    f"Outside NYSE hours (now {now_et.strftime('%H:%M')} ET; hours 09:30–16:00 ET). "
+                    "Day orders will queue for the next open. "
+                    "Pass --ack-closed to place anyway."
+                ),
+            }
+        return None
+
+
 def _check_data_freshness(ack_stale: bool = False) -> dict | None:
     """Returns a freshness warning dict if portfolio.json is stale, else None.
     If ack_stale is True, logs a warning but does not block."""
@@ -344,6 +405,8 @@ def main():
                         help="Bypass the max-order-value cap (requires explicit flag)")
     parser.add_argument("--ack-stale", action="store_true", dest="ack_stale",
                         help="Acknowledge stale portfolio data and proceed anyway (use with caution)")
+    parser.add_argument("--ack-closed", action="store_true", dest="ack_closed",
+                        help="Acknowledge that the market is closed and place the order anyway (Day orders queue as Inactive)")
 
     parser.add_argument("--order-id", default=None, dest="order_id",
                         help="TradingView order UUID (required for --cancel / --modify)")
@@ -375,6 +438,14 @@ def main():
 
     # ── preflight ──────────────────────────────────────────────────────────
     if args.preflight:
+        # Market hours gate — warn/block if NYSE is closed (holiday or after hours)
+        ack_closed = getattr(args, 'ack_closed', False)
+        market_status = _check_market_hours()
+        if market_status and market_status.get("marketClosed") and not ack_closed:
+            print(json.dumps({"error": "MARKET_CLOSED_BLOCKED", "details": market_status}, indent=2))
+            print(f"\n🚫 {market_status['reason']}")
+            sys.exit(5)
+
         # Executable freshness gate — enforced in code, not just SKILL.md
         freshness = _check_data_freshness(ack_stale=getattr(args, 'ack_stale', False))
         if freshness and freshness.get("stale") and not getattr(args, 'ack_stale', False):
@@ -406,6 +477,10 @@ def main():
                 print(f"\n🚫 {freshness['reason']}")
                 sys.exit(4)
 
+        # ── market hours advisory (already acked at this point) ─────────
+        if market_status and market_status.get("marketClosed"):
+            card["_marketClosedWarning"] = market_status["reason"]
+
         # ── max-order-value gate ─────────────────────────────────────────
         cost = card.get("costEstimate")
         if cost is not None and cost > args.max_order_value and not args.allow_large:
@@ -421,6 +496,8 @@ def main():
             with open(args.output_json, "w") as f:
                 json.dump(card, f, indent=2)
 
+        if card.get("_marketClosedWarning"):
+            print(f"\n⚠️  MARKET CLOSED (acked): {card['_marketClosedWarning']}")
         if card.get("_sizeWarning"):
             print(f"\n🚫 {card['_sizeWarning']}")
             sys.exit(3)
