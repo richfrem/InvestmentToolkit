@@ -1,0 +1,89 @@
+[
+  {
+    "ticker": "FOTO",
+    "id": "718e9b43-be81-43dd-a1a5-f094948fbdeb",
+    "source": "ETF_ANALYSIS",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-06-21T20:00:00Z",
+    "updatedAt": "2026-06-21T20:00:00Z",
+    "name": "AI ETF Analysis \u2014 FOTO \u2014 2026-06-21",
+    "rationale": "Tuttle Capital Pure Play Photonics ETF holds the exact names in our photonics thesis (COHR, CIEN, LITE, AAOI, VIAV) but thesis alignment scores 62% \u2014 HOLD range \u2014 due to 24% weighting in industrial/non-AI photonics names (IPGP fiber lasers, LASR defense lasers). Entry trigger set in thesis at <$19 has NOT been met at current $23.65 (+24% above gate). AUM is very small \u2014 liquidity risk for meaningful position sizes. Do not initiate above $19.",
+    "snapshot": {
+      "price": 23.65,
+      "currency": "USD",
+      "shares": 0,
+      "revenue": 0,
+      "lastActualPS": null,
+      "fiscalPeriod": "N/A \u2014 THEMATIC_ETF",
+      "analystGrowthEstimate": null,
+      "analystMarginEstimate": null
+    },
+    "dataPreferences": {
+      "growthBasis": "N/A",
+      "marginBasis": "N/A"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": -20,
+        "netMargin": 0,
+        "exitPE": 0,
+        "qualityMultiplier": 0.5,
+        "shareChange": 0,
+        "scenarioPrice": 16.08,
+        "rationale": "Adverse scenario: thesis headwinds, sector rotation, macro weakness.",
+        "year5Revenue": 0,
+        "year5NetIncome": 0,
+        "year5EPS": 0,
+        "year5Shares": 0,
+        "year5PriceUndiscounted": 16.08,
+        "presentValue": 16.08
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 5,
+        "netMargin": 0,
+        "exitPE": 0,
+        "qualityMultiplier": 1.0,
+        "shareChange": 0,
+        "scenarioPrice": 27.2,
+        "rationale": "Base scenario: thesis plays out, moderate appreciation.",
+        "year5Revenue": 0,
+        "year5NetIncome": 0,
+        "year5EPS": 0,
+        "year5Shares": 0,
+        "year5PriceUndiscounted": 27.2,
+        "presentValue": 27.2
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 30,
+        "netMargin": 0,
+        "exitPE": 0,
+        "qualityMultiplier": 1.5,
+        "shareChange": 0,
+        "scenarioPrice": 37.84,
+        "rationale": "Bull scenario: thesis catalysts accelerate, strong re-rating.",
+        "year5Revenue": 0,
+        "year5NetIncome": 0,
+        "year5EPS": 0,
+        "year5Shares": 0,
+        "year5PriceUndiscounted": 37.84,
+        "presentValue": 37.84
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "fairValue": 25.44,
+      "action": "HOLD",
+      "analyzedAt": "2026-06-21T20:00:00Z",
+      "rationale": "# FOTO \u2014 AI ETF Analysis \u2014 FOTO \u2014 2026-06-21\n## ETF Analysis \u2014 THEMATIC_ETF (NOT a DCF)\n\nTuttle Capital Pure Play Photonics ETF holds the exact names in our photonics thesis (COHR, CIEN, LITE, AAOI, VIAV) but thesis alignment scores 62% \u2014 HOLD range \u2014 due to 24% weighting in industrial/non-AI photonics names (IPGP fiber lasers, LASR defense lasers). Entry trigger set in thesis at <$19 has NOT been met at current $23.65 (+24% above gate). AUM is very small \u2014 liquidity risk for meaningful position sizes. Do not initiate above $19.\n\n---\n\n### Holdings (Top 10)\n\n| Symbol | Weight | Alignment | Note |\n|--------|--------|-----------|------|\n| LITE | 14.1% | DIRECT |  |\n| IPGP | 13.7% | PARTIAL |  |\n| CIEN | 11.1% | DIRECT |  |\n| COHR | 10.7% | DIRECT |  |\n| FN | 10.5% | PARTIAL |  |\n| LASR | 10.1% | TANGENTIAL |  |\n| AAOI | 7.5% | DIRECT |  |\n| VIAV | 6.2% | DIRECT |  |\n\n**Thesis Alignment Score: 62/100**\n\n---\n\n### Action Rationale\n\nAlignment 62% \u2014 majority of AUM in thesis-aligned names (COHR, LITE, CIEN, AAOI, VIAV = 49.6% direct) but IPGP (industrial fiber lasers, 13.7%) and LASR (defense lasers, 10.1%) dilute the AI data center photonics thesis. No overlap with current holdings \u2014 pure diversification. Entry trigger from photonics thesis is <$19 (200D MA); current price $23.65 is 24.4% above gate. Do not initiate until price pulls back to entry trigger. AUM extremely small \u2014 size entry carefully to avoid market impact.\n\n### Upside Catalysts\n\n- AI data center optical capex acceleration drives COHR/LITE/CIEN revenue beats\n- Price pullback to $19-20 range triggers entry gate \u2014 2.5% initiation\n- Co-packaged optics (CPO) transition expands optical silicon TAM for COHR and LITE\n- Hyperscaler announces mandatory CPO timeline \u2014 re-rates entire basket\n\n### Risks\n\n- Entry trigger ($19) not met \u2014 current $23.65 is 24% above gate; buying here violates thesis discipline\n- AUM very small (~$245K per yfinance) \u2014 liquidity risk; large orders could move price\n- IPGP (13.7%) is primarily industrial fiber lasers \u2014 limited AI data center exposure; dilutes thesis\n- LASR (10.1%) is defense/industrial lasers \u2014 tangential to photonics thesis\n- Sector has already re-rated 200-300% \u2014 multiple compression from current levels likely before thesis plays out\n- Expense ratio ~0.85% (Tuttle Capital estimate) \u2014 meaningful drag at small AUM\n\n### Entry Note\n\nINITIATE at 2.5% target only on pullback to <$19. At $23.65 the entry gate has not been triggered. Monitor weekly \u2014 if COHR or LITE pull back sharply, FOTO will follow. GTC limit order at $18.90 is a reasonable set-and-forget approach."
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": []
+  }
+]

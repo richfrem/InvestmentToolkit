@@ -5,7 +5,7 @@
 | **Current Theme** | ASI Buildout (Primary) + Sovereign Finance (Secondary) |
 | **Edition** | "The Compute Sovereign" |
 | **Status** | ACTIVE |
-| **Last Updated** | 2026-06-05 |
+| **Last Updated** | 2026-06-26 |
 | **Thesis Last Analyzed** | 2026-05-22 (Full strategic review post-13F chip exits) |
 | **13F Last Refactored** | 2026-05-22 (Refactored SA LP Q1 2026 13F filed 2026-05-18 into target-portfolio.json) |
 | **Portfolio Data** | Live — synced from Questrade via app or `python3 investment_screener/backend/src/QuestradeDataEngine.py` |
@@ -53,11 +53,14 @@ This strategy is built on a single macro conviction: **the 2020s will be defined
 
 - **[SA / ASI Race](../../../investment_screener/backend/data/theses/sub_strategies/asi_race.md)** (Primary: Immediate Growth)
 - **[AI-Native Cybersecurity](../../../investment_screener/backend/data/theses/sub_strategies/cybersecurity.md)**
+- **[Ontological AI & Operating Systems](../../../investment_screener/backend/data/theses/sub_strategies/ontological_os.md)**
 - **[Sovereign Finance](../../../investment_screener/backend/data/theses/sub_strategies/sovereign_finance.md)** (Secondary: Strategic Maturity)
-- **[Quality SaaS Resilience](../../../investment_screener/backend/data/theses/sub_strategies/quality_saas.md)**
-- **[Applied AI / Frontier Bets](../../../investment_screener/backend/data/theses/sub_strategies/applied_ai.md)**
+- **[Quality SaaS — Oversold Leaders](../../../investment_screener/backend/data/theses/sub_strategies/quality_saas.md)**
 - **[Strategic Reserve](../../../investment_screener/backend/data/theses/sub_strategies/strategic_reserve.md)**
 - **[Space Data Centers & Defense](../../../investment_screener/backend/data/theses/sub_strategies/space_defense.md)** (Proposed)
+- **[Photonics & Optical Interconnect](../../../investment_screener/backend/data/theses/sub_strategies/photonics_optical.md)** (Proposed — Watchlist Only)
+- **[Quantum Computing](../../../investment_screener/backend/data/theses/sub_strategies/quantum_computing.md)** (Partial)
+- **[Robotics & Physical AI](../../../investment_screener/backend/data/theses/sub_strategies/robotics_automation.md)** (Approved — ETF Only)
 
 Every holding in the portfolio maps to exactly one of these strategies. The skill assesses each sub-strategy as a unit — conviction intact, weakening, or broken.
 
@@ -71,111 +74,95 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 
 ## IV. Portfolio Blueprint
 
-*Generated 2026-06-05 · Source: `validate_weights.py` × `target-portfolio.json` × `portfolio.json` (Questrade live)*
-*Portfolio value: $32,826. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
+<!-- AUTO_UPDATE_START: portfolio_blueprint -->
+*Generated 2026-06-26 · Source: `validate_weights.py` × `target-portfolio.json` × `portfolio.json` (Questrade live)*
+*Portfolio value: $33,171. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
 
 ### Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **BE** | 🔵 ACCUMULATE | — | 4.73% | 5.73% | — | Bloom Energy fuel cells. |
-| **GOOG** | ⚪ MAINTAIN | — | 4.41% | 4.66% | — | Hyperscaler with vertically integrated AI stack. |
-| **DRAM** | ⚪ MAINTAIN | — | 4.27% | 4.77% | — | Only US-listed vehicle for SK Hynix (25.9%) and Samsung (21.6%) HBM exposure — Nvidia's #1 and #2 HBM suppliers, not tradeable directly on US exchanges. Strategic memory play: HBM is the critical scarcity resource in AI compute scaling. Korean/Japanese memory consolidation thesis. Wait for pullback from current levels (+94.6% in 6mo) before initiating. |
-| **SNDK** | ⚪ MAINTAIN | — | 3.79% | 3.88% | — | NAND storage infrastructure play. |
-| **CRWV** | 🔵 ACCUMULATE | — | 3.64% | 5.92% | — | GPU cloud provider. |
-| **CORZ** | ⚪ MAINTAIN | — | 3.61% | 3.78% | — | BTC→AI data center conversion thesis. |
-| **IREN** | 🟡 TRIM | — | 3.09% | 2.44% | — | EXIT: Liquidation finalized. |
-| **HUMN** | ⚪ MAINTAIN | — | 2.82% | 2.84% | — | Physical embodiment of ASI thesis. |
-| **CBRS** | ⚪ MAINTAIN | — | 2.75% | 2.74% | — | Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference. |
-| **KOID** | ⚪ MAINTAIN | — | 2.71% | 2.64% | — | Automation and robotics revolution. |
-| **CEG** | ⚪ MAINTAIN | — | 2.56% | 2.64% | — | Largest US nuclear operator. |
-| **APLD** | 🟡 TRIM | — | 2.38% | 2.02% | — | Situational Awareness LP core holding. AI data center infrastructure play aligned with SA fund thesis on ASI race build-out. |
-| **BTDR** | 🟡 TRIM | — | 2.38% | 2.00% | — | Proprietary Sealminer ASIC chip design. |
-| **NBIS** | 🔵 ACCUMULATE | — | 2.06% | 5.87% | — | European AI infrastructure. |
-| **TEAM** | ⚪ MAINTAIN | — | 1.81% | 1.73% | — | Human-agentic collaboration platform. |
-| **VST** | 🔵 ACCUMULATE | — | 1.80% | 2.27% | — | Nuclear + natgas power merchant. |
-| **OKLO** | ⚪ MAINTAIN | — | 1.77% | 1.87% | — | Micro-nuclear reactor commercialization. |
-| **PSIX** | 🔵 ACCUMULATE | — | 1.02% | 2.26% | — | AI power infrastructure. |
-| **VRT** | ⚪ MAINTAIN | — | 0.91% | 0.94% | — | Data center thermal management. |
-| **WYFI** | 🔵 ACCUMULATE | — | 0.85% | 1.21% | — | AI GPU cloud + HPC data center. |
-| **INTC** | 👁️ WATCHLIST | — | — | — | — | The Sovereign Foundry: designated US National Champion for onshored compute manufacturing. |
+| **CRWV** | ⚪ MAINTAIN | — | 5.26% | 5.23% | — | GPU cloud provider. |
+| **SNDK** | 🟡 TRIM | — | 4.84% | 3.96% | — | NAND storage infrastructure play. |
+| **DRAM** | ⚪ MAINTAIN | — | 4.78% | 4.45% | — | Only US-listed vehicle for SK Hynix (25.9%) and Samsung (21.6%) HBM exposure — Nvidia's #1 and #2 HBM suppliers, not tradeable directly on US exchanges. Strategic memory play: HBM is the critical scarcity resource in AI compute scaling. Korean/Japanese memory consolidation thesis. Wait for pullback from current levels (+94.6% in 6mo) before initiating. |
+| **GOOG** | ⚪ MAINTAIN | — | 4.05% | 3.96% | — | Hyperscaler with vertically integrated AI stack. |
+| **CORZ** | ⚪ MAINTAIN | — | 3.71% | 3.71% | — | BTC→AI data center conversion thesis. |
+| **IREN** | ⚪ MAINTAIN | — | 3.11% | 3.26% | — | AI GPU cloud pivot — 800MW Australia campus + Blackwell GPU deployment + $4.4B ARR target. IREN converted from BTC mining to AI data center infrastructure. HOLD at target weight; reduce only if AI capex thesis deteriorates. |
+| **BE** | ⚪ MAINTAIN | — | 2.75% | 2.97% | — | Bloom Energy fuel cells. |
+| **CEG** | ⚪ MAINTAIN | — | 2.63% | 2.47% | — | Largest US nuclear operator. |
+| **APLD** | ⚪ MAINTAIN | — | 2.43% | 2.47% | — | Situational Awareness LP core holding. AI data center infrastructure play aligned with SA fund thesis on ASI race build-out. |
+| **NBIS** | ⚪ MAINTAIN | — | 2.28% | 2.47% | — | European AI infrastructure. |
+| **CBRS** | ⚪ MAINTAIN | — | 2.25% | 2.47% | — | Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference. |
+| **BTDR** | 🟡 TRIM | — | 2.18% | 1.89% | — | Proprietary Sealminer ASIC chip design. |
+| **VST** | ⚪ MAINTAIN | — | 1.99% | 1.88% | — | Nuclear + natgas power merchant. |
+| **TEAM** | ⚪ MAINTAIN | — | 1.77% | 1.88% | — | Human-agentic collaboration platform. |
+| **OKLO** | ⚪ MAINTAIN | — | 1.51% | 1.48% | — | Micro-nuclear reactor commercialization. Power pillar speculative play — same theme as BE and CEG. AI data center power demand requires diverse nuclear supply; OKLO's micro-reactor model targets co-location with data centers. |
+| **PSIX** | 🔵 ACCUMULATE | — | 1.38% | 1.98% | — | AI power infrastructure. |
+| **INTC** | 👁️ WATCHLIST | — | — | — | — | EXIT: Position closed 2026-06. Semis sector overextended — waiting for pullback before re-entry. Terafab JV (Intel + Tesla + SpaceX/xAI) thesis intact long-term but valuation stretched. |
 | **AVGO** | 👁️ WATCHLIST | — | — | — | — | Custom ASIC + networking moat. |
 | **NVDA** | 👁️ WATCHLIST | — | — | — | — | Highest-conviction BUY. Target increased to absorb freed capital from IREN, COHR, and EQT exits. |
 | **AMD** | 👁️ WATCHLIST | — | — | — | — | Hedge against NVDA dominance. |
 | **META** | 👁️ WATCHLIST | — | — | — | — | Social monopoly + AI ad flywheel. |
 | **EQIX** | 👁️ WATCHLIST | — | — | — | — | Digital Geneva. |
 | **ANET** | 👁️ WATCHLIST | — | — | — | — | AI networking switching fabric. |
-| **LITE** | 👁️ WATCHLIST | — | — | — | — | Lumentum optical interconnects. |
-| **COHR** | 👁️ WATCHLIST | — | — | — | — | EXIT: Liquidation finalized. |
-| **EQT** | 👁️ WATCHLIST | — | — | — | — | EXIT: Liquidation finalized. |
+| **VRT** | 👁️ WATCHLIST | — | — | — | — | Data center thermal management. |
+| **EQT** | 👁️ WATCHLIST | — | — | — | — | EXIT: Position closed. Not held. |
+| **WYFI** | 👁️ WATCHLIST | — | — | — | — | AI GPU cloud + HPC data center. |
 | **TSM** | 👁️ WATCHLIST | — | — | — | — | The foundry backbone of the AI compute stack. |
 | **ASML** | 👁️ WATCHLIST | — | — | — | — | Absolute monopoly on EUV lithography. |
 | **MU** | 👁️ WATCHLIST | — | — | — | — | HBM3E memory bandwidth bottleneck. |
-| **Subtotal** | | **53.38%** | **62.25%** | +8.87pp | |
+| **Subtotal** | | **46.92%** | **46.54%** | -0.38pp | |
 
 ### Sub-Strategy 2 — AI-Native Cybersecurity
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **ZS** | ⚪ MAINTAIN | — | 4.36% | 4.01% | — | Zero-trust SASE leader. |
-| **PANW** | 🔵 ACCUMULATE | — | 4.14% | 6.34% | — | AI-native platform consolidation leader. |
+| **ZS** | ⚪ MAINTAIN | — | 4.40% | 4.45% | — | Zero-trust SASE leader. |
+| **PANW** | ⚪ MAINTAIN | — | 4.34% | 4.45% | — | AI-native platform consolidation leader. |
 | **CRWD** | 👁️ WATCHLIST | — | — | — | — | EXIT: DCF -66% downside. |
-| **Subtotal** | | **8.50%** | **10.34%** | +1.84pp | |
+| **Subtotal** | | **8.74%** | **8.90%** | +0.16pp | |
 
 ### Sub-Strategy 3 — Sovereign Finance
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **CRCL** | ⚪ MAINTAIN | — | 2.44% | 2.83% | — | USDC issuer and stablecoin infrastructure for AI agents. |
-| **COIN** | ⚪ MAINTAIN | — | 2.31% | 2.44% | — | Regulated crypto exchange + Base L2 growth. Settlement rail for AI Agents. |
-| **CLSK** | ⚪ MAINTAIN | — | 2.10% | 2.18% | — | High-efficiency green BTC mining operator with liquid balance sheet. |
+| **COIN** | ⚪ MAINTAIN | — | 2.74% | 2.97% | — | Regulated crypto exchange + Base L2 growth. Settlement rail for AI Agents. |
+| **CRCL** | ⚪ MAINTAIN | — | 2.65% | 2.72% | — | USDC issuer and stablecoin infrastructure for AI agents. |
 | **ETHA** | 👁️ WATCHLIST | — | — | — | — | Ethereum as programmable settlement layer. |
 | **IBIT** | 👁️ WATCHLIST | — | — | — | — | Bitcoin as sovereign reserve asset. |
 | **SOLZ** | 👁️ WATCHLIST | — | — | — | — | EXIT: Solana ETF. |
-| **Subtotal** | | **6.85%** | **7.46%** | +0.61pp | |
+| **Subtotal** | | **5.39%** | **5.69%** | +0.29pp | |
 
 ### Sub-Strategy 4 — Quality SaaS Resilience
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **NOW** | ⚪ MAINTAIN | — | 1.71% | 1.60% | — | AI workflow automation. |
-| **CRM** | 🔵 ACCUMULATE | — | 1.70% | 2.00% | — | Agentforce AI platform. |
-| **Subtotal** | | **3.41%** | **3.61%** | +0.20pp | |
+| **CRM** | ⚪ MAINTAIN | — | 1.78% | 1.88% | — | Agentforce AI platform. |
+| **NOW** | 🔵 ACCUMULATE | — | 1.59% | 1.88% | — | AI workflow automation. |
+| **Subtotal** | | **3.37%** | **3.76%** | +0.39pp | |
 
 ### Sub-Strategy 5 — Applied AI / Frontier Bets
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **IONQ** | 🔵 ACCUMULATE | — | 1.04% | 1.26% | — | IONQ |
-| **RGTI** | 👁️ WATCHLIST | — | — | — | — | EXIT: Rigetti Computing. |
 | **POET** | 👁️ WATCHLIST | — | — | — | — | EXIT: POET Technologies. |
 | **DXYZ** | 👁️ WATCHLIST | — | — | — | — | Only public vehicle for pre-IPO AI basket: SpaceX, Anthropic, OpenAI, xAI, Databricks. Scarcity premium play — not a value play. |
-| **Subtotal** | | **1.04%** | **1.26%** | +0.21pp | |
+| **Subtotal** | | **0.00%** | **0.00%** | — | |
 
 ### Strategic Reserve
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **PSU-U.TO** | 🟢 INITIATE | — | — | 12.56% | — | USD cash reserve (Purpose US Cash Fund) — holds short-term USD treasuries on TSX. Primary purpose: USD currency exposure + interest income while awaiting deployment into thesis positions. Monthly dividend ~$0.31-0.33/share (~$3.68-3.90 USD annualized). ENTRY RULE: always buy 1-2 days AFTER the ex-dividend date (typically last Tuesday of month) to get the cycle-low reset price and capture the full next month of accrual. Buying mid-cycle or just before ex-date overpays for already-accrued dividend. Ex-dates: ~Jan 28, Feb 25, Mar 31, Apr 28, May 28, Jun 30 pattern. Next planned entry: May 29, 2026 (post May 28 ex-date). |
-| **Subtotal** | | **0.00%** | **12.56%** | +12.56pp | |
-
-### Untracked / Thesis Pending
-
-| Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
-| :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **PSU.U.TO** | 🔴 EXIT | — | 17.08% | — | — | PSU.U.TO |
-| **Subtotal** | | **17.08%** | **0.00%** | -17.08pp | |
+| **PSU-U.TO** | 🔵 ACCUMULATE | — | 15.74% | 18.65% | — | USD cash reserve (Purpose US Cash Fund) — holds short-term USD treasuries on TSX. Primary purpose: USD currency exposure + interest income while awaiting deployment into thesis positions. Monthly dividend ~$0.31-0.33/share (~$3.68-3.90 USD annualized). ENTRY RULE: always buy 1-2 days AFTER the ex-dividend date (typically last Tuesday of month) to get the cycle-low reset price and capture the full next month of accrual. Buying mid-cycle or just before ex-date overpays for already-accrued dividend. Ex-dates: ~Jan 28, Feb 25, Mar 31, Apr 28, May 28, Jun 30 pattern. Next planned entry: May 29, 2026 (post May 28 ex-date). |
+| **Subtotal** | | **15.74%** | **18.65%** | +2.92pp | |
 
 ### Portfolio Totals
 
 | | Actual % | Target % | Delta |
 | :--- | ---: | ---: | ---: |
-| **All holdings** | **90.26%** | **97.47%** | +7.21pp |
+| **All holdings** | **80.16%** | **83.54%** | +3.38pp |
 | *Validate* | `python3 plugins/portfolio-advisor/scripts/validate_weights.py --mode both` | | |
-
-
----
-
+<!-- AUTO_UPDATE_END: portfolio_blueprint -->
 
 ## V. Risk Factors
 

@@ -37,6 +37,7 @@ from tv_client import TV_NODE_DIR, tv_call, is_tv_running
 
 REPO_ROOT = TV_NODE_DIR.parent
 PROJECTIONS_DIR = REPO_ROOT / "investment_screener" / "backend" / "data" / "projections"
+TARGET_JSON_PATH = REPO_ROOT / "investment_screener" / "backend" / "data" / "theses" / "target-portfolio.json"
 
 
 # ---------------------------------------------------------------------------
@@ -92,6 +93,60 @@ def get_alert_levels(entry: dict) -> list[tuple[str, float]]:
     return levels
 
 
+def get_tier_alert_levels(ticker: str, target_json: dict) -> list[tuple[str, float]]:
+    """Extract (label, price) tuples from priceLevels blocks in target-portfolio.json.
+
+    Returns richer tiered alerts: buy tiers, sell tiers with trim%, and stop loss.
+    Returns empty list if no priceLevels block found for this ticker.
+    Priority over DCF scenario prices when available.
+    """
+    holding = next(
+        (h for h in target_json.get("holdings", [])
+         if h.get("ticker", "").upper() == ticker.upper()),
+        None
+    )
+    if not holding:
+        return []
+
+    price_levels = holding.get("priceLevels")
+    if not price_levels:
+        return []
+
+    levels = []
+
+    for tier in price_levels.get("buyTiers", []):
+        if tier.get("status") != "active":
+            continue
+        price = tier.get("price")
+        n = tier.get("tier", "?")
+        if price and price > 0:
+            label = f"{ticker} Buy Tier {n} — Accumulate at ${price:.2f}"
+            levels.append((label, float(price)))
+
+    for tier in price_levels.get("sellTiers", []):
+        if tier.get("status") != "active":
+            continue
+        price = tier.get("price")
+        n = tier.get("tier", "?")
+        trim_pct = tier.get("trimPct")
+        action = tier.get("action", "trim")
+        if price and price > 0:
+            if action == "exit" or trim_pct == 100:
+                label = f"{ticker} Exit — Full position at ${price:.2f}"
+            else:
+                label = f"{ticker} Sell Tier {n} — Trim {trim_pct or 30}% at ${price:.2f}"
+            levels.append((label, float(price)))
+
+    stop = price_levels.get("stopLoss")
+    if stop and stop.get("status") == "active":
+        price = stop.get("price")
+        if price and price > 0:
+            label = f"{ticker} ⚠️ Stop Loss — Thesis Breaker at ${price:.2f}"
+            levels.append((label, float(price)))
+
+    return levels
+
+
 def create_alert(ticker: str, price: float, message: str, dry_run: bool = False) -> dict:
     """Create a single TradingView price alert."""
     if dry_run:
@@ -114,18 +169,29 @@ def get_all_tickers() -> list[str]:
     return [p.stem for p in PROJECTIONS_DIR.glob("*.json")]
 
 
-def process_ticker(ticker: str, dry_run: bool) -> dict:
-    """Create alerts for a single ticker. Returns a result summary dict."""
-    entry = load_latest_ai_entry(ticker)
-    if entry is None:
-        return {"ticker": ticker, "status": "skipped", "reason": "no projection file"}
+def process_ticker(ticker: str, dry_run: bool, target_json: dict | None = None) -> dict:
+    """Create alerts for a single ticker. Returns a result summary dict.
 
-    levels = get_alert_levels(entry)
+    Priority: priceLevels tiers from target-portfolio.json (richer labels + trim%).
+    Fallback: scenarioPrice levels from projection JSON.
+    """
+    # --- Primary source: priceLevels from target-portfolio.json ---
+    tier_levels: list[tuple[str, float]] = []
+    if target_json:
+        tier_levels = get_tier_alert_levels(ticker, target_json)
+
+    # --- Fallback source: DCF scenario prices from projections/ ---
+    entry = load_latest_ai_entry(ticker)
+    dcf_levels = get_alert_levels(entry) if entry else []
+
+    # Use tier levels if available, otherwise fall back to DCF scenario levels
+    levels = tier_levels if tier_levels else dcf_levels
+
     if not levels:
         return {
             "ticker": ticker,
             "status": "skipped",
-            "reason": "no scenarioPrice values in projection",
+            "reason": "no price levels or scenarioPrice values found",
         }
 
     created = []
@@ -167,6 +233,15 @@ def main():
         )
         sys.exit(1)
 
+    # Load target-portfolio.json once for priceLevels tier alerts
+    target_json = None
+    if TARGET_JSON_PATH.exists():
+        try:
+            with open(TARGET_JSON_PATH) as f:
+                target_json = json.load(f)
+        except Exception:
+            pass  # proceed without tier alerts if file unreadable
+
     tickers = [args.ticker.upper()] if args.ticker else get_all_tickers()
 
     if not tickers:
@@ -175,7 +250,7 @@ def main():
 
     results = []
     for ticker in sorted(tickers):
-        result = process_ticker(ticker, dry_run=args.dry_run)
+        result = process_ticker(ticker, dry_run=args.dry_run, target_json=target_json)
         results.append(result)
 
     # Summary table

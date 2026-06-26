@@ -1,0 +1,60 @@
+[
+  {
+    "ticker": "ETHA",
+    "id": "c9f5e4d3-0a6b-4f93-7c4d-8e1f2b0c9a6e",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.0",
+    "schemaType": "ETF_ANALYSIS",
+    "fundType": "THEMATIC_ETF",
+    "version": 1,
+    "savedAt": "2026-06-21T20:00:00Z",
+    "updatedAt": "2026-06-21T20:00:00Z",
+    "name": "AI ETF Analysis \u2014 ETHA \u2014 2026-06-21",
+    "rationale": "iShares Ethereum Trust (BlackRock spot ETH ETF). Single-asset \u2014 holds spot ETH, no holdings diversification. Price $12.88 is near 52w low of $11.62 after -32% YTD as ETH significantly underperformed BTC in 2026. $5.9B AUM and 30M+ daily volume make this the most liquid ETH vehicle available. Currently watchlist at 0% target \u2014 initiation requires a target weight decision and evidence of ETH relative strength vs BTC improving.",
+    "snapshot": {
+      "price": 12.88,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "aum": 5914945024,
+      "expenseRatio": 0.0025,
+      "fiftyTwoWeekHigh": 36.8,
+      "fiftyTwoWeekLow": 11.62
+    },
+    "holdingsAnalysis": {
+      "topHoldings": [
+        {
+          "symbol": "ETH",
+          "name": "Ethereum (spot)",
+          "holdingPct": 100.0,
+          "alignment": "DIRECT"
+        }
+      ],
+      "concentration": {
+        "top5Pct": 100.0,
+        "top10Pct": 100.0
+      },
+      "thesisAlignmentScore": 80,
+      "expenseDragBps": 25,
+      "overlapWithDirectHoldings": []
+    },
+    "action": "HOLD",
+    "actionRationale": "ETHA is the highest-quality vehicle for ETH exposure (BlackRock, $5.9B AUM, 0.25% expense ratio) but three gates must be cleared before initiating: (1) target weight must be set in target-portfolio.json \u2014 currently 0%; (2) ETH must show relative strength improvement vs BTC \u2014 ETH -32% YTD while BTC is significantly positive is a structural concern; (3) staking yield is NOT passed through in spot ETFs \u2014 you hold ETH at full price risk without the 3-4% staking APY that on-chain holders receive, which is a meaningful opportunity cost. Price near 52w low ($12.88 vs $11.62 low) is interesting for a contrarian position, but the -65% drawdown from 52w high ($36.80) reflects genuine ETH-specific weakness, not just a pullback.",
+    "upsideCatalysts": [
+      "SEC approves ETH ETF staking yield pass-through \u2014 transforms ETHA from price-only to yield-bearing",
+      "Ethereum Pectra/future upgrade drives renewed developer and DeFi activity \u2014 ETH narrative reset",
+      "BTC dominance cycle peaks and rotation into ETH begins \u2014 ETH historically outperforms BTC in alt seasons",
+      "Institutional adoption of Ethereum smart contracts for tokenized assets (bonds, funds) \u2014 demand catalyst",
+      "Near 52w low ($11.62) \u2014 price compression may already reflect most of the downside"
+    ],
+    "risks": [
+      "ETH -32% YTD vs BTC significantly positive in 2026 \u2014 structural underperformance, not a temporary dip",
+      "No staking yield pass-through \u2014 on-chain ETH earns 3-4% APY; ETHA earns 0% plus 0.25% fee drag",
+      "Target weight is 0% \u2014 no initiation without an explicit committee decision to allocate",
+      "65% drawdown from 52w high ($36.80 to $12.88) \u2014 single-asset concentration risk fully exposed",
+      "Ethereum competes with alternative L1s (Solana, Sui, Aptos) for DeFi activity \u2014 market share erosion",
+      "If BTC dominance continues rising, ETH may continue underperforming for extended period"
+    ],
+    "entryNote": "Do not initiate until: (1) target weight >0% is explicitly set, AND (2) ETH/BTC ratio shows recovery. If initiating, a limit around $11.50 (just above 52w low) is the disciplined entry. Maximum 1-2% of portfolio given single-asset concentration risk. Monitor SEC staking yield ruling \u2014 approval would materially change the thesis.",
+    "agentRationale": "ETF_ANALYSIS: HOLD | ETH spot -32% YTD, near 52w low; no staking yield; initiation requires target weight decision + ETH vs BTC strength signal | analyzed 2026-06-21"
+  }
+]

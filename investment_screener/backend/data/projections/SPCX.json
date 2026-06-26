@@ -1,0 +1,118 @@
+[
+  {
+    "ticker": "SPCX",
+    "id": "d13c09fb-68f7-4e0d-8604-7863cf6765da",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-06-13T00:00:00.000Z",
+    "updatedAt": "2026-06-19T21:17:22Z",
+    "name": "AI Deep Dive \u2014 SPCX \u2014 2026-06-13",
+    "rationale": "SpaceX (SPCX) is a pre-IPO 3-segment aerospace and connectivity company trading on secondary markets. The core thesis is that Starlink's LEO broadband network \u2014 already at 49% gross margins and millions of subscribers \u2014 combined with a near-monopoly in orbital launch services creates a durable, compounding revenue stream. The current -26% net margin reflects Starship development capex, not underlying unit economics. As Starship commercializes and Starlink penetrates global markets, margins should expand significantly toward 15-22% over 5 years. The secondary market price of $160.95 represents 27% upside to a DCF-derived fair value of $204 at a 12% discount rate. Primary risks are Starship timeline execution, private market illiquidity, and a valuation that prices in meaningful growth expectations. UPDATE 2026-06-19: IPO completed 2026-06-12 at ~$185. Public float implies 7.57B total shares vs the 1.16B used in original DCF. Restated per-share FV is approximately $31 \u2014 current price is ~6x the restated DCF value. SELL.",
+    "snapshot": {
+      "price": 185.0,
+      "currency": "USD",
+      "exchange": "Secondary Market (Pre-IPO)"
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 15,
+        "netMargin": 5,
+        "exitPE": 20,
+        "qualityMultiplier": 1.2,
+        "shareChange": 0.5,
+        "scenarioPrice": 21.47,
+        "rationale": "Starlink growth decelerates to 15% CAGR as Amazon Kuiper achieves commercial scale (2027-2028), eroding pricing power. FAA regulatory friction delays Starship commercial operations beyond 2029, meaning SpaceX continues burning $14B+/yr capex with limited near-term offset. Net margins recover only to 5% as competitive pressure and continued capex weigh. Exit multiple of 20x reflects aerospace/defense median (18x) with modest premium for uniqueness. Quality multiplier 1.2 anchored to (1) Falcon 9 cost advantage via vertical integration \u2014 ~60-70% cheaper than ULA; (2) Starlink first-mover satellite density advantage with 7,000+ LEO satellites deployed. Both moats persist even in bear scenario."
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 22,
+        "netMargin": 15,
+        "exitPE": 35,
+        "qualityMultiplier": 1.2,
+        "shareChange": 0.5,
+        "scenarioPrice": 151.49,
+        "rationale": "Starlink scales to 20M+ active subscribers globally by 2029, reaching $25-30B in segment revenue. Falcon 9 cadence sustains 100+ missions/year; pricing power maintained as competition remains 3+ years behind. Starship achieves commercial cargo operations by 2027-2028, beginning to offset development costs. 22% CAGR represents natural deceleration from historical 34% 2yr CAGR as penetration deepens in mature markets. Net margin recovery to 15% as Starship capex rolls off and Starlink segment reaches high incremental margins. Exit P/E of 35x reflects hybrid platform/aerospace classification \u2014 anchored to Tech Platform median (28x) with premium justified by network effects and launch monopoly, within \u00b130% deviation rule. Quality multiplier 1.2 anchored to dual structural moats cited in bear rationale."
+      },
+      "bull": {
+        "weight": 0.3,
+        "growthRate": 30,
+        "netMargin": 22,
+        "exitPE": 50,
+        "qualityMultiplier": 1.2,
+        "shareChange": 0.5,
+        "scenarioPrice": 436.05,
+        "rationale": "Catalyst: Starlink achieves 50M+ subscribers driven by Direct-to-Cell partnerships with major mobile operators (confirmed FCC spectrum licenses) and rapid emerging markets penetration. Starship fully commercial by 2027 with reusability rates matching Falcon 9, collapsing launch costs and opening new markets (point-to-point Earth transit, lunar logistics). xAI/Grok achieves enterprise-scale revenue from Starlink infrastructure synergies. 30% CAGR is aggressive but grounded in Starlink TAM ($1T+ broadband) still in early penetration. Net margin 22% reflects Starlink's near-zero marginal cost structure at scale. Exit P/E of 50x reflects Tech Platform growth multiple (45x benchmark) with modest premium for the dual-business compounding dynamic. This is the scenario where SpaceX becomes a multi-trillion dollar enterprise \u2014 named catalyst: Direct-to-Cell with T-Mobile/Verizon at scale."
+      }
+    },
+    "analyticsLog": {
+      "shareCountMethod": "shares_diluted \u2014 1,161.6M shares. Note: yfinance reports shares_outstanding=7.49B which conflicts with shares_diluted=1.16B. shares_diluted used per standardize_metrics.py output. Private company \u2014 actual cap table not public. This is the primary data quality concern.",
+      "marginAnchor": "TTM used as anchor. Net margins are volatile (-44.6% \u2192 +5.6% \u2192 -26.4%) reflecting investment cycles, not operational deterioration. Gross margin is trending (41.2% \u2192 42.9% \u2192 49.4%) confirming strong unit economics. TTM op margin -11.1% reflects Starship capex peak, not structural weakness.",
+      "growthDerivation": "No analyst consensus available (private company). Historical 2yr CAGR: 34.1% ($10.4B \u2192 $14.0B \u2192 $18.7B). Bear: 15% CAGR (competition + regulatory). Base: 22% CAGR (natural deceleration from 34% historical as markets mature). Bull: 30% CAGR (Direct-to-Cell + Starship catalysts). No consensus to anchor to \u2014 qualitative derivation from business fundamentals.",
+      "sectorBenchmarkRow": "Primary: Industrials row (Conservative 14, Median 18, Growth 24) for Launch segment. Secondary: Technology \u2014 Internet/Platforms row (Conservative 18, Median 28, Growth 45) for Starlink/AI. Base exitPE 35x anchored to Tech Platform median (28x) with premium for dual-moat profile, within \u00b130% rule (28\u00d71.3=36.4).",
+      "dataQualityFlags": [
+        "PRIVATE COMPANY: No audited financial statements publicly available. Revenue/margin data from yfinance secondary estimates \u2014 unverified.",
+        "SHARE COUNT CONFLICT: shares_outstanding (7.49B) vs shares_diluted (1.16B) \u2014 6.4x discrepancy. Private cap table not public. Used shares_diluted=1.16B per standardize_metrics.py.",
+        "MARKET CAP AMBIGUITY: yfinance reports $2.1T market cap (inconsistent with price\u00d7diluted_shares=$187B). Secondary market illiquidity means price discovery is unreliable.",
+        "NO ANALYST COVERAGE: Zero sell-side analyst targets available. All growth/margin assumptions are qualitative without consensus anchor.",
+        "FCF DISTORTION: TTM FCF -$14.1B driven by Starship capex. FCF will not normalize until Starship reaches commercial operations (est. 2027-2028).",
+        "SECONDARY MARKET RISK: Pre-IPO shares have wide bid-ask spreads, limited liquidity, and no guaranteed path to public exit. Discount rate 12% applied (vs standard 10%) to reflect illiquidity premium."
+      ],
+      "analystInputs": {
+        "y1RevEstimate": null,
+        "y2RevEstimate": null,
+        "y1GrowthPct": null,
+        "y2GrowthPct": null,
+        "blendedConsensusPct": null,
+        "analystTargetMean": null,
+        "analystCount": 0
+      },
+      "historicalRevenue": [
+        10387000000.0,
+        14015000000.0,
+        18674000000.0
+      ],
+      "historicalNetMargins": [
+        -44.6,
+        5.6,
+        -26.4
+      ],
+      "historicalEPS": [
+        null,
+        null,
+        null
+      ],
+      "priorAnalysisReview": {
+        "priorModel": "None",
+        "priorDate": "None",
+        "priorPrice": "None",
+        "priorFairValue": "None",
+        "priorAction": "None",
+        "priceDelta": "N/A \u2014 first coverage",
+        "assumptionAudit": "N/A \u2014 no prior model to audit",
+        "modelQualityFlag": "N/A",
+        "thesisOutcome": "N/A \u2014 initial coverage",
+        "fundamentalChanges": "First analysis \u2014 no prior baseline."
+      },
+      "confidenceBreakdown": "0.45/1.0 \u2014 Base: 1.0. +0.1 dual structural moat (launch vertical integration + Starlink constellation density). -0.2 private company (no audited financials, no analyst coverage). -0.15 share count ambiguity (6.4x discrepancy). -0.15 secondary market illiquidity (price discovery unreliable). -0.15 FCF deeply negative (timing of margin recovery uncertain). Net: 0.45/1.0 \u2014 LOW CONFIDENCE. Do not size aggressively without additional verification."
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "SpaceX holds a defensible near-monopoly in orbital launch services (Falcon 9 at ~90% US market share) and is scaling Starlink into what may become the world's largest broadband network by subscriber count. The investment thesis rests on two structural moats: (1) vertical integration in launch enabling 60-70% cost advantage over ULA/Blue Origin \u2014 not closeable in the next 5 years; (2) Starlink constellation density (7,000+ LEO satellites) providing latency advantages that newer entrants cannot match without years of deployment. Current -26% net margin reflects intentional Starship development capex at ~$14B/yr, not structural weakness \u2014 gross margins of 49.4% confirm exceptional unit economics. The DCF model (12% discount rate, 5yr horizon) yields $204 weighted fair value vs $160.95 secondary market price, a 27% discount. However, this analysis carries LOW CONFIDENCE (0.45/1.0) due to: no audited financials, no analyst coverage, ambiguous share count (1.16B used per standardize_metrics.py vs 7.49B shares_outstanding in yfinance), and significant secondary market illiquidity. Position sizing should be conservative. The key trigger to increase conviction would be a public IPO filing or direct access to audited S-1 financial data.",
+      "fairValue": 204.35,
+      "action": "SELL",
+      "analyzedAt": "2026-06-19T21:17:22Z",
+      "researchReport": "SPCX_2026-06-13.md",
+      "ipoNote": "IPO: 2026-06-12 at ~$185. Public share count 7.57B vs secondary-market assumption of 1.16B diluted. Prior DCF FV of $204/share was per-secondary-market-share. Restated per public share: total equity FV $237B / 7.57B shares = $31/share. At $185 public price, market cap is $1.40T vs $237B modeled equity \u2014 ~6x overvalued vs DCF. 75x P/S ratio. Pass at current price. Revisit if price declines toward $30-40 range or after audited S-1 financials clarify true diluted share count."
+    },
+    "globalSettings": {
+      "discountRate": 0.12,
+      "timeHorizon": 5
+    }
+  }
+]

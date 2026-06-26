@@ -100,8 +100,8 @@ def generate(date_str: str) -> dict:
         {
             "id":                p["id"],
             "name":              p["name"],
-            "currentTarget":     round(p["targetWeight"], 2),
-            "recommendedTarget": round(p["targetWeight"], 2),
+            "currentTarget":     round(p.get("targetWeight") or 0, 2),
+            "recommendedTarget": round(p.get("targetWeight") or 0, 2),
             "delta":             0.0,
             "note":              f"Current target from {thesis.get('name')}",
         }

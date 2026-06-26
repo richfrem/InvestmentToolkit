@@ -37,6 +37,7 @@ This workstation is built on a modular plugin architecture. You have access to t
 - `/rebalance`: Valuation-gated trade recommendations (never buys SELL-rated holdings).
 - `/calibrate-targets`: Interactive target-weight calibration session.
 - `/update-portfolio-targets`: Apply formula/weight changes.
+- `/update-price-levels {TICKER}`: Derive and write structured buy/sell tiers from DCF projections. Auto-runs after `/evaluate-stock`. Script: `plugins/portfolio-advisor/scripts/update_price_levels.py`. ADR: `docs/architecture/ADR-price-levels-schema.md`.
 - `/x-news-sweep`: Daily news processing via Grok/X.com. Called by `/daily` agent on news days.
 - `/bundle-thesis-review`: Package thesis/DCF for external LLMs.
 - `/13f-tracker` & `/13f-analyze`: Poll and analyze SEC 13F EDGAR filings.

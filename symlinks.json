@@ -672,6 +672,18 @@
       "dst": "plugins/portfolio-advisor/skills/daily-brief/scripts/daily_brief.py",
       "strategy": "symlink",
       "description": "ADR-003: daily-brief skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "investment_screener/backend/py_services/portfolio_io.py",
+      "dst": "plugins/portfolio-advisor/scripts/portfolio_io.py",
+      "strategy": "symlink",
+      "description": "portfolio_io.py canonical in py_services/; portfolio-advisor scripts symlink for import convenience"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/refresh_all.py",
+      "dst": "investment_screener/backend/py_services/refresh_all.py",
+      "strategy": "symlink",
+      "description": "refresh_all.py canonical in portfolio-advisor/scripts; py_services/ symlink for fetch_broker_data access"
     }
   ]
 }

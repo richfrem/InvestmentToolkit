@@ -26,8 +26,10 @@ Planned (`suggested`/`logged`) entries are cancelled in JSON only — no TV acti
 The Trade Log × button calls `POST /api/trading/cancel`:
 
 ```bash
+API_TOKEN=$(cat .runtime/api-token)
 curl -s -X POST http://localhost:3001/api/trading/cancel \
-  -H 'Content-Type: application/json' \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $API_TOKEN" \
   -d '{
     "entryId": "1c96b4ce4b70",
     "tvOrderId": "292b5304-0c3d-42c2-02c0-290f6d322c12",
