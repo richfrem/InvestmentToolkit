@@ -41,6 +41,7 @@ THESIS_MD     = REPO_ROOT / "investment_screener/backend/data/theses/investment_
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from ticker_aliases import is_cash  # noqa: E402
+from portfolio_io import load_portfolio_state, replace_block  # noqa: E402
 
 SUB_STRATEGY_NAMES = {
     "sa-asi-race":       "Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)",
@@ -60,20 +61,45 @@ def load_json(path: Path) -> dict | list:
         return json.load(f)
 
 
-def build_actual_map(portfolio: list | dict) -> tuple[dict, float]:
-    if isinstance(portfolio, dict) and "holdings" in portfolio:
-        portfolio = portfolio["holdings"]
-    total = sum(h["shares"] * h["price"] for h in portfolio)
-    actual = {}
-    for h in portfolio:
-        val = h["shares"] * h["price"]
-        actual[h["symbol"]] = {
-            "shares":    h["shares"],
-            "price":     h["price"],
-            "book":      h.get("book_price", 0),
+def build_actual_map(portfolio: dict | list) -> tuple[dict, float]:
+    """Build actual-position map from portfolio.json.
+
+    Uses load_portfolio_state() so the total comes from totals.totalUSD
+    (broker authoritative), never computed from shares×price.
+    """
+    import tempfile
+    # Accept both list and dict; write to tmp for load_portfolio_state
+    if isinstance(portfolio, list):
+        data = portfolio
+        total_ref: dict = {}
+    else:
+        data = portfolio.get("holdings", [])
+        total_ref = portfolio.get("totals") or {}
+
+    # Use portfolio_io for safe total resolution
+    tmp = Path(tempfile.mktemp(suffix=".json"))
+    tmp.write_text(json.dumps({"holdings": data, "totals": total_ref}))
+    try:
+        state = load_portfolio_state(tmp)
+    finally:
+        tmp.unlink(missing_ok=True)
+
+    total = state["total_usd"]
+    actual: dict = {}
+    for h in data:
+        sym = h.get("symbol") or h.get("ticker", "")
+        if not sym:
+            continue
+        shares = float(h.get("shares") or 0)
+        price  = float(h.get("price") or h.get("book_price") or 0)
+        val    = shares * price
+        actual[sym] = {
+            "shares":    shares,
+            "price":     price,
+            "book":      float(h.get("book_price") or 0),
             "value":     round(val, 2),
             "actualPct": round(val / total * 100, 2) if total else 0,
-            "name":      h.get("name", h["symbol"]),
+            "name":      h.get("name", sym),
         }
     return actual, total
 
@@ -125,8 +151,8 @@ def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> 
         groups.setdefault("untracked", []).extend(untracked)
 
     lines = []
-    lines.append("## IV. Portfolio Blueprint")
-    lines.append("")
+    # Note: the "## IV. Portfolio Blueprint" header lives OUTSIDE the AUTO_UPDATE block.
+    # generate_section() outputs only the block BODY so replace_block() can insert it cleanly.
     lines.append(f"*Generated {today} · Source: `validate_weights.py` × `target-portfolio.json` × `portfolio.json` (Questrade live)*")
     lines.append(f"*Portfolio value: ${total_value:,.0f}. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*")
     lines.append("")
@@ -214,12 +240,13 @@ def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> 
 
 
 def update_thesis_md(new_section: str, path: Path) -> None:
+    """Replace AUTO_UPDATE block in investment_thesis.md with regenerated content.
+
+    Uses replace_block() so only the content between delimiters is touched.
+    The '## IV. Portfolio Blueprint' header lives outside the block and is preserved.
+    """
     content = path.read_text()
-    pattern = r"(## IV\. Portfolio Blueprint.*?)(?=\n## |\Z)"
-    replacement = new_section + "\n\n---\n\n"
-    updated, count = re.subn(pattern, replacement, content, flags=re.DOTALL)
-    if count == 0:
-        updated = re.sub(r"(\n## V\.)", "\n\n" + new_section + "\n\n---\n\n## V.", content, count=1)
+    updated = replace_block(content, "portfolio_blueprint", new_section)
     path.write_text(updated)
     print(f"✅ Updated Section IV: {path}")
 
@@ -398,6 +425,12 @@ def main():
         md_path.write_text(updated)
         print(f"✅ Section tables enriched with live Action / Current % / Target %")
         print(f"✅ Header synced: {thesis_version} · Last Updated {today}")
+
+        # 5. Regenerate current_positions blocks in all sub-strategy .md files
+        print("\n── Updating sub-strategy current_positions blocks ──")
+        sys.path.insert(0, str(Path(__file__).parent))
+        from generate_sub_strategy_blocks import run as run_sub_blocks
+        run_sub_blocks(Path(args.portfolio), Path(args.thesis_json))
     else:
         print(section)
 

@@ -37,7 +37,8 @@ allowed-tools: Bash, Read, Write
 ## Step 1: Load Prior Analysis Context
 ```bash
 # Load the most recent AI projection
-curl -s http://localhost:3001/api/projections/{TICKER} | python3 -c "
+API_TOKEN=$(cat .runtime/api-token)
+curl -s -H "Authorization: Bearer $API_TOKEN" http://localhost:3001/api/projections/{TICKER} | python3 -c "
 import json, sys
 from datetime import datetime, timezone
 data = json.load(sys.stdin)

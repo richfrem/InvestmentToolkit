@@ -1,5 +1,57 @@
 import { z } from 'zod';
 
+// === PRICE LEVEL SCHEMAS ===
+// Structured tiered buy/sell price levels derived from DCF, TA, news, earnings, 13F.
+// Written by update_price_levels.py — consumed by tv-alert-sync, ta-daily-sweep,
+// rebalance-portfolio, and the daily-loop triage cards.
+
+export const PriceTierSchema = z.object({
+    tier: z.number().int().min(1),
+    price: z.number().positive(),
+    action: z.enum(['accumulate', 'accumulate_aggressive', 'trim', 'exit']),
+    trimPct: z.number().min(1).max(100).nullable().optional(),
+    orderType: z.enum(['limit', 'market', 'stop_limit']).default('limit'),
+    basis: z.string().max(300),
+    source: z.enum(['dcf', 'ta', 'news', 'earnings', '13f', 'manual']),
+    sourceDate: z.string(),
+    condition: z.string().nullable().optional(),
+    status: z.enum(['active', 'triggered', 'cancelled', 'expired']).default('active'),
+    triggeredAt: z.string().datetime().optional(),
+});
+
+export const StopLossSchema = z.object({
+    price: z.number().positive(),
+    basis: z.string().max(300),
+    source: z.enum(['dcf', 'ta', 'news', 'earnings', '13f', 'manual']),
+    sourceDate: z.string(),
+    type: z.enum(['thesis_breaker', 'trailing', 'manual']),
+    status: z.enum(['active', 'triggered', 'cancelled']).default('active'),
+    triggeredAt: z.string().datetime().optional(),
+});
+
+export const PriceLevelsSchema = z.object({
+    schemaVersion: z.string().default('1.0'),
+    lastUpdated: z.string(),
+    lastUpdatedBy: z.string(),
+    buyTiers: z.array(PriceTierSchema).max(5).optional(),
+    sellTiers: z.array(PriceTierSchema).max(5).optional(),
+    stopLoss: StopLossSchema.optional(),
+}).optional();
+
+// Denormalized snapshot written into portfolio.json by update_price_levels.py.
+// Refreshed on every /tv-portfolio-sync. Read-only — always derived from priceLevels.
+export const PriceLevelSnapshotSchema = z.object({
+    nextBuyTier: PriceTierSchema.nullable().optional(),
+    nextSellTier: PriceTierSchema.nullable().optional(),
+    stopLoss: StopLossSchema.nullable().optional(),
+    proximityFlags: z.array(z.string()).optional(),
+}).optional();
+
+export type PriceTier = z.infer<typeof PriceTierSchema>;
+export type StopLoss = z.infer<typeof StopLossSchema>;
+export type PriceLevels = z.infer<typeof PriceLevelsSchema>;
+export type PriceLevelSnapshot = z.infer<typeof PriceLevelSnapshotSchema>;
+
 const tickerRegex = /^[A-Z0-9.\-_]{1,10}$/;
 
 // Scenario Schema — .passthrough() preserves v1.2 fields (year5Revenue, year5NetIncome,
@@ -95,7 +147,24 @@ export const ThesisHoldingSchema = z.object({
     thesisForInclusion: z.string().max(2000).optional(),
     thesisBreakers: z.array(z.string().max(500)).max(5).optional(),
     role: z.enum(['core', 'hedge', 'speculative', 'reserve', 'watchlist', 'untracked', 'satellite', 'monitor']).default('core'),
-});
+    // Structured tiered price levels — written by update_price_levels.py
+    priceLevels: PriceLevelsSchema,
+}).passthrough(); // allow agentRationale, shares, subStrategyId and other free fields
+
+// Live portfolio holding schema (portfolio.json) — broker-synced snapshot.
+// priceLevelSnapshot is denormalized from target-portfolio.json on every sync.
+export const PortfolioHoldingSchema = z.object({
+    symbol: z.string().regex(tickerRegex),
+    shares: z.number().nonnegative(),
+    book_price: z.number().nonnegative().optional(),
+    market_value: z.number().optional(),
+    price: z.number().nonnegative(),
+    last_updated: z.string().optional(),
+    // Denormalized tier snapshot — read-only, derived from priceLevels
+    priceLevelSnapshot: PriceLevelSnapshotSchema,
+}).passthrough();
+
+export type PortfolioHolding = z.infer<typeof PortfolioHoldingSchema>;
 
 export const ThesisPillarSchema = z.object({
     id: z.string(),

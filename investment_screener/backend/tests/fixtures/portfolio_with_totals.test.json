@@ -1,0 +1,13 @@
+{
+  "holdings": [
+    {"symbol": "AAPL", "shares": 10, "price": 150.0, "book_price": 130.0},
+    {"symbol": "MSFT", "shares": 5,  "price": 400.0, "book_price": 350.0},
+    {"symbol": "PSU.U.TO", "shares": 100, "price": 10.0, "book_price": 10.0}
+  ],
+  "totals": {
+    "totalUSD": 4500.0,
+    "holdingsUSD": 3500.0,
+    "cashUSD": 1000.0,
+    "exchangeRate": 1.38
+  }
+}

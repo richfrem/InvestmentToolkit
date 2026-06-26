@@ -88,6 +88,12 @@ def save_thesis(data: dict, dry_run: bool, note: str | None) -> None:
     os.replace(tmp, THESIS_PATH)
     print(f"✅  Saved thesis.json  (version {data['version']})")
 
+    # Refresh all thesis pages and role fields after any thesis write.
+    import subprocess
+    refresh = Path(__file__).parent / "refresh_all.py"
+    if refresh.exists():
+        subprocess.run([sys.executable, str(refresh)], check=False)
+
 
 def validate_weights(data: dict) -> list[str]:
     errors = []

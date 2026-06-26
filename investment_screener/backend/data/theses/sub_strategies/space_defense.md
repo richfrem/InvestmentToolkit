@@ -63,6 +63,8 @@ We focus on profitable software and component infrastructure players that do not
 | **RDW** | Satellite avionics & infrastructure | $24.57 | $4.73 | -81% | SELL | — |
 | **RKLB** | Launch vehicles (Electron + Neutron) | $143.48 | $10.46 | -93% | SELL | $103.91 |
 | **ASTS** | Satellite-to-cell broadband | $113.41 | $23.00 | -80% | SELL | $82 |
+| **SPCX** | SpaceX — LEO launch, Starlink, xAI | $185.00 | ~$31 (restated) | -83% | SELL | Lock-up expiry Sep-Dec 2026 |
+| **LDOS** | Leidos Holdings — DoD/Intel IT contracts | $107.00 | ~$129-168 | +21-57% | WATCHLIST | Below $115 |
 
 **Key Finding**: All 5 watchlist candidates return SELL at current prices. The space/defense sector has re-rated dramatically in 2025-2026 (ASTS +1432% YTD, RKLB +425% YTD) — fundamentals have not kept pace with price.
 
@@ -85,3 +87,20 @@ Sub-strategy thesis is structurally valid. Space infrastructure, government defe
 - ASTS pulls back below $20 (approaching $23 FV)
 
 OR upon a thesis confirmation event: Neutron orbital success (RKLB), ASTS commercial satellite launch achieving coverage targets, or KRMN winning a major hypersonic program contract.
+
+
+---
+
+## Current Positions (Auto-Updated)
+
+<!-- AUTO_UPDATE_START: current_positions -->
+*Auto-updated 2026-06-26 07:20 by TV sync · Portfolio total: $33,171 USD*
+
+**Pending Initiation**
+
+| Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
+|--------|--------|---------|---------|-----|--------|-------------|
+| **CACI** | — | — | 1.4% | — | 🟢 INITIATE | — |
+
+**Pillar total — Actual: 0.0% · Target: 1.4% · Gap: -1.4pp**
+<!-- AUTO_UPDATE_END: current_positions -->

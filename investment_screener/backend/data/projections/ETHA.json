@@ -1,0 +1,89 @@
+[
+  {
+    "ticker": "ETHA",
+    "id": "55612875-44c0-41c4-8c9f-df05db7997d8",
+    "source": "ETF_ANALYSIS",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-06-21T20:00:00Z",
+    "updatedAt": "2026-06-21T20:00:00Z",
+    "name": "AI ETF Analysis \u2014 ETHA \u2014 2026-06-21",
+    "rationale": "iShares Ethereum Trust (BlackRock spot ETH ETF). Single-asset \u2014 holds spot ETH, no holdings diversification. Price $12.88 is near 52w low of $11.62 after -32% YTD as ETH significantly underperformed BTC in 2026. $5.9B AUM and 30M+ daily volume make this the most liquid ETH vehicle available. Currently watchlist at 0% target \u2014 initiation requires a target weight decision and evidence of ETH relative strength vs BTC improving.",
+    "snapshot": {
+      "price": 12.88,
+      "currency": "USD",
+      "shares": 0,
+      "revenue": 0,
+      "lastActualPS": null,
+      "fiscalPeriod": "N/A \u2014 THEMATIC_ETF",
+      "analystGrowthEstimate": null,
+      "analystMarginEstimate": null
+    },
+    "dataPreferences": {
+      "growthBasis": "N/A",
+      "marginBasis": "N/A"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": -20,
+        "netMargin": 0,
+        "exitPE": 0,
+        "qualityMultiplier": 0.5,
+        "shareChange": 0,
+        "scenarioPrice": 8.76,
+        "rationale": "Adverse scenario: thesis headwinds, sector rotation, macro weakness.",
+        "year5Revenue": 0,
+        "year5NetIncome": 0,
+        "year5EPS": 0,
+        "year5Shares": 0,
+        "year5PriceUndiscounted": 8.76,
+        "presentValue": 8.76
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 5,
+        "netMargin": 0,
+        "exitPE": 0,
+        "qualityMultiplier": 1.0,
+        "shareChange": 0,
+        "scenarioPrice": 14.81,
+        "rationale": "Base scenario: thesis plays out, moderate appreciation.",
+        "year5Revenue": 0,
+        "year5NetIncome": 0,
+        "year5EPS": 0,
+        "year5Shares": 0,
+        "year5PriceUndiscounted": 14.81,
+        "presentValue": 14.81
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 30,
+        "netMargin": 0,
+        "exitPE": 0,
+        "qualityMultiplier": 1.5,
+        "shareChange": 0,
+        "scenarioPrice": 20.61,
+        "rationale": "Bull scenario: thesis catalysts accelerate, strong re-rating.",
+        "year5Revenue": 0,
+        "year5NetIncome": 0,
+        "year5EPS": 0,
+        "year5Shares": 0,
+        "year5PriceUndiscounted": 20.61,
+        "presentValue": 20.61
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "fairValue": 13.85,
+      "action": "HOLD",
+      "analyzedAt": "2026-06-21T20:00:00Z",
+      "rationale": "# ETHA \u2014 AI ETF Analysis \u2014 ETHA \u2014 2026-06-21\n## ETF Analysis \u2014 THEMATIC_ETF (NOT a DCF)\n\niShares Ethereum Trust (BlackRock spot ETH ETF). Single-asset \u2014 holds spot ETH, no holdings diversification. Price $12.88 is near 52w low of $11.62 after -32% YTD as ETH significantly underperformed BTC in 2026. $5.9B AUM and 30M+ daily volume make this the most liquid ETH vehicle available. Currently watchlist at 0% target \u2014 initiation requires a target weight decision and evidence of ETH relative strength vs BTC improving.\n\n---\n\n### Holdings (Top 1)\n\n| Symbol | Weight | Alignment | Note |\n|--------|--------|-----------|------|\n| ETH | 100.0% | DIRECT |  |\n\n**Thesis Alignment Score: 80/100**\n\n---\n\n### Action Rationale\n\nETHA is the highest-quality vehicle for ETH exposure (BlackRock, $5.9B AUM, 0.25% expense ratio) but three gates must be cleared before initiating: (1) target weight must be set in target-portfolio.json \u2014 currently 0%; (2) ETH must show relative strength improvement vs BTC \u2014 ETH -32% YTD while BTC is significantly positive is a structural concern; (3) staking yield is NOT passed through in spot ETFs \u2014 you hold ETH at full price risk without the 3-4% staking APY that on-chain holders receive, which is a meaningful opportunity cost. Price near 52w low ($12.88 vs $11.62 low) is interesting for a contrarian position, but the -65% drawdown from 52w high ($36.80) reflects genuine ETH-specific weakness, not just a pullback.\n\n### Upside Catalysts\n\n- SEC approves ETH ETF staking yield pass-through \u2014 transforms ETHA from price-only to yield-bearing\n- Ethereum Pectra/future upgrade drives renewed developer and DeFi activity \u2014 ETH narrative reset\n- BTC dominance cycle peaks and rotation into ETH begins \u2014 ETH historically outperforms BTC in alt seasons\n- Institutional adoption of Ethereum smart contracts for tokenized assets (bonds, funds) \u2014 demand catalyst\n- Near 52w low ($11.62) \u2014 price compression may already reflect most of the downside\n\n### Risks\n\n- ETH -32% YTD vs BTC significantly positive in 2026 \u2014 structural underperformance, not a temporary dip\n- No staking yield pass-through \u2014 on-chain ETH earns 3-4% APY; ETHA earns 0% plus 0.25% fee drag\n- Target weight is 0% \u2014 no initiation without an explicit committee decision to allocate\n- 65% drawdown from 52w high ($36.80 to $12.88) \u2014 single-asset concentration risk fully exposed\n- Ethereum competes with alternative L1s (Solana, Sui, Aptos) for DeFi activity \u2014 market share erosion\n- If BTC dominance continues rising, ETH may continue underperforming for extended period\n\n### Entry Note\n\nDo not initiate until: (1) target weight >0% is explicitly set, AND (2) ETH/BTC ratio shows recovery. If initiating, a limit around $11.50 (just above 52w low) is the disciplined entry. Maximum 1-2% of portfolio given single-asset concentration risk. Monitor SEC staking yield ruling \u2014 approval would materially change the thesis."
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": []
+  }
+]

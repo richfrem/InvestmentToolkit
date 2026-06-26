@@ -27,7 +27,8 @@ If backend unavailable → immediately invoke **FB-01** from `references/fallbac
 
 ## Phase 1: Select & Load Thesis
 ```bash
-curl -s http://localhost:3001/api/theses | python3 -m json.tool
+API_TOKEN=$(cat .runtime/api-token)
+curl -s -H "Authorization: Bearer $API_TOKEN" http://localhost:3001/api/theses | python3 -m json.tool
 ```
 - If `thesis_id` provided → use directly
 - Otherwise → present numbered list and ask user to select
@@ -36,7 +37,8 @@ curl -s http://localhost:3001/api/theses | python3 -m json.tool
 ## Phase 2: Run Health Check + Load All Valuations
 ```bash
 # Run drift health check
-curl -s "http://localhost:3001/api/theses/{THESIS_ID}/health" | python3 -m json.tool
+API_TOKEN=$(cat .runtime/api-token)
+curl -s -H "Authorization: Bearer $API_TOKEN" "http://localhost:3001/api/theses/{THESIS_ID}/health" | python3 -m json.tool
 
 # Run automated synchronization verification
 python3 investment_screener/backend/py_services/verify_thesis_sync.py
@@ -48,10 +50,11 @@ python3 << 'EOF'
 import subprocess, json
 
 # Load all AI projections for thesis holdings
+token = open('.runtime/api-token').read().strip()
 thesis_tickers = [h['ticker'] for h in thesis['holdings']]
 valuations = {}
 for ticker in thesis_tickers:
-    r = subprocess.run(['curl','-s',f'http://localhost:3001/api/projections/{ticker}'], capture_output=True, text=True)
+    r = subprocess.run(['curl','-s','-H',f'Authorization: Bearer {token}',f'http://localhost:3001/api/projections/{ticker}'], capture_output=True, text=True)
     try:
         d = json.loads(r.stdout)
         ai = [p for p in d if p.get('source')=='AI_AGENT']
