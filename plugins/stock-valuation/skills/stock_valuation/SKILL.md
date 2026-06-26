@@ -40,6 +40,25 @@ You are an **independent analyst**, not a stock promoter. Before generating scen
 - ✅ `exitPE` MUST be benchmarked against sector median from `references/valuation-benchmarks.md`.
 - ✅ If prior thesis said BUY and price has since surged significantly, the new analysis MUST independently re-evaluate whether thesis still holds — do not carry forward the prior bullish stance.
 
+## ⚠️ Local API Auth — Required for All Backend Calls
+All `/api/*` routes on the Express backend require a bearer token. Two patterns:
+
+**Shell / curl** — read the token file and pass it as a header:
+```bash
+API_TOKEN=$(cat .runtime/api-token)
+# Then pass: -H "Authorization: Bearer $API_TOKEN"
+```
+
+**Python scripts** — import the shared utility (handles token loading automatically):
+```python
+from utils.local_api import api_get, api_post, health_check
+data = api_get("/api/projections/NVDA")
+api_post("/api/projections", payload)
+```
+`utils/local_api.py` lives at `investment_screener/backend/py_services/utils/local_api.py`.
+
+The token is auto-generated on first boot and stored at `.runtime/api-token` (gitignored). The `/health` endpoint is exempt. Missing this header returns `401 Unauthorized — missing or invalid local API token.`
+
 ## Dual-Mode Operation
 See `CONNECTORS.md` for full degradation contract.
 
@@ -55,7 +74,8 @@ If health check fails → immediately invoke **FB-02** from `references/fallback
 ## Step 0: Freshness Check (Skip Analysis If Recent)
 ```bash
 # Check for existing AI projection within the last 30 days
-curl -s http://localhost:3001/api/projections/{TICKER} | python3 -c "
+API_TOKEN=$(cat .runtime/api-token)
+curl -s -H "Authorization: Bearer $API_TOKEN" http://localhost:3001/api/projections/{TICKER} | python3 -c "
 import json, sys
 from datetime import datetime, timezone, timedelta
 data = json.load(sys.stdin)
@@ -81,7 +101,8 @@ else:
 > Only runs when a STALE prior projection exists. Purpose: extract the prior thesis for **context and fact-checking** — NOT to inherit its assumptions.
 
 ```bash
-curl -s http://localhost:3001/api/projections/{TICKER} | python3 -c "
+API_TOKEN=$(cat .runtime/api-token)
+curl -s -H "Authorization: Bearer $API_TOKEN" http://localhost:3001/api/projections/{TICKER} | python3 -c "
 import json, sys
 data = json.load(sys.stdin)
 ai = [p for p in data if p.get('source') == 'AI_AGENT']
@@ -132,7 +153,9 @@ python3 investment_screener/backend/py_services/fetch_financials.py {TICKER} > t
 ## Step 2: Build Snapshot Object + Seed analyticsLog
 ```bash
 # Standardize metrics using the canonical calculation engine
-cat temp/evaluations/{TICKER}_raw.json | python3 plugins/stock-valuation/skills/stock_valuation/scripts/standardize_metrics.py > temp/evaluations/{TICKER}_metrics.json
+# NOTE: standardize_metrics.py requires a file path argument — do NOT pipe via stdin
+python3 plugins/stock-valuation/skills/stock_valuation/scripts/standardize_metrics.py \
+  temp/evaluations/{TICKER}_raw.json > temp/evaluations/{TICKER}_metrics.json
 ```
 Read `temp/evaluations/{TICKER}_metrics.json` and use the `snapshot` and `ratios` blocks. 
 
@@ -231,8 +254,10 @@ cat > temp/evaluations/{TICKER}_projection.json << 'EOF'
 EOF
 
 # Persist via REST API (persist_projection.py does not exist — use the API)
+API_TOKEN=$(cat .runtime/api-token)
 curl -s -X POST http://localhost:3001/api/projections \
-  -H 'Content-Type: application/json' \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $API_TOKEN" \
   -d @temp/evaluations/{TICKER}_projection.json
 ```
 - Success response: `{"success":true,"message":"Projection saved successfully"}`
@@ -324,6 +349,29 @@ If this check fails, resolve any missing ticker entries, mismatched weights, or 
 | Conflict (409) | Increment `version` → retry once |
 | Research dir missing | `mkdir -p` → retry → FB-04 |
 | Math inconsistency | Recompute from scratch → FB-05 |
+
+---
+
+## Step N — Write Price Levels from DCF Output
+
+After the projection JSON is saved to `backend/data/projections/{TICKER}.json`,
+automatically derive and write structured buy/sell tiers:
+
+```bash
+python3 plugins/portfolio-advisor/scripts/update_price_levels.py \
+  --ticker {TICKER} \
+  --source dcf \
+  --note "Auto-derived from /evaluate-stock $(date +%Y-%m-%d)" \
+  --write
+```
+
+This populates `priceLevels` in `target-portfolio.json` and `priceLevelSnapshot` in
+`portfolio.json` using the bear/base/bull `scenarioPrice` values from the projection.
+
+**Skip silently** if the ticker is not in `target-portfolio.json` holdings
+(e.g. watchlist-only or new ticker not yet added to thesis).
+
+If successful, print the summary so the user can review the derived levels.
 
 ---
 

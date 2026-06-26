@@ -560,7 +560,8 @@ Always preview the full set of changes as a diff before writing any file:
 ## Step 1: Load Thesis + All Valuations
 ```bash
 # Load thesis
-curl -s http://localhost:3001/api/theses | python3 -c "
+API_TOKEN=$(cat .runtime/api-token)
+curl -s -H "Authorization: Bearer $API_TOKEN" http://localhost:3001/api/theses | python3 -c "
 import json, sys
 theses = json.load(sys.stdin)
 for i, t in enumerate(theses):
@@ -568,18 +569,19 @@ for i, t in enumerate(theses):
 "
 
 # Load health check
-curl -s "http://localhost:3001/api/theses/{THESIS_ID}/health" | python3 -m json.tool
+curl -s -H "Authorization: Bearer $API_TOKEN" "http://localhost:3001/api/theses/{THESIS_ID}/health" | python3 -m json.tool
 
 # Load all AI projections for thesis holdings
 python3 << 'EOF'
 import subprocess, json
 
+token = open('.runtime/api-token').read().strip()
 thesis_tickers = []  # populate from thesis holdings above
 valuations = {}
 missing = []
 
 for ticker in thesis_tickers:
-    r = subprocess.run(['curl','-s',f'http://localhost:3001/api/projections/{ticker}'],
+    r = subprocess.run(['curl','-s','-H',f'Authorization: Bearer {token}',f'http://localhost:3001/api/projections/{ticker}'],
                        capture_output=True, text=True)
     try:
         d = json.loads(r.stdout)

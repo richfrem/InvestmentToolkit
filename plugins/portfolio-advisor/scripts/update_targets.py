@@ -38,6 +38,7 @@ REPO_ROOT     = Path(__file__).resolve().parents[3]
 TARGET_JSON   = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 VALIDATE_PY   = Path(__file__).parent / "validate_weights.py"
 BLUEPRINT_PY  = Path(__file__).parent / "generate_portfolio_blueprint.py"
+REFRESH_ALL   = Path(__file__).parent / "refresh_all.py"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from file_lock import locked_write_json  # noqa: E402
@@ -185,12 +186,15 @@ def apply_remove(data: dict, tickers: list[str], dry_run: bool) -> dict:
 
 
 def run_blueprint() -> None:
+    """Run the full refresh pipeline (roles + blueprint) after any target change."""
+    script = REFRESH_ALL if REFRESH_ALL.exists() else BLUEPRINT_PY
+    extra  = [] if REFRESH_ALL.exists() else ["--write"]
     result = subprocess.run(
-        [sys.executable, str(BLUEPRINT_PY), "--write"],
+        [sys.executable, str(script)] + extra,
         capture_output=True, text=True
     )
     if result.returncode != 0:
-        print(f"Blueprint error: {result.stderr}", file=sys.stderr)
+        print(f"Refresh error: {result.stderr}", file=sys.stderr)
     else:
         print(result.stdout.strip())
 

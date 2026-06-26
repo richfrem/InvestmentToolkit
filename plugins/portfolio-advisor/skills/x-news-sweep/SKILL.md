@@ -278,6 +278,26 @@ python3 scripts/apply_catalyst.py \
 | Analyst maintains price target, no new data | ❌ No — existing known info |
 | Rumour / unconfirmed X post | ❌ No — wait for confirmation |
 
+### Step 6b — Re-derive Price Levels After Catalyst
+
+For every ticker where `apply_catalyst.py` ran and updated scenario weights,
+re-derive price levels from the new scenario prices:
+
+```bash
+python3 plugins/portfolio-advisor/scripts/update_price_levels.py \
+  --ticker {TICKER} \
+  --source news \
+  --note "Catalyst: {one-line description}" \
+  --write
+```
+
+This re-reads the updated `projections/{TICKER}.json` (just written by `apply_catalyst.py`)
+and recomputes all DCF-sourced tiers from the new bear/base/bull scenario prices.
+TA-sourced tiers in `priceLevels` are preserved (additive — not replaced by this step).
+
+**Run this after every `apply_catalyst.py --write`** — catalyst weight shifts change the
+weighted fair values, which changes where your tier prices should sit.
+
 ---
 
 ## Phase 7 — Session Close

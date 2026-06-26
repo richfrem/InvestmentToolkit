@@ -39,10 +39,12 @@ router.get('/sub-strategies', (req, res) => {
         }
 
         const files = fs.readdirSync(SUB_STRATEGIES_DIR).filter(f => f.endsWith('.md'));
-        const strategies: SubStrategySummary[] = files.map(file => {
-            const content = fs.readFileSync(path.join(SUB_STRATEGIES_DIR, file), 'utf-8');
-            return parseMetadata(content, file);
-        });
+        const strategies: SubStrategySummary[] = files
+            .map(file => {
+                const content = fs.readFileSync(path.join(SUB_STRATEGIES_DIR, file), 'utf-8');
+                return parseMetadata(content, file);
+            })
+            .filter(s => !s.status.startsWith('ARCHIVED'));
 
         // Sort by id for consistency
         strategies.sort((a, b) => a.id.localeCompare(b.id));

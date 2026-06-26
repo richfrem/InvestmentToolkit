@@ -189,7 +189,8 @@ The script will:
 
 ```bash
 # Confirm thesis loaded correctly
-curl -s http://localhost:3001/api/theses/target-portfolio | python3 -c "
+API_TOKEN=$(cat .runtime/api-token)
+curl -s -H "Authorization: Bearer $API_TOKEN" http://localhost:3001/api/theses/target-portfolio | python3 -c "
 import json, sys
 t = json.load(sys.stdin)
 print(f'Name: {t[\"name\"]}  version: {t[\"version\"]}')
@@ -199,7 +200,7 @@ for p in sorted(t['pillars'], key=lambda x: -x['targetWeight']):
 "
 
 # Run health check to verify drift is recalculated against new targets
-curl -s http://localhost:3001/api/theses/target-portfolio/health | python3 -c "
+curl -s -H "Authorization: Bearer $API_TOKEN" http://localhost:3001/api/theses/target-portfolio/health | python3 -c "
 import json, sys
 h = json.load(sys.stdin)
 print(f'Health check at: {h[\"analyzedAt\"]}')

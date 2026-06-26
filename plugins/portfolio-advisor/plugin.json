@@ -82,6 +82,11 @@
             "name": "thesis_review_agent",
             "path": "agents/thesis-review-agent.md",
             "trigger": "thesis-review"
+        },
+        {
+            "name": "single_stock_advisor",
+            "path": "agents/single-stock-advisor.md",
+            "trigger": "/single-stock-advisor"
         }
     ],
     "commands": [

@@ -8,6 +8,56 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-06-22
+
+**Macro:** Not run (user skipped morning brief — focused on single trade decision)
+**TA Sweep:** Live CDP read (1H + Weekly + 1min + Daily via user screenshots)
+**Actions taken:** 1 sold (WYFI 12 shares TFSA, market, ~$42.75)
+**User overrides:** None — user initiated EXIT independently, agent concurred
+**Tool failures:**
+- Tier 2: `--submit` failed after dialog timed out during TA review pause. Fixed by re-running `--execute` then `--submit`. No code change needed — expected timeout behavior.
+- Tier 2: `fetch_broker_data.py --snapshot | json.load(sys.stdin)` failed (empty stdin). Fixed by capturing output first, finding JSON start index. Lesson: always use `capture_output=True` pattern or pipe through file, not direct stdin parse.
+**Score improvements vs yesterday:** N/A
+**Consecutive EXIT signals:** WYFI was flagged 🟡 TRIM in thesis — user escalated to full EXIT after 145% gain in ~1 month
+**Notes:**
+- WYFI exited at ~$42.75, book $17.46, +145% gain. DCF fair value was $32.00 (stock was 34% above FV). Daily RSI 74.17 (overbought). Two consecutive +10%+ days (yesterday +10.78%, today +12.61%). User identified the exit independently — correct call.
+- WYFI was speculative, not in target-portfolio.json, low-confidence DCF (0.45). Booking gains on names like this is textbook discipline.
+- Order dialog timeout: if TA review takes >2 min, re-run `--execute` before `--submit`. Add note to pre-submit check.
+- Portfolio confirmed post-trade: WYFI = NONE in TV positions ✓
+
+## 2026-06-22 — Tier 2: Backend Local API Auth Missing from All Skill curl Calls
+
+**Tier: 2 (Failure)** — `GET /api/projections/CACI` returned `401 Unauthorized — missing or invalid local API token` during `/evaluate-stock CACI` run. Root cause: `localAuth` middleware was added to the Express backend but no skill documentation was updated to include the `Authorization: Bearer` header.
+
+### Root Cause
+`investment_screener/backend/src/middleware/localAuth.ts` reads/creates a bearer token at `.runtime/api-token` on first boot and gates all `/api/*` routes. SKILL.md files across 7 plugins contained raw `curl http://localhost:3001/api/...` calls with no auth header. The `/health` endpoint is correctly exempt.
+
+### Fix Applied (2026-06-22)
+1. **Created** `investment_screener/backend/py_services/utils/local_api.py` — authenticated HTTP client for Python scripts. Reads token once from `.runtime/api-token`, exposes `api_get()`, `api_post()`, `health_check()`. All future Python scripts calling the backend should import this instead of using raw curl/subprocess.
+2. **Updated** `plugins/stock-valuation/skills/stock_valuation/SKILL.md` — added auth note section with both shell (`API_TOKEN=$(cat .runtime/api-token)`) and Python (`from utils.local_api import api_get`) patterns. Fixed all 3 curl commands in Steps 0, 0.5, and 6.
+3. **Fixed** `standardize_metrics.py` stdin bug in SKILL.md Step 2 (script requires file path arg, not piped stdin).
+
+### Remaining Work (next session)
+The following SKILL.md files still contain unauthenticated curl calls and need the same treatment:
+- `plugins/stock-valuation/skills/stock-research/SKILL.md` (Step 0 freshness check)
+- `plugins/tradingview/skills/cancel-order/SKILL.md` (POST to /api/trading/cancel)
+- `plugins/portfolio-advisor/skills/calibrate-targets/SKILL.md`
+- `plugins/portfolio-advisor/skills/update-portfolio-targets/SKILL.md`
+- `plugins/portfolio-advisor/skills/portfolio-health/SKILL.md` (curl + subprocess.run)
+- `plugins/portfolio-advisor/skills/rebalance-portfolio/SKILL.md` (curl + subprocess.run)
+- `plugins/portfolio-advisor/skills/strategic-review/SKILL.md` (curl + subprocess.run)
+
+### Rule Going Forward
+Any new SKILL.md that calls the backend MUST use `API_TOKEN=$(cat .runtime/api-token)` and `-H "Authorization: Bearer $API_TOKEN"`. Python scripts MUST use `utils.local_api`.
+
+## 2026-06-19 (addendum) — US Market Holiday: Inactive Orders Are Normal
+
+**Learning**: June 19 is Juneteenth — a US federal market holiday. Orders placed on a holiday show as "Inactive" and do not fill because the market is closed. This is expected behavior, not a broker error or wrong ticker.
+
+**Rule**: Before diagnosing an unfilled order, check whether today is a US market holiday. Day limit orders queued on a holiday carry over and activate at the next regular session open (Monday June 23 in this case). CRWV orders at $119 are correctly queued and will attempt to fill Monday.
+
+**Agent behavior**: If orders show Inactive and prices look right, check the market calendar before troubleshooting CDP automation or order routing.
+
 ## 2026-06-19 (addendum) — BE Double-Reduce: Trade History Not Cross-Checked
 
 **Tier: 2 (Failure)** — System recommended reducing BE when user had already reduced BE in a prior session. User missed subsequent +13.3% gap because position was smaller than intended.

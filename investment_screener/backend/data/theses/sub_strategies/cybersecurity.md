@@ -53,3 +53,27 @@ More AI = more attack surface = more security spend. The proliferation of AI age
 
 **Decision Notes**:
 Maintained as core defensive pillar.
+
+
+---
+
+## Current Positions (Auto-Updated)
+
+<!-- AUTO_UPDATE_START: current_positions -->
+*Auto-updated 2026-06-26 07:20 by TV sync · Portfolio total: $33,171 USD*
+
+**Active Positions**
+
+| Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
+|--------|--------|---------|---------|-----|--------|-------------|
+| **ZS** | 12 | 4.5% | 4.5% | +0.0pp | ⚪ MAINTAIN | — |
+| **PANW** | 5 | 4.4% | 4.5% | -0.0pp | ⚪ MAINTAIN | — |
+
+**Pending Initiation**
+
+| Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
+|--------|--------|---------|---------|-----|--------|-------------|
+| **PLTR** | — | — | 2.4% | — | 🟢 INITIATE | — |
+
+**Pillar total — Actual: 8.9% · Target: 11.3% · Gap: -2.4pp**
+<!-- AUTO_UPDATE_END: current_positions -->

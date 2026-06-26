@@ -396,7 +396,21 @@ def write_snapshot(snapshot: dict, promote: bool = False, balances: Optional[dic
 
     with open(path, "w") as f:
         json.dump(data, f, indent=2)
+
+    # Refresh all thesis pages and role fields after every portfolio.json write.
+    _run_portfolio_refresh()
+
     return path
+
+
+def _run_portfolio_refresh() -> None:
+    """Run refresh_all.py after any portfolio.json write to keep thesis pages current."""
+    _repo_root = Path(SCRIPT_DIR).parents[2]
+    refresh_script = _repo_root / "plugins/portfolio-advisor/scripts/refresh_all.py"
+    if refresh_script.exists():
+        subprocess.run([sys.executable, str(refresh_script)], check=False)
+    else:
+        print(f"⚠ refresh_all.py not found at {refresh_script}", file=sys.stderr)
 
 
 # ── CLI ───────────────────────────────────────────────────────────────────────

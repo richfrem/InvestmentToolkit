@@ -66,7 +66,8 @@ python3 plugins/portfolio-advisor/scripts/validate_weights.py \
   --target investment_screener/backend/data/theses/target-portfolio.json
 
 # 4. Latest DCF valuations for context (optional enrichment)
-curl -s http://localhost:3001/api/projections | python3 -c "
+API_TOKEN=$(cat .runtime/api-token)
+curl -s -H "Authorization: Bearer $API_TOKEN" http://localhost:3001/api/projections | python3 -c "
 import json, sys
 all_p = json.load(sys.stdin)
 ai = [p for p in all_p if p.get('source')=='AI_AGENT']

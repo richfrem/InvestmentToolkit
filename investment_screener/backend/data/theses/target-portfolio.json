@@ -2,14 +2,14 @@
   "id": "target-portfolio",
   "name": "Investment Thesis v9.4",
   "schemaVersion": "1.0",
-  "version": "9.4111",
+  "version": "9.5",
   "createdAt": "2026-02-14T12:00:00Z",
-  "updatedAt": "2026-06-19T15:07:25.309784+00:00",
+  "updatedAt": "2026-06-21T18:30:00Z",
   "description": "Investment thesis focused on the dual infrastructure buildout for ASI Compute (Primary) and Sovereign Finance (Secondary).",
   "pillars": [
     {
       "id": "compute",
-      "name": "ASI / Compute \u2014 Chips",
+      "name": "ASI / Compute — Chips",
       "targetWeight": 9.5207
     },
     {
@@ -20,7 +20,7 @@
     {
       "id": "sovfin",
       "name": "Sovereign Finance / Digital",
-      "targetWeight": 8.2705
+      "targetWeight": 5.5
     },
     {
       "id": "datainfra",
@@ -38,9 +38,10 @@
       "targetWeight": 9.969
     },
     {
-      "id": "applied",
-      "name": "Applied AI / Robotics",
-      "targetWeight": 12.1585
+      "id": "quality_saas",
+      "name": "Quality SaaS — Oversold Leaders",
+      "targetWeight": 5.5,
+      "description": "Value recovery in leading enterprise SaaS platforms. CRM, NOW, TEAM were oversold in the 2024-2025 SaaSpocalypse and now trade at discounts vs AI-native growth potential. DXYZ as private-market AI proxy watchlist."
     },
     {
       "id": "cash",
@@ -50,12 +51,29 @@
     {
       "id": "quantum",
       "name": "Quantum Computing",
-      "targetWeight": 1.2871
+      "targetWeight": 2
     },
     {
       "id": "biohealth",
       "name": "Healthcare AI / Life Science",
       "targetWeight": 0
+    },
+    {
+      "id": "defense",
+      "name": "Defense AI & Space Infrastructure",
+      "description": "AI-native defense IT, space systems, and government tech modernization. Long-term US government contracts with high backlogs and switching costs. Counter-cyclical to consumer AI valuation swings."
+    },
+    {
+      "id": "photonics",
+      "name": "Photonics / Optical Interconnect",
+      "targetWeight": 2.5,
+      "description": "Copper-to-optical shift in AI data centers. Co-packaged optics, silicon photonics, coherent transceivers, glass fiber supply chain. Multi-decade secular transition accelerated by GPU cluster bandwidth demands."
+    },
+    {
+      "id": "robotics",
+      "name": "Robotics & Physical AI",
+      "description": "Humanoid robots and physical AI automation. ETF-only strategy: HUMN + KOID capture the sector without single-company binary risk. Mirrors the Applied AI ETF playbook.",
+      "targetWeight": 5.5
     }
   ],
   "holdings": [
@@ -63,11 +81,11 @@
       "ticker": "PSU-U.TO",
       "name": "Purpose US Cash Fund",
       "pillarId": "cash",
-      "targetWeight": 12.564,
-      "role": "reserve",
+      "targetWeight": 18.6548,
+      "role": "accumulate",
       "subStrategyId": "cash",
-      "thesisForInclusion": "USD cash reserve (Purpose US Cash Fund) \u2014 holds short-term USD treasuries on TSX. Primary purpose: USD currency exposure + interest income while awaiting deployment into thesis positions. Monthly dividend ~$0.31-0.33/share (~$3.68-3.90 USD annualized). ENTRY RULE: always buy 1-2 days AFTER the ex-dividend date (typically last Tuesday of month) to get the cycle-low reset price and capture the full next month of accrual. Buying mid-cycle or just before ex-date overpays for already-accrued dividend. Ex-dates: ~Jan 28, Feb 25, Mar 31, Apr 28, May 28, Jun 30 pattern. Next planned entry: May 29, 2026 (post May 28 ex-date).",
-      "agentRationale": "MAINTAIN. 56 shares held (PSU.U.TO in broker = same fund, hyphen/dot notation only). Purpose US Cash Fund \u2014 USD HISA equivalent, monthly dividend ~$0.31-0.33/share. Core cash reserve position. Entry rule: buy 1-2 days after ex-dividend date (last Tuesday of month).",
+      "thesisForInclusion": "USD cash reserve (Purpose US Cash Fund) — holds short-term USD treasuries on TSX. Primary purpose: USD currency exposure + interest income while awaiting deployment into thesis positions. Monthly dividend ~$0.31-0.33/share (~$3.68-3.90 USD annualized). ENTRY RULE: always buy 1-2 days AFTER the ex-dividend date (typically last Tuesday of month) to get the cycle-low reset price and capture the full next month of accrual. Buying mid-cycle or just before ex-date overpays for already-accrued dividend. Ex-dates: ~Jan 28, Feb 25, Mar 31, Apr 28, May 28, Jun 30 pattern. Next planned entry: May 29, 2026 (post May 28 ex-date).",
+      "agentRationale": "MAINTAIN. 56 shares held (PSU.U.TO in broker = same fund, hyphen/dot notation only). Purpose US Cash Fund — USD HISA equivalent, monthly dividend ~$0.31-0.33/share. Core cash reserve position. Entry rule: buy 1-2 days after ex-dividend date (last Tuesday of month).",
       "shares": 53
     },
     {
@@ -75,17 +93,17 @@
       "name": "Intel Corp",
       "pillarId": "compute",
       "targetWeight": 0,
-      "role": "untracked",
+      "role": "avoid",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "The Sovereign Foundry: designated US National Champion for onshored compute manufacturing.",
-      "agentRationale": "2026-05-13 Grok sweep: Q1 beat (rev $13.6B +9% QoQ, EPS $0.29 vs $0.01 est); data center +8%, foundry ramp, cost cuts ahead of schedule. Target trimmed to 7.81% (post-normalize). DCF: SELL -50.2%; trim aligns. SA LP: long 20.2M calls. SA 13F expected 2026-05-14/15. 2026-05-13: Terafab JV confirmed (Apr 7 2026): Intel + Tesla + SpaceX/xAI joint fab in Texas on Intel 14A process. $20-25B initial ($3B pilot), up to $55-119B at full scale. Revenue ramp 2027+. AMD 14A exploratory talks (unconfirmed, decision H2 2026). Marquee anchor customer validates IFS foundry thesis.."
+      "thesisForInclusion": "EXIT: Position closed 2026-06. Semis sector overextended — waiting for pullback before re-entry. Terafab JV (Intel + Tesla + SpaceX/xAI) thesis intact long-term but valuation stretched.",
+      "agentRationale": "CLOSED 2026-06. Full exit — semis moved too far. Watchlist only. Re-evaluate on meaningful sector pullback (15-25%+). Terafab JV and sovereign foundry thesis still structurally valid; execution risk and valuation are the gating factors."
     },
     {
       "ticker": "AVGO",
       "name": "Broadcom Inc.",
       "pillarId": "compute",
       "targetWeight": 0,
-      "role": "untracked",
+      "role": "watchlist",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Custom ASIC + networking moat.",
       "agentRationale": "DCF: INITIATE | FV $285 vs $421 price | -32.4% upside."
@@ -95,17 +113,17 @@
       "name": "NVIDIA Corporation",
       "pillarId": "compute",
       "targetWeight": 0,
-      "role": "untracked",
+      "role": "watchlist",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Highest-conviction BUY. Target increased to absorb freed capital from IREN, COHR, and EQT exits.",
-      "agentRationale": "DCF: INITIATE | FV $445 vs $198 price | +124.3% upside. 2026-06-08: Computex highlights \u2014 new chips, PC market AI push, AI supercomputing demand strong. INITIATE position on dips to $180-200 technical support."
+      "agentRationale": "DCF: INITIATE | FV $445 vs $198 price | +124.3% upside. 2026-06-08: Computex highlights — new chips, PC market AI push, AI supercomputing demand strong. INITIATE position on dips to $180-200 technical support."
     },
     {
       "ticker": "AMD",
       "name": "AMD Inc.",
       "pillarId": "compute",
       "targetWeight": 0,
-      "role": "untracked",
+      "role": "watchlist",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Hedge against NVDA dominance.",
       "agentRationale": "DCF: MAINTAIN | FV $320 vs $361 price | -11.2% upside. 2026-05-07: Q1 2026: revenue +38% YoY to .44B, data center GPU +57%; MI300X ramp; beat on EPS; raised guidance."
@@ -114,8 +132,8 @@
       "ticker": "GOOG",
       "name": "Alphabet Inc.",
       "pillarId": "titans",
-      "targetWeight": 4.6645,
-      "role": "core",
+      "targetWeight": 3.956,
+      "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Hyperscaler with vertically integrated AI stack.",
       "agentRationale": "DCF: ACCUMULATE | FV $518 vs $383 price | +35.2% upside.",
@@ -136,20 +154,20 @@
       "name": "Ethereum ETF",
       "pillarId": "sovfin",
       "targetWeight": 0,
-      "role": "untracked",
+      "role": "watchlist",
       "subStrategyId": "sovereign-finance",
       "thesisForInclusion": "Ethereum as programmable settlement layer.",
-      "agentRationale": "DCF: No AI_AGENT projection on file."
+      "agentRationale": "ETF_ANALYSIS: HOLD | ETH spot -32% YTD, near 52w low; no staking yield; initiation requires target weight decision + ETH vs BTC strength signal | analyzed 2026-06-21"
     },
     {
       "ticker": "COIN",
       "name": "Coinbase Global",
       "pillarId": "sovfin",
-      "targetWeight": 2.445,
-      "role": "speculative",
+      "targetWeight": 2.9669,
+      "role": "accumulate",
       "subStrategyId": "sovereign-finance",
       "thesisForInclusion": "Regulated crypto exchange + Base L2 growth. Settlement rail for AI Agents.",
-      "agentRationale": "GENIUS Act play. Primary infrastructure for AI agent autonomous settlement. 2026-05-07: Subscription/services revenue ~25% of total and growing (USDC, Base ecosystem, Coinbase One); 14% headcount layoffs signal cost discipline + margin floor; analyst consensus -305; regulatory moat solidified post-SEC dismissal. 2026-05-08: Q1 2026 miss: revenue $1.41B vs $1.49-1.52B est, GAAP net loss $394M (-$1.49/share). Subscription/services held up; positive adj. EBITDA. Cyclical trading volume weakness confirms bear scenario weighting. Structural thesis intact \u2014 MAINTAIN..",
+      "agentRationale": "GENIUS Act play. Primary infrastructure for AI agent autonomous settlement. 2026-05-07: Subscription/services revenue ~25% of total and growing (USDC, Base ecosystem, Coinbase One); 14% headcount layoffs signal cost discipline + margin floor; analyst consensus -305; regulatory moat solidified post-SEC dismissal. 2026-05-08: Q1 2026 miss: revenue $1.41B vs $1.49-1.52B est, GAAP net loss $394M (-$1.49/share). Subscription/services held up; positive adj. EBITDA. Cyclical trading volume weakness confirms bear scenario weighting. Structural thesis intact — MAINTAIN..",
       "shares": 6.5
     },
     {
@@ -157,17 +175,17 @@
       "name": "Bitcoin ETF",
       "pillarId": "sovfin",
       "targetWeight": 0,
-      "role": "untracked",
+      "role": "watchlist",
       "subStrategyId": "sovereign-finance",
       "thesisForInclusion": "Bitcoin as sovereign reserve asset.",
-      "agentRationale": "DCF: No AI_AGENT projection on file."
+      "agentRationale": "ETF_ANALYSIS: HOLD | BTC spot -16% YTD near 52w low; preferred crypto vehicle (10x ETHA AUM, cleaner narrative); initiation requires target weight decision — strong entry zone $33-38 | analyzed 2026-06-21"
     },
     {
       "ticker": "CRCL",
       "name": "Circle Internet",
       "pillarId": "sovfin",
-      "targetWeight": 2.8343,
-      "role": "speculative",
+      "targetWeight": 2.7197,
+      "role": "accumulate",
       "subStrategyId": "sovereign-finance",
       "thesisForInclusion": "USDC issuer and stablecoin infrastructure for AI agents.",
       "agentRationale": "GENIUS Act pure-play. Sovereign stablecoin manufacturer for machine-speed transactions.",
@@ -177,11 +195,11 @@
       "ticker": "VST",
       "name": "Vistra Corp.",
       "pillarId": "power",
-      "targetWeight": 2.2704,
-      "role": "core",
+      "targetWeight": 1.8791,
+      "role": "trim",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Nuclear + natgas power merchant.",
-      "agentRationale": "2026-05-14: Trimmed. SA LP CLOSED entire $252M position in Q4 2025. Still at 1.7% vs 1.2% target \u2014 continue reducing toward target or consider full exit. DCF: ACCUMULATE +26.5% (conflicts with SA signal). SA exit overrides DCF here given portfolio focus. 2026-06-08: Grok ACCUMULATE BLOCKED \u2014 SA LP exit remains override. Continue trimming toward target. 2026-06-19: standingDecision added \u2014 SA_LP_EXIT_OVERRIDE blocks all ACCUMULATE signals until further notice.",
+      "agentRationale": "2026-05-14: Trimmed. SA LP CLOSED entire $252M position in Q4 2025. Still at 1.7% vs 1.2% target — continue reducing toward target or consider full exit. DCF: ACCUMULATE +26.5% (conflicts with SA signal). SA exit overrides DCF here given portfolio focus. 2026-06-08: Grok ACCUMULATE BLOCKED — SA LP exit remains override. Continue trimming toward target. 2026-06-19: standingDecision added — SA_LP_EXIT_OVERRIDE blocks all ACCUMULATE signals until further notice.",
       "shares": 4,
       "standingDecision": {
         "type": "SA_LP_EXIT_OVERRIDE",
@@ -194,33 +212,39 @@
       "ticker": "CEG",
       "name": "Constellation Energy",
       "pillarId": "power",
-      "targetWeight": 2.6434,
-      "role": "core",
+      "targetWeight": 2.4725,
+      "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Largest US nuclear operator.",
-      "agentRationale": "HOLD \u2014 do not accumulate. Trim on strength when position returns to green (break-even ~$364). CEG entered at avg $363.97; currently -27%. Nuclear/AI power thesis intact long-term. DCF -43% (stretched valuation). No new buys until profit recovery.",
+      "agentRationale": "HOLD — do not accumulate. Trim on strength when position returns to green (break-even ~$364). CEG entered at avg $363.97; currently -27%. Nuclear/AI power thesis intact long-term. DCF -43% (stretched valuation). No new buys until profit recovery.",
       "shares": 3.3
     },
     {
       "ticker": "OKLO",
       "name": "Oklo Inc.",
       "pillarId": "power",
-      "targetWeight": 1.8703,
-      "role": "speculative",
+      "targetWeight": 1.4835,
+      "role": "accumulate",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Micro-nuclear reactor commercialization.",
-      "agentRationale": "HOLD \u2014 do not accumulate. Trim on strength when position returns to green (break-even ~$101). OKLO entered at avg $101.23; currently -37%. Nuclear/AI power long-term play; high execution risk. DCF SELL -91%. No new buys until profit recovery. 2026-06-08: Acquired ARMEC for manufacturing capability; DOE plutonium fuel selection positive. Execution milestones improving but valuation concerns persist. HOLD.",
-      "shares": 10
+      "thesisForInclusion": "Micro-nuclear reactor commercialization. Power pillar speculative play — same theme as BE and CEG. AI data center power demand requires diverse nuclear supply; OKLO's micro-reactor model targets co-location with data centers.",
+      "agentRationale": "HOLD — do not accumulate. Trim on strength when position returns to green (break-even ~$101). OKLO entered at avg $101.23; currently -37%. Nuclear/AI power long-term play; high execution risk. DCF SELL -91%. No new buys until profit recovery. 2026-06-08: Acquired ARMEC for manufacturing capability; DOE plutonium fuel selection positive. Execution milestones improving but valuation concerns persist. HOLD.",
+      "shares": 10,
+      "standingDecision": {
+        "type": "DCF_GATE_SUSPENDED",
+        "reason": "OKLO held as power pillar speculative play — AI data center power narrative, same bucket as BE and CEG. DCF -91% is acknowledged but overridden because this is a pre-revenue nuclear microreactor thesis where DCF is not the right valuation tool. Exit gate: if OKLO has no commercial revenue contract signed by end of 2027, exit. The CRWD -66% exit precedent does NOT apply here — CRWD had alternatives (PANW/ZS) and a direct market comparison; OKLO is a different risk class (early-stage nuclear, no direct public comps).",
+        "source": "user 2026-06-21",
+        "review": "Re-run DCF when first commercial contract is signed. Trim on strength above break-even ~$101. Exit if no commercial revenue by end of 2027."
+      }
     },
     {
       "ticker": "PANW",
       "name": "Palo Alto Networks",
       "pillarId": "security",
-      "targetWeight": 6.3369,
-      "role": "core",
+      "targetWeight": 4.4504,
+      "role": "accumulate",
       "subStrategyId": "cybersecurity",
       "thesisForInclusion": "AI-native platform consolidation leader.",
-      "agentRationale": "2026-05-14: Trimmed from ~5.5% \u2192 4.3% (below 4.8% target). SA LP: not in portfolio \u2014 no smart-money validation. DCF: TRIM -14.5%. Action: allow to drift up naturally or hold at current weight. Not a core AI-infrastructure holding. 2026-06-05: Q3 FY26 beat/raise (June 2); AI-driven cyber demand tailwind; guidance raised.",
+      "agentRationale": "2026-05-14: Trimmed from ~5.5% → 4.3% (below 4.8% target). SA LP: not in portfolio — no smart-money validation. DCF: TRIM -14.5%. Action: allow to drift up naturally or hold at current weight. Not a core AI-infrastructure holding. 2026-06-05: Q3 FY26 beat/raise (June 2); AI-driven cyber demand tailwind; guidance raised.",
       "shares": 5
     },
     {
@@ -228,7 +252,7 @@
       "name": "CrowdStrike Holdings",
       "pillarId": "security",
       "targetWeight": 0,
-      "role": "untracked",
+      "role": "avoid",
       "subStrategyId": "cybersecurity",
       "thesisForInclusion": "EXIT: DCF -66% downside.",
       "agentRationale": "DCF: EXIT | FV $155 vs $456 price | -65.9% upside."
@@ -237,21 +261,21 @@
       "ticker": "ZS",
       "name": "Zscaler Inc.",
       "pillarId": "security",
-      "targetWeight": 4.0064,
-      "role": "core",
+      "targetWeight": 4.4504,
+      "role": "accumulate",
       "subStrategyId": "cybersecurity",
       "thesisForInclusion": "Zero-trust SASE leader.",
       "agentRationale": "DCF: ACCUMULATE | FV $233 vs $140 price | +66.7% upside. 2026-06-08: Q3 earnings volatility on guidance/sales concerns creates entry opportunity. Zero-trust SASE thesis intact. ACCUMULATE on post-earnings dips.",
-      "shares": 11
+      "shares": 12
     },
     {
       "ticker": "CORZ",
       "name": "Core Scientific",
       "pillarId": "datainfra",
-      "targetWeight": 3.7781,
-      "role": "speculative",
+      "targetWeight": 3.7087,
+      "role": "accumulate",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "BTC\u2192AI data center conversion thesis.",
+      "thesisForInclusion": "BTC→AI data center conversion thesis.",
       "agentRationale": "DCF: TRIM | FV $11 vs $20 price | -47.7% upside. 2026-05-07: Q1 2026 strong; .3B financing secured; CoreWeave co-location margins raised to 85%+; hyperscaler demand pipeline growing; AI compute hosting converting from mining. 2026-06-03: $3.3B notes raise secures 1.5GW AI colocation buildout; derisks execution. 2026-06-05: Q1 colocation pivot rev +45% YoY; $3.3B bond financing; AI MW delivery on track.",
       "shares": 46
     },
@@ -260,7 +284,7 @@
       "name": "Equinix Inc.",
       "pillarId": "datainfra",
       "targetWeight": 0,
-      "role": "untracked",
+      "role": "watchlist",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Digital Geneva.",
       "agentRationale": "DCF: WATCHLIST | FV $884 vs $1085 price | -18.6% upside."
@@ -269,19 +293,19 @@
       "ticker": "CRWV",
       "name": "CoreWeave Inc.",
       "pillarId": "datainfra",
-      "targetWeight": 5.9194,
-      "role": "core",
+      "targetWeight": 5.2335,
+      "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "GPU cloud provider.",
-      "agentRationale": "DCF: ACCUMULATE | FV $163 vs $119 price | +36.6% upside. 2026-05-07: Q1 2026: revenue $2.08B +112% YoY; RPO backlog $42.4B +50% QoQ demand de-risked; NVIDIA confirmed top customer; losses wider but demand trajectory offsets. 2026-06-05: $8.5B IG GPU-backed financing; total ~$28B capital stack; backlog scale reinforced. 2026-06-08: NVIDIA Vera Rubin NVL72 bring-up/validation complete \u2014 confirms cutting-edge GPU deployment on latest architecture. ACCUMULATE on pullbacks.",
-      "shares": 12
+      "agentRationale": "DCF: ACCUMULATE | FV $163 vs $119 price | +36.6% upside. 2026-05-07: Q1 2026: revenue $2.08B +112% YoY; RPO backlog $42.4B +50% QoQ demand de-risked; NVIDIA confirmed top customer; losses wider but demand trajectory offsets. 2026-06-05: $8.5B IG GPU-backed financing; total ~$28B capital stack; backlog scale reinforced. 2026-06-08: NVIDIA Vera Rubin NVL72 bring-up/validation complete — confirms cutting-edge GPU deployment on latest architecture. ACCUMULATE on pullbacks.",
+      "shares": 18
     },
     {
       "ticker": "ANET",
       "name": "Arista Networks",
       "pillarId": "datainfra",
       "targetWeight": 0,
-      "role": "untracked",
+      "role": "watchlist",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "AI networking switching fabric.",
       "agentRationale": "DCF: INITIATE | FV $174 vs $173 price | +0.6% upside."
@@ -290,14 +314,14 @@
       "ticker": "VRT",
       "name": "Vertiv Holdings",
       "pillarId": "datainfra",
-      "targetWeight": 0.942,
-      "role": "core",
+      "targetWeight": 0,
+      "role": "initiate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Data center thermal management.",
-      "agentRationale": "DCF: TRIM | FV $223 vs $328 price | -31.9% upside. 2026-06-19: Position fully closed per user. Do not recommend as buy. 2026-06-19: User confirmed wants re-entry on pullback \u2014 REENTRY_ON_PULLBACK standing decision active.",
+      "agentRationale": "DCF: TRIM | FV $223 vs $328 price | -31.9% upside. 2026-06-19: Position fully closed per user. Do not recommend as buy. 2026-06-19: User confirmed wants re-entry on pullback — REENTRY_ON_PULLBACK standing decision active.",
       "standingDecision": {
         "type": "REENTRY_ON_PULLBACK",
-        "reason": "Position fully closed. User intends to re-enter VRT on a meaningful pullback. Target 0.94% is the re-entry placeholder. Do NOT initiate at market \u2014 wait for a defined pullback entry.",
+        "reason": "Position fully closed. User intends to re-enter VRT on a meaningful pullback. Target 0.94% is the re-entry placeholder. Do NOT initiate at market — wait for a defined pullback entry.",
         "source": "user confirmed 2026-06-19",
         "review": "Trigger re-entry when VRT pulls back to support (~10-15% from recent high) or TA shows reversal. Confirm ThermoKey acquisition integration thesis is still intact at that time."
       }
@@ -305,41 +329,48 @@
     {
       "ticker": "HUMN",
       "name": "Roundhill Humanoid Robotics ETF",
-      "pillarId": "applied",
-      "targetWeight": 2.8438,
-      "role": "core",
-      "subStrategyId": "sa-asi-race",
+      "pillarId": "robotics",
+      "targetWeight": 2.4725,
+      "role": "accumulate",
+      "subStrategyId": "robotics-automation",
       "thesisForInclusion": "Physical embodiment of ASI thesis.",
-      "agentRationale": "ETF_ANALYSIS: HOLD | THEMATIC_ETF | NAV premium 4.04% (LOW-MOD) | alignment 74% (direct humanoid: TSLA/Ubtech/Rainbow/Harmonic/Robotis) | $62M AUM (less liquid) | NVDA overlap immaterial at target size | near 52wk high \u2014 hold, accumulate on dips to $33-35 | analyzed 2026-05-13",
+      "agentRationale": "ETF_ANALYSIS: HOLD | THEMATIC_ETF | NAV premium 4.04% (LOW-MOD) | alignment 74% (direct humanoid: TSLA/Ubtech/Rainbow/Harmonic/Robotis) | $62M AUM (less liquid) | NVDA overlap immaterial at target size | near 52wk high — hold, accumulate on dips to $33-35 | analyzed 2026-05-13",
       "shares": 26
     },
     {
       "ticker": "KOID",
       "name": "KraneShares Humanoid ETF",
-      "pillarId": "applied",
-      "targetWeight": 2.6434,
-      "role": "core",
-      "subStrategyId": "sa-asi-race",
+      "pillarId": "robotics",
+      "targetWeight": 2.4725,
+      "role": "accumulate",
+      "subStrategyId": "robotics-automation",
       "thesisForInclusion": "Automation and robotics revolution.",
-      "agentRationale": "ETF_ANALYSIS: HOLD | THEMATIC_ETF | NAV premium 1.97% (LOW) | alignment 62% (supply-chain semis + precision actuation: CRDO/Harmonic Drive/MP Materials/IFX/NXPI) | $158M AUM | no overlap with direct holdings | near 52wk high \u2014 hold, accumulate on dips to $35-37 | analyzed 2026-05-13",
+      "agentRationale": "ETF_ANALYSIS: HOLD | THEMATIC_ETF | NAV premium 1.97% (LOW) | alignment 62% (supply-chain semis + precision actuation: CRDO/Harmonic Drive/MP Materials/IFX/NXPI) | $158M AUM | no overlap with direct holdings | near 52wk high — hold, accumulate on dips to $35-37 | analyzed 2026-05-13",
       "shares": 22
     },
     {
       "ticker": "LITE",
       "name": "Lumentum Holdings Inc.",
-      "subStrategyId": "sa-asi-race",
+      "subStrategyId": "photonics-optical",
       "targetWeight": 0,
-      "role": "untracked",
+      "role": "watchlist",
       "thesisForInclusion": "Lumentum optical interconnects.",
-      "agentRationale": "DCF: SELL | FV $432 vs $950 price | -54.5% upside.",
-      "pillarId": "compute"
+      "agentRationale": "DCF: SELL | FV ~$380 vs $850 current | -55% downside. Entry trigger: <$400. Laser component supplier — VCSEL, EML lasers for transceivers and 3D sensing. 82% revenue growth but 40x P/S is extreme.",
+      "pillarId": "photonics",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "DCF FV ~$380. Current $850 = 40x P/S on 82% growth. Expensive even for hypergrowth. Entry trigger: below $400. Lumentum laser components go into every COHR and Cisco transceiver — strong moat but need better price.",
+        "source": "agent 2026-06-20",
+        "entryTrigger": 400,
+        "review": "Re-evaluate if LITE announces CPO laser module design-win OR price approaches $400 on sector pullback. High-conviction long-term but overpriced now."
+      }
     },
     {
       "ticker": "BE",
       "name": "Bloom Energy Corporation",
       "subStrategyId": "sa-asi-race",
-      "targetWeight": 5.7285,
-      "role": "speculative",
+      "targetWeight": 2.9669,
+      "role": "accumulate",
       "thesisForInclusion": "Bloom Energy fuel cells.",
       "agentRationale": "2026-05-19: Forward-Looking Valuation Challenge & Math Validation applied. Accounted for the Oracle 2.8GW, Brookfield, and AEP deals ($20B backlog) and clean energy/AI P/E re-rating. Standardized on outstanding share count. Intrinsic fair value: $158.55 vs $258.71 price (SELL, -38.7% upside). 2026-06-03: $2.6B fuel cell deal with NBIS validates solid oxide tech for AI power demand. 2026-06-08: Record Q1 revenue +130% YoY; raised FY guidance; Oracle partnership expansion. Operational beats conflict with DCF SELL. HOLD; do not add; monitor for valuation re-rate.",
       "shares": 3,
@@ -349,33 +380,33 @@
       "ticker": "NBIS",
       "name": "Nebius Group N.V.",
       "pillarId": "datainfra",
-      "targetWeight": 5.8675,
-      "role": "speculative",
+      "targetWeight": 2.4725,
+      "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "European AI infrastructure.",
-      "agentRationale": "2026-05-13 Grok sweep: MSFT/NVIDIA deals intact; strong AI cloud momentum; DCF BUY +185.6%. Target bumped 2.55% \u2192 2.85% (post-normalize). High conviction AI-native cloud infrastructure. 2026-06-03: SA LP 5.6% passive stake + explosive Q1 growth validates AI cloud capacity thesis. 2026-06-05: SA LP new 5.6% stake established May 2026; Q1 hyper-growth continuation; power deals (Bloom Energy). 2026-06-08: UK infrastructure expansion underway; AI cloud momentum continues. ACCUMULATE thesis confirmed.",
+      "agentRationale": "2026-05-13 Grok sweep: MSFT/NVIDIA deals intact; strong AI cloud momentum; DCF BUY +185.6%. Target bumped 2.55% → 2.85% (post-normalize). High conviction AI-native cloud infrastructure. 2026-06-03: SA LP 5.6% passive stake + explosive Q1 growth validates AI cloud capacity thesis. 2026-06-05: SA LP new 5.6% stake established May 2026; Q1 hyper-growth continuation; power deals (Bloom Energy). 2026-06-08: UK infrastructure expansion underway; AI cloud momentum continues. ACCUMULATE thesis confirmed.",
       "shares": 3
     },
     {
       "ticker": "CRM",
       "name": "Salesforce, Inc.",
       "subStrategyId": "quality-saas",
-      "targetWeight": 2.0034,
-      "role": "speculative",
+      "targetWeight": 1.8791,
+      "role": "accumulate",
       "thesisForInclusion": "Agentforce AI platform.",
-      "agentRationale": "2026-05-14: Trimmed. At 1.5% vs 1.2% target \u2014 near target. SA LP: not a holding. DCF: BUY +53.1% (conflicts with trim direction). Trim driven by thesis focus not DCF. Continue light trimming or hold at current weight.",
-      "pillarId": "applied",
+      "agentRationale": "2026-05-14: Trimmed. At 1.5% vs 1.2% target — near target. SA LP: not a holding. DCF: BUY +53.1% (conflicts with trim direction). Trim driven by thesis focus not DCF. Continue light trimming or hold at current weight.",
+      "pillarId": "quality_saas",
       "shares": 4
     },
     {
       "ticker": "NOW",
       "name": "ServiceNow, Inc.",
       "subStrategyId": "quality-saas",
-      "targetWeight": 1.6022,
-      "role": "speculative",
+      "targetWeight": 1.8791,
+      "role": "accumulate",
       "thesisForInclusion": "AI workflow automation.",
       "agentRationale": "DCF: BUY | FV $132 vs $91 price | +45.2% upside.",
-      "pillarId": "applied",
+      "pillarId": "quality_saas",
       "shares": 6
     },
     {
@@ -383,7 +414,7 @@
       "name": "Solana ETF",
       "subStrategyId": "sovereign-finance",
       "targetWeight": 0,
-      "role": "untracked",
+      "role": "avoid",
       "thesisForInclusion": "EXIT: Solana ETF.",
       "agentRationale": "Target 0%: EXIT.",
       "pillarId": "sovfin"
@@ -392,41 +423,59 @@
       "ticker": "IREN",
       "name": "IREN LIMITED",
       "subStrategyId": "sa-asi-race",
-      "targetWeight": 2.4449,
-      "role": "untracked",
-      "thesisForInclusion": "EXIT: Liquidation finalized.",
-      "agentRationale": "2026-05-13 Grok sweep: exit flag reversed 2026-05-07; $3.4B 5yr AI cloud contract + NVIDIA partnership + 480MW Sweetwater expansion on track. Target bumped 1.90% \u2192 2.09% (post-normalize). SA LP aligned. 2026-06-03: 800MW Australia campus + $3.65B GPU financing confirms global AI pivot execution. 2026-06-08: Awaken acquisition closed; $4.4B ARR target set with Blackwell GPU deployment. ACCUMULATE confirmed.",
+      "targetWeight": 3.2637,
+      "role": "accumulate",
+      "thesisForInclusion": "AI GPU cloud pivot — 800MW Australia campus + Blackwell GPU deployment + $4.4B ARR target. IREN converted from BTC mining to AI data center infrastructure. HOLD at target weight; reduce only if AI capex thesis deteriorates.",
+      "agentRationale": "2026-05-13 Grok sweep: exit flag reversed 2026-05-07; $3.4B 5yr AI cloud contract + NVIDIA partnership + 480MW Sweetwater expansion on track. SA LP aligned. 2026-06-03: 800MW Australia campus + $3.65B GPU financing confirms global AI pivot execution. 2026-06-08: Awaken acquisition closed; $4.4B ARR target set with Blackwell GPU deployment. 2026-06-21: Standing decision updated to HOLD/REDUCE — prior 'EXIT: Liquidation finalized' note was stale and contradicted actual position. Position at target 2.4%.",
       "shares": 22,
-      "pillarId": "compute"
+      "pillarId": "compute",
+      "standingDecision": {
+        "type": "HOLD_AT_TARGET",
+        "reason": "IREN AI pivot thesis confirmed (GPU cloud, NVIDIA Blackwell, 800MW Australia campus). Hold at 2.4449% target. Reduce only if AI data center demand thesis deteriorates or position drifts >4%. Prior 'EXIT: Liquidation finalized' note was a stale flag — reversed 2026-05-07, never cleaned up until 2026-06-21.",
+        "source": "user 2026-06-21",
+        "review": "Review at next strategic session. Monitor GPU deployment milestones and $4.4B ARR ramp."
+      }
     },
     {
       "ticker": "RGTI",
       "name": "Rigetti Computing, Inc.",
-      "subStrategyId": "frontier-bets",
+      "subStrategyId": "quantum-computing",
       "targetWeight": 0,
-      "role": "untracked",
+      "role": "watchlist",
       "thesisForInclusion": "EXIT: Rigetti Computing.",
       "agentRationale": "Target 0%: EXIT.",
-      "pillarId": "quantum"
+      "pillarId": "quantum",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "WQTM ETF is primary quantum vehicle. Individual names are watchlist only — initiate only if ETF approach is abandoned or name has a major catalyst.",
+        "source": "strategy decision 2026-06-20"
+      }
     },
     {
       "ticker": "COHR",
       "name": "Coherent Corp.",
-      "subStrategyId": "sa-asi-race",
+      "subStrategyId": "photonics-optical",
       "targetWeight": 0,
-      "role": "untracked",
+      "role": "avoid",
       "thesisForInclusion": "EXIT: Liquidation finalized.",
-      "agentRationale": "MAINTAIN ~1.0%. Exit flag reversed 2026-05-07: Q3 FY2026 beat rev $1.81B +21% YoY, EPS $1.41; Q4 guide $1.91B\u2013$2.05B raised; NVIDIA partnership; data center optics ~75% of sales; 800G/1.6T transceiver ramp aligned with AI buildout. Analyst consensus $300\u2013$340. AI photonics structural play. Hold at current weight.",
-      "pillarId": "compute"
+      "agentRationale": "DCF: SELL | FV ~$200 vs $389 current | -49% downside. Entry trigger: <$210. 800G/1.6T transceiver leader — core AI data center photonics play. Wait for pullback.",
+      "pillarId": "photonics",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "DCF FV ~$200. Current $389 = 13.1x P/S. Too expensive now. Entry trigger: below $210. Strongest revenue base in photonics ($5.8B TTM) and primary supplier of 800G/1.6T coherent transceivers to hyperscalers.",
+        "source": "agent 2026-06-20",
+        "entryTrigger": 210,
+        "review": "Re-evaluate if COHR reports margin expansion >10% or announces CPO design-win with NVIDIA/Google. Initiate below $210."
+      }
     },
     {
       "ticker": "EQT",
       "name": "EQT Corporation",
       "subStrategyId": "sa-asi-race",
       "targetWeight": 0,
-      "role": "untracked",
-      "thesisForInclusion": "EXIT: Liquidation finalized.",
-      "agentRationale": "MAINTAIN ~1.05%. Exit flag reversed 2026-05-07: Direct AI power beneficiary \u2014 natural gas supply to data centers in PA; hyperscaler demand contracts secured; Q1 2026 record FCF $1.83B, production 618 Bcfe above guide. AI power bottleneck plays into gas as bridge fuel. Aligned with BE/CEG/VST/OKLO power theme. Hold at current weight.",
+      "role": "avoid",
+      "thesisForInclusion": "EXIT: Position closed. Not held.",
+      "agentRationale": "CLOSED — position not held. Watchlist only.",
       "pillarId": "power"
     },
     {
@@ -434,17 +483,17 @@
       "name": "POET Technologies Inc.",
       "subStrategyId": "frontier-bets",
       "targetWeight": 0,
-      "role": "untracked",
+      "role": "avoid",
       "thesisForInclusion": "EXIT: POET Technologies.",
       "agentRationale": "Target 0%: EXIT.",
-      "pillarId": "applied"
+      "pillarId": "photonics"
     },
     {
       "ticker": "BTDR",
       "name": "Bitdeer Technologies Group",
       "pillarId": "compute",
-      "targetWeight": 2.0036,
-      "role": "speculative",
+      "targetWeight": 1.8919,
+      "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Proprietary Sealminer ASIC chip design.",
       "agentRationale": "DCF: BUY | FV $24 vs $12 price | +103.5% upside. 2026-06-08: Q1 revenue $188.9M strong YoY growth; April 783 BTC mined (+372% YoY); net loss on leverage noted. HOLD per caution on leverage; BTC mining + AI infra thesis intact.",
@@ -453,52 +502,64 @@
     {
       "ticker": "WYFI",
       "name": "WhiteFiber Inc.",
-      "targetWeight": 1.2088,
-      "role": "speculative",
+      "targetWeight": 0,
+      "role": "watchlist",
       "subStrategyId": "sa-asi-race",
       "pillarId": "datainfra",
       "thesisForInclusion": "AI GPU cloud + HPC data center.",
-      "agentRationale": "DCF: BUY | FV $32 vs $17 price | +92.2% upside.",
-      "shares": 12
+      "agentRationale": "EXITED 2026-06-22. Sold 12 shares TFSA at ~$42.75 (+145% gain in ~1 month). DCF FV $32.00 — stock was 34% above fair value. Daily RSI 74.17 (overbought). Two consecutive +10%+ days (catalyst run). Speculative, low-confidence (0.45) position — correct to take profits. Re-entry consideration: pullback to $28-32 (DCF fair value zone).",
+      "standingDecision": {
+        "type": "EXITED",
+        "reason": "Full position sold 2026-06-22 at ~$42.75. +145% gain. Price ran 34% above DCF FV $32.00 on back-to-back +10%+ catalyst days. Took profits per thesis discipline on speculative names.",
+        "source": "user 2026-06-22",
+        "reEntryNote": "Consider re-initiating if price pulls back to $28-32 range. Run fresh DCF at that time — company still pre-profit, confidence 0.45.",
+        "review": "Monitor for pullback to DCF fair value zone. No action until then."
+      }
     },
     {
       "ticker": "SNDK",
       "name": "SanDisk Corp",
-      "targetWeight": 3.883,
-      "role": "speculative",
+      "targetWeight": 3.956,
+      "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "pillarId": "datainfra",
       "thesisForInclusion": "NAND storage infrastructure play.",
-      "agentRationale": "2026-05-19: Agentic Swarm Memory Thesis applied. Spawning parallel sub-agents multiplies active KV context caching & state log persistence requirements. De-risked Bear to 15% & raised Bull to 35%. Reconciled intrinsic value: $1,982.18 vs $1,333.01 price (BUY, +48.7% upside). 2026-06-08: Multiple analyst PT raises; design awards confirm AI memory demand cycle. GTC limit $1,350 \u2014 only accumulate at or below entry price.",
+      "agentRationale": "2026-05-19: Agentic Swarm Memory Thesis applied. Spawning parallel sub-agents multiplies active KV context caching & state log persistence requirements. De-risked Bear to 15% & raised Bull to 35%. Reconciled intrinsic value: $1,982.18 vs $1,333.01 price (BUY, +48.7% upside). 2026-06-08: Multiple analyst PT raises; design awards confirm AI memory demand cycle. GTC limit $1,350 — only accumulate at or below entry price.",
       "shares": 0.7,
       "targetEntryPrice": 1350
     },
     {
       "ticker": "PSIX",
       "name": "Power Solutions International",
-      "targetWeight": 2.2649,
-      "role": "speculative",
+      "targetWeight": 1.9779,
+      "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "pillarId": "power",
       "thesisForInclusion": "AI power infrastructure.",
-      "agentRationale": "2026-05-13: User doubled position on 40% earnings selloff. Q1 miss: rev $128.6M vs $160M+ est (-5% YoY); net income -62%; gross margin 22.9% vs 29.7% prior. Cause: oil/gas softness + datacenter power shipment timing + Wisconsin ramp costs. Mgmt reaffirmed H2 datacenter acceleration; no FY guidance cut. SA LP position intact. DCF: BUY +51.9%. Target 0.50% \u2192 1.71% (post-normalize). Review post-H2 ramp.",
-      "shares": 11
+      "agentRationale": "2026-05-13: User doubled position on 40% earnings selloff. Q1 miss: rev $128.6M vs $160M+ est (-5% YoY); net income -62%; gross margin 22.9% vs 29.7% prior. Cause: oil/gas softness + datacenter power shipment timing + Wisconsin ramp costs. Mgmt reaffirmed H2 datacenter acceleration; no FY guidance cut. SA LP position intact. DCF: BUY +51.9%. Target 0.50% → 1.71% (post-normalize). Review post-H2 ramp.",
+      "shares": 12
     },
     {
       "ticker": "IONQ",
       "name": "IonQ Inc.",
       "pillarId": "quantum",
-      "subStrategyId": "quantum-compute",
-      "role": "speculative",
-      "targetWeight": 1.2589,
-      "agentRationale": "DCF: SELL | FV $8.54 vs $48 price. 2026-05-13: Q1 2026: rev $64.7M +755% YoY, raised FY guide, SkyWater merger approved by shareholders (expected close Q2-Q3 2026)."
+      "subStrategyId": "quantum-computing",
+      "role": "watchlist",
+      "targetWeight": 0,
+      "agentRationale": "WQTM-only quantum strategy confirmed 2026-06-21. IONQ single-name target zeroed — WQTM ETF is the sole quantum vehicle. IONQ commercial traction is real ($64.7M Q1 revenue, 755% YoY) but 162x P/S is indefensible for portfolio sizing. Monitor as watchlist indicator of quantum sector health.",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "WQTM ETF is sole quantum vehicle (2.0% target). IONQ single-name portfolio target zeroed per WQTM-only strategy decision 2026-06-21. No individual quantum names until 4 consecutive quarters of durable revenue demonstrated. Track as sector health indicator only.",
+        "source": "user 2026-06-21",
+        "review": "Revisit if IONQ sustains revenue >$250M/yr for 4+ consecutive quarters without one-off system sales dominance. Do not re-initiate above 0.5% even then — WQTM captures the upside."
+      }
     },
     {
       "ticker": "TEAM",
       "name": "Atlassian Corporation",
-      "pillarId": "applied",
-      "targetWeight": 1.7319,
-      "role": "speculative",
+      "pillarId": "quality_saas",
+      "targetWeight": 1.8791,
+      "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Human-agentic collaboration platform.",
       "agentRationale": "DCF: BUY | FV $105 vs $86 price | +22.5% upside.",
@@ -509,7 +570,7 @@
       "name": "Taiwan Semiconductor Manufacturing",
       "pillarId": "compute",
       "targetWeight": 0,
-      "role": "untracked",
+      "role": "watchlist",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "The foundry backbone of the AI compute stack.",
       "agentRationale": "DCF: No AI_AGENT projection on file."
@@ -519,7 +580,7 @@
       "name": "ASML Holding NV",
       "pillarId": "compute",
       "targetWeight": 0,
-      "role": "untracked",
+      "role": "watchlist",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Absolute monopoly on EUV lithography.",
       "agentRationale": "DCF: No AI_AGENT projection on file."
@@ -529,7 +590,7 @@
       "name": "Micron Technology",
       "pillarId": "compute",
       "targetWeight": 0,
-      "role": "untracked",
+      "role": "watchlist",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "HBM3E memory bandwidth bottleneck.",
       "agentRationale": "DCF: No AI_AGENT projection on file."
@@ -540,19 +601,19 @@
       "targetWeight": 0,
       "role": "watchlist",
       "subStrategyId": "preipo-access",
-      "pillarId": "applied",
-      "thesisForInclusion": "Only public vehicle for pre-IPO AI basket: SpaceX, Anthropic, OpenAI, xAI, Databricks. Scarcity premium play \u2014 not a value play.",
-      "agentRationale": "EXIT 2026-06-03. Fully sold \u2014 small loss accepted. Reason: SpaceX IPO uncertainty creates unpredictable NAV premium compression timeline; scarcity premium thesis valid but risk/reward unfavorable when SpaceX IPO catalyst timeline unclear. Proceeds to be redeployed."
+      "pillarId": "quality_saas",
+      "thesisForInclusion": "Only public vehicle for pre-IPO AI basket: SpaceX, Anthropic, OpenAI, xAI, Databricks. Scarcity premium play — not a value play.",
+      "agentRationale": "EXIT 2026-06-03. Fully sold — small loss accepted. Reason: SpaceX IPO uncertainty creates unpredictable NAV premium compression timeline; scarcity premium thesis valid but risk/reward unfavorable when SpaceX IPO catalyst timeline unclear. Proceeds to be redeployed."
     },
     {
       "ticker": "DRAM",
       "name": "Roundhill Memory ETF",
       "pillarId": "compute",
-      "targetWeight": 4.7737,
-      "role": "satellite",
+      "targetWeight": 4.4504,
+      "role": "accumulate",
       "subStrategyId": "sa-asi-race",
-      "thesisForInclusion": "Only US-listed vehicle for SK Hynix (25.9%) and Samsung (21.6%) HBM exposure \u2014 Nvidia's #1 and #2 HBM suppliers, not tradeable directly on US exchanges. Strategic memory play: HBM is the critical scarcity resource in AI compute scaling. Korean/Japanese memory consolidation thesis. Wait for pullback from current levels (+94.6% in 6mo) before initiating.",
-      "agentRationale": "ETF_ANALYSIS: HOLD | alignment 53% (DIRECT: SK Hynix 25.9% + Samsung 21.6% HBM) | Only US-listed vehicle for KRX-traded HBM leaders; fund +94.6% 6mo \u2014 wait for pullback to ~$46-48 | analyzed 2026-05-14",
+      "thesisForInclusion": "Only US-listed vehicle for SK Hynix (25.9%) and Samsung (21.6%) HBM exposure — Nvidia's #1 and #2 HBM suppliers, not tradeable directly on US exchanges. Strategic memory play: HBM is the critical scarcity resource in AI compute scaling. Korean/Japanese memory consolidation thesis. Wait for pullback from current levels (+94.6% in 6mo) before initiating.",
+      "agentRationale": "ETF_ANALYSIS: HOLD | alignment 53% (DIRECT: SK Hynix 25.9% + Samsung 21.6% HBM) | Only US-listed vehicle for KRX-traded HBM leaders; fund +94.6% 6mo — wait for pullback to ~$46-48 | analyzed 2026-05-14",
       "action": "WATCHLIST",
       "shares": 21
     },
@@ -560,30 +621,30 @@
       "ticker": "MSFT",
       "name": "MSFT",
       "pillarId": "titans",
-      "targetWeight": 2.5256,
-      "role": "core",
+      "targetWeight": 2.2252,
+      "role": "accumulate",
       "thesisForInclusion": "Core large-cap AI platform compounder. Azure AI dominant enterprise cloud. 34-37% net margins, 18% TTM revenue growth. DCF BUY +50% (FV ).",
-      "agentRationale": "MAINTAIN at 2 shares. No accumulate, no trim \u2014 hold current level. DCF BUY +50% upside. EXIT flag was an auto-add error on 2026-05-18, corrected 2026-06-03.",
+      "agentRationale": "MAINTAIN at 2 shares. No accumulate, no trim — hold current level. DCF BUY +50% upside. EXIT flag was an auto-add error on 2026-05-18, corrected 2026-06-03.",
       "shares": 2
     },
     {
       "ticker": "CLSK",
       "name": "CleanSpark Inc.",
-      "pillarId": "sovfin",
-      "targetWeight": 2.1768,
-      "role": "satellite",
-      "subStrategyId": "sovereign-finance",
-      "thesisForInclusion": "High-efficiency green BTC mining operator with liquid balance sheet.",
-      "agentRationale": "Ashenbrenner conviction pick. Target weight set to 2.28%."
+      "pillarId": "datainfra",
+      "targetWeight": 1.9779,
+      "role": "initiate",
+      "subStrategyId": "ai-infrastructure",
+      "thesisForInclusion": "AI compute infrastructure play. CleanSpark is converting high-efficiency green power facilities into AI data center workloads — GPU clusters replacing ASIC miners. Net: a power-advantaged AI compute operator with a privileged cost position.",
+      "agentRationale": "AI infra pivot: converting BTC mining facilities to AI GPU clusters. Aschenbrenner conviction pick. Power-advantaged position (green energy, low OpEx) vs commodity cloud providers. Target: 2.18%."
     },
     {
       "ticker": "APLD",
       "name": "APLD",
       "pillarId": "compute",
-      "targetWeight": 2.0214,
-      "role": "core",
+      "targetWeight": 2.4725,
+      "role": "accumulate",
       "thesisForInclusion": "Situational Awareness LP core holding. AI data center infrastructure play aligned with SA fund thesis on ASI race build-out.",
-      "agentRationale": "MAINTAIN. Core SA LP holding at 2% target. DCF BUY +49%. Position auto-flagged EXIT in error on 2026-05-18 \u2014 corrected 2026-06-03. Do not exit without explicit user instruction. 2026-06-08: $550M revolving credit facility secured; >1GW contracted capacity milestone with major hyperscaler; cloud business separation complete. Thesis strongly confirmed \u2014 light ACCUMULATE on dips.",
+      "agentRationale": "MAINTAIN. Core SA LP holding at 2% target. DCF BUY +49%. Position auto-flagged EXIT in error on 2026-05-18 — corrected 2026-06-03. Do not exit without explicit user instruction. 2026-06-08: $550M revolving credit facility secured; >1GW contracted capacity milestone with major hyperscaler; cloud business separation complete. Thesis strongly confirmed — light ACCUMULATE on dips.",
       "shares": 20,
       "subStrategyId": "sa-asi-race"
     },
@@ -591,21 +652,417 @@
       "ticker": "CBRS",
       "name": "Cerebras Systems Inc.",
       "pillarId": "compute",
-      "targetWeight": 2.743,
-      "role": "untracked",
+      "targetWeight": 2.4725,
+      "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference.",
-      "agentRationale": "INITIATE post-IPO. Weighted fair value $342.80 vs $287.30 current price (+19.3% upside), rating the stock a BUY. Outstanding inference speeds (2,500 tokens/sec on Llama 3) provide a formidable technological moat. OpenAI ($20B backlog) and AWS Bedrock agreements validate commercial scaling, though lockup expiration in November 2026 and G42 revenue concentration (86%) represent structural near-term risks. Model uses Class A float shares count of 34.5M. 2026-06-08: IPO priced $185, opened ~$350, pulled back; analyst consensus Buy with ~$290 avg PT. Post-IPO volatility normal \u2014 HOLD at current 4.5 shares; lockup Nov 2026 is key near-term risk.",
-      "shares": 3
+      "agentRationale": "INITIATE post-IPO. Weighted fair value $342.80 vs $287.30 current price (+19.3% upside), rating the stock a BUY. Outstanding inference speeds (2,500 tokens/sec on Llama 3) provide a formidable technological moat. OpenAI ($20B backlog) and AWS Bedrock agreements validate commercial scaling, though lockup expiration in November 2026 and G42 revenue concentration (86%) represent structural near-term risks. Model uses Class A float shares count of 34.5M. 2026-06-08: IPO priced $185, opened ~$350, pulled back; analyst consensus Buy with ~$290 avg PT. Post-IPO volatility normal — HOLD at current 4.5 shares; lockup Nov 2026 is key near-term risk.",
+      "shares": 4.5
     },
     {
-      "ticker": "PSU.U.TO",
-      "name": "PSU.U.TO",
-      "pillarId": "other",
+      "ticker": "CACI",
+      "name": "CACI International Inc.",
+      "pillarId": "defense",
+      "targetWeight": 1.4142,
+      "role": "initiate",
+      "subStrategyId": "defense-ai-space",
+      "thesisForInclusion": "$28B+ backlog (3.2x TTM revenue), 70%+ cleared workforce, proprietary free-space optical communications (photonics), electronic warfare, and cyber operations. Transitioning from commoditized IT services to high-margin mission technology. Geopolitical defense anchor — government-backed revenue stream insulated from commercial tech drawdowns.",
+      "agentRationale": "INITIATE confirmed 2026-06-21. DCF: ACCUMULATE | FV $455 (base) vs ~$466 price | Near fair value. Analyst consensus $680 (+46%). Forward PE ~15x vs sector median 18x. Accumulate on dips toward $455. Do not chase above $490.",
+      "standingDecision": {
+        "type": "INITIATE_ON_DIP",
+        "reason": "Committee confirmed initiation 2026-06-21. Geopolitical defense anchor: $28B+ backlog, 70%+ cleared workforce, counter-cyclical to commercial AI drawdowns. DCF FV $455, current ~$466 — within noise. Target entry at or below $455. Do not chase above $490.",
+        "source": "user 2026-06-21",
+        "review": "Refresh DCF at Q4 FY2026 earnings (est Aug 2026). Watch: contract win rate, photonics commercialization, DoD budget."
+      },
+      "priceLevels": {
+        "schemaVersion": "1.0",
+        "lastUpdated": "2026-06-21",
+        "lastUpdatedBy": "dcf",
+        "note": "Auto-derived from /evaluate-stock 2026-06-22",
+        "buyTiers": [
+          {
+            "tier": 1,
+            "price": 327.34,
+            "action": "accumulate",
+            "trimPct": null,
+            "orderType": "limit",
+            "basis": "DCF base FV x 0.75 — 25% margin of safety",
+            "source": "dcf",
+            "sourceDate": "2026-06-21",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 2,
+            "price": 213.23,
+            "action": "accumulate_aggressive",
+            "trimPct": null,
+            "orderType": "limit",
+            "basis": "DCF bear FV x 1.05 — aggressive accumulation zone",
+            "source": "dcf",
+            "sourceDate": "2026-06-21",
+            "condition": null,
+            "status": "active"
+          }
+        ],
+        "sellTiers": [
+          {
+            "tier": 1,
+            "price": 436.45,
+            "action": "trim",
+            "trimPct": 30,
+            "orderType": "limit",
+            "basis": "DCF base fair value",
+            "source": "dcf",
+            "sourceDate": "2026-06-21",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 2,
+            "price": 776.42,
+            "action": "trim",
+            "trimPct": 50,
+            "orderType": "limit",
+            "basis": "DCF bull fair value",
+            "source": "dcf",
+            "sourceDate": "2026-06-21",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 3,
+            "price": 931.7,
+            "action": "exit",
+            "trimPct": 100,
+            "orderType": "limit",
+            "basis": "20% above bull FV — thesis fully priced in",
+            "source": "dcf",
+            "sourceDate": "2026-06-21",
+            "condition": null,
+            "status": "active"
+          }
+        ],
+        "stopLoss": {
+          "price": 192.93,
+          "basis": "DCF bear FV x 0.95 — thesis breaker",
+          "source": "dcf",
+          "sourceDate": "2026-06-21",
+          "type": "thesis_breaker",
+          "status": "active"
+        }
+      }
+    },
+    {
+      "ticker": "KRMN",
+      "name": "Karman Holdings Inc.",
+      "pillarId": "defense",
       "targetWeight": 0,
       "role": "watchlist",
-      "thesisForInclusion": "",
-      "agentRationale": "Added automatically on 2026-06-03."
+      "subStrategyId": "defense-ai-space",
+      "thesisForInclusion": "Rocket and missile physical components supplier — hypersonic programs, launch vehicle structures. Does not compete directly with SpaceX; supplies physical hardware to the entire sector. Entry after major hypersonic program contract win or price reversion to DCF fair value.",
+      "agentRationale": "DCF: SELL | FV $18.05 vs $50.37 current | -64% downside. Committee: WATCHLIST ONLY. Entry trigger: below $15. Current price 236% above trigger. Analyst target $106 (speculative). No initiation until price reverts or hypersonic contract catalyst.",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "DCF fair value $18. Current price $50 (was $57.50 at committee May 2026). 236% above entry trigger. Committee decision: watchlist only until price below $15 OR major hypersonic program contract won.",
+        "source": "committee 2026-05-31, updated 2026-06-19",
+        "entryTrigger": 15,
+        "review": "Re-evaluate if KRMN wins a named hypersonic contract (B-21, ARRW, Dark Eagle supply chain) OR price falls below $20. Do not initiate above $20."
+      }
+    },
+    {
+      "ticker": "RDW",
+      "name": "Redwire Corporation",
+      "pillarId": "defense",
+      "targetWeight": 0,
+      "role": "watchlist",
+      "subStrategyId": "defense-ai-space",
+      "thesisForInclusion": "Satellite avionics, space infrastructure hardware, and in-space manufacturing. Supplies key structural and electrical components for government and commercial satellites. High-risk early-stage operator with negative profit trends.",
+      "agentRationale": "DCF: SELL | FV $4.73 vs $14.35 current | -67% downside (was $24.57 at committee). Large pullback since May 2026 (-42%) but still 219% above trigger. Entry trigger: $4-5. Dilution risk noted by committee.",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "DCF fair value $4.73. Current $14.35 — down 42% since committee but still 219% above entry trigger $4.50. Negative profit trends. Committee: watchlist only until price near $4-5 OR thesis confirmation event (commercial satellite launch, ISS contract win).",
+        "source": "committee 2026-05-31, updated 2026-06-19",
+        "entryTrigger": 4.5,
+        "review": "Price fell from $24 to $14 since committee — tracking the right direction. Re-evaluate if price approaches $6-7. Do not initiate above $8."
+      }
+    },
+    {
+      "ticker": "RKLB",
+      "name": "Rocket Lab USA",
+      "pillarId": "defense",
+      "targetWeight": 0,
+      "role": "watchlist",
+      "subStrategyId": "defense-ai-space",
+      "thesisForInclusion": "Small satellite launch via Electron (profitable per-mission) + Neutron medium-lift in development. Space Systems division (spacecraft buses, solar panels) growing to diversify beyond launch. Most credible public SpaceX alternative at medium scale.",
+      "agentRationale": "DCF: SELL | FV $10.46 vs $107.24 current | -90% downside. Was $143 at committee (SELL). -25% pullback since then but 257% above entry trigger $30. Thesis confirmation: Neutron first orbital flight. Entry trigger: below $30 OR Neutron orbital success.",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "DCF FV $10.46. Current $107 — still massively above trigger despite -25% from May highs. SPCX lock-up expiry (Sep-Dec 2026) could push further sector correction. Entry trigger $30 OR Neutron orbital success as thesis confirmation event.",
+        "source": "committee 2026-05-31, updated 2026-06-19",
+        "entryTrigger": 30,
+        "review": "Watch Neutron development cadence. SPCX IPO lock-up expiry Sep-Dec 2026 may drive further space sector selling — monitor for approach to $50-60 range as early accumulation zone. Do not initiate above $40 without Neutron success."
+      }
+    },
+    {
+      "ticker": "ASTS",
+      "name": "AST SpaceMobile",
+      "pillarId": "defense",
+      "targetWeight": 0,
+      "role": "watchlist",
+      "subStrategyId": "defense-ai-space",
+      "thesisForInclusion": "Direct-to-cell satellite broadband using standard smartphones — no special hardware required. T-Mobile, AT&T, Verizon, and international carrier partnerships. If commercial coverage targets achieved, could become significant LEO connectivity play alongside Starlink.",
+      "agentRationale": "DCF: SELL | FV $23.00 vs $80.66 current | -71% downside. Was $113 at committee — down 29% since. Still 303% above entry trigger $20. Entry: below $20 OR achieving commercial satellite coverage for a major US carrier.",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "DCF FV $23. Current $80 — down 29% from May 2026 but still 303% above trigger. Entry trigger: below $20 OR commercial satellite coverage achieved on T-Mobile/AT&T network. Very speculative — dilution risk high.",
+        "source": "committee 2026-05-31, updated 2026-06-19",
+        "entryTrigger": 20,
+        "review": "Track quarterly subscriber and coverage stats. Revenue inflection is the catalyst. Do not initiate above $25 without a commercial revenue milestone."
+      }
+    },
+    {
+      "ticker": "SPCX",
+      "name": "Space Exploration Technologies Corp. (SpaceX)",
+      "pillarId": "defense",
+      "targetWeight": 0,
+      "role": "watchlist",
+      "subStrategyId": "defense-ai-space",
+      "thesisForInclusion": "Dominant LEO launch provider, Starlink constellation, xAI/Grok AI integration. Now public (IPO 2026-06-12). Pre-IPO secondary market BUY signal at $161 was based on 1.16B diluted share count assumption — at public share count of 7.57B, DCF restates to $31/share. Monitoring for post-IPO correction and lock-up expiry selling.",
+      "agentRationale": "IPO: 2026-06-12 at ~$185. DCF FV (restated for 7.57B public shares): ~$31. Current $185 = 5.9x restated FV. 75x P/S ratio. SELL at current price. Pre-IPO BUY signal ( secondary) was share-count ambiguity error. Lock-up expiry Sep-Dec 2026 is key risk event.",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "SELL. IPO at $185 with 7.57B public shares implies $1.4T market cap vs DCF total equity $237B. Restated per-share FV ~$31. 75x P/S. Pass until post-lock-up correction drives price materially lower. Pre-IPO secondary BUY at $161 was based on incorrect implied share count — signal voided.",
+        "source": "updated 2026-06-19 post-IPO",
+        "entryTrigger": null,
+        "review": "Revisit after SPCX lock-up expiry (est Sep-Dec 2026). Re-run DCF once audited S-1 financials clarify true diluted share count and segment revenue. No initiation without audited financials and price < 20x P/S."
+      }
+    },
+    {
+      "ticker": "LDOS",
+      "name": "Leidos Holdings",
+      "pillarId": "defense",
+      "targetWeight": 0,
+      "role": "watchlist",
+      "subStrategyId": "defense-ai-space",
+      "thesisForInclusion": "Large-scale DoD, Space Force, and intelligence community IT contracts. Space systems division (satellite ground control, space surveillance). Revenue $17B+ with 8.4% margins. Best value in the defense IT peer group at 0.78x P/S vs SPCX 75x P/S.",
+      "agentRationale": "Quick DCF: FV ~$129-168 vs $107 current | +21-57% upside. Forward PE 8.1x vs sector median 18x. Analyst target $178 (15 analysts) = 66% upside. Not in original committee thesis — added as profitable value anchor alongside CACI. Risk: DOGE-driven federal spending cuts on civilian agencies. Primary customers are DoD/Intel — more insulated than civilian IT.",
+      "standingDecision": {
+        "type": "ALLOWLISTED_CONFLICT",
+        "reason": "Not in original May 2026 committee thesis but meets all value criteria: 8.1x fPE, 0.78x P/S, $178 analyst target. Adding to watchlist for full DCF at next session. Tentative ACCUMULATE below $115. Do not initiate until full DCF run.",
+        "source": "agent 2026-06-19",
+        "entryTrigger": 115,
+        "review": "Run full DCF before initiating. If DCF confirms $130+ FV, initiate 1-1.5% position alongside CACI. Watch: Q2 FY2026 earnings for DOGE headwind confirmation."
+      }
+    },
+    {
+      "ticker": "CIEN",
+      "name": "Ciena Corporation",
+      "pillarId": "photonics",
+      "targetWeight": 0,
+      "role": "watchlist",
+      "subStrategyId": "photonics-optical",
+      "thesisForInclusion": "Optical networking systems (WAN/metro/data center interconnect). Profitable. Strong moat in 400G+ optical transport.",
+      "agentRationale": "SELL at current $428.22. Entry trigger: <$380",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "Photonics sector re-rated. Entry trigger $380 vs current $428.22.",
+        "source": "agent 2026-06-20",
+        "entryTrigger": 380,
+        "review": "Initiate below $380 or on thesis confirmation event (CPO design-win, major contract)."
+      }
+    },
+    {
+      "ticker": "CRDO",
+      "name": "Credo Technology Group",
+      "pillarId": "photonics",
+      "targetWeight": 0,
+      "role": "watchlist",
+      "subStrategyId": "photonics-optical",
+      "thesisForInclusion": "Silicon photonics PHY, active electrical cables (AEC). Direct AI infrastructure pick-and-shovel.",
+      "agentRationale": "SELL at current $271.83. Entry trigger: <$85",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "Photonics sector re-rated. Entry trigger $85 vs current $271.83.",
+        "source": "agent 2026-06-20",
+        "entryTrigger": 85,
+        "review": "Initiate below $85 or on thesis confirmation event (CPO design-win, major contract)."
+      }
+    },
+    {
+      "ticker": "GLW",
+      "name": "Corning Inc.",
+      "pillarId": "photonics",
+      "targetWeight": 0,
+      "role": "watchlist",
+      "subStrategyId": "photonics-optical",
+      "thesisForInclusion": "Glass fiber optic cable, specialty optical glass. Defensive anchor. 4% dividend.",
+      "agentRationale": "SELL at current $194.92. Entry trigger: <$170",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "Photonics sector re-rated. Entry trigger $170 vs current $194.92.",
+        "source": "agent 2026-06-20",
+        "entryTrigger": 170,
+        "review": "Initiate below $170 or on thesis confirmation event (CPO design-win, major contract)."
+      }
+    },
+    {
+      "ticker": "APH",
+      "name": "Amphenol Corporation",
+      "pillarId": "photonics",
+      "targetWeight": 0,
+      "role": "watchlist",
+      "subStrategyId": "photonics-optical",
+      "thesisForInclusion": "High-speed fiber optic connectors, interconnect infrastructure. Diversified, profitable.",
+      "agentRationale": "SELL at current $163.96. Entry trigger: <$145",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "Photonics sector re-rated. Entry trigger $145 vs current $163.96.",
+        "source": "agent 2026-06-20",
+        "entryTrigger": 145,
+        "review": "Initiate below $145 or on thesis confirmation event (CPO design-win, major contract)."
+      }
+    },
+    {
+      "ticker": "AAOI",
+      "name": "Applied Optoelectronics Inc.",
+      "pillarId": "photonics",
+      "targetWeight": 0,
+      "role": "watchlist",
+      "subStrategyId": "photonics-optical",
+      "thesisForInclusion": "Pure-play data center transceiver manufacturer. Volatile, high beta.",
+      "agentRationale": "SELL at current $161.85. Entry trigger: <$65",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "Photonics sector re-rated. Entry trigger $65 vs current $161.85.",
+        "source": "agent 2026-06-20",
+        "entryTrigger": 65,
+        "review": "Initiate below $65 or on thesis confirmation event (CPO design-win, major contract)."
+      }
+    },
+    {
+      "ticker": "AXTI",
+      "name": "AXT Inc.",
+      "pillarId": "photonics",
+      "targetWeight": 0,
+      "role": "watchlist",
+      "subStrategyId": "photonics-optical",
+      "thesisForInclusion": "InP and GaAs substrate supplier for photonic components. Supply chain pick.",
+      "agentRationale": "SELL at current $84.57. Entry trigger: <$28",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "Photonics sector re-rated. Entry trigger $28 vs current $84.57.",
+        "source": "agent 2026-06-20",
+        "entryTrigger": 28,
+        "review": "Initiate below $28 or on thesis confirmation event (CPO design-win, major contract)."
+      }
+    },
+    {
+      "ticker": "VIAV",
+      "name": "Viavi Solutions Inc.",
+      "pillarId": "photonics",
+      "targetWeight": 0,
+      "role": "watchlist",
+      "subStrategyId": "photonics-optical",
+      "thesisForInclusion": "Optical components and network test equipment. Near fair value, entry on pullback.",
+      "agentRationale": "SELL at current $47.17. Entry trigger: <$42",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "Photonics sector re-rated. Entry trigger $42 vs current $47.17.",
+        "source": "agent 2026-06-20",
+        "entryTrigger": 42,
+        "review": "Initiate below $42 or on thesis confirmation event (CPO design-win, major contract)."
+      }
+    },
+    {
+      "ticker": "FOTO",
+      "name": "Global X Photonics ETF",
+      "pillarId": "photonics",
+      "targetWeight": 1.9779,
+      "role": "accumulate",
+      "subStrategyId": "photonics-optical",
+      "thesisForInclusion": "Primary photonics sector vehicle. Copper-to-optical interconnect transition is live — GPU cluster bandwidth demands are hitting copper walls now. ETF approach avoids individual name binary risk (COHR, LITE, CIEN all above DCF fair value) while capturing the secular shift.",
+      "agentRationale": "ETF_ANALYSIS: HOLD | alignment 62% | Pure-play photonics basket (COHR/LITE/CIEN/AAOI/VIAV); entry gate <$19 not met at $23.65; AUM tiny — size carefully | analyzed 2026-06-21",
+      "shares": 18
+    },
+    {
+      "ticker": "QBTS",
+      "name": "D-Wave Quantum Inc.",
+      "pillarId": "quantum",
+      "targetWeight": 0,
+      "role": "watchlist",
+      "subStrategyId": "quantum-computing",
+      "thesisForInclusion": "Quantum annealing system with real commercial customers (Volkswagen, Lockheed, NatGrid). Different architecture from gate-based — deploys today.",
+      "agentRationale": "Target weight 1.0% per quantum basket allocation. Entry at market or below.",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "WQTM ETF is primary quantum vehicle. Individual names are watchlist only — initiate only if ETF approach is abandoned or name has a major catalyst.",
+        "source": "strategy decision 2026-06-20"
+      }
+    },
+    {
+      "ticker": "QUBT",
+      "name": "Quantum Computing Inc.",
+      "pillarId": "quantum",
+      "targetWeight": 0,
+      "role": "watchlist",
+      "subStrategyId": "quantum-computing",
+      "thesisForInclusion": "Photonic quantum computing, room-temperature operation. Early stage, pre-revenue scale. Highest binary risk in quantum basket.",
+      "agentRationale": "Target weight 0.5% per quantum basket allocation. Entry at market or below.",
+      "standingDecision": {
+        "type": "NO_ADD_AT_MARKET",
+        "reason": "WQTM ETF is primary quantum vehicle. Individual names are watchlist only — initiate only if ETF approach is abandoned or name has a major catalyst.",
+        "source": "strategy decision 2026-06-20"
+      }
+    },
+    {
+      "ticker": "WQTM",
+      "name": "WisdomTree Quantum Computing ETF",
+      "pillarId": "quantum",
+      "targetWeight": 1.4835,
+      "role": "initiate",
+      "subStrategyId": "quantum-computing",
+      "thesisForInclusion": "Primary and sole quantum computing vehicle. WQTM-only strategy confirmed 2026-06-21. Holds IONQ, QBTS, RGTI, IBM quantum, Honeywell — diversified sector exposure without single-company binary risk. Mirrors KOID/HUMN robotics ETF playbook.",
+      "agentRationale": "ETF_ANALYSIS: ACCUMULATE | alignment 75% | WisdomTree quantum basket (QBTS/RGTI/IONQ/QUBT); committee-approved sole quantum vehicle at 2.0%; initiate in 2 tranches | analyzed 2026-06-21"
+    },
+    {
+      "ticker": "PLTR",
+      "name": "Palantir Technologies Inc.",
+      "targetWeight": 2.439,
+      "role": "initiate",
+      "subStrategyId": "ontological-os",
+      "pillarId": "security",
+      "thesisForInclusion": "Ontological data operating system (AIP + Gotham). Highly sticky defense ontologies.",
+      "agentRationale": "DCF: BUY | FV $122.92 vs $111.22 price (+10.5% upside). Oversold daily RSI (32.5) curls up from support. Initiated at 2.50% target weight (2.44% normalized). Top-1m support limit set at $109.50.",
+      "priceLevels": {
+        "schemaVersion": "1.0",
+        "lastUpdated": "2026-06-26",
+        "lastUpdatedBy": "agent",
+        "note": "Entry limit set at intraday 1m chart pullback support block.",
+        "buyTiers": [
+          {
+            "tier": 1,
+            "price": 109.5,
+            "action": "accumulate",
+            "trimPct": null,
+            "orderType": "limit",
+            "basis": "Intraday 1-minute breakout pullback support",
+            "source": "ta",
+            "sourceDate": "2026-06-26",
+            "condition": "Price retraces to market open support block",
+            "status": "active"
+          }
+        ],
+        "sellTiers": [],
+        "stopLoss": {
+          "price": 41.95,
+          "basis": "Bear case fair value $44.16 x 0.95",
+          "source": "dcf",
+          "sourceDate": "2026-06-26",
+          "type": "thesis_breaker",
+          "status": "active"
+        }
+      }
     }
   ],
   "globalSettings": {

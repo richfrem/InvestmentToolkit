@@ -52,7 +52,8 @@ All math for P&L and position sizing must use the **exact values from the data f
 Before generating any trade recommendations, check today's order audit log to avoid double-recommending trades already placed this session:
 
 ```bash
-curl -s http://localhost:3001/api/trading/audit/today | python3 -m json.tool
+API_TOKEN=$(cat .runtime/api-token)
+curl -s -H "Authorization: Bearer $API_TOKEN" http://localhost:3001/api/trading/audit/today | python3 -m json.tool
 ```
 
 For each ticker that already has a `ORDER_SUBMITTED` event today:
@@ -126,18 +127,20 @@ python3 investment_screener/backend/py_services/verify_thesis_sync.py
 ## Step 1: Load Current State
 ```bash
 # Load thesis + health check
-curl -s http://localhost:3001/api/theses/{THESIS_ID}/health | python3 -m json.tool
+API_TOKEN=$(cat .runtime/api-token)
+curl -s -H "Authorization: Bearer $API_TOKEN" http://localhost:3001/api/theses/{THESIS_ID}/health | python3 -m json.tool
 
 # Load valuations for all holdings
 python3 << 'EOF'
 import subprocess, json
 
+token = open('.runtime/api-token').read().strip()
 thesis_tickers = []  # populate from health check output
 valuations = {}
 missing = []
 
 for ticker in thesis_tickers:
-    r = subprocess.run(['curl','-s',f'http://localhost:3001/api/projections/{ticker}'],
+    r = subprocess.run(['curl','-s','-H',f'Authorization: Bearer {token}',f'http://localhost:3001/api/projections/{ticker}'],
                        capture_output=True, text=True)
     try:
         d = json.loads(r.stdout)
@@ -320,8 +323,10 @@ Example — buying 6 shares of NVDA:
 ### API Call
 
 ```bash
+API_TOKEN=$(cat .runtime/api-token)
 curl -s -X POST http://localhost:3001/api/trading/log/suggest \
-  -H 'Content-Type: application/json' \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $API_TOKEN" \
   -d '{
     "suggestions": [
       {

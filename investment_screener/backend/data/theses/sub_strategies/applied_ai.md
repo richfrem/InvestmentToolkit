@@ -1,53 +1,31 @@
 # Investment Thesis Proposal: Applied AI / Frontier Bets
 
-**Date**: 2026-05-26
+**Date**: 2026-05-26 (archived 2026-06-20)
 **Agent**: Portfolio Advisor
-**Status**: APPROVED
+**Status**: ARCHIVED — SPLIT INTO DEDICATED THESES
 
 ---
 
-## 1. Executive Summary
+## ARCHIVED — All sub-strategies have been promoted to standalone theses
 
-Pre-IPO access and quantum computing represent the absolute bleeding edge of technology. These are highly speculative, asymmetric bets on hardware breakthroughs and private-market titan valuations.
+This thesis has been fully decomposed. Every strategy that was here now has its own dedicated thesis file:
 
-**Key Metadata**:
-- **Target Weight**: ~3.0%
-- **Pillar**: Applied AI
-- **Role**: speculative
-- **Time Horizon**: 5+ years
+| Sub-strategy | Now in | Thesis File |
+|---|---|---|
+| AI-native SaaS (CRM, NOW, TEAM) | `quality_saas` pillar | `quality_saas.md` |
+| Robotics & Physical AI (HUMN, KOID) | `robotics` pillar | `robotics_automation.md` |
+| Quantum Computing (IONQ, QBTS, RGTI, QUBT, WQTM) | `quantum` pillar | `quantum_computing.md` |
+| Private AI proxy (DXYZ) | `quality_saas` pillar (watchlist) | `quality_saas.md` |
 
----
+**Reason for split**: Each theme has a sufficiently distinct value chain, risk profile, time horizon, and position sizing approach that a single "frontier bets" bucket was obscuring allocation decisions. The daily loop and advisor agents now read each theme's dedicated thesis for triage and rebalancing decisions.
 
-## 2. The Core Thesis (Why this? Why now?)
+This file is preserved to maintain audit history. Do not re-activate it.
 
-The most significant AI value creation (OpenAI, xAI, Anthropic, SpaceX, Databricks) is locked in the private markets. The only way for retail to access this scarcity premium is through specific proxy vehicles (e.g., DXYZ). Additionally, Quantum Computing (IONQ) represents the next paradigm shift beyond classical silicon limits, requiring trapped-ion or superconducting moats.
-
----
-
-## 3. Adversarial Red-Team Review
-
-- **Risk 1**: Massive premium to Net Asset Value (NAV) in proxy vehicles like DXYZ means extreme price volatility disconnected from fundamental value.
-- **Risk 2**: Quantum computing fails to achieve fault tolerance or commercial viability within the next decade, making early hardware investments zeros.
-- **Risk 3**: Private AI valuations collapse if hyperscaler capex dries up before IPO exits.
 
 ---
 
-## 4. Valuation & Sizing Justification
+## Current Positions (Auto-Updated)
 
-- **Weighting Rationale**: Strictly limited to <3% of the portfolio. This is a scarcity premium play, not a traditional value play. Position sizing is the only risk management tool here.
-
----
-
-## 5. Execution Plan
-
-- **Entry Rules**: Initiate tiny starter positions and ignore volatility. Do not dollar-cost average down into losers.
-- **Capital Source**: Cash reserves.
-
----
-
-## 6. Committee Decision
-
-- [x] **APPROVED**
-
-**Decision Notes**:
-DXYZ initiated for private AI access. IONQ accumulated. RGTI and POET moved to Watchlist/Exit.
+<!-- AUTO_UPDATE_START: current_positions -->
+*Auto-updated 2026-06-26 07:20 — this thesis is ARCHIVED; no active positions.*
+<!-- AUTO_UPDATE_END: current_positions -->

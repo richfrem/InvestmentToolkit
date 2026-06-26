@@ -1,0 +1,117 @@
+[
+  {
+    "ticker": "WQTM",
+    "id": "b8e4d3c2-9f5a-4e82-8b2c-6d3e0a1f9b5d",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.0",
+    "schemaType": "ETF_ANALYSIS",
+    "fundType": "THEMATIC_ETF",
+    "version": 1,
+    "savedAt": "2026-06-21T20:00:00Z",
+    "updatedAt": "2026-06-21T20:00:00Z",
+    "name": "AI ETF Analysis \u2014 WQTM \u2014 2026-06-21",
+    "rationale": "WisdomTree Quantum Computing Fund is the sole approved vehicle for quantum thesis exposure (committee decision 2026-06-21, 2.0% target, all single-name targets zeroed). Top holdings are the exact pure-play names in our thesis (QBTS, RGTI, IONQ, QUBT) with only IBM/MSFT/AMZN as partial-credit cloud quantum plays. AUM $219M and WisdomTree quality confirm strong liquidity. YTD +52% puts price near 52w high \u2014 start the 2.0% initiation in tranches rather than all at once.",
+    "snapshot": {
+      "price": 37.83,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "aum": 219199120,
+      "expenseRatio": 0.0045,
+      "fiftyTwoWeekHigh": 41.38,
+      "fiftyTwoWeekLow": 23.18
+    },
+    "holdingsAnalysis": {
+      "topHoldings": [
+        {
+          "symbol": "QBTS",
+          "name": "D-Wave Quantum Inc",
+          "holdingPct": 6.7,
+          "alignment": "DIRECT"
+        },
+        {
+          "symbol": "RGTI",
+          "name": "Rigetti Computing Inc",
+          "holdingPct": 6.4,
+          "alignment": "DIRECT"
+        },
+        {
+          "symbol": "IONQ",
+          "name": "IonQ Inc",
+          "holdingPct": 6.1,
+          "alignment": "DIRECT"
+        },
+        {
+          "symbol": "IBM",
+          "name": "International Business Machines",
+          "holdingPct": 3.6,
+          "alignment": "PARTIAL"
+        },
+        {
+          "symbol": "QUBT",
+          "name": "Quantum Computing Inc",
+          "holdingPct": 3.3,
+          "alignment": "DIRECT"
+        },
+        {
+          "symbol": "INFQ",
+          "name": "Infleqtion Inc",
+          "holdingPct": 3.1,
+          "alignment": "DIRECT"
+        },
+        {
+          "symbol": "MSFT",
+          "name": "Microsoft Corp",
+          "holdingPct": 2.9,
+          "alignment": "PARTIAL"
+        },
+        {
+          "symbol": "XNDU.TO",
+          "name": "Xanadu Quantum Technologies",
+          "holdingPct": 2.8,
+          "alignment": "DIRECT"
+        },
+        {
+          "symbol": "6702.T",
+          "name": "Fujitsu Ltd",
+          "holdingPct": 2.7,
+          "alignment": "PARTIAL"
+        },
+        {
+          "symbol": "AMZN",
+          "name": "Amazon.com Inc",
+          "holdingPct": 2.7,
+          "alignment": "PARTIAL"
+        }
+      ],
+      "concentration": {
+        "top5Pct": 29.9,
+        "top10Pct": 40.3
+      },
+      "thesisAlignmentScore": 75,
+      "expenseDragBps": 45,
+      "overlapWithDirectHoldings": [
+        "MSFT",
+        "AMZN"
+      ]
+    },
+    "action": "ACCUMULATE",
+    "actionRationale": "Alignment ~75% \u2014 top holdings are QBTS, RGTI, IONQ, QUBT (all named in quantum thesis). Remaining ~60% of AUM in global quantum names per WisdomTree mandate. IBM/MSFT/AMZN are partial credit: genuine quantum programs but not pure-plays. MSFT and AMZN overlap with direct holdings (minor \u2014 different thesis rationale). AUM $219M and WisdomTree brand quality provide ample liquidity. Committee already approved INITIATE at 2.0% \u2014 this analysis confirms that decision. YTD +52% and price 8.6% below 52w high means start with 1.0% now, add remaining 1.0% on any pullback to $32-34 range.",
+    "upsideCatalysts": [
+      "Any major pure-play quantum company (IONQ, QBTS) announces commercial advantage milestone \u2014 basket re-rates",
+      "DARPA/DoD funding increase for quantum programs (geopolitical driver)",
+      "IBM or Google announces breakthrough in error correction \u2014 validates sector",
+      "Post-quantum cryptography enterprise demand accelerates quantum hardware adoption",
+      "WisdomTree fund inflows accelerate on sector momentum \u2014 ETF premium creates liquidity"
+    ],
+    "risks": [
+      "YTD +52% \u2014 entry near 52w high; a risk-off rotation or single-name disappointment compresses the basket",
+      "Top 3 holdings (QBTS/RGTI/IONQ) all pre-profit with burn rates; capital markets stress could force dilutive raises",
+      "Remaining 60% of AUM is unknown from yfinance \u2014 could include less-aligned names",
+      "MSFT and AMZN overlap with existing direct positions (IBM, Microsoft already held via GOOG adjacency)",
+      "Expense ratio ~0.45% (WisdomTree estimate) \u2014 low drag but present",
+      "Fund is 10+ months old \u2014 limited track record for a sector ETF at this stage"
+    ],
+    "entryNote": "INITIATE in two tranches: 1.0% immediately at market open (overnight session or Monday open), remaining 1.0% on pullback to $32-34 range (10-15% from current). Total target 2.0% per committee decision. Do not chase if it gaps above $40 \u2014 wait for the pullback.",
+    "agentRationale": "ETF_ANALYSIS: ACCUMULATE | alignment 75% | WisdomTree quantum basket (QBTS/RGTI/IONQ/QUBT); committee-approved sole quantum vehicle at 2.0%; initiate in 2 tranches | analyzed 2026-06-21"
+  }
+]

@@ -175,6 +175,11 @@ SWEEP SUMMARY — {DATE} — {N} holdings scanned
 | `NEAR_FV` | Price within 5% of DCF fair value | Approaching trim zone |
 | `ABOVE_FV` | Price > DCF fair value | Above intrinsic — reduce |
 | `DEEP_VALUE` | Price > 25% below DCF fair value | High-conviction accumulate zone |
+| `AT_BUY_TIER_N` | Price within 2% below buyTier[N].price | Limit order zone — accumulate |
+| `AT_SELL_TIER_N` | Price within 2% below sellTier[N].price | Prepare tier trim limit order |
+| `ABOVE_SELL_TIER_N` | Price above sellTier[N].price | Tier triggered — confirm trim executed |
+| `AT_STOP_LOSS` | Price within 3% above stopLoss.price | Thesis breaker approaching — review urgently |
+| `BELOW_STOP_LOSS` | Price below stopLoss.price | ⚠️ Thesis breaker triggered — escalate to EXIT review |
 
 ---
 
@@ -184,8 +189,13 @@ SWEEP SUMMARY — {DATE} — {N} holdings scanned
 |---------------|----------------|
 | `RSI_OS` | ACCUMULATE |
 | `ACCUM_SIGNAL` + `DEEP_VALUE` | ACCUMULATE |
+| `AT_BUY_TIER_N` | ACCUMULATE — tier approaching, consider GTC limit |
 | `ABOVE_FV` | REDUCE |
+| `ABOVE_SELL_TIER_N` | REDUCE — confirm tier trim was executed |
 | `RSI_OB` + (`NEAR_FV` or `DIST_SIGNAL`) | REDUCE |
+| `AT_SELL_TIER_N` | MONITOR — prepare trim limit order at tier price |
+| `AT_STOP_LOSS` | MONITOR — thesis breaker approaching, review thesis urgently |
+| `BELOW_STOP_LOSS` | REDUCE/EXIT — thesis breaker triggered |
 | `DIST_SIGNAL` + `VOLUME_DRY` | MONITOR |
 | `VOLUME_SPIKE` or `BIG_DAY` | MONITOR |
 | `SQUEEZE_ON` | MONITOR |
@@ -196,6 +206,40 @@ When they conflict, note the conflict explicitly — e.g., "Thesis says BUY but 
 says REDUCE — wait for RSI to cool before adding."
 
 ---
+
+## Phase 3b — Enrich with Price Level Tier Flags
+
+After the TA sweep (Phase 2–3), read `priceLevelSnapshot` from `portfolio.json` for
+each holding and merge tier proximity flags into the output:
+
+```python
+import json
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[5]  # adjust for install path
+portfolio_path = REPO_ROOT / 'investment_screener/backend/data/portfolio.json'
+
+with open(portfolio_path) as f:
+    portfolio = json.load(f)
+
+for holding in portfolio.get('holdings', []):
+    snapshot = holding.get('priceLevelSnapshot', {})
+    flags = snapshot.get('proximityFlags', [])
+    # Merge into the ticker's flag list for reporting
+    ticker_flags[holding['symbol']].extend(flags)
+```
+
+If a holding's `priceLevelSnapshot` has tier flags, include them in the action card:
+
+```
+🟠 MONITOR  GOOG  AT_SELL_TIER_1 ($518 target, 1.4% away)
+             Sell Tier 1 approaching: 30% trim at $518 (DCF base FV).
+             TA: RSI 65 — momentum supporting trim signal.
+             Suggested: place limit sell at $518 (30% of position).
+```
+
+**Hard rule**: Tier proximity flags from `priceLevelSnapshot` are informational —
+do not auto-execute. Always surface for user review in the action card.
 
 ## Hard Rules
 

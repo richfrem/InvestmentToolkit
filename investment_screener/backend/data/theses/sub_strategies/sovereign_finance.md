@@ -53,3 +53,21 @@ The primary users of this infrastructure will not just be humans, but **AI Agent
 
 **Decision Notes**:
 Red team review in early May 2026 triggered exits on speculative crypto (CRCL/ETHA/IBIT) in favor of DCF buys, keeping only core regulated entities (COIN/CRCL).
+
+
+---
+
+## Current Positions (Auto-Updated)
+
+<!-- AUTO_UPDATE_START: current_positions -->
+*Auto-updated 2026-06-26 07:20 by TV sync · Portfolio total: $33,171 USD*
+
+**Active Positions**
+
+| Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
+|--------|--------|---------|---------|-----|--------|-------------|
+| **COIN** | 6.5 | 2.8% | 3.0% | -0.2pp | ⚪ MAINTAIN | — |
+| **CRCL** | 13 | 2.7% | 2.7% | -0.0pp | ⚪ MAINTAIN | — |
+
+**Pillar total — Actual: 5.5% · Target: 5.7% · Gap: -0.2pp**
+<!-- AUTO_UPDATE_END: current_positions -->
