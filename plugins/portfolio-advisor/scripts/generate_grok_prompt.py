@@ -277,6 +277,13 @@ def main():
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(prompt + "\n")
         print(f"✅ Prompt written to {args.output}")
+
+        # Create daily response placeholder
+        placeholder_path = REPO_ROOT / f"temp/grok-response/daily-{datetime.datetime.now().strftime('%b%d-%Y').lower()}.md"
+        placeholder_path.parent.mkdir(parents=True, exist_ok=True)
+        if not placeholder_path.exists():
+            placeholder_path.write_text(f"# Grok Daily Sweep Response — {datetime.datetime.now().strftime('%Y-%m-%d')}\n\nPlease paste the raw Grok response below:\n\n---\n")
+            print(f"[Response Placeholder Created at {placeholder_path}]")
     elif args.clipboard:
         import subprocess
         subprocess.run(["pbcopy"], input=prompt.encode(), check=True)
