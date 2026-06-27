@@ -1,5 +1,5 @@
 # Session Start Briefing — InvestmentToolkit
-_Last updated: 2026-06-10 | Thesis v9.4 | Portfolio ~$34,643 USD_
+_Last updated: 2026-06-27 | Thesis v9.7 | Portfolio ~$33,575 USD_
 
 > **Read this first at the start of every new session.**
 
@@ -23,6 +23,7 @@ The `daily-loop-agent` handles everything interactively — no checklist to foll
 | Situation | Command |
 |-----------|---------|
 | Every session | `/daily` |
+| Weekend review (markets closed) | `/weekly-review` |
 | After 13F filing or major catalyst | `/run-advisor` |
 | Evaluating a new stock or thesis change | `thesis-review-agent` |
 
@@ -101,34 +102,19 @@ TradingView broker panel → Orders tab.
 
 ---
 
-## 🛠️ Recent System Changes (2026-06-01 to 2026-06-04)
+## 🛠️ Recent System Changes (June 2026)
 
 ### New Capabilities
+- **`/weekly-review` Command**: Extends sweep functionality to the weekend, conducting a range-based drift analysis and compiling a news sweep prompt.
+- **Dynamic ETF/Cash Exclusions**: Grok prompt generators automatically scan `etf_analysis/*.json` and filter them out from standard stock sweeps along with cash.
+- **Grok Prompt Templates**: Centralized in `plugins/portfolio-advisor/assets/templates/` (`daily_sweep.md.template` and `weekly_sweep.md.template`) for programmatic generation.
+- **Thesis-Template Auto-Sync**: Enforced via self-evolution policy and `thesis-review-agent` execution step. Templates auto-update when strategic pillars shift.
+- **Strict Compliance instructions**: Anti-laziness rules prevent Grok from outputting lazy placeholders and enforce single-ticker entries for all listed stocks.
 - **`targetEntryPrice` field** — GTC limit price per holding in `target-portfolio.json`
-  - Set via: `python3 plugins/portfolio-advisor/scripts/update_targets.py --set-entry TICKER=PRICE --write`
 - **Fractional shares** — `place_order.py --shares 0.2` now works
 - **Portfolio sync fallback** — after fills: Express API → direct CDP snapshot → Questrade REST
-- **`fetch_broker_data.py --snapshot`** — now fetches balances BEFORE positions (avoids TV state corruption), writes live `cashUSD` + `totalUSD` to portfolio.json
-- **Grok prompt v2** — conviction score (1–10) column, entry price column, "material only" framing, portfolio-level questions section (risks, mispriced, macro)
+- **`fetch_broker_data.py --snapshot`** — now fetches balances BEFORE positions, writes live `cashUSD` + `totalUSD` to portfolio.json
 - **Auto-proceed in `/x-news-sweep`** — no longer waits for "apply" when all items APPROVED/WARN-allowlisted. Only gates on CONFIRM/BLOCKED.
-
-### Bug Fixes
-- **PSU.U.TO duplicate eliminated** — `fetch_broker_data.py` hardcodes alias `PSU.U.TO → PSU-U.TO`. Will never recreate the 0%-target EXIT entry again.
-- **Limit order form fill** — `trading.js` now fills shares BEFORE limit price (prevents price field being overwritten with share count)
-- **APLD/MSFT EXIT flags removed** — both are now MAINTAIN/core holdings
-- **Modal auto-updates** — x-news-sweep, 13f-analyze, portfolio-health now auto-apply approved changes immediately
-
-### Thesis Changes This Session
-- CORZ: 7.8% → 8.4%
-- PANW: 5.4% → 6.0%
-- NBIS: 4.9% → 5.5%
-- IREN: 1.6% → 2.4%
-- SNDK: trimmed to 0.8 shares, target 3.7%, entry price $1,350
-- DXYZ: exited (SpaceX IPO uncertainty)
-- APLD: EXIT → MAINTAIN 2% (SA LP core holding)
-- MSFT: EXIT → MAINTAIN 2.45%
-- PSU.U.TO duplicate: removed
-- CBRS: 1.0% → 2.5% target; 3 shares filled @ $215
 
 ---
 

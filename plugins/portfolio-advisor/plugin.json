@@ -87,6 +87,11 @@
             "name": "single_stock_advisor",
             "path": "agents/single-stock-advisor.md",
             "trigger": "/single-stock-advisor"
+        },
+        {
+            "name": "weekly_review_agent",
+            "path": "agents/weekly-review-agent.md",
+            "trigger": "/weekly-review"
         }
     ],
     "commands": [
@@ -129,6 +134,11 @@
             "name": "13f-analyze",
             "path": "commands/13f-analyze.md",
             "trigger": "/13f-analyze"
+        },
+        {
+            "name": "weekly-review",
+            "path": "commands/weekly-review.md",
+            "trigger": "/weekly-review"
         }
     ],
     "connectors": "CONNECTORS.md",

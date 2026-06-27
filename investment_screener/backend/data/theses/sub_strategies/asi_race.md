@@ -67,19 +67,19 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-06-26 07:20 by TV sync · Portfolio total: $33,171 USD*
+*Auto-updated 2026-06-26 20:04 by TV sync · Portfolio total: $33,516 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **CRWV** | 18 | 5.4% | 5.2% | +0.1pp | ⚪ MAINTAIN | — |
-| **SNDK** | 0.7 | 4.9% | 4.0% | +1.0pp | 🟡 TRIM | ≤$1,350 |
-| **DRAM** | 21 | 4.9% | 4.5% | +0.4pp | ⚪ MAINTAIN | — |
-| **GOOG** | 4 | 4.1% | 4.0% | +0.2pp | ⚪ MAINTAIN | — |
-| **CORZ** | 46 | 3.8% | 3.7% | +0.1pp | ⚪ MAINTAIN | — |
-| **IREN** | 22 | 3.2% | 3.3% | -0.1pp | ⚪ MAINTAIN | — |
-| **APLD** | 20 | 2.5% | 2.5% | -0.0pp | ⚪ MAINTAIN | — |
+| **CRWV** | 18 | 5.3% | 5.2% | +0.1pp | ⚪ MAINTAIN | — |
+| **SNDK** | 0.7 | 4.9% | 4.0% | +0.9pp | 🟡 TRIM | ≤$1,350 |
+| **DRAM** | 21 | 4.8% | 4.4% | +0.4pp | ⚪ MAINTAIN | — |
+| **GOOG** | 4 | 4.1% | 4.0% | +0.1pp | ⚪ MAINTAIN | — |
+| **CORZ** | 46 | 3.7% | 3.7% | +0.0pp | ⚪ MAINTAIN | — |
+| **IREN** | 22 | 3.1% | 3.3% | -0.1pp | ⚪ MAINTAIN | — |
+| **APLD** | 20 | 2.4% | 2.5% | -0.0pp | ⚪ MAINTAIN | — |
 | **NBIS** | 3 | 2.3% | 2.5% | -0.2pp | ⚪ MAINTAIN | — |
 | **CBRS** | 4.5 | 2.3% | 2.5% | -0.2pp | ⚪ MAINTAIN | — |
 | **BTDR** | 45 | 2.2% | 1.9% | +0.3pp | 🟡 TRIM | — |
@@ -92,5 +92,5 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 | **CLSK** | — | — | 2.0% | — | 🟢 INITIATE | — |
 | **VRT** | — | — | 0.0% | — | 🟢 INITIATE | — |
 
-**Pillar total — Actual: 37.7% · Target: 38.1% · Gap: -0.4pp**
+**Pillar total — Actual: 37.3% · Target: 38.1% · Gap: -0.8pp**
 <!-- AUTO_UPDATE_END: current_positions -->
