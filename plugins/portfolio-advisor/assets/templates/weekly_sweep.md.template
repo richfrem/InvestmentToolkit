@@ -1,0 +1,60 @@
+# Weekly Investment News & Catalyst Sweep — {{DATE}}
+
+## Core Portfolio Thesis Background (Context for Grok)
+You are analyzing a highly sophisticated, institutionally structured investment portfolio focused on two civilizational-scale macro pillars:
+
+1. **The ASI Race (Primary: Infrastructure & Compute Buildout)**:
+   - **GPU Cloud & Memory Infrastructure**: Captures GPU supply chains and HBM/NAND scarcity. Tickers include `CRWV` (GPU cloud), `SNDK` (NAND), and `DRAM` (HBM memory proxy).
+   - **AI Power Infrastructure**: Datacenters require massive power grids. Tickers include `CEG`, `VST` (nuclear/merchant power), `OKLO` (micro-nuclear commercialization), `BE` (fuel cells), and `PSIX` (power generation).
+   - **AI Data Center Infrastructure (Bitcoin Miner Pivot)**: High-performance computing (HPC) landlords pivoting from BTC mining to AI compute. Tickers include `CORZ`, `IREN`, `APLD`, and `CLSK`.
+   - **Compute Moats & Foundries**: Foundations of silicon manufacturing. Tickers include `TSM`, `ASML`, `AMD`, `INTC`.
+   - **Quality SaaS (Enterprise AI)**: CRM, NOW, TEAM (Enterprise software platforms adapting AI models).
+
+2. **Sovereign Finance (Secondary: Rails for Autonomous AI Agents)**:
+   - Digital rails built for machine-to-machine autonomous settlement. Tickers include `COIN` and `CRCL`.
+
+3. **Space Infrastructure & Defense AI**:
+   - Government modernization, defense contracts, and space infrastructure. Tickers include `CACI` (Defense IT), `RKLB` (rocket launch/satellites), and `RDW` (space structures).
+
+4. **Ontological AI & Operating Systems**:
+   - Institutional ontologies and operational data execution platforms. Ticker: `PLTR` (Palantir AIP).
+
+---
+
+## Instructions for Grok
+Please review all material news, earnings, filings, and macro developments for the following portfolio positions and targets over the **last 7 days**. 
+
+### ⚠️ STRICT COMPLIANCE MANDATE:
+- **FOR EVERY SINGLE TICKER** listed below, you **MUST** provide a detailed row in the table. 
+- **DO NOT group tickers** together (e.g. "Miners: CORZ, IREN, CLSK - Volatile"). 
+- **DO NOT write lazy placeholder text** (e.g., "Noise", "Neutral", "N/A"). 
+- **IF A TICKER HAS NO SPECIFIC COMPANY NEWS**, you must analyze and explicitly write 1-2 sentences explaining the sector-level flows, industry rotation (e.g. AI capex sentiment, treasury yields, semiconductor rotation) that drove the price action for that ticker this week.
+
+Please return the results in three parts:
+
+### Part 1 — Weekly Sweep Table
+Return a Markdown table with the following columns:
+- **Ticker** (in bold)
+- **Weekly Move** (7-day price direction/percent)
+- **Weekly Key Catalyst/News** (1-2 sentences of specific news, filings, or sector-relative movements. **NO PLACEHOLDERS**.)
+- **Thesis Impact** (Positive / Negative / Neutral / Structural Shift)
+- **Sizing Thoughts** (Is the move noise, or does it justify shifting target weight?)
+- **Action Recommendation** (MAINTAIN / TRIM / ACCUMULATE / WATCH)
+- **Deep Dive?** (Mark `[DD]` if there is a major fundamental event that changes our thesis)
+
+Include these tickers in the table:
+{{TICKERS}}
+
+### Part 2 — Deep Dives for [DD]-Flagged and Initiate Targets
+Provide a detailed qualitative summary (2 paragraphs) for each stock flagged with `[DD]` or any newly added/watchlisted initiate targets (specifically **PLTR**, **CLSK**, and **CACI**). 
+Highlight:
+- The detailed fundamental catalyst.
+- Current valuation relative to the move (stretched vs. discount).
+- Smart money (SA LP) actions or commentary if any.
+
+### Part 3 — Macro & Sector Themes
+Synthesize this week's market developments:
+1. **Macro Regime**: Is the broader market in a Risk-On or Risk-Off stance? Cite specific indicators (VIX, bond yields, credit spreads).
+2. **AI Capex & GPU Demand**: Any new details on cloud hyperscaler spend or chip supply chains?
+3. **Bitcoin Mining Power Pivot**: How is the narrative around miners transitioning to AI HPC data centers shifting?
+4. **Space & Defense Infrastructure**: News on launches, defense budgets, or government contracts.

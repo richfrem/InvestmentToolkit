@@ -74,6 +74,7 @@ Execute the following steps:
 2. **Update Target Weights**: Use `scripts/update_targets.py --set TICKER=WEIGHT ... --write --blueprint` to apply the changes to `target-portfolio.json`.
 3. **Normalize**: Run `scripts/validate_weights.py --normalize --write` to ensure it equals 100%.
 4. **Refactor Markdown**: If a new pillar was created, edit `references/investment_thesis.md` to add the new sub-strategy text. (Do not overwrite the blueprint tables; they are handled by the scripts).
+5. **Update Sweep Templates**: Whenever the core thesis, sub-strategies, or pillars change, you MUST update the "Core Portfolio Thesis Background" section in both `plugins/portfolio-advisor/assets/templates/daily_sweep.md.template` and `plugins/portfolio-advisor/assets/templates/weekly_sweep.md.template` to keep Grok's sweep prompt aligned with the latest pillars.
 
 ---
 

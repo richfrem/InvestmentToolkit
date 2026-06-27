@@ -42,6 +42,7 @@ This workstation is built on a modular plugin architecture. You have access to t
 - `/bundle-thesis-review`: Package thesis/DCF for external LLMs.
 - `/13f-tracker` & `/13f-analyze`: Poll and analyze SEC 13F EDGAR filings.
 - `/run-advisor`: Full 5-phase orchestrator — use post-catalyst (after 13F or news sweep), not daily.
+- `/weekly-review`: Weekend review cycle — range-based drift audit, weekly Grok sweep prompt generation, and TradingView technical checks. Agent: `plugins/portfolio-advisor/agents/weekly-review-agent.md`.
 
 ### 2. Stock Valuation Analyst (`plugins/stock-valuation`)
 *Autonomous buy-side analyst.*
