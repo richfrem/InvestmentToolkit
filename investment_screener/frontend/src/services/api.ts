@@ -496,6 +496,12 @@ export const fetchPortfolioWeights = async (): Promise<Record<string, HoldingWei
     } catch { return {}; }
 };
 
+export const fetchTargetPortfolio = async (): Promise<any> => {
+    const res = await fetch('/api/theses/target-portfolio');
+    if (!res.ok) throw new Error('Failed to load target portfolio');
+    return res.json();
+};
+
 export const fetchAgentGuide = async (): Promise<{ content: string; filename: string }> => {
     const res = await fetch('/api/docs/agent-guide');
     if (!res.ok) throw new Error('Failed to load agent guide');
