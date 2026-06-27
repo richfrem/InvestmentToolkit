@@ -27,8 +27,10 @@ Please review all material news, earnings, filings, and macro developments for t
 ### ⚠️ STRICT COMPLIANCE MANDATE:
 - **FOR EVERY SINGLE TICKER** listed below, you **MUST** provide a detailed row in the table. 
 - **DO NOT group tickers** together (e.g. "Miners: CORZ, IREN, CLSK - Volatile"). 
-- **DO NOT write lazy placeholder text** (e.g., "Noise", "Neutral", "N/A"). 
+- **DO NOT write lazy placeholder text** (e.g., "Noise", "Neutral", "N/A").
+- **DO NOT write ultra-short fragments** (e.g. "Limited. Niche. Sector. WATCH"). Every row must have a full, descriptive sentence.
 - **IF A TICKER HAS NO SPECIFIC COMPANY NEWS**, you must analyze and explicitly write 1-2 sentences explaining the sector-level flows, industry rotation (e.g. AI capex sentiment, treasury yields, semiconductor rotation) that drove the price action for that ticker this week.
+
 
 Please return the results in three parts:
 
