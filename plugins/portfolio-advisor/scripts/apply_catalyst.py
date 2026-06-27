@@ -84,7 +84,7 @@ def _shift_weights(scenarios: dict, bull_delta_pp: float, bear_delta_pp: float) 
 
 
 def _compute_fv(scenarios: dict, new_weights: dict[str, float]) -> float:
-    return round(sum(new_weights[n] * s["scenarioPrice"] for n, s in scenarios.items()), 2)
+    return round(sum(new_weights[n] * (s.get("scenarioPrice") or s.get("presentValue") or 0.0) for n, s in scenarios.items()), 2)
 
 
 def _find_latest_ai_agent(data: list) -> tuple[int, dict]:
