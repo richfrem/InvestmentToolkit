@@ -31,3 +31,6 @@ This policy governs how agents must respond when a tool call, subprocess, web au
 8. **Synchronize Sweep Templates on Thesis/Strategy Changes**: Whenever the core investment thesis, sub-strategies, or target weights are modified:
    * You MUST update the "Core Portfolio Thesis Background" section inside both the daily sweep template (`plugins/portfolio-advisor/assets/templates/daily_sweep.md.template`) and the weekly sweep template (`plugins/portfolio-advisor/assets/templates/weekly_sweep.md.template`).
    * Regenerate the final prompt outputs to verify they align with the updated strategies.
+
+9. **Refine Prompt Templates on Ingesting Grok Responses**: Every time you ingest and process a Grok sweep response, you MUST evaluate its quality (checking for grouped tickers, lazy placeholders, or TA-related errors) and immediately update the prompt templates (`daily_sweep.md.template` and `weekly_sweep.md.template`) to guard against any observed deficiencies.
+

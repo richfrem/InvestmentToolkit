@@ -197,7 +197,7 @@ You must read and strictly adhere to all rules defined in `.agent/rules/`:
 - **Coding Conventions (`coding-conventions.md`)**: Dual-layer docs, type hints, proper casing, and strict refactoring thresholds.
 - **Dependency Management (`dependency-management.md`)**: No manual `pip install`. Edit `.in` files and use `pip-compile`.
 - **Plugin Architecture (`plugin-architecture.md` & `symlink-cross-platform.md`)**: Use file-level symlinks ONLY via `symlink_manager.py`. Never raw `ln -s`. No cross-plugin script execution.
-- **Self-Evolution (`self-evolution-policy.md`)**: Classify failures, max 3 repair attempts, update playbooks. Deletions are forbidden. Synchronize daily/weekly sweep templates in `assets/templates/` whenever strategies or target weights change.
+- **Self-Evolution (`self-evolution-policy.md`)**: Classify failures, max 3 repair attempts, update playbooks. Deletions are forbidden. Synchronize daily/weekly sweep templates in `assets/templates/` whenever strategies or target weights change. Refine prompt templates on ingesting Grok responses based on quality delta.
 
 ---
 
