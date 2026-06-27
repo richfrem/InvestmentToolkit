@@ -164,14 +164,15 @@ def run_weekly_review(write_prompt_path=None):
         prompt_content = f"# Weekly Sweep\n\nInclude: {', '.join(tickers_to_review)}"
 
     if write_prompt_path:
-        with open(write_prompt_path, 'w') as f:
-            f.write(prompt_content)
-        print(f"\n[Prompt Written to {write_prompt_path}]")
+        out_path = Path(write_prompt_path)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(prompt_content)
+        print(f"\n[Prompt Written to {out_path}]")
         
     return grok_tickers_data
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--prompt-output", default="/tmp/weekly_grok_prompt.md")
+    parser.add_argument("--prompt-output", default=str(REPO_ROOT / "temp/grok-prompts/weekly_grok_prompt.md"))
     args = parser.parse_args()
     run_weekly_review(write_prompt_path=args.prompt_output)
