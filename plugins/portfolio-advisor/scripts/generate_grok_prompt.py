@@ -264,7 +264,8 @@ def main():
     parser = argparse.ArgumentParser(description="Generate a Grok X.com portfolio sweep prompt.")
     parser.add_argument("--date", default=datetime.date.today().isoformat(),
                         help="Sweep date (YYYY-MM-DD). Defaults to today.")
-    parser.add_argument("--output", help="Write prompt to this file path instead of stdout.")
+    parser.add_argument("--output", default=str(REPO_ROOT / "temp/grok-prompts/daily_grok_prompt.md"),
+                        help="Write prompt to this file path instead of stdout.")
     parser.add_argument("--clipboard", action="store_true",
                         help="Copy output to macOS clipboard (requires pbcopy).")
     args = parser.parse_args()
@@ -272,7 +273,9 @@ def main():
     prompt = build_prompt(args.date)
 
     if args.output:
-        Path(args.output).write_text(prompt + "\n")
+        out_path = Path(args.output)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(prompt + "\n")
         print(f"✅ Prompt written to {args.output}")
     elif args.clipboard:
         import subprocess
