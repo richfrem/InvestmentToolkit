@@ -84,10 +84,21 @@ def save_to_cache(ticker, data):
         # Silently fail on cache write errors to avoid breaking the main output flow
         pass
 
+def sanitize_json_data(val):
+    if isinstance(val, dict):
+        return {k: sanitize_json_data(v) for k, v in val.items()}
+    elif isinstance(val, list):
+        return [sanitize_json_data(v) for v in val]
+    elif isinstance(val, float):
+        if np.isnan(val) or np.isinf(val):
+            return None
+    return val
+
 def fetch_financial_data(ticker_symbol, no_cache: bool = False):
     # 1. Try Cache First
     cached = None if no_cache else get_cached_data(ticker_symbol)
     if cached:
+        cached = sanitize_json_data(cached)
         print(json.dumps(cached, indent=2))
         return
 
@@ -448,6 +459,7 @@ def fetch_financial_data(ticker_symbol, no_cache: bool = False):
         }
 
         # 3. Save to Cache
+        result = sanitize_json_data(result)
         save_to_cache(ticker_symbol, result)
 
         print(json.dumps(result, indent=2, cls=NpEncoder))
