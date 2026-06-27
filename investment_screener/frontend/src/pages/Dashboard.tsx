@@ -17,7 +17,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { fetchStockData, type StockData, type ValuationResult, type Projection } from '../services/api';
+import { fetchStockData, fetchTargetPortfolio, type StockData, type ValuationResult, type Projection } from '../services/api';
 import { useRecentTickers } from '../hooks/useRecentTickers';
 import MetricsGrid from '../components/MetricsGrid';
 import FinancialChart from '../components/analysis/FinancialChart';
@@ -26,6 +26,7 @@ import ValuationModeler from '../components/ValuationModeler';
 import { LayoutDashboard, BarChart3, Calculator } from 'lucide-react';
 import PerformanceMetrics from '../components/PerformanceMetrics';
 import { AIThesisSummary } from '../components/AIThesisSummary';
+import { TargetThesisDetails } from '../components/TargetThesisDetails';
 import { AIAnalysisModal } from '../components/AIAnalysisModal';
 import { TradeButtons } from '../components/TradeButtons';
 import { storage } from '../services/storage';
@@ -41,10 +42,18 @@ export default function Dashboard() {
     const [error, setError] = useState<string | null>(null);
     const { addTicker } = useRecentTickers();
 
-    // AI State
-    const [aiResult, setAiResult] = useState<ValuationResult | null>(null);
-    const [viewingProjection, setViewingProjection] = useState<Projection | null>(null);
-    const [showAIModal, setShowAIModal] = useState(false);
+    const [targetHolding, setTargetHolding] = useState<any | null>(null);
+
+    const loadTargetHolding = useCallback(async (ticker: string) => {
+        try {
+            const data = await fetchTargetPortfolio();
+            const holding = data.holdings?.find((h: any) => h.ticker.toUpperCase() === ticker.toUpperCase());
+            setTargetHolding(holding || null);
+        } catch (err) {
+            console.error("Failed to load target holding details:", err);
+            setTargetHolding(null);
+        }
+    }, []);
 
     const loadAIThesis = useCallback(async (ticker: string) => {
         try {
@@ -84,12 +93,14 @@ export default function Dashboard() {
         setError(null);
         setStockData(null);
         setAiResult(null);
+        setTargetHolding(null);
 
         try {
             const data = await fetchStockData(ticker);
             setStockData(data);
             addTicker(ticker);
             loadAIThesis(ticker);
+            await loadTargetHolding(ticker);
         } catch (err: any) {
             console.error("Search failed:", err);
             setError(err.message || "Failed to fetch stock data");
@@ -257,6 +268,12 @@ export default function Dashboard() {
 
                         {activeTab === 'overview' && (
                             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                                {targetHolding && (
+                                    <TargetThesisDetails 
+                                        holding={targetHolding} 
+                                        currentPrice={stockData?.price} 
+                                    />
+                                )}
                                 {aiResult && (
                                     <AIThesisSummary 
                                         aiResult={aiResult} 
