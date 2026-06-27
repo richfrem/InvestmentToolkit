@@ -209,9 +209,12 @@ def derive_and_write(
     if 'bear' not in scenarios or 'base' not in scenarios or 'bull' not in scenarios:
         raise ValueError(f"Incomplete scenarios in projection for {ticker}")
         
-    bear_fv = scenarios['bear']['scenarioPrice']
-    base_fv = scenarios['base']['scenarioPrice']
-    bull_fv = scenarios['bull']['scenarioPrice']
+    bear_fv = scenarios['bear'].get('scenarioPrice') or scenarios['bear'].get('presentValue')
+    base_fv = scenarios['base'].get('scenarioPrice') or scenarios['base'].get('presentValue')
+    bull_fv = scenarios['bull'].get('scenarioPrice') or scenarios['bull'].get('presentValue')
+    
+    if bear_fv is None or base_fv is None or bull_fv is None:
+        raise ValueError(f"Could not find scenarioPrice or presentValue in scenarios for {ticker}")
     
     today = datetime.now().strftime('%Y-%m-%d')
     price_levels = derive_tiers_from_dcf(bear_fv, base_fv, bull_fv, today, note)

@@ -4,7 +4,7 @@
   "schemaVersion": "1.0",
   "version": "9.5",
   "createdAt": "2026-02-14T12:00:00Z",
-  "updatedAt": "2026-06-21T18:30:00Z",
+  "updatedAt": "2026-06-27T15:09:26.075301+00:00",
   "description": "Investment thesis focused on the dual infrastructure buildout for ASI Compute (Primary) and Sovereign Finance (Secondary).",
   "pillars": [
     {
@@ -635,7 +635,85 @@
       "role": "initiate",
       "subStrategyId": "ai-infrastructure",
       "thesisForInclusion": "AI compute infrastructure play. CleanSpark is converting high-efficiency green power facilities into AI data center workloads \u2014 GPU clusters replacing ASIC miners. Net: a power-advantaged AI compute operator with a privileged cost position.",
-      "agentRationale": "AI infra pivot: converting BTC mining facilities to AI GPU clusters. Aschenbrenner conviction pick. Power-advantaged position (green energy, low OpEx) vs commodity cloud providers. Target: 2.18%."
+      "agentRationale": "AI infra pivot: converting BTC mining facilities to AI GPU clusters. Aschenbrenner conviction pick. Power-advantaged position (green energy, low OpEx) vs commodity cloud providers. Target: 2.18%.",
+      "priceLevels": {
+        "schemaVersion": "1.0",
+        "lastUpdated": "2026-06-27",
+        "lastUpdatedBy": "dcf",
+        "note": "Catalyst: May ops update & key multi-GW commercialization hire",
+        "buyTiers": [
+          {
+            "tier": 1,
+            "price": 7.04,
+            "action": "accumulate",
+            "trimPct": null,
+            "orderType": "limit",
+            "basis": "DCF base FV x 0.75 \u2014 25% margin of safety",
+            "source": "dcf",
+            "sourceDate": "2026-06-27",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 2,
+            "price": 0.79,
+            "action": "accumulate_aggressive",
+            "trimPct": null,
+            "orderType": "limit",
+            "basis": "DCF bear FV x 1.05 \u2014 aggressive accumulation zone",
+            "source": "dcf",
+            "sourceDate": "2026-06-27",
+            "condition": null,
+            "status": "active"
+          }
+        ],
+        "sellTiers": [
+          {
+            "tier": 1,
+            "price": 9.39,
+            "action": "trim",
+            "trimPct": 30,
+            "orderType": "limit",
+            "basis": "DCF base fair value",
+            "source": "dcf",
+            "sourceDate": "2026-06-27",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 2,
+            "price": 44.01,
+            "action": "trim",
+            "trimPct": 50,
+            "orderType": "limit",
+            "basis": "DCF bull fair value",
+            "source": "dcf",
+            "sourceDate": "2026-06-27",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 3,
+            "price": 52.81,
+            "action": "exit",
+            "trimPct": 100,
+            "orderType": "limit",
+            "basis": "20% above bull FV \u2014 thesis fully priced in",
+            "source": "dcf",
+            "sourceDate": "2026-06-27",
+            "condition": null,
+            "status": "active"
+          }
+        ],
+        "stopLoss": {
+          "price": 0.71,
+          "basis": "DCF bear FV x 0.95 \u2014 thesis breaker",
+          "source": "dcf",
+          "sourceDate": "2026-06-27",
+          "type": "thesis_breaker",
+          "status": "active"
+        }
+      }
     },
     {
       "ticker": "APLD",
@@ -646,7 +724,85 @@
       "thesisForInclusion": "Situational Awareness LP core holding. AI data center infrastructure play aligned with SA fund thesis on ASI race build-out.",
       "agentRationale": "MAINTAIN. Core SA LP holding at 2% target. DCF BUY +49%. Position auto-flagged EXIT in error on 2026-05-18 \u2014 corrected 2026-06-03. Do not exit without explicit user instruction. 2026-06-08: $550M revolving credit facility secured; >1GW contracted capacity milestone with major hyperscaler; cloud business separation complete. Thesis strongly confirmed \u2014 light ACCUMULATE on dips.",
       "shares": 20,
-      "subStrategyId": "sa-asi-race"
+      "subStrategyId": "sa-asi-race",
+      "priceLevels": {
+        "schemaVersion": "1.0",
+        "lastUpdated": "2026-06-27",
+        "lastUpdatedBy": "dcf",
+        "note": "Catalyst: Secured .59B financing and 210MW Delta Forge 2 lease",
+        "buyTiers": [
+          {
+            "tier": 1,
+            "price": 24.36,
+            "action": "accumulate",
+            "trimPct": null,
+            "orderType": "limit",
+            "basis": "DCF base FV x 0.75 \u2014 25% margin of safety",
+            "source": "dcf",
+            "sourceDate": "2026-06-27",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 2,
+            "price": 3.8,
+            "action": "accumulate_aggressive",
+            "trimPct": null,
+            "orderType": "limit",
+            "basis": "DCF bear FV x 1.05 \u2014 aggressive accumulation zone",
+            "source": "dcf",
+            "sourceDate": "2026-06-27",
+            "condition": null,
+            "status": "active"
+          }
+        ],
+        "sellTiers": [
+          {
+            "tier": 1,
+            "price": 32.48,
+            "action": "trim",
+            "trimPct": 30,
+            "orderType": "limit",
+            "basis": "DCF base fair value",
+            "source": "dcf",
+            "sourceDate": "2026-06-27",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 2,
+            "price": 137.97,
+            "action": "trim",
+            "trimPct": 50,
+            "orderType": "limit",
+            "basis": "DCF bull fair value",
+            "source": "dcf",
+            "sourceDate": "2026-06-27",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 3,
+            "price": 165.56,
+            "action": "exit",
+            "trimPct": 100,
+            "orderType": "limit",
+            "basis": "20% above bull FV \u2014 thesis fully priced in",
+            "source": "dcf",
+            "sourceDate": "2026-06-27",
+            "condition": null,
+            "status": "active"
+          }
+        ],
+        "stopLoss": {
+          "price": 3.44,
+          "basis": "DCF bear FV x 0.95 \u2014 thesis breaker",
+          "source": "dcf",
+          "sourceDate": "2026-06-27",
+          "type": "thesis_breaker",
+          "status": "active"
+        }
+      }
     },
     {
       "ticker": "CBRS",
@@ -676,9 +832,9 @@
       },
       "priceLevels": {
         "schemaVersion": "1.0",
-        "lastUpdated": "2026-06-21",
+        "lastUpdated": "2026-06-27",
         "lastUpdatedBy": "dcf",
-        "note": "Auto-derived from /evaluate-stock 2026-06-22",
+        "note": "Catalyst: Dr. Dave Young named COO & achieved CDAO awardable status",
         "buyTiers": [
           {
             "tier": 1,
@@ -688,7 +844,7 @@
             "orderType": "limit",
             "basis": "DCF base FV x 0.75 \u2014 25% margin of safety",
             "source": "dcf",
-            "sourceDate": "2026-06-21",
+            "sourceDate": "2026-06-27",
             "condition": null,
             "status": "active"
           },
@@ -700,7 +856,7 @@
             "orderType": "limit",
             "basis": "DCF bear FV x 1.05 \u2014 aggressive accumulation zone",
             "source": "dcf",
-            "sourceDate": "2026-06-21",
+            "sourceDate": "2026-06-27",
             "condition": null,
             "status": "active"
           }
@@ -714,7 +870,7 @@
             "orderType": "limit",
             "basis": "DCF base fair value",
             "source": "dcf",
-            "sourceDate": "2026-06-21",
+            "sourceDate": "2026-06-27",
             "condition": null,
             "status": "active"
           },
@@ -726,7 +882,7 @@
             "orderType": "limit",
             "basis": "DCF bull fair value",
             "source": "dcf",
-            "sourceDate": "2026-06-21",
+            "sourceDate": "2026-06-27",
             "condition": null,
             "status": "active"
           },
@@ -738,7 +894,7 @@
             "orderType": "limit",
             "basis": "20% above bull FV \u2014 thesis fully priced in",
             "source": "dcf",
-            "sourceDate": "2026-06-21",
+            "sourceDate": "2026-06-27",
             "condition": null,
             "status": "active"
           }
@@ -747,7 +903,7 @@
           "price": 192.93,
           "basis": "DCF bear FV x 0.95 \u2014 thesis breaker",
           "source": "dcf",
-          "sourceDate": "2026-06-21",
+          "sourceDate": "2026-06-27",
           "type": "thesis_breaker",
           "status": "active"
         }
