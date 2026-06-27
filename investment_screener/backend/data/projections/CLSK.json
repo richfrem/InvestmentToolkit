@@ -7,7 +7,7 @@
     "version": 3,
     "savedAt": "2026-05-02T18:05:00.000Z",
     "updatedAt": "2026-05-02T19:01:07.353Z",
-    "name": "AI Deep Dive — CLSK — 2026-05-02",
+    "name": "AI Deep Dive \u2014 CLSK \u2014 2026-05-02",
     "rationale": "CleanSpark (CLSK) is a major Bitcoin miner. It burned $1.0B in FCF last year on $766M in revenue due to massive capex. At $3.1B market cap and $12.17/share, it trades at 4x sales but requires massive dilution to sustain the hash rate arms race. Weighted PV of $6.09 indicates significant downside.",
     "snapshot": {
       "price": 12.17,
@@ -120,7 +120,7 @@
     "version": 1,
     "savedAt": "2026-05-02T21:57:03.544553Z",
     "updatedAt": "2026-05-02T21:57:03.544553Z",
-    "name": "AI Deep Dive — CLSK — 2026-05-02",
+    "name": "AI Deep Dive \u2014 CLSK \u2014 2026-05-02",
     "rationale": "CleanSpark is a Bitcoin miner with $766M TTM revenue but only 11.6% growth, lagging sector peers. Negative forward PE at $90K+ BTC price signals operational inefficiency. DCF FV $8.25 vs $12.17 current price (-32%). Mean-reversion in BTC mining margins through the cycle will compress earnings. SELL.",
     "snapshot": {
       "price": 12.17,
@@ -138,7 +138,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.35,
+        "weight": 0.31999999999999995,
         "growthRate": 5,
         "netMargin": 3,
         "exitPE": 8,
@@ -152,7 +152,7 @@
         "presentValue": 0.46
       },
       "base": {
-        "weight": 0.45,
+        "weight": 0.43,
         "growthRate": 18,
         "netMargin": 12,
         "exitPE": 12,
@@ -166,7 +166,7 @@
         "presentValue": 5.83
       },
       "bull": {
-        "weight": 0.2,
+        "weight": 0.25,
         "growthRate": 30,
         "netMargin": 22,
         "exitPE": 18,
@@ -183,9 +183,9 @@
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
       "rationale": "CleanSpark is a Bitcoin miner with $766M TTM revenue but only 11.6% growth, lagging sector peers. Negative forward PE at $90K+ BTC price signals operational inefficiency. DCF FV $8.25 vs $12.17 current price (-32%). Mean-reversion in BTC mining margins through the cycle will compress earnings. SELL.",
-      "fairValue": 8.25,
-      "action": "SELL",
-      "analyzedAt": "2026-05-02T21:57:03.544553Z",
+      "fairValue": 15.28,
+      "action": "BUY",
+      "analyzedAt": "2026-06-27T15:09:23Z",
       "researchReport": "CLSK_2026-05-02.md"
     },
     "globalSettings": {
@@ -194,7 +194,7 @@
     },
     "analyticsLog": {
       "shareCountMethod": "See dataQualityFlags",
-      "marginAnchor": "Path-to-profitability model applied — see dataQualityFlags",
+      "marginAnchor": "Path-to-profitability model applied \u2014 see dataQualityFlags",
       "growthDerivation": "Derived from TTM growth with deceleration path",
       "sectorBenchmarkRow": "See dataQualityFlags",
       "dataQualityFlags": [
@@ -224,7 +224,23 @@
         "thesisOutcome": "Re-evaluated with current fundamentals",
         "fundamentalChanges": "No new fundamentals; updated for Sonnet 4.6 model consistency"
       },
-      "confidenceBreakdown": "0.55/1.0 — limited historical data; no analyst estimates"
-    }
+      "confidenceBreakdown": "0.55/1.0 \u2014 limited historical data; no analyst estimates"
+    },
+    "catalystUpdates": [
+      {
+        "date": "2026-06-27",
+        "source": "apply_catalyst.py",
+        "type": "partnership",
+        "events": [
+          "May ops update & key multi-GW commercialization hire"
+        ],
+        "weightShifts": {
+          "bull": 5,
+          "bear": -3
+        },
+        "thesisImpact": "Bull probability +5pp; bear -3pp. FV $8.25\u2192$15.28. Action: SELL\u2192BUY."
+      }
+    ],
+    "lastGrokSweep": "2026-06-27"
   }
 ]
