@@ -173,6 +173,7 @@ The `daily-loop-agent` interactively guides through every step. No checklist.
 | `/13f-analyze` | portfolio-advisor | Surgical 13F analysis — cross-references SA LP holdings vs your targets, outputs gated INITIATE/ACCUMULATE/TRIM/EXIT recs, applies approved changes to target-portfolio.json |
 | `/bundle-thesis-review` | portfolio-advisor | Package thesis + DCF projections for paste into external LLM (Grok, ChatGPT, Gemini) |
 | `/run-advisor` | portfolio-advisor | Interactive Portfolio Advisor orchestrator — full review → calibrate → rebalance lifecycle (post-catalyst) |
+| `/weekly-review` | portfolio-advisor | Weekend review cycle — range-based drift audit, weekly Grok sweep prompt generation, and TradingView technical checks |
 | `/place-order {buy\|sell} {N} {TICKER} in {ACCOUNT}` | **tradingview** | **Live order execution** via TradingView CDP broker automation. 3-step HITL: preflight card → CONFIRM → dialog filled + submitted + portfolio.json synced. Requires TradingView Desktop with Questrade broker connected. |
 | `/cancel-order {tvOrderId}` | **tradingview** | **Cancel a Working/Inactive order** via CDP — finds order by UUID, clicks ×, handles TV confirmation dialog, marks trade-log entry cancelled. |
 | `/modify-order {tvOrderId} {newPrice}` | **tradingview** | **Modify a limit price** on a Working/Inactive order via CDP keyboard events. |
@@ -196,7 +197,7 @@ You must read and strictly adhere to all rules defined in `.agent/rules/`:
 - **Coding Conventions (`coding-conventions.md`)**: Dual-layer docs, type hints, proper casing, and strict refactoring thresholds.
 - **Dependency Management (`dependency-management.md`)**: No manual `pip install`. Edit `.in` files and use `pip-compile`.
 - **Plugin Architecture (`plugin-architecture.md` & `symlink-cross-platform.md`)**: Use file-level symlinks ONLY via `symlink_manager.py`. Never raw `ln -s`. No cross-plugin script execution.
-- **Self-Evolution (`self-evolution-policy.md`)**: Classify failures, max 3 repair attempts, update playbooks. Deletions are strictly forbidden.
+- **Self-Evolution (`self-evolution-policy.md`)**: Classify failures, max 3 repair attempts, update playbooks. Deletions are forbidden. Synchronize daily/weekly sweep templates in `assets/templates/` whenever strategies or target weights change.
 
 ---
 

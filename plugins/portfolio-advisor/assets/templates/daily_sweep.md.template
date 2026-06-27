@@ -1,0 +1,74 @@
+# Portfolio News Sweep — {{DATE}}
+**Thesis:** {{THESIS_NAME}}  |  **Portfolio value:** ~${{PORTFOLIO_VALUE}}  |  **Date:** {{DATE}}
+
+## Core Portfolio Thesis Background (Context for Grok)
+You are analyzing a highly concentrated, institutional-grade AI infrastructure portfolio focused on two civilizational-scale macro pillars:
+
+1. **The ASI Race (Primary: Infrastructure & Compute Buildout)**:
+   - **GPU Cloud & Memory Infrastructure**: Captures GPU supply chains and HBM/NAND scarcity. Tickers include `CRWV` (GPU cloud), `SNDK` (NAND), and `DRAM` (HBM memory proxy).
+   - **AI Power Infrastructure**: Datacenters require massive power grids. Tickers include `CEG`, `VST` (nuclear/merchant power), `OKLO` (micro-nuclear commercialization), `BE` (fuel cells), and `PSIX` (power generation).
+   - **AI Data Center Infrastructure (Bitcoin Miner Pivot)**: High-performance computing (HPC) landlords pivoting from BTC mining to AI compute. Tickers include `CORZ`, `IREN`, `APLD`, and `CLSK`.
+   - **Compute Moats & Foundries**: Foundations of silicon manufacturing. Tickers include `TSM`, `ASML`, `AMD`, `INTC`.
+   - **Quality SaaS (Enterprise AI)**: CRM, NOW, TEAM (Enterprise software platforms adapting AI models).
+
+2. **Sovereign Finance (Secondary: Rails for Autonomous AI Agents)**:
+   - Digital rails built for machine-to-machine autonomous settlement. Tickers include `COIN` and `CRCL`.
+
+3. **Space Infrastructure & Defense AI**:
+   - Government modernization, defense contracts, and space infrastructure. Tickers include `CACI` (Defense IT), `RKLB` (rocket launch/satellites), and `RDW` (space structures).
+
+4. **Ontological AI & Operating Systems**:
+   - Institutional ontologies and operational data execution platforms. Ticker: `PLTR` (Palantir AIP).
+
+---
+
+## Instructions for Grok
+Please search X posts, earnings releases, SEC filings, and analyst notes for **material updates only** from the **last 7–14 days**.
+
+### ⚠️ STRICT COMPLIANCE MANDATE:
+- **FOR EVERY SINGLE TICKER** listed below, you **MUST** provide a detailed row in the table.
+- **DO NOT group tickers** together.
+- **DO NOT write lazy placeholder text** (e.g., "Noise", "Neutral", "N/A").
+- **IF A TICKER HAS NO SPECIFIC COMPANY NEWS**, you must analyze and explicitly write 1-2 sentences explaining the sector-level flows, industry rotation (e.g. AI capex sentiment, treasury yields, semiconductor rotation) that drove the price action for that ticker this week.
+
+Return your response in **{{NUM_PARTS}} parts**:
+
+---
+
+### Part 1 — Sweep Table (every position)
+
+| Ticker | Current% | Target% | Key Catalyst/News (Provide 1-2 sentences of specific news, filings, or sector-relative movements. **NO PLACEHOLDERS**.) | Thesis Impact | Conviction (1–10) | Action | Target Change | Deep Dive? |
+|--------|----------|---------|-------------------------------------------------------------------------------------------------------------------------|---------------|-------------------|--------|---------------|------------|
+
+**Conviction scale**: 1–3 = bearish / thesis challenged, 4–6 = neutral / hold, 7–10 = high conviction / add.
+Mark `[DD]` only for: earnings beat/miss >10%, major contract, regulatory shift, SA LP position change, or thesis breaker.
+For target changes give a specific % (e.g. `↑ to 5.5%`) — not just 'add more'.
+
+---
+
+{{INITIATE_SECTION}}
+
+---
+
+### Part {{DEEP_DIVE_PART}} — Active Holdings Deep Dives (only [DD]-flagged)
+
+For each `[DD]` position: catalyst + thesis impact + conviction change + sizing recommendation.
+Include current valuation context (price vs. analyst PT range) where available.
+
+---
+
+### Part {{QUESTIONS_PART}} — Portfolio-Level Questions & Themes
+
+Answer these for the portfolio as a whole:
+1. **Biggest risk right now** — what single development could most damage this portfolio?
+2. **Most mispriced position** — which holding looks most over- or under-valued vs. current thesis?
+3. **Top trim / add priorities this month** — 2–3 highest-conviction actions.
+4. **Macro & Sector Regime** — Is the market in a risk-on or risk-off stance? Cite VIX, yields, and overall AI capex sentiment.
+
+---
+
+{{ACTIVE_HOLDINGS_TABLE}}
+
+{{INITIATE_HOLDINGS_SECTION}}
+
+{{EXIT_HOLDINGS_SECTION}}

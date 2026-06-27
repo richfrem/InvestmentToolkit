@@ -76,16 +76,16 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 
 <!-- AUTO_UPDATE_START: portfolio_blueprint -->
 *Generated 2026-06-26 · Source: `validate_weights.py` × `target-portfolio.json` × `portfolio.json` (Questrade live)*
-*Portfolio value: $33,171. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
+*Portfolio value: $33,516. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
 
 ### Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
 | **CRWV** | ⚪ MAINTAIN | — | 5.26% | 5.23% | — | GPU cloud provider. |
-| **SNDK** | 🟡 TRIM | — | 4.84% | 3.96% | — | NAND storage infrastructure play. |
+| **SNDK** | 🟡 TRIM | — | 4.84% | 4.00% | — | NAND storage infrastructure play. |
 | **DRAM** | ⚪ MAINTAIN | — | 4.78% | 4.45% | — | Only US-listed vehicle for SK Hynix (25.9%) and Samsung (21.6%) HBM exposure — Nvidia's #1 and #2 HBM suppliers, not tradeable directly on US exchanges. Strategic memory play: HBM is the critical scarcity resource in AI compute scaling. Korean/Japanese memory consolidation thesis. Wait for pullback from current levels (+94.6% in 6mo) before initiating. |
-| **GOOG** | ⚪ MAINTAIN | — | 4.05% | 3.96% | — | Hyperscaler with vertically integrated AI stack. |
+| **GOOG** | ⚪ MAINTAIN | — | 4.05% | 3.95% | — | Hyperscaler with vertically integrated AI stack. |
 | **CORZ** | ⚪ MAINTAIN | — | 3.71% | 3.71% | — | BTC→AI data center conversion thesis. |
 | **IREN** | ⚪ MAINTAIN | — | 3.11% | 3.26% | — | AI GPU cloud pivot — 800MW Australia campus + Blackwell GPU deployment + $4.4B ARR target. IREN converted from BTC mining to AI data center infrastructure. HOLD at target weight; reduce only if AI capex thesis deteriorates. |
 | **BE** | ⚪ MAINTAIN | — | 2.75% | 2.97% | — | Bloom Energy fuel cells. |
@@ -93,7 +93,7 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | **APLD** | ⚪ MAINTAIN | — | 2.43% | 2.47% | — | Situational Awareness LP core holding. AI data center infrastructure play aligned with SA fund thesis on ASI race build-out. |
 | **NBIS** | ⚪ MAINTAIN | — | 2.28% | 2.47% | — | European AI infrastructure. |
 | **CBRS** | ⚪ MAINTAIN | — | 2.25% | 2.47% | — | Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference. |
-| **BTDR** | 🟡 TRIM | — | 2.18% | 1.89% | — | Proprietary Sealminer ASIC chip design. |
+| **BTDR** | 🟡 TRIM | — | 2.18% | 1.90% | — | Proprietary Sealminer ASIC chip design. |
 | **VST** | ⚪ MAINTAIN | — | 1.99% | 1.88% | — | Nuclear + natgas power merchant. |
 | **TEAM** | ⚪ MAINTAIN | — | 1.77% | 1.88% | — | Human-agentic collaboration platform. |
 | **OKLO** | ⚪ MAINTAIN | — | 1.51% | 1.48% | — | Micro-nuclear reactor commercialization. Power pillar speculative play — same theme as BE and CEG. AI data center power demand requires diverse nuclear supply; OKLO's micro-reactor model targets co-location with data centers. |
@@ -111,7 +111,7 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | **TSM** | 👁️ WATCHLIST | — | — | — | — | The foundry backbone of the AI compute stack. |
 | **ASML** | 👁️ WATCHLIST | — | — | — | — | Absolute monopoly on EUV lithography. |
 | **MU** | 👁️ WATCHLIST | — | — | — | — | HBM3E memory bandwidth bottleneck. |
-| **Subtotal** | | **46.92%** | **46.54%** | -0.38pp | |
+| **Subtotal** | | **46.92%** | **46.56%** | -0.35pp | |
 
 ### Sub-Strategy 2 — AI-Native Cybersecurity
 
@@ -131,7 +131,7 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | **ETHA** | 👁️ WATCHLIST | — | — | — | — | Ethereum as programmable settlement layer. |
 | **IBIT** | 👁️ WATCHLIST | — | — | — | — | Bitcoin as sovereign reserve asset. |
 | **SOLZ** | 👁️ WATCHLIST | — | — | — | — | EXIT: Solana ETF. |
-| **Subtotal** | | **5.39%** | **5.69%** | +0.29pp | |
+| **Subtotal** | | **5.39%** | **5.68%** | +0.29pp | |
 
 ### Sub-Strategy 4 — Quality SaaS Resilience
 
@@ -154,13 +154,13 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
 | **PSU-U.TO** | 🔵 ACCUMULATE | — | 15.74% | 18.65% | — | USD cash reserve (Purpose US Cash Fund) — holds short-term USD treasuries on TSX. Primary purpose: USD currency exposure + interest income while awaiting deployment into thesis positions. Monthly dividend ~$0.31-0.33/share (~$3.68-3.90 USD annualized). ENTRY RULE: always buy 1-2 days AFTER the ex-dividend date (typically last Tuesday of month) to get the cycle-low reset price and capture the full next month of accrual. Buying mid-cycle or just before ex-date overpays for already-accrued dividend. Ex-dates: ~Jan 28, Feb 25, Mar 31, Apr 28, May 28, Jun 30 pattern. Next planned entry: May 29, 2026 (post May 28 ex-date). |
-| **Subtotal** | | **15.74%** | **18.65%** | +2.92pp | |
+| **Subtotal** | | **15.74%** | **18.65%** | +2.91pp | |
 
 ### Portfolio Totals
 
 | | Actual % | Target % | Delta |
 | :--- | ---: | ---: | ---: |
-| **All holdings** | **80.16%** | **83.54%** | +3.38pp |
+| **All holdings** | **80.16%** | **83.55%** | +3.39pp |
 | *Validate* | `python3 plugins/portfolio-advisor/scripts/validate_weights.py --mode both` | | |
 <!-- AUTO_UPDATE_END: portfolio_blueprint -->
 
