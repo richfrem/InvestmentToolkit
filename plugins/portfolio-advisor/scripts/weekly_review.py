@@ -169,6 +169,13 @@ def run_weekly_review(write_prompt_path=None):
         out_path.write_text(prompt_content)
         print(f"\n[Prompt Written to {out_path}]")
         
+        # Create weekly response placeholder
+        placeholder_path = REPO_ROOT / f"temp/grok-response/weekly-{datetime.now().strftime('%b%d-%Y').lower()}.md"
+        placeholder_path.parent.mkdir(parents=True, exist_ok=True)
+        if not placeholder_path.exists():
+            placeholder_path.write_text(f"# Grok Weekly Sweep Response — {datetime.now().strftime('%Y-%m-%d')}\n\nPlease paste the raw Grok response below:\n\n---\n")
+            print(f"[Response Placeholder Created at {placeholder_path}]")
+        
     return grok_tickers_data
 
 if __name__ == "__main__":
