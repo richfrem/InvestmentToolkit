@@ -8,6 +8,18 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-06-27 — Weekly Review
+
+**Macro Regime:** RISK-OFF (with sector stabilization). Semi rout mid-June led to tech de-rating, but MU blowout earnings late-week catalyzed memory/HBM recovery. VIX elevated; credit/yields show macro caution. Hyperscaler capex scrutinized but remains robust.
+**TA Sweep:** Checked PLTR, CLSK, ASTS, RKLB, CACI, SNDK. Support levels mapped to GTC limit orders.
+**Actions Recommended:**
+- **Accumulate Dips**: Core compute & memory (NVDA, TSM, AMD, SNDK, MU), power pillars (CEG, VST, BE, OKLO), and space/ontological pillars (PLTR, RKLB, RDW).
+- **Trims**: Exit non-core consumer discretionary names showing secular relative weakness (CAKE, CELH, NKE) to consolidate capital into higher-conviction AI infrastructure.
+- **Initiates**: Focus on buying PLTR, CLSK, and CACI on support dips.
+**Prompt Evolution Observations:**
+- *Grok Prompts*: Ingested prompt layout was extremely successful. Explicitly forcing a table row for every ticker solved the omission bug, listing all 82 equities with detailed news summaries or sector-relative context.
+- *Friction/Deficiencies*: Some smaller tickers received shorter sector-level summaries. Rule 12 codified to prevent future prompt laziness. No retry needed this session; Grok's data depth is highly actionable.
+
 ## 2026-06-22
 
 **Macro:** Not run (user skipped morning brief — focused on single trade decision)
