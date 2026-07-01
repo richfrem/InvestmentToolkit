@@ -162,6 +162,20 @@
         "thesisImpact": "Bull probability +5pp; bear -3pp. FV $516.33\u2192$569.91. Action: BUY\u2192BUY."
       }
     ],
-    "lastGrokSweep": "2026-06-05"
+    "lastGrokSweep": "2026-06-05",
+    "taLevels": {
+      "date": "2026-07-01",
+      "signal": "HOLD",
+      "score": 2,
+      "priceLevels": {
+        "stopLoss": 205.0,
+        "trimAt": 310.0,
+        "holdLo": 218.0,
+        "holdHi": 280.0,
+        "accumulateAt": 220.0
+      },
+      "source": "tv-ta-deep multi-timeframe",
+      "notes": "Daily RSI 49 not oversold \u2014 room to fall to EMA50 at $218. Hold current 3sh (+65% profit). Add only at $218-220 (EMA50 daily). 5m ADX 63 = intraday exhaustion; bounce likely but daily not washed out."
+    }
   }
 ]

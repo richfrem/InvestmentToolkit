@@ -71,7 +71,7 @@ def run_checks() -> dict:
             if all_ok
             else (
                 "TradingView Desktop not detected. "
-                "Launch with: python3 tools/launch_tradingview_with_debugport.py"
+                "Launch with: python3 plugins/tradingview/scripts/tv_launch.py"
                 if not port_ok
                 else f"CLI check failed: {cli_message}"
             )
@@ -124,7 +124,7 @@ def main():
         if not checks["port"]:
             print(
                 "  Launch TradingView:\n"
-                "    python3 tools/launch_tradingview_with_debugport.py\n"
+                "    python3 plugins/tradingview/scripts/tv_launch.py\n"
                 "  Or manually:\n"
                 "    open -a TradingView --args --remote-debugging-port=9222\n"
             )

@@ -141,13 +141,20 @@ numbered list, ranked by urgency:
 ```
 Here's what I'm seeing today, ranked by urgency:
 
-1. [IMMINENT EVENT] TICKER earns in N days — pre-event size check
+1. [IMMINENT EVENT] TICKER — earns in N days, currently [REDUCE/EXIT], pre-event size check needed
+   P&L: [+/-X%] · Score: [X] · Reason: [1-line why this needs attention before earnings]
+
 2. [EXIT] TICKER — score [X], [Nth] consecutive day at EXIT
-3. [EXIT] TICKER — score [X], thesis signal: [DCF_ACTION]
+   P&L: [+/-X%] · Reason: [DCF action + TA signal, e.g. "DCF SELL, RSI 78 cooling, thesis broken"]
+
+3. [EXIT] TICKER — score [X], new signal
+   P&L: [+/-X%] · Reason: [what flipped today]
+
 4. [REDUCE] TICKER — score [X], overweight [+X.X%]
-...
-[N+1]. [ACCUMULATE] TICKER — score [+X], [X]% to fair value, [X.X]% underweight
-...
+   P&L: [+/-X%] · Reason: [why reduce, e.g. "RSI OB, at resistance, +18% above book"]
+
+5. [ACCUMULATE] TICKER — score [+X], [X]% to fair value, [X.X]% underweight
+   P&L: [+/-X%] · Reason: [why now, e.g. "DCF BUY, RSI oversold, at support"]
 
 Start with item 1, or jump to a specific one?
 ```
@@ -175,23 +182,143 @@ wait for the user's response, then move to the next.
 **Card format:**
 ```
 ─── [N]/[TOTAL] · [SIGNAL]: [TICKER] ─────────────────────────
-  [Company Name]  ·  Current Weight: [X.X]%  ·  Target: [X.X]%
+  [Company Name]  ·  Weight: [X.X]% actual → [X.X]% target  ([±X.X]% gap)
 
+  P&L:    Book $[X] · Now $[Y] · [+/-$Z] ([+/-W]%)  [PROFIT / UNDERWATER]
   Score:  [total] = DCF([X]) + TA([X]) + Gap([X]) + Momentum([X])
-  DCF:    [ACTION] · [+X.X]% to fair value  ($[price] → $[FV])
+  DCF:    [ACTION] · FV $[Z] ([+X.X]% upside)  ← bear $[A] / base $[B] / bull $[C]
   TA:     RSI [XX.X] · ADX [XX.X] · Vol Bias [±XX%]
   Flags:  [RSI_COOLING | VOL_SPIKE | SQUEEZE_ACTIVE | none]
   Earns:  [MM-DD (N days)] or [no event in 30 days]
 
-  [SIGNAL NARRATIVE — 1–2 sentences of your view, not just data]
-  Example: "IONQ is deep in EXIT territory with a broken DCF thesis,
-  3 consecutive EXIT sessions, and heavily overbought RSI now cooling.
-  This is a clear exit — the risk/reward has inverted."
+  [SIGNAL NARRATIVE — 2–3 sentences: WHY this signal, whether DCF and TA
+   agree or conflict, and what the P&L context means for the decision.
+   Flag if underwater with a broken thesis vs underwater with intact thesis.
+   Example: "IONQ is deep in EXIT territory — DCF and TA both agree the thesis
+   is broken. RSI cooling from 80, 3 consecutive EXIT sessions, and FV now
+   below current price. Down 15% but the risk/reward has inverted — cutting
+   losses here protects capital better than holding for a bounce."]
 
-→ [Proposed action]: [sell X shares / trim to Y% / hold / skip]
-  What do you want to do? (yes / no / custom)
+  TA Levels:
+    Exit / Stop-loss:  $[price]  (below [key support / 200D / bear FV])
+    Trim / Reduce at:  $[price]  (at [resistance / RSI overbought threshold])
+    Hold zone:         $[lo] – $[hi]
+    Accumulate at:     $[price]  (at [support / DCF margin of safety entry])
+
+→ Recommended: [sell X shares / trim to Y% / hold / skip + reason]
+  Confirm? (yes / no / custom)
 ──────────────────────────────────────────────────────────────
 ```
+
+**How to derive TA Levels when live CDP TA is not available:**
+1. Pull `data/projections/{TICKER}.json` for bear/base/bull DCF fair values — use bear as
+   the stop-loss reference, base as hold zone upper bound, bull as full target.
+2. Check `targetEntryPrice` in `target-portfolio.json` — if set, use as the accumulate level.
+3. Use RSI/ADX context as directional signal:
+   - RSI > 70 and COOLING → trim zone is at or above current price
+   - RSI < 35 → accumulate zone is at or near current price
+   - ADX > 40 → strong trend; widen hold zone by ~10%
+4. If `ta-sweep-results.json` has a recent entry (< 2 days old), read EMA/support values from it.
+5. When levels are DCF-derived (not live TA), label them: `(DCF ref)` vs `(TA ref)`.
+
+**P&L context rules:**
+- UNDERWATER (current < book): never recommend selling a REDUCE signal purely on weight gap.
+  Only recommend selling if: (a) thesis is broken (DCF action = SELL), OR (b) score ≤ -3 (EXIT).
+  Always state the break-even price and % to get back to flat.
+- IN PROFIT: trim/reduce signals are actionable at normal thresholds. State the realized gain
+  if sold (approx shares × (current − book)).
+- Flag SELL_ONLY_WHEN_GREEN positions explicitly — never propose a trade below book on these.
+
+**After each card decision — write the triage history record (mandatory):**
+
+Append a JSON entry to `plugins/portfolio-advisor/references/triage-history.json`.
+This file is an array of objects — append to it after every card, every session.
+
+```json
+{
+  "date": "YYYY-MM-DD",
+  "ticker": "TICKER",
+  "signal": "EXIT|REDUCE|HOLD|ACCUMULATE",
+  "score": -1,
+  "score_delta": -3,
+  "price": 373.0,
+  "book_price": 424.0,
+  "pnl_pct": -12.0,
+  "pnl_status": "UNDERWATER|PROFIT",
+  "dcf_action": "BUY|SELL|HOLD|ACCUMULATE|TRIM",
+  "dcf_fv": 649.0,
+  "dcf_upside_pct": 74.0,
+  "rsi": 72.1,
+  "adx": 47.1,
+  "flags": ["RSI_OB", "RSI_COOLING"],
+  "levels": {
+    "stop_loss": 300.0,
+    "trim_at": 425.0,
+    "hold_lo": 340.0,
+    "hold_hi": 424.0,
+    "accumulate_at": 355.0
+  },
+  "recommended_action": "HOLD",
+  "user_decision": "HOLD|SELL|TRIM|ACCUMULATE|SKIP|DEFERRED",
+  "user_note": "optional — any override reason the user gave",
+  "standing_decision_type": "null|ALLOWLISTED_CONFLICT|SELL_ONLY_WHEN_GREEN|NO_ADD_AT_MARKET"
+}
+```
+
+**After recording the triage-history entry**, also write `taLevels` into the ticker's
+projection file (`data/projections/{TICKER}.json`) so levels appear on the web app
+stock analysis pages. Patch the **latest entry** in the array only:
+
+```python
+# Pattern: load → patch latest entry → write back
+with open(f'investment_screener/backend/data/projections/{ticker}.json') as f:
+    proj = json.load(f)
+proj[-1]['taLevels'] = {
+    "date": "YYYY-MM-DD",
+    "signal": "EXIT|REDUCE|HOLD|ACCUMULATE",
+    "score": -3,
+    "priceLevels": {
+        "stopLoss": 220.0,      # or null
+        "trimAt": 272.0,        # or null
+        "holdLo": 230.0,        # or null
+        "holdHi": 271.0,        # or null
+        "accumulateAt": None    # null when not recommended
+    },
+    "source": "daily-loop-agent",
+    "notes": "one-line rationale for the levels"
+}
+with open(f'investment_screener/backend/data/projections/{ticker}.json', 'w') as f:
+    json.dump(proj, f, indent=2)
+```
+
+Skip silently if the projection file does not exist (watchlist-only tickers).
+The frontend `AIAnalysisModal` reads this field and renders Stop/Trim/Hold/Accumulate
+price tiles on the stock analysis page. Levels persist across sessions — always
+overwrite with the most recent card's levels.
+
+**Before building each card**, read the last 7 entries for that ticker from
+`triage-history.json` and surface any patterns directly in the card:
+
+```
+  History:  [DATE: SIGNAL score=X decision=Y] × N days
+            Pattern: [e.g. "HOLD 3 days, score stable ±1 — TA noise"]
+                     [e.g. "REDUCE 5 days, no action — consider standing decision"]
+                     [e.g. "Score improving: -3 → -2 → -1 — thesis recovering"]
+```
+
+**Pattern detection rules (surface as notes in the card):**
+- Same signal for 3+ days with no trade → "Stable signal, no action taken. Consider
+  a standing decision to suppress noise or a forced trade review."
+- User overrode the same recommendation 3+ times → "You've overridden [SIGNAL] on
+  TICKER [N] times. Consider encoding this as a standing decision."
+- Score deteriorating for 3+ consecutive days → "Score has declined [X] pts over
+  [N] days — trajectory is worsening. Watch for EXIT trigger."
+- Score improving for 3+ consecutive days → "Score recovering [X] pts over [N] days
+  — thesis strengthening. Consider whether ACCUMULATE threshold is approaching."
+- P&L deepening underwater for 3+ days (price falling) → "Position has been
+  deteriorating [N] days. Verify thesis is still intact."
+- Price crossed accumulate level → "Price has entered accumulate zone (below $[X])
+  for the first time in [N] days."
 
 **After user confirms yes:**
 - For a sell/trim: translate into a `/place-order sell N TICKER in ACCOUNT` command
@@ -204,7 +331,8 @@ wait for the user's response, then move to the next.
 
 **After user confirms no / overrides:**
 Ask one follow-up: *"What's driving your decision? I'll note it for my improvement log."*
-Record their answer in the session's evolution entry. This is a learning signal.
+Record their answer in both the session's evolution entry AND the triage-history record
+for that ticker. This is the primary learning signal for future pattern detection.
 
 **x-news-sweep integration:**
 After working through the REDUCE/EXIT queue, ask:
@@ -246,7 +374,30 @@ Append to `plugins/portfolio-advisor/references/evolution-log.md`:
 **Notes:** [anything surprising or worth flagging for next session]
 ```
 
-**4c. Auto-trigger strategic review if warranted:**
+**4c. Triage history optimization pass:**
+After logging the session, read `triage-history.json` and run the following analysis
+across ALL tickers with 3+ entries. Surface only findings with clear signal — suppress
+noise. Present as a short "optimization notes" block at end of session:
+
+```
+─── Optimization Notes ────────────────────────────────────
+  [TICKER] — [pattern description + suggested action]
+  Example: "MSFT has been HOLD/REDUCE for 5 sessions, score ±1
+  range — pure TA noise. Consider adding a standing decision
+  to suppress this signal until RSI resets below 50."
+
+  [TICKER] — "Score has recovered +X pts over N days. ACCUMULATE
+  threshold may be approaching — review at next /run-advisor."
+─────────────────────────────────────────────────────────
+```
+
+Only surface a ticker if it meets at least one of:
+- 3+ consecutive same signal with no trade taken
+- Score trend monotonically up or down for 3+ days
+- User overrode the same signal 2+ times
+- P&L direction diverging from DCF direction for 5+ days (e.g. price falling while DCF says BUY)
+
+**4d. Auto-trigger strategic review if warranted:**
 After logging, check these conditions:
 - Any pillar's avg_score has been < -1.0 for 3+ consecutive sessions →
   "The [PILLAR] pillar has been stressed for 3+ sessions. Want to run `/strategic-review` now?"

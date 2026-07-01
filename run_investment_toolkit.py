@@ -23,7 +23,7 @@ Usage Examples:
     #   - If TradingView Desktop is not installed → it is skipped, and yfinance fallback is used.
     #
     # 3. To relaunch or start TradingView Desktop independently with the debugging port (9222):
-    python3 tools/launch_tradingview_with_debugport.py
+    python3 plugins/tradingview/scripts/tv_launch.py
 
 CLI Arguments:
     None

@@ -431,6 +431,20 @@
         "thesisImpact": "Bull probability +10pp; bear -8pp. FV $5.10\u2192$6.65. Action: TRIM\u2192SELL."
       }
     ],
-    "lastGrokSweep": "2026-05-07"
+    "lastGrokSweep": "2026-05-07",
+    "taLevels": {
+      "date": "2026-06-29",
+      "signal": "REDUCE",
+      "score": -2,
+      "priceLevels": {
+        "stopLoss": 45.0,
+        "trimAt": 101.0,
+        "holdLo": 45.0,
+        "holdHi": 101.0,
+        "accumulateAt": null
+      },
+      "source": "daily-loop-agent",
+      "notes": "SELL_ONLY_WHEN_GREEN. Underwater -49.1%, break-even $101. Distribution ongoing (vol bias -52%). Trim above $101 only. No accumulate: DCF SELL, pre-revenue, bull FV only $16."
+    }
   }
 ]

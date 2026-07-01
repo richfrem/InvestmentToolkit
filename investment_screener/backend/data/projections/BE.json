@@ -397,6 +397,20 @@
         "thesisImpact": "Bull probability +8pp; bear -5pp. FV $158.55\u2192$185.72. Action: SELL\u2192SELL."
       }
     ],
-    "lastGrokSweep": "2026-06-03"
+    "lastGrokSweep": "2026-06-03",
+    "taLevels": {
+      "date": "2026-06-29",
+      "signal": "EXIT",
+      "score": -3,
+      "priceLevels": {
+        "stopLoss": 220.0,
+        "trimAt": 272.0,
+        "holdLo": 230.0,
+        "holdHi": 271.0,
+        "accumulateAt": null
+      },
+      "source": "daily-loop-agent",
+      "notes": "Stock trades 36% above DCF FV ($186). Standing decision: ALLOWLISTED_CONFLICT \u2014 SA LP #1 long + $2.6B NBIS deal. No accumulate until FV re-rates above $270+. Trim above break-even ($272) on any bounce. DCF model (May 19) predates Q1 beat and NBIS deal \u2014 refresh warranted."
+    }
   }
 ]
