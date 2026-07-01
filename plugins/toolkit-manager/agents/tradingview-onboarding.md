@@ -124,7 +124,7 @@ If it shows `❌ Not reachable`:
      ```
    - In the monorepo:
      ```bash
-     python3 tools/launch_tradingview_with_debugport.py
+     python3 plugins/tradingview/scripts/tv_launch.py
      ```
 2. Wait ~10 seconds for it to fully start, then re-run the health check.
 3. If still failing, check that port 9222 isn't blocked: `lsof -i :9222`
@@ -178,7 +178,7 @@ Explain these key points:
     ```
   - In the monorepo:
     ```bash
-    python3 tools/launch_tradingview_with_debugport.py
+    python3 plugins/tradingview/scripts/tv_launch.py
     ```
 - **Price source badge**: the dashboard shows "TV Live" when CDP is active, "yfinance" when it isn't.
 - **Order execution**: `/place-order buy 10 AAPL in TFSA` — fills through TradingView's broker panel with a 3-step HITL confirmation.

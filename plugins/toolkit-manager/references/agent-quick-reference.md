@@ -166,7 +166,7 @@ python3 investment_screener/backend/py_services/update_thesis.py --list
 
 To relaunch TradingView independently:
 ```bash
-python3 tools/launch_tradingview_with_debugport.py
+python3 plugins/tradingview/scripts/tv_launch.py
 ```
 
 ---

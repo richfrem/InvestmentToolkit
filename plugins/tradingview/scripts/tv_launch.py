@@ -6,7 +6,7 @@ Purpose:
     Ensures TradingView Desktop is running with --remote-debugging-port=9222
     so the Investment Toolkit can connect to it for real-time price quotes.
     Called automatically by run_investment_toolkit.py at suite startup, and
-    available standalone as launch_tradingview_with_debugport.py at repo root.
+    Available standalone via: python3 plugins/tradingview/scripts/tv_launch.py
 
 What it does (in order):
     1. Checks if CDP port 9222 is already reachable.
@@ -25,7 +25,7 @@ What it does (in order):
 Usage:
     python3 plugins/tradingview/scripts/tv_launch.py
     python3 plugins/tradingview/scripts/tv_launch.py --port 9222
-    python3 tools/launch_tradingview_with_debugport.py   # root-level shortcut
+    python3 plugins/tradingview/scripts/tv_launch.py
 """
 
 import sys

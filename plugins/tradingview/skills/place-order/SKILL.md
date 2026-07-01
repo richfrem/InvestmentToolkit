@@ -276,4 +276,4 @@ User: sell 10 WYFI market from TFSA
 | `Shares input not found` | Dialog may have closed — re-run `--execute` |
 | `Tab not found: Limit` | Order type not available for this symbol — try Market |
 | `Account switch failing` | Account switching dropdown options are clean `span` tags with empty className matching `s.className === ''` and text starting with target. The standard `.click()` method fails on these elements; you MUST dispatch a sequence of `mousedown`, `mouseup`, and `click` MouseEvents to both the option span and its `parentElement` to trigger the change. |
-| TradingView not running | Start TradingView Desktop with debug port: `python3 tools/launch_tradingview_with_debugport.py` |
+| TradingView not running | Start TradingView Desktop with debug port: `python3 plugins/tradingview/scripts/tv_launch.py` |

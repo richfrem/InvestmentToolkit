@@ -420,6 +420,20 @@
         "thesisImpact": "Bull probability +5pp; bear -3pp. FV $611.52\u2192$648.60. Action: ACCUMULATE\u2192BUY."
       }
     ],
-    "lastGrokSweep": "2026-05-07"
+    "lastGrokSweep": "2026-05-07",
+    "taLevels": {
+      "date": "2026-06-29",
+      "signal": "REDUCE",
+      "score": -1,
+      "priceLevels": {
+        "stopLoss": 300.0,
+        "trimAt": 425.0,
+        "holdLo": 340.0,
+        "holdHi": 424.0,
+        "accumulateAt": 355.0
+      },
+      "source": "daily-loop-agent",
+      "notes": "TA REDUCE only \u2014 DCF strongly BUY (+74% to $649 FV). Underwater at $373 vs $424 book. Trim only above break-even. Accumulate if RSI resets to <50 around $350-360."
+    }
   }
 ]

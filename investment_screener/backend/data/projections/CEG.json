@@ -467,6 +467,20 @@
       "valuationAction": "SELL",
       "portfolioRationale": "SELL-rated at $174.96 FV vs price $307.81 (\u221243.2%). Situational Awareness LP EXITED CEG between Q2 and Q4 2025 \u2014 independent confirmation from the thesis fund. Nuclear power thesis is valid but CEG is overpriced. Trim from 4.33% to 2.0%. Freed weight \u2192 VST.",
       "portfolioUrgency": "NORMAL"
+    },
+    "taLevels": {
+      "date": "2026-06-29",
+      "signal": "REDUCE",
+      "score": -2,
+      "priceLevels": {
+        "stopLoss": null,
+        "trimAt": 364.0,
+        "holdLo": 240.0,
+        "holdHi": 364.0,
+        "accumulateAt": null
+      },
+      "source": "daily-loop-agent",
+      "notes": "SELL_ONLY_WHEN_GREEN. Underwater -28.8%, break-even $364. Trim only above $364 (book) or $385 (bull FV). SQUEEZE_ON \u2014 watch for coil resolution. No accumulate: DCF TRIM, stock above $175 FV."
     }
   }
 ]

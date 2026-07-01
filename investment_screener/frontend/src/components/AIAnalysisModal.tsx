@@ -317,6 +317,51 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
                                 </div>
                             )}
 
+                            {/* TA Price Levels */}
+                            {projection.taLevels && (
+                                <div className="bg-slate-800/30 border border-slate-700 rounded-xl p-5">
+                                    <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                                        <span className="w-1 h-4 bg-cyan-500 rounded-full"></span>
+                                        TA Price Levels
+                                        <span className="text-xs font-normal text-slate-500 ml-auto">
+                                            {projection.taLevels.signal} · score {projection.taLevels.score > 0 ? '+' : ''}{projection.taLevels.score} · {projection.taLevels.date}
+                                        </span>
+                                    </h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                                        {projection.taLevels.priceLevels.stopLoss != null && (
+                                            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/25 text-center">
+                                                <div className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-1">Stop / Exit</div>
+                                                <div className="text-lg font-black text-red-300">${projection.taLevels.priceLevels.stopLoss}</div>
+                                            </div>
+                                        )}
+                                        {projection.taLevels.priceLevels.trimAt != null && (
+                                            <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/25 text-center">
+                                                <div className="text-[10px] font-bold text-orange-400 uppercase tracking-wider mb-1">Trim At</div>
+                                                <div className="text-lg font-black text-orange-300">${projection.taLevels.priceLevels.trimAt}</div>
+                                            </div>
+                                        )}
+                                        {projection.taLevels.priceLevels.holdLo != null && projection.taLevels.priceLevels.holdHi != null && (
+                                            <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/25 text-center">
+                                                <div className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider mb-1">Hold Zone</div>
+                                                <div className="text-sm font-black text-yellow-300">${projection.taLevels.priceLevels.holdLo}–${projection.taLevels.priceLevels.holdHi}</div>
+                                            </div>
+                                        )}
+                                        <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/25 text-center">
+                                            <div className="text-[10px] font-bold text-green-400 uppercase tracking-wider mb-1">Accumulate At</div>
+                                            <div className="text-lg font-black text-green-300">
+                                                {projection.taLevels.priceLevels.accumulateAt != null
+                                                    ? `$${projection.taLevels.priceLevels.accumulateAt}`
+                                                    : <span className="text-sm text-slate-500">Not yet</span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {projection.taLevels.notes && (
+                                        <p className="text-xs text-slate-400 italic">{projection.taLevels.notes}</p>
+                                    )}
+                                </div>
+                            )}
+
                             {/* AI Rationale / Deep Dive */}
                             {projection.aiThesis?.rationale && projection.aiThesis.rationale !== projection.rationale && (
                                 <div className="bg-indigo-900/10 border border-indigo-500/20 rounded-xl p-5">

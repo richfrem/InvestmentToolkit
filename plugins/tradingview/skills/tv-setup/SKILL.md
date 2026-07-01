@@ -38,7 +38,7 @@ cd tradingview-cdp && npm ci
 If the health check fails due to the port not being reachable:
 - On macOS:
   ```bash
-  python3 tools/launch_tradingview_with_debugport.py
+  python3 plugins/tradingview/scripts/tv_launch.py
   ```
 - Or run manually:
   - Close all instances of TradingView Desktop.
