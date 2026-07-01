@@ -9,8 +9,8 @@ T0.5: portfolio_action.py subprocess smoke — verifies the bridge is intact.
       If this returns empty or non-zero, abort before all other tiers.
 
 Usage:
-    python3 tests/run_tests.py           # run T0 + T0.5
-    python3 tests/run_tests.py --t0-only # run T0 only
+    python3 run_tests.py           # run T0 + T0.5
+    python3 run_tests.py --t0-only # run T0 only
 """
 
 import argparse
@@ -20,7 +20,7 @@ import sys
 import os
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parent
 FIXTURES = REPO_ROOT / "investment_screener/backend/tests/fixtures"
 
 CRITICAL = "\033[91m[CRITICAL]\033[0m"
@@ -84,7 +84,7 @@ def t0_path_regression() -> bool:
         "adrs/023-tradingview-test-harness.md",
         "temp/bundles/tradingview-symlink-review/post-implementation/payload.md",
         "temp/bundles/tradingview-symlink-review/payload.md",
-        "tests/run_tests.py", # This file itself
+        "run_tests.py", # This file itself
     }
     
     ok = True
@@ -144,10 +144,11 @@ def t0_symlink_cwd_invariance() -> bool:
     env = os.environ.copy()
     env["TV_CDP_DIR"] = "/tmp/fake-tradingview-cdp"
     result = subprocess.run(["python3", str(REPO_ROOT / "plugins/tradingview/scripts/tv_health_check.py"), "--json"], capture_output=True, text=True, cwd=str(REPO_ROOT), env=env)
-    if result.returncode != 0 and "not found" in result.stderr:
+    combined = result.stdout + result.stderr
+    if result.returncode != 0 and "not found" in combined:
         print(f"  {OK} TV_CDP_DIR override test passed (failed correctly with bad path)")
     else:
-        print(f"  {CRITICAL} TV_CDP_DIR override test failed. Output: {result.stderr[:200]}")
+        print(f"  {CRITICAL} TV_CDP_DIR override test failed. Exit={result.returncode} stdout={result.stdout[:200]}")
         ok = False
         
     return ok

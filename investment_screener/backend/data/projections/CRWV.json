@@ -504,6 +504,20 @@
         "thesisImpact": "Bull probability +7pp; bear -4pp. FV $179.10\u2192$202.03. Action: BUY\u2192BUY."
       }
     ],
-    "lastGrokSweep": "2026-06-05"
+    "lastGrokSweep": "2026-06-05",
+    "taLevels": {
+      "date": "2026-07-01",
+      "signal": "ACCUMULATE",
+      "score": 1,
+      "priceLevels": {
+        "stopLoss": 78.0,
+        "trimAt": 110.0,
+        "holdLo": 82.0,
+        "holdHi": 96.0,
+        "accumulateAt": 86.0
+      },
+      "source": "tv-ta-deep multi-timeframe",
+      "notes": "1H RSI 28 oversold; daily ADX 13 (no trend = volatile, not trending). 5m ADX 56 signals intraday exhaustion. DCF BUY +128% upside to $202 FV. Add 2-4sh at $82-88."
+    }
   }
 ]

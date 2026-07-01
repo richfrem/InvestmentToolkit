@@ -21,6 +21,7 @@
         "obsidian-wiki-engine",
         "plugin-manager",
         "spec-kitty",
+        "spec-kitty-plugin",
         "task-manager"
       ]
     },

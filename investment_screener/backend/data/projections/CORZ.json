@@ -432,6 +432,20 @@
         "thesisImpact": "Bull probability +5pp; bear -3pp. FV $14.72\u2192$16.08. Action: SELL\u2192SELL."
       }
     ],
-    "lastGrokSweep": "2026-06-05"
+    "lastGrokSweep": "2026-06-05",
+    "taLevels": {
+      "date": "2026-06-29",
+      "signal": "EXIT",
+      "score": -3,
+      "priceLevels": {
+        "stopLoss": 22.0,
+        "trimAt": 29.0,
+        "holdLo": 23.0,
+        "holdHi": 28.0,
+        "accumulateAt": 16.0
+      },
+      "source": "daily-loop-agent",
+      "notes": "Stock 69% above weighted DCF FV ($16). Allowlisted \u2014 SA LP long. Trim above $28-30 (bull FV ceiling) on distribution signal. Accumulate only after DCF refresh confirms re-rate; base case $6.92 is extreme bear. Model (May 2) predates $3.3B bond raise and 1.5GW buildout."
+    }
   }
 ]

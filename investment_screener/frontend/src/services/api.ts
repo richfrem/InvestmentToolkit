@@ -375,6 +375,20 @@ export interface Projection {
         analyzedAt: string;
         researchReport?: string;
     };
+    taLevels?: {
+        date: string;
+        signal: string;
+        score: number;
+        priceLevels: {
+            stopLoss: number | null;
+            trimAt: number | null;
+            holdLo: number | null;
+            holdHi: number | null;
+            accumulateAt: number | null;
+        };
+        source: string;
+        notes?: string;
+    };
     globalSettings: {
         discountRate: number;
         timeHorizon: number;

@@ -8,6 +8,39 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-06-29 — Card Format Enhancement (Tier 1 Evolution)
+
+**Macro:** RISK-ON (score=2)
+**TA Sweep:** skipped (--skip-ta flag; TA data from prior sweep used)
+**Actions taken:** 0 — session in progress at time of evolution entry
+**User overrides:** n/a
+**Tool failures:** none
+
+**Evolution applied (Tier 1 — new capability):**
+User requested that every triage card include:
+1. **P&L position** — book price, current price, gain/loss $ and %, PROFIT vs UNDERWATER label.
+   Rule added: never recommend selling a REDUCE signal on an underwater position unless thesis
+   is broken (DCF SELL) or score ≤ -3 (EXIT). Always show break-even price.
+2. **TA-derived action levels** — four price targets per card: Exit/Stop-loss, Trim/Reduce at,
+   Hold zone, Accumulate at. Derived from: (a) DCF bear/base/bull projections, (b) targetEntryPrice
+   from target-portfolio.json, (c) RSI/ADX context rules. Labels distinguish `(DCF ref)` vs `(TA ref)`.
+3. **Triage queue reasons** — each queue item now shows a one-line reason explaining the signal
+   (e.g. "DCF SELL, RSI 78 cooling, thesis broken") alongside the P&L %.
+4. **DCF agree/conflict narrative** — card narrative must explicitly call out whether TA and
+   DCF are aligned or pulling in opposite directions, since conflicting signals require user judgment.
+
+**Files updated:** `plugins/portfolio-advisor/agents/daily-loop-agent.md` (Step 2 triage format
++ Step 3 card format + TA levels derivation rules + P&L context rules + triage history
+recording + pattern detection + optimization pass in Step 4c).
+`plugins/portfolio-advisor/references/triage-history.json` — created (first entry: MSFT 2026-06-29).
+
+**Consecutive EXIT signals (3+ days):** BE, CORZ (both ALLOWLISTED — no action without user direction)
+**Score improvements vs yesterday:** CLSK +4 · CACI +3 · CRWV +2 · APLD +2 · OKLO +2
+**Score deteriorations:** MSFT -3 (largest single-day delta) · FOTO -1 · KOID -1 · BE -1
+**Notes:** WYFI confirmed sold by user — remove from future triage. 15 holdings with >5% overnight
+gaps today (ASTS +9.4%, RKLB +9.0%, CRWD +6.8%, PANW +6.7% UP; WYFI -10.5%, SNDK -8.6%,
+COHR -8.6% DOWN). Only 1 actionable recommendation today (MSFT trim, score -1, weight at target).
+
 ## 2026-06-27 — Weekly Review
 
 **Macro Regime:** RISK-OFF (with sector stabilization). Semi rout mid-June led to tech de-rating, but MU blowout earnings late-week catalyzed memory/HBM recovery. VIX elevated; credit/yields show macro caution. Hyperscaler capex scrutinized but remains robust.
@@ -256,3 +289,41 @@ CORZ, OKLO, PANW — all have standing decisions, no action required
 **Notes:** First session where the evolution log is actually written. The daily-loop-agent
 spec mandates an entry every session — before today the log was empty despite the system
 being live since June 1. The loop only compounds if this file grows.
+
+## 2026-06-29 — Daily Session (Partial — user on break)
+
+**Macro:** RISK-ON (score=2) · VIX 18.1 · SPY +7.0% vs 200D · HYG/LQD 0.729
+**TA Sweep:** skipped (--skip-ta; prior cache used)
+**Actions taken:** 0 trades · 4 HOLD decisions · 1 target weight reduced (BE 2.97%→2.26%)
+**Deferred:** Card 5 — CLSK/CACI score improvements (carry to tomorrow)
+
+**Decisions:**
+- MSFT: HOLD — TA noise (-1 score), DCF BUY +74%, at target weight, underwater -12%
+- BE:   HOLD — allowlisted (SA LP #1 long), target reduced to 2.26% to match actual, role→hold
+- CORZ: HOLD — allowlisted (SA LP long), in profit +17.6%, approaching bull FV ceiling ($30)
+- CEG:  HOLD — SELL_ONLY_WHEN_GREEN, underwater -28.8%, SQUEEZE_ON forming
+- OKLO: HOLD — SELL_ONLY_WHEN_GREEN, underwater -49.1%, distribution ongoing
+
+**User note:** All cash deployed to PSU-U.TO (90 shares, $9,003) for high-interest parking
+while waiting for re-entry opportunities. PSU-U.TO earns yield while dry powder holds.
+
+**Overnight movers noted (>5%):** ASTS +9.4%, RKLB +9.0%, CRWD +6.8%, PANW +6.7%
+WYFI -10.5% (user confirmed already sold), SNDK -8.6%, COHR -8.6%
+
+**Tool failures:** none
+
+**Evolution applied this session (Tier 1):**
+1. daily-loop-agent: P&L context + TA levels + triage-history recording + optimization pass
+2. daily-loop-agent: taLevels written to projection JSONs for web app display
+3. single-stock-advisor: same three additions (P&L in Phase 1, taLevels in Phase 2, triage-history in Phase 4)
+4. AIAnalysisModal.tsx: TA Price Levels tile section added (stop/trim/hold/accumulate)
+5. api.ts Projection interface: taLevels field added
+
+**taLevels written today:** MSFT, BE, CORZ, CEG, OKLO
+**triage-history.json entries:** 5
+
+**Consecutive EXIT signals:** BE (2+ sessions, allowlisted) · CORZ (2+ sessions, allowlisted)
+**Score improvements vs yesterday:** CLSK +4 · CACI +3 · CRWV +2 · APLD +2 (carry to tomorrow)
+**Notes:** CEG watching for SQUEEZE_ON resolution. CORZ approaching bull FV $30 — monitor.
+PSU-U.TO fully loaded as cash reserve. Next session: start with CLSK/CACI card.
+echo "Gap logged"

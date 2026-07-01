@@ -6,7 +6,7 @@ Reads from temp/stocks.xlsx, table TABLE_PORTFOLIO_SUMMARY, extracts stock symbo
 from the 2nd column, and outputs to a JSON file.
 
 Usage:
-    python3 tools/extract_portfolio_symbols.py
+    python3 investment_screener/backend/py_services/extract_portfolio_symbols.py
 """
 
 import json

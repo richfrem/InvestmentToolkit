@@ -34,8 +34,8 @@ export default function PerformanceMetrics({ performance }: PerformanceMetricsPr
 
     return (
         <div className="flex gap-1.5 items-center">
-            {metrics.map((m) => {
-                const isPositive = m.value >= 0;
+            {metrics.filter((m) => m.value != null).map((m) => {
+                const isPositive = (m.value as number) >= 0;
                 return (
                     <div
                         key={m.label}
@@ -47,7 +47,7 @@ export default function PerformanceMetrics({ performance }: PerformanceMetricsPr
                     >
                         <span className="text-[9px] text-slate-500 uppercase font-bold leading-tight">{m.label}</span>
                         <span className={`text-[11px] font-black ${isPositive ? 'text-green-400' : 'text-red-400'} leading-tight`}>
-                            {isPositive ? '+' : ''}{m.value.toFixed(1)}%
+                            {isPositive ? '+' : ''}{(m.value as number).toFixed(1)}%
                         </span>
                     </div>
                 );

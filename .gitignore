@@ -101,3 +101,9 @@ plugins/tradingview/audit/
 
 .pytest_cache/
 **/.pytest_cache/
+
+# Python file locks (created by pip-compile; never committed)
+*.pylock
+
+# Triage session history (ephemeral daily agent state)
+plugins/portfolio-advisor/references/triage-history.json

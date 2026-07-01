@@ -43,6 +43,9 @@ export default function Dashboard() {
     const { addTicker } = useRecentTickers();
 
     const [targetHolding, setTargetHolding] = useState<any | null>(null);
+    const [aiResult, setAiResult] = useState<ValuationResult | null>(null);
+    const [viewingProjection, setViewingProjection] = useState<Projection | null>(null);
+    const [showAIModal, setShowAIModal] = useState(false);
 
     const loadTargetHolding = useCallback(async (ticker: string) => {
         try {

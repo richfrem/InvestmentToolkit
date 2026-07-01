@@ -34,3 +34,5 @@ This policy governs how agents must respond when a tool call, subprocess, web au
 
 9. **Refine Prompt Templates on Ingesting Grok Responses**: Every time you ingest and process a Grok sweep response, you MUST evaluate its quality (checking for grouped tickers, lazy placeholders, or TA-related errors) and immediately update the prompt templates (`daily_sweep.md.template` and `weekly_sweep.md.template`) to guard against any observed deficiencies.
 
+10. **Keep instruction files lean**: After any session that adds new pitfalls, rules, or project knowledge, check instruction file sizes: `wc -c .claude/CLAUDE.md GEMINI.md .github/copilot-instructions.md`. If any exceeds 12,000 characters, compress it using the principles in `.agents/skills/optimize-context/SKILL.md` — remove duplicate content, compress pitfalls to 2-line entries, strip sections already covered by skill/agent prompts. Never let instruction files grow unbounded; token cost compounds across every turn in every session.
+
