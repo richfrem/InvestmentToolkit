@@ -27,11 +27,29 @@ CACHE_TTL_SECONDS = {
 
 
 def _cache_path(key: str, data_class: str) -> Path:
+    """Construct a cache file path from key and data class.
+
+    Args:
+        key: Cache key, sanitized to alphanumeric + '-' + '.'.
+        data_class: Data class name (e.g., 'quote', 'ohlcv').
+
+    Returns:
+        Path object pointing to the cache file.
+    """
     safe_key = "".join(c for c in key if c.isalnum() or c in ("-", "."))
     return CACHE_DIR / f"{data_class}_{safe_key}.json"
 
 
 def cache_get(key: str, data_class: str) -> Optional[dict]:
+    """Retrieve a value from cache if it exists and hasn't expired.
+
+    Args:
+        key: Cache key.
+        data_class: Data class name to look up TTL.
+
+    Returns:
+        Cached dict if found and not expired; None otherwise.
+    """
     path = _cache_path(key, data_class)
     if not path.exists():
         return None
@@ -47,6 +65,13 @@ def cache_get(key: str, data_class: str) -> Optional[dict]:
 
 
 def cache_set(key: str, data_class: str, value: dict) -> None:
+    """Store a value in the cache.
+
+    Args:
+        key: Cache key.
+        data_class: Data class name.
+        value: Dict to cache.
+    """
     path = _cache_path(key, data_class)
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w") as f:
