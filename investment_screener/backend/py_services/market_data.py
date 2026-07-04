@@ -105,3 +105,40 @@ def get_prices(tickers: list[str], period: str, interval: str = "1d") -> dict[st
         result[t] = {**entry, "source": "yfinance"}
 
     return result
+
+
+def get_quote(tickers: list[str]) -> dict[str, dict]:
+    """Fetch the latest price quote for one or more tickers.
+
+    Attempts to retrieve each quote from cache first (15-minute TTL, see
+    cache.CACHE_TTL_SECONDS["quote"]). For any ticker not in cache, fetches
+    the current price from yfinance's fast_info, caches the result, and
+    returns it tagged with the source.
+
+    Note: this is yfinance-only. Per documented pitfall #7, TV CDP's `quote`
+    command reads only the active chart symbol regardless of the ticker
+    requested, so it cannot be used for batch quoting without silently
+    returning wrong-ticker data. A TV-CDP single-ticker quote path is
+    intentionally out of scope here.
+
+    Args:
+        tickers: List of ticker symbols (e.g., ["AAPL", "MSFT"]).
+
+    Returns:
+        Dict mapping ticker to result dict. Each result has:
+            - "price": Latest price as a float.
+            - "source": "yfinance" or "cache".
+            - "asOf": ISO 8601 timestamp of fetch/cache.
+    """
+    result = {}
+    for t in tickers:
+        cached = cache_get(t, "quote")
+        if cached is not None:
+            result[t] = {**cached, "source": "cache"}
+            continue
+        info = yf.Ticker(t).fast_info
+        price = info.get("lastPrice") if hasattr(info, "get") else info["lastPrice"]
+        entry = {"price": float(price), "asOf": _now_iso()}
+        cache_set(t, "quote", entry)
+        result[t] = {**entry, "source": "yfinance"}
+    return result
