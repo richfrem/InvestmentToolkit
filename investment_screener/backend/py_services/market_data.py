@@ -136,9 +136,17 @@ def get_quote(tickers: list[str]) -> dict[str, dict]:
         if cached is not None:
             result[t] = {**cached, "source": "cache"}
             continue
-        info = yf.Ticker(t).fast_info
-        price = info.get("lastPrice") if hasattr(info, "get") else info["lastPrice"]
-        entry = {"price": float(price), "asOf": _now_iso()}
+        # A single bad/delisted ticker (missing "lastPrice", or any other
+        # response-shape drift from yfinance) must not raise out of this
+        # loop and kill the whole batch — skip just this ticker and keep
+        # processing the rest, mirroring the per-row skip in get_prices().
+        try:
+            info = yf.Ticker(t).fast_info
+            price = info.get("lastPrice") if hasattr(info, "get") else info["lastPrice"]
+            price = float(price)
+        except (TypeError, ValueError, KeyError, AttributeError):
+            continue
+        entry = {"price": price, "asOf": _now_iso()}
         cache_set(t, "quote", entry)
         result[t] = {**entry, "source": "yfinance"}
     return result
