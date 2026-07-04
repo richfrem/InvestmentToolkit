@@ -150,3 +150,83 @@ def get_quote(tickers: list[str]) -> dict[str, dict]:
         cache_set(t, "quote", entry)
         result[t] = {**entry, "source": "yfinance"}
     return result
+
+
+def _extract_avg_estimate(df, row_label: str):
+    """Safely pull a float 'avg' value for one row out of an estimates table.
+
+    Guards against every way an analyst-estimates DataFrame can be missing or
+    malformed: the whole object being None, not a DataFrame, empty, lacking
+    the requested row or the 'avg' column, or containing a NaN in that cell.
+    None of these are errors worth raising for — they all mean "no estimate
+    available for this field" and must degrade to None, never 0.0.
+
+    Args:
+        df: The (possibly None/empty/malformed) estimates DataFrame.
+        row_label: Row index label to read (e.g. "0y", "+1y").
+
+    Returns:
+        The estimate as a float, or None if unavailable in any way.
+    """
+    if not isinstance(df, pd.DataFrame) or df.empty:
+        return None
+    if row_label not in df.index or "avg" not in df.columns:
+        return None
+    try:
+        value = df.loc[row_label, "avg"]
+    except (KeyError, TypeError):
+        return None
+    if pd.isna(value):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def get_estimates(ticker: str) -> dict:
+    """Fetch analyst forward revenue estimates for the current and next fiscal year.
+
+    Attempts to retrieve the estimate from cache first (24h TTL, see
+    cache.CACHE_TTL_SECONDS["fundamentals"]). On a cache miss, fetches
+    yfinance's revenue_estimate table, extracts the "0y" (current fiscal
+    year) and "+1y" (next fiscal year) analyst-consensus averages, caches
+    the result, and returns it tagged with the source.
+
+    Never raises on missing or malformed upstream data: a ticker with no
+    analyst coverage, a revenue_estimate access that itself throws, an
+    empty/None table, a missing row, or a NaN 'avg' cell all degrade to a
+    None value for the affected field rather than crashing the caller or
+    silently returning a zeroed estimate.
+
+    Args:
+        ticker: Ticker symbol (e.g., "PLTR").
+
+    Returns:
+        Dict with:
+            - "y1RevEstimate": float|None current fiscal year revenue estimate.
+            - "y2RevEstimate": float|None next fiscal year revenue estimate.
+            - "source": "yfinance" or "cache".
+            - "asOf": ISO 8601 timestamp of fetch/cache.
+    """
+    cached = cache_get(ticker, "fundamentals")
+    if cached is not None and "y1RevEstimate" in cached:
+        return {**cached, "source": "cache"}
+
+    # yfinance's revenue_estimate property can itself raise (network errors,
+    # upstream parsing failures, etc.) for a single ticker — that must not
+    # propagate and kill the caller, mirroring the per-ticker guard in
+    # get_quote().
+    try:
+        df = yf.Ticker(ticker).revenue_estimate
+    except Exception:  # noqa: BLE001 - yfinance's failure modes here are unbounded
+        # (network errors, upstream JSON/schema drift, etc.); any of them means
+        # "no estimate available", never a reason to crash the caller.
+        df = None
+
+    y1 = _extract_avg_estimate(df, "0y")
+    y2 = _extract_avg_estimate(df, "+1y")
+
+    entry = {"y1RevEstimate": y1, "y2RevEstimate": y2, "asOf": _now_iso()}
+    cache_set(ticker, "fundamentals", entry)
+    return {**entry, "source": "yfinance"}
