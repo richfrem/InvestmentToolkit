@@ -11,8 +11,10 @@ Purpose:
     docs/superpowers/specs/2026-07-02-data-layer-design.md.
 
     Never returns a zeroed/defaulted value for missing data — a missing field is
-    absent from the response, not present-and-wrong. See
-    .agent/rules/no-silent-nan-to-zero.md.
+    absent from the response, not present-and-wrong. This applies equally to
+    partial/NaN rows from upstream providers: a NaN value must never be
+    silently coerced to zero, and must never crash the whole batch request
+    either — the affected row is simply omitted for that ticker.
 
 Layer: Backend / Python Services / Data Layer
 """
@@ -21,13 +23,11 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import pandas as pd
 import yfinance as yf
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import cache  # noqa: E402
 from cache import cache_get, cache_set  # noqa: E402
-
-CACHE_DIR = Path(__file__).resolve().parent / ".." / "data" / "cache"
 
 
 def _now_iso() -> str:
@@ -39,7 +39,7 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def get_prices(tickers: list, period: str, interval: str = "1d") -> dict:
+def get_prices(tickers: list[str], period: str, interval: str = "1d") -> dict[str, dict]:
     """Fetch OHLCV price data for one or more tickers.
 
     Attempts to retrieve prices from cache first. For any ticker not in cache,
@@ -56,9 +56,6 @@ def get_prices(tickers: list, period: str, interval: str = "1d") -> dict:
             - "source": "yfinance" or "cache".
             - "asOf": ISO 8601 timestamp of fetch/cache.
     """
-    # Sync cache module's CACHE_DIR with ours (supports monkeypatching in tests)
-    cache.CACHE_DIR = CACHE_DIR
-
     result = {}
     to_fetch = []
     for t in tickers:
@@ -85,13 +82,23 @@ def get_prices(tickers: list, period: str, interval: str = "1d") -> dict:
             continue
         rows = []
         for idx, row in sub.iterrows():
+            o, hi, lo, c, v = (
+                row.get("Open"), row.get("High"), row.get("Low"),
+                row.get("Close"), row.get("Volume"),
+            )
+            # Misaligned trading calendars (e.g. a TSX ticker alongside a NASDAQ
+            # ticker) leave real NaN values — not missing keys — for the ticker
+            # that didn't trade that day. Skip the row for this ticker rather
+            # than crash (int(NaN) raises ValueError) or fabricate a zero.
+            if any(pd.isna(field) for field in (o, hi, lo, c, v)):
+                continue
             rows.append({
                 "date": idx.strftime("%Y-%m-%d"),
-                "open": float(row.get("Open", 0.0)),
-                "high": float(row.get("High", 0.0)),
-                "low": float(row.get("Low", 0.0)),
-                "close": float(row.get("Close", 0.0)),
-                "volume": int(row.get("Volume", 0)),
+                "open": float(o),
+                "high": float(hi),
+                "low": float(lo),
+                "close": float(c),
+                "volume": int(v),
             })
         entry = {"data": rows, "asOf": _now_iso()}
         cache_set(f"{t}_{period}_{interval}", "ohlcv", entry)
