@@ -5,3 +5,4 @@
 yfinance
 keyring
 cryptography>=46.0.7
+jsonschema
