@@ -28,6 +28,8 @@ import yfinance as yf
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from cache import cache_get, cache_set  # noqa: E402
+from edgar_facts import get_company_facts  # noqa: E402
+from data_quality import check_disagreement, check_staleness  # noqa: E402
 
 
 def _now_iso() -> str:
@@ -230,3 +232,181 @@ def get_estimates(ticker: str) -> dict:
     entry = {"y1RevEstimate": y1, "y2RevEstimate": y2, "asOf": _now_iso()}
     cache_set(ticker, "fundamentals", entry)
     return {**entry, "source": "yfinance"}
+
+
+# yfinance's .info dict field for each metric that has a clean 1:1 raw
+# equivalent. operatingIncome is deliberately excluded — yfinance has no raw
+# field for it, only a derived ratio (operatingMargins * totalRevenue), and
+# mixing computed-vs-raw provenance in one merge function is an explicit
+# scope boundary for this task, not an oversight (see task brief / ADR).
+_YF_FUNDAMENTALS_FIELDS = {
+    "revenue": "totalRevenue",
+    "netIncome": "netIncomeToCommon",
+}
+
+
+def _safe_float(value):
+    """Coerce a raw upstream value to float, treating anything unusable as absent.
+
+    Guards every way a value from EDGAR or yfinance can fail to be a clean
+    number: None, a non-numeric type, or NaN. None of these are errors worth
+    raising for — they all mean "no usable value", never 0.0.
+
+    Args:
+        value: Raw value from an upstream provider (may be None, NaN, str, etc.).
+
+    Returns:
+        The value as a float, or None if it is missing/malformed.
+    """
+    if value is None:
+        return None
+    try:
+        as_float = float(value)
+    except (TypeError, ValueError):
+        return None
+    if pd.isna(as_float):
+        return None
+    return as_float
+
+
+def _safe_edgar_facts(cik):
+    """Fetch EDGAR company facts, tolerating any failure as "no EDGAR data".
+
+    get_company_facts() already returns {} for a clean 404 (invalid CIK) or
+    a metric missing/malformed within an otherwise-valid response. But the
+    underlying HTTP/JSON call can also raise for reasons unrelated to a
+    clean 404 (network timeout, DNS failure, non-JSON response body, etc.).
+    None of those are reasons to crash get_fundamentals() — EDGAR being
+    unavailable for any reason just means every metric falls through to
+    yfinance instead.
+
+    Args:
+        cik: SEC Central Index Key string, or None/falsy to skip EDGAR
+            entirely (non-US tickers have no CIK).
+
+    Returns:
+        Dict from get_company_facts(), or {} if cik is falsy or the call
+        fails for any reason.
+    """
+    if not cik:
+        return {}
+    try:
+        return get_company_facts(cik) or {}
+    except Exception:  # noqa: BLE001 - network/parsing failures here are unbounded
+        return {}
+
+
+def _safe_yf_info(ticker):
+    """Fetch yfinance's `.info` dict, tolerating any failure as "no yfinance data".
+
+    Mirrors the per-ticker guard already used in get_quote()/get_estimates():
+    a single ticker's `.info` access raising, returning None, or returning a
+    non-dict must never crash the caller.
+
+    Args:
+        ticker: Ticker symbol (e.g., "AAPL").
+
+    Returns:
+        The `.info` dict, or {} if unavailable for any reason.
+    """
+    try:
+        info = yf.Ticker(ticker).info
+    except Exception:  # noqa: BLE001 - yfinance's failure modes here are unbounded
+        return {}
+    return info if isinstance(info, dict) else {}
+
+
+def get_fundamentals(ticker: str, cik: str = None) -> dict:
+    """Fetch revenue/netIncome/operatingIncome via an EDGAR-primary, yfinance-supplement waterfall.
+
+    For "revenue" and "netIncome": EDGAR (point-in-time-correct, US filers
+    only, via edgar_facts.get_company_facts()) is preferred whenever it has
+    a value; yfinance's `.info` dict supplements any metric EDGAR lacks.
+    When both sources have a value for the same metric, check_disagreement()
+    flags — but never hides or auto-resolves — a divergence beyond the
+    default threshold; EDGAR's value is still the one returned. When `cik`
+    is None (non-US ticker, e.g. "ASML", "PSU-U.TO"), EDGAR is skipped
+    entirely and every field is sourced from yfinance.
+
+    "operatingIncome" is EDGAR-only in this pass: yfinance's `.info` has no
+    clean raw field for it (only a derived margin ratio), and mixing
+    computed-vs-raw provenance in one merge function is an explicit,
+    deliberate scope boundary — not a gap to silently fill with a yfinance
+    fallback.
+
+    A metric absent from both sources is simply omitted from the result —
+    never coerced to 0.0. Any failure fetching from EDGAR or yfinance
+    (network error, malformed response, missing/NaN fields, unexpected
+    response shape) degrades to "no data from that source" for the affected
+    metric rather than crashing the caller.
+
+    Args:
+        ticker: Ticker symbol (e.g., "AAPL").
+        cik: SEC Central Index Key, or None to skip EDGAR (non-US tickers).
+
+    Returns:
+        Dict with per-metric entries for any of "revenue", "netIncome", and
+        "operatingIncome" that have data from at least one source, each
+        shaped {"value": float, "source": "edgar"|"yfinance", "asOf": str},
+        plus "dataQuality": {"staleness": bool, "dataConflicts": list, "flags": list}.
+    """
+    cached = cache_get(ticker, "fundamentals")
+    if cached is not None and "revenue" in cached:
+        return {
+            **cached,
+            "dataQuality": cached.get(
+                "dataQuality", {"staleness": False, "dataConflicts": [], "flags": []}
+            ),
+        }
+
+    edgar = _safe_edgar_facts(cik)
+    yf_info = _safe_yf_info(ticker)
+
+    result = {}
+    conflicts = []
+
+    for metric, yf_key in _YF_FUNDAMENTALS_FIELDS.items():
+        edgar_field = edgar.get(metric)
+        edgar_value = _safe_float(edgar_field.get("value")) if edgar_field else None
+        yf_value = _safe_float(yf_info.get(yf_key))
+
+        if edgar_value is not None:
+            result[metric] = {
+                "value": edgar_value,
+                "source": "edgar",
+                "asOf": edgar_field.get("asOf"),
+            }
+            if yf_value is not None:
+                conflict = check_disagreement(edgar_value, yf_value, metric)
+                if conflict:
+                    conflicts.append(conflict)
+        elif yf_value is not None:
+            result[metric] = {"value": yf_value, "source": "yfinance", "asOf": _now_iso()}
+        # else: absent from both sources — omitted entirely, never zeroed.
+
+    # operatingIncome: EDGAR-only for this pass (see docstring for rationale).
+    operating_field = edgar.get("operatingIncome")
+    operating_value = _safe_float(operating_field.get("value")) if operating_field else None
+    if operating_value is not None:
+        result["operatingIncome"] = {
+            "value": operating_value,
+            "source": "edgar",
+            "asOf": operating_field.get("asOf"),
+        }
+
+    # Staleness is judged on revenue's asOf date — revenue is always present
+    # when any data was found at all, and is the metric every downstream
+    # valuation script (DCF, framework_score) anchors on.
+    is_stale = False
+    revenue_as_of = result.get("revenue", {}).get("asOf")
+    if revenue_as_of:
+        try:
+            is_stale = check_staleness(revenue_as_of[:10])
+        except ValueError:
+            # Malformed/unexpected asOf format must never crash the whole
+            # call — treat as "cannot determine staleness", not stale.
+            is_stale = False
+
+    result["dataQuality"] = {"staleness": is_stale, "dataConflicts": conflicts, "flags": []}
+    cache_set(ticker, "fundamentals", result)
+    return result
