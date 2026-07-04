@@ -135,6 +135,21 @@ Parse the JSON and present exactly this format. Be concise — the goal is a 30-
 
 ### Step 2 — Triage (Agent Proposes, User Confirms)
 
+**News × Technical Confluence Gate (mandatory, all signal types):** Full rule at
+`.agent/rules/news-technical-confluence.md`. Before building the priority queue, check
+`temp/news-sweep-responses/{grok,gemini}/` for a response dated within the last 7 days.
+If none exists, offer to generate one now — not only when ACCUMULATE candidates are present.
+Every REDUCE/EXIT/ACCUMULATE/TRIM signal must carry a confluence verdict before it's
+presented as a confident recommendation:
+- `[CONFLUENCE]` — TA/DCF and available news agree on direction
+- `[PARTIAL]` — partial agreement, or only one news source covered the ticker
+- `[CONFLICT]` — TA/DCF and news disagree — state the conflict, do not pick a side
+- `[TA/DCF-ONLY — NEWS UNCHECKED]` — no sweep available this session; label as provisional
+
+When TA shows `RSI_COOLING` + `VOLUME_DRY` + `BIG_DAY` together, check news for the catalyst
+that caused the spike — if found, prefer TRIM over EXIT unless news also confirms the thesis
+itself is broken.
+
 After presenting the brief, build a **priority queue** from the signals. Present it as a
 numbered list, ranked by urgency:
 
@@ -189,6 +204,8 @@ wait for the user's response, then move to the next.
   DCF:    [ACTION] · FV $[Z] ([+X.X]% upside)  ← bear $[A] / base $[B] / bull $[C]
   TA:     RSI [XX.X] · ADX [XX.X] · Vol Bias [±XX%]
   Flags:  [RSI_COOLING | VOL_SPIKE | SQUEEZE_ACTIVE | none]
+  News:   [Grok: STANCE (conviction N/10) — 1-line reason] · [Gemini: STANCE (conviction N/10) — 1-line reason]
+          Verdict: [CONFLUENCE | PARTIAL | CONFLICT | TA/DCF-ONLY — NEWS UNCHECKED]
   Earns:  [MM-DD (N days)] or [no event in 30 days]
 
   [SIGNAL NARRATIVE — 2–3 sentences: WHY this signal, whether DCF and TA
@@ -334,15 +351,17 @@ Ask one follow-up: *"What's driving your decision? I'll note it for my improveme
 Record their answer in both the session's evolution entry AND the triage-history record
 for that ticker. This is the primary learning signal for future pattern detection.
 
-**x-news-sweep integration:**
-After working through the REDUCE/EXIT queue, ask:
-> "Want fresh news context before acting on the accumulate signals?
-> I'll generate the Grok prompt now — takes 60 seconds to paste and return."
+**x-news-sweep integration (now gates every signal type, per the confluence rule above):**
+If no sweep response exists within the last 7 days when the triage queue is built, ask:
+> "No recent news sweep on file. Want fresh news context before I finalize these
+> recommendations? I'll generate the prompt now — takes 60 seconds to paste and return."
 
 If yes: invoke `python3 plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_grok_prompt.py`
-and present the prompt. Wait for the user to paste back Grok's response.
-Parse the response and fold any EXIT overrides or new ACCUMULATE signals into the
-remaining queue before proceeding.
+and present the prompt. Wait for the user to paste back the response(s) — Grok, Gemini, or both.
+Parse each response, compute the confluence verdict per ticker (`[CONFLUENCE]` / `[PARTIAL]` /
+`[CONFLICT]`), and fold any EXIT overrides, new ACCUMULATE signals, or conflicts into the
+remaining queue before proceeding. `[CONFLICT]` tickers are surfaced explicitly, never
+silently resolved in either direction.
 
 ---
 

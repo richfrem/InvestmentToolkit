@@ -31,12 +31,12 @@ InvestmentToolkit/
 
 ## Non-Negotiable Rules
 
-1. **TDD**: NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST. Mocking strictly prohibited on critical runtime paths. Check `.agent/rules/test-driven-development.md` before any implementation.
+1. **TDW (TDD & TDO)**: NO CODE DEVELOPMENT OR ORCHESTRATION EXECUTION WITHOUT A FAILING TEST OR SUCCESS CONTRACT FIRST. Mocking strictly prohibited on critical runtime paths. Check `.agent/rules/test-driven-development.md` before any work begins.
 2. **No Inline Python**: Never compute financial/analytical calculations inline. Always extract to versioned scripts in `investment_screener/backend/py_services/`.
 3. **Coding Conventions**: Google-style docstrings, type hints, snake_case/camelCase, refactor at 50+ lines or 3+ nesting levels.
 4. **Dependency Management**: No manual `pip install`. Edit `requirements.in` → `pip-compile requirements.in -o requirements.txt`.
 5. **Plugin Architecture**: Symlinks ONLY via `symlink_manager.py`. Never raw `ln -s`. No cross-plugin script execution.
-6. **Self-Evolution**: Classify failures (Tier 1/2/3), max 3 repair attempts, update playbooks. Deletions strictly forbidden.
+6. **Self-Evolution & Map Debt**: Classify failures/friction (Tiers 0/1/2/3), max 3 attempts. Active map debt audit must pass in `run_tests.py`. Always execute the `PRE-COMPLETION GATE` check block and log map debt before ending the session. Deletions are strictly forbidden.
 7. **Self-Healing**: Fix broken Bash/python3 snippets inline, re-run silently. Never advance with broken output visible.
 8. **Standing Decision is anchor**: Read `standingDecision` in `target-portfolio.json` before any recommendation. DCF never silently overrides — only material delta (>15% FV change) or new information justifies revisiting. Never flip BUY→SELL on <15% variance.
 9. **Post-trade update mandatory**: After ANY trade: sells → `role: "exited"`, `targetWeight: 0`; buys → update `shares` + `agentRationale`. Dashboard reads this file — stale entries = data integrity failure.

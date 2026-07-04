@@ -2,9 +2,9 @@
   "id": "target-portfolio",
   "name": "Investment Thesis v9.4",
   "schemaVersion": "1.0",
-  "version": "9.5",
+  "version": "9.6",
   "createdAt": "2026-02-14T12:00:00Z",
-  "updatedAt": "2026-06-30T06:39:09.490Z",
+  "updatedAt": "2026-07-02T17:47:31.113Z",
   "description": "Investment thesis focused on the dual infrastructure buildout for ASI Compute (Primary) and Sovereign Finance (Secondary).",
   "pillars": [
     {
@@ -46,7 +46,7 @@
     {
       "id": "cash",
       "name": "Cash (Strategic Reserve)",
-      "targetWeight": 12.8474
+      "targetWeight": 13.5635
     },
     {
       "id": "quantum",
@@ -61,6 +61,7 @@
     {
       "id": "defense",
       "name": "Defense AI & Space Infrastructure",
+      "targetWeight": 0,
       "description": "AI-native defense IT, space systems, and government tech modernization. Long-term US government contracts with high backlogs and switching costs. Counter-cyclical to consumer AI valuation swings."
     },
     {
@@ -81,12 +82,12 @@
       "ticker": "PSU-U.TO",
       "name": "Purpose US Cash Fund",
       "pillarId": "cash",
-      "targetWeight": 18.6451,
+      "targetWeight": 18.425,
       "role": "accumulate",
       "subStrategyId": "cash",
       "thesisForInclusion": "USD cash reserve (Purpose US Cash Fund) — holds short-term USD treasuries on TSX. Primary purpose: USD currency exposure + interest income while awaiting deployment into thesis positions. Monthly dividend ~$0.31-0.33/share (~$3.68-3.90 USD annualized). ENTRY RULE: always buy 1-2 days AFTER the ex-dividend date (typically last Tuesday of month) to get the cycle-low reset price and capture the full next month of accrual. Buying mid-cycle or just before ex-date overpays for already-accrued dividend. Ex-dates: ~Jan 28, Feb 25, Mar 31, Apr 28, May 28, Jun 30 pattern. Next planned entry: May 29, 2026 (post May 28 ex-date).",
       "agentRationale": "MAINTAIN. 56 shares held (PSU.U.TO in broker = same fund, hyphen/dot notation only). Purpose US Cash Fund — USD HISA equivalent, monthly dividend ~$0.31-0.33/share. Core cash reserve position. Entry rule: buy 1-2 days after ex-dividend date (last Tuesday of month).",
-      "shares": 90
+      "shares": 74
     },
     {
       "ticker": "INTC",
@@ -132,7 +133,7 @@
       "ticker": "GOOG",
       "name": "Alphabet Inc.",
       "pillarId": "titans",
-      "targetWeight": 3.9539,
+      "targetWeight": 3.982,
       "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Hyperscaler with vertically integrated AI stack.",
@@ -163,7 +164,7 @@
       "ticker": "COIN",
       "name": "Coinbase Global",
       "pillarId": "sovfin",
-      "targetWeight": 2.9654,
+      "targetWeight": 2.9865,
       "role": "accumulate",
       "subStrategyId": "sovereign-finance",
       "thesisForInclusion": "Regulated crypto exchange + Base L2 growth. Settlement rail for AI Agents.",
@@ -184,7 +185,7 @@
       "ticker": "CRCL",
       "name": "Circle Internet",
       "pillarId": "sovfin",
-      "targetWeight": 2.7183,
+      "targetWeight": 2.7376,
       "role": "accumulate",
       "subStrategyId": "sovereign-finance",
       "thesisForInclusion": "USDC issuer and stablecoin infrastructure for AI agents.",
@@ -195,7 +196,7 @@
       "ticker": "VST",
       "name": "Vistra Corp.",
       "pillarId": "power",
-      "targetWeight": 1.8781,
+      "targetWeight": 1.8914,
       "role": "trim",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Nuclear + natgas power merchant.",
@@ -212,7 +213,7 @@
       "ticker": "CEG",
       "name": "Constellation Energy",
       "pillarId": "power",
-      "targetWeight": 2.4712,
+      "targetWeight": 2.4888,
       "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Largest US nuclear operator.",
@@ -223,7 +224,7 @@
       "ticker": "OKLO",
       "name": "Oklo Inc.",
       "pillarId": "power",
-      "targetWeight": 1.4827,
+      "targetWeight": 1.4932,
       "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Micro-nuclear reactor commercialization. Power pillar speculative play — same theme as BE and CEG. AI data center power demand requires diverse nuclear supply; OKLO's micro-reactor model targets co-location with data centers.",
@@ -240,12 +241,12 @@
       "ticker": "PANW",
       "name": "Palo Alto Networks",
       "pillarId": "security",
-      "targetWeight": 4.4481,
+      "targetWeight": 4.4797,
       "role": "accumulate",
       "subStrategyId": "cybersecurity",
       "thesisForInclusion": "AI-native platform consolidation leader.",
       "agentRationale": "2026-05-14: Trimmed from ~5.5% → 4.3% (below 4.8% target). SA LP: not in portfolio — no smart-money validation. DCF: TRIM -14.5%. Action: allow to drift up naturally or hold at current weight. Not a core AI-infrastructure holding. 2026-06-05: Q3 FY26 beat/raise (June 2); AI-driven cyber demand tailwind; guidance raised.",
-      "shares": 5
+      "shares": 3.5
     },
     {
       "ticker": "CRWD",
@@ -261,7 +262,7 @@
       "ticker": "ZS",
       "name": "Zscaler Inc.",
       "pillarId": "security",
-      "targetWeight": 4.4481,
+      "targetWeight": 4.4797,
       "role": "accumulate",
       "subStrategyId": "cybersecurity",
       "thesisForInclusion": "Zero-trust SASE leader.",
@@ -272,7 +273,7 @@
       "ticker": "CORZ",
       "name": "Core Scientific",
       "pillarId": "datainfra",
-      "targetWeight": 3.7068,
+      "targetWeight": 3.7331,
       "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "BTC→AI data center conversion thesis.",
@@ -293,12 +294,12 @@
       "ticker": "CRWV",
       "name": "CoreWeave Inc.",
       "pillarId": "datainfra",
-      "targetWeight": 5.2308,
+      "targetWeight": 5.268,
       "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "GPU cloud provider.",
       "agentRationale": "DCF: ACCUMULATE | FV $163 vs $119 price | +36.6% upside. 2026-05-07: Q1 2026: revenue $2.08B +112% YoY; RPO backlog $42.4B +50% QoQ demand de-risked; NVIDIA confirmed top customer; losses wider but demand trajectory offsets. 2026-06-05: $8.5B IG GPU-backed financing; total ~$28B capital stack; backlog scale reinforced. 2026-06-08: NVIDIA Vera Rubin NVL72 bring-up/validation complete — confirms cutting-edge GPU deployment on latest architecture. ACCUMULATE on pullbacks.",
-      "shares": 18
+      "shares": 24
     },
     {
       "ticker": "ANET",
@@ -330,7 +331,7 @@
       "ticker": "HUMN",
       "name": "Roundhill Humanoid Robotics ETF",
       "pillarId": "robotics",
-      "targetWeight": 2.4712,
+      "targetWeight": 2.4888,
       "role": "accumulate",
       "subStrategyId": "robotics-automation",
       "thesisForInclusion": "Physical embodiment of ASI thesis.",
@@ -341,7 +342,7 @@
       "ticker": "KOID",
       "name": "KraneShares Humanoid ETF",
       "pillarId": "robotics",
-      "targetWeight": 2.4712,
+      "targetWeight": 2.4888,
       "role": "accumulate",
       "subStrategyId": "robotics-automation",
       "thesisForInclusion": "Automation and robotics revolution.",
@@ -369,18 +370,18 @@
       "ticker": "BE",
       "name": "Bloom Energy Corporation",
       "subStrategyId": "sa-asi-race",
-      "targetWeight": 2.26,
+      "targetWeight": 2.2761,
       "role": "accumulate",
       "thesisForInclusion": "Bloom Energy fuel cells.",
       "agentRationale": "2026-05-19: Forward-Looking Valuation Challenge & Math Validation applied. Accounted for the Oracle 2.8GW, Brookfield, and AEP deals ($20B backlog) and clean energy/AI P/E re-rating. Standardized on outstanding share count. Intrinsic fair value: $158.55 vs $258.71 price (SELL, -38.7% upside). 2026-06-03: $2.6B fuel cell deal with NBIS validates solid oxide tech for AI power demand. 2026-06-08: Record Q1 revenue +130% YoY; raised FY guidance; Oracle partnership expansion. Operational beats conflict with DCF SELL. HOLD; do not add; monitor for valuation re-rate. 2026-06-29: Target weight reduced to 2.26% (match actual). Role changed from accumulate to hold. Standing decision maintained: ALLOWLISTED_CONFLICT — SA LP #1 long ($878M), no exit without user direction. DCF refresh queued (model predates Q1 +130% beat and $2.6B NBIS deal).",
-      "shares": 3,
+      "shares": 4.5,
       "pillarId": "power"
     },
     {
       "ticker": "NBIS",
       "name": "Nebius Group N.V.",
       "pillarId": "datainfra",
-      "targetWeight": 2.4712,
+      "targetWeight": 2.4888,
       "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "European AI infrastructure.",
@@ -391,7 +392,7 @@
       "ticker": "CRM",
       "name": "Salesforce, Inc.",
       "subStrategyId": "quality-saas",
-      "targetWeight": 1.8781,
+      "targetWeight": 1.8914,
       "role": "accumulate",
       "thesisForInclusion": "Agentforce AI platform.",
       "agentRationale": "2026-05-14: Trimmed. At 1.5% vs 1.2% target — near target. SA LP: not a holding. DCF: BUY +53.1% (conflicts with trim direction). Trim driven by thesis focus not DCF. Continue light trimming or hold at current weight.",
@@ -402,7 +403,7 @@
       "ticker": "NOW",
       "name": "ServiceNow, Inc.",
       "subStrategyId": "quality-saas",
-      "targetWeight": 1.8781,
+      "targetWeight": 1.8914,
       "role": "accumulate",
       "thesisForInclusion": "AI workflow automation.",
       "agentRationale": "DCF: BUY | FV $132 vs $91 price | +45.2% upside.",
@@ -423,17 +424,95 @@
       "ticker": "IREN",
       "name": "IREN LIMITED",
       "subStrategyId": "sa-asi-race",
-      "targetWeight": 3.262,
+      "targetWeight": 3.638,
       "role": "accumulate",
-      "thesisForInclusion": "AI GPU cloud pivot — 800MW Australia campus + Blackwell GPU deployment + $4.4B ARR target. IREN converted from BTC mining to AI data center infrastructure. HOLD at target weight; reduce only if AI capex thesis deteriorates.",
+      "thesisForInclusion": "AI GPU cloud pivot — 800MW Australia campus + Blackwell GPU deployment. Increased target weight to 3.638% (31 shares) to accumulate on dilution dip in RRSP (+3) and TFSA (+6) as execution play.",
       "agentRationale": "2026-05-13 Grok sweep: exit flag reversed 2026-05-07; $3.4B 5yr AI cloud contract + NVIDIA partnership + 480MW Sweetwater expansion on track. SA LP aligned. 2026-06-03: 800MW Australia campus + $3.65B GPU financing confirms global AI pivot execution. 2026-06-08: Awaken acquisition closed; $4.4B ARR target set with Blackwell GPU deployment. 2026-06-21: Standing decision updated to HOLD/REDUCE — prior 'EXIT: Liquidation finalized' note was stale and contradicted actual position. Position at target 2.4%.",
-      "shares": 22,
+      "shares": 31,
       "pillarId": "compute",
       "standingDecision": {
         "type": "HOLD_AT_TARGET",
         "reason": "IREN AI pivot thesis confirmed (GPU cloud, NVIDIA Blackwell, 800MW Australia campus). Hold at 2.4449% target. Reduce only if AI data center demand thesis deteriorates or position drifts >4%. Prior 'EXIT: Liquidation finalized' note was a stale flag — reversed 2026-05-07, never cleaned up until 2026-06-21.",
         "source": "user 2026-06-21",
         "review": "Review at next strategic session. Monitor GPU deployment milestones and $4.4B ARR ramp."
+      },
+      "priceLevels": {
+        "schemaVersion": "1.0",
+        "lastUpdated": "2026-07-02",
+        "lastUpdatedBy": "dcf",
+        "note": "Auto-derived from adjusted /evaluate-stock 2026-07-02",
+        "buyTiers": [
+          {
+            "tier": 1,
+            "price": 13.71,
+            "action": "accumulate",
+            "trimPct": null,
+            "orderType": "limit",
+            "basis": "DCF base FV x 0.75 — 25% margin of safety",
+            "source": "dcf",
+            "sourceDate": "2026-07-02",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 2,
+            "price": 0.73,
+            "action": "accumulate_aggressive",
+            "trimPct": null,
+            "orderType": "limit",
+            "basis": "DCF bear FV x 1.05 — aggressive accumulation zone",
+            "source": "dcf",
+            "sourceDate": "2026-07-02",
+            "condition": null,
+            "status": "active"
+          }
+        ],
+        "sellTiers": [
+          {
+            "tier": 1,
+            "price": 18.28,
+            "action": "trim",
+            "trimPct": 30,
+            "orderType": "limit",
+            "basis": "DCF base fair value",
+            "source": "dcf",
+            "sourceDate": "2026-07-02",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 2,
+            "price": 68.06,
+            "action": "trim",
+            "trimPct": 50,
+            "orderType": "limit",
+            "basis": "DCF bull fair value",
+            "source": "dcf",
+            "sourceDate": "2026-07-02",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 3,
+            "price": 81.67,
+            "action": "exit",
+            "trimPct": 100,
+            "orderType": "limit",
+            "basis": "20% above bull FV — thesis fully priced in",
+            "source": "dcf",
+            "sourceDate": "2026-07-02",
+            "condition": null,
+            "status": "active"
+          }
+        ],
+        "stopLoss": {
+          "price": 0.66,
+          "basis": "DCF bear FV x 0.95 — thesis breaker",
+          "source": "dcf",
+          "sourceDate": "2026-07-02",
+          "type": "thesis_breaker",
+          "status": "active"
+        }
       }
     },
     {
@@ -492,7 +571,7 @@
       "ticker": "BTDR",
       "name": "Bitdeer Technologies Group",
       "pillarId": "compute",
-      "targetWeight": 1.899,
+      "targetWeight": 1.9125,
       "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Proprietary Sealminer ASIC chip design.",
@@ -519,25 +598,103 @@
     {
       "ticker": "SNDK",
       "name": "SanDisk Corp",
-      "targetWeight": 3.9979,
+      "targetWeight": 4.0263,
       "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "pillarId": "datainfra",
       "thesisForInclusion": "NAND storage infrastructure play.",
       "agentRationale": "2026-05-19: Agentic Swarm Memory Thesis applied. Spawning parallel sub-agents multiplies active KV context caching & state log persistence requirements. De-risked Bear to 15% & raised Bull to 35%. Reconciled intrinsic value: $1,982.18 vs $1,333.01 price (BUY, +48.7% upside). 2026-06-08: Multiple analyst PT raises; design awards confirm AI memory demand cycle. GTC limit $1,350 — only accumulate at or below entry price.",
-      "shares": 0.7,
-      "targetEntryPrice": 1350
+      "shares": 0.94,
+      "targetEntryPrice": 1350,
+      "priceLevels": {
+        "schemaVersion": "1.0",
+        "lastUpdated": "2026-07-02",
+        "lastUpdatedBy": "dcf",
+        "note": "Auto-derived from /evaluate-stock 2026-07-02",
+        "buyTiers": [
+          {
+            "tier": 1,
+            "price": 1048.28,
+            "action": "accumulate",
+            "trimPct": null,
+            "orderType": "limit",
+            "basis": "DCF base FV x 0.75 — 25% margin of safety",
+            "source": "dcf",
+            "sourceDate": "2026-07-02",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 2,
+            "price": 107.29,
+            "action": "accumulate_aggressive",
+            "trimPct": null,
+            "orderType": "limit",
+            "basis": "DCF bear FV x 1.05 — aggressive accumulation zone",
+            "source": "dcf",
+            "sourceDate": "2026-07-02",
+            "condition": null,
+            "status": "active"
+          }
+        ],
+        "sellTiers": [
+          {
+            "tier": 1,
+            "price": 1397.7,
+            "action": "trim",
+            "trimPct": 30,
+            "orderType": "limit",
+            "basis": "DCF base fair value",
+            "source": "dcf",
+            "sourceDate": "2026-07-02",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 2,
+            "price": 4252.52,
+            "action": "trim",
+            "trimPct": 50,
+            "orderType": "limit",
+            "basis": "DCF bull fair value",
+            "source": "dcf",
+            "sourceDate": "2026-07-02",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 3,
+            "price": 5103.02,
+            "action": "exit",
+            "trimPct": 100,
+            "orderType": "limit",
+            "basis": "20% above bull FV — thesis fully priced in",
+            "source": "dcf",
+            "sourceDate": "2026-07-02",
+            "condition": null,
+            "status": "active"
+          }
+        ],
+        "stopLoss": {
+          "price": 97.07,
+          "basis": "DCF bear FV x 0.95 — thesis breaker",
+          "source": "dcf",
+          "sourceDate": "2026-07-02",
+          "type": "thesis_breaker",
+          "status": "active"
+        }
+      }
     },
     {
       "ticker": "PSIX",
       "name": "Power Solutions International",
-      "targetWeight": 1.9769,
+      "targetWeight": 1.9909,
       "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "pillarId": "power",
       "thesisForInclusion": "AI power infrastructure.",
       "agentRationale": "2026-05-13: User doubled position on 40% earnings selloff. Q1 miss: rev $128.6M vs $160M+ est (-5% YoY); net income -62%; gross margin 22.9% vs 29.7% prior. Cause: oil/gas softness + datacenter power shipment timing + Wisconsin ramp costs. Mgmt reaffirmed H2 datacenter acceleration; no FY guidance cut. SA LP position intact. DCF: BUY +51.9%. Target 0.50% → 1.71% (post-normalize). Review post-H2 ramp.",
-      "shares": 12
+      "shares": 14
     },
     {
       "ticker": "IONQ",
@@ -558,7 +715,7 @@
       "ticker": "TEAM",
       "name": "Atlassian Corporation",
       "pillarId": "quality_saas",
-      "targetWeight": 1.8781,
+      "targetWeight": 1.8914,
       "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Human-agentic collaboration platform.",
@@ -609,7 +766,7 @@
       "ticker": "DRAM",
       "name": "Roundhill Memory ETF",
       "pillarId": "compute",
-      "targetWeight": 4.4481,
+      "targetWeight": 4.4797,
       "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Only US-listed vehicle for SK Hynix (25.9%) and Samsung (21.6%) HBM exposure — Nvidia's #1 and #2 HBM suppliers, not tradeable directly on US exchanges. Strategic memory play: HBM is the critical scarcity resource in AI compute scaling. Korean/Japanese memory consolidation thesis. Wait for pullback from current levels (+94.6% in 6mo) before initiating.",
@@ -621,7 +778,7 @@
       "ticker": "MSFT",
       "name": "MSFT",
       "pillarId": "titans",
-      "targetWeight": 2.224,
+      "targetWeight": 2.2398,
       "role": "accumulate",
       "thesisForInclusion": "Core large-cap AI platform compounder. Azure AI dominant enterprise cloud. 34-37% net margins, 18% TTM revenue growth. DCF BUY +50% (FV ).",
       "agentRationale": "MAINTAIN at 2 shares. No accumulate, no trim — hold current level. DCF BUY +50% upside. EXIT flag was an auto-add error on 2026-05-18, corrected 2026-06-03.",
@@ -631,7 +788,7 @@
       "ticker": "CLSK",
       "name": "CleanSpark Inc.",
       "pillarId": "datainfra",
-      "targetWeight": 1.9769,
+      "targetWeight": 1.9909,
       "role": "initiate",
       "subStrategyId": "ai-infrastructure",
       "thesisForInclusion": "AI compute infrastructure play. CleanSpark is converting high-efficiency green power facilities into AI data center workloads — GPU clusters replacing ASIC miners. Net: a power-advantaged AI compute operator with a privileged cost position.",
@@ -719,7 +876,7 @@
       "ticker": "APLD",
       "name": "APLD",
       "pillarId": "compute",
-      "targetWeight": 2.4712,
+      "targetWeight": 2.4888,
       "role": "accumulate",
       "thesisForInclusion": "Situational Awareness LP core holding. AI data center infrastructure play aligned with SA fund thesis on ASI race build-out.",
       "agentRationale": "MAINTAIN. Core SA LP holding at 2% target. DCF BUY +49%. Position auto-flagged EXIT in error on 2026-05-18 — corrected 2026-06-03. Do not exit without explicit user instruction. 2026-06-08: $550M revolving credit facility secured; >1GW contracted capacity milestone with major hyperscaler; cloud business separation complete. Thesis strongly confirmed — light ACCUMULATE on dips.",
@@ -808,7 +965,7 @@
       "ticker": "CBRS",
       "name": "Cerebras Systems Inc.",
       "pillarId": "compute",
-      "targetWeight": 2.4712,
+      "targetWeight": 2.4888,
       "role": "accumulate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference.",
@@ -819,7 +976,7 @@
       "ticker": "CACI",
       "name": "CACI International Inc.",
       "pillarId": "defense",
-      "targetWeight": 1.4135,
+      "targetWeight": 1.4235,
       "role": "initiate",
       "subStrategyId": "defense-ai-space",
       "thesisForInclusion": "$28B+ backlog (3.2x TTM revenue), 70%+ cleared workforce, proprietary free-space optical communications (photonics), electronic warfare, and cyber operations. Transitioning from commoditized IT services to high-margin mission technology. Geopolitical defense anchor — government-backed revenue stream insulated from commercial tech drawdowns.",
@@ -1134,7 +1291,7 @@
       "ticker": "FOTO",
       "name": "Global X Photonics ETF",
       "pillarId": "photonics",
-      "targetWeight": 1.9769,
+      "targetWeight": 1.9909,
       "role": "accumulate",
       "subStrategyId": "photonics-optical",
       "thesisForInclusion": "Primary photonics sector vehicle. Copper-to-optical interconnect transition is live — GPU cluster bandwidth demands are hitting copper walls now. ETF approach avoids individual name binary risk (COHR, LITE, CIEN all above DCF fair value) while capturing the secular shift.",
@@ -1175,7 +1332,7 @@
       "ticker": "WQTM",
       "name": "WisdomTree Quantum Computing ETF",
       "pillarId": "quantum",
-      "targetWeight": 1.4827,
+      "targetWeight": 1.4932,
       "role": "initiate",
       "subStrategyId": "quantum-computing",
       "thesisForInclusion": "Primary and sole quantum computing vehicle. WQTM-only strategy confirmed 2026-06-21. Holds IONQ, QBTS, RGTI, IBM quantum, Honeywell — diversified sector exposure without single-company binary risk. Mirrors KOID/HUMN robotics ETF playbook.",
@@ -1184,7 +1341,7 @@
     {
       "ticker": "PLTR",
       "name": "Palantir Technologies Inc.",
-      "targetWeight": 2.4377,
+      "targetWeight": 2.455,
       "role": "initiate",
       "subStrategyId": "ontological-os",
       "pillarId": "security",
@@ -1192,29 +1349,78 @@
       "agentRationale": "DCF: BUY | FV $122.92 vs $111.22 price (+10.5% upside). Oversold daily RSI (32.5) curls up from support. Initiated at 2.50% target weight (2.44% normalized). Top-1m support limit set at $109.50.",
       "priceLevels": {
         "schemaVersion": "1.0",
-        "lastUpdated": "2026-06-26",
-        "lastUpdatedBy": "agent",
-        "note": "Entry limit set at intraday 1m chart pullback support block.",
+        "lastUpdated": "2026-07-02",
+        "lastUpdatedBy": "dcf",
+        "note": "Auto-derived from /evaluate-stock 2026-07-02",
         "buyTiers": [
           {
             "tier": 1,
-            "price": 109.5,
+            "price": 101.66,
             "action": "accumulate",
             "trimPct": null,
             "orderType": "limit",
-            "basis": "Intraday 1-minute breakout pullback support",
-            "source": "ta",
-            "sourceDate": "2026-06-26",
-            "condition": "Price retraces to market open support block",
+            "basis": "DCF base FV x 0.75 — 25% margin of safety",
+            "source": "dcf",
+            "sourceDate": "2026-07-02",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 2,
+            "price": 21.15,
+            "action": "accumulate_aggressive",
+            "trimPct": null,
+            "orderType": "limit",
+            "basis": "DCF bear FV x 1.05 — aggressive accumulation zone",
+            "source": "dcf",
+            "sourceDate": "2026-07-02",
+            "condition": null,
             "status": "active"
           }
         ],
-        "sellTiers": [],
+        "sellTiers": [
+          {
+            "tier": 1,
+            "price": 135.55,
+            "action": "trim",
+            "trimPct": 30,
+            "orderType": "limit",
+            "basis": "DCF base fair value",
+            "source": "dcf",
+            "sourceDate": "2026-07-02",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 2,
+            "price": 320.1,
+            "action": "trim",
+            "trimPct": 50,
+            "orderType": "limit",
+            "basis": "DCF bull fair value",
+            "source": "dcf",
+            "sourceDate": "2026-07-02",
+            "condition": null,
+            "status": "active"
+          },
+          {
+            "tier": 3,
+            "price": 384.12,
+            "action": "exit",
+            "trimPct": 100,
+            "orderType": "limit",
+            "basis": "20% above bull FV — thesis fully priced in",
+            "source": "dcf",
+            "sourceDate": "2026-07-02",
+            "condition": null,
+            "status": "active"
+          }
+        ],
         "stopLoss": {
-          "price": 41.95,
-          "basis": "Bear case fair value $44.16 x 0.95",
+          "price": 19.13,
+          "basis": "DCF bear FV x 0.95 — thesis breaker",
           "source": "dcf",
-          "sourceDate": "2026-06-26",
+          "sourceDate": "2026-07-02",
           "type": "thesis_breaker",
           "status": "active"
         }
@@ -1226,5 +1432,12 @@
     "criticalDriftPct": 5,
     "rebalanceFrequency": "quarterly",
     "portfolioValueUSD": 30797
-  }
+  },
+  "changeLog": [
+    {
+      "version": "9.6",
+      "date": "2026-07-02",
+      "note": "DCA buying on IREN dilution dip (adds 3 in RRSP, 6 in TFSA; total 31 shares)."
+    }
+  ]
 }

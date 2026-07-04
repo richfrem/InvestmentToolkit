@@ -67,23 +67,23 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-06-30 17:04 by TV sync · Portfolio total: $34,418 USD*
+*Auto-updated 2026-07-02 10:50 by TV sync · Portfolio total: $32,473 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **CRWV** | 18 | 5.0% | 5.2% | -0.2pp | ⚪ MAINTAIN | — |
-| **DRAM** | 21 | 4.4% | 4.4% | -0.1pp | ⚪ MAINTAIN | — |
-| **SNDK** | 0.7 | 4.2% | 4.0% | +0.2pp | ⚪ MAINTAIN | ≤$1,350 |
-| **GOOG** | 4 | 4.1% | 4.0% | +0.1pp | ⚪ MAINTAIN | — |
-| **CORZ** | 46 | 3.5% | 3.7% | -0.2pp | ⚪ MAINTAIN | — |
-| **IREN** | 22 | 2.9% | 3.3% | -0.3pp | ⚪ MAINTAIN | — |
+| **CRWV** | 24 | 6.0% | 5.3% | +0.7pp | ⚪ MAINTAIN | — |
+| **SNDK** | 0.94 | 5.0% | 4.0% | +1.0pp | 🟡 TRIM | ≤$1,350 |
+| **IREN** | 31 | 4.4% | 3.6% | +0.8pp | 🟡 TRIM | — |
+| **GOOG** | 4 | 4.4% | 4.0% | +0.4pp | ⚪ MAINTAIN | — |
+| **DRAM** | 21 | 3.8% | 4.5% | -0.7pp | ⚪ MAINTAIN | — |
+| **CORZ** | 46 | 3.0% | 3.7% | -0.7pp | 🔵 ACCUMULATE | — |
 | **CBRS** | 4.5 | 2.8% | 2.5% | +0.4pp | ⚪ MAINTAIN | — |
-| **NBIS** | 3 | 2.3% | 2.5% | -0.2pp | ⚪ MAINTAIN | — |
-| **APLD** | 20 | 2.2% | 2.5% | -0.3pp | ⚪ MAINTAIN | — |
-| **MSFT** | 2 | 2.1% | 2.2% | -0.1pp | ⚪ MAINTAIN | — |
-| **BTDR** | 45 | 2.1% | 1.9% | +0.2pp | ⚪ MAINTAIN | — |
+| **MSFT** | 2 | 2.4% | 2.2% | +0.2pp | ⚪ MAINTAIN | — |
+| **APLD** | 20 | 2.0% | 2.5% | -0.5pp | 🔵 ACCUMULATE | — |
+| **BTDR** | 45 | 1.9% | 1.9% | +0.0pp | ⚪ MAINTAIN | — |
+| **NBIS** | 3 | 1.9% | 2.5% | -0.6pp | 🔵 ACCUMULATE | — |
 
 **Pending Initiation**
 
@@ -92,5 +92,5 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 | **CLSK** | — | — | 2.0% | — | 🟢 INITIATE | — |
 | **VRT** | — | — | 0.0% | — | 🟢 INITIATE | — |
 
-**Pillar total — Actual: 35.6% · Target: 38.1% · Gap: -2.6pp**
+**Pillar total — Actual: 37.6% · Target: 38.7% · Gap: -1.2pp**
 <!-- AUTO_UPDATE_END: current_positions -->

@@ -6,7 +6,7 @@ import { questradeSyncService } from '../services/QuestradeSyncService';
 import { brokerSyncService, mergeIntoPortfolio } from '../services/BrokerSyncService';
 import { getLiveUsdCadRate, isTradingViewConnected } from '../utils/helpers';
 import { PORTFOLIO_FILE, PORTFOLIO_CONFIG_FILE, THESIS_FILE } from '../utils/paths';
-import { buildPortfolioSnapshot, PortfolioTotals } from '../utils/portfolioSnapshot';
+import { buildPortfolioSnapshot, preserveAuthoritativeTotal, computeWeightsMap, PortfolioTotals } from '../utils/portfolioSnapshot';
 import { computeStrategyAllocation } from '../utils/strategyAllocation';
 
 const router = express.Router();
@@ -143,17 +143,28 @@ async function persistPortfolioWithSnapshot(items: any[], tvSnapshot?: any): Pro
         return { snapshots: [] };
     })();
     const exchangeRate = await getLiveUsdCadRate(JAN1_USD_CAD_RATE);
-    const { holdings: enriched, totals } = buildPortfolioSnapshot(items, tvSnap, exchangeRate);
 
-    // TV broker equity is authoritative — use it instead of our recomputed sum.
-    const tvBrokerTotal = (tvSnap?.snapshots ?? []).reduce((sum: number, snap: any) => {
+    // Fresh TV account balances (from a companion --balances fetch) are authoritative when
+    // present. The plain --snapshot fetch used by sync-tv does NOT include balances, so this
+    // is usually absent — that's expected, not a bug (see preserveAuthoritativeTotal below).
+    const freshTvBrokerTotal = (tvSnap?.snapshots ?? []).reduce((sum: number, snap: any) => {
         const eq = snap?.balances?.totalEquityUSDCombined ?? snap?.balances?.totalEquityUSD ?? 0;
         return sum + (typeof eq === 'number' && eq > 0 ? eq : 0);
     }, 0);
-    if (tvBrokerTotal > 0) {
-        console.log(`[Portfolio] TV equity=$${tvBrokerTotal.toFixed(2)} computed=$${(totals.holdingsUSD + totals.cashUSD).toFixed(2)} diff=$${(tvBrokerTotal - totals.holdingsUSD - totals.cashUSD).toFixed(2)}`);
-        totals.totalUSD = tvBrokerTotal;
-        totals.totalCAD = tvBrokerTotal * exchangeRate;
+
+    const { holdings: enriched, totals } = buildPortfolioSnapshot(
+        items, tvSnap, exchangeRate, freshTvBrokerTotal > 0 ? freshTvBrokerTotal : null
+    );
+
+    // No fresh authoritative total this write (the common case) — carry forward whatever
+    // was already persisted, rather than silently overwriting it with the shares*price
+    // fallback. This is the fix for the "refresh prices clobbers the real total" bug.
+    if (totals.totalSource === 'computed_fallback') {
+        const { totals: existingTotals } = readPortfolio();
+        const preserved = preserveAuthoritativeTotal(existingTotals, { totalUSD: totals.totalUSD, totalCAD: totals.totalCAD });
+        totals.totalUSD = preserved.totalUSD;
+        totals.totalCAD = preserved.totalCAD;
+        totals.totalSource = preserved.totalSource;
     }
 
     fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify({ holdings: enriched, totals, tvSnapshot: tvSnap }, null, 2));
@@ -273,15 +284,8 @@ router.get('/performance', async (_req, res) => {
 
 router.get('/weights', (_req, res) => {
     try {
-        const { holdings } = readPortfolio();
-        const marketPrice = (p: any) => p.price ?? p.book_price ?? 0;
-        const total = holdings.reduce((s, p) => s + (p.shares || 0) * marketPrice(p), 0);
-        const map: Record<string, number> = {};
-        for (const p of holdings) {
-            const ticker = p.symbol ?? p.ticker;
-            if (ticker && total > 0) map[ticker] = ((p.shares || 0) * marketPrice(p) / total) * 100;
-        }
-        res.json(map);
+        const { holdings, totals } = readPortfolio();
+        res.json(computeWeightsMap(holdings, totals));
     } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 

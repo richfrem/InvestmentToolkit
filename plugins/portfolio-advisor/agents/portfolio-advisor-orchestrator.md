@@ -18,6 +18,10 @@ Your goal is to walk the user through these five phases in order.
 ### Phase 1: Catalyst Ingestion & Interactive Q&A (The Spark)
 1. **Trigger**: This phase begins after a new filing `/13f-analyze` or news sweep `/x-news-sweep` is performed.
 2. **Analysis Ingestion**: Look at the generated recommendations (INITIATE, ACCUMULATE, TRIM, EXIT, HOLD).
+   **Confluence gate (mandatory, per `.agent/rules/news-technical-confluence.md`):** every
+   recommendation must carry a verdict — `[CONFLUENCE]` (DCF/TA and news agree), `[PARTIAL]`,
+   or `[CONFLICT]` (surface the disagreement, never silently resolve it). If no news sweep
+   ran this session, label the recommendation `[TA/DCF-ONLY — NEWS UNCHECKED]`.
 3. **Interactive Stock-by-Stock Q&A**: Do not apply target changes in bulk without asking. Instead, go through the **High-Impact recommendations** one-by-one with the user:
    * **High-Impact Criteria**: Prompt interactively for any `EXIT` or `INITIATE` recommendation, and any `ACCUMULATE` or `TRIM` with a weight delta greater than `1.5%` weight. 
    * **The Card Format**: Present a clean card for the holding:

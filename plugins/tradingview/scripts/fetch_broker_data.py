@@ -295,6 +295,31 @@ def print_compare_report(report: dict):
 
 # ── snapshot writer ───────────────────────────────────────────────────────────
 
+def build_totals_from_balances(balances: dict, stored_exchange_rate: float) -> dict:
+    """Pure transform: live TV account balances -> portfolio.json totals block.
+
+    Marks totalSource='tv_authoritative' so the TS-side preserveAuthoritativeTotal()
+    (portfolioSnapshot.ts) recognizes this as broker-authoritative and won't let a
+    later price-refresh silently overwrite it with a shares*price approximation —
+    both writers must agree on this convention, or the protection added there is
+    incomplete.
+    """
+    cash_usd = balances.get("cashUSDCombined") or balances.get("cashUSD") or 0
+    total_usd = balances.get("totalEquityUSDCombined") or balances.get("totalEquityUSD") or 0
+    market_usd = balances.get("marketValueUSDCombined") or balances.get("marketValueUSD") or 0
+    fx = stored_exchange_rate if stored_exchange_rate and stored_exchange_rate > 0 else 1.3795
+    total_cad = round(total_usd * fx, 4)
+    return {
+        "holdingsUSD": market_usd,
+        "cashUSD": cash_usd,
+        "totalUSD": total_usd,
+        "totalCAD": total_cad,
+        "exchangeRate": fx,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "totalSource": "tv_authoritative",
+    }
+
+
 def write_snapshot(snapshot: dict, promote: bool = False, balances: Optional[dict] = None) -> str:
     """Write snapshot to portfolio.json — merges RRSP+TFSA positions and updates totals from live balances."""
     path = os.path.join(DATA_DIR, "portfolio.json")
@@ -377,22 +402,9 @@ def write_snapshot(snapshot: dict, promote: bool = False, balances: Optional[dic
     # Update totals from live balances — standalone getBalances() is reliable;
     # the embedded call inside getPortfolio() fails due to tab-switching state conflicts.
     if balances and not balances.get("error"):
-        cash_usd = balances.get("cashUSDCombined") or balances.get("cashUSD") or 0
-        total_usd = balances.get("totalEquityUSDCombined") or balances.get("totalEquityUSD") or 0
-        market_usd = balances.get("marketValueUSDCombined") or balances.get("marketValueUSD") or 0
-        # CAD not available from getAccountTotals() — derive from stored exchange rate
         stored_fx = (data.get("totals") or {}).get("exchangeRate") or 1.3795
-        fx = stored_fx if stored_fx > 0 else 1.3795
-        total_cad = round(total_usd * fx, 4)
-        data["totals"] = {
-            "holdingsUSD": market_usd,
-            "cashUSD": cash_usd,
-            "totalUSD": total_usd,
-            "totalCAD": total_cad,
-            "exchangeRate": fx,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-        }
-        print(f"✓ Totals updated: totalUSD=${total_usd:,.2f}  cashUSD=${cash_usd:,.2f}")
+        data["totals"] = build_totals_from_balances(balances, stored_fx)
+        print(f"✓ Totals updated: totalUSD=${data['totals']['totalUSD']:,.2f}  cashUSD=${data['totals']['cashUSD']:,.2f}")
 
     with open(path, "w") as f:
         json.dump(data, f, indent=2)

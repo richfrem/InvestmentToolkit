@@ -1,334 +1,104 @@
 {
-  "timestamp": "2026-06-29T14:04:40.675985+00:00",
-  "scan_date": "2026-06-29",
+  "timestamp": "2026-07-02T14:08:13.839619+00:00",
+  "scan_date": "2026-07-02",
   "count": 26,
   "results": [
     {
-      "ticker": "APLD",
-      "close": 37.66,
-      "changePct": null,
-      "rsi": 31.1,
-      "rsima": 41.2,
-      "volBias": -72.8,
-      "adx": 28.8,
+      "ticker": "KOID",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
       "squeezeOn": false,
-      "vol": 237,
-      "volMA": 1.8,
-      "volumeRatio": 131.67,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
       "flags": [
-        "DIST_SIGNAL",
-        "VOLUME_SPIKE",
-        "DEEP_VALUE"
-      ],
-      "dcf": {
-        "fairValue": 66.89,
-        "pctToFV": 77.6,
-        "base": null,
-        "action": "BUY"
-      },
-      "action": "MONITOR",
-      "targetAction": null,
-      "targetWeight": 2.4712
-    },
-    {
-      "ticker": "BE",
-      "close": 268.95,
-      "changePct": null,
-      "rsi": 39.9,
-      "rsima": 29.2,
-      "volBias": 42.9,
-      "adx": 43.5,
-      "squeezeOn": false,
-      "vol": 133.41,
-      "volMA": 2.23,
-      "volumeRatio": 59.83,
-      "flags": [
-        "ADX_STRONG",
+        "ADX_WEAK",
         "VOLUME_SPIKE",
         "NEAR_FV",
         "ABOVE_FV"
       ],
       "dcf": {
-        "fairValue": 185.72,
-        "pctToFV": -30.9,
-        "base": 120.68,
-        "action": "SELL"
-      },
-      "action": "REDUCE",
-      "targetAction": null,
-      "targetWeight": 2.9654
-    },
-    {
-      "ticker": "BTDR",
-      "close": 15.81,
-      "changePct": 0.29,
-      "rsi": 36.6,
-      "rsima": 55,
-      "volBias": 45.4,
-      "adx": 23.4,
-      "squeezeOn": false,
-      "vol": 161.7,
-      "volMA": 691.84,
-      "volumeRatio": 0.23,
-      "flags": [
-        "DEEP_VALUE"
-      ],
-      "dcf": {
-        "fairValue": 24.09,
-        "pctToFV": 52.4,
-        "base": 29.42,
-        "action": "BUY"
-      },
-      "action": "HOLD",
-      "targetAction": null,
-      "targetWeight": 1.899
-    },
-    {
-      "ticker": "CBRS",
-      "close": 192.56,
-      "changePct": null,
-      "rsi": 64.5,
-      "rsima": 61.3,
-      "volBias": 65.4,
-      "adx": 21.5,
-      "squeezeOn": false,
-      "vol": 75.63,
-      "volMA": 508.79,
-      "volumeRatio": 0.15,
-      "flags": [
-        "ACCUM_SIGNAL",
-        "DEEP_VALUE"
-      ],
-      "dcf": {
-        "fairValue": 342.8,
-        "pctToFV": 78.0,
-        "base": 323.07,
-        "action": "BUY"
-      },
-      "action": "ACCUMULATE",
-      "targetAction": null,
-      "targetWeight": 2.4712
-    },
-    {
-      "ticker": "CEG",
-      "close": 263.88,
-      "changePct": null,
-      "rsi": 44.1,
-      "rsima": 43.3,
-      "volBias": -46.8,
-      "adx": 22.3,
-      "squeezeOn": true,
-      "vol": 16.65,
-      "volMA": 154.5,
-      "volumeRatio": 0.11,
-      "flags": [
-        "SQUEEZE_ON",
-        "NEAR_FV",
-        "ABOVE_FV"
-      ],
-      "dcf": {
-        "fairValue": 174.96,
-        "pctToFV": -33.7,
-        "base": 135.03,
-        "action": "TRIM"
+        "fairValue": 45.4,
+        "pctToFV": -81.3,
+        "base": 48.0,
+        "action": "HOLD"
       },
       "action": "REDUCE",
       "targetAction": null,
       "targetWeight": 2.4712
     },
     {
-      "ticker": "COIN",
-      "close": 148.93,
-      "changePct": 0.09,
-      "rsi": 52.6,
-      "rsima": 54.5,
-      "volBias": -19.6,
-      "adx": 16,
+      "ticker": "HUMN",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
       "squeezeOn": false,
-      "vol": 35.08,
-      "volMA": 429.9,
-      "volumeRatio": 0.08,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
       "flags": [
-        "ADX_WEAK"
-      ],
-      "dcf": {
-        "fairValue": 185.06,
-        "pctToFV": 24.3,
-        "base": 98.16,
-        "action": "MAINTAIN"
-      },
-      "action": "HOLD",
-      "targetAction": null,
-      "targetWeight": 2.9654
-    },
-    {
-      "ticker": "CORZ",
-      "close": 26.78,
-      "changePct": null,
-      "rsi": 43.6,
-      "rsima": 48.8,
-      "volBias": -32.1,
-      "adx": 29.7,
-      "squeezeOn": false,
-      "vol": 97.09,
-      "volMA": 875.89,
-      "volumeRatio": 0.11,
-      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
         "NEAR_FV",
         "ABOVE_FV"
       ],
       "dcf": {
-        "fairValue": 16.08,
-        "pctToFV": -40.0,
-        "base": 6.92,
-        "action": "SELL"
+        "fairValue": 46.65,
+        "pctToFV": -80.8,
+        "base": 46.0,
+        "action": "HOLD"
       },
       "action": "REDUCE",
       "targetAction": null,
-      "targetWeight": 3.7068
+      "targetWeight": 2.4712
     },
     {
-      "ticker": "CRCL",
-      "close": 73.37,
-      "changePct": 0.05,
-      "rsi": 53.5,
-      "rsima": 59.9,
-      "volBias": 23.6,
-      "adx": 27.5,
+      "ticker": "VST",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
       "squeezeOn": false,
-      "vol": 119.76,
-      "volMA": 582.87,
-      "volumeRatio": 0.21,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
       "flags": [
-        "DEEP_VALUE"
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
       ],
       "dcf": {
-        "fairValue": 142.29,
-        "pctToFV": 93.9,
-        "base": 88.63,
-        "action": "MAINTAIN"
+        "fairValue": 196.47,
+        "pctToFV": -19.1,
+        "base": 148.76,
+        "action": "ACCUMULATE"
       },
-      "action": "HOLD",
-      "targetAction": null,
-      "targetWeight": 2.7183
-    },
-    {
-      "ticker": "CRM",
-      "close": 159.83,
-      "changePct": null,
-      "rsi": 71.4,
-      "rsima": 70.4,
-      "volBias": -23.7,
-      "adx": 35.8,
-      "squeezeOn": false,
-      "vol": 54.36,
-      "volMA": 844.16,
-      "volumeRatio": 0.06,
-      "flags": [
-        "ADX_STRONG",
-        "DEEP_VALUE"
-      ],
-      "dcf": {
-        "fairValue": 281.49,
-        "pctToFV": 76.1,
-        "base": 260.09,
-        "action": "BUY"
-      },
-      "action": "HOLD",
+      "action": "REDUCE",
       "targetAction": null,
       "targetWeight": 1.8781
     },
     {
-      "ticker": "CRWV",
-      "close": 92.67,
-      "changePct": null,
-      "rsi": null,
-      "rsima": null,
-      "volBias": -59.8,
-      "adx": 28.8,
-      "squeezeOn": false,
-      "vol": 272.37,
-      "volMA": 1.91,
-      "volumeRatio": 142.6,
-      "flags": [
-        "DIST_SIGNAL",
-        "VOLUME_SPIKE",
-        "DEEP_VALUE"
-      ],
-      "dcf": {
-        "fairValue": 202.03,
-        "pctToFV": 118.0,
-        "base": 133.63,
-        "action": "BUY"
-      },
-      "action": "MONITOR",
-      "targetAction": null,
-      "targetWeight": 5.2308
-    },
-    {
-      "ticker": "DRAM",
-      "close": 68.23,
-      "changePct": 0.06,
-      "rsi": 27.3,
-      "rsima": 38,
-      "volBias": -6.7,
-      "adx": 28.5,
-      "squeezeOn": false,
-      "vol": 1.44,
-      "volMA": 2.91,
-      "volumeRatio": 0.49,
-      "flags": [
-        "RSI_OS",
-        "NEAR_FV",
-        "ABOVE_FV"
-      ],
-      "dcf": {
-        "fairValue": 58.8,
-        "pctToFV": -13.8,
-        "base": 62.0,
-        "action": "HOLD"
-      },
-      "action": "ACCUMULATE",
-      "targetAction": "WATCHLIST",
-      "targetWeight": 4.4481
-    },
-    {
-      "ticker": "FOTO",
-      "close": 21.81,
-      "changePct": null,
-      "rsi": 35.5,
-      "rsima": 42.9,
-      "volBias": 8,
-      "adx": 35.6,
-      "squeezeOn": false,
-      "vol": 18.09,
-      "volMA": 34.76,
-      "volumeRatio": 0.52,
-      "flags": [
-        "ADX_STRONG"
-      ],
-      "dcf": {
-        "fairValue": 25.44,
-        "pctToFV": 16.6,
-        "base": 27.2,
-        "action": "HOLD"
-      },
-      "action": "HOLD",
-      "targetAction": null,
-      "targetWeight": 1.9769
-    },
-    {
       "ticker": "GOOG",
-      "close": 345.12,
-      "changePct": null,
-      "rsi": 61.5,
-      "rsima": 47.6,
-      "volBias": 42.1,
-      "adx": 16.7,
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
       "squeezeOn": false,
-      "vol": 165.61,
-      "volMA": 2.7,
-      "volumeRatio": 61.34,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
       "flags": [
         "ADX_WEAK",
         "VOLUME_SPIKE",
@@ -336,7 +106,7 @@
       ],
       "dcf": {
         "fairValue": 517.98,
-        "pctToFV": 50.1,
+        "pctToFV": 113.3,
         "base": 475.52,
         "action": "ACCUMULATE"
       },
@@ -345,213 +115,53 @@
       "targetWeight": 3.9539
     },
     {
-      "ticker": "HUMN",
-      "close": 32.75,
-      "changePct": 0.24,
-      "rsi": 48.1,
-      "rsima": 40.1,
-      "volBias": -12,
-      "adx": 17.9,
+      "ticker": "MSFT",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
       "squeezeOn": false,
-      "vol": 1.68,
-      "volMA": 5.15,
-      "volumeRatio": 0.33,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
       "flags": [
         "ADX_WEAK",
-        "DEEP_VALUE"
-      ],
-      "dcf": {
-        "fairValue": 46.65,
-        "pctToFV": 42.4,
-        "base": 46.0,
-        "action": "HOLD"
-      },
-      "action": "HOLD",
-      "targetAction": null,
-      "targetWeight": 2.4712
-    },
-    {
-      "ticker": "IREN",
-      "close": 46.25,
-      "changePct": null,
-      "rsi": 37.3,
-      "rsima": 45.5,
-      "volBias": -7.1,
-      "adx": 29.6,
-      "squeezeOn": false,
-      "vol": 365.79,
-      "volMA": 2.11,
-      "volumeRatio": 173.36,
-      "flags": [
-        "VOLUME_SPIKE",
-        "DEEP_VALUE"
-      ],
-      "dcf": {
-        "fairValue": 61.85,
-        "pctToFV": 33.7,
-        "base": 27,
-        "action": "BUY"
-      },
-      "action": "MONITOR",
-      "targetAction": null,
-      "targetWeight": 3.262
-    },
-    {
-      "ticker": "KOID",
-      "close": 38.78,
-      "changePct": 0.14,
-      "rsi": 39.3,
-      "rsima": 37.7,
-      "volBias": 1.5,
-      "adx": 30.3,
-      "squeezeOn": false,
-      "vol": 1.1,
-      "volMA": 12.6,
-      "volumeRatio": 0.09,
-      "flags": [
-        "ADX_STRONG"
-      ],
-      "dcf": {
-        "fairValue": 45.4,
-        "pctToFV": 17.1,
-        "base": 48.0,
-        "action": "HOLD"
-      },
-      "action": "HOLD",
-      "targetAction": null,
-      "targetWeight": 2.4712
-    },
-    {
-      "ticker": "MSFT",
-      "close": 378.76,
-      "changePct": null,
-      "rsi": 72.1,
-      "rsima": 72.3,
-      "volBias": 72.6,
-      "adx": 47.1,
-      "squeezeOn": false,
-      "vol": 351.38,
-      "volMA": 6.08,
-      "volumeRatio": 57.79,
-      "flags": [
-        "RSI_OB",
-        "RSI_COOLING",
-        "ADX_STRONG",
-        "ACCUM_SIGNAL",
         "VOLUME_SPIKE",
         "DEEP_VALUE"
       ],
       "dcf": {
         "fairValue": 648.6,
-        "pctToFV": 71.2,
+        "pctToFV": 167.1,
         "base": 580.59,
-        "action": "BUY"
-      },
-      "action": "ACCUMULATE",
-      "targetAction": null,
-      "targetWeight": 2.224
-    },
-    {
-      "ticker": "NBIS",
-      "close": 249.41,
-      "changePct": null,
-      "rsi": 51.8,
-      "rsima": 41.7,
-      "volBias": -5.4,
-      "adx": 22.3,
-      "squeezeOn": false,
-      "vol": 160.85,
-      "volMA": 570.53,
-      "volumeRatio": 0.28,
-      "flags": [
-        "DEEP_VALUE"
-      ],
-      "dcf": {
-        "fairValue": 569.91,
-        "pctToFV": 128.5,
-        "base": 350.8,
-        "action": "BUY"
-      },
-      "action": "HOLD",
-      "targetAction": null,
-      "targetWeight": 2.4712
-    },
-    {
-      "ticker": "NOW",
-      "close": 102.04,
-      "changePct": null,
-      "rsi": 80.6,
-      "rsima": 76.9,
-      "volBias": 33.9,
-      "adx": 58.1,
-      "squeezeOn": false,
-      "vol": 308.98,
-      "volMA": 1.26,
-      "volumeRatio": 245.22,
-      "flags": [
-        "RSI_OB",
-        "ADX_STRONG",
-        "VOLUME_SPIKE"
-      ],
-      "dcf": {
-        "fairValue": 132.32,
-        "pctToFV": 29.7,
-        "base": 109.21,
         "action": "BUY"
       },
       "action": "MONITOR",
       "targetAction": null,
-      "targetWeight": 1.8781
-    },
-    {
-      "ticker": "OKLO",
-      "close": 52.27,
-      "changePct": null,
-      "rsi": 58,
-      "rsima": 45.8,
-      "volBias": -52,
-      "adx": 30.9,
-      "squeezeOn": false,
-      "vol": 184.09,
-      "volMA": 851.92,
-      "volumeRatio": 0.22,
-      "flags": [
-        "ADX_STRONG",
-        "DIST_SIGNAL",
-        "NEAR_FV",
-        "ABOVE_FV"
-      ],
-      "dcf": {
-        "fairValue": 6.65,
-        "pctToFV": -87.3,
-        "base": 3.25,
-        "action": "SELL"
-      },
-      "action": "REDUCE",
-      "targetAction": null,
-      "targetWeight": 1.4827
+      "targetWeight": 2.224
     },
     {
       "ticker": "PANW",
-      "close": 323.21,
-      "changePct": null,
-      "rsi": 82.5,
-      "rsima": 74.1,
-      "volBias": -6,
-      "adx": 58.7,
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
       "squeezeOn": false,
-      "vol": 66.83,
-      "volMA": 322.42,
-      "volumeRatio": 0.21,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
       "flags": [
-        "RSI_OB",
-        "ADX_STRONG",
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
         "NEAR_FV",
         "ABOVE_FV"
       ],
       "dcf": {
         "fairValue": 167.72,
-        "pctToFV": -48.1,
+        "pctToFV": -30.9,
         "base": 129.17,
         "action": "TRIM"
       },
@@ -560,136 +170,559 @@
       "targetWeight": 4.4481
     },
     {
-      "ticker": "PSIX",
-      "close": 37.88,
-      "changePct": null,
-      "rsi": 44.6,
-      "rsima": 45.8,
-      "volBias": 55.8,
-      "adx": 22.8,
-      "squeezeOn": true,
-      "vol": 4.47,
-      "volMA": 27.46,
-      "volumeRatio": 0.16,
+      "ticker": "OKLO",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
       "flags": [
-        "SQUEEZE_ON",
-        "ACCUM_SIGNAL",
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 6.65,
+        "pctToFV": -97.3,
+        "base": 3.25,
+        "action": "SELL"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 1.4827
+    },
+    {
+      "ticker": "CRWV",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 202.03,
+        "pctToFV": -16.8,
+        "base": 133.63,
+        "action": "BUY"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 5.2308
+    },
+    {
+      "ticker": "COIN",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 185.06,
+        "pctToFV": -23.8,
+        "base": 98.16,
+        "action": "MAINTAIN"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 2.9654
+    },
+    {
+      "ticker": "CRCL",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 142.29,
+        "pctToFV": -41.4,
+        "base": 88.63,
+        "action": "MAINTAIN"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 2.7183
+    },
+    {
+      "ticker": "ZS",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 233.02,
+        "pctToFV": -4.0,
+        "base": 201.63,
+        "action": "ACCUMULATE"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 4.4481
+    },
+    {
+      "ticker": "NBIS",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
         "DEEP_VALUE"
       ],
       "dcf": {
+        "fairValue": 569.91,
+        "pctToFV": 134.7,
+        "base": 350.8,
+        "action": "BUY"
+      },
+      "action": "MONITOR",
+      "targetAction": null,
+      "targetWeight": 2.4712
+    },
+    {
+      "ticker": "BTDR",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 24.09,
+        "pctToFV": -90.1,
+        "base": 29.42,
+        "action": "BUY"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 1.899
+    },
+    {
+      "ticker": "CORZ",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 16.08,
+        "pctToFV": -93.4,
+        "base": 6.92,
+        "action": "SELL"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 3.7068
+    },
+    {
+      "ticker": "PSIX",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
         "fairValue": 107.09,
-        "pctToFV": 182.7,
+        "pctToFV": -55.9,
         "base": 84.26,
         "action": "BUY"
       },
-      "action": "ACCUMULATE",
+      "action": "REDUCE",
       "targetAction": null,
       "targetWeight": 1.9769
     },
     {
-      "ticker": "SNDK",
-      "close": 1929.6,
-      "changePct": 0.3,
-      "rsi": 27,
-      "rsima": 38.7,
-      "volBias": -63.2,
-      "adx": 23.2,
+      "ticker": "BE",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
       "squeezeOn": false,
-      "vol": 155.66,
-      "volMA": 621.52,
-      "volumeRatio": 0.25,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
       "flags": [
-        "RSI_OS",
-        "DIST_SIGNAL",
-        "NEAR_FV"
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 185.72,
+        "pctToFV": -23.5,
+        "base": 120.68,
+        "action": "SELL"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 2.26
+    },
+    {
+      "ticker": "DRAM",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 58.8,
+        "pctToFV": -75.8,
+        "base": 62.0,
+        "action": "HOLD"
+      },
+      "action": "REDUCE",
+      "targetAction": "WATCHLIST",
+      "targetWeight": 4.4481
+    },
+    {
+      "ticker": "APLD",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 66.89,
+        "pctToFV": -72.4,
+        "base": null,
+        "action": "BUY"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 2.4712
+    },
+    {
+      "ticker": "IREN",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 61.85,
+        "pctToFV": -74.5,
+        "base": 27,
+        "action": "BUY"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 3.262
+    },
+    {
+      "ticker": "SNDK",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "DEEP_VALUE"
       ],
       "dcf": {
         "fairValue": 1982.18,
-        "pctToFV": 2.7,
+        "pctToFV": 716.4,
         "base": 2236.54,
         "action": "BUY"
       },
-      "action": "ACCUMULATE",
+      "action": "MONITOR",
       "targetAction": null,
       "targetWeight": 3.9979
     },
     {
-      "ticker": "TEAM",
-      "close": 81.76,
-      "changePct": null,
-      "rsi": 70,
-      "rsima": 61.2,
-      "volBias": -39.8,
-      "adx": 39.6,
+      "ticker": "CBRS",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
       "squeezeOn": false,
-      "vol": 34.08,
-      "volMA": 295.56,
-      "volumeRatio": 0.12,
-      "flags": [
-        "ADX_STRONG"
-      ],
-      "dcf": {
-        "fairValue": 105.33,
-        "pctToFV": 28.8,
-        "base": 71.55,
-        "action": "BUY"
-      },
-      "action": "HOLD",
-      "targetAction": null,
-      "targetWeight": 1.8781
-    },
-    {
-      "ticker": "VST",
-      "close": 164.28,
-      "changePct": 0.68,
-      "rsi": 48.4,
-      "rsima": 44.3,
-      "volBias": -72,
-      "adx": 12.5,
-      "squeezeOn": false,
-      "vol": 17.85,
-      "volMA": 210.27,
-      "volumeRatio": 0.08,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
       "flags": [
         "ADX_WEAK",
-        "DIST_SIGNAL"
-      ],
-      "dcf": {
-        "fairValue": 196.47,
-        "pctToFV": 19.6,
-        "base": 148.76,
-        "action": "ACCUMULATE"
-      },
-      "action": "HOLD",
-      "targetAction": null,
-      "targetWeight": 1.8781
-    },
-    {
-      "ticker": "ZS",
-      "close": 137.73,
-      "changePct": null,
-      "rsi": 77.1,
-      "rsima": 73.6,
-      "volBias": 19.4,
-      "adx": 48.3,
-      "squeezeOn": false,
-      "vol": 42.95,
-      "volMA": 142.03,
-      "volumeRatio": 0.3,
-      "flags": [
-        "RSI_OB",
-        "ADX_STRONG",
+        "VOLUME_SPIKE",
         "DEEP_VALUE"
       ],
       "dcf": {
-        "fairValue": 233.02,
-        "pctToFV": 69.2,
-        "base": 201.63,
-        "action": "ACCUMULATE"
+        "fairValue": 342.8,
+        "pctToFV": 41.2,
+        "base": 323.07,
+        "action": "BUY"
       },
-      "action": "HOLD",
+      "action": "MONITOR",
       "targetAction": null,
-      "targetWeight": 4.4481
+      "targetWeight": 2.4712
+    },
+    {
+      "ticker": "NOW",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 132.32,
+        "pctToFV": -45.5,
+        "base": 109.21,
+        "action": "BUY"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 1.8781
+    },
+    {
+      "ticker": "CRM",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE"
+      ],
+      "dcf": {
+        "fairValue": 281.49,
+        "pctToFV": 15.9,
+        "base": 260.09,
+        "action": "BUY"
+      },
+      "action": "MONITOR",
+      "targetAction": null,
+      "targetWeight": 1.8781
+    },
+    {
+      "ticker": "TEAM",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 105.33,
+        "pctToFV": -56.6,
+        "base": 71.55,
+        "action": "BUY"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 1.8781
+    },
+    {
+      "ticker": "FOTO",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 25.44,
+        "pctToFV": -89.5,
+        "base": 27.2,
+        "action": "HOLD"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 1.9769
+    },
+    {
+      "ticker": "CEG",
+      "close": 242.79,
+      "changePct": 2.66,
+      "rsi": 36.8,
+      "rsima": 44.6,
+      "volBias": -24.4,
+      "adx": 19,
+      "squeezeOn": false,
+      "vol": 605,
+      "volMA": 3.95,
+      "volumeRatio": 153.16,
+      "flags": [
+        "ADX_WEAK",
+        "VOLUME_SPIKE",
+        "NEAR_FV",
+        "ABOVE_FV"
+      ],
+      "dcf": {
+        "fairValue": 174.96,
+        "pctToFV": -27.9,
+        "base": 135.03,
+        "action": "TRIM"
+      },
+      "action": "REDUCE",
+      "targetAction": null,
+      "targetWeight": 2.4712
     }
   ]
 }
