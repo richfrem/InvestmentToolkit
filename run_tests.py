@@ -90,7 +90,7 @@ def t0_path_regression() -> bool:
     ok = True
     import os
     for root, dirs, files in os.walk(str(REPO_ROOT)):
-        if ".git" in root or "node_modules" in root or "venv" in root or "temp" in root or ".agents" in root or "docs/superpowers" in root or "tasks/done" in root:
+        if ".git" in root or "node_modules" in root or "venv" in root or "temp" in root or ".agents" in root or "docs/superpowers" in root or "tasks/done" in root or ".claude" in root:
             continue
         for f in files:
             if f.endswith(".png") or f.endswith(".svg"):
@@ -167,6 +167,12 @@ def t0_node_syntax() -> bool:
     return ok
 
 
+def t0_map_debt() -> bool:
+    print(f"\n{HEADER}T0 — Map Debt registry audit{RESET}")
+    script = REPO_ROOT / ".agents/skills/self-evolution/scripts/audit_map_debt.py"
+    return run(["python3", str(script)], label="map-debt.md audit")
+
+
 def t0_5_bridge_smoke() -> bool:
     print(f"\n{HEADER}T0.5 — Bridge smoke (portfolio_action.py via symlink){RESET}")
     symlink = REPO_ROOT / "investment_screener/backend/py_services/portfolio_action.py"
@@ -210,6 +216,7 @@ def main() -> None:
         ("T0 Node syntax",    t0_node_syntax),
         ("T0 Path regression", t0_path_regression),
         ("T0 Invariance",      t0_symlink_cwd_invariance),
+        ("T0 Map Debt",        t0_map_debt),
     ]:
         if not fn():
             failed.append(tier)

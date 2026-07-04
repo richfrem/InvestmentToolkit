@@ -36,6 +36,66 @@ def safe_float(val) -> float:
         return 0.0
 
 
+def compute_performance(
+    close: pd.DataFrame,
+    shares_map: dict,
+    cash_value: float,
+    tickers: list,
+    now: datetime,
+) -> dict:
+    """Pure computation over an already-fetched close-price DataFrame.
+
+    Forward-fills missing/NaN prices (e.g. a ticker on a foreign exchange with no
+    trading data on a local market holiday — PSU-U.TO on Canada Day while US
+    tickers trade normally) with the last known price before computing equity
+    value. Treating a gap as $0.00 (the pre-fix behavior) makes that position's
+    entire value vanish from the historical total for that date, producing a
+    wildly inflated return.
+    """
+    close = close.ffill()
+
+    current_row = close.iloc[-1]
+    current_equity = sum(
+        shares_map[t] * safe_float(current_row.get(t) if hasattr(current_row, "get") else current_row[t])
+        for t in tickers
+    )
+    current_total = current_equity + cash_value
+
+    periods = {
+        "1d": now - timedelta(days=1),
+        "1w": now - timedelta(days=7),
+        "1m": now - timedelta(days=30),
+    }
+
+    result: dict = {}
+    for label, ref_date in periods.items():
+        try:
+            past_dates = close.index[close.index <= pd.Timestamp(ref_date)]
+            if len(past_dates) == 0:
+                result[label] = None
+                continue
+
+            past_row = close.loc[past_dates[-1]]
+            past_equity = sum(
+                shares_map[t] * safe_float(past_row.get(t) if hasattr(past_row, "get") else past_row[t])
+                for t in tickers
+            )
+            past_total = past_equity + cash_value
+            change = current_total - past_total
+            change_pct = (change / past_total * 100) if past_total > 0 else 0.0
+
+            result[label] = {
+                "change": round(change, 2),
+                "changePct": round(change_pct, 4),
+                "historicalValue": round(past_total, 2),
+                "currentValue": round(current_total, 2),
+            }
+        except Exception as e:
+            result[label] = {"error": str(e)}
+
+    return result
+
+
 def main():
     if len(sys.argv) < 2:
         print(json.dumps({"error": "portfolio path required"}))
@@ -88,47 +148,7 @@ def main():
         print(json.dumps({"error": "no price data returned from yfinance"}))
         return
 
-    # Use the last yfinance row as the "current" value (more accurate than cached portfolio.json)
-    current_row = close.iloc[-1]
-    current_equity = sum(
-        shares_map[t] * safe_float(current_row.get(t) if hasattr(current_row, "get") else current_row[t])
-        for t in tickers
-    )
-    current_total = current_equity + cash_value
-
-    now = datetime.now()
-    periods = {
-        "1d": now - timedelta(days=1),
-        "1w": now - timedelta(days=7),
-        "1m": now - timedelta(days=30),
-    }
-
-    result: dict = {}
-    for label, ref_date in periods.items():
-        try:
-            past_dates = close.index[close.index <= pd.Timestamp(ref_date)]
-            if len(past_dates) == 0:
-                result[label] = None
-                continue
-
-            past_row = close.loc[past_dates[-1]]
-            past_equity = sum(
-                shares_map[t] * safe_float(past_row.get(t) if hasattr(past_row, "get") else past_row[t])
-                for t in tickers
-            )
-            past_total = past_equity + cash_value
-            change = current_total - past_total
-            change_pct = (change / past_total * 100) if past_total > 0 else 0.0
-
-            result[label] = {
-                "change": round(change, 2),
-                "changePct": round(change_pct, 4),
-                "historicalValue": round(past_total, 2),
-                "currentValue": round(current_total, 2),
-            }
-        except Exception as e:
-            result[label] = {"error": str(e)}
-
+    result = compute_performance(close, shares_map, cash_value, tickers, datetime.now())
     print(json.dumps(result))
 
 

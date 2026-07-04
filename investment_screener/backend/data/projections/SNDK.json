@@ -148,7 +148,7 @@
     },
     "scenarios": {
       "bear": {
-        "weight": 0.30,
+        "weight": 0.3,
         "growthRate": 20,
         "netMargin": 10,
         "exitPE": 15,
@@ -159,7 +159,7 @@
         "rationale": "NAND pricing cycles peak early in Y2 and soften due to industry capacity expansions, but contracted high-density enterprise SSD business blocks a collapse. Revenue scales to $18.3B by Y5 (20% CAGR). Net margin squeezes to 10% on lower commodity margins. Exit P/E of 15x reflects semiconductor trough. Dilution at 5% over 5 years."
       },
       "base": {
-        "weight": 0.50,
+        "weight": 0.5,
         "growthRate": 55,
         "netMargin": 22,
         "exitPE": 22,
@@ -170,7 +170,7 @@
         "rationale": "Smooth execution matching consensus in Y1 ($19.4B) and Y2 ($41.4B), then moderating to a steady-state. Implied CAGR of 55% from TTM base. Normalized margins stabilize at 22% under long-term SSD contract pricing. Exit P/E of 22x is in-line with semiconductor hardware leaders. Quality multiplier of 1.05 captures proprietary controller intellectual property."
       },
       "bull": {
-        "weight": 0.20,
+        "weight": 0.2,
         "growthRate": 65,
         "netMargin": 30,
         "exitPE": 28,
@@ -206,8 +206,8 @@
       "analystInputs": {
         "y1RevEstimate": 19484146100,
         "y2RevEstimate": 41477643720,
-        "y1GrowthPct": 165.0,
-        "y2GrowthPct": 113.0,
+        "y1GrowthPct": 165,
+        "y2GrowthPct": 113,
         "blendedConsensusPct": 137.5,
         "analystTargetMean": 1421.77,
         "analystCount": 22
@@ -235,17 +235,17 @@
     "id": "a84b8c58-bd4a-4e2b-b8c2-4f7f105d6e94",
     "source": "AI_AGENT",
     "schemaVersion": "1.2",
-    "version": 6,
-    "savedAt": "2026-05-19T01:19:00Z",
-    "updatedAt": "2026-05-19T01:19:00Z",
-    "name": "Agentic Swarm Memory Thesis — SNDK — 2026-05-19",
-    "rationale": "Incorporated the User's strategic insight regarding the explosive, non-linear storage demand from Agentic AI Swarms (launching parallel sub-agents, loop state caching, continuous trace logging, and vector embeddings). Since sub-agent orchestration multiplies active context KV caching and state persistence requirements, memory is a core physical bottleneck. Recalibrated scenario weights to shift 15% probability from Bear to Bull case (15% Bear, 50% Base, 35% Bull), reflecting this structural shift. Reconciled weighted fair value: $1,982.18, restoring BUY (+48.7% upside).",
+    "version": 7,
+    "savedAt": "2026-07-02T17:42:00Z",
+    "updatedAt": "2026-07-02T17:42:09.596Z",
+    "name": "AI Deep Dive — SNDK (Adjusted) — 2026-07-02",
+    "rationale": "SNDK has fallen 15% due to a broader sector-wide rotation away from semiconductor hardware. However, its underlying business fundamentals have been significantly de-risked by newly announced 3-5 year Long-Term Agreements (LTAs) with range-bound pricing, upfront payments, and price floors. Combined with structural demand for high-density enterprise SSDs to support Agentic AI Swarm logging and embeddings, the weighted fair value is $2,202.56. BUY (+27.6% upside).",
     "snapshot": {
-      "price": 1333.01,
+      "price": 1726.81,
       "currency": "USD",
       "shares": 148089758,
       "revenue": 7355000000,
-      "lastActualPS": 26.84,
+      "lastActualPS": 34.77,
       "fiscalPeriod": "TTM",
       "analystGrowthEstimate": 251,
       "analystMarginEstimate": 34.19
@@ -258,66 +258,62 @@
       "bear": {
         "weight": 0.15,
         "growthRate": 20,
-        "netMargin": 10,
+        "netMargin": 12,
         "exitPE": 15,
         "qualityMultiplier": 0.9,
-        "shareChange": 5,
-        "scenarioPrice": 158.76,
-        "presentValue": 98.58,
-        "rationale": "NAND pricing peaks early in Y2 and contracts, but long-term enterprise cloud SSD contracts underwrite a Y5 revenue floor of $18.3B. Net margins contract to 10% on lower commodity margins."
+        "shareChange": 4,
+        "rationale": "NAND pricing cycles peak early and soften, but new long-term supply agreement (LTA) floors and upfront commitments protect the downside, maintaining a 12% net margin floor and preventing a collapse.",
+        "scenarioPrice": 102.18
       },
       "base": {
-        "weight": 0.50,
-        "growthRate": 55,
+        "weight": 0.5,
+        "growthRate": 58,
         "netMargin": 22,
         "exitPE": 22,
         "qualityMultiplier": 1.05,
         "shareChange": 2,
-        "scenarioPrice": 2236.54,
-        "presentValue": 1388.71,
-        "rationale": "Consensus met in Y1 ($19.4B) and Y2 ($41.4B), moderating to a steady-state in out-years. Implied 55% CAGR. Normalized margins expand to 22% on enterprise SSD mixtures. Exit P/E of 22x in-line with peers."
+        "rationale": "Smooth execution with consensus revenue matching Y1 ($19.6B) and Y2 ($44.5B) before moderating. Implied 58% CAGR. Long-term SSD contract pricing secures stable 22% net margins.",
+        "scenarioPrice": 1397.7
       },
       "bull": {
         "weight": 0.35,
-        "growthRate": 65,
-        "netMargin": 30,
+        "growthRate": 68,
+        "netMargin": 32,
         "exitPE": 28,
         "qualityMultiplier": 1.15,
         "shareChange": 0,
-        "scenarioPrice": 5857.82,
-        "presentValue": 3637.24,
-        "rationale": "Catalyst realized: Agentic AI swarms launch parallel sub-agents globally, multiplying active KV caching and persistent state log storage demands. Revenue reaches $89.8B in Y5. Net margin scales to 30% as high-density enterprise SSDs dominate the mix. Exit P/E of 28x."
+        "rationale": "Sustained hyper-growth driven by Agentic AI Swarms requiring massive cost-effective context caching, trace logging, and vector embeddings. High-density enterprise SSDs dominate the product mix, boosting net margins to 32%.",
+        "scenarioPrice": 4252.52
       }
     },
     "aiThesis": {
-      "model": "Gemini 1.5 Pro (Agentic Swarm Memory Thesis & Math Validation)",
-      "fairValue": 1982.18,
+      "model": "Antigravity Gemini 3.5",
+      "rationale": "## SNDK Thesis Update (July 2, 2026)\n\n### The Fundamental Shift: Long-Term Agreements (LTAs)\nSanDisk's investment thesis has been fundamentally de-risked by newly signed 3-5 year Long-Term Agreements (LTAs). As noted by Bernstein, these contracts flip the historical power balance back to the memory producers by locking in fixed pricing, upfront prepayments, and minimum price floors (~$0.29/GB). This dramatically reduces the cyclical volatility of earnings and cash flows, shielding the company's profitability even in a deep memory spot market downturn.\n\n### Agentic Swarm Memory Moat\nAI memory demand is transitioning from raw GPU training requirements to sustained inference and agentic swarm execution. The global deployment of parallel sub-agents, loop state caching, continuous trace logging, and vector database embeddings creates a non-linear, cost-effective storage demand profile. High-density TLC/QLC enterprise SSDs are the only viable hardware layer to support this tier, positioning SanDisk directly at the center of the AI memory bottleneck.\n\n### Valuation Committee Summary\n- **Bear Scenario ($102.18, 15%)**: NAND pricing contracts early, but LTA floors protect margins at 12%. Present value: $102.18.\n- **Base Scenario ($1,397.70, 50%)**: consensus revenue met in Y1 ($19.6B) and Y2 ($44.5B). 58% CAGR, 22% net margin, exit PE 22x. Present value: $1,397.70.\n- **Bull Scenario ($4,252.52, 35%)**: Agentic AI swarm demand triggers structural NAND storage deficit. 68% CAGR, 32% net margin, exit PE 28x. Present value: $4,252.52.\n\n**Weighted Fair Value: $2,202.56 (BUY) vs $1,726.81 current price.**",
+      "fairValue": 2202.56,
       "action": "BUY",
-      "analyzedAt": "2026-05-19T01:19:00Z",
-      "researchReport": "SNDK_2026-05-19.md"
+      "analyzedAt": "2026-07-02T17:42:00Z",
+      "researchReport": "SNDK_2026-07-02.md"
     },
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "Verified: shares_diluted = shares_outstanding = 148,089,758 (no discrepancy). Explicit shareChange modeled per scenario to handle future dilutions.",
-      "marginAnchor": "TTM peak cycle net margin (34.19%) is adjusted down to a cycle-normalized 22% in the base case to account for semiconductor cyclicality.",
-      "growthDerivation": "Agentic Storage Swarm Multiplier: Parallel agent orchestration creates a massive physical memory and storage footprint, de-risking cyclical oversupply and making the Bull scenario a highly probable baseline (weight increased to 35%, Bear weight reduced to 15%).",
-      "sectorBenchmarkRow": "Technology - Computer Hardware / Memory. multiples set to 15x (Bear), 22x (Base), and 28x (Bull) to reflect cycle position.",
+      "shareCountMethod": "shares_outstanding (verified clean count at 148.09M)",
+      "marginAnchor": "TTM 34.19% adjusted downward to normalized 22% base margin to account for semiconductor cyclicality.",
+      "growthDerivation": "Hypergrowth exception applied: consensus forecasts of $19.6B and $44.5B imply massive short-term growth. Restored base CAGR to 58% and bull to 68% based on new LTAs and capacity locks.",
+      "sectorBenchmarkRow": "Technology — Computer Hardware / Memory. exit multiples set to 15x (Bear), 22x (Base), and 28x (Bull) to reflect cycle positioning.",
       "dataQualityFlags": [
-        "Spread ratio: 36.9x - Pass (within the 20x-50x hyper-growth acceptable range; successfully resolved the previous unvalidated 106x spread anomaly).",
-        "Probability validation: 100% total (15% bear, 50% base, 35% bull) - Pass.",
-        "Double-discounting check: Pass.",
-        "Share dilution bounds check: Pass."
+        "INFO: Bernstein Mark Newman upgraded target to $3,000 on June 30 citing new long-term agreements.",
+        "INFO: Sector-wide profit-taking rotation presents a tactical buy opportunity."
       ],
       "analystInputs": {
-        "y1RevEstimate": 19484146100,
-        "y2RevEstimate": 41477643720,
-        "y1GrowthPct": 165.0,
-        "y2GrowthPct": 113.0,
-        "blendedConsensusPct": 137.5,
-        "analystTargetMean": 1421.77,
+        "y1RevEstimate": 19611715330,
+        "y2RevEstimate": 44466793790,
+        "y1GrowthPct": 166.6,
+        "y2GrowthPct": 126.7,
+        "blendedConsensusPct": 146.6,
+        "analystTargetMean": 1863.82,
         "analystCount": 22
       },
       "historicalRevenue": [
@@ -328,14 +324,26 @@
       "historicalNetMargins": [
         -35.21,
         -10.09,
-        -22.31
+        34.19
       ],
       "historicalEPS": [
         -14.78,
         -4.63,
-        -11.32
+        34.77
       ],
-      "confidenceBreakdown": "0.88/1.0 - Very high confidence. The structural integration of Agentic AI Swarms provides a long-term demand multiplier that fundamentally shifts cyclical dynamics. High-quality inputs and strict validation ensure highly reliable outputs."
+      "priorAnalysisReview": {
+        "priorModel": "Gemini 1.5 Pro (Agentic Swarm Memory Thesis & Math Validation)",
+        "priorDate": "2026-05-19",
+        "priorPrice": 1333.01,
+        "priorFairValue": 1982.18,
+        "priorAction": "BUY",
+        "priceDelta": "+29.5%",
+        "assumptionAudit": "Prior model used 55% base CAGR and 22% net margin. Re-evaluating now, those inputs were highly conservative given the $44.5B Y2 consensus and newly announced LTAs.",
+        "modelQualityFlag": "Validated.",
+        "thesisOutcome": "Played out successfully with stock peaking over $2,000 before the recent sector rotation pullback.",
+        "fundamentalChanges": "Bernstein target raised to $3,000 on new long-term agreements. Y2 consensus increased to $44.5B."
+      },
+      "confidenceBreakdown": "0.82/1.0 — Elevated confidence. LTAs de-risk the cyclical profile, providing strong revenue floors and margin stability through 2027."
     }
   }
 ]

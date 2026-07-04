@@ -25,8 +25,16 @@ def standardize(raw_data: dict[str, Any]) -> dict[str, Any]:
     m = raw_data.get("metrics", {})
     price = float(m.get("price", 0))
     revenue = float(m.get("revenue", 0))
-    net_income = float(m.get("net_income", 0))
     mktcap = float(m.get("market_cap", 0))
+
+    # Some tickers' raw metrics omit "net_income" but provide "profit_margin" directly
+    # (e.g. PLTR). Derive net_income from profit_margin x revenue in that case, instead
+    # of silently defaulting to 0 and reporting a profitable company as 0% margin.
+    net_income = float(m.get("net_income", 0))
+    if net_income == 0 and revenue > 0:
+        raw_profit_margin = m.get("profit_margin")
+        if raw_profit_margin:
+            net_income = revenue * (float(raw_profit_margin) / 100)
     
     # Shares Selection Logic (Mirrored from dcf_scenarios.py and ValuationModeler.tsx)
     shares_diluted = m.get("shares_diluted")

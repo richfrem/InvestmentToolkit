@@ -32,14 +32,25 @@ TARGET_JSON      = REPO_ROOT / "investment_screener/backend/data/theses/target-p
 
 
 # ---------------------------------------------------------------------------
-# Current holdings — computed from portfolio.json (shares × price / total)
+# Current holdings — computed from portfolio.json (market_value / total)
+#
+# Denominator mirrors the canonical TS computeWeightsMap() in portfolioSnapshot.ts:
+# prefer the persisted totals.totalUSD (TV-broker-authoritative when available —
+# see buildPortfolioSnapshot/preserveAuthoritativeTotal) over a locally recomputed
+# sum(shares*price), which can diverge (missing cash, stale pricing). Cross-language
+# parity is enforced by test_compute_current_weights.py.
 # ---------------------------------------------------------------------------
 def compute_current(portfolio_path: Path) -> dict:
     with open(portfolio_path) as f:
         raw = json.load(f)
     holdings = raw if isinstance(raw, list) else raw.get("holdings", [])
+    totals = {} if isinstance(raw, list) else (raw.get("totals") or {})
 
-    total_value = sum(h.get("shares", 0) * h.get("price", 0) for h in holdings)
+    def market_value(h: dict) -> float:
+        return h.get("shares", 0) * h.get("price", 0)
+
+    persisted_total = totals.get("totalUSD", 0) or 0
+    total_value = persisted_total if persisted_total > 0 else sum(market_value(h) for h in holdings)
     if total_value == 0:
         return {"total": 0.0, "holdings": {}, "total_value": 0.0}
 
@@ -48,8 +59,7 @@ def compute_current(portfolio_path: Path) -> dict:
         sym = h.get("symbol") or h.get("ticker")
         if not sym:
             continue
-        value = h.get("shares", 0) * h.get("price", 0)
-        result[sym] = round(value / total_value * 100, 4)
+        result[sym] = round(market_value(h) / total_value * 100, 4)
 
     total = round(sum(result.values()), 4)
     return {"total": total, "holdings": result, "total_value": round(total_value, 2)}

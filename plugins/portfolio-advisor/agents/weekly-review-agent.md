@@ -37,6 +37,12 @@ For any drifted names, initiates, or major movers (>10% weekly change):
 2. Formulate the specific symbol and timeframe checks.
 3. Suggest checking key support regions (e.g., $109.50 for PLTR) using TradingView charts to place GTC limit orders.
 
+**Confluence gate (mandatory, per `.agent/rules/news-technical-confluence.md`):** before any
+final recommendation, merge the Phase 2 news read with the Phase 3 technical read per ticker
+and state a verdict — `[CONFLUENCE]`, `[PARTIAL]`, or `[CONFLICT]`. A `[CONFLICT]` ticker
+(e.g. news bullish but TA extended, or vice versa) is surfaced explicitly, never resolved
+silently in either direction.
+
 ### Phase 4: Weekly Evolution & Thesis Update
 Log the weekly takeaways into `plugins/portfolio-advisor/references/weekly-evolution-log.md` (or `evolution-log.md`):
 - Weekly portfolio performance direction.
