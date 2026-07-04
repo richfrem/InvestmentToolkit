@@ -30,3 +30,20 @@ def test_get_quote_uses_cache_within_15_minutes(tmp_path, monkeypatch):
 
     mock_ticker.assert_called_once()
     assert result["AAPL"]["source"] == "cache"
+
+
+def test_get_quote_skips_bad_ticker_without_crashing_batch(tmp_path, monkeypatch):
+    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    good_ticker = MagicMock()
+    good_ticker.fast_info = {"lastPrice": 100.0}
+    bad_ticker = MagicMock()
+    bad_ticker.fast_info = {}  # missing "lastPrice" -> None -> float(None) would raise TypeError
+
+    def fake_ticker_factory(symbol):
+        return bad_ticker if symbol == "BAD" else good_ticker
+
+    with patch("market_data.yf.Ticker", side_effect=fake_ticker_factory):
+        result = get_quote(["GOOD", "BAD"])
+
+    assert result["GOOD"]["price"] == 100.0
+    assert "BAD" not in result
