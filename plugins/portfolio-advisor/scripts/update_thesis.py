@@ -69,7 +69,18 @@ def load_thesis() -> dict:
 def save_thesis(data: dict, dry_run: bool, note: str | None) -> None:
     now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     data["updatedAt"] = now
-    data["version"] = data.get("version", 1) + 1
+    version = data.get("version", 1)
+    if isinstance(version, str):
+        try:
+            if "." in version:
+                version = str(round(float(version) + 0.1, 4))
+            else:
+                version = str(int(version) + 1)
+        except ValueError:
+            version = version + "_updated"
+    else:
+        version = version + 1
+    data["version"] = version
     if note:
         data.setdefault("changeLog", []).append({
             "version": data["version"],
