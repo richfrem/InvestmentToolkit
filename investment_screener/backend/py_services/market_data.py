@@ -244,6 +244,20 @@ _YF_FUNDAMENTALS_FIELDS = {
     "netIncome": "netIncomeToCommon",
 }
 
+# yfinance's `.financials` (annual income statement) row label for each
+# metric that has a clean 1:1 annual equivalent — used ONLY for the
+# EDGAR-vs-yfinance disagreement cross-check. EDGAR's revenue/netIncome are
+# always annual (from the latest 10-K); `.info`'s totalRevenue/
+# netIncomeToCommon are trailing-twelve-months (TTM). Comparing an annual
+# EDGAR figure against a TTM yfinance figure via check_disagreement() would
+# produce false-positive "conflicts" for any growing/shrinking company as a
+# matter of routine, not a real data-quality signal — so the disagreement
+# check must use yfinance's own annual figures instead.
+_YF_FINANCIALS_ANNUAL_ROWS = {
+    "revenue": "Total Revenue",
+    "netIncome": "Net Income",
+}
+
 
 def _safe_float(value):
     """Coerce a raw upstream value to float, treating anything unusable as absent.
@@ -316,6 +330,51 @@ def _safe_yf_info(ticker):
     return info if isinstance(info, dict) else {}
 
 
+def _safe_yf_annual_financials(ticker):
+    """Fetch yfinance's annual income-statement figures, for disagreement cross-checks only.
+
+    EDGAR's revenue/netIncome values always come from the latest 10-K
+    (annual). `.info`'s totalRevenue/netIncomeToCommon are TTM (trailing
+    twelve months) — a reasonable *fallback* value when EDGAR is unavailable,
+    but not a fair basis for a disagreement comparison against an annual
+    EDGAR figure. `.financials` is yfinance's annual income statement
+    DataFrame (index: line items like "Total Revenue"/"Net Income"; columns:
+    fiscal year-end dates, most recent column first) — the correct
+    like-for-like comparison source for check_disagreement().
+
+    Guards every way this can fail, mirroring the per-ticker guard pattern
+    used elsewhere in this module: `.financials` raising, returning
+    something that isn't a DataFrame, being empty, or lacking the expected
+    row all degrade to "no annual figure available for this metric" —
+    the caller then simply skips the disagreement check for that metric
+    rather than crashing or fabricating a comparison value.
+
+    Args:
+        ticker: Ticker symbol (e.g., "AAPL").
+
+    Returns:
+        Dict mapping metric key ("revenue", "netIncome") to the latest
+        annual float value, only for metrics that were cleanly extracted.
+    """
+    try:
+        df = yf.Ticker(ticker).financials
+    except Exception:  # noqa: BLE001 - yfinance's failure modes here are unbounded
+        return {}
+
+    if not isinstance(df, pd.DataFrame) or df.empty:
+        return {}
+
+    latest_col = df.columns[0]
+    result = {}
+    for metric, row_label in _YF_FINANCIALS_ANNUAL_ROWS.items():
+        if row_label not in df.index:
+            continue
+        value = _safe_float(df.loc[row_label, latest_col])
+        if value is not None:
+            result[metric] = value
+    return result
+
+
 def get_fundamentals(ticker: str, cik: str = None) -> dict:
     """Fetch revenue/netIncome/operatingIncome via an EDGAR-primary, yfinance-supplement waterfall.
 
@@ -324,9 +383,14 @@ def get_fundamentals(ticker: str, cik: str = None) -> dict:
     a value; yfinance's `.info` dict supplements any metric EDGAR lacks.
     When both sources have a value for the same metric, check_disagreement()
     flags — but never hides or auto-resolves — a divergence beyond the
-    default threshold; EDGAR's value is still the one returned. When `cik`
-    is None (non-US ticker, e.g. "ASML", "PSU-U.TO"), EDGAR is skipped
-    entirely and every field is sourced from yfinance.
+    default threshold; EDGAR's value is still the one returned. The
+    disagreement check compares EDGAR's annual figure against yfinance's own
+    ANNUAL figure (`.financials`, not `.info`'s TTM fields) — comparing
+    across periods would produce false-positive conflicts for any
+    growing/shrinking company as a matter of routine. When `cik` is None
+    (non-US ticker, e.g. "ASML", "PSU-U.TO"), EDGAR is skipped entirely and
+    every field is sourced from yfinance's `.info` (TTM, a reasonable
+    fallback when there's no EDGAR figure to compare it against).
 
     "operatingIncome" is EDGAR-only in this pass: yfinance's `.info` has no
     clean raw field for it (only a derived margin ratio), and mixing
@@ -361,6 +425,11 @@ def get_fundamentals(ticker: str, cik: str = None) -> dict:
 
     edgar = _safe_edgar_facts(cik)
     yf_info = _safe_yf_info(ticker)
+    # Annual figures, fetched only for the disagreement cross-check below —
+    # never used as the yfinance-only fallback value (that's still `.info`,
+    # a TTM approximation, which is fine as a fallback but not as a fair
+    # comparison against EDGAR's annual figure).
+    yf_annual = _safe_yf_annual_financials(ticker) if edgar else {}
 
     result = {}
     conflicts = []
@@ -376,10 +445,14 @@ def get_fundamentals(ticker: str, cik: str = None) -> dict:
                 "source": "edgar",
                 "asOf": edgar_field.get("asOf"),
             }
-            if yf_value is not None:
-                conflict = check_disagreement(edgar_value, yf_value, metric)
+            annual_value = yf_annual.get(metric)
+            if annual_value is not None:
+                conflict = check_disagreement(edgar_value, annual_value, metric)
                 if conflict:
                     conflicts.append(conflict)
+            # else: no clean annual yfinance figure available — skip the
+            # disagreement check for this metric rather than fabricating
+            # a comparison against a TTM value, or crashing.
         elif yf_value is not None:
             result[metric] = {"value": yf_value, "source": "yfinance", "asOf": _now_iso()}
         # else: absent from both sources — omitted entirely, never zeroed.

@@ -3,6 +3,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
+import pandas as pd
+
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SCRIPT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(SCRIPT_DIR))
@@ -22,12 +24,29 @@ def _fake_edgar_facts(as_of: str = None):
     }
 
 
+def _fake_yf_financials_df(revenue=395000000000.0, net_income=94000000000.0):
+    """Build a fake yfinance `.financials` annual income-statement DataFrame.
+
+    Shape mirrors real yfinance: index is line items ("Total Revenue", "Net
+    Income"), columns are fiscal year-end Timestamps with the most recent
+    column first.
+    """
+    return pd.DataFrame(
+        {pd.Timestamp("2025-09-27"): [revenue, net_income]},
+        index=["Total Revenue", "Net Income"],
+    )
+
+
 def _fake_yf_info():
     fake_ticker = MagicMock()
     fake_ticker.info = {
         "totalRevenue": 395000000000.0,  # ~1% off EDGAR, within threshold
         "netIncomeToCommon": 94000000000.0,
     }
+    # Annual figures used ONLY for the disagreement cross-check — matches
+    # .info here (within threshold) so tests not focused on disagreement
+    # stay unaffected.
+    fake_ticker.financials = _fake_yf_financials_df()
     return fake_ticker
 
 
@@ -52,7 +71,11 @@ def test_get_fundamentals_skips_edgar_when_no_cik(tmp_path, monkeypatch):
 def test_get_fundamentals_flags_disagreement_without_hiding_it(tmp_path, monkeypatch):
     monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
     fake_yf = MagicMock()
-    fake_yf.info = {"totalRevenue": 500000000000.0, "netIncomeToCommon": 94000000000.0}  # way off
+    fake_yf.info = {"totalRevenue": 500000000000.0, "netIncomeToCommon": 94000000000.0}  # way off (TTM, unused for the check itself)
+    # The disagreement check compares EDGAR's annual figure against
+    # yfinance's own ANNUAL figure (.financials), not .info's TTM fields —
+    # this must also be "way off" for the conflict to fire.
+    fake_yf.financials = _fake_yf_financials_df(revenue=500000000000.0, net_income=94000000000.0)
     with patch("market_data.get_company_facts", return_value=_fake_edgar_facts()), \
          patch("market_data.yf.Ticker", return_value=fake_yf):
         result = get_fundamentals("AAPL", cik="0000320193")
@@ -60,6 +83,78 @@ def test_get_fundamentals_flags_disagreement_without_hiding_it(tmp_path, monkeyp
     assert len(result["dataQuality"]["dataConflicts"]) >= 1
     # still returns the EDGAR value — disagreement is flagged, not auto-resolved
     assert result["revenue"]["value"] == 391035000000.0
+
+
+def test_get_fundamentals_no_disagreement_when_annual_figures_actually_agree(tmp_path, monkeypatch):
+    """Regression test for the annual-vs-TTM mismatch bug: EDGAR's annual
+    revenue vs. yfinance's TTM totalRevenue would differ by far more than 5%
+    for a growing company as a matter of routine — but when compared against
+    yfinance's own ANNUAL figure (which genuinely agrees with EDGAR), no
+    conflict should fire, even though the TTM figure is wildly different."""
+    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    fake_yf = MagicMock()
+    # TTM (.info) is ~28% higher than EDGAR's annual figure — would trip the
+    # 5% threshold if compared directly (the exact bug this finding fixes).
+    fake_yf.info = {"totalRevenue": 500000000000.0, "netIncomeToCommon": 94000000000.0}
+    # But yfinance's own ANNUAL figure agrees with EDGAR within threshold.
+    fake_yf.financials = _fake_yf_financials_df(revenue=391035000000.0, net_income=93736000000.0)
+    with patch("market_data.get_company_facts", return_value=_fake_edgar_facts()), \
+         patch("market_data.yf.Ticker", return_value=fake_yf):
+        result = get_fundamentals("AAPL", cik="0000320193")
+
+    assert result["dataQuality"]["dataConflicts"] == []
+    assert result["revenue"]["value"] == 391035000000.0
+
+
+def test_get_fundamentals_financials_raises_skips_disagreement_check(tmp_path, monkeypatch):
+    """yf.Ticker(ticker).financials raising must not crash get_fundamentals()
+    — it degrades to 'no annual figure available', so the disagreement check
+    is skipped for that metric rather than fabricating a comparison."""
+    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    fake_yf = MagicMock()
+    fake_yf.info = {"totalRevenue": 395000000000.0, "netIncomeToCommon": 94000000000.0}
+    type(fake_yf).financials = property(lambda self: (_ for _ in ()).throw(RuntimeError("boom")))
+    with patch("market_data.get_company_facts", return_value=_fake_edgar_facts()), \
+         patch("market_data.yf.Ticker", return_value=fake_yf):
+        result = get_fundamentals("AAPL", cik="0000320193")
+
+    assert result["revenue"]["source"] == "edgar"
+    assert result["dataQuality"]["dataConflicts"] == []
+
+
+def test_get_fundamentals_financials_empty_skips_disagreement_check(tmp_path, monkeypatch):
+    """An empty `.financials` DataFrame (e.g. a ticker with no annual
+    filings yet) must degrade to 'no annual figure available', not crash."""
+    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    fake_yf = MagicMock()
+    fake_yf.info = {"totalRevenue": 395000000000.0, "netIncomeToCommon": 94000000000.0}
+    fake_yf.financials = pd.DataFrame()
+    with patch("market_data.get_company_facts", return_value=_fake_edgar_facts()), \
+         patch("market_data.yf.Ticker", return_value=fake_yf):
+        result = get_fundamentals("AAPL", cik="0000320193")
+
+    assert result["revenue"]["source"] == "edgar"
+    assert result["dataQuality"]["dataConflicts"] == []
+
+
+def test_get_fundamentals_financials_missing_expected_row_skips_disagreement_check(
+    tmp_path, monkeypatch
+):
+    """A `.financials` DataFrame that doesn't have the expected row (e.g.
+    upstream naming drift) must degrade to 'no annual figure available' for
+    that metric, not crash or fabricate a comparison value."""
+    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    fake_yf = MagicMock()
+    fake_yf.info = {"totalRevenue": 395000000000.0, "netIncomeToCommon": 94000000000.0}
+    fake_yf.financials = pd.DataFrame(
+        {pd.Timestamp("2025-09-27"): [1.0]}, index=["Some Other Line Item"]
+    )
+    with patch("market_data.get_company_facts", return_value=_fake_edgar_facts()), \
+         patch("market_data.yf.Ticker", return_value=fake_yf):
+        result = get_fundamentals("AAPL", cik="0000320193")
+
+    assert result["revenue"]["source"] == "edgar"
+    assert result["dataQuality"]["dataConflicts"] == []
 
 
 def test_get_fundamentals_never_returns_zero_for_missing_edgar_field(tmp_path, monkeypatch):
