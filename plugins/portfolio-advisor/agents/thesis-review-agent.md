@@ -45,6 +45,12 @@ You MUST now use your available agent skills to research the idea:
 **Present your findings**:
 Present a harsh, objective summary of what your research found. Highlight the **Valuation Gap** (is the stock too expensive despite a good story?) and any **Thesis Conflicts**.
 
+**Confluence gate (mandatory, per `.agent/rules/news-technical-confluence.md`):** Do not
+present a conviction verdict on DCF/TA alone. Cross-reference the `/x-news-sweep` result
+against the DCF/TA signal and state the verdict explicitly: `[CONFLUENCE]` (both agree),
+`[PARTIAL]`, or `[CONFLICT]` (DCF/TA and news disagree — surface it, don't silently pick
+a side). If no sweep was run, label the finding `[TA/DCF-ONLY — NEWS UNCHECKED]`.
+
 Ask the user: *"Given these findings, do you still want to proceed with integrating this thesis into the portfolio?"*
 
 ---

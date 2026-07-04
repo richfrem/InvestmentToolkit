@@ -34,7 +34,15 @@ async function clickTab(tabLabel) {
         return text === label || text.startsWith(label + ' ') || text.startsWith(label + '\\u00A0');
       });
     if (tabs.length === 0) return JSON.stringify({ error: 'Tab not found: ' + label });
-    tabs[0].click();
+    // Plain .click() does not register on TV's React tab buttons (same class of issue as the
+    // broker account dropdown — React's synthetic event system needs real mouse events).
+    // Dispatch mousedown + mouseup + click to both the tab and its parentElement.
+    var targets = [tabs[0], tabs[0].parentElement].filter(Boolean);
+    targets.forEach(function(el) {
+      ['mousedown', 'mouseup', 'click'].forEach(function(type) {
+        el.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: window }));
+      });
+    });
     return JSON.stringify({ clicked: tabs[0].textContent.trim().substring(0, 40) });
   })()`).then(JSON.parse);
   await sleep(500);

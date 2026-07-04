@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MarketDataResponse",
+  "description": "Shape produced by market_data.py's public functions. Every leaf value carries source + asOf provenance — see docs/superpowers/specs/2026-07-02-data-layer-design.md",
+  "definitions": {
+    "sourcedValue": {
+      "type": "object",
+      "required": ["value", "source", "asOf"],
+      "properties": {
+        "value": {"type": "number"},
+        "source": {"type": "string", "enum": ["edgar", "yfinance", "tv_cdp", "cache"]},
+        "asOf": {"type": "string"}
+      }
+    },
+    "fundamentals": {
+      "type": "object",
+      "properties": {
+        "revenue": {"$ref": "#/definitions/sourcedValue"},
+        "netIncome": {"$ref": "#/definitions/sourcedValue"},
+        "operatingIncome": {"$ref": "#/definitions/sourcedValue"},
+        "dataQuality": {
+          "type": "object",
+          "required": ["staleness", "dataConflicts", "flags"],
+          "properties": {
+            "staleness": {"type": "boolean"},
+            "dataConflicts": {"type": "array"},
+            "flags": {"type": "array"}
+          }
+        }
+      }
+    }
+  }
+}

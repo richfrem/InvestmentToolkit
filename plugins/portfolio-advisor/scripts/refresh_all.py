@@ -29,6 +29,12 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS   = Path(__file__).parent
 
+# Fallback to plugins directory if executed from backend py_services
+if "py_services" in SCRIPTS.parts:
+    plugin_scripts = REPO_ROOT / "plugins" / "portfolio-advisor" / "scripts"
+    if plugin_scripts.exists():
+        SCRIPTS = plugin_scripts
+
 SYNC_ROLES  = SCRIPTS / "sync_portfolio_roles.py"
 BLUEPRINT   = SCRIPTS / "generate_portfolio_blueprint.py"
 SUB_BLOCKS  = SCRIPTS / "generate_sub_strategy_blocks.py"
