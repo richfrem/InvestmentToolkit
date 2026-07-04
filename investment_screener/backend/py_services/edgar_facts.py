@@ -26,6 +26,16 @@ _TAG_MAP = {
 
 
 def get_company_facts(cik: str) -> dict:
+    """Fetch SEC EDGAR XBRL company facts for a given CIK.
+
+    Args:
+        cik: Central Index Key (10-digit CIK string or unpadded integer).
+
+    Returns:
+        dict: Mapping of metric keys (e.g., 'revenue', 'netIncome') to dicts with
+              'value' (float) and 'asOf' (filing date string). Metrics with missing
+              or malformed values are excluded (not zeroed).
+    """
     padded_cik = cik.zfill(10)
     url = f"https://data.sec.gov/api/xbrl/companyfacts/CIK{padded_cik}.json"
     resp = requests.get(url, headers={"User-Agent": USER_AGENT})
@@ -42,12 +52,23 @@ def get_company_facts(cik: str) -> dict:
         if not annual:
             continue
         latest = max(annual, key=lambda u: u.get("end", ""))
-        result[key] = {"value": float(latest["val"]), "asOf": latest.get("filed", latest.get("end"))}
+
+        # Skip this metric if 'val' is missing or cannot be converted to float
+        val = latest.get("val")
+        if val is None:
+            continue
+        try:
+            numeric_val = float(val)
+        except (TypeError, ValueError):
+            continue
+
+        result[key] = {"value": numeric_val, "asOf": latest.get("filed", latest.get("end"))}
 
     return result
 
 
 def main():
+    """CLI entry point: fetch and print company facts JSON for a given CIK."""
     if len(sys.argv) < 2:
         print('{"error": "cik required"}')
         sys.exit(1)
