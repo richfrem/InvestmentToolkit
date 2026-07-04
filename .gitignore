@@ -81,6 +81,7 @@ kitty-specs/**/tasks/*.md
 
 # Backend cache
 investment_screener/backend/py_services/cache/
+investment_screener/backend/data/cache/
 
 # Runtime secrets (generated at startup, never committed)
 .runtime/

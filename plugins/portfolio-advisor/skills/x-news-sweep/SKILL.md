@@ -15,7 +15,7 @@ allowed-tools: Bash, Read, Write
 
 1. **Generates** a Grok prompt from live `target-portfolio.json` — always reflects current targets, actions, and DCF signals (never stale)
 2. **Receives** Grok's structured table pasted back by the user
-3. **Gates** every recommendation against DCF projections and the 8 hard gates (no blind applies)
+3. **Gates** every recommendation against DCF projections, live technicals (RSI/ADX/volume flags), and the 8 hard gates (no blind applies) — per `.agent/rules/news-technical-confluence.md`, label each ticker `[CONFLUENCE]`, `[PARTIAL]`, or `[CONFLICT]` before applying
 4. **Applies** approved changes + updates `agentRationale` and projection `catalystUpdate` fields
 5. **Runs** the full refresh chain: blueprint → review JSON → verify
 

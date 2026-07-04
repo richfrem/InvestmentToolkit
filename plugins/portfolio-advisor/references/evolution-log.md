@@ -8,6 +8,59 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-07-02 — Dashboard Data-Integrity Fixes (Tier 2/3 Evolution)
+
+**Trigger:** User caught an impossible "+29.79% today" on the Portfolio Summary dashboard,
+plus a suspected ~$1,500 total-value discrepancy.
+
+**Tier 3 regression fixed — target weight drift:** `target-portfolio.json` target weights
+summed to 99.29% instead of 100%. Root cause: BE's weight was deliberately reduced
+2.9654% -> 2.26% on 2026-06-29 (documented, intentional) but never rebalanced against
+the other 30 holdings, and the change landed inside an unrelated commit
+("Compress instruction files..."). Fixed via `validate_weights.py --normalize --write`.
+Added `.git/hooks/pre-commit-thesis-sync-check` (local, untracked like the repo's other
+hooks) to run `verify_thesis_sync.py` automatically whenever `target-portfolio.json` is
+staged, so this class of drift can't land again unnoticed.
+
+**Tier 2 bug fixed — standardize_metrics.py:** `net_income`/`profit_margin` silently
+defaulted to 0.0 when raw `fetch_financials.py` metrics provided `profit_margin` directly
+but no `net_income` key (e.g. PLTR) — reported a 43.7%-margin company as 0% profitable.
+Fixed with TDD (`test_standardize_metrics.py`); derives net_income from
+profit_margin x revenue when the raw key is absent.
+
+**Tier 3 architectural fix — portfolio weight/total split-brain:** Audit found 5
+independent "actual weight %" implementations across Python and TypeScript with 2
+different denominator conventions, and two independent writers of `portfolio.json`'s
+`totals.totalUSD` (Python's TV-authoritative writer vs. TS's shares*price recompute,
+which could silently clobber the authoritative figure on any price refresh). Consolidated
+to a single canonical implementation: `buildPortfolioSnapshot()` +
+`preserveAuthoritativeTotal()` + `computeWeightsMap()` in `portfolioSnapshot.ts`, with
+`validate_weights.py::compute_current()` (Python, used by chat-agent sessions) mirroring
+the identical formula and a cross-language parity test
+(`test_compute_current_weights.py`, mirrors the existing `test_math_parity.py` pattern
+for DCF math). Backend rebuilt and restarted mid-session.
+
+**Tier 2 bug fixed — portfolio_performance.py:** root cause of the +29.79% display bug.
+`safe_float(NaN) -> 0.0` zeroed out PSU-U.TO's (TSX) full ~$8,000 value for 2026-07-01
+(Canada Day, TSX closed, US tickers traded normally), understating yesterday's total and
+inflating the 1-day return. Fixed by forward-filling (`.ffill()`) the price series before
+computing any point-in-time total; extracted a pure, tested `compute_performance()`
+function (`test_portfolio_performance.py`, injected-NaN-gap test pattern). New rule
+created: `.agent/rules/no-silent-nan-to-zero.md` — missing price data must never
+silently become $0 in a financial calculation.
+
+**Tool failures:** none (all fixes were genuine pre-existing bugs found via user-reported
+symptoms, not tool/script execution failures).
+
+**Unresolved, flagged for next session:** `fetch_broker_data.py --snapshot` still doesn't
+fetch account balances in the same call, so `totals.totalUSD` currently falls back to
+`computed_fallback` (shares*price) rather than TV-authoritative — the balance-tab
+`clickTab()` fix attempted this session (mousedown/mouseup/click dispatch in
+`broker_data.js`) did not fully resolve it. `PortfolioTable.tsx`'s client-side live-refetch
+% was flagged as a legitimate (not broken) separate "right now" display, left as-is.
+
+---
+
 ## 2026-06-29 — Card Format Enhancement (Tier 1 Evolution)
 
 **Macro:** RISK-ON (score=2)
