@@ -5,176 +5,65 @@ _Last updated: 2026-07-04 | Thesis v9.7 | Portfolio ~$32,904 USD (reconciled fro
 
 ---
 
-## 🚦 Git policy while Fable5 Elevation Guide is in progress
-
-**Do NOT push to `origin/main` until all 6 Fable5 phases are complete** — this is an
-explicit user instruction (2026-07-04). Local `main` accumulates completed work normally
-(merge each finished phase's branch locally, verify tests, delete the local branch). After
-each milestone, also push a dedicated `feature/fable5-<milestone>` branch to `origin` as a
-backup — never `origin/main` directly. Local `main` will keep drifting ahead of
-`origin/main` by design until the user says otherwise.
-
-Backup branches on GitHub so far (all supersets of each other, safe to leave):
-- `worktree-market-data-layer` — Phase 1 data layer, 17 commits, pre-dashboard-fixes
-- `feature/dashboard-fixes-2026-07-02` — the dashboard/data-integrity fixes commit alone
-- `feature/fable5-phase1-data-layer-complete` — **current milestone**, everything merged
-  into local `main` so far (data layer + dashboard fixes)
-
----
-
-## 🔥 ACTIVE: Fable5 Elevation Guide — Market Data Layer Build (resume here first)
+## 🔥 ACTIVE: Fable5 Elevation Guide — Phase 1 DONE, start Phase 2 here
 
 **Context:** User had Fable5 (primary), Gemini, GPT, Grok review the codebase for
 "next level" improvements — reviews saved at `temp/bundles/full-bundle/reviews/`.
-Fable5's guide (`fable5-ELEVATION_GUIDE.md`) is the one being executed — it's the only
-review grounded in the actual repo. Decomposed via brainstorming into sub-projects;
-started with **Phase 1: data layer** (`market_data.py` provider abstraction — directly
-motivated by two real bugs found this session, see below).
+Fable5's guide (`fable5-ELEVATION_GUIDE.md`) is the one being executed — the only review
+grounded in the actual repo. It's a 6-phase roadmap: (1) data layer, (2) valuation
+committee, (3) executable scoring framework + local TA engine, (4) TradingView/Pine
+hardening, (5) risk engine + rebalancer + prediction ledger + backtesting, (6) skills/
+sub-agent architecture cleanup. **This session starts fresh on Phase 2 — Phase 1 is fully
+shipped, verified, and merged to `origin/main`. Nothing from Phase 1 needs redoing.**
 
-**Artifacts (all committed to `main`):**
-- Design spec: `docs/superpowers/specs/2026-07-02-data-layer-design.md`
-- Implementation plan: `docs/superpowers/plans/2026-07-02-market-data-layer.md` (8 tasks)
-- Progress ledger: `.claude/worktrees/market-data-layer/.superpowers/sdd/progress.md`
+### ✅ Phase 1 (data layer) — COMPLETE, on `origin/main` right now
+`py_services/market_data.py` (+ `cache.py`, `edgar_facts.py`, `data_quality.py`, schema) —
+a unified, cached, quality-gated provider abstraction (yfinance + SEC EDGAR) built to
+eliminate a real bug class found this session (missing/NaN external data silently becoming
+a wrong number, e.g. the dashboard's impossible "+29.79% today" bug). Built as 8 TDD-gated
+tasks via `superpowers:subagent-driven-development`, each implementer→review→fix→re-review
+cycle documented in `docs/superpowers/plans/2026-07-02-market-data-layer.md` and the
+now-closed ledger. Whole-branch review passed twice (once before, once after a 3-finding
+fix round). **Confirmed merged into `origin/main` via PR #59** (`git log origin/main` shows
+`73d7c19` as HEAD) — verified directly, not assumed.
 
-**Execution mode:** `superpowers:subagent-driven-development`, in an isolated worktree —
-`.claude/worktrees/market-data-layer` (branch `worktree-market-data-layer`). The worktree
-was fast-forwarded to local `main` at creation, so it has the two committed spec/plan
-commits but **not** the 40 files of uncommitted fixes below (worktrees don't share
-uncommitted changes across checkouts — this was verified to be fine because Tasks 1-8 are
-self-contained new files with no runtime dependency on those uncommitted changes).
+**Deliberately deferred, NOT part of Phase 1, pick up whenever convenient (not blockers):**
+1. **13-file yfinance migration** onto the new `market_data.py` — `fetch_financials.py`,
+   `portfolio_performance.py`, `macro_regime.py`, `earnings_calendar.py`, `fetch_quotes.py`,
+   `overnight_gaps.py`, `fetch_portfolio_heatmap.py`, `history_store.py`, ETF/TV scripts,
+   one TS-adjacent file. Each needs reading fresh for accurate before/after steps.
+   `fetch_financials.py` has its own bespoke 1hr-TTL cache at
+   `plugins/stock-valuation/scripts/cache/` that must be *replaced*, not duplicated.
+2. **Cache-key collision**: `get_fundamentals()` and `get_estimates()` share cache key
+   `(ticker, "fundamentals")` — confirmed safe (no misread) but whichever runs second
+   overwrites the other's entry. Fix before any caller uses both for the same ticker.
 
-**Status: ALL 8 TASKS COMPLETE** (commits `43f042e..f04cdbf` on branch
-`worktree-market-data-layer`, HEAD = `f04cdbf`). Every task went through implementer →
-review → fix-round (where needed) → re-review, all now Approved. Full detail in the ledger:
-`.superpowers/sdd/progress.md`.
+### 🚦 Git policy going forward
+Phase 1 shipped to `origin/main` via the user merging the PR themselves on GitHub. **This
+is the standing pattern**: after each phase's whole-branch review passes, Claude pushes a
+dedicated `feature/fable5-phase<N>-<name>` branch to `origin` as a backup/PR source —
+**Claude never merges or opens the PR into `origin/main`.** The user reviews and merges via
+GitHub's PR flow themselves, on their own timing. So the full sequence per phase: brainstorm
+→ spec → plan → `subagent-driven-development` in a fresh worktree → whole-branch review →
+merge to local `main` → push `feature/fable5-phase<N>-<name>` to origin → **stop there** —
+report the branch is ready, do not merge/PR/touch `origin/main`.
 
-| Task | What | Outcome |
-|---|---|---|
-| 1 | `cache.py` (shared TTL cache) | Approved (1 fix: docstrings) |
-| 2 | `get_prices()` | Approved (1 fix: **critical** NaN-crash on misaligned trading calendars — e.g. TSX holiday gaps) |
-| 3 | `get_quote()` | Approved (1 fix: **critical** batch-crash on bad/delisted ticker) |
-| 4 | `get_estimates()` | Approved first pass — implementer proactively avoided the NaN/crash pattern |
-| 5 | `edgar_facts.py` (SEC EDGAR XBRL client) | Approved (1 fix: malformed-value crash + docstrings) |
-| 6 | `data_quality.py` (disagreement/staleness gate) | Approved first pass — tests written directly (primary-owned per plan), implementation delegated to Haiku |
-| 7 | `get_fundamentals()` (EDGAR/yfinance waterfall) | Approved — 5-scenario robustness proactively built & verified with value-level assertions |
-| 8 | Schema + full regression check | Approved — `jsonschema` added properly via `requirements.in`+pip-compile, 162 passed/3 skipped/2 pre-existing-verified-failed |
+**Git hygiene lesson from tonight, worth repeating:** after pushing a backup branch, keep
+committing/pushing as work continues — don't let further edits (e.g. to this file) sit
+uncommitted after a branch is already pushed, or the backup silently goes stale. Verify any
+"is it pushed" claim with `git fetch` + `git log <ref>` before asserting it's done, not
+from memory of having run `git push` earlier.
 
-**Recurring pattern (worth remembering for future plans in this style):** 3 of 8 tasks
-shipped with a "crashes or silently zeroes on missing/malformed data" bug that review
-caught via direct reproduction and sent back for one fix round each — exactly the bug
-class this data layer exists to eliminate. By Task 4, implementers started proactively
-guarding against it without review needing to catch it at all.
-
-**Known, deliberately-deferred follow-up (not a blocker, zero current callers):**
-`get_fundamentals()` (Task 7) and `get_estimates()` (Task 4) share the same cache key
-`(ticker, "fundamentals")` with incompatible entry shapes. Confirmed safe (each guards its
-own read, no misread), but whichever runs second overwrites the other's cache entry —
-if a future caller ever fetches both for the same ticker, it defeats the 24h TTL and
-doubles live EDGAR+yfinance calls. Fix: give `get_fundamentals()` a distinct data-class
-key (e.g. `"fundamentals_full"`) before wiring anything that calls both together.
-
-**Whole-branch review: DONE, verdict "Ready to merge: Yes with minor fixes."** Caught 3
-Important cross-task issues no single per-task review could see in isolation:
-1. `data_quality.py`'s gates compared EDGAR annual figures against yfinance TTM figures —
-   would have made staleness read `True` ~8 months/year for every US filer, and made the
-   5% disagreement threshold fire constantly on ordinary growth, training users to ignore it.
-2. `edgar_facts.py` only checked the `Revenues` GAAP tag — many large real filers use
-   `RevenueFromContractWithCustomerExcludingAssessedTax` instead, silently falling back to
-   yfinance and quietly defeating the point of using EDGAR.
-3. SEC's required ≤10 req/s rate limit was never implemented, and the `"edgar"` 7-day cache
-   TTL class in `cache.py` was dead — `get_company_facts()` never actually cached anything.
-
-**All 3 fixed** (commit `0a0f3b5`, "fix: decouple EDGAR staleness from annual period, add
-revenue tag fallback, wire caching/throttle"): staleness now uses the most recent filing of
-*any* form (10-K or 10-Q) while the reported value still comes from the latest 10-K;
-disagreement now cross-checks against yfinance's *annual* `.financials` instead of TTM
-`.info`; revenue extraction falls back to the alternate GAAP tag; `get_company_facts()` is
-now cache-first (7-day TTL) with a 0.15s throttle on real network calls only. Targeted suite
-34/34 passed; full suite 175 passed / 3 skipped / 2 pre-existing-and-verified failed
-(`test_math_parity` path bug, a date-sensitive `test_place_order_gates` weekend-gate test —
-both confirmed unrelated via `git stash`, same two that showed up throughout this whole
-build). Fix report (not committed, gitignored by convention):
-`.claude/worktrees/market-data-layer/.superpowers/sdd/whole-branch-review-fix-report.md`.
-
-**✅ Whole-branch-review fix (`0a0f3b5`): RE-REVIEWED, "Ready to merge: Yes."** All 3
-findings confirmed genuinely resolved (correct precedence/decoupling logic, comprehensive
-tests), previously-verified paths (both-sources-missing, EDGAR-unavailable) confirmed
-unchanged. One note: the fix report's claim that test-isolation work "exposed a latent
-pre-existing defect" in Task 5 was overstated by the reviewer's own assessment — it was
-necessary hygiene for newly-wired caching, not a review-process miss (pre-fix code had no
-cache calls at all). Not a blocker either way.
-
-**✅ Merged to local `main`** (fast-forward, `43f042e..0a0f3b5`), worktree removed
-(`ExitWorktree action:"remove"` — safe, commits already fast-forwarded into `main` first).
-Tests verified on `main` post-merge: 187 passing, same 2 pre-existing-unrelated failures.
-
-**✅ Phase 1 (data layer) is fully DONE.** Nothing left to do on it except the two
-deliberately-deferred follow-ups below — both are separate future work, not blockers.
-
-**Deliberately deferred (separate future work, not blockers on Phase 1 completion):**
-1. **The 13-file yfinance migration** onto this new `market_data.py` layer — needs each of
-   the 13 files (`fetch_financials.py`, `portfolio_performance.py`, `macro_regime.py`,
-   `earnings_calendar.py`, `fetch_quotes.py`, `overnight_gaps.py`,
-   `fetch_portfolio_heatmap.py`, `history_store.py`, ETF/TV scripts, one TS-adjacent file)
-   read fresh for accurate before/after steps. `fetch_financials.py` has its own bespoke
-   1hr-TTL cache at `plugins/stock-valuation/scripts/cache/` that must be *replaced*, not
-   duplicated, by the new shared `cache.py`.
-2. **Cache-key collision** between `get_fundamentals()` and `get_estimates()` (both key on
-   `(ticker, "fundamentals")`, confirmed safe/no-misread but cache-defeating) — fix before
-   any future caller uses both functions for the same ticker together.
-
-**Next up: pick the Phase 2 sub-project from the Fable5 guide** (valuation committee /
-executable scoring framework / TA engine / TradingView-Pine hardening / risk engine +
-rebalancer + prediction ledger / skills cleanup — see `fable5-ELEVATION_GUIDE.md` §2-8 for
-the full menu). Follow the same process as Phase 1: brainstorm → spec → plan →
-`subagent-driven-development` in a fresh worktree → whole-branch review → merge to local
-`main` only (see git policy banner at the top of this file — do not push `origin/main` yet).
+### Next step for this session
+Pick a Phase 2 sub-project from `fable5-ELEVATION_GUIDE.md` §2 (Valuation Committee:
+reverse-DCF, WACC, Monte Carlo/sensitivity, comps cross-check) or reorder if something else
+is more urgent — confirm with the user first (this repo's brainstorming skill gate applies:
+don't start implementation before a design is proposed and approved). §9 in the guide has
+the full phase/acceptance-criteria breakdown if useful context.
 
 ---
 
-## ⚠️ UNCOMMITTED WORK ON MAIN — 40 files, do not lose
-
-The main checkout (`/Users/richardfremmerlid/Projects/InvestmentToolkit`, NOT the worktree)
-has ~40 files of real, tested, working fixes from the 2026-07-02 session that were **never
-committed** (only asked-for commits get made, per standing instruction). Run `git status`
-there first thing. Highlights:
-
-- **`portfolioSnapshot.ts`** — `preserveAuthoritativeTotal()` + `computeWeightsMap()`,
-  fixes the dashboard "+29.79% today" bug and a real $685.82 cash-undercount bug (only
-  RRSP's cash was being read, not all 3 accounts). Portfolio totals were manually
-  reconciled from Questrade screenshots and written to `portfolio.json` with
-  `totalSource: "tv_authoritative"` — this will hold until the next real sync IF
-  `preserveAuthoritativeTotal()` ships (it's currently uncommitted).
-- **`portfolio_performance.py`** — fixed `safe_float(NaN)->0.0` silently zeroing PSU-U.TO's
-  value on TSX holidays (Canada Day), which caused the impossible +29.79% 1-day return.
-- **`standardize_metrics.py`** — fixed `net_income`/`profit_margin` silently defaulting to
-  0.0 when raw data has `profit_margin` but no `net_income` key (found via PLTR).
-- **`fetch_broker_data.py`** — `build_totals_from_balances()` now tags `totalSource:
-  "tv_authoritative"` so Python-sourced totals are also protected by
-  `preserveAuthoritativeTotal()` once both land.
-- **`.agent/rules/no-silent-nan-to-zero.md`** — new rule (untracked), the throughline
-  connecting the above three bugs.
-- **`.agent/rules/news-technical-confluence.md`** — new rule (untracked) requiring
-  `[CONFLUENCE]/[PARTIAL]/[CONFLICT]` verdicts on every ACCUMULATE/EXIT/TRIM recommendation,
-  checked against both news (Grok/Gemini sweeps) and technicals. Wired into
-  `daily-loop-agent.md`, `portfolio-advisor-orchestrator.md`, `thesis-review-agent.md`,
-  `weekly-review-agent.md`, and the `x-news-sweep` skill.
-- **`target-portfolio.json`** — weight-sum drift fixed (99.29%→99.9998%) via
-  `validate_weights.py --normalize --write`; root cause was BE's deliberate 2026-06-29
-  weight reduction never being rebalanced. New local git hook
-  `.git/hooks/pre-commit-thesis-sync-check` now blocks any future commit that leaves this
-  file out of sync (local-only, like the repo's other hooks — not tracked in git).
-- **`PLTR.json` projection + research report** — fresh DCF (HOLD, FV $147.06 vs $130.96),
-  resolves a `[CONFLICT]` between a stale prior SELL call and Grok/Gemini's "INITIATE NOW."
-- New test files (untracked): `test_standardize_metrics.py`, `test_compute_current_weights.py`
-  (cross-language parity with TS, mirrors `test_math_parity.py`), `test_portfolio_performance.py`,
-  `test_build_totals_from_balances.py`. All green; only the pre-existing `test_math_parity.py`
-  path bug remains as an unrelated failure.
-
-**Ask the user before committing this** — it's a lot of real fixes, but commit scope/message
-grouping should be a conscious decision, not automatic.
-
-## 🟡 Other open items from 2026-07-02 (not yet resolved)
+## 🟡 Other open items from 2026-07-02 (not yet resolved, unrelated to Fable5)
 
 1. **BE position** — user said they'd exit manually ("I'll do it myself, standby") after
    overriding the `ALLOWLISTED_CONFLICT` standing decision. TV showed the position still
