@@ -1,7 +1,24 @@
 # Session Start Briefing — InvestmentToolkit
-_Last updated: 2026-07-03 | Thesis v9.7 | Portfolio ~$32,904 USD (reconciled from Questrade screenshots)_
+_Last updated: 2026-07-04 | Thesis v9.7 | Portfolio ~$32,904 USD (reconciled from Questrade screenshots)_
 
 > **Read this first at the start of every new session.**
+
+---
+
+## 🚦 Git policy while Fable5 Elevation Guide is in progress
+
+**Do NOT push to `origin/main` until all 6 Fable5 phases are complete** — this is an
+explicit user instruction (2026-07-04). Local `main` accumulates completed work normally
+(merge each finished phase's branch locally, verify tests, delete the local branch). After
+each milestone, also push a dedicated `feature/fable5-<milestone>` branch to `origin` as a
+backup — never `origin/main` directly. Local `main` will keep drifting ahead of
+`origin/main` by design until the user says otherwise.
+
+Backup branches on GitHub so far (all supersets of each other, safe to leave):
+- `worktree-market-data-layer` — Phase 1 data layer, 17 commits, pre-dashboard-fixes
+- `feature/dashboard-fixes-2026-07-02` — the dashboard/data-integrity fixes commit alone
+- `feature/fable5-phase1-data-layer-complete` — **current milestone**, everything merged
+  into local `main` so far (data layer + dashboard fixes)
 
 ---
 
@@ -79,29 +96,39 @@ both confirmed unrelated via `git stash`, same two that showed up throughout thi
 build). Fix report (not committed, gitignored by convention):
 `.claude/worktrees/market-data-layer/.superpowers/sdd/whole-branch-review-fix-report.md`.
 
-**Backed up:** `worktree-market-data-layer` pushed to `origin` (tracking set up) as a safety
-net — nothing merged, nothing finished, local worktree untouched. Continue there tomorrow.
+**✅ Whole-branch-review fix (`0a0f3b5`): RE-REVIEWED, "Ready to merge: Yes."** All 3
+findings confirmed genuinely resolved (correct precedence/decoupling logic, comprehensive
+tests), previously-verified paths (both-sources-missing, EDGAR-unavailable) confirmed
+unchanged. One note: the fix report's claim that test-isolation work "exposed a latent
+pre-existing defect" in Task 5 was overstated by the reviewer's own assessment — it was
+necessary hygiene for newly-wired caching, not a review-process miss (pre-fix code had no
+cache calls at all). Not a blocker either way.
 
-**⚠️ NOT YET DONE — this is exactly where tomorrow starts:**
-1. **Re-review the whole-branch-review fix** (commit `0a0f3b5`) — it has NOT been
-   re-reviewed yet. Generate a review package (`scripts/review-package <merge-base> HEAD`
-   from the `subagent-driven-development` skill dir) and dispatch a focused re-review
-   confirming: (a) the 3 findings are genuinely resolved, tracing the actual code same as
-   every other re-review this session did, (b) nothing new was broken (175/178 non-skipped
-   passing, same 2 pre-existing failures as before the fix).
-2. Once that's clean, use `superpowers:finishing-a-development-branch` to decide
-   merge/PR/cleanup — **the worktree branch has never been merged to `main`.** Everything
-   in this whole build (all 8 tasks + the whole-branch-review fix) exists only on
-   `worktree-market-data-layer`, not on `main`.
-3. The plan explicitly **excludes** migrating the 13 yfinance-importing call sites onto
-   this new layer — that's a deliberate, separate follow-up plan (needs each of the 13
-   files read fresh for accurate before/after steps; one of them, `fetch_financials.py`,
-   has its own bespoke 1hr-TTL cache at `plugins/stock-valuation/scripts/cache/` that
-   must be *replaced*, not duplicated, by this new shared `cache.py`).
-6. Baseline note: 3 pre-existing test failures in this worktree are unrelated —
-   `test_math_parity.py` (confirmed pre-existing path bug via `git stash` on `main`) and
-   2x `test_place_order_gates.py` (missing `tradingview-cdp/node_modules`, gitignored/
-   per-checkout, irrelevant to this pure-Python plan).
+**✅ Merged to local `main`** (fast-forward, `43f042e..0a0f3b5`), worktree removed
+(`ExitWorktree action:"remove"` — safe, commits already fast-forwarded into `main` first).
+Tests verified on `main` post-merge: 187 passing, same 2 pre-existing-unrelated failures.
+
+**✅ Phase 1 (data layer) is fully DONE.** Nothing left to do on it except the two
+deliberately-deferred follow-ups below — both are separate future work, not blockers.
+
+**Deliberately deferred (separate future work, not blockers on Phase 1 completion):**
+1. **The 13-file yfinance migration** onto this new `market_data.py` layer — needs each of
+   the 13 files (`fetch_financials.py`, `portfolio_performance.py`, `macro_regime.py`,
+   `earnings_calendar.py`, `fetch_quotes.py`, `overnight_gaps.py`,
+   `fetch_portfolio_heatmap.py`, `history_store.py`, ETF/TV scripts, one TS-adjacent file)
+   read fresh for accurate before/after steps. `fetch_financials.py` has its own bespoke
+   1hr-TTL cache at `plugins/stock-valuation/scripts/cache/` that must be *replaced*, not
+   duplicated, by the new shared `cache.py`.
+2. **Cache-key collision** between `get_fundamentals()` and `get_estimates()` (both key on
+   `(ticker, "fundamentals")`, confirmed safe/no-misread but cache-defeating) — fix before
+   any future caller uses both functions for the same ticker together.
+
+**Next up: pick the Phase 2 sub-project from the Fable5 guide** (valuation committee /
+executable scoring framework / TA engine / TradingView-Pine hardening / risk engine +
+rebalancer + prediction ledger / skills cleanup — see `fable5-ELEVATION_GUIDE.md` §2-8 for
+the full menu). Follow the same process as Phase 1: brainstorm → spec → plan →
+`subagent-driven-development` in a fresh worktree → whole-branch review → merge to local
+`main` only (see git policy banner at the top of this file — do not push `origin/main` yet).
 
 ---
 
