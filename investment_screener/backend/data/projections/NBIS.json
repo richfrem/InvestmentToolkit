@@ -7,7 +7,7 @@
     "version": 2,
     "savedAt": "2026-05-31T08:58:00Z",
     "updatedAt": "2026-05-31T08:58:00Z",
-    "name": "AI Deep Dive \u2014 NBIS \u2014 2026-05-31",
+    "name": "AI Deep Dive — NBIS — 2026-05-31",
     "rationale": "Nebius Group is building full-stack AI infrastructure with GPU clusters, cloud platforms, and developer tooling. TTM revenue has updated to $529.8M, representing rapid capacity expansion. Recalibrating forward growth rates using this higher baseline yields a weighted fair value of $462.75, representing a spec BUY target.",
     "snapshot": {
       "price": 231.09,
@@ -98,7 +98,7 @@
       "shareCountMethod": "shares_outstanding = shares_diluted = 220,406,311 per API.",
       "marginAnchor": "Margin target 12% anchored on sector average and adjusted for capital intensity.",
       "growthDerivation": "Base case CAGR set to 133% from the current $529.8M base to align with consensus targets.",
-      "sectorBenchmarkRow": "Technology \u2014 Internet / Platforms: conservative P/E 18, median P/E 28, growth P/E 45.",
+      "sectorBenchmarkRow": "Technology — Internet / Platforms: conservative P/E 18, median P/E 28, growth P/E 45.",
       "dataQualityFlags": [
         "Corporate restructuring historical statements remain distorted; forward guidance prioritized."
       ],
@@ -146,7 +146,7 @@
           "bull": 5,
           "bear": -3
         },
-        "thesisImpact": "Bull probability +5pp; bear -3pp. FV $462.75\u2192$516.33. Action: BUY\u2192BUY."
+        "thesisImpact": "Bull probability +5pp; bear -3pp. FV $462.75→$516.33. Action: BUY→BUY."
       },
       {
         "date": "2026-06-05",
@@ -159,7 +159,7 @@
           "bull": 5,
           "bear": -3
         },
-        "thesisImpact": "Bull probability +5pp; bear -3pp. FV $516.33\u2192$569.91. Action: BUY\u2192BUY."
+        "thesisImpact": "Bull probability +5pp; bear -3pp. FV $516.33→$569.91. Action: BUY→BUY."
       }
     ],
     "lastGrokSweep": "2026-06-05",
@@ -175,7 +175,7 @@
         "accumulateAt": 220.0
       },
       "source": "tv-ta-deep multi-timeframe",
-      "notes": "Daily RSI 49 not oversold \u2014 room to fall to EMA50 at $218. Hold current 3sh (+65% profit). Add only at $218-220 (EMA50 daily). 5m ADX 63 = intraday exhaustion; bounce likely but daily not washed out."
+      "notes": "Daily RSI 49 not oversold — room to fall to EMA50 at $218. Hold current 3sh (+65% profit). Add only at $218-220 (EMA50 daily). 5m ADX 63 = intraday exhaustion; bounce likely but daily not washed out."
     },
     "peers": [
       "CRWV",
