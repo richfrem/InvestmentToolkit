@@ -1682,10 +1682,11 @@ def _resolve_discount_rate(explicit_rate: float | None, wacc_file: str | None) -
 Run: `cd investment_screener/backend && python3 -m pytest tests/py_services/test_dcf_scenarios_wacc_file.py -v`
 Expected: PASS — all 3 tests.
 
-- [ ] **Step 5: Run the existing math-parity test to confirm no regression**
+- [ ] **Step 5: Run the existing math-parity test to confirm no new regression**
 
 Run: `cd investment_screener/backend && python3 -m pytest tests/py_services/test_math_parity.py -v`
-Expected: PASS (unchanged) — this test never passes `--discount-rate` or `--wacc-file`, so it still gets the 0.10 default via `_resolve_discount_rate(None, None)`.
+
+**Known pre-existing failure, unrelated to this task:** this test currently fails on `main` too (confirmed before this task started) — its `PROJECT_ROOT` path calculation (`os.path.dirname(os.path.dirname(os.path.abspath(__file__)))`) resolves one directory too shallow from `tests/py_services/test_math_parity.py`, producing a doubled, nonexistent path when it shells out to `dcf_scenarios.py`. Expected outcome: the **same** failure, with the **same** doubled-path error message, both before and after your change in this task — confirm the error text is unchanged (still the `can't open file '.../tests/investment_screener/backend/py_services/dcf_scenarios.py'` message), not a new/different failure. Do not attempt to fix this test — it is out of scope for this task.
 
 - [ ] **Step 6: Commit**
 
@@ -2294,9 +2295,10 @@ action.
 - [ ] **Step 7: Run the full backend test suite plus `run_tests.py` to confirm no regressions**
 
 Run: `cd investment_screener/backend && python3 -m pytest tests/py_services/ -v`
-Expected: PASS — every test file in `tests/py_services/`, old and new.
 
-Run: `cd /Users/richardfremmerlid/Projects/InvestmentToolkit && python3 run_tests.py`
+**Two known pre-existing failures, unrelated to this plan** (confirmed present on `main` before Phase 2a work started): `test_math_parity.py::test_math_parity` (a pre-existing broken `PROJECT_ROOT` path calculation in that test file, out of scope — see Task 6 Step 5) and `test_place_order_gates.py::test_stale_portfolio_exits_4` (a weekend/market-closed environmental dependency, unrelated to valuation code). Expected: every test file passes **except these two pre-existing failures**, which must show the same failure they showed before this plan started — not a new or different error. Every new test file from Tasks 1–7 must be 100% green.
+
+Run: `cd "$(git rev-parse --show-toplevel)" && python3 run_tests.py`
 Expected: `All gates passed.` (T0 TypeScript/Python/Node syntax, path regression, symlink/CWD invariance, map debt, T0.5 bridge smoke — none of these tasks touched anything those gates check beyond new syntactically-valid Python files and new symlinks, both of which the gates are designed to catch if broken).
 
 - [ ] **Step 8: Commit**
