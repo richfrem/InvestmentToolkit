@@ -21,6 +21,64 @@ import argparse
 from typing import Any
 
 
+ACCUMULATE_SPREAD_THRESHOLD_PCT = 25.0
+ACCUMULATE_DCF_UPSIDE_THRESHOLD_PCT = 15.0
+
+
+def check_accumulate_gate(projection: dict) -> dict:
+    """Gate check: ACCUMULATE requires >=2 of 3 valuation lenses agreeing.
+
+    Lenses: (1) DCF upside > 15% (analyticsLog.dcf.upsidePct), (2) comps
+    implied price (midpoint of analyticsLog.comps.impliedPriceRange) >
+    current price, (3) implied growth < base-case growth
+    (analyticsLog.reverseDcf.impliedGrowthVsBaseCase < 0 — the market is
+    pricing in less optimism than our own base case, a margin-of-safety
+    signal). A projection whose aiThesis.action isn't ACCUMULATE always
+    passes trivially — this gate only constrains that one action.
+
+    Args:
+        projection: Full projection dict (aiThesis, snapshot, analyticsLog).
+
+    Returns:
+        {"gatePassed": bool, "lensesAgreeing": int,
+         "lensResults": {"dcf": bool, "comps": bool, "impliedGrowth": bool},
+         "spreadPct": float, "disagreementNoteRequired": bool}
+    """
+    analytics = projection.get("analyticsLog", {}) or {}
+    action = projection.get("aiThesis", {}).get("action")
+    current_price = projection.get("snapshot", {}).get("price")
+
+    dcf_upside_pct = analytics.get("dcf", {}).get("upsidePct")
+    dcf_lens = bool(dcf_upside_pct is not None and dcf_upside_pct > ACCUMULATE_DCF_UPSIDE_THRESHOLD_PCT)
+
+    comps = analytics.get("comps", {}) or {}
+    comps_price = None
+    if comps.get("status") == "ok" and current_price:
+        implied_range = comps.get("impliedPriceRange", {})
+        comps_price = (implied_range.get("low", 0) + implied_range.get("high", 0)) / 2
+    comps_lens = bool(comps_price is not None and current_price and comps_price > current_price)
+
+    reverse_dcf = analytics.get("reverseDcf", {}) or {}
+    implied_growth_vs_base = reverse_dcf.get("impliedGrowthVsBaseCase")
+    implied_growth_lens = bool(implied_growth_vs_base is not None and implied_growth_vs_base < 0)
+
+    lenses_agreeing = sum([dcf_lens, comps_lens, implied_growth_lens])
+    gate_passed = (action != "ACCUMULATE") or (lenses_agreeing >= 2)
+
+    prices = [p for p in [analytics.get("dcf", {}).get("weightedFairValue"), comps_price] if p is not None]
+    spread_pct = 0.0
+    if len(prices) >= 2 and min(prices) > 0:
+        spread_pct = round((max(prices) - min(prices)) / min(prices) * 100, 2)
+
+    return {
+        "gatePassed": gate_passed,
+        "lensesAgreeing": lenses_agreeing,
+        "lensResults": {"dcf": dcf_lens, "comps": comps_lens, "impliedGrowth": implied_growth_lens},
+        "spreadPct": spread_pct,
+        "disagreementNoteRequired": spread_pct > ACCUMULATE_SPREAD_THRESHOLD_PCT,
+    }
+
+
 def check(condition: bool, field: str, message: str, errors: list[str]) -> None:
     """Append an error message if condition is False."""
     if not condition:
@@ -103,6 +161,20 @@ def validate_projection(data: dict[str, Any], verbose: bool = False) -> list[str
                   f"Must be in [0.0, 1.0], got {confidence}", errors)
         except (TypeError, ValueError):
             errors.append(f"[FAIL] confidenceScore: Must be a number, got '{confidence}'")
+
+    # --- Valuation-committee gate (Phase 2a) ---
+    gate = check_accumulate_gate(data)
+    if not gate["gatePassed"]:
+        errors.append(
+            f"[FAIL] aiThesis.action: ACCUMULATE requires >=2 of 3 valuation lenses "
+            f"agreeing, only {gate['lensesAgreeing']} do ({gate['lensResults']})"
+        )
+    if gate["disagreementNoteRequired"]:
+        print(
+            f"[WARN] valuation lenses disagree by {gate['spreadPct']}% (>25%) — "
+            "document this disagreement in rationale before finalizing.",
+            file=sys.stderr,
+        )
 
     if verbose:
         if errors:
