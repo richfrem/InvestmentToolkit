@@ -7,7 +7,7 @@
     "version": 5,
     "savedAt": "2026-05-19T00:59:37.370Z",
     "updatedAt": "2026-05-19T00:59:37.371Z",
-    "name": "AI Infrastructure Refresh \u2014 Locked Solid Backlog",
+    "name": "AI Infrastructure Refresh — Locked Solid Backlog",
     "rationale": "Updated analysis accounting for 2B+ in locked-in data center buildouts over the next 24 months. Traditional TTM-anchored DCF fails to capture the massive contracted backlog. Using Forward Run-Rate Optionality to model the infrastructure transition.",
     "snapshot": {
       "price": 39.14,
@@ -94,7 +94,7 @@
           "bull": 7,
           "bear": -4
         },
-        "thesisImpact": "Bull probability +7pp; bear -4pp. FV $58.35\u2192$66.89. Action: BUY\u2192BUY."
+        "thesisImpact": "Bull probability +7pp; bear -4pp. FV $58.35→$66.89. Action: BUY→BUY."
       }
     ],
     "lastGrokSweep": "2026-06-27",
