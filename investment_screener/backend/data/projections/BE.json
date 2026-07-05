@@ -411,6 +411,10 @@
       },
       "source": "daily-loop-agent",
       "notes": "Stock trades 36% above DCF FV ($186). Standing decision: ALLOWLISTED_CONFLICT \u2014 SA LP #1 long + $2.6B NBIS deal. No accumulate until FV re-rates above $270+. Trim above break-even ($272) on any bounce. DCF model (May 19) predates Q1 beat and NBIS deal \u2014 refresh warranted."
-    }
+    },
+    "peers": [
+      "PLUG",
+      "FCEL"
+    ]
   }
 ]

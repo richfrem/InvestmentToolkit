@@ -296,6 +296,11 @@
         "thesisImpact": "Bull probability +5pp; bear -3pp. FV $154.91\u2192$167.72. Action: TRIM\u2192TRIM."
       }
     ],
-    "lastGrokSweep": "2026-06-05"
+    "lastGrokSweep": "2026-06-05",
+    "peers": [
+      "CRWD",
+      "FTNT",
+      "ZS"
+    ]
   }
 ]
