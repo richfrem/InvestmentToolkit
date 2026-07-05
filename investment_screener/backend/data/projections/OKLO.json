@@ -445,6 +445,10 @@
       },
       "source": "daily-loop-agent",
       "notes": "SELL_ONLY_WHEN_GREEN. Underwater -49.1%, break-even $101. Distribution ongoing (vol bias -52%). Trim above $101 only. No accumulate: DCF SELL, pre-revenue, bull FV only $16."
-    }
+    },
+    "peers": [
+      "SMR",
+      "NNE"
+    ]
   }
 ]

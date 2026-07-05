@@ -7,7 +7,7 @@
     "version": 4,
     "savedAt": "2026-05-02T22:15:00.000Z",
     "updatedAt": "2026-05-02T22:26:51.248Z",
-    "name": "AI Deep Dive — SNDK — 2026-05-02",
+    "name": "AI Deep Dive \u2014 SNDK \u2014 2026-05-02",
     "rationale": "SanDisk (NAND flash, spun off from WD) is experiencing a massive NAND cycle recovery. Revenue grew 251% YoY to $7.36B TTM and analysts project explosive growth: $19.4B Y1 (+163.7%) and $38.25B Y2 (+97.3%). DCF fair value $1,500.72 vs $1,187 (BUY +26.5%), closely aligned with analyst mean target $1,205 (21 analysts). The BUY signal reflects extraordinary NAND price cycle recovery compounded by AI/ML storage demand. Key risk: NAND is highly cyclical and bear case ($54.99) shows the floor if cycle reverses.",
     "snapshot": {
       "price": 1187,
@@ -43,7 +43,7 @@
         "exitPE": 22,
         "qualityMultiplier": 1,
         "shareChange": 0,
-        "rationale": "Hypergrowth deceleration: Y1 +164%, Y2 +97%, Y3 +49%, Y4 +24%, Y5 +12% — implied CAGR ~55% from TTM base. NAND margins normalize to 22% in a sustained recovery. AI/ML storage demand provides structural floor.",
+        "rationale": "Hypergrowth deceleration: Y1 +164%, Y2 +97%, Y3 +49%, Y4 +24%, Y5 +12% \u2014 implied CAGR ~55% from TTM base. NAND margins normalize to 22% in a sustained recovery. AI/ML storage demand provides structural floor.",
         "year5EPS": 97.81,
         "scenarioPrice": 2151.82,
         "presentValue": 1336.17
@@ -74,14 +74,14 @@
     },
     "analyticsLog": {
       "shareCountMethod": "shares_diluted = shares_outstanding = 148,000,000 (no discrepancy). Clean share count.",
-      "marginAnchor": "TTM 34.19% is at peak NAND cycle — NOT representative of normalized margins. Historical NI: [-$2.14B, -$672M, -$1.64B] in prior 3 years (trough NAND pricing) vs +$2.52B TTM (peak pricing). Mean-reverting NAND cycles suggest normalized margin ~15-25%. Bear uses 5% (trough), Base 22% (normalized recovery), Bull 35% (sustained peak). TTM margin NOT used as anchor due to cyclicality.",
-      "growthDerivation": "HYPERGROWTH EXCEPTION APPLIED — Y1 analyst +163.7% >> 40% threshold. Derived 5-yr CAGR from analyst trajectory: Y1 $19.4B (+164%), Y2 $38.25B (+97%), Y3 +49%=$57.0B, Y4 +24%=$70.7B, Y5 +12%=$79.2B. 5-yr CAGR from TTM $7.355B: ($79.2/$7.355)^0.2-1 = 61%. Base uses 55% (below full trajectory for conservatism). Bear 30% (cycle truncated). Bull 75% (AI acceleration extends cycle).",
-      "sectorBenchmarkRow": "Technology — Computer Hardware / Memory. Conservative PE 10-15x (cyclical), median 20-25x (recovery), growth premium 25-35x. Memory stocks historically trade at 10-20x due to cycle uncertainty.",
+      "marginAnchor": "TTM 34.19% is at peak NAND cycle \u2014 NOT representative of normalized margins. Historical NI: [-$2.14B, -$672M, -$1.64B] in prior 3 years (trough NAND pricing) vs +$2.52B TTM (peak pricing). Mean-reverting NAND cycles suggest normalized margin ~15-25%. Bear uses 5% (trough), Base 22% (normalized recovery), Bull 35% (sustained peak). TTM margin NOT used as anchor due to cyclicality.",
+      "growthDerivation": "HYPERGROWTH EXCEPTION APPLIED \u2014 Y1 analyst +163.7% >> 40% threshold. Derived 5-yr CAGR from analyst trajectory: Y1 $19.4B (+164%), Y2 $38.25B (+97%), Y3 +49%=$57.0B, Y4 +24%=$70.7B, Y5 +12%=$79.2B. 5-yr CAGR from TTM $7.355B: ($79.2/$7.355)^0.2-1 = 61%. Base uses 55% (below full trajectory for conservatism). Bear 30% (cycle truncated). Bull 75% (AI acceleration extends cycle).",
+      "sectorBenchmarkRow": "Technology \u2014 Computer Hardware / Memory. Conservative PE 10-15x (cyclical), median 20-25x (recovery), growth premium 25-35x. Memory stocks historically trade at 10-20x due to cycle uncertainty.",
       "dataQualityFlags": [
-        "Revenue growth of 251% is largely a NAND price cycle recovery, not organic volume growth — context-dependent interpretation required",
-        "Historical NI: 3 years of massive losses [-$2.14B, -$672M, -$1.64B] before TTM profit. Cycle-induced — not structural impairment",
+        "Revenue growth of 251% is largely a NAND price cycle recovery, not organic volume growth \u2014 context-dependent interpretation required",
+        "Historical NI: 3 years of massive losses [-$2.14B, -$672M, -$1.64B] before TTM profit. Cycle-induced \u2014 not structural impairment",
         "Analyst Y1 $19.4B vs TTM $7.4B (+163%) is almost certainly a full-year vs partial-year spin-off timing effect compounded by NAND price recovery",
-        "Piotroski 5/9 — modest quality score, NI positive only in most recent period"
+        "Piotroski 5/9 \u2014 modest quality score, NI positive only in most recent period"
       ],
       "analystInputs": {
         "y1RevEstimate": 19387189660,
@@ -113,13 +113,13 @@
         "priorPrice": 1187,
         "priorFairValue": 412,
         "priorAction": "SELL",
-        "priceDelta": "0% — price unchanged at $1,187",
-        "assumptionAudit": "Prior base CAGR 80% with netMargin 20%, PE 18x, QM 1.0. Prior bear CAGR 30% with 10% margin. Prior analysis significantly underestimated the cycle recovery scale — Y1 analyst estimates of $19.4B vs prior assumption of modest growth from $1.187B base. Prior QM 1.2 on bull was unjustified without structural moat citation. Our base at 55% CAGR/22% margin/22x PE produces $1,336 PV vs prior $412 FV — substantially different due to updated analyst projections.",
-        "modelQualityFlag": "UNVALIDATED — Gemini 3 Pro",
+        "priceDelta": "0% \u2014 price unchanged at $1,187",
+        "assumptionAudit": "Prior base CAGR 80% with netMargin 20%, PE 18x, QM 1.0. Prior bear CAGR 30% with 10% margin. Prior analysis significantly underestimated the cycle recovery scale \u2014 Y1 analyst estimates of $19.4B vs prior assumption of modest growth from $1.187B base. Prior QM 1.2 on bull was unjustified without structural moat citation. Our base at 55% CAGR/22% margin/22x PE produces $1,336 PV vs prior $412 FV \u2014 substantially different due to updated analyst projections.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Gemini 3 Pro",
         "thesisOutcome": "Prior SELL at $412 was significantly wrong directionally. Price unchanged at $1,187 but analyst consensus upgraded to Buy at $1,206. NAND cycle recovery exceeded prior model expectations.",
-        "fundamentalChanges": "NAND prices recovered sharply — analyst Y1 revenue now $19.4B (+164% from TTM). Profitability restored in TTM with 34.19% margin. AI/ML storage demand providing additional structural tailwind. Analyst count grew to 21 with Buy consensus."
+        "fundamentalChanges": "NAND prices recovered sharply \u2014 analyst Y1 revenue now $19.4B (+164% from TTM). Profitability restored in TTM with 34.19% margin. AI/ML storage demand providing additional structural tailwind. Analyst count grew to 21 with Buy consensus."
       },
-      "confidenceBreakdown": "0.58/1.0 — Base: 1.0. -0.20 NAND extreme cyclicality (DCF unreliable for memory cycles). -0.12 limited 3-year history as independent company. -0.10 bear case ($55) shows severe downside if cycle reverses."
+      "confidenceBreakdown": "0.58/1.0 \u2014 Base: 1.0. -0.20 NAND extreme cyclicality (DCF unreliable for memory cycles). -0.12 limited 3-year history as independent company. -0.10 bear case ($55) shows severe downside if cycle reverses."
     }
   },
   {
@@ -130,7 +130,7 @@
     "version": 5,
     "savedAt": "2026-05-19T01:15:00Z",
     "updatedAt": "2026-05-19T01:15:00Z",
-    "name": "Forward-Looking Valuation Challenge — SNDK — 2026-05-19",
+    "name": "Forward-Looking Valuation Challenge \u2014 SNDK \u2014 2026-05-19",
     "rationale": "Applied the forward-looking valuation challenge skill to reflect Sandisk's explosive NAND flash memory price recovery and enterprise solid-state drive (SSD) demand driven by AI clusters. We also ran full math validation: corrected the highly cyclical trough bear case floor to $98.58 (previously $54.99) based on long-term enterprise cloud contracts, taming the previous extreme 106x spread ratio down to a validated 36.9x. The resulting weighted fair value of $1,451.38 vs the current market price of $1,333.01 implies a robust, objective HOLD (+8.9% upside).",
     "snapshot": {
       "price": 1333.01,
@@ -238,7 +238,7 @@
     "version": 7,
     "savedAt": "2026-07-02T17:42:00Z",
     "updatedAt": "2026-07-02T17:42:09.596Z",
-    "name": "AI Deep Dive — SNDK (Adjusted) — 2026-07-02",
+    "name": "AI Deep Dive \u2014 SNDK (Adjusted) \u2014 2026-07-02",
     "rationale": "SNDK has fallen 15% due to a broader sector-wide rotation away from semiconductor hardware. However, its underlying business fundamentals have been significantly de-risked by newly announced 3-5 year Long-Term Agreements (LTAs) with range-bound pricing, upfront payments, and price floors. Combined with structural demand for high-density enterprise SSDs to support Agentic AI Swarm logging and embeddings, the weighted fair value is $2,202.56. BUY (+27.6% upside).",
     "snapshot": {
       "price": 1726.81,
@@ -302,7 +302,7 @@
       "shareCountMethod": "shares_outstanding (verified clean count at 148.09M)",
       "marginAnchor": "TTM 34.19% adjusted downward to normalized 22% base margin to account for semiconductor cyclicality.",
       "growthDerivation": "Hypergrowth exception applied: consensus forecasts of $19.6B and $44.5B imply massive short-term growth. Restored base CAGR to 58% and bull to 68% based on new LTAs and capacity locks.",
-      "sectorBenchmarkRow": "Technology — Computer Hardware / Memory. exit multiples set to 15x (Bear), 22x (Base), and 28x (Bull) to reflect cycle positioning.",
+      "sectorBenchmarkRow": "Technology \u2014 Computer Hardware / Memory. exit multiples set to 15x (Bear), 22x (Base), and 28x (Bull) to reflect cycle positioning.",
       "dataQualityFlags": [
         "INFO: Bernstein Mark Newman upgraded target to $3,000 on June 30 citing new long-term agreements.",
         "INFO: Sector-wide profit-taking rotation presents a tactical buy opportunity."
@@ -343,7 +343,11 @@
         "thesisOutcome": "Played out successfully with stock peaking over $2,000 before the recent sector rotation pullback.",
         "fundamentalChanges": "Bernstein target raised to $3,000 on new long-term agreements. Y2 consensus increased to $44.5B."
       },
-      "confidenceBreakdown": "0.82/1.0 — Elevated confidence. LTAs de-risk the cyclical profile, providing strong revenue floors and margin stability through 2027."
-    }
+      "confidenceBreakdown": "0.82/1.0 \u2014 Elevated confidence. LTAs de-risk the cyclical profile, providing strong revenue floors and margin stability through 2027."
+    },
+    "peers": [
+      "MU",
+      "WDC"
+    ]
   }
 ]

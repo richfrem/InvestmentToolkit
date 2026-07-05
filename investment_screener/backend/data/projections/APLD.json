@@ -97,6 +97,11 @@
         "thesisImpact": "Bull probability +7pp; bear -4pp. FV $58.35\u2192$66.89. Action: BUY\u2192BUY."
       }
     ],
-    "lastGrokSweep": "2026-06-27"
+    "lastGrokSweep": "2026-06-27",
+    "peers": [
+      "CRWV",
+      "NBIS",
+      "IREN"
+    ]
   }
 ]

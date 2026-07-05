@@ -481,6 +481,10 @@
       },
       "source": "daily-loop-agent",
       "notes": "SELL_ONLY_WHEN_GREEN. Underwater -28.8%, break-even $364. Trim only above $364 (book) or $385 (bull FV). SQUEEZE_ON \u2014 watch for coil resolution. No accumulate: DCF TRIM, stock above $175 FV."
-    }
+    },
+    "peers": [
+      "VST",
+      "NRG"
+    ]
   }
 ]

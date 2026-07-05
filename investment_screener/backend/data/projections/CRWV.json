@@ -518,6 +518,11 @@
       },
       "source": "tv-ta-deep multi-timeframe",
       "notes": "1H RSI 28 oversold; daily ADX 13 (no trend = volatile, not trending). 5m ADX 56 signals intraday exhaustion. DCF BUY +128% upside to $202 FV. Add 2-4sh at $82-88."
-    }
+    },
+    "peers": [
+      "NBIS",
+      "APLD",
+      "ORCL"
+    ]
   }
 ]

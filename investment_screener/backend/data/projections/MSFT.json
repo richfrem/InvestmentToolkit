@@ -434,6 +434,11 @@
       },
       "source": "daily-loop-agent",
       "notes": "TA REDUCE only \u2014 DCF strongly BUY (+74% to $649 FV). Underwater at $373 vs $424 book. Trim only above break-even. Accumulate if RSI resets to <50 around $350-360."
-    }
+    },
+    "peers": [
+      "GOOGL",
+      "AMZN",
+      "AAPL"
+    ]
   }
 ]

@@ -446,6 +446,11 @@
       },
       "source": "daily-loop-agent",
       "notes": "Stock 69% above weighted DCF FV ($16). Allowlisted \u2014 SA LP long. Trim above $28-30 (bull FV ceiling) on distribution signal. Accumulate only after DCF refresh confirms re-rate; base case $6.92 is extreme bear. Model (May 2) predates $3.3B bond raise and 1.5GW buildout."
-    }
+    },
+    "peers": [
+      "IREN",
+      "CIFR",
+      "WULF"
+    ]
   }
 ]
