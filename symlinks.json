@@ -726,6 +726,18 @@
       "dst": "plugins/stock-valuation/skills/stock_valuation/scripts/dcf_sensitivity.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/comps_valuation.py",
+      "dst": "investment_screener/backend/py_services/comps_valuation.py",
+      "strategy": "symlink",
+      "description": "comps_valuation.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/comps_valuation.py",
+      "dst": "plugins/stock-valuation/skills/stock_valuation/scripts/comps_valuation.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
     }
   ]
 }
