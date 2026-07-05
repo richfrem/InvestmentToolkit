@@ -2,7 +2,7 @@
 
 **Date**: 2026-07-05
 **Agent**: Stock Valuation Analyst / Portfolio Advisor
-**Status**: PROPOSED — LLY and CRSP both cleared `/evaluate-stock`. CRSP's DCF says SELL/WATCHLIST with a heavy tool-mismatch caveat (see Section 3, Risk 6, and Section 6) — do not treat as a clean accumulate signal.
+**Status**: PROPOSED — LLY and CRSP both cleared `/evaluate-stock`. User decision (2026-07-05): hold both at WATCHLIST rather than initiating now — `targetWeight` set to 0 for both, freed 4.5% returned to PSU-U.TO (13.925%→18.425%). This sub-strategy evaluates entry over time rather than initiating immediately after a DCF pass clears. The biohealth pillar's 4.5% structural target remains registered for future deployment.
 
 **Update 2026-07-05**: VERV (Verve Therapeutics) was removed from this sub-strategy. Eli Lilly completed its acquisition of Verve Therapeutics in July 2025 (tender offer closed at $10.50/share cash + up to $3.00/share CVR); the stock was delisted from Nasdaq and deregistered. `/evaluate-stock VERV` confirmed no financial data is fetchable — the ticker no longer exists as a tradeable equity. VERV's 15%-of-pillar (0.675% of portfolio) allocation was reallocated proportionally to LLY and CRSP per the original 65:20 split (now 76.5%/23.5% of pillar).
 
@@ -15,9 +15,9 @@ The Incretin (GLP-1R) boom represents the massive infrastructure buildout phase 
 **Key Metadata**:
 - **Target Weight**: 4.5% (biohealth pillar)
 - **Pillar**: Healthcare AI / Life Science
-- **Role**: initiate (both tickers — 0 shares held, target commitment only)
+- **Role**: watchlist (both tickers — 0 shares held, 0 target weight, evaluating entry over time)
 - **Time Horizon**: 3-7 years
-- **Execution Strategy**: Barbell (76.5% Aggregator / 23.5% In-Vivo Core) — VERV's speculative sleeve removed (delisted, see Update above)
+- **Execution Strategy**: Barbell, structural target 76.5% Aggregator / 23.5% In-Vivo Core once initiated — VERV's speculative sleeve removed (delisted, see Update above)
 
 ---
 
@@ -54,21 +54,21 @@ The Incretin (GLP-1R) boom represents the massive infrastructure buildout phase 
 
 | Ticker | Role | Target Allocation | Rationale |
 | :--- | :--- | :--- | :--- |
-| **LLY** | The Core Aggregator | 76.5% of pillar (3.441% of portfolio) | Dominates cash flows; elite capital allocator utilizing GLP-1 revenue to capture adjacent frontiers. Absorbed VERV's proportional share (65:20 split preserved). |
-| **CRSP** | In-Vivo Liver / Epigenetic Core | 23.5% of pillar (1.059% of portfolio) | Lead asset CTX310 targets ANGPTL3 to slash lipids permanently; ~$2.4B cash runway to clear clinical readouts. Absorbed VERV's proportional share (65:20 split preserved). |
+| **LLY** | The Core Aggregator (watchlist) | Structural 76.5% of pillar (3.441% of portfolio) once initiated; currently 0% | Dominates cash flows; elite capital allocator utilizing GLP-1 revenue to capture adjacent frontiers. Absorbed VERV's proportional share (65:20 split preserved). Held at watchlist per 2026-07-05 user decision. |
+| **CRSP** | In-Vivo Liver / Epigenetic Core (watchlist) | Structural 23.5% of pillar (1.059% of portfolio) once initiated; currently 0% | Lead asset CTX310 targets ANGPTL3 to slash lipids permanently; ~$2.4B cash runway to clear clinical readouts. Absorbed VERV's proportional share (65:20 split preserved). Held at watchlist per 2026-07-05 user decision (also DCF-tool-mismatch, see Risk 6). |
 | ~~**VERV**~~ | ~~Precision Base Editor~~ | ~~15% of pillar (0.675% of portfolio)~~ | Removed 2026-07-05 — Eli Lilly completed its acquisition of Verve Therapeutics in July 2025; VERV was delisted from Nasdaq and no longer exists as a tradeable equity. Weight reallocated to LLY/CRSP above. |
 
-**Capital source**: Drawn from the Strategic Reserve (`PSU-U.TO`, reduced 18.425% → 13.925%). Total portfolio target weight remains exactly 100% after this addition.
+**Capital source**: Currently none deployed — both tickers at watchlist. The 4.5% originally drawn from the Strategic Reserve (`PSU-U.TO`, 18.425%→13.925%) has been returned in full (`PSU-U.TO` back to 18.425%) pending an actual initiate decision. Total portfolio target weight remains exactly 100%.
 
 ---
 
 ## 5. Execution Plan
 
-- **LLY**: Accumulate on technical pullbacks. Do not chase if trailing multiple exceeds 50x. DCF-derived price levels now live in `target-portfolio.json.priceLevels`.
-- **CRSP**: WATCHLIST per DCF (see Risk 6) — do not initiate on the auto-derived price levels, they are not usable. If initiating at all, size as a small, catalyst-gated starter position keyed strictly to the CTX310/CTX320 Phase 1/2a cardiotoxicity and lipid reduction durability data drop, with an explicit DCF-gate-suspension decision recorded first.
+- **LLY**: WATCHLIST (2026-07-05 user decision, not a DCF concern — DCF cleared clean at HOLD). Price levels are live in `target-portfolio.json.priceLevels` (buy tiers $861.20/$322.33) for ongoing entry evaluation; not an active buy yet.
+- **CRSP**: WATCHLIST — both the DCF-tool-mismatch caveat (Risk 6) and the 2026-07-05 user decision apply. Do not act on the auto-derived price levels, they are not usable.
 - ~~**VERV**: Speculative watchlist.~~ Removed 2026-07-05 — acquired by Eli Lilly, delisted, no longer tradeable.
-- **Capital Source**: Allocated directly from the Strategic Reserve (`PSU-U.TO`).
-- **Gate before any live buy**: Run `/evaluate-stock` for each ticker to produce a DCF projection and clear the Phase 2a 2-of-3 valuation-committee gate before `role` moves from `initiate` to `accumulate`.
+- **Capital Source**: None currently deployed — freed back to the Strategic Reserve (`PSU-U.TO`) pending an actual initiate decision.
+- **Re-entry process**: This sub-strategy evaluates entry over time rather than initiating immediately after a DCF pass clears. Re-run `/evaluate-stock` periodically and reassess against the milestone gates in Section 6 (CTX310/CTX320 data for CRSP; technical pullback levels for LLY) before deciding to initiate either name.
 
 ---
 
@@ -91,7 +91,9 @@ The Incretin (GLP-1R) boom represents the massive infrastructure buildout phase 
 - [ ] **REJECTED**
 
 **Decision Notes** *(2026-07-05)*:
-Structural wiring only — target weights and sub-strategy registered in `target-portfolio.json` and this file. `/evaluate-stock LLY` complete (DCF + price levels persisted). `/evaluate-stock VERV` returned no data — Verve Therapeutics was acquired by Eli Lilly and delisted from Nasdaq in July 2025; VERV was removed from this sub-strategy and its 0.675% weight reallocated proportionally to LLY/CRSP. `/evaluate-stock CRSP` complete — DCF says SELL but this is a DCF-tool mismatch (see Risk 6); `aiThesis.action` set to WATCHLIST. Next step: user decides whether to proceed with CRSP's planned starter-tier initiate under an explicit standingDecision override (OKLO-style), or hold at WATCHLIST until CTX310/CTX320 catalyst data de-risks the pipeline case independent of DCF.
+Structural wiring only — target weights and sub-strategy registered in `target-portfolio.json` and this file. `/evaluate-stock LLY` complete (DCF + price levels persisted, clean HOLD, no DCF concerns). `/evaluate-stock VERV` returned no data — Verve Therapeutics was acquired by Eli Lilly and delisted from Nasdaq in July 2025; VERV was removed from this sub-strategy and its 0.675% weight reallocated proportionally to LLY/CRSP. `/evaluate-stock CRSP` complete — DCF says SELL but this is a DCF-tool mismatch (see Risk 6); `aiThesis.action` set to WATCHLIST.
+
+**Final decision**: user confirmed neither LLY nor CRSP will be initiated right now, despite LLY's clean DCF pass — both held at `role: watchlist`, `targetWeight: 0`. The freed 4.5% returned in full to `PSU-U.TO` (18.425%). This sub-strategy's operating model is to evaluate entry over time rather than auto-initiating the moment a DCF clears — re-run `/evaluate-stock` periodically and reassess against Section 6's milestone gates before initiating either name.
 
 ---
 
@@ -122,14 +124,7 @@ Two forward-looking applications follow directly from this mapping, both still p
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-05 09:03 by TV sync · Portfolio total: $32,473 USD*
+*Auto-updated 2026-07-05 09:15 by TV sync · Portfolio total: $32,473 USD*
 
-**Pending Initiation**
-
-| Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
-|--------|--------|---------|---------|-----|--------|-------------|
-| **LLY** | — | — | 3.4% | — | 🟢 INITIATE | — |
-| **CRSP** | — | — | 1.1% | — | 🟢 INITIATE | — |
-
-**Pillar total — Actual: 0.0% · Target: 4.5% · Gap: -4.5pp**
+**Pillar total — Actual: 0.0% · Target: 0.0% · Gap: +0.0pp**
 <!-- AUTO_UPDATE_END: current_positions -->
