@@ -89,7 +89,6 @@ def solve_implied_growth(
 
     tolerance = RELATIVE_TOLERANCE * max(price, 1.0)
     iterations = 0
-    mid = (lo + hi) / 2
     converged = False
     while iterations < MAX_ITERATIONS:
         mid = (lo + hi) / 2
