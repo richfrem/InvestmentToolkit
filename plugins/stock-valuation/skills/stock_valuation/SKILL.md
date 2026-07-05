@@ -244,6 +244,8 @@ python3 investment_screener/backend/py_services/wacc.py \
 # 2. Re-run DCF with the computed WACC (instead of the default --discount-rate)
 python3 investment_screener/backend/py_services/dcf_scenarios.py \
   --raw <raw_financials.json> --scenarios <scenarios.json> --wacc-file <wacc_output.json> --pretty
+# -> analyticsLog.dcf (persist weightedFairValue, upsidePct, and the full
+# scenario breakdown from this re-run's output — this is lens #1 the gate reads)
 
 # 3. Reverse-DCF implied growth
 python3 investment_screener/backend/py_services/reverse_dcf.py \
@@ -269,7 +271,7 @@ python3 investment_screener/backend/py_services/comps_valuation.py \
 # for any ticker without a curated peers list yet — do not fabricate one.
 ```
 
-Merge all five outputs (`wacc`, `reverseDcf`, `sensitivity`, `monteCarlo`, `comps`) into the
+Merge all six outputs (`dcf`, `wacc`, `reverseDcf`, `sensitivity`, `monteCarlo`, `comps`) into the
 projection's `analyticsLog` object before Step 4. If DCF upside, comps upside,
 and implied-growth-vs-base disagree by more than 25%, say so explicitly in the
 conversational summary (Step 8) and in `rationale` — never average the
@@ -282,7 +284,9 @@ valuation-committee gate: `aiThesis.action = ACCUMULATE` requires at least 2
 of the 3 lenses (DCF upside, comps upside, implied-growth-below-base-case)
 to agree — a validation error if fewer than 2 agree, forcing either the
 action to be revised or a re-check of the underlying lens data before
-persistence.
+persistence. A pre-Phase-2a projection re-validated without lens data will
+correctly fail this gate if its action is ACCUMULATE — re-run it through
+Step 3.5 first rather than treating the failure as a bug.
 ```bash
 # Run pre-persistence validator
 cat temp/evaluations/{TICKER}_projection.json | python3 plugins/stock-valuation/skills/stock_valuation/scripts/validate_projection.py --verbose
