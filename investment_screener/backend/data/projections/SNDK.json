@@ -344,6 +344,10 @@
         "fundamentalChanges": "Bernstein target raised to $3,000 on new long-term agreements. Y2 consensus increased to $44.5B."
       },
       "confidenceBreakdown": "0.82/1.0 — Elevated confidence. LTAs de-risk the cyclical profile, providing strong revenue floors and margin stability through 2027."
-    }
+    },
+    "peers": [
+      "MU",
+      "WDC"
+    ]
   }
 ]

@@ -7,7 +7,7 @@
     "version": 1,
     "savedAt": "2026-05-02T19:26:33Z",
     "updatedAt": "2026-05-02T19:26:33Z",
-    "name": "AI Deep Dive \u2014 OKLO \u2014 2026-05-02",
+    "name": "AI Deep Dive — OKLO — 2026-05-02",
     "rationale": "Oklo is pre-revenue with advanced fission technology; analyst revenue paths assume commercialization milestones. Under cautious margin and adoption assumptions the DCF fair value is far below market price, yielding SELL.",
     "snapshot": {
       "price": 70.4,
@@ -83,12 +83,12 @@
     },
     "analyticsLog": {
       "shareCountMethod": "Used metrics.shares_diluted=173919838; DCF-derived baseShares=173919838; difference 0.0%",
-      "marginAnchor": "TTM 0.0 used; no historical revenue \u2014 use cautious recovery to positive margins by Yr5",
-      "growthDerivation": "Y1=235450.0, Y2=1142750.0; blendedConsensusPct=N/A% (TTM revenue=0 \u2192 base CAGR set by analyst pathway/clamped)",
+      "marginAnchor": "TTM 0.0 used; no historical revenue — use cautious recovery to positive margins by Yr5",
+      "growthDerivation": "Y1=235450.0, Y2=1142750.0; blendedConsensusPct=N/A% (TTM revenue=0 → base CAGR set by analyst pathway/clamped)",
       "sectorBenchmarkRow": "Utilities: Conservative P/E 12, Median P/E 16, Growth P/E 20",
       "dataQualityFlags": [
-        "TTM revenue is zero \u2014 analyst forecasts project revenue from a zero base (high uncertainty)",
-        "Company pre-revenue / early-stage \u2014 high execution and commercialization risk",
+        "TTM revenue is zero — analyst forecasts project revenue from a zero base (high uncertainty)",
+        "Company pre-revenue / early-stage — high execution and commercialization risk",
         "Analyst estimates sparse; small analyst count increases uncertainty"
       ],
       "analystInputs": {
@@ -121,7 +121,7 @@
         -0.74,
         0
       ],
-      "confidenceBreakdown": "0.25 \u2014 -0.20 execution risk, -0.05 data uncertainty"
+      "confidenceBreakdown": "0.25 — -0.20 execution risk, -0.05 data uncertainty"
     }
   },
   {
@@ -132,8 +132,8 @@
     "version": 1,
     "savedAt": "2026-05-02T19:47:00Z",
     "updatedAt": "2026-05-02T19:47:00Z",
-    "name": "AI Deep Dive \u2014 OKLO \u2014 2026-05-02",
-    "rationale": "Oklo is a pre-revenue advanced fission (micro-SMR) developer with accelerating cash burn and a binary NRC licensing dependency. At $70.40, the $12.24B market cap prices in a full-scale nuclear renaissance well beyond a 5-year horizon. A first-principles DCF seeded from a $5M pre-commercial baseline yields a probability-weighted fair value of $5.10, implying 93% downside. Even the bull scenario \u2014 20+ Aurora units online by 2030 \u2014 produces only $16.34 present value. The stock is pricing on real-options/optionality rather than fundamentals. SELL.",
+    "name": "AI Deep Dive — OKLO — 2026-05-02",
+    "rationale": "Oklo is a pre-revenue advanced fission (micro-SMR) developer with accelerating cash burn and a binary NRC licensing dependency. At $70.40, the $12.24B market cap prices in a full-scale nuclear renaissance well beyond a 5-year horizon. A first-principles DCF seeded from a $5M pre-commercial baseline yields a probability-weighted fair value of $5.10, implying 93% downside. Even the bull scenario — 20+ Aurora units online by 2030 — produces only $16.34 present value. The stock is pricing on real-options/optionality rather than fundamentals. SELL.",
     "snapshot": {
       "price": 70.4,
       "currency": "USD",
@@ -209,7 +209,7 @@
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "OKLO is a compelling technological vision priced as though it has already succeeded. The Aurora powerhouse and fuel recycling technology are genuinely differentiated \u2014 but a $12.24B market cap for a company with zero revenue, $115M annual cash burn, no NRC approval, and a first commercial reactor still 1-2 years away is pricing in a nuclear renaissance that may or may not materialise within a decade. My first-principles DCF, seeded from a $5M pre-commercial baseline and modelled across three commercial deployment scenarios, yields a weighted fair value of $5.10 \u2014 a 93% discount to the current price of $70.40. Even in the bull case (20+ reactors, fuel recycling commercial, $1.2B Y5 revenue), present value is only $16.34. The analyst mean target of $91.36 reflects real-options pricing \u2014 a speculative bet on the nuclear renaissance \u2014 not a 5-year fundamental model. The stock is not un-investable on a 10+ year thesis, but at this price it prices in extraordinary success that has a low probability of being achieved by 2030. SELL on fundamentals; acknowledge speculative optionality in sizing decisions.",
+      "rationale": "OKLO is a compelling technological vision priced as though it has already succeeded. The Aurora powerhouse and fuel recycling technology are genuinely differentiated — but a $12.24B market cap for a company with zero revenue, $115M annual cash burn, no NRC approval, and a first commercial reactor still 1-2 years away is pricing in a nuclear renaissance that may or may not materialise within a decade. My first-principles DCF, seeded from a $5M pre-commercial baseline and modelled across three commercial deployment scenarios, yields a weighted fair value of $5.10 — a 93% discount to the current price of $70.40. Even in the bull case (20+ reactors, fuel recycling commercial, $1.2B Y5 revenue), present value is only $16.34. The analyst mean target of $91.36 reflects real-options pricing — a speculative bet on the nuclear renaissance — not a 5-year fundamental model. The stock is not un-investable on a 10+ year thesis, but at this price it prices in extraordinary success that has a low probability of being achieved by 2030. SELL on fundamentals; acknowledge speculative optionality in sizing decisions.",
       "fairValue": 5.1,
       "action": "SELL",
       "analyzedAt": "2026-05-02T19:47:00Z",
@@ -220,16 +220,16 @@
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "Used metrics.shares_diluted = 173,919,838. shares_outstanding == shares_diluted (no multi-class discrepancy). Piotroski flag no_dilution=false confirms active equity dilution \u2014 share count will grow; modelled as +2-4%/yr by scenario.",
+      "shareCountMethod": "Used metrics.shares_diluted = 173,919,838. shares_outstanding == shares_diluted (no multi-class discrepancy). Piotroski flag no_dilution=false confirms active equity dilution — share count will grow; modelled as +2-4%/yr by scenario.",
       "marginAnchor": "TTM net margin = 0% (pre-revenue; no sales). 4-yr avg = 0% (all zero). Neither standard anchor applicable. Used sector-informed margin path: 5% (bear, early-scale fixed cost drag), 12% (base, modest operating leverage), 18% (bull, modular manufacturing efficiencies). Sector typical range Utilities 10-15% informed the base; Engineering/IPP peers 15-20% informed bull ceiling.",
-      "growthDerivation": "Analyst Y1 avg = $235,450 and Y2 avg = $1,142,750 (raw dollars per yfinance \u2014 near-zero, not useful for CAGR derivation). Standard \u00b13pp analyst-anchoring rule cannot apply from a zero base. Used first-principles commercial ramp: seed $5M pre-commercial baseline \u2192 bear 80% pa (Y5 ~$95M, 1-2 reactors), base 150% pa (Y5 ~$490M, 5-10 reactors), bull 200% pa (Y5 ~$1.2B, 20+ reactors). Each growth rate reflects a specific commercial deployment count assumption, not an abstract %. Hypergrowth exception documented.",
-      "sectorBenchmarkRow": "Utilities \u2014 Independent Power Producers. Benchmark row: conservative P/E 12, median P/E 16, growth P/E 20. Bear exitPE=14 (between conservative and median, appropriate for unproven first-generation reactor). Base exitPE=18 (above median, reflecting growth profile). Bull exitPE=22 (above growth ceiling, justified by NextEra comparables at ~20x and fuel recycling moat). All within \u00b130% of median (16) rule: 14 = -12.5%, 18 = +12.5%, 22 = +37.5% (bull justification: fuel recycling recurring revenue differentiates from pure utility).",
+      "growthDerivation": "Analyst Y1 avg = $235,450 and Y2 avg = $1,142,750 (raw dollars per yfinance — near-zero, not useful for CAGR derivation). Standard ±3pp analyst-anchoring rule cannot apply from a zero base. Used first-principles commercial ramp: seed $5M pre-commercial baseline → bear 80% pa (Y5 ~$95M, 1-2 reactors), base 150% pa (Y5 ~$490M, 5-10 reactors), bull 200% pa (Y5 ~$1.2B, 20+ reactors). Each growth rate reflects a specific commercial deployment count assumption, not an abstract %. Hypergrowth exception documented.",
+      "sectorBenchmarkRow": "Utilities — Independent Power Producers. Benchmark row: conservative P/E 12, median P/E 16, growth P/E 20. Bear exitPE=14 (between conservative and median, appropriate for unproven first-generation reactor). Base exitPE=18 (above median, reflecting growth profile). Bull exitPE=22 (above growth ceiling, justified by NextEra comparables at ~20x and fuel recycling moat). All within ±30% of median (16) rule: 14 = -12.5%, 18 = +12.5%, 22 = +37.5% (bull justification: fuel recycling recurring revenue differentiates from pure utility).",
       "dataQualityFlags": [
         "PRE-REVENUE: All 5 years of historical revenue = $0. Standard DCF methodology not applicable. Seeded base revenue $5M representing pre-commercial government contracts and design work. All scenario prices are model-derived approximations with very high uncertainty.",
-        "ACCELERATING BURN: FCF -$10M, -$16M, -$38.7M, -$115.4M over 4 years \u2014 exponentially worsening. Capital raises are near-certain in bear/base; modelled as +3-4%/yr dilution.",
+        "ACCELERATING BURN: FCF -$10M, -$16M, -$38.7M, -$115.4M over 4 years — exponentially worsening. Capital raises are near-certain in bear/base; modelled as +3-4%/yr dilution.",
         "ANALYST DATA NEAR-USELESS: Y1 avg $235K and Y2 avg $1.14M revenue estimates reflect placeholder zeroes from analysts who cannot model pre-commercial revenue. Wide dispersion ($0-$6.3M high). Analyst mean price target $91.36 implies real-options/10-yr DCF framework not captured by this 5-yr model.",
-        "BINARY NRC RISK: Without NRC Design Approval and Construction Permit, no commercial revenue is possible. This is a regulatory binary event with no guaranteed timeline. NuScale (2023) withdrew its project after $300M+ spent \u2014 precedent for failure.",
-        "FORWARD PE = -77.66: Company expected to remain deeply loss-making through analyst horizon. EPS estimates: FY2026 -$0.79, FY2027 -$0.94 \u2014 losses deepening even as first revenues appear."
+        "BINARY NRC RISK: Without NRC Design Approval and Construction Permit, no commercial revenue is possible. This is a regulatory binary event with no guaranteed timeline. NuScale (2023) withdrew its project after $300M+ spent — precedent for failure.",
+        "FORWARD PE = -77.66: Company expected to remain deeply loss-making through analyst horizon. EPS estimates: FY2026 -$0.79, FY2027 -$0.94 — losses deepening even as first revenues appear."
       ],
       "analystInputs": {
         "y1RevEstimate": 235450,
@@ -261,7 +261,7 @@
         -0.74,
         0
       ],
-      "confidenceBreakdown": "0.20/1.0 \u2014 Base: 1.0. -0.25 pre-revenue/unproven commercial technology (zero revenue history). -0.20 binary NRC licensing risk (pass/fail with no partial outcome). -0.15 accelerating cash burn with no FCF visibility in 5-yr horizon. -0.10 analyst revenue estimates near-zero/unusable for anchoring. -0.10 5-yr DCF horizon fundamentally mismatched to a 8-12yr commercialisation timeline. Final confidence: 0.20 (very low \u2014 speculative/optionality valuation)."
+      "confidenceBreakdown": "0.20/1.0 — Base: 1.0. -0.25 pre-revenue/unproven commercial technology (zero revenue history). -0.20 binary NRC licensing risk (pass/fail with no partial outcome). -0.15 accelerating cash burn with no FCF visibility in 5-yr horizon. -0.10 analyst revenue estimates near-zero/unusable for anchoring. -0.10 5-yr DCF horizon fundamentally mismatched to a 8-12yr commercialisation timeline. Final confidence: 0.20 (very low — speculative/optionality valuation)."
     }
   },
   {
@@ -272,8 +272,8 @@
     "version": 2,
     "savedAt": "2026-05-02T23:05:00Z",
     "updatedAt": "2026-05-04T05:17:23Z",
-    "name": "AI Deep Dive \u2014 OKLO \u2014 2026-05-02",
-    "rationale": "Oklo is a pre-revenue advanced fission (micro-SMR) developer with accelerating cash burn and a binary NRC licensing dependency. At $70.40, the $12.24B market cap prices in a full-scale nuclear renaissance well beyond a 5-year horizon. A first-principles DCF seeded from a $5M pre-commercial baseline yields a probability-weighted fair value of $5.10, implying 93% downside. Even the bull scenario \u2014 20+ Aurora units online by 2030 \u2014 produces only $16.34 present value. The stock is pricing on real-options/optionality rather than fundamentals. SELL.",
+    "name": "AI Deep Dive — OKLO — 2026-05-02",
+    "rationale": "Oklo is a pre-revenue advanced fission (micro-SMR) developer with accelerating cash burn and a binary NRC licensing dependency. At $70.40, the $12.24B market cap prices in a full-scale nuclear renaissance well beyond a 5-year horizon. A first-principles DCF seeded from a $5M pre-commercial baseline yields a probability-weighted fair value of $5.10, implying 93% downside. Even the bull scenario — 20+ Aurora units online by 2030 — produces only $16.34 present value. The stock is pricing on real-options/optionality rather than fundamentals. SELL.",
     "snapshot": {
       "price": 70.4,
       "currency": "USD",
@@ -349,7 +349,7 @@
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "OKLO is a compelling technological vision priced as though it has already succeeded. The Aurora powerhouse and fuel recycling technology are genuinely differentiated \u2014 but a $12.24B market cap for a company with zero revenue, $115M annual cash burn, no NRC approval, and a first commercial reactor still 1-2 years away is pricing in a nuclear renaissance that may or may not materialise within a decade. My first-principles DCF, seeded from a $5M pre-commercial baseline and modelled across three commercial deployment scenarios, yields a weighted fair value of $5.10 \u2014 a 93% discount to the current price of $70.40. Even in the bull case (20+ reactors, fuel recycling commercial, $1.2B Y5 revenue), present value is only $16.34. The analyst mean target of $91.36 reflects real-options pricing \u2014 a speculative bet on the nuclear renaissance \u2014 not a 5-year fundamental model. The stock is not un-investable on a 10+ year thesis, but at this price it prices in extraordinary success that has a low probability of being achieved by 2030. SELL on fundamentals; acknowledge speculative optionality in sizing decisions.",
+      "rationale": "OKLO is a compelling technological vision priced as though it has already succeeded. The Aurora powerhouse and fuel recycling technology are genuinely differentiated — but a $12.24B market cap for a company with zero revenue, $115M annual cash burn, no NRC approval, and a first commercial reactor still 1-2 years away is pricing in a nuclear renaissance that may or may not materialise within a decade. My first-principles DCF, seeded from a $5M pre-commercial baseline and modelled across three commercial deployment scenarios, yields a weighted fair value of $5.10 — a 93% discount to the current price of $70.40. Even in the bull case (20+ reactors, fuel recycling commercial, $1.2B Y5 revenue), present value is only $16.34. The analyst mean target of $91.36 reflects real-options pricing — a speculative bet on the nuclear renaissance — not a 5-year fundamental model. The stock is not un-investable on a 10+ year thesis, but at this price it prices in extraordinary success that has a low probability of being achieved by 2030. SELL on fundamentals; acknowledge speculative optionality in sizing decisions.",
       "fairValue": 6.65,
       "action": "SELL",
       "analyzedAt": "2026-05-08T05:21:54Z",
@@ -358,11 +358,11 @@
         "date": "2026-05-03",
         "source": "Grok / X.com news sweep",
         "events": [
-          "Meta signed a nuclear campus deal with Oklo \u2014 first direct hyperscaler-to-SMR company PPA",
+          "Meta signed a nuclear campus deal with Oklo — first direct hyperscaler-to-SMR company PPA",
           "Hyperscaler SMR/nuclear PPA interest accelerating broadly (multiple signings)",
           "AI power demand forecasts remain elevated, validating the data center power thesis"
         ],
-        "thesisImpact": "Demand-side binary risk is partially resolved: Meta choosing Oklo directly validates the SMR product roadmap before NRC licensing. The binary is now NRC-only (not NRC + demand). Target increased from 1.99%\u21922.40% on this de-risking."
+        "thesisImpact": "Demand-side binary risk is partially resolved: Meta choosing Oklo directly validates the SMR product roadmap before NRC licensing. The binary is now NRC-only (not NRC + demand). Target increased from 1.99%→2.40% on this de-risking."
       }
     },
     "globalSettings": {
@@ -370,16 +370,16 @@
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "Used metrics.shares_diluted = 173,919,838. shares_outstanding == shares_diluted (no multi-class discrepancy). Piotroski flag no_dilution=false confirms active equity dilution \u2014 share count will grow; modelled as +2-4%/yr by scenario.",
+      "shareCountMethod": "Used metrics.shares_diluted = 173,919,838. shares_outstanding == shares_diluted (no multi-class discrepancy). Piotroski flag no_dilution=false confirms active equity dilution — share count will grow; modelled as +2-4%/yr by scenario.",
       "marginAnchor": "TTM net margin = 0% (pre-revenue; no sales). 4-yr avg = 0% (all zero). Neither standard anchor applicable. Used sector-informed margin path: 5% (bear, early-scale fixed cost drag), 12% (base, modest operating leverage), 18% (bull, modular manufacturing efficiencies). Sector typical range Utilities 10-15% informed the base; Engineering/IPP peers 15-20% informed bull ceiling.",
-      "growthDerivation": "Analyst Y1 avg = $235,450 and Y2 avg = $1,142,750 (raw dollars per yfinance \u2014 near-zero, not useful for CAGR derivation). Standard \u00b13pp analyst-anchoring rule cannot apply from a zero base. Used first-principles commercial ramp: seed $5M pre-commercial baseline \u2192 bear 80% pa (Y5 ~$95M, 1-2 reactors), base 150% pa (Y5 ~$490M, 5-10 reactors), bull 200% pa (Y5 ~$1.2B, 20+ reactors). Each growth rate reflects a specific commercial deployment count assumption, not an abstract %. Hypergrowth exception documented.",
-      "sectorBenchmarkRow": "Utilities \u2014 Independent Power Producers. Benchmark row: conservative P/E 12, median P/E 16, growth P/E 20. Bear exitPE=14 (between conservative and median, appropriate for unproven first-generation reactor). Base exitPE=18 (above median, reflecting growth profile). Bull exitPE=22 (above growth ceiling, justified by NextEra comparables at ~20x and fuel recycling moat). All within \u00b130% of median (16) rule: 14 = -12.5%, 18 = +12.5%, 22 = +37.5% (bull justification: fuel recycling recurring revenue differentiates from pure utility).",
+      "growthDerivation": "Analyst Y1 avg = $235,450 and Y2 avg = $1,142,750 (raw dollars per yfinance — near-zero, not useful for CAGR derivation). Standard ±3pp analyst-anchoring rule cannot apply from a zero base. Used first-principles commercial ramp: seed $5M pre-commercial baseline → bear 80% pa (Y5 ~$95M, 1-2 reactors), base 150% pa (Y5 ~$490M, 5-10 reactors), bull 200% pa (Y5 ~$1.2B, 20+ reactors). Each growth rate reflects a specific commercial deployment count assumption, not an abstract %. Hypergrowth exception documented.",
+      "sectorBenchmarkRow": "Utilities — Independent Power Producers. Benchmark row: conservative P/E 12, median P/E 16, growth P/E 20. Bear exitPE=14 (between conservative and median, appropriate for unproven first-generation reactor). Base exitPE=18 (above median, reflecting growth profile). Bull exitPE=22 (above growth ceiling, justified by NextEra comparables at ~20x and fuel recycling moat). All within ±30% of median (16) rule: 14 = -12.5%, 18 = +12.5%, 22 = +37.5% (bull justification: fuel recycling recurring revenue differentiates from pure utility).",
       "dataQualityFlags": [
         "PRE-REVENUE: All 5 years of historical revenue = $0. Standard DCF methodology not applicable. Seeded base revenue $5M representing pre-commercial government contracts and design work. All scenario prices are model-derived approximations with very high uncertainty.",
-        "ACCELERATING BURN: FCF -$10M, -$16M, -$38.7M, -$115.4M over 4 years \u2014 exponentially worsening. Capital raises are near-certain in bear/base; modelled as +3-4%/yr dilution.",
+        "ACCELERATING BURN: FCF -$10M, -$16M, -$38.7M, -$115.4M over 4 years — exponentially worsening. Capital raises are near-certain in bear/base; modelled as +3-4%/yr dilution.",
         "ANALYST DATA NEAR-USELESS: Y1 avg $235K and Y2 avg $1.14M revenue estimates reflect placeholder zeroes from analysts who cannot model pre-commercial revenue. Wide dispersion ($0-$6.3M high). Analyst mean price target $91.36 implies real-options/10-yr DCF framework not captured by this 5-yr model.",
-        "BINARY NRC RISK: Without NRC Design Approval and Construction Permit, no commercial revenue is possible. This is a regulatory binary event with no guaranteed timeline. NuScale (2023) withdrew its project after $300M+ spent \u2014 precedent for failure.",
-        "FORWARD PE = -77.66: Company expected to remain deeply loss-making through analyst horizon. EPS estimates: FY2026 -$0.79, FY2027 -$0.94 \u2014 losses deepening even as first revenues appear."
+        "BINARY NRC RISK: Without NRC Design Approval and Construction Permit, no commercial revenue is possible. This is a regulatory binary event with no guaranteed timeline. NuScale (2023) withdrew its project after $300M+ spent — precedent for failure.",
+        "FORWARD PE = -77.66: Company expected to remain deeply loss-making through analyst horizon. EPS estimates: FY2026 -$0.79, FY2027 -$0.94 — losses deepening even as first revenues appear."
       ],
       "analystInputs": {
         "y1RevEstimate": 235450,
@@ -411,9 +411,9 @@
         -0.74,
         0
       ],
-      "confidenceBreakdown": "0.20/1.0 \u2014 Base: 1.0. -0.25 pre-revenue/unproven commercial technology (zero revenue history). -0.20 binary NRC licensing risk (pass/fail with no partial outcome). -0.15 accelerating cash burn with no FCF visibility in 5-yr horizon. -0.10 analyst revenue estimates near-zero/unusable for anchoring. -0.10 5-yr DCF horizon fundamentally mismatched to a 8-12yr commercialisation timeline. Final confidence: 0.20 (very low \u2014 speculative/optionality valuation).",
+      "confidenceBreakdown": "0.20/1.0 — Base: 1.0. -0.25 pre-revenue/unproven commercial technology (zero revenue history). -0.20 binary NRC licensing risk (pass/fail with no partial outcome). -0.15 accelerating cash burn with no FCF visibility in 5-yr horizon. -0.10 analyst revenue estimates near-zero/unusable for anchoring. -0.10 5-yr DCF horizon fundamentally mismatched to a 8-12yr commercialisation timeline. Final confidence: 0.20 (very low — speculative/optionality valuation).",
       "valuationAction": "SELL",
-      "portfolioRationale": "SELL-rated, FV $0 (pre-revenue DCF). Speculative role at 1.32% actual. Cap at 0.5% \u2014 NRC decision is binary, not a position to size up ahead of regulatory ruling.",
+      "portfolioRationale": "SELL-rated, FV $0 (pre-revenue DCF). Speculative role at 1.32% actual. Cap at 0.5% — NRC decision is binary, not a position to size up ahead of regulatory ruling.",
       "portfolioUrgency": "LOW"
     },
     "catalystUpdates": [
@@ -428,7 +428,7 @@
           "bull": 10.0,
           "bear": -8.0
         },
-        "thesisImpact": "Bull probability +10pp; bear -8pp. FV $5.10\u2192$6.65. Action: TRIM\u2192SELL."
+        "thesisImpact": "Bull probability +10pp; bear -8pp. FV $5.10→$6.65. Action: TRIM→SELL."
       }
     ],
     "lastGrokSweep": "2026-05-07",
@@ -445,6 +445,10 @@
       },
       "source": "daily-loop-agent",
       "notes": "SELL_ONLY_WHEN_GREEN. Underwater -49.1%, break-even $101. Distribution ongoing (vol bias -52%). Trim above $101 only. No accumulate: DCF SELL, pre-revenue, bull FV only $16."
-    }
+    },
+    "peers": [
+      "SMR",
+      "NNE"
+    ]
   }
 ]

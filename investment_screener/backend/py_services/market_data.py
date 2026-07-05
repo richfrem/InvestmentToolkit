@@ -244,6 +244,16 @@ _YF_FUNDAMENTALS_FIELDS = {
     "netIncome": "netIncomeToCommon",
 }
 
+# Balance-sheet/income-statement fields with no EDGAR tag mapping in this
+# pass — yfinance-only, a deliberate scope boundary (the inverse of
+# operatingIncome's EDGAR-only boundary below). Needed by wacc.py (cost of
+# debt, capital-structure weighting) and comps_valuation.py (enterprise value).
+_YF_ONLY_FUNDAMENTALS_FIELDS = {
+    "totalDebt": "totalDebt",
+    "cashAndEquivalents": "totalCash",
+    "interestExpense": "interestExpense",
+}
+
 # yfinance's `.financials` (annual income statement) row label for each
 # metric that has a clean 1:1 annual equivalent — used ONLY for the
 # EDGAR-vs-yfinance disagreement cross-check. EDGAR's revenue/netIncome are
@@ -466,6 +476,14 @@ def get_fundamentals(ticker: str, cik: str = None) -> dict:
             "source": "edgar",
             "asOf": operating_field.get("asOf"),
         }
+
+    # totalDebt / cashAndEquivalents / interestExpense: yfinance-only for this
+    # pass (see _YF_ONLY_FUNDAMENTALS_FIELDS comment) — a metric absent from
+    # yfinance is simply omitted, never zeroed.
+    for metric, yf_key in _YF_ONLY_FUNDAMENTALS_FIELDS.items():
+        yf_value = _safe_float(yf_info.get(yf_key))
+        if yf_value is not None:
+            result[metric] = {"value": yf_value, "source": "yfinance", "asOf": _now_iso()}
 
     # Staleness is judged on revenue's asOf date — revenue is always present
     # when any data was found at all, and is the metric every downstream

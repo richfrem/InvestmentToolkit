@@ -7,8 +7,8 @@
     "version": 4,
     "savedAt": "2026-05-02T20:26:42Z",
     "updatedAt": "2026-05-02T20:33:53.971Z",
-    "name": "AI Deep Dive \u2014 CORZ \u2014 2026-05-02",
-    "rationale": "Core Scientific (CORZ) emerged from Chapter 11 bankruptcy in January 2024 and is aggressively pivoting from Bitcoin mining to AI/HPC hosting. The power infrastructure thesis is real \u2014 ~800 MW of capacity with signed contracts worth billions (CoreWeave-type deals). However at $20.35 ($6.4B market cap) against $319M revenue declining -16% YoY and -90.47% net margin, the market is pricing flawless execution of a capital-intensive, multi-year transformation. Weighted fair value $10.64 \u2014 SELL (-48%). Re-entry thesis at $8-10 where base case provides reasonable margin of safety.",
+    "name": "AI Deep Dive — CORZ — 2026-05-02",
+    "rationale": "Core Scientific (CORZ) emerged from Chapter 11 bankruptcy in January 2024 and is aggressively pivoting from Bitcoin mining to AI/HPC hosting. The power infrastructure thesis is real — ~800 MW of capacity with signed contracts worth billions (CoreWeave-type deals). However at $20.35 ($6.4B market cap) against $319M revenue declining -16% YoY and -90.47% net margin, the market is pricing flawless execution of a capital-intensive, multi-year transformation. Weighted fair value $10.64 — SELL (-48%). Re-entry thesis at $8-10 where base case provides reasonable margin of safety.",
     "snapshot": {
       "price": 20.35,
       "currency": "USD",
@@ -31,7 +31,7 @@
         "exitPE": 12,
         "qualityMultiplier": 0.75,
         "shareChange": 4,
-        "rationale": "AI hosting contracts face delays/cancellations; Bitcoin mining economics deteriorate further on difficulty adjustments. The pivot stalls \u2014 50%+ of capacity remains on low-margin mining by Y5. Revenue grows modestly to $641M via organic mining hash-rate but at near-zero margins (mining losses offset by partial AI hosting contribution). Continuous equity raises to fund capex (+4%/yr dilution). QM 0.75 reflects genuine execution risk on a post-bankruptcy pivot requiring perfect capital markets access. Exit PE 12x = distressed infrastructure company. Note: bear margin 1% vs prior Gemini 5% \u2014 corrected downward; even 1% requires significant improvement from -90.47% TTM, representing slow but not failed transition.",
+        "rationale": "AI hosting contracts face delays/cancellations; Bitcoin mining economics deteriorate further on difficulty adjustments. The pivot stalls — 50%+ of capacity remains on low-margin mining by Y5. Revenue grows modestly to $641M via organic mining hash-rate but at near-zero margins (mining losses offset by partial AI hosting contribution). Continuous equity raises to fund capex (+4%/yr dilution). QM 0.75 reflects genuine execution risk on a post-bankruptcy pivot requiring perfect capital markets access. Exit PE 12x = distressed infrastructure company. Note: bear margin 1% vs prior Gemini 5% — corrected downward; even 1% requires significant improvement from -90.47% TTM, representing slow but not failed transition.",
         "year5Revenue": 641.7,
         "year5NetIncome": 6.4,
         "year5EPS": 0.02,
@@ -47,7 +47,7 @@
         "exitPE": 25,
         "qualityMultiplier": 0.95,
         "shareChange": 3,
-        "rationale": "AI/HPC hosting contracts execute on schedule. Core Scientific successfully converts majority of power capacity to AI hosting over 3-4 years. Revenue grows from $319M to $1.43B at 35% CAGR as hyperscaler and AI model training contracts ramp. GAAP margins reach 12% by Y5 as AI hosting gross margins (~30-35%) overcome D&A and SBC. QM 0.95 \u2014 power infrastructure moat is real (800 MW capacity, long-term power purchase agreements) but not exceptional tier (replicable given enough capital and time). Ongoing dilution (+3%/yr) reflects ongoing capital needs for facility upgrades. Anchor: no analyst estimates; 35% CAGR based on ~2x revenue per MW of AI hosting capacity at full deployment.",
+        "rationale": "AI/HPC hosting contracts execute on schedule. Core Scientific successfully converts majority of power capacity to AI hosting over 3-4 years. Revenue grows from $319M to $1.43B at 35% CAGR as hyperscaler and AI model training contracts ramp. GAAP margins reach 12% by Y5 as AI hosting gross margins (~30-35%) overcome D&A and SBC. QM 0.95 — power infrastructure moat is real (800 MW capacity, long-term power purchase agreements) but not exceptional tier (replicable given enough capital and time). Ongoing dilution (+3%/yr) reflects ongoing capital needs for facility upgrades. Anchor: no analyst estimates; 35% CAGR based on ~2x revenue per MW of AI hosting capacity at full deployment.",
         "year5Revenue": 1430.5,
         "year5NetIncome": 171.7,
         "year5EPS": 0.47,
@@ -63,7 +63,7 @@
         "exitPE": 35,
         "qualityMultiplier": 1.05,
         "shareChange": 1,
-        "rationale": "Catalyst: AI compute demand outstrips supply through 2028; Core Scientific's power capacity becomes the scarcest resource in the AI infrastructure stack. Premium pricing on HPC hosting contracts (CoreWeave-level: $3-4/W/month vs typical $1-2/W) drives revenue to $2.42B. Additional capacity expansion via new data center builds funded by long-term pre-paid AI hosting contracts. GAAP margins reach 18% as operating leverage materializes. QM 1.05 citing specific moat: long-term power purchase agreements at sub-market rates across multiple Texas, Kentucky, and North Dakota facilities \u2014 these PPAs are 10-15 year contracts at $0.03-0.05/kWh that cannot be replicated by new entrants in current power market conditions (grid interconnection queues are 5-7 years in key AI markets).",
+        "rationale": "Catalyst: AI compute demand outstrips supply through 2028; Core Scientific's power capacity becomes the scarcest resource in the AI infrastructure stack. Premium pricing on HPC hosting contracts (CoreWeave-level: $3-4/W/month vs typical $1-2/W) drives revenue to $2.42B. Additional capacity expansion via new data center builds funded by long-term pre-paid AI hosting contracts. GAAP margins reach 18% as operating leverage materializes. QM 1.05 citing specific moat: long-term power purchase agreements at sub-market rates across multiple Texas, Kentucky, and North Dakota facilities — these PPAs are 10-15 year contracts at $0.03-0.05/kWh that cannot be replicated by new entrants in current power market conditions (grid interconnection queues are 5-7 years in key AI markets).",
         "year5Revenue": 2422.6,
         "year5NetIncome": 436.1,
         "year5EPS": 1.31,
@@ -75,7 +75,7 @@
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "## CORZ Investment Thesis\n\nCore Scientific is betting its entire identity on becoming the picks-and-shovels play for AI compute infrastructure. The thesis is simple and compelling: power is the scarce resource for AI, CORZ has 800 MW of it with long-term PPAs at sub-market rates, and AI hyperscalers are desperate for power. CoreWeave-type contracts worth billions validate this demand.\n\nThe problem is the execution gap between thesis and reality. Today: $319M revenue declining -16% YoY, -90.47% net margins, and a $6.4B market cap that prices in flawless execution. The $20 price represents the market already paying for the base case to succeed.\n\n**Bear ($0.09, 30%)**: Pivot stalls. Bitcoin mining economics worsen, AI hosting contracts face delays (grid interconnection issues, permitting, equipment delays). Revenue grows slowly at 15% CAGR but margins barely reach 1% by Y5 under double-running cost pressure. Heavy dilution (+4%/yr) for ongoing capex. Present value: $0.09.\n\n**Base ($6.92, 45%)**: Execution proceeds. 35% CAGR, $1.43B revenue by Y5, 12% GAAP margins as AI hosting mix dominates. Real power moat (long-term PPAs at $0.03-0.05/kWh) provides durable competitive advantage. Present value: $6.92.\n\n**Bull ($30.00, 25%)**: AI compute shortage persists through 2028+. CORZ's power capacity commands premium pricing. Revenue to $2.42B at 18% margins. Long-term PPA rates become an insurmountable structural advantage. Present value: $30.00.\n\n**Weighted Fair Value: $10.64 \u2014 SELL at $20.35 (-48%)**\n\nAt $20.35, you're paying for bull case execution at base case probability. The real bet is whether AI hosting demand stays supply-constrained long enough for CORZ to complete the transition. That's a valid macro bet \u2014 but at $10.64 fair value, you're paying a 91% premium to fundamental value today. Wait for re-entry at $8-10.",
+      "rationale": "## CORZ Investment Thesis\n\nCore Scientific is betting its entire identity on becoming the picks-and-shovels play for AI compute infrastructure. The thesis is simple and compelling: power is the scarce resource for AI, CORZ has 800 MW of it with long-term PPAs at sub-market rates, and AI hyperscalers are desperate for power. CoreWeave-type contracts worth billions validate this demand.\n\nThe problem is the execution gap between thesis and reality. Today: $319M revenue declining -16% YoY, -90.47% net margins, and a $6.4B market cap that prices in flawless execution. The $20 price represents the market already paying for the base case to succeed.\n\n**Bear ($0.09, 30%)**: Pivot stalls. Bitcoin mining economics worsen, AI hosting contracts face delays (grid interconnection issues, permitting, equipment delays). Revenue grows slowly at 15% CAGR but margins barely reach 1% by Y5 under double-running cost pressure. Heavy dilution (+4%/yr) for ongoing capex. Present value: $0.09.\n\n**Base ($6.92, 45%)**: Execution proceeds. 35% CAGR, $1.43B revenue by Y5, 12% GAAP margins as AI hosting mix dominates. Real power moat (long-term PPAs at $0.03-0.05/kWh) provides durable competitive advantage. Present value: $6.92.\n\n**Bull ($30.00, 25%)**: AI compute shortage persists through 2028+. CORZ's power capacity commands premium pricing. Revenue to $2.42B at 18% margins. Long-term PPA rates become an insurmountable structural advantage. Present value: $30.00.\n\n**Weighted Fair Value: $10.64 — SELL at $20.35 (-48%)**\n\nAt $20.35, you're paying for bull case execution at base case probability. The real bet is whether AI hosting demand stays supply-constrained long enough for CORZ to complete the transition. That's a valid macro bet — but at $10.64 fair value, you're paying a 91% premium to fundamental value today. Wait for re-entry at $8-10.",
       "fairValue": 10.64,
       "action": "SELL",
       "analyzedAt": "2026-05-02T20:26:42Z",
@@ -86,18 +86,18 @@
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "Used 315,594,802 shares_diluted from API. Net income null so NI/EPS derivation unavailable. Post-bankruptcy emergence means share count may be understated vs warrants/options issued in restructuring \u2014 actual fully diluted count likely 330-350M.",
-      "marginAnchor": "TTM -90.47% net margin is the only data point (no historical arrays from yfinance). The -90% reflects: (1) Bitcoin mining losses during BTC price/difficulty cycle, (2) bankruptcy-related costs and write-downs, (3) transition period with double-running costs. Scenarios model improvement to 1%/12%/18% by Y5 \u2014 all represent significant but achievable improvement as AI hosting (30-35% gross margins) replaces Bitcoin mining (~5-15% gross margins at current BTC prices). Prior Gemini bear margin 5% is not as egregious as AMD/INTC case (where bear > TTM), but understates the risk of slow transition by assuming faster profitability improvement than the conservative scenario justifies. Corrected to 1%.",
-      "growthDerivation": "TTM -16% revenue growth (declining). No analyst estimates. Base 35% CAGR derived from: AI hosting capacity conversion math \u2014 800 MW \u00d7 $2M/MW/year revenue at full deployment = $1.6B; at 35% CAGR from $319M \u2192 $1.43B in 5 years = consistent with 60-70% capacity utilization at AI hosting rates. Bull 50% assumes full capacity + expansion. Bear 15% assumes partial/delayed conversion. Revenue currently declining due to BTC mining transition, not fundamental business weakness.",
-      "sectorBenchmarkRow": "Technology \u2014 Software Infrastructure (API industry). For exit multiple: data center/infrastructure comps \u2014 Digital Realty 20-25x P/E, Equinix 35-40x P/E. Using 25x base (below pure REIT comps, reflects operational risk) and 35x bull (approaching Equinix territory if AI hosting premium sustains). Prior Gemini bull PE 25x was too conservative for a full AI hosting pivot \u2014 corrected to 35x.",
+      "shareCountMethod": "Used 315,594,802 shares_diluted from API. Net income null so NI/EPS derivation unavailable. Post-bankruptcy emergence means share count may be understated vs warrants/options issued in restructuring — actual fully diluted count likely 330-350M.",
+      "marginAnchor": "TTM -90.47% net margin is the only data point (no historical arrays from yfinance). The -90% reflects: (1) Bitcoin mining losses during BTC price/difficulty cycle, (2) bankruptcy-related costs and write-downs, (3) transition period with double-running costs. Scenarios model improvement to 1%/12%/18% by Y5 — all represent significant but achievable improvement as AI hosting (30-35% gross margins) replaces Bitcoin mining (~5-15% gross margins at current BTC prices). Prior Gemini bear margin 5% is not as egregious as AMD/INTC case (where bear > TTM), but understates the risk of slow transition by assuming faster profitability improvement than the conservative scenario justifies. Corrected to 1%.",
+      "growthDerivation": "TTM -16% revenue growth (declining). No analyst estimates. Base 35% CAGR derived from: AI hosting capacity conversion math — 800 MW × $2M/MW/year revenue at full deployment = $1.6B; at 35% CAGR from $319M → $1.43B in 5 years = consistent with 60-70% capacity utilization at AI hosting rates. Bull 50% assumes full capacity + expansion. Bear 15% assumes partial/delayed conversion. Revenue currently declining due to BTC mining transition, not fundamental business weakness.",
+      "sectorBenchmarkRow": "Technology — Software Infrastructure (API industry). For exit multiple: data center/infrastructure comps — Digital Realty 20-25x P/E, Equinix 35-40x P/E. Using 25x base (below pure REIT comps, reflects operational risk) and 35x bull (approaching Equinix territory if AI hosting premium sustains). Prior Gemini bull PE 25x was too conservative for a full AI hosting pivot — corrected to 35x.",
       "dataQualityFlags": [
-        "WARNING: Net margin -90.47% TTM is primarily a bankruptcy/transition artifact \u2014 not indicative of steady-state operations. All scenario margins represent forward improvement, not historical mean-reversion.",
+        "WARNING: Net margin -90.47% TTM is primarily a bankruptcy/transition artifact — not indicative of steady-state operations. All scenario margins represent forward improvement, not historical mean-reversion.",
         "WARNING: Revenue declining -16% YoY due to Bitcoin mining transition, not underlying demand loss. AI hosting contracts are ramping but not yet reflected in TTM revenue.",
         "WARNING: No financial history available from API (recent restructuring/re-listing complicates historical data).",
         "WARNING: No analyst estimates available.",
-        "WARNING: Beta 6.355 \u2014 extremely volatile. Position sizing must reflect this.",
-        "WARNING: Prior Gemini v3 bear margin 5% vs TTM -90.47% \u2014 directionally correct (improving) but bear profitability assumed too quickly. Corrected to 1%.",
-        "INFO: Forward P/E 48x confirms market expects meaningful near-term profitability \u2014 consistent with AI hosting contract ramp story.",
+        "WARNING: Beta 6.355 — extremely volatile. Position sizing must reflect this.",
+        "WARNING: Prior Gemini v3 bear margin 5% vs TTM -90.47% — directionally correct (improving) but bear profitability assumed too quickly. Corrected to 1%.",
+        "INFO: Forward P/E 48x confirms market expects meaningful near-term profitability — consistent with AI hosting contract ramp story.",
         "INFO: Post-bankruptcy warrants/options from restructuring may create additional dilution not captured in 315.6M share count."
       ],
       "analystInputs": {
@@ -110,15 +110,15 @@
         "analystCount": null
       },
       "historicalRevenue": [
-        "unavailable \u2014 post-bankruptcy restructuring complicates yfinance historical data"
+        "unavailable — post-bankruptcy restructuring complicates yfinance historical data"
       ],
       "historicalNetMargins": [
-        "unavailable \u2014 yfinance returns null"
+        "unavailable — yfinance returns null"
       ],
       "historicalEPS": [
-        "unavailable \u2014 yfinance returns null"
+        "unavailable — yfinance returns null"
       ],
-      "confidenceBreakdown": "0.48/1.0 \u2014 Base: 1.0. -0.15 no analyst estimates. -0.12 no financial history. -0.10 post-bankruptcy execution risk (capital structure complexity). -0.08 BTC price dependency creates binary revenue outcomes. -0.07 power grid/regulatory risk for AI hosting facilities. Net: 0.48. Below-average confidence reflects high uncertainty on transition execution timeline."
+      "confidenceBreakdown": "0.48/1.0 — Base: 1.0. -0.15 no analyst estimates. -0.12 no financial history. -0.10 post-bankruptcy execution risk (capital structure complexity). -0.08 BTC price dependency creates binary revenue outcomes. -0.07 power grid/regulatory risk for AI hosting facilities. Net: 0.48. Below-average confidence reflects high uncertainty on transition execution timeline."
     }
   },
   {
@@ -129,8 +129,8 @@
     "version": 5,
     "savedAt": "2026-05-02T22:55:00Z",
     "updatedAt": "2026-05-02T22:55:00Z",
-    "name": "AI Deep Dive \u2014 CORZ \u2014 2026-05-02",
-    "rationale": "Core Scientific (CORZ) emerged from Chapter 11 bankruptcy in January 2024 and is aggressively pivoting from Bitcoin mining to AI/HPC hosting. The power infrastructure thesis is real \u2014 ~800 MW of capacity with signed contracts worth billions (CoreWeave-type deals). However at $20.35 ($6.4B market cap) against $319M revenue declining -16% YoY and -90.47% net margin, the market is pricing flawless execution of a capital-intensive, multi-year transformation. Weighted fair value $10.64 \u2014 SELL (-48%). Re-entry thesis at $8-10 where base case provides reasonable margin of safety.",
+    "name": "AI Deep Dive — CORZ — 2026-05-02",
+    "rationale": "Core Scientific (CORZ) emerged from Chapter 11 bankruptcy in January 2024 and is aggressively pivoting from Bitcoin mining to AI/HPC hosting. The power infrastructure thesis is real — ~800 MW of capacity with signed contracts worth billions (CoreWeave-type deals). However at $20.35 ($6.4B market cap) against $319M revenue declining -16% YoY and -90.47% net margin, the market is pricing flawless execution of a capital-intensive, multi-year transformation. Weighted fair value $10.64 — SELL (-48%). Re-entry thesis at $8-10 where base case provides reasonable margin of safety.",
     "snapshot": {
       "price": 20.35,
       "currency": "USD",
@@ -153,7 +153,7 @@
         "exitPE": 12,
         "qualityMultiplier": 0.75,
         "shareChange": 4,
-        "rationale": "AI hosting contracts face delays/cancellations; Bitcoin mining economics deteriorate further on difficulty adjustments. The pivot stalls \u2014 50%+ of capacity remains on low-margin mining by Y5. Revenue grows modestly to $641M via organic mining hash-rate but at near-zero margins (mining losses offset by partial AI hosting contribution). Continuous equity raises to fund capex (+4%/yr dilution). QM 0.75 reflects genuine execution risk on a post-bankruptcy pivot requiring perfect capital markets access. Exit PE 12x = distressed infrastructure company. Note: bear margin 1% vs prior Gemini 5% \u2014 corrected downward; even 1% requires significant improvement from -90.47% TTM, representing slow but not failed transition.",
+        "rationale": "AI hosting contracts face delays/cancellations; Bitcoin mining economics deteriorate further on difficulty adjustments. The pivot stalls — 50%+ of capacity remains on low-margin mining by Y5. Revenue grows modestly to $641M via organic mining hash-rate but at near-zero margins (mining losses offset by partial AI hosting contribution). Continuous equity raises to fund capex (+4%/yr dilution). QM 0.75 reflects genuine execution risk on a post-bankruptcy pivot requiring perfect capital markets access. Exit PE 12x = distressed infrastructure company. Note: bear margin 1% vs prior Gemini 5% — corrected downward; even 1% requires significant improvement from -90.47% TTM, representing slow but not failed transition.",
         "year5Revenue": 641.7,
         "year5NetIncome": 6.4,
         "year5EPS": 0.02,
@@ -169,7 +169,7 @@
         "exitPE": 25,
         "qualityMultiplier": 0.95,
         "shareChange": 3,
-        "rationale": "AI/HPC hosting contracts execute on schedule. Core Scientific successfully converts majority of power capacity to AI hosting over 3-4 years. Revenue grows from $319M to $1.43B at 35% CAGR as hyperscaler and AI model training contracts ramp. GAAP margins reach 12% by Y5 as AI hosting gross margins (~30-35%) overcome D&A and SBC. QM 0.95 \u2014 power infrastructure moat is real (800 MW capacity, long-term power purchase agreements) but not exceptional tier (replicable given enough capital and time). Ongoing dilution (+3%/yr) reflects ongoing capital needs for facility upgrades. Anchor: no analyst estimates; 35% CAGR based on ~2x revenue per MW of AI hosting capacity at full deployment.",
+        "rationale": "AI/HPC hosting contracts execute on schedule. Core Scientific successfully converts majority of power capacity to AI hosting over 3-4 years. Revenue grows from $319M to $1.43B at 35% CAGR as hyperscaler and AI model training contracts ramp. GAAP margins reach 12% by Y5 as AI hosting gross margins (~30-35%) overcome D&A and SBC. QM 0.95 — power infrastructure moat is real (800 MW capacity, long-term power purchase agreements) but not exceptional tier (replicable given enough capital and time). Ongoing dilution (+3%/yr) reflects ongoing capital needs for facility upgrades. Anchor: no analyst estimates; 35% CAGR based on ~2x revenue per MW of AI hosting capacity at full deployment.",
         "year5Revenue": 1430.5,
         "year5NetIncome": 171.7,
         "year5EPS": 0.47,
@@ -185,7 +185,7 @@
         "exitPE": 35,
         "qualityMultiplier": 1.05,
         "shareChange": 1,
-        "rationale": "Catalyst: AI compute demand outstrips supply through 2028; Core Scientific's power capacity becomes the scarcest resource in the AI infrastructure stack. Premium pricing on HPC hosting contracts (CoreWeave-level: $3-4/W/month vs typical $1-2/W) drives revenue to $2.42B. Additional capacity expansion via new data center builds funded by long-term pre-paid AI hosting contracts. GAAP margins reach 18% as operating leverage materializes. QM 1.05 citing specific moat: long-term power purchase agreements at sub-market rates across multiple Texas, Kentucky, and North Dakota facilities \u2014 these PPAs are 10-15 year contracts at $0.03-0.05/kWh that cannot be replicated by new entrants in current power market conditions (grid interconnection queues are 5-7 years in key AI markets).",
+        "rationale": "Catalyst: AI compute demand outstrips supply through 2028; Core Scientific's power capacity becomes the scarcest resource in the AI infrastructure stack. Premium pricing on HPC hosting contracts (CoreWeave-level: $3-4/W/month vs typical $1-2/W) drives revenue to $2.42B. Additional capacity expansion via new data center builds funded by long-term pre-paid AI hosting contracts. GAAP margins reach 18% as operating leverage materializes. QM 1.05 citing specific moat: long-term power purchase agreements at sub-market rates across multiple Texas, Kentucky, and North Dakota facilities — these PPAs are 10-15 year contracts at $0.03-0.05/kWh that cannot be replicated by new entrants in current power market conditions (grid interconnection queues are 5-7 years in key AI markets).",
         "year5Revenue": 2422.6,
         "year5NetIncome": 436.1,
         "year5EPS": 1.31,
@@ -197,7 +197,7 @@
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "## CORZ Investment Thesis\n\nCore Scientific is betting its entire identity on becoming the picks-and-shovels play for AI compute infrastructure. The thesis is simple and compelling: power is the scarce resource for AI, CORZ has 800 MW of it with long-term PPAs at sub-market rates, and AI hyperscalers are desperate for power. CoreWeave-type contracts worth billions validate this demand.\n\nThe problem is the execution gap between thesis and reality. Today: $319M revenue declining -16% YoY, -90.47% net margins, and a $6.4B market cap that prices in flawless execution. The $20 price represents the market already paying for the base case to succeed.\n\n**Bear ($0.09, 30%)**: Pivot stalls. Bitcoin mining economics worsen, AI hosting contracts face delays (grid interconnection issues, permitting, equipment delays). Revenue grows slowly at 15% CAGR but margins barely reach 1% by Y5 under double-running cost pressure. Heavy dilution (+4%/yr) for ongoing capex. Present value: $0.09.\n\n**Base ($6.92, 45%)**: Execution proceeds. 35% CAGR, $1.43B revenue by Y5, 12% GAAP margins as AI hosting mix dominates. Real power moat (long-term PPAs at $0.03-0.05/kWh) provides durable competitive advantage. Present value: $6.92.\n\n**Bull ($30.00, 25%)**: AI compute shortage persists through 2028+. CORZ's power capacity commands premium pricing. Revenue to $2.42B at 18% margins. Long-term PPA rates become an insurmountable structural advantage. Present value: $30.00.\n\n**Weighted Fair Value: $10.64 \u2014 SELL at $20.35 (-48%)**\n\nAt $20.35, you're paying for bull case execution at base case probability. The real bet is whether AI hosting demand stays supply-constrained long enough for CORZ to complete the transition. That's a valid macro bet \u2014 but at $10.64 fair value, you're paying a 91% premium to fundamental value today. Wait for re-entry at $8-10. [2026-05-02 13F Update: Situational Awareness LP tripled CORZ position Q2\u2192Q4 2025 (7.9M\u219228.8M shares, $136M\u2192$418M). Despite SELL rating at -47.7% FV gap, Aschenbrenner's fund is making a contrarian bet. Rationale likely: HPC...]",
+      "rationale": "## CORZ Investment Thesis\n\nCore Scientific is betting its entire identity on becoming the picks-and-shovels play for AI compute infrastructure. The thesis is simple and compelling: power is the scarce resource for AI, CORZ has 800 MW of it with long-term PPAs at sub-market rates, and AI hyperscalers are desperate for power. CoreWeave-type contracts worth billions validate this demand.\n\nThe problem is the execution gap between thesis and reality. Today: $319M revenue declining -16% YoY, -90.47% net margins, and a $6.4B market cap that prices in flawless execution. The $20 price represents the market already paying for the base case to succeed.\n\n**Bear ($0.09, 30%)**: Pivot stalls. Bitcoin mining economics worsen, AI hosting contracts face delays (grid interconnection issues, permitting, equipment delays). Revenue grows slowly at 15% CAGR but margins barely reach 1% by Y5 under double-running cost pressure. Heavy dilution (+4%/yr) for ongoing capex. Present value: $0.09.\n\n**Base ($6.92, 45%)**: Execution proceeds. 35% CAGR, $1.43B revenue by Y5, 12% GAAP margins as AI hosting mix dominates. Real power moat (long-term PPAs at $0.03-0.05/kWh) provides durable competitive advantage. Present value: $6.92.\n\n**Bull ($30.00, 25%)**: AI compute shortage persists through 2028+. CORZ's power capacity commands premium pricing. Revenue to $2.42B at 18% margins. Long-term PPA rates become an insurmountable structural advantage. Present value: $30.00.\n\n**Weighted Fair Value: $10.64 — SELL at $20.35 (-48%)**\n\nAt $20.35, you're paying for bull case execution at base case probability. The real bet is whether AI hosting demand stays supply-constrained long enough for CORZ to complete the transition. That's a valid macro bet — but at $10.64 fair value, you're paying a 91% premium to fundamental value today. Wait for re-entry at $8-10. [2026-05-02 13F Update: Situational Awareness LP tripled CORZ position Q2→Q4 2025 (7.9M→28.8M shares, $136M→$418M). Despite SELL rating at -47.7% FV gap, Aschenbrenner's fund is making a contrarian bet. Rationale likely: HPC...]",
       "fairValue": 10.64,
       "action": "SELL",
       "analyzedAt": "2026-05-02T22:55:00Z",
@@ -208,18 +208,18 @@
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "Used 315,594,802 shares_diluted from API. Net income null so NI/EPS derivation unavailable. Post-bankruptcy emergence means share count may be understated vs warrants/options issued in restructuring \u2014 actual fully diluted count likely 330-350M.",
-      "marginAnchor": "TTM -90.47% net margin is the only data point (no historical arrays from yfinance). The -90% reflects: (1) Bitcoin mining losses during BTC price/difficulty cycle, (2) bankruptcy-related costs and write-downs, (3) transition period with double-running costs. Scenarios model improvement to 1%/12%/18% by Y5 \u2014 all represent significant but achievable improvement as AI hosting (30-35% gross margins) replaces Bitcoin mining (~5-15% gross margins at current BTC prices). Prior Gemini bear margin 5% is not as egregious as AMD/INTC case (where bear > TTM), but understates the risk of slow transition by assuming faster profitability improvement than the conservative scenario justifies. Corrected to 1%.",
-      "growthDerivation": "TTM -16% revenue growth (declining). No analyst estimates. Base 35% CAGR derived from: AI hosting capacity conversion math \u2014 800 MW \u00d7 $2M/MW/year revenue at full deployment = $1.6B; at 35% CAGR from $319M \u2192 $1.43B in 5 years = consistent with 60-70% capacity utilization at AI hosting rates. Bull 50% assumes full capacity + expansion. Bear 15% assumes partial/delayed conversion. Revenue currently declining due to BTC mining transition, not fundamental business weakness.",
-      "sectorBenchmarkRow": "Technology \u2014 Software Infrastructure (API industry). For exit multiple: data center/infrastructure comps \u2014 Digital Realty 20-25x P/E, Equinix 35-40x P/E. Using 25x base (below pure REIT comps, reflects operational risk) and 35x bull (approaching Equinix territory if AI hosting premium sustains). Prior Gemini bull PE 25x was too conservative for a full AI hosting pivot \u2014 corrected to 35x.",
+      "shareCountMethod": "Used 315,594,802 shares_diluted from API. Net income null so NI/EPS derivation unavailable. Post-bankruptcy emergence means share count may be understated vs warrants/options issued in restructuring — actual fully diluted count likely 330-350M.",
+      "marginAnchor": "TTM -90.47% net margin is the only data point (no historical arrays from yfinance). The -90% reflects: (1) Bitcoin mining losses during BTC price/difficulty cycle, (2) bankruptcy-related costs and write-downs, (3) transition period with double-running costs. Scenarios model improvement to 1%/12%/18% by Y5 — all represent significant but achievable improvement as AI hosting (30-35% gross margins) replaces Bitcoin mining (~5-15% gross margins at current BTC prices). Prior Gemini bear margin 5% is not as egregious as AMD/INTC case (where bear > TTM), but understates the risk of slow transition by assuming faster profitability improvement than the conservative scenario justifies. Corrected to 1%.",
+      "growthDerivation": "TTM -16% revenue growth (declining). No analyst estimates. Base 35% CAGR derived from: AI hosting capacity conversion math — 800 MW × $2M/MW/year revenue at full deployment = $1.6B; at 35% CAGR from $319M → $1.43B in 5 years = consistent with 60-70% capacity utilization at AI hosting rates. Bull 50% assumes full capacity + expansion. Bear 15% assumes partial/delayed conversion. Revenue currently declining due to BTC mining transition, not fundamental business weakness.",
+      "sectorBenchmarkRow": "Technology — Software Infrastructure (API industry). For exit multiple: data center/infrastructure comps — Digital Realty 20-25x P/E, Equinix 35-40x P/E. Using 25x base (below pure REIT comps, reflects operational risk) and 35x bull (approaching Equinix territory if AI hosting premium sustains). Prior Gemini bull PE 25x was too conservative for a full AI hosting pivot — corrected to 35x.",
       "dataQualityFlags": [
-        "WARNING: Net margin -90.47% TTM is primarily a bankruptcy/transition artifact \u2014 not indicative of steady-state operations. All scenario margins represent forward improvement, not historical mean-reversion.",
+        "WARNING: Net margin -90.47% TTM is primarily a bankruptcy/transition artifact — not indicative of steady-state operations. All scenario margins represent forward improvement, not historical mean-reversion.",
         "WARNING: Revenue declining -16% YoY due to Bitcoin mining transition, not underlying demand loss. AI hosting contracts are ramping but not yet reflected in TTM revenue.",
         "WARNING: No financial history available from API (recent restructuring/re-listing complicates historical data).",
         "WARNING: No analyst estimates available.",
-        "WARNING: Beta 6.355 \u2014 extremely volatile. Position sizing must reflect this.",
-        "WARNING: Prior Gemini v3 bear margin 5% vs TTM -90.47% \u2014 directionally correct (improving) but bear profitability assumed too quickly. Corrected to 1%.",
-        "INFO: Forward P/E 48x confirms market expects meaningful near-term profitability \u2014 consistent with AI hosting contract ramp story.",
+        "WARNING: Beta 6.355 — extremely volatile. Position sizing must reflect this.",
+        "WARNING: Prior Gemini v3 bear margin 5% vs TTM -90.47% — directionally correct (improving) but bear profitability assumed too quickly. Corrected to 1%.",
+        "INFO: Forward P/E 48x confirms market expects meaningful near-term profitability — consistent with AI hosting contract ramp story.",
         "INFO: Post-bankruptcy warrants/options from restructuring may create additional dilution not captured in 315.6M share count."
       ],
       "analystInputs": {
@@ -232,20 +232,20 @@
         "analystCount": null
       },
       "historicalRevenue": [
-        "unavailable \u2014 post-bankruptcy restructuring complicates yfinance historical data"
+        "unavailable — post-bankruptcy restructuring complicates yfinance historical data"
       ],
       "historicalNetMargins": [
-        "unavailable \u2014 yfinance returns null"
+        "unavailable — yfinance returns null"
       ],
       "historicalEPS": [
-        "unavailable \u2014 yfinance returns null"
+        "unavailable — yfinance returns null"
       ],
-      "confidenceBreakdown": "0.48/1.0 \u2014 Base: 1.0. -0.15 no analyst estimates. -0.12 no financial history. -0.10 post-bankruptcy execution risk (capital structure complexity). -0.08 BTC price dependency creates binary revenue outcomes. -0.07 power grid/regulatory risk for AI hosting facilities. Net: 0.48. Below-average confidence reflects high uncertainty on transition execution timeline.",
+      "confidenceBreakdown": "0.48/1.0 — Base: 1.0. -0.15 no analyst estimates. -0.12 no financial history. -0.10 post-bankruptcy execution risk (capital structure complexity). -0.08 BTC price dependency creates binary revenue outcomes. -0.07 power grid/regulatory risk for AI hosting facilities. Net: 0.48. Below-average confidence reflects high uncertainty on transition execution timeline.",
       "sa13fInsight": {
         "researchDate": "2026-05-02",
         "source": "Situational Awareness LP 13F Q4 2025 (filed 2026-02-11), Q2 2025 (filed 2025-08-14)",
         "direction": "INCREASED",
-        "note": "Situational Awareness LP tripled CORZ position Q2\u2192Q4 2025 (7.9M\u219228.8M shares, $136M\u2192$418M). Despite SELL rating at -47.7% FV gap, Aschenbrenner's fund is making a contrarian bet. Rationale likely: HPC/AI transition optionality not captured by DCF. Reduces bear case conviction but does not override SELL \u2014 valuation math unchanged; this is a speculative sizing signal, not a fundamental one.",
+        "note": "Situational Awareness LP tripled CORZ position Q2→Q4 2025 (7.9M→28.8M shares, $136M→$418M). Despite SELL rating at -47.7% FV gap, Aschenbrenner's fund is making a contrarian bet. Rationale likely: HPC/AI transition optionality not captured by DCF. Reduces bear case conviction but does not override SELL — valuation math unchanged; this is a speculative sizing signal, not a fundamental one.",
         "portfolioValueAtQ4": "$5.52B"
       }
     }
@@ -258,8 +258,8 @@
     "version": 6,
     "savedAt": "2026-05-02T23:05:00Z",
     "updatedAt": "2026-05-04T05:21:25Z",
-    "name": "AI Deep Dive \u2014 CORZ \u2014 2026-05-02",
-    "rationale": "Core Scientific (CORZ) emerged from Chapter 11 bankruptcy in January 2024 and is aggressively pivoting from Bitcoin mining to AI/HPC hosting. The power infrastructure thesis is real \u2014 ~800 MW of capacity with signed contracts worth billions (CoreWeave-type deals). However at $20.35 ($6.4B market cap) against $319M revenue declining -16% YoY and -90.47% net margin, the market is pricing flawless execution of a capital-intensive, multi-year transformation. Weighted fair value $10.64 \u2014 SELL (-48%). Re-entry thesis at $8-10 where base case provides reasonable margin of safety.",
+    "name": "AI Deep Dive — CORZ — 2026-05-02",
+    "rationale": "Core Scientific (CORZ) emerged from Chapter 11 bankruptcy in January 2024 and is aggressively pivoting from Bitcoin mining to AI/HPC hosting. The power infrastructure thesis is real — ~800 MW of capacity with signed contracts worth billions (CoreWeave-type deals). However at $20.35 ($6.4B market cap) against $319M revenue declining -16% YoY and -90.47% net margin, the market is pricing flawless execution of a capital-intensive, multi-year transformation. Weighted fair value $10.64 — SELL (-48%). Re-entry thesis at $8-10 where base case provides reasonable margin of safety.",
     "snapshot": {
       "price": 20.35,
       "currency": "USD",
@@ -282,7 +282,7 @@
         "exitPE": 12,
         "qualityMultiplier": 0.75,
         "shareChange": 4,
-        "rationale": "AI hosting contracts face delays/cancellations; Bitcoin mining economics deteriorate further on difficulty adjustments. The pivot stalls \u2014 50%+ of capacity remains on low-margin mining by Y5. Revenue grows modestly to $641M via organic mining hash-rate but at near-zero margins (mining losses offset by partial AI hosting contribution). Continuous equity raises to fund capex (+4%/yr dilution). QM 0.75 reflects genuine execution risk on a post-bankruptcy pivot requiring perfect capital markets access. Exit PE 12x = distressed infrastructure company. Note: bear margin 1% vs prior Gemini 5% \u2014 corrected downward; even 1% requires significant improvement from -90.47% TTM, representing slow but not failed transition.",
+        "rationale": "AI hosting contracts face delays/cancellations; Bitcoin mining economics deteriorate further on difficulty adjustments. The pivot stalls — 50%+ of capacity remains on low-margin mining by Y5. Revenue grows modestly to $641M via organic mining hash-rate but at near-zero margins (mining losses offset by partial AI hosting contribution). Continuous equity raises to fund capex (+4%/yr dilution). QM 0.75 reflects genuine execution risk on a post-bankruptcy pivot requiring perfect capital markets access. Exit PE 12x = distressed infrastructure company. Note: bear margin 1% vs prior Gemini 5% — corrected downward; even 1% requires significant improvement from -90.47% TTM, representing slow but not failed transition.",
         "year5Revenue": 641.7,
         "year5NetIncome": 6.4,
         "year5EPS": 0.02,
@@ -298,7 +298,7 @@
         "exitPE": 25,
         "qualityMultiplier": 0.95,
         "shareChange": 3,
-        "rationale": "AI/HPC hosting contracts execute on schedule. Core Scientific successfully converts majority of power capacity to AI hosting over 3-4 years. Revenue grows from $319M to $1.43B at 35% CAGR as hyperscaler and AI model training contracts ramp. GAAP margins reach 12% by Y5 as AI hosting gross margins (~30-35%) overcome D&A and SBC. QM 0.95 \u2014 power infrastructure moat is real (800 MW capacity, long-term power purchase agreements) but not exceptional tier (replicable given enough capital and time). Ongoing dilution (+3%/yr) reflects ongoing capital needs for facility upgrades. Anchor: no analyst estimates; 35% CAGR based on ~2x revenue per MW of AI hosting capacity at full deployment.",
+        "rationale": "AI/HPC hosting contracts execute on schedule. Core Scientific successfully converts majority of power capacity to AI hosting over 3-4 years. Revenue grows from $319M to $1.43B at 35% CAGR as hyperscaler and AI model training contracts ramp. GAAP margins reach 12% by Y5 as AI hosting gross margins (~30-35%) overcome D&A and SBC. QM 0.95 — power infrastructure moat is real (800 MW capacity, long-term power purchase agreements) but not exceptional tier (replicable given enough capital and time). Ongoing dilution (+3%/yr) reflects ongoing capital needs for facility upgrades. Anchor: no analyst estimates; 35% CAGR based on ~2x revenue per MW of AI hosting capacity at full deployment.",
         "year5Revenue": 1430.5,
         "year5NetIncome": 171.7,
         "year5EPS": 0.47,
@@ -314,7 +314,7 @@
         "exitPE": 35,
         "qualityMultiplier": 1.05,
         "shareChange": 1,
-        "rationale": "Catalyst: AI compute demand outstrips supply through 2028; Core Scientific's power capacity becomes the scarcest resource in the AI infrastructure stack. Premium pricing on HPC hosting contracts (CoreWeave-level: $3-4/W/month vs typical $1-2/W) drives revenue to $2.42B. Additional capacity expansion via new data center builds funded by long-term pre-paid AI hosting contracts. GAAP margins reach 18% as operating leverage materializes. QM 1.05 citing specific moat: long-term power purchase agreements at sub-market rates across multiple Texas, Kentucky, and North Dakota facilities \u2014 these PPAs are 10-15 year contracts at $0.03-0.05/kWh that cannot be replicated by new entrants in current power market conditions (grid interconnection queues are 5-7 years in key AI markets).",
+        "rationale": "Catalyst: AI compute demand outstrips supply through 2028; Core Scientific's power capacity becomes the scarcest resource in the AI infrastructure stack. Premium pricing on HPC hosting contracts (CoreWeave-level: $3-4/W/month vs typical $1-2/W) drives revenue to $2.42B. Additional capacity expansion via new data center builds funded by long-term pre-paid AI hosting contracts. GAAP margins reach 18% as operating leverage materializes. QM 1.05 citing specific moat: long-term power purchase agreements at sub-market rates across multiple Texas, Kentucky, and North Dakota facilities — these PPAs are 10-15 year contracts at $0.03-0.05/kWh that cannot be replicated by new entrants in current power market conditions (grid interconnection queues are 5-7 years in key AI markets).",
         "year5Revenue": 2422.6,
         "year5NetIncome": 436.1,
         "year5EPS": 1.31,
@@ -326,7 +326,7 @@
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "## CORZ Investment Thesis\n\nCore Scientific is betting its entire identity on becoming the picks-and-shovels play for AI compute infrastructure. The thesis is simple and compelling: power is the scarce resource for AI, CORZ has 800 MW of it with long-term PPAs at sub-market rates, and AI hyperscalers are desperate for power. CoreWeave-type contracts worth billions validate this demand.\n\nThe problem is the execution gap between thesis and reality. Today: $319M revenue declining -16% YoY, -90.47% net margins, and a $6.4B market cap that prices in flawless execution. The $20 price represents the market already paying for the base case to succeed.\n\n**Bear ($0.09, 30%)**: Pivot stalls. Bitcoin mining economics worsen, AI hosting contracts face delays (grid interconnection issues, permitting, equipment delays). Revenue grows slowly at 15% CAGR but margins barely reach 1% by Y5 under double-running cost pressure. Heavy dilution (+4%/yr) for ongoing capex. Present value: $0.09.\n\n**Base ($6.92, 45%)**: Execution proceeds. 35% CAGR, $1.43B revenue by Y5, 12% GAAP margins as AI hosting mix dominates. Real power moat (long-term PPAs at $0.03-0.05/kWh) provides durable competitive advantage. Present value: $6.92.\n\n**Bull ($30.00, 25%)**: AI compute shortage persists through 2028+. CORZ's power capacity commands premium pricing. Revenue to $2.42B at 18% margins. Long-term PPA rates become an insurmountable structural advantage. Present value: $30.00.\n\n**Weighted Fair Value: $10.64 \u2014 SELL at $20.35 (-48%)**\n\nAt $20.35, you're paying for bull case execution at base case probability. The real bet is whether AI hosting demand stays supply-constrained long enough for CORZ to complete the transition. That's a valid macro bet \u2014 but at $10.64 fair value, you're paying a 91% premium to fundamental value today. Wait for re-entry at $8-10. [2026-05-02 13F Update: Situational Awareness LP tripled CORZ position Q2\u2192Q4 2025 (7.9M\u219228.8M shares, $136M\u2192$418M). Despite SELL rating at -47.7% FV gap, Aschenbrenner's fund is making a contrarian bet. Rationale likely: HPC...]",
+      "rationale": "## CORZ Investment Thesis\n\nCore Scientific is betting its entire identity on becoming the picks-and-shovels play for AI compute infrastructure. The thesis is simple and compelling: power is the scarce resource for AI, CORZ has 800 MW of it with long-term PPAs at sub-market rates, and AI hyperscalers are desperate for power. CoreWeave-type contracts worth billions validate this demand.\n\nThe problem is the execution gap between thesis and reality. Today: $319M revenue declining -16% YoY, -90.47% net margins, and a $6.4B market cap that prices in flawless execution. The $20 price represents the market already paying for the base case to succeed.\n\n**Bear ($0.09, 30%)**: Pivot stalls. Bitcoin mining economics worsen, AI hosting contracts face delays (grid interconnection issues, permitting, equipment delays). Revenue grows slowly at 15% CAGR but margins barely reach 1% by Y5 under double-running cost pressure. Heavy dilution (+4%/yr) for ongoing capex. Present value: $0.09.\n\n**Base ($6.92, 45%)**: Execution proceeds. 35% CAGR, $1.43B revenue by Y5, 12% GAAP margins as AI hosting mix dominates. Real power moat (long-term PPAs at $0.03-0.05/kWh) provides durable competitive advantage. Present value: $6.92.\n\n**Bull ($30.00, 25%)**: AI compute shortage persists through 2028+. CORZ's power capacity commands premium pricing. Revenue to $2.42B at 18% margins. Long-term PPA rates become an insurmountable structural advantage. Present value: $30.00.\n\n**Weighted Fair Value: $10.64 — SELL at $20.35 (-48%)**\n\nAt $20.35, you're paying for bull case execution at base case probability. The real bet is whether AI hosting demand stays supply-constrained long enough for CORZ to complete the transition. That's a valid macro bet — but at $10.64 fair value, you're paying a 91% premium to fundamental value today. Wait for re-entry at $8-10. [2026-05-02 13F Update: Situational Awareness LP tripled CORZ position Q2→Q4 2025 (7.9M→28.8M shares, $136M→$418M). Despite SELL rating at -47.7% FV gap, Aschenbrenner's fund is making a contrarian bet. Rationale likely: HPC...]",
       "fairValue": 16.08,
       "action": "SELL",
       "analyzedAt": "2026-06-05T18:23:36Z",
@@ -339,7 +339,7 @@
           "$3.3B bond raise to fund hyperscale AI data center buildout",
           "Ongoing CoreWeave anchor tenant partnership expanding"
         ],
-        "thesisImpact": "BTC\u2192AI conversion thesis executing materially ahead of schedule. $3.3B raise proves capital markets support. 1.5 GW Pecos positions CORZ as a genuine hyperscale AI data center operator. DCF model (-47.7% at $20) does not capture recurring AI hosting revenue \u2014 DCF revision warranted once first AI revenue contracts are disclosed. Target lifted 4.14%\u21924.40%."
+        "thesisImpact": "BTC→AI conversion thesis executing materially ahead of schedule. $3.3B raise proves capital markets support. 1.5 GW Pecos positions CORZ as a genuine hyperscale AI data center operator. DCF model (-47.7% at $20) does not capture recurring AI hosting revenue — DCF revision warranted once first AI revenue contracts are disclosed. Target lifted 4.14%→4.40%."
       }
     },
     "globalSettings": {
@@ -347,18 +347,18 @@
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "Used 315,594,802 shares_diluted from API. Net income null so NI/EPS derivation unavailable. Post-bankruptcy emergence means share count may be understated vs warrants/options issued in restructuring \u2014 actual fully diluted count likely 330-350M.",
-      "marginAnchor": "TTM -90.47% net margin is the only data point (no historical arrays from yfinance). The -90% reflects: (1) Bitcoin mining losses during BTC price/difficulty cycle, (2) bankruptcy-related costs and write-downs, (3) transition period with double-running costs. Scenarios model improvement to 1%/12%/18% by Y5 \u2014 all represent significant but achievable improvement as AI hosting (30-35% gross margins) replaces Bitcoin mining (~5-15% gross margins at current BTC prices). Prior Gemini bear margin 5% is not as egregious as AMD/INTC case (where bear > TTM), but understates the risk of slow transition by assuming faster profitability improvement than the conservative scenario justifies. Corrected to 1%.",
-      "growthDerivation": "TTM -16% revenue growth (declining). No analyst estimates. Base 35% CAGR derived from: AI hosting capacity conversion math \u2014 800 MW \u00d7 $2M/MW/year revenue at full deployment = $1.6B; at 35% CAGR from $319M \u2192 $1.43B in 5 years = consistent with 60-70% capacity utilization at AI hosting rates. Bull 50% assumes full capacity + expansion. Bear 15% assumes partial/delayed conversion. Revenue currently declining due to BTC mining transition, not fundamental business weakness.",
-      "sectorBenchmarkRow": "Technology \u2014 Software Infrastructure (API industry). For exit multiple: data center/infrastructure comps \u2014 Digital Realty 20-25x P/E, Equinix 35-40x P/E. Using 25x base (below pure REIT comps, reflects operational risk) and 35x bull (approaching Equinix territory if AI hosting premium sustains). Prior Gemini bull PE 25x was too conservative for a full AI hosting pivot \u2014 corrected to 35x.",
+      "shareCountMethod": "Used 315,594,802 shares_diluted from API. Net income null so NI/EPS derivation unavailable. Post-bankruptcy emergence means share count may be understated vs warrants/options issued in restructuring — actual fully diluted count likely 330-350M.",
+      "marginAnchor": "TTM -90.47% net margin is the only data point (no historical arrays from yfinance). The -90% reflects: (1) Bitcoin mining losses during BTC price/difficulty cycle, (2) bankruptcy-related costs and write-downs, (3) transition period with double-running costs. Scenarios model improvement to 1%/12%/18% by Y5 — all represent significant but achievable improvement as AI hosting (30-35% gross margins) replaces Bitcoin mining (~5-15% gross margins at current BTC prices). Prior Gemini bear margin 5% is not as egregious as AMD/INTC case (where bear > TTM), but understates the risk of slow transition by assuming faster profitability improvement than the conservative scenario justifies. Corrected to 1%.",
+      "growthDerivation": "TTM -16% revenue growth (declining). No analyst estimates. Base 35% CAGR derived from: AI hosting capacity conversion math — 800 MW × $2M/MW/year revenue at full deployment = $1.6B; at 35% CAGR from $319M → $1.43B in 5 years = consistent with 60-70% capacity utilization at AI hosting rates. Bull 50% assumes full capacity + expansion. Bear 15% assumes partial/delayed conversion. Revenue currently declining due to BTC mining transition, not fundamental business weakness.",
+      "sectorBenchmarkRow": "Technology — Software Infrastructure (API industry). For exit multiple: data center/infrastructure comps — Digital Realty 20-25x P/E, Equinix 35-40x P/E. Using 25x base (below pure REIT comps, reflects operational risk) and 35x bull (approaching Equinix territory if AI hosting premium sustains). Prior Gemini bull PE 25x was too conservative for a full AI hosting pivot — corrected to 35x.",
       "dataQualityFlags": [
-        "WARNING: Net margin -90.47% TTM is primarily a bankruptcy/transition artifact \u2014 not indicative of steady-state operations. All scenario margins represent forward improvement, not historical mean-reversion.",
+        "WARNING: Net margin -90.47% TTM is primarily a bankruptcy/transition artifact — not indicative of steady-state operations. All scenario margins represent forward improvement, not historical mean-reversion.",
         "WARNING: Revenue declining -16% YoY due to Bitcoin mining transition, not underlying demand loss. AI hosting contracts are ramping but not yet reflected in TTM revenue.",
         "WARNING: No financial history available from API (recent restructuring/re-listing complicates historical data).",
         "WARNING: No analyst estimates available.",
-        "WARNING: Beta 6.355 \u2014 extremely volatile. Position sizing must reflect this.",
-        "WARNING: Prior Gemini v3 bear margin 5% vs TTM -90.47% \u2014 directionally correct (improving) but bear profitability assumed too quickly. Corrected to 1%.",
-        "INFO: Forward P/E 48x confirms market expects meaningful near-term profitability \u2014 consistent with AI hosting contract ramp story.",
+        "WARNING: Beta 6.355 — extremely volatile. Position sizing must reflect this.",
+        "WARNING: Prior Gemini v3 bear margin 5% vs TTM -90.47% — directionally correct (improving) but bear profitability assumed too quickly. Corrected to 1%.",
+        "INFO: Forward P/E 48x confirms market expects meaningful near-term profitability — consistent with AI hosting contract ramp story.",
         "INFO: Post-bankruptcy warrants/options from restructuring may create additional dilution not captured in 315.6M share count."
       ],
       "analystInputs": {
@@ -371,24 +371,24 @@
         "analystCount": null
       },
       "historicalRevenue": [
-        "unavailable \u2014 post-bankruptcy restructuring complicates yfinance historical data"
+        "unavailable — post-bankruptcy restructuring complicates yfinance historical data"
       ],
       "historicalNetMargins": [
-        "unavailable \u2014 yfinance returns null"
+        "unavailable — yfinance returns null"
       ],
       "historicalEPS": [
-        "unavailable \u2014 yfinance returns null"
+        "unavailable — yfinance returns null"
       ],
-      "confidenceBreakdown": "0.48/1.0 \u2014 Base: 1.0. -0.15 no analyst estimates. -0.12 no financial history. -0.10 post-bankruptcy execution risk (capital structure complexity). -0.08 BTC price dependency creates binary revenue outcomes. -0.07 power grid/regulatory risk for AI hosting facilities. Net: 0.48. Below-average confidence reflects high uncertainty on transition execution timeline.",
+      "confidenceBreakdown": "0.48/1.0 — Base: 1.0. -0.15 no analyst estimates. -0.12 no financial history. -0.10 post-bankruptcy execution risk (capital structure complexity). -0.08 BTC price dependency creates binary revenue outcomes. -0.07 power grid/regulatory risk for AI hosting facilities. Net: 0.48. Below-average confidence reflects high uncertainty on transition execution timeline.",
       "sa13fInsight": {
         "researchDate": "2026-05-02",
         "source": "Situational Awareness LP 13F Q4 2025 (filed 2026-02-11), Q2 2025 (filed 2025-08-14)",
         "direction": "INCREASED",
-        "note": "Situational Awareness LP tripled CORZ position Q2\u2192Q4 2025 (7.9M\u219228.8M shares, $136M\u2192$418M). Despite SELL rating at -47.7% FV gap, Aschenbrenner's fund is making a contrarian bet. Rationale likely: HPC/AI transition optionality not captured by DCF. Reduces bear case conviction but does not override SELL \u2014 valuation math unchanged; this is a speculative sizing signal, not a fundamental one.",
+        "note": "Situational Awareness LP tripled CORZ position Q2→Q4 2025 (7.9M→28.8M shares, $136M→$418M). Despite SELL rating at -47.7% FV gap, Aschenbrenner's fund is making a contrarian bet. Rationale likely: HPC/AI transition optionality not captured by DCF. Reduces bear case conviction but does not override SELL — valuation math unchanged; this is a speculative sizing signal, not a fundamental one.",
         "portfolioValueAtQ4": "$5.52B"
       },
       "valuationAction": "SELL",
-      "portfolioRationale": "SELL-rated at $10.64 FV vs price $20.35 (\u221247.7%). Speculative role but oversized at 3.25%. Situational Awareness LP tripled position Q2\u2192Q4 2025 (contrarian signal noted) but valuation math unchanged. HPC transition optionality is real but unproven. Reduce to 0.75% speculative. Freed weight \u2192 CRWV.",
+      "portfolioRationale": "SELL-rated at $10.64 FV vs price $20.35 (−47.7%). Speculative role but oversized at 3.25%. Situational Awareness LP tripled position Q2→Q4 2025 (contrarian signal noted) but valuation math unchanged. HPC transition optionality is real but unproven. Reduce to 0.75% speculative. Freed weight → CRWV.",
       "portfolioUrgency": "NORMAL"
     },
     "catalystUpdates": [
@@ -403,7 +403,7 @@
           "bull": 8,
           "bear": -5
         },
-        "thesisImpact": "Bull probability +8pp; bear -5pp. FV $10.64\u2192$12.83. Action: TRIM\u2192SELL."
+        "thesisImpact": "Bull probability +8pp; bear -5pp. FV $10.64→$12.83. Action: TRIM→SELL."
       },
       {
         "date": "2026-06-03",
@@ -416,7 +416,7 @@
           "bull": 7,
           "bear": -4
         },
-        "thesisImpact": "Bull probability +7pp; bear -4pp. FV $12.83\u2192$14.72. Action: SELL\u2192SELL."
+        "thesisImpact": "Bull probability +7pp; bear -4pp. FV $12.83→$14.72. Action: SELL→SELL."
       },
       {
         "date": "2026-06-05",
@@ -429,7 +429,7 @@
           "bull": 5,
           "bear": -3
         },
-        "thesisImpact": "Bull probability +5pp; bear -3pp. FV $14.72\u2192$16.08. Action: SELL\u2192SELL."
+        "thesisImpact": "Bull probability +5pp; bear -3pp. FV $14.72→$16.08. Action: SELL→SELL."
       }
     ],
     "lastGrokSweep": "2026-06-05",
@@ -445,7 +445,12 @@
         "accumulateAt": 16.0
       },
       "source": "daily-loop-agent",
-      "notes": "Stock 69% above weighted DCF FV ($16). Allowlisted \u2014 SA LP long. Trim above $28-30 (bull FV ceiling) on distribution signal. Accumulate only after DCF refresh confirms re-rate; base case $6.92 is extreme bear. Model (May 2) predates $3.3B bond raise and 1.5GW buildout."
-    }
+      "notes": "Stock 69% above weighted DCF FV ($16). Allowlisted — SA LP long. Trim above $28-30 (bull FV ceiling) on distribution signal. Accumulate only after DCF refresh confirms re-rate; base case $6.92 is extreme bear. Model (May 2) predates $3.3B bond raise and 1.5GW buildout."
+    },
+    "peers": [
+      "IREN",
+      "CIFR",
+      "WULF"
+    ]
   }
 ]

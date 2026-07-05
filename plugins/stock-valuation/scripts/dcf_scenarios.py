@@ -208,6 +208,28 @@ def load_raw_json(path: str) -> tuple[str, float, float, float]:
     return ticker, revenue, shares, price
 
 
+def _resolve_discount_rate(explicit_rate: float | None, wacc_file: str | None) -> float:
+    """CLI-layer discount-rate resolution: --discount-rate (explicit) wins over
+    --wacc-file (derived) wins over the 0.10 default — preserves old-run
+    reproducibility while letting wacc.py drive the rate when no explicit
+    override is given.
+
+    Args:
+        explicit_rate: Value of --discount-rate, or None if not passed.
+        wacc_file: Path to a wacc.py JSON output file, or None.
+
+    Returns:
+        The resolved discount rate as a decimal fraction.
+    """
+    if explicit_rate is not None:
+        return explicit_rate
+    if wacc_file:
+        with open(wacc_file) as f:
+            wacc_data = json.load(f)
+        return wacc_data["wacc"]
+    return 0.10
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="DCF Scenario Calculator — compute 5-year scenario valuations"
@@ -224,7 +246,14 @@ def main() -> None:
         required=True,
         help="Path to scenario params JSON, or '-' to read from stdin",
     )
-    parser.add_argument("--discount-rate", type=float, default=0.10)
+    parser.add_argument(
+        "--discount-rate", type=float, default=None,
+        help="Explicit discount rate override — wins over --wacc-file. Defaults to 0.10 if neither is given.",
+    )
+    parser.add_argument(
+        "--wacc-file", default=None,
+        help="Path to wacc.py's JSON output; used as the discount rate unless --discount-rate is explicitly set.",
+    )
     parser.add_argument("--horizon", type=int, default=5)
     parser.add_argument("--pretty", action="store_true", help="Pretty-print output JSON")
 
@@ -252,12 +281,14 @@ def main() -> None:
         shares = args.shares
         price = args.price
 
+    discount_rate = _resolve_discount_rate(args.discount_rate, args.wacc_file)
+
     result = run(
         ticker=ticker,
         base_revenue=revenue,
         base_shares=shares,
         scenario_params=scenario_params,
-        discount_rate=args.discount_rate,
+        discount_rate=discount_rate,
         horizon=args.horizon,
         price=price,
     )
