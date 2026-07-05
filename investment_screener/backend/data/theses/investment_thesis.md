@@ -1,11 +1,11 @@
-# Investment Thesis v9.4
+# Investment Thesis v9.8
 
 | Field | Value |
 | :--- | :--- |
 | **Current Theme** | ASI Buildout (Primary) + Sovereign Finance (Secondary) |
 | **Edition** | "The Compute Sovereign" |
 | **Status** | ACTIVE |
-| **Last Updated** | 2026-07-02 |
+| **Last Updated** | 2026-07-05 |
 | **Thesis Last Analyzed** | 2026-05-22 (Full strategic review post-13F chip exits) |
 | **13F Last Refactored** | 2026-05-22 (Refactored SA LP Q1 2026 13F filed 2026-05-18 into target-portfolio.json) |
 | **Portfolio Data** | Live — synced from Questrade via app or `python3 investment_screener/backend/src/QuestradeDataEngine.py` |
@@ -19,6 +19,7 @@
 
 | Version | Date | Edition | Key Change |
 | :--- | :--- | :--- | :--- |
+| 9.8 | 2026-07-05 | The Compute Sovereign | Added Metabolic Reprogramming & Genetic Editing sub-strategy (biohealth pillar, 0%→4.5%): LLY 2.925%, CRSP 0.90%, VERV 0.675%, funded by reducing PSU-U.TO 18.425%→13.925%. Status: PROPOSED, pending DCF via `/evaluate-stock` for all 3 tickers before any role moves past `initiate`. **Same-day update**: `/evaluate-stock LLY` cleared (DCF + price levels persisted). `/evaluate-stock VERV` found the ticker delisted — Eli Lilly completed its acquisition of Verve Therapeutics in July 2025; VERV removed and its 0.675% weight reallocated proportionally to LLY (3.441%) and CRSP (1.059%) per the original 65:20 split. `/evaluate-stock CRSP` complete — DCF says SELL (FV $16.23 vs $60.08, -73%) but this is a DCF-tool mismatch (CRSP's economics run through a 40%-profit-share Vertex collaboration a revenue DCF can't price), same pattern as OKLO's DCF_GATE_SUSPENDED; `aiThesis.action` set to WATCHLIST, not ACCUMULATE. Auto-derived price levels are not usable for trading. |
 | 9.7 | 2026-06-05 | The Compute Sovereign | Grok sweep: OKLO target 2.82%→1.75% (development-stage DCF -91%); CEG target 3.84%→2.5% (no fresh catalyst, DCF -43%); GOOG re-locked to actual 4.47% (MAINTAIN). Catalyst updates: CORZ Q1 colo beat + $3.3B bond (FV $14.72→$16.08); CRWV $8.5B IG GPU financing (FV $179→$202); NBIS SA LP new 5.6% stake May 2026 (FV $516→$570); PANW Q3 beat/raise June 2 (FV $155→$168). |
 | 9.6 | 2026-05-21 | The Compute Sovereign | Initiated CBRS (Cerebras Systems) post-IPO valuation ($342.80 weighted fair value, BUY) under Compute direct plays. |
 | 9.5 | 2026-05-18 | The Compute Sovereign | SA LP Q1 2026 13F filed: **MAJOR SIGNAL SHIFT** — portfolio nearly tripled ($5.5B→$13.7B). Barbell strategy: ~62% puts on semiconductor sector (SMH $2.04B, NVDA $1.57B, ORCL $1.07B, AVGO $1.01B, AMD $969M, MU $584M, TSM $535M, ASML $494M, INTC $159M) + ~25% AI infrastructure equity longs (BE $878M #1 long, CRWV $697M, IREN $401M, CORZ $389M, APLD $320M). SNDK: $1.11B total ($724M shares + $388M calls — NOT puts). Key Validators updated. Exchange rate fallback corrected (1.0→1.38). |
@@ -61,6 +62,7 @@ This strategy is built on a single macro conviction: **the 2020s will be defined
 - **[Photonics & Optical Interconnect](../../../investment_screener/backend/data/theses/sub_strategies/photonics_optical.md)** (Proposed — Watchlist Only)
 - **[Quantum Computing](../../../investment_screener/backend/data/theses/sub_strategies/quantum_computing.md)** (Partial)
 - **[Robotics & Physical AI](../../../investment_screener/backend/data/theses/sub_strategies/robotics_automation.md)** (Approved — ETF Only)
+- **[Metabolic Reprogramming & Genetic Editing](../../../investment_screener/backend/data/theses/sub_strategies/metabolic_rewriting.md)** (Proposed — pending DCF)
 
 Every holding in the portfolio maps to exactly one of these strategies. The skill assesses each sub-strategy as a unit — conviction intact, weakening, or broken.
 
@@ -75,7 +77,7 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 ## IV. Portfolio Blueprint
 
 <!-- AUTO_UPDATE_START: portfolio_blueprint -->
-*Generated 2026-07-02 · Source: `validate_weights.py` × `target-portfolio.json` × `portfolio.json` (Questrade live)*
+*Generated 2026-07-05 · Source: `validate_weights.py` × `target-portfolio.json` × `portfolio.json` (Questrade live)*
 *Portfolio value: $32,473. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
 
 ### Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)
@@ -147,6 +149,14 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
 | **POET** | 👁️ WATCHLIST | — | — | — | — | EXIT: POET Technologies. |
 | **DXYZ** | 👁️ WATCHLIST | — | — | — | — | Only public vehicle for pre-IPO AI basket: SpaceX, Anthropic, OpenAI, xAI, Databricks. Scarcity premium play — not a value play. |
+| **Subtotal** | | **0.00%** | **0.00%** | — | |
+
+### Sub-Strategy 6 — Metabolic Reprogramming & Genetic Editing
+
+| Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
+| :--- | :--- | :--- | ---: | ---: | ---: | :--- |
+| **LLY** | 👁️ WATCHLIST | — | — | — | — | Core cash-flow aggregator for the Metabolic Reprogramming sub-strategy. GLP-1 franchise (Zepbound/Mounjaro) generates tech-like margins (>81% gross margin, Rule of 40 ~90%), funding M&A into gene-editing delivery vectors as a hedge against continuous-maintenance obsolescence. Structural target 76.5% of the biohealth pillar (3.441% of total portfolio) once initiated; held at watchlist for now. Accumulate on pullbacks; do not chase above ~50x forward P/E. |
+| **CRSP** | 👁️ WATCHLIST | — | — | — | — | In-vivo liver/epigenetic editing core of the sub-strategy. Lead asset CTX310 targets ANGPTL3 for permanent LDL/triglyceride reduction - a genetic alternative to continuous GLP-1 maintenance. $2.4B cash runway funds clinical readouts. Structural target 23.5% of the biohealth pillar (1.059% of total portfolio) once initiated; held at watchlist for now. Milestone gate: CTX310 Phase 1/2a cardiotoxicity and durability data. |
 | **Subtotal** | | **0.00%** | **0.00%** | — | |
 
 ### Strategic Reserve

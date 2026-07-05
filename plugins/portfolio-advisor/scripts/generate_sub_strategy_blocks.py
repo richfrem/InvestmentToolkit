@@ -40,6 +40,7 @@ PILLAR_MAP: dict[str, list[str]] = {
     "strategic_reserve":   ["cash"],
     "power_infrastructure": ["power"],
     "applied_ai":          [],  # ARCHIVED — block will note this
+    "metabolic_rewriting": ["biohealth"],
 }
 
 
