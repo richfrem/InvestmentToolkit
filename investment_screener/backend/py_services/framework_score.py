@@ -48,17 +48,19 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from market_data import get_fundamentals, get_estimates  # noqa: E402
 from comps_valuation import load_latest_projection, compute_ev  # noqa: E402
-
-DEFAULT_TAX_RATE = 0.21
+from wacc import DEFAULT_TAX_RATE  # noqa: E402
 
 # Composite weights — must sum to 1.00, matches the doc's §5 formula exactly.
+# NOTE: the doc's own §5 formula lists fcfYield at 0.10, which sums to 1.05
+# (an arithmetic error in the source doc). Corrected here to 0.05 so the
+# total is exactly 1.00 — a deliberate, traced divergence from the doc text.
 COMPOSITE_WEIGHTS = {
     "revenueGrowth": 0.25,
     "ruleOf40": 0.20,
     "operatingMargin": 0.15,
     "roic": 0.10,
     "valuation": 0.10,
-    "fcfYield": 0.10,
+    "fcfYield": 0.05,
     "balanceSheet": 0.05,
     "competitiveMoat": 0.05,
     "newsImpact": 0.05,
