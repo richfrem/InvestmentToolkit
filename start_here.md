@@ -1,11 +1,11 @@
 # Session Start Briefing — InvestmentToolkit
-_Last updated: 2026-07-04 | Thesis v9.7 | Portfolio ~$32,904 USD (reconciled from Questrade screenshots)_
+_Last updated: 2026-07-05 | Thesis v9.7 | Portfolio ~$32,904 USD (reconciled from Questrade screenshots)_
 
 > **Read this first at the start of every new session.**
 
 ---
 
-## 🔥 ACTIVE: Fable5 Elevation Guide — Phase 1 DONE, start Phase 2 here
+## 🔥 ACTIVE: Fable5 Elevation Guide — Phase 2a DONE, start Phase 2b here
 
 **Context:** User had Fable5 (primary), Gemini, GPT, Grok review the codebase for
 "next level" improvements — reviews saved at `temp/bundles/full-bundle/reviews/`.
@@ -13,19 +13,15 @@ Fable5's guide (`fable5-ELEVATION_GUIDE.md`) is the one being executed — the o
 grounded in the actual repo. It's a 6-phase roadmap: (1) data layer, (2) valuation
 committee, (3) executable scoring framework + local TA engine, (4) TradingView/Pine
 hardening, (5) risk engine + rebalancer + prediction ledger + backtesting, (6) skills/
-sub-agent architecture cleanup. **This session starts fresh on Phase 2 — Phase 1 is fully
-shipped, verified, and merged to `origin/main`. Nothing from Phase 1 needs redoing.**
+sub-agent architecture cleanup. Phase 2 was split into two sub-phases during brainstorming
+(2a = Valuation Committee, 2b = Executable Framework + local TA) because it bundled two
+loosely-coupled workstreams. **This session starts fresh on Phase 2b — Phases 1 and 2a are
+fully shipped, verified, and merged to `origin/main`. Nothing from either needs redoing.**
 
-### ✅ Phase 1 (data layer) — COMPLETE, on `origin/main` right now
+### ✅ Phase 1 (data layer) — COMPLETE, on `origin/main`
 `py_services/market_data.py` (+ `cache.py`, `edgar_facts.py`, `data_quality.py`, schema) —
-a unified, cached, quality-gated provider abstraction (yfinance + SEC EDGAR) built to
-eliminate a real bug class found this session (missing/NaN external data silently becoming
-a wrong number, e.g. the dashboard's impossible "+29.79% today" bug). Built as 8 TDD-gated
-tasks via `superpowers:subagent-driven-development`, each implementer→review→fix→re-review
-cycle documented in `docs/superpowers/plans/2026-07-02-market-data-layer.md` and the
-now-closed ledger. Whole-branch review passed twice (once before, once after a 3-finding
-fix round). **Confirmed merged into `origin/main` via PR #59** (`git log origin/main` shows
-`73d7c19` as HEAD) — verified directly, not assumed.
+a unified, cached, quality-gated provider abstraction (yfinance + SEC EDGAR). Built as 8
+TDD-gated tasks via `superpowers:subagent-driven-development`. Merged via PR #59.
 
 **Deliberately deferred, NOT part of Phase 1, pick up whenever convenient (not blockers):**
 1. **13-file yfinance migration** onto the new `market_data.py` — `fetch_financials.py`,
@@ -38,28 +34,74 @@ fix round). **Confirmed merged into `origin/main` via PR #59** (`git log origin/
    `(ticker, "fundamentals")` — confirmed safe (no misread) but whichever runs second
    overwrites the other's entry. Fix before any caller uses both for the same ticker.
 
-### 🚦 Git policy going forward
-Phase 1 shipped to `origin/main` via the user merging the PR themselves on GitHub. **This
-is the standing pattern**: after each phase's whole-branch review passes, Claude pushes a
-dedicated `feature/fable5-phase<N>-<name>` branch to `origin` as a backup/PR source —
-**Claude never merges or opens the PR into `origin/main`.** The user reviews and merges via
-GitHub's PR flow themselves, on their own timing. So the full sequence per phase: brainstorm
-→ spec → plan → `subagent-driven-development` in a fresh worktree → whole-branch review →
-merge to local `main` → push `feature/fable5-phase<N>-<name>` to origin → **stop there** —
-report the branch is ready, do not merge/PR/touch `origin/main`.
+### ✅ Phase 2a (Valuation Committee) — COMPLETE, on `origin/main` right now
+Four new independent valuation lenses replacing the single flat-10%-discount-rate DCF, plus
+a gate requiring 2-of-3 agreement before `ACCUMULATE`. Spec: `docs/superpowers/specs/2026-07-04-valuation-committee-design.md`.
+Plan: `docs/superpowers/plans/2026-07-04-valuation-committee.md`. ADR: `docs/architecture/ADR-valuation-committee.md`.
 
-**Git hygiene lesson from tonight, worth repeating:** after pushing a backup branch, keep
+- **`wacc.py`** — per-company discount rate (risk-free rate + local-OLS beta vs SPY + ERP +
+  after-tax cost of debt, capped/floored [7%, 14%]), replacing the flat 10% default.
+- **`reverse_dcf.py`** — bisection-inverts `compute_scenario()` to find the growth rate the
+  market is pricing in at the current price, classified vs bear/base/bull.
+- **`dcf_sensitivity.py`** — 2D grid (growth × exit-PE) + Monte Carlo (P10/P50/P90,
+  P(overvalued)).
+- **`comps_valuation.py`** — peer-median EV/Sales cross-check (EV/EBITDA deliberately out of
+  scope — no EBITDA source in the data layer yet). Peers seeded for 10 current holdings
+  (CORZ, PANW, CRWV, NBIS, BE, SNDK, CEG, OKLO, APLD, MSFT); CBRS deliberately left unseeded
+  (no confident peer knowledge).
+- **`market_data.py`** extended with `totalDebt`/`cashAndEquivalents`/`interestExpense`
+  (yfinance-only for now — no EDGAR tag mapping yet).
+- **`dcf_scenarios.py`** gained `--wacc-file` (an explicit `--discount-rate` still wins, for
+  reproducing old runs — `compute_scenario()`'s math itself is untouched).
+- **`validate_projection.py`** gained `check_accumulate_gate()` — blocks `ACCUMULATE` unless
+  ≥2 of 3 lenses agree (DCF upside >15%, comps upside, implied-growth-below-base-case); a
+  >25% cross-lens spread triggers a non-blocking disagreement-note warning.
+- **`SKILL.md`** (stock_valuation) updated with the full 5-script pipeline (Step 3.5) — a
+  whole-branch-review fix round added the missing `analyticsLog.dcf` wiring instruction,
+  since without it the gate would have silently run as 2-of-2 instead of 2-of-3.
+
+Built as 8 TDD-gated tasks via `superpowers:subagent-driven-development` in a fresh worktree
+(`.worktrees/feature-fable5-phase2a-valuation-committee`, now cleaned up). Two tasks needed
+one fix round each after task-level review; the final whole-branch review (opus) caught and
+fixed the `analyticsLog.dcf` gap above. **Merged via PR #60** (`git log origin/main` shows
+`32bbe85` as the merge commit) — user merged themselves on GitHub, confirmed via
+`git fetch` + `git log origin/main`, not assumed.
+
+**Follow-up flagged by the migration-audit test, not yet acted on:** 5 existing projections
+carry `aiThesis.action = ACCUMULATE` from before this phase and have no `analyticsLog.{dcf,comps,reverseDcf}`
+data yet, so they'd fail the new gate if re-validated as-is: **COHR, GOOG, VST, WQTM, ZS**.
+This is expected (documented in the ADR), not a bug — each just needs to go through
+`/evaluate-stock` again to pick up the new lens data. Not urgent, but don't be surprised if
+`validate_projection.py` rejects one of these five before it's been re-run.
+
+### 🚦 Git policy going forward
+**Standing pattern, now confirmed twice (Phase 1, Phase 2a):** after each phase's
+whole-branch review passes, Claude pushes a dedicated `feature/fable5-phase<N>-<name>`
+branch to `origin` as a backup/PR source — **Claude never merges or opens the PR into
+`origin/main`.** The user reviews and merges via GitHub's PR flow themselves, on their own
+timing. So the full sequence per phase: brainstorm → spec → plan →
+`subagent-driven-development` in a fresh worktree → whole-branch review → merge to local
+`main` → push `feature/fable5-phase<N>-<name>` to origin → **stop there** — report the
+branch is ready, do not merge/PR/touch `origin/main`.
+
+**Git hygiene lesson, worth repeating:** after pushing a backup branch, keep
 committing/pushing as work continues — don't let further edits (e.g. to this file) sit
 uncommitted after a branch is already pushed, or the backup silently goes stale. Verify any
-"is it pushed" claim with `git fetch` + `git log <ref>` before asserting it's done, not
-from memory of having run `git push` earlier.
+"is it pushed"/"is it merged" claim with `git fetch` + `git log <ref>` before asserting it's
+done, not from memory of having run `git push` earlier — this session confirmed PR #60's
+merge this way before updating this file.
 
 ### Next step for this session
-Pick a Phase 2 sub-project from `fable5-ELEVATION_GUIDE.md` §2 (Valuation Committee:
-reverse-DCF, WACC, Monte Carlo/sensitivity, comps cross-check) or reorder if something else
-is more urgent — confirm with the user first (this repo's brainstorming skill gate applies:
-don't start implementation before a design is proposed and approved). §9 in the guide has
-the full phase/acceptance-criteria breakdown if useful context.
+Phase 2b = Workstream B (Fundamental Analyst) + C1 from `fable5-ELEVATION_GUIDE.md`: **B1
+scoring engine** (`framework_score.py` — encodes the full investment-framework doc into a
+deterministic 0.25/0.20/… weighted composite score), **B3 peer benchmarking**
+(`peer_bench.py` — reuses the `peers` field seeded in Phase 2a), and **C1 local TA engine**
+(`technicals.py` — needed as a trend-input metric for the framework score; independent
+ground truth alongside the TV scrape). Confirm scope/sequencing with the user first (this
+repo's brainstorming skill gate applies: don't start implementation before a design is
+proposed and approved) — likely worth the same brainstorming pass done for 2a (check
+whether B1/B3/C1 should further split into separate specs, given C1 in particular is its own
+substantial engine). §9 in the guide has the full phase/acceptance-criteria breakdown.
 
 ---
 
