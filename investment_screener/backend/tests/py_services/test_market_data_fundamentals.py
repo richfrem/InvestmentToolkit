@@ -265,3 +265,40 @@ def test_get_fundamentals_operating_income_stays_edgar_only(tmp_path, monkeypatc
         result = get_fundamentals("AAPL", cik="0000320193")
 
     assert "operatingIncome" not in result
+
+
+def test_get_fundamentals_includes_debt_cash_interest_from_yfinance(tmp_path, monkeypatch):
+    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    fake_yf = MagicMock()
+    fake_yf.info = {
+        "totalRevenue": 395000000000.0,
+        "netIncomeToCommon": 94000000000.0,
+        "totalDebt": 120000000000.0,
+        "totalCash": 65000000000.0,
+        "interestExpense": 3900000000.0,
+    }
+    fake_yf.financials = _fake_yf_financials_df()
+    with patch("market_data.get_company_facts", return_value=_fake_edgar_facts()), \
+         patch("market_data.yf.Ticker", return_value=fake_yf):
+        result = get_fundamentals("AAPL", cik="0000320193")
+
+    assert result["totalDebt"]["value"] == 120000000000.0
+    assert result["totalDebt"]["source"] == "yfinance"
+    assert result["cashAndEquivalents"]["value"] == 65000000000.0
+    assert result["cashAndEquivalents"]["source"] == "yfinance"
+    assert result["interestExpense"]["value"] == 3900000000.0
+    assert result["interestExpense"]["source"] == "yfinance"
+
+
+def test_get_fundamentals_omits_debt_cash_interest_when_yfinance_lacks_them(tmp_path, monkeypatch):
+    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+    fake_yf = MagicMock()
+    fake_yf.info = {"totalRevenue": 395000000000.0, "netIncomeToCommon": 94000000000.0}
+    fake_yf.financials = _fake_yf_financials_df()
+    with patch("market_data.get_company_facts", return_value=_fake_edgar_facts()), \
+         patch("market_data.yf.Ticker", return_value=fake_yf):
+        result = get_fundamentals("AAPL", cik="0000320193")
+
+    assert "totalDebt" not in result
+    assert "cashAndEquivalents" not in result
+    assert "interestExpense" not in result
