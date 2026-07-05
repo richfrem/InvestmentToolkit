@@ -44,13 +44,14 @@ from ticker_aliases import is_cash  # noqa: E402
 from portfolio_io import load_portfolio_state, replace_block  # noqa: E402
 
 SUB_STRATEGY_NAMES = {
-    "sa-asi-race":       "Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)",
-    "cybersecurity":     "Sub-Strategy 2 — AI-Native Cybersecurity",
-    "sovereign-finance": "Sub-Strategy 3 — Sovereign Finance",
-    "quality-saas":      "Sub-Strategy 4 — Quality SaaS Resilience",
-    "frontier-bets":     "Sub-Strategy 5 — Applied AI / Frontier Bets",
-    "cash":              "Strategic Reserve",
-    "untracked":         "Untracked / Thesis Pending",
+    "sa-asi-race":         "Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)",
+    "cybersecurity":       "Sub-Strategy 2 — AI-Native Cybersecurity",
+    "sovereign-finance":   "Sub-Strategy 3 — Sovereign Finance",
+    "quality-saas":        "Sub-Strategy 4 — Quality SaaS Resilience",
+    "frontier-bets":       "Sub-Strategy 5 — Applied AI / Frontier Bets",
+    "metabolic-rewriting": "Sub-Strategy 6 — Metabolic Reprogramming & Genetic Editing",
+    "cash":                "Strategic Reserve",
+    "untracked":           "Untracked / Thesis Pending",
 }
 
 from portfolio_action import derive_action, ACTION_EMOJI
@@ -160,7 +161,7 @@ def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> 
     grand_actual = 0.0
     grand_target = 0.0
 
-    order = ["sa-asi-race", "cybersecurity", "sovereign-finance", "quality-saas", "frontier-bets", "cash", "untracked"]
+    order = ["sa-asi-race", "cybersecurity", "sovereign-finance", "quality-saas", "frontier-bets", "metabolic-rewriting", "cash", "untracked"]
     for sid in order:
         if sid not in groups:
             continue
