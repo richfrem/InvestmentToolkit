@@ -12,7 +12,7 @@ sys.path.insert(0, str(PLUGIN_SCRIPTS_DIR))
 from validate_projection import check_accumulate_gate  # noqa: E402
 
 
-def test_document_existing_accumulate_projections_against_new_gate(capsys):
+def test_document_existing_accumulate_projections_against_new_gate():
     """Not a pass/fail gate on old data — a documentation pass. Prints every
     currently-ACCUMULATE projection that would fail the new 2-of-3 gate, so
     the agent can re-review each one (never silently auto-corrected, per the
@@ -43,7 +43,6 @@ def test_document_existing_accumulate_projections_against_new_gate(capsys):
             print(f"  - {ticker}: only {n}/3 lenses agree")
 
     # Documentation only — always passes. The printed list above is the
-    # actual deliverable (captured by `capsys` here just to keep the test
-    # from being silently swallowed; run with `-s` to see it directly).
-    captured = capsys.readouterr()
+    # actual deliverable; run with `-s` to see it (now works, since the
+    # test no longer captures its own stdout via the capsys fixture).
     assert True
