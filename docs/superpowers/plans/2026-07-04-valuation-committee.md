@@ -1946,7 +1946,7 @@ Expected: PASS — all 9 tests.
 
 - [ ] **Step 5: Sync the `.agents/` mirror copy**
 
-`plugins/stock-valuation/scripts/validate_projection.py` has a non-symlinked duplicate at `.agents/skills/stock_valuation/scripts/validate_projection.py` (pre-existing, not introduced by this task). Copy the updated file to keep both in sync:
+`plugins/stock-valuation/scripts/validate_projection.py` has a non-symlinked duplicate at `.agents/skills/stock_valuation/scripts/validate_projection.py` (pre-existing, not introduced by this task). **`.agents/` is entirely gitignored** (`.gitignore:65`) — this file is not tracked by git at all, so it must be copied for local consistency but never `git add`-ed. Copy the updated file to keep both in sync:
 
 ```bash
 cp plugins/stock-valuation/scripts/validate_projection.py .agents/skills/stock_valuation/scripts/validate_projection.py
@@ -1957,10 +1957,12 @@ Expected: `diff` produces no output (files identical).
 - [ ] **Step 6: Commit**
 
 ```bash
-git add plugins/stock-valuation/scripts/validate_projection.py .agents/skills/stock_valuation/scripts/validate_projection.py \
+git add plugins/stock-valuation/scripts/validate_projection.py \
   plugins/stock-valuation/tests/test_validate_projection.py
 git commit -m "feat: add 2-of-3 valuation-lens gate to validate_projection.py"
 ```
+
+Note: do not `git add` the `.agents/` copy — it is gitignored by design and the `cp` in Step 5 is a local-sync convenience only, not a version-controlled change.
 
 ---
 
