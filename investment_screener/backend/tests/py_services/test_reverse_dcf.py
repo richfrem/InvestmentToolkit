@@ -60,6 +60,18 @@ def test_reverse_dcf_verdict_between_base_and_bull():
     assert result["verdict"] == "BETWEEN_BASE_AND_BULL"
 
 
+def test_reverse_dcf_verdict_between_bear_and_base():
+    price = (_pv_for_growth(10.0) + _pv_for_growth(22.0)) / 2
+
+    result = solve_implied_growth(
+        price=price, base_shares=100_000_000.0, discount_rate=0.10, horizon=5,
+        margin=25.0, exit_pe=30.0, quality_multiplier=1.0, base_revenue=1_000_000_000.0,
+        bear_growth=10.0, base_growth=22.0, bull_growth=35.0,
+    )
+
+    assert result["verdict"] == "BETWEEN_BEAR_AND_BASE"
+
+
 def test_reverse_dcf_verdict_pricing_in_more_than_bull_when_price_over_bull_pv():
     price = _pv_for_growth(35.0) * 1.1
 
