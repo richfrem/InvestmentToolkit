@@ -228,7 +228,65 @@ python3 investment_screener/backend/py_services/dcf_scenarios.py \
 - `sectorBenchmarkRow`: name the exact benchmark row used and the P/E range it provides
 - `confidenceBreakdown`: document each positive/negative factor and its score impact
 
+## Step 3.5: Valuation Committee — Additional Lenses (Phase 2a)
+
+After the canonical DCF calculator runs (Step 3), run the four additional
+valuation-committee scripts before persisting. Each one is optional to run
+standalone but all four are required before Step 4's validator, since the
+2-of-3 ACCUMULATE gate needs their output in `analyticsLog`.
+
+```bash
+# 1. Per-company discount rate (replaces the flat 10% default)
+python3 investment_screener/backend/py_services/wacc.py \
+  --ticker TICKER --market-cap <market_cap_from_metrics> --cik <cik_or_omit> --pretty
+# -> analyticsLog.wacc
+
+# 2. Re-run DCF with the computed WACC (instead of the default --discount-rate)
+python3 investment_screener/backend/py_services/dcf_scenarios.py \
+  --raw <raw_financials.json> --scenarios <scenarios.json> --wacc-file <wacc_output.json> --pretty
+# -> analyticsLog.dcf (persist weightedFairValue, upsidePct, and the full
+# scenario breakdown from this re-run's output — this is lens #1 the gate reads)
+
+# 3. Reverse-DCF implied growth
+python3 investment_screener/backend/py_services/reverse_dcf.py \
+  --price <current_price> --revenue <base_revenue> --shares <base_shares> \
+  --margin <base_margin> --exit-pe <base_exit_pe> \
+  --bear-growth <bear_growth> --base-growth <base_growth> --bull-growth <bull_growth> --pretty
+# -> analyticsLog.reverseDcf
+
+# 4. Sensitivity grid + Monte Carlo
+python3 investment_screener/backend/py_services/dcf_sensitivity.py \
+  --scenarios <scenarios.json> --revenue <base_revenue> --shares <base_shares> \
+  --price <current_price> --mode grid --pretty
+python3 investment_screener/backend/py_services/dcf_sensitivity.py \
+  --scenarios <scenarios.json> --revenue <base_revenue> --shares <base_shares> \
+  --price <current_price> --mode montecarlo --pretty
+# -> analyticsLog.sensitivity, analyticsLog.monteCarlo
+
+# 5. Comps cross-check (only if projections/{TICKER}.json already has a peers list)
+python3 investment_screener/backend/py_services/comps_valuation.py \
+  --ticker TICKER --peers <comma_separated_peers> \
+  --projections-dir investment_screener/backend/data/projections --pretty
+# -> analyticsLog.comps ; {"status": "insufficient_peer_data"} is expected and fine
+# for any ticker without a curated peers list yet — do not fabricate one.
+```
+
+Merge all six outputs (`dcf`, `wacc`, `reverseDcf`, `sensitivity`, `monteCarlo`, `comps`) into the
+projection's `analyticsLog` object before Step 4. If DCF upside, comps upside,
+and implied-growth-vs-base disagree by more than 25%, say so explicitly in the
+conversational summary (Step 8) and in `rationale` — never average the
+disagreement away.
+
 ## Step 4: Validate & Repair
+
+Run the pre-persistence validator. This now also enforces the Phase 2a
+valuation-committee gate: `aiThesis.action = ACCUMULATE` requires at least 2
+of the 3 lenses (DCF upside, comps upside, implied-growth-below-base-case)
+to agree — a validation error if fewer than 2 agree, forcing either the
+action to be revised or a re-check of the underlying lens data before
+persistence. A pre-Phase-2a projection re-validated without lens data will
+correctly fail this gate if its action is ACCUMULATE — re-run it through
+Step 3.5 first rather than treating the failure as a bug.
 ```bash
 # Run pre-persistence validator
 cat temp/evaluations/{TICKER}_projection.json | python3 plugins/stock-valuation/skills/stock_valuation/scripts/validate_projection.py --verbose

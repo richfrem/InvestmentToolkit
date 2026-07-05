@@ -108,3 +108,9 @@ plugins/tradingview/audit/
 
 # Triage session history (ephemeral daily agent state)
 plugins/portfolio-advisor/references/triage-history.json
+
+# Local git worktrees for isolated feature work
+.worktrees/
+
+# superpowers subagent-driven-development scratch state (progress ledger)
+.superpowers/

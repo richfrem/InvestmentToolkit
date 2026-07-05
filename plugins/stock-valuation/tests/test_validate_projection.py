@@ -1,0 +1,140 @@
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+SCRIPT_DIR = REPO_ROOT / "plugins/stock-valuation/scripts"
+sys.path.insert(0, str(SCRIPT_DIR))
+
+from validate_projection import check_accumulate_gate, validate_projection  # noqa: E402
+
+
+def _projection(action, dcf_upside=None, comps_status="ok", comps_low=None, comps_high=None,
+                 implied_growth_vs_base=None, current_price=100.0, dcf_fair_value=None):
+    analytics = {}
+    if dcf_upside is not None:
+        analytics["dcf"] = {"upsidePct": dcf_upside}
+        if dcf_fair_value is not None:
+            analytics["dcf"]["weightedFairValue"] = dcf_fair_value
+    if comps_status == "ok":
+        analytics["comps"] = {
+            "status": "ok",
+            "impliedPriceRange": {"low": comps_low, "high": comps_high},
+        }
+    else:
+        analytics["comps"] = {"status": "insufficient_peer_data"}
+    if implied_growth_vs_base is not None:
+        analytics["reverseDcf"] = {"impliedGrowthVsBaseCase": implied_growth_vs_base}
+
+    return {
+        "aiThesis": {"action": action},
+        "snapshot": {"price": current_price},
+        "analyticsLog": analytics,
+        "rationale": "placeholder rationale",
+    }
+
+
+def test_gate_passes_when_all_three_lenses_agree():
+    proj = _projection(
+        action="ACCUMULATE", dcf_upside=20.0, comps_low=110.0, comps_high=130.0,
+        implied_growth_vs_base=-3.0, current_price=100.0,
+    )
+    result = check_accumulate_gate(proj)
+    assert result["gatePassed"] is True
+    assert result["lensesAgreeing"] == 3
+    assert result["lensResults"] == {"dcf": True, "comps": True, "impliedGrowth": True}
+
+
+def test_gate_passes_when_exactly_two_of_three_agree():
+    proj = _projection(
+        action="ACCUMULATE", dcf_upside=20.0, comps_low=110.0, comps_high=130.0,
+        implied_growth_vs_base=5.0,  # disagrees (market pricing in MORE than base case)
+        current_price=100.0,
+    )
+    result = check_accumulate_gate(proj)
+    assert result["gatePassed"] is True
+    assert result["lensesAgreeing"] == 2
+
+
+def test_gate_blocks_when_only_one_of_three_agrees():
+    proj = _projection(
+        action="ACCUMULATE", dcf_upside=20.0, comps_low=70.0, comps_high=90.0,  # comps disagrees
+        implied_growth_vs_base=5.0,  # impliedGrowth disagrees
+        current_price=100.0,
+    )
+    result = check_accumulate_gate(proj)
+    assert result["gatePassed"] is False
+    assert result["lensesAgreeing"] == 1
+
+
+def test_gate_blocks_when_zero_lenses_agree():
+    proj = _projection(
+        action="ACCUMULATE", dcf_upside=5.0, comps_low=70.0, comps_high=90.0,
+        implied_growth_vs_base=5.0, current_price=100.0,
+    )
+    result = check_accumulate_gate(proj)
+    assert result["gatePassed"] is False
+    assert result["lensesAgreeing"] == 0
+
+
+def test_gate_is_trivially_passed_for_non_accumulate_actions():
+    proj = _projection(
+        action="HOLD", dcf_upside=5.0, comps_low=70.0, comps_high=90.0,
+        implied_growth_vs_base=5.0, current_price=100.0,
+    )
+    result = check_accumulate_gate(proj)
+    assert result["gatePassed"] is True
+
+
+def test_gate_treats_insufficient_comps_data_as_comps_lens_disagreeing():
+    proj = _projection(
+        action="ACCUMULATE", dcf_upside=20.0, comps_status="insufficient_peer_data",
+        implied_growth_vs_base=-3.0, current_price=100.0,
+    )
+    result = check_accumulate_gate(proj)
+    # Only dcf + impliedGrowth can agree = 2 of 3 -> still passes
+    assert result["lensResults"]["comps"] is False
+    assert result["gatePassed"] is True
+
+
+def test_disagreement_note_required_above_25_percent_spread():
+    proj = _projection(
+        action="ACCUMULATE", dcf_upside=20.0, dcf_fair_value=150.0,
+        comps_low=100.0, comps_high=100.0,  # comps midpoint 100, dcf fair value 150 -> 50% spread
+        implied_growth_vs_base=-3.0, current_price=100.0,
+    )
+    result = check_accumulate_gate(proj)
+    assert result["spreadPct"] > 25.0
+    assert result["disagreementNoteRequired"] is True
+
+
+def test_disagreement_note_not_required_within_25_percent_spread():
+    proj = _projection(
+        action="ACCUMULATE", dcf_upside=20.0, dcf_fair_value=110.0,
+        comps_low=105.0, comps_high=115.0,  # comps midpoint 110, dcf fair value 110 -> 0% spread
+        implied_growth_vs_base=-3.0, current_price=100.0,
+    )
+    result = check_accumulate_gate(proj)
+    assert result["disagreementNoteRequired"] is False
+
+
+def test_validate_projection_appends_gate_failure_to_errors():
+    proj = _projection(
+        action="ACCUMULATE", dcf_upside=5.0, comps_low=70.0, comps_high=90.0,
+        implied_growth_vs_base=5.0, current_price=100.0,
+    )
+    # Fill in the other required top-level fields validate_projection() checks
+    proj.update({
+        "ticker": "TEST", "id": "11111111-1111-1111-1111-111111111111", "source": "AI_AGENT",
+        "schemaVersion": "1.2", "version": 1, "savedAt": "2026-07-04T00:00:00Z",
+        "globalSettings": {"discountRate": 10, "timeHorizon": 5},
+        "scenarios": {
+            "bear": {"weight": 0.2, "growthRate": 5, "netMargin": 10, "exitPE": 15,
+                     "qualityMultiplier": 1.0, "shareChange": 0, "scenarioPrice": 50},
+            "base": {"weight": 0.5, "growthRate": 15, "netMargin": 20, "exitPE": 25,
+                     "qualityMultiplier": 1.0, "shareChange": 0, "scenarioPrice": 100},
+            "bull": {"weight": 0.3, "growthRate": 25, "netMargin": 30, "exitPE": 35,
+                     "qualityMultiplier": 1.0, "shareChange": 0, "scenarioPrice": 150},
+        },
+    })
+    errors = validate_projection(proj)
+    assert any("ACCUMULATE requires" in e for e in errors)
