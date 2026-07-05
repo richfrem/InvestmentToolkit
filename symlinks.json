@@ -684,6 +684,24 @@
       "dst": "investment_screener/backend/py_services/refresh_all.py",
       "strategy": "symlink",
       "description": "refresh_all.py canonical in portfolio-advisor/scripts; py_services/ symlink for fetch_broker_data access"
+    },
+    {
+      "src": "investment_screener/backend/py_services/market_data.py",
+      "dst": "plugins/stock-valuation/scripts/market_data.py",
+      "strategy": "symlink",
+      "description": "market_data.py canonical in py_services/; wacc.py co-location symlink"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/wacc.py",
+      "dst": "investment_screener/backend/py_services/wacc.py",
+      "strategy": "symlink",
+      "description": "wacc.py canonical in plugin/scripts; py_services/ symlink for agent convenience"
+    },
+    {
+      "src": "plugins/stock-valuation/scripts/wacc.py",
+      "dst": "plugins/stock-valuation/skills/stock_valuation/scripts/wacc.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
     }
   ]
 }
