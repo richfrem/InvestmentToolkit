@@ -738,6 +738,12 @@
       "dst": "plugins/stock-valuation/skills/stock_valuation/scripts/comps_valuation.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/references/definitive_professional_investment_framework.md",
+      "dst": "plugins/portfolio-advisor/references/defininitive_professional_investment_framework.md",
+      "strategy": "symlink",
+      "description": "Compat symlink \u2014 typo'd filename kept for any hardcoded references, Phase 2b rename"
     }
   ]
 }
