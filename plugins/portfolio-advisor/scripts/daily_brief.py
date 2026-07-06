@@ -192,7 +192,8 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     print("▶ Risk snapshot...", file=sys.stderr)
     try:
         risk_snapshot = compute_risk_snapshot()
-    except Exception:
+    except Exception as exc:
+        print(f"  Risk snapshot skipped: {exc}", file=sys.stderr)
         risk_snapshot = None
 
     # ── 2. TA sweep (auto-refresh if stale) ───────────────────────────────────
