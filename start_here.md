@@ -168,6 +168,26 @@ splitting into separate specs (risk engine vs. rebalancer vs. regime/breakers vs
 four fairly independent workstreams that only share the risk snapshot as a data contract).
 §9 in the guide has the full phase/acceptance-criteria breakdown.
 
+### 🗺️ Map debt — fix after ALL Fable5 phases complete (not a blocker now)
+Two pre-existing, unrelated test failures were found (and logged to
+`.agent/map-debt.md`) while verifying a clean baseline before starting Phase 3 E1 —
+both out of scope for the phase in progress, deliberately deferred rather than fixed
+inline (would've been an undeclared scope addition mid-task):
+1. **`test_math_parity.py`** — `PROJECT_ROOT` only walks up 2 directories instead of to
+   the repo root, so its `dcf_scenarios.py` subprocess call looks for the script at a
+   nonexistent doubled path. Fix: use `Path(__file__).resolve().parents[4]` like every
+   other test file in that directory already does.
+2. **`test_place_order_gates.py`** (3 tests: `test_stale_portfolio_exits_4`,
+   `test_fresh_portfolio_exits_0`, `test_size_cap_exits_3`) — not isolated from real
+   wall-clock/market-hours state; they fail on weekends because `place_order.py
+   --preflight`'s market-closed gate fires before the gate under test. **Repeats every
+   Sat/Sun** until fixed. Fix: add a test-only override for the market-hours check.
+
+**When to pick this up:** once every Fable5 phase (3 through 6) has shipped and merged,
+sweep `.agent/map-debt.md` for OPEN entries (not just these two — anything logged during
+the remaining phases) and clear them in one pass before considering the elevation guide
+fully closed out.
+
 ---
 
 ## 🟡 Other open items from 2026-07-02 (not yet resolved, unrelated to Fable5)
