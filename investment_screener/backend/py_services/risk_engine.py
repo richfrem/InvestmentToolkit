@@ -21,6 +21,7 @@ Usage:
 
 import sys
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
@@ -233,3 +234,45 @@ def compute_concentration(weights: dict[str, float]) -> dict[str, float | None]:
         "top3Weight": round(top3, 4),
         "effectiveN": round(effective_n, 2) if effective_n is not None else None,
     }
+
+
+def compute_cluster_exposure(
+    weights: dict[str, float], pillar_map: dict[str, str], mrc: dict[str, float]
+) -> list[dict[str, Any]]:
+    """Pillar-level weight and variance-contribution exposure.
+
+    Groups holdings by their existing target-portfolio.json `pillarId` (the
+    curated taxonomy, not a correlation-derived cluster) and sums weight and
+    marginal-risk-contribution within each pillar. Produces the "72% of
+    portfolio variance from one cluster" sentence.
+
+    Args:
+        weights: {ticker: weight_fraction}, need not sum to 1.0.
+        pillar_map: {ticker: pillarId}, from target-portfolio.json holdings.
+        mrc: Output of compute_marginal_risk_contribution() — {ticker: fraction}.
+
+    Returns:
+        List of {"pillarId", "weight", "varianceContributionPct"}, sorted by
+        weight descending. A ticker with no pillarId entry is grouped under
+        "unassigned". Weight is renormalized over the supplied weights dict.
+    """
+    normalized = _normalize_weights(weights)
+    if not normalized:
+        return []
+
+    pillar_weight: dict[str, float] = {}
+    pillar_mrc: dict[str, float] = {}
+    for ticker, weight in normalized.items():
+        pillar = pillar_map.get(ticker, "unassigned")
+        pillar_weight[pillar] = pillar_weight.get(pillar, 0.0) + weight
+        pillar_mrc[pillar] = pillar_mrc.get(pillar, 0.0) + mrc.get(ticker, 0.0)
+
+    result = [
+        {
+            "pillarId": pillar,
+            "weight": round(pillar_weight[pillar], 4),
+            "varianceContributionPct": round(pillar_mrc[pillar] * 100, 2),
+        }
+        for pillar in pillar_weight
+    ]
+    return sorted(result, key=lambda r: r["weight"], reverse=True)
