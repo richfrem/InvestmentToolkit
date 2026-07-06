@@ -289,8 +289,9 @@ def compute_technical_snapshot(
 ) -> dict:
     """Primary orchestrator — one TechnicalSnapshot per ticker/timeframe.
 
-    If `anchor_date` is not supplied, defaults to the ticker's most recent
-    past earnings date from earnings_calendar.py; if neither is available,
+    If `anchor_date` is not supplied, attempts to auto-detect one via
+    `_default_earnings_anchor` (see that function's docstring for why this
+    rarely resolves to a usable date today); if neither is available,
     anchoredVwap is None rather than guessed.
 
     Args:
@@ -311,11 +312,36 @@ def compute_technical_snapshot(
     df = pd.DataFrame(rows)
     benchmark_df = pd.DataFrame(benchmark_rows)
 
+    if df.empty:
+        return {
+            "ticker": ticker, "timeframe": timeframe, "asOf": None,
+            "rsi14": None, "ema21": None, "ema50": None, "ema200": None,
+            "macd": None, "adx14": None, "plusDI": None, "minusDI": None,
+            "atr14": None, "bollinger": None, "keltner": None, "squeeze": None,
+            "anchoredVwap": None, "volumeRatio20d": None,
+            "relativeStrength": {"ratio": None, "slope63d": None},
+        }
+
     if anchor_date is None:
         anchor_date = _default_earnings_anchor(ticker)
 
     atr14 = compute_atr(df["high"], df["low"], df["close"]) or 0.0
     adx_result = compute_adx(df["high"], df["low"], df["close"])
+
+    # Align ticker and benchmark on calendar date (inner join) before computing
+    # relative strength — a positional (RangeIndex) division would silently pair
+    # up mismatched dates if the two series have different lengths/histories
+    # (e.g. a recently-IPO'd ticker vs. a long-history benchmark).
+    if not benchmark_df.empty:
+        merged = df[["date", "close"]].merge(
+            benchmark_df[["date", "close"]], on="date", suffixes=("", "_benchmark")
+        )
+        relative_strength = (
+            compute_relative_strength(merged["close"], merged["close_benchmark"])
+            if not merged.empty else {"ratio": None, "slope63d": None}
+        )
+    else:
+        relative_strength = {"ratio": None, "slope63d": None}
 
     return {
         "ticker": ticker,
@@ -333,25 +359,30 @@ def compute_technical_snapshot(
             df["high"], df["low"], df["close"], df["volume"], df["date"], anchor_date
         ),
         "volumeRatio20d": compute_volume_ratio(df["volume"]),
-        "relativeStrength": (
-            compute_relative_strength(df["close"], benchmark_df["close"])
-            if not benchmark_df.empty else {"ratio": None, "slope63d": None}
-        ),
+        "relativeStrength": relative_strength,
     }
 
 
 def _default_earnings_anchor(ticker: str) -> str | None:
-    """Most recent past earnings date for `ticker`, or None if unavailable.
+    """Best-effort auto-anchor lookup for `ticker`, or None if unavailable.
 
-    earnings_calendar.py only forecasts upcoming events by design (see its
-    module docstring) — this walks its entries defensively and returns None
-    on any shape it doesn't recognize rather than raising, since a missing
-    anchor is a normal, expected case (see compute_anchored_vwap's None path).
-    Calls the module-level `get_earnings_calendar` (imported at the top of
-    this file, not locally) so tests can `patch("technicals.get_earnings_calendar", ...)`
-    — a function-local import would make that patch target a name that
-    doesn't exist in this module's namespace, and unittest.mock.patch would
-    raise AttributeError instead of substituting the stub.
+    `get_earnings_calendar()` currently only returns upcoming/future earnings
+    dates (by that module's own design — it exists to flag imminent binary
+    events, not to look backward). As a result, this auto-anchor will rarely
+    if ever resolve to a usable historical date today: it safely returns None
+    in that case rather than fabricating one (see compute_anchored_vwap's None
+    path). A future enhancement to earnings_calendar.py to expose past
+    earnings dates would make this useful; until then, callers should pass
+    `--anchor-date` explicitly for a working anchored VWAP.
+
+    This walks entries defensively and returns None on any shape it doesn't
+    recognize rather than raising, since a missing anchor is a normal,
+    expected case. Calls the module-level `get_earnings_calendar` (imported
+    at the top of this file, not locally) so tests can
+    `patch("technicals.get_earnings_calendar", ...)` — a function-local
+    import would make that patch target a name that doesn't exist in this
+    module's namespace, and unittest.mock.patch would raise AttributeError
+    instead of substituting the stub.
     """
     try:
         entries = get_earnings_calendar()
