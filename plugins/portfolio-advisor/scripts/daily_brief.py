@@ -171,6 +171,7 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     # Dynamically import py_services modules
     sys.path.insert(0, str(PY_SERVICES))
     from macro_regime import get_macro_regime
+    from risk_engine import compute_risk_snapshot
     from earnings_calendar import get_earnings_calendar
     from compute_conviction_scores import compute_all
     from brief_recommendations import build_recommendations, load_standing_decisions
@@ -186,6 +187,13 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     # ── 1. Macro regime ───────────────────────────────────────────────────────
     print("▶ Macro regime...", file=sys.stderr)
     macro = get_macro_regime()
+
+    # ── 1b. Portfolio risk snapshot ───────────────────────────────────────────
+    print("▶ Risk snapshot...", file=sys.stderr)
+    try:
+        risk_snapshot = compute_risk_snapshot()
+    except Exception:
+        risk_snapshot = None
 
     # ── 2. TA sweep (auto-refresh if stale) ───────────────────────────────────
     age = _ta_age_hours()
@@ -271,6 +279,7 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
         "date": date.today().isoformat(),
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "macro_regime": asdict(macro),
+        "risk_snapshot": risk_snapshot,
         "ta_refreshed": ran_ta,
         "ta_skip_reason": ta_skip_reason,
         "conviction_scores": scores_raw,
@@ -338,6 +347,26 @@ def render(brief: dict[str, Any]) -> str:
         lines.append("    ⛔  Gate all ACCUMULATE signals. Execute only REDUCE / EXIT today.")
     elif regime == "NEUTRAL":
         lines.append("    ⚠️  Only highest-conviction (+4 or above) ACCUMULATE actions.")
+
+    # ── Portfolio risk snapshot ───────────────────────────────────────────────
+    risk = brief.get("risk_snapshot")
+    if risk:
+        vol = risk.get("portfolioVol")
+        beta = risk.get("portfolioBeta")
+        cluster = risk.get("clusterExposure") or []
+        top_cluster = max(cluster, key=lambda c: c["weight"], default=None)
+        mrc = risk.get("marginalRiskContribution") or {}
+        mrc_leader = max(mrc.items(), key=lambda kv: kv[1], default=None)
+
+        vol_str = f"{vol * 100:.0f}%" if vol is not None else "—"
+        beta_str = f"{beta:.1f}" if beta is not None else "—"
+        cluster_str = f"{top_cluster['weight'] * 100:.0f}%" if top_cluster else "—"
+        mrc_str = f"{mrc_leader[0]} {mrc_leader[1] * 100:.0f}%" if mrc_leader else "—"
+
+        lines.append(
+            f"\n📊  RISK: vol {vol_str} · beta {beta_str} · top cluster {cluster_str} "
+            f"· MRC leader: {mrc_str}"
+        )
 
     # ── Earnings / binary events ──────────────────────────────────────────────
     urgent = [e for e in earnings if e["flag"] in ("IMMINENT", "APPROACHING")]
