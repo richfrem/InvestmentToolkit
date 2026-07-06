@@ -262,3 +262,37 @@ def test_stress_replay_omits_2022_scenario_when_data_doesnt_cover_it():
 def test_stress_replay_empty_for_no_qualifying_holdings():
     returns = pd.DataFrame({"SPY": [0.01, -0.02, 0.03]})
     assert compute_stress_replay(returns, {"A": 1.0}, benchmark="SPY") == []
+
+
+def test_stress_replay_day0_peak_limitation():
+    """Documents a known limitation: worst-drawdown search cannot detect a peak
+    on day 0 of the returns window because day 0 is dropped upstream as the
+    pct_change() baseline (no return can be computed relative to itself).
+
+    For a synthetic 4-price series [100, 90, 95, 80], the mathematically true
+    worst drawdown is day0(100)->day3(80) = -20.00%. However, because day 0
+    cannot be observed in the cumulative return series (it's the baseline), the
+    function observes the peak at day2(95)->day3(80) = -15.79%. This limitation
+    only manifests when the true worst peak occurs on day 0 specifically. This
+    test pins that behavior so future regressions are caught.
+    """
+    # Prices: [100, 90, 95, 80]
+    # Returns (pct_change): [-0.10, 0.0556, -0.1579]
+    # Cumulative: [0.90, 0.9501, 0.8001]
+    # The cumulative series starts from index 1 (day 1), missing the day 0 peak.
+    # Running max: [0.90, 0.9501, 0.9501]
+    # Min drawdown is at index 2, with peak at index 1 (2026-01-03, price 95)
+    dates_closes = [
+        ("2026-01-01", 100.0),  # Day 0 (true peak, but invisible to drawdown search)
+        ("2026-01-02", 90.0),   # Day 1
+        ("2026-01-03", 95.0),   # Day 2 (observed peak in cumulative series)
+        ("2026-01-04", 80.0),   # Day 3 (trough)
+    ]
+    returns = _build_return_series(dates_closes)
+    result = compute_stress_replay(returns, {"A": 1.0}, benchmark="SPY")
+
+    drawdown = next(r for r in result if r["scenario"] == "worst_drawdown")
+    # The function reports day2->day3 drawdown, not the true day0->day3
+    assert drawdown["window"] == ["2026-01-03", "2026-01-04"]
+    # (80/95 - 1) * 100 ≈ -15.79%, NOT the true -20%
+    assert drawdown["portfolioReturnPct"] == pytest.approx(-15.79, abs=0.01)
