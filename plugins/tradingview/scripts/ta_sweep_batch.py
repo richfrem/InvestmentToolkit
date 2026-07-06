@@ -38,6 +38,12 @@ TA_SWEEP_RESULTS_PATH = REPO_ROOT / "investment_screener/backend/data/ta-sweep-r
 # Always skip — cash / non-equity entries
 DEFAULT_SKIP: set[str] = {"PSU.U.TO", "PSU-U.TO", "USD_CASH"}
 
+# --validate mode: local (technicals.py) vs. TV Data Window cross-check
+DIVERGENCE_THRESHOLD_PTS = 2.0
+
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from technicals import compute_technical_snapshot  # noqa: E402
+
 
 # ── Data loaders ───────────────────────────────────────────────────────────────
 
@@ -138,6 +144,36 @@ def add_dcf_flags(result: dict[str, Any], dcf: dict[str, Any] | None) -> None:
         "base":      dcf.get("base"),
         "action":    dcf.get("action"),
     }
+
+
+def add_local_validation(result: dict[str, Any], snapshot_fn: Any = compute_technical_snapshot) -> dict[str, Any]:
+    """Cross-check TV Data Window rsi/adx against technicals.py's local computation.
+
+    Args:
+        result: Per-ticker sweep result dict (must have "ticker"; "rsi"/"adx"
+            keys are the TV-scraped values, absent or None if the scrape
+            didn't produce them).
+        snapshot_fn: Injectable — defaults to the real technicals.py call;
+            tests pass a stub instead of hitting the network.
+
+    Returns:
+        A new dict (result plus a "localValidation" block) — does not mutate
+        the input, matching validate_adx()'s existing copy-on-write pattern.
+    """
+    snapshot = snapshot_fn(result["ticker"], "D", "3mo", "SPY", None)
+    result = {**result}
+    result["localValidation"] = {}
+    for tv_key, local_key in (("rsi", "rsi14"), ("adx", "adx14")):
+        tv_value = result.get(tv_key)
+        local_value = snapshot.get(local_key)
+        divergence = abs(local_value - tv_value) if (local_value is not None and tv_value is not None) else None
+        result["localValidation"][tv_key] = {
+            "local": local_value,
+            "tv": tv_value,
+            "divergencePts": round(divergence, 2) if divergence is not None else None,
+            "flag": bool(divergence is not None and divergence > DIVERGENCE_THRESHOLD_PTS),
+        }
+    return result
 
 
 def derive_action(result: dict[str, Any], _target: dict[str, Any] | None) -> str:
@@ -277,6 +313,11 @@ def main() -> None:
         action="store_true",
         help="Suppress auto-save (overrides default auto-save behaviour)",
     )
+    parser.add_argument(
+        "--validate",
+        action="store_true",
+        help="Cross-check TV rsi/adx against technicals.py's local computation, flag >2pt divergence",
+    )
     args = parser.parse_args()
 
     extra_skip: set[str] = set(args.skip.upper().split(",")) if args.skip else set()
@@ -291,6 +332,9 @@ def main() -> None:
     scan_results = run_sweep(tickers, delay_ms=delay_ms)
     target_map   = load_target_portfolio()
     scan_results = enrich_results(scan_results, target_map)
+
+    if args.validate:
+        scan_results = [add_local_validation(r) for r in scan_results]
 
     print(json.dumps(scan_results, indent=2))
 

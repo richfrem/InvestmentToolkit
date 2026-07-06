@@ -302,3 +302,35 @@ def test_get_fundamentals_omits_debt_cash_interest_when_yfinance_lacks_them(tmp_
     assert "totalDebt" not in result
     assert "cashAndEquivalents" not in result
     assert "interestExpense" not in result
+
+
+def test_get_fundamentals_includes_ebitda_current_ratio_and_free_cash_flow():
+    """New yfinance-only fields needed by framework_score.py (Phase 2b)."""
+    fake_info = {
+        "totalRevenue": 1_000_000.0,
+        "ebitda": 250_000.0,
+        "currentRatio": 1.8,
+        "freeCashflow": 120_000.0,
+    }
+    with patch("market_data._safe_yf_info", return_value=fake_info), \
+         patch("market_data._safe_edgar_facts", return_value={}), \
+         patch("market_data.cache_get", return_value=None), \
+         patch("market_data.cache_set"):
+        result = get_fundamentals("TEST", cik=None)
+
+    assert result["ebitda"]["value"] == 250_000.0
+    assert result["ebitda"]["source"] == "yfinance"
+    assert result["currentRatio"]["value"] == 1.8
+    assert result["freeCashflow"]["value"] == 120_000.0
+
+
+def test_get_fundamentals_omits_ebitda_when_absent_from_yfinance():
+    """A ticker with no ebitda in yfinance .info must not get a zeroed field."""
+    fake_info = {"totalRevenue": 1_000_000.0}
+    with patch("market_data._safe_yf_info", return_value=fake_info), \
+         patch("market_data._safe_edgar_facts", return_value={}), \
+         patch("market_data.cache_get", return_value=None), \
+         patch("market_data.cache_set"):
+        result = get_fundamentals("TEST", cik=None)
+
+    assert "ebitda" not in result
