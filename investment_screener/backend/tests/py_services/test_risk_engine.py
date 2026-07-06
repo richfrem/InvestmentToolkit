@@ -335,3 +335,114 @@ def test_var_cvar_empty_for_insufficient_data():
     assert result["var"]["historical"] == {}
     assert result["cvar"]["parametric"] == {}
     assert result["cvar"]["historical"] == {}
+
+
+# ── compute_risk_snapshot (orchestrator) ──────────────────────────────────────
+
+import json
+from unittest.mock import patch
+
+from risk_engine import compute_risk_snapshot  # noqa: E402
+
+
+def _write_target_portfolio(path: Path, holdings: list[dict]) -> None:
+    path.write_text(json.dumps({"holdings": holdings, "pillars": []}))
+
+
+def _write_portfolio(path: Path, shares: dict, prices: dict, total_usd: float) -> None:
+    payload = {
+        "holdings": [{"ticker": t, "shares": q, "price": prices[t]} for t, q in shares.items()],
+        "totals": {"totalUSD": total_usd},
+    }
+    path.write_text(json.dumps(payload))
+
+
+def _bdate_rows(n: int, start_price: float, drift: float) -> list[dict]:
+    dates = pd.bdate_range("2024-01-01", periods=n)
+    return [
+        {"date": d.strftime("%Y-%m-%d"), "open": start_price + drift * i,
+         "high": start_price + drift * i, "low": start_price + drift * i,
+         "close": start_price + drift * i, "volume": 1000.0}
+        for i, d in enumerate(dates)
+    ]
+
+
+def test_compute_risk_snapshot_full_shape(tmp_path):
+    target_path = tmp_path / "target-portfolio.json"
+    portfolio_path = tmp_path / "portfolio.json"
+    _write_target_portfolio(target_path, [
+        {"ticker": "NVDA", "pillarId": "ai_infra"},
+        {"ticker": "PANW", "pillarId": "cyber"},
+    ])
+    _write_portfolio(
+        portfolio_path,
+        shares={"NVDA": 10.0, "PANW": 20.0},
+        prices={"NVDA": 100.0, "PANW": 50.0},
+        total_usd=2000.0,
+    )
+
+    nvda_rows = _bdate_rows(120, 100.0, 0.1)
+    panw_rows = _bdate_rows(120, 50.0, 0.05)
+    spy_rows = _bdate_rows(120, 400.0, 0.2)
+
+    def fake_get_prices(tickers, period, interval="1d"):
+        data = {"NVDA": nvda_rows, "PANW": panw_rows, "SPY": spy_rows}
+        return {t: {"data": data[t]} for t in tickers if t in data}
+
+    with patch("risk_engine.get_prices", side_effect=fake_get_prices):
+        snapshot = compute_risk_snapshot(
+            target_portfolio_path=target_path, portfolio_path=portfolio_path, benchmark="SPY",
+        )
+
+    expected_keys = {
+        "asOf", "benchmark", "portfolioVol", "portfolioBeta", "correlationMatrix",
+        "marginalRiskContribution", "concentration", "clusterExposure",
+        "stressReplay", "var", "cvar", "warnings",
+    }
+    assert expected_keys <= set(snapshot.keys())
+    assert snapshot["benchmark"] == "SPY"
+    assert snapshot["portfolioVol"] is not None
+    assert snapshot["portfolioBeta"] is not None
+    assert set(snapshot["marginalRiskContribution"].keys()) == {"NVDA", "PANW"}
+    assert snapshot["var"]["estimate"] is True
+    assert snapshot["var"]["horizonDays"] == 1
+    assert snapshot["cvar"]["estimate"] is True
+    assert snapshot["warnings"] == []
+
+
+def test_compute_risk_snapshot_excludes_short_history_ticker_with_warning(tmp_path):
+    target_path = tmp_path / "target-portfolio.json"
+    portfolio_path = tmp_path / "portfolio.json"
+    _write_target_portfolio(target_path, [
+        {"ticker": "NVDA", "pillarId": "ai_infra"},
+        {"ticker": "CBRS", "pillarId": "power"},
+    ])
+    _write_portfolio(
+        portfolio_path,
+        shares={"NVDA": 10.0, "CBRS": 3.0},
+        prices={"NVDA": 100.0, "CBRS": 200.0},
+        total_usd=1600.0,
+    )
+
+    nvda_rows = _bdate_rows(120, 100.0, 0.1)
+    cbrs_rows = _bdate_rows(10, 200.0, 0.0)  # too short — below MIN_HISTORY_DAYS
+    spy_rows = _bdate_rows(120, 400.0, 0.2)
+
+    def fake_get_prices(tickers, period, interval="1d"):
+        data = {"NVDA": nvda_rows, "CBRS": cbrs_rows, "SPY": spy_rows}
+        return {t: {"data": data[t]} for t in tickers if t in data}
+
+    with patch("risk_engine.get_prices", side_effect=fake_get_prices):
+        snapshot = compute_risk_snapshot(
+            target_portfolio_path=target_path, portfolio_path=portfolio_path, benchmark="SPY",
+        )
+
+    assert any("CBRS" in w for w in snapshot["warnings"])
+    assert "CBRS" not in snapshot["marginalRiskContribution"]
+    # CBRS's pillar ("power") must not appear at all — cluster exposure is built
+    # from the same mrc-eligible ticker set as concentration, so an excluded
+    # ticker's weight never leaks into a pillar figure it has no mrc data for.
+    cluster_pillars = {c["pillarId"] for c in snapshot["clusterExposure"]}
+    assert "power" not in cluster_pillars
+    ai_infra = next(c for c in snapshot["clusterExposure"] if c["pillarId"] == "ai_infra")
+    assert ai_infra["weight"] == pytest.approx(1.0)  # NVDA is the only mrc-eligible holding
