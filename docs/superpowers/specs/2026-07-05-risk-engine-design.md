@@ -96,7 +96,7 @@ reweighting: visible in the output, not silent.
     {"pillarId": "ai_infra", "weight": 0.61, "varianceContributionPct": 72.0}
   ],
   "stressReplay": [
-    {"scenario": "2022_rate_shock", "window": ["2022-01-03", "2022-10-14"], "portfolioReturnPct": -31.2, "excludedHoldings": ["CBRS"]}
+    {"scenario": "2022_rate_shock", "window": ["2022-01-03", "2022-10-14"], "portfolioReturnPct": -31.2}
   ],
   "var": {"parametric": {"p95": -0.021, "p99": -0.034}, "historical": {"p95": -0.019, "p99": -0.041}, "horizonDays": 1, "estimate": true},
   "cvar": {"parametric": {"p95": -0.028, "p99": -0.041}, "historical": {"p95": -0.026, "p99": -0.049}, "estimate": true},

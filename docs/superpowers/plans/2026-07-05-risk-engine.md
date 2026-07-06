@@ -1106,6 +1106,13 @@ def test_compute_risk_snapshot_excludes_short_history_ticker_with_warning(tmp_pa
 
     assert any("CBRS" in w for w in snapshot["warnings"])
     assert "CBRS" not in snapshot["marginalRiskContribution"]
+    # CBRS's pillar ("power") must not appear at all — cluster exposure is built
+    # from the same mrc-eligible ticker set as concentration, so an excluded
+    # ticker's weight never leaks into a pillar figure it has no mrc data for.
+    cluster_pillars = {c["pillarId"] for c in snapshot["clusterExposure"]}
+    assert "power" not in cluster_pillars
+    ai_infra = next(c for c in snapshot["clusterExposure"] if c["pillarId"] == "ai_infra")
+    assert ai_infra["weight"] == pytest.approx(1.0)  # NVDA is the only mrc-eligible holding
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**
@@ -1182,10 +1189,15 @@ def compute_risk_snapshot(
         compute_correlation_matrix(returns_2y[holdings_2y]) if len(holdings_2y) >= 2 else {}
     )
     mrc = compute_marginal_risk_contribution(returns_2y, weights_frac, benchmark)
-    concentration = compute_concentration(
-        {t: weights_frac[t] for t in holdings_2y if t in weights_frac}
-    )
-    cluster = compute_cluster_exposure(weights_frac, pillar_map, mrc)
+    weights_2y = {t: weights_frac[t] for t in holdings_2y if t in weights_frac}
+    concentration = compute_concentration(weights_2y)
+    # Filtered to weights_2y, not the full weights_frac — a ticker excluded from
+    # returns_2y (insufficient history) has no mrc entry; passing the unfiltered
+    # weights here would keep its full weight in a pillar's "weight" figure while
+    # mrc.get() silently zeroes its variance contribution, understating cluster
+    # risk (the exact thing this feature exists to surface). Same exclusion set
+    # as concentration keeps both figures computed over the same ticker basis.
+    cluster = compute_cluster_exposure(weights_2y, pillar_map, mrc)
     stress = compute_stress_replay(returns_5y, weights_frac, benchmark)
 
     portfolio_returns_2y = _weighted_portfolio_returns(returns_2y, weights_frac, exclude={benchmark})
