@@ -296,3 +296,42 @@ def test_stress_replay_day0_peak_limitation():
     assert drawdown["window"] == ["2026-01-03", "2026-01-04"]
     # (80/95 - 1) * 100 ≈ -15.79%, NOT the true -20%
     assert drawdown["portfolioReturnPct"] == pytest.approx(-15.79, abs=0.01)
+
+
+from risk_engine import compute_var_cvar  # noqa: E402
+
+_SAMPLE_RETURNS = [
+    0.02, -0.03, 0.01, -0.05, 0.015, -0.01, 0.03, -0.02, 0.005, -0.04,
+    0.01, -0.015, 0.025, -0.01, 0.005, -0.03, 0.02, -0.005, 0.01, -0.02,
+]
+
+
+def test_var_cvar_cvar_worse_than_var_property():
+    result = compute_var_cvar(pd.Series(_SAMPLE_RETURNS))
+    for method in ("parametric", "historical"):
+        for level in ("p95", "p99"):
+            assert result["cvar"][method][level] <= result["var"][method][level]
+
+
+def test_var_cvar_p99_more_extreme_than_p95():
+    result = compute_var_cvar(pd.Series(_SAMPLE_RETURNS))
+    assert result["var"]["parametric"]["p99"] <= result["var"]["parametric"]["p95"]
+    assert result["var"]["historical"]["p99"] <= result["var"]["historical"]["p95"]
+
+
+def test_var_cvar_historical_matches_quantile_definition():
+    portfolio_returns = pd.Series([
+        0.05, 0.03, 0.01, -0.01, -0.03, -0.05, 0.02, -0.02, 0.04, -0.04,
+        0.0, 0.015, -0.015, 0.025, -0.025, 0.035, -0.035, 0.045, -0.045, 0.005,
+    ])
+    result = compute_var_cvar(portfolio_returns)
+    expected_p95 = round(float(portfolio_returns.quantile(0.05)), 4)
+    assert result["var"]["historical"]["p95"] == pytest.approx(expected_p95)
+
+
+def test_var_cvar_empty_for_insufficient_data():
+    result = compute_var_cvar(pd.Series([0.01]))
+    assert result["var"]["parametric"] == {}
+    assert result["var"]["historical"] == {}
+    assert result["cvar"]["parametric"] == {}
+    assert result["cvar"]["historical"] == {}

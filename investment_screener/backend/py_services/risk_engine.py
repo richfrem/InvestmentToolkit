@@ -19,6 +19,7 @@ Usage:
     python3 risk_engine.py --benchmark SPY --no-save --pretty
 """
 
+import math
 import sys
 from pathlib import Path
 from typing import Any
@@ -339,3 +340,71 @@ def compute_stress_replay(
     })
 
     return results
+
+
+def _normal_pdf(z: float) -> float:
+    """Standard normal probability density at z (no scipy dependency — see
+    design doc's documented simplification on avoiding a new dependency
+    for two constants and one closed-form density).
+    """
+    return math.exp(-0.5 * z * z) / math.sqrt(2 * math.pi)
+
+
+def compute_var_cvar(
+    portfolio_returns: pd.Series, confidences: tuple[float, ...] = (0.95, 0.99)
+) -> dict[str, dict[str, dict[str, float]]]:
+    """Parametric and historical VaR/CVaR at the given confidence levels.
+
+    Parametric assumes daily returns are normally distributed (mean, std of
+    the supplied series); the expected-shortfall (CVaR) closed form is
+    mean - std * (phi(z) / (1 - confidence)). Historical uses the empirical
+    return distribution directly (no distributional assumption). Both are
+    1-day-horizon figures — the caller (compute_risk_snapshot) is
+    responsible for labeling them as estimates in the output, not this
+    function, which has no opinion on presentation.
+
+    Args:
+        portfolio_returns: Daily weighted portfolio-return series (e.g.
+            from _weighted_portfolio_returns()).
+        confidences: Confidence levels to compute, e.g. (0.95, 0.99).
+
+    Returns:
+        {"var": {"parametric": {"p95": ..., "p99": ...}, "historical": {...}},
+         "cvar": {"parametric": {...}, "historical": {...}}}. All values are
+         negative-or-zero (a loss). Empty nested dicts if `portfolio_returns`
+         has fewer than 2 observations.
+    """
+    empty = {
+        "var": {"parametric": {}, "historical": {}},
+        "cvar": {"parametric": {}, "historical": {}},
+    }
+    if len(portfolio_returns) < 2:
+        return empty
+
+    mean = float(portfolio_returns.mean())
+    std = float(portfolio_returns.std(ddof=1))
+
+    var_parametric: dict[str, float] = {}
+    var_historical: dict[str, float] = {}
+    cvar_parametric: dict[str, float] = {}
+    cvar_historical: dict[str, float] = {}
+
+    for c in confidences:
+        key = f"p{int(c * 100)}"
+        z = Z_SCORES[c]
+
+        var_param = mean - z * std
+        es_param = mean - std * (_normal_pdf(z) / (1 - c))
+        var_parametric[key] = round(var_param, 4)
+        cvar_parametric[key] = round(es_param, 4)
+
+        var_hist = float(portfolio_returns.quantile(1 - c))
+        tail = portfolio_returns[portfolio_returns <= var_hist]
+        cvar_hist = float(tail.mean()) if not tail.empty else var_hist
+        var_historical[key] = round(var_hist, 4)
+        cvar_historical[key] = round(cvar_hist, 4)
+
+    return {
+        "var": {"parametric": var_parametric, "historical": var_historical},
+        "cvar": {"parametric": cvar_parametric, "historical": cvar_historical},
+    }
