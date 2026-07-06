@@ -39,8 +39,13 @@ def compute_peer_benchmark(
 
     A metric is included in the table only if the target ticker has a value
     for it AND at least MIN_USABLE_PEERS peers also have a value — never
-    fabricated from a smaller set. A percentile of 0 std-dev peer sets
-    (all peers identical) reports zScore 0.0 rather than dividing by zero.
+    fabricated from a smaller set. The Z-score is computed against the
+    peer-set-only mean/stdev (never pooling the target into its own
+    baseline), per the framework doc's "standard deviations from peer
+    mean" definition. A 0 std-dev peer set (all peers identical) reports
+    zScore 0.0 rather than dividing by zero. Percentile rank is computed
+    across peers + target together (target's rank within the combined,
+    sorted distribution).
 
     Args:
         ticker: Target ticker.
@@ -76,9 +81,9 @@ def compute_peer_benchmark(
 
         peer_median = statistics.median(peer_values)
         all_values = peer_values + [target_value]
-        mean = statistics.mean(all_values)
-        stdev = statistics.pstdev(all_values)
-        z_score = (target_value - mean) / stdev if stdev > 0 else 0.0
+        peer_mean = statistics.mean(peer_values)
+        peer_stdev = statistics.pstdev(peer_values)
+        z_score = (target_value - peer_mean) / peer_stdev if peer_stdev > 0 else 0.0
         rank = sorted(all_values).index(target_value) + 1
         percentile = round(rank / len(all_values) * 100)
 

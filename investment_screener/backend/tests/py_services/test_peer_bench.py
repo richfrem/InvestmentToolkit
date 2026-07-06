@@ -33,6 +33,7 @@ def test_compute_peer_benchmark_computes_zscore_and_percentile():
     row = next(r for r in result["table"] if r["metric"] == "revenueGrowth")
     assert row["ticker"] == 0.30
     assert row["peerMedian"] == 0.15  # median of [0.10, 0.20]
+    assert row["zScore"] == 3.0  # peer-only: mean=0.15, pstdev=0.05, (0.30-0.15)/0.05
     assert row["percentile"] == 100  # highest of the three values
 
 
