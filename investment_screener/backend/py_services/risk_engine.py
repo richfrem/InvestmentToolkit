@@ -286,7 +286,15 @@ def compute_stress_replay(
 
     Current weights are held static across the whole replay window — a
     documented simplifying assumption (true historical weights aren't
-    tracked anywhere in the system; see design doc).
+    tracked anywhere in the system; see design doc). The worst-drawdown
+    search is performed on the cumulative portfolio return series, which
+    begins at day 1 (not day 0) because day 0 is dropped upstream when
+    converting prices to daily returns (pct_change has no return for the
+    baseline date). As a result, if the true worst peak occurs on day 0
+    of the supplied returns window, the function will report a shallower
+    drawdown magnitude than the true one. This is a known limitation; if
+    systematic understatement is observed in production, check this
+    constraint first.
 
     Args:
         returns_5y: Aligned daily-return DataFrame spanning ~5 years, must
