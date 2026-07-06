@@ -20,9 +20,17 @@ decomposed into 5 sub-specs during brainstorming — E1/C2/B5/E2/G2, built stric
 order since E2 and G2 both consume E1's `risk_snapshot.json` as a data contract. E1
 (portfolio risk engine) is now shipped; this session starts fresh on Phase 3's second
 sub-spec, C2 (regime classifier)** — Phases 1, 2a, 2b, and Phase 3's E1 are all fully
-shipped, verified, and merged to local `main` (E1's feature branch is pushed to `origin`
-as a backup/PR source, not yet merged to `origin/main` by the user, same as 2b's). Nothing
-from any of them needs redoing.
+shipped, verified, and merged all the way to `origin/main` (E1 via PR #63). Nothing from
+any of them needs redoing.
+
+**Also shipped this session, unrelated to the Fable5 phases:** a `norberts-gambit` skill
+(`plugins/portfolio-advisor/skills/norberts-gambit/`) — a broker-agnostic guide for
+converting cash between CAD and USD via the DLR.TO/DLR.U ETF pair, with a Questrade
+appendix (`references/questrade.md`); more brokers can get their own appendix file later
+without touching the core. Registered in both `plugin.json` manifests and
+`marketplace.json`. On `feature/norberts-gambit-skill`, pushed to `origin`, **not yet
+merged** — same backup/PR pattern as the phase branches, just not part of the Fable5
+numbering.
 
 ### ✅ Phase 1 (data layer) — COMPLETE, on `origin/main`
 `py_services/market_data.py` (+ `cache.py`, `edgar_facts.py`, `data_quality.py`, schema) —
@@ -163,8 +171,8 @@ in `daily_brief.py`, a stale `excludedHoldings` field in the design doc's exampl
 that was never actually implemented) were applied in one more commit before merge.
 **Merged to local `main` via a real merge commit** (main had diverged — an unrelated
 map-debt-logging commit landed on main directly mid-session); `feature/fable5-phase3-e1-risk-engine`
-pushed to `origin` as a backup/PR source — **not yet merged to `origin/main`**, the user
-merges via GitHub's PR flow on their own timing, same as every prior phase.
+pushed to `origin` and **merged to `origin/main` via PR #63**, confirmed via `git fetch` +
+`git log origin/main` (`06810b0`), same GitHub PR flow as every prior phase.
 
 **Baseline-verification finding, logged not fixed (see Map Debt section below):** two
 pre-existing, unrelated test failures were found while confirming a clean baseline before
