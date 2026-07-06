@@ -13,6 +13,8 @@ from risk_engine import (  # noqa: E402
     build_returns_matrix,
     compute_correlation_matrix,
     compute_portfolio_vol_beta,
+    compute_concentration,
+    compute_marginal_risk_contribution,
 )
 
 
@@ -125,3 +127,58 @@ def test_vol_beta_ignores_tickers_with_no_weight():
     # No weight entry for B -> must not affect beta despite wild returns.
     result = compute_portfolio_vol_beta(returns, {"A": 1.0}, benchmark="SPY")
     assert result["beta"] == pytest.approx(1.0, abs=1e-6)
+
+
+# ── compute_marginal_risk_contribution ───────────────────────────────────────
+
+def test_mrc_sums_to_one_property():
+    returns = pd.DataFrame({
+        "A": [0.01, -0.02, 0.015, 0.005, -0.01, 0.02, 0.01, -0.005],
+        "B": [0.02, -0.01, 0.005, 0.015, -0.02, 0.01, -0.005, 0.02],
+        "C": [-0.01, 0.02, -0.015, 0.01, 0.005, -0.02, 0.015, -0.01],
+    })
+    weights = {"A": 0.5, "B": 0.3, "C": 0.2}
+    mrc = compute_marginal_risk_contribution(returns, weights, benchmark="SPY")
+    assert sum(mrc.values()) == pytest.approx(1.0, abs=1e-4)
+    assert set(mrc.keys()) == {"A", "B", "C"}
+
+
+def test_mrc_zero_variance_ticker_contributes_zero():
+    returns = pd.DataFrame({
+        "A": [0.01, -0.02, 0.015, 0.005, -0.01, 0.02],
+        "FLAT": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    })
+    weights = {"A": 0.7, "FLAT": 0.3}
+    mrc = compute_marginal_risk_contribution(returns, weights, benchmark="SPY")
+    assert mrc["FLAT"] == 0.0
+
+
+def test_mrc_returns_empty_for_single_holding():
+    returns = pd.DataFrame({"A": [0.01, -0.02, 0.015]})
+    assert compute_marginal_risk_contribution(returns, {"A": 1.0}, benchmark="SPY") == {}
+
+
+# ── compute_concentration ─────────────────────────────────────────────────────
+
+def test_concentration_known_weights():
+    weights = {"A": 0.5, "B": 0.3, "C": 0.2}
+    result = compute_concentration(weights)
+    assert result["hhi"] == pytest.approx(0.25 + 0.09 + 0.04)
+    assert result["top3Weight"] == 1.0
+    assert result["effectiveN"] == pytest.approx(1 / 0.38, abs=1e-2)
+
+
+def test_concentration_renormalizes_non_100pct_input():
+    weights = {"A": 50.0, "B": 30.0, "C": 20.0}  # e.g. raw 0-100 scale weights
+    result = compute_concentration(weights)
+    assert result["hhi"] == pytest.approx(0.25 + 0.09 + 0.04)
+
+
+def test_concentration_empty_input_returns_none_shape():
+    assert compute_concentration({}) == {"hhi": None, "top3Weight": None, "effectiveN": None}
+
+
+def test_concentration_top3_with_more_than_three_holdings():
+    weights = {"A": 0.4, "B": 0.3, "C": 0.15, "D": 0.15}
+    result = compute_concentration(weights)
+    assert result["top3Weight"] == pytest.approx(0.85)

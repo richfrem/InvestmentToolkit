@@ -169,3 +169,67 @@ def compute_portfolio_vol_beta(
         "vol": round(vol, 4),
         "beta": round(beta, 3) if beta is not None else None,
     }
+
+
+def compute_marginal_risk_contribution(
+    returns: pd.DataFrame, weights: dict[str, float], benchmark: str
+) -> dict[str, float]:
+    """Fraction of total portfolio variance contributed by each holding.
+
+    MRC_i = w_i * (Sigma . w)_i / portfolio_variance, so the returned
+    values always sum to 1.0 across included holdings (100% of variance
+    decomposed) — this is the property that makes "MRC leader: NVDA 18%"
+    a meaningful sentence rather than an arbitrary score.
+
+    Args:
+        returns: Aligned daily-return DataFrame, may include a benchmark column.
+        weights: {ticker: weight_fraction}.
+        benchmark: Benchmark column name to exclude from the holdings set.
+
+    Returns:
+        {ticker: fraction_of_variance}, {} if fewer than 2 holdings qualify
+        or portfolio variance is 0.
+    """
+    tickers = [t for t in returns.columns if t in weights and t != benchmark]
+    if len(tickers) < 2:
+        return {}
+    normalized = _normalize_weights({t: weights[t] for t in tickers})
+    if not normalized:
+        return {}
+
+    cov_matrix = returns[tickers].cov() * 252  # annualize
+    w = pd.Series(normalized).reindex(tickers)
+    portfolio_variance = float(w @ cov_matrix @ w)
+    if portfolio_variance <= 0:
+        return {}
+
+    marginal = cov_matrix @ w  # per-ticker (Sigma . w)
+    contribution = (w * marginal) / portfolio_variance
+    return {t: round(float(contribution[t]), 4) for t in tickers}
+
+
+def compute_concentration(weights: dict[str, float]) -> dict[str, float | None]:
+    """Herfindahl-Hirschman Index, top-3 weight, and effective N.
+
+    Args:
+        weights: {ticker: weight_fraction}, need not sum to 1.0 (renormalized
+            internally so a partial/excluded-tickers input is still meaningful).
+
+    Returns:
+        {"hhi", "top3Weight", "effectiveN"} — all None if weights is empty
+        or sums to <= 0.
+    """
+    normalized = _normalize_weights(weights)
+    if not normalized:
+        return {"hhi": None, "top3Weight": None, "effectiveN": None}
+
+    values = sorted(normalized.values(), reverse=True)
+    hhi = sum(w * w for w in values)
+    top3 = sum(values[:3])
+    effective_n = 1 / hhi if hhi > 0 else None
+
+    return {
+        "hhi": round(hhi, 4),
+        "top3Weight": round(top3, 4),
+        "effectiveN": round(effective_n, 2) if effective_n is not None else None,
+    }
