@@ -277,6 +277,39 @@ and implied-growth-vs-base disagree by more than 25%, say so explicitly in the
 conversational summary (Step 8) and in `rationale` — never average the
 disagreement away.
 
+## Step 3.6: Fundamental Framework Score + Peer Benchmarking + Local TA (Phase 2b)
+
+After Step 3.5's valuation-committee lenses, run these three additional scripts. Unlike
+Step 3.5, none of these gate `aiThesis.action` — they are informational, surfaced in
+`/evaluate-stock` output and `analyticsLog` for context.
+
+```bash
+# 1. Sector-aware weighted composite score (requires a `sector` field on the
+#    projection — set it once, agent-curated, same pattern as `peers`)
+python3 investment_screener/backend/py_services/framework_score.py \
+  --ticker TICKER --sector {saas_cyber,chips_ai,energy_infra} \
+  --projections-dir investment_screener/backend/data/projections \
+  [--qualitative-file <qualitative.json>] --pretty
+# -> analyticsLog.framework
+
+# 2. Peer benchmarking table (only if projections/{TICKER}.json already has peers)
+python3 investment_screener/backend/py_services/peer_bench.py \
+  --ticker TICKER --peers <comma_separated_peers> --sector <same_sector_as_above> \
+  --projections-dir investment_screener/backend/data/projections --pretty
+# -> analyticsLog.peerBench ; {"status": "insufficient_peer_data"} is expected and fine
+
+# 3. Local TA snapshot (independent of TV CDP — works headless)
+python3 investment_screener/backend/py_services/technicals.py \
+  --ticker TICKER --timeframe D --period 1y --benchmark SPY --pretty
+# -> analyticsLog.technicals
+```
+
+Merge all three outputs (`framework`, `peerBench`, `technicals`) into the projection's
+`analyticsLog` object before Step 4. If `--qualitative-file` isn't supplied,
+`framework_score.py`'s output will show `excludedMetrics: ["competitiveMoat",
+"newsImpact"]` — this is expected, not an error; fill the file in only when you have
+sourced, dated research for those fields (never guess a moat/news rating).
+
 ## Step 4: Validate & Repair
 
 Run the pre-persistence validator. This now also enforces the Phase 2a
