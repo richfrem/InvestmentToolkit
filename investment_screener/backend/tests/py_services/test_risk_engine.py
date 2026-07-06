@@ -15,6 +15,7 @@ from risk_engine import (  # noqa: E402
     compute_portfolio_vol_beta,
     compute_concentration,
     compute_marginal_risk_contribution,
+    compute_cluster_exposure,
 )
 
 
@@ -182,3 +183,31 @@ def test_concentration_top3_with_more_than_three_holdings():
     weights = {"A": 0.4, "B": 0.3, "C": 0.15, "D": 0.15}
     result = compute_concentration(weights)
     assert result["top3Weight"] == pytest.approx(0.85)
+
+
+# ── compute_cluster_exposure ─────────────────────────────────────────────────
+
+
+def test_cluster_exposure_groups_by_pillar():
+    weights = {"NVDA": 0.4, "CRWV": 0.2, "PANW": 0.25, "CBRS": 0.15}
+    pillar_map = {"NVDA": "ai_infra", "CRWV": "ai_infra", "PANW": "cyber", "CBRS": "cyber"}
+    mrc = {"NVDA": 0.5, "CRWV": 0.22, "PANW": 0.2, "CBRS": 0.08}
+
+    result = compute_cluster_exposure(weights, pillar_map, mrc)
+
+    ai = next(r for r in result if r["pillarId"] == "ai_infra")
+    cyber = next(r for r in result if r["pillarId"] == "cyber")
+    assert ai["weight"] == pytest.approx(0.6)
+    assert ai["varianceContributionPct"] == pytest.approx(72.0)
+    assert cyber["weight"] == pytest.approx(0.4)
+    assert cyber["varianceContributionPct"] == pytest.approx(28.0)
+    assert result[0]["pillarId"] == "ai_infra"  # sorted by weight descending
+
+
+def test_cluster_exposure_unassigned_pillar():
+    result = compute_cluster_exposure({"NEWTICKER": 1.0}, pillar_map={}, mrc={"NEWTICKER": 1.0})
+    assert result == [{"pillarId": "unassigned", "weight": 1.0, "varianceContributionPct": 100.0}]
+
+
+def test_cluster_exposure_empty_weights_returns_empty_list():
+    assert compute_cluster_exposure({}, {}, {}) == []
