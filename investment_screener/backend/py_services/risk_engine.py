@@ -19,14 +19,20 @@ Usage:
     python3 risk_engine.py --benchmark SPY --no-save --pretty
 """
 
+import argparse
+import json
 import math
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from market_data import get_prices  # noqa: E402
+from portfolio_io import load_portfolio_state, compute_weights  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
@@ -408,3 +414,107 @@ def compute_var_cvar(
         "var": {"parametric": var_parametric, "historical": var_historical},
         "cvar": {"parametric": cvar_parametric, "historical": cvar_historical},
     }
+
+
+def compute_risk_snapshot(
+    target_portfolio_path: Path = TARGET_PATH,
+    portfolio_path: Path = PORTFOLIO_PATH,
+    benchmark: str = "SPY",
+) -> dict[str, Any]:
+    """Primary orchestrator — builds the full portfolio risk snapshot.
+
+    Loads current actual weights (never re-derived from raw shares x price
+    — portfolio_io.compute_weights() against the broker-authoritative
+    total), fetches 2y daily prices for correlation/vol/beta/MRC/VaR and a
+    separate 5y fetch for stress replay (2y doesn't reach the 2022 rate-
+    shock window), then assembles every compute_*() result into one dict.
+    Does not write to disk — see main() for the CLI's --no-save-gated write.
+
+    Args:
+        target_portfolio_path: Path to target-portfolio.json (pillars/holdings).
+        portfolio_path: Path to portfolio.json (actual broker state).
+        benchmark: Benchmark ticker for beta/relative calcs.
+
+    Returns:
+        The full risk snapshot dict — see docs/superpowers/specs/
+        2026-07-05-risk-engine-design.md for the field-by-field shape.
+    """
+    target_data = json.loads(Path(target_portfolio_path).read_text())
+    pillar_map = {
+        h["ticker"]: h.get("pillarId", "unassigned")
+        for h in target_data.get("holdings", [])
+    }
+
+    state = load_portfolio_state(Path(portfolio_path))
+    weights_pct = compute_weights(state["shares"], state["prices"], state["total_usd"])
+    tickers = list(weights_pct.keys())
+    weights_frac = {t: w / 100.0 for t, w in weights_pct.items()}
+
+    warnings: list[str] = []
+
+    prices_2y = get_prices(tickers + [benchmark], period="2y", interval="1d")
+    returns_2y, excluded_2y = build_returns_matrix(prices_2y)
+    for t in excluded_2y:
+        if t != benchmark:
+            warnings.append(f"{t} excluded from correlation/vol/beta/VaR: insufficient price history")
+
+    prices_5y = get_prices(tickers + [benchmark], period="5y", interval="1d")
+    returns_5y, excluded_5y = build_returns_matrix(prices_5y)
+    for t in excluded_5y:
+        if t != benchmark and t not in excluded_2y:
+            warnings.append(f"{t} excluded from stress replay: insufficient price history")
+
+    holdings_2y = [t for t in returns_2y.columns if t != benchmark]
+    vol_beta = compute_portfolio_vol_beta(returns_2y, weights_frac, benchmark)
+    correlation = (
+        compute_correlation_matrix(returns_2y[holdings_2y]) if len(holdings_2y) >= 2 else {}
+    )
+    mrc = compute_marginal_risk_contribution(returns_2y, weights_frac, benchmark)
+    weights_2y = {t: weights_frac[t] for t in holdings_2y if t in weights_frac}
+    concentration = compute_concentration(weights_2y)
+    # Filtered to weights_2y, not the full weights_frac — a ticker excluded from
+    # returns_2y (insufficient history) has no mrc entry; passing the unfiltered
+    # weights here would keep its full weight in a pillar's "weight" figure while
+    # mrc.get() silently zeroes its variance contribution, understating cluster
+    # risk (the exact thing this feature exists to surface). Same exclusion set
+    # as concentration keeps both figures computed over the same ticker basis.
+    cluster = compute_cluster_exposure(weights_2y, pillar_map, mrc)
+    stress = compute_stress_replay(returns_5y, weights_frac, benchmark)
+
+    portfolio_returns_2y = _weighted_portfolio_returns(returns_2y, weights_frac, exclude={benchmark})
+    var_cvar = compute_var_cvar(portfolio_returns_2y)
+
+    return {
+        "asOf": date.today().isoformat(),
+        "benchmark": benchmark,
+        "portfolioVol": vol_beta["vol"],
+        "portfolioBeta": vol_beta["beta"],
+        "correlationMatrix": correlation,
+        "marginalRiskContribution": mrc,
+        "concentration": concentration,
+        "clusterExposure": cluster,
+        "stressReplay": stress,
+        "var": {**var_cvar["var"], "horizonDays": 1, "estimate": True},
+        "cvar": {**var_cvar["cvar"], "estimate": True},
+        "warnings": warnings,
+    }
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Portfolio risk snapshot")
+    parser.add_argument("--benchmark", default="SPY")
+    parser.add_argument("--pretty", action="store_true")
+    parser.add_argument("--no-save", action="store_true", help="Print only, skip writing risk_snapshot.json")
+    args = parser.parse_args()
+
+    snapshot = compute_risk_snapshot(benchmark=args.benchmark)
+    if not args.no_save:
+        RISK_SNAPSHOT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(RISK_SNAPSHOT_PATH, "w") as f:
+            json.dump(snapshot, f, indent=2)
+
+    print(json.dumps(snapshot, indent=2 if args.pretty else None))
+
+
+if __name__ == "__main__":
+    main()
