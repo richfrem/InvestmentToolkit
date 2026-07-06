@@ -1,11 +1,11 @@
 # Session Start Briefing — InvestmentToolkit
-_Last updated: 2026-07-05 | Thesis v9.7 | Portfolio ~$32,904 USD (reconciled from Questrade screenshots)_
+_Last updated: 2026-07-05 (Phase 2b shipped) | Thesis v9.7 | Portfolio ~$32,904 USD (reconciled from Questrade screenshots)_
 
 > **Read this first at the start of every new session.**
 
 ---
 
-## 🔥 ACTIVE: Fable5 Elevation Guide — Phase 2a DONE, start Phase 2b here
+## 🔥 ACTIVE: Fable5 Elevation Guide — Phase 2b DONE, start Phase 3 here
 
 **Context:** User had Fable5 (primary), Gemini, GPT, Grok review the codebase for
 "next level" improvements — reviews saved at `temp/bundles/full-bundle/reviews/`.
@@ -15,8 +15,11 @@ committee, (3) executable scoring framework + local TA engine, (4) TradingView/P
 hardening, (5) risk engine + rebalancer + prediction ledger + backtesting, (6) skills/
 sub-agent architecture cleanup. Phase 2 was split into two sub-phases during brainstorming
 (2a = Valuation Committee, 2b = Executable Framework + local TA) because it bundled two
-loosely-coupled workstreams. **This session starts fresh on Phase 2b — Phases 1 and 2a are
-fully shipped, verified, and merged to `origin/main`. Nothing from either needs redoing.**
+loosely-coupled workstreams. **This session starts fresh on Phase 3 (§9 in the guide:
+Risk & Rebalancer — E1/E2/C2/B5/G2) — Phases 1, 2a, and 2b are fully shipped, verified,
+and merged to local `main` (2b's feature branch is pushed to `origin` as a backup/PR
+source, not yet merged to `origin/main` by the user). Nothing from any of them needs
+redoing.**
 
 ### ✅ Phase 1 (data layer) — COMPLETE, on `origin/main`
 `py_services/market_data.py` (+ `cache.py`, `edgar_facts.py`, `data_quality.py`, schema) —
@@ -34,7 +37,7 @@ TDD-gated tasks via `superpowers:subagent-driven-development`. Merged via PR #59
    `(ticker, "fundamentals")` — confirmed safe (no misread) but whichever runs second
    overwrites the other's entry. Fix before any caller uses both for the same ticker.
 
-### ✅ Phase 2a (Valuation Committee) — COMPLETE, on `origin/main` right now
+### ✅ Phase 2a (Valuation Committee) — COMPLETE, on `origin/main`
 Four new independent valuation lenses replacing the single flat-10%-discount-rate DCF, plus
 a gate requiring 2-of-3 agreement before `ACCUMULATE`. Spec: `docs/superpowers/specs/2026-07-04-valuation-committee-design.md`.
 Plan: `docs/superpowers/plans/2026-07-04-valuation-committee.md`. ADR: `docs/architecture/ADR-valuation-committee.md`.
@@ -74,9 +77,61 @@ This is expected (documented in the ADR), not a bug — each just needs to go th
 `/evaluate-stock` again to pick up the new lens data. Not urgent, but don't be surprised if
 `validate_projection.py` rejects one of these five before it's been re-run.
 
+### ✅ Phase 2b (Fundamental Analyst + Local TA Engine) — COMPLETE, on local `main`
+Executable version of the investment-framework scoring doc, automated peer benchmarking,
+and a headless local TA engine — all three informational/advisory only, none gate
+`aiThesis.action`. Spec: `docs/superpowers/specs/2026-07-05-fundamental-analyst-ta-design.md`.
+Plan: `docs/superpowers/plans/2026-07-05-fundamental-analyst-ta.md`.
+
+- **`framework_score.py`** — sector-aware weighted composite score (revenue growth, Rule of
+  40 Method A/B, operating margin, ROIC, EV/Sales valuation, FCF yield, averaged balance-sheet
+  score, qualitative moat/news via `--qualitative-file`) with missing-metric reweighting
+  (never zero-filled). New `sector` field (`saas_cyber`/`chips_ai`/`energy_infra`) added to
+  projections, same agent-curated pattern as `peers`.
+- **`peer_bench.py`** — Z-score/percentile peer benchmarking table, reuses
+  `framework_score.compute_raw_metrics()` as the single source of truth (zero formula
+  duplication). Z-score correctly uses peer-only mean/stdev (a pooling bug caught and fixed
+  during task review).
+- **`technicals.py`** — hand-rolled local TA engine (RSI Wilder, EMA 21/50/200, MACD, ADX,
+  ATR, Bollinger/Keltner squeeze, anchored VWAP, volume ratio, relative strength vs.
+  benchmark — date-aligned, not positional). Sources OHLCV via `market_data.get_prices()`
+  (yfinance), never TV CDP (pitfall #7: CDP can't do batch/background history).
+- **`ta_sweep_batch.py --validate`** — new opt-in mode cross-checking local RSI/ADX against
+  the TV Data Window scrape, flags >2pt divergence. Default sweep behavior unchanged.
+- **`market_data.py`** extended with `ebitda`/`currentRatio`/`freeCashflow` (yfinance-only,
+  same scope-boundary pattern as Phase 2a's `totalDebt`/`cashAndEquivalents`).
+- **`validate_projection.py`** gained an optional `sector` enum check (no-op if absent, no
+  change to the Phase 2a `check_accumulate_gate()`).
+- Framework doc renamed `defininitive_...` → `definitive_professional_investment_framework.md`
+  (fixed the long-standing typo), old path kept as a real compat symlink via
+  `symlink_manager.py`.
+- **`SKILL.md`** (stock_valuation) gained Step 3.6 wiring the three new scripts into the
+  `/evaluate-stock` pipeline, merging into `analyticsLog.{framework,peerBench,technicals}`.
+
+Built as 9 TDD-gated tasks via `superpowers:subagent-driven-development` in a fresh worktree
+(`.worktrees/feature-fable5-phase2b-fundamental-analyst-ta`, now cleaned up). Four tasks
+needed a fix round after task-level review (composite weights summed to 1.05 not 1.00 —
+inherited from an arithmetic error in the source doc itself; peer Z-score pooling bug;
+relative-strength positional-alignment bug; an unguarded empty-price-data crash path) — all
+caught and fixed before the final whole-branch review, which returned **Ready to merge: Yes**
+with zero Critical/Important findings. Two trivial cosmetic follow-ups from that final review
+(a wrong type hint, an undocumented simplification) were applied in one more commit. **Merged
+to local `main` via fast-forward** (main hadn't diverged); `feature/fable5-phase2b-fundamental-analyst-ta`
+pushed to `origin` as a backup/PR source — **not yet merged to `origin/main`**, the user
+merges via GitHub's PR flow on their own timing, same as Phase 1/2a.
+
+**One real process incident this phase, already resolved:** a Task 3 implementer subagent
+briefly `cd`'d into the main checkout (then on `feature/metabolic-rewriting-thesis`) instead
+of the worktree, committing that task's change onto the user's active branch. Caught by
+independently verifying `git log`/`readlink` after the report instead of trusting it,
+`git revert`ed cleanly there (not `reset --hard`, to preserve an unrelated pre-existing
+uncommitted change on that branch), and redone correctly in the worktree on retry. Worth
+being extra explicit about worktree paths in dispatch prompts for any future multi-task
+session — the fix already got folded into every subsequent dispatch this session.
+
 ### 🚦 Git policy going forward
-**Standing pattern, now confirmed twice (Phase 1, Phase 2a):** after each phase's
-whole-branch review passes, Claude pushes a dedicated `feature/fable5-phase<N>-<name>`
+**Standing pattern, now confirmed three times (Phase 1, Phase 2a, Phase 2b):** after each
+phase's whole-branch review passes, Claude pushes a dedicated `feature/fable5-phase<N>-<name>`
 branch to `origin` as a backup/PR source — **Claude never merges or opens the PR into
 `origin/main`.** The user reviews and merges via GitHub's PR flow themselves, on their own
 timing. So the full sequence per phase: brainstorm → spec → plan →
@@ -88,20 +143,30 @@ branch is ready, do not merge/PR/touch `origin/main`.
 committing/pushing as work continues — don't let further edits (e.g. to this file) sit
 uncommitted after a branch is already pushed, or the backup silently goes stale. Verify any
 "is it pushed"/"is it merged" claim with `git fetch` + `git log <ref>` before asserting it's
-done, not from memory of having run `git push` earlier — this session confirmed PR #60's
-merge this way before updating this file.
+done, not from memory of having run `git push` earlier.
+
+**Worktree lesson from Phase 2b:** when dispatching implementer subagents that touch git
+(commits, mv, symlinks), state the exact worktree path as the first, non-negotiable
+instruction and have the subagent confirm `pwd`/`git branch --show-current` before its first
+command — a subagent with two valid-looking checkouts on disk (main repo + worktree) can
+`cd` to the wrong one silently. Independently verify a subagent's git claims (`git log`,
+`readlink`, `git branch --show-current`) rather than trusting the report — this session's
+Task 3 incident was caught exactly this way, not by the subagent noticing its own mistake.
 
 ### Next step for this session
-Phase 2b = Workstream B (Fundamental Analyst) + C1 from `fable5-ELEVATION_GUIDE.md`: **B1
-scoring engine** (`framework_score.py` — encodes the full investment-framework doc into a
-deterministic 0.25/0.20/… weighted composite score), **B3 peer benchmarking**
-(`peer_bench.py` — reuses the `peers` field seeded in Phase 2a), and **C1 local TA engine**
-(`technicals.py` — needed as a trend-input metric for the framework score; independent
-ground truth alongside the TV scrape). Confirm scope/sequencing with the user first (this
-repo's brainstorming skill gate applies: don't start implementation before a design is
-proposed and approved) — likely worth the same brainstorming pass done for 2a (check
-whether B1/B3/C1 should further split into separate specs, given C1 in particular is its own
-substantial engine). §9 in the guide has the full phase/acceptance-criteria breakdown.
+Phase 3 = Risk & Rebalancer from `fable5-ELEVATION_GUIDE.md` §9: **E1 portfolio risk engine**
+(`risk_engine.py` — correlation matrix, vol/beta, marginal risk contribution, HHI/cluster
+concentration, historical stress replay, parametric+historical VaR/CVaR), **E2 rebalancer v2**
+(`rebalancer.py` — drift bands not point targets, risk-budget check, Canada-aware
+account/tax placement, ordered sell-then-buy plan), **C2 regime classifier**
+(`market_regime.py` — RISK_ON/NEUTRAL/RISK_OFF/STRESS with per-ticker trend/momentum/vol
+state), **B5 thesis breakers as data** (`thesisBreakers` field + evaluation in
+`daily_brief.py`), and **G2 risk-officer + red-team sub-agents**. Confirm scope/sequencing
+with the user first (brainstorming skill gate — don't start implementation before a design
+is proposed and approved); this is the largest phase yet and almost certainly needs
+splitting into separate specs (risk engine vs. rebalancer vs. regime/breakers vs. agents are
+four fairly independent workstreams that only share the risk snapshot as a data contract).
+§9 in the guide has the full phase/acceptance-criteria breakdown.
 
 ---
 
