@@ -1,11 +1,11 @@
 # Session Start Briefing — InvestmentToolkit
-_Last updated: 2026-07-05 (Phase 2b shipped) | Thesis v9.7 | Portfolio ~$32,904 USD (reconciled from Questrade screenshots)_
+_Last updated: 2026-07-06 (Phase 3 E1 shipped) | Thesis v9.7 | Portfolio ~$32,904 USD (reconciled from Questrade screenshots)_
 
 > **Read this first at the start of every new session.**
 
 ---
 
-## 🔥 ACTIVE: Fable5 Elevation Guide — Phase 2b DONE, start Phase 3 here
+## 🔥 ACTIVE: Fable5 Elevation Guide — Phase 3 E1 DONE, start Phase 3 C2 here
 
 **Context:** User had Fable5 (primary), Gemini, GPT, Grok review the codebase for
 "next level" improvements — reviews saved at `temp/bundles/full-bundle/reviews/`.
@@ -15,11 +15,14 @@ committee, (3) executable scoring framework + local TA engine, (4) TradingView/P
 hardening, (5) risk engine + rebalancer + prediction ledger + backtesting, (6) skills/
 sub-agent architecture cleanup. Phase 2 was split into two sub-phases during brainstorming
 (2a = Valuation Committee, 2b = Executable Framework + local TA) because it bundled two
-loosely-coupled workstreams. **This session starts fresh on Phase 3 (§9 in the guide:
-Risk & Rebalancer — E1/E2/C2/B5/G2) — Phases 1, 2a, and 2b are fully shipped, verified,
-and merged to local `main` (2b's feature branch is pushed to `origin` as a backup/PR
-source, not yet merged to `origin/main` by the user). Nothing from any of them needs
-redoing.**
+loosely-coupled workstreams. **Phase 3 (§9 in the guide: Risk & Rebalancer) was likewise
+decomposed into 5 sub-specs during brainstorming — E1/C2/B5/E2/G2, built strictly in that
+order since E2 and G2 both consume E1's `risk_snapshot.json` as a data contract. E1
+(portfolio risk engine) is now shipped; this session starts fresh on Phase 3's second
+sub-spec, C2 (regime classifier)** — Phases 1, 2a, 2b, and Phase 3's E1 are all fully
+shipped, verified, and merged to local `main` (E1's feature branch is pushed to `origin`
+as a backup/PR source, not yet merged to `origin/main` by the user, same as 2b's). Nothing
+from any of them needs redoing.
 
 ### ✅ Phase 1 (data layer) — COMPLETE, on `origin/main`
 `py_services/market_data.py` (+ `cache.py`, `edgar_facts.py`, `data_quality.py`, schema) —
@@ -129,8 +132,48 @@ uncommitted change on that branch), and redone correctly in the worktree on retr
 being extra explicit about worktree paths in dispatch prompts for any future multi-task
 session — the fix already got folded into every subsequent dispatch this session.
 
+### ✅ Phase 3, Sub-Spec 1 — E1 Portfolio Risk Engine — COMPLETE, on local `main`
+`risk_engine.py` — correlation matrix, annualized portfolio volatility/beta (current
+actual weights, never re-derived from shares×price), marginal risk contribution per
+holding, concentration (HHI/top-3/effective N), pillar-level cluster exposure (reuses
+target-portfolio.json's curated `pillarId` taxonomy), historical stress replay (2022 rate
+shock + worst drawdown found in a separate 5y fetch), and parametric+historical VaR/CVaR
+(95%/99%, 1-day horizon, explicitly labeled as estimates — no scipy dependency, z-scores
+and normal PDF hand-computed). Orchestrated by `compute_risk_snapshot()` (CLI +
+importable), writing `data/risk_snapshot.json`. Wired into `/daily`'s morning brief as a
+compact `RISK: vol 28% · beta 1.4 · top cluster 61% · MRC leader: NVDA 18%` line
+(`daily_brief.py`), degrading gracefully (with an stderr breadcrumb) if the risk engine
+fails. Backend-only this pass — a dedicated `Risk.tsx` frontend page is an explicit
+fast-follow, not yet built. Spec: `docs/superpowers/specs/2026-07-05-risk-engine-design.md`.
+Plan: `docs/superpowers/plans/2026-07-05-risk-engine.md`.
+
+Built as 7 TDD-gated tasks via `superpowers:subagent-driven-development` in a fresh
+worktree (`.worktrees/feature-fable5-phase3-e1-risk-engine`, now cleaned up). One task
+(stress replay) needed a fix round after task-level review — a real, reproduced accuracy
+bug (worst-drawdown detection structurally can't recognize a peak on the very first date
+of the 5-year fetch window, since that date is dropped as the `pct_change()` baseline);
+user chose to document + pin with a regression test rather than redesign the function's
+contract mid-branch. A second real bug was caught and fixed *before* it ever shipped: the
+orchestrator would have passed cluster-exposure the full unfiltered weights instead of the
+mrc-eligible subset, letting an excluded ticker's weight leak into a pillar while
+contributing zero variance — fixed in the plan itself before the orchestrator task was
+even dispatched. Final whole-branch review (opus) returned **Ready to merge: Yes** with
+zero Critical/Important findings; two trivial Minor cleanups (silent exception swallowing
+in `daily_brief.py`, a stale `excludedHoldings` field in the design doc's example JSON
+that was never actually implemented) were applied in one more commit before merge.
+**Merged to local `main` via a real merge commit** (main had diverged — an unrelated
+map-debt-logging commit landed on main directly mid-session); `feature/fable5-phase3-e1-risk-engine`
+pushed to `origin` as a backup/PR source — **not yet merged to `origin/main`**, the user
+merges via GitHub's PR flow on their own timing, same as every prior phase.
+
+**Baseline-verification finding, logged not fixed (see Map Debt section below):** two
+pre-existing, unrelated test failures were found while confirming a clean baseline before
+starting this sub-spec — a `PROJECT_ROOT` path bug in `test_math_parity.py`, and 3
+weekend/market-hours-coupled tests in `test_place_order_gates.py`. Both logged to
+`.agent/map-debt.md`, deliberately deferred (out of scope for this sub-spec).
+
 ### 🚦 Git policy going forward
-**Standing pattern, now confirmed three times (Phase 1, Phase 2a, Phase 2b):** after each
+**Standing pattern, now confirmed four times (Phase 1, Phase 2a, Phase 2b, Phase 3 E1):** after each
 phase's whole-branch review passes, Claude pushes a dedicated `feature/fable5-phase<N>-<name>`
 branch to `origin` as a backup/PR source — **Claude never merges or opens the PR into
 `origin/main`.** The user reviews and merges via GitHub's PR flow themselves, on their own
@@ -154,19 +197,45 @@ command — a subagent with two valid-looking checkouts on disk (main repo + wor
 Task 3 incident was caught exactly this way, not by the subagent noticing its own mistake.
 
 ### Next step for this session
-Phase 3 = Risk & Rebalancer from `fable5-ELEVATION_GUIDE.md` §9: **E1 portfolio risk engine**
-(`risk_engine.py` — correlation matrix, vol/beta, marginal risk contribution, HHI/cluster
-concentration, historical stress replay, parametric+historical VaR/CVaR), **E2 rebalancer v2**
-(`rebalancer.py` — drift bands not point targets, risk-budget check, Canada-aware
-account/tax placement, ordered sell-then-buy plan), **C2 regime classifier**
-(`market_regime.py` — RISK_ON/NEUTRAL/RISK_OFF/STRESS with per-ticker trend/momentum/vol
-state), **B5 thesis breakers as data** (`thesisBreakers` field + evaluation in
-`daily_brief.py`), and **G2 risk-officer + red-team sub-agents**. Confirm scope/sequencing
-with the user first (brainstorming skill gate — don't start implementation before a design
-is proposed and approved); this is the largest phase yet and almost certainly needs
-splitting into separate specs (risk engine vs. rebalancer vs. regime/breakers vs. agents are
-four fairly independent workstreams that only share the risk snapshot as a data contract).
-§9 in the guide has the full phase/acceptance-criteria breakdown.
+Phase 3 sub-spec 2 of 5 — **C2 regime classifier** (`market_regime.py`): formalizes and
+extends the existing `macro_regime.py` (which stays RISK-ON/NEUTRAL/RISK-OFF, VIX/SPY-200d/
+HYG-LQD only) into `RISK_ON/NEUTRAL/RISK_OFF/STRESS` with added inputs (term-slope proxy,
+breadth — % of portfolio tickers above their own 200d, USD/DXY via UUP), **plus per-ticker
+regime**: trend (above/below rising/falling 200d), momentum percentile (12-1M return vs.
+own history), volatility state (ATR% percentile). Rebalancer (E2, not yet built) and triage
+are meant to consume this later (STRESS → explicit override required for new ACCUMULATE;
+RISK_OFF → half-sized adds) — that consumption is out of scope for C2 itself, C2 just needs
+to produce the classification. Confirm scope with the user first (brainstorming skill gate)
+before writing a spec — in particular whether `macro_regime.py` gets replaced in-place or
+kept alongside `market_regime.py` as a deprecation path (daily_brief.py currently imports
+`get_macro_regime` directly, same pattern C2 would need to either extend or replace).
+§9 in the guide still has the full Phase 3 acceptance-criteria breakdown (risk_snapshot.json
+✅ already shipped; rebalancer evals veto test, RISK block in brief ✅ already shipped,
+fixture-triggered thesis-breaker in triage — still pending B5/E2).
+
+**After C2:** B5 thesis breakers → E2 rebalancer v2 (consumes both E1's risk_snapshot.json
+and C2's regime output) → G2 risk-officer/red-team agents (consumes E1's snapshot + E2's
+order-plan format) — same agreed order as before, unchanged.
+
+### 🗺️ Map debt — fix after ALL Fable5 phases complete (not a blocker now)
+Two pre-existing, unrelated test failures were found (and logged to
+`.agent/map-debt.md`) while verifying a clean baseline before starting Phase 3 E1 —
+both out of scope for the phase in progress, deliberately deferred rather than fixed
+inline (would've been an undeclared scope addition mid-task):
+1. **`test_math_parity.py`** — `PROJECT_ROOT` only walks up 2 directories instead of to
+   the repo root, so its `dcf_scenarios.py` subprocess call looks for the script at a
+   nonexistent doubled path. Fix: use `Path(__file__).resolve().parents[4]` like every
+   other test file in that directory already does.
+2. **`test_place_order_gates.py`** (3 tests: `test_stale_portfolio_exits_4`,
+   `test_fresh_portfolio_exits_0`, `test_size_cap_exits_3`) — not isolated from real
+   wall-clock/market-hours state; they fail on weekends because `place_order.py
+   --preflight`'s market-closed gate fires before the gate under test. **Repeats every
+   Sat/Sun** until fixed. Fix: add a test-only override for the market-hours check.
+
+**When to pick this up:** once every Fable5 phase (3 through 6) has shipped and merged,
+sweep `.agent/map-debt.md` for OPEN entries (not just these two — anything logged during
+the remaining phases) and clear them in one pass before considering the elevation guide
+fully closed out.
 
 ---
 
