@@ -282,3 +282,35 @@ class TestAdxValidation:
         result = validate_adx({"ticker": "BTDR", "adx": 44.5, "flags": ["ADX_STRONG"]})
         assert result["adx"] == 44.5
         assert "ADX_STRONG" in result["flags"]
+
+
+# ── local vs. TV Data Window cross-check (--validate mode) ───────────────────
+
+sys.path.insert(0, str(SCRIPT.parent))
+from ta_sweep_batch import add_local_validation  # noqa: E402
+
+
+def test_add_local_validation_flags_divergence_over_2pts():
+    result = {"ticker": "NVDA", "rsi": 57.9, "adx": 30.1}
+
+    def fake_snapshot(ticker, timeframe, period, benchmark, anchor_date):
+        return {"rsi14": 58.2, "adx14": 27.3}
+
+    enriched = add_local_validation(result, snapshot_fn=fake_snapshot)
+
+    assert enriched["localValidation"]["rsi"]["local"] == 58.2
+    assert enriched["localValidation"]["rsi"]["tv"] == 57.9
+    assert enriched["localValidation"]["rsi"]["flag"] is False  # 0.3pt divergence
+    assert enriched["localValidation"]["adx"]["divergencePts"] == 2.8
+    assert enriched["localValidation"]["adx"]["flag"] is True  # 2.8pt > 2.0pt threshold
+
+
+def test_add_local_validation_handles_missing_tv_values():
+    result = {"ticker": "NVDA"}  # no "rsi"/"adx" keys from the TV scrape
+
+    def fake_snapshot(ticker, timeframe, period, benchmark, anchor_date):
+        return {"rsi14": 58.2, "adx14": 27.3}
+
+    enriched = add_local_validation(result, snapshot_fn=fake_snapshot)
+    assert enriched["localValidation"]["rsi"]["tv"] is None
+    assert enriched["localValidation"]["rsi"]["flag"] is False  # can't flag without a TV value
