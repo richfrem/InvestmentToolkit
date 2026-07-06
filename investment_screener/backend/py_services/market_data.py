@@ -247,11 +247,15 @@ _YF_FUNDAMENTALS_FIELDS = {
 # Balance-sheet/income-statement fields with no EDGAR tag mapping in this
 # pass — yfinance-only, a deliberate scope boundary (the inverse of
 # operatingIncome's EDGAR-only boundary below). Needed by wacc.py (cost of
-# debt, capital-structure weighting) and comps_valuation.py (enterprise value).
+# debt, capital-structure weighting), comps_valuation.py (enterprise value),
+# and framework_score.py (Debt/EBITDA, Current Ratio, FCF Yield — Phase 2b).
 _YF_ONLY_FUNDAMENTALS_FIELDS = {
     "totalDebt": "totalDebt",
     "cashAndEquivalents": "totalCash",
     "interestExpense": "interestExpense",
+    "ebitda": "ebitda",
+    "currentRatio": "currentRatio",
+    "freeCashflow": "freeCashflow",
 }
 
 # yfinance's `.financials` (annual income statement) row label for each
