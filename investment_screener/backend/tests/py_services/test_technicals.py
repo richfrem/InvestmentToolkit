@@ -183,3 +183,48 @@ def test_compute_technical_snapshot_shape():
     }
     assert expected_keys <= set(snapshot.keys())
     assert snapshot["ticker"] == "NVDA"
+
+
+def test_compute_technical_snapshot_aligns_relative_strength_by_date_not_position():
+    # Benchmark (SPY) has a long history; ticker IPO'd 5 trading days later.
+    # Positional alignment would pair ticker[0] with benchmark[0] (wrong dates);
+    # date-based alignment must only compare the 60 overlapping dates.
+    benchmark_rows = [
+        {"date": f"2026-01-{i+1:02d}", "open": 400 + i, "high": 402 + i,
+         "low": 398 + i, "close": 400 + i, "volume": 5000.0}
+        for i in range(65)
+    ]
+    ticker_rows = [
+        {"date": f"2026-01-{i+1:02d}", "open": 100 + 2 * (i - 5),
+         "high": 102 + 2 * (i - 5), "low": 98 + 2 * (i - 5),
+         "close": 100 + 2 * (i - 5), "volume": 1000.0}
+        for i in range(5, 65)
+    ]
+    fake_prices = {"NVDA": {"data": ticker_rows}, "SPY": {"data": benchmark_rows}}
+    with patch("technicals.get_prices", return_value=fake_prices), \
+         patch("technicals.get_earnings_calendar", return_value=[]):
+        snapshot = compute_technical_snapshot("NVDA", "D", "1y", "SPY", anchor_date=None)
+
+    # Overlapping window is 2026-01-06 .. 2026-01-65th-day (60 dates).
+    merged_ticker = pd.Series([100 + 2 * (i - 5) for i in range(5, 65)])
+    merged_benchmark = pd.Series([400 + i for i in range(5, 65)])
+    expected = compute_relative_strength(merged_ticker, merged_benchmark)
+
+    assert snapshot["relativeStrength"]["ratio"] == expected["ratio"]
+    assert snapshot["relativeStrength"]["slope63d"] == expected["slope63d"]
+
+
+def test_compute_technical_snapshot_returns_all_none_shape_for_empty_price_data():
+    fake_prices = {"DELISTED": {"data": []}, "SPY": {"data": []}}
+    with patch("technicals.get_prices", return_value=fake_prices), \
+         patch("technicals.get_earnings_calendar", return_value=[]):
+        snapshot = compute_technical_snapshot("DELISTED", "D", "1y", "SPY", anchor_date=None)
+
+    assert snapshot == {
+        "ticker": "DELISTED", "timeframe": "D", "asOf": None,
+        "rsi14": None, "ema21": None, "ema50": None, "ema200": None,
+        "macd": None, "adx14": None, "plusDI": None, "minusDI": None,
+        "atr14": None, "bollinger": None, "keltner": None, "squeeze": None,
+        "anchoredVwap": None, "volumeRatio20d": None,
+        "relativeStrength": {"ratio": None, "slope63d": None},
+    }
