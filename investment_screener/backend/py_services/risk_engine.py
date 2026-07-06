@@ -276,3 +276,58 @@ def compute_cluster_exposure(
         for pillar in pillar_weight
     ]
     return sorted(result, key=lambda r: r["weight"], reverse=True)
+
+
+def compute_stress_replay(
+    returns_5y: pd.DataFrame, weights: dict[str, float], benchmark: str = "SPY"
+) -> list[dict[str, Any]]:
+    """Portfolio P&L through the 2022 rate-shock window plus the worst
+    drawdown found anywhere in the supplied 5-year return history.
+
+    Current weights are held static across the whole replay window — a
+    documented simplifying assumption (true historical weights aren't
+    tracked anywhere in the system; see design doc).
+
+    Args:
+        returns_5y: Aligned daily-return DataFrame spanning ~5 years, must
+            include `benchmark`'s column (excluded from holdings).
+        weights: {ticker: weight_fraction} for current holdings.
+        benchmark: Benchmark column name to exclude from holdings.
+
+    Returns:
+        List of scenario dicts: [{"scenario", "window": [start, end],
+        "portfolioReturnPct"}, ...]. 2022_rate_shock is omitted entirely if
+        the supplied data doesn't cover that window. worst_drawdown is
+        omitted if the portfolio-return series is empty.
+    """
+    portfolio_returns = _weighted_portfolio_returns(returns_5y, weights, exclude={benchmark})
+    if portfolio_returns.empty:
+        return []
+
+    results: list[dict[str, Any]] = []
+    for scenario, (start, end) in STRESS_WINDOWS.items():
+        window = portfolio_returns.loc[
+            (portfolio_returns.index >= start) & (portfolio_returns.index <= end)
+        ]
+        if window.empty:
+            continue
+        window_cum = (1 + window).cumprod()
+        pct_return = float((window_cum.iloc[-1] - 1) * 100)
+        results.append({
+            "scenario": scenario,
+            "window": [start, end],
+            "portfolioReturnPct": round(pct_return, 2),
+        })
+
+    cumulative = (1 + portfolio_returns).cumprod()
+    running_max = cumulative.cummax()
+    drawdown = (cumulative - running_max) / running_max
+    trough_date = drawdown.idxmin()
+    peak_date = cumulative.loc[:trough_date].idxmax()
+    results.append({
+        "scenario": "worst_drawdown",
+        "window": [peak_date, trough_date],
+        "portfolioReturnPct": round(float(drawdown.min() * 100), 2),
+    })
+
+    return results

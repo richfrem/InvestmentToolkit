@@ -211,3 +211,54 @@ def test_cluster_exposure_unassigned_pillar():
 
 def test_cluster_exposure_empty_weights_returns_empty_list():
     assert compute_cluster_exposure({}, {}, {}) == []
+
+
+from risk_engine import compute_stress_replay  # noqa: E402
+
+
+def _build_return_series(dates_closes: list[tuple[str, float]]) -> pd.DataFrame:
+    dates = [d for d, _ in dates_closes]
+    closes = [c for _, c in dates_closes]
+    df = pd.DataFrame({"A": closes}, index=dates)
+    return df.pct_change().iloc[1:]
+
+
+def test_stress_replay_2022_rate_shock_window():
+    dates_closes = [
+        ("2022-01-03", 100.0), ("2022-04-01", 90.0),
+        ("2022-07-01", 80.0), ("2022-10-14", 70.0), ("2023-01-01", 90.0),
+    ]
+    returns = _build_return_series(dates_closes)
+    result = compute_stress_replay(returns, {"A": 1.0}, benchmark="SPY")
+
+    shock = next(r for r in result if r["scenario"] == "2022_rate_shock")
+    assert shock["window"] == ["2022-01-03", "2022-10-14"]
+    assert shock["portfolioReturnPct"] == pytest.approx((70.0 / 100.0 - 1) * 100)
+
+
+def test_stress_replay_worst_drawdown_finds_largest_decline():
+    dates_closes = [
+        ("2021-01-01", 100.0), ("2021-06-01", 120.0),   # peak
+        ("2021-12-01", 60.0),                            # big trough (-50%)
+        ("2022-06-01", 100.0), ("2022-10-14", 95.0),     # smaller decline inside named window
+        ("2023-01-01", 110.0),
+    ]
+    returns = _build_return_series(dates_closes)
+    result = compute_stress_replay(returns, {"A": 1.0}, benchmark="SPY")
+
+    drawdown = next(r for r in result if r["scenario"] == "worst_drawdown")
+    assert drawdown["window"] == ["2021-06-01", "2021-12-01"]
+    assert drawdown["portfolioReturnPct"] == pytest.approx((60.0 / 120.0 - 1) * 100)
+
+
+def test_stress_replay_omits_2022_scenario_when_data_doesnt_cover_it():
+    dates_closes = [("2024-01-01", 100.0), ("2024-06-01", 110.0), ("2024-12-01", 105.0)]
+    returns = _build_return_series(dates_closes)
+    result = compute_stress_replay(returns, {"A": 1.0}, benchmark="SPY")
+    assert not any(r["scenario"] == "2022_rate_shock" for r in result)
+    assert any(r["scenario"] == "worst_drawdown" for r in result)
+
+
+def test_stress_replay_empty_for_no_qualifying_holdings():
+    returns = pd.DataFrame({"SPY": [0.01, -0.02, 0.03]})
+    assert compute_stress_replay(returns, {"A": 1.0}, benchmark="SPY") == []
