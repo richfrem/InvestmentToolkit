@@ -23,6 +23,7 @@ from typing import Any
 
 ACCUMULATE_SPREAD_THRESHOLD_PCT = 25.0
 ACCUMULATE_DCF_UPSIDE_THRESHOLD_PCT = 15.0
+VALID_SECTORS = {"saas_cyber", "chips_ai", "energy_infra"}
 
 
 def check_accumulate_gate(projection: dict) -> dict:
@@ -161,6 +162,12 @@ def validate_projection(data: dict[str, Any], verbose: bool = False) -> list[str
                   f"Must be in [0.0, 1.0], got {confidence}", errors)
         except (TypeError, ValueError):
             errors.append(f"[FAIL] confidenceScore: Must be a number, got '{confidence}'")
+
+    # --- Sector enum (Phase 2b, optional field) ---
+    sector = data.get("sector")
+    if sector is not None:
+        check(sector in VALID_SECTORS, "sector",
+              f"Must be one of {sorted(VALID_SECTORS)}, got '{sector}'", errors)
 
     # --- Valuation-committee gate (Phase 2a) ---
     gate = check_accumulate_gate(data)

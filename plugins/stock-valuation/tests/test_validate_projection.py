@@ -138,3 +138,39 @@ def test_validate_projection_appends_gate_failure_to_errors():
     })
     errors = validate_projection(proj)
     assert any("ACCUMULATE requires" in e for e in errors)
+
+
+def _base_projection(**overrides):
+    """Helper for sector enum tests."""
+    proj = {
+        "ticker": "TEST", "id": "abc", "source": "AI_AGENT", "schemaVersion": "1.2",
+        "version": 1, "savedAt": "2026-01-01T00:00:00Z", "rationale": "test",
+        "snapshot": {"price": 100.0},
+        "scenarios": {
+            "bear": {"weight": 0.3, "growthRate": 5, "scenarioPrice": 80},
+            "base": {"weight": 0.4, "growthRate": 15, "scenarioPrice": 100},
+            "bull": {"weight": 0.3, "growthRate": 25, "scenarioPrice": 130},
+        },
+        "aiThesis": {"action": "HOLD"},
+        "globalSettings": {},
+    }
+    proj.update(overrides)
+    return proj
+
+
+def test_valid_sector_enum_passes():
+    proj = _base_projection(sector="chips_ai")
+    errors = validate_projection(proj)
+    assert not any("sector" in e for e in errors)
+
+
+def test_invalid_sector_enum_fails():
+    proj = _base_projection(sector="not_a_real_sector")
+    errors = validate_projection(proj)
+    assert any("sector" in e for e in errors)
+
+
+def test_missing_sector_is_not_an_error():
+    proj = _base_projection()  # no "sector" key at all
+    errors = validate_projection(proj)
+    assert not any("sector" in e for e in errors)
