@@ -1,7 +1,7 @@
 {
     "name": "portfolio-advisor",
-    "version": "2.1.0",
-    "description": "Investment portfolio advisor suite. /daily — one interactive daily command: portfolio sync, morning brief (macro+TA+DCF+earnings), triage cards, trade execution, self-evolution log. Plus: /adversarial-review, /bundle-thesis-review, drift monitoring, valuation-gated rebalancing, 13F tracking, and target calibration.",
+    "version": "2.2.0",
+    "description": "Investment portfolio advisor suite. /daily — one interactive daily command: portfolio sync, morning brief (macro+TA+DCF+earnings), triage cards, trade execution, self-evolution log. Plus: /adversarial-review, /bundle-thesis-review, /norberts-gambit (CAD/USD conversion guide), drift monitoring, valuation-gated rebalancing, 13F tracking, and target calibration.",
     "author": {
         "name": "richfrem",
         "email": "connect.richfrem@gmail.com"
@@ -15,6 +15,7 @@
         "macro-regime",
         "thesis",
         "rebalancing",
-        "drift-detection"
+        "drift-detection",
+        "currency-conversion"
     ]
 }

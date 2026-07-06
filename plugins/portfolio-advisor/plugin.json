@@ -1,7 +1,7 @@
 {
     "name": "portfolio-advisor",
-    "version": "2.1.0",
-    "description": "Investment portfolio advisor suite. /daily — one interactive daily command: sync check, morning brief (macro + TA + DCF + earnings), ranked triage cards, trade execution, self-evolution log. Additional skills: /review-portfolio, /strategic-review, /rebalance, /calibrate-targets, /update-portfolio-targets, /x-news-sweep, /bundle-thesis-review, /13f-tracker, /13f-analyze, /run-advisor (post-catalyst orchestrator).",
+    "version": "2.2.0",
+    "description": "Investment portfolio advisor suite. /daily — one interactive daily command: sync check, morning brief (macro + TA + DCF + earnings), ranked triage cards, trade execution, self-evolution log. Additional skills: /review-portfolio, /strategic-review, /rebalance, /calibrate-targets, /update-portfolio-targets, /x-news-sweep, /bundle-thesis-review, /13f-tracker, /13f-analyze, /norberts-gambit (CAD/USD conversion guide), /run-advisor (post-catalyst orchestrator).",
     "author": "InvestmentToolkit",
     "maturity": "L5",
     "architecture": "supercharged",
@@ -30,6 +30,11 @@
             "name": "calibrate_targets",
             "path": "skills/calibrate-targets/SKILL.md",
             "trigger": "/calibrate-targets"
+        },
+        {
+            "name": "norberts_gambit",
+            "path": "skills/norberts-gambit/SKILL.md",
+            "trigger": "/norberts-gambit"
         },
         {
             "name": "x_news_sweep",
@@ -167,6 +172,7 @@
         "portfolio-advisor",
         "thesis-management",
         "rebalancing",
-        "drift-detection"
+        "drift-detection",
+        "currency-conversion"
     ]
 }
