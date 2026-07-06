@@ -29,6 +29,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from market_data import get_prices  # noqa: E402
+from earnings_calendar import get_earnings_calendar  # noqa: E402
 
 
 def _wilder_smooth(series: pd.Series, period: int) -> pd.Series:
@@ -181,30 +182,200 @@ def compute_adx(highs: pd.Series, lows: pd.Series, closes: pd.Series, period: in
     }
 
 
+def compute_bollinger_keltner_squeeze(
+    closes: pd.Series, highs: pd.Series, lows: pd.Series, atr14: float, period: int = 20
+) -> dict:
+    """Bollinger(20,2) and Keltner(20, 1.5xATR14) bands, plus squeeze detection.
+
+    Squeeze is True when the Bollinger Bands sit entirely inside the Keltner
+    Channel — the standard TTM Squeeze definition, signaling a volatility
+    contraction that often precedes a breakout.
+
+    Args:
+        closes: Close prices, oldest first.
+        highs: High prices, oldest first (unused directly, kept for interface symmetry).
+        lows: Low prices, oldest first (unused directly, kept for interface symmetry).
+        atr14: Precomputed ATR(14) value, used as the Keltner band width.
+        period: SMA/EMA period for both bands' midline, default 20.
+
+    Returns:
+        {"bollinger": {"upper","mid","lower"}, "keltner": {"upper","mid","lower"}, "squeeze": bool}.
+    """
+    sma = closes.rolling(period).mean().iloc[-1]
+    std = closes.rolling(period).std().iloc[-1]
+    bollinger = {"upper": round(sma + 2 * std, 4), "mid": round(sma, 4), "lower": round(sma - 2 * std, 4)}
+
+    ema = closes.ewm(span=period, adjust=False).mean().iloc[-1]
+    keltner_width = 1.5 * atr14
+    keltner = {"upper": round(ema + keltner_width, 4), "mid": round(ema, 4), "lower": round(ema - keltner_width, 4)}
+
+    squeeze = bool(bollinger["upper"] < keltner["upper"] and bollinger["lower"] > keltner["lower"])
+    return {"bollinger": bollinger, "keltner": keltner, "squeeze": squeeze}
+
+
+def compute_anchored_vwap(
+    highs: pd.Series, lows: pd.Series, closes: pd.Series, volumes: pd.Series,
+    dates: pd.Series, anchor_date: str | None,
+) -> float | None:
+    """Volume-weighted average price from `anchor_date` forward.
+
+    Args:
+        highs, lows, closes, volumes: OHLCV columns, oldest first, same length as `dates`.
+        dates: ISO date strings ("YYYY-MM-DD"), same index alignment as the OHLCV columns.
+        anchor_date: The date to anchor from (inclusive), or None to skip.
+
+    Returns:
+        VWAP from the anchor date onward, or None if anchor_date is None or
+        not present in `dates`.
+    """
+    if anchor_date is None or anchor_date not in set(dates):
+        return None
+    mask = dates >= anchor_date
+    typical_price = (highs[mask] + lows[mask] + closes[mask]) / 3
+    vol = volumes[mask]
+    if vol.sum() == 0:
+        return None
+    return round(float((typical_price * vol).sum() / vol.sum()), 4)
+
+
+def compute_volume_ratio(volumes: pd.Series, period: int = 20) -> float | None:
+    """Latest volume divided by the trailing `period`-bar average volume.
+
+    Args:
+        volumes: Volume series, oldest first.
+        period: Lookback window for the average, default 20.
+
+    Returns:
+        Ratio (>1.0 = above-average volume), or None if fewer than period+1 bars.
+    """
+    if len(volumes) < period + 1:
+        return None
+    avg = volumes.iloc[-(period + 1):-1].mean()
+    if avg == 0:
+        return None
+    return round(float(volumes.iloc[-1] / avg), 3)
+
+
+def compute_relative_strength(closes: pd.Series, benchmark_closes: pd.Series) -> dict:
+    """Cumulative-return ratio vs. a benchmark, plus its 63-day slope.
+
+    Args:
+        closes: Ticker close prices, oldest first.
+        benchmark_closes: Benchmark (e.g. SPY) close prices, same length/alignment.
+
+    Returns:
+        {"ratio": float, "slope63d": float}. Ratio > 1.0 means the ticker has
+        outperformed the benchmark since the start of the supplied window;
+        slope63d is the least-squares slope of the ratio series over its
+        trailing 63 bars (positive = improving relative strength).
+    """
+    ticker_cum = closes / closes.iloc[0]
+    benchmark_cum = benchmark_closes / benchmark_closes.iloc[0]
+    ratio_series = (ticker_cum / benchmark_cum).dropna()
+    ratio = float(ratio_series.iloc[-1])
+
+    window = ratio_series.iloc[-63:]
+    x = np.arange(len(window))
+    if len(window) < 2 or np.var(x) == 0:
+        slope = 0.0
+    else:
+        slope = float(np.cov(x, window.values, bias=True)[0, 1] / np.var(x))
+
+    return {"ratio": round(ratio, 4), "slope63d": round(slope, 6)}
+
+
+def compute_technical_snapshot(
+    ticker: str, timeframe: str, period: str, benchmark: str, anchor_date: str | None,
+) -> dict:
+    """Primary orchestrator — one TechnicalSnapshot per ticker/timeframe.
+
+    If `anchor_date` is not supplied, defaults to the ticker's most recent
+    past earnings date from earnings_calendar.py; if neither is available,
+    anchoredVwap is None rather than guessed.
+
+    Args:
+        ticker: Ticker symbol.
+        timeframe: "D" or "W".
+        period: yfinance period string (e.g. "1y") passed to market_data.get_prices().
+        benchmark: Benchmark ticker for relative strength (e.g. "SPY").
+        anchor_date: ISO date string to anchor VWAP from, or None for auto-detection.
+
+    Returns:
+        Full TechnicalSnapshot dict — see docs/superpowers/specs/
+        2026-07-05-fundamental-analyst-ta-design.md for the field-by-field shape.
+    """
+    interval = "1d" if timeframe == "D" else "1wk"
+    prices = get_prices([ticker, benchmark], period=period, interval=interval)
+    rows = prices.get(ticker, {}).get("data", [])
+    benchmark_rows = prices.get(benchmark, {}).get("data", [])
+    df = pd.DataFrame(rows)
+    benchmark_df = pd.DataFrame(benchmark_rows)
+
+    if anchor_date is None:
+        anchor_date = _default_earnings_anchor(ticker)
+
+    atr14 = compute_atr(df["high"], df["low"], df["close"]) or 0.0
+    adx_result = compute_adx(df["high"], df["low"], df["close"])
+
+    return {
+        "ticker": ticker,
+        "timeframe": timeframe,
+        "asOf": df["date"].iloc[-1] if not df.empty else None,
+        "rsi14": compute_rsi(df["close"]),
+        "ema21": compute_ema(df["close"], 21),
+        "ema50": compute_ema(df["close"], 50),
+        "ema200": compute_ema(df["close"], 200),
+        "macd": compute_macd(df["close"]),
+        **adx_result,
+        "atr14": atr14,
+        **compute_bollinger_keltner_squeeze(df["close"], df["high"], df["low"], atr14),
+        "anchoredVwap": compute_anchored_vwap(
+            df["high"], df["low"], df["close"], df["volume"], df["date"], anchor_date
+        ),
+        "volumeRatio20d": compute_volume_ratio(df["volume"]),
+        "relativeStrength": (
+            compute_relative_strength(df["close"], benchmark_df["close"])
+            if not benchmark_df.empty else {"ratio": None, "slope63d": None}
+        ),
+    }
+
+
+def _default_earnings_anchor(ticker: str) -> str | None:
+    """Most recent past earnings date for `ticker`, or None if unavailable.
+
+    earnings_calendar.py only forecasts upcoming events by design (see its
+    module docstring) — this walks its entries defensively and returns None
+    on any shape it doesn't recognize rather than raising, since a missing
+    anchor is a normal, expected case (see compute_anchored_vwap's None path).
+    Calls the module-level `get_earnings_calendar` (imported at the top of
+    this file, not locally) so tests can `patch("technicals.get_earnings_calendar", ...)`
+    — a function-local import would make that patch target a name that
+    doesn't exist in this module's namespace, and unittest.mock.patch would
+    raise AttributeError instead of substituting the stub.
+    """
+    try:
+        entries = get_earnings_calendar()
+        for entry in entries:
+            if getattr(entry, "ticker", None) == ticker:
+                return getattr(entry, "earnings_date", None)
+    except Exception:  # noqa: BLE001 - any failure here just means "no anchor available"
+        return None
+    return None
+
+
 def main() -> None:
-    """CLI entry point — wired fully in Task 6 once squeeze/VWAP/RS are added."""
-    parser = argparse.ArgumentParser(description="Local TA engine")
+    parser = argparse.ArgumentParser(description="Local TA engine — full TechnicalSnapshot")
     parser.add_argument("--ticker", required=True)
     parser.add_argument("--timeframe", default="D", choices=["D", "W"])
     parser.add_argument("--period", default="1y")
+    parser.add_argument("--benchmark", default="SPY")
+    parser.add_argument("--anchor-date", default=None, help="YYYY-MM-DD, omit to auto-detect from earnings")
     parser.add_argument("--pretty", action="store_true")
     args = parser.parse_args()
-    interval = "1d" if args.timeframe == "D" else "1wk"
-    prices = get_prices([args.ticker], period=args.period, interval=interval)
-    rows = prices.get(args.ticker, {}).get("data", [])
-    df = pd.DataFrame(rows)
-    result = {
-        "ticker": args.ticker,
-        "timeframe": args.timeframe,
-        "rsi14": compute_rsi(df["close"]) if not df.empty else None,
-        "ema21": compute_ema(df["close"], 21) if not df.empty else None,
-        "ema50": compute_ema(df["close"], 50) if not df.empty else None,
-        "ema200": compute_ema(df["close"], 200) if not df.empty else None,
-        "macd": compute_macd(df["close"]) if not df.empty else None,
-        "atr14": compute_atr(df["high"], df["low"], df["close"]) if not df.empty else None,
-        **(compute_adx(df["high"], df["low"], df["close"]) if not df.empty else
-           {"adx14": None, "plusDI": None, "minusDI": None}),
-    }
+
+    result = compute_technical_snapshot(
+        args.ticker, args.timeframe, args.period, args.benchmark, args.anchor_date
+    )
     print(json.dumps(result, indent=2 if args.pretty else None))
 
 
