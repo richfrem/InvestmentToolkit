@@ -134,7 +134,7 @@ def score_lower_better(value: float | None, strong: float, consider: float) -> i
     return 30
 
 
-def _score_qualitative(qualitative: dict | None, field: str) -> tuple[float | None, int | None]:
+def _score_qualitative(qualitative: dict | None, field: str) -> tuple[str | None, int | None]:
     """Look up an agent-supplied qualitative rating and its 90/60/30 score.
 
     Args:
@@ -193,6 +193,10 @@ def compute_raw_metrics(
     current_ratio = _val("currentRatio")
     free_cash_flow = _val("freeCashflow")
 
+    # Single-year step (y2 vs y1), not a multi-year CAGR — get_estimates() only
+    # exposes current- and next-fiscal-year revenue estimates, not the full
+    # 2025-2028 guidance window the doc describes. Same class of documented
+    # simplification as Rule of 40 Method B / FCF Yield / invested capital above.
     y1 = estimates.get("y1RevEstimate")
     y2 = estimates.get("y2RevEstimate")
     revenue_growth = (y2 - y1) / y1 if y1 and y2 and y1 > 0 else None
