@@ -129,6 +129,71 @@ def _classify_regime_v2(score: int, unavailable: int) -> tuple[str, bool]:
     return "STRESS", False
 
 
+def _load_active_tickers(target_portfolio_path: Path) -> list[str]:
+    """Read target-portfolio.json and return active-holding tickers.
+
+    Active = role not in INACTIVE_ROLES ({"exit", "avoid"}) — the real role
+    enum values validated by update_thesis.py. Not portfolio_io.load_portfolio_state():
+    that loader reads portfolio.json (broker shares/prices) and has no role field.
+
+    Args:
+        target_portfolio_path: Path to target-portfolio.json.
+
+    Returns:
+        List of ticker strings (uses the "ticker" key, never "symbol" —
+        CLAUDE.md rule 10).
+    """
+    data = json.loads(Path(target_portfolio_path).read_text())
+    return [
+        h["ticker"] for h in data.get("holdings", [])
+        if h.get("role") not in INACTIVE_ROLES
+    ]
+
+
+def _sma(closes: pd.Series, period: int) -> pd.Series:
+    """Simple moving average, full series (not just the latest value).
+
+    Args:
+        closes: Close prices, oldest first.
+        period: SMA window length.
+
+    Returns:
+        A pandas Series of the same length as `closes`, with NaN for the
+        first `period - 1` bars (insufficient data to seed the average).
+    """
+    return closes.rolling(window=period).mean()
+
+
+def compute_breadth(prices_by_ticker: dict[str, dict]) -> tuple[float | None, list[str]]:
+    """% of tickers whose latest close is above their own 200d SMA.
+
+    Args:
+        prices_by_ticker: market_data.get_prices() output, {ticker: {"data": [...]}}.
+
+    Returns:
+        (breadth_pct, excluded_tickers) — breadth_pct is None if no ticker
+        has enough history (200+ rows) to compute a 200d SMA. Excluded
+        tickers are never zero-filled into the denominator.
+    """
+    above = 0
+    eligible = 0
+    excluded: list[str] = []
+    for ticker, payload in prices_by_ticker.items():
+        rows = payload.get("data", [])
+        if len(rows) < 200:
+            excluded.append(ticker)
+            continue
+        closes = pd.DataFrame(rows)["close"]
+        sma200 = _sma(closes, 200).iloc[-1]
+        eligible += 1
+        if closes.iloc[-1] > sma200:
+            above += 1
+
+    if eligible == 0:
+        return None, excluded
+    return round(above / eligible * 100, 2), excluded
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Market regime classifier")
     parser.add_argument("--pretty", action="store_true")
