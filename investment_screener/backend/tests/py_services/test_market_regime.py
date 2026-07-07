@@ -174,16 +174,28 @@ class TestClassifyTickerTrend:
         assert result == {"position": "BELOW", "slope": "FALLING", "state": "DOWNTREND"}
 
     def test_above_sma_but_falling_slope_is_weakening(self):
-        # Build a pattern where SMA slope is falling while price is still above it:
-        # Early base (high), middle drop (low), recent recovery (medium-high).
-        # sma200[-21] sees mostly high base; sma200[-1] sees mix of drop + recovery.
-        early_base = [110.0] * 20  # High base for sma200[-21]
-        middle_base = [100.0] * 180  # Transition
-        drop = [80.0] * 10  # Significant drop
-        recovery = [105.0] * 20  # Recovery but still under the high base
-        closes = pd.Series(early_base + middle_base + drop + recovery)
+        # 250 bars: high plateau (150) rolls out of the trailing-200 window as
+        # time passes, while a lower plateau (100) and mild recovery (110) roll
+        # in — the window's average genuinely declines (105.0 -> 101.0, not a
+        # tie) even though the latest close (110) is still above the latest SMA.
+        high_plateau = [150.0] * 50
+        low_plateau = [100.0] * 180
+        recovery = [110.0] * 20
+        closes = pd.Series(high_plateau + low_plateau + recovery)
         result = classify_ticker_trend(closes)
-        assert result["slope"] == "FALLING"
+        assert result == {"position": "ABOVE", "slope": "FALLING", "state": "WEAKENING"}
+
+    def test_below_sma_but_rising_slope_is_basing(self):
+        # 250 bars: low plateau (50) rolls out of the trailing-200 window as
+        # time passes, while a higher plateau (100) and a recent dip (90) roll
+        # in — the window's average genuinely rises (95.0 -> 99.0, not a tie)
+        # even though the latest close (90) is still below the latest SMA.
+        low_plateau = [50.0] * 50
+        high_plateau = [100.0] * 180
+        dip = [90.0] * 20
+        closes = pd.Series(low_plateau + high_plateau + dip)
+        result = classify_ticker_trend(closes)
+        assert result == {"position": "BELOW", "slope": "RISING", "state": "BASING"}
 
     def test_insufficient_history_returns_none(self):
         closes = pd.Series([100.0, 101.0, 99.0])
