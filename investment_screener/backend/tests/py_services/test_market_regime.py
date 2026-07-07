@@ -261,3 +261,68 @@ class TestComputeVolatilityPercentile:
         lows.iloc[-5:] = closes.iloc[-5:] - 10.0
         result = compute_volatility_percentile(highs, lows, closes)
         assert result >= 90.0
+
+
+from unittest.mock import patch
+
+from market_regime import compute_market_regime  # noqa: E402
+
+
+FIXTURE_TARGET = {
+    "holdings": [
+        {"ticker": "NVDA", "role": "accumulate"},
+        {"ticker": "PANW", "role": "maintain"},
+        {"ticker": "CBRS", "role": "watchlist"},
+        {"ticker": "OLD", "role": "exit"},
+    ]
+}
+
+
+def _fixture_prices(n: int, base: float, spread: float = 1.0) -> dict:
+    closes = [base + i * 0.05 for i in range(n)]
+    return {
+        "data": [
+            {"date": f"2024-{1 + i // 28:02d}-{1 + i % 28:02d}",
+             "open": c, "high": c + spread, "low": c - spread, "close": c,
+             "volume": 1000.0}
+            for i, c in enumerate(closes)
+        ]
+    }
+
+
+class TestComputeMarketRegime:
+    def test_full_snapshot_shape(self, tmp_path):
+        target_path = tmp_path / "target-portfolio.json"
+        target_path.write_text(json.dumps(FIXTURE_TARGET))
+
+        macro_result = type("M", (), {
+            "regime": "RISK-ON", "score": 2, "vix": 14.0, "vix_signal": "LOW",
+            "spy_vs_200d": 3.0, "spy_signal": "ABOVE", "hyg_lqd_ratio": 0.64,
+            "credit_signal": "HEALTHY", "details": [], "degraded": False,
+        })()
+
+        def fake_get_prices(tickers, period, interval="1d"):
+            result = {}
+            for t in tickers:
+                if t == "CBRS":
+                    result[t] = {"data": _fixture_prices(30, base=100.0)["data"]}
+                else:
+                    result[t] = _fixture_prices(300, base=100.0)
+            return result
+
+        with patch("market_regime.get_macro_regime", return_value=macro_result), \
+             patch("market_regime.get_prices", side_effect=fake_get_prices), \
+             patch("market_regime._fetch_ratio", return_value=1.05), \
+             patch("market_regime._fetch_dxy_vs_200d", return_value=3.0):
+            result = compute_market_regime(target_portfolio_path=target_path)
+
+        assert result["regime"] in {"RISK_ON", "NEUTRAL", "RISK_OFF", "STRESS"}
+        assert "signals" in result
+        assert set(result["signals"].keys()) == {
+            "vix", "spy200d", "credit", "termSlope", "breadth", "dxy",
+        }
+        tickers_seen = {t["ticker"] for t in result["tickerRegimes"]}
+        assert tickers_seen == {"NVDA", "PANW", "CBRS"}
+        cbrs = next(t for t in result["tickerRegimes"] if t["ticker"] == "CBRS")
+        assert cbrs["trend"] is None  # insufficient history
+        assert any("CBRS" in w for w in result["warnings"])
