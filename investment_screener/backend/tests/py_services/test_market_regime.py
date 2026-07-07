@@ -231,3 +231,33 @@ class TestComputeMomentumPercentile:
         result = compute_momentum_percentile(closes)
         assert result is not None
         assert 0.0 <= result <= 100.0
+
+
+from market_regime import compute_volatility_percentile  # noqa: E402
+
+
+def _ohlc(n: int, base: float = 100.0, spread: float = 1.0) -> tuple[pd.Series, pd.Series, pd.Series]:
+    closes = pd.Series([base] * n)
+    highs = closes + spread
+    lows = closes - spread
+    return highs, lows, closes
+
+
+class TestComputeVolatilityPercentile:
+    def test_insufficient_history_returns_none(self):
+        highs, lows, closes = _ohlc(10)
+        assert compute_volatility_percentile(highs, lows, closes) is None
+
+    def test_constant_range_percentile_is_defined(self):
+        highs, lows, closes = _ohlc(60)
+        result = compute_volatility_percentile(highs, lows, closes)
+        assert result is not None
+        assert 0.0 <= result <= 100.0
+
+    def test_recent_spike_ranks_high_percentile(self):
+        highs, lows, closes = _ohlc(60, spread=1.0)
+        # Blow out the range on the most recent 5 bars only.
+        highs.iloc[-5:] = closes.iloc[-5:] + 10.0
+        lows.iloc[-5:] = closes.iloc[-5:] - 10.0
+        result = compute_volatility_percentile(highs, lows, closes)
+        assert result >= 90.0
