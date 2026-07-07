@@ -37,7 +37,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from market_data import get_prices  # noqa: E402
 from macro_regime import (  # noqa: E402
-    get_macro_regime, _classify_vix, _classify_spy, _classify_credit,
+    MacroRegimeResult, get_macro_regime, _classify_vix, _classify_spy, _classify_credit,
 )
 from technicals import _true_range, _wilder_smooth  # noqa: E402
 
@@ -343,6 +343,129 @@ def _fetch_dxy_vs_200d(ticker: str = "UUP") -> float | None:
         return None
 
 
+def _score_macro_signals(macro: MacroRegimeResult) -> tuple[int, int, dict[str, Any]]:
+    """Score the 3 macro signals reused from macro_regime.py (vix/spy200d/credit).
+
+    Re-invokes macro_regime.py's own classifiers on its raw values rather than
+    duplicating a second copy of their point tables — if macro_regime.py's
+    thresholds ever change, this stays in sync automatically. macro.vix_signal
+    (etc.) is still used for the UNAVAILABLE check, since a failed fetch
+    leaves the raw value at its harmless default (e.g. vix=20.0) rather than
+    None, and classifying that default would silently look like real data.
+
+    Args:
+        macro: Result of macro_regime.get_macro_regime().
+
+    Returns:
+        (score_contribution, unavailable_count, signals) where signals has
+        keys "vix", "spy200d", "credit".
+    """
+    score = 0
+    unavailable = 0
+    signals: dict[str, Any] = {}
+
+    if macro.vix_signal == "UNAVAILABLE":
+        unavailable += 1
+    else:
+        _, vix_pts = _classify_vix(macro.vix)
+        score += vix_pts
+    if macro.spy_signal == "UNAVAILABLE":
+        unavailable += 1
+    else:
+        _, spy_pts = _classify_spy(macro.spy_vs_200d)
+        score += spy_pts
+    if macro.credit_signal == "UNAVAILABLE":
+        unavailable += 1
+    else:
+        _, credit_pts = _classify_credit(macro.hyg_lqd_ratio)
+        score += credit_pts
+
+    signals["vix"] = {"value": macro.vix, "signal": macro.vix_signal}
+    signals["spy200d"] = {"value": macro.spy_vs_200d, "signal": macro.spy_signal}
+    signals["credit"] = {"value": macro.hyg_lqd_ratio, "signal": macro.credit_signal}
+
+    return score, unavailable, signals
+
+
+def _score_new_signals(
+    term_slope_ratio: float | None, breadth_pct: float | None, dxy_pct: float | None
+) -> tuple[int, int, dict[str, Any]]:
+    """Score the 3 new signals added by this module (termSlope/breadth/dxy).
+
+    Args:
+        term_slope_ratio: IEF/SHY ratio, or None if the fetch failed.
+        breadth_pct: % of active holdings above their own 200d SMA, or None
+            if it could not be computed.
+        dxy_pct: UUP's % distance above/below its own 200d SMA, or None if
+            the fetch failed.
+
+    Returns:
+        (score_contribution, unavailable_count, signals) where signals has
+        keys "termSlope", "breadth", "dxy".
+    """
+    score = 0
+    unavailable = 0
+    signals: dict[str, Any] = {}
+
+    if term_slope_ratio is None:
+        signals["termSlope"] = {"value": None, "signal": "UNAVAILABLE"}
+        unavailable += 1
+    else:
+        term_signal, term_pts = _classify_term_slope(term_slope_ratio)
+        signals["termSlope"] = {"value": round(term_slope_ratio, 4), "signal": term_signal}
+        score += term_pts
+
+    if breadth_pct is None:
+        signals["breadth"] = {"value": None, "signal": "UNAVAILABLE"}
+        unavailable += 1
+    else:
+        breadth_signal, breadth_pts = _classify_breadth(breadth_pct)
+        signals["breadth"] = {"value": breadth_pct, "signal": breadth_signal}
+        score += breadth_pts
+
+    if dxy_pct is None:
+        signals["dxy"] = {"value": None, "signal": "UNAVAILABLE"}
+        unavailable += 1
+    else:
+        dxy_signal, dxy_pts = _classify_dxy(dxy_pct)
+        signals["dxy"] = {"value": round(dxy_pct, 2), "signal": dxy_signal}
+        score += dxy_pts
+
+    return score, unavailable, signals
+
+
+def _build_ticker_regimes(tickers: list[str], prices: dict[str, dict]) -> list[dict[str, Any]]:
+    """Build the per-ticker regime layer: trend, momentum percentile, volatility percentile.
+
+    Args:
+        tickers: Active portfolio tickers to classify.
+        prices: Ticker -> price history dict, as returned by market_data.get_prices().
+
+    Returns:
+        List of per-ticker regime dicts, one per input ticker, each with keys
+        "ticker", "trend", "momentumPercentile", "volatilityPercentile".
+    """
+    ticker_regimes: list[dict[str, Any]] = []
+    for ticker in tickers:
+        rows = prices.get(ticker, {}).get("data", [])
+        if not rows:
+            ticker_regimes.append({
+                "ticker": ticker, "trend": None,
+                "momentumPercentile": None, "volatilityPercentile": None,
+            })
+            continue
+        df = pd.DataFrame(rows)
+        ticker_regimes.append({
+            "ticker": ticker,
+            "trend": classify_ticker_trend(df["close"]),
+            "momentumPercentile": compute_momentum_percentile(df["close"]),
+            "volatilityPercentile": compute_volatility_percentile(
+                df["high"], df["low"], df["close"]
+            ),
+        })
+    return ticker_regimes
+
+
 def compute_market_regime(target_portfolio_path: Path = TARGET_PATH) -> dict[str, Any]:
     """Primary orchestrator — 4-tier composite regime + per-ticker regime layer.
 
@@ -373,80 +496,17 @@ def compute_market_regime(target_portfolio_path: Path = TARGET_PATH) -> dict[str
     term_slope_ratio = _fetch_ratio("IEF", "SHY")
     dxy_pct = _fetch_dxy_vs_200d()
 
-    score = 0
-    unavailable = 0
-    signals: dict[str, Any] = {}
+    macro_score, macro_unavailable, macro_signals = _score_macro_signals(macro)
+    new_score, new_unavailable, new_signals = _score_new_signals(
+        term_slope_ratio, breadth_pct, dxy_pct
+    )
 
-    # Re-invoke macro_regime.py's own classifiers on its raw values rather than
-    # duplicating a second copy of their point tables — if macro_regime.py's
-    # thresholds ever change, this stays in sync automatically. macro.vix_signal
-    # (etc.) is still used for the UNAVAILABLE check, since a failed fetch
-    # leaves the raw value at its harmless default (e.g. vix=20.0) rather than
-    # None, and classifying that default would silently look like real data.
-    if macro.vix_signal == "UNAVAILABLE":
-        unavailable += 1
-    else:
-        _, vix_pts = _classify_vix(macro.vix)
-        score += vix_pts
-    if macro.spy_signal == "UNAVAILABLE":
-        unavailable += 1
-    else:
-        _, spy_pts = _classify_spy(macro.spy_vs_200d)
-        score += spy_pts
-    if macro.credit_signal == "UNAVAILABLE":
-        unavailable += 1
-    else:
-        _, credit_pts = _classify_credit(macro.hyg_lqd_ratio)
-        score += credit_pts
-
-    signals["vix"] = {"value": macro.vix, "signal": macro.vix_signal}
-    signals["spy200d"] = {"value": macro.spy_vs_200d, "signal": macro.spy_signal}
-    signals["credit"] = {"value": macro.hyg_lqd_ratio, "signal": macro.credit_signal}
-
-    if term_slope_ratio is None:
-        signals["termSlope"] = {"value": None, "signal": "UNAVAILABLE"}
-        unavailable += 1
-    else:
-        term_signal, term_pts = _classify_term_slope(term_slope_ratio)
-        signals["termSlope"] = {"value": round(term_slope_ratio, 4), "signal": term_signal}
-        score += term_pts
-
-    if breadth_pct is None:
-        signals["breadth"] = {"value": None, "signal": "UNAVAILABLE"}
-        unavailable += 1
-    else:
-        breadth_signal, breadth_pts = _classify_breadth(breadth_pct)
-        signals["breadth"] = {"value": breadth_pct, "signal": breadth_signal}
-        score += breadth_pts
-
-    if dxy_pct is None:
-        signals["dxy"] = {"value": None, "signal": "UNAVAILABLE"}
-        unavailable += 1
-    else:
-        dxy_signal, dxy_pts = _classify_dxy(dxy_pct)
-        signals["dxy"] = {"value": round(dxy_pct, 2), "signal": dxy_signal}
-        score += dxy_pts
+    score = macro_score + new_score
+    unavailable = macro_unavailable + new_unavailable
+    signals: dict[str, Any] = {**macro_signals, **new_signals}
 
     regime, degraded = _classify_regime_v2(score, unavailable)
-
-    ticker_regimes: list[dict[str, Any]] = []
-    for ticker in tickers:
-        rows = prices.get(ticker, {}).get("data", [])
-        if not rows:
-            ticker_regimes.append({
-                "ticker": ticker, "trend": None,
-                "momentumPercentile": None, "volatilityPercentile": None,
-            })
-            continue
-        df = pd.DataFrame(rows)
-        ticker_regimes.append({
-            "ticker": ticker,
-            "trend": classify_ticker_trend(df["close"]),
-            "momentumPercentile": compute_momentum_percentile(df["close"]),
-            "volatilityPercentile": compute_volatility_percentile(
-                df["high"], df["low"], df["close"]
-            ),
-        })
+    ticker_regimes = _build_ticker_regimes(tickers, prices)
 
     return {
         "asOf": date.today().isoformat(),
