@@ -227,6 +227,38 @@ def classify_ticker_trend(closes: pd.Series) -> dict[str, str] | None:
     return {"position": position, "slope": slope, "state": state}
 
 
+def compute_momentum_percentile(closes: pd.Series) -> float | None:
+    """12-1 month momentum (skip the most recent month, standard momentum
+    convention), ranked as a percentile against that same metric computed at
+    every trading day in the ticker's own history.
+
+    momentum_t = close[t-21] / close[t-252] - 1, for every t where both
+    indices exist. The current (last) momentum reading is ranked against
+    the full historical distribution of that same rolling metric — i.e.
+    "is today's 12-1M return stronger than X% of this ticker's own past
+    12-1M readings."
+
+    Args:
+        closes: Close prices, oldest first.
+
+    Returns:
+        Percentile (0-100) of the latest momentum reading vs. its own
+        history, or None if fewer than 274 bars (252 + 21 + 1) are
+        available to compute at least one momentum value.
+    """
+    if len(closes) < 252 + 21 + 1:
+        return None
+
+    momentum = closes.shift(21) / closes.shift(252) - 1
+    momentum = momentum.dropna()
+    if momentum.empty:
+        return None
+
+    current = momentum.iloc[-1]
+    percentile = (momentum <= current).sum() / len(momentum) * 100
+    return round(float(percentile), 2)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Market regime classifier")
     parser.add_argument("--pretty", action="store_true")
