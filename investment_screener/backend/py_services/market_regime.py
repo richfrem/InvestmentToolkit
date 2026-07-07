@@ -194,6 +194,39 @@ def compute_breadth(prices_by_ticker: dict[str, dict]) -> tuple[float | None, li
     return round(above / eligible * 100, 2), excluded
 
 
+def classify_ticker_trend(closes: pd.Series) -> dict[str, str] | None:
+    """Classify a ticker's trend: position vs. its 200d SMA, and that SMA's
+    own rising/falling slope over the trailing 20 days.
+
+    Combines into 4 states: UPTREND (above + rising), DOWNTREND (below +
+    falling), WEAKENING (above + falling — losing momentum but not yet
+    broken down), BASING (below + rising — recovering but not yet reclaimed).
+
+    Args:
+        closes: Close prices, oldest first.
+
+    Returns:
+        {"position": "ABOVE"|"BELOW", "slope": "RISING"|"FALLING",
+        "state": "UPTREND"|"DOWNTREND"|"WEAKENING"|"BASING"}, or None if
+        fewer than 220 bars (200 for the SMA + 20 for the slope lookback).
+    """
+    if len(closes) < 220:
+        return None
+
+    sma200 = _sma(closes, 200)
+    position = "ABOVE" if closes.iloc[-1] > sma200.iloc[-1] else "BELOW"
+    slope = "RISING" if sma200.iloc[-1] > sma200.iloc[-21] else "FALLING"
+
+    state = {
+        ("ABOVE", "RISING"): "UPTREND",
+        ("ABOVE", "FALLING"): "WEAKENING",
+        ("BELOW", "RISING"): "BASING",
+        ("BELOW", "FALLING"): "DOWNTREND",
+    }[(position, slope)]
+
+    return {"position": position, "slope": slope, "state": state}
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Market regime classifier")
     parser.add_argument("--pretty", action="store_true")
