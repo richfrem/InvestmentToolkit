@@ -615,9 +615,18 @@ class TestComputeMomentumPercentile:
         assert compute_momentum_percentile(closes) is None
 
     def test_strongest_recent_momentum_is_100th_percentile(self):
-        # A steadily accelerating series: the most recent 12-1M momentum
-        # reading is the largest the series has ever produced.
-        closes = pd.Series([100.0 * (1.001 ** i) ** 1.02 for i in range(300)])
+        # 250 flat days (100.0) followed by a 50-day linear ramp up to 198.0.
+        # A pure exponential series gives every momentum_t the SAME value
+        # (r^231 - 1, constant regardless of t) — a hidden tie that would make
+        # this test pass for the wrong reason. This flat-then-ramp construction
+        # instead produces a genuine, strictly-increasing, unique maximum at
+        # the final reading: momentum is 0.0 for t=252..270 (both lookback
+        # windows still in the flat region), then strictly increases for
+        # t=271..299 as the near-window starts capturing the ramp, peaking at
+        # 0.56 (verified by direct computation) only at the very last index.
+        flat = [100.0] * 250
+        ramp = [100.0 + 2.0 * i for i in range(50)]
+        closes = pd.Series(flat + ramp)
         result = compute_momentum_percentile(closes)
         assert result == pytest.approx(100.0)
 
