@@ -200,3 +200,34 @@ class TestClassifyTickerTrend:
     def test_insufficient_history_returns_none(self):
         closes = pd.Series([100.0, 101.0, 99.0])
         assert classify_ticker_trend(closes) is None
+
+
+from market_regime import compute_momentum_percentile  # noqa: E402
+
+
+class TestComputeMomentumPercentile:
+    def test_insufficient_history_returns_none(self):
+        closes = pd.Series([100.0] * 200)  # need 252+21+1 = 274 minimum
+        assert compute_momentum_percentile(closes) is None
+
+    def test_strongest_recent_momentum_is_100th_percentile(self):
+        # 250 flat days (100.0) followed by a 50-day linear ramp up to 198.0.
+        # A pure exponential series gives every momentum_t the SAME value
+        # (r^231 - 1, constant regardless of t) — a hidden tie that would make
+        # this test pass for the wrong reason. This flat-then-ramp construction
+        # instead produces a genuine, strictly-increasing, unique maximum at
+        # the final reading: momentum is 0.0 for t=252..270 (both lookback
+        # windows still in the flat region), then strictly increases for
+        # t=271..299 as the near-window starts capturing the ramp, peaking at
+        # 0.56 (verified by direct computation) only at the very last index.
+        flat = [100.0] * 250
+        ramp = [100.0 + 2.0 * i for i in range(50)]
+        closes = pd.Series(flat + ramp)
+        result = compute_momentum_percentile(closes)
+        assert result == pytest.approx(100.0)
+
+    def test_flat_series_momentum_percentile_is_defined(self):
+        closes = pd.Series([100.0] * 300)
+        result = compute_momentum_percentile(closes)
+        assert result is not None
+        assert 0.0 <= result <= 100.0
