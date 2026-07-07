@@ -416,7 +416,7 @@ def render(brief: dict[str, Any]) -> str:
     # ── ACCUMULATE list (gated by macro) ──────────────────────────────────────
     accum = [s for s in scores if s["band"] == "ACCUMULATE"]
     if accum:
-        if regime == "RISK-OFF":
+        if macro_regime_label == "RISK-OFF":
             lines.append(f"\n  (ACCUMULATE signals muted — RISK-OFF macro. "
                          f"{len(accum)} candidates queued.)")
         else:
