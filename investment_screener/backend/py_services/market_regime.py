@@ -33,6 +33,8 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from technicals import _true_range, _wilder_smooth  # noqa: E402
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
 TARGET_PATH = DATA_DIR / "theses/target-portfolio.json"
@@ -256,6 +258,40 @@ def compute_momentum_percentile(closes: pd.Series) -> float | None:
 
     current = momentum.iloc[-1]
     percentile = (momentum <= current).sum() / len(momentum) * 100
+    return round(float(percentile), 2)
+
+
+def compute_volatility_percentile(
+    highs: pd.Series, lows: pd.Series, closes: pd.Series, period: int = 14
+) -> float | None:
+    """ATR% (ATR / close) at every day in the supplied history, current
+    value ranked as a percentile against that same-ticker history.
+
+    technicals.py's compute_atr() only returns the latest scalar value, so
+    this reuses its internal _true_range/_wilder_smooth series helpers
+    directly (not duplicated) to build the full ATR series first.
+
+    Args:
+        highs: High prices, oldest first.
+        lows: Low prices, oldest first.
+        closes: Close prices, oldest first.
+        period: ATR lookback period, default 14 (matches technicals.py).
+
+    Returns:
+        Percentile (0-100) of the latest ATR% reading vs. its own history,
+        or None if fewer than period+2 bars are available.
+    """
+    if len(closes) < period + 2:
+        return None
+
+    tr = _true_range(highs, lows, closes).dropna()
+    atr_series = _wilder_smooth(tr, period).dropna()
+    if atr_series.empty:
+        return None
+
+    atr_pct = atr_series / closes.loc[atr_series.index]
+    current = atr_pct.iloc[-1]
+    percentile = (atr_pct <= current).sum() / len(atr_pct) * 100
     return round(float(percentile), 2)
 
 
