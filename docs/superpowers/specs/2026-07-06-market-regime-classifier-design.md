@@ -128,10 +128,21 @@ as the existing 3):**
 
 ## Daily-brief wiring
 
-`daily_brief.py` swaps its import from `macro_regime.get_macro_regime` to
-`market_regime.get_market_regime` (same call-site pattern, same
-try/except-with-stderr-breadcrumb error handling as E1's risk-snapshot wiring), and the
-existing `MACRO:` line is replaced with:
+**Additive, not a replacement.** `brief_recommendations.build_recommendations()`
+already gates ACCUMULATE signals on `macro.get("regime") == "RISK-OFF"` (hyphenated) —
+its own module docstring calls this "the only systemic risk control in the daily
+loop." Swapping that call's input to the new composite's underscored labels
+(`RISK_OFF`, `STRESS`) would silently break the string match and defeat the gate. To
+avoid that regression while still satisfying "informational only, no gating this
+pass":
+
+- `daily_brief.py` keeps calling `macro_regime.get_macro_regime()` exactly as today
+  and passes it to `build_recommendations()` unchanged — the existing gate is
+  untouched, zero risk.
+- `daily_brief.py` additionally calls `market_regime.get_market_regime()` (same
+  try/except-with-stderr-breadcrumb error handling as E1's risk-snapshot wiring),
+  attaches `brief["market_regime"] = regime`, and **replaces** the old `MACRO:`
+  terminal line with:
 
 ```
 REGIME: RISK_ON · breadth 71% · term-slope +1.0 · degraded: no
@@ -139,7 +150,10 @@ REGIME: RISK_ON · breadth 71% · term-slope +1.0 · degraded: no
 
 Per-ticker `tickerRegimes` are persisted to `market_regime.json` and available to
 `brief["market_regime"]` in the JSON snapshot, but not rendered per-ticker in the
-terminal brief this pass — E2/triage render and act on them later.
+terminal brief this pass — E2/triage render and act on them later. Unifying the gate
+onto the new composite's labels (updating `brief_recommendations.py` to check
+`RISK_OFF`/`STRESS`) is deferred to E2, alongside the rest of the rebalancer's gating
+logic.
 
 ## Testing (TDD, per repo's non-negotiable rule 1)
 
