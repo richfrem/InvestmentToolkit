@@ -64,9 +64,13 @@ as the existing 3):**
 
 **Per-ticker layer:**
 
-- Ticker universe: active holdings only (`role != "exited"`) from `target-portfolio.json`
-  via `portfolio_io.load_portfolio_state()` — same loader `risk_engine.py` already uses,
-  no new ticker list to maintain.
+- Ticker universe: active holdings only (`role not in {"exit", "avoid"}` — the real
+  enum values, per `update_thesis.py`'s validation) read directly from
+  `target-portfolio.json`'s `holdings[]` list, same direct-read pattern
+  `risk_engine.py` already uses for its `pillar_map`. **Not**
+  `portfolio_io.load_portfolio_state()` — that loader reads `portfolio.json` (actual
+  broker shares/prices) and has no `role` field at all; role lives only in
+  `target-portfolio.json`.
 - `market_data.get_prices(tickers, period="2y", interval="1d")` — one batched, cached
   fetch covers trend, momentum percentile, and ATR% percentile for every ticker, and
   doubles as the breadth calculation's data source.
@@ -82,7 +86,7 @@ as the existing 3):**
 | `compute_breadth(prices_by_ticker)` | `float` | % of tickers whose latest close > their own trailing 200d SMA |
 | `classify_ticker_trend(closes)` | `{position, slope}` | `ABOVE`/`BELOW` vs. 200d SMA; `RISING`/`FALLING` from the SMA's own 20d slope — 4 combined states (`UPTREND`, `DOWNTREND`, `WEAKENING`, `BASING`) |
 | `compute_momentum_percentile(closes)` | `float` | 12-1M total return (skip most recent month, standard momentum convention) ranked as a percentile against the same rolling metric computed at every trading day in the ticker's own 2yr window |
-| `compute_volatility_percentile(highs, lows, closes)` | `float` | ATR% (`compute_atr` from `technicals.py`, reused — not reimplemented) at each day in the 2yr window, current value ranked as a percentile against that same-ticker history |
+| `compute_volatility_percentile(highs, lows, closes)` | `float` | ATR% at each day in the 2yr window, current value ranked as a percentile against that same-ticker history. `technicals.py`'s `compute_atr()` only returns the latest scalar, so this reuses its internal `_true_range`/`_wilder_smooth` helpers (imported directly, not duplicated) to get the full ATR series, then divides by close and ranks the last value against the series |
 | `compute_market_regime()` | full dict | orchestrator — loads state, fetches macro signals + per-ticker prices, computes breadth, classifies composite regime, classifies each ticker, assembles output, writes `data/market_regime.json` |
 
 ### Missing-data handling
