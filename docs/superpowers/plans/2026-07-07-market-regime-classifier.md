@@ -22,9 +22,11 @@ yfinance fetch), `macro_regime._classify_vix/_classify_spy/_classify_credit` and
 - Spec: `docs/superpowers/specs/2026-07-06-market-regime-classifier-design.md` — read
   it once before starting; every task below implements a piece of it.
 - `macro_regime.py` is never modified — `market_regime.py` imports from it only.
-- No new yfinance/network calls beyond what `market_data.get_prices()` and
-  `macro_regime.get_macro_regime()` already make — no raw `yf.Ticker`/`yf.download`
-  calls inside `market_regime.py` itself.
+- Per-ticker portfolio OHLCV always goes through `market_data.get_prices()` — never
+  reimplement that fetch/cache path inside `market_regime.py`. Direct `yf.Ticker(...)`
+  calls are fine, but only for macro/index proxy tickers (IEF/SHY, UUP) that mirror
+  `macro_regime.py`'s own existing pattern (VIX/SPY/HYG/LQD) — Task 6's
+  `_fetch_ratio`/`_fetch_dxy_vs_200d` are exactly this, not a violation of this rule.
 - Ticker field is always `ticker`, never `symbol`, when reading `target-portfolio.json`
   (CLAUDE.md rule 10).
 - Active holdings = `role not in {"exit", "avoid"}` — real enum values, not `"exited"`.
