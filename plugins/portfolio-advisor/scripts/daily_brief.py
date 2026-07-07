@@ -348,17 +348,19 @@ def render(brief: dict[str, Any]) -> str:
                 f"  (${g['current']:.2f} vs ${g['prev_close']:.2f})  {state}"
             )
 
-    # ── Macro (unchanged — still feeds the RISK-OFF ACCUMULATE gate) ──────────
+    # ── Macro (unchanged — still feeds the RISK-OFF/NEUTRAL ACCUMULATE gate) ──
     macro_regime_label = macro["regime"]
     if macro_regime_label == "RISK-OFF":
         lines.append("\n⛔  MACRO GATE: RISK-OFF — ACCUMULATE signals blocked today.")
+    elif macro_regime_label == "NEUTRAL":
+        lines.append("\n⚠️  MACRO GATE: NEUTRAL — only highest-conviction (+4 or above) ACCUMULATE actions.")
 
     # ── Market regime (new, C2 — additive, informational only) ────────────────
     mr = brief.get("market_regime")
     if mr:
         icon = {"RISK_ON": "✅", "NEUTRAL": "⚠️", "RISK_OFF": "🔴", "STRESS": "🆘"}.get(mr["regime"], "")
-        breadth = mr["signals"].get("breadth", {}).get("value")
-        term_slope = mr["signals"].get("termSlope", {}).get("value")
+        breadth = mr.get("signals", {}).get("breadth", {}).get("value")
+        term_slope = mr.get("signals", {}).get("termSlope", {}).get("value")
         breadth_str = f"{breadth:.0f}%" if breadth is not None else "n/a"
         term_str = f"{term_slope:+.2f}" if term_slope is not None else "n/a"
         lines.append(
