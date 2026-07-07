@@ -35,7 +35,7 @@ investment_screener/backend/py_services/
 
 plugins/portfolio-advisor/scripts/daily_brief.py  — import swapped from
                                                      macro_regime.get_macro_regime()
-                                                     to market_regime.get_market_regime(),
+                                                     to market_regime.compute_market_regime(),
                                                      MACRO line replaced with REGIME line
 ```
 
@@ -87,7 +87,7 @@ as the existing 3):**
 | `classify_ticker_trend(closes)` | `{position, slope}` | `ABOVE`/`BELOW` vs. 200d SMA; `RISING`/`FALLING` from the SMA's own 20d slope — 4 combined states (`UPTREND`, `DOWNTREND`, `WEAKENING`, `BASING`) |
 | `compute_momentum_percentile(closes)` | `float` | 12-1M total return (skip most recent month, standard momentum convention) ranked as a percentile against the same rolling metric computed at every trading day in the ticker's own 2yr window |
 | `compute_volatility_percentile(highs, lows, closes)` | `float` | ATR% at each day in the 2yr window, current value ranked as a percentile against that same-ticker history. `technicals.py`'s `compute_atr()` only returns the latest scalar, so this reuses its internal `_true_range`/`_wilder_smooth` helpers (imported directly, not duplicated) to get the full ATR series, then divides by close and ranks the last value against the series |
-| `compute_market_regime()` | full dict | orchestrator — loads state, fetches macro signals + per-ticker prices, computes breadth, classifies composite regime, classifies each ticker, assembles output, writes `data/market_regime.json` |
+| `compute_market_regime()` | full dict | orchestrator — loads state, fetches macro signals + per-ticker prices, computes breadth, classifies composite regime, classifies each ticker, assembles output. Does **not** write to disk itself (same convention as `risk_engine.py`'s `compute_risk_snapshot()`) — only the CLI's `main()` writes `data/market_regime.json`, gated by `--no-save` |
 
 ### Missing-data handling
 
@@ -139,7 +139,7 @@ pass":
 - `daily_brief.py` keeps calling `macro_regime.get_macro_regime()` exactly as today
   and passes it to `build_recommendations()` unchanged — the existing gate is
   untouched, zero risk.
-- `daily_brief.py` additionally calls `market_regime.get_market_regime()` (same
+- `daily_brief.py` additionally calls `market_regime.compute_market_regime()` (same
   try/except-with-stderr-breadcrumb error handling as E1's risk-snapshot wiring),
   attaches `brief["market_regime"] = regime`, and **replaces** the old `MACRO:`
   terminal line with:
