@@ -157,3 +157,34 @@ class TestComputeBreadth:
         breadth, excluded = compute_breadth(prices)
         assert breadth is None
         assert excluded == ["SHORT"]
+
+
+from market_regime import classify_ticker_trend  # noqa: E402
+
+
+class TestClassifyTickerTrend:
+    def test_monotonically_rising_series_is_uptrend(self):
+        closes = pd.Series([float(c) for c in range(1, 231)])  # 230 days, steadily up
+        result = classify_ticker_trend(closes)
+        assert result == {"position": "ABOVE", "slope": "RISING", "state": "UPTREND"}
+
+    def test_monotonically_falling_series_is_downtrend(self):
+        closes = pd.Series([float(c) for c in range(230, 0, -1)])
+        result = classify_ticker_trend(closes)
+        assert result == {"position": "BELOW", "slope": "FALLING", "state": "DOWNTREND"}
+
+    def test_above_sma_but_falling_slope_is_weakening(self):
+        # Build a pattern where SMA slope is falling while price is still above it:
+        # Early base (high), middle drop (low), recent recovery (medium-high).
+        # sma200[-21] sees mostly high base; sma200[-1] sees mix of drop + recovery.
+        early_base = [110.0] * 20  # High base for sma200[-21]
+        middle_base = [100.0] * 180  # Transition
+        drop = [80.0] * 10  # Significant drop
+        recovery = [105.0] * 20  # Recovery but still under the high base
+        closes = pd.Series(early_base + middle_base + drop + recovery)
+        result = classify_ticker_trend(closes)
+        assert result["slope"] == "FALLING"
+
+    def test_insufficient_history_returns_none(self):
+        closes = pd.Series([100.0, 101.0, 99.0])
+        assert classify_ticker_trend(closes) is None
