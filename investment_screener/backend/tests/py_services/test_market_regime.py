@@ -1,6 +1,10 @@
 """Tests for market_regime.py — 4-tier composite regime classifier (Phase 3, C2)."""
+import json
 import sys
 from pathlib import Path
+
+import pandas as pd
+import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"
@@ -11,6 +15,9 @@ from market_regime import (  # noqa: E402
     _classify_breadth,
     _classify_dxy,
     _classify_regime_v2,
+    _load_active_tickers,
+    _sma,
+    compute_breadth,
 )
 
 
@@ -68,3 +75,85 @@ class TestClassifyRegimeV2:
 
     def test_all_six_unavailable_forces_stress(self):
         assert _classify_regime_v2(1, unavailable=6) == ("STRESS", True)
+
+
+def _price_rows(closes: list[float], start_day: int = 1) -> list[dict]:
+    return [
+        {"date": f"2024-01-{start_day + i:02d}", "open": c, "high": c, "low": c,
+         "close": c, "volume": 1000.0}
+        for i, c in enumerate(closes)
+    ]
+
+
+class TestLoadActiveTickers:
+    def test_excludes_exit_and_avoid_roles(self, tmp_path):
+        target = {"holdings": [
+            {"ticker": "NVDA", "role": "accumulate"},
+            {"ticker": "OLD1", "role": "exit"},
+            {"ticker": "OLD2", "role": "avoid"},
+            {"ticker": "CBRS", "role": "watchlist"},
+        ]}
+        path = tmp_path / "target-portfolio.json"
+        path.write_text(json.dumps(target))
+
+        tickers = _load_active_tickers(path)
+
+        assert set(tickers) == {"NVDA", "CBRS"}
+
+    def test_empty_holdings_returns_empty_list(self, tmp_path):
+        path = tmp_path / "target-portfolio.json"
+        path.write_text(json.dumps({"holdings": []}))
+        assert _load_active_tickers(path) == []
+
+
+class TestSma:
+    def test_sma_matches_manual_average(self):
+        closes = pd.Series([1.0, 2.0, 3.0, 4.0, 5.0])
+        result = _sma(closes, period=3)
+        assert result.iloc[-1] == pytest.approx(4.0)  # mean(3,4,5)
+
+    def test_sma_is_nan_before_period(self):
+        closes = pd.Series([1.0, 2.0])
+        result = _sma(closes, period=3)
+        assert pd.isna(result.iloc[-1])
+
+
+class TestComputeBreadth:
+    def test_all_above_200d_is_100_pct(self):
+        # 210 rising closes -> last close is above its own 200d SMA
+        rising = list(range(1, 211))
+        prices = {
+            "A": {"data": _price_rows([float(c) for c in rising])},
+            "B": {"data": _price_rows([float(c) for c in rising])},
+        }
+        breadth, excluded = compute_breadth(prices)
+        assert breadth == pytest.approx(100.0)
+        assert excluded == []
+
+    def test_one_below_200d_is_50_pct(self):
+        rising = [float(c) for c in range(1, 211)]
+        falling = [float(c) for c in range(210, 0, -1)]
+        prices = {
+            "A": {"data": _price_rows(rising)},
+            "B": {"data": _price_rows(falling)},
+        }
+        breadth, excluded = compute_breadth(prices)
+        assert breadth == pytest.approx(50.0)
+        assert excluded == []
+
+    def test_short_history_ticker_excluded_not_crashed(self):
+        rising = [float(c) for c in range(1, 211)]
+        short = [100.0, 101.0, 99.0]
+        prices = {
+            "A": {"data": _price_rows(rising)},
+            "SHORT": {"data": _price_rows(short)},
+        }
+        breadth, excluded = compute_breadth(prices)
+        assert excluded == ["SHORT"]
+        assert breadth == pytest.approx(100.0)  # only A counted
+
+    def test_no_eligible_tickers_returns_none(self):
+        prices = {"SHORT": {"data": _price_rows([100.0, 101.0])}}
+        breadth, excluded = compute_breadth(prices)
+        assert breadth is None
+        assert excluded == ["SHORT"]
