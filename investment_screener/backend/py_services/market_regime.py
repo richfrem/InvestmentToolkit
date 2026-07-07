@@ -26,13 +26,19 @@ Usage:
 import argparse
 import json
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
+import yfinance as yf
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from market_data import get_prices  # noqa: E402
+from macro_regime import (  # noqa: E402
+    get_macro_regime, _classify_vix, _classify_spy, _classify_credit,
+)
 from technicals import _true_range, _wilder_smooth  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -295,12 +301,177 @@ def compute_volatility_percentile(
     return round(float(percentile), 2)
 
 
+def _fetch_ratio(numerator: str, denominator: str) -> float | None:
+    """Fetch two tickers' latest closes and return numerator/denominator.
+
+    Used for the IEF/SHY term-slope proxy — same ETF-ratio-via-yfinance
+    pattern as macro_regime.py's HYG/LQD credit signal.
+
+    Args:
+        numerator: Ticker whose close is the ratio's numerator.
+        denominator: Ticker whose close is the ratio's denominator.
+
+    Returns:
+        The ratio, or None if either fetch fails.
+    """
+    try:
+        num_close = float(yf.Ticker(numerator).history(period="5d")["Close"].to_numpy()[-1])
+        den_close = float(yf.Ticker(denominator).history(period="5d")["Close"].to_numpy()[-1])
+        return num_close / den_close if den_close > 0 else None
+    except Exception:
+        return None
+
+
+def _fetch_dxy_vs_200d(ticker: str = "UUP") -> float | None:
+    """Fetch UUP's % distance above/below its own 200D SMA.
+
+    Same pattern as macro_regime.py's SPY-vs-200d signal.
+
+    Args:
+        ticker: USD-strength proxy ETF ticker, default UUP.
+
+    Returns:
+        Percentage above (positive) or below (negative) the 200D SMA, or
+        None if the fetch fails.
+    """
+    try:
+        hist = yf.Ticker(ticker).history(period="1y")
+        close = float(hist["Close"].to_numpy()[-1])
+        sma_200 = float(hist["Close"].tail(200).mean().item())
+        return (close - sma_200) / sma_200 * 100
+    except Exception:
+        return None
+
+
+def compute_market_regime(target_portfolio_path: Path = TARGET_PATH) -> dict[str, Any]:
+    """Primary orchestrator — 4-tier composite regime + per-ticker regime layer.
+
+    Reuses macro_regime.get_macro_regime() for 3 of the 6 macro signals,
+    fetches the 3 new ones (term-slope, breadth, DXY), classifies the
+    composite regime, then classifies trend/momentum/volatility for every
+    active holding. Does not write to disk itself — see main() for the
+    CLI's --no-save-gated write, same convention as risk_engine.py's
+    compute_risk_snapshot().
+
+    Args:
+        target_portfolio_path: Path to target-portfolio.json.
+
+    Returns:
+        Full market regime snapshot dict — see docs/superpowers/specs/
+        2026-07-06-market-regime-classifier-design.md for the field-by-field shape.
+    """
+    macro = get_macro_regime()
+    tickers = _load_active_tickers(target_portfolio_path)
+    prices = get_prices(tickers, period="2y", interval="1d") if tickers else {}
+
+    warnings: list[str] = []
+
+    breadth_pct, breadth_excluded = compute_breadth(prices)
+    for t in breadth_excluded:
+        warnings.append(f"{t} excluded from breadth/trend: insufficient price history")
+
+    term_slope_ratio = _fetch_ratio("IEF", "SHY")
+    dxy_pct = _fetch_dxy_vs_200d()
+
+    score = 0
+    unavailable = 0
+    signals: dict[str, Any] = {}
+
+    # Re-invoke macro_regime.py's own classifiers on its raw values rather than
+    # duplicating a second copy of their point tables — if macro_regime.py's
+    # thresholds ever change, this stays in sync automatically. macro.vix_signal
+    # (etc.) is still used for the UNAVAILABLE check, since a failed fetch
+    # leaves the raw value at its harmless default (e.g. vix=20.0) rather than
+    # None, and classifying that default would silently look like real data.
+    if macro.vix_signal == "UNAVAILABLE":
+        unavailable += 1
+    else:
+        _, vix_pts = _classify_vix(macro.vix)
+        score += vix_pts
+    if macro.spy_signal == "UNAVAILABLE":
+        unavailable += 1
+    else:
+        _, spy_pts = _classify_spy(macro.spy_vs_200d)
+        score += spy_pts
+    if macro.credit_signal == "UNAVAILABLE":
+        unavailable += 1
+    else:
+        _, credit_pts = _classify_credit(macro.hyg_lqd_ratio)
+        score += credit_pts
+
+    signals["vix"] = {"value": macro.vix, "signal": macro.vix_signal}
+    signals["spy200d"] = {"value": macro.spy_vs_200d, "signal": macro.spy_signal}
+    signals["credit"] = {"value": macro.hyg_lqd_ratio, "signal": macro.credit_signal}
+
+    if term_slope_ratio is None:
+        signals["termSlope"] = {"value": None, "signal": "UNAVAILABLE"}
+        unavailable += 1
+    else:
+        term_signal, term_pts = _classify_term_slope(term_slope_ratio)
+        signals["termSlope"] = {"value": round(term_slope_ratio, 4), "signal": term_signal}
+        score += term_pts
+
+    if breadth_pct is None:
+        signals["breadth"] = {"value": None, "signal": "UNAVAILABLE"}
+        unavailable += 1
+    else:
+        breadth_signal, breadth_pts = _classify_breadth(breadth_pct)
+        signals["breadth"] = {"value": breadth_pct, "signal": breadth_signal}
+        score += breadth_pts
+
+    if dxy_pct is None:
+        signals["dxy"] = {"value": None, "signal": "UNAVAILABLE"}
+        unavailable += 1
+    else:
+        dxy_signal, dxy_pts = _classify_dxy(dxy_pct)
+        signals["dxy"] = {"value": round(dxy_pct, 2), "signal": dxy_signal}
+        score += dxy_pts
+
+    regime, degraded = _classify_regime_v2(score, unavailable)
+
+    ticker_regimes: list[dict[str, Any]] = []
+    for ticker in tickers:
+        rows = prices.get(ticker, {}).get("data", [])
+        if not rows:
+            ticker_regimes.append({
+                "ticker": ticker, "trend": None,
+                "momentumPercentile": None, "volatilityPercentile": None,
+            })
+            continue
+        df = pd.DataFrame(rows)
+        ticker_regimes.append({
+            "ticker": ticker,
+            "trend": classify_ticker_trend(df["close"]),
+            "momentumPercentile": compute_momentum_percentile(df["close"]),
+            "volatilityPercentile": compute_volatility_percentile(
+                df["high"], df["low"], df["close"]
+            ),
+        })
+
+    return {
+        "asOf": date.today().isoformat(),
+        "regime": regime,
+        "score": score,
+        "degraded": degraded,
+        "signals": signals,
+        "tickerRegimes": ticker_regimes,
+        "warnings": warnings,
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Market regime classifier")
     parser.add_argument("--pretty", action="store_true")
     parser.add_argument("--no-save", action="store_true", help="Print only, skip writing market_regime.json")
     args = parser.parse_args()
-    print("market_regime.py: orchestrator not yet implemented (see Task 6)", file=sys.stderr)
+
+    snapshot = compute_market_regime()
+    if not args.no_save:
+        MARKET_REGIME_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(MARKET_REGIME_PATH, "w") as f:
+            json.dump(snapshot, f, indent=2)
+
+    print(json.dumps(snapshot, indent=2 if args.pretty else None))
 
 
 if __name__ == "__main__":
