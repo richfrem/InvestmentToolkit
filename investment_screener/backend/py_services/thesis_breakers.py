@@ -263,9 +263,230 @@ def evaluate_breakers(
     return new_state
 
 
+def compute_breaker_state(
+    conviction_scores: list[dict[str, Any]],
+    market_regime: dict[str, Any] | None,
+    pillar_health: list[dict[str, Any]],
+    target_portfolio_path: Path = TARGET_PATH,
+    state_path: Path = STATE_PATH,
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Load, evaluate, and persist thesis breaker state for this run.
+
+    I/O wrapper around the pure evaluate_breakers(). Never mutates
+    target_portfolio_path — only reads it. Owns state_path exclusively.
+
+    Args:
+        conviction_scores: This run's conviction score rows — pass the same
+            list daily_brief.py already computed, never recompute here.
+        market_regime: This run's market_regime output, or None.
+        pillar_health: This run's pillar health list.
+        target_portfolio_path: Path to target-portfolio.json.
+        state_path: Path to thesis_breaker_state.json.
+
+    Returns:
+        (full_state_dict, triggered_list) — full_state_dict is the exact
+        shape written to state_path; triggered_list is every breaker whose
+        status is "TRIGGERED" this run, each entry merging its definition
+        (metric/operator/threshold/horizon/note/type) with its evaluated
+        state and the holding's targetWeight (for triage sort order).
+    """
+    with open(target_portfolio_path) as f:
+        target_data = json.load(f)
+
+    prev_state: dict[str, Any] = {}
+    if state_path.exists():
+        with open(state_path) as f:
+            prev_state = json.load(f).get("holdings", {})
+
+    today = date.today().isoformat()
+    holdings_state = evaluate_breakers(
+        target_data, conviction_scores, market_regime, pillar_health, prev_state, today
+    )
+
+    now_iso = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    full_state = {"generatedAt": now_iso, "holdings": holdings_state}
+
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = state_path.with_suffix(".tmp")
+    with open(tmp, "w") as f:
+        json.dump(full_state, f, indent=2)
+    os.replace(tmp, state_path)
+
+    breakers_by_id = {
+        (h["ticker"], b["id"]): b
+        for h in target_data.get("holdings", [])
+        for b in h.get("thesisBreakers", [])
+    }
+    weight_by_ticker = {h["ticker"]: h.get("targetWeight") for h in target_data.get("holdings", [])}
+
+    triggered: list[dict[str, Any]] = []
+    for ticker, breakers in holdings_state.items():
+        for breaker_id, entry in breakers.items():
+            if entry.get("status") != "TRIGGERED":
+                continue
+            definition = breakers_by_id[(ticker, breaker_id)]
+            triggered.append({
+                "ticker": ticker,
+                "breakerId": breaker_id,
+                "targetWeight": weight_by_ticker.get(ticker),
+                **definition,
+                **entry,
+            })
+
+    return full_state, triggered
+
+
+def log_breaker_override(
+    ticker: str,
+    breaker_id: str,
+    metric: str,
+    current_value: Any,
+    threshold: Any,
+    streak: int | None,
+    horizon: Any,
+    rationale: str,
+    overridden_by: str = "user",
+    path: Path = OVERRIDES_PATH,
+) -> None:
+    """Append one accountability-trail record for a TRIGGERED-breaker override.
+
+    Called by the daily-loop-agent (not daily_brief.py itself) — only a human
+    decision to hold through a TRIGGERED breaker constitutes an "override."
+
+    Args:
+        ticker: Holding ticker.
+        breaker_id: The breaker's id, as defined in target-portfolio.json.
+        metric: The breaker's metric name.
+        current_value: The value that caused (or accompanies) the trigger.
+        threshold: The breaker's threshold.
+        streak: currentStreak at time of override (None for manual breakers).
+        horizon: The breaker's horizon (int for auto, str for manual).
+        rationale: The user's stated reason for holding through.
+        overridden_by: Who made the call — defaults to "user".
+        path: Target JSONL file.
+    """
+    entry = {
+        "date": date.today().isoformat(),
+        "ticker": ticker,
+        "breakerId": breaker_id,
+        "metric": metric,
+        "currentValue": current_value,
+        "threshold": threshold,
+        "streak": streak,
+        "horizon": horizon,
+        "rationale": rationale,
+        "overriddenBy": overridden_by,
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "a") as f:
+        f.write(json.dumps(entry) + "\n")
+
+
+def _cli_log_override(
+    ticker: str,
+    breaker_id: str,
+    rationale: str,
+    overridden_by: str = "user",
+    target_portfolio_path: Path = TARGET_PATH,
+    state_path: Path = STATE_PATH,
+    overrides_path: Path = OVERRIDES_PATH,
+) -> None:
+    """Resolve a breaker's definition + current state, then log an override.
+
+    Thin wrapper so a caller (the daily-loop-agent, via `--log-override`) only
+    needs a ticker, breaker id, and rationale — not thesis_breaker_state.json's
+    internal shape.
+
+    Args:
+        ticker: Holding ticker.
+        breaker_id: The breaker's id, as defined in target-portfolio.json.
+        rationale: The user's stated reason for holding through.
+        overridden_by: Who made the call — defaults to "user".
+        target_portfolio_path: Path to target-portfolio.json.
+        state_path: Path to thesis_breaker_state.json (missing file is fine —
+            streak/currentValue are logged as None if state hasn't run yet).
+        overrides_path: Target JSONL file.
+
+    Raises:
+        ValueError: If the ticker or breaker id isn't found.
+    """
+    with open(target_portfolio_path) as f:
+        target_data = json.load(f)
+    holding = next((h for h in target_data["holdings"] if h["ticker"] == ticker), None)
+    if holding is None:
+        raise ValueError(f"ticker '{ticker}' not found in target-portfolio.json")
+    definition = next((b for b in holding.get("thesisBreakers", []) if b["id"] == breaker_id), None)
+    if definition is None:
+        raise ValueError(f"breaker id '{breaker_id}' not found on {ticker}")
+
+    state: dict[str, Any] = {}
+    if state_path.exists():
+        with open(state_path) as f:
+            state = json.load(f).get("holdings", {})
+    entry = state.get(ticker, {}).get(breaker_id, {})
+
+    log_breaker_override(
+        ticker=ticker, breaker_id=breaker_id, metric=definition["metric"],
+        current_value=entry.get("currentValue"), threshold=definition["threshold"],
+        streak=entry.get("currentStreak"), horizon=definition["horizon"],
+        rationale=rationale, overridden_by=overridden_by, path=overrides_path,
+    )
+
+
 def main() -> None:
-    """CLI entry point — placeholder until Task 3 adds compute_breaker_state()."""
-    print("thesis_breakers.py: run via daily_brief.py, not standalone yet.")
+    """CLI entry point — evaluate breakers standalone, or log an override.
+
+    --log-override lets the daily-loop-agent record a TRIGGERED-breaker
+    override without importing this module directly.
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Thesis breaker evaluation / override logging")
+    parser.add_argument("--log-override", action="store_true", help="Log an override instead of evaluating")
+    parser.add_argument("--ticker", help="Ticker (required with --log-override)")
+    parser.add_argument("--breaker-id", help="Breaker id (required with --log-override)")
+    parser.add_argument("--rationale", help="Override rationale (required with --log-override)")
+    parser.add_argument("--overridden-by", default="user", help="Who made the override call")
+    args = parser.parse_args()
+
+    if args.log_override:
+        if not (args.ticker and args.breaker_id and args.rationale):
+            sys.exit("ERROR: --log-override requires --ticker, --breaker-id, and --rationale")
+        _cli_log_override(args.ticker, args.breaker_id, args.rationale, args.overridden_by)
+        print(f"✅  Logged override for {args.ticker} / {args.breaker_id}")
+        return
+
+    from compute_conviction_scores import compute_all
+    from dataclasses import asdict
+    from market_regime import compute_market_regime
+
+    scores_raw = [asdict(s) for s in compute_all()]
+    try:
+        market_regime = compute_market_regime()
+    except Exception as exc:
+        print(f"market_regime unavailable: {exc}", file=sys.stderr)
+        market_regime = None
+
+    with open(TARGET_PATH) as f:
+        target_data = json.load(f)
+    ticker_pillar = {h["ticker"]: h.get("subStrategyId", "unknown") for h in target_data["holdings"]}
+    pillars: dict[str, list[int]] = {}
+    for s in scores_raw:
+        p = ticker_pillar.get(s["ticker"], "unknown")
+        pillars.setdefault(p, []).append(s["total"])
+    pillar_health = [
+        {"pillar": p, "avg_score": round(sum(pts) / len(pts), 2), "count": len(pts),
+         "min": min(pts), "max": max(pts)}
+        for p, pts in pillars.items() if p not in ("unknown", "cash")
+    ]
+
+    _, triggered = compute_breaker_state(scores_raw, market_regime, pillar_health)
+    if triggered:
+        print(f"TRIGGERED breakers: {len(triggered)}")
+        for t in triggered:
+            print(f"  {t['ticker']}  {t['metric']} {t['operator']} {t['threshold']}")
+    else:
+        print("No TRIGGERED breakers.")
 
 
 if __name__ == "__main__":
