@@ -124,6 +124,145 @@ def resolve_auto_metric_value(
     raise ValueError(f"Unknown auto metric: {metric!r} — must be one of {sorted(AUTO_METRICS)}")
 
 
+def _evaluate_auto_breaker(
+    breaker: dict[str, Any],
+    ticker: str,
+    conviction_scores: list[dict[str, Any]],
+    market_regime: dict[str, Any] | None,
+    pillar_health: list[dict[str, Any]],
+    target_data: dict[str, Any],
+    prev_entry: dict[str, Any],
+    today: str,
+    now_iso: str,
+) -> dict[str, Any]:
+    """Evaluate one auto breaker for one holding, given its prior state.
+
+    Args:
+        breaker: One entry from a holding's thesisBreakers list (type "auto").
+        ticker: Holding ticker this breaker belongs to.
+        conviction_scores: This run's conviction score rows (dicts).
+        market_regime: This run's market_regime.compute_market_regime() output,
+            or None if that step failed.
+        pillar_health: This run's daily_brief._pillar_summary() output.
+        target_data: Parsed target-portfolio.json.
+        prev_entry: This breaker's previous state entry, or {} if none exists yet.
+        today: ISO date string for today (wall-clock-free, injected).
+        now_iso: ISO timestamp string for "now" (wall-clock-free, injected).
+
+    Returns:
+        The new state entry for this breaker: currentValue, conditionMet,
+        currentStreak, streakStartDate, lastEvaluatedAt, and status.
+    """
+    value = resolve_auto_metric_value(
+        breaker["metric"], ticker, conviction_scores, market_regime, pillar_health, target_data
+    )
+    condition_met = evaluate_condition(value, breaker["operator"], breaker["threshold"])
+    prev_streak = prev_entry.get("currentStreak", 0)
+
+    if condition_met:
+        new_streak = prev_streak + 1
+        streak_start = prev_entry.get("streakStartDate") if prev_streak > 0 else today
+    else:
+        new_streak = 0
+        streak_start = None
+
+    horizon = breaker["horizon"]
+    if new_streak >= horizon:
+        status = "TRIGGERED"
+    elif new_streak > 0:
+        status = "WATCHING"
+    else:
+        status = "OK"
+
+    return {
+        "type": "auto",
+        "currentValue": value,
+        "conditionMet": condition_met,
+        "currentStreak": new_streak,
+        "streakStartDate": streak_start,
+        "lastEvaluatedAt": now_iso,
+        "status": status,
+    }
+
+
+def _evaluate_manual_breaker(breaker: dict[str, Any], today: str) -> dict[str, Any]:
+    """Pass through a manual breaker's hand-set status, computing staleness.
+
+    Args:
+        breaker: One entry from a holding's thesisBreakers list (type "manual").
+            Must carry status, statusSetAt, and reviewCadenceDays.
+        today: ISO date string for today (wall-clock-free, injected).
+
+    Returns:
+        The state entry for this breaker: status, statusSetAt, reviewCadenceDays,
+        daysSinceReview, and stale.
+    """
+    status_set_at = date.fromisoformat(breaker["statusSetAt"])
+    days_since = (date.fromisoformat(today) - status_set_at).days
+    review_cadence = breaker["reviewCadenceDays"]
+    return {
+        "type": "manual",
+        "status": breaker["status"],
+        "statusSetAt": breaker["statusSetAt"],
+        "reviewCadenceDays": review_cadence,
+        "daysSinceReview": days_since,
+        "stale": days_since > review_cadence,
+    }
+
+
+def evaluate_breakers(
+    target_data: dict[str, Any],
+    conviction_scores: list[dict[str, Any]],
+    market_regime: dict[str, Any] | None,
+    pillar_health: list[dict[str, Any]],
+    prev_state: dict[str, Any],
+    today: str,
+) -> dict[str, dict[str, dict[str, Any]]]:
+    """Evaluate every holding's thesisBreakers against this run's data.
+
+    Pure function — no I/O. Auto breakers use a persisted, run-based streak
+    (not calendar days): each call is "one evaluated run." Manual breakers
+    pass through their hand-set status and compute a staleness flag from
+    reviewCadenceDays. See spec §3.2/§3.3.
+
+    Args:
+        target_data: Parsed target-portfolio.json.
+        conviction_scores: This run's conviction score rows (dicts).
+        market_regime: This run's market_regime.compute_market_regime() output,
+            or None if that step failed.
+        pillar_health: This run's daily_brief._pillar_summary() output.
+        prev_state: Previous run's {ticker: {breakerId: stateEntry}}, or {}
+            on the first-ever run.
+        today: ISO date string (injected, never date.today() — keeps this
+            function wall-clock-free and testable).
+
+    Returns:
+        {ticker: {breakerId: stateEntry}} — the new state for every breaker
+        across every holding that has thesisBreakers defined.
+    """
+    now_iso = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    new_state: dict[str, dict[str, dict[str, Any]]] = {}
+
+    for holding in target_data.get("holdings", []):
+        breakers = holding.get("thesisBreakers", [])
+        if not breakers:
+            continue
+        ticker = holding["ticker"]
+        ticker_state: dict[str, dict[str, Any]] = {}
+        for breaker in breakers:
+            prev_entry = prev_state.get(ticker, {}).get(breaker["id"], {})
+            if breaker["type"] == "auto":
+                ticker_state[breaker["id"]] = _evaluate_auto_breaker(
+                    breaker, ticker, conviction_scores, market_regime, pillar_health,
+                    target_data, prev_entry, today, now_iso,
+                )
+            else:
+                ticker_state[breaker["id"]] = _evaluate_manual_breaker(breaker, today)
+        new_state[ticker] = ticker_state
+
+    return new_state
+
+
 def main() -> None:
     """CLI entry point — placeholder until Task 3 adds compute_breaker_state()."""
     print("thesis_breakers.py: run via daily_brief.py, not standalone yet.")
