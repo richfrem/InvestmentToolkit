@@ -132,3 +132,164 @@ class TestResolveAutoMetricValue:
         assert AUTO_METRICS == frozenset({
             "rsi", "dcfFairValueGapPct", "trendState", "momentumPercentile", "pillarAvgScore",
         })
+
+
+from thesis_breakers import evaluate_breakers  # noqa: E402
+
+
+def _target_data_one_auto_breaker(horizon: int = 5) -> dict:
+    return {
+        "holdings": [
+            {
+                "ticker": "NBIS",
+                "subStrategyId": "asi_race",
+                "targetWeight": 5.5,
+                "thesisBreakers": [
+                    {
+                        "id": "nbis-trend-breakdown",
+                        "type": "auto",
+                        "metric": "trendState",
+                        "operator": "in",
+                        "threshold": ["DOWNTREND"],
+                        "horizon": horizon,
+                        "note": "Sustained downtrend contradicts the thesis",
+                    }
+                ],
+            }
+        ]
+    }
+
+
+def _regime_with_trend(state: str) -> dict:
+    return {"tickerRegimes": [
+        {"ticker": "NBIS", "trend": {"position": "BELOW", "slope": "FALLING", "state": state},
+         "momentumPercentile": 10.0, "volatilityPercentile": 80.0},
+    ]}
+
+
+class TestEvaluateBreakersAutoStreak:
+    def test_first_true_evaluation_starts_streak_at_one_and_watching(self):
+        result = evaluate_breakers(
+            _target_data_one_auto_breaker(horizon=5), [], _regime_with_trend("DOWNTREND"),
+            [], prev_state={}, today="2026-07-09",
+        )
+        entry = result["NBIS"]["nbis-trend-breakdown"]
+        assert entry["currentStreak"] == 1
+        assert entry["conditionMet"] is True
+        assert entry["status"] == "WATCHING"
+        assert entry["streakStartDate"] == "2026-07-09"
+        assert entry["currentValue"] == "DOWNTREND"
+
+    def test_streak_increments_across_runs(self):
+        prev_state = {"NBIS": {"nbis-trend-breakdown": {
+            "type": "auto", "currentValue": "DOWNTREND", "conditionMet": True,
+            "currentStreak": 3, "streakStartDate": "2026-07-05",
+            "lastEvaluatedAt": "2026-07-08T13:00:00Z", "status": "WATCHING",
+        }}}
+        result = evaluate_breakers(
+            _target_data_one_auto_breaker(horizon=5), [], _regime_with_trend("DOWNTREND"),
+            [], prev_state=prev_state, today="2026-07-09",
+        )
+        entry = result["NBIS"]["nbis-trend-breakdown"]
+        assert entry["currentStreak"] == 4
+        assert entry["streakStartDate"] == "2026-07-05"
+        assert entry["status"] == "WATCHING"
+
+    def test_streak_reaches_horizon_becomes_triggered(self):
+        prev_state = {"NBIS": {"nbis-trend-breakdown": {
+            "type": "auto", "currentValue": "DOWNTREND", "conditionMet": True,
+            "currentStreak": 4, "streakStartDate": "2026-07-05",
+            "lastEvaluatedAt": "2026-07-08T13:00:00Z", "status": "WATCHING",
+        }}}
+        result = evaluate_breakers(
+            _target_data_one_auto_breaker(horizon=5), [], _regime_with_trend("DOWNTREND"),
+            [], prev_state=prev_state, today="2026-07-09",
+        )
+        entry = result["NBIS"]["nbis-trend-breakdown"]
+        assert entry["currentStreak"] == 5
+        assert entry["status"] == "TRIGGERED"
+
+    def test_condition_false_resets_streak_to_zero(self):
+        prev_state = {"NBIS": {"nbis-trend-breakdown": {
+            "type": "auto", "currentValue": "DOWNTREND", "conditionMet": True,
+            "currentStreak": 4, "streakStartDate": "2026-07-05",
+            "lastEvaluatedAt": "2026-07-08T13:00:00Z", "status": "WATCHING",
+        }}}
+        result = evaluate_breakers(
+            _target_data_one_auto_breaker(horizon=5), [], _regime_with_trend("UPTREND"),
+            [], prev_state=prev_state, today="2026-07-09",
+        )
+        entry = result["NBIS"]["nbis-trend-breakdown"]
+        assert entry["currentStreak"] == 0
+        assert entry["conditionMet"] is False
+        assert entry["status"] == "OK"
+        assert entry["streakStartDate"] is None
+
+    def test_unresolvable_metric_never_crashes_and_counts_as_not_met(self):
+        result = evaluate_breakers(
+            _target_data_one_auto_breaker(horizon=5), [], None,
+            [], prev_state={}, today="2026-07-09",
+        )
+        entry = result["NBIS"]["nbis-trend-breakdown"]
+        assert entry["conditionMet"] is False
+        assert entry["currentStreak"] == 0
+
+
+class TestEvaluateBreakersManualStaleness:
+    def _target_data_one_manual_breaker(self, review_cadence_days: int = 90) -> dict:
+        return {
+            "holdings": [
+                {
+                    "ticker": "NBIS",
+                    "subStrategyId": "asi_race",
+                    "targetWeight": 5.5,
+                    "thesisBreakers": [
+                        {
+                            "id": "nbis-ndr-floor",
+                            "type": "manual",
+                            "metric": "ndr",
+                            "operator": "<",
+                            "threshold": 115,
+                            "horizon": "2 quarters",
+                            "note": "NDR floor from 10-Q disclosures",
+                            "status": "OK",
+                            "statusSetAt": "2026-07-01",
+                            "statusSetBy": "agent",
+                            "reviewCadenceDays": review_cadence_days,
+                        }
+                    ],
+                }
+            ]
+        }
+
+    def test_manual_breaker_not_stale_within_cadence(self):
+        result = evaluate_breakers(
+            self._target_data_one_manual_breaker(review_cadence_days=90), [], None,
+            [], prev_state={}, today="2026-07-09",
+        )
+        entry = result["NBIS"]["nbis-ndr-floor"]
+        assert entry["daysSinceReview"] == 8
+        assert entry["stale"] is False
+        assert entry["status"] == "OK"
+
+    def test_manual_breaker_stale_past_cadence(self):
+        result = evaluate_breakers(
+            self._target_data_one_manual_breaker(review_cadence_days=5), [], None,
+            [], prev_state={}, today="2026-07-09",
+        )
+        entry = result["NBIS"]["nbis-ndr-floor"]
+        assert entry["daysSinceReview"] == 8
+        assert entry["stale"] is True
+
+    def test_manual_breaker_status_passed_through_verbatim(self):
+        target = self._target_data_one_manual_breaker()
+        target["holdings"][0]["thesisBreakers"][0]["status"] = "TRIGGERED"
+        result = evaluate_breakers(target, [], None, [], prev_state={}, today="2026-07-09")
+        assert result["NBIS"]["nbis-ndr-floor"]["status"] == "TRIGGERED"
+
+
+class TestEvaluateBreakersNoBreakers:
+    def test_holding_with_no_thesis_breakers_produces_no_entries(self):
+        target = {"holdings": [{"ticker": "MSFT", "targetWeight": 2.4}]}
+        result = evaluate_breakers(target, [], None, [], prev_state={}, today="2026-07-09")
+        assert result == {}
