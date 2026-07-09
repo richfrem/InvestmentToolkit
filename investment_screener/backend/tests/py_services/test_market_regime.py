@@ -22,14 +22,14 @@ from market_regime import (  # noqa: E402
 
 
 class TestClassifyTermSlope:
-    def test_rising_ratio_is_steepening(self):
-        assert _classify_term_slope(1.05) == ("STEEPENING", 1)
+    def test_rising_pct_change_is_steepening(self):
+        assert _classify_term_slope(0.8) == ("STEEPENING", 1)
 
-    def test_flat_ratio_is_neutral(self):
-        assert _classify_term_slope(1.0) == ("NEUTRAL", 0)
+    def test_flat_pct_change_is_neutral(self):
+        assert _classify_term_slope(0.0) == ("NEUTRAL", 0)
 
-    def test_falling_ratio_is_flattening(self):
-        assert _classify_term_slope(0.95) == ("FLATTENING", -1)
+    def test_falling_pct_change_is_flattening(self):
+        assert _classify_term_slope(-0.8) == ("FLATTENING", -1)
 
 
 class TestClassifyBreadth:
@@ -45,13 +45,13 @@ class TestClassifyBreadth:
 
 class TestClassifyDxy:
     def test_dxy_above_200d_is_above(self):
-        assert _classify_dxy(3.0) == ("ABOVE", 1)
+        assert _classify_dxy(3.0) == ("ABOVE", -1)
 
     def test_dxy_near_200d_is_near(self):
         assert _classify_dxy(0.0) == ("NEAR", 0)
 
     def test_dxy_below_200d_is_below(self):
-        assert _classify_dxy(-3.0) == ("BELOW", -1)
+        assert _classify_dxy(-3.0) == ("BELOW", 1)
 
 
 class TestClassifyRegimeV2:
@@ -99,6 +99,20 @@ class TestLoadActiveTickers:
         tickers = _load_active_tickers(path)
 
         assert set(tickers) == {"NVDA", "CBRS"}
+
+    def test_excludes_exited_role_defensively(self, tmp_path):
+        # CLAUDE.md rule 9: sold positions get tagged role: "exited". Not yet
+        # observed in live data, but INACTIVE_ROLES excludes it defensively.
+        target = {"holdings": [
+            {"ticker": "NVDA", "role": "accumulate"},
+            {"ticker": "SOLD", "role": "exited"},
+        ]}
+        path = tmp_path / "target-portfolio.json"
+        path.write_text(json.dumps(target))
+
+        tickers = _load_active_tickers(path)
+
+        assert set(tickers) == {"NVDA"}
 
     def test_empty_holdings_returns_empty_list(self, tmp_path):
         path = tmp_path / "target-portfolio.json"
@@ -312,7 +326,7 @@ class TestComputeMarketRegime:
 
         with patch("market_regime.get_macro_regime", return_value=macro_result), \
              patch("market_regime.get_prices", side_effect=fake_get_prices), \
-             patch("market_regime._fetch_ratio", return_value=1.05), \
+             patch("market_regime._fetch_ratio_trend", return_value=0.8), \
              patch("market_regime._fetch_dxy_vs_200d", return_value=3.0):
             result = compute_market_regime(target_portfolio_path=target_path)
 

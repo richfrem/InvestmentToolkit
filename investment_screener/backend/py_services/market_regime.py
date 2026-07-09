@@ -46,26 +46,27 @@ DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
 TARGET_PATH = DATA_DIR / "theses/target-portfolio.json"
 MARKET_REGIME_PATH = DATA_DIR / "market_regime.json"
 
-INACTIVE_ROLES = {"exit", "avoid"}
+INACTIVE_ROLES = {"exit", "exited", "avoid"}
 
 
-def _classify_term_slope(ratio: float) -> tuple[str, int]:
-    """Classify the IEF/SHY (10yr/1-3yr Treasury ETF) price ratio trend.
+def _classify_term_slope(pct_change: float) -> tuple[str, int]:
+    """Classify the IEF/SHY (10yr/1-3yr Treasury ETF) ratio's trailing trend.
 
-    A rising ratio means long-duration bonds are outperforming short-duration
-    ones — the curve is steepening. A falling ratio means the opposite —
-    flattening or inverting, a classic recession-risk tell. Same ETF-ratio
-    pattern as macro_regime.py's existing HYG/LQD credit proxy.
+    Compares the ratio's own recent percentage change (not an absolute
+    level — see _fetch_ratio_trend's docstring for why). A rising ratio
+    means long-duration bonds are outperforming short-duration ones — the
+    curve is steepening. Thresholds calibrated against real 6-month data
+    (20-day % change std ~0.9%).
 
     Args:
-        ratio: IEF close / SHY close.
+        pct_change: % change in the IEF/SHY ratio over the trailing lookback window.
 
     Returns:
         Tuple of (signal_label, score_pts).
     """
-    if ratio > 1.02:
+    if pct_change > 0.5:
         return "STEEPENING", 1
-    if ratio >= 0.98:
+    if pct_change >= -0.5:
         return "NEUTRAL", 0
     return "FLATTENING", -1
 
@@ -90,10 +91,11 @@ def _classify_dxy(pct_vs_200d: float) -> tuple[str, int]:
     """Classify USD strength (UUP vs its own 200d SMA).
 
     A strong, rising dollar is a risk-off tell for this portfolio's
-    international and rate-sensitive names — mirrors _classify_spy's
-    ABOVE/NEAR/BELOW shape but the same direction (ABOVE = risk-on points),
-    since dollar strength here is being used as one input among six, not
-    as a standalone directional call.
+    international and rate-sensitive names, so ABOVE (dollar strength)
+    contributes a risk-off (negative) point — inverted from the SPY-vs-200d
+    signal's ABOVE=risk-on convention. (This fixes a polarity bug: an
+    earlier version scored ABOVE as risk-on, directly contradicting the
+    risk-off rationale stated in this same docstring and in the design spec.)
 
     Args:
         pct_vs_200d: Percentage UUP is above (positive) or below (negative)
@@ -103,10 +105,10 @@ def _classify_dxy(pct_vs_200d: float) -> tuple[str, int]:
         Tuple of (signal_label, score_pts).
     """
     if pct_vs_200d > 2:
-        return "ABOVE", 1
+        return "ABOVE", -1
     if pct_vs_200d > -2:
         return "NEAR", 0
-    return "BELOW", -1
+    return "BELOW", 1
 
 
 def _classify_regime_v2(score: int, unavailable: int) -> tuple[str, bool]:
@@ -140,9 +142,14 @@ def _classify_regime_v2(score: int, unavailable: int) -> tuple[str, bool]:
 def _load_active_tickers(target_portfolio_path: Path) -> list[str]:
     """Read target-portfolio.json and return active-holding tickers.
 
-    Active = role not in INACTIVE_ROLES ({"exit", "avoid"}) — the real role
-    enum values validated by update_thesis.py. Not portfolio_io.load_portfolio_state():
-    that loader reads portfolio.json (broker shares/prices) and has no role field.
+    Active = role not in INACTIVE_ROLES. update_thesis.py's VALID_ROLES is a
+    different enum for a different file and doesn't apply here; the real
+    values observed in target-portfolio.json's live data are {watchlist,
+    accumulate, trim, initiate, exit, avoid}. `exited` is also excluded
+    defensively per CLAUDE.md rule 9's documented sold-position convention,
+    even though it hasn't appeared in live data yet. Not
+    portfolio_io.load_portfolio_state(): that loader reads portfolio.json
+    (broker shares/prices) and has no role field.
 
     Args:
         target_portfolio_path: Path to target-portfolio.json.
@@ -301,23 +308,37 @@ def compute_volatility_percentile(
     return round(float(percentile), 2)
 
 
-def _fetch_ratio(numerator: str, denominator: str) -> float | None:
-    """Fetch two tickers' latest closes and return numerator/denominator.
+def _fetch_ratio_trend(numerator: str, denominator: str, lookback_days: int = 20) -> float | None:
+    """Fetch two tickers' history and return the % change in their price
+    ratio over the trailing `lookback_days` trading days.
 
-    Used for the IEF/SHY term-slope proxy — same ETF-ratio-via-yfinance
-    pattern as macro_regime.py's HYG/LQD credit signal.
+    Used for the IEF/SHY term-slope proxy. A fixed absolute-ratio threshold
+    doesn't work here — IEF and SHY trade at structurally different price
+    levels (IEF ~$95, SHY ~$82), so the ratio always sits ~1.13-1.18 and
+    never crosses a naive absolute threshold. Comparing the ratio's own
+    recent trend instead (verified against real data: 20-day % change
+    ranges roughly -2.5% to +1.8%, std ~0.9%) gives a genuinely informative
+    signal, matching the percentage-distance style already used for
+    SPY/DXY-vs-200d elsewhere in this module.
 
     Args:
         numerator: Ticker whose close is the ratio's numerator.
         denominator: Ticker whose close is the ratio's denominator.
+        lookback_days: Trading days to look back for the trend comparison.
 
     Returns:
-        The ratio, or None if either fetch fails.
+        Percentage change in the ratio over the lookback window, or None if
+        either fetch fails or there's insufficient history.
     """
     try:
-        num_close = float(yf.Ticker(numerator).history(period="5d")["Close"].to_numpy()[-1])
-        den_close = float(yf.Ticker(denominator).history(period="5d")["Close"].to_numpy()[-1])
-        return num_close / den_close if den_close > 0 else None
+        num_hist = yf.Ticker(numerator).history(period="3mo")["Close"]
+        den_hist = yf.Ticker(denominator).history(period="3mo")["Close"]
+        ratio = (num_hist / den_hist).dropna()
+        if len(ratio) < lookback_days + 1:
+            return None
+        current = float(ratio.iloc[-1])
+        past = float(ratio.iloc[-1 - lookback_days])
+        return (current - past) / past * 100
     except Exception:
         return None
 
@@ -388,12 +409,13 @@ def _score_macro_signals(macro: MacroRegimeResult) -> tuple[int, int, dict[str, 
 
 
 def _score_new_signals(
-    term_slope_ratio: float | None, breadth_pct: float | None, dxy_pct: float | None
+    term_slope_pct: float | None, breadth_pct: float | None, dxy_pct: float | None
 ) -> tuple[int, int, dict[str, Any]]:
     """Score the 3 new signals added by this module (termSlope/breadth/dxy).
 
     Args:
-        term_slope_ratio: IEF/SHY ratio, or None if the fetch failed.
+        term_slope_pct: % change in the IEF/SHY ratio over the trailing
+            lookback window, or None if the fetch failed.
         breadth_pct: % of active holdings above their own 200d SMA, or None
             if it could not be computed.
         dxy_pct: UUP's % distance above/below its own 200d SMA, or None if
@@ -407,12 +429,12 @@ def _score_new_signals(
     unavailable = 0
     signals: dict[str, Any] = {}
 
-    if term_slope_ratio is None:
+    if term_slope_pct is None:
         signals["termSlope"] = {"value": None, "signal": "UNAVAILABLE"}
         unavailable += 1
     else:
-        term_signal, term_pts = _classify_term_slope(term_slope_ratio)
-        signals["termSlope"] = {"value": round(term_slope_ratio, 4), "signal": term_signal}
+        term_signal, term_pts = _classify_term_slope(term_slope_pct)
+        signals["termSlope"] = {"value": round(term_slope_pct, 4), "signal": term_signal}
         score += term_pts
 
     if breadth_pct is None:
@@ -493,12 +515,12 @@ def compute_market_regime(target_portfolio_path: Path = TARGET_PATH) -> dict[str
     for t in breadth_excluded:
         warnings.append(f"{t} excluded from breadth/trend: insufficient price history")
 
-    term_slope_ratio = _fetch_ratio("IEF", "SHY")
+    term_slope_pct = _fetch_ratio_trend("IEF", "SHY")
     dxy_pct = _fetch_dxy_vs_200d()
 
     macro_score, macro_unavailable, macro_signals = _score_macro_signals(macro)
     new_score, new_unavailable, new_signals = _score_new_signals(
-        term_slope_ratio, breadth_pct, dxy_pct
+        term_slope_pct, breadth_pct, dxy_pct
     )
 
     score = macro_score + new_score
