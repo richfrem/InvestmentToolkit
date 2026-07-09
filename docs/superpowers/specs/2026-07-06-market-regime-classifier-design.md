@@ -110,9 +110,9 @@ as the existing 3):**
     "vix": {"value": 14.2, "signal": "LOW"},
     "spy200d": {"value": 3.1, "signal": "ABOVE"},
     "credit": {"value": 0.64, "signal": "HEALTHY"},
-    "termSlope": {"value": 1.02, "signal": "STEEPENING"},
+    "termSlope": {"value": 0.8, "signal": "STEEPENING"},
     "breadth": {"value": 71.4, "signal": "HEALTHY"},
-    "dxy": {"value": -1.8, "signal": "ABOVE"}
+    "dxy": {"value": 2.5, "signal": "ABOVE"}
   },
   "tickerRegimes": [
     {
