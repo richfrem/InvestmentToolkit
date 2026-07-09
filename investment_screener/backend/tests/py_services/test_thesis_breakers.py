@@ -293,3 +293,190 @@ class TestEvaluateBreakersNoBreakers:
         target = {"holdings": [{"ticker": "MSFT", "targetWeight": 2.4}]}
         result = evaluate_breakers(target, [], None, [], prev_state={}, today="2026-07-09")
         assert result == {}
+
+
+import json as _json
+
+from thesis_breakers import (  # noqa: E402
+    _cli_log_override,
+    compute_breaker_state,
+    log_breaker_override,
+)
+
+
+class TestComputeBreakerState:
+    def test_writes_state_file_and_returns_triggered_list(self, tmp_path):
+        target_path = tmp_path / "target-portfolio.json"
+        state_path = tmp_path / "thesis_breaker_state.json"
+        target_data = {
+            "holdings": [
+                {
+                    "ticker": "NBIS",
+                    "subStrategyId": "asi_race",
+                    "targetWeight": 5.5,
+                    "thesisBreakers": [
+                        {
+                            "id": "nbis-trend-breakdown",
+                            "type": "auto",
+                            "metric": "trendState",
+                            "operator": "in",
+                            "threshold": ["DOWNTREND"],
+                            "horizon": 5,
+                            "note": "Sustained downtrend",
+                        }
+                    ],
+                },
+                {"ticker": "MSFT", "subStrategyId": "quality_saas", "targetWeight": 2.4},
+            ]
+        }
+        target_path.write_text(_json.dumps(target_data))
+        prev_state = {
+            "generatedAt": "2026-07-08T13:00:00Z",
+            "holdings": {"NBIS": {"nbis-trend-breakdown": {
+                "type": "auto", "currentValue": "DOWNTREND", "conditionMet": True,
+                "currentStreak": 4, "streakStartDate": "2026-07-04",
+                "lastEvaluatedAt": "2026-07-08T13:00:00Z", "status": "WATCHING",
+            }}},
+        }
+        state_path.write_text(_json.dumps(prev_state))
+        market_regime = {"tickerRegimes": [
+            {"ticker": "NBIS", "trend": {"position": "BELOW", "slope": "FALLING",
+             "state": "DOWNTREND"}, "momentumPercentile": 5.0, "volatilityPercentile": 90.0},
+        ]}
+
+        state, triggered = compute_breaker_state(
+            conviction_scores=[], market_regime=market_regime, pillar_health=[],
+            target_portfolio_path=target_path, state_path=state_path,
+        )
+
+        assert state_path.exists()
+        on_disk = _json.loads(state_path.read_text())
+        assert on_disk["holdings"]["NBIS"]["nbis-trend-breakdown"]["status"] == "TRIGGERED"
+        assert "generatedAt" in on_disk
+
+        assert len(triggered) == 1
+        assert triggered[0]["ticker"] == "NBIS"
+        assert triggered[0]["breakerId"] == "nbis-trend-breakdown"
+        assert triggered[0]["metric"] == "trendState"
+        assert triggered[0]["targetWeight"] == 5.5
+        assert triggered[0]["currentStreak"] == 5
+
+    def test_no_prior_state_file_treated_as_empty(self, tmp_path):
+        target_path = tmp_path / "target-portfolio.json"
+        state_path = tmp_path / "thesis_breaker_state.json"
+        target_path.write_text(_json.dumps({"holdings": []}))
+
+        state, triggered = compute_breaker_state(
+            conviction_scores=[], market_regime=None, pillar_health=[],
+            target_portfolio_path=target_path, state_path=state_path,
+        )
+
+        assert state["holdings"] == {}
+        assert triggered == []
+
+
+class TestLogBreakerOverride:
+    def test_appends_one_jsonl_line(self, tmp_path):
+        path = tmp_path / "breaker-overrides.jsonl"
+        log_breaker_override(
+            ticker="NBIS", breaker_id="nbis-trend-breakdown", metric="trendState",
+            current_value="DOWNTREND", threshold=["DOWNTREND"], streak=5, horizon=5,
+            rationale="Vera Rubin ramp de-risks the downtrend; holding through",
+            path=path,
+        )
+        lines = path.read_text().strip().splitlines()
+        assert len(lines) == 1
+        entry = _json.loads(lines[0])
+        assert entry["ticker"] == "NBIS"
+        assert entry["breakerId"] == "nbis-trend-breakdown"
+        assert entry["overriddenBy"] == "user"
+        assert "date" in entry
+
+    def test_second_call_appends_not_overwrites(self, tmp_path):
+        path = tmp_path / "breaker-overrides.jsonl"
+        log_breaker_override(
+            ticker="NBIS", breaker_id="a", metric="rsi", current_value=25, threshold=30,
+            streak=3, horizon=3, rationale="first", path=path,
+        )
+        log_breaker_override(
+            ticker="PANW", breaker_id="b", metric="rsi", current_value=25, threshold=30,
+            streak=3, horizon=3, rationale="second", path=path,
+        )
+        lines = path.read_text().strip().splitlines()
+        assert len(lines) == 2
+
+
+class TestCliLogOverride:
+    def test_resolves_definition_and_state_then_logs(self, tmp_path):
+        target_path = tmp_path / "target-portfolio.json"
+        state_path = tmp_path / "thesis_breaker_state.json"
+        overrides_path = tmp_path / "breaker-overrides.jsonl"
+        target_path.write_text(_json.dumps({"holdings": [{
+            "ticker": "NBIS", "thesisBreakers": [{
+                "id": "nbis-trend-breakdown", "type": "auto", "metric": "trendState",
+                "operator": "in", "threshold": ["DOWNTREND"], "horizon": 5,
+                "note": "Sustained downtrend",
+            }],
+        }]}))
+        state_path.write_text(_json.dumps({"holdings": {"NBIS": {"nbis-trend-breakdown": {
+            "type": "auto", "currentValue": "DOWNTREND", "conditionMet": True,
+            "currentStreak": 5, "status": "TRIGGERED",
+        }}}}))
+
+        _cli_log_override(
+            ticker="NBIS", breaker_id="nbis-trend-breakdown",
+            rationale="Vera Rubin ramp de-risks the downtrend",
+            target_portfolio_path=target_path, state_path=state_path,
+            overrides_path=overrides_path,
+        )
+
+        lines = overrides_path.read_text().strip().splitlines()
+        assert len(lines) == 1
+        entry = _json.loads(lines[0])
+        assert entry["metric"] == "trendState"
+        assert entry["currentValue"] == "DOWNTREND"
+        assert entry["streak"] == 5
+        assert entry["horizon"] == 5
+        assert entry["rationale"] == "Vera Rubin ramp de-risks the downtrend"
+
+    def test_unknown_ticker_raises(self, tmp_path):
+        target_path = tmp_path / "target-portfolio.json"
+        target_path.write_text(_json.dumps({"holdings": []}))
+        with pytest.raises(ValueError, match="not found in target-portfolio"):
+            _cli_log_override(
+                ticker="NOPE", breaker_id="x", rationale="r",
+                target_portfolio_path=target_path, state_path=tmp_path / "s.json",
+                overrides_path=tmp_path / "o.jsonl",
+            )
+
+    def test_unknown_breaker_id_raises(self, tmp_path):
+        target_path = tmp_path / "target-portfolio.json"
+        target_path.write_text(_json.dumps({"holdings": [{"ticker": "NBIS", "thesisBreakers": []}]}))
+        with pytest.raises(ValueError, match="not found on NBIS"):
+            _cli_log_override(
+                ticker="NBIS", breaker_id="nope", rationale="r",
+                target_portfolio_path=target_path, state_path=tmp_path / "s.json",
+                overrides_path=tmp_path / "o.jsonl",
+            )
+
+    def test_missing_state_file_still_logs_with_null_streak(self, tmp_path):
+        target_path = tmp_path / "target-portfolio.json"
+        target_path.write_text(_json.dumps({"holdings": [{
+            "ticker": "NBIS", "thesisBreakers": [{
+                "id": "nbis-ndr-floor", "type": "manual", "metric": "ndr", "operator": "<",
+                "threshold": 115, "horizon": "2 quarters", "note": "NDR floor",
+                "status": "TRIGGERED", "statusSetAt": "2026-07-09",
+                "statusSetBy": "agent", "reviewCadenceDays": 90,
+            }],
+        }]}))
+        overrides_path = tmp_path / "breaker-overrides.jsonl"
+
+        _cli_log_override(
+            ticker="NBIS", breaker_id="nbis-ndr-floor", rationale="Board confirmed NDR recovery plan",
+            target_portfolio_path=target_path, state_path=tmp_path / "does-not-exist.json",
+            overrides_path=overrides_path,
+        )
+
+        entry = _json.loads(overrides_path.read_text().strip())
+        assert entry["streak"] is None
+        assert entry["horizon"] == "2 quarters"
