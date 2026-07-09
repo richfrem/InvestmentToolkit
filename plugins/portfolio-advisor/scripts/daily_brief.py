@@ -171,6 +171,7 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     # Dynamically import py_services modules
     sys.path.insert(0, str(PY_SERVICES))
     from macro_regime import get_macro_regime
+    from market_regime import compute_market_regime
     from risk_engine import compute_risk_snapshot
     from earnings_calendar import get_earnings_calendar
     from compute_conviction_scores import compute_all
@@ -187,6 +188,14 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     # ── 1. Macro regime ───────────────────────────────────────────────────────
     print("▶ Macro regime...", file=sys.stderr)
     macro = get_macro_regime()
+
+    # ── 1a. Market regime (additive — does not feed the RISK-OFF gate above) ──
+    print("▶ Market regime...", file=sys.stderr)
+    try:
+        market_regime = compute_market_regime()
+    except Exception as exc:
+        print(f"  Market regime skipped: {exc}", file=sys.stderr)
+        market_regime = None
 
     # ── 1b. Portfolio risk snapshot ───────────────────────────────────────────
     print("▶ Risk snapshot...", file=sys.stderr)
@@ -280,6 +289,7 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
         "date": date.today().isoformat(),
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "macro_regime": asdict(macro),
+        "market_regime": market_regime,
         "risk_snapshot": risk_snapshot,
         "ta_refreshed": ran_ta,
         "ta_skip_reason": ta_skip_reason,
@@ -338,16 +348,27 @@ def render(brief: dict[str, Any]) -> str:
                 f"  (${g['current']:.2f} vs ${g['prev_close']:.2f})  {state}"
             )
 
-    # ── Macro ─────────────────────────────────────────────────────────────────
-    regime = macro["regime"]
-    icon   = {"RISK-ON": "✅", "NEUTRAL": "⚠️", "RISK-OFF": "🔴"}.get(regime, "")
-    lines.append(f"\n{icon}  MACRO REGIME: {regime}  (score={macro['score']})")
-    for d in macro["details"]:
-        lines.append(f"    {d}")
-    if regime == "RISK-OFF":
-        lines.append("    ⛔  Gate all ACCUMULATE signals. Execute only REDUCE / EXIT today.")
-    elif regime == "NEUTRAL":
-        lines.append("    ⚠️  Only highest-conviction (+4 or above) ACCUMULATE actions.")
+    # ── Macro (unchanged — still feeds the RISK-OFF/NEUTRAL ACCUMULATE gate) ──
+    macro_regime_label = macro["regime"]
+    if macro_regime_label == "RISK-OFF":
+        lines.append("\n⛔  MACRO GATE: RISK-OFF — ACCUMULATE signals blocked today.")
+    elif macro_regime_label == "NEUTRAL":
+        lines.append("\n⚠️  MACRO GATE: NEUTRAL — only highest-conviction (+4 or above) ACCUMULATE actions.")
+
+    # ── Market regime (new, C2 — additive, informational only) ────────────────
+    mr = brief.get("market_regime")
+    if mr:
+        icon = {"RISK_ON": "✅", "NEUTRAL": "⚠️", "RISK_OFF": "🔴", "STRESS": "🆘"}.get(mr["regime"], "")
+        breadth = mr.get("signals", {}).get("breadth", {}).get("value")
+        term_slope = mr.get("signals", {}).get("termSlope", {}).get("value")
+        breadth_str = f"{breadth:.0f}%" if breadth is not None else "n/a"
+        term_str = f"{term_slope:+.2f}" if term_slope is not None else "n/a"
+        lines.append(
+            f"\n{icon}  REGIME: {mr['regime']} · breadth {breadth_str} · "
+            f"term-slope {term_str} · degraded: {'yes' if mr['degraded'] else 'no'}"
+        )
+    else:
+        lines.append("\n⚠️  REGIME: unavailable (market_regime.py failed — see stderr)")
 
     # ── Portfolio risk snapshot ───────────────────────────────────────────────
     risk = brief.get("risk_snapshot")
@@ -397,7 +418,7 @@ def render(brief: dict[str, Any]) -> str:
     # ── ACCUMULATE list (gated by macro) ──────────────────────────────────────
     accum = [s for s in scores if s["band"] == "ACCUMULATE"]
     if accum:
-        if regime == "RISK-OFF":
+        if macro_regime_label == "RISK-OFF":
             lines.append(f"\n  (ACCUMULATE signals muted — RISK-OFF macro. "
                          f"{len(accum)} candidates queued.)")
         else:
