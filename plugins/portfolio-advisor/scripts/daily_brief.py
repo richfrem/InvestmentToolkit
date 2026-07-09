@@ -329,6 +329,29 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
 
 # ── Renderer ──────────────────────────────────────────────────────────────────
 
+def _stale_manual_breakers(
+    thesis_breakers: dict[str, Any] | None,
+) -> list[tuple[str, str, dict[str, Any]]]:
+    """Collect every stale manual breaker across all holdings.
+
+    Args:
+        thesis_breakers: The daily brief's thesis_breakers state dict (Task 3's
+            compute_breaker_state() output), or None if evaluation failed this run.
+
+    Returns:
+        List of (ticker, breaker_id, state_entry) tuples for every manual
+        breaker currently flagged stale.
+    """
+    if not thesis_breakers:
+        return []
+    return [
+        (ticker, bid, entry)
+        for ticker, breakers in thesis_breakers.get("holdings", {}).items()
+        for bid, entry in breakers.items()
+        if entry.get("type") == "manual" and entry.get("stale")
+    ]
+
+
 def render(brief: dict[str, Any]) -> str:
     """Render the daily brief as a human-readable report.
 
@@ -499,18 +522,13 @@ def render(brief: dict[str, Any]) -> str:
             )
 
     # ── Manual breaker staleness (B5) ──────────────────────────────────────────
-    stale_manual: list[tuple[str, str, dict[str, Any]]] = []
-    if brief.get("thesis_breakers"):
-        for ticker, breakers in brief["thesis_breakers"].get("holdings", {}).items():
-            for bid, entry in breakers.items():
-                if entry.get("type") == "manual" and entry.get("stale"):
-                    stale_manual.append((ticker, bid, entry))
+    stale_manual = _stale_manual_breakers(brief.get("thesis_breakers"))
     if stale_manual:
         lines.append(f"\n🕰   MANUAL BREAKERS NEEDING REVIEW — {len(stale_manual)}:")
         for ticker, bid, entry in stale_manual:
             lines.append(
-                f"    {ticker:<8} {bid}  last set {entry.get('statusSetAt')} "
-                f"({entry.get('daysSinceReview')}d ago, cadence {entry.get('reviewCadenceDays')}d)"
+                f"    {ticker:<8} {bid}  last set {entry['statusSetAt']} "
+                f"({entry['daysSinceReview']}d ago, cadence {entry['reviewCadenceDays']}d)"
             )
 
     # ── Footer ────────────────────────────────────────────────────────────────
