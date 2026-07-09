@@ -177,6 +177,7 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     from compute_conviction_scores import compute_all
     from brief_recommendations import build_recommendations, load_standing_decisions
     from overnight_gaps import get_overnight_gaps
+    from thesis_breakers import compute_breaker_state
 
     # ── 0. Overnight gap scan ─────────────────────────────────────────────────
     print("▶ Overnight gap scan...", file=sys.stderr)
@@ -263,6 +264,18 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
         target_data = json.load(f)
     pillars = _pillar_summary(scores_raw, target_data)
 
+    # ── 5b. Thesis breaker evaluation (B5 — additive, top-of-triage) ──────────
+    print("▶ Thesis breakers...", file=sys.stderr)
+    try:
+        breaker_state, triggered_breakers = compute_breaker_state(
+            conviction_scores=scores_raw,
+            market_regime=market_regime,
+            pillar_health=pillars,
+        )
+    except Exception as exc:
+        print(f"  Thesis breakers skipped: {exc}", file=sys.stderr)
+        breaker_state, triggered_breakers = None, []
+
     # ── 6. Deltas vs yesterday ────────────────────────────────────────────────
     yesterday = _load_yesterday()
     deltas = _score_deltas(scores_raw, yesterday)
@@ -301,6 +314,8 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
         "pillar_deltas": pillar_deltas,
         "earnings_flags": earnings_raw,
         "yesterday_date": yesterday.get("date") if yesterday else None,
+        "thesis_breakers": breaker_state,
+        "thesis_breakers_triggered": triggered_breakers,
     }
 
     # ── 7. Save snapshot ──────────────────────────────────────────────────────
@@ -335,6 +350,22 @@ def render(brief: dict[str, Any]) -> str:
 
     W = 72
     lines += [f"\n{'═' * W}", f"  DAILY PORTFOLIO BRIEF — {today}  (prev: {yesterday})", f"{'═' * W}"]
+
+    # ── Thesis breakers (B5 — top of triage, above all TA signals) ────────────
+    triggered = brief.get("thesis_breakers_triggered") or []
+    if triggered:
+        triggered_sorted = sorted(triggered, key=lambda b: -(b.get("targetWeight") or 0))
+        lines.append(f"\n🚨  THESIS BREAKER TRIGGERED — {len(triggered_sorted)} holding(s):")
+        for b in triggered_sorted:
+            thr = b["threshold"]
+            thr_str = ",".join(str(t) for t in thr) if isinstance(thr, list) else str(thr)
+            if b["type"] == "auto":
+                detail = f"(current: {b.get('currentValue')}, {b.get('currentStreak')}/{b.get('horizon')} consecutive runs)"
+            else:
+                detail = f"(manually flagged TRIGGERED on {b.get('statusSetAt')})"
+            lines.append(f"    {b['ticker']:<8} {b['metric']} {b['operator']} {thr_str}  {detail}")
+            if b.get("note"):
+                lines.append(f"          \"{b['note']}\"")
 
     # ── Overnight gaps ────────────────────────────────────────────────────────
     gaps = brief.get("overnight_gaps", [])
@@ -465,6 +496,21 @@ def render(brief: dict[str, Any]) -> str:
                 f"   {pname:<20}  {p['avg_score']:>+5.2f}  "
                 f"[{p['min']:+d}→{p['max']:+d}]  {pd_str:<8}  "
                 f"n={p['count']}  {bar}"
+            )
+
+    # ── Manual breaker staleness (B5) ──────────────────────────────────────────
+    stale_manual: list[tuple[str, str, dict[str, Any]]] = []
+    if brief.get("thesis_breakers"):
+        for ticker, breakers in brief["thesis_breakers"].get("holdings", {}).items():
+            for bid, entry in breakers.items():
+                if entry.get("type") == "manual" and entry.get("stale"):
+                    stale_manual.append((ticker, bid, entry))
+    if stale_manual:
+        lines.append(f"\n🕰   MANUAL BREAKERS NEEDING REVIEW — {len(stale_manual)}:")
+        for ticker, bid, entry in stale_manual:
+            lines.append(
+                f"    {ticker:<8} {bid}  last set {entry.get('statusSetAt')} "
+                f"({entry.get('daysSinceReview')}d ago, cadence {entry.get('reviewCadenceDays')}d)"
             )
 
     # ── Footer ────────────────────────────────────────────────────────────────
