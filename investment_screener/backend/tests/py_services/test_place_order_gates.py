@@ -22,6 +22,13 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[4]
 PLACE_ORDER = REPO_ROOT / "investment_screener/backend/py_services/place_order.py"
 
+# A known-in-hours weekday timestamp (Wed 2024-06-12, 11:00 ET / 15:00 UTC — no US market
+# holiday that week) for PLACE_ORDER_NOW_OVERRIDE, so gate-order tests below assert the
+# gate they name regardless of what day/time this suite actually runs (map-debt: these 3
+# tests used to fail with MARKET_CLOSED_BLOCKED on weekends/after-hours since the market-
+# hours gate fires before the gate under test).
+IN_HOURS_NOW = "2024-06-12T15:00:00+00:00"
+
 
 def _run(*extra_args: str, env_overrides: dict | None = None) -> subprocess.CompletedProcess:
     env = os.environ.copy()
@@ -100,7 +107,10 @@ def test_stale_portfolio_exits_4(tmp_path):
     r = _run(
         "--ticker", "AAPL", "--action", "buy", "--shares", "1",
         "--order-type", "market", "--account", "tfsa", "--preflight",
-        env_overrides={"PLACE_ORDER_PORTFOLIO_PATH": str(portfolio)},
+        env_overrides={
+            "PLACE_ORDER_PORTFOLIO_PATH": str(portfolio),
+            "PLACE_ORDER_NOW_OVERRIDE": IN_HOURS_NOW,
+        },
     )
     assert r.returncode == 4, (
         f"Expected exit 4 for stale portfolio, got {r.returncode}.\n"
@@ -125,6 +135,45 @@ def test_stale_with_ack_stale_proceeds(tmp_path):
     assert r.returncode != 4, (
         f"Expected --ack-stale to bypass stale gate (not exit 4), got {r.returncode}.\n"
         f"stdout: {r.stdout[:300]}\nstderr: {r.stderr[:300]}"
+    )
+
+
+def test_market_closed_exits_5_and_ack_closed_bypasses(tmp_path):
+    """PLACE_ORDER_NOW_OVERRIDE lets this gate be asserted directly, independent of
+    wall-clock/weekday state — a Saturday timestamp must exit 5 (MARKET_CLOSED_BLOCKED)
+    before any Node.js invocation, and --ack-closed must bypass it (not exit 5)."""
+    portfolio = _make_portfolio(tmp_path, age_minutes=0)
+    saturday_utc = "2024-06-15T15:00:00+00:00"  # confirmed Saturday
+
+    r = _run(
+        "--ticker", "AAPL", "--action", "buy", "--shares", "1",
+        "--order-type", "market", "--account", "tfsa", "--preflight",
+        env_overrides={
+            "PLACE_ORDER_PORTFOLIO_PATH": str(portfolio),
+            "PLACE_ORDER_NOW_OVERRIDE": saturday_utc,
+        },
+    )
+    assert r.returncode == 5, (
+        f"Expected exit 5 for market-closed weekend, got {r.returncode}.\n"
+        f"stdout: {r.stdout[:300]}\nstderr: {r.stderr[:300]}"
+    )
+    combined = r.stdout + r.stderr
+    assert "MARKET_CLOSED_BLOCKED" in combined or "closed" in combined.lower(), (
+        "Expected a market-closed message in output"
+    )
+
+    r_ack = _run(
+        "--ticker", "AAPL", "--action", "buy", "--shares", "1",
+        "--order-type", "market", "--account", "tfsa", "--preflight",
+        "--ack-closed",
+        env_overrides={
+            "PLACE_ORDER_PORTFOLIO_PATH": str(portfolio),
+            "PLACE_ORDER_NOW_OVERRIDE": saturday_utc,
+        },
+    )
+    assert r_ack.returncode != 5, (
+        f"Expected --ack-closed to bypass market-closed gate (not exit 5), got {r_ack.returncode}.\n"
+        f"stdout: {r_ack.stdout[:300]}\nstderr: {r_ack.stderr[:300]}"
     )
 
 
@@ -156,7 +205,10 @@ def test_fresh_portfolio_exits_0(tmp_path):
     r = _run(
         "--ticker", "AAPL", "--action", "buy", "--shares", "1",
         "--order-type", "market", "--account", "tfsa", "--preflight",
-        env_overrides={"PLACE_ORDER_PORTFOLIO_PATH": str(portfolio)},
+        env_overrides={
+            "PLACE_ORDER_PORTFOLIO_PATH": str(portfolio),
+            "PLACE_ORDER_NOW_OVERRIDE": IN_HOURS_NOW,
+        },
     )
     combined = r.stdout + r.stderr
     if r.returncode == 1 and "No broker connected" in combined:
@@ -178,7 +230,10 @@ def test_size_cap_exits_3(tmp_path):
         "--order-type", "limit", "--limit-price", "100.00",  # cost = $10,000
         "--account", "tfsa", "--preflight",
         "--max-order-value", "100",   # $100 cap — $10,000 order will exceed it
-        env_overrides={"PLACE_ORDER_PORTFOLIO_PATH": str(portfolio)},
+        env_overrides={
+            "PLACE_ORDER_PORTFOLIO_PATH": str(portfolio),
+            "PLACE_ORDER_NOW_OVERRIDE": IN_HOURS_NOW,
+        },
     )
     combined = r.stdout + r.stderr
     if r.returncode == 1 and "No broker connected" in combined:
