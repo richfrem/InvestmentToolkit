@@ -56,6 +56,12 @@ THESIS_DOC  = REPO_ROOT / "plugins" / "portfolio-advisor" / "references" / "inve
 
 VALID_ROLES = {"core", "hedge", "speculative", "reserve"}
 
+AUTO_METRICS = frozenset({
+    "rsi", "dcfFairValueGapPct", "trendState", "momentumPercentile", "pillarAvgScore",
+})
+VALID_OPERATORS = frozenset({"<", "<=", ">", ">=", "==", "in"})
+VALID_STATUSES = frozenset({"OK", "WATCHING", "TRIGGERED"})
+
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -192,6 +198,103 @@ def apply_patch(data: dict, patch: dict) -> dict:
     return data
 
 
+def validate_breaker(breaker: dict) -> list[str]:
+    """Validate a thesisBreakers entry before it's written to target-portfolio.json.
+
+    Args:
+        breaker: A single breaker dict (auto or manual — see spec §2.1).
+
+    Returns:
+        List of human-readable error strings; empty if valid.
+    """
+    errors: list[str] = []
+    if not breaker.get("id"):
+        errors.append("breaker missing 'id'")
+    if breaker.get("type") not in ("auto", "manual"):
+        errors.append(f"breaker 'type' must be 'auto' or 'manual', got {breaker.get('type')!r}")
+    if breaker.get("type") == "auto" and breaker.get("metric") not in AUTO_METRICS:
+        errors.append(f"auto breaker 'metric' must be one of {sorted(AUTO_METRICS)}, got {breaker.get('metric')!r}")
+    if breaker.get("operator") not in VALID_OPERATORS:
+        errors.append(f"'operator' must be one of {sorted(VALID_OPERATORS)}, got {breaker.get('operator')!r}")
+    if breaker.get("operator") == "in" and not isinstance(breaker.get("threshold"), list):
+        errors.append("operator 'in' requires 'threshold' to be a list")
+    if breaker.get("type") == "manual":
+        if breaker.get("status") not in VALID_STATUSES:
+            errors.append(f"manual breaker 'status' must be one of {sorted(VALID_STATUSES)}, got {breaker.get('status')!r}")
+        if not breaker.get("statusSetAt"):
+            errors.append("manual breaker missing 'statusSetAt'")
+        if not breaker.get("reviewCadenceDays"):
+            errors.append("manual breaker missing 'reviewCadenceDays'")
+    return errors
+
+
+def set_breaker(holding: dict, breaker: dict) -> None:
+    """Add a new breaker to a holding's thesisBreakers list.
+
+    Args:
+        holding: The holding dict from target-portfolio.json (mutated in place).
+        breaker: The breaker to add — validated before insertion.
+
+    Raises:
+        ValueError: If the breaker fails validate_breaker(), or its id
+            already exists on this holding.
+    """
+    errors = validate_breaker(breaker)
+    if errors:
+        raise ValueError(f"Invalid breaker: {'; '.join(errors)}")
+    existing = holding.setdefault("thesisBreakers", [])
+    if any(b["id"] == breaker["id"] for b in existing):
+        raise ValueError(f"breaker id '{breaker['id']}' already exists on {holding.get('ticker')}")
+    existing.append(breaker)
+
+
+def set_breaker_status(holding: dict, breaker_id: str, status: str, note: str | None) -> None:
+    """Update a manual breaker's status.
+
+    Args:
+        holding: The holding dict (mutated in place).
+        breaker_id: id of the breaker to update.
+        status: New status — must be one of VALID_STATUSES.
+        note: Optional note appended to the breaker's 'note' field. If the
+            breaker already has a note (e.g. the original condition rationale
+            for a manual breaker), the new note is appended after a dated
+            separator rather than overwriting it.
+
+    Raises:
+        ValueError: If the breaker isn't found, or isn't type "manual".
+    """
+    breaker = next((b for b in holding.get("thesisBreakers", []) if b["id"] == breaker_id), None)
+    if breaker is None:
+        raise ValueError(f"breaker id '{breaker_id}' not found on {holding.get('ticker')}")
+    if breaker["type"] != "manual":
+        raise ValueError(f"breaker '{breaker_id}' is type '{breaker['type']}' — status can only be set on manual breakers")
+    today = datetime.now(timezone.utc).date().isoformat()
+    breaker["status"] = status
+    breaker["statusSetAt"] = today
+    if note:
+        if breaker.get("note"):
+            breaker["note"] = f"{breaker['note']} | status update {today}: {note}"
+        else:
+            breaker["note"] = note
+
+
+def remove_breaker(holding: dict, breaker_id: str) -> None:
+    """Remove a breaker from a holding's thesisBreakers list.
+
+    Args:
+        holding: The holding dict (mutated in place).
+        breaker_id: id of the breaker to remove.
+
+    Raises:
+        ValueError: If no breaker with that id exists on this holding.
+    """
+    existing = holding.get("thesisBreakers", [])
+    remaining = [b for b in existing if b["id"] != breaker_id]
+    if len(remaining) == len(existing):
+        raise ValueError(f"breaker id '{breaker_id}' not found on {holding.get('ticker')}")
+    holding["thesisBreakers"] = remaining
+
+
 # ── CLI ────────────────────────────────────────────────────────────────────────
 
 def main():
@@ -225,6 +328,10 @@ Patch file format (JSON):
     parser.add_argument("--role",    choices=sorted(VALID_ROLES), help="Update holding role")
     parser.add_argument("--thesis",  help="Update thesisForInclusion text for the holding")
     parser.add_argument("--patch",   help="Path to a JSON patch file for batch updates")
+    parser.add_argument("--set-breaker", help="JSON breaker object to add to --holding's thesisBreakers")
+    parser.add_argument("--set-breaker-status", metavar="BREAKER_ID", help="Breaker id whose status to update (manual breakers only)")
+    parser.add_argument("--status", choices=sorted(VALID_STATUSES), help="New status for --set-breaker-status")
+    parser.add_argument("--remove-breaker", metavar="BREAKER_ID", help="Breaker id to remove from --holding's thesisBreakers")
     parser.add_argument("--note",    help="Change note recorded in changeLog")
     parser.add_argument("--dry-run", action="store_true", help="Validate and print diff but do not write")
     parser.add_argument("--list",    action="store_true", help="Print current thesis summary and exit")
@@ -277,6 +384,18 @@ Patch file format (JSON):
             holding["role"] = args.role
         if args.thesis:
             holding["thesisForInclusion"] = args.thesis
+        try:
+            if args.set_breaker:
+                breaker = json.loads(args.set_breaker)
+                set_breaker(holding, breaker)
+            if args.set_breaker_status:
+                if not args.status:
+                    sys.exit("ERROR: --set-breaker-status requires --status")
+                set_breaker_status(holding, args.set_breaker_status, args.status, args.note)
+            if args.remove_breaker:
+                remove_breaker(holding, args.remove_breaker)
+        except ValueError as e:
+            sys.exit(f"ERROR: {e}")
 
     if not args.patch and not args.pillar and not args.holding and not args.list:
         parser.print_help()
