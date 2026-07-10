@@ -411,6 +411,73 @@ def compute_capital_gains_estimate(
     return round((sale_price - cost_basis) * shares_sold, 2)
 
 
+def compute_risk_budget_check(
+    routed_orders: list[dict[str, Any]],
+    bands: dict[str, dict[str, Any]],
+    risk_snapshot: dict[str, Any] | None,
+    account_policy: dict[str, Any],
+    target_data: dict[str, Any],
+) -> dict[str, list[str]]:
+    """Warn (never exclude) when a proposed buy would push MRC/cluster over cap.
+
+    This is a deliberate design decision (spec §6.1): real veto power belongs
+    to a later, separate component. This function only ever attaches warning
+    strings to an order — it never removes or excludes one.
+
+    First-order estimate only: scales the ticker's existing
+    marginalRiskContribution by its proposed weight ratio (target/current)
+    rather than re-running risk_engine.py against hypothetical post-trade
+    weights (out of scope — spec §6.1). Labeled as an estimate in the
+    warning text. Degrades to {} when risk_snapshot is None.
+
+    A ticker with currentWeight == 0.0 (e.g. a fresh INITIATE buy with no
+    prior position) has no valid target/current ratio to scale from, so the
+    MRC projection is skipped for that ticker rather than dividing by zero —
+    the cluster-variance check still runs independently for it.
+
+    Args:
+        routed_orders: Output of compute_account_routing() (only buys matter).
+        bands: Output of compute_bands() (for currentWeight/targetWeight).
+        risk_snapshot: Parsed risk_snapshot.json, or None if unavailable.
+        account_policy: Parsed account_policy.json (riskBudgetCaps).
+        target_data: Parsed target-portfolio.json (pillarId per holding).
+
+    Returns:
+        {ticker: [warning strings]} — only tickers with at least one warning.
+    """
+    if not risk_snapshot:
+        return {}
+    mrc = risk_snapshot.get("marginalRiskContribution", {})
+    cluster = {c["pillarId"]: c for c in risk_snapshot.get("clusterExposure", [])}
+    caps = account_policy.get("riskBudgetCaps", {})
+    mrc_cap = caps.get("maxMarginalRiskContributionPct", 25)
+    cluster_cap = caps.get("maxClusterVarianceContributionPct", 60)
+    pillar_map = {h["ticker"]: h.get("pillarId", "unassigned") for h in target_data.get("holdings", [])}
+
+    warnings: dict[str, list[str]] = {}
+    for order in routed_orders:
+        if order["action"] != "buy":
+            continue
+        ticker = order["ticker"]
+        band = bands.get(ticker, {})
+        current_w, target_w = band.get("currentWeight", 0.0), band.get("targetWeight", 0.0)
+        old_mrc = mrc.get(ticker)
+        if old_mrc is not None and current_w > 0:
+            projected_mrc_pct = old_mrc * 100 * (target_w / current_w)
+            if projected_mrc_pct > mrc_cap:
+                warnings.setdefault(ticker, []).append(
+                    f"Estimated MRC would reach {projected_mrc_pct:.1f}% (estimate) > {mrc_cap}% cap"
+                )
+        pillar = pillar_map.get(ticker, "unassigned")
+        cluster_entry = cluster.get(pillar)
+        if cluster_entry and cluster_entry.get("varianceContributionPct", 0) > cluster_cap:
+            warnings.setdefault(ticker, []).append(
+                f"Pillar '{pillar}' cluster variance already "
+                f"{cluster_entry['varianceContributionPct']:.1f}% > {cluster_cap}% cap"
+            )
+    return warnings
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Rebalance order plan")
     parser.add_argument("--pretty", action="store_true")
