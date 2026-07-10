@@ -1,11 +1,11 @@
 # Session Start Briefing — InvestmentToolkit
-_Last updated: 2026-07-09 (Phase 3 C2 shipped) | Thesis v9.7 | Portfolio ~$32,904 USD (reconciled from Questrade screenshots)_
+_Last updated: 2026-07-09 (Phase 3 B5 shipped) | Thesis v9.7 | Portfolio ~$32,904 USD (reconciled from Questrade screenshots)_
 
 > **Read this first at the start of every new session.**
 
 ---
 
-## 🔥 ACTIVE: Fable5 Elevation Guide — Phase 3 C2 DONE, start Phase 3 B5 here
+## 🔥 ACTIVE: Fable5 Elevation Guide — Phase 3 B5 DONE, start Phase 3 E2 here
 
 **Context:** User had Fable5 (primary), Gemini, GPT, Grok review the codebase for
 "next level" improvements — reviews saved at `temp/bundles/full-bundle/reviews/`.
@@ -17,14 +17,16 @@ sub-agent architecture cleanup. Phase 2 was split into two sub-phases during bra
 (2a = Valuation Committee, 2b = Executable Framework + local TA) because it bundled two
 loosely-coupled workstreams. **Phase 3 (§9 in the guide: Risk & Rebalancer) was likewise
 decomposed into 5 sub-specs during brainstorming — E1/C2/B5/E2/G2, built strictly in that
-order since E2 and G2 both consume E1's `risk_snapshot.json` **and now also C2's
-`market_regime.json`** as data contracts. E1 (portfolio risk engine) and C2 (market
-regime classifier) are now both shipped; this session starts fresh on Phase 3's third
-sub-spec, B5 (thesis breakers)** — Phases 1, 2a, 2b, and Phase 3's E1 + C2 are all fully
-shipped and verified. E1 is merged all the way to `origin/main` (PR #63); C2 is merged to
-local `main` and pushed to `origin` as `feature/fable5-phase3-c2-market-regime`, **not yet
-merged to `origin/main`** — same PR-yourself pattern as every phase, waiting on the user's
-GitHub review. Nothing from any of them needs redoing.
+order since E2 and G2 both consume E1's `risk_snapshot.json`, C2's `market_regime.json`,
+**and now also B5's `thesisBreakers`/`thesis_breaker_state.json`** as data contracts. E1
+(portfolio risk engine), C2 (market regime classifier), and B5 (thesis breakers) are now
+all shipped; this session starts fresh on Phase 3's fourth sub-spec, E2 (rebalancer v2)** —
+Phases 1, 2a, 2b, and Phase 3's E1 + C2 + B5 are all fully shipped and verified. E1 is
+merged all the way to `origin/main` (PR #63); C2 and B5 are both merged to local `main` and
+pushed to `origin` as `feature/fable5-phase3-c2-market-regime` and
+`feature/fable5-phase3-b5-thesis-breakers` respectively, **neither yet merged to
+`origin/main`** — same PR-yourself pattern as every phase, waiting on the user's GitHub
+review. Nothing from any of them needs redoing.
 
 **Also shipped this session, unrelated to the Fable5 phases:** a `norberts-gambit` skill
 (`plugins/portfolio-advisor/skills/norberts-gambit/`) — a broker-agnostic guide for
@@ -238,6 +240,70 @@ conflicts). `feature/fable5-phase3-c2-market-regime` pushed to `origin` as a
 backup/PR source — **not yet merged to `origin/main`**, same GitHub PR flow as every
 prior phase, user merges on their own timing.
 
+### ✅ Phase 3, Sub-Spec 3 — B5 Thesis Breakers — COMPLETE, on local `main`, pushed to `origin`
+`thesis_breakers.py` — turns the framework's "3 specific, measurable thesis breakers" from
+markdown prose into structured, evaluated data. Each holding in `target-portfolio.json` can
+carry a `thesisBreakers` array (human-owned, edited only via `update_thesis.py`'s new
+`--set-breaker`/`--set-breaker-status`/`--remove-breaker` flags, routed through the
+existing versioned `save_thesis()` path). Breakers are `auto` (checked every `/daily` run
+against a 5-metric enum — `rsi`, `dcfFairValueGapPct`, C2's `trendState`,
+`momentumPercentile`, `pillarAvgScore` — all sourced from data `daily_brief.py` already
+computes, never refetched) or `manual` (hand-set status, e.g. NDR/GRR, with a
+`reviewCadenceDays` staleness flag). Auto breakers use a **persisted, run-based streak**
+(consecutive evaluated `/daily` runs, not calendar days — no historical time-series store
+exists or was added) written to a new machine-owned `data/thesis_breaker_state.json`, which
+`thesis_breakers.py` owns exclusively — it never mutates `target-portfolio.json`, mirroring
+how E1's `risk_snapshot.json` and C2's embedded `market_regime` never do either. A
+`TRIGGERED` breaker renders as the very **first content** in `/daily`'s brief — above
+overnight gaps, macro/regime/risk context, and every TA-signal-driven section — satisfying
+this sub-spec's literal Phase 3 acceptance criterion ("a fixture triggered thesis-breaker
+appears at top of triage"), proven by a fixture test asserting the exact line ordering. This
+is **visibility escalation only**: it never flips `aiThesis.action` or bypasses
+`standingDecision`, same as every other signal in this repo — `brief_recommendations.py` is
+untouched. Overrides (holding through a `TRIGGERED` breaker) get an accountability trail via
+a new append-only `data/theses/breaker-overrides.jsonl`, written by the daily-loop-agent via
+`thesis_breakers.py --log-override`. A new interactive HITL skill,
+`plugins/portfolio-advisor/skills/set-thesis-breakers/` (`/set-thesis-breakers`), means
+nobody hand-authors raw breaker JSON — it reads a holding's rationale/DCF params/Phase 2b
+`analyticsLog`, proposes 2-3 candidate breakers, explains the auto/manual tradeoff in plain
+language, and calls the CLI under the hood. Spec:
+`docs/superpowers/specs/2026-07-09-thesis-breakers-design.md`. Plan:
+`docs/superpowers/plans/2026-07-09-thesis-breakers.md`.
+
+Built as 7 TDD-gated tasks via `superpowers:subagent-driven-development` in a fresh
+worktree (`.worktrees/feature-fable5-phase3-b5-thesis-breakers`, now cleaned up). Two
+brainstorming-stage design gaps were caught and resolved *before* the plan was written, not
+during implementation: the horizon/streak semantics were underspecified (resolved as a
+persisted, run-based counter rather than a calendar-day or recomputed-history approach,
+since no time-series store exists), and a `dcfFairValueGapPct` auto-metric risked creating a
+second, competing path around the `standingDecision` >15%-material-delta gate (resolved as
+explicitly notification-only, matching how existing EXIT/REDUCE bands already defer to a
+standing decision). One task (5, the `daily_brief.py` triage integration — the task
+implementing the literal acceptance criterion) needed a fix round after task-level review: a
+manual-breaker-staleness collection block nested 4 levels deep, violating this repo's
+"refactor at 3+ nesting levels" rule; extracted to a `_stale_manual_breakers()` helper,
+independently re-verified to still render byte-identical output. The final whole-branch
+review (opus) returned **Ready to merge: Yes** with zero Critical/Important findings; two
+Minor items were fixed in one more commit before merge (a `note`-overwrite behavior that
+silently discarded a manual breaker's original rationale on every status update — fixed to
+append instead, matching what the docstring already promised; and CLI handlers raising raw
+`ValueError` instead of this file's existing `sys.exit(f"ERROR: ...")` convention). A third,
+newly-discovered issue surfaced *while verifying* those two fixes: a test comparing
+`statusSetAt` against the local machine's date rather than UTC (which the production code
+correctly uses, consistent with the rest of the codebase) — a latent bug in Task 4's
+original test that only manifests when local time and UTC cross a calendar-day boundary,
+independently reproduced by the controller before dispatching the fix, and corrected in one
+more commit. Every task's main-checkout isolation was verified clean per
+`.agent/rules/worktree-subagent-isolation.md` — no repeat of the C2 leak incident this
+phase. **Backfilling real `thesisBreakers` data for the 73 existing holdings is deliberately
+out of scope** (matches C2's "produce the data, don't gate yet" pattern) — natural follow-up
+work for `thesis-review-agent` or a dedicated pass, not a blocker.
+
+**Merged to local `main` via fast-forward** (main hadn't diverged since the worktree was
+branched). `feature/fable5-phase3-b5-thesis-breakers` pushed to `origin` as a backup/PR
+source — **not yet merged to `origin/main`**, same GitHub PR flow as every prior phase, user
+merges on their own timing.
+
 ### 🚦 Git policy going forward
 **Standing pattern, now confirmed four times (Phase 1, Phase 2a, Phase 2b, Phase 3 E1):** after each
 phase's whole-branch review passes, Claude pushes a dedicated `feature/fable5-phase<N>-<name>`
@@ -263,33 +329,37 @@ command — a subagent with two valid-looking checkouts on disk (main repo + wor
 Task 3 incident was caught exactly this way, not by the subagent noticing its own mistake.
 
 ### Next step for this session
-Phase 3 sub-spec 3 of 5 — **B5 thesis breakers**: rule-based triggers that flag when a
-holding's thesis has broken (e.g. fundamental deterioration, technical breakdown,
-sustained underperformance vs. its own pillar/benchmark) and surface it in triage rather
-than waiting for a human to notice. This is the first sub-spec that can lean on both
-prior deliverables — E1's `risk_snapshot.json` (correlation/MRC/concentration/VaR) and
-C2's new `market_regime.json` (per-ticker trend/momentum/volatility percentiles, plus
-the composite regime for context-aware thresholds, e.g. a looser breaker tolerance in
-STRESS vs. RISK_ON). Confirm scope with the user first (brainstorming skill gate) before
-writing a spec — in particular: what exactly counts as a "broken thesis" trigger set
-(some candidates from §9 of the guide: DCF fair-value gap flip, sustained RSI/trend
-breakdown per C2's `classify_ticker_trend`, momentum percentile collapse, a pillar's
-`avg_score` dropping below some threshold for N consecutive daily briefs), and whether
-B5 renders directly into `/daily`'s triage cards or just annotates `daily_brief.py`'s
-JSON snapshot for E2/G2 to consume later (mirroring C2's "produce the data, don't gate
-yet" scoping decision). §9 in the guide has the full Phase 3 acceptance-criteria
-breakdown — the fixture-triggered thesis-breaker in triage is B5's actual named
-deliverable there.
+Phase 3 sub-spec 4 of 5 — **E2 rebalancer v2** (`py_services/rebalancer.py`, §9's E2 in
+the guide): formalizes what `/rebalance` + `portfolio_action.py` currently do informally.
+§9's spec calls for: **drift bands, not point targets** (per-holding band =
+`max(±20% relative, ±1.5pp absolute)` around `targetWeight`, configurable in
+`target-portfolio.json` — inside band means no action generated at all, killing churn and
+small-order noise); a **risk-budget check** against E1's `risk_snapshot.json` (proposed
+post-trade weights can't push any single name's marginal risk contribution or cluster
+exposure past a configured cap without a surfaced, user-acknowledged warning); **Canada-aware
+account/tax placement** as data (`data/account_policy.json` — US dividend payers prefer
+RRSP for treaty withholding, highest-expected-growth prefers TFSA, Cash-account sells flag
+a capital-gains estimate from `trade-log.json` lot data; the existing PSU-U.TO same-account
+funding rule moves from CLAUDE.md prose into this engine); and an **order-plan output**
+(ordered sells-before-buys list, per-order rationale + which gates it passed, `/rebalance`
+becomes run engine → present plan → HITL per order, execution path unchanged). Absolute
+rule carried over unchanged: never generates buys for `EXIT`/`SELL`-gated names, never buys
+above `targetEntryPrice`. This is the second sub-spec (after C2) that consumes a prior
+deliverable as a data contract — E1's `risk_snapshot.json` for the risk-budget check — and
+now also has B5's `thesis_breakers` state available if a TRIGGERED breaker should suppress
+or flag a proposed ACCUMULATE order in the same plan (worth confirming with the user during
+brainstorming whether E2 should read B5's state at all, or stay scoped to E1's risk data
+only for this pass — not decided yet). Confirm scope with the user first (brainstorming
+skill gate) before writing a spec, same as every prior sub-spec.
 
-**Before dispatching B5's first task**, read `.agent/rules/worktree-subagent-isolation.md`
-(new this session) and apply its mandatory post-task `git status --short` check in the
-**main checkout** after every implementer/fix subagent — this caught a real stray-write
-incident during C2's Task 7 and is now a standing requirement for every future
-subagent-driven-development task in this repo, not just a one-off note.
+**Before dispatching E2's first task**, continue applying
+`.agent/rules/worktree-subagent-isolation.md`'s mandatory post-task `git status --short`
+check in the **main checkout** after every implementer/fix subagent — used cleanly
+throughout B5 with zero leaks (a marked improvement over C2's incident), keep it standard.
 
-**After B5:** E2 rebalancer v2 (consumes both E1's risk_snapshot.json and C2's regime
-output) → G2 risk-officer/red-team agents (consumes E1's snapshot + E2's order-plan
-format) — same agreed order as before, unchanged.
+**After E2:** G2 risk-officer/red-team agents (consumes E1's snapshot + E2's order-plan
+format) — same agreed order as before, unchanged. This closes out Phase 3 (5 of 5
+sub-specs).
 
 ### 🗺️ Map debt — fix after ALL Fable5 phases complete (not a blocker now)
 Two pre-existing, unrelated test failures were found (and logged to
