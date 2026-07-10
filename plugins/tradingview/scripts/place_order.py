@@ -92,7 +92,15 @@ def _check_market_hours() -> dict | None:
     """
     from datetime import datetime, timezone, timedelta
     now_override = os.environ.get("PLACE_ORDER_NOW_OVERRIDE")
-    now_utc = datetime.fromisoformat(now_override) if now_override else datetime.now(timezone.utc)
+    if now_override:
+        print(
+            f"⚠️  PLACE_ORDER_NOW_OVERRIDE is set ({now_override}) — market-hours check is "
+            "using a fake timestamp, not the real clock. Unset this env var for real trading.",
+            file=sys.stderr,
+        )
+        now_utc = datetime.fromisoformat(now_override)
+    else:
+        now_utc = datetime.now(timezone.utc)
     # Approximate EDT offset (UTC-4). Close enough for an advisory gate.
     now_et = now_utc + timedelta(hours=-4)
 
