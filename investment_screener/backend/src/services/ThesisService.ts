@@ -23,13 +23,15 @@ import { lock } from 'proper-lockfile';
 import {
     Thesis, ThesisSchema,
     HealthCheck, HealthCheckSchema,
-    DriftEntry, HoldingHealth, Projection
+    DriftEntry, HoldingHealth, Projection,
+    AccountPolicy, AccountPolicySchema
 } from '../utils/zod-schemas';
 import { geminiService } from './GeminiService';
 
 const THESES_DIR = path.resolve(__dirname, '../../data/theses');
 const PROJECTIONS_DIR = path.resolve(__dirname, '../../data/projections');
 const PORTFOLIO_FILE = path.resolve(__dirname, '../../data/portfolio.json');
+const ACCOUNT_POLICY_FILE = path.resolve(__dirname, '../../data/account_policy.json');
 const REBALANCE_PROMPT_PATH = path.resolve(__dirname, '../../../.agent/skills/portfolio-advisor/references/rebalance_prompt.md');
 // Ensure directory exists
 if (!fs.existsSync(THESES_DIR)) {
@@ -91,11 +93,28 @@ export class ThesisService {
         }
     }
 
+    private getAccountPolicy(): AccountPolicy | null {
+        if (!fs.existsSync(ACCOUNT_POLICY_FILE)) return null;
+        try {
+            const data = JSON.parse(fs.readFileSync(ACCOUNT_POLICY_FILE, 'utf-8'));
+            return AccountPolicySchema.parse(data);
+        } catch (e) {
+            console.error('[ThesisService] Error reading account_policy.json:', e);
+            return null;
+        }
+    }
+
+    private computeBandPct(targetPct: number, bandConfig: AccountPolicy['bandConfig']): number {
+        return Math.max(targetPct * bandConfig.relativePct / 100, bandConfig.absolutePct);
+    }
+
     async computeHealthCheck(thesisId: string): Promise<HealthCheck> {
         const thesis = await this.getThesis(thesisId);
         if (!thesis) throw new Error('Thesis not found');
 
         const portfolioItems = await this.getPortfolioItems();
+        const accountPolicy = this.getAccountPolicy();
+        const bandConfig = accountPolicy?.bandConfig ?? { relativePct: 20, absolutePct: 1.5, criticalMultiplier: 2.0 };
 
         // Calculate Total Portfolio Value (sum of market values)
         let totalPortfolioValue = 0;
@@ -138,9 +157,10 @@ export class ThesisService {
             const actualPct = totalPortfolioValue > 0 ? (actualValue / totalPortfolioValue) * 100 : 0;
             const driftPct = actualPct - holding.targetWeight;
 
+            const bandPct = this.computeBandPct(holding.targetWeight, bandConfig);
             let status: 'ON_TARGET' | 'DRIFT' | 'CRITICAL' = 'ON_TARGET';
-            if (Math.abs(driftPct) >= thesis.globalSettings.criticalDriftPct) status = 'CRITICAL';
-            else if (Math.abs(driftPct) >= thesis.globalSettings.driftThresholdPct) status = 'DRIFT';
+            if (Math.abs(driftPct) >= bandPct * bandConfig.criticalMultiplier) status = 'CRITICAL';
+            else if (Math.abs(driftPct) >= bandPct) status = 'DRIFT';
 
             // Cross-reference Tool A (from cache)
             const aiProj = projectionMap.get(holding.ticker);
@@ -174,7 +194,7 @@ export class ThesisService {
             } else if (status === 'DRIFT' && holding.role === 'core') {
                 alerts.push({
                     severity: 'WARNING',
-                    message: `${holding.ticker} is drifting ${driftPct.toFixed(1)}% (Threshold: ${thesis.globalSettings.driftThresholdPct}%)`,
+                    message: `${holding.ticker} is drifting ${driftPct.toFixed(1)}% (Band: ${bandPct.toFixed(1)}pp)`,
                     ticker: holding.ticker,
                     pillarId: holding.pillarId,
                     action: driftPct < 0 ? 'BUY' : 'SELL'
@@ -199,9 +219,10 @@ export class ThesisService {
             const actualPct = pillarHoldings.reduce((sum, h) => sum + h.actualPct, 0);
             const driftPct = actualPct - pillar.targetWeight;
 
+            const pillarBandPct = this.computeBandPct(pillar.targetWeight, bandConfig);
             let status: 'ON_TARGET' | 'DRIFT' | 'CRITICAL' = 'ON_TARGET';
-            if (Math.abs(driftPct) >= thesis.globalSettings.criticalDriftPct) status = 'CRITICAL';
-            else if (Math.abs(driftPct) >= thesis.globalSettings.driftThresholdPct) status = 'DRIFT';
+            if (Math.abs(driftPct) >= pillarBandPct * bandConfig.criticalMultiplier) status = 'CRITICAL';
+            else if (Math.abs(driftPct) >= pillarBandPct) status = 'DRIFT';
 
             pillarHealth.push({
                 id: pillar.id,
