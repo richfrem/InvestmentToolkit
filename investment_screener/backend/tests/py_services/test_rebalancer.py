@@ -251,3 +251,42 @@ def test_routing_caps_sell_at_actual_held_shares_when_candidate_requests_more():
     routed = compute_account_routing(candidates, positions, cash, policy, {"holdings": []}, {"CRWD": 100.0})
     assert routed[0]["account"] == "TFSA"
     assert routed[0]["shares"] == 6  # capped at actually-held amount, not the requested 10
+
+
+def test_routing_caps_each_account_at_its_own_held_shares_in_multi_account_oversell():
+    # order requests 20 shares of CRWD but TFSA holds 9 and RRSP holds 3 (12 total)
+    candidates = [{"ticker": "CRWD", "action": "sell", "shares": 20, "currentWeight": 7.0, "targetWeight": 4.0}]
+    positions = {
+        "TFSA": {"CRWD": {"shares": 9.0, "costBasis": 100.0}},
+        "RRSP": {"CRWD": {"shares": 3.0, "costBasis": 100.0}},
+    }
+    cash = {"TFSA": 0.0, "RRSP": 0.0}
+    policy = {"accountPreferenceRules": [{"match": "default", "prefer": "TFSA"}], "psuFundingRule": {"ticker": "PSU-U.TO"}}
+    routed = compute_account_routing(candidates, positions, cash, policy, {"holdings": []}, {"CRWD": 100.0})
+    tfsa_order = next(o for o in routed if o["account"] == "TFSA")
+    rrsp_order = next(o for o in routed if o["account"] == "RRSP")
+    assert tfsa_order["shares"] <= 9  # never more than TFSA actually holds
+    assert rrsp_order["shares"] <= 3  # never more than RRSP actually holds
+    assert tfsa_order["shares"] + rrsp_order["shares"] == 12  # full aggregate held is still routed
+
+
+def test_routing_rounding_remainder_never_pushes_account_past_its_own_held_shares():
+    # Fractional holdings across 3 accounts where proportional floor() rounding loses a
+    # combined 1.5 shares; the remainder redistribution must top up each account only up
+    # to its own held_shares headroom, never past it (largest holder first).
+    candidates = [{"ticker": "CRWD", "action": "sell", "shares": 14.5, "currentWeight": 7.0, "targetWeight": 4.0}]
+    positions = {
+        "TFSA": {"CRWD": {"shares": 9.5, "costBasis": 100.0}},
+        "RRSP": {"CRWD": {"shares": 3.5, "costBasis": 100.0}},
+        "MARGIN": {"CRWD": {"shares": 1.5, "costBasis": 100.0}},
+    }
+    cash = {"TFSA": 0.0, "RRSP": 0.0, "MARGIN": 0.0}
+    policy = {"accountPreferenceRules": [{"match": "default", "prefer": "TFSA"}], "psuFundingRule": {"ticker": "PSU-U.TO"}}
+    routed = compute_account_routing(candidates, positions, cash, policy, {"holdings": []}, {"CRWD": 100.0})
+    tfsa_order = next(o for o in routed if o["account"] == "TFSA")
+    rrsp_order = next(o for o in routed if o["account"] == "RRSP")
+    margin_order = next(o for o in routed if o["account"] == "MARGIN")
+    assert tfsa_order["shares"] <= 9.5
+    assert rrsp_order["shares"] <= 3.5
+    assert margin_order["shares"] <= 1.5
+    assert tfsa_order["shares"] + rrsp_order["shares"] + margin_order["shares"] == 14.5
