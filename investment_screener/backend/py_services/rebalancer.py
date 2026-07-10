@@ -204,6 +204,66 @@ def compute_candidate_orders(
     return candidates, skipped
 
 
+def load_account_positions(
+    portfolio_path: Path = PORTFOLIO_PATH,
+) -> tuple[dict[str, dict[str, dict[str, float]]], dict[str, str]]:
+    """Per-account share/cost-basis positions, preferring real tvSnapshot data.
+
+    Reads portfolio.json's tvSnapshot.snapshots[].positions for real
+    per-account splits (with avgFillPrice as cost basis) when present. Falls
+    back to mirroring TFSA at ~1/3 share count for RRSP (this repo's
+    documented account structure) for any account tvSnapshot doesn't cover.
+
+    Args:
+        portfolio_path: Path to portfolio.json.
+
+    Returns:
+        (account_positions, account_source) — account_positions[account][ticker]
+        = {"shares", "costBasis"}, plus a reserved "_cashUSD" float key per
+        account; account_source[account] is "tvSnapshot" or
+        "heuristic_1_3_mirror".
+    """
+    raw = json.loads(Path(portfolio_path).read_text())
+    snapshots = (raw.get("tvSnapshot") or {}).get("snapshots", [])
+
+    positions: dict[str, dict[str, dict[str, float]]] = {}
+    source: dict[str, str] = {}
+    synced_accounts: set[str] = set()
+
+    for snap in snapshots:
+        acct = snap.get("accountType")
+        if not acct:
+            continue
+        synced_accounts.add(acct)
+        acct_positions: dict[str, dict[str, float]] = {}
+        for p in snap.get("positions", []):
+            sym = normalize_ticker(p.get("symbol", ""))
+            if not sym:
+                continue
+            acct_positions[sym] = {
+                "shares": float(p.get("quantity") or 0),
+                "costBasis": float(p["avgFillPrice"]) if p.get("avgFillPrice") else None,
+            }
+        balances = snap.get("balances", {})
+        acct_positions["_cashUSD"] = float(balances.get("cashUSDCombined") or balances.get("cashUSD") or 0)
+        positions[acct] = acct_positions
+        source[acct] = "tvSnapshot"
+
+    if synced_accounts and "RRSP" not in synced_accounts and "TFSA" in positions:
+        rrsp_positions: dict[str, dict[str, float]] = {}
+        for sym, pos in positions["TFSA"].items():
+            if sym == "_cashUSD":
+                continue
+            mirrored = math.floor(pos["shares"] / 3)
+            if mirrored > 0:
+                rrsp_positions[sym] = {"shares": float(mirrored), "costBasis": pos["costBasis"]}
+        rrsp_positions["_cashUSD"] = 0.0
+        positions["RRSP"] = rrsp_positions
+        source["RRSP"] = "heuristic_1_3_mirror"
+
+    return positions, source
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Rebalance order plan")
     parser.add_argument("--pretty", action="store_true")
