@@ -18,6 +18,7 @@ from rebalancer import (  # noqa: E402
 from rebalancer import load_account_positions  # noqa: E402
 from rebalancer import compute_account_routing  # noqa: E402
 from rebalancer import compute_capital_gains_estimate  # noqa: E402
+from rebalancer import compute_risk_budget_check  # noqa: E402
 
 
 def test_compute_bands_in_band_when_drift_within_band():
@@ -316,3 +317,81 @@ def test_capital_gains_zero_cost_basis_is_not_treated_as_unavailable():
     positions = {"Cash": {"AAPL": {"shares": 50.0, "costBasis": 0.0}}}
     gain = compute_capital_gains_estimate("AAPL", "Cash", 10.0, 150.0, positions)
     assert gain == pytest.approx(1500.0)  # (150-0)*10
+
+
+def test_risk_budget_warns_when_projected_mrc_exceeds_cap():
+    routed = [{"ticker": "NBIS", "action": "buy", "account": "TFSA", "shares": 50}]
+    bands = {"NBIS": {"currentWeight": 2.0, "targetWeight": 5.5, "bandPct": 1.5, "driftPct": -3.5, "inBand": False}}
+    risk_snapshot = {"marginalRiskContribution": {"NBIS": 0.10}, "clusterExposure": []}  # 10% MRC today
+    policy = {"riskBudgetCaps": {"maxMarginalRiskContributionPct": 25, "maxClusterVarianceContributionPct": 60}}
+    target_data = {"holdings": [{"ticker": "NBIS", "pillarId": "ai_infra"}]}
+    warnings = compute_risk_budget_check(routed, bands, risk_snapshot, policy, target_data)
+    # projected = 10% * (5.5/2.0) = 27.5% > 25% cap
+    assert "NBIS" in warnings
+    assert any("MRC" in w for w in warnings["NBIS"])
+
+
+def test_risk_budget_no_warning_when_under_cap():
+    routed = [{"ticker": "NBIS", "action": "buy", "account": "TFSA", "shares": 10}]
+    bands = {"NBIS": {"currentWeight": 4.0, "targetWeight": 4.5, "bandPct": 1.5, "driftPct": -0.5, "inBand": False}}
+    risk_snapshot = {"marginalRiskContribution": {"NBIS": 0.10}, "clusterExposure": []}
+    policy = {"riskBudgetCaps": {"maxMarginalRiskContributionPct": 25, "maxClusterVarianceContributionPct": 60}}
+    target_data = {"holdings": [{"ticker": "NBIS", "pillarId": "ai_infra"}]}
+    assert compute_risk_budget_check(routed, bands, risk_snapshot, policy, target_data) == {}
+
+
+def test_risk_budget_warns_on_cluster_cap_breach():
+    routed = [{"ticker": "NBIS", "action": "buy", "account": "TFSA", "shares": 1}]
+    bands = {"NBIS": {"currentWeight": 4.0, "targetWeight": 4.1, "bandPct": 1.5, "driftPct": -0.1, "inBand": False}}
+    risk_snapshot = {
+        "marginalRiskContribution": {"NBIS": 0.05},
+        "clusterExposure": [{"pillarId": "ai_infra", "weight": 0.6, "varianceContributionPct": 72.0}],
+    }
+    policy = {"riskBudgetCaps": {"maxMarginalRiskContributionPct": 25, "maxClusterVarianceContributionPct": 60}}
+    target_data = {"holdings": [{"ticker": "NBIS", "pillarId": "ai_infra"}]}
+    warnings = compute_risk_budget_check(routed, bands, risk_snapshot, policy, target_data)
+    assert any("cluster" in w.lower() for w in warnings["NBIS"])
+
+
+def test_risk_budget_degrades_gracefully_when_snapshot_missing():
+    routed = [{"ticker": "NBIS", "action": "buy", "account": "TFSA", "shares": 10}]
+    bands = {"NBIS": {"currentWeight": 2.0, "targetWeight": 5.5, "bandPct": 1.5, "driftPct": -3.5, "inBand": False}}
+    assert compute_risk_budget_check(routed, bands, None, {}, {"holdings": []}) == {}
+
+
+def test_risk_budget_ignores_sell_orders():
+    routed = [{"ticker": "CRWD", "action": "sell", "account": "TFSA", "shares": 10}]
+    bands = {"CRWD": {"currentWeight": 7.8, "targetWeight": 4.0, "bandPct": 1.5, "driftPct": 3.8, "inBand": False}}
+    risk_snapshot = {"marginalRiskContribution": {"CRWD": 0.99}, "clusterExposure": []}
+    policy = {"riskBudgetCaps": {"maxMarginalRiskContributionPct": 1, "maxClusterVarianceContributionPct": 1}}
+    assert compute_risk_budget_check(routed, bands, risk_snapshot, policy, {"holdings": []}) == {}
+
+
+def test_risk_budget_no_crash_when_current_weight_zero():
+    # A fresh INITIATE buy has currentWeight == 0.0 (no prior position), so the
+    # target/current weight ratio used to project MRC is mathematically undefined.
+    # A naive `mrc * (target / current)` would raise ZeroDivisionError here — the
+    # function must guard against that and simply skip the MRC projection (it has
+    # no denominator to scale from) rather than crash or fabricate a warning.
+    routed = [{"ticker": "NEWCO", "action": "buy", "account": "TFSA", "shares": 25}]
+    bands = {"NEWCO": {"currentWeight": 0.0, "targetWeight": 3.0, "bandPct": 1.5, "driftPct": -3.0, "inBand": False}}
+    risk_snapshot = {"marginalRiskContribution": {"NEWCO": 0.08}, "clusterExposure": []}
+    policy = {"riskBudgetCaps": {"maxMarginalRiskContributionPct": 25, "maxClusterVarianceContributionPct": 60}}
+    target_data = {"holdings": [{"ticker": "NEWCO", "pillarId": "ai_infra"}]}
+    warnings = compute_risk_budget_check(routed, bands, risk_snapshot, policy, target_data)
+    assert warnings == {}
+
+
+def test_risk_budget_no_warning_when_pillar_absent_from_cluster_exposure():
+    # clusterExposure lists other pillars but not this ticker's own pillarId —
+    # cluster lookup must miss cleanly (no warning, no KeyError) rather than
+    # match the wrong entry or raise.
+    routed = [{"ticker": "NBIS", "action": "buy", "account": "TFSA", "shares": 1}]
+    bands = {"NBIS": {"currentWeight": 4.0, "targetWeight": 4.1, "bandPct": 1.5, "driftPct": -0.1, "inBand": False}}
+    risk_snapshot = {
+        "marginalRiskContribution": {"NBIS": 0.05},
+        "clusterExposure": [{"pillarId": "semiconductors", "weight": 0.3, "varianceContributionPct": 90.0}],
+    }
+    policy = {"riskBudgetCaps": {"maxMarginalRiskContributionPct": 25, "maxClusterVarianceContributionPct": 60}}
+    target_data = {"holdings": [{"ticker": "NBIS", "pillarId": "ai_infra"}]}
+    assert compute_risk_budget_check(routed, bands, risk_snapshot, policy, target_data) == {}
