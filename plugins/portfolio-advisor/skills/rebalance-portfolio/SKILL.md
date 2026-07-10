@@ -42,7 +42,7 @@ Apply before presenting any trade recommendation:
 | Cash floor | Maintain ≥ 2% portfolio in cash/USD after all buys | Reduce buy sizes proportionally |
 | Single-session cap | Don't recommend more than **$15,000** total buys in one rebalance session | Split into two sessions; flag to user |
 
-All math for P&L and position sizing must use the **exact values from the data files** — never round or estimate intermediate calculations. Derive size in shares as: `shares = floor(target_value_USD / current_price)`.
+All math for P&L and position sizing must use the **exact values from the data files** — never round or estimate intermediate calculations. Share counts are pre-computed by `rebalancer.py` (`orders[].shares`, drift-based sizing — not a flat `target_value_USD / current_price` formula); this table is a human-side sanity check to apply on top of the engine's output, not a formula to re-derive shares from scratch.
 
 ---
 
@@ -135,25 +135,22 @@ already sequenced sells-before-buys, per-account.
 ## Step 5: Present Trade Recommendations
 ```
 **Rebalance Recommendation — {THESIS_NAME}**
-*Current Drift Score: {X} → Projected: {Y}*
+*{N} holdings out of band → {M} orders proposed*
 
-📊 Trade Plan ({N} trades):
+📊 Trade Plan ({M} trades):
 | # | Ticker | Action | Shares | Account | Rationale                                  |
 |---|--------|--------|--------|---------|---------------------------------------------|
 | 1 | CRWD   | SELL   | 15     | TFSA    | Out of band: +3.8pp vs 2.0pp band            |
 | 2 | ZS     | BUY    | 8      | TFSA    | Out of band: −2.1pp vs 2.0pp band            |
 | 3 | VST    | BUY    | 12     | RRSP    | Out of band: −1.8pp vs 2.0pp band            |
 
-⛔ Skipped Restores (SELL-rated underweights — NOT buying):
-| Ticker | Drift   | FV Gap | Reason                                          |
-|--------|---------|--------|-------------------------------------------------|
-| INTC   | −4.2%   | −77%   | SELL-rated — thesis review recommended instead  |
-| AVGO   | −1.9%   | −32%   | SELL-rated — hold cash in pillar                |
+⛔ Skipped Restores (buy blocked by valuation gate, entry price, or standing decision — NOT buying):
+| Ticker | Reason                                                                                          |
+|--------|--------------------------------------------------------------------------------------------------|
+| INTC   | SELL-rated — not restoring                                                                        |
+| AVGO   | Standing decision (USER): Wait for FY26 guidance. Signal stands but no trade proposed without your direction. |
 
-⚠️ Missing Valuations (cannot classify):
-{list of tickers with no AI projection — recommend /evaluate-stock for each}
-
-💡 {X}/{N} orders carry risk-gate or thesis-breaker warnings (`riskGateWarnings` / `breakerWarnings` non-empty)
+💡 {X}/{M} orders carry risk-gate or thesis-breaker warnings (`riskGateWarnings` / `breakerWarnings` non-empty)
 
 **Net capital required**: ${X} (${Y} from trims + ${Z} cash)
 
@@ -179,28 +176,19 @@ After presenting the trade plan (Step 5), immediately post ALL proposed trades t
 
 **ALWAYS post sells before buys in the `suggestions` array.** The Trade Log displays entries in order, and the user executes them top-to-bottom. Buys that depend on sell proceeds will fail if submitted first.
 
-**Per-account capital check (run before building the suggestions array):**
+**Per-account capital check**: Per-account capital sequencing — including same-account
+PSU-U.TO funding sells when a buy's target account can't cover its cost — is already resolved
+inside `rebalancer.py`'s `compute_account_routing()`. Every order in `orders[]` is already
+capital-aware; when a buy needs more cash than its target account has, the engine inserts a
+synthetic PSU-U.TO sell order (`rationale: "Same-account funding for {ticker} buy"`) directly
+ahead of that buy in the same account. There is nothing to manually compute or sequence here.
 
-```python
-# Compute available buying power per account separately
-# Available = current cash in account + proceeds from all sells in that account
-
-account_cash = {}  # populated from portfolio.json — USD_CASH split proportionally
-                   # If account data unavailable, treat all cash as TFSA
-
-for account in ['TFSA', 'RRSP']:
-    cash = account_cash.get(account, 0)
-    sell_proceeds = sum(s['shares'] * s['price'] for s in sells if s['account'] == account)
-    total_available = cash + sell_proceeds
-    buy_cost = sum(b['shares'] * b['price'] for b in buys if b['account'] == account)
-    
-    if buy_cost > total_available:
-        # Flag which buys to defer — prioritize by DCF upside descending
-        # Remove lowest-priority buys until buy_cost <= total_available
-        # Mention deferred buys explicitly to user:
-        print(f"⚠️ {account}: buys (${buy_cost:.0f}) exceed available capital (${total_available:.0f}). "
-              f"Deferred: {[b['ticker'] for b in deferred]}")
-```
+Note: if even the PSU-U.TO funding sell can't fully cover a buy's cost, the engine does **not**
+defer or drop the buy — it still emits the order as-is (unfunded shortfall included). Don't
+invent a "defer lowest-priority buys by DCF upside" step; that logic doesn't exist in the engine.
+If you see an order whose cost looks larger than the account's available cash even after any
+PSU-U.TO funding sell in the plan, flag it to the user rather than silently dropping or
+re-sequencing it yourself.
 
 **Settlement note**: Canadian equities on Questrade settle T+1. If you're selling today to fund a buy today, confirm the account has sufficient *settled* buying power before submitting the buy. If in doubt, submit the sell first and wait for settlement confirmation before submitting buys.
 
@@ -239,7 +227,7 @@ curl -s -X POST http://localhost:3001/api/trading/log/suggest \
         "account": "TFSA",
         "orderType": "market",
         "date": "'"$(date +%Y-%m-%d)"'",
-        "notes": "Drift: +3.8% overweight · SELL-rated (−66% FV gap)",
+        "notes": "Out of band: +3.8pp vs 2.0pp band",
         "source": "rebalance"
       },
       {
@@ -250,7 +238,7 @@ curl -s -X POST http://localhost:3001/api/trading/log/suggest \
         "account": "TFSA",
         "orderType": "market",
         "date": "'"$(date +%Y-%m-%d)"'",
-        "notes": "Underweight +1.2% · BUY-rated (+82% upside)",
+        "notes": "Out of band: -2.1pp vs 2.0pp band",
         "source": "rebalance"
       }
     ]
@@ -259,6 +247,8 @@ curl -s -X POST http://localhost:3001/api/trading/log/suggest \
 
 ### Rules
 - Post ALL proposed trades (only actionable buys/sells — not drift-skips)
+- Set `notes` to the order's own `rationale` field from `rebalance_plan.json` — don't invent
+  FV-gap percentages or upside figures that aren't part of `orders[]`'s real shape
 - Set `price: 0` (fill price unknown at planning time); set `limitPrice` if suggesting a limit order
 - Set `source: "rebalance"` always
 - If the endpoint is unreachable (backend offline), proceed silently — do not block the recommendation
@@ -286,7 +276,8 @@ For each proposed trade:
 ## Sources Checked
 - Rebalance Engine: [✅ rebalancer.py --pretty ran successfully / ❌ Failed — {error}]
 - Blocked Reason: [✅ null — orders generated / ⛔ {blockedReason value} — no orders]
-- Valuations: [✅ {N}/{M} holdings / ⚠️ Missing: {list}]
+  (MISSING_VALUATIONS is one possible value here — it blocks the whole run, not a per-ticker list;
+  there is no per-ticker "N/M holdings have valuations" field in `rebalance_plan.json`.)
 - Thesis synchronization: [✅ verify_thesis_sync.py passed / ❌ Failed/Out of sync]
 
 ## Sources Unavailable
