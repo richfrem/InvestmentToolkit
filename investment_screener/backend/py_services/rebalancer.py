@@ -377,6 +377,40 @@ def compute_account_routing(
     return routed
 
 
+def compute_capital_gains_estimate(
+    ticker: str,
+    account: str,
+    shares_sold: float,
+    sale_price: float,
+    account_positions: dict[str, dict[str, dict[str, float | None]]],
+) -> float | None:
+    """Estimate capital gains/loss for a Cash-account sell.
+
+    TFSA/RRSP gains are never taxed, so this returns None for any account
+    other than "Cash" without even attempting a cost-basis lookup. Forward-
+    looking: the user's current accounts are TFSA/RRSP only, so this path is
+    fixture-tested but not yet exercised against real data (spec §8).
+
+    Args:
+        ticker: Ticker being sold.
+        account: Account name the sell is routed to.
+        shares_sold: Shares in this sell order.
+        sale_price: Current price used for the sell.
+        account_positions: Output of load_account_positions() (positions
+            only) — used for cost basis in the same account.
+
+    Returns:
+        (sale_price - cost_basis) * shares_sold, or None if the account
+        isn't "Cash" or cost basis is unavailable.
+    """
+    if account != "Cash":
+        return None
+    cost_basis = account_positions.get(account, {}).get(ticker, {}).get("costBasis")
+    if cost_basis is None:
+        return None
+    return round((sale_price - cost_basis) * shares_sold, 2)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Rebalance order plan")
     parser.add_argument("--pretty", action="store_true")
