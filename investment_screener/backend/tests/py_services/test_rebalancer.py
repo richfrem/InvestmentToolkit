@@ -19,6 +19,7 @@ from rebalancer import load_account_positions  # noqa: E402
 from rebalancer import compute_account_routing  # noqa: E402
 from rebalancer import compute_capital_gains_estimate  # noqa: E402
 from rebalancer import compute_risk_budget_check  # noqa: E402
+from rebalancer import compute_breaker_warnings  # noqa: E402
 
 
 def test_compute_bands_in_band_when_drift_within_band():
@@ -395,3 +396,30 @@ def test_risk_budget_no_warning_when_pillar_absent_from_cluster_exposure():
     policy = {"riskBudgetCaps": {"maxMarginalRiskContributionPct": 25, "maxClusterVarianceContributionPct": 60}}
     target_data = {"holdings": [{"ticker": "NBIS", "pillarId": "ai_infra"}]}
     assert compute_risk_budget_check(routed, bands, risk_snapshot, policy, target_data) == {}
+
+
+def test_breaker_warnings_flags_triggered_breaker_on_buy():
+    routed = [{"ticker": "NBIS", "action": "buy", "account": "TFSA", "shares": 6}]
+    state = {"holdings": {"NBIS": {"nbis-rsi-breaker": {
+        "status": "TRIGGERED", "currentValue": 78, "currentStreak": 3,
+    }}}}
+    warnings = compute_breaker_warnings(routed, state)
+    assert "NBIS" in warnings
+    assert "TRIGGERED" in warnings["NBIS"][0]
+
+
+def test_breaker_warnings_ignores_ok_and_watching_status():
+    routed = [{"ticker": "NBIS", "action": "buy", "account": "TFSA", "shares": 6}]
+    state = {"holdings": {"NBIS": {"nbis-rsi-breaker": {"status": "WATCHING", "currentStreak": 2}}}}
+    assert compute_breaker_warnings(routed, state) == {}
+
+
+def test_breaker_warnings_ignores_sell_orders():
+    routed = [{"ticker": "CRWD", "action": "sell", "account": "TFSA", "shares": 10}]
+    state = {"holdings": {"CRWD": {"some-breaker": {"status": "TRIGGERED", "currentStreak": 5}}}}
+    assert compute_breaker_warnings(routed, state) == {}
+
+
+def test_breaker_warnings_degrades_gracefully_when_state_missing():
+    routed = [{"ticker": "NBIS", "action": "buy", "account": "TFSA", "shares": 6}]
+    assert compute_breaker_warnings(routed, None) == {}
