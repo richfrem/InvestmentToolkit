@@ -111,3 +111,123 @@ def compute_risk_officer_review(
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
         Path(output_path).write_text(json.dumps(result, indent=2))
     return result
+
+
+def log_risk_officer_override(
+    ticker: str,
+    action: str,
+    account: str,
+    shares: float | None,
+    veto_reasons: list[str],
+    rationale: str,
+    overridden_by: str = "user",
+    path: Path = OVERRIDES_PATH,
+) -> None:
+    """Append one accountability-trail record for a vetoed-order override.
+
+    Called by risk-officer-agent.md — only a human decision to proceed with
+    a vetoed order constitutes an "override." Mirrors thesis_breakers.py's
+    log_breaker_override() exactly: append-only, one JSON object per line.
+
+    Args:
+        ticker: Order's ticker.
+        action: "buy" or "sell".
+        account: Order's account (e.g. "TFSA").
+        shares: Order's share count, or None if unknown.
+        veto_reasons: The order's vetoReasons at time of override.
+        rationale: The user's stated reason for proceeding anyway.
+        overridden_by: Who made the call — defaults to "user".
+        path: Target JSONL file.
+    """
+    entry = {
+        "date": date.today().isoformat(),
+        "ticker": ticker,
+        "action": action,
+        "account": account,
+        "shares": shares,
+        "vetoReasons": veto_reasons,
+        "rationale": rationale,
+        "overriddenBy": overridden_by,
+    }
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "a") as f:
+        f.write(json.dumps(entry) + "\n")
+
+
+def _cli_log_override(
+    ticker: str,
+    action: str,
+    account: str,
+    rationale: str,
+    overridden_by: str = "user",
+    review_path: Path = REVIEW_PATH,
+    overrides_path: Path = OVERRIDES_PATH,
+) -> None:
+    """Resolve a vetoed order's shares/vetoReasons from risk_officer_review.json, then log.
+
+    Thin wrapper so a caller (risk-officer-agent.md, via --log-override) only
+    needs a ticker/action/account/rationale — not risk_officer_review.json's
+    internal shape.
+
+    Args:
+        ticker: Order's ticker.
+        action: "buy" or "sell".
+        account: Order's account.
+        rationale: The user's stated reason for proceeding anyway.
+        overridden_by: Who made the call — defaults to "user".
+        review_path: Path to risk_officer_review.json.
+        overrides_path: Target JSONL file.
+
+    Raises:
+        ValueError: If review_path doesn't exist, or no vetoed order matches
+            (ticker, action, account).
+    """
+    if not Path(review_path).exists():
+        raise ValueError(f"{review_path} not found — run risk_officer.py --pretty first")
+    review = json.loads(Path(review_path).read_text())
+    match = next(
+        (
+            o for o in review.get("vetoedOrders", [])
+            if o["ticker"] == ticker and o["action"] == action and o["account"] == account
+        ),
+        None,
+    )
+    if match is None:
+        raise ValueError(f"no vetoed order found for {ticker}/{action}/{account} in {review_path}")
+    log_risk_officer_override(
+        ticker=ticker, action=action, account=account, shares=match.get("shares"),
+        veto_reasons=match.get("vetoReasons", []), rationale=rationale,
+        overridden_by=overridden_by, path=overrides_path,
+    )
+
+
+def main() -> None:
+    """CLI entry point — compute the risk-officer review, or log an override.
+
+    --log-override lets risk-officer-agent.md record a vetoed-order override
+    without importing this module directly.
+    """
+    parser = argparse.ArgumentParser(description="Risk officer veto classification / override logging")
+    parser.add_argument("--pretty", action="store_true")
+    parser.add_argument("--no-save", action="store_true", help="Print only, skip writing risk_officer_review.json")
+    parser.add_argument("--log-override", action="store_true", help="Log an override instead of reviewing")
+    parser.add_argument("--ticker", help="Ticker (required with --log-override)")
+    parser.add_argument("--action", choices=["buy", "sell"], help="Order action (required with --log-override)")
+    parser.add_argument("--account", help="Account (required with --log-override)")
+    parser.add_argument("--rationale", help="Override rationale (required with --log-override)")
+    parser.add_argument("--overridden-by", default="user", help="Who made the override call")
+    args = parser.parse_args()
+
+    if args.log_override:
+        if not (args.ticker and args.action and args.account and args.rationale):
+            sys.exit("ERROR: --log-override requires --ticker, --action, --account, and --rationale")
+        _cli_log_override(args.ticker, args.action, args.account, args.rationale, args.overridden_by)
+        print(f"✅  Logged override for {args.ticker} {args.action} ({args.account})")
+        return
+
+    result = compute_risk_officer_review(save=not args.no_save)
+    print(json.dumps(result, indent=2 if args.pretty else None))
+
+
+if __name__ == "__main__":
+    main()
