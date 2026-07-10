@@ -85,9 +85,22 @@ def _check_market_hours() -> dict | None:
     """Returns a warning dict if NYSE is closed (holiday or outside hours), else None.
 
     Uses pandas_market_calendars when available; falls back to weekday + rough ET hours.
+
+    Reads PLACE_ORDER_NOW_OVERRIDE (ISO 8601 UTC timestamp) when set, so tests can pin
+    "now" to a known in-hours/out-of-hours moment instead of being coupled to the real
+    wall clock. Unset in production — defaults to datetime.now(timezone.utc).
     """
     from datetime import datetime, timezone, timedelta
-    now_utc = datetime.now(timezone.utc)
+    now_override = os.environ.get("PLACE_ORDER_NOW_OVERRIDE")
+    if now_override:
+        print(
+            f"⚠️  PLACE_ORDER_NOW_OVERRIDE is set ({now_override}) — market-hours check is "
+            "using a fake timestamp, not the real clock. Unset this env var for real trading.",
+            file=sys.stderr,
+        )
+        now_utc = datetime.fromisoformat(now_override)
+    else:
+        now_utc = datetime.now(timezone.utc)
     # Approximate EDT offset (UTC-4). Close enough for an advisory gate.
     now_et = now_utc + timedelta(hours=-4)
 
