@@ -393,7 +393,9 @@ def write_snapshot(snapshot: dict, promote: bool = False, balances: Optional[dic
         if usd_cash:
             cash_item = dict(usd_cash)
             if balances and not balances.get("error"):
-                cash_item["shares"] = balances.get("cashUSDCombined") or balances.get("cashUSD") or usd_cash.get("shares", 0)
+                val = balances.get("cashUSDCombined") or balances.get("cashUSD") or usd_cash.get("shares", 0)
+                cash_item["shares"] = val
+                cash_item["market_value"] = val
             merged.append(cash_item)
 
         data["holdings"] = merged

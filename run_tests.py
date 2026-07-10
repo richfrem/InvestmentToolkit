@@ -90,7 +90,7 @@ def t0_path_regression() -> bool:
     ok = True
     import os
     for root, dirs, files in os.walk(str(REPO_ROOT)):
-        if ".git" in root or "node_modules" in root or "venv" in root or "temp" in root or ".agents" in root or "docs/superpowers" in root or "tasks/done" in root or ".claude" in root:
+        if ".git" in root or "node_modules" in root or "venv" in root or "temp" in root or ".agents" in root or "docs/superpowers" in root or "tasks/done" in root or ".claude" in root or ".worktrees" in root:
             continue
         for f in files:
             if f.endswith(".png") or f.endswith(".svg"):

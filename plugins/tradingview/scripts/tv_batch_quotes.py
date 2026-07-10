@@ -130,7 +130,10 @@ def _yf_fast_quote(ticker: str) -> Optional[dict]:
     """
     try:
         import yfinance as yf
-        t = yf.Ticker(ticker)
+        yf_ticker = ticker
+        if ".U.TO" in ticker:
+            yf_ticker = ticker.replace(".U.TO", "-U.TO")
+        t = yf.Ticker(yf_ticker)
         fi = t.fast_info
         price = getattr(fi, "last_price", None)
         prev = getattr(fi, "previous_close", None)
