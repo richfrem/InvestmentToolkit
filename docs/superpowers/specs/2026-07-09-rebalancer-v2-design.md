@@ -152,8 +152,12 @@ importable/CLI orchestrator.
 
 ### 4.2 Carried-over hard rules (never warnings — these exclude the order entirely)
 
-- Never generates a buy for an `EXIT`/`SELL`-gated holding (via `derive_action()`, called
-  read-only — not modified).
+- Never generates a buy for an `EXIT`/`SELL`-gated holding. This reads the ticker's latest
+  AI projection `aiThesis.action` (`EXIT`, or a legacy `SELL` value) from
+  `data/projections/{TICKER}.json` — the same valuation signal the current skill's "Valuation
+  Gate" section already checks, and the same source `portfolio_action.py`'s
+  `_load_ai_upside()` already loads (reused pattern, not `derive_action()`'s portfolio-weight
+  ratio label, which answers a different question — see §2's "Action label scope" decision).
 - Never generates a buy above `targetEntryPrice` when the field is set.
 - `standingDecision` on a holding is read but never overridden — a holding with a
   `standingDecision` still gets a band check, but any conflicting signal downgrades to a
