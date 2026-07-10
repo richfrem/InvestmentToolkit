@@ -190,12 +190,39 @@ export const ThesisSchema = z.object({
             return Math.abs(sum - 100) < 0.5;
         }, { message: "Holding target weights must sum to 100%" }),
     globalSettings: z.object({
-        driftThresholdPct: z.number().min(0.5).max(20).default(3.0),
-        criticalDriftPct: z.number().min(1).max(30).default(5.0),
         rebalanceFrequency: z.enum(['weekly', 'monthly', 'quarterly']).default('quarterly'),
         portfolioValueUSD: z.number().nonnegative().optional(),
     }),
 });
+
+// === ACCOUNT POLICY SCHEMA (E2 — Rebalancer v2) ===
+// account_policy.json — drift-band config, risk-budget caps, account/tax
+// placement rules. Read by both rebalancer.py (Python) and this service
+// (TypeScript, independently re-implemented, not shelled out to Python).
+
+export const AccountPolicySchema = z.object({
+    accountPreferenceRules: z.array(z.object({
+        match: z.string(),
+        prefer: z.enum(['TFSA', 'RRSP', 'Cash']),
+        reason: z.string().optional(),
+    })),
+    psuFundingRule: z.object({
+        ticker: z.string(),
+        sameAccountOnly: z.boolean(),
+        sharesFormula: z.string(),
+    }),
+    riskBudgetCaps: z.object({
+        maxMarginalRiskContributionPct: z.number().positive(),
+        maxClusterVarianceContributionPct: z.number().positive(),
+    }),
+    bandConfig: z.object({
+        relativePct: z.number().positive(),
+        absolutePct: z.number().positive(),
+        criticalMultiplier: z.number().positive().default(2.0),
+    }),
+});
+
+export type AccountPolicy = z.infer<typeof AccountPolicySchema>;
 
 export type Thesis = z.infer<typeof ThesisSchema>;
 export type ThesisHolding = z.infer<typeof ThesisHoldingSchema>;

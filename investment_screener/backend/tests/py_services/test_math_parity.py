@@ -2,8 +2,9 @@ import subprocess
 import json
 import random
 import os
+from pathlib import Path
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_ROOT = str(Path(__file__).resolve().parents[4])
 
 def run_python_math(revenue, shares, discount_rate, horizon, scenarios):
     cmd = [
