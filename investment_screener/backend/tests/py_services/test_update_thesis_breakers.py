@@ -1,5 +1,6 @@
 """Tests for update_thesis.py's thesisBreakers CLI functions (B5 task 4)."""
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -120,7 +121,7 @@ class TestSetBreakerStatus:
         set_breaker_status(holding, "nbis-ndr-floor", "TRIGGERED", "Q2 NDR 108%")
         b = holding["thesisBreakers"][0]
         assert b["status"] == "TRIGGERED"
-        assert b["statusSetAt"] == __import__("datetime").date.today().isoformat()
+        assert b["statusSetAt"] == datetime.now(timezone.utc).date().isoformat()
 
     def test_status_note_appends_rather_than_overwrites(self):
         holding = {"ticker": "NBIS", "thesisBreakers": [_manual_breaker(note="NDR floor from 10-Q disclosures")]}
