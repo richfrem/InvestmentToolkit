@@ -17,7 +17,8 @@ Do not delete resolved items; set `Status: RESOLVED` to maintain history.
 - Evidence: `python3 -m pytest tests/py_services/test_math_parity.py -v` → `Exception: Python math failed`; captured stdout shows `can't open file '.../tests/investment_screener/backend/py_services/dcf_scenarios.py'`.
 - Severity: S
 - Repeat: NO (isolated to this one file)
-- Status: OPEN
+- Status: RESOLVED
+- Resolution (2026-07-10, Phase 3 E2 session, at explicit user request rather than deferred further): applied the recommended fix verbatim — `PROJECT_ROOT` now computed via `Path(__file__).resolve().parents[4]`, matching every other test file in this directory. `python3 -m pytest tests/py_services/test_math_parity.py -v` → 1 passed.
 
 ### Entry: test_place_order_gates.py — 3 tests coupled to real-world weekday/market-hours state
 
@@ -30,7 +31,8 @@ Do not delete resolved items; set `Status: RESOLVED` to maintain history.
 - Evidence: `python3 -m pytest tests/py_services/test_place_order_gates.py -v` on 2026-07-05 (Sunday) → all 3 fail with returncode 5 / "Weekend — NYSE is closed" instead of their expected returncodes.
 - Severity: S
 - Repeat: YES — will recur every Saturday/Sunday (and likely market holidays) until fixed
-- Status: OPEN
+- Status: RESOLVED
+- Resolution (2026-07-10, Phase 3 E2 session, at explicit user request rather than deferred further): applied the recommended fix — `_check_market_hours()` in `plugins/tradingview/scripts/place_order.py` now reads a `PLACE_ORDER_NOW_OVERRIDE` env var (ISO 8601 UTC timestamp) when set, falling back to `datetime.now(timezone.utc)` when unset (production behavior unchanged — additive only). The 3 named tests plus `test_stale_with_ack_stale_proceeds` (same fragility class, not originally named) now pin a known in-hours weekday timestamp via this override instead of depending on the real wall clock. Added a new dedicated test, `test_market_closed_exits_5_and_ack_closed_bypasses`, asserting the market-hours gate itself (previously zero direct coverage) using a pinned Saturday timestamp, plus `--ack-closed` bypass behavior. `python3 -m pytest tests/py_services/test_place_order_gates.py -v` → 11 passed. Note: the failures observed *this session* before the fix were actually a worktree-only environment gap (`tradingview-cdp/node_modules` never installed here, resolved via `npm ci`), not a live reproduction of the documented market-hours race — the wall-clock-coupling design fix above was applied proactively per the documented recommendation, independent of that day's actual symptom.
 
 ### Entry: subagent-driven-development implementer wrote to main checkout instead of worktree (2nd occurrence)
 
