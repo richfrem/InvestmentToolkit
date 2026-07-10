@@ -67,23 +67,23 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-05 09:15 by TV sync · Portfolio total: $32,473 USD*
+*Auto-updated 2026-07-09 07:24 by TV sync · Portfolio total: $32,871 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **CRWV** | 24 | 6.0% | 5.3% | +0.7pp | ⚪ MAINTAIN | — |
-| **SNDK** | 0.94 | 5.0% | 4.0% | +1.0pp | 🟡 TRIM | ≤$1,350 |
-| **IREN** | 31 | 4.4% | 3.6% | +0.8pp | 🟡 TRIM | — |
-| **GOOG** | 4 | 4.4% | 4.0% | +0.4pp | ⚪ MAINTAIN | — |
-| **DRAM** | 21 | 3.8% | 4.5% | -0.7pp | ⚪ MAINTAIN | — |
-| **CORZ** | 46 | 3.0% | 3.7% | -0.7pp | 🔵 ACCUMULATE | — |
-| **CBRS** | 4.5 | 2.8% | 2.5% | +0.4pp | ⚪ MAINTAIN | — |
-| **MSFT** | 2 | 2.4% | 2.2% | +0.2pp | ⚪ MAINTAIN | — |
-| **APLD** | 20 | 2.0% | 2.5% | -0.5pp | 🔵 ACCUMULATE | — |
-| **BTDR** | 45 | 1.9% | 1.9% | +0.0pp | ⚪ MAINTAIN | — |
-| **NBIS** | 3 | 1.9% | 2.5% | -0.6pp | 🔵 ACCUMULATE | — |
+| **CRWV** | 24 | 4.5% | 5.3% | -0.8pp | 🔵 ACCUMULATE | — |
+| **SNDK** | 0.94 | 3.2% | 4.0% | -0.8pp | 🔵 ACCUMULATE | ≤$1,350 |
+| **DRAM** | 21 | 3.0% | 4.5% | -1.5pp | 🔵 ACCUMULATE | — |
+| **IREN** | 31 | 2.8% | 3.6% | -0.8pp | 🔵 ACCUMULATE | — |
+| **CORZ** | 46 | 2.5% | 3.7% | -1.2pp | 🔵 ACCUMULATE | — |
+| **NBIS** | 5.5 | 2.3% | 2.5% | -0.2pp | ⚪ MAINTAIN | — |
+| **GOOG** | 4 | 2.1% | 4.0% | -1.9pp | 🔵 ACCUMULATE | — |
+| **CBRS** | 4.5 | 1.7% | 2.5% | -0.8pp | 🔵 ACCUMULATE | — |
+| **MSFT** | 2 | 1.1% | 2.2% | -1.1pp | 🔵 ACCUMULATE | — |
+| **APLD** | 20 | 1.0% | 2.5% | -1.5pp | 🔵 ACCUMULATE | — |
+| **BTDR** | 45 | 0.6% | 1.9% | -1.3pp | 🔵 ACCUMULATE | — |
 
 **Pending Initiation**
 
@@ -92,5 +92,5 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 | **CLSK** | — | — | 2.0% | — | 🟢 INITIATE | — |
 | **VRT** | — | — | 0.0% | — | 🟢 INITIATE | — |
 
-**Pillar total — Actual: 37.6% · Target: 38.7% · Gap: -1.2pp**
+**Pillar total — Actual: 24.9% · Target: 38.7% · Gap: -13.8pp**
 <!-- AUTO_UPDATE_END: current_positions -->
