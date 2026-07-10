@@ -227,4 +227,21 @@ def test_compute_technical_snapshot_returns_all_none_shape_for_empty_price_data(
         "atr14": None, "bollinger": None, "keltner": None, "squeeze": None,
         "anchoredVwap": None, "volumeRatio20d": None,
         "relativeStrength": {"ratio": None, "slope63d": None},
+        "dataQuality": {"staleness": False},
     }
+
+
+def test_compute_technical_snapshot_surfaces_data_quality_staleness():
+    rows = [{"date": f"2026-01-{i:02d}", "open": 100.0, "high": 101.0, "low": 99.0, "close": 100.0, "volume": 1000} for i in range(1, 25)]
+    with patch("technicals.get_prices", return_value={
+        "NVDA": {"data": rows, "source": "yfinance", "asOf": "x", "dataQuality": {"staleness": True}},
+        "SPY": {"data": rows, "source": "yfinance", "asOf": "x", "dataQuality": {"staleness": False}},
+    }):
+        result = compute_technical_snapshot("NVDA", "D", "1y", "SPY", None)
+    assert result["dataQuality"] == {"staleness": True}
+
+
+def test_compute_technical_snapshot_empty_data_defaults_data_quality_not_stale():
+    with patch("technicals.get_prices", return_value={}):
+        result = compute_technical_snapshot("NVDA", "D", "1y", "SPY", None)
+    assert result["dataQuality"] == {"staleness": False}
