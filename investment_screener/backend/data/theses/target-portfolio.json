@@ -4,7 +4,7 @@
   "schemaVersion": "1.0",
   "version": 9.8,
   "createdAt": "2026-02-14T12:00:00Z",
-  "updatedAt": "2026-07-09T14:16:25.493Z",
+  "updatedAt": "2026-07-10T13:54:08.703Z",
   "description": "Investment thesis focused on the dual infrastructure buildout for ASI Compute (Primary) and Sovereign Finance (Secondary).",
   "pillars": [
     {
@@ -386,7 +386,7 @@
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "European AI infrastructure.",
       "agentRationale": "2026-05-13 Grok sweep: MSFT/NVIDIA deals intact; strong AI cloud momentum; DCF BUY +185.6%. Target bumped 2.55% → 2.85% (post-normalize). High conviction AI-native cloud infrastructure. 2026-06-03: SA LP 5.6% passive stake + explosive Q1 growth validates AI cloud capacity thesis. 2026-06-05: SA LP new 5.6% stake established May 2026; Q1 hyper-growth continuation; power deals (Bloom Energy). 2026-06-08: UK infrastructure expansion underway; AI cloud momentum continues. ACCUMULATE thesis confirmed.",
-      "shares": 5.5
+      "shares": 6
     },
     {
       "ticker": "CRM",
@@ -880,7 +880,7 @@
       "role": "accumulate",
       "thesisForInclusion": "Situational Awareness LP core holding. AI data center infrastructure play aligned with SA fund thesis on ASI race build-out.",
       "agentRationale": "MAINTAIN. Core SA LP holding at 2% target. DCF BUY +49%. Position auto-flagged EXIT in error on 2026-05-18 — corrected 2026-06-03. Do not exit without explicit user instruction. 2026-06-08: $550M revolving credit facility secured; >1GW contracted capacity milestone with major hyperscaler; cloud business separation complete. Thesis strongly confirmed — light ACCUMULATE on dips.",
-      "shares": 20,
+      "shares": 22,
       "subStrategyId": "sa-asi-race",
       "priceLevels": {
         "schemaVersion": "1.0",
