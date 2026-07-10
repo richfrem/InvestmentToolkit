@@ -17,6 +17,7 @@ from rebalancer import (  # noqa: E402
 )
 from rebalancer import load_account_positions  # noqa: E402
 from rebalancer import compute_account_routing  # noqa: E402
+from rebalancer import compute_capital_gains_estimate  # noqa: E402
 
 
 def test_compute_bands_in_band_when_drift_within_band():
@@ -290,3 +291,28 @@ def test_routing_rounding_remainder_never_pushes_account_past_its_own_held_share
     assert rrsp_order["shares"] <= 3.5
     assert margin_order["shares"] <= 1.5
     assert tfsa_order["shares"] + rrsp_order["shares"] + margin_order["shares"] == 14.5
+
+
+def test_capital_gains_computed_for_cash_account_with_cost_basis():
+    positions = {"Cash": {"AAPL": {"shares": 50.0, "costBasis": 100.0}}}
+    gain = compute_capital_gains_estimate("AAPL", "Cash", 10.0, 150.0, positions)
+    assert gain == pytest.approx(500.0)  # (150-100)*10
+
+
+def test_capital_gains_none_for_tfsa_or_rrsp():
+    positions = {"TFSA": {"AAPL": {"shares": 50.0, "costBasis": 100.0}}}
+    assert compute_capital_gains_estimate("AAPL", "TFSA", 10.0, 150.0, positions) is None
+
+
+def test_capital_gains_none_when_cost_basis_unavailable():
+    positions = {"Cash": {"AAPL": {"shares": 50.0, "costBasis": None}}}
+    assert compute_capital_gains_estimate("AAPL", "Cash", 10.0, 150.0, positions) is None
+
+
+def test_capital_gains_zero_cost_basis_is_not_treated_as_unavailable():
+    # costBasis == 0.0 is a valid (if rare) value — e.g. gifted/DRIP shares with no
+    # recorded purchase price. A naive `if not cost_basis` check would misclassify
+    # this as "unavailable" and silently drop a real capital-gains figure.
+    positions = {"Cash": {"AAPL": {"shares": 50.0, "costBasis": 0.0}}}
+    gain = compute_capital_gains_estimate("AAPL", "Cash", 10.0, 150.0, positions)
+    assert gain == pytest.approx(1500.0)  # (150-0)*10
