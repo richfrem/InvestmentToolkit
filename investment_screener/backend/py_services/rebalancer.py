@@ -329,12 +329,23 @@ def compute_account_routing(
         remaining = min(order["shares"], total_held)
         allocated: list[dict[str, Any]] = []
         for acct, held_shares in sorted(held.items(), key=lambda kv: -kv[1]):
-            acct_shares = min(remaining, math.floor(order["shares"] * held_shares / total_held))
+            acct_shares = min(remaining, held_shares, math.floor(order["shares"] * held_shares / total_held))
             if acct_shares > 0:
                 allocated.append({**order, "account": acct, "shares": acct_shares})
                 remaining -= acct_shares
         if remaining > 0 and allocated:
-            allocated[0]["shares"] += remaining  # rounding remainder to the largest holder
+            # Distribute rounding remainder to accounts with headroom (largest
+            # holder first, since `allocated` preserves the descending sort),
+            # never pushing any single account past its own held_shares cap.
+            for entry in allocated:
+                headroom = held[entry["account"]] - entry["shares"]
+                if headroom <= 0:
+                    continue
+                add = min(remaining, headroom)
+                entry["shares"] += add
+                remaining -= add
+                if remaining <= 0:
+                    break
         routed.extend(allocated)
 
     available_cash: dict[str, float] = dict(account_cash_usd)
