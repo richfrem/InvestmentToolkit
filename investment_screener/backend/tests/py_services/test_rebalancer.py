@@ -240,3 +240,14 @@ def test_routing_no_shares_held_produces_no_sell_order():
     policy = {"accountPreferenceRules": [{"match": "default", "prefer": "TFSA"}], "psuFundingRule": {"ticker": "PSU-U.TO"}}
     routed = compute_account_routing(candidates, positions, cash, policy, {"holdings": []}, {"GHOST": 10.0})
     assert routed == []
+
+
+def test_routing_caps_sell_at_actual_held_shares_when_candidate_requests_more():
+    # order["shares"]=10 but only 6 actually held (e.g. stale drift-derived request vs real tvSnapshot data)
+    candidates = [{"ticker": "CRWD", "action": "sell", "shares": 10, "currentWeight": 7.0, "targetWeight": 4.0}]
+    positions = {"TFSA": {"CRWD": {"shares": 6.0, "costBasis": 100.0}}}
+    cash = {"TFSA": 0.0}
+    policy = {"accountPreferenceRules": [{"match": "default", "prefer": "TFSA"}], "psuFundingRule": {"ticker": "PSU-U.TO"}}
+    routed = compute_account_routing(candidates, positions, cash, policy, {"holdings": []}, {"CRWD": 100.0})
+    assert routed[0]["account"] == "TFSA"
+    assert routed[0]["shares"] == 6  # capped at actually-held amount, not the requested 10
