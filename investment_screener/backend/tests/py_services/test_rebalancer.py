@@ -15,6 +15,7 @@ from rebalancer import (  # noqa: E402
     get_latest_valuation_action,
     compute_candidate_orders,
 )
+from rebalancer import load_account_positions  # noqa: E402
 
 
 def test_compute_bands_in_band_when_drift_within_band():
@@ -119,3 +120,53 @@ def test_candidate_orders_skips_zero_share_orders(tmp_path):
     target_data = {"holdings": [{"ticker": "TINY", "targetWeight": 1.5}]}
     candidates, skipped = compute_candidate_orders(bands, target_data, {"TINY": 5000.0}, 100.0, tmp_path)
     assert candidates == []
+
+
+def _write_portfolio_with_tvsnapshot(path: Path, accounts: list[dict]) -> None:
+    path.write_text(json.dumps({
+        "holdings": [], "totals": {"totalUSD": 1000.0},
+        "tvSnapshot": {"snapshots": accounts},
+    }))
+
+
+def test_load_account_positions_reads_tvsnapshot_per_account(tmp_path):
+    portfolio_path = tmp_path / "portfolio.json"
+    _write_portfolio_with_tvsnapshot(portfolio_path, [
+        {
+            "accountType": "TFSA",
+            "positions": [{"symbol": "NBIS", "quantity": 10, "avgFillPrice": 20.0}],
+            "balances": {"cashUSDCombined": 500.0},
+        },
+        {
+            "accountType": "RRSP",
+            "positions": [{"symbol": "NBIS", "quantity": 3, "avgFillPrice": 22.0}],
+            "balances": {"cashUSDCombined": 100.0},
+        },
+    ])
+    positions, source = load_account_positions(portfolio_path)
+    assert positions["TFSA"]["NBIS"] == {"shares": 10.0, "costBasis": 20.0}
+    assert positions["RRSP"]["NBIS"] == {"shares": 3.0, "costBasis": 22.0}
+    assert positions["TFSA"]["_cashUSD"] == 500.0
+    assert source == {"TFSA": "tvSnapshot", "RRSP": "tvSnapshot"}
+
+
+def test_load_account_positions_falls_back_to_heuristic_when_rrsp_missing(tmp_path):
+    portfolio_path = tmp_path / "portfolio.json"
+    _write_portfolio_with_tvsnapshot(portfolio_path, [
+        {
+            "accountType": "TFSA",
+            "positions": [{"symbol": "NBIS", "quantity": 9, "avgFillPrice": 20.0}],
+            "balances": {"cashUSDCombined": 500.0},
+        },
+    ])
+    positions, source = load_account_positions(portfolio_path)
+    assert positions["RRSP"]["NBIS"]["shares"] == 3.0  # floor(9/3)
+    assert source["RRSP"] == "heuristic_1_3_mirror"
+
+
+def test_load_account_positions_no_tvsnapshot_returns_empty(tmp_path):
+    portfolio_path = tmp_path / "portfolio.json"
+    portfolio_path.write_text(json.dumps({"holdings": [], "totals": {"totalUSD": 1000.0}}))
+    positions, source = load_account_positions(portfolio_path)
+    assert positions == {}
+    assert source == {}
