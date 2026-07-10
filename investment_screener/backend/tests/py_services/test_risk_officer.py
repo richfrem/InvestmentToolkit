@@ -118,3 +118,86 @@ def test_compute_risk_officer_review_no_save_skips_write(tmp_path):
     output_path = tmp_path / "risk_officer_review.json"
     compute_risk_officer_review(rebalance_plan_path=plan_path, output_path=output_path, save=False)
     assert not output_path.exists()
+
+
+import pytest
+
+from risk_officer import log_risk_officer_override, _cli_log_override  # noqa: E402
+
+
+class TestLogRiskOfficerOverride:
+    def test_appends_one_jsonl_line(self, tmp_path):
+        path = tmp_path / "risk_officer_overrides.jsonl"
+        log_risk_officer_override(
+            ticker="CORZ", action="buy", account="TFSA", shares=10.0,
+            veto_reasons=["MRC breach"],
+            rationale="Conviction unchanged, MRC estimate is first-order only",
+            path=path,
+        )
+        lines = path.read_text().strip().splitlines()
+        assert len(lines) == 1
+        entry = json.loads(lines[0])
+        assert entry["ticker"] == "CORZ"
+        assert entry["action"] == "buy"
+        assert entry["account"] == "TFSA"
+        assert entry["shares"] == 10.0
+        assert entry["vetoReasons"] == ["MRC breach"]
+        assert entry["overriddenBy"] == "user"
+        assert "date" in entry
+
+    def test_second_call_appends_not_overwrites(self, tmp_path):
+        path = tmp_path / "risk_officer_overrides.jsonl"
+        log_risk_officer_override(
+            ticker="CORZ", action="buy", account="TFSA", shares=10.0,
+            veto_reasons=["a"], rationale="first", path=path,
+        )
+        log_risk_officer_override(
+            ticker="NBIS", action="buy", account="RRSP", shares=3.0,
+            veto_reasons=["b"], rationale="second", path=path,
+        )
+        lines = path.read_text().strip().splitlines()
+        assert len(lines) == 2
+
+
+class TestCliLogOverride:
+    def test_resolves_vetoed_order_then_logs(self, tmp_path):
+        review_path = tmp_path / "risk_officer_review.json"
+        overrides_path = tmp_path / "risk_officer_overrides.jsonl"
+        review_path.write_text(json.dumps({
+            "status": "ok", "generatedAt": "x", "sourceRebalancePlanGeneratedAt": "y",
+            "vetoedOrders": [{
+                "ticker": "CORZ", "action": "buy", "account": "TFSA", "shares": 10,
+                "vetoReasons": ["MRC breach"],
+            }],
+            "approvedOrders": [],
+        }))
+        _cli_log_override(
+            ticker="CORZ", action="buy", account="TFSA",
+            rationale="Conviction unchanged",
+            review_path=review_path, overrides_path=overrides_path,
+        )
+        entry = json.loads(overrides_path.read_text().strip())
+        assert entry["shares"] == 10
+        assert entry["vetoReasons"] == ["MRC breach"]
+
+    def test_missing_review_file_raises(self, tmp_path):
+        review_path = tmp_path / "does_not_exist.json"
+        overrides_path = tmp_path / "risk_officer_overrides.jsonl"
+        with pytest.raises(ValueError, match="not found"):
+            _cli_log_override(
+                ticker="CORZ", action="buy", account="TFSA", rationale="x",
+                review_path=review_path, overrides_path=overrides_path,
+            )
+
+    def test_no_matching_vetoed_order_raises(self, tmp_path):
+        review_path = tmp_path / "risk_officer_review.json"
+        overrides_path = tmp_path / "risk_officer_overrides.jsonl"
+        review_path.write_text(json.dumps({
+            "status": "ok", "generatedAt": "x", "sourceRebalancePlanGeneratedAt": "y",
+            "vetoedOrders": [], "approvedOrders": [],
+        }))
+        with pytest.raises(ValueError, match="no vetoed order"):
+            _cli_log_override(
+                ticker="CORZ", action="buy", account="TFSA", rationale="x",
+                review_path=review_path, overrides_path=overrides_path,
+            )
