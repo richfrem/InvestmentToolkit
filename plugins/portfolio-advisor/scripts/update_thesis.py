@@ -255,7 +255,10 @@ def set_breaker_status(holding: dict, breaker_id: str, status: str, note: str | 
         holding: The holding dict (mutated in place).
         breaker_id: id of the breaker to update.
         status: New status — must be one of VALID_STATUSES.
-        note: Optional note appended to the breaker's 'note' field.
+        note: Optional note appended to the breaker's 'note' field. If the
+            breaker already has a note (e.g. the original condition rationale
+            for a manual breaker), the new note is appended after a dated
+            separator rather than overwriting it.
 
     Raises:
         ValueError: If the breaker isn't found, or isn't type "manual".
@@ -265,10 +268,14 @@ def set_breaker_status(holding: dict, breaker_id: str, status: str, note: str | 
         raise ValueError(f"breaker id '{breaker_id}' not found on {holding.get('ticker')}")
     if breaker["type"] != "manual":
         raise ValueError(f"breaker '{breaker_id}' is type '{breaker['type']}' — status can only be set on manual breakers")
+    today = datetime.now(timezone.utc).date().isoformat()
     breaker["status"] = status
-    breaker["statusSetAt"] = datetime.now(timezone.utc).date().isoformat()
+    breaker["statusSetAt"] = today
     if note:
-        breaker["note"] = note
+        if breaker.get("note"):
+            breaker["note"] = f"{breaker['note']} | status update {today}: {note}"
+        else:
+            breaker["note"] = note
 
 
 def remove_breaker(holding: dict, breaker_id: str) -> None:
@@ -377,15 +384,18 @@ Patch file format (JSON):
             holding["role"] = args.role
         if args.thesis:
             holding["thesisForInclusion"] = args.thesis
-        if args.set_breaker:
-            breaker = json.loads(args.set_breaker)
-            set_breaker(holding, breaker)
-        if args.set_breaker_status:
-            if not args.status:
-                sys.exit("ERROR: --set-breaker-status requires --status")
-            set_breaker_status(holding, args.set_breaker_status, args.status, args.note)
-        if args.remove_breaker:
-            remove_breaker(holding, args.remove_breaker)
+        try:
+            if args.set_breaker:
+                breaker = json.loads(args.set_breaker)
+                set_breaker(holding, breaker)
+            if args.set_breaker_status:
+                if not args.status:
+                    sys.exit("ERROR: --set-breaker-status requires --status")
+                set_breaker_status(holding, args.set_breaker_status, args.status, args.note)
+            if args.remove_breaker:
+                remove_breaker(holding, args.remove_breaker)
+        except ValueError as e:
+            sys.exit(f"ERROR: {e}")
 
     if not args.patch and not args.pillar and not args.holding and not args.list:
         parser.print_help()
