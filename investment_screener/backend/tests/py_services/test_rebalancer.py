@@ -2,6 +2,7 @@
 import json
 import math
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -20,6 +21,7 @@ from rebalancer import compute_account_routing  # noqa: E402
 from rebalancer import compute_capital_gains_estimate  # noqa: E402
 from rebalancer import compute_risk_budget_check  # noqa: E402
 from rebalancer import compute_breaker_warnings  # noqa: E402
+from rebalancer import compute_rebalance_plan  # noqa: E402
 
 
 def test_compute_bands_in_band_when_drift_within_band():
@@ -423,3 +425,137 @@ def test_breaker_warnings_ignores_sell_orders():
 def test_breaker_warnings_degrades_gracefully_when_state_missing():
     routed = [{"ticker": "NBIS", "action": "buy", "account": "TFSA", "shares": 6}]
     assert compute_breaker_warnings(routed, None) == {}
+
+
+# ── compute_rebalance_plan() — orchestrator integration ─────────────────────
+
+def _fresh_timestamp() -> str:
+    # NOTE: intentionally computed at fixture-write time, not hardcoded — a
+    # fixed literal (e.g. "2026-07-09T13:00:00Z") ages past the 60-minute
+    # staleness threshold as soon as real wall-clock time moves past it,
+    # which would flakily/permanently trip DATA_STALE regardless of what a
+    # test is actually trying to exercise.
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _write_full_fixture(tmp_path):
+    target_path = tmp_path / "target-portfolio.json"
+    portfolio_path = tmp_path / "portfolio.json"
+    risk_path = tmp_path / "risk_snapshot.json"
+    breaker_path = tmp_path / "thesis_breaker_state.json"
+    policy_path = tmp_path / "account_policy.json"
+    proj_dir = tmp_path / "projections"
+    proj_dir.mkdir()
+
+    target_path.write_text(json.dumps({
+        "holdings": [
+            {"ticker": "CRWD", "targetWeight": 4.0, "pillarId": "cyber"},
+            {"ticker": "NBIS", "targetWeight": 5.5, "pillarId": "ai_infra"},
+            {"ticker": "PSU-U.TO", "targetWeight": 90.5, "pillarId": "cash"},
+        ],
+    }))
+    portfolio_path.write_text(json.dumps({
+        "holdings": [
+            {"ticker": "CRWD", "shares": 15.0, "price": 100.0},
+            {"ticker": "NBIS", "shares": 1.0, "price": 20.0},
+            {"ticker": "PSU-U.TO", "shares": 90.0, "price": 100.0},
+        ],
+        "totals": {"totalUSD": 10500.0, "timestamp": _fresh_timestamp()},
+        "tvSnapshot": {"snapshots": [{
+            "accountType": "TFSA",
+            "positions": [
+                {"symbol": "CRWD", "quantity": 15.0, "avgFillPrice": 90.0},
+                {"symbol": "NBIS", "quantity": 1.0, "avgFillPrice": 18.0},
+                {"symbol": "PSU-U.TO", "quantity": 90.0, "avgFillPrice": 100.0},
+            ],
+            "balances": {"cashUSDCombined": 500.0},
+        }]},
+    }))
+    risk_path.write_text(json.dumps({"marginalRiskContribution": {}, "clusterExposure": []}))
+    breaker_path.write_text(json.dumps({"holdings": {}}))
+    policy_path.write_text(json.dumps({
+        "accountPreferenceRules": [{"match": "default", "prefer": "TFSA"}],
+        "psuFundingRule": {"ticker": "PSU-U.TO", "sameAccountOnly": True, "sharesFormula": "ceil(N * price / 100)"},
+        "riskBudgetCaps": {"maxMarginalRiskContributionPct": 25, "maxClusterVarianceContributionPct": 60},
+        "bandConfig": {"relativePct": 20.0, "absolutePct": 1.5, "criticalMultiplier": 2.0},
+    }))
+    # All three thesis holdings need a projection on disk, or the >30%-missing
+    # no-trade check (_check_no_trade_conditions) blocks the plan before any
+    # of the "happy path" assertions below get a chance to run — a 1-of-3
+    # missing count is already 33% in this tiny fixture.
+    _write_projection(proj_dir, "CRWD", "MAINTAIN")
+    _write_projection(proj_dir, "NBIS", "ACCUMULATE")
+    _write_projection(proj_dir, "PSU-U.TO", "MAINTAIN")
+    return target_path, portfolio_path, risk_path, breaker_path, policy_path, proj_dir
+
+
+def test_compute_rebalance_plan_full_shape(tmp_path):
+    target_path, portfolio_path, risk_path, breaker_path, policy_path, proj_dir = _write_full_fixture(tmp_path)
+    plan = compute_rebalance_plan(
+        target_portfolio_path=target_path, portfolio_path=portfolio_path,
+        risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
+        account_policy_path=policy_path, projections_dir=proj_dir,
+    )
+    expected_keys = {"generatedAt", "blockedReason", "bands", "orders", "skippedRestores", "accountDataSource", "warnings"}
+    assert expected_keys <= set(plan.keys())
+    assert plan["blockedReason"] is None
+    tickers_in_orders = {o["ticker"] for o in plan["orders"]}
+    assert "CRWD" in tickers_in_orders  # overweight (14.3% actual vs 4.0% target) -> sell
+    assert "NBIS" in tickers_in_orders  # underweight (0.19% actual vs 5.5% target) -> buy
+    assert plan["accountDataSource"] == {"TFSA": "tvSnapshot", "RRSP": "heuristic_1_3_mirror"}
+
+
+def test_compute_rebalance_plan_blocked_when_targets_dont_sum_to_100(tmp_path):
+    target_path, portfolio_path, risk_path, breaker_path, policy_path, proj_dir = _write_full_fixture(tmp_path)
+    target_path.write_text(json.dumps({"holdings": [{"ticker": "CRWD", "targetWeight": 4.0, "pillarId": "cyber"}]}))
+    plan = compute_rebalance_plan(
+        target_portfolio_path=target_path, portfolio_path=portfolio_path,
+        risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
+        account_policy_path=policy_path, projections_dir=proj_dir,
+    )
+    assert plan["blockedReason"] is not None
+    assert "TARGETS_INVALID" in plan["blockedReason"]
+    assert plan["orders"] == []
+
+
+def test_compute_rebalance_plan_blocked_when_portfolio_stale(tmp_path):
+    target_path, portfolio_path, risk_path, breaker_path, policy_path, proj_dir = _write_full_fixture(tmp_path)
+    stale = json.loads(portfolio_path.read_text())
+    stale["totals"]["timestamp"] = "2020-01-01T00:00:00Z"
+    portfolio_path.write_text(json.dumps(stale))
+    plan = compute_rebalance_plan(
+        target_portfolio_path=target_path, portfolio_path=portfolio_path,
+        risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
+        account_policy_path=policy_path, projections_dir=proj_dir,
+    )
+    assert "DATA_STALE" in plan["blockedReason"]
+
+
+def test_compute_rebalance_plan_degrades_when_risk_snapshot_missing(tmp_path):
+    target_path, portfolio_path, risk_path, breaker_path, policy_path, proj_dir = _write_full_fixture(tmp_path)
+    risk_path.unlink()
+    plan = compute_rebalance_plan(
+        target_portfolio_path=target_path, portfolio_path=portfolio_path,
+        risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
+        account_policy_path=policy_path, projections_dir=proj_dir,
+    )
+    assert plan["blockedReason"] is None
+    assert any("risk_snapshot" in w for w in plan["warnings"])
+
+
+def test_compute_rebalance_plan_order_carries_risk_and_breaker_warnings(tmp_path):
+    target_path, portfolio_path, risk_path, breaker_path, policy_path, proj_dir = _write_full_fixture(tmp_path)
+    risk_path.write_text(json.dumps({
+        "marginalRiskContribution": {"NBIS": 0.20},
+        "clusterExposure": [{"pillarId": "ai_infra", "weight": 0.3, "varianceContributionPct": 30.0}],
+    }))
+    breaker_path.write_text(json.dumps({"holdings": {"NBIS": {"b1": {"status": "TRIGGERED", "currentValue": 80, "currentStreak": 4}}}}))
+    plan = compute_rebalance_plan(
+        target_portfolio_path=target_path, portfolio_path=portfolio_path,
+        risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
+        account_policy_path=policy_path, projections_dir=proj_dir,
+    )
+    nbis_order = next(o for o in plan["orders"] if o["ticker"] == "NBIS")
+    assert len(nbis_order["riskGateWarnings"]) >= 1  # cap-breaching, deliberately not vetoed
+    assert len(nbis_order["breakerWarnings"]) >= 1
+    assert nbis_order in plan["orders"]  # still present, not excluded

@@ -512,12 +512,209 @@ def compute_breaker_warnings(
     return warnings
 
 
+def _now_iso() -> str:
+    """Current UTC time as an ISO-8601 string with a literal 'Z' suffix."""
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _check_no_trade_conditions(
+    target_data: dict[str, Any], portfolio_path: Path, projections_dir: Path,
+) -> str | None:
+    """Returns a blockedReason string, or None if clear to trade.
+
+    Checks (in order): portfolio.json staleness (>60min), target weights not
+    summing to 100%±0.5%, >30% of thesis holdings missing a DCF projection.
+
+    Args:
+        target_data: Parsed target-portfolio.json.
+        portfolio_path: Path to portfolio.json.
+        projections_dir: Path to data/projections/.
+
+    Returns:
+        A human-readable blockedReason, or None.
+    """
+    raw = json.loads(Path(portfolio_path).read_text())
+    ts = raw.get("totals", {}).get("timestamp")
+    if ts:
+        age_minutes = (
+            datetime.now(timezone.utc) - datetime.fromisoformat(ts.replace("Z", "+00:00"))
+        ).total_seconds() / 60
+        if age_minutes > 60:
+            return f"DATA_STALE — portfolio.json is {age_minutes:.0f} min old (run /tv-portfolio-sync first)"
+
+    holdings = target_data.get("holdings", [])
+    weight_sum = sum(h.get("targetWeight", 0.0) for h in holdings)
+    if abs(weight_sum - 100) > 0.5:
+        return f"TARGETS_INVALID — target weights sum to {weight_sum:.1f}% (must be 100%)"
+
+    thesis_tickers = [h for h in holdings if h.get("targetWeight", 0) > 0]
+    if thesis_tickers:
+        missing = sum(1 for h in thesis_tickers if not (Path(projections_dir) / f"{h['ticker']}.json").exists())
+        if missing / len(thesis_tickers) > 0.3:
+            return f"MISSING_VALUATIONS — {missing}/{len(thesis_tickers)} thesis holdings have no DCF projection"
+
+    return None
+
+
+def _build_order_entries(
+    routed: list[dict[str, Any]],
+    bands: dict[str, dict[str, Any]],
+    prices: dict[str, float],
+    account_positions: dict[str, dict[str, dict[str, float | None]]],
+    risk_warnings: dict[str, list[str]],
+    breaker_warnings: dict[str, list[str]],
+) -> list[dict[str, Any]]:
+    """Attach rationale, gates, and warnings to each routed order for the final plan.
+
+    Split out of compute_rebalance_plan() to keep the orchestrator itself
+    focused on sequencing the seven sub-functions (Google-style docstring
+    convention: refactor at 50+ lines).
+
+    Args:
+        routed: Output of compute_account_routing().
+        bands: Output of compute_bands() (for the default drift rationale).
+        prices: {ticker: current_price}.
+        account_positions: Output of load_account_positions() (positions dict
+            — first element of its 3-tuple return).
+        risk_warnings: Output of compute_risk_budget_check().
+        breaker_warnings: Output of compute_breaker_warnings().
+
+    Returns:
+        Orders in the shape rebalance_plan.json's "orders" field expects.
+    """
+    orders: list[dict[str, Any]] = []
+    for order in routed:
+        ticker = order["ticker"]
+        band = bands.get(ticker, {})
+        price = prices.get(ticker, 0.0)
+        capital_gains = None
+        if order["action"] == "sell":
+            capital_gains = compute_capital_gains_estimate(
+                ticker, order["account"], order["shares"], price, account_positions
+            )
+        # Only compute_account_routing's synthetic PSU-funding sell pre-sets
+        # "rationale" — every normal candidate-derived order does not, so this
+        # (not "driftPct" in band, which PSU-U.TO's own real band entry would
+        # also satisfy) is the correct way to tell them apart.
+        is_psu_funding_order = "rationale" in order
+        gates = ["psu_funding_rule"] if is_psu_funding_order else ["band_check"]
+        if order["action"] == "buy":
+            gates += ["not_exit_or_sell_rated", "below_target_entry_price"]
+        orders.append({
+            "ticker": ticker,
+            "action": order["action"],
+            "account": order["account"],
+            "shares": order["shares"],
+            "rationale": order.get("rationale") or (
+                f"Out of band: {band.get('driftPct', 0):+.1f}pp vs {band.get('bandPct', 0):.1f}pp band"
+            ),
+            "gatesPassed": gates,
+            "riskGateWarnings": risk_warnings.get(ticker, []),
+            "breakerWarnings": breaker_warnings.get(ticker, []),
+            "capitalGainsEstimate": capital_gains,
+        })
+    return orders
+
+
+def compute_rebalance_plan(
+    target_portfolio_path: Path = TARGET_PATH,
+    portfolio_path: Path = PORTFOLIO_PATH,
+    risk_snapshot_path: Path = RISK_SNAPSHOT_PATH,
+    thesis_breaker_state_path: Path = THESIS_BREAKER_STATE_PATH,
+    account_policy_path: Path = ACCOUNT_POLICY_PATH,
+    projections_dir: Path = PROJECTIONS_DIR,
+) -> dict[str, Any]:
+    """Primary orchestrator — builds the full rebalance order plan.
+
+    Never mutates any input file — owns data/rebalance_plan.json exclusively
+    (main()'s --no-save-gated write). Checks no-trade conditions first; if
+    any fire, returns early with blockedReason set and orders: [].
+
+    Args:
+        target_portfolio_path: Path to target-portfolio.json.
+        portfolio_path: Path to portfolio.json.
+        risk_snapshot_path: Path to risk_snapshot.json (E1 output).
+        thesis_breaker_state_path: Path to thesis_breaker_state.json (B5 output).
+        account_policy_path: Path to account_policy.json.
+        projections_dir: Path to data/projections/.
+
+    Returns:
+        The full rebalance plan dict — see docs/superpowers/specs/
+        2026-07-09-rebalancer-v2-design.md §3.3 for the field-by-field shape.
+    """
+    target_data = json.loads(Path(target_portfolio_path).read_text())
+    account_policy = json.loads(Path(account_policy_path).read_text())
+
+    blocked = _check_no_trade_conditions(target_data, Path(portfolio_path), Path(projections_dir))
+    if blocked:
+        return {
+            "generatedAt": _now_iso(), "blockedReason": blocked, "bands": {},
+            "orders": [], "skippedRestores": [], "accountDataSource": {}, "warnings": [],
+        }
+
+    warnings: list[str] = []
+    state = load_portfolio_state(Path(portfolio_path))
+    current_weights = compute_weights(state["shares"], state["prices"], state["total_usd"])
+    target_weights = {h["ticker"]: h.get("targetWeight", 0.0) for h in target_data.get("holdings", [])}
+    band_config = account_policy.get("bandConfig", DEFAULT_BAND_CONFIG)
+
+    bands = compute_bands(current_weights, target_weights, band_config)
+    candidates, skipped = compute_candidate_orders(
+        bands, target_data, state["prices"], state["total_usd"], Path(projections_dir)
+    )
+
+    account_positions, account_cash_usd, account_source = load_account_positions(Path(portfolio_path))
+    routed = compute_account_routing(
+        candidates, account_positions, account_cash_usd, account_policy, target_data, state["prices"]
+    )
+
+    risk_snapshot = None
+    if Path(risk_snapshot_path).exists():
+        risk_snapshot = json.loads(Path(risk_snapshot_path).read_text())
+    else:
+        warnings.append("risk_snapshot.json not found — risk-budget check skipped")
+    risk_warnings = compute_risk_budget_check(routed, bands, risk_snapshot, account_policy, target_data)
+
+    breaker_state = None
+    if Path(thesis_breaker_state_path).exists():
+        breaker_state = json.loads(Path(thesis_breaker_state_path).read_text())
+    else:
+        warnings.append("thesis_breaker_state.json not found — breaker check skipped")
+    breaker_warnings = compute_breaker_warnings(routed, breaker_state)
+
+    orders = _build_order_entries(
+        routed, bands, state["prices"], account_positions, risk_warnings, breaker_warnings
+    )
+
+    return {
+        "generatedAt": _now_iso(),
+        "blockedReason": None,
+        "bands": bands,
+        "orders": orders,
+        "skippedRestores": skipped,
+        "accountDataSource": account_source,
+        "warnings": warnings,
+    }
+
+
 def main() -> None:
+    """CLI entry point — computes the rebalance plan and prints/saves it.
+
+    Writes data/rebalance_plan.json unless --no-save is passed. Never
+    mutates any input file (spec §3.3).
+    """
     parser = argparse.ArgumentParser(description="Rebalance order plan")
     parser.add_argument("--pretty", action="store_true")
-    parser.add_argument("--no-save", action="store_true")
+    parser.add_argument("--no-save", action="store_true", help="Print only, skip writing rebalance_plan.json")
     args = parser.parse_args()
-    print(json.dumps({"status": "scaffold — orchestrator added in Task 8"}, indent=2 if args.pretty else None))
+
+    plan = compute_rebalance_plan()
+    if not args.no_save:
+        REBALANCE_PLAN_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(REBALANCE_PLAN_PATH, "w") as f:
+            json.dump(plan, f, indent=2)
+
+    print(json.dumps(plan, indent=2 if args.pretty else None))
 
 
 if __name__ == "__main__":
