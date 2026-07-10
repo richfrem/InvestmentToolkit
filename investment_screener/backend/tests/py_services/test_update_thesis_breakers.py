@@ -122,6 +122,13 @@ class TestSetBreakerStatus:
         assert b["status"] == "TRIGGERED"
         assert b["statusSetAt"] == __import__("datetime").date.today().isoformat()
 
+    def test_status_note_appends_rather_than_overwrites(self):
+        holding = {"ticker": "NBIS", "thesisBreakers": [_manual_breaker(note="NDR floor from 10-Q disclosures")]}
+        set_breaker_status(holding, "nbis-ndr-floor", "TRIGGERED", "Q2 NDR 108%")
+        b = holding["thesisBreakers"][0]
+        assert "NDR floor from 10-Q disclosures" in b["note"]
+        assert "Q2 NDR 108%" in b["note"]
+
     def test_missing_breaker_id_raises(self):
         holding = {"ticker": "NBIS", "thesisBreakers": [_manual_breaker()]}
         with pytest.raises(ValueError, match="not found"):
