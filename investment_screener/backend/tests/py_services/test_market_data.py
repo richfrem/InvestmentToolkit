@@ -48,3 +48,39 @@ def test_get_prices_attaches_data_quality_on_cache_hit():
     with patch("market_data.cache_get", return_value=cached_entry):
         result = get_prices(["NVDA"], period="5d")
     assert result["NVDA"]["dataQuality"]["staleness"] is True
+
+
+def test_get_prices_mixed_cache_and_empty_fetch():
+    """Test that cached ticker retains dataQuality key even when fetch batch returns empty.
+
+    Regression test for bug: if some tickers are cache hits and the remaining to-fetch
+    batch's yf.download() returns None or empty, the function must still wrap cached
+    entries in _with_data_quality(). This tests the early return at line 112.
+    """
+    from datetime import date, timedelta
+    cached_date = (date.today() - timedelta(days=2)).isoformat()
+    cached_entry = {
+        "data": [{"date": cached_date, "open": 100, "high": 101, "low": 99, "close": 100.5, "volume": 1000}],
+        "asOf": "x"
+    }
+
+    def cache_get_side_effect(key, category):
+        if "AAPL" in key and category == "ohlcv":
+            return cached_entry
+        return None
+
+    import pandas as pd
+    with patch("market_data.cache_get", side_effect=cache_get_side_effect), \
+         patch("market_data.cache_set"), \
+         patch("market_data.yf.download") as mock_download:
+        mock_download.return_value = pd.DataFrame()  # Empty DataFrame
+        result = get_prices(["AAPL", "MSFT"], period="5d")
+
+    # Both tickers must be in result
+    assert "AAPL" in result
+    assert "MSFT" not in result  # Not fetched, wasn't cached
+
+    # AAPL was cached and must have dataQuality key
+    assert "dataQuality" in result["AAPL"]
+    assert "staleness" in result["AAPL"]["dataQuality"]
+    assert result["AAPL"]["dataQuality"]["staleness"] is False
