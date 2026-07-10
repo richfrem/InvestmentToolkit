@@ -87,3 +87,41 @@ def test_comps_implied_range_incorporates_target_debt_and_cash(tmp_path):
     # impliedPrice = (1125M - 100M + 300M)/10M = 132.5
     assert result["impliedPriceRange"]["low"] == round(132.5 * 0.9, 2)
     assert result["impliedPriceRange"]["high"] == round(132.5 * 1.1, 2)
+
+
+def test_comps_implied_range_includes_data_quality_per_ticker_used(tmp_path, monkeypatch):
+    import comps_valuation
+
+    (tmp_path / "NVDA.json").write_text(json.dumps([{
+        "source": "AI_AGENT", "savedAt": "2026-07-01",
+        "snapshot": {"price": 100.0, "shares": 1000.0, "revenue": 5000.0},
+    }]))
+    (tmp_path / "AMD.json").write_text(json.dumps([{
+        "source": "AI_AGENT", "savedAt": "2026-07-01",
+        "snapshot": {"price": 50.0, "shares": 2000.0, "revenue": 3000.0},
+    }]))
+    (tmp_path / "AVGO.json").write_text(json.dumps([{
+        "source": "AI_AGENT", "savedAt": "2026-07-01",
+        "snapshot": {"price": 200.0, "shares": 500.0, "revenue": 4000.0},
+    }]))
+
+    quality_by_ticker = {
+        "NVDA": {"staleness": True, "dataConflicts": [], "flags": []},
+        "AMD": {"staleness": False, "dataConflicts": [], "flags": []},
+        "AVGO": {"staleness": False, "dataConflicts": [], "flags": []},
+    }
+
+    def fake_get_fundamentals(ticker, cik=None):
+        return {
+            "totalDebt": {"value": 0.0}, "cashAndEquivalents": {"value": 0.0},
+            "dataQuality": quality_by_ticker[ticker],
+        }
+
+    monkeypatch.setattr(comps_valuation, "get_fundamentals", fake_get_fundamentals)
+
+    result = comps_valuation.comps_implied_range("NVDA", ["AMD", "AVGO"], str(tmp_path))
+
+    assert result["status"] == "ok"
+    assert result["dataQuality"]["NVDA"]["staleness"] is True
+    assert result["dataQuality"]["AMD"]["staleness"] is False
+    assert result["dataQuality"]["AVGO"]["staleness"] is False
