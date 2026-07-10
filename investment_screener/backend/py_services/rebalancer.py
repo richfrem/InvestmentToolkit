@@ -83,6 +83,127 @@ def compute_bands(
     return result
 
 
+def get_latest_valuation_action(ticker: str, projections_dir: Path) -> str | None:
+    """Latest AI projection's aiThesis.action for a ticker, or None if unavailable.
+
+    Mirrors portfolio_action.py's _load_ai_upside() latest-AI_AGENT-projection
+    selection, but returns the raw action string instead of computed upside —
+    this is the actual "EXIT/SELL-gated" signal the rebalancer must never buy
+    against (not derive_action()'s portfolio-weight ratio label).
+
+    Args:
+        ticker: Ticker to look up.
+        projections_dir: Path to data/projections/.
+
+    Returns:
+        The latest AI_AGENT projection's aiThesis.action, or None if the
+        projection file is missing, empty, or malformed.
+    """
+    path = projections_dir / f"{ticker}.json"
+    if not path.exists():
+        return None
+    try:
+        projs = json.loads(path.read_text())
+        if isinstance(projs, list):
+            if not projs:
+                return None
+            ai = [p for p in projs if p.get("source") == "AI_AGENT"]
+            proj = max(ai, key=lambda x: x.get("savedAt", "")) if ai else projs[0]
+        else:
+            proj = projs
+        return proj.get("aiThesis", {}).get("action")
+    except Exception:
+        return None
+
+
+def compute_candidate_orders(
+    bands: dict[str, dict[str, Any]],
+    target_data: dict[str, Any],
+    prices: dict[str, float],
+    total_usd: float,
+    projections_dir: Path,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Turn out-of-band holdings into raw candidate orders (pre-account-routing).
+
+    Applies the hard-rule exclusions that remove an order entirely (never
+    warnings): never buys an EXIT/SELL-rated holding, never buys above
+    targetEntryPrice, and downgrades to a no-op when a standingDecision is
+    present (same "signal stands but no trade proposed without your
+    direction" framing brief_recommendations.py already uses for EXIT/REDUCE).
+    Sells are never gated — an overweight EXIT-rated or standing-decision
+    holding should still be trimmed toward target.
+
+    Args:
+        bands: Output of compute_bands().
+        target_data: Parsed target-portfolio.json (targetEntryPrice,
+            standingDecision per holding).
+        prices: {ticker: current_price}.
+        total_usd: Broker-authoritative portfolio total (never shares×price).
+        projections_dir: Path to data/projections/.
+
+    Returns:
+        (candidate_orders, skipped_restores).
+    """
+    holdings_by_ticker = {h["ticker"]: h for h in target_data.get("holdings", [])}
+    candidates: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
+
+    for ticker, band in bands.items():
+        if band["inBand"]:
+            continue
+        price = prices.get(ticker)
+        if not price or price <= 0:
+            continue
+        holding = holdings_by_ticker.get(ticker, {})
+        drift_dollars = abs(band["driftPct"]) / 100.0 * total_usd
+        shares = math.floor(drift_dollars / price)
+
+        if band["driftPct"] > 0:
+            if shares <= 0:
+                continue
+            candidates.append({
+                "ticker": ticker, "action": "sell", "shares": shares,
+                "currentWeight": band["currentWeight"], "targetWeight": band["targetWeight"],
+            })
+            continue
+
+        # Buy-side hard gates are evaluated before the zero-share check so a
+        # skip reason is still recorded even when the drift-dollar amount
+        # floors to 0 shares at the current price (e.g. high-priced tickers).
+        valuation_action = get_latest_valuation_action(ticker, projections_dir)
+        if valuation_action in ("EXIT", "SELL"):
+            skipped.append({"ticker": ticker, "reason": f"{valuation_action}-rated — not restoring"})
+            continue
+
+        entry_cap = holding.get("targetEntryPrice")
+        if entry_cap is not None and price > entry_cap:
+            skipped.append({
+                "ticker": ticker,
+                "reason": f"Price ${price:.2f} above targetEntryPrice ${entry_cap:.2f}",
+            })
+            continue
+
+        standing = holding.get("standingDecision")
+        if standing:
+            skipped.append({
+                "ticker": ticker,
+                "reason": f"Standing decision ({standing.get('type', 'USER')}): "
+                          f"{standing.get('reason', '')} Signal stands but no trade "
+                          f"proposed without your direction.",
+            })
+            continue
+
+        if shares <= 0:
+            continue
+
+        candidates.append({
+            "ticker": ticker, "action": "buy", "shares": shares,
+            "currentWeight": band["currentWeight"], "targetWeight": band["targetWeight"],
+        })
+
+    return candidates, skipped
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Rebalance order plan")
     parser.add_argument("--pretty", action="store_true")
