@@ -206,7 +206,7 @@ def compute_candidate_orders(
 
 def load_account_positions(
     portfolio_path: Path = PORTFOLIO_PATH,
-) -> tuple[dict[str, dict[str, dict[str, float]]], dict[str, str]]:
+) -> tuple[dict[str, dict[str, dict[str, float | None]]], dict[str, float], dict[str, str]]:
     """Per-account share/cost-basis positions, preferring real tvSnapshot data.
 
     Reads portfolio.json's tvSnapshot.snapshots[].positions for real
@@ -218,15 +218,18 @@ def load_account_positions(
         portfolio_path: Path to portfolio.json.
 
     Returns:
-        (account_positions, account_source) — account_positions[account][ticker]
-        = {"shares", "costBasis"}, plus a reserved "_cashUSD" float key per
-        account; account_source[account] is "tvSnapshot" or
-        "heuristic_1_3_mirror".
+        (account_positions, account_cash_usd, account_source) —
+        account_positions[account][ticker] = {"shares", "costBasis"};
+        account_cash_usd[account] is that account's USD cash balance (a
+        separate dict, not folded into account_positions — see this
+        function's Interfaces note on why); account_source[account] is
+        "tvSnapshot" or "heuristic_1_3_mirror".
     """
     raw = json.loads(Path(portfolio_path).read_text())
     snapshots = (raw.get("tvSnapshot") or {}).get("snapshots", [])
 
-    positions: dict[str, dict[str, dict[str, float]]] = {}
+    positions: dict[str, dict[str, dict[str, float | None]]] = {}
+    cash_usd: dict[str, float] = {}
     source: dict[str, str] = {}
     synced_accounts: set[str] = set()
 
@@ -235,7 +238,7 @@ def load_account_positions(
         if not acct:
             continue
         synced_accounts.add(acct)
-        acct_positions: dict[str, dict[str, float]] = {}
+        acct_positions: dict[str, dict[str, float | None]] = {}
         for p in snap.get("positions", []):
             sym = normalize_ticker(p.get("symbol", ""))
             if not sym:
@@ -245,23 +248,21 @@ def load_account_positions(
                 "costBasis": float(p["avgFillPrice"]) if p.get("avgFillPrice") else None,
             }
         balances = snap.get("balances", {})
-        acct_positions["_cashUSD"] = float(balances.get("cashUSDCombined") or balances.get("cashUSD") or 0)
+        cash_usd[acct] = float(balances.get("cashUSDCombined") or balances.get("cashUSD") or 0)
         positions[acct] = acct_positions
         source[acct] = "tvSnapshot"
 
     if synced_accounts and "RRSP" not in synced_accounts and "TFSA" in positions:
-        rrsp_positions: dict[str, dict[str, float]] = {}
+        rrsp_positions: dict[str, dict[str, float | None]] = {}
         for sym, pos in positions["TFSA"].items():
-            if sym == "_cashUSD":
-                continue
             mirrored = math.floor(pos["shares"] / 3)
             if mirrored > 0:
                 rrsp_positions[sym] = {"shares": float(mirrored), "costBasis": pos["costBasis"]}
-        rrsp_positions["_cashUSD"] = 0.0
         positions["RRSP"] = rrsp_positions
+        cash_usd["RRSP"] = 0.0
         source["RRSP"] = "heuristic_1_3_mirror"
 
-    return positions, source
+    return positions, cash_usd, source
 
 
 def main() -> None:

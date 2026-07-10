@@ -143,10 +143,11 @@ def test_load_account_positions_reads_tvsnapshot_per_account(tmp_path):
             "balances": {"cashUSDCombined": 100.0},
         },
     ])
-    positions, source = load_account_positions(portfolio_path)
+    positions, cash, source = load_account_positions(portfolio_path)
     assert positions["TFSA"]["NBIS"] == {"shares": 10.0, "costBasis": 20.0}
     assert positions["RRSP"]["NBIS"] == {"shares": 3.0, "costBasis": 22.0}
-    assert positions["TFSA"]["_cashUSD"] == 500.0
+    assert cash["TFSA"] == 500.0
+    assert cash["RRSP"] == 100.0
     assert source == {"TFSA": "tvSnapshot", "RRSP": "tvSnapshot"}
 
 
@@ -159,14 +160,16 @@ def test_load_account_positions_falls_back_to_heuristic_when_rrsp_missing(tmp_pa
             "balances": {"cashUSDCombined": 500.0},
         },
     ])
-    positions, source = load_account_positions(portfolio_path)
+    positions, cash, source = load_account_positions(portfolio_path)
     assert positions["RRSP"]["NBIS"]["shares"] == 3.0  # floor(9/3)
+    assert cash["RRSP"] == 0.0
     assert source["RRSP"] == "heuristic_1_3_mirror"
 
 
 def test_load_account_positions_no_tvsnapshot_returns_empty(tmp_path):
     portfolio_path = tmp_path / "portfolio.json"
     portfolio_path.write_text(json.dumps({"holdings": [], "totals": {"totalUSD": 1000.0}}))
-    positions, source = load_account_positions(portfolio_path)
+    positions, cash, source = load_account_positions(portfolio_path)
     assert positions == {}
+    assert cash == {}
     assert source == {}
