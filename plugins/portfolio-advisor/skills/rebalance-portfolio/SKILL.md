@@ -16,8 +16,7 @@ allowed-tools: Bash, Read, Write
 ## Quick Reference
 - **Trigger**: `/rebalance` or `/rebalance-portfolio`
 - **Persona**: Disciplined Trade Optimizer — minimizes drift while valuation-gating all BUY trades
-- **Rebalance Prompt**: `references/rebalance_prompt.md` ← LLM prompt for trade output
-- **Fallbacks**: `references/fallback-tree.md`
+- **Engine**: `investment_screener/backend/py_services/rebalancer.py --pretty` ← computes `data/rebalance_plan.json`
 
 ## ⚠️ Valuation Gate Constraint
 > This skill NEVER proposes buying a SELL-rated holding to restore drift.
@@ -139,11 +138,11 @@ already sequenced sells-before-buys, per-account.
 *Current Drift Score: {X} → Projected: {Y}*
 
 📊 Trade Plan ({N} trades):
-| # | Ticker | Action | Shares | Drift Reason      | Valuation Reason        | Score   |
-|---|--------|--------|--------|-------------------|-------------------------|---------|
-| 1 | CRWD   | SELL   | 15     | +3.8% overweight  | SELL-rated (−66% FV gap)| −66%    |
-| 2 | ZS     | BUY    | 8      | −2.1% underweight | BUY-rated (+67% upside) | +67%    |
-| 3 | VST    | BUY    | 12     | −1.8% underweight | BUY-rated (+27% upside) | +27%    |
+| # | Ticker | Action | Shares | Account | Rationale                                  |
+|---|--------|--------|--------|---------|---------------------------------------------|
+| 1 | CRWD   | SELL   | 15     | TFSA    | Out of band: +3.8pp vs 2.0pp band            |
+| 2 | ZS     | BUY    | 8      | TFSA    | Out of band: −2.1pp vs 2.0pp band            |
+| 3 | VST    | BUY    | 12     | RRSP    | Out of band: −1.8pp vs 2.0pp band            |
 
 ⛔ Skipped Restores (SELL-rated underweights — NOT buying):
 | Ticker | Drift   | FV Gap | Reason                                          |
@@ -154,7 +153,7 @@ already sequenced sells-before-buys, per-account.
 ⚠️ Missing Valuations (cannot classify):
 {list of tickers with no AI projection — recommend /evaluate-stock for each}
 
-💡 Valuation Alignment Score: {X}/10 trades improve both drift AND valuation alignment
+💡 {X}/{N} orders carry risk-gate or thesis-breaker warnings (`riskGateWarnings` / `breakerWarnings` non-empty)
 
 **Net capital required**: ${X} (${Y} from trims + ${Z} cash)
 
@@ -213,15 +212,14 @@ for account in ['TFSA', 'RRSP']:
 
 **SELLS**: Check `portfolio.json` — if the ticker is held in multiple accounts (e.g., ZS in both TFSA and RRSP), create a separate entry for each account using that account's actual share count.
 
-**BUYS**: Create two entries — one per account. The user mirrors buys across both accounts with proportional sizing:
-- **TFSA** (main, larger account): full proposed share count
-- **RRSP** (smaller account): approximately 1/3 the TFSA share count (round down, minimum 1)
-- Use the TFSA/RRSP heuristic table to pick which account is "primary" for the asset type, but always create both entries.
+**BUYS**: `rebalancer.py` already resolves each buy to exactly ONE account (via
+`account_policy.json`'s `accountPreferenceRules`) and puts that single account directly on the
+order. Post exactly one trade-log entry per buy order, using that order's own `account` field —
+never fabricate a second mirrored entry in another account.
 
-Example — buying 6 shares of NVDA:
+Example — buying 6 shares of NVDA (order's `account` field is `"TFSA"`):
 ```json
-{ "ticker": "NVDA", "action": "buy", "shares": 6, "account": "TFSA", ... },
-{ "ticker": "NVDA", "action": "buy", "shares": 2, "account": "RRSP", ... }
+{ "ticker": "NVDA", "action": "buy", "shares": 6, "account": "TFSA", ... }
 ```
 
 ### API Call
@@ -254,17 +252,6 @@ curl -s -X POST http://localhost:3001/api/trading/log/suggest \
         "date": "'"$(date +%Y-%m-%d)"'",
         "notes": "Underweight +1.2% · BUY-rated (+82% upside)",
         "source": "rebalance"
-      },
-      {
-        "ticker": "NVDA",
-        "action": "buy",
-        "shares": 2,
-        "price": 0,
-        "account": "RRSP",
-        "orderType": "market",
-        "date": "'"$(date +%Y-%m-%d)"'",
-        "notes": "Underweight +1.2% · BUY-rated (+82% upside) — RRSP mirror (1/3)",
-        "source": "rebalance"
       }
     ]
   }'
@@ -289,8 +276,7 @@ For each proposed trade:
 3. After confirmation, format as actionable order note:
    ```
    ✅ CONFIRMED: {ACTION} {shares} {TICKER} @ market
-   Note: {drift reason} + {valuation reason}
-   Expected drift correction: {driftPct}%
+   Note: {rationale}
    ```
 
 ---
@@ -298,11 +284,9 @@ For each proposed trade:
 ## Sources Checked Declaration
 ```
 ## Sources Checked
-- Health API: [✅ /api/theses/:id/health / ❌ Failed]
+- Rebalance Engine: [✅ rebalancer.py --pretty ran successfully / ❌ Failed — {error}]
+- Blocked Reason: [✅ null — orders generated / ⛔ {blockedReason value} — no orders]
 - Valuations: [✅ {N}/{M} holdings / ⚠️ Missing: {list}]
-- Drift Classifications: [✅ Completed]
-- Rebalance Prompt: [✅ references/rebalance_prompt.md]
-- Capital Assessment: [✅ Available: ${X} / ⚠️ Estimated]
 - Thesis synchronization: [✅ verify_thesis_sync.py passed / ❌ Failed/Out of sync]
 
 ## Sources Unavailable
