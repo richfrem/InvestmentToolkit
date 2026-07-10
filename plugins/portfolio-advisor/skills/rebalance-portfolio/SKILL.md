@@ -193,8 +193,12 @@ re-sequencing it yourself.
 **Settlement note**: Canadian equities on Questrade settle T+1. If you're selling today to fund a buy today, confirm the account has sufficient *settled* buying power before submitting the buy. If in doubt, submit the sell first and wait for settlement confirmation before submitting buys.
 
 **Array ordering rule**: `suggestions` array must be ordered:
-1. All SELL entries first (sorted by account: TFSA sells → RRSP sells)
-2. All BUY entries second (sorted by DCF upside descending — highest-conviction buys first)
+1. All SELL entries first
+2. All BUY entries second
+
+`orders[]` in `rebalance_plan.json` is already sequenced this way (sells before buys) by
+`rebalancer.py` — post them in the order the engine produced, don't re-sort by upside or
+conviction; the engine has no such field to sort by.
 
 ### Multi-Account Rules
 
