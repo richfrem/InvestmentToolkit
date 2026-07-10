@@ -478,6 +478,40 @@ def compute_risk_budget_check(
     return warnings
 
 
+def compute_breaker_warnings(
+    routed_orders: list[dict[str, Any]],
+    thesis_breaker_state: dict[str, Any] | None,
+) -> dict[str, list[str]]:
+    """Flag (never suppress) a proposed buy on a ticker with a TRIGGERED breaker.
+
+    Visibility escalation only, matching B5's own posture — this never
+    removes a buy order from the plan, only attaches a warning string.
+
+    Args:
+        routed_orders: Output of compute_account_routing().
+        thesis_breaker_state: Parsed thesis_breaker_state.json, or None.
+
+    Returns:
+        {ticker: [warning strings]} for buy orders on tickers with at least
+        one TRIGGERED breaker. Degrades to {} if state is missing.
+    """
+    if not thesis_breaker_state:
+        return {}
+    holdings_state = thesis_breaker_state.get("holdings", {})
+    warnings: dict[str, list[str]] = {}
+    for order in routed_orders:
+        if order["action"] != "buy":
+            continue
+        ticker = order["ticker"]
+        for breaker_id, entry in holdings_state.get(ticker, {}).items():
+            if entry.get("status") == "TRIGGERED":
+                warnings.setdefault(ticker, []).append(
+                    f"TRIGGERED breaker '{breaker_id}': current value "
+                    f"{entry.get('currentValue')!r}, streak {entry.get('currentStreak')}"
+                )
+    return warnings
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Rebalance order plan")
     parser.add_argument("--pretty", action="store_true")
