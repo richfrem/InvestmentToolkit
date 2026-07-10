@@ -65,36 +65,26 @@ If the audit endpoint is unreachable, proceed but prepend a warning:
 
 ---
 
-## 🇨🇦 Account Selection Heuristics (TFSA vs RRSP)
+## 🇨🇦 Account Selection
 
-When surfacing trade recommendations, include an account suggestion based on Canadian tax optimization rules:
-
-| Holding Type | Preferred Account | Reason |
-|-------------|-------------------|--------|
-| **High-growth equities** (tech, AI, speculative) | **TFSA** | Tax-free compounding on capital gains |
-| **USD dividend payers** (REITs, ETFs with US dividends) | **RRSP** | IRS/CRA treaty exempts RRSP from 15% US withholding tax |
-| **Canadian dividend stocks** | TFSA or non-reg | Dividend tax credit applies outside RRSP; TFSA shelters growth |
-| **Bond ETFs / income funds** | **RRSP** | Shields interest income (fully taxable) from annual tax |
-| **Speculative / high-volatility** | **TFSA** | Losses in TFSA don't reduce contribution room (unlike RRSP) |
-
-Format the suggestion as a one-line note per trade:
-```
-→ Suggested: TFSA (growth equity — tax-free compounding on gains)
-```
-
-If the current portfolio.json account data shows the holding is already in the "wrong" account, surface it as a soft advisory — never block the trade.
+Account routing (TFSA/RRSP/Cash preference rules, PSU-U.TO same-account funding rule) is now
+computed by `rebalancer.py` from `investment_screener/backend/data/account_policy.json` — each
+order in the plan already carries its `"account"` field. Edit `account_policy.json` directly
+if the routing rules need to change; no skill-side heuristic table to keep in sync anymore.
 
 ---
 
 ## ⚠️ No-Trade Conditions
 
-Block rebalance recommendations (surface as `PAUSED` state) when:
+`rebalancer.py`'s `blockedReason` field covers `DATA_STALE`, `TARGETS_INVALID`, and
+`MISSING_VALUATIONS` computationally — if `data/rebalance_plan.json`'s `blockedReason` is
+non-null, state it verbatim and stop; no orders were generated.
 
-- `DATA_STALE` — portfolio.json > 60 min old. State: *"Run `/tv-portfolio-sync` first — rebalance math needs live prices."*
-- `TARGETS_INVALID` — targets don't sum to 100% ± 0.5%. State: *"Run `/calibrate-targets` first — targets sum to {X}%."*
-- `MISSING_VALUATIONS` — more than 30% of thesis tickers have no DCF projection. State: *"Too many holdings unvalued — run `/evaluate-stock` for the missing ones before rebalancing."*
-- `EARNINGS_SEASON` — 3+ holdings have earnings within 7 days. Surface a list; let user decide whether to proceed.
-- `THESIS_OUT_OF_SYNC` — target-portfolio.json, investment_thesis.md, or active projections are not in synchronization. State: *"Run `verify_thesis_sync.py` to check for and fix synchronization errors before rebalancing."*
+Two conditions stay your judgment call, not a hard block — check before presenting the plan:
+- `EARNINGS_SEASON` — 3+ holdings have earnings within 7 days. Surface a list; let the user
+  decide whether to proceed.
+- `THESIS_OUT_OF_SYNC` — run `verify_thesis_sync.py`; if it fails, tell the user to fix sync
+  before rebalancing.
 
 ---
 
@@ -124,114 +114,22 @@ python3 investment_screener/backend/py_services/verify_thesis_sync.py
 
 ---
 
-## Step 1: Load Current State
+## Step 1: Run the Rebalancer Engine
+
 ```bash
-# Load thesis + health check
-API_TOKEN=$(cat .runtime/api-token)
-curl -s -H "Authorization: Bearer $API_TOKEN" http://localhost:3001/api/theses/{THESIS_ID}/health | python3 -m json.tool
-
-# Load valuations for all holdings
-python3 << 'EOF'
-import subprocess, json
-
-token = open('.runtime/api-token').read().strip()
-thesis_tickers = []  # populate from health check output
-valuations = {}
-missing = []
-
-for ticker in thesis_tickers:
-    r = subprocess.run(['curl','-s','-H',f'Authorization: Bearer {token}',f'http://localhost:3001/api/projections/{ticker}'],
-                       capture_output=True, text=True)
-    try:
-        d = json.loads(r.stdout)
-        ai = [p for p in d if p.get('source')=='AI_AGENT']
-        if ai:
-            p = max(ai, key=lambda x: x.get('savedAt',''))
-            th = p.get('aiThesis',{})
-            sn = p.get('snapshot',{})
-            fv = th.get('fairValue',0)
-            price = sn.get('price',0)
-            upside = round((fv - price)/price*100, 1) if price else None
-            valuations[ticker] = {
-                'action': th.get('action'),
-                'fairValue': fv,
-                'price': price,
-                'upside': upside
-            }
-        else:
-            missing.append(ticker)
-    except:
-        missing.append(ticker)
-
-print(json.dumps({'valuations': valuations, 'missing': missing}, indent=2))
-EOF
+python3 investment_screener/backend/py_services/rebalancer.py --pretty
 ```
 
----
+This computes drift bands, candidate orders (with the EXIT/SELL-rated, targetEntryPrice, and
+standingDecision hard-rule exclusions already applied), account routing (real per-account
+data when available, heuristic TFSA/RRSP mirror otherwise), capital-gains estimates for any
+Cash-account sells, risk-budget warnings against `risk_snapshot.json`, and thesis-breaker
+warnings against `thesis_breaker_state.json` — then writes `data/rebalance_plan.json`.
 
-## Step 2: Classify All Drifted Holdings
-For each holding with `|driftPct| > 1%`, classify by combining drift direction with valuation action:
+If `blockedReason` is non-null, state it verbatim and stop (see No-Trade Conditions above).
 
-| Drift Direction | Valuation | Classification | Priority |
-|-----------------|-----------|----------------|----------|
-| Drifted UP      | SELL      | **Trim First** | 1 — both agree |
-| Drifted DOWN    | BUY       | **Restore First** | 2 — both agree |
-| Drifted UP      | BUY       | **Hold or Trim Late** | 3 — momentum, trim only >8% |
-| Drifted DOWN    | SELL      | **Skip Restore** | Blocked — flag as skippedRestore |
-| Drifted UP      | HOLD      | **Trim** | 4 |
-| Drifted DOWN    | HOLD      | **Restore** | 5 |
-| No Valuation    | N/A       | **Flag Missing** | Last |
-
----
-
-## Step 3: Assess Available Capital
-
-```python
-# Assess capital per account — sells and buys must be sequenced within each account
-cash_holding = get_holding_by_pillar('cash')
-capital_from_trims = sum(trim_trades_value)
-available_capital = cash_holding.value + capital_from_trims
-
-# Per-account breakdown (use portfolio.json account field if present)
-# If account field is missing/unknown, default to TFSA for all tech/AI holdings
-tfsa_cash  = cash_held_in_tfsa   # from portfolio.json USD_CASH + TFSA sell proceeds
-rrsp_cash  = cash_held_in_rrsp   # from portfolio.json RRSP cash + RRSP sell proceeds
-```
-
-**Capital sequencing rule**: Sells in account X fund buys in account X.
-- TFSA sells → available for TFSA buys
-- RRSP sells → available for RRSP buys
-- Do NOT assume proceeds from one account fund buys in another
-
-If insufficient capital to restore all underweights → prioritize by:
-1. BUY-rated + largest negative drift first (per account)
-2. HOLD-rated second
-3. Leave SELL-rated underweights as `skippedRestores`
-4. If still over budget per account → defer lowest-upside buys and tell the user explicitly
-
----
-
-## Step 4: Build Trade Payload
-```python
-rebalance_payload = {
-    "thesis": { "name": thesis_name, "pillars": pillars, "holdings": holdings_with_targets },
-    "healthCheck": health_check_data,
-    "marketData": {
-        ticker: {
-            "currentWeight": h.currentWeight,
-            "targetWeight": h.targetWeight,
-            "driftPct": h.driftPct,
-            "currentValue": h.currentValue,
-            "price": h.price
-        }
-        for h, ticker in holdings
-    },
-    "valuations": valuations,
-    "availableCapital": available_capital,
-    "driftClassifications": drift_classifications  # from Step 2
-}
-```
-Submit payload using `references/rebalance_prompt.md` as the system prompt.
+Read `data/rebalance_plan.json` for the rest of this skill's steps — its `orders[]` array is
+already sequenced sells-before-buys, per-account.
 
 ---
 
@@ -262,6 +160,12 @@ Submit payload using `references/rebalance_prompt.md` as the system prompt.
 
 Ready to execute? Confirm each trade before I generate order details.
 ```
+
+Under any order row with non-empty `riskGateWarnings` or `breakerWarnings`, render:
+```
+   ⚠️ {warning text}
+```
+one line per warning string, before moving to the next order row.
 
 > ⚠️ **Recap Before Execute**: Always confirm individual trades with the user before finalizing.
 > Never output "execute all" language. Each trade confirmation is explicit.
@@ -379,7 +283,8 @@ After posting, tell the user:
 
 ## Step 6: Confirm + Log Each Trade
 For each proposed trade:
-1. Present: *"Trade {N}: {ACTION} {shares} shares of {TICKER} at ~${price} — {reason}. Confirm?"*
+1. Present: *"Trade {N}: {ACTION} {shares} shares of {TICKER} at ~${price} — {rationale}.
+   {warning lines, if any}. Confirm?"*
 2. Wait for explicit confirmation per trade
 3. After confirmation, format as actionable order note:
    ```
