@@ -265,6 +265,107 @@ def load_account_positions(
     return positions, cash_usd, source
 
 
+def compute_account_routing(
+    candidate_orders: list[dict[str, Any]],
+    account_positions: dict[str, dict[str, dict[str, float | None]]],
+    account_cash_usd: dict[str, float],
+    account_policy: dict[str, Any],
+    target_data: dict[str, Any],
+    prices: dict[str, float],
+) -> list[dict[str, Any]]:
+    """Assign each candidate order to an account, sequenced sells-before-buys.
+
+    Sells route to whichever account(s) actually hold shares, split
+    proportionally to shares held when more than one account holds the
+    ticker. Buys route per accountPreferenceRules matched against the
+    holding's role/pillarId tags, falling back to "default". A buy needing
+    more cash than is available in its target account triggers a
+    same-account PSU-U.TO trim sized via ceil(shortfall / psu_price)
+    (never cross-account, per psuFundingRule).
+
+    Args:
+        candidate_orders: Output of compute_candidate_orders().
+        account_positions: Output of load_account_positions() (the positions
+            dict — first element of its 3-tuple return).
+        account_cash_usd: Output of load_account_positions() (the cash dict —
+            second element of its 3-tuple return).
+        account_policy: Parsed account_policy.json.
+        target_data: Parsed target-portfolio.json (role/pillarId per holding).
+        prices: {ticker: current_price}.
+
+    Returns:
+        Ordered list of per-account orders — sells first (by ticker), then
+        buys (by ticker); each order has an "account" key, and PSU-funded
+        buys get a preceding synthetic PSU-U.TO sell order in the same
+        account.
+    """
+    holdings_by_ticker = {h["ticker"]: h for h in target_data.get("holdings", [])}
+    rules = account_policy.get("accountPreferenceRules", [])
+    psu_rule = account_policy.get("psuFundingRule", {})
+    psu_ticker = psu_rule.get("ticker", "PSU-U.TO")
+
+    def preferred_account(ticker: str) -> str:
+        holding = holdings_by_ticker.get(ticker, {})
+        tags = {holding.get("role"), holding.get("pillarId")}
+        for rule in rules:
+            if rule.get("match") in tags:
+                return rule["prefer"]
+        return next((r["prefer"] for r in rules if r.get("match") == "default"), "TFSA")
+
+    sells = [o for o in candidate_orders if o["action"] == "sell"]
+    buys = [o for o in candidate_orders if o["action"] == "buy"]
+    routed: list[dict[str, Any]] = []
+
+    for order in sorted(sells, key=lambda o: o["ticker"]):
+        ticker = order["ticker"]
+        held = {
+            acct: pos[ticker]["shares"]
+            for acct, pos in account_positions.items()
+            if ticker in pos and pos[ticker]["shares"] > 0
+        }
+        if not held:
+            continue
+        total_held = sum(held.values())
+        remaining = order["shares"]
+        allocated: list[dict[str, Any]] = []
+        for acct, held_shares in sorted(held.items(), key=lambda kv: -kv[1]):
+            acct_shares = min(remaining, math.floor(order["shares"] * held_shares / total_held))
+            if acct_shares > 0:
+                allocated.append({**order, "account": acct, "shares": acct_shares})
+                remaining -= acct_shares
+        if remaining > 0 and allocated:
+            allocated[0]["shares"] += remaining  # rounding remainder to the largest holder
+        routed.extend(allocated)
+
+    available_cash: dict[str, float] = dict(account_cash_usd)
+    for order in routed:
+        price = prices.get(order["ticker"], 0.0)
+        available_cash[order["account"]] = available_cash.get(order["account"], 0.0) + order["shares"] * price
+
+    for order in sorted(buys, key=lambda o: o["ticker"]):
+        ticker = order["ticker"]
+        acct = preferred_account(ticker)
+        price = prices.get(ticker, 0.0)
+        cost = order["shares"] * price
+        cash_here = available_cash.get(acct, 0.0)
+        if cost > cash_here and ticker != psu_ticker:
+            shortfall = cost - cash_here
+            psu_price = prices.get(psu_ticker, 100.0)
+            psu_held = account_positions.get(acct, {}).get(psu_ticker, {}).get("shares", 0.0)
+            psu_shares = math.ceil(shortfall / psu_price)
+            if psu_held >= psu_shares:
+                routed.append({
+                    "ticker": psu_ticker, "action": "sell", "account": acct,
+                    "shares": psu_shares,
+                    "rationale": f"Same-account funding for {ticker} buy",
+                })
+                available_cash[acct] = cash_here + psu_shares * psu_price
+        routed.append({**order, "account": acct})
+        available_cash[acct] = available_cash.get(acct, 0.0) - cost
+
+    return routed
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Rebalance order plan")
     parser.add_argument("--pretty", action="store_true")

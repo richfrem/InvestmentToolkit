@@ -16,6 +16,7 @@ from rebalancer import (  # noqa: E402
     compute_candidate_orders,
 )
 from rebalancer import load_account_positions  # noqa: E402
+from rebalancer import compute_account_routing  # noqa: E402
 
 
 def test_compute_bands_in_band_when_drift_within_band():
@@ -173,3 +174,69 @@ def test_load_account_positions_no_tvsnapshot_returns_empty(tmp_path):
     assert positions == {}
     assert cash == {}
     assert source == {}
+
+
+def test_routing_sells_go_to_the_account_that_holds_shares():
+    candidates = [{"ticker": "CRWD", "action": "sell", "shares": 10, "currentWeight": 7.0, "targetWeight": 4.0}]
+    positions = {"TFSA": {"CRWD": {"shares": 15.0, "costBasis": 100.0}}}
+    cash = {"TFSA": 0.0}
+    policy = {"accountPreferenceRules": [{"match": "default", "prefer": "TFSA"}], "psuFundingRule": {"ticker": "PSU-U.TO"}}
+    routed = compute_account_routing(candidates, positions, cash, policy, {"holdings": []}, {"CRWD": 100.0})
+    assert routed[0]["account"] == "TFSA"
+    assert routed[0]["shares"] == 10
+
+
+def test_routing_splits_sell_proportionally_across_two_accounts():
+    candidates = [{"ticker": "CRWD", "action": "sell", "shares": 12, "currentWeight": 7.0, "targetWeight": 4.0}]
+    positions = {
+        "TFSA": {"CRWD": {"shares": 9.0, "costBasis": 100.0}},
+        "RRSP": {"CRWD": {"shares": 3.0, "costBasis": 100.0}},
+    }
+    cash = {"TFSA": 0.0, "RRSP": 0.0}
+    policy = {"accountPreferenceRules": [{"match": "default", "prefer": "TFSA"}], "psuFundingRule": {"ticker": "PSU-U.TO"}}
+    routed = compute_account_routing(candidates, positions, cash, policy, {"holdings": []}, {"CRWD": 100.0})
+    tfsa_order = next(o for o in routed if o["account"] == "TFSA")
+    rrsp_order = next(o for o in routed if o["account"] == "RRSP")
+    assert tfsa_order["shares"] + rrsp_order["shares"] == 12
+    assert tfsa_order["shares"] > rrsp_order["shares"]  # TFSA held more
+
+
+def test_routing_buy_uses_preferred_account_from_policy():
+    candidates = [{"ticker": "NBIS", "action": "buy", "shares": 5, "currentWeight": 2.1, "targetWeight": 5.5}]
+    positions = {"TFSA": {}}
+    cash = {"TFSA": 5000.0}
+    policy = {
+        "accountPreferenceRules": [{"match": "highGrowthEquity", "prefer": "TFSA"}, {"match": "default", "prefer": "TFSA"}],
+        "psuFundingRule": {"ticker": "PSU-U.TO"},
+    }
+    target_data = {"holdings": [{"ticker": "NBIS", "role": "highGrowthEquity"}]}
+    routed = compute_account_routing(candidates, positions, cash, policy, target_data, {"NBIS": 20.0})
+    assert routed[-1]["account"] == "TFSA"
+
+
+def test_routing_psu_funding_rule_triggers_when_cash_insufficient():
+    candidates = [{"ticker": "NBIS", "action": "buy", "shares": 100, "currentWeight": 2.1, "targetWeight": 5.5}]
+    positions = {"TFSA": {"PSU-U.TO": {"shares": 50.0, "costBasis": 100.0}}}
+    cash = {"TFSA": 100.0}
+    policy = {
+        "accountPreferenceRules": [{"match": "default", "prefer": "TFSA"}],
+        "psuFundingRule": {"ticker": "PSU-U.TO", "sameAccountOnly": True, "sharesFormula": "ceil(N * price / 100)"},
+    }
+    target_data = {"holdings": [{"ticker": "NBIS"}]}
+    prices = {"NBIS": 20.0, "PSU-U.TO": 100.0}  # buy costs $2000, only $100 cash -> needs PSU trim
+    routed = compute_account_routing(candidates, positions, cash, policy, target_data, prices)
+    psu_sell = next(o for o in routed if o["ticker"] == "PSU-U.TO")
+    nbis_buy = next(o for o in routed if o["ticker"] == "NBIS")
+    assert psu_sell["action"] == "sell"
+    assert psu_sell["account"] == "TFSA"  # same account as the buy it's funding
+    assert nbis_buy["account"] == "TFSA"
+
+
+def test_routing_no_shares_held_produces_no_sell_order():
+    # Defensive: a candidate sell for a ticker not actually held in any account must not crash.
+    candidates = [{"ticker": "GHOST", "action": "sell", "shares": 5, "currentWeight": 3.0, "targetWeight": 1.0}]
+    positions = {"TFSA": {}}
+    cash = {"TFSA": 0.0}
+    policy = {"accountPreferenceRules": [{"match": "default", "prefer": "TFSA"}], "psuFundingRule": {"ticker": "PSU-U.TO"}}
+    routed = compute_account_routing(candidates, positions, cash, policy, {"holdings": []}, {"GHOST": 10.0})
+    assert routed == []
