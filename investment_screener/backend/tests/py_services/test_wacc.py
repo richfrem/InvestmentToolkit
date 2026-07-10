@@ -137,26 +137,3 @@ def test_compute_wacc_floors_at_lower_bound():
     assert result["floorApplied"] is True
     assert result["wacc"] == WACC_FLOOR
     assert result["betaWarning"] is not None
-
-
-def test_compute_wacc_surfaces_data_quality_from_fundamentals():
-    with patch("wacc.compute_risk_free_rate", return_value={"riskFreeRate": 0.04, "usedFallback": False}), \
-         patch("wacc.get_fundamentals", return_value={
-             "totalDebt": {"value": 200_000_000.0, "source": "yfinance", "asOf": "x"},
-             "dataQuality": {"staleness": True, "dataConflicts": [], "flags": []},
-         }):
-        result = compute_wacc(
-            ticker="TESTCO", market_cap=800_000_000.0,
-            beta_override=1.0, cost_of_debt_override=0.05,
-        )
-    assert result["dataQuality"] == {"staleness": True, "dataConflicts": [], "flags": []}
-
-
-def test_compute_wacc_defaults_data_quality_when_fundamentals_omit_it():
-    with patch("wacc.compute_risk_free_rate", return_value={"riskFreeRate": 0.04, "usedFallback": False}), \
-         patch("wacc.get_fundamentals", return_value={}):
-        result = compute_wacc(
-            ticker="TESTCO", market_cap=1_000_000_000.0,
-            beta_override=1.0, cost_of_debt_override=0.05,
-        )
-    assert result["dataQuality"] == {"staleness": False, "dataConflicts": [], "flags": []}

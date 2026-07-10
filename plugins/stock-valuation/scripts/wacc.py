@@ -200,9 +200,6 @@ def compute_wacc(
         "capApplied": cap_applied,
         "floorApplied": floor_applied,
         "betaWarning": beta_warning,
-        "dataQuality": fundamentals.get(
-            "dataQuality", {"staleness": False, "dataConflicts": [], "flags": []}
-        ),
         "source": {
             "riskFree": "fallback" if rf["usedFallback"] else "market_data:^TNX",
             "beta": "override" if beta_override is not None else (
