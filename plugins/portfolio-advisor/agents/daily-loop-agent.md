@@ -156,25 +156,31 @@ numbered list, ranked by urgency:
 ```
 Here's what I'm seeing today, ranked by urgency:
 
-1. [IMMINENT EVENT] TICKER — earns in N days, currently [REDUCE/EXIT], pre-event size check needed
+1. [THESIS BREAKER] TICKER — {metric} {operator} {threshold} TRIGGERED ({streak}/{horizon} runs)
+   "{note}" — this is a pre-declared condition for selling. Hold anyway, or act on it?
+
+2. [IMMINENT EVENT] TICKER — earns in N days, currently [REDUCE/EXIT], pre-event size check needed
    P&L: [+/-X%] · Score: [X] · Reason: [1-line why this needs attention before earnings]
 
-2. [EXIT] TICKER — score [X], [Nth] consecutive day at EXIT
+3. [EXIT] TICKER — score [X], [Nth] consecutive day at EXIT
    P&L: [+/-X%] · Reason: [DCF action + TA signal, e.g. "DCF SELL, RSI 78 cooling, thesis broken"]
 
-3. [EXIT] TICKER — score [X], new signal
+4. [EXIT] TICKER — score [X], new signal
    P&L: [+/-X%] · Reason: [what flipped today]
 
-4. [REDUCE] TICKER — score [X], overweight [+X.X%]
+5. [REDUCE] TICKER — score [X], overweight [+X.X%]
    P&L: [+/-X%] · Reason: [why reduce, e.g. "RSI OB, at resistance, +18% above book"]
 
-5. [ACCUMULATE] TICKER — score [+X], [X]% to fair value, [X.X]% underweight
+6. [ACCUMULATE] TICKER — score [+X], [X]% to fair value, [X.X]% underweight
    P&L: [+/-X%] · Reason: [why now, e.g. "DCF BUY, RSI oversold, at support"]
 
 Start with item 1, or jump to a specific one?
 ```
 
 **Priority rules:**
+0. TRIGGERED thesis breakers — always first, above imminent earnings. A breaker only
+   exists because the user or agent pre-declared it as a reason to sell; surfacing it late
+   defeats the point.
 1. IMMINENT earnings on any REDUCE/EXIT position (size before event)
 2. EXIT signals that have been EXIT for 2+ consecutive sessions
 3. EXIT signals (new)
@@ -193,6 +199,40 @@ Start with item 1, or jump to a specific one?
 
 Work through the triage queue one item at a time. For each item, present a card,
 wait for the user's response, then move to the next.
+
+**THESIS BREAKER card format (present these before any other card type):**
+```
+─── [N]/[TOTAL] · THESIS BREAKER: [TICKER] ───────────────────
+  [Company Name]  ·  Breaker: [breaker id]
+
+  Condition:  [metric] [operator] [threshold]
+  Streak:     [currentStreak]/[horizon] consecutive daily runs   (auto breakers)
+              -- OR --
+  Manually flagged TRIGGERED on [statusSetAt]                    (manual breakers)
+  Note:       "[note]"
+
+  This is a pre-declared condition the user set as a reason to sell this
+  position. It does not auto-execute anything — you decide.
+
+→ Act on it (sell/trim), or hold anyway with a stated reason?
+──────────────────────────────────────────────────────────────
+```
+
+**If the user chooses "hold anyway"** — this is an override, and the framework requires an
+accountability trail. Ask for a one-sentence rationale, then log it before moving to the
+next card:
+
+```bash
+python3 investment_screener/backend/py_services/thesis_breakers.py --log-override \
+  --ticker {TICKER} --breaker-id {breaker_id} --rationale "{user's stated reason}"
+```
+
+**If the user chooses to act on it** (sell/trim) — proceed exactly like an EXIT/REDUCE card:
+build the trade proposal, confirm, execute. No override log is written, since the breaker's
+own recommendation was followed, not overridden.
+
+A TRIGGERED breaker never auto-executes a trade on its own — same HITL rule as every other
+signal in this loop.
 
 **Card format:**
 ```
