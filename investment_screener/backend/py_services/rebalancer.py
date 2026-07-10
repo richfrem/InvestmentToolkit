@@ -326,7 +326,7 @@ def compute_account_routing(
         if not held:
             continue
         total_held = sum(held.values())
-        remaining = order["shares"]
+        remaining = min(order["shares"], total_held)
         allocated: list[dict[str, Any]] = []
         for acct, held_shares in sorted(held.items(), key=lambda kv: -kv[1]):
             acct_shares = min(remaining, math.floor(order["shares"] * held_shares / total_held))
