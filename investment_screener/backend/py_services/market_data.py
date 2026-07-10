@@ -109,7 +109,7 @@ def get_prices(tickers: list[str], period: str, interval: str = "1d") -> dict[st
 
     raw = yf.download(to_fetch, period=period, interval=interval, auto_adjust=True, progress=False)
     if raw is None or raw.empty:
-        return result
+        return _with_data_quality(result)
 
     for t in to_fetch:
         try:
