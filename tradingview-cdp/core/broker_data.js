@@ -428,9 +428,9 @@ export async function getAccountTotals() {
       continue;
     }
     const balances = await getBalances();
-    const equity  = balances.totalEquityUSD  ?? 0;
-    const mktVal  = balances.marketValueUSD  ?? 0;
-    const cash    = balances.cashUSD         ?? 0;
+    const equity  = balances.totalEquityUSDCombined  ?? balances.totalEquityUSD  ?? 0;
+    const mktVal  = balances.marketValueUSDCombined  ?? balances.marketValueUSD  ?? 0;
+    const cash    = balances.cashUSDCombined         ?? balances.cashUSD         ?? 0;
     results.push({ accountType: acct.accountType, accountId: acct.accountId,
                    totalEquityUSD: equity, marketValueUSD: mktVal, cashUSD: cash });
     grandTotalUSD       += equity;
