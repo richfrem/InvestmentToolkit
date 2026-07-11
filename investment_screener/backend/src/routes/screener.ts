@@ -1,3 +1,16 @@
+/**
+ * src/routes/screener.ts
+ * =====================
+ *
+ * Purpose:
+ *   Handles Express API routes for watchlist management, screener calculations,
+ *   and fetching python-based actionable opportunities.
+ *
+ * Key Functions:
+ *   - GET /watchlist - Retrieves user watchlist
+ *   - POST /watchlist - Adds a ticker to the watchlist
+ */
+
 import express from 'express';
 import fs from 'fs';
 import path from 'path';

@@ -1,3 +1,16 @@
+/**
+ * src/routes/trading.ts
+ * =====================
+ *
+ * Purpose:
+ *   Handles Express API routes for live order execution, checking open orders,
+ *   cancelling working orders, and accessing trade execution logs.
+ *
+ * Key Functions:
+ *   - POST /place-order - Places broker orders via TradingView CDP
+ *   - GET /orders - Retrieves working and inactive orders
+ */
+
 import express from 'express';
 import { spawn } from 'child_process';
 import crypto from 'crypto';

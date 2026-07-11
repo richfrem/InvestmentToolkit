@@ -1,3 +1,23 @@
+/**
+ * src/routes/portfolio.ts
+ * =======================
+ *
+ * Purpose:
+ *   Handles backend Express routes for user portfolio data management,
+ *   rebalancing updates, live snapshot sync, and performance tracking.
+ *
+ * Key Input Dependencies:
+ *   - investment_screener/backend/data/portfolio.json (Live portfolio state)
+ *   - investment_screener/backend/data/cash_flows.json (Deposit & withdrawal logs)
+ *   - investment_screener/backend/data/portfolio-config.json (YTD starting configuration overrides)
+ *   - investment_screener/backend/data/ytd_performance_report.json (Output TWR data)
+ *
+ * Key Functions:
+ *   - loadYtdPerformanceReport() - Executes TWR calculation and loads results
+ *   - readPortfolio() - Parses portfolio JSON structure
+ *   - syncThesisShares() - Synchronizes holdings with active portfolio
+ */
+
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
@@ -24,6 +44,32 @@ try {
 
 function backupPortfolio(): void {
     if (fs.existsSync(PORTFOLIO_FILE)) fs.copyFileSync(PORTFOLIO_FILE, PORTFOLIO_FILE + '.bak');
+}
+
+/**
+ * Executes the Python TWR calculation script and reads the generated report.
+ */
+async function loadYtdPerformanceReport(): Promise<any> {
+    /*
+      Checks if cash_flows.json is present, executes ytd_return.py via the Python bridge,
+      and loads ytd_performance_report.json. Returns null on failure or if missing.
+     */
+    const cashFlowsFile = path.join(path.dirname(PORTFOLIO_FILE), 'cash_flows.json');
+    const reportFile = path.join(path.dirname(PORTFOLIO_FILE), 'ytd_performance_report.json');
+    
+    if (!fs.existsSync(cashFlowsFile)) {
+        return null;
+    }
+    
+    try {
+        await spawnPythonScript('ytd_return.py', []);
+        if (fs.existsSync(reportFile)) {
+            return JSON.parse(fs.readFileSync(reportFile, 'utf-8'));
+        }
+    } catch (err) {
+        console.error(`[loadYtdPerformanceReport] Failed to run ytd_return.py:`, err);
+    }
+    return null;
 }
 
 /** Read portfolio.json — handles both legacy array format and new { holdings, totals, tvSnapshot } format. */
@@ -245,17 +291,27 @@ router.get('/summary', async (_req, res) => {
         }, '');
         const lastUpdated = fromTotals ?? fromHoldings ?? new Date().toISOString();
 
-        const ytdStartValueUSD = YTD_START_VALUE_CAD / JAN1_USD_CAD_RATE;
+        // Fetch time-weighted performance metrics from report
+        const twrReport = await loadYtdPerformanceReport();
+
+        let ytdStartValueCAD_toUse = twrReport?.starting_balance_cad ?? YTD_START_VALUE_CAD;
+        let ytdChangeCAD_toUse = twrReport?.dollar_gain_cad ?? (totalMarketValueCAD - YTD_START_VALUE_CAD);
+        let ytdChangePctCAD_toUse = twrReport?.time_weighted_return_pct ?? ((totalMarketValueCAD - YTD_START_VALUE_CAD) / YTD_START_VALUE_CAD) * 100;
+
+        const ytdStartValueUSD = ytdStartValueCAD_toUse / JAN1_USD_CAD_RATE;
+        const ytdChangeUSD = ytdChangeCAD_toUse / liveUsdCadRate;
+        const ytdChangePctUSD = ytdChangePctCAD_toUse;
+
         res.json({
             positionCount: positions.length,
             totalMarketValueUSD, totalMarketValueCAD,
             totalBookValueUSD, totalBookValueCAD,
-            ytdStartValueCAD: YTD_START_VALUE_CAD,
+            ytdStartValueCAD: ytdStartValueCAD_toUse,
             ytdStartValueUSD,
-            ytdChangeCAD: totalMarketValueCAD - YTD_START_VALUE_CAD,
-            ytdChangePctCAD: ((totalMarketValueCAD - YTD_START_VALUE_CAD) / YTD_START_VALUE_CAD) * 100,
-            ytdChangeUSD: totalMarketValueUSD - ytdStartValueUSD,
-            ytdChangePctUSD: ((totalMarketValueUSD - ytdStartValueUSD) / ytdStartValueUSD) * 100,
+            ytdChangeCAD: ytdChangeCAD_toUse,
+            ytdChangePctCAD: ytdChangePctCAD_toUse,
+            ytdChangeUSD,
+            ytdChangePctUSD,
             unrealizedGainUSD: totalMarketValueUSD - totalBookValueUSD,
             unrealizedGainPctUSD: totalBookValueUSD > 0 ? ((totalMarketValueUSD - totalBookValueUSD) / totalBookValueUSD) * 100 : 0,
             unrealizedGainCAD: totalMarketValueCAD - totalBookValueCAD,
