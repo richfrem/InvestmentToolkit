@@ -120,6 +120,7 @@ As an AI agent operating in this repository, you **MUST** adhere to the followin
 - Live brokerage state is maintained in `backend/data/*.ts` singletons.
 - Portfolio syncing uses a source waterfall: TradingView CDP → Questrade API Fallback → Cached data.
 - All Python-based analytical logic MUST be invoked via the `bridge.ts` service.
+- **Initialize missing private data**: If any local gitignored data files (e.g., `portfolio.json`, `cash_flows.json`) are missing from `investment_screener/backend/data/`, initialize them by copying their corresponding `.example` files.
 
 ### 5. Security & Objectivity
 - **Security**: Never prompt users to paste raw Questrade tokens or API keys. Always use built-in wizards that handle secure encryption.

@@ -67,23 +67,23 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-10 18:07 by TV sync · Portfolio total: $30,731 USD*
+*Auto-updated 2026-07-11 08:50 by TV sync · Portfolio total: $30,889 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **CRWV** | 24 | 7.0% | 3.8% | +3.2pp ⚠ | 🟡 TRIM | — |
-| **SNDK** | 0.94 | 5.7% | 3.3% | +2.4pp ⚠ | 🟡 TRIM | ≤$1,350 |
-| **GOOG** | 4 | 4.6% | 4.1% | +0.5pp | ⚪ MAINTAIN | — |
-| **DRAM** | 21 | 4.3% | 4.6% | -0.3pp | ⚪ MAINTAIN | — |
-| **NBIS** | 6 | 4.1% | 3.1% | +1.1pp | 🟡 TRIM | — |
-| **IREN** | 31 | 4.1% | 3.7% | +0.4pp | ⚪ MAINTAIN | — |
-| **CORZ** | 46 | 3.5% | 3.8% | -0.4pp | ⚪ MAINTAIN | — |
-| **CBRS** | 4.5 | 2.9% | 2.5% | +0.4pp | 🟡 TRIM | — |
-| **MSFT** | 2 | 2.5% | 2.3% | +0.2pp | ⚪ MAINTAIN | — |
+| **CRWV** | 24 | 6.9% | 3.8% | +3.1pp ⚠ | 🟡 TRIM | — |
+| **SNDK** | 0.94 | 5.8% | 3.3% | +2.6pp ⚠ | 🟡 TRIM | ≤$1,350 |
+| **GOOG** | 4 | 4.6% | 4.0% | +0.6pp | 🟡 TRIM | — |
+| **DRAM** | 21 | 4.3% | 4.5% | -0.2pp | ⚪ MAINTAIN | — |
+| **NBIS** | 6 | 4.3% | 3.0% | +1.3pp | 🟡 TRIM | — |
+| **IREN** | 31 | 4.1% | 3.6% | +0.5pp | ⚪ MAINTAIN | — |
+| **CORZ** | 46 | 3.5% | 3.7% | -0.2pp | ⚪ MAINTAIN | — |
+| **CBRS** | 4.5 | 3.1% | 2.5% | +0.6pp | 🟡 TRIM | — |
+| **MSFT** | 2 | 2.5% | 2.2% | +0.3pp | ⚪ MAINTAIN | — |
 | **APLD** | 22 | 2.2% | 2.5% | -0.3pp | ⚪ MAINTAIN | — |
-| **BTDR** | 45 | 1.9% | 2.0% | -0.0pp | ⚪ MAINTAIN | — |
+| **BTDR** | 45 | 1.9% | 1.9% | +0.0pp | ⚪ MAINTAIN | — |
 
 **Pending Initiation**
 
@@ -92,5 +92,11 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 | **CLSK** | — | — | 2.0% | — | 🟢 INITIATE | — |
 | **VRT** | — | — | 0.0% | — | 🟢 INITIATE | — |
 
-**Pillar total — Actual: 42.9% · Target: 37.7% · Gap: +5.1pp**
+**Watchlist** *(target set, entry not yet triggered)*
+
+| Ticker | Target% | Action | Entry Price | Note |
+|--------|---------|--------|-------------|------|
+| META | 2.0% | WATCHLIST | — | Social monopoly + AI ad flywheel. |
+
+**Pillar total — Actual: 43.3% · Target: 39.0% · Gap: +4.3pp**
 <!-- AUTO_UPDATE_END: current_positions -->
