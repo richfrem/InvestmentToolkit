@@ -50,7 +50,12 @@ If either is missing, direct them to install before continuing:
 - Node.js: https://nodejs.org/
 - Python: https://www.python.org/downloads/
 
-Once dependencies are confirmed, ask if they've run the startup script yet:
+Once dependencies are confirmed, have them check if the private JSON data files are initialized. If they are missing from `investment_screener/backend/data/`, copy them from their `.example` counterparts:
+- `portfolio.json` ← `portfolio.json.example`
+- `cash_flows.json` ← `cash_flows.json.example`
+- `portfolio-config.json` ← `portfolio-config.json.example`
+
+Once the files are present, ask if they've run the startup script yet:
 ```bash
 python3 run_investment_toolkit.py
 ```
