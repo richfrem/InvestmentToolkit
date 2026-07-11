@@ -102,6 +102,21 @@
             "name": "weekly_review_agent",
             "path": "agents/weekly-review-agent.md",
             "trigger": "/weekly-review"
+        },
+        {
+            "name": "risk_officer_agent",
+            "path": "agents/risk-officer-agent.md",
+            "trigger": "/rebalance"
+        },
+        {
+            "name": "red_team_agent",
+            "path": "agents/red-team-agent.md",
+            "trigger": "red-team"
+        },
+        {
+            "name": "data_quality_agent",
+            "path": "agents/data-quality-agent.md",
+            "trigger": "data-quality"
         }
     ],
     "commands": [

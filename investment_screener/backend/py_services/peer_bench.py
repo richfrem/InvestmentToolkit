@@ -28,6 +28,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from framework_score import compute_raw_metrics  # noqa: E402
+from market_data import get_fundamentals  # noqa: E402
 
 MIN_USABLE_PEERS = 2
 
@@ -95,7 +96,14 @@ def compute_peer_benchmark(
             "percentile": percentile,
         })
 
-    return {"status": "ok", "peersUsed": peers_used, "table": table}
+    data_quality = {}
+    for t in [ticker, *peers_used]:
+        fundamentals = get_fundamentals(t)
+        data_quality[t] = fundamentals.get(
+            "dataQuality", {"staleness": False, "dataConflicts": [], "flags": []}
+        )
+
+    return {"status": "ok", "peersUsed": peers_used, "table": table, "dataQuality": data_quality}
 
 
 def main() -> None:

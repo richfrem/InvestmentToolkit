@@ -320,6 +320,7 @@ def compute_technical_snapshot(
             "atr14": None, "bollinger": None, "keltner": None, "squeeze": None,
             "anchoredVwap": None, "volumeRatio20d": None,
             "relativeStrength": {"ratio": None, "slope63d": None},
+            "dataQuality": {"staleness": False},
         }
 
     if anchor_date is None:
@@ -360,6 +361,7 @@ def compute_technical_snapshot(
         ),
         "volumeRatio20d": compute_volume_ratio(df["volume"]),
         "relativeStrength": relative_strength,
+        "dataQuality": prices.get(ticker, {}).get("dataQuality", {"staleness": False}),
     }
 
 
