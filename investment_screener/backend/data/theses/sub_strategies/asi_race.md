@@ -67,23 +67,23 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-10 06:54 by TV sync · Portfolio total: $33,094 USD*
+*Auto-updated 2026-07-10 18:07 by TV sync · Portfolio total: $30,731 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **CRWV** | 24 | 6.5% | 5.3% | +1.2pp | 🟡 TRIM | — |
-| **SNDK** | 0.94 | 5.3% | 4.0% | +1.3pp | 🟡 TRIM | ≤$1,350 |
-| **GOOG** | 4 | 4.3% | 4.0% | +0.3pp | ⚪ MAINTAIN | — |
-| **DRAM** | 21 | 4.1% | 4.5% | -0.4pp | ⚪ MAINTAIN | — |
-| **NBIS** | 5.5 | 3.9% | 2.5% | +1.4pp | 🟡 TRIM | — |
-| **IREN** | 31 | 3.9% | 3.6% | +0.3pp | ⚪ MAINTAIN | — |
-| **CORZ** | 46 | 3.3% | 3.7% | -0.4pp | ⚪ MAINTAIN | — |
-| **CBRS** | 4.5 | 2.7% | 2.5% | +0.2pp | ⚪ MAINTAIN | — |
-| **MSFT** | 2 | 2.3% | 2.2% | +0.1pp | ⚪ MAINTAIN | — |
-| **APLD** | 22 | 2.1% | 2.5% | -0.3pp | ⚪ MAINTAIN | — |
-| **BTDR** | 45 | 1.9% | 1.9% | +0.0pp | ⚪ MAINTAIN | — |
+| **CRWV** | 24 | 7.0% | 3.8% | +3.2pp ⚠ | 🟡 TRIM | — |
+| **SNDK** | 0.94 | 5.7% | 3.3% | +2.4pp ⚠ | 🟡 TRIM | ≤$1,350 |
+| **GOOG** | 4 | 4.6% | 4.1% | +0.5pp | ⚪ MAINTAIN | — |
+| **DRAM** | 21 | 4.3% | 4.6% | -0.3pp | ⚪ MAINTAIN | — |
+| **NBIS** | 6 | 4.1% | 3.1% | +1.1pp | 🟡 TRIM | — |
+| **IREN** | 31 | 4.1% | 3.7% | +0.4pp | ⚪ MAINTAIN | — |
+| **CORZ** | 46 | 3.5% | 3.8% | -0.4pp | ⚪ MAINTAIN | — |
+| **CBRS** | 4.5 | 2.9% | 2.5% | +0.4pp | 🟡 TRIM | — |
+| **MSFT** | 2 | 2.5% | 2.3% | +0.2pp | ⚪ MAINTAIN | — |
+| **APLD** | 22 | 2.2% | 2.5% | -0.3pp | ⚪ MAINTAIN | — |
+| **BTDR** | 45 | 1.9% | 2.0% | -0.0pp | ⚪ MAINTAIN | — |
 
 **Pending Initiation**
 
@@ -92,5 +92,5 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 | **CLSK** | — | — | 2.0% | — | 🟢 INITIATE | — |
 | **VRT** | — | — | 0.0% | — | 🟢 INITIATE | — |
 
-**Pillar total — Actual: 40.4% · Target: 38.7% · Gap: +1.7pp**
+**Pillar total — Actual: 42.9% · Target: 37.7% · Gap: +5.1pp**
 <!-- AUTO_UPDATE_END: current_positions -->
