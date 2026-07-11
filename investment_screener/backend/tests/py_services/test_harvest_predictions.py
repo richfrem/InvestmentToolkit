@@ -17,6 +17,11 @@ from harvest_predictions import (  # noqa: E402
     build_dcf_fair_value_claim,
     harvest_action_and_dcf_claims,
 )
+from harvest_predictions import (  # noqa: E402
+    build_breaker_forecast_claims,
+    build_rebalance_order_claims,
+    harvest_rebalance_and_breaker_claims,
+)
 
 
 class TestLoadProjection:
@@ -170,3 +175,89 @@ class TestHarvestActionAndDcfClaims:
         projections_dir.mkdir()
         result = harvest_action_and_dcf_claims(projections_dir, tmp_path / "predictions.jsonl")
         assert result == []
+
+
+class TestBuildRebalanceOrderClaims:
+    def test_buy_is_bullish(self):
+        plan = {"orders": [{"ticker": "CORZ", "action": "buy", "riskGateWarnings": [], "breakerWarnings": []}]}
+        claims = build_rebalance_order_claims(plan, "2026-07-10")
+        assert claims == [{
+            "ticker": "CORZ", "type": "rebalance_order", "date": "2026-07-10",
+            "claim": {"action": "buy", "gateWarningsPresent": False}, "direction": "bullish",
+        }]
+
+    def test_sell_is_bearish(self):
+        plan = {"orders": [{"ticker": "PSU-U.TO", "action": "sell", "riskGateWarnings": [], "breakerWarnings": []}]}
+        claims = build_rebalance_order_claims(plan, "2026-07-10")
+        assert claims[0]["direction"] == "bearish"
+
+    def test_gate_warnings_present_flag(self):
+        plan = {"orders": [{"ticker": "NBIS", "action": "buy", "riskGateWarnings": ["cluster cap"], "breakerWarnings": []}]}
+        claims = build_rebalance_order_claims(plan, "2026-07-10")
+        assert claims[0]["claim"]["gateWarningsPresent"] is True
+
+    def test_empty_orders_returns_empty_list(self):
+        assert build_rebalance_order_claims({"orders": []}, "2026-07-10") == []
+
+    def test_missing_ticker_or_action_skipped(self):
+        plan = {"orders": [{"ticker": None, "action": "buy"}, {"ticker": "X", "action": "hold"}]}
+        assert build_rebalance_order_claims(plan, "2026-07-10") == []
+
+
+class TestBuildBreakerForecastClaims:
+    def test_triggered_breaker_is_harvested_as_bearish(self):
+        breaker_state = {"holdings": {"NBIS": {"rsi_breach": {"status": "TRIGGERED"}}}}
+        target_data = {"holdings": [{"ticker": "NBIS", "thesisBreakers": [
+            {"id": "rsi_breach", "metric": "rsi"}
+        ]}]}
+        claims = build_breaker_forecast_claims(breaker_state, target_data, "2026-07-10")
+        assert claims == [{
+            "ticker": "NBIS", "type": "breaker_forecast", "date": "2026-07-10",
+            "claim": {"breakerId": "rsi_breach", "metric": "rsi", "status": "TRIGGERED"},
+            "direction": "bearish",
+        }]
+
+    def test_non_triggered_breaker_is_not_harvested(self):
+        breaker_state = {"holdings": {"NBIS": {"rsi_breach": {"status": "OK"}}}}
+        target_data = {"holdings": [{"ticker": "NBIS", "thesisBreakers": [{"id": "rsi_breach", "metric": "rsi"}]}]}
+        assert build_breaker_forecast_claims(breaker_state, target_data, "2026-07-10") == []
+
+    def test_empty_holdings_returns_empty_list(self):
+        assert build_breaker_forecast_claims({"holdings": {}}, {"holdings": []}, "2026-07-10") == []
+
+
+class TestHarvestRebalanceAndBreakerClaims:
+    @patch("harvest_predictions._fetch_base_prices", return_value=(5.32, 612.40))
+    def test_missing_rebalance_plan_file_is_not_an_error(self, _mock_prices, tmp_path):
+        result = harvest_rebalance_and_breaker_claims(
+            rebalance_plan_path=tmp_path / "no_such_plan.json",
+            thesis_breaker_state_path=tmp_path / "no_such_state.json",
+            target_portfolio_path=tmp_path / "no_such_target.json",
+            predictions_path=tmp_path / "predictions.jsonl",
+        )
+        assert result == []
+
+    @patch("harvest_predictions._fetch_base_prices", return_value=(5.32, 612.40))
+    def test_harvests_from_both_artifacts_when_present(self, _mock_prices, tmp_path):
+        plan_path = tmp_path / "rebalance_plan.json"
+        plan_path.write_text(json.dumps({
+            "generatedAt": "2026-07-10T14:00:00Z",
+            "orders": [{"ticker": "CORZ", "action": "buy", "riskGateWarnings": [], "breakerWarnings": []}],
+        }))
+        state_path = tmp_path / "thesis_breaker_state.json"
+        state_path.write_text(json.dumps({
+            "generatedAt": "2026-07-10T14:00:00Z",
+            "holdings": {"NBIS": {"rsi_breach": {"status": "TRIGGERED"}}},
+        }))
+        target_path = tmp_path / "target-portfolio.json"
+        target_path.write_text(json.dumps({
+            "holdings": [{"ticker": "NBIS", "thesisBreakers": [{"id": "rsi_breach", "metric": "rsi"}]}]
+        }))
+        result = harvest_rebalance_and_breaker_claims(
+            rebalance_plan_path=plan_path,
+            thesis_breaker_state_path=state_path,
+            target_portfolio_path=target_path,
+            predictions_path=tmp_path / "predictions.jsonl",
+        )
+        types = {r["type"] for r in result}
+        assert types == {"rebalance_order", "breaker_forecast"}
