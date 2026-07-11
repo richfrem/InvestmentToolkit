@@ -25,6 +25,14 @@ python3 plugins/portfolio-advisor/scripts/weekly_review.py --prompt-output temp/
 - **Drifted**: Holdings outside these bands (Overweight / Underweight) are flagged for sizing reviews.
 - **Initiates**: High-conviction target names not yet owned (e.g. PLTR, CLSK, WQTM, CACI) are evaluated for entry limits.
 
+### Phase 1b: Track Record Grading (E3 — additive, sparse initially)
+Grade any predictions that matured this week and refresh the rolling hit-rate report:
+```bash
+python3 investment_screener/backend/py_services/grade_predictions.py
+python3 investment_screener/backend/py_services/generate_track_record_report.py --json
+```
+Present the hit-rate table (per claim type: correct / incorrect / inconclusive / hit rate) alongside the drift audit. **This will be sparse or empty for a while** — claims need 90-180 days to mature before they're gradable, and harvesting only started once E3 shipped. That's expected, not a bug; don't treat an empty report as a failure.
+
 ### Phase 2: Weekly Catalyst Sweep (Grok News Sweep)
 1. Present the range audit.
 2. Present the generated prompt in `temp/weekly_grok_prompt.md`.
