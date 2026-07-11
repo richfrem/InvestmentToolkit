@@ -43,6 +43,7 @@ InvestmentToolkit/
 10. **`ticker` key, not `symbol`**: All `target-portfolio.json` lookups use `h.get('ticker')`, not `h.get('symbol')`.
 11. **Sync sweep templates**: When target weights/pillars/sub-strategies change, update "Core Portfolio Thesis Background" in both `daily_sweep.md.template` and `weekly_sweep.md.template`.
 12. **Refine templates on Grok ingest**: After each Grok response, improve prompt templates to guard against observed gaps (grouped tickers, lazy placeholders, TA errors).
+13. **Initialize missing private data**: If any local gitignored data files (e.g., `portfolio.json`, `cash_flows.json`) are missing from `investment_screener/backend/data/`, initialize them by copying their corresponding `.example` files.
 
 ## Canonical Scripts
 | Script | Purpose |
@@ -80,7 +81,7 @@ On `Token rotation failed: 400`: tell user token expired, guide to apphub.questr
 
 **5. `lastActualPS` nullable**: In `zod-schemas.ts` use `.nullable().transform(v => v ?? 0)`. Strict `z.number()` causes 400s for pre-revenue/mining stocks.
 
-**6. Projection `action` enum**: `aiThesis.action` carries `INITIATE|ACCUMULATE|MAINTAIN|TRIM|EXIT|WATCHLIST`. DCF signal is in `analyticsLog.valuationAction`. Not limited to BUY/HOLD/SELL.
+**6. Projection `action` enum**: `aiThesis.action` carries `INITIATE|ACCUMULATE|MAINTAIN|TRIM|EXIT|WATCHLIST`. DCF signal is in `analyticsLog.valuationAction`. Portfolio urgency in `analyticsLog.portfolioUrgency`. Not limited to BUY/HOLD/SELL.
 
 **7. TV CDP single-ticker**: `tv_call("quote", sym)` reads the **active chart** regardless of `sym`. Never use for batch prices (use yfinance). "TV Live" badge = port 9222 reachable, not the price source.
 
@@ -114,7 +115,7 @@ On `Token rotation failed: 400`: tell user token expired, guide to apphub.questr
 
 **22. GTC orders**: CDP submits limit orders as **Day orders**. Change to "Good till cancelled" manually in TradingView after placing.
 
-**23. Pine Editor blocks `addIndicator`**: Pine Editor dialog overlays screen, blocking Indicators search. Use "Update on chart" button directly (mouse events). Check `.editorBaseLayoutContainer-dialog-z_CXxRZA` visibility, not `aria-pressed`.
+**23. Pine Editor blocks `addIndicator`**: Pine Editor dialog overlays screen, blocking Indicators search. Use "Update on chart" button directly (mouse events, not `.click()`). Check `.editorBaseLayoutContainer-dialog-z_CXxRZA` visibility, not `aria-pressed`.
 
 **24. `addIndicator` (no Pine Editor)**: Uses `Input.dispatchMouseEvent` at Indicators button center (not `.click()` — opens timezone dropdown). Result rows: `div[class*="container-WeNdU0sq"]`; match: exact → first → contains.
 
@@ -123,6 +124,8 @@ On `Token rotation failed: 400`: tell user token expired, guide to apphub.questr
 **26. Custom Pine library**: `plugins/tradingview/assets/pinescript-indicators/ai-ta-levels.pine` (Multi-EMA 21/50/200 + volume bias, saved in TV as "AI TA Levels"). Lint before inject: `python3 .../pine_linter.py <file.pine>`.
 
 **27. Portfolio total validation**: NEVER compute totals from shares×price. Use TV broker `totalEquityUSDCombined`. All pages must read from the same snapshot.
+
+**28. Worktree/subagent isolation**: Full rule + mandatory post-task check → `.agent/rules/worktree-subagent-isolation.md`.
 
 ## Key Files
 | File | Purpose |

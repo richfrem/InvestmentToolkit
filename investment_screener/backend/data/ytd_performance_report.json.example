@@ -1,0 +1,27 @@
+{
+  "starting_balance_cad": 10000.0,
+  "ending_balance_cad": 11500.0,
+  "total_deposits_cad": 1000.0,
+  "total_withdrawals_cad": 500.0,
+  "net_cash_flows_cad": 500.0,
+  "net_capital_invested_cad": 10500.0,
+  "dollar_gain_cad": 1000.0,
+  "simple_return_pct": 9.52,
+  "time_weighted_return_pct": 10.25,
+  "sub_periods": [
+    {
+      "date": "2026-02-06",
+      "type": "deposit",
+      "amount_cad": 1000.0,
+      "portfolio_value_before_flow_cad": 10500.0,
+      "account": "TFSA"
+    },
+    {
+      "date": "2026-03-24",
+      "type": "withdrawal",
+      "amount_cad": 500.0,
+      "portfolio_value_before_flow_cad": 11200.0,
+      "account": "TFSA"
+    }
+  ]
+}
