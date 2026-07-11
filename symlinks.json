@@ -744,6 +744,24 @@
       "dst": "plugins/portfolio-advisor/references/defininitive_professional_investment_framework.md",
       "strategy": "symlink",
       "description": "Compat symlink \u2014 typo'd filename kept for any hardcoded references, Phase 2b rename"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/ytd_return.py",
+      "dst": "plugins/portfolio-advisor/skills/ytd-return/scripts/ytd_return.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/ytd_return.py",
+      "dst": "investment_screener/backend/py_services/ytd_return.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/ytd_performance_report_template.json",
+      "dst": "plugins/portfolio-advisor/skills/ytd-return/assets/templates/ytd_performance_report_template.json",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
