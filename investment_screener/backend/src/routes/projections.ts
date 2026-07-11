@@ -1,3 +1,17 @@
+/**
+ * src/routes/projections.ts
+ * =========================
+ *
+ * Purpose:
+ *   Handles Express API routes for fetching, saving, and deleting DCF projections.
+ *
+ * Key Functions:
+ *   - GET / - Returns all projections
+ *   - GET /:ticker - Returns projections for a specific ticker
+ *   - POST / - Saves a projection
+ *   - DELETE /:ticker/:id - Deletes a projection
+ */
+
 import express from 'express';
 import { projectionService } from '../services/ProjectionService';
 import { isValidTicker } from '../utils/helpers';

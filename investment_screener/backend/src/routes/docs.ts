@@ -1,3 +1,16 @@
+/**
+ * src/routes/docs.ts
+ * ==================
+ *
+ * Purpose:
+ *   Handles Express API routes for reading investment thesis, portfolio reviews,
+ *   agent guides, and qualitative research reports.
+ *
+ * Key Functions:
+ *   - GET /research - Lists all available research files
+ *   - GET /research/:filename - Fetches a specific research report
+ */
+
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
