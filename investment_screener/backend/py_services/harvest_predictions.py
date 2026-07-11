@@ -49,11 +49,20 @@ def _hash_claim(claim: dict[str, Any]) -> str:
 
 
 def _load_projection(path: Path) -> dict[str, Any] | None:
-    """Load a projection file, unwrapping its list-wrapper if present."""
+    """Load a projection file, selecting the latest AI_AGENT revision if a list.
+
+    Projection files are often arrays of revision entries (multiple versions,
+    human vs. AI_AGENT sources). Mirrors ThesisService.getLatestAIProjection():
+    filter to source == "AI_AGENT", sort descending by version, return the
+    highest-version entry, or None if no AI_AGENT entry exists.
+    """
     with open(path) as f:
         data = json.load(f)
     if isinstance(data, list):
-        return data[0] if data else None
+        ai_entries = [entry for entry in data if entry.get("source") == "AI_AGENT"]
+        if not ai_entries:
+            return None
+        return sorted(ai_entries, key=lambda entry: entry.get("version", 0), reverse=True)[0]
     return data
 
 
