@@ -9,6 +9,10 @@
  *
  * Layer: Backend / Services / Data Sync
  *
+ * Key Input Dependencies:
+ *     - investment_screener/backend/data/portfolio.json (Maintains aggregate holdings and TV snapshots)
+ *     - investment_screener/backend/data/theses/target-portfolio.json (Maintains active conviction weight mappings)
+ *
  * Key Functions:
  *     - syncFromTV()      — Fetches all accounts from TradingView broker panel via CDP
  *     - syncAuto()        — Auto-picks source (TV if reachable, else Questrade, else cache)
