@@ -26,6 +26,8 @@ specific staleness or conflict detail, and whether that script's output feeds
 `wacc.py`'s discount rate directly; `framework`/`peerBench`/`technicals` are informational-only
 and never gate).
 
+**Known limitation**: `comps_valuation.py` does not thread a `cik` argument to `get_fundamentals()`, so its `dataConflicts` list is always empty in practice; only staleness can trigger DEGRADE for comps, while HALT via data conflict is effectively wacc-only today.
+
 1. Staleness only (no `dataConflicts` entries), on an informational-only lens (`peerBench` or
    `technicals`) → **DEGRADE**.
 2. Staleness only, on a gate-feeding lens (`wacc` or `comps`) → **DEGRADE**, but your note
