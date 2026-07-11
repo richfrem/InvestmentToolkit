@@ -24,7 +24,6 @@ yarn-error.log*
 # IDE
 .idea/
 .vscode/
-frontend/src/data/portfolio.json
 backend/data/portfolio.json
 backend/data/portfolio_snapshot.json
 backend/data/portfolio_tv.json
