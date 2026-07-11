@@ -1,19 +1,23 @@
+#!/usr/bin/env python3
 """
-Daily TA sweep across all active portfolio holdings.
+ta_sweep_batch.py — Daily TA sweep across all active portfolio holdings.
+=========================================================================
 
-Reads portfolio.json for current holdings, runs a batch CDP scan via
-tradingview-cdp/cli.js sweep, cross-references DCF projections and
-target-portfolio.json for context, then outputs enriched JSON to stdout.
+Purpose:
+    Reads portfolio.json for current holdings, runs a batch CDP scan via
+    tradingview-cdp/cli.js sweep, cross-references DCF projections and
+    target-portfolio.json for context, then outputs enriched JSON to stdout.
 
-The SKILL.md (ta-daily-sweep) calls this script and formats the report.
+Layer:
+    Plugins / TradingView
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Reads holdings)
+    - investment_screener/backend/data/theses/target-portfolio.json (Reads target weights)
+    - investment_screener/backend/data/projections/ (Reads DCF valuations)
 
 Usage:
     python3 plugins/tradingview/scripts/ta_sweep_batch.py [--skip TICKERS]
-    python3 plugins/tradingview/scripts/ta_sweep_batch.py --skip HUMN,WYFI
-
-Args:
-    --skip: Extra tickers to exclude beyond the default skip list.
-    --delay: CDP wait ms per ticker (default 1500, use 1200 for speed).
 """
 from __future__ import annotations
 
