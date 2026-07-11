@@ -80,6 +80,7 @@ already logged this" — no separate `harvest_state.json` to keep in sync.
 
 ```json
 {
+  "v": 1,
   "id": "CORZ:action_rating:2026-05-02",
   "date": "2026-05-02",
   "ticker": "CORZ",
@@ -112,6 +113,7 @@ already logged this" — no separate `harvest_state.json` to keep in sync.
 
 ```json
 {
+  "v": 1,
   "predictionId": "CORZ:action_rating:2026-05-02",
   "gradedAt": "2026-08-02",
   "tickerReturn": -0.041,
