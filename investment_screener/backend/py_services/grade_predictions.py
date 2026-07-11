@@ -6,6 +6,9 @@ mutates predictions.jsonl — grading only appends to predictions_graded.jsonl.
 
 Usage:
     python3 grade_predictions.py [--dry-run]
+
+Key Input Dependencies:
+    - investment_screener/backend/data/daily-briefs/ (Grades prediction records)
 """
 from __future__ import annotations
 

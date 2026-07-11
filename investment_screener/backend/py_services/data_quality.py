@@ -9,6 +9,9 @@ Purpose:
 
 Layer:
     Market data layer — pre-response quality gates.
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Validates schema alignment)
 """
 
 from datetime import datetime, timezone

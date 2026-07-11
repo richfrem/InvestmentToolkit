@@ -8,6 +8,9 @@ ledger — no separate state file.
 
 Usage:
     python3 harvest_predictions.py [--dry-run]
+
+Key Input Dependencies:
+    - investment_screener/backend/data/daily-briefs/ (Aggregates daily performance)
 """
 from __future__ import annotations
 

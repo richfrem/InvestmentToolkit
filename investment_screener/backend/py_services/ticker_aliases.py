@@ -6,6 +6,9 @@ Single source of truth for:
   - Reserved cash symbols (USD_CASH — the internal sentinel for uninvested USD)
 
 Import this module instead of scattering inline `if ticker == "USD_CASH"` checks.
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Maps ticker synonyms)
 """
 
 # Questrade returns "PSU.U" without the exchange suffix; normalize to the TSX symbol.

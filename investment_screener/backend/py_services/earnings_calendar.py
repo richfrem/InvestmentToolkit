@@ -7,6 +7,9 @@ before binary events.
 Usage:
     python3 earnings_calendar.py
     python3 earnings_calendar.py --days 14 --json
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Finds upcoming holdings earnings)
 """
 from __future__ import annotations
 

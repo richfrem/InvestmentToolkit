@@ -17,6 +17,9 @@ Key Functions:
     - fetch_financial_data() - Primary orchestrator for data retrieval, caching, and transformation
     - get_cached_data() / save_to_cache() - Implements a local filesystem cache (1-hour TTL) to prevent API rate limiting
     - Piotroski calculation block - Implements the full 9-point fundamental health methodology
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import sys

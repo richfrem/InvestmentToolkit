@@ -9,6 +9,9 @@ exclusively. See docs/superpowers/specs/2026-07-09-thesis-breakers-design.md.
 
 Usage:
     python3 investment_screener/backend/py_services/thesis_breakers.py
+
+Key Input Dependencies:
+    - investment_screener/backend/data/thesis_breaker_state.json (Evaluates thesis logic)
 """
 from __future__ import annotations
 

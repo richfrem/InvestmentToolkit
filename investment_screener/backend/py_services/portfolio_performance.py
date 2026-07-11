@@ -8,25 +8,31 @@ Purpose:
     Downloads batched historical data via yfinance and uses the most recent close as the "current" price 
     baseline to ensure accuracy independent of brokerage sync staleness.
 
-Layer: Backend / Python Services / Performance Analytics
+Layer:
+    Backend / Python Services / Performance Analytics
 
-Usage Examples:
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Live portfolio state)
+
+Usage:
     python3 portfolio_performance.py investment_screener/backend/data/portfolio.json
-
-Key Functions:
-    - main() - CLI orchestrator that filters positions, fetches batched history, and computes time-weighted performance
-    - safe_float() - Utility to handle NaN/None values from financial data frames
 """
+
 import json
 import sys
 import math
 from datetime import datetime, timedelta
+from typing import Any, Dict, List, Tuple
 
 import pandas as pd
 import yfinance as yf
 
 
-def safe_float(val) -> float:
+# External comment: Safely cast value to float handling NaN and None cases
+def safe_float(val: Any) -> float:
+    """
+    Utility to handle NaN/None values from financial data frames.
+    """
     if val is None:
         return 0.0
     try:
@@ -36,21 +42,67 @@ def safe_float(val) -> float:
         return 0.0
 
 
+# External comment: Load portfolio JSON data and extract equity positions and cash values
+def load_portfolio_data(portfolio_path: str) -> Tuple[float, List[str], Dict[str, float]]:
+    """
+    Reads holdings, calculates total cash, and returns (cash_value, tickers, shares_map).
+    """
+    with open(portfolio_path) as f:
+        raw = json.load(f)
+    portfolio = raw if isinstance(raw, list) else raw.get("holdings", [])
+
+    equity_positions = [
+        p for p in portfolio
+        if p.get("sector") != "CASH" and p.get("symbol") != "USD_CASH"
+    ]
+    cash_value = sum(
+        p.get("shares", 0) * p.get("price", 1.0)
+        for p in portfolio
+        if p.get("sector") == "CASH" or p.get("symbol") == "USD_CASH"
+    )
+
+    tickers = [p["symbol"] for p in equity_positions]
+    shares_map = {p["symbol"]: p["shares"] for p in equity_positions}
+
+    return cash_value, tickers, shares_map
+
+
+# External comment: Fetches and normalizes yfinance historical pricing dataframe
+def fetch_history_dataframe(tickers: List[str]) -> pd.DataFrame:
+    """
+    Downloads historical close prices and normalizes index timezone.
+    """
+    # Fetch 35 calendar days of history in one batch call
+    raw = yf.download(tickers, period="35d", auto_adjust=True, progress=False)
+
+    if raw is None or raw.empty:
+        return pd.DataFrame()
+
+    # Normalise to a ticker-keyed Close DataFrame
+    if isinstance(raw.columns, pd.MultiIndex):
+        close: pd.DataFrame = raw["Close"]  # type: ignore[assignment]
+    elif len(tickers) == 1:
+        close = raw[["Close"]].rename(columns={"Close": tickers[0]})  # type: ignore[arg-type]
+    else:
+        close = raw
+
+    # Strip timezone so comparisons work with naive datetime
+    if hasattr(close.index, "tz") and getattr(close.index, "tz", None) is not None:
+        close.index = close.index.tz_localize(None)  # type: ignore[assignment]
+
+    return close
+
+
+# External comment: Calculates dollar and percentage return changes over standard periods
 def compute_performance(
     close: pd.DataFrame,
-    shares_map: dict,
+    shares_map: Dict[str, float],
     cash_value: float,
-    tickers: list,
+    tickers: List[str],
     now: datetime,
-) -> dict:
-    """Pure computation over an already-fetched close-price DataFrame.
-
-    Forward-fills missing/NaN prices (e.g. a ticker on a foreign exchange with no
-    trading data on a local market holiday — PSU-U.TO on Canada Day while US
-    tickers trade normally) with the last known price before computing equity
-    value. Treating a gap as $0.00 (the pre-fix behavior) makes that position's
-    entire value vanish from the historical total for that date, producing a
-    wildly inflated return.
+) -> Dict[str, Any]:
+    """
+    Pure computation over an already-fetched close-price DataFrame with forward-fill.
     """
     close = close.ffill()
 
@@ -67,7 +119,7 @@ def compute_performance(
         "1m": now - timedelta(days=30),
     }
 
-    result: dict = {}
+    result: Dict[str, Any] = {}
     for label, ref_date in periods.items():
         try:
             past_dates = close.index[close.index <= pd.Timestamp(ref_date)]
@@ -96,54 +148,25 @@ def compute_performance(
     return result
 
 
-def main():
+# External comment: Entry point execution orchestrator
+def main() -> None:
+    """
+    CLI orchestrator that filters positions, fetches history, and runs performance calculations.
+    """
     if len(sys.argv) < 2:
         print(json.dumps({"error": "portfolio path required"}))
         sys.exit(1)
 
-    with open(sys.argv[1]) as f:
-        raw = json.load(f)
-    portfolio = raw if isinstance(raw, list) else raw.get("holdings", [])
+    cash_value, tickers, shares_map = load_portfolio_data(sys.argv[1])
 
-    equity_positions = [
-        p for p in portfolio
-        if p.get("sector") != "CASH" and p.get("symbol") != "USD_CASH"
-    ]
-    cash_value = sum(
-        p.get("shares", 0) * p.get("price", 1.0)
-        for p in portfolio
-        if p.get("sector") == "CASH" or p.get("symbol") == "USD_CASH"
-    )
-
-    if not equity_positions:
+    if not tickers:
         fallback = cash_value
         result = {p: {"change": 0.0, "changePct": 0.0, "historicalValue": fallback, "currentValue": fallback}
                   for p in ("1d", "1w", "1m")}
         print(json.dumps(result))
         return
 
-    tickers = [p["symbol"] for p in equity_positions]
-    shares_map = {p["symbol"]: p["shares"] for p in equity_positions}
-
-    # Fetch 35 calendar days of history in one batch call
-    raw = yf.download(tickers, period="35d", auto_adjust=True, progress=False)
-
-    if raw is None or raw.empty:
-        print(json.dumps({"error": "no price data returned from yfinance"}))
-        return
-
-    # Normalise to a ticker-keyed Close DataFrame
-    if isinstance(raw.columns, pd.MultiIndex):
-        close: pd.DataFrame = raw["Close"]  # type: ignore[assignment]
-    elif len(tickers) == 1:
-        close = raw[["Close"]].rename(columns={"Close": tickers[0]})  # type: ignore[arg-type]
-    else:
-        close = raw
-
-    # Strip timezone so comparisons work with naive datetime
-    if hasattr(close.index, "tz") and getattr(close.index, "tz", None) is not None:
-        close.index = close.index.tz_localize(None)  # type: ignore[assignment]
-
+    close = fetch_history_dataframe(tickers)
     if close.empty:
         print(json.dumps({"error": "no price data returned from yfinance"}))
         return

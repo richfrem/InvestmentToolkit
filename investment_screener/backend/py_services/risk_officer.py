@@ -24,6 +24,9 @@ Key Functions:
     - classify_orders() - Splits rebalance_plan.json's orders into (vetoed, approved)
     - compute_risk_officer_review() - Primary orchestrator: plan -> risk_officer_review.json
     - log_risk_officer_override() - Appends one accountability-trail record for an override
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Validates position risk limits)
 """
 import argparse
 import json

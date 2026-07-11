@@ -21,6 +21,9 @@ Usage:
 Key Functions:
     - sensitivity_grid() - Fair value across (growthRate +/- step*points) x (exitPE +/- step*points)
     - monte_carlo() - Triangular-distribution sampling -> P10/P50/P90 + P(overvalued)
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import argparse

@@ -37,6 +37,9 @@ Key Functions:
     - compute_raw_metrics() - Pulls every raw (unscored) metric value for one ticker
     - score_higher_better() / score_lower_better() - 90/60/30 band scoring, inclusive top boundary
     - compute_framework_score() - Primary orchestrator: raw metrics -> scored -> composite
+
+Key Input Dependencies:
+    - investment_screener/backend/data/theses/target-portfolio.json (Evaluates conviction bands)
 """
 
 import argparse

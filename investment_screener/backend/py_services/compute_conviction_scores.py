@@ -16,6 +16,9 @@ Bands:
 Usage:
     python3 compute_conviction_scores.py
     python3 compute_conviction_scores.py --json
+
+Key Input Dependencies:
+    - investment_screener/backend/data/theses/target-portfolio.json (Reads targets)
 """
 from __future__ import annotations
 

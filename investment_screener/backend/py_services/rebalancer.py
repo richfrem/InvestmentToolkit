@@ -17,6 +17,9 @@ Layer: Backend / Python Services / Rebalancer
 Usage:
     python3 rebalancer.py --pretty
     python3 rebalancer.py --no-save --pretty
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Calculates target weight rebalancing)
 """
 import argparse
 import json

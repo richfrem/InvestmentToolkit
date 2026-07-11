@@ -9,6 +9,9 @@ Performs three core sanity checks:
   3. Total Weights Guard: Asserts that target weights sum to exactly 100% (within 0.1% tolerance).
 
 Exits with 0 on success, 1 on failure.
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Audits thesis and holdings alignment)
 """
 
 import json

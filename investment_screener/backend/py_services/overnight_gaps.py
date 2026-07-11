@@ -8,6 +8,9 @@ Usage:
     python3 overnight_gaps.py                  # scan all portfolio holdings
     python3 overnight_gaps.py NVDA,AAPL,TSLA   # explicit ticker list
     python3 overnight_gaps.py --threshold 3.0  # custom threshold (default: 2.0%)
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Measures pre-market gaps)
 """
 from __future__ import annotations
 

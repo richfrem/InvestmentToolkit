@@ -11,6 +11,9 @@ Critical invariant:
   when cash positions exist outside individual holdings).
 
 Layer: Backend / py_services / Shared I/O
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Loads and saves portfolio)
 """
 
 import json

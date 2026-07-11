@@ -10,6 +10,9 @@ for the full schema and grading rationale.
 
 Usage:
     python3 prediction_ledger.py --validate
+
+Key Input Dependencies:
+    - investment_screener/backend/data/daily-briefs/ (Maintains prediction schema)
 """
 from __future__ import annotations
 

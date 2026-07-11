@@ -20,6 +20,9 @@ Usage:
 Key Functions:
     - solve_implied_growth() - Bisection solve + verdict classification (the
       round-trip inverse of dcf_scenarios.compute_scenario())
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import argparse

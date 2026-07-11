@@ -23,6 +23,9 @@ Key Functions:
     - compute_scenario() - Calculates all derived 5-year values (EPS, Undiscounted Price, PV) for a single scenario
     - validate_scenarios() - Enforces ordering constraints and probability weight sums to ensure model integrity
     - run() - Primary orchestrator that merges scenario outputs into a single weighted fair value and determines the recommended action
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import argparse

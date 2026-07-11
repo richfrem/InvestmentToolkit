@@ -19,6 +19,9 @@ Key Functions:
     - get_or_update() - High-level entry point that manages full vs. incremental fetching and persistence
     - calc_changes() - Derives percentage changes for standard investment horizons from the stored history
     - _trim() - Maintains the rolling 365-day window by pruning stale data
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Saves time-series snapshot)
 """
 
 import os
