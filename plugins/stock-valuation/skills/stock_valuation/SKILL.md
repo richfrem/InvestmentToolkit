@@ -288,6 +288,8 @@ one of:
   currently in `temp/evaluations/{TICKER}_projection.json` as-is (don't delete it, don't
   persist it to `data/projections/`) so the user can inspect what was gathered before the halt.
 
+*Note: `comps_valuation.py` does not pass a `cik` argument to `get_fundamentals()`, so its `dataQuality.dataConflicts` is structurally always empty; comps can only contribute a DEGRADE on staleness, while only wacc can trigger a HALT via a data conflict.*
+
 ## Step 3.6: Fundamental Framework Score + Peer Benchmarking + Local TA (Phase 2b)
 
 After Step 3.5's valuation-committee lenses, run these three additional scripts. Unlike
