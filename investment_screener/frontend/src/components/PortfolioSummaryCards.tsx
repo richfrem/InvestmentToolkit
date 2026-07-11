@@ -41,14 +41,14 @@ export default function PortfolioSummaryCards({ data }: Props) {
     const cards = [
         {
             title: 'YTD Performance',
-            icon: data.ytdChangePctCAD >= 0 ? TrendingUp : TrendingDown,
-            primary: fmtPct(data.ytdChangePctCAD),
-            primaryColor: deltaColor(data.ytdChangePctCAD),
+            icon: data.ytdSimpleReturnPctCAD >= 0 ? TrendingUp : TrendingDown,
+            primary: fmtPct(data.ytdSimpleReturnPctCAD),
+            primaryColor: deltaColor(data.ytdSimpleReturnPctCAD),
             rows: [
-                { label: 'CAD', value: `${data.ytdChangeCAD >= 0 ? '+' : ''}${formatCurrency(data.ytdChangeCAD)}`, color: deltaColor(data.ytdChangeCAD) },
-                { label: 'USD', value: `${data.ytdChangeUSD >= 0 ? '+' : ''}${formatCurrency(data.ytdChangeUSD)}`, color: deltaColor(data.ytdChangeUSD) },
+                { label: 'TWR', value: `${fmtPct(data.ytdChangePctCAD)}`, color: deltaColor(data.ytdChangePctCAD) },
+                { label: 'CAD Gain', value: `${data.ytdChangeCAD >= 0 ? '+' : ''}${formatCurrency(data.ytdChangeCAD)}`, color: deltaColor(data.ytdChangeCAD) },
             ],
-            glow: changeBgGlow(data.ytdChangePctCAD),
+            glow: changeBgGlow(data.ytdSimpleReturnPctCAD),
         },
         {
             title: 'Total Market Value',
