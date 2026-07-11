@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Prediction",
+  "description": "E3 prediction ledger records — see docs/superpowers/specs/2026-07-10-phase4-e3-prediction-ledger-design.md",
+  "definitions": {
+    "prediction": {
+      "type": "object",
+      "required": [
+        "v", "id", "date", "ticker", "type", "claim", "direction",
+        "horizonDays", "basePrice", "baseSpyPrice", "inputsHash", "harvestedAt"
+      ],
+      "properties": {
+        "v": {"type": "integer", "const": 1},
+        "id": {"type": "string"},
+        "date": {"type": "string"},
+        "ticker": {"type": "string"},
+        "type": {
+          "type": "string",
+          "enum": ["action_rating", "dcf_fair_value", "rebalance_order", "breaker_forecast", "earnings_expectation"]
+        },
+        "claim": {"type": "object"},
+        "direction": {"type": "string", "enum": ["bullish", "bearish"]},
+        "horizonDays": {"type": "integer"},
+        "basePrice": {"type": "number"},
+        "baseSpyPrice": {"type": "number"},
+        "confidence": {"type": ["number", "null"]},
+        "inputsHash": {"type": "string"},
+        "harvestedAt": {"type": "string"}
+      }
+    },
+    "grade": {
+      "type": "object",
+      "required": ["v", "predictionId", "gradedAt", "tickerReturn", "spyReturn", "relativeReturn", "verdict"],
+      "properties": {
+        "v": {"type": "integer", "const": 1},
+        "predictionId": {"type": "string"},
+        "gradedAt": {"type": "string"},
+        "tickerReturn": {"type": "number"},
+        "spyReturn": {"type": "number"},
+        "relativeReturn": {"type": "number"},
+        "verdict": {"type": "string", "enum": ["correct", "incorrect", "inconclusive"]}
+      }
+    }
+  }
+}
