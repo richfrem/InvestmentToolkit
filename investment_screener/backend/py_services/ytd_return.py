@@ -1,0 +1,1 @@
+../../../plugins/portfolio-advisor/scripts/ytd_return.py
