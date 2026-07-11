@@ -9,6 +9,9 @@ Designed to:
 4. Auto-normalize the REMAINING unlocked non-zero tickers so the entire portfolio sums to exactly 100.0%.
 
 This is compliant with Gate 7 actual broker-weight locks and the Aschenbrenner 13F exit adjustments.
+
+Key Input Dependencies:
+    - investment_screener/backend/data/theses/target-portfolio.json (Locks weights)
 """
 
 import argparse

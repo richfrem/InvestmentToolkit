@@ -17,6 +17,9 @@ Key Functions:
     - fetch_portfolio_data() - Primary orchestrator that manages parallel pre-fetching and result normalization
     - prefetch_info() / prefetch_history() - Utilizes ThreadPoolExecutor for high-concurrency data retrieval
     - _fetch_one() - Atomically fetches and caches yfinance info for a single symbol
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Builds heatmap telemetry)
 """
 
 import sys

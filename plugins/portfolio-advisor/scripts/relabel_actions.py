@@ -15,6 +15,9 @@ Usage Examples:
 Key Functions:
     - assign_action() - Core logic for mapping weight deltas to specific investment action verbs
     - main() - CLI orchestrator that computes actual weights and updates recommendation files in-place
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import argparse

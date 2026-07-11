@@ -18,6 +18,9 @@ Key Functions:
     - generate() - Primary orchestrator that computes deltas, assigns action urgency, and structures the final JSON payload
     - _urgency() - Logic for classifying rebalance actions into URGENT, NORMAL, or LOW priority based on delta magnitude and action type
     - main() - CLI wrapper for persistence and interactive overwrite protection
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import json

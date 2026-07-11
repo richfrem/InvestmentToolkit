@@ -8,6 +8,9 @@ Usage:
     python3 investment_screener/backend/py_services/system_health.py
     python3 investment_screener/backend/py_services/system_health.py --json
     python3 investment_screener/backend/py_services/system_health.py --quiet   # exit code only
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Diagnostics metrics check)
 """
 
 import argparse

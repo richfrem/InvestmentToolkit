@@ -39,6 +39,9 @@ Key Functions:
     - fetch_questrade() - Reads from Questrade REST API (requires .questrade_cache)
     - compare()         - Diffs TV vs Questrade positions and balances
     - write_snapshot()  - Writes tvSnapshot inside portfolio.json (or promotes positions with --promote)
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import sys

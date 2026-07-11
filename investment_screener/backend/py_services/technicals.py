@@ -17,6 +17,9 @@ Layer: Backend / Python Services / Technical Analysis
 
 Usage:
     python3 technicals.py --ticker NVDA --timeframe D --period 1y --benchmark SPY --pretty
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Calculates RSI and Squeeze momentum)
 """
 
 import argparse

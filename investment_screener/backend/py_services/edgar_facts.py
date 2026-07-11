@@ -11,6 +11,9 @@ Layer: Backend / Python Services / Data Layer
 
 Usage Examples:
     python3 edgar_facts.py 0000320193
+
+Key Input Dependencies:
+    - investment_screener/backend/data/13f/ (Downloads SEC EDGAR filing details)
 """
 
 import sys

@@ -26,6 +26,9 @@ Key Functions:
     - _shift_weights() - Implements the weight shift logic (Bull/Bear shifts with Base absorption)
     - _compute_fv() - Calculates the new weighted fair value from scenario prices
     - main() - CLI orchestrator for applying catalysts and persisting changes to data storage
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import argparse

@@ -16,6 +16,9 @@ Rules:
 CLI usage (called by backend):
   python3 portfolio_action.py --all --portfolio <path> --target <path>
   → prints JSON: { "ZS": "TRIM", "INTC": "MAINTAIN", ... }
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 ACTION_EMOJI = {

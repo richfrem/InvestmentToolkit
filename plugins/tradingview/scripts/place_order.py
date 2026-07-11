@@ -33,6 +33,9 @@ Key Functions:
     - preflight() - Checks TV broker status, buying power, returns confirmation card
     - execute_order() - Runs Node.js trading.js to fill + submit the TV order dialog
     - sync_portfolio() - Triggers QuestradeDataEngine sync after fill
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import sys

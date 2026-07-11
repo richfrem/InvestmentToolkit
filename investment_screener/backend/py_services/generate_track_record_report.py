@@ -6,6 +6,9 @@ expected to be sparse for a while after this ships, which is fine.
 
 Usage:
     python3 generate_track_record_report.py [--json]
+
+Key Input Dependencies:
+    - investment_screener/backend/data/trade-log.json (Computes realized gains)
 """
 from __future__ import annotations
 

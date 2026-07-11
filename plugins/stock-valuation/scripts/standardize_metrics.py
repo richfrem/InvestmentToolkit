@@ -9,6 +9,9 @@ Purpose:
     to prevent AI "split-brain" math or inline calculation errors.
 
 Layer: Backend / Python Services / Fundamental Analysis
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import json

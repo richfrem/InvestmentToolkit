@@ -21,6 +21,9 @@ Layer: Backend / Python Services / Regime
 Usage:
     python3 market_regime.py --pretty
     python3 market_regime.py --no-save --pretty
+
+Key Input Dependencies:
+    - investment_screener/backend/data/daily-briefs/ (Calculates technical trend signals)
 """
 
 import argparse

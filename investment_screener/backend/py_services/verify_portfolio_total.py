@@ -11,6 +11,9 @@ the tvSnapshot root key.
 Usage:
     python3 verify_portfolio_total.py            # live TV + stored prices
     python3 verify_portfolio_total.py --live     # live TV + live yfinance prices
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Audits equity sum verification)
 """
 
 import sys

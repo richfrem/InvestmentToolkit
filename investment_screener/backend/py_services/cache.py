@@ -8,6 +8,9 @@ Purpose:
     (still writes, so a subsequent call is warm).
 
 Layer: Backend / Python Services / Data Layer
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import json

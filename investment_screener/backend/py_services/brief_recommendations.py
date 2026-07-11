@@ -13,6 +13,9 @@ allowlisted SA/DCF conflict, OKLO/CEG sell-only-when-green).
 
 Usage (library only — wired into daily_brief.py):
     from brief_recommendations import build_recommendations, load_standing_decisions
+
+Key Input Dependencies:
+    - investment_screener/backend/data/daily-briefs/ (Reads conviction data)
 """
 from __future__ import annotations
 

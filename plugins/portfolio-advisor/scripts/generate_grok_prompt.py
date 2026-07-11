@@ -17,6 +17,9 @@ Key Functions:
     - build_prompt() - Primary orchestrator that aggregates thesis, portfolio, and DCF data into a formatted Markdown prompt
     - load_dcf() - Retrieves the latest AI-generated valuation signals for inclusion in the prompt context
     - _action_emoji() - Utility for visual status indicators in the generated prompt table
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import json
