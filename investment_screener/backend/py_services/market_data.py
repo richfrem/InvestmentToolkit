@@ -41,6 +41,43 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _price_staleness(rows: list[dict], max_age_days: int = 5) -> bool:
+    """True if the last row's date is more than max_age_days old.
+
+    OHLCV has no second source to cross-check for conflicts (unlike
+    get_fundamentals()'s EDGAR-vs-yfinance check) — this is a staleness-only
+    signal, reusing check_staleness() from data_quality.py.
+
+    Args:
+        rows: OHLCV row dicts (get_prices()'s "data" list), oldest first —
+            the last element is the most recent bar.
+        max_age_days: Staleness threshold in days, default 5 (a trading
+            week) — looser than get_fundamentals()'s 120-day threshold since
+            daily price data is expected to be much fresher.
+
+    Returns:
+        False if rows is empty (nothing to judge staleness on), or the last
+        date is within max_age_days (inclusive boundary). True otherwise.
+    """
+    if not rows:
+        return False
+    return check_staleness(rows[-1]["date"], max_age_days=max_age_days)
+
+
+def _with_data_quality(result: dict[str, dict]) -> dict[str, dict]:
+    """Attach a {"staleness": bool} dataQuality dict to every entry in result, in place.
+
+    Args:
+        result: get_prices()'s per-ticker result dict, built so far.
+
+    Returns:
+        The same dict, mutated in place and returned for convenience at call sites.
+    """
+    for entry in result.values():
+        entry["dataQuality"] = {"staleness": _price_staleness(entry.get("data", []))}
+    return result
+
+
 def get_prices(tickers: list[str], period: str, interval: str = "1d") -> dict[str, dict]:
     """Fetch OHLCV price data for one or more tickers.
 
@@ -68,11 +105,11 @@ def get_prices(tickers: list[str], period: str, interval: str = "1d") -> dict[st
             to_fetch.append(t)
 
     if not to_fetch:
-        return result
+        return _with_data_quality(result)
 
     raw = yf.download(to_fetch, period=period, interval=interval, auto_adjust=True, progress=False)
     if raw is None or raw.empty:
-        return result
+        return _with_data_quality(result)
 
     for t in to_fetch:
         try:
@@ -106,7 +143,7 @@ def get_prices(tickers: list[str], period: str, interval: str = "1d") -> dict[st
         cache_set(f"{t}_{period}_{interval}", "ohlcv", entry)
         result[t] = {**entry, "source": "yfinance"}
 
-    return result
+    return _with_data_quality(result)
 
 
 def get_quote(tickers: list[str]) -> dict[str, dict]:
