@@ -75,6 +75,11 @@
             "name": "daily_loop",
             "path": "skills/daily-loop/SKILL.md",
             "trigger": "/daily"
+        },
+        {
+            "name": "ytd_return",
+            "path": "skills/ytd-return/SKILL.md",
+            "trigger": "/ytd-return"
         }
     ],
     "agents": [

@@ -1,0 +1,12 @@
+{
+  "starting_balance_cad": 0.0,
+  "ending_balance_cad": 0.0,
+  "total_deposits_cad": 0.0,
+  "total_withdrawals_cad": 0.0,
+  "net_cash_flows_cad": 0.0,
+  "net_capital_invested_cad": 0.0,
+  "dollar_gain_cad": 0.0,
+  "simple_return_pct": 0.0,
+  "time_weighted_return_pct": 0.0,
+  "sub_periods": []
+}

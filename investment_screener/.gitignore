@@ -29,3 +29,5 @@ backend/data/portfolio.json
 backend/data/portfolio_snapshot.json
 backend/data/portfolio_tv.json
 backend/data/portfolio.json.bak
+backend/data/cash_flows.json
+backend/data/ytd_performance_report.json
