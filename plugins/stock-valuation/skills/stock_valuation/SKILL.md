@@ -277,6 +277,19 @@ and implied-growth-vs-base disagree by more than 25%, say so explicitly in the
 conversational summary (Step 8) and in `rationale` — never average the
 disagreement away.
 
+**Data-quality check (mandatory, after merging):** For `wacc` (single-ticker `dataQuality`
+dict) and `comps` (per-ticker `dataQuality` dict, check the target ticker's own entry), if
+`dataQuality.staleness` is `true` or `dataQuality.dataConflicts` is non-empty, dispatch
+`data-quality-agent` via the Agent tool with: which script flagged it (`wacc` or `comps`), the
+specific detail, and the fact that both feed `aiThesis.action`'s 2-of-3 gate. Its response is
+one of:
+- `DEGRADE: {note}` — append `{note}` to `analyticsLog.dataQualityFlags` and continue to Step 4.
+- `HALT: {reason}` — stop before Step 4. Report `{reason}` to the user. Leave whatever is
+  currently in `temp/evaluations/{TICKER}_projection.json` as-is (don't delete it, don't
+  persist it to `data/projections/`) so the user can inspect what was gathered before the halt.
+
+*Note: `comps_valuation.py` does not pass a `cik` argument to `get_fundamentals()`, so its `dataQuality.dataConflicts` is structurally always empty; comps can only contribute a DEGRADE on staleness, while only wacc can trigger a HALT via a data conflict.*
+
 ## Step 3.6: Fundamental Framework Score + Peer Benchmarking + Local TA (Phase 2b)
 
 After Step 3.5's valuation-committee lenses, run these three additional scripts. Unlike
@@ -310,6 +323,17 @@ Merge all three outputs (`framework`, `peerBench`, `technicals`) into the projec
 "newsImpact"]` — this is expected, not an error; fill the file in only when you have
 sourced, dated research for those fields (never guess a moat/news rating).
 
+**Data-quality check (mandatory, after merging):** For `peerBench` (per-ticker `dataQuality`
+dict, check the target ticker's own entry) and `technicals` (single `dataQuality` dict), if
+`dataQuality.staleness` is `true` or `dataQuality.dataConflicts` is non-empty, dispatch
+`data-quality-agent` via the Agent tool with: which script flagged it (`peerBench` or
+`technicals`), the specific detail, and the fact that neither feeds `aiThesis.action`'s gate
+(informational-only, per the framework doc's own Step 3.6 boundary). Per the agent's decision
+tree, this always resolves to `DEGRADE` for an informational-only lens — append the note to
+`analyticsLog.dataQualityFlags` and continue. `framework_score.py` doesn't call
+`get_fundamentals()`/`get_prices()` directly (it reads persisted projection snapshots), so it
+has no `dataQuality` output to check here.
+
 ## Step 4: Validate & Repair
 
 Run the pre-persistence validator. This now also enforces the Phase 2a
@@ -328,6 +352,18 @@ cat temp/evaluations/{TICKER}_projection.json | python3 plugins/stock-valuation/
 Fix all reported errors before proceeding. If math inconsistency detected → invoke **FB-05** from `references/fallback-tree.md`.
 
 Normalize weights if sum ≠ 1.0. Cast string numbers to actual numbers. Clamp out-of-range values.
+
+---
+
+## Step 4.5: Red Team Review
+
+Dispatch `red-team-agent` via the Agent tool, passing the validated projection JSON (post-Step
+4, pre-persistence). Print its "Objections" and "What would change my mind" sections to the
+user, directly above whatever conversational summary this skill was about to present. This
+step is **mandatory, every `/evaluate-stock` run** — never skipped, never made conditional on
+conviction level or user request.
+
+---
 
 ## Step 5: Assemble Projection Object
 Construct the projection object using the official template provided in:

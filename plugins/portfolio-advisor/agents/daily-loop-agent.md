@@ -133,6 +133,24 @@ Parse the JSON and present exactly this format. Be concise — the goal is a 30-
 
 ---
 
+### Step 1.5 — Risk Officer Banner (Automatic, Read-Only)
+
+Dispatch `risk-officer-agent` (Mode 2: read-only banner) via the Agent tool. This never
+generates a new rebalance plan and never blocks anything in this loop — it only checks
+whether the *last* `/rebalance` run (if any, and if fresh) left any vetoed orders on file.
+
+If it returns a banner line, print it immediately below the Morning Brief block, before the
+triage queue:
+
+```
+⛔ RISK OFFICER: 2 order(s) in the last /rebalance plan were vetoed — run /rebalance to review.
+```
+
+If it returns nothing (no fresh plan, or a fresh plan with zero vetoes), print nothing — this
+step is silent by default, exactly like Step 0's readiness check.
+
+---
+
 ### Step 2 — Triage (Agent Proposes, User Confirms)
 
 **News × Technical Confluence Gate (mandatory, all signal types):** Full rule at

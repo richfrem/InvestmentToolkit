@@ -93,9 +93,11 @@ def comps_implied_range(ticker: str, peer_tickers: list[str], projections_dir: s
 
     Returns:
         {"status": "ok", "impliedPriceRange": {"low": float, "high": float},
-         "peersUsed": [...], "evSalesMedian": float}
+         "peersUsed": [...], "evSalesMedian": float,
+         "dataQuality": {ticker: {"staleness","dataConflicts","flags"}, ...peers...}}
         or {"status": "insufficient_peer_data", "peersUsed": [...]} when fewer
-        than 2 peers have usable data.
+        than 2 peers have usable data. dataQuality is keyed by every ticker
+        whose get_fundamentals() was actually consulted (target + peersUsed).
     """
     target_proj = load_latest_projection(ticker, projections_dir)
     if target_proj is None:
@@ -125,6 +127,15 @@ def comps_implied_range(ticker: str, peer_tickers: list[str], projections_dir: s
     implied_ev = ev_sales_median * target_revenue
     implied_price = (implied_ev - target_debt + target_cash) / target_shares
 
+    data_quality = {ticker: fundamentals.get(
+        "dataQuality", {"staleness": False, "dataConflicts": [], "flags": []}
+    )}
+    for peer in peer_multiples:
+        peer_fundamentals = get_fundamentals(peer)
+        data_quality[peer] = peer_fundamentals.get(
+            "dataQuality", {"staleness": False, "dataConflicts": [], "flags": []}
+        )
+
     # +/-10% band around the point estimate — a single multiple from a small
     # peer set is not precise enough to present as one number.
     return {
@@ -135,6 +146,7 @@ def comps_implied_range(ticker: str, peer_tickers: list[str], projections_dir: s
         },
         "peersUsed": list(peer_multiples),
         "evSalesMedian": round(ev_sales_median, 3),
+        "dataQuality": data_quality,
     }
 
 

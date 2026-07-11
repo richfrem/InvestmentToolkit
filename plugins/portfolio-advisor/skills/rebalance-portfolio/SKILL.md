@@ -132,6 +132,36 @@ already sequenced sells-before-buys, per-account.
 
 ---
 
+## Step 1b: Risk Officer Review
+
+Dispatch `risk-officer-agent` (Mode 1: real enforcement) via the Agent tool. It runs
+`risk_officer.py --pretty` and returns vetoed vs approved orders.
+
+- Any order in `vetoedOrders` is **removed** from the trade plan presented in Step 5 and
+  instead rendered in a new "⛔ Vetoed by Risk Officer" section (same table style as the
+  existing "Skipped Restores" section in Step 5), each row listing its `vetoReasons`.
+- If the user chooses to override a veto, that override is handled entirely inside
+  `risk-officer-agent`'s own conversation (one order at a time, logged via
+  `risk_officer.py --log-override`) — once overridden, the order rejoins the set of orders
+  this skill treats as approved for the rest of the flow (Step 5 table, Step 5b posting,
+  Step 6 confirm+log).
+- If `risk_officer.py` reports `"status": "no_plan"` or `"plan_blocked"`, or fails outright,
+  degrade gracefully: show a one-line warning and proceed with the unreviewed plan — same
+  degrade pattern E1/C2 already use in `daily_brief.py` when their own engines are
+  unavailable.
+
+---
+
+## Step 1c: Red Team Review
+
+Dispatch `red-team-agent` via the Agent tool, passing the post-veto-filtering order set (what
+will actually be proposed in Step 5, after Step 1b's exclusions and any overrides). Print its
+"Objections" and "What would change my mind" sections to the user, directly above Step 5's
+trade table. This step is **mandatory, every `/rebalance` run** — never skipped, never made
+conditional on plan size or user request.
+
+---
+
 ## Step 5: Present Trade Recommendations
 ```
 **Rebalance Recommendation — {THESIS_NAME}**
