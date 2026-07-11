@@ -245,17 +245,45 @@ router.get('/summary', async (_req, res) => {
         }, '');
         const lastUpdated = fromTotals ?? fromHoldings ?? new Date().toISOString();
 
-        const ytdStartValueUSD = YTD_START_VALUE_CAD / JAN1_USD_CAD_RATE;
+        // Run TWR calculation dynamically to update performance report
+        let twrReport: any = null;
+        const cashFlowsFile = path.join(path.dirname(PORTFOLIO_FILE), 'cash_flows.json');
+        const reportFile = path.join(path.dirname(PORTFOLIO_FILE), 'ytd_performance_report.json');
+        if (fs.existsSync(cashFlowsFile)) {
+            try {
+                await spawnPythonScript('ytd_return.py', []);
+                if (fs.existsSync(reportFile)) {
+                    twrReport = JSON.parse(fs.readFileSync(reportFile, 'utf-8'));
+                }
+            } catch (err) {
+                console.error(`[Summary] Failed to run ytd_return.py:`, err);
+            }
+        }
+
+        let ytdStartValueCAD_toUse = YTD_START_VALUE_CAD;
+        let ytdChangeCAD_toUse = totalMarketValueCAD - YTD_START_VALUE_CAD;
+        let ytdChangePctCAD_toUse = (ytdChangeCAD_toUse / YTD_START_VALUE_CAD) * 100;
+
+        if (twrReport) {
+            ytdStartValueCAD_toUse = twrReport.starting_balance_cad;
+            ytdChangeCAD_toUse = twrReport.dollar_gain_cad;
+            ytdChangePctCAD_toUse = twrReport.time_weighted_return_pct;
+        }
+
+        const ytdStartValueUSD = ytdStartValueCAD_toUse / JAN1_USD_CAD_RATE;
+        const ytdChangeUSD = ytdChangeCAD_toUse / liveUsdCadRate;
+        const ytdChangePctUSD = ytdChangePctCAD_toUse;
+
         res.json({
             positionCount: positions.length,
             totalMarketValueUSD, totalMarketValueCAD,
             totalBookValueUSD, totalBookValueCAD,
-            ytdStartValueCAD: YTD_START_VALUE_CAD,
+            ytdStartValueCAD: ytdStartValueCAD_toUse,
             ytdStartValueUSD,
-            ytdChangeCAD: totalMarketValueCAD - YTD_START_VALUE_CAD,
-            ytdChangePctCAD: ((totalMarketValueCAD - YTD_START_VALUE_CAD) / YTD_START_VALUE_CAD) * 100,
-            ytdChangeUSD: totalMarketValueUSD - ytdStartValueUSD,
-            ytdChangePctUSD: ((totalMarketValueUSD - ytdStartValueUSD) / ytdStartValueUSD) * 100,
+            ytdChangeCAD: ytdChangeCAD_toUse,
+            ytdChangePctCAD: ytdChangePctCAD_toUse,
+            ytdChangeUSD,
+            ytdChangePctUSD,
             unrealizedGainUSD: totalMarketValueUSD - totalBookValueUSD,
             unrealizedGainPctUSD: totalBookValueUSD > 0 ? ((totalMarketValueUSD - totalBookValueUSD) / totalBookValueUSD) * 100 : 0,
             unrealizedGainCAD: totalMarketValueCAD - totalBookValueCAD,
