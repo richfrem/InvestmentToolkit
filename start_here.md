@@ -1,11 +1,11 @@
 # Session Start Briefing — InvestmentToolkit
-_Last updated: 2026-07-10 (Phase 3 E2 shipped) | Thesis v10.8 | Portfolio value: check live snapshot (user actively trading — do not trust a stale figure here)_
+_Last updated: 2026-07-10 (Phase 3 G2 shipped — Phase 3 fully closed, 5 of 5) | Thesis v10.8 | Portfolio value: check live snapshot (user actively trading — do not trust a stale figure here)_
 
 > **Read this first at the start of every new session.**
 
 ---
 
-## 🔥 ACTIVE: Fable5 Elevation Guide — Phase 3 E2 DONE, start Phase 3 G2 here (final sub-spec)
+## 🔥 ACTIVE: Fable5 Elevation Guide — Phase 3 fully closed (G2 shipped, 5 of 5 sub-specs done)
 
 **Context:** User had Fable5 (primary), Gemini, GPT, Grok review the codebase for
 "next level" improvements — reviews saved at `temp/bundles/full-bundle/reviews/`.
@@ -20,15 +20,14 @@ decomposed into 5 sub-specs during brainstorming — E1/C2/B5/E2/G2, built stric
 order since E2 and G2 both consume E1's `risk_snapshot.json`, C2's `market_regime.json`,
 and B5's `thesisBreakers`/`thesis_breaker_state.json` as data contracts, and G2 additionally
 consumes E2's `data/rebalance_plan.json` order-plan format.** E1 (portfolio risk engine), C2
-(market regime classifier), B5 (thesis breakers), and E2 (rebalancer v2) are now all
-shipped; this session starts fresh on Phase 3's fifth and final sub-spec, **G2
-(risk-officer + red-team agents)** — Phases 1, 2a, 2b, and all of Phase 3's E1 + C2 + B5 +
-E2 are fully shipped and verified. E1 is merged all the way to `origin/main` (PR #63); C2,
-B5, and E2 are all merged to local `main` and pushed to `origin` as
-`feature/fable5-phase3-c2-market-regime`, `feature/fable5-phase3-b5-thesis-breakers`, and
-`feature/fable5-phase3-e2-rebalancer-v2` respectively, **none yet merged to `origin/main`**
-— same PR-yourself pattern as every phase, waiting on the user's GitHub review. Nothing
-from any of them needs redoing.
+(market regime classifier), B5 (thesis breakers), E2 (rebalancer v2), and now **G2
+(risk-officer + red-team + data-quality agents)** are all shipped — **Phase 3 is fully
+closed, 5 of 5 sub-specs done.** E1 is merged all the way to `origin/main` (PR #63); C2, B5,
+E2, and G2 are all merged to local `main` and pushed to `origin` as
+`feature/fable5-phase3-c2-market-regime`, `feature/fable5-phase3-b5-thesis-breakers`,
+`feature/fable5-phase3-e2-rebalancer-v2`, and `feature/fable5-phase3-g2-risk-officer-red-team`
+respectively, **none yet merged to `origin/main`** — same PR-yourself pattern as every phase,
+waiting on the user's GitHub review. Nothing from any of them needs redoing.
 
 **Also shipped this session, unrelated to the Fable5 phases:** a `norberts-gambit` skill
 (`plugins/portfolio-advisor/skills/norberts-gambit/`) — a broker-agnostic guide for
@@ -379,8 +378,73 @@ before merging). `feature/fable5-phase3-e2-rebalancer-v2` pushed to `origin` as 
 source — **not yet merged to `origin/main`**, same GitHub PR flow as every prior phase, user
 merges on their own timing.
 
+### ✅ Phase 3, Sub-Spec 5 — G2 Risk Officer + Red Team + Data Quality — COMPLETE, on local `main`, pushed to `origin`
+Closes the two gaps E2 deliberately left open and formalizes a third. **`risk_officer.py`**
+(new) — turns E2's warn-only `riskGateWarnings`/`breakerWarnings` (already computed on every
+`rebalance_plan.json` order) into a real veto: any order carrying either warning is vetoed
+by default, reusing E2's exact thresholds (no new numeric caps). `classify_orders()` +
+`compute_risk_officer_review()` write a new `data/risk_officer_review.json`; overrides are
+logged to a new append-only `data/risk_officer_overrides.jsonl` via `--log-override`,
+mirroring B5's `log_breaker_override()` pattern exactly. **`risk-officer-agent.md`** wraps
+it: real enforcement inside `/rebalance` (new SKILL.md Step 1b — vetoed orders pulled into a
+"⛔ Vetoed by Risk Officer" section, override handled one order at a time, always logged),
+read-only banner inside `/daily` (new Step 1.5 — only surfaces a one-line warning if a
+*fresh* `/rebalance` plan on file has vetoes; never generates a plan itself, never blocks
+Step 2/3). **Pins Phase 3's deferred acceptance criterion** ("a deliberately cap-breaching
+plan that gets vetoed") via `test_compute_risk_officer_review_writes_file_and_round_trips`.
+
+**`red-team-agent.md`** — no new engine, purely conversational, `tools: ["Read"]` only
+(mandate enforced at the tool-permission level, not just prose): given a projection or
+rebalance plan, produces ≥3 falsifiable objections + a "what would change my mind" list,
+explicitly forbidden from proposing trades. **Mandatory on every run** — new Step 1c in
+`/rebalance` and new Step 4.5 in `/evaluate-stock`, both printing objections above the final
+recommendation, never persisted to disk.
+
+**`data-quality-agent.md`** — closes a real gap found mid-build: `market_data.py`'s
+`dataQuality` signal (staleness + cross-source conflicts) existed since Phase 1 but every
+caller silently dropped it, so nothing could ever trigger this agent. Fixed by wiring
+`dataQuality` passthrough into `get_prices()` (new `_price_staleness()`) and into
+`wacc.py`/`comps_valuation.py`/`peer_bench.py`/`technicals.py`'s own outputs — all four
+already called `get_fundamentals()`/`get_prices()` but dropped the field. New mandatory
+checks in `/evaluate-stock` Steps 3.5/3.6 dispatch the agent on a flag; its 5-rule
+DEGRADE/HALT decision tree (documented in the agent file) treats `wacc`/`comps` as
+gate-feeding (can HALT before persistence on a ≥15% conflict) and `peerBench`/`technicals`
+as informational-only (always DEGRADE). **Known limitation, documented not fixed:**
+`comps_valuation.py` never threads a `cik` into its `get_fundamentals()` calls, so EDGAR is
+always skipped and its `dataConflicts` is structurally always empty — the conflict-driven
+HALT path is effectively `wacc`-only today; a one-line note was added to both
+`data-quality-agent.md` and the SKILL.md rather than fixing the cik-threading itself
+(explicitly out of scope, flagged by the final whole-branch review).
+
+Built as 11 TDD-gated tasks via `superpowers:subagent-driven-development` in a fresh
+worktree (`.worktrees/feature-fable5-phase3-g2-risk-officer-red-team`, now cleaned up).
+**Two more worktree-isolation leaks this session** (Tasks 4 and 9 — both `haiku`-tier
+dispatches committed straight onto `main` despite the mandatory `pwd`/`git branch` check
+instruction), a third and fourth occurrence of the same failure class documented for C2 and
+Phase 2b — both caught immediately (review-package showing "0 commits" for the expected
+range) and fixed identically each time: cherry-pick the commit onto the worktree branch,
+`git revert --no-edit` on `main` (never `reset --hard`, since a concurrent, unrelated
+`/daily` session had real uncommitted portfolio/thesis edits in the main checkout the whole
+time — verified untouched after every fix). Observed pattern worth carrying forward:
+`haiku`-tier implementer dispatches leaked twice this session, `sonnet`-tier dispatches
+never did — later tasks in this session were deliberately switched to `sonnet` for exactly
+this reason. One real bug also caught by the final full-suite run (not by any task review):
+`test_price_staleness_boundary_is_inclusive_not_stale` used local `date.today()` while the
+function under test compares against UTC time — flaky right at the local/UTC day boundary,
+fixed to use `datetime.now(timezone.utc).date()`. Final whole-branch review (opus) returned
+**Ready to merge: With fixes** — one Important finding (the comps `cik` limitation above,
+documented rather than fixed) and a handful of confirmed-Minor items (stale docstrings not
+mentioning the new `dataQuality` key, a couple of cosmetic test-style inconsistencies) — all
+resolved or explicitly deferred before merge.
+
+**Merged to local `main` via a real merge commit** (main had diverged — the same concurrent
+`/daily` session's uncommitted edits, verified zero file overlap with this branch's diff
+before merging, confirmed still intact and untouched after). `feature/fable5-phase3-g2-risk-officer-red-team`
+pushed to `origin` as a backup/PR source — **not yet merged to `origin/main`**, same GitHub
+PR flow as every prior phase, user merges on their own timing.
+
 ### 🚦 Git policy going forward
-**Standing pattern, now confirmed five times (Phase 1, Phase 2a, Phase 2b, Phase 3 E1, Phase 3 E2):** after each
+**Standing pattern, now confirmed six times (Phase 1, Phase 2a, Phase 2b, Phase 3 E1, Phase 3 E2, Phase 3 G2):** after each
 phase's whole-branch review passes, Claude pushes a dedicated `feature/fable5-phase<N>-<name>`
 branch to `origin` as a backup/PR source — **Claude never merges or opens the PR into
 `origin/main`.** The user reviews and merges via GitHub's PR flow themselves, on their own
@@ -404,48 +468,29 @@ command — a subagent with two valid-looking checkouts on disk (main repo + wor
 Task 3 incident was caught exactly this way, not by the subagent noticing its own mistake.
 
 ### Next step for this session
-Phase 3 sub-spec 5 of 5 (the **final** sub-spec — closes out Phase 3) — **G2
-risk-officer + red-team agents** (§8 G2 in the guide). Per the guide, G2 defines three new
-agent definitions under `agents/`, per the existing daily-loop pattern:
-1. **`risk-officer-agent.md`** — consumes E1's `risk_snapshot.json` **and now E2's
-   `data/rebalance_plan.json` order-plan format** (E2 shipped since this section of the
-   guide was written); has **veto-with-rationale power** over plans that breach cluster
-   caps or hit a TRIGGERED thesis breaker (E2 deliberately only *warns* on both —
-   `riskGateWarnings`/`breakerWarnings` fields on each order — precisely so this agent
-   would be the one with real veto authority, per the scope boundary drawn during E2's
-   brainstorming). User can override; override is logged to the ledger. Runs inside
-   `/daily` Step 2.5 and `/rebalance`. **This is also where E2's own design spec (§6.3)
-   deferred the Phase 3 acceptance criterion** — "a deliberately cap-breaching plan that
-   gets vetoed" — pin this as the acceptance test for the risk-officer-agent specifically,
-   not re-litigated as an E2 gap.
-2. **`red-team-agent.md`** — formalizes the "Adversarial Objectivity Constraint." Invoked
-   with a completed analysis artifact (projection JSON, rebalance plan); must produce ≥3
-   specific, falsifiable objections + a "what would change my mind" list; explicitly
-   forbidden from proposing trades. `/evaluate-stock` and `/rebalance` route their outputs
-   through it before user presentation.
-3. **`data-quality-agent.md`** (lightweight) — invoked when `data_quality.py` flags
-   degradation; decides degrade-gracefully vs halt per a short decision tree. (Guide lists
-   this under G2 too; confirm with the user during brainstorming whether it's in scope for
-   this sub-spec or a separate follow-up — not decided yet, same as every prior "confirm
-   scope first" gate.)
+**Phase 3 is fully closed out (5 of 5 sub-specs: E1, C2, B5, E2, G2 all shipped).** Per the
+elevation guide, next up is **Phase 4** (Track Record: E3 prediction ledger, E4 backtest
+harness, B4 earnings intelligence, G4 structured evolution events) — not yet brainstormed.
+Confirm with the user whether to proceed directly into Phase 4 or pause for the map-debt
+sweep below first, since "once every Fable5 phase (3 through 6) has shipped" was the
+original trigger condition for that sweep and Phase 3 is now complete. Also worth raising:
+`.agents/AGENTS.md`'s invocation-contract documentation (input artifact path → output
+artifact path per specialist agent) was never written for E1/C2/B5/E2/G2's five new agents
+— a natural pre-Phase-4 cleanup item, not blocking.
 
-Orchestrators (`daily-loop`, `run-advisor`, `weekly-review`) stay the only user-facing
-agents; specialists are invoked, produce structured artifacts, and return. Document the
-invocation contract (input artifact path → output artifact path) in `AGENTS.md`, per the
-guide. Confirm scope with the user first (brainstorming skill gate) before writing a spec,
-same as every prior sub-spec.
-
-**Before dispatching G2's first task**, continue applying
-`.agent/rules/worktree-subagent-isolation.md`'s mandatory post-task `git status --short`
-check in the **main checkout** after every implementer/fix subagent — used cleanly
-throughout B5 and E2 with zero leaks, keep it standard.
-
-**After G2: Phase 3 is fully closed out (5 of 5 sub-specs).** Per the elevation guide, next
-up is Phase 4 (Track Record: E3 prediction ledger, E4 backtest harness, B4 earnings
-intelligence, G4 structured evolution events) — not yet brainstormed, confirm with the user
-whether to proceed directly into Phase 4 or pause for the map-debt sweep below first, since
-"once every Fable5 phase (3 through 6) has shipped" was the original trigger condition for
-that sweep and Phase 3 will be complete after G2.
+**Worktree-isolation lesson from this session (G2), worth repeating going forward:** two more
+leaks occurred (Tasks 4 and 9, both `haiku`-tier dispatches), a third/fourth occurrence of
+the same failure class first seen in Phase 2b and repeated in C2. Both were caught
+immediately via `review-package` showing "0 commits" for the expected range (not just
+`git status --short`, which only catches *uncommitted* leaks — a clean commit landing on
+`main` needs `git log --oneline` checked too) and fixed via cherry-pick + `git revert`
+(never `reset --hard`, given the concurrent `/daily` session's real uncommitted work in the
+main checkout). The pattern observed this session — `haiku`-tier implementers leaked twice,
+`sonnet`-tier dispatches never did — is not proven causally, but is a reasonable prior for
+future sessions: consider defaulting mechanical-but-git-touching tasks to `sonnet` rather
+than the cheapest tier, or add the same "every git command starts with `cd <path> &&`"
+reinforcement used in G2's later dispatches (Tasks 5-11) as a standing instruction rather
+than something added mid-session after the first leak.
 
 ### 🗺️ Map debt — sweep `.agent/map-debt.md` before/after Phase 4 kickoff
 The two pre-existing test failures logged before Phase 3 E1 started are now **RESOLVED** (fixed
