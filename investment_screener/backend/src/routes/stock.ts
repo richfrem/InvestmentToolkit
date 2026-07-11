@@ -1,3 +1,16 @@
+/**
+ * src/routes/stock.ts
+ * ===================
+ *
+ * Purpose:
+ *   Handles Express API routes for looking up stocks, fetching real-time financial metrics,
+ *   running valuations, and obtaining ETF allocation details.
+ *
+ * Key Functions:
+ *   - GET /stock/lookup - Builds search dictionaries for tickers
+ *   - GET /stock/metrics/:ticker - Fetches financial metrics via python bridge
+ */
+
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
