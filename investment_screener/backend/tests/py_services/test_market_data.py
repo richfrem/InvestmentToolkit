@@ -15,14 +15,14 @@ def test_price_staleness_false_for_empty_rows():
 
 
 def test_price_staleness_boundary_is_inclusive_not_stale():
-    from datetime import date, timedelta
-    boundary_date = (date.today() - timedelta(days=5)).isoformat()
+    from datetime import datetime, timedelta, timezone
+    boundary_date = (datetime.now(timezone.utc).date() - timedelta(days=5)).isoformat()
     assert _price_staleness([{"date": boundary_date, "close": 1.0}], max_age_days=5) is False
 
 
 def test_price_staleness_true_past_boundary():
-    from datetime import date, timedelta
-    old_date = (date.today() - timedelta(days=10)).isoformat()
+    from datetime import datetime, timedelta, timezone
+    old_date = (datetime.now(timezone.utc).date() - timedelta(days=10)).isoformat()
     assert _price_staleness([{"date": old_date, "close": 1.0}], max_age_days=5) is True
 
 
