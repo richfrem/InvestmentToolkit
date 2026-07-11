@@ -12,10 +12,41 @@ sys.path.insert(0, str(PY_SERVICES))
 
 from harvest_predictions import (  # noqa: E402
     _append_if_new,
+    _load_projection,
     build_action_rating_claim,
     build_dcf_fair_value_claim,
     harvest_action_and_dcf_claims,
 )
+
+
+class TestLoadProjection:
+    def test_selects_highest_version_ai_agent_entry(self, tmp_path):
+        """Mirrors real ANET.json: 3 revisions, latest AI_AGENT version wins, not index 0."""
+        path = tmp_path / "ANET.json"
+        entries = [
+            {"source": "AI_AGENT", "version": 1, "aiThesis": {"action": "BUY"}},
+            {"source": "AI_AGENT", "version": 1, "aiThesis": {"action": "HOLD"}},
+            {"source": "AI_AGENT", "version": 2, "aiThesis": {"action": "INITIATE"}},
+        ]
+        path.write_text(json.dumps(entries))
+        result = _load_projection(path)
+        assert result == entries[2]
+        assert result["aiThesis"]["action"] == "INITIATE"
+
+    def test_single_entry_list_still_works(self, tmp_path):
+        path = tmp_path / "SINGLE.json"
+        entries = [{"source": "AI_AGENT", "version": 1, "aiThesis": {"action": "ACCUMULATE"}}]
+        path.write_text(json.dumps(entries))
+        assert _load_projection(path) == entries[0]
+
+    def test_no_ai_agent_entries_returns_none(self, tmp_path):
+        path = tmp_path / "NOAI.json"
+        entries = [
+            {"source": "HUMAN", "version": 1, "aiThesis": {"action": "BUY"}},
+            {"source": "HUMAN", "version": 2, "aiThesis": {"action": "TRIM"}},
+        ]
+        path.write_text(json.dumps(entries))
+        assert _load_projection(path) is None
 
 
 class TestBuildActionRatingClaim:
@@ -123,6 +154,7 @@ class TestHarvestActionAndDcfClaims:
         projections_dir = tmp_path / "projections"
         projections_dir.mkdir()
         (projections_dir / "CORZ.json").write_text(json.dumps([{
+            "source": "AI_AGENT", "version": 1,
             "aiThesis": {"action": "TRIM", "fairValue": 10.64,
                           "analyzedAt": "2026-05-02T15:35:09Z"},
             "analyticsLog": {"dcf": None},
