@@ -21,6 +21,9 @@ Key Functions:
     - compute_cost_of_debt() - After-tax cost of debt from interest expense / total debt
     - compute_risk_free_rate() - 10Y Treasury yield via market_data.get_prices(["^TNX"])
     - compute_wacc() - Primary orchestrator: combines all inputs into a capped/floored WACC
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import argparse

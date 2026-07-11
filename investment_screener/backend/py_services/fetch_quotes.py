@@ -12,6 +12,9 @@ Price source priority:
 info.get('bid') / info.get('ask') are intentionally NOT used — they return
 stale cached values from Yahoo Finance that can be wildly incorrect during
 market hours. Instead, bid/ask are derived from the last trade price.
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Queries current yfinance prices)
 """
 import sys
 import json

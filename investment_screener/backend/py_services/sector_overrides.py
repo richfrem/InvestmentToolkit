@@ -1,4 +1,7 @@
-"""Canonical sector/industry overrides for stocks Yahoo Finance mis-classifies."""
+"""Canonical sector/industry overrides for stocks Yahoo Finance mis-classifies.
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Saves sector classifications)
+"""
 
 SECTOR_OVERRIDES: dict[str, dict[str, str]] = {
     "HUMN": {"sector": "Technology",     "industry": "Software - Application"},

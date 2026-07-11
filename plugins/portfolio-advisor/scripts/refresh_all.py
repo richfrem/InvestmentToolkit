@@ -19,6 +19,9 @@ Usage:
   python3 plugins/portfolio-advisor/scripts/refresh_all.py --skip-blueprint
 
 Layer: Plugin / portfolio-advisor / Orchestrator
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import argparse

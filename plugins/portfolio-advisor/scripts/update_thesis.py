@@ -39,6 +39,9 @@ Key Functions:
     - apply_patch() - Supports batch updates from a JSON patch file
     - validate_weights() - Hard-gate validation ensuring all target allocations sum exactly to 100%
     - save_thesis() - Atomic write operation that bumps version numbers and persists changes to data storage
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import argparse

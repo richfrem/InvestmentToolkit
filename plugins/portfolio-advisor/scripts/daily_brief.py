@@ -16,6 +16,9 @@ Usage:
     python3 plugins/portfolio-advisor/scripts/daily_brief.py
     python3 plugins/portfolio-advisor/scripts/daily_brief.py --skip-ta
     python3 plugins/portfolio-advisor/scripts/daily_brief.py --json
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 from __future__ import annotations
 

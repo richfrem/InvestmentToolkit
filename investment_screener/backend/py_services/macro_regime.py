@@ -7,6 +7,9 @@ conviction signals are actionable.
 Usage:
     python3 macro_regime.py
     python3 macro_regime.py --json
+
+Key Input Dependencies:
+    - investment_screener/backend/data/daily-briefs/ (Updates macroeconomic regime)
 """
 from __future__ import annotations
 

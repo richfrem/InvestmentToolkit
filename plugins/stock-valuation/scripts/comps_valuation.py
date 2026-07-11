@@ -21,6 +21,9 @@ Key Functions:
       versioned projections/{TICKER}.json file
     - compute_ev() - Enterprise value from price * shares + debt - cash
     - comps_implied_range() - Primary orchestrator: peer-median EV/Sales -> implied price range
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import argparse

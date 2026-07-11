@@ -8,6 +8,9 @@ Usage:
     from file_lock import locked_write_json
 
     locked_write_json(path, data)          # acquire → atomic write → release
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import json

@@ -17,6 +17,9 @@ Purpose:
     either — the affected row is simply omitted for that ticker.
 
 Layer: Backend / Python Services / Data Layer
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Pulls yfinance sector data)
 """
 
 import sys

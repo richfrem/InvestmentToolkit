@@ -17,6 +17,9 @@ Layer: Backend / Python Services / Risk
 Usage:
     python3 risk_engine.py --pretty
     python3 risk_engine.py --benchmark SPY --no-save --pretty
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Measures Value-at-Risk)
 """
 
 import argparse

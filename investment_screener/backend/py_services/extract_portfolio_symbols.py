@@ -7,6 +7,9 @@ from the 2nd column, and outputs to a JSON file.
 
 Usage:
     python3 investment_screener/backend/py_services/extract_portfolio_symbols.py
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Extracts active tickers)
 """
 
 import json

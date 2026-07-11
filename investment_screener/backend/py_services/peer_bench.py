@@ -18,6 +18,9 @@ Usage:
 
 Key Functions:
     - compute_peer_benchmark() - Primary orchestrator: target + peer raw metrics -> benchmarking table
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Benchmarks holdings performance)
 """
 
 import argparse

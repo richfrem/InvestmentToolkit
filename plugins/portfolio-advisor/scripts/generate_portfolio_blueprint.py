@@ -24,6 +24,9 @@ Key Functions:
     - generate_section() - Constructs the primary Section IV Markdown content with live performance metrics
     - update_section_tables() - Rigorously scans the entire thesis document to enrich legacy tables with live data
     - build_actual_map() / build_thesis_map() - Normalize disparate data sources into unified maps for aggregation
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Internal state database)
 """
 
 import argparse
