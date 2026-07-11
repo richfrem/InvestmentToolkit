@@ -151,7 +151,9 @@ If this returns errors or empty accounts, the broker panel inside TradingView is
 
 ## Phase 7: First Portfolio Sync
 
-The toolkit is now ready. Tell the user:
+The toolkit is now ready. Before running the sync, ensure that the private JSON files under `investment_screener/backend/data/` are initialized (copied from their `.example` counterparts, e.g., `portfolio.json`, `cash_flows.json`, `portfolio-config.json`).
+
+Tell the user:
 
 > "Type `/tv-portfolio-sync` to pull your live positions across all accounts into portfolio.json."
 
