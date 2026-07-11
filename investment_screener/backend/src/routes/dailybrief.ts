@@ -1,7 +1,14 @@
 /**
- * dailybrief.ts — Daily portfolio brief API
- * Serves today's conviction scores, macro regime, pillar health, and earnings
- * flags from the daily-briefs/ snapshot directory.
+ * src/routes/dailybrief.ts
+ * =======================
+ *
+ * Purpose:
+ *   Serves today's conviction scores, macro regime, pillar health, and earnings
+ *   flags from the daily-briefs/ snapshot directory.
+ *
+ * Key Functions:
+ *   - todayStr() - Formats current date
+ *   - latestBriefPath() - Resolves path to the most recent brief
  */
 import { Router } from 'express';
 import fs from 'fs';

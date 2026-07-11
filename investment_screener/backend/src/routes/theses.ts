@@ -1,3 +1,16 @@
+/**
+ * src/routes/theses.ts
+ * ====================
+ *
+ * Purpose:
+ *   Handles Express API routes for retrieving and updating investment thesis targets,
+ *   sub-strategies files, and target portfolio allocations.
+ *
+ * Key Functions:
+ *   - GET /sub-strategies - Lists available sub-strategy thesis details
+ *   - GET /target-weights - Retrieves target weights for all holdings
+ */
+
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
