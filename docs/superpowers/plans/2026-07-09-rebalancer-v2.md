@@ -495,9 +495,13 @@ git commit -m "feat: add valuation-action gate + compute_candidate_orders() (E2 
 - Test: `investment_screener/backend/tests/py_services/test_rebalancer.py`
 
 **Interfaces:**
-- Produces: `load_account_positions(portfolio_path: Path) -> tuple[dict[str, dict[str, dict[str, float]]], dict[str, str]]`
-  — returns `(account_positions, account_source)`. `account_positions[account][ticker] = {"shares": float, "costBasis": float | None}`,
-  plus a reserved `account_positions[account]["_cashUSD"] = float`. `account_source[account]`
+- Produces: `load_account_positions(portfolio_path: Path) -> tuple[dict[str, dict[str, dict[str, float | None]]], dict[str, float], dict[str, str]]`
+  — returns `(account_positions, account_cash_usd, account_source)`.
+  `account_positions[account][ticker] = {"shares": float, "costBasis": float | None}`.
+  `account_cash_usd[account]` is the account's USD cash balance (a separate top-level
+  dict, not a reserved key inside `account_positions` — keeping cash out of the
+  per-ticker dict avoids a type-hint mismatch: a `dict[str, dict[str, float]]` cannot
+  also correctly hold a bare `float` under a magic key). `account_source[account]`
   is `"tvSnapshot"` or `"heuristic_1_3_mirror"`.
 
 - [ ] **Step 1: Write the failing tests**
@@ -527,10 +531,11 @@ def test_load_account_positions_reads_tvsnapshot_per_account(tmp_path):
             "balances": {"cashUSDCombined": 100.0},
         },
     ])
-    positions, source = load_account_positions(portfolio_path)
+    positions, cash, source = load_account_positions(portfolio_path)
     assert positions["TFSA"]["NBIS"] == {"shares": 10.0, "costBasis": 20.0}
     assert positions["RRSP"]["NBIS"] == {"shares": 3.0, "costBasis": 22.0}
-    assert positions["TFSA"]["_cashUSD"] == 500.0
+    assert cash["TFSA"] == 500.0
+    assert cash["RRSP"] == 100.0
     assert source == {"TFSA": "tvSnapshot", "RRSP": "tvSnapshot"}
 
 
@@ -543,16 +548,18 @@ def test_load_account_positions_falls_back_to_heuristic_when_rrsp_missing(tmp_pa
             "balances": {"cashUSDCombined": 500.0},
         },
     ])
-    positions, source = load_account_positions(portfolio_path)
+    positions, cash, source = load_account_positions(portfolio_path)
     assert positions["RRSP"]["NBIS"]["shares"] == 3.0  # floor(9/3)
+    assert cash["RRSP"] == 0.0
     assert source["RRSP"] == "heuristic_1_3_mirror"
 
 
 def test_load_account_positions_no_tvsnapshot_returns_empty(tmp_path):
     portfolio_path = tmp_path / "portfolio.json"
     portfolio_path.write_text(json.dumps({"holdings": [], "totals": {"totalUSD": 1000.0}}))
-    positions, source = load_account_positions(portfolio_path)
+    positions, cash, source = load_account_positions(portfolio_path)
     assert positions == {}
+    assert cash == {}
     assert source == {}
 ```
 
@@ -568,7 +575,7 @@ Add to `rebalancer.py`:
 ```python
 def load_account_positions(
     portfolio_path: Path = PORTFOLIO_PATH,
-) -> tuple[dict[str, dict[str, dict[str, float]]], dict[str, str]]:
+) -> tuple[dict[str, dict[str, dict[str, float | None]]], dict[str, float], dict[str, str]]:
     """Per-account share/cost-basis positions, preferring real tvSnapshot data.
 
     Reads portfolio.json's tvSnapshot.snapshots[].positions for real
@@ -580,15 +587,18 @@ def load_account_positions(
         portfolio_path: Path to portfolio.json.
 
     Returns:
-        (account_positions, account_source) — account_positions[account][ticker]
-        = {"shares", "costBasis"}, plus a reserved "_cashUSD" float key per
-        account; account_source[account] is "tvSnapshot" or
-        "heuristic_1_3_mirror".
+        (account_positions, account_cash_usd, account_source) —
+        account_positions[account][ticker] = {"shares", "costBasis"};
+        account_cash_usd[account] is that account's USD cash balance (a
+        separate dict, not folded into account_positions — see this
+        function's Interfaces note on why); account_source[account] is
+        "tvSnapshot" or "heuristic_1_3_mirror".
     """
     raw = json.loads(Path(portfolio_path).read_text())
     snapshots = (raw.get("tvSnapshot") or {}).get("snapshots", [])
 
-    positions: dict[str, dict[str, dict[str, float]]] = {}
+    positions: dict[str, dict[str, dict[str, float | None]]] = {}
+    cash_usd: dict[str, float] = {}
     source: dict[str, str] = {}
     synced_accounts: set[str] = set()
 
@@ -597,7 +607,7 @@ def load_account_positions(
         if not acct:
             continue
         synced_accounts.add(acct)
-        acct_positions: dict[str, dict[str, float]] = {}
+        acct_positions: dict[str, dict[str, float | None]] = {}
         for p in snap.get("positions", []):
             sym = normalize_ticker(p.get("symbol", ""))
             if not sym:
@@ -607,23 +617,21 @@ def load_account_positions(
                 "costBasis": float(p["avgFillPrice"]) if p.get("avgFillPrice") else None,
             }
         balances = snap.get("balances", {})
-        acct_positions["_cashUSD"] = float(balances.get("cashUSDCombined") or balances.get("cashUSD") or 0)
+        cash_usd[acct] = float(balances.get("cashUSDCombined") or balances.get("cashUSD") or 0)
         positions[acct] = acct_positions
         source[acct] = "tvSnapshot"
 
     if synced_accounts and "RRSP" not in synced_accounts and "TFSA" in positions:
-        rrsp_positions: dict[str, dict[str, float]] = {}
+        rrsp_positions: dict[str, dict[str, float | None]] = {}
         for sym, pos in positions["TFSA"].items():
-            if sym == "_cashUSD":
-                continue
             mirrored = math.floor(pos["shares"] / 3)
             if mirrored > 0:
                 rrsp_positions[sym] = {"shares": float(mirrored), "costBasis": pos["costBasis"]}
-        rrsp_positions["_cashUSD"] = 0.0
         positions["RRSP"] = rrsp_positions
+        cash_usd["RRSP"] = 0.0
         source["RRSP"] = "heuristic_1_3_mirror"
 
-    return positions, source
+    return positions, cash_usd, source
 ```
 
 - [ ] **Step 4: Run tests to verify they pass**
@@ -648,8 +656,9 @@ git commit -m "feat: add load_account_positions() with tvSnapshot + heuristic fa
 - Test: `investment_screener/backend/tests/py_services/test_rebalancer.py`
 
 **Interfaces:**
-- Consumes: `compute_candidate_orders()` (Task 2), `load_account_positions()` (Task 3).
-- Produces: `compute_account_routing(candidate_orders: list[dict[str, Any]], account_positions: dict[str, dict[str, dict[str, float]]], account_policy: dict[str, Any], target_data: dict[str, Any], prices: dict[str, float]) -> list[dict[str, Any]]`
+- Consumes: `compute_candidate_orders()` (Task 2), `load_account_positions()` (Task 3) —
+  note Task 3's corrected 3-tuple return: `(account_positions, account_cash_usd, account_source)`.
+- Produces: `compute_account_routing(candidate_orders: list[dict[str, Any]], account_positions: dict[str, dict[str, dict[str, float | None]]], account_cash_usd: dict[str, float], account_policy: dict[str, Any], target_data: dict[str, Any], prices: dict[str, float]) -> list[dict[str, Any]]`
   — each returned order gains `"account"`; buys needing extra cash get a
   same-account synthetic PSU-U.TO sell order inserted before them.
 
@@ -661,9 +670,10 @@ from rebalancer import compute_account_routing  # noqa: E402
 
 def test_routing_sells_go_to_the_account_that_holds_shares():
     candidates = [{"ticker": "CRWD", "action": "sell", "shares": 10, "currentWeight": 7.0, "targetWeight": 4.0}]
-    positions = {"TFSA": {"CRWD": {"shares": 15.0, "costBasis": 100.0}, "_cashUSD": 0.0}}
+    positions = {"TFSA": {"CRWD": {"shares": 15.0, "costBasis": 100.0}}}
+    cash = {"TFSA": 0.0}
     policy = {"accountPreferenceRules": [{"match": "default", "prefer": "TFSA"}], "psuFundingRule": {"ticker": "PSU-U.TO"}}
-    routed = compute_account_routing(candidates, positions, policy, {"holdings": []}, {"CRWD": 100.0})
+    routed = compute_account_routing(candidates, positions, cash, policy, {"holdings": []}, {"CRWD": 100.0})
     assert routed[0]["account"] == "TFSA"
     assert routed[0]["shares"] == 10
 
@@ -671,11 +681,12 @@ def test_routing_sells_go_to_the_account_that_holds_shares():
 def test_routing_splits_sell_proportionally_across_two_accounts():
     candidates = [{"ticker": "CRWD", "action": "sell", "shares": 12, "currentWeight": 7.0, "targetWeight": 4.0}]
     positions = {
-        "TFSA": {"CRWD": {"shares": 9.0, "costBasis": 100.0}, "_cashUSD": 0.0},
-        "RRSP": {"CRWD": {"shares": 3.0, "costBasis": 100.0}, "_cashUSD": 0.0},
+        "TFSA": {"CRWD": {"shares": 9.0, "costBasis": 100.0}},
+        "RRSP": {"CRWD": {"shares": 3.0, "costBasis": 100.0}},
     }
+    cash = {"TFSA": 0.0, "RRSP": 0.0}
     policy = {"accountPreferenceRules": [{"match": "default", "prefer": "TFSA"}], "psuFundingRule": {"ticker": "PSU-U.TO"}}
-    routed = compute_account_routing(candidates, positions, policy, {"holdings": []}, {"CRWD": 100.0})
+    routed = compute_account_routing(candidates, positions, cash, policy, {"holdings": []}, {"CRWD": 100.0})
     tfsa_order = next(o for o in routed if o["account"] == "TFSA")
     rrsp_order = next(o for o in routed if o["account"] == "RRSP")
     assert tfsa_order["shares"] + rrsp_order["shares"] == 12
@@ -684,26 +695,28 @@ def test_routing_splits_sell_proportionally_across_two_accounts():
 
 def test_routing_buy_uses_preferred_account_from_policy():
     candidates = [{"ticker": "NBIS", "action": "buy", "shares": 5, "currentWeight": 2.1, "targetWeight": 5.5}]
-    positions = {"TFSA": {"_cashUSD": 5000.0}}
+    positions = {"TFSA": {}}
+    cash = {"TFSA": 5000.0}
     policy = {
         "accountPreferenceRules": [{"match": "highGrowthEquity", "prefer": "TFSA"}, {"match": "default", "prefer": "TFSA"}],
         "psuFundingRule": {"ticker": "PSU-U.TO"},
     }
     target_data = {"holdings": [{"ticker": "NBIS", "role": "highGrowthEquity"}]}
-    routed = compute_account_routing(candidates, positions, policy, target_data, {"NBIS": 20.0})
+    routed = compute_account_routing(candidates, positions, cash, policy, target_data, {"NBIS": 20.0})
     assert routed[-1]["account"] == "TFSA"
 
 
 def test_routing_psu_funding_rule_triggers_when_cash_insufficient():
     candidates = [{"ticker": "NBIS", "action": "buy", "shares": 100, "currentWeight": 2.1, "targetWeight": 5.5}]
-    positions = {"TFSA": {"PSU-U.TO": {"shares": 50.0, "costBasis": 100.0}, "_cashUSD": 100.0}}
+    positions = {"TFSA": {"PSU-U.TO": {"shares": 50.0, "costBasis": 100.0}}}
+    cash = {"TFSA": 100.0}
     policy = {
         "accountPreferenceRules": [{"match": "default", "prefer": "TFSA"}],
         "psuFundingRule": {"ticker": "PSU-U.TO", "sameAccountOnly": True, "sharesFormula": "ceil(N * price / 100)"},
     }
     target_data = {"holdings": [{"ticker": "NBIS"}]}
     prices = {"NBIS": 20.0, "PSU-U.TO": 100.0}  # buy costs $2000, only $100 cash -> needs PSU trim
-    routed = compute_account_routing(candidates, positions, policy, target_data, prices)
+    routed = compute_account_routing(candidates, positions, cash, policy, target_data, prices)
     psu_sell = next(o for o in routed if o["ticker"] == "PSU-U.TO")
     nbis_buy = next(o for o in routed if o["ticker"] == "NBIS")
     assert psu_sell["action"] == "sell"
@@ -714,9 +727,10 @@ def test_routing_psu_funding_rule_triggers_when_cash_insufficient():
 def test_routing_no_shares_held_produces_no_sell_order():
     # Defensive: a candidate sell for a ticker not actually held in any account must not crash.
     candidates = [{"ticker": "GHOST", "action": "sell", "shares": 5, "currentWeight": 3.0, "targetWeight": 1.0}]
-    positions = {"TFSA": {"_cashUSD": 0.0}}
+    positions = {"TFSA": {}}
+    cash = {"TFSA": 0.0}
     policy = {"accountPreferenceRules": [{"match": "default", "prefer": "TFSA"}], "psuFundingRule": {"ticker": "PSU-U.TO"}}
-    routed = compute_account_routing(candidates, positions, policy, {"holdings": []}, {"GHOST": 10.0})
+    routed = compute_account_routing(candidates, positions, cash, policy, {"holdings": []}, {"GHOST": 10.0})
     assert routed == []
 ```
 
@@ -732,7 +746,8 @@ Add to `rebalancer.py`:
 ```python
 def compute_account_routing(
     candidate_orders: list[dict[str, Any]],
-    account_positions: dict[str, dict[str, dict[str, float]]],
+    account_positions: dict[str, dict[str, dict[str, float | None]]],
+    account_cash_usd: dict[str, float],
     account_policy: dict[str, Any],
     target_data: dict[str, Any],
     prices: dict[str, float],
@@ -749,8 +764,10 @@ def compute_account_routing(
 
     Args:
         candidate_orders: Output of compute_candidate_orders().
-        account_positions: Output of load_account_positions() (positions only,
-            not the source map).
+        account_positions: Output of load_account_positions() (the positions
+            dict — first element of its 3-tuple return).
+        account_cash_usd: Output of load_account_positions() (the cash dict —
+            second element of its 3-tuple return).
         account_policy: Parsed account_policy.json.
         target_data: Parsed target-portfolio.json (role/pillarId per holding).
         prices: {ticker: current_price}.
@@ -799,9 +816,7 @@ def compute_account_routing(
             allocated[0]["shares"] += remaining  # rounding remainder to the largest holder
         routed.extend(allocated)
 
-    available_cash: dict[str, float] = {
-        acct: pos.get("_cashUSD", 0.0) for acct, pos in account_positions.items()
-    }
+    available_cash: dict[str, float] = dict(account_cash_usd)
     for order in routed:
         price = prices.get(order["ticker"], 0.0)
         available_cash[order["account"]] = available_cash.get(order["account"], 0.0) + order["shares"] * price
@@ -852,7 +867,7 @@ git commit -m "feat: add compute_account_routing() with PSU funding rule (E2 tas
 - Test: `investment_screener/backend/tests/py_services/test_rebalancer.py`
 
 **Interfaces:**
-- Produces: `compute_capital_gains_estimate(ticker: str, account: str, shares_sold: float, sale_price: float, account_positions: dict[str, dict[str, dict[str, float]]]) -> float | None`
+- Produces: `compute_capital_gains_estimate(ticker: str, account: str, shares_sold: float, sale_price: float, account_positions: dict[str, dict[str, dict[str, float | None]]]) -> float | None`
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -891,7 +906,7 @@ def compute_capital_gains_estimate(
     account: str,
     shares_sold: float,
     sale_price: float,
-    account_positions: dict[str, dict[str, dict[str, float]]],
+    account_positions: dict[str, dict[str, dict[str, float | None]]],
 ) -> float | None:
     """Estimate capital gains/loss for a Cash-account sell.
 
@@ -1425,8 +1440,10 @@ def compute_rebalance_plan(
         bands, target_data, state["prices"], state["total_usd"], Path(projections_dir)
     )
 
-    account_positions, account_source = load_account_positions(Path(portfolio_path))
-    routed = compute_account_routing(candidates, account_positions, account_policy, target_data, state["prices"])
+    account_positions, account_cash_usd, account_source = load_account_positions(Path(portfolio_path))
+    routed = compute_account_routing(
+        candidates, account_positions, account_cash_usd, account_policy, target_data, state["prices"]
+    )
 
     risk_snapshot = None
     if Path(risk_snapshot_path).exists():
