@@ -1,6 +1,13 @@
 /**
- * thirteenf.ts — 13F filing data API
- * Serves parsed SA LP 13F holdings, diffs, and summaries from local JSON files.
+ * src/routes/thirteenf.ts
+ * =======================
+ *
+ * Purpose:
+ *   Serves parsed SA LP 13F holdings, diffs, and summaries from local JSON files.
+ *
+ * Key Functions:
+ *   - resolveTicker() - Resolves CUSIP/Name to a canonical ticker symbol
+ *   - loadHoldingsFile() - Reads and maps holdings JSON for an accession number
  */
 import { Router } from 'express';
 import fs from 'fs';
