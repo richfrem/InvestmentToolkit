@@ -252,6 +252,7 @@ def _append_if_new(
 
     prices = _fetch_base_prices(claim["ticker"], claim["date"])
     if prices is None:
+        print(f"  Harvest skipped for {new_id}: price lookup failed", file=sys.stderr)
         return []
     base_price, base_spy_price = prices
 
