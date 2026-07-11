@@ -30,7 +30,17 @@ from prediction_ledger import (  # noqa: E402
 def find_maturable_predictions(
     predictions: list[dict[str, Any]], graded_ids: set[str], today: date
 ) -> list[dict[str, Any]]:
-    """Return predictions whose horizon has elapsed and that aren't graded yet."""
+    """Return predictions whose horizon has elapsed and that aren't graded yet.
+
+    Args:
+        predictions: All prediction records loaded from predictions.jsonl.
+        graded_ids: Prediction ids that already have a grade record, to skip.
+        today: The date to evaluate maturity against.
+
+    Returns:
+        Prediction records whose claimDate + horizonDays has elapsed and
+        that have no existing grade record.
+    """
     result = []
     for p in predictions:
         if p["id"] in graded_ids:
@@ -45,7 +55,19 @@ def find_maturable_predictions(
 def grade_prediction(
     prediction: dict[str, Any], ticker_price_now: float, spy_price_now: float, graded_at: str
 ) -> dict[str, Any]:
-    """Compute a grade record for one matured prediction from current prices."""
+    """Compute a grade record for one matured prediction from current prices.
+
+    Args:
+        prediction: The prediction record being graded (needs id, basePrice,
+            baseSpyPrice, and direction).
+        ticker_price_now: Current price of the prediction's ticker.
+        spy_price_now: Current price of SPY, used as the market baseline.
+        graded_at: ISO date string to stamp this grade record with.
+
+    Returns:
+        A grade record dict with tickerReturn, spyReturn, relativeReturn,
+        and verdict, ready to append to predictions_graded.jsonl.
+    """
     ticker_return = (ticker_price_now - prediction["basePrice"]) / prediction["basePrice"]
     spy_return = (spy_price_now - prediction["baseSpyPrice"]) / prediction["baseSpyPrice"]
     relative_return = ticker_return - spy_return
@@ -62,7 +84,15 @@ def grade_prediction(
 
 
 def _fetch_current_prices(ticker: str) -> tuple[float, float] | None:
-    """Fetch (ticker, SPY) current quote prices via market_data.get_quote()."""
+    """Fetch (ticker, SPY) current quote prices via market_data.get_quote().
+
+    Args:
+        ticker: Ticker symbol to fetch alongside SPY.
+
+    Returns:
+        A (ticker_price, spy_price) tuple, or None if either quote is
+        unavailable.
+    """
     from market_data import get_quote
     result = get_quote([ticker, "SPY"])
     t = result.get(ticker, {}).get("price")
@@ -75,7 +105,18 @@ def _fetch_current_prices(ticker: str) -> tuple[float, float] | None:
 def run_grading(
     predictions_path: Path = PREDICTIONS_PATH, graded_path: Path = GRADED_PATH
 ) -> list[dict[str, Any]]:
-    """Find matured, ungraded predictions and append a grade record for each."""
+    """Find matured, ungraded predictions and append a grade record for each.
+
+    Args:
+        predictions_path: Ledger path to read prediction records from.
+        graded_path: Ledger path to read existing grades from and append
+            new grade records to.
+
+    Returns:
+        Every newly appended grade record this run. Predictions whose
+        current price lookup fails are skipped (not graded) and left for
+        a future run to retry.
+    """
     predictions = load_predictions(predictions_path)
     graded_ids = {g["predictionId"] for g in load_graded(graded_path)}
     today = date.today()
@@ -84,6 +125,7 @@ def run_grading(
     for prediction in find_maturable_predictions(predictions, graded_ids, today):
         prices = _fetch_current_prices(prediction["ticker"])
         if prices is None:
+            print(f"  Grading skipped for {prediction['id']}: price lookup failed", file=sys.stderr)
             continue
         ticker_price_now, spy_price_now = prices
         grade = grade_prediction(prediction, ticker_price_now, spy_price_now, today.isoformat())
@@ -93,6 +135,12 @@ def run_grading(
 
 
 def main() -> None:
+    """CLI entrypoint: grade matured predictions, or report matured count in --dry-run mode.
+
+    Returns:
+        None. Prints a summary line to stdout; writes new grade records to
+        GRADED_PATH unless --dry-run is passed.
+    """
     parser = argparse.ArgumentParser(description="Grade matured predictions")
     parser.add_argument("--dry-run", action="store_true", help="Report matured count, don't write")
     args = parser.parse_args()

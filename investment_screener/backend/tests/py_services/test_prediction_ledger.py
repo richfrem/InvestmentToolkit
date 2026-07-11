@@ -1,9 +1,6 @@
 """Tests for prediction_ledger.py — E3 append-only prediction ledger core."""
-import json
 import sys
 from pathlib import Path
-
-import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
 PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"

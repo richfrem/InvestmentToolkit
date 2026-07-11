@@ -8,7 +8,7 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"
 
 
-def _run_validate(predictions_content: str, graded_content: str, tmp_path, monkeypatch) -> subprocess.CompletedProcess:
+def _run_validate(predictions_content: str, graded_content: str, tmp_path) -> subprocess.CompletedProcess:
     predictions_path = tmp_path / "predictions.jsonl"
     predictions_path.write_text(predictions_content)
     graded_path = tmp_path / "graded.jsonl"
@@ -29,7 +29,7 @@ prediction_ledger.main()
 
 
 class TestValidate:
-    def test_valid_records_pass(self, tmp_path, monkeypatch):
+    def test_valid_records_pass(self, tmp_path):
         valid_prediction = json.dumps({
             "v": 1, "id": "CORZ:action_rating:2026-01-01", "date": "2026-01-01", "ticker": "CORZ",
             "type": "action_rating", "claim": {"action": "ACCUMULATE"}, "direction": "bullish",
@@ -40,12 +40,12 @@ class TestValidate:
             "v": 1, "predictionId": "CORZ:action_rating:2026-01-01", "gradedAt": "2026-04-02",
             "tickerReturn": 0.1, "spyReturn": 0.02, "relativeReturn": 0.08, "verdict": "correct",
         })
-        result = _run_validate(valid_prediction + "\n", valid_grade + "\n", tmp_path, monkeypatch)
+        result = _run_validate(valid_prediction + "\n", valid_grade + "\n", tmp_path)
         assert result.returncode == 0
         assert "All prediction/grade records valid" in result.stdout
 
-    def test_invalid_prediction_fails(self, tmp_path, monkeypatch):
+    def test_invalid_prediction_fails(self, tmp_path):
         invalid_prediction = json.dumps({"id": "missing-required-fields"})
-        result = _run_validate(invalid_prediction + "\n", "", tmp_path, monkeypatch)
+        result = _run_validate(invalid_prediction + "\n", "", tmp_path)
         assert result.returncode == 1
         assert "INVALID prediction" in result.stdout
