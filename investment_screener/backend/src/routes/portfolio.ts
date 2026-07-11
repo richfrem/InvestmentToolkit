@@ -297,6 +297,7 @@ router.get('/summary', async (_req, res) => {
         let ytdStartValueCAD_toUse = twrReport?.starting_balance_cad ?? YTD_START_VALUE_CAD;
         let ytdChangeCAD_toUse = twrReport?.dollar_gain_cad ?? (totalMarketValueCAD - YTD_START_VALUE_CAD);
         let ytdChangePctCAD_toUse = twrReport?.time_weighted_return_pct ?? ((totalMarketValueCAD - YTD_START_VALUE_CAD) / YTD_START_VALUE_CAD) * 100;
+        let ytdSimpleReturnPctCAD = twrReport?.simple_return_pct ?? ((totalMarketValueCAD - YTD_START_VALUE_CAD) / YTD_START_VALUE_CAD) * 100;
 
         const ytdStartValueUSD = ytdStartValueCAD_toUse / JAN1_USD_CAD_RATE;
         const ytdChangeUSD = ytdChangeCAD_toUse / liveUsdCadRate;
@@ -310,6 +311,7 @@ router.get('/summary', async (_req, res) => {
             ytdStartValueUSD,
             ytdChangeCAD: ytdChangeCAD_toUse,
             ytdChangePctCAD: ytdChangePctCAD_toUse,
+            ytdSimpleReturnPctCAD,
             ytdChangeUSD,
             ytdChangePctUSD,
             unrealizedGainUSD: totalMarketValueUSD - totalBookValueUSD,

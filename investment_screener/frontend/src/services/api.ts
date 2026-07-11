@@ -129,6 +129,7 @@ export interface PortfolioSummary {
     ytdStartValueUSD: number;
     ytdChangeCAD: number;
     ytdChangePctCAD: number;
+    ytdSimpleReturnPctCAD: number;
     ytdChangeUSD: number;
     ytdChangePctUSD: number;
     unrealizedGainUSD: number;
