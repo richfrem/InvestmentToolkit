@@ -1,11 +1,11 @@
 # Session Start Briefing — InvestmentToolkit
-_Last updated: 2026-07-09 (Phase 3 B5 shipped) | Thesis v9.7 | Portfolio ~$32,904 USD (reconciled from Questrade screenshots)_
+_Last updated: 2026-07-10 (Phase 3 E2 shipped) | Thesis v10.8 | Portfolio value: check live snapshot (user actively trading — do not trust a stale figure here)_
 
 > **Read this first at the start of every new session.**
 
 ---
 
-## 🔥 ACTIVE: Fable5 Elevation Guide — Phase 3 B5 DONE, start Phase 3 E2 here
+## 🔥 ACTIVE: Fable5 Elevation Guide — Phase 3 E2 DONE, start Phase 3 G2 here (final sub-spec)
 
 **Context:** User had Fable5 (primary), Gemini, GPT, Grok review the codebase for
 "next level" improvements — reviews saved at `temp/bundles/full-bundle/reviews/`.
@@ -18,15 +18,17 @@ sub-agent architecture cleanup. Phase 2 was split into two sub-phases during bra
 loosely-coupled workstreams. **Phase 3 (§9 in the guide: Risk & Rebalancer) was likewise
 decomposed into 5 sub-specs during brainstorming — E1/C2/B5/E2/G2, built strictly in that
 order since E2 and G2 both consume E1's `risk_snapshot.json`, C2's `market_regime.json`,
-**and now also B5's `thesisBreakers`/`thesis_breaker_state.json`** as data contracts. E1
-(portfolio risk engine), C2 (market regime classifier), and B5 (thesis breakers) are now
-all shipped; this session starts fresh on Phase 3's fourth sub-spec, E2 (rebalancer v2)** —
-Phases 1, 2a, 2b, and Phase 3's E1 + C2 + B5 are all fully shipped and verified. E1 is
-merged all the way to `origin/main` (PR #63); C2 and B5 are both merged to local `main` and
-pushed to `origin` as `feature/fable5-phase3-c2-market-regime` and
-`feature/fable5-phase3-b5-thesis-breakers` respectively, **neither yet merged to
-`origin/main`** — same PR-yourself pattern as every phase, waiting on the user's GitHub
-review. Nothing from any of them needs redoing.
+and B5's `thesisBreakers`/`thesis_breaker_state.json` as data contracts, and G2 additionally
+consumes E2's `data/rebalance_plan.json` order-plan format.** E1 (portfolio risk engine), C2
+(market regime classifier), B5 (thesis breakers), and E2 (rebalancer v2) are now all
+shipped; this session starts fresh on Phase 3's fifth and final sub-spec, **G2
+(risk-officer + red-team agents)** — Phases 1, 2a, 2b, and all of Phase 3's E1 + C2 + B5 +
+E2 are fully shipped and verified. E1 is merged all the way to `origin/main` (PR #63); C2,
+B5, and E2 are all merged to local `main` and pushed to `origin` as
+`feature/fable5-phase3-c2-market-regime`, `feature/fable5-phase3-b5-thesis-breakers`, and
+`feature/fable5-phase3-e2-rebalancer-v2` respectively, **none yet merged to `origin/main`**
+— same PR-yourself pattern as every phase, waiting on the user's GitHub review. Nothing
+from any of them needs redoing.
 
 **Also shipped this session, unrelated to the Fable5 phases:** a `norberts-gambit` skill
 (`plugins/portfolio-advisor/skills/norberts-gambit/`) — a broker-agnostic guide for
@@ -304,8 +306,81 @@ branched). `feature/fable5-phase3-b5-thesis-breakers` pushed to `origin` as a ba
 source — **not yet merged to `origin/main`**, same GitHub PR flow as every prior phase, user
 merges on their own timing.
 
+### ✅ Phase 3, Sub-Spec 4 — E2 Rebalancer v2 — COMPLETE, on local `main`, pushed to `origin`
+`rebalancer.py` — formalizes what `/rebalance` + `portfolio_action.py` used to do informally
+as an LLM-orchestrated skill. **Drift bands, not point targets**: per-holding band =
+`max(±20% relative, ±1.5pp absolute)` around `targetWeight` (config in new
+`data/account_policy.json`, not `target-portfolio.json` — `globalSettings.driftThresholdPct`/
+`criticalDriftPct` were retired via a one-time migration and `account_policy.json`'s
+`bandConfig` is now the single source of truth, read by both the Python engine and
+`ThesisService.ts`'s dashboard health-check band formula, independently verified identical).
+Inside-band holdings get no order at all. **Three hard-exclude rules** (never appear in
+`orders[]`, only in `skippedRestores[]`): EXIT/SELL-rated valuation action on a buy (reads
+the latest AI projection's `aiThesis.action`, not `derive_action()`'s unrelated
+portfolio-weight-ratio label), price above `targetEntryPrice`, conflicting
+`standingDecision`. **Two warn-only checks** (order stays in `orders[]`, never excluded — a
+deliberate scope boundary: real veto power belongs to G2's risk-officer-agent, built next):
+a risk-budget check against E1's `risk_snapshot.json` (MRC/cluster-variance caps, default
+25%/60%, explicitly labeled an estimate), and a flag-only cross-reference against B5's
+`thesis_breaker_state.json` (a `TRIGGERED` breaker warns on a proposed buy, never suppresses
+it — same visibility-only posture B5 itself uses). **Canada-aware account/tax placement**:
+`account_policy.json`'s `accountPreferenceRules` route each buy to exactly one account (real
+per-account data from `portfolio.json`'s `tvSnapshot` when synced, heuristic TFSA-full/
+RRSP-~1/3-mirror fallback otherwise), the PSU-U.TO same-account funding rule now lives in
+code (`ceil(shortfall / price / 100)`), and Cash-account sells get a capital-gains estimate
+(forward-looking — no Cash account exists yet in this user's portfolio). **Order-plan
+output**: `data/rebalance_plan.json` — `rebalance-portfolio` `SKILL.md` was rewritten to a
+thin wrapper (`rebalancer.py --pretty` → present plan → HITL per order, execution path
+unchanged); most of its old inline drift-classification/capital-sequencing prose is gone.
+Spec: `docs/superpowers/specs/2026-07-09-rebalancer-v2-design.md`. Plan:
+`docs/superpowers/plans/2026-07-09-rebalancer-v2.md`.
+
+Built as 11 TDD-gated tasks via `superpowers:subagent-driven-development` in a fresh
+worktree (`.worktrees/feature-fable3-e2-rebalancer-v2`, now cleaned up). This phase found
+the most task-review bugs of any sub-spec so far, all caught before merge: a real
+check-ordering bug in Task 2's brief code; a genuine type-hint mismatch in Task 3 that
+required amending the plan itself mid-flight (before any downstream task built against the
+wrong shape — `load_account_positions()`'s return signature changed from a 2-tuple to a
+3-tuple, splitting account cash out of the per-ticker dict); an **escalating oversell bug**
+in Task 4's account-routing math that took two follow-up fix rounds to fully close (round 1
+fixed the single-account case, round 2 fixed the multi-account case and proactively found
+and fixed a third variant in the remainder-redistribution logic) — the final fix was
+verified via algebraic proof plus a 20,000-trial randomized fuzz test, not just the unit
+tests; two separate truthiness bugs in Tasks 5 and 6 (`if not cost_basis`/`if not old_mrc`
+would have mistreated a legitimate `0.0` value as "missing," both defended with `is None`
+checks instead); and **three rounds of "fabricated field" cleanup** in Task 11's skill
+rewrite, where each successive full-file re-read found more prose referencing
+`rebalance_plan.json` fields/columns/scores that don't actually exist in the engine's real
+output — most seriously, an early draft still instructed creating a fabricated TFSA+RRSP
+dual-entry buy pattern that actively contradicted the new engine's real single-account-per-
+buy routing. The final whole-branch review (opus) returned **Ready to merge: Yes** with zero
+Critical/Important findings.
+
+**Post-review, at the user's explicit request** ("i hate seeing errors/failures ignored
+after testing"), two pre-existing test failures logged as map debt since before Phase 3 E1
+even started were fixed rather than deferred further: `test_math_parity.py`'s `PROJECT_ROOT`
+path bug (one-line fix, matches the pattern every other test file in that directory already
+used), and `test_place_order_gates.py`'s wall-clock/market-hours coupling (added
+`PLACE_ORDER_NOW_OVERRIDE`, an env-var time injection for `place_order.py`'s market-hours
+gate — production behavior unchanged when unset, independently reviewed given it touches
+live-trading gate code, hardened with a loud stderr warning if the override is ever active).
+Both `.agent/map-debt.md` entries are now `RESOLVED`. Full suite: 443 passed, 0 failed (was
+439/3 before this cleanup).
+
+**Merge required manual conflict resolution** — the user was actively trading via the web
+app during the session (a real, ongoing shares update on an SA LP holding, unrelated to
+E2), which collided with `target-portfolio.json` (Task 9's migration rewrites the whole
+file). Resolved by treating `main`'s live data as authoritative for all real portfolio
+fields (shares, timestamps) while keeping E2's actual intended change (the `globalSettings`
+field removal) — confirmed correct via `verify_thesis_sync.py` post-merge. **Merged to
+local `main` via a real merge commit** (main had diverged — the user's own concurrent
+portfolio/thesis commit landed mid-session, committed first per user's explicit choice
+before merging). `feature/fable5-phase3-e2-rebalancer-v2` pushed to `origin` as a backup/PR
+source — **not yet merged to `origin/main`**, same GitHub PR flow as every prior phase, user
+merges on their own timing.
+
 ### 🚦 Git policy going forward
-**Standing pattern, now confirmed four times (Phase 1, Phase 2a, Phase 2b, Phase 3 E1):** after each
+**Standing pattern, now confirmed five times (Phase 1, Phase 2a, Phase 2b, Phase 3 E1, Phase 3 E2):** after each
 phase's whole-branch review passes, Claude pushes a dedicated `feature/fable5-phase<N>-<name>`
 branch to `origin` as a backup/PR source — **Claude never merges or opens the PR into
 `origin/main`.** The user reviews and merges via GitHub's PR flow themselves, on their own
@@ -329,62 +404,62 @@ command — a subagent with two valid-looking checkouts on disk (main repo + wor
 Task 3 incident was caught exactly this way, not by the subagent noticing its own mistake.
 
 ### Next step for this session
-Phase 3 sub-spec 4 of 5 — **E2 rebalancer v2** (`py_services/rebalancer.py`, §9's E2 in
-the guide): formalizes what `/rebalance` + `portfolio_action.py` currently do informally.
-§9's spec calls for: **drift bands, not point targets** (per-holding band =
-`max(±20% relative, ±1.5pp absolute)` around `targetWeight`, configurable in
-`target-portfolio.json` — inside band means no action generated at all, killing churn and
-small-order noise); a **risk-budget check** against E1's `risk_snapshot.json` (proposed
-post-trade weights can't push any single name's marginal risk contribution or cluster
-exposure past a configured cap without a surfaced, user-acknowledged warning); **Canada-aware
-account/tax placement** as data (`data/account_policy.json` — US dividend payers prefer
-RRSP for treaty withholding, highest-expected-growth prefers TFSA, Cash-account sells flag
-a capital-gains estimate from `trade-log.json` lot data; the existing PSU-U.TO same-account
-funding rule moves from CLAUDE.md prose into this engine); and an **order-plan output**
-(ordered sells-before-buys list, per-order rationale + which gates it passed, `/rebalance`
-becomes run engine → present plan → HITL per order, execution path unchanged). Absolute
-rule carried over unchanged: never generates buys for `EXIT`/`SELL`-gated names, never buys
-above `targetEntryPrice`. This is the second sub-spec (after C2) that consumes a prior
-deliverable as a data contract — E1's `risk_snapshot.json` for the risk-budget check — and
-now also has B5's `thesis_breakers` state available if a TRIGGERED breaker should suppress
-or flag a proposed ACCUMULATE order in the same plan (worth confirming with the user during
-brainstorming whether E2 should read B5's state at all, or stay scoped to E1's risk data
-only for this pass — not decided yet). Confirm scope with the user first (brainstorming
-skill gate) before writing a spec, same as every prior sub-spec.
+Phase 3 sub-spec 5 of 5 (the **final** sub-spec — closes out Phase 3) — **G2
+risk-officer + red-team agents** (§8 G2 in the guide). Per the guide, G2 defines three new
+agent definitions under `agents/`, per the existing daily-loop pattern:
+1. **`risk-officer-agent.md`** — consumes E1's `risk_snapshot.json` **and now E2's
+   `data/rebalance_plan.json` order-plan format** (E2 shipped since this section of the
+   guide was written); has **veto-with-rationale power** over plans that breach cluster
+   caps or hit a TRIGGERED thesis breaker (E2 deliberately only *warns* on both —
+   `riskGateWarnings`/`breakerWarnings` fields on each order — precisely so this agent
+   would be the one with real veto authority, per the scope boundary drawn during E2's
+   brainstorming). User can override; override is logged to the ledger. Runs inside
+   `/daily` Step 2.5 and `/rebalance`. **This is also where E2's own design spec (§6.3)
+   deferred the Phase 3 acceptance criterion** — "a deliberately cap-breaching plan that
+   gets vetoed" — pin this as the acceptance test for the risk-officer-agent specifically,
+   not re-litigated as an E2 gap.
+2. **`red-team-agent.md`** — formalizes the "Adversarial Objectivity Constraint." Invoked
+   with a completed analysis artifact (projection JSON, rebalance plan); must produce ≥3
+   specific, falsifiable objections + a "what would change my mind" list; explicitly
+   forbidden from proposing trades. `/evaluate-stock` and `/rebalance` route their outputs
+   through it before user presentation.
+3. **`data-quality-agent.md`** (lightweight) — invoked when `data_quality.py` flags
+   degradation; decides degrade-gracefully vs halt per a short decision tree. (Guide lists
+   this under G2 too; confirm with the user during brainstorming whether it's in scope for
+   this sub-spec or a separate follow-up — not decided yet, same as every prior "confirm
+   scope first" gate.)
 
-**Before dispatching E2's first task**, continue applying
+Orchestrators (`daily-loop`, `run-advisor`, `weekly-review`) stay the only user-facing
+agents; specialists are invoked, produce structured artifacts, and return. Document the
+invocation contract (input artifact path → output artifact path) in `AGENTS.md`, per the
+guide. Confirm scope with the user first (brainstorming skill gate) before writing a spec,
+same as every prior sub-spec.
+
+**Before dispatching G2's first task**, continue applying
 `.agent/rules/worktree-subagent-isolation.md`'s mandatory post-task `git status --short`
 check in the **main checkout** after every implementer/fix subagent — used cleanly
-throughout B5 with zero leaks (a marked improvement over C2's incident), keep it standard.
+throughout B5 and E2 with zero leaks, keep it standard.
 
-**After E2:** G2 risk-officer/red-team agents (consumes E1's snapshot + E2's order-plan
-format) — same agreed order as before, unchanged. This closes out Phase 3 (5 of 5
-sub-specs).
+**After G2: Phase 3 is fully closed out (5 of 5 sub-specs).** Per the elevation guide, next
+up is Phase 4 (Track Record: E3 prediction ledger, E4 backtest harness, B4 earnings
+intelligence, G4 structured evolution events) — not yet brainstormed, confirm with the user
+whether to proceed directly into Phase 4 or pause for the map-debt sweep below first, since
+"once every Fable5 phase (3 through 6) has shipped" was the original trigger condition for
+that sweep and Phase 3 will be complete after G2.
 
-### 🗺️ Map debt — fix after ALL Fable5 phases complete (not a blocker now)
-Two pre-existing, unrelated test failures were found (and logged to
-`.agent/map-debt.md`) while verifying a clean baseline before starting Phase 3 E1 —
-both out of scope for the phase in progress, deliberately deferred rather than fixed
-inline (would've been an undeclared scope addition mid-task):
-1. **`test_math_parity.py`** — `PROJECT_ROOT` only walks up 2 directories instead of to
-   the repo root, so its `dcf_scenarios.py` subprocess call looks for the script at a
-   nonexistent doubled path. Fix: use `Path(__file__).resolve().parents[4]` like every
-   other test file in that directory already does.
-2. **`test_place_order_gates.py`** (3 tests: `test_stale_portfolio_exits_4`,
-   `test_fresh_portfolio_exits_0`, `test_size_cap_exits_3`) — not isolated from real
-   wall-clock/market-hours state; they fail on weekends **and before-market-open on
-   weekdays** (confirmed again during C2, 2026-07-09) because `place_order.py
-   --preflight`'s market-closed gate fires before the gate under test. Fix: add a
-   test-only override for the market-hours check.
-3. **Worktree/subagent isolation leak (RESOLVED, not open debt)** — see
-   `.agent/rules/worktree-subagent-isolation.md` and the "Second process incident"
-   paragraph in C2's section above. Listed here only for cross-reference; the fix is
-   already applied, this is not a pending item.
+### 🗺️ Map debt — sweep `.agent/map-debt.md` before/after Phase 4 kickoff
+The two pre-existing test failures logged before Phase 3 E1 started are now **RESOLVED** (fixed
+during the E2 session, 2026-07-10, at the user's explicit request — see E2's section above
+and `.agent/map-debt.md` for full resolution notes; not re-described here). No other OPEN
+entries as of this writing, but re-check `.agent/map-debt.md` directly rather than trusting
+this summary, since new entries may have accumulated during G2.
 
-**When to pick this up:** once every Fable5 phase (3 through 6) has shipped and merged,
-sweep `.agent/map-debt.md` for OPEN entries (not just these two — anything logged during
-the remaining phases) and clear them in one pass before considering the elevation guide
-fully closed out.
+For historical reference: the two `test_math_parity.py`/`test_place_order_gates.py` entries
+above are now `RESOLVED` (fixed 2026-07-10 during the E2 session — `PROJECT_ROOT` path fix
+and a `PLACE_ORDER_NOW_OVERRIDE` env-var time injection respectively, see
+`.agent/map-debt.md` for full detail). The worktree/subagent isolation leak
+(`.agent/rules/worktree-subagent-isolation.md`) was already resolved before this file was
+last updated and remains resolved — no repeat incidents during E2's 11 tasks.
 
 ---
 

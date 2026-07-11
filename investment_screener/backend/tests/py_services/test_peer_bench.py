@@ -59,3 +59,26 @@ def test_compute_peer_benchmark_skips_metrics_with_no_target_value():
     metric_names = {r["metric"] for r in result["table"]}
     assert "operatingMargin" not in metric_names
     assert "revenueGrowth" in metric_names
+
+
+def test_compute_peer_benchmark_includes_data_quality_per_ticker_used(monkeypatch):
+    import peer_bench
+
+    def fake_raw_metrics(ticker, sector, projections_dir, cik=None):
+        return {"revenueGrowth": {"NVDA": 0.5, "AMD": 0.3, "AVGO": 0.4}[ticker]}
+
+    def fake_get_fundamentals(ticker, cik=None):
+        return {"dataQuality": {
+            "NVDA": {"staleness": True, "dataConflicts": [], "flags": []},
+            "AMD": {"staleness": False, "dataConflicts": [], "flags": []},
+            "AVGO": {"staleness": False, "dataConflicts": [], "flags": []},
+        }[ticker]}
+
+    monkeypatch.setattr(peer_bench, "compute_raw_metrics", fake_raw_metrics)
+    monkeypatch.setattr(peer_bench, "get_fundamentals", fake_get_fundamentals)
+
+    result = peer_bench.compute_peer_benchmark("NVDA", ["AMD", "AVGO"], "chips_ai", "/tmp/unused")
+
+    assert result["status"] == "ok"
+    assert result["dataQuality"]["NVDA"]["staleness"] is True
+    assert result["dataQuality"]["AMD"]["staleness"] is False
