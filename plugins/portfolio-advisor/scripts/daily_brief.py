@@ -159,6 +159,30 @@ def _pillar_trends(
 
 # ── Core pipeline ─────────────────────────────────────────────────────────────
 
+def _harvest_predictions_step() -> int | None:
+    """Run the E3 prediction harvest, degrading to None on any failure.
+
+    Isolated into its own function (rather than inlined in run()) so it's
+    unit-testable without mocking run()'s other half-dozen dynamically
+    imported dependencies.
+
+    Returns:
+        Count of newly harvested claims this run, or None if harvesting
+        failed — the daily brief must never block on this.
+    """
+    from harvest_predictions import (
+        harvest_action_and_dcf_claims,
+        harvest_rebalance_and_breaker_claims,
+    )
+    try:
+        harvested = harvest_action_and_dcf_claims()
+        harvested += harvest_rebalance_and_breaker_claims()
+        return len(harvested)
+    except Exception as exc:
+        print(f"  Prediction harvest skipped: {exc}", file=sys.stderr)
+        return None
+
+
 def run(skip_ta: bool = False) -> dict[str, Any]:
     """Execute the full daily brief pipeline.
 
@@ -276,6 +300,10 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
         print(f"  Thesis breakers skipped: {exc}", file=sys.stderr)
         breaker_state, triggered_breakers = None, []
 
+    # ── 5c. Prediction ledger harvest (E3 — additive, non-blocking) ──────────
+    print("▶ Prediction harvest...", file=sys.stderr)
+    predictions_harvested = _harvest_predictions_step()
+
     # ── 6. Deltas vs yesterday ────────────────────────────────────────────────
     yesterday = _load_yesterday()
     deltas = _score_deltas(scores_raw, yesterday)
@@ -316,6 +344,7 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
         "yesterday_date": yesterday.get("date") if yesterday else None,
         "thesis_breakers": breaker_state,
         "thesis_breakers_triggered": triggered_breakers,
+        "predictions_harvested": predictions_harvested,
     }
 
     # ── 7. Save snapshot ──────────────────────────────────────────────────────
