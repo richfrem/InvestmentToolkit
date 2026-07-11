@@ -1,15 +1,30 @@
 #!/usr/bin/env python3
 """
 watchlist_manager.py — Synchronizes TradingView watchlists.
-Reads researched watchlists (projections / watchlist.json) and active portfolio holdings,
-then calls the Node.js CDP CLI to sync them to TradingView.
+============================================================
+
+Purpose:
+    Reads researched watchlists (projections / watchlist.json) and active portfolio holdings,
+    then calls the Node.js CDP CLI to sync them to TradingView.
+
+Layer:
+    Plugins / TradingView
+
+Key Input Dependencies:
+    - investment_screener/backend/data/portfolio.json (Reads holdings)
+    - investment_screener/backend/data/watchlist.json (Reads watched tickers list)
+    - investment_screener/backend/data/projections/ (Reads target projections)
+
+Usage:
+    python3 plugins/tradingview/scripts/watchlist_manager.py
 """
 
-import sys
-import json
 import argparse
-from pathlib import Path
+import json
 import subprocess
+import sys
+from pathlib import Path
+from typing import Any, Dict, List
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PORTFOLIO_PATH = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
@@ -26,6 +41,13 @@ from tv_client import tv_call, is_tv_running
 _BOATS_EXCLUDE = {"USD_CASH"}
 
 
+# External comment: Normalizes Purpose HISA convention
+def normalize_symbol(s: str) -> str:
+    """Standardizes mutual fund aliases for consistency."""
+    return "PSU-U" if s in ("PSU-U.TO", "PSU.U.TO") else s
+
+
+# External comment: Check if a ticker is eligible for BOATS ATS
 def _is_boats_eligible(ticker: str) -> bool:
     """Return True if ticker is a US equity eligible for BOATS ATS trading."""
     upper = ticker.upper()
@@ -38,7 +60,8 @@ def _is_boats_eligible(ticker: str) -> bool:
     return True
 
 
-def load_researched_watchlist() -> list[str]:
+# External comment: Retrieve researched symbols from file or projections directory
+def load_researched_watchlist() -> List[str]:
     """Retrieve full list of researched symbols."""
     if TARGET_WATCHLIST_PATH.exists():
         try:
@@ -47,7 +70,6 @@ def load_researched_watchlist() -> list[str]:
                 if isinstance(data, list):
                     return [str(s).upper() for s in data if s and s != "USD_CASH"]
                 elif isinstance(data, dict) and "watchlist" in data:
-                    # Current schema: {"watchlist": [{"ticker": "...", "addedAt": "..."}, ...]}
                     return [e["ticker"].upper() for e in data["watchlist"]
                             if isinstance(e, dict) and e.get("ticker") and e["ticker"] != "USD_CASH"]
                 elif isinstance(data, dict) and "tickers" in data:
@@ -66,14 +88,11 @@ def load_researched_watchlist() -> list[str]:
     return []
 
 
-def load_boats_watchlist() -> list[str]:
-    """US equities from portfolio + watchlist eligible for BOATS ATS after-hours trading.
-
-    Excludes Canadian tickers (.TO, .V) and futures contracts (!).
-    Source: union of active holdings and researched watchlist, deduped and sorted.
-    """
+# External comment: Load US equities for BOATS ATS watchlists
+def load_boats_watchlist() -> List[str]:
+    """US equities from portfolio + watchlist eligible for BOATS ATS after-hours trading."""
     seen: set[str] = set()
-    tickers: list[str] = []
+    tickers: List[str] = []
 
     if PORTFOLIO_PATH.exists():
         try:
@@ -90,12 +109,7 @@ def load_boats_watchlist() -> list[str]:
         try:
             with open(TARGET_WATCHLIST_PATH) as f:
                 data = json.load(f)
-                if isinstance(data, dict) and "watchlist" in data:
-                    entries = data["watchlist"]
-                elif isinstance(data, list):
-                    entries = [{"ticker": s} for s in data]
-                else:
-                    entries = []
+                entries = data.get("watchlist", []) if isinstance(data, dict) else (data if isinstance(data, list) else [])
                 for entry in entries:
                     sym = (entry.get("ticker", "") if isinstance(entry, dict) else str(entry)).upper()
                     if sym and _is_boats_eligible(sym) and sym not in seen:
@@ -106,7 +120,9 @@ def load_boats_watchlist() -> list[str]:
 
     return sorted(tickers)
 
-def load_holdings_watchlist() -> list[str]:
+
+# External comment: Retrieve active portfolio symbols
+def load_holdings_watchlist() -> List[str]:
     """Retrieve symbols representing active portfolio holdings."""
     if PORTFOLIO_PATH.exists():
         try:
@@ -118,18 +134,36 @@ def load_holdings_watchlist() -> list[str]:
             pass
     return []
 
-def run_sync(dry_run: bool = False) -> dict:
+
+# External comment: Execute the actual Node.js CDP sync commands
+def execute_cdp_sync(actions: Dict[str, Any]) -> None:
+    """Communicates with TradingView Desktop via CDP to create and populate lists."""
+    for list_name, meta in actions.items():
+        # Create and open list
+        tv_call("watchlist", "create", list_name)
+        tv_call("watchlist", "open", list_name)
+
+        # Get current symbols in watchlist
+        tv_get = tv_call("watchlist", "get")
+        current_symbols = [normalize_symbol(item["symbol"].upper()) for item in tv_get.get("items", [])]
+
+        # Sync entries
+        for ticker in meta["tickers"]:
+            if ticker not in current_symbols:
+                tv_call("watchlist", "add", list_name, ticker)
+        for ticker in current_symbols:
+            if ticker not in meta["tickers"]:
+                tv_call("watchlist", "remove", list_name, ticker)
+
+
+# External comment: Run sync calculations and orchestrate updates
+def run_sync(dry_run: bool = False) -> Dict[str, Any]:
     """Execute dry-run check or actual watchlist update."""
     researched_list = load_researched_watchlist()
     holdings_list = load_holdings_watchlist()
 
-    # Standardize Purpose HISA convention
-    def normalize(s: str) -> str:
-        return "PSU-U" if s in ("PSU-U.TO", "PSU.U.TO") else s
-
-    researched_list = sorted(list(set(normalize(s) for s in researched_list)))
-    holdings_list = sorted(list(set(normalize(s) for s in holdings_list)))
-
+    researched_list = sorted(list(set(normalize_symbol(s) for s in researched_list)))
+    holdings_list = sorted(list(set(normalize_symbol(s) for s in holdings_list)))
     boats_list = load_boats_watchlist()
 
     actions = {
@@ -153,30 +187,17 @@ def run_sync(dry_run: bool = False) -> dict:
     if not is_tv_running():
         return {"success": False, "error": "TradingView Desktop is not running on debug port 9222"}
 
-    # Actual sync execution via Node CLI calls
-    for list_name, meta in actions.items():
-        try:
-            # Create list
-            tv_call("watchlist", "create", list_name)
-            tv_call("watchlist", "open", list_name)
-
-            # Get current symbols in watchlist
-            tv_get = tv_call("watchlist", "get")
-            current_symbols = [normalize(item["symbol"].upper()) for item in tv_get.get("items", [])]
-
-            # Sync entries
-            for ticker in meta["tickers"]:
-                if ticker not in current_symbols:
-                    tv_call("watchlist", "add", list_name, ticker)
-            for ticker in current_symbols:
-                if ticker not in meta["tickers"]:
-                    tv_call("watchlist", "remove", list_name, ticker)
-        except Exception as e:
-            return {"success": False, "error": f"Failed syncing {list_name}: {e}"}
+    try:
+        execute_cdp_sync(actions)
+    except Exception as e:
+        return {"success": False, "error": f"Failed syncing watchlists: {e}"}
 
     return {"success": True, "actions": actions, "dry_run": False}
 
-def main():
+
+# External comment: CLI execution entry point
+def main() -> None:
+    """CLI orchestrator parser."""
     parser = argparse.ArgumentParser(description="Manage TradingView Watchlists")
     subparsers = parser.add_subparsers(dest="command")
 
@@ -191,6 +212,7 @@ def main():
         sys.exit(0 if res.get("success") else 1)
     else:
         parser.print_help()
+
 
 if __name__ == "__main__":
     main()

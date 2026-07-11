@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
 """
 run_tests.py — T0 Compile/Syntax Gate + T0.5 Bridge Smoke
+=========================================================
 
-T0: TypeScript compile + Python syntax + Node syntax checks.
+Purpose:
+    T0: TypeScript compile + Python syntax + Node syntax checks.
     All failures are CRITICAL — no other tier runs if any T0 check fails.
 
-T0.5: portfolio_action.py subprocess smoke — verifies the bridge is intact.
-      If this returns empty or non-zero, abort before all other tiers.
+    T0.5: portfolio_action.py subprocess smoke — verifies the bridge is intact.
+    If this returns empty or non-zero, abort before all other tiers.
+
+Layer:
+    Codify
+
+Key Input Dependencies:
+    - investment_screener/package.json (TypeScript project config)
+    - symlinks.json (Symlink verification rules)
+    - plugins/ (Active Python plugins directory)
 
 Usage:
     python3 run_tests.py           # run T0 + T0.5
@@ -14,11 +24,13 @@ Usage:
 """
 
 import argparse
+import glob
 import json
+import os
 import subprocess
 import sys
-import os
 from pathlib import Path
+from typing import Any, List
 
 REPO_ROOT = Path(__file__).resolve().parent
 FIXTURES = REPO_ROOT / "investment_screener/backend/tests/fixtures"
@@ -29,7 +41,8 @@ HEADER = "\033[1m"
 RESET = "\033[0m"
 
 
-def run(cmd: list[str], cwd: Path | None = None, label: str = "") -> bool:
+# External comment: Helper to run a command and report status
+def run(cmd: List[str], cwd: Path = None, label: str = "") -> bool:
     """Run a command, print result, return True on success."""
     result = subprocess.run(cmd, capture_output=True, text=True, cwd=str(cwd or REPO_ROOT))
     if result.returncode == 0:
@@ -45,7 +58,9 @@ def run(cmd: list[str], cwd: Path | None = None, label: str = "") -> bool:
     return False
 
 
+# External comment: Compile TypeScript packages
 def t0_typescript() -> bool:
+    """Builds backend and frontend workspaces using npm."""
     print(f"\n{HEADER}T0 — TypeScript compile{RESET}")
     screener = REPO_ROOT / "investment_screener"
     ok = True
@@ -54,9 +69,10 @@ def t0_typescript() -> bool:
     return ok
 
 
+# External comment: Verify all active python scripts parse without errors
 def t0_python_syntax() -> bool:
+    """Runs compile syntax verification over all Python scripts."""
     print(f"\n{HEADER}T0 — Python syntax checks{RESET}")
-    import glob
     scripts = [
         REPO_ROOT / "investment_screener/backend/py_services/portfolio_action.py",
     ]
@@ -71,7 +87,10 @@ def t0_python_syntax() -> bool:
         )
     return ok
 
+
+# External comment: Scans repository to ensure forbidden folders are not referenced in text files
 def t0_path_regression() -> bool:
+    """Audits the repo for legacy paths (e.g. tradingview-mcp)."""
     print(f"\n{HEADER}T0 — Stale Path Regression{RESET}")
     forbidden = [
         "plugins/tradingview/node",
@@ -84,13 +103,12 @@ def t0_path_regression() -> bool:
         "adrs/023-tradingview-test-harness.md",
         "temp/bundles/tradingview-symlink-review/post-implementation/payload.md",
         "temp/bundles/tradingview-symlink-review/payload.md",
-        "run_tests.py", # This file itself
+        "run_tests.py",
     }
     
     ok = True
-    import os
-    for root, dirs, files in os.walk(str(REPO_ROOT)):
-        if ".git" in root or "node_modules" in root or "venv" in root or "temp" in root or ".agents" in root or "docs/superpowers" in root or "tasks/done" in root or ".claude" in root or ".worktrees" in root:
+    for root, _, files in os.walk(str(REPO_ROOT)):
+        if any(p in root for p in [".git", "node_modules", "venv", "temp", ".agents", "docs/superpowers", "tasks/done", ".claude", ".worktrees"]):
             continue
         for f in files:
             if f.endswith(".png") or f.endswith(".svg"):
@@ -111,39 +129,51 @@ def t0_path_regression() -> bool:
         print(f"  {OK} No stale runtime paths found")
     return ok
 
+
+# External comment: Health check verification helper
+def verify_script_health(cwd: Path, label: str) -> bool:
+    """Executes the health check script and validates JSON result."""
+    result = subprocess.run(
+        ["python3", str(REPO_ROOT / "plugins/tradingview/scripts/tv_health_check.py"), "--json"],
+        capture_output=True, text=True, cwd=str(cwd)
+    )
+    try:
+        data = json.loads(result.stdout.strip())
+        if data.get("npm") is True:
+            print(f"  {OK} {label}")
+            return True
+        else:
+            print(f"  {CRITICAL} {label} - npm not resolved to true")
+            return False
+    except Exception:
+        print(f"  {CRITICAL} {label} - output not valid JSON: {result.stdout[:100]} Error: {result.stderr[:100]}")
+        return False
+
+
+# External comment: Verify scripts behavior across different working directories
 def t0_symlink_cwd_invariance() -> bool:
+    """Validates CWD invariance and path variables override logic."""
     print(f"\n{HEADER}T0 — CWD / Symlink Invariance{RESET}")
     ok = True
     
-    def check_health(cwd, label):
-        result = subprocess.run(["python3", str(REPO_ROOT / "plugins/tradingview/scripts/tv_health_check.py"), "--json"], capture_output=True, text=True, cwd=str(cwd))
-        try:
-            data = json.loads(result.stdout.strip())
-            if data.get("npm") is True:
-                print(f"  {OK} {label}")
-                return True
-            else:
-                print(f"  {CRITICAL} {label} - npm not resolved to true")
-                return False
-        except Exception as e:
-            print(f"  {CRITICAL} {label} - output not valid JSON: {result.stdout[:100]} Error: {result.stderr[:100]}")
-            return False
-
     # Run from arbitrary cwd
-    ok &= check_health(Path("/"), "tv_health_check.py from root (/)")
+    ok &= verify_script_health(Path("/"), "tv_health_check.py from root (/)")
     
     # Run from repo root
-    ok &= check_health(REPO_ROOT, "tv_health_check.py from repo root")
+    ok &= verify_script_health(REPO_ROOT, "tv_health_check.py from repo root")
     
     # Run from symlink path
     skill_dir = REPO_ROOT / "plugins/tradingview/skills/get-orders"
     if skill_dir.exists():
-        ok &= check_health(skill_dir, "tv_health_check.py from skill dir")
+        ok &= verify_script_health(skill_dir, "tv_health_check.py from skill dir")
     
     # TV_CDP_DIR override test
     env = os.environ.copy()
     env["TV_CDP_DIR"] = "/tmp/fake-tradingview-cdp"
-    result = subprocess.run(["python3", str(REPO_ROOT / "plugins/tradingview/scripts/tv_health_check.py"), "--json"], capture_output=True, text=True, cwd=str(REPO_ROOT), env=env)
+    result = subprocess.run(
+        ["python3", str(REPO_ROOT / "plugins/tradingview/scripts/tv_health_check.py"), "--json"],
+        capture_output=True, text=True, cwd=str(REPO_ROOT), env=env
+    )
     combined = result.stdout + result.stderr
     if result.returncode != 0 and "not found" in combined:
         print(f"  {OK} TV_CDP_DIR override test passed (failed correctly with bad path)")
@@ -154,8 +184,9 @@ def t0_symlink_cwd_invariance() -> bool:
     return ok
 
 
-
+# External comment: Verify Node.js javascript files parse correctly
 def t0_node_syntax() -> bool:
+    """Checks compilation syntax of JavaScript client dependencies."""
     print(f"\n{HEADER}T0 — Node.js syntax checks{RESET}")
     files = [
         REPO_ROOT / "tradingview-cdp/core/trading.js",
@@ -167,13 +198,17 @@ def t0_node_syntax() -> bool:
     return ok
 
 
+# External comment: Validate self-evolution Map Debt markdown registry
 def t0_map_debt() -> bool:
+    """Audits map-debt.md using evolution audit script."""
     print(f"\n{HEADER}T0 — Map Debt registry audit{RESET}")
     script = REPO_ROOT / ".agents/skills/self-evolution/scripts/audit_map_debt.py"
     return run(["python3", str(script)], label="map-debt.md audit")
 
 
+# External comment: Smoke test the python bridge execution via symlink
 def t0_5_bridge_smoke() -> bool:
+    """Validates the portfolio action bridge script runs and outputs valid JSON."""
     print(f"\n{HEADER}T0.5 — Bridge smoke (portfolio_action.py via symlink){RESET}")
     symlink = REPO_ROOT / "investment_screener/backend/py_services/portfolio_action.py"
     r = subprocess.run(
@@ -202,15 +237,18 @@ def t0_5_bridge_smoke() -> bool:
     return True
 
 
+# External comment: Main entry point orchestrator for execution
 def main() -> None:
+    """
+    Orchestration gate runner that runs T0 and T0.5 verification routines.
+    """
     parser = argparse.ArgumentParser(description="T0 + T0.5 test gates")
     parser.add_argument("--t0-only", action="store_true", help="Skip T0.5")
     args = parser.parse_args()
 
     print(f"\n{HEADER}=== InvestmentToolkit Test Runner ==={RESET}")
-    failed: list[str] = []
 
-    for tier, fn in [
+    for _, fn in [
         ("T0 TypeScript",     t0_typescript),
         ("T0 Python syntax",  t0_python_syntax),
         ("T0 Node syntax",    t0_node_syntax),
@@ -219,13 +257,11 @@ def main() -> None:
         ("T0 Map Debt",        t0_map_debt),
     ]:
         if not fn():
-            failed.append(tier)
-            print(f"\n{CRITICAL} {tier} FAILED — aborting remaining tiers.")
+            print(f"\n{CRITICAL} Gate FAILED — aborting remaining tiers.")
             sys.exit(1)
 
     if not args.t0_only:
         if not t0_5_bridge_smoke():
-            failed.append("T0.5")
             print(f"\n{CRITICAL} T0.5 FAILED — aborting remaining tiers.")
             sys.exit(1)
 

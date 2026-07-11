@@ -9,44 +9,15 @@ Purpose:
     backend building, concurrent service orchestration (Frontend & Backend),
     and TradingView Desktop launch with real-time price access.
 
-Layer: Codify
+Layer:
+    Codify
+
+Key Input Dependencies:
+    - investment_screener/package.json (Vite/React workspace setup)
+    - requirements.txt (Python packages pins)
 
 Usage Examples:
-    # 1. Standard launch — starts backend, frontend, and TradingView with real-time prices:
     python3 run_investment_toolkit.py
-
-    # 2. To ensure TradingView is opened with the required debug port (9222):
-    # The run_investment_toolkit.py script automatically handles the port check:
-    #   - If TradingView Desktop is already running WITH --remote-debugging-port=9222 → no action is taken.
-    #   - If TradingView Desktop is running WITHOUT the debug port → the script kills it and relaunches it with the port.
-    #   - If TradingView Desktop is not running → the script launches it with the debug port.
-    #   - If TradingView Desktop is not installed → it is skipped, and yfinance fallback is used.
-    #
-    # 3. To relaunch or start TradingView Desktop independently with the debugging port (9222):
-    python3 plugins/tradingview/scripts/tv_launch.py
-
-CLI Arguments:
-    None
-
-Input Files:
-    - .env: Environment configuration
-    - investment_screener/backend/data/portfolio.json: User portfolio data
-
-Output:
-    - Backend API on http://localhost:3001
-    - Frontend dashboard on http://localhost:5173
-    - TradingView CDP on http://localhost:9222 (real-time prices)
-
-Key Functions:
-    - main(): Entry point for the startup sequence
-    - run_command(): Synchronous command execution helper
-    - check_command(): Path-based command existence check
-    - _launch_tradingview(): Delegates to plugins/tradingview/scripts/tv_launch.py
-
-Script Dependencies:
-    - Node.js (npm)
-    - Python 3.8+
-    - TradingView Desktop (optional — https://www.tradingview.com/desktop/)
 """
 
 import os
@@ -67,7 +38,7 @@ os.chdir(APP_DIR)
 
 IS_WINDOWS: bool = platform.system() == "Windows"
 
-# Colors class
+
 class Colors:
     """ANSI color codes for terminal output."""
     GREEN: str = '\033[0;32m'
@@ -80,14 +51,11 @@ class Colors:
     def print(msg: str, color: str = NC) -> None:
         """
         Prints a colored message to the terminal.
-
-        Args:
-            msg: The message to print.
-            color: ANSI color code.
         """
         print(f"{color}{msg}{Colors.NC}")
 
-# run_command function
+
+# External comment: Run a shell command synchronously
 def run_command(
     command: List[str], 
     shell: bool = False, 
@@ -96,15 +64,6 @@ def run_command(
 ) -> None:
     """
     Run a command synchronously.
-
-    Args:
-        command: List of command arguments.
-        shell: Whether to use the shell.
-        env: Environment variables for the child process.
-        check: If True, raises CalledProcessError on non-zero exit.
-
-    Raises:
-        SystemExit: If the command fails and check is True.
     """
     try:
         subprocess.run(command, shell=shell, env=env, check=check)
@@ -112,26 +71,19 @@ def run_command(
         Colors.print(f"Error running command: {' '.join(command)}", Colors.RED)
         sys.exit(e.returncode)
 
-# check_command function
+
+# External comment: Checks if command is in system PATH
 def check_command(cmd: str) -> bool:
     """
     Check if a command exists in the system PATH.
-
-    Args:
-        cmd: Command name to check.
-
-    Returns:
-        True if the command exists, False otherwise.
     """
     return shutil.which(cmd) is not None
 
-# clear_ports function
+
+# External comment: Kill stale processes on ports
 def clear_ports(ports: List[int]) -> None:
     """
     Attempt to kill processes listening on the specified ports.
-
-    Args:
-        ports: List of port numbers to clear.
     """
     for port in ports:
         if not IS_WINDOWS:
@@ -144,23 +96,21 @@ def clear_ports(ports: List[int]) -> None:
                 for pid in pids:
                     if pid:
                         try:
-                            # Graceful shutdown first — give the process a chance to exit cleanly
+                            # Graceful shutdown first
                             os.kill(int(pid), signal.SIGTERM)
                             time.sleep(1.0)
                             # Only escalate to SIGKILL if the process is still alive
-                            os.kill(int(pid), 0)  # raises OSError if already dead
+                            os.kill(int(pid), 0)
                             os.kill(int(pid), signal.SIGKILL)
                             Colors.print(f"  Force-killed stale process on :{port} (PID {pid})", Colors.YELLOW)
                         except ProcessLookupError:
                             Colors.print(f"  Cleared stale process on :{port} (PID {pid})", Colors.YELLOW)
-                        except Exception as e:
-                            # Catch permission or other OS errors individually for each PID
+                        except Exception:
                             pass
             except Exception:
                 pass
         else:
             try:
-                # Windows port clearing
                 result = subprocess.run(
                     ["netstat", "-ano"],
                     capture_output=True, text=True
@@ -178,14 +128,11 @@ def clear_ports(ports: List[int]) -> None:
         except Exception:
             pass
 
-# setup_virtual_env function
+
+# External comment: Prepare Python virtual environment
 def setup_virtual_env(venv_dir: str, env: Dict[str, str]) -> None:
     """
     Creates and populates the Python virtual environment.
-
-    Args:
-        venv_dir: Path to the venv directory.
-        env: Environment variables dictionary to be updated.
     """
     if not os.path.exists(venv_dir):
         Colors.print("Creating Python virtual environment...", Colors.GREEN)
@@ -206,20 +153,20 @@ def setup_virtual_env(venv_dir: str, env: Dict[str, str]) -> None:
 
     run_command([python_exec, "-m", "pip", "install", "--upgrade", "pip"], env=env)
 
-    # Install from compiled requirements.txt if present; otherwise fall back to requirements.in.
-    # Always run `pip-compile requirements.in -o requirements.txt` after adding a new dep to requirements.in.
     req_txt = os.path.join(ROOT_DIR, "requirements.txt")
     req_in  = os.path.join(ROOT_DIR, "requirements.in")
     if os.path.exists(req_txt):
         run_command([python_exec, "-m", "pip", "install", "-r", req_txt], env=env)
     elif os.path.exists(req_in):
-        Colors.print("Warning: requirements.txt not found — installing from requirements.in (unpinned).", Colors.YELLOW)
+        Colors.print("Warning: requirements.txt not found — installing from requirements.in.", Colors.YELLOW)
         run_command([python_exec, "-m", "pip", "install", "-r", req_in], env=env)
     else:
-        Colors.print("Warning: No requirements file found — installing minimal fallback deps.", Colors.YELLOW)
+        Colors.print("Warning: No requirements file found — installing fallback deps.", Colors.YELLOW)
         run_command([python_exec, "-m", "pip", "install", "yfinance", "pandas", "uvicorn", "fastapi",
                      "cryptography", "keyring"], env=env)
 
+
+# External comment: Run best-effort TradingView launcher script
 def _launch_tradingview() -> None:
     """Delegate to tv_launch.py — single source of truth for TradingView CDP launch."""
     tv_launcher = os.path.join(ROOT_DIR, "plugins", "tradingview", "scripts", "tv_launch.py")
@@ -232,46 +179,28 @@ def _launch_tradingview() -> None:
         Colors.print(f"  TradingView: launch failed ({e}) — yfinance fallback active.", Colors.YELLOW)
 
 
-# main function
-def main() -> None:
+# External comment: Pre-flight checks for tools and permissions
+def preflight_checks(process_env: Dict[str, str]) -> None:
     """
-    Main execution loop for launching the toolkit.
+    Verifies node environment, config files, and directory permission locks.
     """
-    Colors.print("🚀 Launching Investment Screener...", Colors.GREEN)
-
-    # 1. Check for Node.js
     if not check_command("node"):
         Colors.print("Error: Node.js is not installed.", Colors.RED)
         sys.exit(1)
     
-    # 2. Environment Check (.env is optional — Questrade is optional; TV sync works without it)
     env_file = os.path.join(ROOT_DIR, ".env")
-    questrade_cache = os.path.join(ROOT_DIR, "investment_screener", "backend", ".questrade_cache")
     if not os.path.exists(env_file):
-        Colors.print("Note: No .env file found — copy .env.example to .env to configure optional services.", Colors.YELLOW)
+        Colors.print("Note: No .env file found — copy .env.example to configure optional services.", Colors.YELLOW)
         Colors.print("Tip: TradingView sync (/tv-portfolio-sync) works without Questrade credentials.", Colors.YELLOW)
     
-    # 3. Portfolio Configuration Check
     portfolio_path = os.path.join("frontend", "src", "data", "portfolio.json")
     portfolio_example = os.path.join("frontend", "src", "data", "portfolio.json.example")
     
-    if not os.path.exists(portfolio_path):
-        if os.path.exists(portfolio_example):
-            Colors.print("Creating initial portfolio from example...", Colors.YELLOW)
-            shutil.copy(portfolio_example, portfolio_path)
-        else:
-            Colors.print("Warning: No portfolio.json or portfolio.json.example found — skipping.", Colors.YELLOW)
+    if not os.path.exists(portfolio_path) and os.path.exists(portfolio_example):
+        Colors.print("Creating initial portfolio from example...", Colors.YELLOW)
+        shutil.copy(portfolio_example, portfolio_path)
 
-    # 4. Setup venv
-    process_env = os.environ.copy()
-    
-    # Suppress third-party Node.js deprecation warnings (e.g. from Vite or ts-node-dev under Node 26)
-    process_env["NODE_OPTIONS"] = (process_env.get("NODE_OPTIONS", "") + " --no-deprecation").strip()
-    process_env["NODE_NO_WARNINGS"] = "1"
-    
-    setup_virtual_env(os.path.join(ROOT_DIR, "venv"), process_env)
-
-    # 5. Pre-flight: fix root-owned node_modules (caused by accidental sudo npm/rm)
+    # Pre-flight: fix root-owned node_modules (caused by accidental sudo npm/rm)
     node_modules_dir = os.path.join(ROOT_DIR, "investment_screener", "node_modules")
     if os.path.exists(node_modules_dir) and not IS_WINDOWS:
         import pwd
@@ -282,77 +211,50 @@ def main() -> None:
         )
         root_owned = [l for l in result.stdout.strip().splitlines() if l]
         if root_owned:
-            Colors.print(
-                f"⚠️  {len(root_owned)} node_modules packages are owned by root — fixing permissions...",
-                Colors.YELLOW
-            )
-            fix_result = subprocess.run(
-                ["sudo", "chown", "-R", f"{current_user}", node_modules_dir],
-                check=False
-            )
+            Colors.print(f"⚠️  {len(root_owned)} node_modules packages owned by root — restoring permissions...", Colors.YELLOW)
+            fix_result = subprocess.run(["sudo", "chown", "-R", f"{current_user}", node_modules_dir], check=False)
             if fix_result.returncode != 0:
-                Colors.print("❌ Permission fix failed. Please run this manually, then re-run:", Colors.RED)
-                Colors.print(
-                    f"   sudo chown -R {current_user} {node_modules_dir}",
-                    Colors.YELLOW
-                )
+                Colors.print(f"❌ Permission fix failed. Please run manually: sudo chown -R {current_user} {node_modules_dir}", Colors.RED)
                 sys.exit(1)
-            Colors.print("✅ node_modules permissions restored.", Colors.GREEN)
 
-    # 5. Install Node dependencies
+
+# External comment: Dependency installation and validation
+def install_and_verify_dependencies(process_env: Dict[str, str]) -> None:
+    """
+    Installs packages and checks Python dependency requirements.
+    """
     Colors.print("Installing Node dependencies...", Colors.GREEN)
     run_command(["npm", "install"], env=process_env)
 
-    # 5b. Python dependency preflight — fail fast before starting servers
     Colors.print("Verifying Python dependencies...", Colors.GREEN)
-    _required_modules = ["keyring", "cryptography", "yfinance", "pandas"]
-    _python_exec = "python" if IS_WINDOWS else "python3"
-    _missing = []
-    for _mod in _required_modules:
-        result = subprocess.run(
-            [_python_exec, "-c", f"import {_mod}"],
-            env=process_env,
-            capture_output=True
-        )
+    required_modules = ["keyring", "cryptography", "yfinance", "pandas"]
+    python_exec = "python" if IS_WINDOWS else "python3"
+    missing = []
+    for mod in required_modules:
+        result = subprocess.run([python_exec, "-c", f"import {mod}"], env=process_env, capture_output=True)
         if result.returncode != 0:
-            _missing.append(_mod)
-    if _missing:
-        Colors.print(f"❌ Missing Python modules: {', '.join(_missing)}", Colors.RED)
-        Colors.print("Run: pip install " + " ".join(_missing), Colors.YELLOW)
-        Colors.print("Or add missing packages to requirements.in and re-run pip-compile.", Colors.YELLOW)
+            missing.append(mod)
+    if missing:
+        Colors.print(f"❌ Missing Python modules: {', '.join(missing)}", Colors.RED)
+        Colors.print("Run: pip install " + " ".join(missing), Colors.YELLOW)
         sys.exit(1)
     Colors.print("✅ Python dependencies OK.", Colors.GREEN)
 
-    # 5c. Launch TradingView Desktop (non-blocking, best-effort)
-    Colors.print("Launching TradingView Desktop...", Colors.GREEN)
-    _launch_tradingview()
 
-    # 6. Build Backend
-    Colors.print("Building Backend...", Colors.GREEN)
-    run_command(["npm", "run", "build", "-w", "backend"], env=process_env)
-
-    # 7. Start Services
+# External comment: Concurrently starts backend and frontend servers
+def start_services_loop(process_env: Dict[str, str]) -> None:
+    """
+    Spawns Node backend and Vite frontend services and monitors their lifecycles.
+    """
     Colors.print("Starting Services...", Colors.GREEN)
     clear_ports([3001, 5173])
 
     processes: List[subprocess.Popen] = []
     try:
-        # Start Backend
-        backend_proc = subprocess.Popen(
-            ["npm", "run", "start", "-w", "backend"],
-            env=process_env,
-            shell=False,
-            cwd=APP_DIR
-        )
+        backend_proc = subprocess.Popen(["npm", "run", "start", "-w", "backend"], env=process_env, shell=False, cwd=APP_DIR)
         processes.append(backend_proc)
 
-        # Start Frontend
-        frontend_proc = subprocess.Popen(
-            ["npm", "run", "dev", "-w", "frontend"],
-            env=process_env,
-            shell=False,
-            cwd=APP_DIR
-        )
+        frontend_proc = subprocess.Popen(["npm", "run", "dev", "-w", "frontend"], env=process_env, shell=False, cwd=APP_DIR)
         processes.append(frontend_proc)
 
         Colors.print("✅ Services Running!", Colors.GREEN)
@@ -360,7 +262,6 @@ def main() -> None:
         Colors.print("Frontend: http://localhost:5173")
         Colors.print("\nPress Ctrl+C to stop all services.", Colors.CYAN)
 
-        # Wait for processes
         while all(p.poll() is None for p in processes):
             time.sleep(0.5)
 
@@ -374,6 +275,39 @@ def main() -> None:
                 else:
                     p.terminate()
         Colors.print("All services stopped.", Colors.GREEN)
+
+
+# External comment: CLI execution coordinator
+def main() -> None:
+    """
+    Main execution loop for launching the toolkit.
+    """
+    Colors.print("🚀 Launching Investment Screener...", Colors.GREEN)
+
+    process_env = os.environ.copy()
+    process_env["NODE_OPTIONS"] = (process_env.get("NODE_OPTIONS", "") + " --no-deprecation").strip()
+    process_env["NODE_NO_WARNINGS"] = "1"
+    
+    # 1. Preflight permission and environment check
+    preflight_checks(process_env)
+
+    # 2. Virtual Env setup
+    setup_virtual_env(os.path.join(ROOT_DIR, "venv"), process_env)
+
+    # 3. Dependencies check
+    install_and_verify_dependencies(process_env)
+
+    # 4. Launch TradingView Desktop
+    Colors.print("Launching TradingView Desktop...", Colors.GREEN)
+    _launch_tradingview()
+
+    # 5. Build Backend
+    Colors.print("Building Backend...", Colors.GREEN)
+    run_command(["npm", "run", "build", "-w", "backend"], env=process_env)
+
+    # 6. Start active servers
+    start_services_loop(process_env)
+
 
 if __name__ == "__main__":
     main()
