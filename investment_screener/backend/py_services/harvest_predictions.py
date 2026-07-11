@@ -118,6 +118,96 @@ def build_dcf_fair_value_claim(ticker: str, projection: dict[str, Any]) -> dict[
     }
 
 
+REBALANCE_PLAN_PATH = DATA_DIR / "rebalance_plan.json"
+THESIS_BREAKER_STATE_PATH = DATA_DIR / "thesis_breaker_state.json"
+TARGET_PATH = DATA_DIR / "theses/target-portfolio.json"
+
+
+def build_rebalance_order_claims(rebalance_plan: dict[str, Any], claim_date: str) -> list[dict[str, Any]]:
+    """Extract rebalance_order claims from a rebalance_plan.json dict.
+
+    buy -> bullish, sell -> bearish. gateWarningsPresent is recorded but not
+    itself gradable — it's traceability only, matching the design's
+    read-only posture toward risk_officer/thesis-breaker warn flags.
+    """
+    claims = []
+    for order in rebalance_plan.get("orders", []):
+        ticker = order.get("ticker")
+        action = order.get("action")
+        if not ticker or action not in ("buy", "sell"):
+            continue
+        direction = "bullish" if action == "buy" else "bearish"
+        gate_warnings_present = bool(order.get("riskGateWarnings") or order.get("breakerWarnings"))
+        claims.append({
+            "ticker": ticker, "type": "rebalance_order", "date": claim_date,
+            "claim": {"action": action, "gateWarningsPresent": gate_warnings_present},
+            "direction": direction,
+        })
+    return claims
+
+
+def build_breaker_forecast_claims(
+    breaker_state: dict[str, Any], target_data: dict[str, Any], claim_date: str
+) -> list[dict[str, Any]]:
+    """Extract breaker_forecast claims — only TRIGGERED breakers are claims.
+
+    A breaker at OK status is the absence of a prediction, not one.
+    """
+    definitions = {
+        (h["ticker"], b["id"]): b
+        for h in target_data.get("holdings", [])
+        for b in h.get("thesisBreakers", [])
+    }
+    claims = []
+    for ticker, breakers in (breaker_state.get("holdings") or {}).items():
+        for breaker_id, entry in breakers.items():
+            if entry.get("status") != "TRIGGERED":
+                continue
+            definition = definitions.get((ticker, breaker_id), {})
+            claims.append({
+                "ticker": ticker, "type": "breaker_forecast", "date": claim_date,
+                "claim": {"breakerId": breaker_id, "metric": definition.get("metric"), "status": "TRIGGERED"},
+                "direction": "bearish",
+            })
+    return claims
+
+
+def harvest_rebalance_and_breaker_claims(
+    rebalance_plan_path: Path = REBALANCE_PLAN_PATH,
+    thesis_breaker_state_path: Path = THESIS_BREAKER_STATE_PATH,
+    target_portfolio_path: Path = TARGET_PATH,
+    predictions_path: Path = PREDICTIONS_PATH,
+) -> list[dict[str, Any]]:
+    """Harvest rebalance_order and breaker_forecast claims, if their artifacts exist.
+
+    Neither artifact existing yet (rebalance_plan.json is only written after
+    a /rebalance run; thesis_breaker_state.json may have zero holdings
+    populated) is a normal, expected state — not an error.
+    """
+    existing = load_predictions(predictions_path)
+    new_records: list[dict[str, Any]] = []
+
+    if rebalance_plan_path.exists():
+        with open(rebalance_plan_path) as f:
+            rebalance_plan = json.load(f)
+        claim_date = (rebalance_plan.get("generatedAt") or "")[:10]
+        if claim_date:
+            for claim in build_rebalance_order_claims(rebalance_plan, claim_date):
+                new_records += _append_if_new(claim, existing, predictions_path)
+
+    if thesis_breaker_state_path.exists() and target_portfolio_path.exists():
+        with open(thesis_breaker_state_path) as f:
+            breaker_state = json.load(f)
+        with open(target_portfolio_path) as f:
+            target_data = json.load(f)
+        claim_date = (breaker_state.get("generatedAt") or "")[:10]
+        if claim_date:
+            for claim in build_breaker_forecast_claims(breaker_state, target_data, claim_date):
+                new_records += _append_if_new(claim, existing, predictions_path)
+
+    return new_records
+
+
 def _price_on_or_after(rows: list[dict[str, Any]], target_date: str) -> float | None:
     """First close price on or after target_date; rows must be date-ascending."""
     for row in rows:
@@ -224,6 +314,7 @@ def main() -> None:
         return
 
     new_records = harvest_action_and_dcf_claims()
+    new_records += harvest_rebalance_and_breaker_claims()
     print(f"Harvested {len(new_records)} new claim(s).")
 
 
