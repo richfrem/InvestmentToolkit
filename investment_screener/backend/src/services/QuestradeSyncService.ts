@@ -11,6 +11,10 @@
  * Usage Examples:
  *     await questradeSyncService.runSync();
  *
+ * Key Input Dependencies:
+ *     - investment_screener/backend/.questrade_cache (Stores encrypted API access tokens)
+ *     - investment_screener/backend/data/portfolio.json (Writes synchronized holdings output)
+ *
  * Key Functions:
  *     - runSync() - Spawns the QuestradeDataEngine.py process with appropriate environment context and CLI arguments
  */
