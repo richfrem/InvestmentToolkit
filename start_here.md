@@ -444,14 +444,17 @@ pushed to `origin` as a backup/PR source — **not yet merged to `origin/main`**
 PR flow as every prior phase, user merges on their own timing.
 
 ### 🚦 Git policy going forward
-**Standing pattern, now confirmed six times (Phase 1, Phase 2a, Phase 2b, Phase 3 E1, Phase 3 E2, Phase 3 G2):** after each
-phase's whole-branch review passes, Claude pushes a dedicated `feature/fable5-phase<N>-<name>`
-branch to `origin` as a backup/PR source — **Claude never merges or opens the PR into
-`origin/main`.** The user reviews and merges via GitHub's PR flow themselves, on their own
-timing. So the full sequence per phase: brainstorm → spec → plan →
+**CORRECTED 2026-07-10 — this section was wrong for six phases.** It previously said
+"Claude never merges or opens the PR into `origin/main`." The user's actual standing
+instruction (stated directly, superseding this file): **after a worktree is merged into
+local `main`, push straight to `origin/main`, every change, every phase — no waiting on a
+separate PR review step.** So the corrected sequence per phase: brainstorm → spec → plan →
 `subagent-driven-development` in a fresh worktree → whole-branch review → merge to local
-`main` → push `feature/fable5-phase<N>-<name>` to origin → **stop there** — report the
-branch is ready, do not merge/PR/touch `origin/main`.
+`main` → **push `main` directly to `origin/main`.** Do not stop at a feature-branch-only
+push and wait for the user to PR it themselves — that was this file's own error, not the
+user's actual preference, and it cost real time/trust to sort out. If a feature branch was
+already pushed separately (habit from the old, wrong policy), that's harmless — just also
+push `main` itself.
 
 **Git hygiene lesson, worth repeating:** after pushing a backup branch, keep
 committing/pushing as work continues — don't let further edits (e.g. to this file) sit
