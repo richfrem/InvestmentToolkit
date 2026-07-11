@@ -62,7 +62,7 @@ async function loadYtdPerformanceReport(): Promise<any> {
     }
     
     try {
-        await spawnPythonScript('ytd_return.py', []);
+        await spawnPythonScript('ytd_return.py', ['--json']);
         if (fs.existsSync(reportFile)) {
             return JSON.parse(fs.readFileSync(reportFile, 'utf-8'));
         }
