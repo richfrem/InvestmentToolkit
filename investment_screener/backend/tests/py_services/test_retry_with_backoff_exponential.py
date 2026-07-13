@@ -157,3 +157,25 @@ def test_retry_is_pure_no_side_effects_on_repeated_calls():
         assert result_2 == "second"
         mock_fn_1.assert_called_once()
         mock_fn_2.assert_called_once()
+
+
+# --- Additional: invalid max_attempts guarded with a clear ValueError ---
+
+def test_retry_raises_value_error_for_invalid_max_attempts():
+    """
+    max_attempts <= 0 must raise ValueError immediately (mentioning
+    max_attempts in the message) rather than letting the loop skip
+    entirely and later crash with `raise None`
+    (TypeError: exceptions must derive from BaseException).
+    """
+    mock_fn = Mock(return_value="unused")
+
+    with patch("time.sleep") as mock_sleep:
+        with pytest.raises(ValueError, match="max_attempts"):
+            retry_with_backoff(mock_fn, max_attempts=0)
+
+        with pytest.raises(ValueError, match="max_attempts"):
+            retry_with_backoff(mock_fn, max_attempts=-1)
+
+        mock_fn.assert_not_called()
+        mock_sleep.assert_not_called()

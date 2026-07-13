@@ -482,9 +482,13 @@ def retry_with_backoff(
         whatever fn() returns.
 
     Raises:
+        ValueError: If max_attempts is less than 1.
         Exception: Re-raises the last exception from fn() if all
             max_attempts calls fail.
     """
+    if max_attempts < 1:
+        raise ValueError(f"max_attempts must be >= 1, got {max_attempts}")
+
     last_exception: Optional[BaseException] = None
 
     for attempt_number in range(max_attempts):
