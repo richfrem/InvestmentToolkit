@@ -8,6 +8,10 @@ and Chrome version information.
 Also provides ensure_healthy() to detect stale Chrome sessions and restart TV CDP
 if needed, with platform-specific process management (lsof on macOS, taskkill on Windows).
 
+Also provides retry_with_backoff() — a generic, side-effect-free retry helper with
+exponential delay, intended to be wrapped around any callable (TV CDP or otherwise)
+by later resilience tasks (e.g. tv_call wrapping, order execution gates).
+
 Key Input Dependencies:
     - TradingView CDP engine running on localhost:9222
     - tv_client.py for CDP communication
@@ -27,7 +31,7 @@ import urllib.request
 import urllib.error
 import logging
 from pathlib import Path
-from typing import TypedDict, Optional, Dict
+from typing import TypedDict, Optional, Dict, Any, Callable
 
 # Configure logging for health checks
 logger = logging.getLogger(__name__)
@@ -446,3 +450,56 @@ def ensure_healthy(max_wait_seconds: int = 30) -> Dict:
         "reason": "Chrome session recovery successful: killed stale process and re-spawned TV CDP",
         "new_health": recovery_health,
     }
+
+
+def retry_with_backoff(
+    fn: Callable,
+    max_attempts: int = 3,
+    backoff_factor: float = 2.0,
+    initial_delay_seconds: float = 1.0,
+) -> Any:
+    """
+    Retry a function with exponential backoff.
+
+    Calls fn() with no arguments. On exception, logs the error, sleeps for
+    an exponentially increasing delay, and retries. Returns the result on
+    the first successful call. Raises the last exception after max_attempts
+    failures.
+
+    This is a generic, side-effect-free helper: it doesn't know anything
+    about TV CDP or any specific caller. Any callable that takes no
+    arguments and returns/raises can be wrapped with it.
+
+    Args:
+        fn: Zero-argument callable to invoke. May return any type.
+        max_attempts: Maximum number of attempts before giving up (default: 3).
+        backoff_factor: Multiplier for exponential delay growth (default: 2.0).
+        initial_delay_seconds: Base delay in seconds before the multiplier
+            is applied (default: 1.0).
+
+    Returns:
+        The result of fn() from its first successful call. Type matches
+        whatever fn() returns.
+
+    Raises:
+        Exception: Re-raises the last exception from fn() if all
+            max_attempts calls fail.
+    """
+    last_exception: Optional[BaseException] = None
+
+    for attempt_number in range(max_attempts):
+        try:
+            return fn()
+        except Exception as e:
+            last_exception = e
+            logger.warning(f"[Retry] Attempt {attempt_number + 1}/{max_attempts} failed: {str(e)}")
+
+            is_last_attempt = attempt_number == max_attempts - 1
+            if is_last_attempt:
+                break
+
+            delay = initial_delay_seconds * (backoff_factor ** attempt_number)
+            logger.info(f"[Retry] Attempt {attempt_number + 1}/{max_attempts}: sleeping {delay}s before retry")
+            time.sleep(delay)
+
+    raise last_exception
