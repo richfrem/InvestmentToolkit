@@ -67,23 +67,23 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-11 10:50 by TV sync · Portfolio total: $30,840 USD*
+*Auto-updated 2026-07-12 19:17 by TV sync · Portfolio total: $30,355 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **CRWV** | 24 | 6.9% | 3.8% | +3.1pp ⚠ | 🟡 TRIM | — |
-| **SNDK** | 0.94 | 5.8% | 3.3% | +2.6pp ⚠ | 🟡 TRIM | ≤$1,350 |
-| **GOOG** | 4 | 4.6% | 4.0% | +0.6pp | 🟡 TRIM | — |
-| **DRAM** | 21 | 4.3% | 4.5% | -0.2pp | ⚪ MAINTAIN | — |
+| **CRWV** | 24 | 7.0% | 3.8% | +3.3pp ⚠ | 🟡 TRIM | — |
+| **SNDK** | 0.94 | 5.9% | 3.3% | +2.7pp ⚠ | 🟡 TRIM | ≤$1,350 |
+| **GOOG** | 4 | 4.7% | 4.0% | +0.7pp | 🟡 TRIM | — |
+| **DRAM** | 21 | 4.4% | 4.5% | -0.1pp | ⚪ MAINTAIN | — |
 | **NBIS** | 6 | 4.3% | 3.0% | +1.3pp | 🟡 TRIM | — |
-| **IREN** | 31 | 4.1% | 3.6% | +0.5pp | ⚪ MAINTAIN | — |
-| **CORZ** | 46 | 3.5% | 3.7% | -0.2pp | ⚪ MAINTAIN | — |
-| **CBRS** | 4.5 | 3.1% | 2.5% | +0.7pp | 🟡 TRIM | — |
+| **IREN** | 31 | 4.2% | 3.6% | +0.6pp | 🟡 TRIM | — |
+| **CORZ** | 46 | 3.6% | 3.7% | -0.2pp | ⚪ MAINTAIN | — |
+| **CBRS** | 4.5 | 3.2% | 2.5% | +0.7pp | 🟡 TRIM | — |
 | **MSFT** | 2 | 2.5% | 2.2% | +0.3pp | ⚪ MAINTAIN | — |
-| **APLD** | 22 | 2.2% | 2.5% | -0.3pp | ⚪ MAINTAIN | — |
-| **BTDR** | 45 | 1.9% | 1.9% | +0.0pp | ⚪ MAINTAIN | — |
+| **APLD** | 22 | 2.3% | 2.5% | -0.2pp | ⚪ MAINTAIN | — |
+| **BTDR** | 45 | 2.0% | 1.9% | +0.1pp | ⚪ MAINTAIN | — |
 
 **Pending Initiation**
 
@@ -98,5 +98,5 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 |--------|---------|--------|-------------|------|
 | META | 2.0% | WATCHLIST | — | Social monopoly + AI ad flywheel. |
 
-**Pillar total — Actual: 43.4% · Target: 39.0% · Gap: +4.4pp**
+**Pillar total — Actual: 44.1% · Target: 39.0% · Gap: +5.1pp**
 <!-- AUTO_UPDATE_END: current_positions -->
