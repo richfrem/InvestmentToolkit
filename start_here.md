@@ -1,33 +1,32 @@
 # Session Start Briefing — InvestmentToolkit
-_Last updated: 2026-07-10 (Phase 3 G2 shipped — Phase 3 fully closed, 5 of 5) | Thesis v10.8 | Portfolio value: check live snapshot (user actively trading — do not trust a stale figure here)_
+_Last updated: 2026-07-12 (Phase 4: E3/B4/G4 shipped — 3 of 4 sub-specs complete; E4 in progress) | Thesis v10.8 | Portfolio value: check live snapshot (user actively trading — do not trust a stale figure here)_
 
 > **Read this first at the start of every new session.**
 
 ---
 
-## 🔥 ACTIVE: Fable5 Elevation Guide — Phase 3 fully closed (G2 shipped, 5 of 5 sub-specs done)
+## 🔥 ACTIVE: Fable5 Elevation Guide — Phase 4 underway (E3/B4/G4 shipped, 3 of 4 sub-specs done)
 
-**Context:** User had Fable5 (primary), Gemini, GPT, Grok review the codebase for
-"next level" improvements — reviews saved at `temp/bundles/full-bundle/reviews/`.
-Fable5's guide (`fable5-ELEVATION_GUIDE.md`) is the one being executed — the only review
-grounded in the actual repo. It's a 6-phase roadmap: (1) data layer, (2) valuation
-committee, (3) executable scoring framework + local TA engine, (4) TradingView/Pine
-hardening, (5) risk engine + rebalancer + prediction ledger + backtesting, (6) skills/
-sub-agent architecture cleanup. Phase 2 was split into two sub-phases during brainstorming
-(2a = Valuation Committee, 2b = Executable Framework + local TA) because it bundled two
-loosely-coupled workstreams. **Phase 3 (§9 in the guide: Risk & Rebalancer) was likewise
-decomposed into 5 sub-specs during brainstorming — E1/C2/B5/E2/G2, built strictly in that
-order since E2 and G2 both consume E1's `risk_snapshot.json`, C2's `market_regime.json`,
-and B5's `thesisBreakers`/`thesis_breaker_state.json` as data contracts, and G2 additionally
-consumes E2's `data/rebalance_plan.json` order-plan format.** E1 (portfolio risk engine), C2
-(market regime classifier), B5 (thesis breakers), E2 (rebalancer v2), and now **G2
-(risk-officer + red-team + data-quality agents)** are all shipped — **Phase 3 is fully
-closed, 5 of 5 sub-specs done.** E1 is merged all the way to `origin/main` (PR #63); C2, B5,
-E2, and G2 are all merged to local `main` and pushed to `origin` as
-`feature/fable5-phase3-c2-market-regime`, `feature/fable5-phase3-b5-thesis-breakers`,
-`feature/fable5-phase3-e2-rebalancer-v2`, and `feature/fable5-phase3-g2-risk-officer-red-team`
-respectively, **none yet merged to `origin/main`** — same PR-yourself pattern as every phase,
-waiting on the user's GitHub review. Nothing from any of them needs redoing.
+**Context:** Fable5's 6-phase roadmap: (1) data layer, (2) valuation committee, (3) executable 
+scoring framework + local TA engine, (4) TradingView/Pine hardening, (5) risk engine + rebalancer 
++ prediction ledger + backtesting, (6) skills/sub-agent architecture cleanup.
+
+**Phase 3 (§9: Risk & Rebalancer) — COMPLETE, all 5 sub-specs on `origin/main`:**
+E1 (risk engine, PR #63), C2 (market regime), B5 (thesis breakers), E2 (rebalancer v2), 
+G2 (risk-officer + red-team + data-quality). Full integration into `/daily` and rebalance workflows.
+
+**Phase 4 (§10: Track Record) — IN PROGRESS, 3 of 4 sub-specs shipped to `origin/main`:**
+- ✅ **E3 (Prediction Ledger)** — Commit 61bcd7e. Captures action ratings, DCF values, rebalance 
+  orders, breaker forecasts into `data/predictions.jsonl`. Grades outcomes weekly. Feeds track-record 
+  report (rolled hit-rate stats by claim type).
+- ✅ **B4 (Earnings Intelligence)** — Commit 4496fec. Harvests yfinance consensus, grades BEAT/MEET/MISS, 
+  emits `earnings_expectation` claims to E3 ledger. Wired into `/daily` (consensus display) and 
+  `/weekly-review` (grades + correlations).
+- ✅ **G4 (Structured Evolution Events)** — Commit 7304621. Logs 6 event types (earnings catalysts, 
+  breaker overrides, rebalances, large price moves, dividends, forced exits) to `data/evolution_events.jsonl`. 
+  Tracks 7d/30d outcomes (NULL until window passes, no lookahead bias). Weekly correlation report.
+- ⏳ **E4 (Backtest Harness)** — IN PROGRESS. Historical rebalance replay via target-portfolio.json 
+  versioning, counterfactual order execution, returns analysis.
 
 **Also shipped this session, unrelated to the Fable5 phases:** a `norberts-gambit` skill
 (`plugins/portfolio-advisor/skills/norberts-gambit/`) — a broker-agnostic guide for
