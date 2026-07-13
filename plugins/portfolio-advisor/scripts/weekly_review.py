@@ -22,6 +22,11 @@ try:
 except ImportError:
     HistoricalPriceStore = None
 
+try:
+    from evolution_events import generate_evolution_correlation_report
+except ImportError:
+    generate_evolution_correlation_report = None
+
 TARGET_JSON = REPO_ROOT / 'investment_screener/backend/data/theses/target-portfolio.json'
 PORTFOLIO_JSON = REPO_ROOT / 'investment_screener/backend/data/portfolio.json'
 WATCHLIST_JSON = REPO_ROOT / 'investment_screener/backend/data/watchlist.json'
@@ -168,14 +173,41 @@ def run_weekly_review(write_prompt_path=None):
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(prompt_content)
         print(f"\n[Prompt Written to {out_path}]")
-        
+
         # Create weekly response placeholder
         placeholder_path = REPO_ROOT / f"temp/news-sweep-responses/grok/weekly-{datetime.now().strftime('%b%d-%Y').lower()}.md"
         placeholder_path.parent.mkdir(parents=True, exist_ok=True)
         if not placeholder_path.exists():
             placeholder_path.write_text(f"# Grok Weekly Sweep Response — {datetime.now().strftime('%Y-%m-%d')}\n\nPlease paste the raw Grok response below:\n\n---\n")
             print(f"[Response Placeholder Created at {placeholder_path}]")
-        
+
+    # ── Evolution events correlation report (G4 — non-blocking) ──────────────
+    if generate_evolution_correlation_report:
+        try:
+            # Get week boundaries (Mon-Fri of current week)
+            today = date.today()
+            week_start = today - __import__('datetime').timedelta(days=today.weekday())
+            week_end = week_start + __import__('datetime').timedelta(days=4)
+
+            report = generate_evolution_correlation_report(
+                week_start.isoformat(),
+                week_end.isoformat(),
+            )
+
+            if report and report.get("total_events", 0) > 0:
+                print(f"\n🔄  EVOLUTION EVENTS — Week of {week_start.isoformat()}:")
+                for evt_type, summary in report.get("event_summary", {}).items():
+                    if summary.get("count", 0) > 0:
+                        tickers_str = ", ".join(summary.get("tickers", [])[:5])
+                        avg_7d = summary.get("avg_7day_return")
+                        avg_30d = summary.get("avg_30day_return")
+                        avg_7d_str = f"{avg_7d:+.1f}%" if avg_7d is not None else "—"
+                        avg_30d_str = f"{avg_30d:+.1f}%" if avg_30d is not None else "—"
+                        print(f"    {evt_type:<25} {summary['count']:>2} events  avg_7d: {avg_7d_str:>6}  avg_30d: {avg_30d_str:>6}  ({tickers_str})")
+        except Exception as e:
+            # Non-blocking
+            pass
+
     return grok_tickers_data
 
 if __name__ == "__main__":
