@@ -77,11 +77,21 @@ def main():
 
     try:
         result = tv_call("pine", "inject", "--content", script_content)
-        print(json.dumps(result, indent=2))
-        sys.exit(0)
     except Exception as e:
         print(json.dumps({"success": False, "error": str(e)}))
         sys.exit(1)
+
+    # Task 5A-8: tv_call() no longer raises on failure — it returns
+    # {"error": str, "data": ..., "cached": bool, "timestamp": str} instead.
+    # That shape has no "success" key (unlike the CLI's own
+    # {"success": false, "error": ...} responses, which should still exit 0
+    # here as before), so its presence is what used to be a raised exception.
+    if isinstance(result, dict) and "error" in result and "success" not in result:
+        print(json.dumps({"success": False, "error": result["error"]}))
+        sys.exit(1)
+
+    print(json.dumps(result, indent=2))
+    sys.exit(0)
 
 
 if __name__ == "__main__":
