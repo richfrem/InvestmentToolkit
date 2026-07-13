@@ -1025,7 +1025,11 @@ def cache_get(key: str) -> Optional[dict]:
 
     if _is_cache_entry_expired(match):
         remaining = [e for e in entries if e.get("key") != key]
-        _write_cache_entries(remaining, TV_CDP_CACHE_PATH)
+        try:
+            _write_cache_entries(remaining, TV_CDP_CACHE_PATH)
+        except Exception as e:
+            logger.error(f"Failed to write cache during expiry cleanup for key={key}: {str(e)}")
+            return None
         logger.info(f"Cache expired for key={key}; entry removed")
         return None
 
