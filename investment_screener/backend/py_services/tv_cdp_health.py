@@ -5,17 +5,28 @@ Provides health_check() function to verify TradingView CDP engine status.
 Returns structured health status including port connectivity, chart responsiveness,
 and Chrome version information.
 
+Also provides ensure_healthy() to detect stale Chrome sessions and restart TV CDP
+if needed, with platform-specific process management (lsof on macOS, taskkill on Windows).
+
 Key Input Dependencies:
     - TradingView CDP engine running on localhost:9222
     - tv_client.py for CDP communication
+    - tv_launch.py for CDP subprocess spawning
+    - psutil for cross-platform process management
 """
 
 import json
 import socket
+import subprocess
+import time
+import platform
+import os
+import sys
 import urllib.request
 import urllib.error
 import logging
-from typing import TypedDict, Optional
+from pathlib import Path
+from typing import TypedDict, Optional, Dict
 
 # Configure logging for health checks
 logger = logging.getLogger(__name__)
@@ -178,3 +189,259 @@ def _check_chart_responsive(timeout: int = 5) -> bool:
         return True
     except Exception as e:
         raise Exception(f"Chart responsiveness check failed: {str(e)}")
+
+
+def run_tv_cdp_subprocess() -> bool:
+    """
+    Spawn TV CDP subprocess via tv_launch.py.
+
+    Launches TradingView Desktop with --remote-debugging-port=9222
+    to re-establish the Chrome debugging protocol connection.
+
+    Returns:
+        True if launch subprocess was initiated successfully, False otherwise
+
+    Raises:
+        Exception: If subprocess execution fails
+    """
+    try:
+        tv_launch_path = Path(__file__).resolve().parents[3] / "plugins/tradingview/scripts/tv_launch.py"
+
+        if not tv_launch_path.exists():
+            raise FileNotFoundError(f"tv_launch.py not found at {tv_launch_path}")
+
+        logger.info(f"Spawning TV CDP subprocess via {tv_launch_path}")
+
+        # Launch as detached subprocess (don't wait for it)
+        if platform.system() == "Windows":
+            # Windows: use CREATE_NEW_PROCESS_GROUP
+            subprocess.Popen(
+                [sys.executable, str(tv_launch_path)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if hasattr(subprocess, 'CREATE_NEW_PROCESS_GROUP') else 0,
+            )
+        else:
+            # Unix: use preexec_fn to create new process group
+            subprocess.Popen(
+                [sys.executable, str(tv_launch_path)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                preexec_fn=os.setsid if hasattr(os, 'setsid') else None,
+            )
+
+        logger.info("TV CDP subprocess initiated")
+        return True
+    except Exception as e:
+        error_msg = f"Failed to spawn TV CDP subprocess: {str(e)}"
+        logger.error(error_msg)
+        raise Exception(error_msg)
+
+
+def _kill_chrome_process_on_port(port: int = 9222) -> bool:
+    """
+    Kill Chrome process holding the given port.
+
+    Uses platform-specific tools:
+      - macOS/Linux: lsof
+      - Windows: taskkill via netstat
+
+    Args:
+        port: Port number to kill (default: 9222)
+
+    Returns:
+        True if process was killed or port was free, False on error
+    """
+    try:
+        is_windows = platform.system() == "Windows"
+
+        if not is_windows:
+            # macOS/Linux: use lsof
+            try:
+                result = subprocess.run(
+                    ["lsof", "-ti", f":{port}"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                )
+                pids = result.stdout.strip().split()
+                for pid in pids:
+                    if pid:
+                        try:
+                            pid_int = int(pid)
+                            logger.info(f"Killing process PID {pid_int} on port {port}")
+                            os.kill(pid_int, 9)  # SIGKILL
+                            time.sleep(0.5)
+                        except (ValueError, ProcessLookupError, PermissionError) as e:
+                            logger.warning(f"Failed to kill PID {pid}: {str(e)}")
+                            continue
+                return True
+            except FileNotFoundError:
+                # lsof not available, fallback to netstat
+                logger.warning("lsof not found, trying netstat fallback")
+                result = subprocess.run(
+                    ["netstat", "-tlnp"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5,
+                )
+                for line in result.stdout.splitlines():
+                    if f":{port}" in line:
+                        # Try to extract PID from netstat output
+                        parts = line.split()
+                        if len(parts) > 0 and "/" in parts[-1]:
+                            pid_str = parts[-1].split("/")[0]
+                            try:
+                                pid_int = int(pid_str)
+                                logger.info(f"Killing process PID {pid_int} on port {port} (via netstat)")
+                                os.kill(pid_int, 9)
+                                time.sleep(0.5)
+                            except (ValueError, ProcessLookupError, PermissionError) as e:
+                                logger.warning(f"Failed to kill PID {pid_str}: {str(e)}")
+                return True
+        else:
+            # Windows: use netstat and taskkill
+            result = subprocess.run(
+                ["netstat", "-ano"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            for line in result.stdout.splitlines():
+                if f":{port}" in line and "LISTENING" in line:
+                    parts = line.split()
+                    if len(parts) > 0:
+                        pid = parts[-1]
+                        try:
+                            logger.info(f"Killing process PID {pid} on port {port} (via taskkill)")
+                            subprocess.run(
+                                ["taskkill", "/F", "/PID", pid],
+                                capture_output=True,
+                                timeout=5,
+                            )
+                            time.sleep(0.5)
+                        except Exception as e:
+                            logger.warning(f"Failed to kill PID {pid}: {str(e)}")
+            return True
+    except Exception as e:
+        logger.error(f"Error killing Chrome process on port {port}: {str(e)}")
+        return False
+
+
+def _wait_for_port_ready(port: int = 9222, max_wait_seconds: int = 30) -> bool:
+    """
+    Poll port until it's reachable or timeout expires.
+
+    Uses exponential backoff: 0.5s → 1s → 2s with a max_wait timeout.
+
+    Args:
+        port: Port number to poll
+        max_wait_seconds: Maximum wait time in seconds
+
+    Returns:
+        True if port becomes reachable, False on timeout
+    """
+    start_time = time.time()
+    wait_time = 0.5
+
+    while time.time() - start_time < max_wait_seconds:
+        try:
+            with socket.create_connection(("localhost", port), timeout=1):
+                logger.info(f"Port {port} is now reachable")
+                return True
+        except (socket.timeout, ConnectionRefusedError, OSError):
+            pass
+
+        time.sleep(wait_time)
+        wait_time = min(wait_time * 2, 2)  # Exponential backoff, max 2s
+
+    logger.warning(f"Port {port} did not become reachable within {max_wait_seconds}s")
+    return False
+
+
+def ensure_healthy(max_wait_seconds: int = 30) -> Dict:
+    """
+    Detect stale Chrome session and restart TV CDP if needed.
+
+    Workflow:
+      1. Call health_check() to assess current state
+      2. If healthy: return early (no-op)
+      3. If unhealthy:
+         - Kill Chrome process on port 9222
+         - Call run_tv_cdp_subprocess() to re-spawn TV CDP
+         - Poll port 9222 for readiness (with timeout)
+         - Call health_check() again to verify recovery
+         - On recovery failure: raise exception with context
+
+    Args:
+        max_wait_seconds: Maximum wait time for port/health recovery (default: 30)
+
+    Returns:
+        Dict with keys:
+            - recovered: bool indicating if recovery was successful
+            - reason: str with recovery reason/explanation
+            - new_health: HealthCheckResult dict from final health_check()
+
+    Raises:
+        Exception: If recovery fails after retries
+    """
+    logger.info("Running ensure_healthy() check...")
+
+    # Step 1: Check initial health
+    initial_health = health_check(timeout=5)
+    is_healthy = initial_health.get("port_open", False) and initial_health.get("chart_responsive", False)
+
+    if is_healthy:
+        logger.info("Chrome session is healthy, no recovery needed")
+        return {
+            "recovered": False,
+            "reason": "Chrome session is already healthy",
+            "new_health": initial_health,
+        }
+
+    logger.warning(f"Chrome session is unhealthy: {initial_health}")
+
+    # Step 2: Kill Chrome process on port 9222
+    logger.info("Killing stale Chrome process on port 9222...")
+    kill_result = _kill_chrome_process_on_port(9222)
+    if not kill_result:
+        logger.error("Failed to kill Chrome process")
+
+    time.sleep(1)  # Grace period after kill
+
+    # Step 3: Re-spawn TV CDP
+    logger.info("Spawning new TV CDP subprocess...")
+    try:
+        run_tv_cdp_subprocess()
+    except Exception as e:
+        error_msg = f"Failed to spawn TV CDP: {str(e)}"
+        logger.error(error_msg)
+        raise Exception(error_msg)
+
+    # Step 4: Wait for port to be ready
+    logger.info(f"Waiting up to {max_wait_seconds}s for port 9222 to be ready...")
+    port_ready = _wait_for_port_ready(9222, max_wait_seconds=max_wait_seconds)
+
+    if not port_ready:
+        error_msg = f"Port 9222 did not become ready within {max_wait_seconds}s"
+        logger.error(error_msg)
+        raise Exception(error_msg)
+
+    time.sleep(2)  # Additional grace period for TV to fully initialize
+
+    # Step 5: Verify recovery via health_check
+    logger.info("Verifying recovery with health_check...")
+    recovery_health = health_check(timeout=5)
+    recovery_successful = recovery_health.get("port_open", False) and recovery_health.get("chart_responsive", False)
+
+    if not recovery_successful:
+        error_msg = f"Chrome recovery failed — health check still reports unhealthy: {recovery_health}"
+        logger.error(error_msg)
+        raise Exception(error_msg)
+
+    logger.info("Chrome session successfully recovered")
+    return {
+        "recovered": True,
+        "reason": "Chrome session recovery successful: killed stale process and re-spawned TV CDP",
+        "new_health": recovery_health,
+    }
