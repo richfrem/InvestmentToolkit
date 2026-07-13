@@ -80,11 +80,12 @@ def test_ensure_healthy_kills_chrome_process():
         with patch("tv_cdp_health._kill_chrome_process_on_port", return_value=True) as mock_kill:
             with patch("tv_cdp_health.run_tv_cdp_subprocess"):
                 with patch("tv_cdp_health._wait_for_port_ready", return_value=True):
-                    result = ensure_healthy(max_wait_seconds=30)
+                    with patch("time.sleep"):
+                        result = ensure_healthy(max_wait_seconds=30)
 
-                    # Should call kill_chrome_process_on_port with port 9222
-                    mock_kill.assert_called_with(9222)
-                    assert result["recovered"] is True
+                        # Should call kill_chrome_process_on_port with port 9222
+                        mock_kill.assert_called_with(9222)
+                        assert result["recovered"] is True
 
 
 # --- Test 3: Respawns TV CDP when unhealthy ---
@@ -112,11 +113,12 @@ def test_ensure_healthy_respawns_tv_cdp():
         with patch("tv_cdp_health._kill_chrome_process_on_port", return_value=True):
             with patch("tv_cdp_health.run_tv_cdp_subprocess") as mock_spawn:
                 with patch("tv_cdp_health._wait_for_port_ready", return_value=True):
-                    result = ensure_healthy(max_wait_seconds=30)
+                    with patch("time.sleep"):
+                        result = ensure_healthy(max_wait_seconds=30)
 
-                    # Should call run_tv_cdp_subprocess
-                    mock_spawn.assert_called_once()
-                    assert result["recovered"] is True
+                        # Should call run_tv_cdp_subprocess
+                        mock_spawn.assert_called_once()
+                        assert result["recovered"] is True
 
 
 # --- Test 4: Waits for port ready before recovery validation ---
@@ -144,11 +146,12 @@ def test_ensure_healthy_waits_for_port_ready():
         with patch("tv_cdp_health._kill_chrome_process_on_port", return_value=True):
             with patch("tv_cdp_health.run_tv_cdp_subprocess"):
                 with patch("tv_cdp_health._wait_for_port_ready", return_value=True) as mock_wait:
-                    result = ensure_healthy(max_wait_seconds=30)
+                    with patch("time.sleep"):
+                        result = ensure_healthy(max_wait_seconds=30)
 
-                    # Should call _wait_for_port_ready with correct port and timeout
-                    mock_wait.assert_called_with(9222, max_wait_seconds=30)
-                    assert result["recovered"] is True
+                        # Should call _wait_for_port_ready with correct port and timeout
+                        mock_wait.assert_called_with(9222, max_wait_seconds=30)
+                        assert result["recovered"] is True
 
 
 # --- Test 5: Verifies recovery with second health_check call ---
@@ -177,15 +180,16 @@ def test_ensure_healthy_verifies_recovery():
         with patch("tv_cdp_health._kill_chrome_process_on_port", return_value=True):
             with patch("tv_cdp_health.run_tv_cdp_subprocess"):
                 with patch("tv_cdp_health._wait_for_port_ready", return_value=True):
-                    result = ensure_healthy(max_wait_seconds=30)
+                    with patch("time.sleep"):
+                        result = ensure_healthy(max_wait_seconds=30)
 
-                    # Should call health_check twice: before and after recovery
-                    assert mock_health_check.call_count == 2
+                        # Should call health_check twice: before and after recovery
+                        assert mock_health_check.call_count == 2
 
-                    # Result should contain the recovered health state
-                    assert result["recovered"] is True
-                    assert result["new_health"] == healthy_recovery
-                    assert "recovery" in result["reason"].lower()
+                        # Result should contain the recovered health state
+                        assert result["recovered"] is True
+                        assert result["new_health"] == healthy_recovery
+                        assert "recovery" in result["reason"].lower()
 
 
 # --- Test 6: Timeout on recovery failure ---
@@ -206,14 +210,15 @@ def test_ensure_healthy_timeout_on_recovery_failure():
         with patch("tv_cdp_health._kill_chrome_process_on_port", return_value=True):
             with patch("tv_cdp_health.run_tv_cdp_subprocess"):
                 with patch("tv_cdp_health._wait_for_port_ready", return_value=False):
-                    # Should raise exception on timeout
-                    with pytest.raises(Exception) as exc_info:
-                        ensure_healthy(max_wait_seconds=30)
+                    with patch("time.sleep"):
+                        # Should raise exception on timeout
+                        with pytest.raises(Exception) as exc_info:
+                            ensure_healthy(max_wait_seconds=30)
 
-                    # Exception message should mention timeout and port/time
-                    error_msg = str(exc_info.value)
-                    assert "9222" in error_msg or "port" in error_msg.lower()
-                    assert "30" in error_msg or "timeout" in error_msg.lower()
+                        # Exception message should mention timeout and port/time
+                        error_msg = str(exc_info.value)
+                        assert "9222" in error_msg or "port" in error_msg.lower()
+                        assert "30" in error_msg or "timeout" in error_msg.lower()
 
 
 # --- Additional Edge Case Tests ---
@@ -242,12 +247,13 @@ def test_ensure_healthy_recovery_health_check_still_fails():
         with patch("tv_cdp_health._kill_chrome_process_on_port", return_value=True):
             with patch("tv_cdp_health.run_tv_cdp_subprocess"):
                 with patch("tv_cdp_health._wait_for_port_ready", return_value=True):
-                    # Should raise exception since recovery health is still unhealthy
-                    with pytest.raises(Exception) as exc_info:
-                        ensure_healthy(max_wait_seconds=30)
+                    with patch("time.sleep"):
+                        # Should raise exception since recovery health is still unhealthy
+                        with pytest.raises(Exception) as exc_info:
+                            ensure_healthy(max_wait_seconds=30)
 
-                    error_msg = str(exc_info.value)
-                    assert "failed" in error_msg.lower()
+                        error_msg = str(exc_info.value)
+                        assert "failed" in error_msg.lower()
 
 
 def test_ensure_healthy_spawn_fails():
@@ -265,12 +271,13 @@ def test_ensure_healthy_spawn_fails():
     with patch("tv_cdp_health.health_check", return_value=unhealthy_initial):
         with patch("tv_cdp_health._kill_chrome_process_on_port", return_value=True):
             with patch("tv_cdp_health.run_tv_cdp_subprocess", side_effect=Exception("tv_launch.py not found")):
-                # Should raise exception from spawn failure
-                with pytest.raises(Exception) as exc_info:
-                    ensure_healthy(max_wait_seconds=30)
+                with patch("time.sleep"):
+                    # Should raise exception from spawn failure
+                    with pytest.raises(Exception) as exc_info:
+                        ensure_healthy(max_wait_seconds=30)
 
-                error_msg = str(exc_info.value)
-                assert "spawn" in error_msg.lower() or "launch" in error_msg.lower()
+                    error_msg = str(exc_info.value)
+                    assert "spawn" in error_msg.lower() or "launch" in error_msg.lower()
 
 
 def test_run_tv_cdp_subprocess_success():
@@ -318,15 +325,16 @@ def test_kill_chrome_process_on_port_macos():
 
         with patch("subprocess.run", return_value=mock_lsof_result) as mock_run:
             with patch("os.kill") as mock_kill:
-                result = _kill_chrome_process_on_port(9222)
+                with patch("time.sleep"):
+                    result = _kill_chrome_process_on_port(9222)
 
-                # Should call lsof
-                calls = [c for c in mock_run.call_args_list if "lsof" in str(c)]
-                assert len(calls) > 0
+                    # Should call lsof
+                    calls = [c for c in mock_run.call_args_list if "lsof" in str(c)]
+                    assert len(calls) > 0
 
-                # Should call os.kill with PID 1234
-                mock_kill.assert_called_with(1234, 9)
-                assert result is True
+                    # Should call os.kill with PID 1234
+                    mock_kill.assert_called_with(1234, 9)
+                    assert result is True
 
 
 def test_kill_chrome_process_on_port_windows():
@@ -346,13 +354,14 @@ def test_kill_chrome_process_on_port_windows():
         mock_netstat_result.returncode = 0
 
         with patch("subprocess.run", return_value=mock_netstat_result) as mock_run:
-            result = _kill_chrome_process_on_port(9222)
+            with patch("time.sleep"):
+                result = _kill_chrome_process_on_port(9222)
 
-            # Should call taskkill with PID 5678
-            calls = [c for c in mock_run.call_args_list if "taskkill" in str(c)]
-            assert len(calls) > 0
+                # Should call taskkill with PID 5678
+                calls = [c for c in mock_run.call_args_list if "taskkill" in str(c)]
+                assert len(calls) > 0
 
-            assert result is True
+                assert result is True
 
 
 def test_wait_for_port_ready_success():
@@ -375,12 +384,24 @@ def test_wait_for_port_ready_timeout():
     _wait_for_port_ready() should return False if port doesn't respond
     within max_wait_seconds.
     """
+    # Deterministic fake clock: advances only when time.sleep() is called,
+    # so the while-loop's `time.time() - start_time < max_wait_seconds`
+    # check doesn't busy-spin against the real wall clock for 2s.
+    fake_now = [0.0]
+
+    def mock_time():
+        return fake_now[0]
+
+    def mock_sleep(duration):
+        fake_now[0] += duration
+
     # Mock socket connection always failing
     with patch("socket.create_connection", side_effect=ConnectionRefusedError("Connection refused")):
-        with patch("time.sleep"):  # Speed up test by mocking sleep
-            result = _wait_for_port_ready(9222, max_wait_seconds=2)
+        with patch("time.sleep", side_effect=mock_sleep):  # Speed up test by mocking sleep
+            with patch("time.time", side_effect=mock_time):
+                result = _wait_for_port_ready(9222, max_wait_seconds=2)
 
-            assert result is False
+                assert result is False
 
 
 def test_wait_for_port_ready_exponential_backoff():
