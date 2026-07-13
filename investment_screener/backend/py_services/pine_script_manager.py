@@ -21,21 +21,23 @@ Key Input Dependencies:
 import json
 import os
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-# Cross-directory import of the real PineLinter (Task 5B-2). Follows the
-# same sys.path-insert pattern as tv_cdp_health.py's import of
-# tv_client.py (Task 5A-8) — plugins/tradingview/scripts/ is not a
-# package on the default path. pine_linter.py itself is untouched; this
-# module only wraps its output.
+# Cross-directory import of the real PineLinter (Task 5B-2) and tv_call
+# (Task 5A-8). Follows the same sys.path-insert pattern as
+# tv_cdp_health.py's import of tv_client.py — plugins/tradingview/scripts/
+# is not a package on the default path. Neither pine_linter.py nor
+# tv_client.py is touched; this module only wraps their output.
 _TV_SCRIPTS_DIR = str(Path(__file__).resolve().parents[3] / "plugins" / "tradingview" / "scripts")
 if _TV_SCRIPTS_DIR not in sys.path:
     sys.path.insert(0, _TV_SCRIPTS_DIR)
 
 from pine_linter import PineLinter  # noqa: E402
+from tv_client import tv_call  # noqa: E402
 
 # Central Pine Script registry file. Tests monkeypatch this module-level
 # constant to a temp path — never write to the real path from a test.
@@ -289,3 +291,119 @@ def validate_pine_script(file_path: str) -> dict:
 
     errors = _missing_file_errors(file_path, list(linter.errors), is_valid)
     return {"valid": is_valid, "errors": errors, "warnings": list(linter.warnings)}
+
+
+def _resolve_script_path(entry: PineScriptEntry) -> Path:
+    """Resolve a registry entry's `path` to a full filesystem path.
+
+    Entry paths are relative to
+    plugins/tradingview/assets/pinescript-indicators/, i.e. the parent
+    directory of PINE_REGISTRY_PATH itself (read live off the module
+    global so tests that monkeypatch PINE_REGISTRY_PATH resolve
+    correctly against their temp registry's own directory).
+
+    Args:
+        entry: The registry entry whose path to resolve.
+
+    Returns:
+        The full filesystem Path to the .pine file.
+    """
+    return PINE_REGISTRY_PATH.parent / entry.path
+
+
+def _tv_call_succeeded(result: dict) -> bool:
+    """Decide whether a tv_call() response signals success.
+
+    Reuses the exact distinguishing logic tv_pine_inject.py:84-91
+    already established for tv_call()'s two distinct failure shapes:
+    the Task 5A-8 error-dict contract ({"error": str, "data": ...,
+    "cached": bool, "timestamp": str}, notably with no "success" key)
+    and the CLI's own {"success": False, "error": ...} shape.
+
+    Args:
+        result: The raw dict returned by tv_call().
+
+    Returns:
+        False if either failure shape is present; True otherwise.
+    """
+    if not isinstance(result, dict):
+        return False
+    if "error" in result and "success" not in result:
+        return False
+    if result.get("success") is False:
+        return False
+    return True
+
+
+def _switch_chart_and_inject(chart_symbol: str, script_content: str) -> bool:
+    """Switch the active TV chart, then inject Pine Script content.
+
+    Args:
+        chart_symbol: Ticker to switch the active chart to first.
+        script_content: Raw Pine Script source to inject.
+
+    Returns:
+        True only if both the chart-symbol switch and the injection
+        call succeeded per _tv_call_succeeded().
+    """
+    switch_result = tv_call("chart", "symbol", chart_symbol)
+    if not _tv_call_succeeded(switch_result):
+        return False
+
+    inject_result = tv_call("pine", "inject", "--content", script_content)
+    return _tv_call_succeeded(inject_result)
+
+
+def inject_pine_script(script_name: str, chart_symbol: str) -> bool:
+    """Validate and inject a registered Pine Script onto a chart.
+
+    Looks up `script_name` in the registry (5B-1), reads its .pine file
+    content, validates it (5B-2), then switches the given chart to
+    `chart_symbol` and injects the script via TV CDP (tv_client.tv_call,
+    5A-8). Updates the registry's `last_injected` timestamp only on
+    confirmed success. Refuses to call tv_call at all for an
+    unregistered, missing, or invalid script.
+
+    Never raises: every failure mode (unknown script, missing file,
+    invalid script, chart-switch failure, injection failure) is a
+    normal, expected outcome and returns False.
+
+    Args:
+        script_name: Registry key of the script to inject.
+        chart_symbol: Ticker symbol to switch the active chart to
+            before injecting (e.g. "NVDA").
+
+    Returns:
+        True only if the chart-symbol switch and the injection both
+        succeeded; False otherwise.
+    """
+    registry = load_registry()
+    entry = registry.get_script(script_name)
+    if entry is None:
+        print(f"inject_pine_script: '{script_name}' not found in registry", file=sys.stderr)
+        return False
+
+    full_path = _resolve_script_path(entry)
+    if not full_path.exists():
+        print(f"inject_pine_script: file missing at {full_path}", file=sys.stderr)
+        return False
+
+    validation = validate_pine_script(str(full_path))
+    if not validation["valid"]:
+        print(
+            f"inject_pine_script: '{script_name}' failed validation: {validation['errors']}",
+            file=sys.stderr,
+        )
+        return False
+
+    script_content = full_path.read_text()
+    if not _switch_chart_and_inject(chart_symbol, script_content):
+        print(
+            f"inject_pine_script: injection failed for '{script_name}' on {chart_symbol}",
+            file=sys.stderr,
+        )
+        return False
+
+    entry.last_injected = datetime.now(timezone.utc).isoformat()
+    save_registry(registry)
+    return True
