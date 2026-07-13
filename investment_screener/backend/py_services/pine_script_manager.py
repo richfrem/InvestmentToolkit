@@ -19,13 +19,17 @@ Key Input Dependencies:
 """
 
 import json
+import logging
 import os
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
+
+logger = logging.getLogger(__name__)
 
 # Cross-directory import of the real PineLinter (Task 5B-2) and tv_call
 # (Task 5A-8). Follows the same sys.path-insert pattern as
@@ -407,3 +411,187 @@ def inject_pine_script(script_name: str, chart_symbol: str) -> bool:
     entry.last_injected = datetime.now(timezone.utc).isoformat()
     save_registry(registry)
     return True
+
+
+def _git_repo_root(start_path: Path) -> Optional[Path]:
+    """Resolve the git repository root containing `start_path`.
+
+    Args:
+        start_path: A file or directory to resolve the enclosing repo
+            root for (PINE_REGISTRY_PATH's parent directory).
+
+    Returns:
+        The repo root as a Path, or None if `start_path` is not inside a
+        git repository, `git` is unavailable, or the call fails/times
+        out for any reason.
+    """
+    cwd = start_path if start_path.is_dir() else start_path.parent
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (OSError, subprocess.SubprocessError) as e:
+        logger.warning("list_script_versions: git rev-parse failed: %s", e)
+        return None
+    if result.returncode != 0 or not result.stdout.strip():
+        return None
+    return Path(result.stdout.strip())
+
+
+def _git_log_commits(repo_root: Path, relative_path: str) -> List[Tuple[str, str]]:
+    """List (commit_hash, author_date_iso8601) touching a file, newest first.
+
+    Args:
+        repo_root: Root of the git repository to run `git log` in.
+        relative_path: Path to the tracked file, relative to repo_root.
+
+    Returns:
+        A list of (full commit hash, %aI-formatted author date) tuples in
+        `git log`'s default newest-first order. Empty list if the file
+        has no history or the git call fails for any reason.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "log", "--follow", "--format=%H|%aI", "--", relative_path],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError) as e:
+        logger.warning("list_script_versions: git log failed: %s", e)
+        return []
+    if result.returncode != 0 or not result.stdout.strip():
+        return []
+
+    commits = []
+    for line in result.stdout.strip().splitlines():
+        if "|" not in line:
+            continue
+        commit_hash, timestamp = line.split("|", 1)
+        commits.append((commit_hash, timestamp))
+    return commits
+
+
+def _git_show_registry_json(
+    repo_root: Path, commit_hash: str, relative_path: str
+) -> Optional[dict]:
+    """Read and parse a historical revision of the registry file.
+
+    Args:
+        repo_root: Root of the git repository to run `git show` in.
+        commit_hash: The commit whose revision of the file to read.
+        relative_path: Path to the tracked file, relative to repo_root.
+
+    Returns:
+        The parsed JSON dict, or None if the git call fails or the
+        historical content isn't valid JSON (logged as a warning either
+        way rather than raised).
+    """
+    try:
+        result = subprocess.run(
+            ["git", "show", f"{commit_hash}:{relative_path}"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (OSError, subprocess.SubprocessError) as e:
+        logger.warning("list_script_versions: git show failed for %s: %s", commit_hash, e)
+        return None
+    if result.returncode != 0:
+        return None
+    try:
+        return json.loads(result.stdout)
+    except json.JSONDecodeError as e:
+        logger.warning(
+            "list_script_versions: corrupted registry at commit %s: %s", commit_hash, e
+        )
+        return None
+
+
+def _script_version_hash(data: dict, script_name: str) -> Optional[Tuple[str, str]]:
+    """Extract (version, hash) for `script_name` from a parsed registry dict.
+
+    Args:
+        data: A parsed registry.json revision (arbitrary/untrusted shape).
+        script_name: Registry key to look up.
+
+    Returns:
+        (version, hash) if `script_name` is present with both fields set,
+        otherwise None.
+    """
+    scripts = data.get("scripts") if isinstance(data, dict) else None
+    if not isinstance(scripts, dict):
+        return None
+    entry = scripts.get(script_name)
+    if not isinstance(entry, dict):
+        return None
+    version, hash_value = entry.get("version"), entry.get("hash")
+    if version is None or hash_value is None:
+        return None
+    return (version, hash_value)
+
+
+def list_script_versions(script_name: str) -> List[dict]:
+    """Return a script's version history from registry.json's git history.
+
+    Walks `git log --follow` for PINE_REGISTRY_PATH (newest first),
+    reading each historical revision via `git show` and recording a
+    version-history entry whenever `script_name`'s (version, hash) pair
+    differs from the immediately newer entry already collected — so a
+    commit that only touched a different script's entry, or this
+    script's `last_injected`, does not produce a spurious duplicate row.
+
+    Args:
+        script_name: Registry key of the script to look up history for.
+
+    Returns:
+        A list of {"version", "hash", "timestamp", "commit"} dicts,
+        newest first. Empty list if `script_name` has no history, the
+        registry file has no git history, or PINE_REGISTRY_PATH isn't
+        inside a git repository at all. Never raises — every failure
+        mode (missing repo, missing history, corrupted historical
+        revision) degrades to an empty or partial list.
+    """
+    repo_root = _git_repo_root(PINE_REGISTRY_PATH.parent)
+    if repo_root is None:
+        logger.warning(
+            "list_script_versions: %s is not inside a git repository", PINE_REGISTRY_PATH
+        )
+        return []
+
+    try:
+        relative_path = str(PINE_REGISTRY_PATH.relative_to(repo_root))
+    except ValueError as e:
+        logger.warning(
+            "list_script_versions: %s is outside repo root %s: %s",
+            PINE_REGISTRY_PATH,
+            repo_root,
+            e,
+        )
+        return []
+
+    commits = _git_log_commits(repo_root, relative_path)
+
+    history: List[dict] = []
+    last_version_hash: Optional[Tuple[str, str]] = None
+    for commit_hash, timestamp in commits:
+        data = _git_show_registry_json(repo_root, commit_hash, relative_path)
+        if data is None:
+            continue
+        version_hash = _script_version_hash(data, script_name)
+        if version_hash is None or version_hash == last_version_hash:
+            continue
+        last_version_hash = version_hash
+        history.append({
+            "version": version_hash[0],
+            "hash": version_hash[1],
+            "timestamp": timestamp,
+            "commit": commit_hash[:7],
+        })
+    return history
