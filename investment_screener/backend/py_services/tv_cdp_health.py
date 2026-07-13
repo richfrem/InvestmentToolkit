@@ -27,9 +27,11 @@ import time
 import platform
 import os
 import sys
+import traceback
 import urllib.request
 import urllib.error
 import logging
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import TypedDict, Optional, Dict, Any, Callable, Union
 
@@ -37,6 +39,11 @@ from pydantic import BaseModel, ValidationError
 
 # Configure logging for health checks
 logger = logging.getLogger(__name__)
+
+# Append-only audit trail for tv_call() failures (Task 5A-5). Tests
+# monkeypatch this module-level constant to a temp path — never write to
+# the real path from a test.
+TV_CDP_ERRORS_PATH = Path(__file__).resolve().parents[1] / "data" / "tv_cdp_errors.jsonl"
 
 
 class HealthCheckResult(TypedDict):
@@ -624,3 +631,86 @@ def validate_tv_response(
         # Final defensive catch-all: this function must never raise.
         logger.error(f"Unexpected error validating TV CDP response: {str(e)}")
         return False
+
+
+def _build_tv_error_record(
+    function: str,
+    args: dict,
+    error: Exception,
+    attempt_number: int,
+) -> Dict[str, Any]:
+    """
+    Build a single tv_call() failure record for the JSONL audit trail.
+
+    Args:
+        function: Name of the tv_call function/command that failed.
+        args: Arguments passed to the failed call (serialized as-is).
+        error: The exception raised by the failed call.
+        attempt_number: Which retry attempt this failure occurred on.
+
+    Returns:
+        Dict matching the schema: timestamp, function, args, error,
+        traceback, attempt_number. `traceback` uses traceback.format_exc(),
+        which captures the currently-handled exception (if called from
+        within an except block) or "NoneType: None" otherwise.
+    """
+    return {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "function": function,
+        "args": args,
+        "error": str(error),
+        "traceback": traceback.format_exc(),
+        "attempt_number": attempt_number,
+    }
+
+
+def _append_error_jsonl(record: Dict[str, Any], path: Path) -> None:
+    """
+    Append one JSON record as a line to path, creating parent dirs as needed.
+
+    Atomic single open/write/close. `default=str` guards against
+    non-JSON-serializable values that may end up in `args`.
+
+    Args:
+        record: The record dict to serialize and append.
+        path: JSONL file path to append to.
+
+    Raises:
+        OSError: If directory creation or file write fails. Callers
+            (log_tv_error) are responsible for catching this.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "a") as f:
+        f.write(json.dumps(record, default=str) + "\n")
+
+
+def log_tv_error(
+    function: str,
+    args: dict,
+    error: Exception,
+    attempt_number: int = 0
+) -> None:
+    """
+    Append error to data/tv_cdp_errors.jsonl.
+    Never raises; logs to application logger on failure.
+
+    Args:
+        function: Name of the tv_call function/command that failed.
+        args: Arguments passed to the failed call.
+        error: The exception raised by the failed call.
+        attempt_number: Which retry attempt this failure occurred on
+            (default: 0).
+
+    Returns:
+        None. This is a best-effort audit log: any failure while building
+        or writing the record is caught and logged (INFO on success,
+        ERROR on failure), never raised.
+    """
+    try:
+        record = _build_tv_error_record(function, args, error, attempt_number)
+        _append_error_jsonl(record, TV_CDP_ERRORS_PATH)
+        logger.info(
+            f"Logged TV CDP error for {function} (attempt {attempt_number}): {record['error']}"
+        )
+    except Exception as log_error:
+        logger.error(f"Failed to log TV CDP error for {function}: {str(log_error)}")
