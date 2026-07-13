@@ -183,6 +183,27 @@ def test_cache_key_generation_differs_for_different_args(fake_clock):
     assert key1 != key2
 
 
+# --- cache_get degrades gracefully when the lazy-expiration write-back fails ---
+
+def test_cache_get_returns_none_when_expiry_write_back_fails(cache_path, fake_clock, monkeypatch):
+    """
+    cache_get's best-effort contract must hold even when the lazy-expiration
+    cleanup write fails (e.g. disk full, permission error): it should log
+    and return None rather than propagate the exception.
+    """
+    cache_set("quote:AAPL", {"price": 123.45}, ttl_seconds=1)
+    fake_clock.now += 2  # expire the entry
+
+    def _boom(entries, path):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(tv_cdp_health, "_write_cache_entries", _boom)
+
+    result = cache_get("quote:AAPL")
+
+    assert result is None
+
+
 # --- Overwrite semantics: cache_set on an existing key replaces it, no duplicates ---
 
 def test_cache_set_overwrites_existing_key_without_duplication(cache_path, fake_clock):
