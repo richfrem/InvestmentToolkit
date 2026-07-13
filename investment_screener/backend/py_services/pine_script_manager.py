@@ -20,10 +20,22 @@ Key Input Dependencies:
 
 import json
 import os
+import sys
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
+
+# Cross-directory import of the real PineLinter (Task 5B-2). Follows the
+# same sys.path-insert pattern as tv_cdp_health.py's import of
+# tv_client.py (Task 5A-8) — plugins/tradingview/scripts/ is not a
+# package on the default path. pine_linter.py itself is untouched; this
+# module only wraps its output.
+_TV_SCRIPTS_DIR = str(Path(__file__).resolve().parents[3] / "plugins" / "tradingview" / "scripts")
+if _TV_SCRIPTS_DIR not in sys.path:
+    sys.path.insert(0, _TV_SCRIPTS_DIR)
+
+from pine_linter import PineLinter  # noqa: E402
 
 # Central Pine Script registry file. Tests monkeypatch this module-level
 # constant to a temp path — never write to the real path from a test.
@@ -211,3 +223,69 @@ def _compute_placeholder_hash(path: str, version: str) -> str:
     import hashlib
 
     return hashlib.sha256(f"{path}:{version}".encode("utf-8")).hexdigest()[:12]
+
+
+def _missing_file_errors(file_path: str, linter_errors: List[str], is_valid: bool) -> List[str]:
+    """Fill in a synthetic error when PineLinter left .errors empty.
+
+    PineLinter.lint() returns False for a nonexistent file but only
+    prints a message — it does not append anything to self.errors for
+    that specific case (confirmed against the real source). Without
+    this, callers would see valid=False with an empty errors list,
+    which the brief calls out as not meaningful.
+
+    Args:
+        file_path: The path that was validated.
+        linter_errors: PineLinter's own .errors list after .lint().
+        is_valid: PineLinter.lint()'s return value.
+
+    Returns:
+        linter_errors unchanged if non-empty or if is_valid is True;
+        otherwise a single synthetic "file not found" message if the
+        path genuinely doesn't exist on disk.
+    """
+    if linter_errors or is_valid:
+        return linter_errors
+    if not os.path.exists(file_path):
+        return [f"File not found: {file_path}"]
+    return linter_errors
+
+
+def validate_pine_script(file_path: str) -> dict:
+    """Validate a Pine Script file using the existing PineLinter.
+
+    Wraps plugins/tradingview/scripts/pine_linter.py's PineLinter class,
+    translating its bool-return-plus-printed-report interface into a
+    structured result for programmatic callers (registry, injection,
+    rollback in later 5B tasks). No lint rules are reimplemented here —
+    PineLinter does all the actual checking.
+
+    Args:
+        file_path: Path to the .pine file to validate.
+
+    Returns:
+        Dict with exactly these keys:
+            valid: True if PineLinter found zero errors (warnings never
+                affect validity, matching PineLinter's own semantics).
+            errors: List of error message strings. Non-empty whenever
+                valid is False — a synthetic message is substituted for
+                the missing-file case, since PineLinter itself doesn't
+                populate .errors then.
+            warnings: List of warning message strings (informational
+                only; never affects `valid`).
+
+    Never raises: a missing, malformed, or unreadable script file is a
+    normal input for a validation function, not an exceptional one.
+    """
+    try:
+        linter = PineLinter(file_path)
+        is_valid = linter.lint()
+    except Exception as e:
+        return {
+            "valid": False,
+            "errors": [f"Unexpected error validating '{file_path}': {e}"],
+            "warnings": [],
+        }
+
+    errors = _missing_file_errors(file_path, list(linter.errors), is_valid)
+    return {"valid": is_valid, "errors": errors, "warnings": list(linter.warnings)}
