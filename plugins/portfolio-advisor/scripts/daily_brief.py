@@ -205,6 +205,12 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     from brief_recommendations import build_recommendations, load_standing_decisions
     from overnight_gaps import get_overnight_gaps
     from thesis_breakers import compute_breaker_state
+    from evolution_events import (  # G4 event emission (non-blocking)
+        emit_earnings_event,
+        emit_breaker_override_event,
+        emit_rebalance_event,
+        EarningsGrade,
+    )
 
     # ── 0. Overnight gap scan ─────────────────────────────────────────────────
     print("▶ Overnight gap scan...", file=sys.stderr)
@@ -286,6 +292,26 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
         if e.flag != "UNKNOWN"
     ]
 
+    # ── 4a. Emit earnings events (G4 — non-blocking) ──────────────────────────
+    for e in earnings:
+        if e.flag != "UNKNOWN":
+            grade_map = {"BEAT": EarningsGrade.BEAT, "MISS": EarningsGrade.MISS, "IN_LINE": EarningsGrade.IN_LINE}
+            grade = grade_map.get(e.flag, EarningsGrade.IN_LINE)
+            try:
+                # Try to get current price from conviction scores
+                curr_price = next(
+                    (s["price"] for s in scores_raw if s["ticker"] == e.ticker),
+                    None,
+                )
+                emit_earnings_event(
+                    ticker=e.ticker,
+                    grade=grade,
+                    earnings_date=e.earnings_date,
+                    current_price=curr_price,
+                )
+            except Exception:
+                pass  # Non-blocking
+
     # ── 5. Pillar health ──────────────────────────────────────────────────────
     with open(TARGET_PATH) as f:
         target_data = json.load(f)
@@ -303,9 +329,53 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
         print(f"  Thesis breakers skipped: {exc}", file=sys.stderr)
         breaker_state, triggered_breakers = None, []
 
-    # ── 5c. Prediction ledger harvest (E3 — additive, non-blocking) ──────────
+    # ── 5c. Emit breaker override events (G4 — non-blocking) ─────────────────
+    if breaker_state:
+        for ticker, breakers in breaker_state.get("holdings", {}).items():
+            for breaker_id, entry in breakers.items():
+                if entry.get("status") == "TRIGGERED":
+                    try:
+                        curr_price = next(
+                            (s["price"] for s in scores_raw if s["ticker"] == ticker),
+                            None,
+                        )
+                        emit_breaker_override_event(
+                            ticker=ticker,
+                            breaker_name=entry.get("metric", breaker_id),
+                            override_date=date.today().isoformat(),
+                            override_reason=entry.get("note", "Thesis breaker triggered"),
+                            breaker_threshold=entry.get("threshold"),
+                            current_price=curr_price,
+                        )
+                    except Exception:
+                        pass  # Non-blocking
+
+    # ── 5d. Prediction ledger harvest (E3 — additive, non-blocking) ──────────
     print("▶ Prediction harvest...", file=sys.stderr)
     predictions_harvested = _harvest_predictions_step()
+
+    # ── 5e. Emit rebalance events for recommended actions (G4 — non-blocking) ─
+    if recommendations and isinstance(recommendations, dict):
+        for rec in recommendations.get("actions", []):
+            try:
+                ticker = rec.get("ticker")
+                action = rec.get("action")
+                if ticker and action in ("BUY", "SELL"):
+                    curr_price = next(
+                        (s["price"] for s in scores_raw if s["ticker"] == ticker),
+                        None,
+                    )
+                    order_qty = rec.get("size", 1)
+                    emit_rebalance_event(
+                        ticker=ticker,
+                        order_type="buy" if action == "BUY" else "sell",
+                        order_quantity=order_qty,
+                        order_price=curr_price or 0.0,
+                        rebalance_date=date.today().isoformat(),
+                        current_price=curr_price,
+                    )
+            except Exception:
+                pass  # Non-blocking
 
     # ── 6. Deltas vs yesterday ────────────────────────────────────────────────
     yesterday = _load_yesterday()
