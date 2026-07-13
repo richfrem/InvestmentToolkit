@@ -1,7 +1,49 @@
 # Session Start Briefing — InvestmentToolkit
-_Last updated: 2026-07-12 (Phase 4: E3/B4/G4 shipped — 3 of 4 sub-specs complete; E4 in progress) | Thesis v10.8 | Portfolio value: check live snapshot (user actively trading — do not trust a stale figure here)_
+_Last updated: 2026-07-12 | Phase 4: COMPLETE (shipped) | Phase 5: ACTIVE (1/40 tasks done, 39 remaining) | Thesis v10.8 | Portfolio value: check live snapshot (user actively trading — do not trust a stale figure here)_
 
 > **Read this first at the start of every new session.**
+
+---
+
+## 🔄 ACTIVE: Fable5 Elevation Guide — Phase 5 (TradingView/Pine Hardening) — 1 of 40 tasks complete
+
+**⚡ PHASE 5 CONTINUATION (for fresh sessions):**
+
+**Status as of 2026-07-12T23:30 UTC:**
+- ✅ **Task 5A-1 COMPLETE** (commit: 4170ad54) — TV CDP health check, 10/10 tests passing, APPROVED, merged to origin/main
+- 🔄 **Task 5A-2 IN PROGRESS** (agent: a21d32f48e722eebb) — Chrome session recovery (implementer running)
+- 📋 **Tasks 5A-3 through 5E-8 READY** — 39 briefs prepared in `.superpowers/sdd/` (task-5a-3-brief.md through task-5e-1-brief.md)
+
+**To pick up Phase 5 in a fresh session:**
+1. Read this file (you are here)
+2. Read progress ledger: `cat .superpowers/sdd/progress.md` — shows all 40 tasks + completion status
+3. **Locate active task:** Check the ledger for the first incomplete task (search for `[ ]`)
+4. **Recover worktree:** `git worktree list` → worktree at `.worktrees/feature-fable5-phase5-tradingview-pine-hardening` (created 2026-07-12)
+5. **Verify git state:** `cd .worktrees/feature-fable5-phase5-tradingview-pine-hardening && git log --oneline -3` → should show 4170ad54 (Phase 5 task 1)
+6. **Review spec + plan:** `docs/superpowers/specs/2026-07-12-phase5-tradingview-pine-hardening-design.md` and `docs/superpowers/plans/2026-07-12-phase5-tradingview-pine-hardening.md`
+7. **Dispatch next implementer:** Use brief at `.superpowers/sdd/task-5X-Y-brief.md` (e.g., task-5a-2-brief.md if 5A-1 is complete)
+8. **Continuous execution:** Implement → Review → Approve → Dispatch next task, repeat until all 40 tasks complete
+9. **Final step:** Merge branch to main, push to origin/main, update this file with completion status
+
+**Workflow (same as Phase 4):**
+- Use `superpowers:subagent-driven-development` skill with the plan and worktree paths
+- Each task: TDD implementer → generate review package → task reviewer → approve/fix → mark complete
+- All briefs ready; no waiting on spec documents
+- Expected time: ~10 hours for 40 tasks (Phase 4 was ~8 hours for 36 tasks)
+
+**Key files:**
+- **Progress ledger (durable recovery map):** `.superpowers/sdd/progress.md` — update after each task review approval
+- **Spec:** `docs/superpowers/specs/2026-07-12-phase5-tradingview-pine-hardening-design.md`
+- **Plan:** `docs/superpowers/plans/2026-07-12-phase5-tradingview-pine-hardening.md`
+- **Briefs:** `.superpowers/sdd/task-5[A-E]-[1-8]-brief.md` (40 total)
+- **Reports:** `.superpowers/sdd/task-5[A-E]-[1-8]-report.md` (generated during execution)
+
+**Phase 5 at a glance:**
+- **5A (8 tasks):** TV CDP Resilience — health checks, recovery, retry logic, circuit breaker, caching, error logging, integration
+- **5B (8 tasks):** Pine Script Manager — registry, validation, injection, versioning, rollback, library management, auto-discovery, /daily integration
+- **5C (8 tasks):** Alert & Signal Sync — creation, dedup, state sync, metadata, E3 linking, webhook receiver, correlation, /daily integration
+- **5D (8 tasks):** Data Window Extraction — reader, OHLCV validation, indicator extraction, caching, lag tolerance, validation harness, order integration
+- **5E (8 tasks):** Order Execution & Risk Gates — MRC, cluster variance, breaker veto, size, balance, composite check, post-trade validation, audit trail
 
 ---
 
