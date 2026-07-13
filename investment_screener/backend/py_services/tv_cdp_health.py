@@ -210,9 +210,14 @@ def _check_chart_responsive(timeout: int = 5) -> bool:
         # Call chart read with timeout
         response = tv_call("chart", "read", timeout=timeout)
 
-        # Verify response is non-empty
-        if not response:
-            raise Exception("Chart read returned empty response")
+        # Verify response is non-empty. Also check for tv_call()'s Task
+        # 5A-8 error-dict contract ({"error": str, "data": ...}): since
+        # 5A-8, tv_call() no longer raises on failure, it returns a
+        # (truthy, non-empty) error dict instead — so a plain `not
+        # response` truthiness check alone would silently treat a failed
+        # call as chart-responsive.
+        if not response or (isinstance(response, dict) and response.get("error")):
+            raise Exception(f"Chart read returned empty or error response: {response}")
 
         return True
     except Exception as e:
