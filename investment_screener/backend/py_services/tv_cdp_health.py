@@ -511,6 +511,70 @@ def retry_with_backoff(
     raise last_exception
 
 
+def _parse_response_payload(response: Union[dict, str]) -> Optional[dict]:
+    """
+    Normalize a TV CDP response into a dict, parsing JSON strings as needed.
+
+    Args:
+        response: The TV CDP response to normalize — either an already
+            parsed dict, or a raw JSON string.
+
+    Returns:
+        The response normalized to a dict-like value. None if response
+        was a string that failed to parse as JSON, or was neither a dict
+        nor a string. Errors are logged at error level, never raised.
+    """
+    if isinstance(response, str):
+        try:
+            return json.loads(response)
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse TV CDP response as JSON: {str(e)}")
+            return None
+    elif isinstance(response, dict):
+        return response
+    else:
+        logger.error(
+            f"TV CDP response has unsupported type {type(response).__name__}; "
+            "expected dict or JSON string"
+        )
+        return None
+
+
+def _log_validation_errors(e: ValidationError, expected_schema: type[BaseModel]) -> None:
+    """
+    Log a pydantic ValidationError as missing-key and other-field warnings.
+
+    Args:
+        e: The ValidationError raised while instantiating expected_schema.
+        expected_schema: The pydantic BaseModel subclass validation was
+            attempted against (used for log message context only).
+
+    Returns:
+        None. Always logs at warning level for any errors found; never raises.
+    """
+    missing_keys = [
+        ".".join(str(part) for part in err["loc"])
+        for err in e.errors()
+        if err["type"] == "missing"
+    ]
+    other_errors = [
+        f"{'.'.join(str(part) for part in err['loc'])}: {err['msg']}"
+        for err in e.errors()
+        if err["type"] != "missing"
+    ]
+
+    if missing_keys:
+        logger.warning(
+            f"TV CDP response failed schema validation against "
+            f"{expected_schema.__name__}: missing keys: {missing_keys}"
+        )
+    if other_errors:
+        logger.warning(
+            f"TV CDP response failed schema validation against "
+            f"{expected_schema.__name__}: {other_errors}"
+        )
+
+
 def validate_tv_response(
     response: Union[dict, str],
     expected_schema: type[BaseModel],
@@ -538,46 +602,15 @@ def validate_tv_response(
         unexpected input type — full details are logged, never raised.
     """
     try:
-        if isinstance(response, str):
-            try:
-                data = json.loads(response)
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse TV CDP response as JSON: {str(e)}")
-                return False
-        elif isinstance(response, dict):
-            data = response
-        else:
-            logger.error(
-                f"TV CDP response has unsupported type {type(response).__name__}; "
-                "expected dict or JSON string"
-            )
+        data = _parse_response_payload(response)
+        if data is None:
             return False
 
         try:
             expected_schema(**data)
             return True
         except ValidationError as e:
-            missing_keys = [
-                ".".join(str(part) for part in err["loc"])
-                for err in e.errors()
-                if err["type"] == "missing"
-            ]
-            other_errors = [
-                f"{'.'.join(str(part) for part in err['loc'])}: {err['msg']}"
-                for err in e.errors()
-                if err["type"] != "missing"
-            ]
-
-            if missing_keys:
-                logger.warning(
-                    f"TV CDP response failed schema validation against "
-                    f"{expected_schema.__name__}: missing keys: {missing_keys}"
-                )
-            if other_errors:
-                logger.warning(
-                    f"TV CDP response failed schema validation against "
-                    f"{expected_schema.__name__}: {other_errors}"
-                )
+            _log_validation_errors(e, expected_schema)
             return False
         except TypeError as e:
             # expected_schema(**data) requires data to be a mapping; guard
