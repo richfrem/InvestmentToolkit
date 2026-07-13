@@ -91,22 +91,42 @@ def test_circuit_breaker_returns_cached_on_fallback():
 
 def test_circuit_breaker_resets_on_success_calls():
     """
-    After recovery_attempts (default 10) successful calls, success_count
-    wraps back to 0 (the brief's "reset failure counter" recovery
-    bookkeeping) and failure_count stays at 0 throughout since every
-    single success already resets it per the brief's per-call contract.
+    failure_count does NOT reset on every individual success. Per the
+    resolved brief ambiguity (Scope §4 / Key Design Decisions govern
+    over Scope §2), a couple of failures put the breaker in
+    "unhealthy" with failure_count=2, and that count must stay put
+    across 9 further successes — only the 10th *cumulative* success
+    (== recovery_attempts) resets failure_count to 0, re-runs the
+    state transition back to "healthy", and wraps success_count back
+    to 0 to start the next recovery cycle.
     """
     breaker = CircuitBreaker(recovery_attempts=10)
-    mock_fn = Mock(return_value="ok")
+    fail_fn = Mock(side_effect=Exception("boom"))
+    ok_fn = Mock(return_value="ok")
 
-    for _ in range(10):
-        result = breaker.call(mock_fn)
+    # Two failures: unhealthy, failure_count=2.
+    for _ in range(2):
+        with pytest.raises(Exception):
+            breaker.call(fail_fn)
+    assert breaker.failure_count == 2
+    assert breaker.state == "unhealthy"
+
+    # 9 successes accumulate but must not touch failure_count/state.
+    for i in range(9):
+        result = breaker.call(ok_fn)
         assert result == "ok"
+        assert breaker.failure_count == 2
+        assert breaker.state == "unhealthy"
+        assert breaker.success_count == i + 1
 
-    assert breaker.success_count == 0
+    # 10th cumulative success crosses recovery_attempts: failure_count
+    # resets, state flips back to healthy, success_count wraps to 0.
+    result = breaker.call(ok_fn)
+    assert result == "ok"
     assert breaker.failure_count == 0
     assert breaker.state == "healthy"
-    assert mock_fn.call_count == 10
+    assert breaker.success_count == 0
+    assert ok_fn.call_count == 10
 
 
 # --- Test 6: reset() manually restores healthy state ---
@@ -125,13 +145,16 @@ def test_circuit_breaker_reset_method():
     assert breaker.success_count == 0
 
 
-# --- Additional: a success resets failure_count and caches the response ---
+# --- Additional: a single success caches the response but does not reset failure_count ---
 
-def test_circuit_breaker_success_resets_failure_count_and_caches():
+def test_circuit_breaker_success_caches_without_resetting_failure_count():
     """
-    A successful call after some (non-threshold) failures resets
-    failure_count to 0, returns to 'healthy', and stores the result as
-    last_response for future fallback use.
+    A single successful call after some (non-threshold) failures does
+    NOT reset failure_count immediately — recovery only fires after
+    recovery_attempts (default 10) accumulated successes (see
+    test_circuit_breaker_resets_on_success_calls). It still stores the
+    result as last_response for future fallback use and bumps
+    success_count, while state remains 'unhealthy'.
     """
     breaker = CircuitBreaker()
     fail_fn = Mock(side_effect=Exception("boom"))
@@ -146,8 +169,9 @@ def test_circuit_breaker_success_resets_failure_count_and_caches():
     result = breaker.call(ok_fn)
 
     assert result == "fresh-data"
-    assert breaker.failure_count == 0
-    assert breaker.state == "healthy"
+    assert breaker.failure_count == 2
+    assert breaker.state == "unhealthy"
+    assert breaker.success_count == 1
     assert breaker.last_response == "fresh-data"
 
 
