@@ -12,7 +12,8 @@ Key Input Dependencies:
     - TradingView CDP engine running on localhost:9222
     - tv_client.py for CDP communication
     - tv_launch.py for CDP subprocess spawning
-    - psutil for cross-platform process management
+    - Subprocess-based process killing: lsof/netstat output parsing +
+      os.kill on macOS/Linux, taskkill on Windows (no psutil dependency)
 """
 
 import json
