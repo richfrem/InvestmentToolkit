@@ -12,6 +12,14 @@ Also provides retry_with_backoff() — a generic, side-effect-free retry helper 
 exponential delay, intended to be wrapped around any callable (TV CDP or otherwise)
 by later resilience tasks (e.g. tv_call wrapping, order execution gates).
 
+Also provides cache_get()/cache_set()/cache_clear() — a file-based, TTL'd
+last-known-good cache for tv_call() responses (Task 5A-7), plus
+generate_cache_key() for deterministic (function_name, args) -> key
+hashing. Lazily expires entries on access only. Intended to be composed
+with CircuitBreaker's fallback state in Task 5A-8: on a circuit break,
+the fallback path calls cache_get() for the last-known-good data instead
+of returning nothing.
+
 Key Input Dependencies:
     - TradingView CDP engine running on localhost:9222
     - tv_client.py for CDP communication
@@ -20,6 +28,7 @@ Key Input Dependencies:
       os.kill on macOS/Linux, taskkill on Windows (no psutil dependency)
 """
 
+import hashlib
 import json
 import socket
 import subprocess
@@ -33,7 +42,7 @@ import urllib.error
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import TypedDict, Optional, Dict, Any, Callable, Union
+from typing import TypedDict, Optional, Dict, Any, Callable, Union, List
 
 from pydantic import BaseModel, ValidationError
 
@@ -44,6 +53,11 @@ logger = logging.getLogger(__name__)
 # monkeypatch this module-level constant to a temp path — never write to
 # the real path from a test.
 TV_CDP_ERRORS_PATH = Path(__file__).resolve().parents[1] / "data" / "tv_cdp_errors.jsonl"
+
+# Last-known-good response cache for tv_call() (Task 5A-7). Tests
+# monkeypatch this module-level constant to a temp path — never write to
+# the real path from a test.
+TV_CDP_CACHE_PATH = Path(__file__).resolve().parents[1] / "data" / "tv_cdp_responses_cache.jsonl"
 
 
 class HealthCheckResult(TypedDict):
@@ -851,3 +865,187 @@ class CircuitBreaker:
 
         if self.state != previous_state:
             logger.info(f"Circuit breaker: switching to {self.state} (was {previous_state})")
+
+
+def generate_cache_key(function_name: str, args: Dict[str, Any]) -> str:
+    """
+    Deterministically generate a cache key from a function name + its args.
+
+    (function_name, args) is JSON-serialized with sorted keys before
+    hashing, so dict key insertion order never affects the resulting key
+    — the same function_name + same args always produce the same key,
+    regardless of how the caller built the args dict.
+
+    Args:
+        function_name: Name of the tv_call function/command being cached
+            (e.g. "quote", "chart_read").
+        args: Arguments passed to that call. Must be JSON-serializable
+            (non-serializable values are stringified via default=str).
+
+    Returns:
+        A stable hex digest string uniquely identifying (function_name, args).
+    """
+    payload = json.dumps(
+        {"function": function_name, "args": args}, sort_keys=True, default=str
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _read_cache_entries(path: Path) -> List[Dict[str, Any]]:
+    """
+    Read all cache entries from path.
+
+    A missing file returns an empty list — an absent cache is the normal
+    starting state, not an error. Malformed lines are skipped defensively
+    so a single corrupt line can't take down the whole cache.
+
+    Args:
+        path: JSONL cache file path.
+
+    Returns:
+        List of parsed entry dicts, in file order.
+    """
+    if not path.exists():
+        return []
+
+    entries: List[Dict[str, Any]] = []
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entries.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    return entries
+
+
+def _write_cache_entries(entries: List[Dict[str, Any]], path: Path) -> None:
+    """
+    Atomically rewrite path with entries (one JSON object per line).
+
+    Writes to a sibling temp file first, then os.replace()s it over path
+    in a single filesystem operation, so readers never observe a
+    partially written cache file (satisfies the brief's atomicity
+    requirement without needing a lock — single-threaded use only, per
+    Global Constraints).
+
+    Args:
+        entries: List of entry dicts to serialize, one per line.
+        path: JSONL cache file path to (re)write.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_name(path.name + ".tmp")
+    with open(tmp_path, "w") as f:
+        for entry in entries:
+            f.write(json.dumps(entry, default=str) + "\n")
+    os.replace(tmp_path, path)
+
+
+def _is_cache_entry_expired(entry: Dict[str, Any]) -> bool:
+    """
+    True if entry's TTL has elapsed relative to the current time.
+
+    Reads elapsed time via time.time() (not datetime) so tests can
+    monkeypatch tv_cdp_health.time.time to simulate TTL expiry instantly,
+    without a real sleep.
+
+    Args:
+        entry: A cache record with "timestamp" (str, epoch seconds) and
+            "ttl_seconds" (int) fields.
+
+    Returns:
+        True if now - stored timestamp exceeds ttl_seconds.
+    """
+    stored_at = float(entry.get("timestamp", 0))
+    ttl_seconds = entry.get("ttl_seconds", 300)
+    return (time.time() - stored_at) > ttl_seconds
+
+
+def cache_set(key: str, response: dict, ttl_seconds: int = 300) -> None:
+    """
+    Store response in cache with TTL, replacing any existing entry for key.
+
+    Reads the current cache file, drops any existing entry for key (so a
+    repeated cache_set for the same key never accumulates duplicate
+    lines — see Notes: "keep cache file size reasonable"), appends a
+    fresh entry stamped with the current time, and atomically rewrites
+    the cache file.
+
+    Args:
+        key: Cache key (see generate_cache_key).
+        response: The response payload to cache; must be JSON-serializable.
+        ttl_seconds: Seconds until this entry is considered expired
+            (default 300 = 5 minutes, per Global Constraints).
+
+    Returns:
+        None. Best-effort: this is a resilience cache, not critical-path
+        storage — write failures are logged, never raised.
+    """
+    try:
+        entries = _read_cache_entries(TV_CDP_CACHE_PATH)
+        entries = [e for e in entries if e.get("key") != key]
+        entries.append({
+            "key": key,
+            "response": response,
+            "timestamp": str(time.time()),
+            "ttl_seconds": ttl_seconds,
+        })
+        _write_cache_entries(entries, TV_CDP_CACHE_PATH)
+    except Exception as e:
+        logger.error(f"Failed to cache_set key={key}: {str(e)}")
+
+
+def cache_get(key: str) -> Optional[dict]:
+    """
+    Get cached response for key if present and not expired.
+
+    Implements lazy expiration per the brief's Key Design Decisions: an
+    expired entry is only detected and removed when it is actually
+    looked up via cache_get, not via a background sweep — a cache that
+    is never queried again simply keeps its stale entry on disk.
+
+    Args:
+        key: Cache key to look up (see generate_cache_key).
+
+    Returns:
+        The cached response dict if a fresh (non-expired) entry exists,
+        else None — covers no entry ever existing, the entry having
+        expired, and any cache read failure.
+    """
+    try:
+        entries = _read_cache_entries(TV_CDP_CACHE_PATH)
+    except Exception as e:
+        logger.error(f"Failed to read cache for key={key}: {str(e)}")
+        return None
+
+    match = next((e for e in entries if e.get("key") == key), None)
+    if match is None:
+        return None
+
+    if _is_cache_entry_expired(match):
+        remaining = [e for e in entries if e.get("key") != key]
+        _write_cache_entries(remaining, TV_CDP_CACHE_PATH)
+        logger.info(f"Cache expired for key={key}; entry removed")
+        return None
+
+    logger.info(f"Cache hit for key={key}")
+    return match.get("response")
+
+
+def cache_clear() -> None:
+    """
+    Clear all cache entries.
+
+    Removes the cache file entirely if present; a no-op if it doesn't
+    exist. Best-effort — failures are logged, never raised (matches
+    cache_get/cache_set's non-critical-path error handling).
+
+    Returns:
+        None.
+    """
+    try:
+        if TV_CDP_CACHE_PATH.exists():
+            TV_CDP_CACHE_PATH.unlink()
+    except Exception as e:
+        logger.error(f"Failed to clear cache: {str(e)}")
