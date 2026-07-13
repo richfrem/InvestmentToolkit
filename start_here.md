@@ -5,7 +5,7 @@ _Last updated: 2026-07-12 (Phase 4: E3/B4/G4 shipped — 3 of 4 sub-specs comple
 
 ---
 
-## 🔥 ACTIVE: Fable5 Elevation Guide — Phase 4 underway (E3/B4/G4 shipped, 3 of 4 sub-specs done)
+## ✅ COMPLETE: Fable5 Elevation Guide — Phase 4 fully closed (E3/B4/G4/E4 shipped, 4 of 4 sub-specs done)
 
 **Context:** Fable5's 6-phase roadmap: (1) data layer, (2) valuation committee, (3) executable 
 scoring framework + local TA engine, (4) TradingView/Pine hardening, (5) risk engine + rebalancer 
@@ -15,7 +15,7 @@ scoring framework + local TA engine, (4) TradingView/Pine hardening, (5) risk en
 E1 (risk engine, PR #63), C2 (market regime), B5 (thesis breakers), E2 (rebalancer v2), 
 G2 (risk-officer + red-team + data-quality). Full integration into `/daily` and rebalance workflows.
 
-**Phase 4 (§10: Track Record) — IN PROGRESS, 3 of 4 sub-specs shipped to `origin/main`:**
+**Phase 4 (§10: Track Record) — COMPLETE, all 4 sub-specs shipped to `origin/main`:**
 - ✅ **E3 (Prediction Ledger)** — Commit 61bcd7e. Captures action ratings, DCF values, rebalance 
   orders, breaker forecasts into `data/predictions.jsonl`. Grades outcomes weekly. Feeds track-record 
   report (rolled hit-rate stats by claim type).
@@ -25,8 +25,9 @@ G2 (risk-officer + red-team + data-quality). Full integration into `/daily` and 
 - ✅ **G4 (Structured Evolution Events)** — Commit 7304621. Logs 6 event types (earnings catalysts, 
   breaker overrides, rebalances, large price moves, dividends, forced exits) to `data/evolution_events.jsonl`. 
   Tracks 7d/30d outcomes (NULL until window passes, no lookahead bias). Weekly correlation report.
-- ⏳ **E4 (Backtest Harness)** — IN PROGRESS. Historical rebalance replay via target-portfolio.json 
-  versioning, counterfactual order execution, returns analysis.
+- ✅ **E4 (Backtest Harness)** — Commit ac627f8. Historical rebalance replay via target-portfolio.json 
+  versioning, counterfactual order execution (±5% threshold, ±1d timing), execution quality analysis, 
+  E3 correlation report. Complete feedback loop: predictions → grades → correlations → counterfactuals.
 
 **Also shipped this session, unrelated to the Fable5 phases:** a `norberts-gambit` skill
 (`plugins/portfolio-advisor/skills/norberts-gambit/`) — a broker-agnostic guide for
