@@ -31,7 +31,9 @@ import urllib.request
 import urllib.error
 import logging
 from pathlib import Path
-from typing import TypedDict, Optional, Dict, Any, Callable
+from typing import TypedDict, Optional, Dict, Any, Callable, Union
+
+from pydantic import BaseModel, ValidationError
 
 # Configure logging for health checks
 logger = logging.getLogger(__name__)
@@ -507,3 +509,85 @@ def retry_with_backoff(
             time.sleep(delay)
 
     raise last_exception
+
+
+def validate_tv_response(
+    response: Union[dict, str],
+    expected_schema: type[BaseModel],
+) -> bool:
+    """
+    Validate a TV CDP response against a pydantic schema.
+
+    Accepts either a dict or a JSON string, attempts to instantiate
+    expected_schema with the parsed data, and reports the outcome as a
+    bool. This is a purely defensive, in-memory validation layer: it
+    never raises, regardless of input shape. Extra fields present in the
+    response but not declared on expected_schema are allowed (pydantic
+    v2's default BaseModel config ignores them silently) since TV CDP may
+    return fields we don't validate for yet.
+
+    Args:
+        response: The TV CDP response to validate — either an already
+            parsed dict, or a raw JSON string.
+        expected_schema: A pydantic BaseModel subclass (the class itself,
+            not an instance) describing the expected shape of response.
+
+    Returns:
+        True if response was successfully parsed and validated against
+        expected_schema. False on any parse error, validation error, or
+        unexpected input type — full details are logged, never raised.
+    """
+    try:
+        if isinstance(response, str):
+            try:
+                data = json.loads(response)
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse TV CDP response as JSON: {str(e)}")
+                return False
+        elif isinstance(response, dict):
+            data = response
+        else:
+            logger.error(
+                f"TV CDP response has unsupported type {type(response).__name__}; "
+                "expected dict or JSON string"
+            )
+            return False
+
+        try:
+            expected_schema(**data)
+            return True
+        except ValidationError as e:
+            missing_keys = [
+                ".".join(str(part) for part in err["loc"])
+                for err in e.errors()
+                if err["type"] == "missing"
+            ]
+            other_errors = [
+                f"{'.'.join(str(part) for part in err['loc'])}: {err['msg']}"
+                for err in e.errors()
+                if err["type"] != "missing"
+            ]
+
+            if missing_keys:
+                logger.warning(
+                    f"TV CDP response failed schema validation against "
+                    f"{expected_schema.__name__}: missing keys: {missing_keys}"
+                )
+            if other_errors:
+                logger.warning(
+                    f"TV CDP response failed schema validation against "
+                    f"{expected_schema.__name__}: {other_errors}"
+                )
+            return False
+        except TypeError as e:
+            # expected_schema(**data) requires data to be a mapping; guard
+            # against non-dict JSON payloads (e.g. a bare list or number).
+            logger.error(
+                f"TV CDP response could not be validated against "
+                f"{expected_schema.__name__}: {str(e)}"
+            )
+            return False
+    except Exception as e:
+        # Final defensive catch-all: this function must never raise.
+        logger.error(f"Unexpected error validating TV CDP response: {str(e)}")
+        return False
