@@ -714,3 +714,134 @@ def log_tv_error(
         )
     except Exception as log_error:
         logger.error(f"Failed to log TV CDP error for {function}: {str(log_error)}")
+
+
+class CircuitBreaker:
+    """
+    Stateful circuit breaker for TV CDP calls.
+    Protects against cascading failures by returning cached data.
+
+    States (per Global Constraints in the task brief):
+        healthy   — 0 consecutive failures; fn() is called normally.
+        unhealthy — 1-2 consecutive failures; fn() is still called normally
+            (informational state only; call() does not branch on it).
+        fallback  — failure_count reached failure_threshold; call() never
+            invokes fn() again and returns last_response instead. The only
+            way out of fallback is an explicit reset() (manual, or later
+            called by health-check monitoring per 5A-8) — there is no
+            automatic self-healing probe back to healthy through call().
+
+    This is deliberately the simple circuit-breaker pattern the brief
+    asks for, not the more sophisticated half-open/auto-probe variant.
+    """
+
+    def __init__(self, failure_threshold: int = 3, recovery_attempts: int = 10):
+        self.failure_threshold = failure_threshold
+        self.recovery_attempts = recovery_attempts
+        self.failure_count = 0
+        self.success_count = 0
+        self.state = "healthy"  # healthy, unhealthy, fallback
+        self.last_response = None
+
+    def call(self, fn: Callable, *args, **kwargs) -> Any:
+        """
+        Call fn; track state; return result or cached data on fallback.
+
+        While state is "fallback", fn() is never invoked — last_response
+        is returned directly (read-only; no side effects on the cache).
+        Otherwise fn(*args, **kwargs) is called: on success the result is
+        cached and failure_count resets to 0; on failure the original
+        exception is re-raised to the caller after failure bookkeeping
+        (matches this file's existing retry_with_backoff behavior of
+        surfacing the real error rather than swallowing it).
+
+        Args:
+            fn: Callable to invoke when not in fallback state.
+            *args: Positional args forwarded to fn.
+            **kwargs: Keyword args forwarded to fn.
+
+        Returns:
+            fn's result on success, or the cached last_response while in
+            fallback state.
+
+        Raises:
+            Exception: Re-raises whatever fn(*args, **kwargs) raises.
+        """
+        if self.state == "fallback":
+            return self.last_response
+
+        try:
+            result = fn(*args, **kwargs)
+        except Exception as e:
+            self._record_failure(e)
+            raise
+        else:
+            self._record_success(result)
+            return result
+
+    def reset(self) -> None:
+        """
+        Reset to healthy state.
+
+        Manual intervention hook (per brief Notes: "eventually will be
+        called by health-check monitoring"). Unconditionally clears both
+        counters and restores state to "healthy"; logs the transition if
+        state was not already healthy.
+        """
+        previous_state = self.state
+        self.state = "healthy"
+        self.failure_count = 0
+        self.success_count = 0
+        if previous_state != "healthy":
+            logger.info(f"Circuit breaker: manual reset to healthy (was {previous_state})")
+
+    def _record_success(self, result: Any) -> None:
+        """
+        Update counters/cache after a successful fn() call.
+
+        Increments success_count and caches result as last_response;
+        unconditionally resets failure_count to 0 per the brief's
+        per-call contract. Additionally, once success_count reaches
+        recovery_attempts it wraps back to 0 — the brief's "after 10
+        successful calls, reset failure counter" recovery bookkeeping.
+
+        Args:
+            result: The value returned by fn(), cached for fallback use.
+        """
+        self.success_count += 1
+        self.failure_count = 0
+        self.last_response = result
+        if self.success_count >= self.recovery_attempts:
+            self.success_count = 0
+        self._update_state()
+
+    def _record_failure(self, error: Exception) -> None:
+        """
+        Update counters after a failed fn() call.
+
+        Args:
+            error: The exception raised by fn(), logged for context.
+        """
+        self.failure_count += 1
+        logger.warning(
+            f"Circuit breaker: call failed (failure {self.failure_count}/{self.failure_threshold}): {str(error)}"
+        )
+        self._update_state()
+
+    def _update_state(self) -> None:
+        """
+        Recompute state from failure_count and log any transition.
+
+        healthy: failure_count == 0. unhealthy: 0 < failure_count <
+        failure_threshold. fallback: failure_count >= failure_threshold.
+        """
+        previous_state = self.state
+        if self.failure_count >= self.failure_threshold:
+            self.state = "fallback"
+        elif self.failure_count > 0:
+            self.state = "unhealthy"
+        else:
+            self.state = "healthy"
+
+        if self.state != previous_state:
+            logger.info(f"Circuit breaker: switching to {self.state} (was {previous_state})")
