@@ -1,29 +1,35 @@
 ---
-description: Run compliance and structural audits on all modified plugins and skills, and resolve errors before pushing to GitHub.
+description: Run compliance, coding conventions, and structural audits on all modified plugins and skills, and resolve errors before pushing to GitHub.
 globs:
   - "plugins/**/*"
 ---
 
 # Pre-Push Audit & Verification Rule
 
-Before pushing any changes to GitHub or concluding updates to plugins or skills, you MUST run standard compliance and structural audits on all affected plugins, and resolve any flagged errors or symlink issues.
+Before pushing any changes to GitHub or concluding updates to plugins or skills, you MUST run standard compliance, coding conventions, and structural audits on all affected plugins, and resolve any flagged errors or symlink issues.
 
 ## Verification Commands
 
 Run the following checks from the repository root:
 
-1. **Compliance Audit**:
+1. **Workspace Coding Conventions Audit**:
+   Ensure all file headers, Purpose, Key Input Dependencies, and function docstrings match codebase policies:
+   ```bash
+   python3 plugins/dev-utils/scripts/workspace_conventions_auditor.py
+   ```
+
+2. **Compliance Audit**:
    ```bash
    python plugins/agent-scaffolders/scripts/audit.py --path plugins/<plugin-name>
    ```
 
-2. **Structural Audit**:
+3. **Structural Audit**:
    Verify symlink and resource compliance:
    ```bash
    python plugins/agent-scaffolders/scripts/audit_plugin_structure.py plugins/<plugin-name>
    ```
 
-3. **Cross-Platform Symlink Check**:
+4. **Cross-Platform Symlink Check**:
    ```bash
    python .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
    ```

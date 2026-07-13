@@ -124,7 +124,7 @@ Two forward-looking applications follow directly from this mapping, both still p
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-11 10:50 by TV sync · Portfolio total: $30,840 USD*
+*Auto-updated 2026-07-12 19:17 by TV sync · Portfolio total: $30,355 USD*
 
 **Pillar total — Actual: 0.0% · Target: 0.0% · Gap: +0.0pp**
 <!-- AUTO_UPDATE_END: current_positions -->
