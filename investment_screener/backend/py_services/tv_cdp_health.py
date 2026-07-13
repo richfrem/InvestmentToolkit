@@ -750,10 +750,12 @@ class CircuitBreaker:
         While state is "fallback", fn() is never invoked — last_response
         is returned directly (read-only; no side effects on the cache).
         Otherwise fn(*args, **kwargs) is called: on success the result is
-        cached and failure_count resets to 0; on failure the original
-        exception is re-raised to the caller after failure bookkeeping
-        (matches this file's existing retry_with_backoff behavior of
-        surfacing the real error rather than swallowing it).
+        cached and success_count increments (failure_count only resets
+        once success_count reaches recovery_attempts — see
+        _record_success); on failure the original exception is
+        re-raised to the caller after failure bookkeeping (matches this
+        file's existing retry_with_backoff behavior of surfacing the
+        real error rather than swallowing it).
 
         Args:
             fn: Callable to invoke when not in fallback state.
@@ -799,21 +801,25 @@ class CircuitBreaker:
         """
         Update counters/cache after a successful fn() call.
 
-        Increments success_count and caches result as last_response;
-        unconditionally resets failure_count to 0 per the brief's
-        per-call contract. Additionally, once success_count reaches
-        recovery_attempts it wraps back to 0 — the brief's "after 10
-        successful calls, reset failure counter" recovery bookkeeping.
+        Increments success_count and caches result as last_response.
+        failure_count is deliberately left untouched by an individual
+        success — per the resolved brief ambiguity (Scope §4 / Key
+        Design Decisions govern over Scope §2), recovery only happens
+        once success_count reaches recovery_attempts (default 10
+        accumulated successes). At that point failure_count is reset
+        to 0, state transition logic is re-run since failure_count
+        changed, and success_count wraps back to 0 to start the next
+        recovery cycle.
 
         Args:
             result: The value returned by fn(), cached for fallback use.
         """
         self.success_count += 1
-        self.failure_count = 0
         self.last_response = result
         if self.success_count >= self.recovery_attempts:
+            self.failure_count = 0
             self.success_count = 0
-        self._update_state()
+            self._update_state()
 
     def _record_failure(self, error: Exception) -> None:
         """
