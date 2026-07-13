@@ -181,3 +181,71 @@ class EarningsGrade(BaseModel):
             }
         ]}
     }
+
+
+def _fetch_consensus_for_ticker(ticker: str) -> dict | None:
+    """Fetch consensus earnings expectations for a single ticker.
+
+    Retrieves analyst consensus EPS and revenue estimates along with the
+    next earnings date from yfinance. Returns None on missing data or errors.
+
+    Args:
+        ticker: Stock ticker symbol (e.g., 'AAPL', 'INTC').
+
+    Returns:
+        Dict with keys {consensus_eps, consensus_revenue, earnings_date} on success,
+        or None if data unavailable or API error. All values may be None individually.
+
+        Example return:
+            {
+                "consensus_eps": 1.05,
+                "consensus_revenue": 3.8e11,
+                "earnings_date": "2026-07-15"
+            }
+    """
+    try:
+        import yfinance as yf
+        from datetime import date
+
+        ticker_obj = yf.Ticker(ticker)
+
+        # Fetch consensus estimates from yfinance info dict
+        # epsTrailingTwelveMonths: trailing twelve months EPS
+        # totalRevenue: most recent annual revenue
+        info = ticker_obj.info or {}
+
+        consensus_eps = info.get("epsTrailingTwelveMonths")
+        consensus_revenue = info.get("totalRevenue")
+
+        # Fetch next earnings date from calendar
+        earnings_date_str = None
+        try:
+            cal = ticker_obj.calendar
+            if cal is not None:
+                import pandas as pd
+
+                # yfinance returns a DataFrame — columns are dates
+                raw_dt = None
+                if isinstance(cal, pd.DataFrame) and len(cal.columns) > 0:
+                    raw_dt = cal.columns[0]
+                elif isinstance(cal, dict):
+                    dates = cal.get("Earnings Date", [])
+                    raw_dt = dates[0] if dates else None
+
+                if raw_dt is not None:
+                    earnings_date_obj = date.fromisoformat(str(raw_dt)[:10])
+                    earnings_date_str = earnings_date_obj.isoformat()
+        except Exception:
+            # Earnings date fetch failed, continue with consensus data
+            pass
+
+        # Return dict even if fields are None (graceful degrade)
+        return {
+            "consensus_eps": consensus_eps,
+            "consensus_revenue": consensus_revenue,
+            "earnings_date": earnings_date_str,
+        }
+
+    except Exception:
+        # API error, rate limit, timeout, etc. → graceful degrade to None
+        return None
