@@ -757,3 +757,98 @@ def extract_with_lag_logging(ticker: str, timeframe: str = "1D") -> Optional[dic
     if elapsed >= _LAG_WARNING_THRESHOLD_SECONDS:
         logger.warning(f"Data window lagged by {elapsed:.1f}s for {ticker} ({timeframe})")
     return result
+
+
+# --- Task 5D-7: Data Window Validation Harness ---
+#
+# get_validated_data_window() is the natural composition point for
+# everything built across 5D-1 through 5D-6: it chains
+# extract_with_lag_logging() (5D-6), validate_ohlcv() (5D-2), and
+# extract_indicators() (5D-3) unchanged — pure composition, no new
+# extraction or validation logic of its own. See this task's brief for
+# the real-correctness reasoning behind only calling extract_indicators()
+# after a non-None candle is confirmed.
+
+_EMPTY_INDICATORS: Dict[str, Optional[float]] = {
+    "rsi": None,
+    "macd": None,
+    "bb_upper": None,
+    "bb_lower": None,
+    "adx": None,
+    "atr": None,
+}
+
+
+def get_validated_data_window(ticker: str, timeframe: str = "1D") -> Dict[str, Any]:
+    """
+    Full extraction + validation chain: extract (with lag logging) ->
+    validate OHLCV -> extract + report indicators.
+
+    Composes extract_with_lag_logging() (5D-6, itself composing
+    extract_data_window()'s 5D-1 retry logic), validate_ohlcv() (5D-2),
+    and extract_indicators() (5D-3) — reuses all three unchanged, adds
+    no new extraction or validation logic of its own.
+
+    Indicators are only extracted if a non-None candle was obtained
+    (confirms the chart genuinely switched to `ticker` — see this
+    task's brief for why calling extract_indicators() after a total
+    candle-extraction failure would risk reading the wrong chart's
+    data). On total failure, indicators report as all-None, matching
+    extract_indicators()'s own "nothing available" shape.
+
+    `valid` reflects ONLY validate_ohlcv()'s verdict on the candle — it
+    does NOT gate on indicator availability (a candle can be perfectly
+    valid even if RSI/MACD/etc. happen to be unavailable on that
+    particular chart — a normal, expected condition per 5D-3's own
+    design, not a validation failure).
+
+    Never raises: every underlying function (extract_with_lag_logging,
+    validate_ohlcv, extract_indicators) already never raises — this
+    harness adds no new exception surface, and a total candle
+    extraction failure degrades to a structured invalid result with an
+    explanatory warning, not an exception.
+
+    Args:
+        ticker: Ticker symbol.
+        timeframe: Real TV resolution string, passed through unmodified
+            to all three composed functions.
+
+    Returns:
+        {
+            "valid": bool,         # validate_ohlcv()'s verdict; False
+                                    # if candle extraction itself failed
+            "candle": dict | None, # extract_with_lag_logging()'s raw
+                                    # result (may have None sub-fields
+                                    # per 5D-1's own real contract, or
+                                    # be None entirely on total failure)
+            "indicators": Dict[str, Optional[float]],  # extract_indicators()'s
+                                    # result, or an all-None dict if
+                                    # candle extraction failed entirely
+            "warnings": List[str], # validate_ohlcv()'s error list, or
+                                    # a single synthetic warning
+                                    # explaining a total extraction
+                                    # failure
+        }
+    """
+    candle = extract_with_lag_logging(ticker, timeframe)
+
+    if candle is None:
+        return {
+            "valid": False,
+            "candle": None,
+            "indicators": dict(_EMPTY_INDICATORS),
+            "warnings": [
+                f"extract_with_lag_logging() returned None for {ticker} "
+                f"({timeframe}) — extraction failed after all retries"
+            ],
+        }
+
+    indicators = extract_indicators(timeframe)
+    ohlcv_result = validate_ohlcv(candle)
+
+    return {
+        "valid": ohlcv_result["valid"],
+        "candle": candle,
+        "indicators": indicators,
+        "warnings": list(ohlcv_result["errors"]),
+    }
