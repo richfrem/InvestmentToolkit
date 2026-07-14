@@ -311,3 +311,83 @@ def dedup_alerts(ticker: str, price: float, direction: str) -> Optional[str]:
         return None
 
     return _find_created_alert_id(list_result.get("alerts", []), ticker, price)
+
+
+def _classify_alert_state(entry: Dict) -> Optional[str]:
+    """Classify one raw `alert list` entry into pending/fired/expired.
+
+    Uses ONLY the real, confirmed `active` and `last_fired` fields
+    (Task 5C-3's brief, grounded in 306 live-sampled real alerts) —
+    deliberately never reads `expiration`, since no confirmed real
+    example exists of that field's shape on a genuinely expired alert;
+    guessing at it risks silently misclassifying real data.
+
+    Classification priority (fired wins over everything else, since
+    `last_fired`'s presence is the most information-dense, unambiguous
+    real signal available):
+        - last_fired is not None                  -> "fired"
+        - last_fired is None and active is False   -> "expired"
+        - last_fired is None and active is True    -> "pending"
+        - anything else (missing/malformed `active`) -> "pending"
+          (conservative fallback — never silently call an ambiguous
+          entry "fired"/"expired" when it isn't clearly either)
+
+    Args:
+        entry: One raw entry from an `alert list` response's `alerts`
+            array. Expected to be a dict, but this function does not
+            validate `alert_id` presence — that check belongs to the
+            caller (sync_alert_state()), which also decides whether to
+            skip the entry entirely.
+
+    Returns:
+        "pending", "fired", or "expired".
+    """
+    last_fired = entry.get("last_fired")
+    if last_fired is not None:
+        return "fired"
+    if entry.get("active") is False:
+        return "expired"
+    return "pending"
+
+
+def sync_alert_state() -> List[Dict[str, Optional[str]]]:
+    """
+    Poll TV for all current alerts and classify each into pending/fired/
+    expired for this single poll.
+
+    Stateless: does not persist results or compare against a prior poll
+    (Task 5C-4's persistence layer, not yet built, owns that). Classifies
+    using TV's own authoritative `active`/`last_fired` fields — never
+    independently re-derives firing status via a price comparison (TV's
+    server-side alert firing is authoritative; re-deriving it client-side
+    would be redundant and race-prone).
+
+    Never raises: a failed `alert list` call, or any malformed individual
+    alert entry, degrades gracefully (empty list, or that one entry
+    skipped) rather than propagating.
+
+    Returns:
+        List of {"alert_id", "symbol", "state", "last_fired", "created"}
+        dicts, one per successfully classified alert. Empty list if the
+        TV call fails or there are no alerts.
+    """
+    list_result = tv_call("alert", "list")
+    if not _tv_call_succeeded(list_result):
+        logger.warning("sync_alert_state: alert list failed: %s", list_result)
+        return []
+
+    updated_alerts: List[Dict[str, Optional[str]]] = []
+    for entry in list_result.get("alerts", []):
+        if not isinstance(entry, dict) or "alert_id" not in entry:
+            logger.warning("sync_alert_state: skipping malformed alert entry: %r", entry)
+            continue
+
+        updated_alerts.append({
+            "alert_id": entry.get("alert_id"),
+            "symbol": entry.get("symbol"),
+            "state": _classify_alert_state(entry),
+            "last_fired": entry.get("last_fired"),
+            "created": entry.get("created"),
+        })
+
+    return updated_alerts
