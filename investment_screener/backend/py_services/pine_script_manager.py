@@ -68,6 +68,10 @@ class PineScriptEntry(BaseModel):
             injection into TradingView, or None if never injected.
         hash: Git commit hash or file content hash, used to detect
             changes since the last registration.
+        category: Free-text tag for the script's style/purpose (e.g.
+            "level", "trend-follower", "mean-reversion"). Not an enum —
+            new categories can't be predicted in advance. None for
+            scripts registered before Task 5B-6 or that never set one.
     """
 
     path: str
@@ -75,6 +79,7 @@ class PineScriptEntry(BaseModel):
     description: str
     last_injected: Optional[str] = None
     hash: str
+    category: Optional[str] = None
 
 
 class PineScriptRegistry(BaseModel):
@@ -179,13 +184,14 @@ def register_script(
     path: str,
     description: str,
     version: str = "1.0.0",
+    category: Optional[str] = None,
 ) -> PineScriptEntry:
     """Create or update a script entry in the registry and persist it.
 
     Loads the current registry, adds/replaces the entry for `name`
     (re-registering an existing name overwrites its version/description/
-    path/hash — entries are treated as immutable outside of this
-    re-register path), and saves atomically.
+    path/hash/category — entries are treated as immutable outside of
+    this re-register path), and saves atomically.
 
     Args:
         name: Script name to register/update (registry key).
@@ -193,6 +199,10 @@ def register_script(
             plugins/tradingview/assets/pinescript-indicators/.
         description: Human-readable summary of the indicator.
         version: Semantic version string (default "1.0.0").
+        category: Free-text style/purpose tag (e.g. "level",
+            "trend-follower"). Defaults to None for backward
+            compatibility with existing call sites (5B-1 through 5B-5)
+            that don't pass one.
 
     Returns:
         The newly stored PineScriptEntry.
@@ -203,6 +213,7 @@ def register_script(
         version=version,
         description=description,
         hash=_compute_placeholder_hash(path, version),
+        category=category,
     )
     registry.add_script(name, entry)
     save_registry(registry)
@@ -774,3 +785,100 @@ def rollback_pine_script(script_name: str, to_version: str, chart_symbol: str) -
         )
 
     return inject_pine_script(script_name, chart_symbol)
+
+
+def _versions_dir(script_name: str) -> Path:
+    """Resolve the version-archive directory for a script.
+
+    Relative to PINE_REGISTRY_PATH's parent — the same base every entry
+    `path` resolves against — read live off the module global so
+    monkeypatched tests resolve into their own temp directory, matching
+    _resolve_script_path()'s existing pattern.
+
+    Args:
+        script_name: Registry key of the script.
+
+    Returns:
+        Path to plugins/tradingview/assets/pinescript-indicators/
+        versions/<script_name>/ (or the monkeypatched temp equivalent).
+    """
+    return PINE_REGISTRY_PATH.parent / "versions" / script_name
+
+
+def archive_script_version(script_name: str) -> Optional[Path]:
+    """Snapshot a registered script's current file content into its
+    versions/ archive, named after its current registry version.
+
+    Opt-in, not automatic — callers (e.g. a future CLI wrapper, or the
+    5B-8 /daily integration) invoke this deliberately before overwriting
+    an entry with a new version via register_script(), to preserve the
+    outgoing version's content. This is a separate mechanism from
+    5B-4/5B-5's git-history-based versioning (list_script_versions() /
+    rollback_pine_script()) — a plain filesystem archive, independent of
+    git, that coexists with rather than replaces it.
+
+    Never raises: an unregistered script, a missing file on disk, or a
+    filesystem write failure all degrade to None.
+
+    Args:
+        script_name: Registry key of the script to archive.
+
+    Returns:
+        The path the snapshot was written to, or None if the script
+        isn't registered, its file is missing on disk, or the write
+        failed.
+    """
+    registry = load_registry()
+    entry = registry.get_script(script_name)
+    if entry is None:
+        return None
+
+    full_path = _resolve_script_path(entry)
+    if not full_path.exists():
+        return None
+
+    content = full_path.read_text()
+    versions_dir = _versions_dir(script_name)
+    snapshot_path = versions_dir / f"{entry.version}.pine"
+    try:
+        versions_dir.mkdir(parents=True, exist_ok=True)
+        snapshot_path.write_text(content)
+    except OSError as e:
+        logger.warning(
+            "archive_script_version: failed to archive '%s' version '%s': %s",
+            script_name,
+            entry.version,
+            e,
+        )
+        return None
+    return snapshot_path
+
+
+def list_available_versions(script_name: str) -> List[str]:
+    """List version strings archived for a script under its versions/
+    directory (filenames without the .pine extension).
+
+    Never raises: no archive directory, or any read failure, returns [].
+    Sort order is lexical on the version string (NOT semver-aware — a
+    real limitation, acceptable for now since no caller needs numeric
+    version ordering yet; flag it if a later task does).
+
+    Args:
+        script_name: Registry key to look up archived versions for.
+
+    Returns:
+        Sorted list of version strings (e.g. ["1.0.0", "2.0.0"]), or []
+        if none exist.
+    """
+    versions_dir = _versions_dir(script_name)
+    if not versions_dir.exists():
+        return []
+    try:
+        return sorted(p.stem for p in versions_dir.glob("*.pine"))
+    except OSError as e:
+        logger.warning(
+            "list_available_versions: failed to list versions for '%s': %s",
+            script_name,
+            e,
+        )
+        return []
