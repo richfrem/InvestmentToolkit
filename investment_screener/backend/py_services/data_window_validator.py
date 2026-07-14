@@ -53,6 +53,14 @@ if _TV_SCRIPTS_DIR not in sys.path:
 
 from tv_client import tv_call  # noqa: E402
 
+# tv_cdp_health.py lives in the SAME directory as this module
+# (investment_screener/backend/py_services/), unlike tv_call() above — a
+# plain top-level import works with no sys.path manipulation. Top-level
+# (not lazy/function-local) is used here per this task's brief: there's
+# no heavy/side-effecting import-time behavior in tv_cdp_health.py to
+# defer, and a top-level import is simpler.
+from tv_cdp_health import cache_get, cache_set  # noqa: E402
+
 # Key-variant lists, ordered most-to-least likely, based on the real
 # confirmed live sample (2026-07-14) — see this module's docstring and
 # this task's brief for why a single hardcoded vocabulary is unsafe.
@@ -554,3 +562,73 @@ def extract_indicators(timeframe: str) -> Dict[str, Optional[float]]:
     atr = _validate_range(_parse_price(_first_present(data, _ATR_KEYS)), 0, None)
 
     return {"rsi": rsi, "macd": macd, "bb_upper": bb_upper, "bb_lower": bb_lower, "adx": adx, "atr": atr}
+
+
+# --- Task 5D-4: Local Caching ---
+#
+# cache_data_window() deliberately reuses tv_cdp_health.py's already-built,
+# already-tested generic file-based TTL cache (cache_get()/cache_set(),
+# Task 5A-7) rather than reimplementing atomic-write/lazy-expiration logic
+# in a second, separate data_window_cache.jsonl file. See this task's
+# brief for the full reasoning — entries share the SAME physical cache
+# file (tv_cdp_responses_cache.jsonl) as other tv_call() response caching,
+# namespaced under "data_window:" to guarantee no key collision.
+
+_CACHE_KEY_PREFIX = "data_window:"
+
+
+def cache_data_window(key: str, data: dict, ttl: int = 300) -> bool:
+    """
+    Cache a Data Window extraction result (an OHLCV candle from
+    extract_data_window(), an indicator dict from extract_indicators(),
+    or any other JSON-serializable payload) with TTL-based expiration.
+
+    Reuses tv_cdp_health.py's already-built, already-tested generic
+    file-based TTL cache (cache_set()/cache_get(), Task 5A-7) rather
+    than reimplementing atomic-write/lazy-expiration logic — see this
+    task's brief for why entries deliberately share the SAME physical
+    cache file (tv_cdp_responses_cache.jsonl) as other tv_call()
+    response caching, rather than a separate data_window_cache.jsonl
+    file the plan's terse checklist names but which would require
+    duplicating already-reviewed logic to honor literally.
+
+    A "data_window:" prefix is applied to the caller's key before
+    storage, guaranteeing this task's cache entries can never collide
+    with any tv_call()-command's own cache key (those are always raw
+    hex digests from generate_cache_key(), never starting with
+    "data_window:").
+
+    Honest success/failure reporting: cache_set() itself deliberately
+    never raises and never reports success/failure (its own docstring:
+    "Best-effort... write failures are logged, never raised") — the
+    information is structurally unavailable to a caller just by
+    invoking it. To honor this function's `-> bool` contract honestly
+    (not just always returning True), this wrapper immediately verifies
+    the write by reading the entry back via cache_get() and checking it
+    round-tripped successfully — a legitimate, cheap (local file read)
+    verification technique, not a workaround masking a design flaw.
+
+    Never raises (cache_set()/cache_get() already never raise; this
+    wrapper adds no new exception surface).
+
+    Args:
+        key: Caller-supplied cache key (e.g. "NVDA:1D" for a ticker+
+            timeframe combination). Used directly (with the namespacing
+            prefix above) — NOT hashed via generate_cache_key(), since
+            Data Window callers already have a natural, short,
+            meaningful key available and don't need
+            generate_cache_key()'s (function_name, args)-based scheme.
+        data: The payload to cache; must be JSON-serializable.
+        ttl: Seconds until this entry expires (default 300 = 5 min,
+            matches 5A-7's own default and the plan's ask).
+
+    Returns:
+        True if the entry was verified present (and not already
+        expired) immediately after writing; False if the verification
+        read didn't find it (a genuine write failure, or — extremely
+        unlikely but theoretically possible with ttl=0 — the entry
+        expiring in the instant between write and verify).
+    """
+    namespaced_key = f"{_CACHE_KEY_PREFIX}{key}"
+    cache_set(namespaced_key, data, ttl_seconds=ttl)
+    return cache_get(namespaced_key) is not None
