@@ -40,7 +40,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 # Cross-directory import of tv_call (Task 5A-8). Follows the exact same
 # sys.path-insert pattern pine_script_manager.py/alert_manager.py already
@@ -632,3 +632,67 @@ def cache_data_window(key: str, data: dict, ttl: int = 300) -> bool:
     namespaced_key = f"{_CACHE_KEY_PREFIX}{key}"
     cache_set(namespaced_key, data, ttl_seconds=ttl)
     return cache_get(namespaced_key) is not None
+
+
+# --- Task 5D-5: Cache Hit Logic ---
+#
+# get_cached_or_fetch() is a generic cache-aside function layered on top of
+# 5D-4's cache_data_window() and 5A-7's cache_get() — both already
+# imported at module level above (line 62). Deliberately synchronous, no
+# asyncio anywhere: see this task's brief for why the plan's "async if
+# possible" aspiration doesn't fit this codebase (every Python service
+# here, including tv_call() itself, is synchronous — there's no
+# precedent and no ready async caller).
+
+
+def get_cached_or_fetch(
+    key: str, fetch_fn: Callable[[], Optional[dict]], ttl: int = 300
+) -> Optional[dict]:
+    """
+    Cache-aside lookup: return the cached value for `key` if a fresh entry
+    exists, else call `fetch_fn()`, cache its result (via this module's
+    own cache_data_window(), Task 5D-4, reusing the same "data_window:"
+    namespacing so entries are visible to both functions interchangeably),
+    and return it.
+
+    Args:
+        key: Cache key — the same bare string a caller would pass to
+            cache_data_window() (e.g. "NVDA:1D"). Namespacing is applied
+            internally by this function's own cache_get() call, matching
+            5D-4's established "data_window:" prefix convention — the
+            caller never sees or supplies the prefix.
+        fetch_fn: A zero-argument callable that fetches fresh data on a
+            cache miss (e.g. a lambda wrapping
+            extract_data_window(ticker, timeframe) or
+            extract_indicators(timeframe)). Called synchronously, at most
+            once per call to get_cached_or_fetch(), and ONLY on a genuine
+            cache miss — never on a hit.
+        ttl: Seconds the freshly-fetched result should be cached for on a
+            miss (irrelevant on a hit — an existing entry's TTL was
+            already set when it was originally cached).
+
+    Returns:
+        The cached dict on a hit, or fetch_fn()'s return value on a miss
+        (which may itself be None — see below).
+
+    A miss where fetch_fn() returns None is NOT cached (caching a
+    failure/empty result would poison the cache for the full TTL window,
+    hiding a subsequent successful fetch attempt) — the None is still
+    returned as-is to the caller, matching extract_data_window()'s own
+    real "give up after retries" contract (Task 5D-1).
+
+    Does NOT catch exceptions from fetch_fn() — a raising fetch_fn is the
+    caller's own responsibility to handle; only this function's own
+    cache-lookup/cache-write logic (via cache_get()/cache_data_window(),
+    both already never-raising per 5A-7/5D-4) is guaranteed not to raise
+    on its own.
+    """
+    namespaced_key = f"{_CACHE_KEY_PREFIX}{key}"
+    cached = cache_get(namespaced_key)
+    if cached is not None:
+        return cached
+
+    fresh = fetch_fn()
+    if fresh is not None:
+        cache_data_window(key, fresh, ttl=ttl)
+    return fresh
