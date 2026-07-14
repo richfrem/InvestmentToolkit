@@ -34,12 +34,13 @@ Key Input Dependencies:
     - plugins/tradingview/scripts/tv_client.py (Task 5A-8's tv_call())
 """
 
+import math
 import re
 import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 # Cross-directory import of tv_call (Task 5A-8). Follows the exact same
 # sys.path-insert pattern pine_script_manager.py/alert_manager.py already
@@ -272,3 +273,157 @@ def extract_data_window(ticker: str, timeframe: str = "1D") -> Optional[dict]:
             time.sleep(delay)
             delay *= 2
     return last_known_good
+
+
+# --- Task 5D-2: OHLCV Validation ---
+#
+# validate_ohlcv() is a pure, offline validation function operating on
+# a candle dict matching extract_data_window()'s (5D-1) real output
+# shape. It does NOT call extract_data_window() or any tv_call()-based
+# function.
+
+_PRICE_FIELDS = ["open", "high", "low", "close"]
+_MAX_SPREAD_PERCENT = 2.0
+
+
+def _is_finite_number(value: Any) -> bool:
+    """True only for a real, finite int/float — excludes bool (Python's
+    bool is a subclass of int), None, NaN, and +/-inf."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return False
+    return not (math.isnan(value) or math.isinf(value))
+
+
+def _validate_price_fields(candle: dict) -> List[str]:
+    """Check each of open/high/low/close via `_is_finite_number()`.
+
+    Args:
+        candle: The candle dict being validated.
+
+    Returns:
+        One specific error message per invalid/missing price field
+        (empty list if all four are finite numbers).
+    """
+    errors = []
+    for field in _PRICE_FIELDS:
+        if not _is_finite_number(candle.get(field)):
+            errors.append(f"{field} is missing or not a finite number")
+    return errors
+
+
+def _validate_relations_and_spread(candle: dict) -> List[str]:
+    """Run the three relational checks plus the spread check.
+
+    Only called once all four price fields are confirmed finite numbers
+    (see validate_ohlcv) — a relational comparison against None/NaN
+    would raise TypeError, so this is never called until that's ruled
+    out.
+
+    Checks exactly `open <= high`, `high >= low`, `low <= close` — see
+    validate_ohlcv's docstring and this task's brief for why this
+    three-relation set is deliberately not expanded with `low <= open`/
+    `close <= high`. Spread is intraday range as a percentage of low
+    (`(high - low) / low * 100`), flagged at >= 2% — a best-effort
+    interpretation of an ambiguous plan requirement, see this task's
+    brief.
+
+    Args:
+        candle: The candle dict being validated (all four price fields
+            already confirmed finite numbers by the caller).
+
+    Returns:
+        One specific error message per failed check (empty list if all
+        pass).
+    """
+    errors = []
+    open_, high, low, close = candle["open"], candle["high"], candle["low"], candle["close"]
+
+    if not (open_ <= high):
+        errors.append(f"open ({open_}) must be <= high ({high})")
+    if not (high >= low):
+        errors.append(f"high ({high}) must be >= low ({low})")
+    if not (low <= close):
+        errors.append(f"low ({low}) must be <= close ({close})")
+
+    spread_percent = (high - low) / low * 100
+    if spread_percent >= _MAX_SPREAD_PERCENT:
+        errors.append(
+            f"spread {spread_percent:.2f}% exceeds {_MAX_SPREAD_PERCENT}% threshold "
+            "(intraday range as % of low)"
+        )
+    return errors
+
+
+def _validate_volume(candle: dict) -> List[str]:
+    """Volume is a soft/optional check (matches 5D-1's own soft-
+    requirement precedent for volume) — only run if volume is present.
+
+    Args:
+        candle: The candle dict being validated.
+
+    Returns:
+        A single error message if volume is present but non-positive or
+        not a finite number; empty list if volume is None/missing or
+        valid.
+    """
+    volume = candle.get("volume")
+    if volume is None:
+        return []
+    if not _is_finite_number(volume) or volume <= 0:
+        return [f"volume ({volume}) must be a positive finite number"]
+    return []
+
+
+def validate_ohlcv(candle: Any) -> Dict[str, Any]:
+    """
+    Validate a candle dict (matching extract_data_window()'s real
+    output shape, Task 5D-1) for structural sanity.
+
+    Checks:
+    - Every price field (open/high/low/close) is present, a finite
+      real number (not None, not NaN/inf, not a bool) — a candle with
+      any missing/malformed price field is immediately invalid, since
+      the relational checks below assume real numbers to compare.
+    - open <= high, high >= low, low <= close — exactly these three
+      relations, per the plan/spec's own literal (and admittedly
+      incomplete — see this task's brief) requirement. Does NOT check
+      low <= open or close <= high.
+    - volume > 0, IF volume is present (volume is a soft/optional field
+      per 5D-1's own contract — a None volume does not itself
+      invalidate the candle; a present, non-positive volume does).
+    - Intraday spread (high - low) / low * 100 is below 2% — a
+      best-effort interpretation of an ambiguous plan requirement (see
+      this task's brief); division only attempted when low is a
+      positive finite number (already guaranteed by the price-field
+      check above having passed).
+
+    Never raises: any malformed/missing input degrades to a structured
+    invalid result (`{"valid": False, "errors": [...]}`), never an
+    exception — including a non-dict `candle` argument.
+
+    Args:
+        candle: A candle dict, expected to match extract_data_window()'s
+            shape (open/high/low/close/volume/timestamp keys), though
+            any input is accepted defensively.
+
+    Returns:
+        {"valid": bool, "errors": list[str]} — valid is True only if
+        errors is empty. All applicable checks run and accumulate into
+        errors (not just the first failure) — a candle can fail
+        multiple checks simultaneously and all are reported.
+    """
+    if not isinstance(candle, dict):
+        return {"valid": False, "errors": ["candle is not a dict"]}
+
+    errors: List[str] = []
+    price_errors = _validate_price_fields(candle)
+    errors.extend(price_errors)
+
+    # Relational/spread checks are meaningless (and comparison-unsafe)
+    # once any price field is None/NaN/inf — skip them entirely here.
+    if not price_errors:
+        errors.extend(_validate_relations_and_spread(candle))
+
+    errors.extend(_validate_volume(candle))
+
+    return {"valid": not errors, "errors": errors}
