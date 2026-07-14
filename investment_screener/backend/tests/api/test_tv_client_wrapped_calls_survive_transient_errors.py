@@ -241,6 +241,87 @@ def test_tv_call_success_writes_through_to_cache(isolated_jsonl_paths, monkeypat
     assert tv_cdp_health.cache_get(cache_key) == {"success": True, "value": 1}
 
 
+# --- Additional: fallback-state breaker probes health and self-heals ---
+
+def test_tv_call_probes_and_resets_breaker_when_tv_recovers(isolated_jsonl_paths, monkeypatch):
+    """
+    Deferred finding from the 5A whole-sub-spec review: the circuit
+    breaker had no production reset trigger, so once tripped to
+    "fallback" in a long-lived process it never self-heals even after TV
+    CDP recovers. tv_call() must probe health_check() while in fallback
+    state and, on a healthy result, reset() the breaker and attempt a
+    real call instead of silently serving stale cached data forever.
+    """
+    monkeypatch.setattr(tv_client.time, "sleep", lambda *_: None)
+
+    def always_fails(*args, **kwargs):
+        raise RuntimeError("TV CDP unreachable")
+
+    monkeypatch.setattr(tv_client, "_tv_call_once", always_fails)
+    for _ in range(3):
+        tv_client.tv_call("chart", "read", enable_retry=False)
+    assert tv_client._circuit_breaker.state == "fallback"
+
+    monkeypatch.setattr(
+        tv_client,
+        "health_check",
+        lambda timeout=5: {
+            "port_open": True,
+            "chart_responsive": True,
+            "chrome_version": "1.0",
+            "last_error": None,
+        },
+    )
+    monkeypatch.setattr(
+        tv_client, "_tv_call_once", lambda *a, **k: {"success": True, "value": "recovered"}
+    )
+
+    result = tv_client.tv_call("chart", "read", enable_retry=False)
+
+    assert result == {"success": True, "value": "recovered"}
+    assert tv_client._circuit_breaker.state == "healthy"
+
+
+def test_tv_call_stays_in_fallback_when_probe_still_unhealthy(isolated_jsonl_paths, monkeypatch):
+    """If the health probe itself still reports unhealthy, the breaker
+    must stay in "fallback" and tv_call() must keep serving cached data
+    without attempting a real call."""
+    monkeypatch.setattr(tv_client.time, "sleep", lambda *_: None)
+
+    cache_key = tv_client._make_cache_key(("chart", "read"))
+    tv_cdp_health.cache_set(cache_key, {"success": True, "stale": True})
+
+    def always_fails(*args, **kwargs):
+        raise RuntimeError("TV CDP unreachable")
+
+    monkeypatch.setattr(tv_client, "_tv_call_once", always_fails)
+    for _ in range(3):
+        tv_client.tv_call("chart", "read", enable_retry=False)
+    assert tv_client._circuit_breaker.state == "fallback"
+
+    monkeypatch.setattr(
+        tv_client,
+        "health_check",
+        lambda timeout=5: {
+            "port_open": False,
+            "chart_responsive": False,
+            "chrome_version": "",
+            "last_error": "still down",
+        },
+    )
+
+    def fail_if_called(*args, **kwargs):
+        raise AssertionError("_tv_call_once must not be invoked while still unhealthy")
+
+    monkeypatch.setattr(tv_client, "_tv_call_once", fail_if_called)
+
+    result = tv_client.tv_call("chart", "read", enable_retry=False)
+
+    assert result["cached"] is True
+    assert result["data"] == {"success": True, "stale": True}
+    assert tv_client._circuit_breaker.state == "fallback"
+
+
 # --- Additional: missing/broken resilience dependency degrades to pre-5A-8 behavior ---
 
 def test_tv_call_falls_back_to_tv_call_once_when_resilience_import_failed(monkeypatch):

@@ -102,6 +102,7 @@ try:
         cache_get,
         cache_set,
         generate_cache_key,
+        health_check,
     )
 except Exception as e:  # pragma: no cover - defensive; deps should always be present
     _RESILIENCE_IMPORT_ERROR = str(e)
@@ -265,6 +266,40 @@ def _run_resilient_attempt(args: tuple, timeout: int, enable_retry: bool, max_at
     return _once()
 
 
+def _probe_and_maybe_reset_breaker(breaker) -> bool:
+    """
+    Half-open probe for a tripped circuit breaker (deferred 5A finding).
+
+    CircuitBreaker.reset() previously had no production caller — once a
+    breaker tripped to "fallback" in a long-lived process, it never
+    self-healed even after TV CDP recovered, since tv_call() short-
+    circuits fallback-state calls before ever reaching breaker.call()'s
+    own success-counting path. This probes real current health via
+    health_check() (cheap: a port check + one chart read) each time
+    tv_call() is invoked while in fallback state, and resets the breaker
+    on a healthy result so the caller's current attempt proceeds live
+    instead of being served stale cached data forever.
+
+    Args:
+        breaker: The CircuitBreaker instance currently in "fallback" state.
+
+    Returns:
+        True if TV CDP is currently healthy and the breaker was reset
+        (caller should proceed with a real attempt); False if still
+        unhealthy (caller should keep serving cached/error fallback).
+        Never raises — a failed probe itself just counts as unhealthy.
+    """
+    try:
+        result = health_check(timeout=5)
+        healthy = bool(result.get("port_open")) and bool(result.get("chart_responsive"))
+    except Exception:
+        healthy = False
+
+    if healthy:
+        breaker.reset()
+    return healthy
+
+
 def tv_call(
     *args,
     timeout: int = 10,
@@ -320,18 +355,23 @@ def tv_call(
     breaker = _circuit_breaker if enable_circuit_breaker else None
 
     if breaker is not None and breaker.state == "fallback":
-        # Circuit already open: don't hit a known-down TV CDP again, and
-        # deliberately do NOT use breaker.last_response here — the breaker
-        # is a single global instance shared by every command, so its
-        # last_response is one shared slot holding whatever command most
-        # recently succeeded, not necessarily *this* command's data. The
-        # per-command disk cache (keyed by command+args) is the correct
-        # source of last-known-good data across different commands.
-        return _cached_fallback_or_error(
-            command_name, args, cache_key,
-            "Circuit breaker open; TV CDP calls are currently suspended",
-            enable_cache_fallback,
-        )
+        # Circuit already open: probe real current health before giving
+        # up again (see _probe_and_maybe_reset_breaker) — if TV CDP has
+        # actually recovered, reset the breaker and fall through to a
+        # live attempt below instead of serving stale cached data forever.
+        if not _probe_and_maybe_reset_breaker(breaker):
+            # Still down. Deliberately do NOT use breaker.last_response
+            # here — the breaker is a single global instance shared by
+            # every command, so its last_response is one shared slot
+            # holding whatever command most recently succeeded, not
+            # necessarily *this* command's data. The per-command disk
+            # cache (keyed by command+args) is the correct source of
+            # last-known-good data across different commands.
+            return _cached_fallback_or_error(
+                command_name, args, cache_key,
+                "Circuit breaker open; TV CDP calls are currently suspended",
+                enable_cache_fallback,
+            )
 
     try:
         if breaker is not None:
