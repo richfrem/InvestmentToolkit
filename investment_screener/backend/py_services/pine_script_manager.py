@@ -854,6 +854,122 @@ def archive_script_version(script_name: str) -> Optional[Path]:
     return snapshot_path
 
 
+def _first_commit_hash(pine_file: Path) -> str:
+    """Resolve the short (7-char) hash of the commit that FIRST added
+    `pine_file` to git history, or "untracked" if the file has no git
+    history (not yet committed) or isn't inside a git repository at all.
+
+    Reuses the existing _git_repo_root() helper (5B-4). Never raises —
+    every failure mode (not a repo, no history, git subprocess error)
+    degrades to the "untracked" sentinel rather than blocking discovery
+    of the file (the file is still registered; only its version string
+    falls back).
+
+    Known limitation, documented not solved: uses `git log --follow
+    --diff-filter=A`, which relies on git's own rename-detection
+    heuristics to identify the true "first add" event. In rare
+    histories where that heuristic misses (e.g. certain merge
+    topologies), this falls back to "untracked" even for a tracked
+    file — acceptable degradation, not a correctness requirement to
+    exhaustively solve here.
+
+    Args:
+        pine_file: Full filesystem path to the .pine file.
+
+    Returns:
+        The 7-char short commit hash of the file's first addition, or
+        "untracked" if unavailable for any reason.
+    """
+    repo_root = _git_repo_root(pine_file.parent)
+    if repo_root is None:
+        return "untracked"
+
+    try:
+        relative_path = str(pine_file.relative_to(repo_root))
+    except ValueError:
+        return "untracked"
+
+    try:
+        result = subprocess.run(
+            ["git", "log", "--follow", "--diff-filter=A", "--format=%H", "--", relative_path],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError) as e:
+        logger.warning("_first_commit_hash: git log failed for %s: %s", pine_file, e)
+        return "untracked"
+
+    if result.returncode != 0 or not result.stdout.strip():
+        return "untracked"
+
+    return result.stdout.strip().splitlines()[-1][:7]
+
+
+def _discoverable_pine_files() -> List[Path]:
+    """List top-level .pine files eligible for auto-discovery.
+
+    Non-recursive by construction (Path.glob("*.pine"), never
+    .rglob()/"**/*.pine") so files under community-reference/ (5B-6,
+    third-party reference scripts) and versions/<script>/ (5B-6's own
+    archive snapshots) are structurally out of scope — no exclusion
+    list needed. Sorted by filename for deterministic ordering.
+
+    Returns:
+        Sorted list of .pine file paths directly inside
+        PINE_REGISTRY_PATH.parent, or [] if that directory doesn't
+        exist on disk.
+    """
+    scan_dir = PINE_REGISTRY_PATH.parent
+    if not scan_dir.exists():
+        return []
+    return sorted(scan_dir.glob("*.pine"))
+
+
+def discover_and_register_scripts() -> List[str]:
+    """Scan for top-level .pine files not yet in the registry and
+    auto-register each one.
+
+    For every .pine file found directly inside
+    PINE_REGISTRY_PATH.parent (never descending into subdirectories —
+    see _discoverable_pine_files()), derives the registry name from the
+    filename stem and skips it if already registered. Each genuinely
+    new script is registered via register_script() (5B-1, reused
+    unchanged) with a generic auto-generated description and a version
+    derived from _first_commit_hash().
+
+    No drift detection: an already-registered script whose file content
+    later changed is not re-registered or flagged here — matches the
+    plan's literal "if not in registry already" gate.
+
+    Never raises: a missing scan directory, an unregistered/untracked
+    file, or any git failure degrades gracefully rather than raising.
+
+    Returns:
+        List of newly registered script names, in filename order.
+        Empty list if nothing new was found.
+    """
+    registry = load_registry()
+    newly_registered: List[str] = []
+
+    for pine_file in _discoverable_pine_files():
+        name = pine_file.stem
+        if registry.get_script(name) is not None:
+            continue
+
+        version = _first_commit_hash(pine_file)
+        register_script(
+            name,
+            pine_file.name,
+            f"Auto-discovered Pine Script: {pine_file.name}",
+            version=version,
+        )
+        newly_registered.append(name)
+
+    return newly_registered
+
+
 def list_available_versions(script_name: str) -> List[str]:
     """List version strings archived for a script under its versions/
     directory (filenames without the .pine extension).
