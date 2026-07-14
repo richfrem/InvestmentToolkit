@@ -223,8 +223,7 @@ def extract_data_window(ticker: str, timeframe: str = "1D") -> Optional[dict]:
     16s) whenever the switch/timeframe calls fail OR the read succeeds
     but O/H/L/C can't all be parsed. Returns the last successfully
     parsed result (last-known-good) if a later attempt fails after an
-    earlier one succeeded; returns None if no attempt ever produced a
-    complete result.
+    earlier one succeeded.
 
     Never raises.
 
@@ -237,12 +236,29 @@ def extract_data_window(ticker: str, timeframe: str = "1D") -> Optional[dict]:
 
     Returns:
         {"open": float, "high": float, "low": float, "close": float,
-        "volume": int | None, "timestamp": str} on success (volume may
-        be None if genuinely unparseable — price fields are the hard
-        requirement for a "complete" result, not volume), or None if
-        every retry attempt failed to produce a complete price read.
-        `timestamp` is THIS function's own read-time stamp (ISO 8601,
-        UTC) — not a TV-native field, since none exists (see brief).
+        "volume": int | None, "timestamp": str}. `timestamp` is THIS
+        function's own read-time stamp (ISO 8601, UTC) — not a
+        TV-native field, since none exists (see brief).
+
+        `None` is returned ONLY when every one of the 5 attempts'
+        underlying tv_call() calls failed outright at the CDP layer
+        (chart symbol switch, timeframe change, or the read itself) —
+        i.e. `_attempt_extract()` returned None on every attempt. This
+        is the "TV/CDP unreachable" case.
+
+        If `_attempt_extract()` succeeds at least once but the parsed
+        result is never structurally complete (e.g. `chart read`
+        succeeds every time but "Close" is missing from the Data
+        Window on every attempt — see `_is_complete()`), this function
+        does NOT collapse that to None. It returns the LAST such
+        partial dict as-is, with the missing field(s) set to None
+        inside it (e.g. `{"open": 217.04, "high": 222.75, "low":
+        215.28, "close": None, "volume": ..., "timestamp": ...}`).
+        This is deliberate: a partial read is strictly more useful to
+        a caller than discarding the data outright, since the caller
+        can see exactly which fields came back. Callers MUST check the
+        individual O/H/L/C sub-fields for None — a non-None return
+        value alone does not guarantee a complete price read.
     """
     last_known_good = None
     delay = _INITIAL_BACKOFF_SECONDS
