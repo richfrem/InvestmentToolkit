@@ -162,6 +162,31 @@ def test_inject_pine_script_injection_failure_returns_false(registry_path, monke
     assert registry.get_script("my-script").last_injected is None
 
 
+# --- Test: save_registry() OSError after a successful injection never raises ---
+
+def test_inject_pine_script_registry_write_failure_still_returns_true(registry_path, monkeypatch):
+    """A successful chart injection followed by a save_registry() OSError
+    (e.g. disk full) must not propagate — the chart-side effect already
+    happened, so the never-raises contract holds and the function still
+    reports the injection's real outcome (True), per the deferred 5B-3
+    finding logged in progress.md."""
+    _register_real_script(registry_path, "my-script", "my-script.pine", VALID_PINE)
+
+    def fake_tv_call(*args, **kwargs):
+        return {"success": True}
+
+    monkeypatch.setattr(pine_script_manager, "tv_call", fake_tv_call)
+
+    def failing_save_registry(*args, **kwargs):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(pine_script_manager, "save_registry", failing_save_registry)
+
+    result = inject_pine_script("my-script", "NVDA")
+
+    assert result is True
+
+
 # --- Test 6: The CLI's own {"success": False, ...} failure shape ---
 
 def test_inject_pine_script_cli_style_failure_returns_false(registry_path, monkeypatch):
