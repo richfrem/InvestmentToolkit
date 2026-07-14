@@ -160,6 +160,83 @@ def _pillar_trends(
     }
 
 
+def _new_actionable_tickers(
+    recommendations: list[dict[str, Any]],
+    yesterday: dict[str, Any] | None,
+) -> list[str]:
+    """Tickers with an actionable recommendation today that were NOT
+    actionable in yesterday's brief snapshot.
+
+    "New" is day-over-day (same snapshot-comparison idiom as
+    _score_deltas/_pillar_trends), not merely "actionable right now" —
+    a ticker that was already actionable yesterday and remains so today
+    is not re-flagged every single day.
+
+    Args:
+        recommendations: Today's recommendation cards (from
+            build_recommendations() — flat list, each with `ticker` and
+            `actionable`).
+        yesterday: Prior day's full brief snapshot dict, or None on the
+            first-ever run.
+
+    Returns:
+        Sorted list of ticker symbols. On a first-ever run (yesterday is
+        None), every actionable ticker today counts as "new".
+    """
+    today_actionable = {r["ticker"] for r in recommendations if r.get("actionable")}
+    if yesterday is None:
+        return sorted(today_actionable)
+    yesterday_actionable = {
+        r["ticker"] for r in yesterday.get("recommendations", []) if r.get("actionable")
+    }
+    return sorted(today_actionable - yesterday_actionable)
+
+
+def _inject_pine_signals_step(
+    recommendations: list[dict[str, Any]],
+    yesterday: dict[str, Any] | None,
+) -> list[dict[str, Any]]:
+    """Auto-inject 'ai-ta-levels' onto each ticker with a new actionable
+    recommendation today (Task 5B-8).
+
+    Real production side effect: physically switches the live
+    TradingView chart to each qualifying ticker in turn and injects the
+    ai-ta-levels Pine script via pine_script_manager.inject_pine_script().
+    Chosen deliberately (user decision, 2026-07-13) over an
+    advisory-only or opt-in-flag alternative.
+
+    Graceful error handling: inject_pine_script() itself never raises
+    and already logs its own failure reason; this function additionally
+    logs a one-line warning per failed ticker and — critically — keeps
+    processing the remaining tickers rather than stopping early. Never
+    raises.
+
+    Args:
+        recommendations: Today's recommendation cards.
+        yesterday: Prior day's brief snapshot, or None.
+
+    Returns:
+        List of {"ticker": str, "injected": bool} results, one per
+        qualifying ticker (empty list if nothing new today).
+    """
+    tickers = _new_actionable_tickers(recommendations, yesterday)
+    if not tickers:
+        return []
+
+    sys.path.insert(0, str(PY_SERVICES))
+    from pine_script_manager import inject_pine_script
+
+    results = []
+    for ticker in tickers:
+        ok = inject_pine_script("ai-ta-levels", ticker)
+        if not ok:
+            print(f"  Pine injection skipped for {ticker} (validation or "
+                  f"injection failure — see inject_pine_script's own log)",
+                  file=sys.stderr)
+        results.append({"ticker": ticker, "injected": ok})
+    return results
+
+
 # ── Core pipeline ─────────────────────────────────────────────────────────────
 
 def _harvest_predictions_step() -> int | None:
@@ -398,6 +475,10 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
         total_equity=total_equity,
     )
 
+    # ── 6c. Pine signal injection (5B-8, real TV chart side effect) ──────────
+    print("▶ Pine signal injection...", file=sys.stderr)
+    pine_injections = _inject_pine_signals_step(recommendations, yesterday)
+
     brief: dict[str, Any] = {
         "overnight_gaps": gaps,
         "date": date.today().isoformat(),
@@ -418,6 +499,7 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
         "thesis_breakers": breaker_state,
         "thesis_breakers_triggered": triggered_breakers,
         "predictions_harvested": predictions_harvested,
+        "pine_injections": pine_injections,
     }
 
     # ── 7. Save snapshot ──────────────────────────────────────────────────────
