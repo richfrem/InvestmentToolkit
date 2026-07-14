@@ -164,6 +164,23 @@ def test_validate_ohlcv_never_raises_on_non_dict_input(bad_input):
     assert result["errors"]
 
 
+# --- Test 13: rejects non-positive low without crashing (spread division guard) ---
+#
+# Bug found in task review: `_is_finite_number()` accepts 0.0 (and
+# negative numbers) as "finite" — only None/bool/non-numeric/NaN/inf are
+# rejected. A candle with low=0.0 therefore passes the price-field check
+# and reaches `_validate_relations_and_spread()`'s
+# `(high - low) / low * 100` division, raising ZeroDivisionError and
+# violating this function's documented "never raises" contract.
+
+@pytest.mark.parametrize("low", [0.0, -1.0])
+def test_validate_ohlcv_rejects_zero_low_without_crashing(low):
+    result = validate_ohlcv(_valid_candle(open=1.0, high=1.0, low=low, close=1.0))
+
+    assert result["valid"] is False
+    assert any("low" in e.lower() for e in result["errors"])
+
+
 # --- Extra: _is_finite_number helper ---
 
 @pytest.mark.parametrize("value,expected", [
