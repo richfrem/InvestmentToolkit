@@ -573,3 +573,105 @@ def link_alert_to_claim(alert_id: str, claim_id_from_e3: str) -> bool:
     })
     save_alert_metadata(updated)
     return True
+
+
+def get_alerts_for_ticker(ticker: str) -> List[Dict]:
+    """
+    Real TV alerts for `ticker`, enriched with extracted price + state.
+
+    Filters tv_call("alert", "list")'s response by ticker (case-
+    insensitive substring on `symbol`, same matching convention as
+    _find_created_alert_id()), then enriches each match using the
+    already-built _extract_condition_price() (5C-1) and
+    _classify_alert_state() (5C-3) — reused unchanged, not reimplemented.
+
+    Never raises: a failed list call returns []; a malformed entry
+    (non-dict, missing alert_id) is skipped, matching sync_alert_state()'s
+    established convention.
+
+    Args:
+        ticker: Ticker symbol to filter alerts for.
+
+    Returns:
+        List of {"alert_id": str, "symbol": str, "price": float | None,
+        "state": str} dicts — one per matching alert. `price` is None if
+        the condition's price threshold couldn't be extracted (matches
+        _extract_condition_price()'s own degradation contract).
+    """
+    list_result = tv_call("alert", "list")
+    if not _tv_call_succeeded(list_result):
+        logger.warning("get_alerts_for_ticker: alert list failed for '%s': %s", ticker, list_result)
+        return []
+
+    results = []
+    for entry in list_result.get("alerts", []):
+        if not isinstance(entry, dict) or "alert_id" not in entry:
+            logger.warning("get_alerts_for_ticker: skipping malformed entry: %r", entry)
+            continue
+        if ticker.upper() not in str(entry.get("symbol", "")).upper():
+            continue
+        results.append({
+            "alert_id": entry["alert_id"],
+            "symbol": entry.get("symbol"),
+            "price": _extract_condition_price(entry.get("condition")),
+            "state": _classify_alert_state(entry),
+        })
+    return results
+
+
+# Mirrors brief_recommendations._ACTIONABLE_BANDS's value exactly — that
+# constant is module-private (underscore-prefixed) so it isn't imported
+# cross-module (same "don't import private names" convention already
+# established for _tv_call_succeeded() in this file); duplicated here
+# instead, same precedent.
+_ACTIONABLE_BANDS = frozenset({"EXIT", "REDUCE", "ACCUMULATE"})
+
+
+def score_alert_correlation(
+    alert: Dict,
+    current_price: float,
+    ta_signal: Optional[Dict] = None,
+) -> Dict:
+    """
+    Score how relevant one alert is right now.
+
+    proximity_pct: how far (in %) `current_price` is from the alert's
+    own price threshold — abs(current_price - alert_price) / alert_price
+    * 100. Lower means the alert is closer to triggering. None if the
+    alert's price couldn't be extracted (see get_alerts_for_ticker())
+    or is exactly 0 (avoids a division-by-zero).
+
+    matches_ta_signal: True only if `ta_signal` was supplied AND its
+    "band" field is one of the actionable bands this codebase already
+    uses elsewhere (ACCUMULATE/EXIT/REDUCE, matching
+    brief_recommendations._ACTIONABLE_BANDS's exact value) — i.e. TV's
+    alert and today's TA-driven signal agree this ticker deserves
+    attention right now. False if no ta_signal was supplied, or its
+    band isn't actionable, or the field is missing/malformed.
+
+    Never raises: malformed/missing `ta_signal` fields degrade to
+    matches_ta_signal=False.
+
+    Args:
+        alert: One entry from get_alerts_for_ticker()'s output.
+        current_price: The ticker's current live price — caller-
+            supplied (this module deliberately doesn't fetch pricing
+            itself; see this task's brief for why).
+        ta_signal: Optional dict with at least a "band" key, matching
+            the shape of a conviction-score row (e.g.
+            daily_brief.py's scores_raw entries) — the caller's own
+            current TA read for this ticker, if it has one.
+
+    Returns:
+        {"proximity_pct": float | None, "matches_ta_signal": bool}
+    """
+    alert_price = alert.get("price")
+    if alert_price is None or alert_price == 0:
+        proximity_pct = None
+    else:
+        proximity_pct = abs(current_price - alert_price) / alert_price * 100
+
+    band = (ta_signal or {}).get("band")
+    matches_ta_signal = band in _ACTIONABLE_BANDS
+
+    return {"proximity_pct": proximity_pct, "matches_ta_signal": matches_ta_signal}
