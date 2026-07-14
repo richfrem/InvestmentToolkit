@@ -193,6 +193,33 @@ def test_extract_data_window_exponential_backoff_intervals(monkeypatch):
     assert sleep_calls == [1, 2, 4, 8]
 
 
+# --- Test 5b: 5 consecutive incomplete-but-CDP-successful reads (missing
+# "Close" every time) return the LAST partial dict — NOT None. This pins
+# down the exact scenario test 5 exercises but never asserted on: a
+# genuinely successful `chart read` (tv_call succeeds, _attempt_extract()
+# returns a non-None dict) that is merely structurally incomplete every
+# single attempt. Per extract_data_window()'s docstring, None is reserved
+# for when every underlying tv_call fails outright at the CDP layer — a
+# merely-incomplete-but-successful read must return the last partial dict
+# so a caller can see exactly which fields came back and which didn't.
+
+def test_extract_data_window_returns_last_partial_dict_not_none_when_incomplete_every_attempt(monkeypatch):
+    incomplete = _real_shaped_response()
+    del incomplete["data"]["Close"]
+
+    fake = _make_fake_tv_call([incomplete] * 5)
+    monkeypatch.setattr(data_window_validator, "tv_call", fake)
+    monkeypatch.setattr(data_window_validator.time, "sleep", lambda s: None)
+
+    result = extract_data_window("NVDA")
+
+    assert result is not None
+    assert result["close"] is None
+    assert result["open"] == 217.04
+    assert result["high"] == 222.75
+    assert result["low"] == 215.28
+
+
 # --- Test 6: returns last-known-good result after later attempts degrade ---
 
 def test_extract_data_window_returns_last_known_good_after_exhausting_retries(monkeypatch):
