@@ -265,3 +265,49 @@ def create_price_alert(
         alert_id, ticker, price, condition,
     )
     return alert_id
+
+
+def dedup_alerts(ticker: str, price: float, direction: str) -> Optional[str]:
+    """
+    Check whether an alert already exists for (ticker, price) among the
+    user's current TV alerts, returning its real alert_id if so.
+
+    `direction` is validated (raises ValueError on invalid input, same
+    contract as create_price_alert()) but does NOT participate in the
+    match — see this task's brief for why (the real TV alert list
+    response can't reliably distinguish direction; see 5C-1's
+    condition-shape bugfix, commit ea2d295).
+
+    Read-only: never creates, modifies, or deletes any TV alert. Pure
+    creation stays in create_price_alert() (5C-1's own design decision:
+    "No dedup in this task... create_price_alert is pure creation") —
+    this function is the symmetric "pure checking" counterpart. A caller
+    wanting create-if-not-duplicate composes both:
+        existing = dedup_alerts(ticker, price, direction)
+        alert_id = existing or create_price_alert(ticker, price, direction)
+
+    Never raises for TV/network failures — a list-call failure degrades
+    to None (treated as "no duplicate found, safe to create" — matches
+    the conservative default of not silently blocking a real signal from
+    getting an alert just because a dedup check couldn't complete).
+
+    Args:
+        ticker: Ticker symbol to check for an existing alert.
+        price: Alert trigger price level. Must be positive.
+        direction: "above" or "below" (validated only, not matched).
+
+    Raises:
+        ValueError: If ticker/price/direction fail input validation.
+
+    Returns:
+        The existing alert's real TV alert_id if a (ticker, price) match
+        is found, else None.
+    """
+    _validate_alert_input(ticker, price, direction)
+
+    list_result = tv_call("alert", "list")
+    if not _tv_call_succeeded(list_result):
+        logger.warning("dedup_alerts: alert list failed for '%s': %s", ticker, list_result)
+        return None
+
+    return _find_created_alert_id(list_result.get("alerts", []), ticker, price)
