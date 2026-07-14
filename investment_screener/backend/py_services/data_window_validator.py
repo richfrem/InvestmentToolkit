@@ -327,6 +327,17 @@ def _validate_relations_and_spread(candle: dict) -> List[str]:
     interpretation of an ambiguous plan requirement, see this task's
     brief.
 
+    `_is_finite_number()` (the caller's precondition) accepts 0.0 and
+    negative numbers as finite — it only rejects None/bool/non-numeric/
+    NaN/inf. A `low` of zero or below therefore reaches this function
+    and, left unguarded, `(high - low) / low * 100` would raise
+    ZeroDivisionError (low == 0) or silently produce a meaningless
+    negative "spread" (low < 0), violating this module's never-raises
+    contract. The spread division is therefore only attempted when
+    `low > 0`; a non-positive low is itself flagged as an error instead
+    (skipping the spread check for that candle) rather than silently
+    ignored — see this task's fix-round report.
+
     Args:
         candle: The candle dict being validated (all four price fields
             already confirmed finite numbers by the caller).
@@ -345,12 +356,16 @@ def _validate_relations_and_spread(candle: dict) -> List[str]:
     if not (low <= close):
         errors.append(f"low ({low}) must be <= close ({close})")
 
-    spread_percent = (high - low) / low * 100
-    if spread_percent >= _MAX_SPREAD_PERCENT:
-        errors.append(
-            f"spread {spread_percent:.2f}% exceeds {_MAX_SPREAD_PERCENT}% threshold "
-            "(intraday range as % of low)"
-        )
+    if low > 0:
+        spread_percent = (high - low) / low * 100
+        if spread_percent >= _MAX_SPREAD_PERCENT:
+            errors.append(
+                f"spread {spread_percent:.2f}% exceeds {_MAX_SPREAD_PERCENT}% threshold "
+                "(intraday range as % of low)"
+            )
+    else:
+        errors.append(f"low ({low}) must be positive to compute spread")
+
     return errors
 
 
@@ -393,9 +408,11 @@ def validate_ohlcv(candle: Any) -> Dict[str, Any]:
       invalidate the candle; a present, non-positive volume does).
     - Intraday spread (high - low) / low * 100 is below 2% — a
       best-effort interpretation of an ambiguous plan requirement (see
-      this task's brief); division only attempted when low is a
-      positive finite number (already guaranteed by the price-field
-      check above having passed).
+      this task's brief); division is only attempted when `low > 0` —
+      the price-field check only guarantees low is a finite number, NOT
+      that it's positive, so a zero/negative low is flagged as its own
+      error (see this task's fix-round report) instead of being passed
+      into the division.
 
     Never raises: any malformed/missing input degrades to a structured
     invalid result (`{"valid": False, "errors": [...]}`), never an
