@@ -409,7 +409,18 @@ def inject_pine_script(script_name: str, chart_symbol: str) -> bool:
         return False
 
     entry.last_injected = datetime.now(timezone.utc).isoformat()
-    save_registry(registry)
+    try:
+        save_registry(registry)
+    except OSError as e:
+        # The chart injection above already succeeded — that real side
+        # effect can't be undone, so a registry-write failure here must
+        # not violate this function's never-raises contract. Bookkeeping
+        # (last_injected) is secondary to the injection outcome itself.
+        print(
+            f"inject_pine_script: '{script_name}' injected but registry "
+            f"update failed: {e}",
+            file=sys.stderr,
+        )
     return True
 
 
