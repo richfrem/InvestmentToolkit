@@ -16,8 +16,8 @@ ticker, create_price_alert() therefore:
     1. Switches the active chart to the target ticker.
     2. Creates the alert (no ID in the response).
     3. Lists all current alerts.
-    4. Correlates the newly created one by ticker + condition to recover
-       its real alert_id.
+    4. Correlates the newly created one by ticker + price to recover its
+       real alert_id.
 
 This module is the foundation for later 5C tasks (dedup, /daily
 integration) — they call create_price_alert() rather than composing
@@ -111,36 +111,75 @@ def _validate_alert_input(ticker: str, price: float, direction: str) -> str:
     return _DIRECTION_TO_CONDITION[direction]
 
 
+def _extract_condition_price(condition) -> Optional[float]:
+    """Extract the price threshold from a real TV alert's raw `condition`
+    object.
+
+    Confirmed live against the user's real TradingView account
+    (2026-07-14, 306 sampled alerts, read-only `alert list` call): every
+    real alert's `condition` field is a nested object of the shape
+    `{"type": ..., "series": [{"type": "barset"}, {"type": "value",
+    "value": <price>}], ...}`, NOT a simple string — the price threshold
+    lives at `condition["series"][1]["value"]`.
+
+    Never raises: any structural mismatch (missing/malformed condition,
+    too-short series, non-numeric value) degrades to None rather than
+    raising — this is informational correlation, not a hard contract.
+
+    Args:
+        condition: The raw `condition` field from one entry in an
+            `alert list` response's `alerts` array.
+
+    Returns:
+        The extracted price threshold as a float, or None if the
+        structure doesn't match what's been observed against real data.
+    """
+    try:
+        series = condition.get("series") if isinstance(condition, dict) else None
+        if not isinstance(series, list) or len(series) < 2:
+            return None
+        value_entry = series[1]
+        value = value_entry.get("value") if isinstance(value_entry, dict) else None
+        return float(value) if isinstance(value, (int, float)) and not isinstance(value, bool) else None
+    except Exception:
+        return None
+
+
 def _find_created_alert_id(
-    alerts: List[Dict], ticker: str, condition: str
+    alerts: List[Dict], ticker: str, price: float
 ) -> Optional[str]:
     """Correlate the just-created alert in a freshly listed alerts array.
 
-    TV's `symbol` field may include an exchange prefix (e.g.
-    "NASDAQ:NVDA" vs. a bare "NVDA" ticker), so matching uses a
-    case-insensitive substring check rather than exact equality.
+    Matches on ticker (case-insensitive substring on `symbol`, since TV
+    may prefix with an exchange, e.g. "NASDAQ:NVDA") + price threshold
+    (within a small tolerance, since float round-tripping through TV's
+    UI/API isn't guaranteed bit-exact) — NOT on condition.type, which is
+    only confirmed as "cross" for every real alert sampled to date and
+    cannot be reliably distinguished for "greater_than"/"less_than"
+    without creating a live, permanently-undeletable test alert (not
+    done — see this fix's own bugfix brief for why).
 
     Args:
         alerts: The `alerts` array from an `alert list` tv_call()
             response (real shape per tradingview-cdp/core/alerts.js:75-103).
         ticker: The ticker just switched to and alerted on.
-        condition: The real CLI condition ("greater_than"/"less_than")
-            just used to create the alert.
+        price: The price threshold just used to create the alert.
 
     Returns:
         The matching alert's `alert_id` if exactly one match is found.
         If multiple match (e.g. a pre-existing alert with the same
-        ticker/condition already existed), the one with the latest
-        `created` timestamp if present, else the first match. None if
-        zero alerts match — a documented, accepted limitation (creation
-        may have failed silently in the DOM, or this list call raced
-        ahead of TV's own internal state), not solved here.
+        ticker/price already existed), the one with the latest `created`
+        timestamp if present, else the first match. None if zero alerts
+        match — a documented, accepted limitation (creation may have
+        failed silently in the DOM, or this list call raced ahead of
+        TV's own internal state), not solved here.
     """
     matches = [
         a for a in alerts
         if isinstance(a, dict)
-        and a.get("condition") == condition
         and ticker.upper() in str(a.get("symbol", "")).upper()
+        and (entry_price := _extract_condition_price(a.get("condition"))) is not None
+        and abs(entry_price - price) < 0.01
     ]
     if not matches:
         return None
@@ -167,7 +206,7 @@ def create_price_alert(
     chart is currently active, same limitation as every other
     single-chart CDP command). Since the real create response contains
     no alert ID, this then lists current alerts and correlates the
-    newly created one by ticker + condition.
+    newly created one by ticker + price.
 
     Args:
         ticker: Ticker symbol to create the alert for (e.g. "NVDA").
@@ -213,7 +252,7 @@ def create_price_alert(
         )
         return None
 
-    alert_id = _find_created_alert_id(list_result.get("alerts", []), ticker, condition)
+    alert_id = _find_created_alert_id(list_result.get("alerts", []), ticker, price)
     if alert_id is None:
         logger.warning(
             "create_price_alert: no matching alert found for '%s' (%s) in post-creation listing",
