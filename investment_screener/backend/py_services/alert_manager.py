@@ -27,10 +27,13 @@ Key Input Dependencies:
     - plugins/tradingview/scripts/tv_client.py (Task 5A-8's tv_call())
 """
 
+import json
 import logging
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Literal, Optional
+
+from pydantic import BaseModel, ValidationError
 
 # Cross-directory import of tv_call (Task 5A-8). Follows the exact same
 # sys.path-insert pattern pine_script_manager.py already established —
@@ -43,6 +46,104 @@ if _TV_SCRIPTS_DIR not in sys.path:
 from tv_client import tv_call  # noqa: E402
 
 logger = logging.getLogger(__name__)
+
+# Central alert metadata ledger (Task 5C-4). Tests monkeypatch this
+# module-level constant to a temp path — never write to the real path
+# from a test. Same `.parents[1]` pattern as tv_cdp_health.py's
+# TV_CDP_ERRORS_PATH/TV_CDP_CACHE_PATH — alert_manager.py lives in the
+# same py_services/ directory, so `.parents[1]` resolves to
+# investment_screener/backend/.
+ALERTS_STATE_PATH = Path(__file__).resolve().parents[1] / "data" / "alerts_state.jsonl"
+
+
+class AlertMetadata(BaseModel):
+    """One alert's persisted metadata record.
+
+    `id` is the REAL TradingView alert_id (from create_price_alert()'s
+    return value or sync_alert_state()'s output) — not a synthetic UUID.
+    Reusing TV's own real ID as the primary key avoids a redundant
+    parallel identifier scheme that would need its own correlation step
+    against 5C-1/5C-3's already-real alert_ids.
+
+    Attributes:
+        id: The real TV alert_id.
+        ticker: Ticker symbol the alert was created for.
+        price: Alert trigger price level.
+        direction: "above" or "below" (matches alert_manager.py's
+            existing two-value interface, Task 5C-1).
+        type: "price" (a plain price-threshold alert — everything
+            alert_manager.py creates today) or "ta_signal" (reserved for
+            a future signal-driven alert variant, not yet built by any
+            completed task).
+        linked_claim_id: An E3 prediction-ledger claim ID this alert is
+            based on, or None if not yet linked (Task 5C-5's concern —
+            this field exists now so 5C-5 doesn't need a schema
+            migration later).
+        created_at: ISO 8601 timestamp of when this metadata record was
+            created (NOT necessarily identical to when TV created the
+            alert — this is when *this record* was written).
+        fired_at: ISO 8601 timestamp if fired, else None.
+        state: "pending"/"fired"/"expired" — matches sync_alert_state()'s
+            (Task 5C-3) exact 3-state vocabulary.
+    """
+
+    id: str
+    ticker: str
+    price: float
+    direction: Literal["above", "below"]
+    type: Literal["price", "ta_signal"]
+    linked_claim_id: Optional[str] = None
+    created_at: str
+    fired_at: Optional[str] = None
+    state: Literal["pending", "fired", "expired"]
+
+
+def save_alert_metadata(record: AlertMetadata) -> None:
+    """Append one alert metadata record to data/alerts_state.jsonl.
+
+    Append-only: never rewrites or reads prior records. Creates the
+    parent directory if needed.
+
+    Args:
+        record: The AlertMetadata to persist.
+
+    Raises:
+        OSError: If the append write fails. Callers are responsible for
+            handling this — matches pine_script_manager.save_registry()'s
+            precedent (Task 5B-1): this is a real file write to a
+            genuine tracked deliverable, so silent failure would be
+            worse than a clear, catchable exception.
+    """
+    ALERTS_STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(ALERTS_STATE_PATH, "a") as f:
+        f.write(record.model_dump_json() + "\n")
+
+
+def load_alert_metadata() -> List[AlertMetadata]:
+    """Load every alert metadata record from data/alerts_state.jsonl.
+
+    Never raises: a missing file returns []. A line that fails JSON
+    parsing or Pydantic validation is skipped (with a warning) rather
+    than aborting the whole load — matches this module's established
+    graceful-degradation posture for reads (writes are the one place
+    this sub-spec allows raising, per save_alert_metadata() above).
+
+    Returns:
+        List of AlertMetadata records, in file order (oldest first).
+    """
+    if not ALERTS_STATE_PATH.exists():
+        return []
+    records: List[AlertMetadata] = []
+    with open(ALERTS_STATE_PATH) as f:
+        for line in f:
+            if not line.strip():
+                continue
+            try:
+                records.append(AlertMetadata(**json.loads(line)))
+            except (json.JSONDecodeError, ValidationError) as e:
+                logger.warning("load_alert_metadata: skipping malformed line: %s", e)
+    return records
+
 
 # Maps this module's simple two-direction interface onto the real CLI's
 # `--condition` vocabulary (tradingview-cdp/cli.js:49). The real CLI also
