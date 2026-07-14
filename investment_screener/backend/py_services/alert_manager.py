@@ -30,6 +30,7 @@ Key Input Dependencies:
 import json
 import logging
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Literal, Optional
 
@@ -44,6 +45,12 @@ if _TV_SCRIPTS_DIR not in sys.path:
     sys.path.insert(0, _TV_SCRIPTS_DIR)
 
 from tv_client import tv_call  # noqa: E402
+
+# Same-directory import (Task 5C-5) — prediction_ledger.py lives in this
+# same py_services/ directory, so a plain top-level import works with no
+# sys.path manipulation (unlike tv_client.py's genuinely cross-directory
+# import above).
+from prediction_ledger import load_predictions  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -492,3 +499,77 @@ def sync_alert_state() -> List[Dict[str, Optional[str]]]:
         })
 
     return updated_alerts
+
+
+def _latest_alert_metadata(alert_id: str) -> Optional[AlertMetadata]:
+    """Find the most recently appended AlertMetadata record for `alert_id`.
+
+    alerts_state.jsonl may contain multiple snapshots per id (5C-4's
+    append-only design — an update is a new record, not an in-place
+    rewrite). File order is oldest-first, so the LAST matching record
+    is the current/latest one.
+
+    Args:
+        alert_id: The real TV alert_id to look up.
+
+    Returns:
+        The latest AlertMetadata record for this id, or None if no
+        record exists for it yet.
+    """
+    matches = [r for r in load_alert_metadata() if r.id == alert_id]
+    return matches[-1] if matches else None
+
+
+def link_alert_to_claim(alert_id: str, claim_id_from_e3: str) -> bool:
+    """
+    Link an existing alert's metadata to an E3 prediction-ledger claim,
+    for audit ("was this alert based on this claim?").
+
+    Verifies BOTH the alert (via _latest_alert_metadata) and the claim
+    (via prediction_ledger.load_predictions(), matching on the claim's
+    real `id` field) exist before linking — a link to a nonexistent
+    alert or claim is a no-op, not a partial/dangling link.
+
+    Appends a NEW AlertMetadata snapshot (5C-4's append-only design):
+    a copy of the alert's latest record with `linked_claim_id` set to
+    `claim_id_from_e3` and `created_at` refreshed to the link time —
+    every other field (ticker, price, direction, type, state, fired_at)
+    is carried over unchanged from the latest prior snapshot.
+
+    Raises:
+        OSError: If the underlying save_alert_metadata() write fails —
+            deliberately NOT caught here (see this task's brief for
+            why: unlike Task 5B-3's inject_pine_script(), there is no
+            prior external side effect this write could be "wasted"
+            protecting — a write failure here IS a genuine failure of
+            "did the link succeed," so it propagates rather than being
+            silently swallowed).
+
+    Args:
+        alert_id: The real TV alert_id to link (must already have at
+            least one AlertMetadata record).
+        claim_id_from_e3: The E3 prediction-ledger claim's real `id`
+            field (e.g. "AAPL:earnings_expectation:2026-07-12").
+
+    Returns:
+        True if the link was created (both alert and claim existed and
+        the new snapshot was persisted). False if either the alert or
+        the claim doesn't exist — no record is appended in that case.
+    """
+    existing = _latest_alert_metadata(alert_id)
+    if existing is None:
+        logger.warning("link_alert_to_claim: no existing alert metadata for '%s'", alert_id)
+        return False
+
+    claims = load_predictions()
+    if not any(c.get("id") == claim_id_from_e3 for c in claims):
+        logger.warning("link_alert_to_claim: claim '%s' not found in predictions ledger",
+                        claim_id_from_e3)
+        return False
+
+    updated = existing.model_copy(update={
+        "linked_claim_id": claim_id_from_e3,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+    save_alert_metadata(updated)
+    return True
