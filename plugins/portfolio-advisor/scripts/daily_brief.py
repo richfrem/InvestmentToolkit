@@ -192,6 +192,36 @@ def _new_actionable_tickers(
     return sorted(today_actionable - yesterday_actionable)
 
 
+def _newly_fired_alerts(
+    alert_state_start: list[dict[str, Any]],
+    alert_state_end: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Alerts that are 'fired' at the end of this /daily run but were
+    NOT 'fired' at the start — i.e. genuinely fired during this run,
+    not a stale 'fired' state that's been sitting there for weeks.
+
+    Never raises: malformed entries in either list are simply ignored
+    (missing 'alert_id' or 'state' keys just don't match).
+
+    Args:
+        alert_state_start: sync_alert_state()'s output from the start
+            of this run.
+        alert_state_end: sync_alert_state()'s output from the end of
+            this run.
+
+    Returns:
+        The subset of alert_state_end's entries whose state is "fired"
+        and whose alert_id was NOT already "fired" at the start.
+    """
+    fired_at_start = {
+        a.get("alert_id") for a in alert_state_start if a.get("state") == "fired"
+    }
+    return [
+        a for a in alert_state_end
+        if a.get("state") == "fired" and a.get("alert_id") not in fired_at_start
+    ]
+
+
 def _inject_pine_signals_step(
     recommendations: list[dict[str, Any]],
     yesterday: dict[str, Any] | None,
@@ -319,11 +349,16 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     from brief_recommendations import build_recommendations, load_standing_decisions
     from overnight_gaps import get_overnight_gaps
     from thesis_breakers import compute_breaker_state
+    from alert_manager import sync_alert_state
     from evolution_events import (  # G4 event emission (non-blocking)
         emit_earnings_event,
         emit_breaker_override_event,
         EarningsGrade,
     )
+
+    # ── -1. Alert state sync (start) — 5C-8, advisory only, never raises ─────
+    print("▶ Alert state sync (start)...", file=sys.stderr)
+    alert_state_start = sync_alert_state()
 
     # ── 0. Overnight gap scan ─────────────────────────────────────────────────
     print("▶ Overnight gap scan...", file=sys.stderr)
@@ -495,6 +530,16 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     print("▶ Pine signal injection...", file=sys.stderr)
     pine_injections = _inject_pine_signals_step(recommendations, yesterday)
 
+    # ── 6d. Alert state sync (end) + advisory candidates (5C-8) ──────────────
+    # Advisory only: computes which tickers WOULD get a TV alert, but never
+    # calls create_price_alert()/dedup_alerts() — real TV alerts can't be
+    # individually deleted, so /daily surfaces candidates without creating
+    # anything (user decision, 2026-07-14).
+    print("▶ Alert state sync (end)...", file=sys.stderr)
+    alert_state_end = sync_alert_state()
+    newly_fired = _newly_fired_alerts(alert_state_start, alert_state_end)
+    advisory_alert_tickers = _new_actionable_tickers(recommendations, yesterday)
+
     brief: dict[str, Any] = {
         "overnight_gaps": gaps,
         "date": date.today().isoformat(),
@@ -516,6 +561,12 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
         "thesis_breakers_triggered": triggered_breakers,
         "predictions_harvested": predictions_harvested,
         "pine_injections": pine_injections,
+        "alert_sync": {
+            "start": alert_state_start,
+            "end": alert_state_end,
+            "newly_fired": newly_fired,
+        },
+        "advisory_alert_signals": advisory_alert_tickers,
     }
 
     # ── 7. Save snapshot ──────────────────────────────────────────────────────
@@ -589,6 +640,13 @@ def render(brief: dict[str, Any]) -> str:
             lines.append(f"    {b['ticker']:<8} {b['metric']} {b['operator']} {thr_str}  {detail}")
             if b.get("note"):
                 lines.append(f"          \"{b['note']}\"")
+
+    # ── Alerts fired since this run started (5C-8, advisory) ───────────────────
+    newly_fired = brief.get("alert_sync", {}).get("newly_fired", [])
+    if newly_fired:
+        lines.append(f"\n🔔  ALERTS FIRED — {len(newly_fired)} since this run started:")
+        for a in newly_fired:
+            lines.append(f"    {a.get('symbol', '?'):<20} alert_id={a.get('alert_id')}")
 
     # ── Overnight gaps ────────────────────────────────────────────────────────
     gaps = brief.get("overnight_gaps", [])
@@ -689,6 +747,14 @@ def render(brief: dict[str, Any]) -> str:
                     f"   {s['ticker']:<8} {s['total']:>+5d}  {fv_str}  "
                     f"{s['rsi'] or 0:>5.1f}  {gap_str}  {d_str:>4}  {flags}"
                 )
+
+    # ── Advisory alert candidates (5C-8 — advisory only, no real creation) ────
+    advisory_tickers = brief.get("advisory_alert_signals", [])
+    if advisory_tickers:
+        lines.append(
+            f"\n💡  Would create TV alerts for: {', '.join(advisory_tickers)} "
+            f"(advisory-only — auto-creation disabled)."
+        )
 
     # ── Score deltas ──────────────────────────────────────────────────────────
     if deltas:
