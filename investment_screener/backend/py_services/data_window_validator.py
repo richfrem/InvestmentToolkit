@@ -444,3 +444,113 @@ def validate_ohlcv(candle: Any) -> Dict[str, Any]:
     errors.extend(_validate_volume(candle))
 
     return {"valid": not errors, "errors": errors}
+
+
+# --- Task 5D-3: Indicator Extraction ---
+#
+# extract_indicators() is an independent, parallel extraction path
+# reading the same live Data Window (5D-1's confirmed real response
+# shape) for a representative, non-exhaustive set of indicator fields
+# instead of OHLCV. Unlike extract_data_window(), it takes no ticker
+# parameter and never switches the chart's symbol — only its timeframe
+# — matching the plan's literal extract_indicators(timeframe) signature.
+# No retry/backoff here (unlike extract_data_window()): single-attempt
+# only, per this task's explicit scope boundary — Task 5D-6 owns retry
+# generalization, not duplicated here.
+
+# Key-variant lists for the target indicators. RSI/ADX/ATR keys are
+# confirmed against the real live sample gathered for Task 5D-1's brief
+# (2026-07-14). MACD/BB keys are reasonable best-effort guesses — no
+# chart with those indicators loaded was inspected live; if a future
+# task finds these names wrong against a real MACD/BB-loaded chart, that
+# discovery should update this list, not be treated as evidence this
+# task was built wrong (see this task's brief).
+_RSI_KEYS = ["RSI"]
+_MACD_KEYS = ["MACD"]
+_BB_UPPER_KEYS = ["BB Upper", "Bollinger Upper", "BB_upper"]
+_BB_LOWER_KEYS = ["BB Lower", "Bollinger Lower", "BB_lower"]
+_ADX_KEYS = ["ADX"]
+_ATR_KEYS = ["ATR"]
+
+
+def _validate_range(
+    value: Optional[float], low: Optional[float], high: Optional[float]
+) -> Optional[float]:
+    """Return `value` unchanged if it's a finite number within
+    [low, high] (either bound optional — pass None to skip that side),
+    else None. A present-but-implausible value degrades to None, same
+    treatment as a genuinely missing one (per this task's "graceful
+    fail" requirement)."""
+    if value is None or not _is_finite_number(value):
+        return None
+    if low is not None and value < low:
+        return None
+    if high is not None and value > high:
+        return None
+    return value
+
+
+def extract_indicators(timeframe: str) -> Dict[str, Optional[float]]:
+    """
+    Extract a representative set of technical indicators from
+    TradingView's live Data Window panel, on whichever chart symbol is
+    currently active.
+
+    Unlike extract_data_window() (5D-1), this function does NOT switch
+    the chart's symbol — only its timeframe. Call
+    extract_data_window(ticker, timeframe) first if a specific ticker's
+    chart needs to be active before calling this.
+
+    Targets a representative, non-exhaustive indicator set (rsi, macd,
+    bb_upper, bb_lower, adx, atr) — a chart's real indicator set is
+    unbounded; this does not attempt dynamic discovery of arbitrary
+    other indicators. Each value is range-validated (rsi/adx in
+    [0, 100], atr/bb_upper/bb_lower >= 0, macd merely finite, bb_upper
+    >= bb_lower when both present) — a present-but-implausible value is
+    treated identically to a genuinely missing one: None.
+
+    Does NOT retry with backoff (unlike extract_data_window()) — a
+    single-attempt read; retry/lag-tolerance generalization is Task
+    5D-6's concern, not duplicated here (see Key Design Decisions).
+
+    Never raises.
+
+    Args:
+        timeframe: Real TV resolution string, passed through unmodified
+            (see Task 5D-1's brief for the real vocabulary — "1D"/"D"/
+            "W" or a plain minute count).
+
+    Returns:
+        {"rsi": float | None, "macd": float | None, "bb_upper": float | None,
+        "bb_lower": float | None, "adx": float | None, "atr": float | None}
+        — every key always present; value is None for any indicator
+        that's missing from the chart, unparseable, or fails its range
+        check.
+    """
+    empty = {"rsi": None, "macd": None, "bb_upper": None, "bb_lower": None, "adx": None, "atr": None}
+
+    timeframe_result = tv_call("chart", "timeframe", timeframe)
+    if not _tv_call_succeeded(timeframe_result):
+        return dict(empty)
+
+    tv_call("chart", "openDataWindow")  # idempotent, same precedent as 5D-1
+
+    read_result = tv_call("chart", "read")
+    if not _tv_call_succeeded(read_result):
+        return dict(empty)
+
+    data = read_result.get("data", {})
+    if not isinstance(data, dict):
+        return dict(empty)
+
+    rsi = _validate_range(_parse_price(_first_present(data, _RSI_KEYS)), 0, 100)
+    macd = _parse_price(_first_present(data, _MACD_KEYS))
+    macd = macd if _is_finite_number(macd) else None
+    bb_upper = _validate_range(_parse_price(_first_present(data, _BB_UPPER_KEYS)), 0, None)
+    bb_lower = _validate_range(_parse_price(_first_present(data, _BB_LOWER_KEYS)), 0, None)
+    if bb_upper is not None and bb_lower is not None and bb_upper < bb_lower:
+        bb_upper, bb_lower = None, None
+    adx = _validate_range(_parse_price(_first_present(data, _ADX_KEYS)), 0, 100)
+    atr = _validate_range(_parse_price(_first_present(data, _ATR_KEYS)), 0, None)
+
+    return {"rsi": rsi, "macd": macd, "bb_upper": bb_upper, "bb_lower": bb_lower, "adx": adx, "atr": atr}
