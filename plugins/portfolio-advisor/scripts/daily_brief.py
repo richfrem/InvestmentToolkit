@@ -239,6 +239,43 @@ def _inject_pine_signals_step(
 
 # ── Core pipeline ─────────────────────────────────────────────────────────────
 
+def _emit_rebalance_events_step(
+    recommendations: list[dict[str, Any]],
+    scores_raw: list[dict[str, Any]],
+) -> None:
+    """Emit a G4 rebalance event for each BUY/SELL recommendation card
+    (non-blocking — a per-card emission failure is logged nowhere and
+    does not stop processing the rest, matching this file's existing
+    G4 emission convention for earnings/breaker events).
+
+    Args:
+        recommendations: Today's recommendation cards (flat list from
+            build_recommendations()).
+        scores_raw: Today's conviction score rows, used to look up each
+            ticker's current price.
+    """
+    from evolution_events import emit_rebalance_event
+    for rec in recommendations:
+        try:
+            ticker = rec.get("ticker")
+            action = rec.get("recommendation")
+            if ticker and action in ("BUY", "SELL"):
+                curr_price = next(
+                    (s["price"] for s in scores_raw if s["ticker"] == ticker),
+                    None,
+                )
+                emit_rebalance_event(
+                    ticker=ticker,
+                    order_type="buy" if action == "BUY" else "sell",
+                    order_quantity=1,
+                    order_price=curr_price or 0.0,
+                    rebalance_date=date.today().isoformat(),
+                    current_price=curr_price,
+                )
+        except Exception:
+            pass  # Non-blocking
+
+
 def _harvest_predictions_step() -> int | None:
     """Run the E3 prediction harvest, degrading to None on any failure.
 
@@ -285,7 +322,6 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     from evolution_events import (  # G4 event emission (non-blocking)
         emit_earnings_event,
         emit_breaker_override_event,
-        emit_rebalance_event,
         EarningsGrade,
     )
 
@@ -431,29 +467,6 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     print("▶ Prediction harvest...", file=sys.stderr)
     predictions_harvested = _harvest_predictions_step()
 
-    # ── 5e. Emit rebalance events for recommended actions (G4 — non-blocking) ─
-    if recommendations and isinstance(recommendations, dict):
-        for rec in recommendations.get("actions", []):
-            try:
-                ticker = rec.get("ticker")
-                action = rec.get("action")
-                if ticker and action in ("BUY", "SELL"):
-                    curr_price = next(
-                        (s["price"] for s in scores_raw if s["ticker"] == ticker),
-                        None,
-                    )
-                    order_qty = rec.get("size", 1)
-                    emit_rebalance_event(
-                        ticker=ticker,
-                        order_type="buy" if action == "BUY" else "sell",
-                        order_quantity=order_qty,
-                        order_price=curr_price or 0.0,
-                        rebalance_date=date.today().isoformat(),
-                        current_price=curr_price,
-                    )
-            except Exception:
-                pass  # Non-blocking
-
     # ── 6. Deltas vs yesterday ────────────────────────────────────────────────
     yesterday = _load_yesterday()
     deltas = _score_deltas(scores_raw, yesterday)
@@ -474,6 +487,9 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
         macro=asdict(macro),
         total_equity=total_equity,
     )
+
+    # ── 6a. Emit rebalance events for recommended actions (G4 — non-blocking) ─
+    _emit_rebalance_events_step(recommendations, scores_raw)
 
     # ── 6c. Pine signal injection (5B-8, real TV chart side effect) ──────────
     print("▶ Pine signal injection...", file=sys.stderr)
