@@ -34,6 +34,7 @@ Key Input Dependencies:
     - plugins/tradingview/scripts/tv_client.py (Task 5A-8's tv_call())
 """
 
+import logging
 import math
 import re
 import sys
@@ -60,6 +61,8 @@ from tv_client import tv_call  # noqa: E402
 # no heavy/side-effecting import-time behavior in tv_cdp_health.py to
 # defer, and a top-level import is simpler.
 from tv_cdp_health import cache_get, cache_set  # noqa: E402
+
+logger = logging.getLogger(__name__)
 
 # Key-variant lists, ordered most-to-least likely, based on the real
 # confirmed live sample (2026-07-14) — see this module's docstring and
@@ -696,3 +699,61 @@ def get_cached_or_fetch(
     if fresh is not None:
         cache_data_window(key, fresh, ttl=ttl)
     return fresh
+
+
+# --- Task 5D-6: Lag-Tolerant Extraction ---
+#
+# extract_with_lag_logging() is a thin observability wrapper around
+# extract_data_window() (5D-1, already shipped). It does NOT reimplement
+# retry-with-backoff or last-known-good logic — both already exist,
+# correctly, in extract_data_window() — see this task's brief for the
+# full overlap-resolution reasoning. This function's entire value is a
+# single "Data window lagged by Xs" log line, driven by how long the
+# (already-retrying) extract_data_window() call actually took.
+
+_LAG_WARNING_THRESHOLD_SECONDS = 2.0
+# Empirically: a single clean extract_data_window() attempt (chart
+# switch + timeframe + openDataWindow + read, all succeeding on the
+# first try) completes in well under 2 seconds — one CDP round-trip.
+# Needing >= 2 seconds strongly implies at least one internal retry
+# occurred (5D-1's backoff starts at a 1-second sleep), i.e. genuine
+# lag. This is a documented, tunable proxy — not tied to the plan's
+# literal "60s" figure, since that number describes a "price hasn't
+# moved across separate polls" concept this function's scope doesn't
+# implement (see this task's brief for why).
+
+
+def extract_with_lag_logging(ticker: str, timeframe: str = "1D") -> Optional[dict]:
+    """
+    Thin observability wrapper around extract_data_window() (Task
+    5D-1) — times the full extraction call (including any internal
+    retries 5D-1 already performs) and logs a single, consolidated
+    "Data window lagged by Xs" warning if it took meaningfully longer
+    than a clean single attempt would.
+
+    Does NOT reimplement retry-with-backoff or last-known-good logic —
+    both already exist, correctly, in extract_data_window(). This
+    function's entire value is the log line; the return value is
+    exactly whatever extract_data_window() returns, unmodified.
+
+    Never raises: extract_data_window() itself already never raises
+    (Task 5D-1); this wrapper adds no new exception surface — timing
+    via time.monotonic() cannot fail.
+
+    Args:
+        ticker: Ticker symbol, passed through unmodified to
+            extract_data_window().
+        timeframe: Real TV resolution string, passed through unmodified
+            (see Task 5D-1's brief for the real vocabulary).
+
+    Returns:
+        Exactly extract_data_window()'s own return value — a candle
+        dict (possibly with `None` sub-fields, per 5D-1's own real
+        contract) or `None`.
+    """
+    start = time.monotonic()
+    result = extract_data_window(ticker, timeframe)
+    elapsed = time.monotonic() - start
+    if elapsed >= _LAG_WARNING_THRESHOLD_SECONDS:
+        logger.warning(f"Data window lagged by {elapsed:.1f}s for {ticker} ({timeframe})")
+    return result
