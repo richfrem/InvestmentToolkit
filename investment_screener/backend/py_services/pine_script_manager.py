@@ -606,3 +606,171 @@ def list_script_versions(script_name: str) -> List[dict]:
             "commit": commit_hash[:7],
         })
     return history
+
+
+def _git_show_file_content(repo_root: Path, commit_hash: str, relative_path: str) -> Optional[str]:
+    """Read a historical revision of an arbitrary tracked file as text.
+
+    Sibling to _git_show_registry_json() (5B-4), but returns the raw
+    stdout text instead of json.loads()-ing it, since a rolled-back
+    .pine file's historical content isn't JSON.
+
+    Args:
+        repo_root: Root of the git repository to run `git show` in.
+        commit_hash: The commit whose revision of the file to read.
+        relative_path: Path to the tracked file, relative to repo_root.
+
+    Returns:
+        The raw file content as a string, or None if the git call fails
+        for any reason (non-zero exit, OSError, SubprocessError, or
+        timeout). Never raises.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "show", f"{commit_hash}:{relative_path}"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (OSError, subprocess.SubprocessError) as e:
+        logger.warning("rollback_pine_script: git show failed for %s: %s", commit_hash, e)
+        return None
+    if result.returncode != 0:
+        return None
+    return result.stdout
+
+
+def _find_history_entry(script_name: str, to_version: str) -> Optional[dict]:
+    """Find the most recent version-history entry matching `to_version`.
+
+    Args:
+        script_name: Registry key to look up version history for.
+        to_version: The semantic version string to search for.
+
+    Returns:
+        The matching {"version", "hash", "timestamp", "commit"} dict from
+        list_script_versions() (5B-4) — the first (i.e. most recent,
+        given the newest-first list) match — or None if no entry in the
+        script's history has that version.
+    """
+    for entry in list_script_versions(script_name):
+        if entry["version"] == to_version:
+            return entry
+    return None
+
+
+def _restore_script_content(entry: PineScriptEntry, commit_hash: str) -> Optional[str]:
+    """Read a script's historical .pine content at a given commit.
+
+    Resolves the repo root and the entry's current file path relative to
+    it (renamed-file history is out of scope, matching 5B-4's own scope
+    boundary for registry.json), then reads that path's content as of
+    `commit_hash`.
+
+    Args:
+        entry: The current registry entry — used only to resolve the
+            .pine file's repo-relative path.
+        commit_hash: The short commit hash to read historical content
+            from (as returned by list_script_versions()).
+
+    Returns:
+        The historical file content, or None if the repo root can't be
+        resolved, the .pine path lies outside the repo, or the git show
+        call fails. Never raises.
+    """
+    repo_root = _git_repo_root(PINE_REGISTRY_PATH.parent)
+    if repo_root is None:
+        return None
+    full_path = _resolve_script_path(entry)
+    try:
+        relative_path = str(full_path.relative_to(repo_root))
+    except ValueError:
+        return None
+    return _git_show_file_content(repo_root, commit_hash, relative_path)
+
+
+def rollback_pine_script(script_name: str, to_version: str, chart_symbol: str) -> bool:
+    """
+    Restore a registered script to a prior version and re-inject it.
+
+    Finds `to_version` in the script's registry.json git history (5B-4),
+    restores the .pine file's content from that historical commit,
+    updates the registry entry's version/hash to match, then re-injects
+    via inject_pine_script() (5B-3).
+
+    Non-atomic by design: restoring the file and updating the registry
+    are real, separate side effects that happen before re-injection is
+    attempted. If injection then fails, they are NOT rolled back — this
+    matches the module's existing philosophy (no transaction log
+    anywhere in 5B-1 through 5B-4); "never raises" is about not throwing
+    exceptions, not about atomicity.
+
+    Never raises: every failure mode (unregistered script, version not
+    found in history, git show failure, file-write failure, registry
+    save failure, injection failure) returns False rather than
+    propagating.
+
+    Args:
+        script_name: Registry key of the script to roll back.
+        to_version: The semantic version string to restore. Caller-
+            specified, not auto-detected — typically the entry just
+            before the one that broke, per a prior list_script_versions()
+            call.
+        chart_symbol: Ticker symbol to switch the active chart to before
+            re-injecting (passed straight through to
+            inject_pine_script()).
+
+    Returns:
+        True only if the historical version is found, its content is
+        restored to disk, and re-injection succeeds; False otherwise.
+    """
+    registry = load_registry()
+    entry = registry.get_script(script_name)
+    if entry is None:
+        print(f"rollback_pine_script: '{script_name}' not found in registry", file=sys.stderr)
+        return False
+
+    history_entry = _find_history_entry(script_name, to_version)
+    if history_entry is None:
+        print(
+            f"rollback_pine_script: version '{to_version}' not found in "
+            f"history for '{script_name}'",
+            file=sys.stderr,
+        )
+        return False
+
+    restored_content = _restore_script_content(entry, history_entry["commit"])
+    if restored_content is None:
+        print(
+            f"rollback_pine_script: could not read historical content for "
+            f"'{script_name}' at commit {history_entry['commit']}",
+            file=sys.stderr,
+        )
+        return False
+
+    full_path = _resolve_script_path(entry)
+    try:
+        full_path.write_text(restored_content)
+    except OSError as e:
+        print(f"rollback_pine_script: failed to write {full_path}: {e}", file=sys.stderr)
+        return False
+
+    entry.version = to_version
+    entry.hash = history_entry["hash"]
+    registry.add_script(script_name, entry)
+    try:
+        save_registry(registry)
+    except OSError as e:
+        # The file has already been restored on disk — a real side
+        # effect that can't be undone — so a registry bookkeeping
+        # failure here must not block the re-injection attempt below.
+        # Mirrors the exact precedent established by inject_pine_script's
+        # own 5B-3 OSError fix (commit 40a17fe).
+        print(
+            f"rollback_pine_script: '{script_name}' restored but registry "
+            f"update failed: {e}",
+            file=sys.stderr,
+        )
+
+    return inject_pine_script(script_name, chart_symbol)
