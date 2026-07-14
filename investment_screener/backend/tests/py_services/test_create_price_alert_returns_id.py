@@ -33,6 +33,24 @@ def _list_response(alerts):
     return {"success": True, "alert_count": len(alerts), "alerts": alerts, "source": "internal_api"}
 
 
+def _condition(price):
+    """Build a real-shaped TV alert `condition` object for test fixtures.
+
+    Matches the actual `alert list` TV CDP response shape confirmed live
+    against the user's real TradingView account (2026-07-14, 306 sampled
+    alerts) — a nested object, not the flat "greater_than"/"less_than"
+    string the pre-bugfix tests incorrectly assumed. The price threshold
+    lives at `series[1]["value"]`.
+    """
+    return {
+        "type": "cross",
+        "frequency": "on_first_fire",
+        "series": [{"type": "barset"}, {"type": "value", "value": price}],
+        "cross_interval": True,
+        "resolution": "1",
+    }
+
+
 ERROR_DICT_SHAPE = {
     "error": "CDP timeout",
     "data": None,
@@ -66,7 +84,7 @@ def test_create_price_alert_returns_id_on_success(monkeypatch):
                 {
                     "alert_id": "abc123",
                     "symbol": "NASDAQ:NVDA",
-                    "condition": "greater_than",
+                    "condition": _condition(500.0),
                     "created": "2026-07-13T00:00:00Z",
                 }
             ])
@@ -92,7 +110,7 @@ def test_create_price_alert_maps_above_to_greater_than(monkeypatch):
             return {"success": True}
         if args == ("alert", "list"):
             return _list_response([
-                {"alert_id": "id-1", "symbol": "NVDA", "condition": "greater_than"}
+                {"alert_id": "id-1", "symbol": "NVDA", "condition": _condition(500.0)}
             ])
         raise AssertionError(f"Unexpected tv_call args: {args}")
 
@@ -118,7 +136,7 @@ def test_create_price_alert_maps_below_to_less_than(monkeypatch):
             return {"success": True}
         if args == ("alert", "list"):
             return _list_response([
-                {"alert_id": "id-2", "symbol": "NVDA", "condition": "less_than"}
+                {"alert_id": "id-2", "symbol": "NVDA", "condition": _condition(500.0)}
             ])
         raise AssertionError(f"Unexpected tv_call args: {args}")
 
@@ -144,7 +162,7 @@ def test_create_price_alert_switches_chart_before_creating(monkeypatch):
             return {"success": True}
         if args == ("alert", "list"):
             return _list_response([
-                {"alert_id": "id-3", "symbol": "NVDA", "condition": "greater_than"}
+                {"alert_id": "id-3", "symbol": "NVDA", "condition": _condition(500.0)}
             ])
         raise AssertionError(f"Unexpected tv_call args: {args}")
 
@@ -229,7 +247,7 @@ def test_create_price_alert_returns_none_when_no_matching_alert_found_in_list(mo
             return {"success": True}
         if args == ("alert", "list"):
             return _list_response([
-                {"alert_id": "other-id", "symbol": "AAPL", "condition": "less_than"}
+                {"alert_id": "other-id", "symbol": "AAPL", "condition": _condition(500.0)}
             ])
         raise AssertionError(f"Unexpected tv_call args: {args}")
 
@@ -269,8 +287,8 @@ def test_create_price_alert_multiple_matches_picks_latest_created(monkeypatch):
             return {"success": True}
         if args == ("alert", "list"):
             return _list_response([
-                {"alert_id": "old-id", "symbol": "NVDA", "condition": "greater_than", "created": "2026-01-01T00:00:00Z"},
-                {"alert_id": "new-id", "symbol": "NVDA", "condition": "greater_than", "created": "2026-07-13T00:00:00Z"},
+                {"alert_id": "old-id", "symbol": "NVDA", "condition": _condition(500.0), "created": "2026-01-01T00:00:00Z"},
+                {"alert_id": "new-id", "symbol": "NVDA", "condition": _condition(500.0), "created": "2026-07-13T00:00:00Z"},
             ])
         raise AssertionError(f"Unexpected tv_call args: {args}")
 
@@ -288,3 +306,55 @@ def test_create_price_alert_invalid_ticker_raises_value_error(monkeypatch):
 
     with pytest.raises(ValueError):
         create_price_alert("", 500.0, "above")
+
+
+# --- Bugfix (condition-shape): _extract_condition_price / _find_created_alert_id ---
+#
+# The tests above exercise create_price_alert()'s end-to-end flow with
+# real-shaped mock `condition` objects. These tests exercise the two
+# price-matching helpers directly, confirming the fix for the bug where
+# _find_created_alert_id() compared a listed alert's `condition` (a real
+# nested object, confirmed live against the user's TradingView account)
+# against a plain condition string, which is always False in Python and
+# meant create_price_alert() could never correlate a real alert_id.
+
+
+def test_extract_condition_price_reads_series_value():
+    """A real-shaped `condition` object's price threshold is correctly
+    extracted from `condition["series"][1]["value"]`."""
+    condition = _condition(123.45)
+
+    assert alert_manager._extract_condition_price(condition) == 123.45
+
+
+@pytest.mark.parametrize("condition", [
+    "greater_than",  # the OLD, wrong flat-string assumption
+    {"type": "cross"},  # missing "series"
+    {"type": "cross", "series": [{"type": "barset"}]},  # series too short
+])
+def test_extract_condition_price_returns_none_for_malformed_condition(condition):
+    assert alert_manager._extract_condition_price(condition) is None
+
+
+def test_find_created_alert_id_matches_on_price_within_tolerance():
+    """Float round-tripping through TV's UI/API isn't guaranteed
+    bit-exact, so matching allows a small tolerance (< 0.01)."""
+    alerts = [
+        {"alert_id": "id-tol", "symbol": "NVDA", "condition": _condition(100.004)}
+    ]
+
+    result = alert_manager._find_created_alert_id(alerts, "NVDA", 100.00)
+
+    assert result == "id-tol"
+
+
+def test_find_created_alert_id_does_not_match_different_price():
+    """A same-ticker alert at a genuinely different price must not match
+    — matching by ticker alone would over-match."""
+    alerts = [
+        {"alert_id": "id-other", "symbol": "NVDA", "condition": _condition(450.0)}
+    ]
+
+    result = alert_manager._find_created_alert_id(alerts, "NVDA", 500.0)
+
+    assert result is None
