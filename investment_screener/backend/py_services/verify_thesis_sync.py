@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-verify_thesis_sync.py — Automated Portfolio & Thesis Synchronization Checker.
+verify_thesis_sync.py - Python utility script.
+
+Purpose:
+    verify_thesis_sync.py — Automated Portfolio & Thesis Synchronization Checker.
 
 Performs three core sanity checks:
   1. Holding Mismatches: Every ticker in target-portfolio.json must be mentioned in investment_thesis.md.
@@ -12,8 +15,25 @@ Exits with 0 on success, 1 on failure.
 
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Audits thesis and holdings alignment)
-"""
 
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    TBD
+
+Key Functions (Index):
+    - main()
+    - log_ok()
+    - log_fail()
+    - log_warn()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
+"""
 import json
 import re
 import sys

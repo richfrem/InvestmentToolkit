@@ -1,4 +1,9 @@
-"""Unified conviction scorer for portfolio holdings.
+#!/usr/bin/env python3
+"""
+compute_conviction_scores.py - Python utility script.
+
+Purpose:
+    Unified conviction scorer for portfolio holdings.
 
 Combines DCF projections, TA sweep signals, and thesis weight gap into a
 single per-holding score (range −6 to +6). Drives the daily brief's ranked
@@ -19,6 +24,35 @@ Usage:
 
 Key Input Dependencies:
     - investment_screener/backend/data/theses/target-portfolio.json (Reads targets)
+
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    python3 compute_conviction_scores.py
+    python3 compute_conviction_scores.py --json
+
+Key Functions (Index):
+    - ConvictionScore()
+    - _score_dcf()
+    - _score_ta()
+    - _score_weight_gap()
+    - _score_momentum()
+    - _resolve_pct_to_fv()
+    - _band()
+    - _load_ta()
+    - _load_dcf()
+    - _load_actual_weights()
+    - val()
+    - _load_target_weights()
+    - compute_all()
+    - main()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
 """
 from __future__ import annotations
 

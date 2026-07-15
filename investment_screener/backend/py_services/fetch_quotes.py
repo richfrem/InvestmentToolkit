@@ -1,5 +1,9 @@
+#!/usr/bin/env python3
 """
-Batch quote fetcher — returns bid/ask/price/change for a list of tickers.
+fetch_quotes.py - Python utility script.
+
+Purpose:
+    Batch quote fetcher — returns bid/ask/price/change for a list of tickers.
 Usage: python3 fetch_quotes.py INTC,AMD,NVDA
 Output: JSON dict keyed by ticker
 
@@ -15,19 +19,42 @@ market hours. Instead, bid/ask are derived from the last trade price.
 
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Queries current yfinance prices)
+
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    python3 fetch_quotes.py INTC,AMD,NVDA
+
+Key Functions (Index):
+    - _load_tv_prices()
+    - fetch_one()
+    - main()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
 """
 import sys
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from typing import Any
 import yfinance as yf
 
 # TV batch price cache — populated once per process invocation
 _tv_prices: dict = {}
 _tv_loaded: bool = False
 
+# Populate TV prices
 def _load_tv_prices(tickers: list[str]) -> None:
-    """Populate _tv_prices from TradingView watchlist (best-effort, silent on failure)."""
+    """Populates the module-level TV prices cache from the TradingView watchlist.
+
+    Args:
+        tickers: List of stock ticker symbols to load.
+    """
     global _tv_prices, _tv_loaded
     if _tv_loaded:
         return
@@ -44,7 +71,16 @@ def _load_tv_prices(tickers: list[str]) -> None:
     except Exception:
         pass
 
-def fetch_one(ticker: str) -> dict:
+# Fetch quote for one ticker
+def fetch_one(ticker: str) -> dict[str, Any]:
+    """Fetches real-time price quotes, bid, ask, and daily change metrics for a single stock.
+
+    Args:
+        ticker: The stock ticker symbol.
+
+    Returns:
+        A dictionary containing price metrics and metadata or an error payload.
+    """
     try:
         # 1. TradingView live price (populated by _load_tv_prices before fetch_one calls)
         tv_q = _tv_prices.get(ticker)
@@ -124,7 +160,9 @@ def fetch_one(ticker: str) -> dict:
     except Exception as e:
         return {'ticker': ticker, 'error': str(e)}
 
-def main():
+# Main entry point
+def main() -> None:
+    """Parses command line arguments and runs the batch quotes fetcher in parallel."""
     if len(sys.argv) < 2 or not sys.argv[1].strip():
         print(json.dumps({}))
         return

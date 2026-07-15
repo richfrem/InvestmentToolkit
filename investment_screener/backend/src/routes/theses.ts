@@ -1,14 +1,39 @@
 /**
- * src/routes/theses.ts
- * ====================
- *
+ * theses.ts - Express routing for investment theses and conviction categories.
+ * 
  * Purpose:
  *   Handles Express API routes for retrieving and updating investment thesis targets,
  *   sub-strategies files, and target portfolio allocations.
- *
- * Key Functions:
- *   - GET /sub-strategies - Lists available sub-strategy thesis details
- *   - GET /target-weights - Retrieves target weights for all holdings
+ * 
+ * Layer:
+ *   Backend / Routes / Theses
+ * 
+ * Key Functions (Index):
+ *   - parseMetadata(content, filename) - Parse basic metadata from a sub-strategy markdown file
+ * 
+ * Routes Index:
+ *   - GET /sub-strategies - Lists available sub-strategy thesis details (skips archived)
+ *   - GET /sub-strategies/:id - Reads specific sub-strategy markdown content
+ *   - GET / - Lists metadata for all registered theses
+ *   - GET /pillars - Retrieves strategic pillars associated with the target thesis
+ *   - GET /:id - Fetches a thesis configuration by its ID
+ *   - GET /:id/health - Calculates portfolio drift metrics
+ *   - POST /:id/strategic-review - Spawns AI strategic review report
+ *   - POST /:id/optimize - Asks AI for rebalancing trade suggestions
+ *   - POST / - Validates and saves a thesis structure
+ *   - PATCH /:id/holdings/:ticker - Modifies an existing thesis holding weight/rules
+ *   - POST /:id/holdings - Adds a new holding target to a thesis
+ *   - DELETE /:id/holdings/:ticker - Deletes a holding target from a thesis
+ *   - PUT /:id/holdings - Replaces all holdings targets in a thesis
+ *   - DELETE /:id - Deletes an entire thesis configuration file
+ * 
+ * Key Input Dependencies:
+ *   - investment_screener/backend/data/theses/sub_strategies/ (location of markdown files)
+ *   - ../services/ThesisService (thesisService operations)
+ *   - investment_screener/backend/data/theses/target-portfolio.json (primary thesis file)
+ * 
+ * Key Output Dependencies:
+ *   - investment_screener/backend/data/theses/
  */
 
 import express from 'express';

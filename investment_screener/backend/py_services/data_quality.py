@@ -1,4 +1,6 @@
-"""Data quality checks for market data layer.
+#!/usr/bin/env python3
+"""
+data_quality.py - Python utility script.
 
 Purpose:
     This module provides cross-source disagreement and staleness validation for financial data.
@@ -8,12 +10,21 @@ Purpose:
     decisions, confluence gates, and portfolio-total reconciliation).
 
 Layer:
-    Market data layer — pre-response quality gates.
+    Backend / Python Services
+
+Usage Examples:
+    TBD
+
+Key Functions (Index):
+    - check_disagreement()
+    - check_staleness()
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Validates schema alignment)
-"""
+    None
 
+Key Output Dependencies:
+    None
+"""
 from datetime import datetime, timezone
 
 

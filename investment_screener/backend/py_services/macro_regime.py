@@ -1,4 +1,9 @@
-"""Macro regime classifier — RISK-ON / NEUTRAL / RISK-OFF.
+#!/usr/bin/env python3
+"""
+macro_regime.py - Python utility script.
+
+Purpose:
+    Macro regime classifier — RISK-ON / NEUTRAL / RISK-OFF.
 
 Fetches VIX, SPY, and HYG/LQD data via yfinance to classify the current
 macro environment. Used as a hard gate in the daily brief to filter which
@@ -10,6 +15,28 @@ Usage:
 
 Key Input Dependencies:
     - investment_screener/backend/data/daily-briefs/ (Updates macroeconomic regime)
+
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    python3 macro_regime.py
+    python3 macro_regime.py --json
+
+Key Functions (Index):
+    - MacroRegimeResult()
+    - _classify_regime()
+    - _classify_vix()
+    - _classify_spy()
+    - _classify_credit()
+    - get_macro_regime()
+    - main()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
 """
 from __future__ import annotations
 

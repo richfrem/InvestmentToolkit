@@ -1,3 +1,25 @@
+#!/usr/bin/env python3
+"""
+apply_portfolio_updates.py - Python utility script.
+
+Purpose:
+    TBD
+
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    TBD
+
+Key Functions (Index):
+    - main()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
+"""
 import json
 from pathlib import Path
 

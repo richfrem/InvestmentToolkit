@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-technicals.py (Python Service)
-=====================================
+technicals.py - Python utility script.
 
 Purpose:
     Headless local TA engine — hand-rolled implementations (no TA libraries)
@@ -13,15 +12,34 @@ Purpose:
     background history endpoint. TV is used only as the trust-check, via
     ta_sweep_batch.py --validate (Phase 2b, separate task).
 
-Layer: Backend / Python Services / Technical Analysis
+Layer:
+    Backend / Python Services
 
-Usage:
+Usage Examples:
     python3 technicals.py --ticker NVDA --timeframe D --period 1y --benchmark SPY --pretty
 
-Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Calculates RSI and Squeeze momentum)
-"""
+Key Functions (Index):
+    - _wilder_smooth()
+    - compute_rsi()
+    - compute_ema()
+    - compute_macd()
+    - _true_range()
+    - compute_atr()
+    - compute_adx()
+    - compute_bollinger_keltner_squeeze()
+    - compute_anchored_vwap()
+    - compute_volume_ratio()
+    - compute_relative_strength()
+    - compute_technical_snapshot()
+    - _default_earnings_anchor()
+    - main()
 
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
+"""
 import argparse
 import json
 import sys

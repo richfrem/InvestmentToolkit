@@ -1,4 +1,9 @@
-"""Earnings calendar — flags portfolio holdings with upcoming binary events.
+#!/usr/bin/env python3
+"""
+earnings_calendar.py - Python utility script.
+
+Purpose:
+    Earnings calendar — flags portfolio holdings with upcoming binary events.
 
 Fetches next earnings dates via yfinance for all active holdings and
 classifies proximity. Used by the daily brief to gate position sizing
@@ -10,6 +15,27 @@ Usage:
 
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Finds upcoming holdings earnings)
+
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    python3 earnings_calendar.py
+    python3 earnings_calendar.py --days 14 --json
+
+Key Functions (Index):
+    - EarningsEntry()
+    - _load_tickers()
+    - _fetch_earnings_date()
+    - _flag()
+    - get_earnings_calendar()
+    - main()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
 """
 from __future__ import annotations
 

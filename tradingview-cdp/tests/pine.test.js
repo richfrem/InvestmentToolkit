@@ -1,11 +1,15 @@
 /**
- * pine.test.js — Jest tests for Pine Editor CDP automation (Tasks 1 & 2)
- *
- * Tests use mock CDP clients — no live TradingView connection required.
- * Live end-to-end tests live in plugins/tradingview/tests/tv_test_harness.py (Section 1).
- *
- * All real implementations use client.Runtime.evaluate; mocks must return
- * JSON-stringified results matching the evaluate contract.
+ * pine.test.js - Jest tests for Pine Editor CDP automation.
+ * 
+ * Purpose:
+ *   Verifies Pine Script editor automation features (injection, removal, and reading values)
+ *   using mock CDP clients without requiring a live TradingView connection.
+ * 
+ * Key Input Dependencies:
+ *   - ../core/pine.js
+ * 
+ * Key Output Dependencies:
+ *   None (reports test execution results to Jest runner console)
  */
 
 import { jest, describe, it, expect } from '@jest/globals';

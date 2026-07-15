@@ -1,3 +1,17 @@
+/**
+ * watchlist.test.js - Jest tests for Watchlist CDP automation.
+ * 
+ * Purpose:
+ *   Verifies Watchlist automation features (open, get, add, remove, create, and delete)
+ *   using mock CDP clients.
+ * 
+ * Key Input Dependencies:
+ *   - ../core/watchlist.js
+ * 
+ * Key Output Dependencies:
+ *   None (reports test execution results to Jest runner console)
+ */
+
 import { jest, describe, it, expect } from '@jest/globals';
 import {
   openWatchlist,

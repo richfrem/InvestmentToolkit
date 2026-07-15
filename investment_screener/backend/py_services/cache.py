@@ -1,18 +1,29 @@
+#!/usr/bin/env python3
 """
-cache.py (Python Service)
-=====================================
+cache.py - Python utility script.
 
 Purpose:
     Shared TTL-based JSON file cache for market_data.py. One cache entry per
     (key, data_class) pair. Callers pass --no-cache upstream to bypass reads
     (still writes, so a subsequent call is warm).
 
-Layer: Backend / Python Services / Data Layer
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    TBD
+
+Key Functions (Index):
+    - _cache_path()
+    - cache_get()
+    - cache_set()
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
-"""
+    None
 
+Key Output Dependencies:
+    None
+"""
 import json
 import os
 import time
@@ -29,6 +40,7 @@ CACHE_TTL_SECONDS = {
 }
 
 
+# Construct a cache file path from key and data class
 def _cache_path(key: str, data_class: str) -> Path:
     """Construct a cache file path from key and data class.
 
@@ -43,6 +55,7 @@ def _cache_path(key: str, data_class: str) -> Path:
     return CACHE_DIR / f"{data_class}_{safe_key}.json"
 
 
+# Retrieve a value from cache if it exists and hasn't expired
 def cache_get(key: str, data_class: str) -> Optional[dict]:
     """Retrieve a value from cache if it exists and hasn't expired.
 
@@ -67,6 +80,7 @@ def cache_get(key: str, data_class: str) -> Optional[dict]:
         return None
 
 
+# Store a value in the cache
 def cache_set(key: str, data_class: str, value: dict) -> None:
     """Store a value in the cache.
 

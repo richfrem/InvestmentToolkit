@@ -1,4 +1,9 @@
-"""Harvest predictions — E3 claim harvester, reads persisted artifacts only.
+#!/usr/bin/env python3
+"""
+harvest_predictions.py - Python utility script.
+
+Purpose:
+    Harvest predictions — E3 claim harvester, reads persisted artifacts only.
 
 Never modifies projections/*.json, rebalance_plan.json, or
 thesis_breaker_state.json — purely additive, reads them and appends new
@@ -11,6 +16,33 @@ Usage:
 
 Key Input Dependencies:
     - investment_screener/backend/data/daily-briefs/ (Aggregates daily performance)
+
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    python3 harvest_predictions.py [--dry-run]
+
+Key Functions (Index):
+    - _now_iso()
+    - _hash_claim()
+    - _load_projection()
+    - build_action_rating_claim()
+    - build_dcf_fair_value_claim()
+    - build_rebalance_order_claims()
+    - build_breaker_forecast_claims()
+    - harvest_rebalance_and_breaker_claims()
+    - _price_on_or_after()
+    - _fetch_base_prices()
+    - _append_if_new()
+    - harvest_action_and_dcf_claims()
+    - main()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
 """
 from __future__ import annotations
 

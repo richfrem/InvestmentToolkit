@@ -1,21 +1,42 @@
 /**
- * Core screenshot/capture logic.
+ * capture.js - Core screenshot/capture logic.
+ * 
+ * Purpose:
+ *   Handles chart and full-window screenshot captures via the Page.captureScreenshot CDP command.
+ * 
+ * Key Input Dependencies:
+ *   None (reads live state from TradingView Desktop on port 9222 via CDP)
+ * 
+ * Key Output Dependencies:
+ *   - PortfolioAnalysis/screenshots/ (stores generated png screenshots)
  */
 import { getClient, evaluate, getChartCollection } from '../connection.js';
 import { writeFileSync, mkdirSync } from 'fs';
 import { join, dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const scriptDir = dirname(fileURLToPath(import.meta.url));
 // core/capture.js → tradingview-cdp/ → repo root → PortfolioAnalysis/screenshots
-const SCREENSHOT_DIR = resolve(__dirname, '../../PortfolioAnalysis/screenshots');
+const screenshotDir = resolve(scriptDir, '../../PortfolioAnalysis/screenshots');
 
+/**
+ * Capture a screenshot of either a specific chart element or the full window.
+ * 
+ * @param {object} params Parameter object
+ * @param {string} params.region Screenshot region (full, chart)
+ * @param {string} params.filename Base filename to assign to the png file
+ * @returns {Promise<object>} Status report with the generated path and file size
+ */
 export async function captureScreenshot({ region, filename } = {}) {
-  mkdirSync(SCREENSHOT_DIR, { recursive: true });
+  /**
+   * Resolves target element bounds using DOM query, requests Page.captureScreenshot
+   * with clipping from CDP, and writes the base64 output buffer to disk.
+   */
+  mkdirSync(screenshotDir, { recursive: true });
 
   const ts = new Date().toISOString().replace(/[:.]/g, '-');
   const fname = (filename || `tv_${region || 'chart'}_${ts}`).replace(/[\/\\]/g, '_');
-  const filePath = join(SCREENSHOT_DIR, `${fname}.png`);
+  const filePath = join(screenshotDir, `${fname}.png`);
 
   const client = await getClient();
   let clip = undefined;
