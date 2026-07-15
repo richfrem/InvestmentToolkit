@@ -1,0 +1,90 @@
+//@version=6
+// AI TA Levels v2 — Multi-EMA + SuperTrend + ADX + Squeeze + Volume Bias
+// Purpose: Exposes precise numeric levels in the Data Window so AI reads exact
+// values (EMA levels, SuperTrend, ADX strength, ATR, squeeze state, volume bias)
+// without relying on screenshot OCR. All key signals visible in one indicator.
+//
+// Patterns borrowed from:
+//   SuperTrend: KivancOzbilgic (#4) — ATR trailing stop / trend flip
+//   ADX:        ta.dmi() built-in — trend strength gating
+//   Squeeze:    LazyBear (#2) — BB inside KC = compression before breakout
+//   Volume bias: original v1 pattern
+indicator("AI TA Levels", shorttitle="AI-TA", overlay=true)
+
+// ── Inputs ─────────────────────────────────────────────────────────────────
+ema_fast   = input.int(21,   "Fast EMA",    minval=1,   group="EMA Stack")
+ema_mid    = input.int(50,   "Mid EMA",     minval=1,   group="EMA Stack")
+ema_slow   = input.int(200,  "Slow EMA",    minval=1,   group="EMA Stack")
+vol_len    = input.int(20,   "Volume MA",   minval=1,   group="Volume Bias")
+st_factor  = input.float(3.0,"ST Factor",   step=0.5,   group="SuperTrend")
+st_period  = input.int(10,   "ST ATR Len",  minval=1,   group="SuperTrend")
+adx_len    = input.int(14,   "ADX Length",  minval=1,   group="ADX")
+show_label = input.bool(true, "Show Summary Label",     group="Display")
+
+// ── EMA Calculations ────────────────────────────────────────────────────────
+e_fast = ta.ema(close, ema_fast)
+e_mid  = ta.ema(close, ema_mid)
+e_slow = ta.ema(close, ema_slow)
+
+// ── Volume Bias ─────────────────────────────────────────────────────────────
+bull_vol = close > open ? volume : 0.0
+bear_vol = close <= open ? volume : 0.0
+bull_ma  = ta.sma(bull_vol, vol_len)
+bear_ma  = ta.sma(bear_vol, vol_len)
+bias_pct = (bull_ma - bear_ma) / (bull_ma + bear_ma + 0.001) * 100
+
+// ── SuperTrend ───────────────────────────────────────────────────────────────
+// direction: -1 = bullish (price above band), +1 = bearish (price below band)
+[st_val, st_dir] = ta.supertrend(st_factor, st_period)
+st_bull = st_dir < 0
+
+// ── ADX / Trend Strength ─────────────────────────────────────────────────────
+// adx_val > 25 = trending; < 20 = ranging/choppy
+[di_plus, di_minus, adx_val] = ta.dmi(adx_len, adx_len)
+
+// ── ATR (volatility / stop-sizing context) ───────────────────────────────────
+atr_val = ta.atr(14)
+
+// ── Squeeze Detection (LazyBear pattern: BB inside KC = compression) ─────────
+sqz_len    = 20
+bb_upper   = ta.sma(close, sqz_len) + 2.0 * ta.stdev(close, sqz_len)
+bb_lower   = ta.sma(close, sqz_len) - 2.0 * ta.stdev(close, sqz_len)
+kc_mid     = ta.ema(close, sqz_len)
+kc_upper   = kc_mid + 1.5 * ta.atr(sqz_len)
+kc_lower   = kc_mid - 1.5 * ta.atr(sqz_len)
+sqz_on     = bb_lower > kc_lower and bb_upper < kc_upper
+
+// ── Trend State ──────────────────────────────────────────────────────────────
+bull_trend  = close > e_fast and e_fast > e_mid and e_mid > e_slow
+bear_trend  = close < e_fast and e_fast < e_mid and e_mid < e_slow
+trend_color = bull_trend ? color.new(color.lime, 0) : bear_trend ? color.new(color.red, 0) : color.new(color.gray, 0)
+trend_str   = bull_trend ? "BULL" : bear_trend ? "BEAR" : "NEUT"
+
+// ── Overlay Plots ────────────────────────────────────────────────────────────
+plot(e_fast,  "EMA Fast",   color=color.new(color.yellow, 0), linewidth=1)
+plot(e_mid,   "EMA Mid",    color=color.new(color.orange, 0), linewidth=2)
+plot(e_slow,  "EMA Slow",   color=color.new(color.white, 0),  linewidth=2)
+plot(st_val,  "SuperTrend", color=st_bull ? color.new(color.teal, 30) : color.new(color.red, 30), linewidth=1, style=plot.style_linebr)
+
+// ── Data Window — AI reads these numeric values ──────────────────────────────
+plot(bias_pct,            "Vol Bias %",  display=display.data_window, color=color.new(color.aqua, 0))
+plot(adx_val,             "ADX",         display=display.data_window, color=color.new(color.purple, 0))
+plot(atr_val,             "ATR",         display=display.data_window, color=color.new(color.silver, 0))
+plot(sqz_on ? 1.0 : 0.0, "Squeeze",     display=display.data_window, color=color.new(color.orange, 0))
+plot(di_plus,             "DI+",         display=display.data_window, color=color.new(color.lime, 0))
+plot(di_minus,            "DI-",         display=display.data_window, color=color.new(color.red, 0))
+
+// ── Summary Label (last bar) ─────────────────────────────────────────────────
+var label summary_lbl = na
+if barstate.islast and show_label
+    label.delete(summary_lbl)
+    bias_str = bias_pct > 5 ? "Bull" : bias_pct < -5 ? "Bear" : "Neut"
+    adx_lbl  = " | ADX:" + str.tostring(math.round(adx_val)) + (adx_val > 25 ? "↑" : "~")
+    sqz_lbl  = sqz_on ? " | SQZ" : ""
+    st_lbl   = " | ST:" + (st_bull ? "↑" : "↓")
+    bias_lbl = " | " + bias_str + " " + str.tostring(math.round(bias_pct, 1)) + "%"
+    lbl_text = trend_str + st_lbl + bias_lbl + adx_lbl + sqz_lbl
+    summary_lbl := label.new(bar_index, e_fast, lbl_text,
+                   style=label.style_label_left,
+                   color=trend_color,
+                   textcolor=color.black, size=size.small)

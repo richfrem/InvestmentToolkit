@@ -199,9 +199,18 @@ def process_ticker(ticker: str, dry_run: bool, target_json: dict | None = None) 
     for label, price in levels:
         try:
             result = create_alert(ticker, price, label, dry_run=dry_run)
-            created.append({"label": label, "price": price, "result": result})
         except Exception as e:
             failed.append({"label": label, "price": price, "error": str(e)})
+            continue
+
+        # Task 5A-8: tv_call() (used inside create_alert()) no longer raises
+        # on failure — it returns {"error": str, "data": ..., "cached": bool,
+        # "timestamp": str} instead. Detect that shape explicitly so a failed
+        # alert creation still routes to `failed` instead of `created`.
+        if isinstance(result, dict) and result.get("error"):
+            failed.append({"label": label, "price": price, "error": result["error"]})
+        else:
+            created.append({"label": label, "price": price, "result": result})
 
     return {
         "ticker": ticker,
