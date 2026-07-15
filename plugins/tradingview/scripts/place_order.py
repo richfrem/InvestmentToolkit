@@ -74,6 +74,24 @@ DATA_DIR = os.path.abspath(os.path.join(REPO_ROOT, "investment_screener", "backe
 
 sys.path.insert(0, BACKEND_SRC)
 
+# Cross-directory import of the real Task 5E risk-gate composition +
+# post-trade validation. This script's real file lives in
+# plugins/tradingview/scripts/, not next to order_risk_gates.py/
+# portfolio_io.py/ticker_aliases.py (investment_screener/backend/py_services/)
+# — mirrors data_window_validator.py's own reverse sys.path-insert pattern
+# for reaching tv_client.py from the other direction.
+PY_SERVICES_DIR = os.path.join(REPO_ROOT, "investment_screener", "backend", "py_services")
+sys.path.insert(0, PY_SERVICES_DIR)
+from order_risk_gates import (  # noqa: E402
+    build_portfolio_state_for_order,
+    check_risk_gates,
+    log_order_execution,
+    validate_trade_execution,
+    wait_for_trade_log_entry,
+)
+from portfolio_io import load_portfolio_state  # noqa: E402
+from ticker_aliases import normalize_ticker  # noqa: E402
+
 logging.basicConfig(level=logging.WARNING, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
 
@@ -423,6 +441,8 @@ def main():
                         help="Acknowledge stale portfolio data and proceed anyway (use with caution)")
     parser.add_argument("--ack-closed", action="store_true", dest="ack_closed",
                         help="Acknowledge that the market is closed and place the order anyway (Day orders queue as Inactive)")
+    parser.add_argument("--override-risk-gates", action="store_true", dest="override_risk_gates",
+                        help="Place the order despite a failed risk gate (will be logged as OVERRIDDEN).")
 
     parser.add_argument("--order-id", default=None, dest="order_id",
                         help="TradingView order UUID (required for --cancel / --modify)")
@@ -492,6 +512,45 @@ def main():
                 print(json.dumps(card, indent=2))
                 print(f"\n🚫 {freshness['reason']}")
                 sys.exit(4)
+
+        # ── risk gates (Task 5E-6 composite: mrc, cluster_variance, ────────
+        # breaker_veto, size, balance, data_readiness) ─────────────────────
+        # Market orders have no card-level price (costEstimate is only
+        # populated for limit orders per trading.js's real preflight()
+        # contract) — fall back to the last-synced portfolio.json price for
+        # this ticker; if that's also unavailable, use 0.0. Every gate
+        # already degrades gracefully ("can't evaluate, don't block") on
+        # missing price/value data, so this fallback is a safe, intentional
+        # degradation, not a new failure mode.
+        if args.limit_price is not None:
+            order_price = args.limit_price
+        else:
+            try:
+                _state = load_portfolio_state(Path(PORTFOLIO_PATH))
+                order_price = _state["prices"].get(normalize_ticker(args.ticker.upper()), 0.0)
+            except Exception:
+                order_price = 0.0
+
+        order_dict = {
+            "ticker": args.ticker.upper(),
+            "side": args.action.upper(),
+            "shares": args.shares,
+            "price": order_price,
+        }
+
+        portfolio_state = build_portfolio_state_for_order()
+        gate_result = check_risk_gates(order_dict, portfolio_state)
+        card["riskGates"] = gate_result
+        if not gate_result["passed"]:
+            if not args.override_risk_gates:
+                print(json.dumps({"error": "RISK_GATES_BLOCKED", "details": gate_result}, indent=2))
+                print(f"\n🚫 Risk gate(s) failed: {'; '.join(gate_result['reasons'])}")
+                print("   Pass --override-risk-gates to place anyway (will be logged as OVERRIDDEN).")
+                log_order_execution(order_dict, gate_result, decision="BLOCKED")
+                sys.exit(6)
+            else:
+                print(f"\n⚠️  Risk gate(s) overridden: {'; '.join(gate_result['reasons'])}")
+                log_order_execution(order_dict, gate_result, decision="OVERRIDDEN")
 
         # ── market hours advisory (already acked at this point) ─────────
         if market_status and market_status.get("marketClosed"):
@@ -598,6 +657,33 @@ def main():
         print("\n⏳ Syncing portfolio.json...")
         if sync_portfolio():
             print("✓ portfolio.json updated.")
+
+            # ── post-trade validation (Task 5E-7) ────────────────────────
+            # --ticker/--action/--shares may be omitted on a --submit call
+            # that's just re-clicking an already-filled dialog (see the
+            # re-open guard above) — skip validation entirely when there's
+            # nothing to validate against, rather than erroring.
+            if args.ticker and args.action and args.shares:
+                post_trade_order = {
+                    "ticker": args.ticker.upper(),
+                    "side": args.action.upper(),
+                    "shares": args.shares,
+                    "price": args.limit_price or 0.0,
+                }
+                matched_entry = wait_for_trade_log_entry(
+                    post_trade_order,
+                    account=args.account.upper() if args.account else None,
+                )
+                validation = validate_trade_execution(post_trade_order, matched_entry)
+                print(f"\n📋 Post-trade validation: {validation['reason']}")
+                if validation["slippage_flagged"]:
+                    print(f"   ⚠️  {validation['reason']}")
+                log_order_execution(
+                    post_trade_order,
+                    {"passed": True, "gates": [], "reasons": []},
+                    decision="EXECUTED",
+                    trade_execution_result=validation,
+                )
         else:
             print("⚠️  Portfolio sync failed — retry manually.")
         sys.exit(0)

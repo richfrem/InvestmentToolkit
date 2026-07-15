@@ -1,15 +1,30 @@
 """
 Tests for place_order.py input validation and safety gates.
-All tests run via subprocess — no TradingView required for gates 1–7.
+Most tests run via subprocess — no TradingView required for gates 1–7.
 Tests 8–9 require TV on port 9222 and are skipped automatically when absent.
+
+The risk-gates tests at the bottom of this file (5E-fix: wiring
+check_risk_gates()/build_portfolio_state_for_order() into place_order.py's
+--preflight branch) import place_order.py directly instead of via
+subprocess, and monkeypatch check_risk_gates (and preflight(), to avoid a
+real TV/CDP round-trip) at the place_order MODULE level. Driving a real
+gate failure through 5 real data-file layers, or through a live TradingView
+connection, for a CLI-level test would be disproportionate — the gate
+logic itself is already covered by the dedicated order_risk_gates.py test
+files (test_order_risk_gates_checks_data_readiness.py,
+test_order_risk_gates_composite_check.py, etc). This file's job is only to
+verify the CLI wiring: exit code, printed output, and override behavior.
 
 Exit code contract:
   1  — generic error (Node/CDP failure, missing required arg)
   2  — argparse error (missing required argument)
   3  — order exceeds max-order-value cap
   4  — portfolio.json stale (DATA_STALE_BLOCKED, before any CDP call)
+  5  — market closed (MARKET_CLOSED_BLOCKED)
+  6  — risk gate(s) failed (RISK_GATES_BLOCKED, unless --override-risk-gates)
 """
 
+import importlib.util
 import json
 import os
 import subprocess
@@ -245,4 +260,166 @@ def test_size_cap_exits_3(tmp_path):
     assert "_sizeWarning" in r.stdout or "sizeWarning" in r.stdout.lower(), (
         "Expected _sizeWarning in card output"
     )
+
+
+# ── Risk gates wiring (5E-fix) — imported in-process, no subprocess/TV ────────
+#
+# These tests import place_order.py directly (a fresh module object per
+# test, via importlib) so check_risk_gates()/preflight() can be monkeypatched
+# at the place_order module's own references — the same "call site under
+# test only, real logic tested elsewhere" pattern order_risk_gates.py's own
+# test_order_risk_gates_composite_check.py already established for
+# check_risk_gates()'s five composed gate functions.
+
+def _make_fresh_portfolio(tmp_path: Path) -> Path:
+    p = tmp_path / "portfolio.json"
+    p.write_text(json.dumps({
+        "holdings": [{"symbol": "AAPL", "shares": 10, "price": 150.0}],
+        "totals": {"totalUSD": 1500.0, "cashUSD": 10_000.0, "exchangeRate": 1.38},
+    }))
+    return p
+
+
+def _import_fresh_place_order_module(tmp_path: Path, module_name: str):
+    """Import place_order.py as a brand-new module object (not cached in
+    sys.modules under its real name) so each test gets isolated
+    monkeypatch targets."""
+    spec = importlib.util.spec_from_file_location(module_name, PLACE_ORDER)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _fake_preflight_card(ticker, action, shares, order_type, limit_price, account_type):
+    """Stand-in for the real preflight() (which makes a live TV/CDP Node
+    call) — returns a card shaped like a real market-order preflight
+    response (costEstimate=None, matching trading.js's real contract for
+    non-limit orders)."""
+    return {
+        "ticker": ticker,
+        "action": action,
+        "shares": shares,
+        "priceDisplay": "Market",
+        "accountType": account_type.upper(),
+        "accountId": "12345",
+        "costEstimate": None,
+        "costEstimateDisplay": "N/A",
+        "buyingPowerDisplay": "$10,000.00",
+        "coverage": {"sufficient": True},
+    }
+
+
+def test_risk_gates_blocked_exits_6_and_logs_blocked(tmp_path, monkeypatch, capsys):
+    """check_risk_gates() (monkeypatched) returning passed=False must exit 6
+    with RISK_GATES_BLOCKED in the output, and log a BLOCKED decision."""
+    portfolio = _make_fresh_portfolio(tmp_path)
+    monkeypatch.setenv("PLACE_ORDER_PORTFOLIO_PATH", str(portfolio))
+    monkeypatch.setenv("PLACE_ORDER_NOW_OVERRIDE", IN_HOURS_NOW)
+
+    mod = _import_fresh_place_order_module(tmp_path, "place_order_test_blocked_output")
+    monkeypatch.setattr(mod, "preflight", _fake_preflight_card)
+
+    gate_result = {
+        "passed": False,
+        "gates": [{"name": "balance", "passed": False, "reason": "Insufficient cash"}],
+        "reasons": ["Insufficient cash"],
+    }
+    monkeypatch.setattr(mod, "check_risk_gates", lambda order, portfolio_state: gate_result)
+
+    log_calls = []
+    monkeypatch.setattr(
+        mod, "log_order_execution",
+        lambda order, gr, decision, **kw: log_calls.append((order, gr, decision)) or True,
+    )
+
+    monkeypatch.setattr(
+        sys, "argv",
+        ["place_order.py", "--ticker", "AAPL", "--action", "buy", "--shares", "10",
+         "--order-type", "market", "--account", "tfsa", "--preflight"],
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        mod.main()
+
+    assert exc_info.value.code == 6
+    out = capsys.readouterr().out
+    assert "RISK_GATES_BLOCKED" in out
+    assert "Insufficient cash" in out
+    assert len(log_calls) == 1
+    assert log_calls[0][2] == "BLOCKED"
+
+
+def test_override_risk_gates_bypasses_block_and_logs_overridden(tmp_path, monkeypatch, capsys):
+    """--override-risk-gates must bypass the exit-6 block (not exit 6) and
+    log an OVERRIDDEN decision instead of BLOCKED."""
+    portfolio = _make_fresh_portfolio(tmp_path)
+    monkeypatch.setenv("PLACE_ORDER_PORTFOLIO_PATH", str(portfolio))
+    monkeypatch.setenv("PLACE_ORDER_NOW_OVERRIDE", IN_HOURS_NOW)
+
+    mod = _import_fresh_place_order_module(tmp_path, "place_order_test_override")
+    monkeypatch.setattr(mod, "preflight", _fake_preflight_card)
+
+    gate_result = {
+        "passed": False,
+        "gates": [{"name": "balance", "passed": False, "reason": "Insufficient cash"}],
+        "reasons": ["Insufficient cash"],
+    }
+    monkeypatch.setattr(mod, "check_risk_gates", lambda order, portfolio_state: gate_result)
+
+    log_calls = []
+    monkeypatch.setattr(
+        mod, "log_order_execution",
+        lambda order, gr, decision, **kw: log_calls.append((order, gr, decision)) or True,
+    )
+
+    monkeypatch.setattr(
+        sys, "argv",
+        ["place_order.py", "--ticker", "AAPL", "--action", "buy", "--shares", "10",
+         "--order-type", "market", "--account", "tfsa", "--preflight", "--override-risk-gates"],
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        mod.main()
+
+    assert exc_info.value.code != 6
+    out = capsys.readouterr().out
+    assert "Risk gate(s) overridden" in out or "overridden" in out.lower()
+    assert len(log_calls) == 1
+    assert log_calls[0][2] == "OVERRIDDEN"
+
+
+def test_passing_risk_gates_does_not_block_or_log(tmp_path, monkeypatch, capsys):
+    """check_risk_gates() returning passed=True must not exit 6 and must not
+    log any decision at preflight time (only a BLOCKED or OVERRIDDEN
+    decision point is logged at preflight — a passing gate is not a
+    decision point; the real audit record for an executed order belongs at
+    --submit time)."""
+    portfolio = _make_fresh_portfolio(tmp_path)
+    monkeypatch.setenv("PLACE_ORDER_PORTFOLIO_PATH", str(portfolio))
+    monkeypatch.setenv("PLACE_ORDER_NOW_OVERRIDE", IN_HOURS_NOW)
+
+    mod = _import_fresh_place_order_module(tmp_path, "place_order_test_passing")
+    monkeypatch.setattr(mod, "preflight", _fake_preflight_card)
+    monkeypatch.setattr(
+        mod, "check_risk_gates",
+        lambda order, portfolio_state: {"passed": True, "gates": [], "reasons": []},
+    )
+
+    log_calls = []
+    monkeypatch.setattr(
+        mod, "log_order_execution",
+        lambda order, gr, decision, **kw: log_calls.append((order, gr, decision)) or True,
+    )
+
+    monkeypatch.setattr(
+        sys, "argv",
+        ["place_order.py", "--ticker", "AAPL", "--action", "buy", "--shares", "10",
+         "--order-type", "market", "--account", "tfsa", "--preflight"],
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        mod.main()
+
+    assert exc_info.value.code == 0
+    assert log_calls == []
 
