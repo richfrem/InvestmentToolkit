@@ -1,13 +1,24 @@
 /**
- * src/routes/thirteenf.ts
- * =======================
- *
+ * thirteenf.ts - Express routing for SEC 13F institutional holdings reports.
+ * 
  * Purpose:
  *   Serves parsed SA LP 13F holdings, diffs, and summaries from local JSON files.
- *
- * Key Functions:
- *   - resolveTicker() - Resolves CUSIP/Name to a canonical ticker symbol
- *   - loadHoldingsFile() - Reads and maps holdings JSON for an accession number
+ * 
+ * Layer:
+ *   Backend / Routes / 13F
+ * 
+ * Key Functions (Index):
+ *   - resolveTicker(cusip, name) - Resolves CUSIP/Name to a canonical ticker symbol
+ *   - loadHoldingsFile(accession) - Reads and maps holdings JSON for an accession number
+ * 
+ * Routes Index:
+ *   - GET /summary - Aggregates CIK metadata, holdings arrays, married put tags, and quarter diffs
+ * 
+ * Key Input Dependencies:
+ *   - investment_screener/backend/data/13f/ (contains parsed 13F JSON reports)
+ * 
+ * Key Output Dependencies:
+ *   None
  */
 import { Router } from 'express';
 import fs from 'fs';

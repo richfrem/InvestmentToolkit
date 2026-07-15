@@ -1,19 +1,27 @@
 /**
- * GeminiService.ts (TypeScript Service)
- * =====================================
- *
+ * GeminiService.ts - Centralized interface for interacting with Google's Gemini Generative AI models.
+ * 
  * Purpose:
- *     Centralized interface for interacting with Google's Gemini Generative AI models.
- *     Manages API key security and model configuration from environment variables.
- *
- * Layer: Backend / Services / AI
- *
+ *   Centralized interface for interacting with Google's Gemini Generative AI models.
+ *   Manages API key security and model configuration from environment variables.
+ * 
+ * Layer:
+ *   Backend / Services / AI
+ * 
  * Usage Examples:
- *     const response = await geminiService.generateContent("Analyze this stock...");
- *
- * Key Functions:
- *     - generateContent() - Primary entry point for sending prompts and receiving AI-generated text
- *     - getModel() - Lazy-initializer for the GoogleGenerativeAI client and specific model instance
+ *   const response = await geminiService.generateContent("Analyze this stock...");
+ * 
+ * Key Functions (Index):
+ *   - getModelName() - Retrieves the name of the model configured in env
+ *   - getModel() - Lazy-initializer for the GoogleGenerativeAI client and model instance
+ *   - generateContent(prompt: string) - Primary entry point for sending prompts and receiving text
+ * 
+ * Key Input Dependencies:
+ *   - process.env.INVESTMENT_TOOLKIT_GEMINI_API_KEY
+ *   - process.env.INVESTMENT_TOOLKIT_GEMINI_MODEL
+ * 
+ * Key Output Dependencies:
+ *   None
  */
 import { GoogleGenerativeAI } from "@google/generative-ai";
 class GeminiService {

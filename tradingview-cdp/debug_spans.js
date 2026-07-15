@@ -1,6 +1,29 @@
+/**
+ * debug_spans.js - DOM spans diagnostic tool.
+ * 
+ * Purpose:
+ *   Debug helper script to list account selection span elements in the DOM.
+ *   Helps developer verify account dropdown rendering structure inside the TradingView page.
+ * 
+ * Key Input Dependencies:
+ *   None (reads live state from TradingView Desktop on port 9222 via CDP)
+ * 
+ * Key Output Dependencies:
+ *   None (prints debug output directly to console log)
+ */
+
 import { getClient, evaluate } from './connection.js';
 
+/**
+ * Execute DOM inspection, print matches, and exit process cleanly.
+ * 
+ * @returns {Promise<void>}
+ */
 async function main() {
+  /**
+   * Connects client, clicks broker dropdown button, dumps spans details to stdout,
+   * clicks to toggle dropdown closed, and calls process.exit().
+   */
   try {
     const c = await getClient();
     console.log("CDP Connected.");

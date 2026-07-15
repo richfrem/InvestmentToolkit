@@ -1,27 +1,37 @@
 #!/usr/bin/env python3
 """
-fetch_portfolio_heatmap.py (Python Service)
-=====================================
+fetch_portfolio_heatmap.py - Python utility script.
 
 Purpose:
     Retrieves and aggregates portfolio data for treemap and sector-based visualizations.
     Performs parallel pre-fetching of yfinance data and historical prices for rapid rendering.
     Supports real-time price injection via TradingView Desktop (optional).
 
-Layer: Backend / Python Services / Data Aggregation
+Layer:
+    Backend / Python Services
 
 Usage Examples:
-    python3 fetch_portfolio_heatmap.py '[{"symbol": "AAPL", "shares": 100}, {"symbol": "MSFT", "shares": 50}]'
+    TBD
 
-Key Functions:
-    - fetch_portfolio_data() - Primary orchestrator that manages parallel pre-fetching and result normalization
-    - prefetch_info() / prefetch_history() - Utilizes ThreadPoolExecutor for high-concurrency data retrieval
-    - _fetch_one() - Atomically fetches and caches yfinance info for a single symbol
+Key Functions (Index):
+    - _NpEncoder()
+    - default()
+    - _cache_path()
+    - get_cached_info()
+    - save_info_to_cache()
+    - _fetch_one()
+    - prefetch_info()
+    - prefetch_history()
+    - _warm()
+    - fetch_portfolio_data()
+    - main()
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Builds heatmap telemetry)
-"""
+    None
 
+Key Output Dependencies:
+    None
+"""
 import sys
 import json
 import os

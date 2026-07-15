@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-QuestradeDataEngine.py
-=====================================
+QuestradeDataEngine.py - Core Questrade sync orchestration engine.
 
 Purpose:
     Core sync engine that coordinates token management, API retrieval, and portfolio aggregation.
 
-Layer: Retrieve
+Layer:
+    Retrieve
 
 Usage:
     python QuestradeDataEngine.py --cache-dir . --output portfolio.json
@@ -14,6 +14,19 @@ Usage:
 Related:
     - QuestradeAPIClient.py
     - PortfolioAggregator.py
+
+Key Functions (Index):
+    - QuestradeSyncEngine.run_sync() - Coordinates the full Questrade sync lifecycle
+    - main() - Main CLI entry point for processing args and executing sync
+
+Key Input Dependencies:
+    - utils/QuestradeTokenManager.py
+    - utils/QuestradeAPIClient.py
+    - utils/PortfolioAggregator.py
+    - utils/MetadataEnricher.py
+
+Key Output Dependencies:
+    - data/portfolio.json
 """
 
 import os

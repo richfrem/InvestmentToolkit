@@ -1,23 +1,32 @@
 #!/usr/bin/env python3
 """
-QuestradeTokenManager.py (Python Utility)
-=====================================
+QuestradeTokenManager.py - Secure Questrade token cache manager.
 
 Purpose:
     Securely manages Questrade OAuth2 tokens using AES-256-GCM encryption with keys stored in the OS Keychain (via keyring).
     Ensures atomic disk operations to prevent data corruption during token rotation.
 
-Layer: Backend / Utils / Security
+Layer:
+    Backend / Utils / Security
 
 Usage Examples:
     manager = QuestradeTokenManager(cache_dir="path/to/cache")
     manager.save_tokens(new_token_data)
     tokens = manager.load_tokens()
 
-Key Functions:
-    - save_tokens() - Encrypts and atomically writes token data to the .questrade_cache file
-    - load_tokens() - Decrypts tokens from disk or falls back to environment variables for initial seeding
-    - _get_or_create_key() - Manages the hardware-backed master key lifecycle in the system Keychain
+Key Functions (Index):
+    - _get_or_create_key() - Retrieves or generates the AESGCM master key from the OS Keychain
+    - _encrypt() - Encrypts a string using AES-GCM
+    - _decrypt() - Decrypts bytes using AES-GCM
+    - save_tokens() - Atomically saves encrypted tokens to disk
+    - load_tokens() - Loads and decrypts tokens from the cache file
+    - clear_cache() - Deletes the local cache file
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
 """
 
 import os
@@ -27,9 +36,9 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from typing import Optional, Dict, Any
 
 class QuestradeTokenManager:
-    """
-    Manages Questrade OAuth2 tokens with hardware-backed encryption (keyring)
-    and atomic disk operations. Implements ADR 015 and ADR 019.
+    """Manages Questrade OAuth2 tokens with hardware-backed encryption (keyring) and atomic disk operations.
+    
+    Implements ADR 015 and ADR 019.
     """
     
     SERVICE_NAME = "InvestmentToolkit"

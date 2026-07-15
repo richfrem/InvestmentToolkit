@@ -1,29 +1,39 @@
 #!/usr/bin/env python3
 """
-history_store.py (Python Service)
-=====================================
+history_store.py - Python utility script.
 
 Purpose:
     Provides a persistent, CSV-based historical price store for portfolio holdings.
     Implements a rolling 365-day window with incremental yfinance updates to minimize API overhead.
     Used primarily for calculating period performance (1w, 1m, YTD, 1y).
 
-Layer: Backend / Python Services / Data Persistence
+Layer:
+    Backend / Python Services
 
 Usage Examples:
-    from history_store import HistoricalPriceStore
-    store = HistoricalPriceStore()
-    changes = store.calc_changes("AAPL", current_price=185.20)
+    TBD
 
-Key Functions:
-    - get_or_update() - High-level entry point that manages full vs. incremental fetching and persistence
-    - calc_changes() - Derives percentage changes for standard investment horizons from the stored history
-    - _trim() - Maintains the rolling 365-day window by pruning stale data
+Key Functions (Index):
+    - HistoricalPriceStore()
+    - __init__()
+    - get_or_update()
+    - calc_changes()
+    - pct()
+    - _csv_path()
+    - _load()
+    - _save()
+    - _fetch_full()
+    - _fetch_incremental()
+    - _trim()
+    - _df_to_rows()
+    - _empty_changes()
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Saves time-series snapshot)
-"""
+    None
 
+Key Output Dependencies:
+    None
+"""
 import os
 import csv
 import logging

@@ -1,4 +1,9 @@
-"""Generate track record report — E3 rolling hit-rate stats.
+#!/usr/bin/env python3
+"""
+generate_track_record_report.py - Python utility script.
+
+Purpose:
+    Generate track record report — E3 rolling hit-rate stats.
 
 Joins predictions.jsonl and predictions_graded.jsonl into per-claim-type hit
 rates. This is the "graded-predictions section" /weekly-review surfaces —
@@ -9,6 +14,23 @@ Usage:
 
 Key Input Dependencies:
     - investment_screener/backend/data/trade-log.json (Computes realized gains)
+
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    python3 generate_track_record_report.py [--json]
+
+Key Functions (Index):
+    - compute_hit_rates()
+    - build_report()
+    - main()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
 """
 from __future__ import annotations
 

@@ -1,15 +1,24 @@
 /**
- * src/routes/projections.ts
- * =========================
- *
+ * projections.ts - Express routing for DCF model projections.
+ * 
  * Purpose:
  *   Handles Express API routes for fetching, saving, and deleting DCF projections.
- *
- * Key Functions:
- *   - GET / - Returns all projections
- *   - GET /:ticker - Returns projections for a specific ticker
- *   - POST / - Saves a projection
- *   - DELETE /:ticker/:id - Deletes a projection
+ * 
+ * Layer:
+ *   Backend / Routes / Projections
+ * 
+ * Routes Index:
+ *   - GET / - Returns all projections across all tickers
+ *   - GET /:ticker - Returns all stored projection versions for a specific ticker
+ *   - POST / - Validates and saves a projection version (handles conflict checks)
+ *   - DELETE /:ticker/:id - Deletes a specific projection version
+ * 
+ * Key Input Dependencies:
+ *   - ../services/ProjectionService (projectionService operations)
+ *   - ../utils/helpers (isValidTicker format validation)
+ * 
+ * Key Output Dependencies:
+ *   None
  */
 
 import express from 'express';

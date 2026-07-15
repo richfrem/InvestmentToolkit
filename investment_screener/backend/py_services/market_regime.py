@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-market_regime.py (Python Service)
-=====================================
+market_regime.py - Python utility script.
 
 Purpose:
     4-tier market regime classifier (RISK_ON/NEUTRAL/RISK_OFF/STRESS) that
@@ -13,19 +12,38 @@ Purpose:
     active holding. Informational only — does not gate any action. See
     docs/superpowers/specs/2026-07-06-market-regime-classifier-design.md.
 
-    macro_regime.py is never modified; this module imports and reuses its
-    classifiers directly rather than duplicating them.
+Layer:
+    Backend / Python Services
 
-Layer: Backend / Python Services / Regime
-
-Usage:
+Usage Examples:
     python3 market_regime.py --pretty
     python3 market_regime.py --no-save --pretty
 
-Key Input Dependencies:
-    - investment_screener/backend/data/daily-briefs/ (Calculates technical trend signals)
-"""
+Key Functions (Index):
+    - _classify_term_slope()
+    - _classify_breadth()
+    - _classify_dxy()
+    - _classify_regime_v2()
+    - _load_active_tickers()
+    - _sma()
+    - compute_breadth()
+    - classify_ticker_trend()
+    - compute_momentum_percentile()
+    - compute_volatility_percentile()
+    - _fetch_ratio_trend()
+    - _fetch_dxy_vs_200d()
+    - _score_macro_signals()
+    - _score_new_signals()
+    - _build_ticker_regimes()
+    - compute_market_regime()
+    - main()
 
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
+"""
 import argparse
 import json
 import sys

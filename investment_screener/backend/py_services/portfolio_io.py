@@ -1,5 +1,9 @@
+#!/usr/bin/env python3
 """
-portfolio_io.py — Single source of truth for portfolio data I/O.
+portfolio_io.py - Python utility script.
+
+Purpose:
+    portfolio_io.py — Single source of truth for portfolio data I/O.
 
 Safe primitives shared by ALL portfolio scripts (sync_portfolio_roles,
 generate_portfolio_blueprint, refresh_all, etc.).
@@ -14,8 +18,24 @@ Layer: Backend / py_services / Shared I/O
 
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Loads and saves portfolio)
-"""
 
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    TBD
+
+Key Functions (Index):
+    - load_portfolio_state()
+    - compute_weights()
+    - replace_block()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
+"""
 import json
 import re
 import sys

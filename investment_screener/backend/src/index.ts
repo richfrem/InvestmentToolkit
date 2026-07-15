@@ -1,16 +1,38 @@
 /**
- * index.ts (Express Server Entry Point)
- * =====================================
- *
+ * index.ts - Express backend server bootstrap entry point.
+ * 
  * Purpose:
- *     Application bootstrap: middleware setup, route registration, server startup.
- *     Business logic lives in src/routes/ and src/services/.
- *
- * Layer: Backend / Core
- *
+ *   Application bootstrap: middleware setup, route registration, server startup.
+ *   Business logic lives in src/routes/ and src/services/.
+ * 
+ * Layer:
+ *   Backend / Core
+ * 
  * Usage:
- *     node dist/index.js        (Production)
- *     npm run dev               (Development via ts-node-dev)
+ *   node dist/index.js        (Production)
+ *   npm run dev               (Development via ts-node-dev)
+ * 
+ * Key Input Dependencies:
+ *   - ../../../.env
+ *   - ./utils/paths (PORTFOLIO_FILE, PORTFOLIO_EXAMPLE)
+ * 
+ * Key Output Dependencies:
+ *   None (starts API server listening on localhost port 3001)
+ * 
+ * Routes & Endpoints Index:
+ *   - GET /health - Simple application availability ping
+ *   - GET /api/tv-status - Checks whether TradingView CDP client is online
+ *   - POST /api/analysis/valuation - Standalone AI Valuation calculation request
+ *   - POST /api/questrade/seed - Seeds and exchanges new Questrade portal refresh token
+ *   - app.use('/api/portfolio', portfolioRouter)
+ *   - app.use('/api/projections', projectionsRouter)
+ *   - app.use('/api/theses', thesesRouter)
+ *   - app.use('/api', docsRouter)
+ *   - app.use('/api', stockRouter)
+ *   - app.use('/api/screener', screenerRouter)
+ *   - app.use('/api/trading', tradingRouter)
+ *   - app.use('/api/13f', thirteenfRouter)
+ *   - app.use('/api/daily-brief', dailybriefRouter)
  */
 import express from 'express';
 import dotenv from 'dotenv';

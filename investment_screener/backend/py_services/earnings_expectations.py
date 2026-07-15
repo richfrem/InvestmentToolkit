@@ -1,4 +1,6 @@
-"""Earnings expectation claims — B4 sub-spec for Earnings Intelligence feature.
+#!/usr/bin/env python3
+"""
+earnings_expectations.py - Python utility script.
 
 Purpose:
     Defines Pydantic models for earnings expectation predictions and their
@@ -7,13 +9,26 @@ Purpose:
     targets at outcome time.
 
 Layer:
-    Prediction ledger (E3) extension — adds B4 claim type alongside E3's four
-    existing types (action_rating, dcf_fair_value, rebalance_order,
-    breaker_forecast).
+    Backend / Python Services
+
+Usage Examples:
+    TBD
+
+Key Functions (Index):
+    - EarningsExpectationClaim()
+    - EarningsExpectation()
+    - EarningsGradeClaim()
+    - EarningsGrade()
+    - _fetch_consensus_for_ticker()
+    - harvest_earnings_expectations()
+    - grade_earnings_expectations()
+    - get_earnings_context()
 
 Key Input Dependencies:
-    - investment_screener/backend/py_services/prediction_ledger.py (Parent schema)
-    - schemas/prediction.schema.json (Defines enum: earnings_expectation)
+    None
+
+Key Output Dependencies:
+    None
 """
 from __future__ import annotations
 

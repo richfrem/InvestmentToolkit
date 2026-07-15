@@ -1,10 +1,20 @@
 #!/usr/bin/env node
 
 /**
- * Owned TradingView CDP CLI for InvestmentToolkit.
- * Outputs JSON to stdout. All errors → stderr.
- * Exit codes: 0 success, 1 error, 2 connection failure.
- *
+ * cli.js - Owned TradingView CDP CLI for InvestmentToolkit.
+ * 
+ * Purpose:
+ *   CLI entry point for automating TradingView Desktop via Chrome DevTools Protocol.
+ *   Outputs JSON to stdout. All errors → stderr.
+ *   Exit codes: 0 success, 1 error, 2 connection failure.
+ * 
+ * Key Input Dependencies:
+ *   - ../investment_screener/backend/data/portfolio.json (for alert filtering)
+ *   - ../investment_screener/backend/data/watchlist.json (for alert filtering)
+ * 
+ * Key Output Dependencies:
+ *   - None (writes to stdout)
+ * 
  * Commands:
  *   status                    — health check (CDP connection + chart state)
  *   quote [SYMBOL]            — current price from active chart
@@ -40,7 +50,41 @@ register('alert', {
   subcommands: new Map([
     ['list', {
       description: 'List active alerts',
-      handler: () => alerts.list(),
+      options: {
+        filter: { type: 'boolean', short: 'f', description: 'Filter alerts by portfolio/watchlist symbols' },
+      },
+      handler: async (opts) => {
+        /**
+         * Resolves portfolio/watchlist files relative to the script directory,
+         * extracts unique ticker symbols, and calls alerts.list with them.
+         */
+        process.stderr.write(`DEBUG: opts=${JSON.stringify(opts)}\n`);
+        let symbols = [];
+        if (opts.filter) {
+          try {
+            const { readFileSync } = await import('fs');
+            const { fileURLToPath } = await import('url');
+            const { dirname, join } = await import('path');
+            const __dirname = dirname(fileURLToPath(import.meta.url));
+            const portPath = join(__dirname, '../investment_screener/backend/data/portfolio.json');
+            const watchPath = join(__dirname, '../investment_screener/backend/data/watchlist.json');
+            const port = JSON.parse(readFileSync(portPath, 'utf8'));
+            const watch = JSON.parse(readFileSync(watchPath, 'utf8'));
+            const portSyms = (port.holdings || []).map(h => {
+              const sym = h.symbol || h.ticker;
+              return sym ? sym.split('.')[0].split('-')[0].toUpperCase() : null;
+            }).filter(Boolean);
+            const watchSyms = (watch.watchlist || []).map(w => {
+              const sym = w.ticker || w.symbol;
+              return sym ? sym.split('.')[0].split('-')[0].toUpperCase() : null;
+            }).filter(Boolean);
+            symbols = [...new Set([...portSyms, ...watchSyms])];
+          } catch (e) {
+            process.stderr.write(`Filter loading error: ${e.message}\n`);
+          }
+        }
+        return alerts.list(symbols);
+      },
     }],
     ['create', {
       description: 'Create a price alert',

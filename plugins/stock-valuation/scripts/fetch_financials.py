@@ -1,25 +1,30 @@
 #!/usr/bin/env python3
 """
-fetch_financials.py (Python Service)
-=====================================
+fetch_financials.py - Scraping and financial metrics compiler.
 
 Purpose:
     Retrieves comprehensive financial data for a stock using yfinance. 
     Aggregates income statements, balance sheets, cash flows, analyst estimates, and performance history.
     Includes advanced calculations for Rule of 40 and Piotroski F-Score.
 
-Layer: Backend / Python Services / Data Retrieval
+Layer:
+    Backend / Python Services / Data Retrieval
 
 Usage Examples:
     python3 fetch_financials.py AAPL
 
-Key Functions:
-    - fetch_financial_data() - Primary orchestrator for data retrieval, caching, and transformation
-    - get_cached_data() / save_to_cache() - Implements a local filesystem cache (1-hour TTL) to prevent API rate limiting
-    - Piotroski calculation block - Implements the full 9-point fundamental health methodology
+Key Functions (Index):
+    - get_cached_data(ticker) - Retrieve cached data if valid
+    - save_to_cache(ticker, data) - Save data to cache
+    - sanitize_json_data(val) - Clean floats/nans for valid JSON serialization
+    - fetch_financial_data(ticker_symbol, no_cache) - Primary orchestrator for data retrieval, caching, and transformation
+    - main() - Main CLI entry point
 
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Internal state database)
+
+Key Output Dependencies:
+    - investment_screener/backend/py_services/cache/ (cache folder containing JSON quote metrics)
 """
 
 import sys
@@ -28,6 +33,7 @@ import os
 import time
 import hashlib
 import datetime
+from typing import Any, Optional
 import yfinance as yf
 import pandas as pd
 import numpy as np
@@ -38,7 +44,17 @@ CACHE_DURATION = 3600  # 1 hour in seconds
 
 # --- Custom Encoder for Numpy Types (Global) ---
 class NpEncoder(json.JSONEncoder):
-    def default(self, o):
+    """Custom JSON encoder converting numpy data types to native python formats."""
+
+    def default(self, o: Any) -> Any:
+        """Encodes numpy data types into JSON-serializable native python types.
+
+        Args:
+            o: Object to serialize.
+
+        Returns:
+            Native python serializable type.
+        """
         if isinstance(o, np.integer):
             return int(o)
         if isinstance(o, np.floating):
@@ -50,8 +66,17 @@ class NpEncoder(json.JSONEncoder):
         return super().default(o)
 
 # --- Caching Functions ---
-def get_cached_data(ticker):
-    """Retrieve cached data if valid."""
+
+# Retrieve cached data if valid
+def get_cached_data(ticker: str) -> Optional[dict[str, Any]]:
+    """Retrieves cached financial data from the local filesystem cache if the TTL has not expired.
+
+    Args:
+        ticker: The stock ticker symbol.
+
+    Returns:
+        The cached dict data if valid and present, otherwise None.
+    """
     if not os.path.exists(CACHE_DIR):
         return None
     
@@ -72,8 +97,14 @@ def get_cached_data(ticker):
     except Exception:
         return None
 
-def save_to_cache(ticker, data):
-    """Save data to cache."""
+# Save data to cache
+def save_to_cache(ticker: str, data: dict[str, Any]) -> None:
+    """Saves compiled financial data to local cache file.
+
+    Args:
+        ticker: The stock ticker symbol.
+        data: Compiled metrics dictionary to cache.
+    """
     try:
         if not os.path.exists(CACHE_DIR):
             os.makedirs(CACHE_DIR)
@@ -87,7 +118,16 @@ def save_to_cache(ticker, data):
         # Silently fail on cache write errors to avoid breaking the main output flow
         pass
 
-def sanitize_json_data(val):
+# Clean floats/nans for valid JSON serialization
+def sanitize_json_data(val: Any) -> Any:
+    """Recursively converts nan/inf floats to None for valid JSON serialization.
+
+    Args:
+        val: Input data (dicts, lists, values).
+
+    Returns:
+        Sanitized version of the input.
+    """
     if isinstance(val, dict):
         return {k: sanitize_json_data(v) for k, v in val.items()}
     elif isinstance(val, list):
@@ -97,7 +137,14 @@ def sanitize_json_data(val):
             return None
     return val
 
-def fetch_financial_data(ticker_symbol, no_cache: bool = False):
+# Retrieve comprehensive financial data for a stock
+def fetch_financial_data(ticker_symbol: str, no_cache: bool = False) -> None:
+    """Retrieves and compiles financial statements, analyst targets, and key metrics for a given ticker.
+
+    Args:
+        ticker_symbol: The target stock ticker.
+        no_cache: If True, bypasses local disk cache checks.
+    """
     # 1. Try Cache First
     cached = None if no_cache else get_cached_data(ticker_symbol)
     if cached:

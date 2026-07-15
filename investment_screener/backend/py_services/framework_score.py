@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-framework_score.py (Python Service)
-=====================================
+framework_score.py - Python utility script.
 
 Purpose:
     Executable version of the sector-aware weighted composite score defined
@@ -13,35 +12,33 @@ Purpose:
     feed check_accumulate_gate() (see docs/superpowers/specs/
     2026-07-05-fundamental-analyst-ta-design.md).
 
-    Documented simplifications (not gaps to silently fill later):
-    - Rule of 40 Method B reuses Method A's forward-growth figure (no 3yr
-      historical revenue series in market_data.py yet) combined with
-      EBITDA margin instead of FCF margin.
-    - FCF Yield uses yfinance's raw freeCashflow, not SBC-adjusted (no SBC
-      source in the data layer — same scope boundary as EV/EBITDA in
-      comps_valuation.py).
-    - Invested Capital for ROIC uses market cap as the equity proxy,
-      matching wacc.py's existing capital-structure convention.
-    - ROIIC is always null (needs multi-year invested-capital deltas not
-      in the data layer); reported for context, never scored/composited.
+Layer:
+    Backend / Python Services
 
-Layer: Backend / Python Services / Valuation Math
-
-Usage:
+Usage Examples:
     python3 framework_score.py --ticker NVDA --sector chips_ai \
         --projections-dir investment_screener/backend/data/projections --pretty
     python3 framework_score.py --ticker NVDA --sector chips_ai \
         --projections-dir DIR --qualitative-file qual.json --pretty
 
-Key Functions:
-    - compute_raw_metrics() - Pulls every raw (unscored) metric value for one ticker
-    - score_higher_better() / score_lower_better() - 90/60/30 band scoring, inclusive top boundary
-    - compute_framework_score() - Primary orchestrator: raw metrics -> scored -> composite
+Key Functions (Index):
+    - score_higher_better()
+    - score_lower_better()
+    - _score_qualitative()
+    - compute_raw_metrics()
+    - _val()
+    - compute_framework_score()
+    - _balance_sheet_score()
+    - _weighted_composite()
+    - _composite_band()
+    - main()
 
 Key Input Dependencies:
-    - investment_screener/backend/data/theses/target-portfolio.json (Evaluates conviction bands)
-"""
+    None
 
+Key Output Dependencies:
+    None
+"""
 import argparse
 import json
 import sys
