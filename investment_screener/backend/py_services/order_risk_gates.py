@@ -1,6 +1,7 @@
 """
 Order Risk Gates — MRC Risk Gate (Task 5E-1) + Cluster Variance Gate (Task
-5E-2) + Thesis Breaker Veto (Task 5E-3)
+5E-2) + Thesis Breaker Veto (Task 5E-3) + Order Size Gate (Task 5E-4) +
+Balance Gate (Task 5E-5)
 
 check_mrc_limit() (5E-1) checks whether a single, ad-hoc order would push
 its ticker's real Marginal Risk Contribution (MRC) — Phase 3 E1's
@@ -50,14 +51,27 @@ proxy). This gate reuses market_data.py's real, cached get_prices()
 (Phase 1's yfinance data layer) via get_average_daily_volume() instead
 of calling yfinance directly a second time.
 
+check_available_balance() (Task 5E-5) checks whether enough cash is
+available to cover a single, ad-hoc BUY order's cost. Reuses the real,
+already-synced data/portfolio.json broker snapshot (this project's
+existing, established multi-fallback TradingView/Questrade sync
+pipeline, CLAUDE.md pitfall #20) via get_available_cash() instead of
+implementing a new live Questrade API integration from scratch — the
+plan's own checklist explicitly allows "(or cached snapshot)" as an
+alternative. Reads either the portfolio-wide totals.cashUSD or a
+specific account's tvSnapshot.snapshots[].balances.cashUSD (matched by
+accountType). Read-only — never writes to portfolio.json, which is
+gitignored, sacred user data per this project's own CLAUDE.md rule.
+
 Layer: Backend / Python Services / Risk
 
 Usage:
-    from order_risk_gates import check_mrc_limit, check_cluster_variance, check_breaker_veto, check_order_size
+    from order_risk_gates import check_mrc_limit, check_cluster_variance, check_breaker_veto, check_order_size, check_available_balance
     result = check_mrc_limit(order, portfolio_state, risk_snapshot=snapshot)
     result = check_cluster_variance(order, portfolio_state, risk_snapshot=snapshot)
     result = check_breaker_veto(order, thesis_breaker_state=state)
     result = check_order_size(order, daily_volume=avg_volume)
+    result = check_available_balance(order, questrade_cash=cash)
 
 Key Input Dependencies:
     - investment_screener/backend/data/risk_snapshot.json (Phase 3 E1's
@@ -72,6 +86,9 @@ Key Input Dependencies:
     - market_data.py's get_prices() (Phase 1's real, cached yfinance OHLCV
       data layer, same directory — reused by get_average_daily_volume(),
       never re-fetched via yfinance directly)
+    - investment_screener/backend/data/portfolio.json (gitignored, the
+      real, already-synced broker snapshot — "totals.cashUSD" and
+      "tvSnapshot.snapshots[].balances.cashUSD", never written to)
 """
 from __future__ import annotations
 
@@ -82,6 +99,7 @@ from typing import Any, Dict, Optional
 RISK_SNAPSHOT_PATH = Path(__file__).resolve().parents[1] / "data" / "risk_snapshot.json"
 ACCOUNT_POLICY_PATH = Path(__file__).resolve().parents[1] / "data" / "account_policy.json"
 THESIS_BREAKER_STATE_PATH = Path(__file__).resolve().parents[1] / "data" / "thesis_breaker_state.json"
+PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "portfolio.json"
 
 
 def _load_risk_snapshot() -> Dict[str, Any]:
@@ -458,3 +476,100 @@ def check_order_size(
         }
 
     return {"passed": True, "size_pct_of_volume": size_pct, "reason": "Within size limit"}
+
+
+def get_available_cash(account: Optional[str] = None) -> Optional[float]:
+    """
+    Fetch available USD cash from the real, synced portfolio.json
+    snapshot (this project's existing, established multi-fallback
+    broker sync — not a live Questrade API call implemented from
+    scratch here).
+
+    Args:
+        account: Specific account type (e.g. "TFSA", "RRSP") to read
+            that account's own cashUSD from tvSnapshot.snapshots[]
+            (matched by accountType), or None for the portfolio-wide
+            totals.cashUSD.
+
+    Never raises: missing file, malformed JSON, or no matching account
+    all degrade to None.
+
+    Returns:
+        Available USD cash, or None if unavailable.
+    """
+    try:
+        if not PORTFOLIO_PATH.exists():
+            return None
+        data = json.loads(PORTFOLIO_PATH.read_text())
+    except (OSError, json.JSONDecodeError):
+        return None
+
+    if account is None:
+        return data.get("totals", {}).get("cashUSD")
+
+    for snapshot in data.get("tvSnapshot", {}).get("snapshots", []):
+        if snapshot.get("accountType") == account:
+            return snapshot.get("balances", {}).get("cashUSD")
+    return None
+
+
+def check_available_balance(
+    order: Dict[str, Any],
+    questrade_cash: Optional[float] = None,
+    account: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Check whether enough cash is available to cover a BUY order's cost.
+
+    If questrade_cash isn't supplied, fetches it via
+    get_available_cash(account) — pass it explicitly in tests to avoid
+    real file I/O.
+
+    SELL orders are never evaluated — selling doesn't require cash,
+    matching this module's established pattern (5E-2/5E-3) of only
+    gating BUY-side actions where the check is directionally
+    meaningful.
+
+    Missing cash data degrades to passed=True — matches every other
+    gate in this module's consistent "can't evaluate, don't block real
+    trading on an estimate/data gap" posture (5E-1 through 5E-4 all do
+    the same). This gate does not introduce a different, inconsistent
+    failure policy just because a cash shortfall has a more immediate
+    real-world consequence than an MRC/cluster/size estimate — the
+    actual broker will still reject an order it can't afford
+    regardless of what this advisory gate reports.
+
+    Never raises.
+
+    Args:
+        order: {"ticker": str, "side": "BUY"|"SELL", "shares": float,
+            "price": float}.
+        questrade_cash: Available cash, or None to fetch via
+            get_available_cash().
+        account: Passed through to get_available_cash() if
+            questrade_cash isn't supplied — which account's cash to
+            check (None = portfolio-wide total).
+
+    Returns:
+        {"passed": bool, "cash_required": float, "cash_available": float | None, "reason": str}
+    """
+    if order.get("side") != "BUY":
+        return {"passed": True, "cash_required": 0.0, "cash_available": questrade_cash, "reason": "Not a buy order — balance gate only applies to buys"}
+
+    if questrade_cash is None:
+        questrade_cash = get_available_cash(account)
+
+    cash_required = order.get("shares", 0.0) * order.get("price", 0.0)
+
+    if questrade_cash is None:
+        return {"passed": True, "cash_required": cash_required, "cash_available": None, "reason": "Available cash unknown — order not blocked"}
+
+    if questrade_cash < cash_required:
+        return {
+            "passed": False,
+            "cash_required": cash_required,
+            "cash_available": questrade_cash,
+            "reason": f"Insufficient cash: ${questrade_cash:,.2f} available, ${cash_required:,.2f} required",
+        }
+
+    return {"passed": True, "cash_required": cash_required, "cash_available": questrade_cash, "reason": "Sufficient cash"}
