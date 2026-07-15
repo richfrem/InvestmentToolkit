@@ -135,25 +135,40 @@ def load_holdings_watchlist() -> List[str]:
     return []
 
 
+# External comment: Detect tv_call()'s Task 5A-8 never-raise error contract
+def _raise_if_tv_error(result: Any, action: str) -> None:
+    """Raise if a tv_call() result is the Task 5A-8 error-dict shape.
+
+    As of Task 5A-8, tv_call() never raises on failure — it returns
+    {"error": str, "data": ..., "cached": bool, "timestamp": str} instead.
+    execute_cdp_sync()'s caller (run_sync()) still relies on a raised
+    exception to detect a failed sync, so we translate the error dict back
+    into a raise here rather than silently treating it as valid data.
+    """
+    if isinstance(result, dict) and result.get("error"):
+        raise RuntimeError(f"TV CDP call failed while trying to {action}: {result['error']}")
+
+
 # External comment: Execute the actual Node.js CDP sync commands
 def execute_cdp_sync(actions: Dict[str, Any]) -> None:
     """Communicates with TradingView Desktop via CDP to create and populate lists."""
     for list_name, meta in actions.items():
         # Create and open list
-        tv_call("watchlist", "create", list_name)
-        tv_call("watchlist", "open", list_name)
+        _raise_if_tv_error(tv_call("watchlist", "create", list_name), f"create list '{list_name}'")
+        _raise_if_tv_error(tv_call("watchlist", "open", list_name), f"open list '{list_name}'")
 
         # Get current symbols in watchlist
         tv_get = tv_call("watchlist", "get")
+        _raise_if_tv_error(tv_get, f"get symbols for list '{list_name}'")
         current_symbols = [normalize_symbol(item["symbol"].upper()) for item in tv_get.get("items", [])]
 
         # Sync entries
         for ticker in meta["tickers"]:
             if ticker not in current_symbols:
-                tv_call("watchlist", "add", list_name, ticker)
+                _raise_if_tv_error(tv_call("watchlist", "add", list_name, ticker), f"add {ticker} to '{list_name}'")
         for ticker in current_symbols:
             if ticker not in meta["tickers"]:
-                tv_call("watchlist", "remove", list_name, ticker)
+                _raise_if_tv_error(tv_call("watchlist", "remove", list_name, ticker), f"remove {ticker} from '{list_name}'")
 
 
 # External comment: Run sync calculations and orchestrate updates
