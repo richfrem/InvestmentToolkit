@@ -125,6 +125,7 @@ from __future__ import annotations
 
 import json
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -133,6 +134,7 @@ ACCOUNT_POLICY_PATH = Path(__file__).resolve().parents[1] / "data" / "account_po
 THESIS_BREAKER_STATE_PATH = Path(__file__).resolve().parents[1] / "data" / "thesis_breaker_state.json"
 PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "portfolio.json"
 TRADE_LOG_PATH = Path(__file__).resolve().parents[1] / "data" / "trade-log.json"
+ORDERS_EXECUTED_PATH = Path(__file__).resolve().parents[1] / "data" / "orders_executed.jsonl"
 
 
 def _load_risk_snapshot() -> Dict[str, Any]:
@@ -911,3 +913,74 @@ def validate_trade_execution(
         "slippage_flagged": slippage_flagged,
         "reason": reason,
     }
+
+
+# --- Task 5E-8: Order Execution Audit Trail ---
+#
+# LAST task in Sub-Spec 5E (8/8). One write-only logging primitive that
+# completes the audit-trail chain: signal -> alert -> gate decision ->
+# order -> fill -> settlement. Loosely coupled to Tasks 5E-6/5E-7 by
+# argument shape only (accepts their already-computed result dicts —
+# never imports or calls check_risk_gates()/validate_trade_execution()
+# directly), matching this module's established composition-by-argument
+# pattern.
+
+
+def log_order_execution(
+    order: Dict[str, Any],
+    gate_result: Dict[str, Any],
+    decision: str,
+    trade_execution_result: Optional[Dict[str, Any]] = None,
+    orders_executed_path: Optional[Path] = None,
+) -> bool:
+    """
+    Append one audit-trail record for an order attempt to
+    data/orders_executed.jsonl.
+
+    Append-only, NON-BLOCKING: unlike Task 5C-4's save_alert_metadata()
+    (which deliberately raises on write failure for a tracked
+    deliverable), this function NEVER raises — a logging failure must
+    never abort or interfere with a live order already in flight. Any
+    OSError (disk full, permissions, missing parent) is swallowed and
+    reported via the return value only.
+
+    Write-only by design, matching Task 5A-5's TV CDP error-logging
+    precedent (append-only JSONL, no paired reader function in this
+    codebase) — a reader isn't requested by the plan and isn't needed by
+    any other Task 5E function, so it isn't built here (YAGNI).
+
+    Args:
+        order: The order dict being logged, e.g.
+            {"ticker": str, "side": "BUY"|"SELL", "shares": float, "price": float}.
+        gate_result: Task 5E-6's check_risk_gates() output — the real
+            gate-passage status ({"passed": bool, "gates": [...],
+            "reasons": [...]}).
+        decision: The final outcome after gates (and any human
+            override), e.g. "EXECUTED", "BLOCKED", "OVERRIDDEN". Caller
+            supplies this — this function does not itself decide.
+        trade_execution_result: Optional Task 5E-7
+            validate_trade_execution() output, if post-trade
+            reconciliation has already completed by the time this is
+            logged. None if not yet available (e.g. logged at
+            order-placement time, before the fill is confirmed).
+        orders_executed_path: Override path (tests use tmp_path).
+
+    Returns:
+        True if the record was written, False if the write failed
+        (never raises).
+    """
+    path = orders_executed_path or ORDERS_EXECUTED_PATH
+    record = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "order": order,
+        "decision": decision,
+        "gate_result": gate_result,
+        "trade_execution_result": trade_execution_result,
+    }
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "a") as f:
+            f.write(json.dumps(record) + "\n")
+        return True
+    except OSError:
+        return False
