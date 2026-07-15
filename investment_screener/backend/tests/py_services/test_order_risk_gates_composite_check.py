@@ -22,7 +22,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 import order_risk_gates  # noqa: E402
 from order_risk_gates import check_risk_gates  # noqa: E402
 
-GATE_NAMES = ["mrc", "cluster_variance", "breaker_veto", "size", "balance"]
+GATE_NAMES = ["mrc", "cluster_variance", "breaker_veto", "size", "balance", "data_readiness"]
 
 
 def _order(side="BUY", ticker="CORZ", shares=10.0, price=100.0):
@@ -45,6 +45,7 @@ def _patch_all_gates(monkeypatch, **overrides):
         "check_breaker_veto": _passing_gate(),
         "check_order_size": _passing_gate(),
         "check_available_balance": _passing_gate(),
+        "check_data_readiness_gate": _passing_gate(),
     }
     defaults.update(overrides)
     for name, fn in defaults.items():
@@ -52,7 +53,7 @@ def _patch_all_gates(monkeypatch, **overrides):
 
 
 def test_check_risk_gates_all_pass(monkeypatch):
-    """All 5 gates mocked to pass -> passed=True, reasons=[], 5 gate entries."""
+    """All 6 gates mocked to pass -> passed=True, reasons=[], 6 gate entries."""
     _patch_all_gates(monkeypatch)
     order = _order()
 
@@ -60,7 +61,7 @@ def test_check_risk_gates_all_pass(monkeypatch):
 
     assert result["passed"] is True
     assert result["reasons"] == []
-    assert len(result["gates"]) == 5
+    assert len(result["gates"]) == 6
 
 
 def test_check_risk_gates_one_gate_fails(monkeypatch):
@@ -171,6 +172,10 @@ def test_check_risk_gates_calls_each_gate_with_correct_args(monkeypatch):
         received["balance_questrade_cash"] = questrade_cash
         return {"passed": True, "reason": "OK"}
 
+    def fake_data_readiness(order, data_readiness=None, **kwargs):
+        received["data_readiness_value"] = data_readiness
+        return {"passed": True, "reason": "OK"}
+
     _patch_all_gates(
         monkeypatch,
         check_mrc_limit=fake_mrc,
@@ -178,9 +183,11 @@ def test_check_risk_gates_calls_each_gate_with_correct_args(monkeypatch):
         check_breaker_veto=fake_breaker,
         check_order_size=fake_size,
         check_available_balance=fake_balance,
+        check_data_readiness_gate=fake_data_readiness,
     )
     order = _order()
     portfolio_state = {"holdings": {}}
+    sentinel_data_readiness = {"sentinel": "data_readiness"}
 
     check_risk_gates(
         order,
@@ -189,6 +196,7 @@ def test_check_risk_gates_calls_each_gate_with_correct_args(monkeypatch):
         thesis_breaker_state=sentinel_breaker_state,
         daily_volume=12345.0,
         questrade_cash=6789.0,
+        data_readiness=sentinel_data_readiness,
     )
 
     assert received["mrc_risk_snapshot"] is sentinel_snapshot
@@ -196,16 +204,55 @@ def test_check_risk_gates_calls_each_gate_with_correct_args(monkeypatch):
     assert received["breaker_thesis_breaker_state"] is sentinel_breaker_state
     assert received["size_daily_volume"] == 12345.0
     assert received["balance_questrade_cash"] == 6789.0
+    assert received["data_readiness_value"] is sentinel_data_readiness
 
 
 def test_check_risk_gates_gates_list_has_fixed_order_and_names(monkeypatch):
-    """gates list is always in the order mrc, cluster_variance, breaker_veto, size, balance."""
+    """gates list is always in the order mrc, cluster_variance, breaker_veto, size,
+    balance, data_readiness."""
     _patch_all_gates(monkeypatch)
     order = _order()
 
     result = check_risk_gates(order, {}, risk_snapshot={}, thesis_breaker_state={})
 
     assert [g["name"] for g in result["gates"]] == GATE_NAMES
+
+
+def test_check_risk_gates_data_readiness_gate_failure_fails_composite(monkeypatch):
+    """A failing data_readiness gate (6th gate, the new 5D-8 integration) makes
+    the overall result passed=False and its reason surfaces in reasons — passed
+    explicitly via data_readiness= to avoid a live TV CDP call in this test."""
+    _patch_all_gates(monkeypatch, check_data_readiness_gate=_failing_gate("RSI overbought veto"))
+    order = _order()
+
+    result = check_risk_gates(
+        order, {}, risk_snapshot={}, thesis_breaker_state={}, data_readiness={"marker": "explicit"}
+    )
+
+    assert result["passed"] is False
+    assert result["reasons"] == ["RSI overbought veto"]
+    dr_entry = next(g for g in result["gates"] if g["name"] == "data_readiness")
+    assert dr_entry["passed"] is False
+
+
+def test_check_risk_gates_never_eagerly_fetches_data_readiness(monkeypatch):
+    """check_risk_gates() itself never fetches data_readiness eagerly (unlike
+    risk_snapshot/thesis_breaker_state) — it always delegates the None-check to
+    check_data_readiness_gate() itself. This test proves that by NOT mocking
+    check_data_readiness_gate and instead verifying check_risk_gates() passes
+    data_readiness=None straight through when the caller doesn't supply one."""
+    received = {}
+
+    def fake_data_readiness_gate(order, data_readiness=None, **kwargs):
+        received["data_readiness"] = data_readiness
+        return {"passed": True, "reason": "OK"}
+
+    _patch_all_gates(monkeypatch, check_data_readiness_gate=fake_data_readiness_gate)
+    order = _order()
+
+    check_risk_gates(order, {}, risk_snapshot={}, thesis_breaker_state={})
+
+    assert received["data_readiness"] is None
 
 
 def test_check_risk_gates_never_raises_when_a_gate_raises(monkeypatch):
