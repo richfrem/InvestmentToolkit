@@ -1,39 +1,49 @@
 """
-Order Risk Gates — MRC Risk Gate (Task 5E-1)
+Order Risk Gates — MRC Risk Gate (Task 5E-1) + Cluster Variance Gate (Task 5E-2)
 
-Checks whether a single, ad-hoc order would push its ticker's real
-Marginal Risk Contribution (MRC) — Phase 3 E1's correlation/covariance-
-aware risk-decomposition metric from risk_engine.py's
-compute_marginal_risk_contribution() — over the portfolio's real risk
-budget cap. "MRC" here is Marginal Risk Contribution, never "Maximum
-Recommended Concentration".
+check_mrc_limit() (5E-1) checks whether a single, ad-hoc order would push
+its ticker's real Marginal Risk Contribution (MRC) — Phase 3 E1's
+correlation/covariance-aware risk-decomposition metric from
+risk_engine.py's compute_marginal_risk_contribution() — over the
+portfolio's real risk budget cap. "MRC" here is Marginal Risk
+Contribution, never "Maximum Recommended Concentration".
 
-This module reuses the same real data source (risk_snapshot.json's
-"marginalRiskContribution" field, Phase 3 E1) and the same projection
-technique (rebalancer.py's compute_risk_budget_check(), Phase 3 E2:
-scale a ticker's existing MRC by its proposed weight-ratio change) but
-does NOT call into or modify rebalancer.py or risk_engine.py — their
-real signatures are batch-shaped (routed_orders/bands from a full
-rebalance-plan run) and not directly reusable for a single ad-hoc order
-without a larger refactor of already-shipped, already-reviewed code
-(out of scope here). This function independently applies the identical
-formula against the identical real data source instead.
+check_cluster_variance() (5E-2) checks whether a single, ad-hoc BUY
+order's pillar (sub-strategy cluster) already has variance contribution
+— Phase 3 E1's compute_cluster_exposure() output — over the real risk
+budget cap. Unlike check_mrc_limit(), this is NOT a post-order
+projection: it mirrors rebalancer.py's compute_risk_budget_check() (E2)
+exactly, which only checks the pillar's CURRENT variance contribution,
+never a simulated post-trade increase.
 
-Only the traded ticker is evaluated — no cascade check across all
-holdings, matching E2's own real per-ticker scope.
+This module reuses the same real data sources (risk_snapshot.json's
+"marginalRiskContribution" and "clusterExposure" fields, Phase 3 E1)
+and the same real check logic from rebalancer.py's
+compute_risk_budget_check() (Phase 3 E2) but does NOT call into or
+modify rebalancer.py or risk_engine.py — their real signatures are
+batch-shaped (routed_orders/bands from a full rebalance-plan run) and
+not directly reusable for a single ad-hoc order without a larger
+refactor of already-shipped, already-reviewed code (out of scope here).
+These functions independently apply the identical logic against the
+identical real data sources instead.
+
+Only the traded ticker (and its pillar) is evaluated — no cascade check
+across all holdings, matching E2's own real per-ticker scope.
 
 Layer: Backend / Python Services / Risk
 
 Usage:
-    from order_risk_gates import check_mrc_limit
+    from order_risk_gates import check_mrc_limit, check_cluster_variance
     result = check_mrc_limit(order, portfolio_state, risk_snapshot=snapshot)
+    result = check_cluster_variance(order, portfolio_state, risk_snapshot=snapshot)
 
 Key Input Dependencies:
     - investment_screener/backend/data/risk_snapshot.json (Phase 3 E1's
-      "marginalRiskContribution" field)
+      "marginalRiskContribution" and "clusterExposure" fields)
     - investment_screener/backend/data/account_policy.json (informational —
-      real "maxMarginalRiskContributionPct" default mirrored here as
-      mrc_cap_pct's own default)
+      real "maxMarginalRiskContributionPct" and
+      "maxClusterVarianceContributionPct" defaults mirrored here as
+      mrc_cap_pct's / cluster_cap_pct's own defaults)
 """
 from __future__ import annotations
 
@@ -175,3 +185,83 @@ def check_mrc_limit(
         }
 
     return {"passed": True, "holdings_flagged": [], "reason": "Within MRC budget"}
+
+
+def check_cluster_variance(
+    order: Dict[str, Any],
+    portfolio_state: Dict[str, Any],
+    risk_snapshot: Optional[Dict[str, Any]] = None,
+    cluster_cap_pct: float = 60.0,
+) -> Dict[str, Any]:
+    """Check whether a BUY order's pillar (sub-strategy cluster) already
+    has variance contribution over the real risk budget cap.
+
+    Reuses the SAME real data source as rebalancer.py's
+    compute_risk_budget_check() (Phase 3 E2): risk_snapshot.json's
+    "clusterExposure" list (Phase 3 E1's compute_cluster_exposure()
+    output — real, already-computed per-pillar variance contribution),
+    checked against the real "maxClusterVarianceContributionPct" cap
+    (default 60.0).
+
+    NOT a post-order projection — matches E2's own real behavior
+    exactly: this checks whether the pillar's CURRENT variance
+    contribution already exceeds cap, for ANY buy in that pillar,
+    regardless of order size. E2 itself does not simulate a post-trade
+    cluster-variance increase (unlike MRC's weight-ratio scaling,
+    Task 5E-1) — this function does not invent one either.
+
+    SELL orders are never flagged — reducing a position cannot push a
+    pillar's variance contribution up, matching E2's own real scope
+    (E2 only evaluates "buy" actions for this check).
+
+    Never raises: missing risk_snapshot, a ticker with no pillar
+    assignment (falls back to "unassigned", same as E1's own
+    pillar_map.get(ticker, "unassigned") convention), or a pillar with
+    no clusterExposure entry all degrade to passed=True.
+
+    Args:
+        order: {"ticker": str, "side": "BUY"|"SELL", "shares": float,
+            "price": float}.
+        portfolio_state: {"holdings": {ticker: {"pillar_id": str}}, ...}
+            — must include each holding's pillar assignment. Uses
+            snake_case "pillar_id" here (matching this module's own
+            portfolio_state dict convention, e.g. 5E-1's "weight_pct"),
+            distinct from the real underlying source file's camelCase
+            "pillarId" (target-portfolio.json) — this is an ad-hoc
+            caller-constructed dict, not raw target-portfolio.json.
+        risk_snapshot: Parsed risk_snapshot.json. If None, loaded via
+            the same _load_risk_snapshot() helper Task 5E-1 already
+            defined (reused, not duplicated).
+        cluster_cap_pct: Real cap (default 60.0, matching
+            account_policy.json's real "maxClusterVarianceContributionPct").
+
+    Returns:
+        {"passed": bool, "pillar": str | None, "variance_pct": float | None, "reason": str}
+    """
+    if order.get("side") != "BUY":
+        return {"passed": True, "pillar": None, "variance_pct": None, "reason": "Not a buy order — cluster variance gate only applies to buys"}
+
+    if risk_snapshot is None:
+        risk_snapshot = _load_risk_snapshot()
+
+    ticker = order.get("ticker")
+    holdings = portfolio_state.get("holdings", {})
+    pillar = holdings.get(ticker, {}).get("pillar_id", "unassigned")
+
+    cluster_list = (risk_snapshot or {}).get("clusterExposure", [])
+    cluster_map = {c.get("pillarId"): c for c in cluster_list if isinstance(c, dict)}
+    cluster_entry = cluster_map.get(pillar)
+
+    if cluster_entry is None:
+        return {"passed": True, "pillar": pillar, "variance_pct": None, "reason": "No cluster data for this pillar — order not blocked"}
+
+    variance_pct = cluster_entry.get("varianceContributionPct", 0.0)
+    if variance_pct > cluster_cap_pct:
+        return {
+            "passed": False,
+            "pillar": pillar,
+            "variance_pct": variance_pct,
+            "reason": f"Pillar '{pillar}' cluster variance already {variance_pct:.1f}% > {cluster_cap_pct}% cap",
+        }
+
+    return {"passed": True, "pillar": pillar, "variance_pct": variance_pct, "reason": "Within cluster variance budget"}
