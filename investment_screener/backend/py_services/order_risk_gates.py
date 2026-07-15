@@ -41,13 +41,23 @@ logic against the identical real data sources instead.
 Only the traded ticker (and its pillar) is evaluated — no cascade check
 across all holdings, matching E2's own real per-ticker scope.
 
+check_order_size() (Task 5E-4) checks whether a single, ad-hoc order's
+share count exceeds a safe percentage of the ticker's average daily
+trading volume — a liquidity/market-impact safeguard, distinct from
+Task 5D-8's compute_liquidity_score() (which only has a single TV
+candle's Volume + intraday range available as a rough live-chart
+proxy). This gate reuses market_data.py's real, cached get_prices()
+(Phase 1's yfinance data layer) via get_average_daily_volume() instead
+of calling yfinance directly a second time.
+
 Layer: Backend / Python Services / Risk
 
 Usage:
-    from order_risk_gates import check_mrc_limit, check_cluster_variance, check_breaker_veto
+    from order_risk_gates import check_mrc_limit, check_cluster_variance, check_breaker_veto, check_order_size
     result = check_mrc_limit(order, portfolio_state, risk_snapshot=snapshot)
     result = check_cluster_variance(order, portfolio_state, risk_snapshot=snapshot)
     result = check_breaker_veto(order, thesis_breaker_state=state)
+    result = check_order_size(order, daily_volume=avg_volume)
 
 Key Input Dependencies:
     - investment_screener/backend/data/risk_snapshot.json (Phase 3 E1's
@@ -59,6 +69,9 @@ Key Input Dependencies:
     - investment_screener/backend/data/thesis_breaker_state.json (Phase 3
       B5's real live triggered/OK breaker status, machine-owned by
       thesis_breakers.py — never target-portfolio.json)
+    - market_data.py's get_prices() (Phase 1's real, cached yfinance OHLCV
+      data layer, same directory — reused by get_average_daily_volume(),
+      never re-fetched via yfinance directly)
 """
 from __future__ import annotations
 
@@ -358,3 +371,90 @@ def check_breaker_veto(
             }
 
     return {"passed": True, "breaker": None, "reason": "No triggered breaker for this ticker"}
+
+
+def get_average_daily_volume(ticker: str, days: int = 10) -> Optional[int]:
+    """
+    Fetch a ticker's average daily volume over the last `days` trading
+    days, reusing market_data.py's real, cached get_prices() (Phase 1)
+    — does NOT call yfinance directly a second time.
+
+    Never raises: any fetch failure, exception, or empty result
+    degrades to None.
+
+    Args:
+        ticker: Ticker symbol.
+        days: Number of trailing trading days to average over (default 10).
+
+    Returns:
+        Average daily volume (int, rounded), or None if unavailable.
+    """
+    from market_data import get_prices
+    try:
+        result = get_prices([ticker], period=f"{days}d", interval="1d")
+    except Exception:
+        return None
+
+    rows = result.get(ticker, {}).get("data", [])
+    volumes = [r["volume"] for r in rows if isinstance(r, dict) and "volume" in r]
+    if not volumes:
+        return None
+    return int(sum(volumes) / len(volumes))
+
+
+def check_order_size(
+    order: Dict[str, Any],
+    daily_volume: Optional[float] = None,
+    max_pct_of_volume: float = 10.0,
+) -> Dict[str, Any]:
+    """
+    Check whether an order's share count exceeds a safe percentage of
+    the ticker's average daily trading volume — a liquidity/market-
+    impact safeguard.
+
+    Distinct from Task 5D-8's compute_liquidity_score() (which uses a
+    single TV candle's Volume + intraday range as a rough proxy for a
+    live chart read) — this gate uses REAL multi-day average daily
+    volume fetched via market_data.py's get_prices() (Phase 1's real,
+    cached yfinance data layer), a more reliable signal for a genuine
+    pre-trade size check.
+
+    If daily_volume isn't supplied, fetches it via
+    get_average_daily_volume() — pass it explicitly in tests to avoid
+    real network/yfinance calls.
+
+    Never raises: a missing/unfetchable daily_volume degrades to
+    passed=True (can't evaluate, don't block an order on missing data
+    — matches every other gate in this module's consistent posture).
+
+    Boundary convention matches 5E-1/5E-2's established pattern (fail
+    strictly ABOVE the cap, not at-or-above): an order at EXACTLY
+    max_pct_of_volume passes.
+
+    Args:
+        order: {"ticker": str, "shares": float, ...}.
+        daily_volume: Average daily volume for the ticker, or None to
+            fetch it via get_average_daily_volume().
+        max_pct_of_volume: Max order size as % of daily volume (default
+            10.0, per the plan's literal example).
+
+    Returns:
+        {"passed": bool, "size_pct_of_volume": float | None, "reason": str}
+    """
+    if daily_volume is None:
+        daily_volume = get_average_daily_volume(order.get("ticker"))
+
+    if not daily_volume or daily_volume <= 0:
+        return {"passed": True, "size_pct_of_volume": None, "reason": "Daily volume unavailable — order not blocked"}
+
+    shares = order.get("shares", 0.0)
+    size_pct = (shares / daily_volume) * 100
+
+    if size_pct > max_pct_of_volume:
+        return {
+            "passed": False,
+            "size_pct_of_volume": size_pct,
+            "reason": f"Order size {size_pct:.1f}% of daily volume > {max_pct_of_volume}% cap",
+        }
+
+    return {"passed": True, "size_pct_of_volume": size_pct, "reason": "Within size limit"}
