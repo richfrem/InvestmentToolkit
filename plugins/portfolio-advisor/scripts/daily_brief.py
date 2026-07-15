@@ -160,7 +160,151 @@ def _pillar_trends(
     }
 
 
+def _new_actionable_tickers(
+    recommendations: list[dict[str, Any]],
+    yesterday: dict[str, Any] | None,
+) -> list[str]:
+    """Tickers with an actionable recommendation today that were NOT
+    actionable in yesterday's brief snapshot.
+
+    "New" is day-over-day (same snapshot-comparison idiom as
+    _score_deltas/_pillar_trends), not merely "actionable right now" —
+    a ticker that was already actionable yesterday and remains so today
+    is not re-flagged every single day.
+
+    Args:
+        recommendations: Today's recommendation cards (from
+            build_recommendations() — flat list, each with `ticker` and
+            `actionable`).
+        yesterday: Prior day's full brief snapshot dict, or None on the
+            first-ever run.
+
+    Returns:
+        Sorted list of ticker symbols. On a first-ever run (yesterday is
+        None), every actionable ticker today counts as "new".
+    """
+    today_actionable = {r["ticker"] for r in recommendations if r.get("actionable")}
+    if yesterday is None:
+        return sorted(today_actionable)
+    yesterday_actionable = {
+        r["ticker"] for r in yesterday.get("recommendations", []) if r.get("actionable")
+    }
+    return sorted(today_actionable - yesterday_actionable)
+
+
+def _newly_fired_alerts(
+    alert_state_start: list[dict[str, Any]],
+    alert_state_end: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Alerts that are 'fired' at the end of this /daily run but were
+    NOT 'fired' at the start — i.e. genuinely fired during this run,
+    not a stale 'fired' state that's been sitting there for weeks.
+
+    Never raises: malformed entries in either list are simply ignored
+    (missing 'alert_id' or 'state' keys just don't match).
+
+    Args:
+        alert_state_start: sync_alert_state()'s output from the start
+            of this run.
+        alert_state_end: sync_alert_state()'s output from the end of
+            this run.
+
+    Returns:
+        The subset of alert_state_end's entries whose state is "fired"
+        and whose alert_id was NOT already "fired" at the start.
+    """
+    fired_at_start = {
+        a.get("alert_id") for a in alert_state_start if a.get("state") == "fired"
+    }
+    return [
+        a for a in alert_state_end
+        if a.get("state") == "fired" and a.get("alert_id") not in fired_at_start
+    ]
+
+
+def _inject_pine_signals_step(
+    recommendations: list[dict[str, Any]],
+    yesterday: dict[str, Any] | None,
+) -> list[dict[str, Any]]:
+    """Auto-inject 'ai-ta-levels' onto each ticker with a new actionable
+    recommendation today (Task 5B-8).
+
+    Real production side effect: physically switches the live
+    TradingView chart to each qualifying ticker in turn and injects the
+    ai-ta-levels Pine script via pine_script_manager.inject_pine_script().
+    Chosen deliberately (user decision, 2026-07-13) over an
+    advisory-only or opt-in-flag alternative.
+
+    Graceful error handling: inject_pine_script() itself never raises
+    and already logs its own failure reason; this function additionally
+    logs a one-line warning per failed ticker and — critically — keeps
+    processing the remaining tickers rather than stopping early. Never
+    raises.
+
+    Args:
+        recommendations: Today's recommendation cards.
+        yesterday: Prior day's brief snapshot, or None.
+
+    Returns:
+        List of {"ticker": str, "injected": bool} results, one per
+        qualifying ticker (empty list if nothing new today).
+    """
+    tickers = _new_actionable_tickers(recommendations, yesterday)
+    if not tickers:
+        return []
+
+    sys.path.insert(0, str(PY_SERVICES))
+    from pine_script_manager import inject_pine_script
+
+    results = []
+    for ticker in tickers:
+        ok = inject_pine_script("ai-ta-levels", ticker)
+        if not ok:
+            print(f"  Pine injection skipped for {ticker} (validation or "
+                  f"injection failure — see inject_pine_script's own log)",
+                  file=sys.stderr)
+        results.append({"ticker": ticker, "injected": ok})
+    return results
+
+
 # ── Core pipeline ─────────────────────────────────────────────────────────────
+
+def _emit_rebalance_events_step(
+    recommendations: list[dict[str, Any]],
+    scores_raw: list[dict[str, Any]],
+) -> None:
+    """Emit a G4 rebalance event for each BUY/SELL recommendation card
+    (non-blocking — a per-card emission failure is logged nowhere and
+    does not stop processing the rest, matching this file's existing
+    G4 emission convention for earnings/breaker events).
+
+    Args:
+        recommendations: Today's recommendation cards (flat list from
+            build_recommendations()).
+        scores_raw: Today's conviction score rows, used to look up each
+            ticker's current price.
+    """
+    from evolution_events import emit_rebalance_event
+    for rec in recommendations:
+        try:
+            ticker = rec.get("ticker")
+            action = rec.get("recommendation")
+            if ticker and action in ("BUY", "SELL"):
+                curr_price = next(
+                    (s["price"] for s in scores_raw if s["ticker"] == ticker),
+                    None,
+                )
+                emit_rebalance_event(
+                    ticker=ticker,
+                    order_type="buy" if action == "BUY" else "sell",
+                    order_quantity=1,
+                    order_price=curr_price or 0.0,
+                    rebalance_date=date.today().isoformat(),
+                    current_price=curr_price,
+                )
+        except Exception:
+            pass  # Non-blocking
+
 
 def _harvest_predictions_step() -> int | None:
     """Run the E3 prediction harvest, degrading to None on any failure.
@@ -205,12 +349,16 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     from brief_recommendations import build_recommendations, load_standing_decisions
     from overnight_gaps import get_overnight_gaps
     from thesis_breakers import compute_breaker_state
+    from alert_manager import sync_alert_state
     from evolution_events import (  # G4 event emission (non-blocking)
         emit_earnings_event,
         emit_breaker_override_event,
-        emit_rebalance_event,
         EarningsGrade,
     )
+
+    # ── -1. Alert state sync (start) — 5C-8, advisory only, never raises ─────
+    print("▶ Alert state sync (start)...", file=sys.stderr)
+    alert_state_start = sync_alert_state()
 
     # ── 0. Overnight gap scan ─────────────────────────────────────────────────
     print("▶ Overnight gap scan...", file=sys.stderr)
@@ -354,29 +502,6 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     print("▶ Prediction harvest...", file=sys.stderr)
     predictions_harvested = _harvest_predictions_step()
 
-    # ── 5e. Emit rebalance events for recommended actions (G4 — non-blocking) ─
-    if recommendations and isinstance(recommendations, dict):
-        for rec in recommendations.get("actions", []):
-            try:
-                ticker = rec.get("ticker")
-                action = rec.get("action")
-                if ticker and action in ("BUY", "SELL"):
-                    curr_price = next(
-                        (s["price"] for s in scores_raw if s["ticker"] == ticker),
-                        None,
-                    )
-                    order_qty = rec.get("size", 1)
-                    emit_rebalance_event(
-                        ticker=ticker,
-                        order_type="buy" if action == "BUY" else "sell",
-                        order_quantity=order_qty,
-                        order_price=curr_price or 0.0,
-                        rebalance_date=date.today().isoformat(),
-                        current_price=curr_price,
-                    )
-            except Exception:
-                pass  # Non-blocking
-
     # ── 6. Deltas vs yesterday ────────────────────────────────────────────────
     yesterday = _load_yesterday()
     deltas = _score_deltas(scores_raw, yesterday)
@@ -398,6 +523,23 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
         total_equity=total_equity,
     )
 
+    # ── 6a. Emit rebalance events for recommended actions (G4 — non-blocking) ─
+    _emit_rebalance_events_step(recommendations, scores_raw)
+
+    # ── 6c. Pine signal injection (5B-8, real TV chart side effect) ──────────
+    print("▶ Pine signal injection...", file=sys.stderr)
+    pine_injections = _inject_pine_signals_step(recommendations, yesterday)
+
+    # ── 6d. Alert state sync (end) + advisory candidates (5C-8) ──────────────
+    # Advisory only: computes which tickers WOULD get a TV alert, but never
+    # calls create_price_alert()/dedup_alerts() — real TV alerts can't be
+    # individually deleted, so /daily surfaces candidates without creating
+    # anything (user decision, 2026-07-14).
+    print("▶ Alert state sync (end)...", file=sys.stderr)
+    alert_state_end = sync_alert_state()
+    newly_fired = _newly_fired_alerts(alert_state_start, alert_state_end)
+    advisory_alert_tickers = _new_actionable_tickers(recommendations, yesterday)
+
     brief: dict[str, Any] = {
         "overnight_gaps": gaps,
         "date": date.today().isoformat(),
@@ -418,6 +560,13 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
         "thesis_breakers": breaker_state,
         "thesis_breakers_triggered": triggered_breakers,
         "predictions_harvested": predictions_harvested,
+        "pine_injections": pine_injections,
+        "alert_sync": {
+            "start": alert_state_start,
+            "end": alert_state_end,
+            "newly_fired": newly_fired,
+        },
+        "advisory_alert_signals": advisory_alert_tickers,
     }
 
     # ── 7. Save snapshot ──────────────────────────────────────────────────────
@@ -491,6 +640,13 @@ def render(brief: dict[str, Any]) -> str:
             lines.append(f"    {b['ticker']:<8} {b['metric']} {b['operator']} {thr_str}  {detail}")
             if b.get("note"):
                 lines.append(f"          \"{b['note']}\"")
+
+    # ── Alerts fired since this run started (5C-8, advisory) ───────────────────
+    newly_fired = brief.get("alert_sync", {}).get("newly_fired", [])
+    if newly_fired:
+        lines.append(f"\n🔔  ALERTS FIRED — {len(newly_fired)} since this run started:")
+        for a in newly_fired:
+            lines.append(f"    {a.get('symbol', '?'):<20} alert_id={a.get('alert_id')}")
 
     # ── Overnight gaps ────────────────────────────────────────────────────────
     gaps = brief.get("overnight_gaps", [])
@@ -591,6 +747,14 @@ def render(brief: dict[str, Any]) -> str:
                     f"   {s['ticker']:<8} {s['total']:>+5d}  {fv_str}  "
                     f"{s['rsi'] or 0:>5.1f}  {gap_str}  {d_str:>4}  {flags}"
                 )
+
+    # ── Advisory alert candidates (5C-8 — advisory only, no real creation) ────
+    advisory_tickers = brief.get("advisory_alert_signals", [])
+    if advisory_tickers:
+        lines.append(
+            f"\n💡  Would create TV alerts for: {', '.join(advisory_tickers)} "
+            f"(advisory-only — auto-creation disabled)."
+        )
 
     # ── Score deltas ──────────────────────────────────────────────────────────
     if deltas:

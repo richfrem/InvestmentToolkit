@@ -30,3 +30,11 @@ backend/data/portfolio_tv.json
 backend/data/portfolio.json.bak
 backend/data/cash_flows.json
 backend/data/ytd_performance_report.json
+
+# TV CDP resilience layer runtime data (5A-8) — generated, not for version control
+backend/data/tv_cdp_responses_cache.jsonl
+backend/data/tv_cdp_errors.jsonl
+
+# Alert sync state (5C) + order execution audit trail (5E-8) — generated, personal data
+backend/data/alerts_state.jsonl
+backend/data/orders_executed.jsonl

@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "ai-ta-levels": {
+      "path": "ai-ta-levels.pine",
+      "version": "2.0.0",
+      "description": "Multi-EMA (21/50/200) + SuperTrend + ADX + Squeeze + Volume Bias",
+      "last_injected": null,
+      "hash": "d4591acc9bfb",
+      "category": "level"
+    }
+  }
+}
