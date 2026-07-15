@@ -1,7 +1,24 @@
 """
 Order Risk Gates — MRC Risk Gate (Task 5E-1) + Cluster Variance Gate (Task
 5E-2) + Thesis Breaker Veto (Task 5E-3) + Order Size Gate (Task 5E-4) +
-Balance Gate (Task 5E-5) + Post-Trade Validation (Task 5E-7)
+Balance Gate (Task 5E-5) + Post-Trade Validation (Task 5E-7) + Data
+Readiness Gate (5E-fix, closing the previously-orphaned Task 5D-8
+integration) + real place_order.py wiring (5E-fix)
+
+build_portfolio_state_for_order() constructs the real portfolio_state dict
+check_mrc_limit()/check_cluster_variance() require, from the REAL
+target-portfolio.json + portfolio.json data files — reusing risk_engine.py's
+compute_risk_snapshot() pillar_map pattern and portfolio_io.py's
+load_portfolio_state()/compute_weights() unchanged. This is the real
+integration point place_order.py (the CLI's actual order-placement
+entrypoint) now uses instead of every caller hand-building portfolio_state.
+
+check_data_readiness_gate() (5E-fix) is the missing caller
+data_window_validator.py's check_order_data_readiness() (Task 5D-8) was
+built for — that function's own docstring says it's "designed to be
+imported and called FROM [order_risk_gates.py] once it exists." It vetoes a
+BUY order ONLY on a live RSI-overbought read; liquidity_score is always
+surfaced but never gates on its own. This is check_risk_gates()'s 6th gate.
 
 check_mrc_limit() (5E-1) checks whether a single, ad-hoc order would push
 its ticker's real Marginal Risk Contribution (MRC) — Phase 3 E1's
@@ -89,12 +106,17 @@ the slippage calculation entirely rather than raising or reporting
 Layer: Backend / Python Services / Risk
 
 Usage:
-    from order_risk_gates import check_mrc_limit, check_cluster_variance, check_breaker_veto, check_order_size, check_available_balance
+    from order_risk_gates import check_mrc_limit, check_cluster_variance, check_breaker_veto, check_order_size, check_available_balance, check_data_readiness_gate
     result = check_mrc_limit(order, portfolio_state, risk_snapshot=snapshot)
     result = check_cluster_variance(order, portfolio_state, risk_snapshot=snapshot)
     result = check_breaker_veto(order, thesis_breaker_state=state)
     result = check_order_size(order, daily_volume=avg_volume)
     result = check_available_balance(order, questrade_cash=cash)
+    result = check_data_readiness_gate(order, data_readiness=readiness)
+
+    from order_risk_gates import build_portfolio_state_for_order, check_risk_gates
+    portfolio_state = build_portfolio_state_for_order()
+    result = check_risk_gates(order, portfolio_state)  # composes all 6 gates
 
     from order_risk_gates import wait_for_trade_log_entry, validate_trade_execution
     matched_entry = wait_for_trade_log_entry(order, account="TFSA")
@@ -110,12 +132,21 @@ Key Input Dependencies:
     - investment_screener/backend/data/thesis_breaker_state.json (Phase 3
       B5's real live triggered/OK breaker status, machine-owned by
       thesis_breakers.py — never target-portfolio.json)
+    - investment_screener/backend/data/target-portfolio.json (pillarId per
+      ticker, used by build_portfolio_state_for_order() — same file
+      risk_engine.py's compute_risk_snapshot() reads for its own pillar_map)
     - market_data.py's get_prices() (Phase 1's real, cached yfinance OHLCV
       data layer, same directory — reused by get_average_daily_volume(),
       never re-fetched via yfinance directly)
     - investment_screener/backend/data/portfolio.json (gitignored, the
       real, already-synced broker snapshot — "totals.cashUSD" and
-      "tvSnapshot.snapshots[].balances.cashUSD", never written to)
+      "tvSnapshot.snapshots[].balances.cashUSD", never written to; also
+      read via portfolio_io.load_portfolio_state()/compute_weights() by
+      build_portfolio_state_for_order() for real actual weights)
+    - data_window_validator.py's check_order_data_readiness() (Task 5D-8,
+      same directory — a LIVE TradingView CDP Data Window read, lazily
+      imported inside check_data_readiness_gate() to avoid triggering it
+      at module-import time)
     - investment_screener/backend/data/trade-log.json (gitignored, the
       real manual/CDP-synced trade log, written by trading.ts's
       makeLogEntry() — "TRADE_LOG_FILE" in paths.ts — never written to
@@ -129,9 +160,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Sibling module in the same py_services/ directory — a plain top-level
+# import works with no sys.path manipulation, since anything that can import
+# order_risk_gates.py already has this directory on sys.path (matches this
+# codebase's established same-directory import convention, e.g. how
+# risk_engine.py itself reuses portfolio_io.load_portfolio_state()/
+# compute_weights() for its own compute_risk_snapshot()).
+from portfolio_io import compute_weights, load_portfolio_state
+
 RISK_SNAPSHOT_PATH = Path(__file__).resolve().parents[1] / "data" / "risk_snapshot.json"
 ACCOUNT_POLICY_PATH = Path(__file__).resolve().parents[1] / "data" / "account_policy.json"
 THESIS_BREAKER_STATE_PATH = Path(__file__).resolve().parents[1] / "data" / "thesis_breaker_state.json"
+TARGET_PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "target-portfolio.json"
 PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "portfolio.json"
 TRADE_LOG_PATH = Path(__file__).resolve().parents[1] / "data" / "trade-log.json"
 ORDERS_EXECUTED_PATH = Path(__file__).resolve().parents[1] / "data" / "orders_executed.jsonl"
@@ -177,6 +217,73 @@ def _project_new_weight(
     else:
         new_value = current_value - order_value
     return max(new_value, 0.0) / total_value
+
+
+def build_portfolio_state_for_order(
+    target_portfolio_path: Optional[Path] = None,
+    portfolio_path: Optional[Path] = None,
+) -> Dict[str, Any]:
+    """Build the real portfolio_state dict check_mrc_limit()/
+    check_cluster_variance() require, from the REAL data files — this is the
+    missing "real caller convenience" these gates never had until now (every
+    existing test constructs portfolio_state by hand).
+
+    Reuses the EXACT same pattern already established in risk_engine.py's
+    compute_risk_snapshot(): loads target-portfolio.json to build a
+    ticker -> pillarId map, loads portfolio.json via portfolio_io's
+    load_portfolio_state()/compute_weights() for actual weights — no weight
+    math is reimplemented here, both real, already-reviewed functions are
+    reused unchanged.
+
+    Never raises: a missing/unreadable/malformed target-portfolio.json OR
+    portfolio.json (or a portfolio_io failure of any kind) degrades to
+    {"holdings": {}, "total_value": 0.0} — matches how every gate that
+    consumes portfolio_state already treats a zero/missing weight or
+    total_value (check_mrc_limit/check_cluster_variance both degrade to
+    passed=True in that case), so this degradation is a safe, intentional
+    "can't evaluate, don't block" fallback, not a new failure mode.
+
+    Args:
+        target_portfolio_path: Override path (tests use tmp_path); None reads
+            the real TARGET_PORTFOLIO_PATH.
+        portfolio_path: Override path (tests use tmp_path); None reads the
+            real PORTFOLIO_PATH.
+
+    Returns:
+        {"holdings": {ticker: {"weight_pct": float, "pillar_id": str}},
+        "total_value": float} — the union of every ticker with a pillar
+        assignment AND every ticker with an actual portfolio weight (a
+        ticker held but not yet pillar-assigned gets "unassigned"; a
+        pillar-assigned ticker not currently held gets weight_pct=0.0 rather
+        than being omitted).
+    """
+    target_path = target_portfolio_path or TARGET_PORTFOLIO_PATH
+    try:
+        target_data = json.loads(Path(target_path).read_text())
+    except (OSError, json.JSONDecodeError):
+        return {"holdings": {}, "total_value": 0.0}
+
+    pillar_map = {
+        h["ticker"]: h.get("pillarId", "unassigned")
+        for h in target_data.get("holdings", [])
+    }
+
+    try:
+        state = load_portfolio_state(Path(portfolio_path or PORTFOLIO_PATH))
+    except (OSError, json.JSONDecodeError):
+        return {"holdings": {}, "total_value": 0.0}
+
+    weights_pct = compute_weights(state["shares"], state["prices"], state["total_usd"])
+
+    holdings = {
+        ticker: {
+            "weight_pct": weights_pct.get(ticker, 0.0),
+            "pillar_id": pillar_map.get(ticker, "unassigned"),
+        }
+        for ticker in set(pillar_map) | set(weights_pct)
+    }
+
+    return {"holdings": holdings, "total_value": state["total_usd"]}
 
 
 def check_mrc_limit(
@@ -470,7 +577,13 @@ def check_order_size(
     live chart read) — this gate uses REAL multi-day average daily
     volume fetched via market_data.py's get_prices() (Phase 1's real,
     cached yfinance data layer), a more reliable signal for a genuine
-    pre-trade size check.
+    pre-trade size check. 5D-8's own signal (RSI overbought veto +
+    liquidity score) is NOW independently consumed via
+    check_data_readiness_gate() (the 6th gate in check_risk_gates()'s
+    composition) — this function's ADV-based check remains a
+    deliberately separate, complementary signal, not a duplicate: they
+    answer different questions (multi-day real trading volume vs. a
+    single live candle's liquidity+momentum snapshot).
 
     If daily_volume isn't supplied, fetches it via
     get_average_daily_volume() — pass it explicitly in tests to avoid
@@ -610,13 +723,130 @@ def check_available_balance(
     return {"passed": True, "cash_required": cash_required, "cash_available": questrade_cash, "reason": "Sufficient cash"}
 
 
+# --- Task 5E-fix: Data Readiness Gate (closes the 5D-8 -> 5E integration) ---
+#
+# check_data_readiness_gate() is the missing caller data_window_validator.py's
+# check_order_data_readiness() (Task 5D-8) was built for — that function's own
+# docstring says it's "designed to be imported and called FROM
+# [order_risk_gates.py] once it exists." This gate closes that gap.
+
+
+def check_data_readiness_gate(
+    order: Dict[str, Any],
+    data_readiness: Optional[Dict[str, Any]] = None,
+    rsi_veto_threshold: float = 80.0,
+) -> Dict[str, Any]:
+    """Check a BUY order against Task 5D-8's live TV Data Window read —
+    vetoes ONLY on an RSI-overbought condition; a low liquidity score is
+    informational only.
+
+    Closes the previously-orphaned 5D-8 -> 5E integration:
+    data_window_validator.py's check_order_data_readiness() was fully
+    built and unit-tested (Task 5D-8) but had zero production callers —
+    its own docstring literally says it's "designed to be imported and
+    called FROM [order_risk_gates.py] once it exists." This is that
+    caller.
+
+    BUY-only, matching this module's established convention for
+    directionally-meaningful checks (5E-2/5E-3/5E-5 are all buy-only) —
+    an RSI-overbought/liquidity read has no meaningful veto interpretation
+    for a SELL.
+
+    Only "rsi_veto" actually gates (fails) the order. "liquidity_score" is
+    ALWAYS surfaced in the return dict regardless of pass/fail — per
+    5D-8's own docstring distinction between "reports data" (liquidity)
+    and "gates" (RSI veto only): a low liquidity score does not, by
+    itself, fail this gate (that would be a new, undocumented gating
+    policy this task does not introduce).
+
+    If data_readiness isn't supplied, this function lazily imports and
+    calls data_window_validator.check_order_data_readiness() INSIDE this
+    function body (not at module level) — matching this module's own
+    existing convention for expensive, side-effecting fetches (e.g.
+    get_average_daily_volume()'s own function-local `from market_data
+    import get_prices`). The lazy import matters more here than
+    anywhere else in this module: this one call triggers a LIVE
+    TradingView CDP chart-switch, something this module should never do
+    merely by being imported.
+
+    Never raises: check_order_data_readiness() (5D-8) itself already
+    never raises by its own contract, but this function wraps the call
+    in an extra try/except Exception anyway, as defense-in-depth
+    specifically for this gate. Every other gate in this module only
+    reads local files (already trivially safe to leave uncaught per
+    Task 5D-7's own "don't defensively wrap an already-never-raising
+    call" precedent, reused by check_risk_gates() itself) — this is the
+    ONE gate that reaches out to a live external system (TV CDP) via a
+    chain of several composed functions, so a slightly more defensive
+    posture is justified here specifically, not a blanket change to
+    this module's philosophy.
+
+    Args:
+        order: {"ticker": str, "side": "BUY"|"SELL", ...}.
+        data_readiness: check_order_data_readiness()'s own output shape
+            ({"rsi_veto": {"vetoed": bool, "reason": str|None, "rsi":
+            float|None}, "liquidity": {"score": float, ...}, ...}). If
+            None, fetched live via check_order_data_readiness(ticker,
+            rsi_veto_threshold=rsi_veto_threshold) — pass explicitly in
+            tests to avoid a real TV CDP call.
+        rsi_veto_threshold: Forwarded to check_order_data_readiness() when
+            data_readiness isn't supplied (default 80.0, matching 5D-8's
+            own default).
+
+    Returns:
+        {"passed": bool, "rsi": float | None, "liquidity_score": float | None,
+        "reason": str}.
+    """
+    if order.get("side") != "BUY":
+        return {
+            "passed": True,
+            "rsi": None,
+            "liquidity_score": None,
+            "reason": "Not a buy order — data readiness gate only applies to buys",
+        }
+
+    if data_readiness is None:
+        try:
+            from data_window_validator import check_order_data_readiness
+            data_readiness = check_order_data_readiness(
+                order.get("ticker"), rsi_veto_threshold=rsi_veto_threshold
+            )
+        except Exception:
+            return {
+                "passed": True,
+                "rsi": None,
+                "liquidity_score": None,
+                "reason": "Data readiness check unavailable — order not blocked",
+            }
+
+    rsi_veto = (data_readiness or {}).get("rsi_veto") or {}
+    liquidity_score = ((data_readiness or {}).get("liquidity") or {}).get("score")
+    rsi = rsi_veto.get("rsi")
+
+    if rsi_veto.get("vetoed"):
+        return {
+            "passed": False,
+            "rsi": rsi,
+            "liquidity_score": liquidity_score,
+            "reason": f"Data readiness veto: {rsi_veto.get('reason')}",
+        }
+
+    return {
+        "passed": True,
+        "rsi": rsi,
+        "liquidity_score": liquidity_score,
+        "reason": "No RSI-overbought veto",
+    }
+
+
 # --- Task 5E-6: Composite Gate Check ---
 #
-# check_risk_gates() is the natural composition point for all five gates
-# built across 5E-1 through 5E-5: it calls check_mrc_limit(),
-# check_cluster_variance(), check_breaker_veto(), check_order_size(), and
-# check_available_balance() unchanged — pure composition, no new gate
-# logic of its own. See this task's brief for the full design rationale.
+# check_risk_gates() is the natural composition point for all six gates:
+# it calls check_mrc_limit(), check_cluster_variance(), check_breaker_veto(),
+# check_order_size(), check_available_balance() (Tasks 5E-1 through 5E-5),
+# and check_data_readiness_gate() (the 5E-fix task above, closing the 5D-8
+# integration) unchanged — pure composition, no new gate logic of its own.
+# See this task's brief for the full design rationale.
 
 
 def check_risk_gates(
@@ -626,15 +856,18 @@ def check_risk_gates(
     thesis_breaker_state: Optional[Dict[str, Any]] = None,
     daily_volume: Optional[float] = None,
     questrade_cash: Optional[float] = None,
+    data_readiness: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
-    Run all 5 order risk gates (Tasks 5E-1 through 5E-5) against a
-    single order and aggregate results.
+    Run all 6 order risk gates against a single order and aggregate
+    results: Tasks 5E-1 through 5E-5 (mrc, cluster_variance, breaker_veto,
+    size, balance) plus the 5E-fix data_readiness gate that closes Task
+    5D-8's previously-orphaned integration.
 
     Composes check_mrc_limit(), check_cluster_variance(),
-    check_breaker_veto(), check_order_size(), check_available_balance()
-    unchanged — no new gate logic, this function only orchestrates and
-    aggregates.
+    check_breaker_veto(), check_order_size(), check_available_balance(),
+    and check_data_readiness_gate() unchanged — no new gate logic, this
+    function only orchestrates and aggregates.
 
     risk_snapshot and thesis_breaker_state are each loaded AT MOST ONCE
     here (if not supplied) and shared across the gates that use them
@@ -644,11 +877,35 @@ def check_risk_gates(
     only used by one gate (size, balance respectively), so no sharing
     concern applies to them.
 
+    data_readiness is deliberately NOT eagerly fetched here, unlike
+    risk_snapshot/thesis_breaker_state — this function passes
+    data_readiness=None straight through to check_data_readiness_gate()
+    and lets THAT function do its own lazy fetch. risk_snapshot and
+    thesis_breaker_state are cheap local file reads shared by two gates
+    each, so loading them once up front avoids a redundant duplicate
+    file read; data_readiness is a single expensive LIVE TV CDP round-
+    trip used by exactly one gate, so eager-loading it here would waste
+    a live CDP call on every check_risk_gates() invocation that doesn't
+    even care about data readiness (e.g. tests that supply
+    daily_volume=/questrade_cash= explicitly but not data_readiness=).
+
+    IMPORTANT — unlike the other 5 gates (pure local file reads/
+    computation), this 6th gate can make a LIVE TradingView CDP call
+    (chart switch + Data Window read, with 5D-1's own retry/backoff
+    contract) when data_readiness isn't supplied — this can be slow
+    (multiple seconds under retry). Callers needing a fast, synchronous
+    result (e.g. tests, or a caller that already has a fresh
+    data_readiness read from elsewhere) should pass data_readiness=
+    explicitly to skip the live call entirely.
+
     Never raises by design: every individual gate already never raises
-    (5E-1 through 5E-5's own "never raises" contracts), so this
-    function adds no new exception surface in practice. If a gate's own
-    contract were ever violated and it DID raise, this function
-    deliberately does NOT catch it — matching Task 5D-7's own precedent
+    (5E-1 through 5E-5's own "never raises" contracts; the new
+    data_readiness gate also never raises, with its own extra
+    defense-in-depth try/except around its live CDP call — see
+    check_data_readiness_gate()'s docstring), so this function adds no
+    new exception surface in practice. If a gate's own contract were
+    ever violated and it DID raise, this function deliberately does NOT
+    catch it — matching Task 5D-7's own precedent
     (get_validated_data_window(), which composes several "never raises"
     functions without adding a defensive try/except around them). A
     gate raising is treated as a genuine regression in that gate's own
@@ -668,14 +925,18 @@ def check_risk_gates(
             it internally via get_average_daily_volume().
         questrade_cash: See Task 5E-5. If None, check_available_balance()
             fetches it internally via get_available_cash().
+        data_readiness: See check_data_readiness_gate() above. If None,
+            that gate fetches it internally via a LIVE TV CDP call — pass
+            it explicitly (e.g. from an already-fetched value) to avoid
+            that live round-trip, exactly as this module's own tests do.
 
     Returns:
         {
-            "passed": bool,  # True only if ALL 5 gates passed
+            "passed": bool,  # True only if ALL 6 gates passed
             "gates": [{"name": str, "passed": bool, "reason": str, ...}],
                 # one entry per gate, in a fixed order: mrc, cluster_variance,
-                # breaker_veto, size, balance — each entry is that gate's
-                # own full result dict with a "name" key added
+                # breaker_veto, size, balance, data_readiness — each entry
+                # is that gate's own full result dict with a "name" key added
             "reasons": [str],  # "reason" strings from FAILING gates only,
                 # in the same fixed gate order
         }
@@ -690,6 +951,7 @@ def check_risk_gates(
     breaker_result = check_breaker_veto(order, thesis_breaker_state=thesis_breaker_state)
     size_result = check_order_size(order, daily_volume=daily_volume)
     balance_result = check_available_balance(order, questrade_cash=questrade_cash)
+    data_readiness_result = check_data_readiness_gate(order, data_readiness=data_readiness)
 
     gates = [
         {"name": "mrc", **mrc_result},
@@ -697,6 +959,7 @@ def check_risk_gates(
         {"name": "breaker_veto", **breaker_result},
         {"name": "size", **size_result},
         {"name": "balance", **balance_result},
+        {"name": "data_readiness", **data_readiness_result},
     ]
 
     return {
