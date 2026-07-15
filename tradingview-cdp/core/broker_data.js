@@ -1,10 +1,11 @@
 /**
- * broker_data.js — TradingView broker panel data reader via CDP DOM
- *
- * Broker-agnostic abstraction layer that reads accounts, positions, balances,
- * and orders from TradingView's built-in broker panel DOM via CDP.
- * Works with any broker connected to TradingView (Questrade, IBKR, etc.)
- *
+ * broker_data.js - TradingView broker panel data reader via CDP DOM.
+ * 
+ * Purpose:
+ *   Broker-agnostic abstraction layer that reads accounts, positions, balances,
+ *   and orders from TradingView's built-in broker panel DOM via CDP.
+ *   Works with any broker connected to TradingView (Questrade, IBKR, etc.)
+ * 
  * DOM structure confirmed via live inspection (TradingView Desktop, 2026-05-15):
  *   Tabs:       [class*="underline-tab"][class*="size-xsmall"] — compound to avoid container match
  *   ka-rows:    Shared by Positions AND Account Summary tables (class "ka-tr ka-row row-*")
@@ -15,6 +16,12 @@
  *   Acct cols:  6 td — label|CAD|USD|CAD-combined|USD-combined|hidden
  *   Acct btn:   [class*="dropdownButton"] — button text is doubled (visual+aria); use [class*="accountName"] span
  *   Dropdown:   Items appear as <span class=""> — MUST use MutationObserver to capture before blur closes popup
+ * 
+ * Key Input Dependencies:
+ *   None (reads live state from TradingView Desktop on port 9222 via CDP)
+ * 
+ * Key Output Dependencies:
+ *   None (returns JSON data structures representing portfolio state)
  */
 
 import { evaluate, evaluateAsync } from '../connection.js';
@@ -23,7 +30,17 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ── tab navigation ────────────────────────────────────────────────────────────
 
+/**
+ * Click a specific tab in the TradingView broker panel interface.
+ * 
+ * @param {string} tabLabel Text label of the tab to click (e.g. 'Positions')
+ * @returns {Promise<object>} Status report containing click outcome or error
+ */
 async function clickTab(tabLabel) {
+  /**
+   * Dispatches real mouse events (mousedown, mouseup, click) to the tab button
+   * element, avoiding React synthetic event issues, then waits 500ms.
+   */
   const result = await evaluate(`(function() {
     var label = ${JSON.stringify(tabLabel)};
     // TV updated tab class from underline-tab/size-xsmall → roundTabButton-* (2026-06 UI update)
@@ -52,15 +69,15 @@ async function clickTab(tabLabel) {
 // ── accounts ──────────────────────────────────────────────────────────────────
 
 /**
- * getAccounts() — enumerates all broker accounts.
- *
- * TV CSS-toggles dropdown visibility (no DOM insertion) so MutationObserver childList/attribute
- * events fire before items are queryable. Proven fix (2026-06-19): click → fixed wait → query,
- * mirroring the pattern from debug_spans.js which reliably finds all three accounts.
- * Also removed offsetParent guard — broker panel layout can set offsetParent null on the button
- * even when the panel is visible, causing the button to be skipped.
+ * Perform a single attempt to open the accounts dropdown and extract accounts list.
+ * 
+ * @returns {Promise<string[]>} Array of account display texts found in the dropdown
  */
 async function _getAccountsOnce() {
+  /**
+   * Clicks dropdown button, waits 800ms for CSS open, queries list elements
+   * matching account pattern, clicks escape to close dropdown, and returns results.
+   */
   // Open dropdown
   await evaluate(`(function() {
     var btn = [...document.querySelectorAll('[class*="dropdownButton"]')].find(function(b) {
@@ -91,9 +108,16 @@ async function _getAccountsOnce() {
   return raw;
 }
 
+/**
+ * Enumerate all available broker accounts from the broker dropdown panel.
+ * 
+ * @returns {Promise<object[]>} List of parsed account descriptor objects
+ */
 export async function getAccounts() {
-  // Retry up to 3 times — MutationObserver can miss the dropdown on the first attempt
-  // if the broker panel is mid-render or switching tabs.
+  /**
+   * Invokes _getAccountsOnce up to 3 times with retries, then maps and parses
+   * matched account type names, IDs, and raw text representations.
+   */
   let raw = [];
   for (let attempt = 0; attempt < 3; attempt++) {
     raw = await _getAccountsOnce();
@@ -122,7 +146,17 @@ export async function getAccounts() {
  * _getAccountsOnce: click → wait 800ms → query spans → click match → wait for reload.
  * Also removed offsetParent guard on button (can be null even when panel is visible).
  */
+/**
+ * Switch the broker panel view to the specified account type.
+ * 
+ * @param {string} accountType Name of target account type (e.g. TFSA)
+ * @returns {Promise<object>} Status report of the switch attempt
+ */
 export async function switchAccount(accountType) {
+  /**
+   * Clicks the account dropdown button, queries lists for matching account prefix,
+   * dispatches real mouse event sequence to select it, and waits 1.2s for data load.
+   */
   const target = accountType.toUpperCase();
 
   // Open dropdown
@@ -164,9 +198,15 @@ export async function switchAccount(accountType) {
 }
 
 /**
- * activeAccount() — returns the currently selected account type and ID.
+ * Retrieve current active account selected in the broker panel.
+ * 
+ * @returns {Promise<object>} Active account detail object containing type and ID
  */
 export async function activeAccount() {
+  /**
+   * Queries the account name element in the DOM and parses account type
+   * and ID numerical string using regex.
+   */
   return evaluate(`(function() {
     var span = document.querySelector('[class*="accountName"]');
     if (!span) return JSON.stringify({ accountType: null, accountId: null });
@@ -183,11 +223,18 @@ export async function activeAccount() {
 // ── balances ──────────────────────────────────────────────────────────────────
 
 /**
- * getBalances() — reads Account Summary tab for full balance detail.
+ * Read the Account summary tab to retrieve full balance details.
+ * 
  * Uses td-only cell selector to avoid double-counting from nested ka-cell-text divs.
  * Columns: label | CAD | USD | CAD (combined) | USD (combined) | empty
+ * 
+ * @returns {Promise<object>} Parsed balances object mapping CAD/USD amounts
  */
 export async function getBalances() {
+  /**
+   * Switches to 'Account summary' tab, queries rows, maps labels and CAD/USD cell columns,
+   * assigns them into named balance fields, and reverts to the 'Positions' tab.
+   */
   await clickTab('Account summary');
 
   const detail = await evaluate(`(function() {
@@ -250,12 +297,18 @@ export async function getBalances() {
 // ── positions ─────────────────────────────────────────────────────────────────
 
 /**
- * getPositions() — reads all position rows from the Positions tab.
- * Clicks "Show more" to load all rows before reading.
+ * Retrieve all open position rows from the Positions tab.
+ * 
  * Position rows: ka-row WHERE first td has "leftFixedColumn-*"
  * Cells: Symbol | Side | Qty | AvgFillPrice | Profit | UpdateTime | BorrowRate | UUID | empty
+ * 
+ * @returns {Promise<object>} Object listing parsed positions and raw row counts
  */
 export async function getPositions() {
+  /**
+   * Clicks 'Positions' tab, recursively clicks 'Show more' button (up to 15 times)
+   * to expand all rows, queries the table rows, and parses symbol details.
+   */
   await clickTab('Positions');
 
   // Expand all rows via "Show more"
@@ -316,7 +369,16 @@ export async function getPositions() {
 
 // ── orders ────────────────────────────────────────────────────────────────────
 
+/**
+ * Read the Orders tab to retrieve current working and inactive orders.
+ * 
+ * @returns {Promise<object[]>} List of parsed order detail objects
+ */
 export async function getOrders() {
+  /**
+   * Switches to 'Orders' tab, parses symbol, side, qty, order type, and status
+   * fields, filters out invalid rows, and switches back to the 'Positions' tab.
+   */
   await clickTab('Orders');
   await sleep(300);
 
@@ -347,9 +409,14 @@ export async function getOrders() {
 // ── per-account snapshot ──────────────────────────────────────────────────────
 
 /**
- * getAccountSnapshot() — reads positions + balances for whichever account is currently active.
+ * Retrieve positions and balances snapshot for the active broker account.
+ * 
+ * @returns {Promise<object>} Balance and position collection for active account
  */
 async function getAccountSnapshot() {
+  /**
+   * Reads active account name/id, fetches positions, and fetches balances sequentially.
+   */
   const acct    = await activeAccount();
   const posResult = await getPositions();   // sequential — each call clicks a different tab
   const balances  = await getBalances();
@@ -365,13 +432,18 @@ async function getAccountSnapshot() {
 // ── full portfolio (all accounts) ─────────────────────────────────────────────
 
 /**
- * getPortfolio() — iterates every available account, reads positions + balances,
- * and returns an aggregated snapshot across all accounts.
+ * Iterate every available account, read positions + balances, and return aggregated portfolio state.
  *
  * Positions with the same symbol across accounts are kept separate (tagged with accountType).
  * The caller can aggregate quantities if needed.
+ * 
+ * @returns {Promise<object>} Consolidated portfolio data including snapshots list
  */
 export async function getPortfolio() {
+  /**
+   * Discovers accounts, iterates through each to switch active account views,
+   * captures snapshots, and aggregates positions with account tags before returning.
+   */
   const accounts = await getAccounts();
   const snapshots = [];
 
@@ -410,14 +482,21 @@ export async function getPortfolio() {
 // ── account totals ────────────────────────────────────────────────────────────
 
 /**
- * getAccountTotals() — reads Total Equity USD from each account's Account Summary tab.
- * Returns per-account breakdown and grand total in USD.
+ * Read Total Equity USD from each account's Account Summary tab and return consolidated totals.
+ *
  * Used by the portfolio summary endpoint and the verify_portfolio_total.py audit script.
+ * 
+ * @returns {Promise<object>} Grand totals and per-account breakdown details in USD
  */
 export async function getAccountTotals() {
+  /**
+   * Switches to each account sequentially, reads parsed balances, extracts combined
+   * or base USD/CAD values, accumulates cash/market/equity sums, and reverts to the primary account.
+   */
   const accounts = await getAccounts();
   const results = [];
   let grandTotalUSD = 0;
+  let grandTotalCAD = 0;
   let grandMarketValueUSD = 0;
   let grandCashUSD = 0;
 
@@ -428,25 +507,36 @@ export async function getAccountTotals() {
       continue;
     }
     const balances = await getBalances();
-    const equity  = balances.totalEquityUSDCombined  ?? balances.totalEquityUSD  ?? 0;
-    const mktVal  = balances.marketValueUSDCombined  ?? balances.marketValueUSD  ?? 0;
-    const cash    = balances.cashUSDCombined         ?? balances.cashUSD         ?? 0;
+    const equity    = balances.totalEquityUSDCombined  ?? balances.totalEquityUSD  ?? 0;
+    const equityCAD = balances.totalEquityCADCombined  ?? balances.totalEquityCAD  ?? 0;
+    const mktVal    = balances.marketValueUSDCombined  ?? balances.marketValueUSD  ?? 0;
+    const cash      = balances.cashUSDCombined         ?? balances.cashUSD         ?? 0;
     results.push({ accountType: acct.accountType, accountId: acct.accountId,
-                   totalEquityUSD: equity, marketValueUSD: mktVal, cashUSD: cash });
+                   totalEquityUSD: equity, totalEquityCAD: equityCAD, marketValueUSD: mktVal, cashUSD: cash });
     grandTotalUSD       += equity;
+    grandTotalCAD       += equityCAD;
     grandMarketValueUSD += mktVal;
     grandCashUSD        += cash;
   }
 
   if (accounts.length > 0) await switchAccount(accounts[0].accountType).catch(() => {});
 
-  return { accounts: results, grandTotalUSD, grandMarketValueUSD, grandCashUSD,
+  return { accounts: results, grandTotalUSD, grandTotalCAD, grandMarketValueUSD, grandCashUSD,
            timestamp: new Date().toISOString() };
 }
 
 // ── inspectors ────────────────────────────────────────────────────────────────
 
+/**
+ * Inspect raw state and layout classes of the active TradingView broker panel.
+ * 
+ * @returns {Promise<object>} Diagnostic details on tabs, rows, and selected account
+ */
 export async function inspectBrokerPanel() {
+  /**
+   * Evaluates browser DOM to query round tab buttons, count row columns, check
+   * position row class presence, and extract selected account name.
+   */
   return evaluate(`(function() {
     // TV updated tab class from underline-tab/size-xsmall → roundTabButton-* (2026-06 UI update)
     // offsetParent is null on TV broker elements — do not use as visibility guard

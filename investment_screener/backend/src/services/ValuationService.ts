@@ -1,20 +1,28 @@
 /**
- * ValuationService.ts (TypeScript Service)
- * =====================================
- *
+ * ValuationService.ts - Stock valuation analyst and AI reasoning orchestrator.
+ * 
  * Purpose:
- *     The "Hybrid Analyst" engine that orchestrates stock valuation using Gemini AI.
- *     Implements a 30-day freshness cache to optimize token usage and integrates live financials with qualitative AI reasoning.
- *
- * Layer: Backend / Services / Analysis
- *
+ *   The "Hybrid Analyst" engine that orchestrates stock valuation using Gemini AI.
+ *   Implements a 30-day freshness cache to optimize token usage and integrates live financials with qualitative AI reasoning.
+ * 
+ * Layer:
+ *   Backend / Services / Analysis
+ * 
  * Usage Examples:
- *     const result = await valuationService.analyzeStock('NVDA');
- *
- * Key Functions:
- *     - analyzeStock() - Primary entry point for conducting a stock valuation, includes freshness checks and context aggregation
- *     - buildPrompt() - Constructs the specialized system prompt for the AI equities analyst persona
- *     - parseResponse() - Sanitizes and validates the AI's JSON output for application consumption
+ *   const result = await valuationService.analyzeStock('NVDA');
+ * 
+ * Key Functions (Index):
+ *   - analyzeStock(ticker: string, userMessage: string) - Conducts a valuation analysis for a given ticker, checking cache freshness
+ *   - buildPrompt(context: any, userMessage: string) - Constructs the specialized system prompt for the AI equities analyst persona
+ *   - parseResponse(text: string) - Sanitizes and validates the AI's JSON output for application consumption
+ * 
+ * Key Input Dependencies:
+ *   - ./GeminiService (for calling Gemini AI)
+ *   - ./AnalysisContextBuilder (for building stock context)
+ *   - ./ProjectionService (for fetching cached projections)
+ * 
+ * Key Output Dependencies:
+ *   None
  */
 import { geminiService } from './GeminiService';
 import { analysisContextBuilder } from './AnalysisContextBuilder';

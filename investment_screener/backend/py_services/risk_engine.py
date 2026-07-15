@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-risk_engine.py (Python Service)
-=====================================
+risk_engine.py - Python utility script.
 
 Purpose:
     Portfolio-level risk snapshot: correlation matrix, annualized volatility
@@ -12,16 +11,34 @@ Purpose:
     as estimates). Informational only — does not gate any action. See
     docs/superpowers/specs/2026-07-05-risk-engine-design.md.
 
-Layer: Backend / Python Services / Risk
+Layer:
+    Backend / Python Services
 
-Usage:
+Usage Examples:
     python3 risk_engine.py --pretty
     python3 risk_engine.py --benchmark SPY --no-save --pretty
 
-Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Measures Value-at-Risk)
-"""
+Key Functions (Index):
+    - _normalize_weights()
+    - build_returns_matrix()
+    - compute_correlation_matrix()
+    - _weighted_portfolio_returns()
+    - compute_portfolio_vol_beta()
+    - compute_marginal_risk_contribution()
+    - compute_concentration()
+    - compute_cluster_exposure()
+    - compute_stress_replay()
+    - _normal_pdf()
+    - compute_var_cvar()
+    - compute_risk_snapshot()
+    - main()
 
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
+"""
 import argparse
 import json
 import math

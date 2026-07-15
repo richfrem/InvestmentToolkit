@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-ytd_return.py — Performance tracking script for calculating YTD returns.
-========================================================================
+ytd_return.py - Time-weighted rate of return performance tracker.
 
 Purpose:
     Computes both Simple Return and Time-Weighted Rate of Return (TWR) to adjust
@@ -10,15 +9,22 @@ Purpose:
 Layer:
     Codify
 
+Usage Examples:
+    python3 plugins/portfolio-advisor/scripts/ytd_return.py [--json]
+
+Key Functions (Index):
+    - load_json(path) - Loads JSON file from path
+    - calculate_simple_metrics(current_value, cash_flows) - Calculates simple return and dollar gains
+    - calculate_twr_return(initial_value, final_value, subperiod_cash_flows) - Computes subperiod TWR percentage
+    - save_and_print_report(report_data, is_json_mode) - Persists performance metrics to output path
+    - calculate_twr() - Main execution pipeline orchestrator
+
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Live portfolio balances)
     - investment_screener/backend/data/cash_flows.json (Deposit & withdrawal history)
 
-Key Output:
+Key Output Dependencies:
     - investment_screener/backend/data/ytd_performance_report.json (TWR performance metrics)
-
-Usage:
-    python3 plugins/portfolio-advisor/scripts/ytd_return.py [--json]
 """
 
 import json

@@ -1,23 +1,36 @@
 #!/usr/bin/env python3
 """
-QuestradeAPIClient.py (Python Utility)
-=====================================
+QuestradeAPIClient.py - Questrade API HTTP interface client.
 
 Purpose:
     Low-level HTTP client for interacting with the Questrade API. 
     Handles account discovery, position retrieval, and automatic OAuth2 token rotation.
 
-Layer: Backend / Utils / API Client
+Layer:
+    Backend / Utils / API Client
 
 Usage Examples:
     token_manager = QuestradeTokenManager(cache_dir="path/to/cache")
     client = QuestradeAPIClient(token_manager)
     positions = client.get_all_positions()
 
-Key Functions:
-    - get_all_positions() - Discovers all linked accounts and aggregates every holding into a unified list
-    - get_all_balances() - Aggregates cash balances (CAD/USD) across all brokerage accounts
-    - refresh_tokens() - Internal utility for rotating the refresh token via the Questrade OAuth2 endpoint
+Key Functions (Index):
+    - _get_headers() - Loads valid tokens and returns authorization headers
+    - refresh_tokens() - Refreshes OAuth2 tokens using current refresh token
+    - _request() - Executes authenticated API request with automatic token rotation
+    - get_accounts() - Retrieves all accounts associated with the profile
+    - get_positions() - Retrieves current positions for a specific account
+    - get_balances() - Retrieves current cash balances for a specific account
+    - get_all_balances() - Discover all accounts and aggregate all cash balances
+    - get_all_positions() - Discover all accounts and aggregate all positions
+    - search_symbol() - Resolves a ticker string to a Questrade symbolId
+    - place_order() - Submits a buy or sell order to Questrade
+
+Key Input Dependencies:
+    - .QuestradeTokenManager.py (QuestradeTokenManager)
+
+Key Output Dependencies:
+    None
 """
 
 import requests
@@ -26,8 +39,8 @@ from typing import List, Dict, Any, Optional
 from .QuestradeTokenManager import QuestradeTokenManager
 
 class QuestradeAPIClient:
-    """
-    Client for interacting with the Questrade API.
+    """Client for interacting with the Questrade API.
+    
     Handles account discovery, position fetching, and automatic token rotation.
     Implements ADR 015/017/018.
     """

@@ -1,4 +1,9 @@
-"""Grade predictions — E3 weekly grading job.
+#!/usr/bin/env python3
+"""
+grade_predictions.py - Python utility script.
+
+Purpose:
+    Grade predictions — E3 weekly grading job.
 
 Finds every matured, ungraded prediction and appends a grade record based on
 realized ticker return vs. SPY return since the claim's basePrice. Never
@@ -9,6 +14,25 @@ Usage:
 
 Key Input Dependencies:
     - investment_screener/backend/data/daily-briefs/ (Grades prediction records)
+
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    python3 grade_predictions.py [--dry-run]
+
+Key Functions (Index):
+    - find_maturable_predictions()
+    - grade_prediction()
+    - _fetch_current_prices()
+    - run_grading()
+    - main()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
 """
 from __future__ import annotations
 

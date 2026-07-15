@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-system_health.py — Deterministic system integrity check.
+system_health.py - Python utility script.
+
+Purpose:
+    system_health.py — Deterministic system integrity check.
 
 Checks all critical system components and exits 0 if healthy, 1 if degraded.
 
@@ -11,8 +14,33 @@ Usage:
 
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Diagnostics metrics check)
-"""
 
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    python3 investment_screener/backend/py_services/system_health.py
+    python3 investment_screener/backend/py_services/system_health.py --json
+    python3 investment_screener/backend/py_services/system_health.py --quiet   # exit code only
+
+Key Functions (Index):
+    - _check_backend_build()
+    - _check_python_scripts()
+    - _check_portfolio_file()
+    - _check_target_weights()
+    - _check_projections()
+    - _check_cdp()
+    - _check_api_auth()
+    - _check_last_audit()
+    - _check_stale_locks()
+    - main()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
+"""
 import argparse
 import json
 import os

@@ -1,35 +1,32 @@
 /**
- * pine.js — TradingView Pine Script editor automation via CDP
- *
- * Provides inject/read/remove operations on the Pine Editor and Data Window.
- * Functions accept an explicit CDP client for testability; production callers
- * should pass the result of getClient() from connection.js.
- *
- * Inject flow (confirmed via live DOM probing 2026-05-17, TV Desktop):
- *   1. Open Pine Editor via [data-name="pine-dialog-button"]
- *   2. If current tab is read-only (3rd-party script), click "+" in tab bar
- *      to create a blank user-owned tab — this keeps the panel open, unlike
- *      More → New tab which toggles the panel closed.
- *   3. Inject content via executeEdits (fires onDidChangeModelContent so TV
- *      recompiles; setValue() is silent and TV may not recompile).
- *   4. Click "Add to chart" (new/blank tabs never show a save modal).
- *
- * process.exit() is NOT needed here — the CLI router (execute() in router.js)
- * handles exit after awaiting the handler result.
+ * pine.js - TradingView Pine Script editor automation via CDP.
+ * 
+ * Purpose:
+ *   Automates operations inside the Pine Editor pane, enabling injection of custom indicators,
+ *   saving scripts to the user's library, and reading open-source Pine Script source files.
+ * 
+ * Key Input Dependencies:
+ *   None (reads live state from TradingView Desktop on port 9222 via CDP)
+ * 
+ * Key Output Dependencies:
+ *   None (manipulates the user's active TradingView Pine Editor in the browser)
  */
 
 /**
  * Inject a Pine Script into the active TradingView chart.
+ * 
+ * Clicks the Pine Editor dialog tab, adds a new editor workspace if current is read-only,
+ * replaces text content via Monaco editor React fiber controller, and triggers update/add.
  *
- * Args:
- *   client: CDP client instance (from connection.js getClient())
- *   scriptContent: Pine Script v5/v6 source string
- *
- * Returns:
- *   { success: true } on success
- *   { success: false, error: string } on failure
+ * @param {object} client - CDP client instance (from connection.js getClient())
+ * @param {string} scriptContent - Pine Script v5/v6 source code string to compile
+ * @returns {Promise<object>} Status report
  */
 export async function injectPineScript(client, scriptContent) {
+  /**
+   * Asserts editor visibility, checks read-only status and expands tabs if needed,
+   * traverses react fiber elements to extract Monaco instance, and applies executeEdits.
+   */
   try {
     const safeContent = JSON.stringify(scriptContent);
 
@@ -231,16 +228,16 @@ export async function injectPineScript(client, scriptContent) {
 
 /**
  * Read current indicator values from the TradingView Data Window.
- *
- * Args:
- *   client: CDP client instance
- *   indicatorName: display name of the indicator to read values for
- *
- * Returns:
- *   { success: true, data: object } with indicator key/value pairs
- *   { success: false, error: string } on failure
+ * 
+ * @param {object} client - CDP client instance
+ * @param {string} indicatorName - Display name of the indicator to read values for
+ * @returns {Promise<object>} Status report mapping current indicator values
  */
 export async function readIndicatorValues(client, indicatorName) {
+  /**
+   * Evaluates the DOM to query items in the widgetbar-widget-object_tree panel
+   * containing indicator titles and extracts value strings.
+   */
   try {
     const result = await client.Runtime.evaluate({
       expression: `(function() {
@@ -272,16 +269,15 @@ export async function readIndicatorValues(client, indicatorName) {
 
 /**
  * Remove a named custom indicator from the active TradingView chart.
- *
- * Args:
- *   client: CDP client instance
- *   indicatorName: exact display name of the indicator to remove
- *
- * Returns:
- *   { success: true } on success
- *   { success: false, error: string } on failure
+ * 
+ * @param {object} client - CDP client instance
+ * @param {string} indicatorName - Exact display name of the indicator to remove
+ * @returns {Promise<object>} Status report
  */
 export async function removePineScript(client, indicatorName) {
+  /**
+   * Queries legends matching indicator name, clicks its remove/close/delete button.
+   */
   try {
     const safeName = JSON.stringify(indicatorName);
     await client.Runtime.evaluate({
@@ -306,20 +302,20 @@ export async function removePineScript(client, indicatorName) {
 }
 
 /**
- * Save the current Pine Script to TradingView's personal library.
+ * Save the current Pine Script in the editor to TradingView's personal library.
  *
  * Sends Cmd+S / Ctrl+S within the Pine Editor context. Handles the "Save as"
  * naming dialog if the script has never been saved before.
  *
- * Args:
- *   client: CDP client instance
- *   scriptName: display name to save under (used if naming dialog appears)
- *
- * Returns:
- *   { success: true, name: string, action: 'saved' | 'named-and-saved' }
- *   { success: false, error: string }
+ * @param {object} client - CDP client instance
+ * @param {string} scriptName - Display name to save under (used if naming dialog appears)
+ * @returns {Promise<object>} Status report showing the name of saved script and action taken
  */
 export async function savePineToLibrary(client, scriptName) {
+  /**
+   * Asserts editor open state, dispatches Keydown 's' event with meta/ctrl key,
+   * queries naming dialog input, inputs script name, and confirms save.
+   */
   try {
     const safeName = JSON.stringify(String(scriptName || 'Untitled Script').trim());
 
@@ -395,21 +391,20 @@ export async function savePineToLibrary(client, scriptName) {
 }
 
 /**
- * Open an indicator's Pine Script source code in the Pine Editor via the
- * Indicators dialog.  Navigates to the "Top" list (or searches by name),
- * hovers the matching row to expose the "Source code" { } button, clicks it,
- * then reads and returns the full source from the Monaco editor.
+ * Open an indicator's Pine Script source code in the Pine Editor via the Indicators dialog.
+ * 
+ * Navigates to the "Top" list (or searches by name), hovers the matching row to expose the
+ * "Source code" { } button, clicks it, then reads and returns the full source from Monaco.
  *
- * Args:
- *   client: CDP client
- *   name:   Indicator name to search for (partial match).  Pass null / ""
- *           to read whatever is currently open in the Pine Editor.
- *
- * Returns:
- *   { success: true, name: string, source: string, version: string }
- *   { success: false, error: string }
+ * @param {object} client - CDP client instance
+ * @param {string} name - Indicator name to search for (partial match). Pass null/"" to read active script.
+ * @returns {Promise<object>} Status report mapping source string and Pine version
  */
 export async function readSourceFromDialog(client, name) {
+  /**
+   * Opens indicators dialog, clicks 'Top' tab, types indicator name, hovers result,
+   * clicks source button, traverses react fiber to find editor controller, and gets content.
+   */
   try {
     const delay = (ms) => new Promise(r => setTimeout(r, ms));
 

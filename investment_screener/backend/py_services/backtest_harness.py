@@ -1,4 +1,9 @@
-"""Backtest harness — E4 historical simulation and counterfactual analysis.
+#!/usr/bin/env python3
+"""
+backtest_harness.py - Python utility script.
+
+Purpose:
+    Backtest harness — E4 historical simulation and counterfactual analysis.
 
 Simulates portfolio rebalances from historical target snapshots, generates
 execution quality metrics, counterfactual scenarios, and correlates outcomes
@@ -19,6 +24,36 @@ Key Input Dependencies:
     - investment_screener/backend/data/target-portfolio.json
     - yfinance for historical OHLCV data
     - investment_screener/backend/data/predictions.jsonl (E3 correlation)
+
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    from backtest_harness import (
+        extract_historical_targets, fetch_backtest_prices,
+        simulate_rebalance, analyze_execution_quality,
+        generate_timing_counterfactuals, generate_threshold_counterfactuals,
+        generate_backtest_report, correlate_with_prediction_ledger
+    )
+
+Key Functions (Index):
+    - Order()
+    - RebalanceSnapshot()
+    - extract_historical_targets()
+    - fetch_backtest_prices()
+    - simulate_rebalance()
+    - analyze_execution_quality()
+    - generate_timing_counterfactuals()
+    - generate_threshold_counterfactuals()
+    - generate_backtest_report()
+    - correlate_with_prediction_ledger()
+    - main()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
 """
 from __future__ import annotations
 

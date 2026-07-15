@@ -123,7 +123,7 @@ On `Token rotation failed: 400`: tell user token expired, guide to apphub.questr
 
 **26. Custom Pine library**: `plugins/tradingview/assets/pinescript-indicators/ai-ta-levels.pine` (Multi-EMA 21/50/200 + volume bias, saved in TV as "AI TA Levels"). Lint before inject: `python3 .../pine_linter.py <file.pine>`.
 
-**27. Portfolio total validation**: NEVER compute totals from shares×price. Use TV broker `totalEquityUSDCombined`. All pages must read from the same snapshot.
+**27. Portfolio total validation & Exchange Rates**: Compute totals using the formula: `cash value all accounts + sum(portfolio holding price * shares)`. Never convert USD to CAD via external API calls; always infer the exchange rate directly from TradingView's native values (e.g. `totalEquityCADCombined / totalEquityUSDCombined`).
 
 **28. Worktree/subagent isolation**: Full rule + mandatory post-task check → `.agent/rules/worktree-subagent-isolation.md`.
 

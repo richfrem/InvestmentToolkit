@@ -73,6 +73,7 @@
     { "name": "get_orders", "path": "skills/get-orders/SKILL.md", "trigger": "/get-orders" },
     { "name": "ta_daily_sweep", "path": "skills/ta-daily-sweep/SKILL.md", "trigger": "/ta-daily-sweep" },
     { "name": "tv_manage_watchlists", "path": "skills/tv-manage-watchlists/SKILL.md", "trigger": "/tv-watchlist-sync" },
+    { "name": "tv_alert_list", "path": "skills/alert-list/SKILL.md", "trigger": "/tv-alert-list" },
     { "name": "tv_setup", "path": "skills/tv-setup/SKILL.md", "trigger": "/setup-tradingview" }
   ],
   "commands": [
@@ -87,6 +88,7 @@
     { "name": "get-orders", "path": "commands/get-orders.md", "trigger": "/get-orders" },
     { "name": "ta-daily-sweep", "path": "commands/ta-daily-sweep.md", "trigger": "/ta-daily-sweep" },
     { "name": "tv-watchlist-sync", "path": "commands/tv-watchlist-sync.md", "trigger": "/tv-watchlist-sync" },
+    { "name": "tv-alert-list", "path": "commands/tv-alert-list.md", "trigger": "/tv-alert-list" },
     { "name": "setup-tradingview", "path": "commands/setup-tradingview.md", "trigger": "/setup-tradingview" }
   ],
   "external_dependencies": [
