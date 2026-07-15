@@ -1,5 +1,15 @@
 /**
- * watchlist.js — TradingView Watchlist automation via CDP DOM.
+ * watchlist.js - TradingView Watchlist automation via CDP DOM.
+ * 
+ * Purpose:
+ *   Automates TradingView Watchlist operations (create, delete, list, add, and remove symbols)
+ *   by evaluating DOM interactions and dispatches mouse/keyboard events via CDP.
+ * 
+ * Key Input Dependencies:
+ *   None (reads live state from TradingView Desktop on port 9222 via CDP)
+ * 
+ * Key Output Dependencies:
+ *   None (manipulates the user's active TradingView watchlists in the browser)
  */
 
 // Helper to wait
@@ -7,8 +17,16 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 /**
  * Open/select a watchlist by name in the sidebar.
+ * 
+ * @param {object} client Connected CDP client instance
+ * @param {string} name Target watchlist name to open
+ * @returns {Promise<object>} Status report
  */
 export async function openWatchlist(client, name) {
+  /**
+   * Asserts the watchlist side panel is open, clicks the watchlist title selector
+   * dropdown, finds the named list element by matching text, and clicks it.
+   */
   try {
     const safeName = JSON.stringify(name);
     
@@ -92,9 +110,16 @@ export async function openWatchlist(client, name) {
 }
 
 /**
- * Read current watchlist tickers, prices, and change percentages.
+ * Read current watchlist name, symbols, prices, and change percentages.
+ * 
+ * @param {object} client Connected CDP client instance
+ * @returns {Promise<object>} Watchlist payload containing list of symbol objects
  */
 export async function getWatchlist(client) {
+  /**
+   * Scans active symbol rows in the DOM sidebar, parses text content of price,
+   * symbol name, and percentage change elements, returning normalized JSON.
+   */
   try {
     const result = await client.Runtime.evaluate({
       expression: `(function() {
@@ -153,8 +178,17 @@ export async function getWatchlist(client) {
 
 /**
  * Add a symbol to the specified watchlist.
+ * 
+ * @param {object} client Connected CDP client instance
+ * @param {string} watchlistName Name of the watchlist to modify
+ * @param {string} symbol Symbol ticker string to insert
+ * @returns {Promise<object>} Status report
  */
 export async function addWatchlistItem(client, watchlistName, symbol) {
+  /**
+   * Switches to target watchlist, clicks "Add symbol", types the ticker string in
+   * the search input, dispatches an Enter keypress, and closes the modal.
+   */
   try {
     // 1. Switch to the watchlist
     const openRes = await openWatchlist(client, watchlistName);
@@ -224,8 +258,17 @@ export async function addWatchlistItem(client, watchlistName, symbol) {
 
 /**
  * Remove a symbol from the specified watchlist.
+ * 
+ * @param {object} client Connected CDP client instance
+ * @param {string} watchlistName Name of the watchlist to modify
+ * @param {string} symbol Symbol ticker string to remove
+ * @returns {Promise<object>} Status report
  */
 export async function removeWatchlistItem(client, watchlistName, symbol) {
+  /**
+   * Opens the watchlist sidebar, finds the target symbol row element, gets the coordinates
+   * for its "x" remove button, and dispatches left mouse pressed and released CDP events.
+   */
   try {
     const openRes = await openWatchlist(client, watchlistName);
     if (!openRes.success) return openRes;
@@ -272,9 +315,17 @@ export async function removeWatchlistItem(client, watchlistName, symbol) {
 }
 
 /**
- * Create a new watchlist.
+ * Create a new empty watchlist with the specified name.
+ * 
+ * @param {object} client Connected CDP client instance
+ * @param {string} name Watchlist name to create
+ * @returns {Promise<object>} Status report
  */
 export async function createWatchlist(client, name) {
+  /**
+   * Asserts watchlist sidebar panel is open, clicks the watchlist dropdown, finds and
+   * clicks the "Create new list..." button, inputs the name string, and submits.
+   */
   try {
     // 1. Ensure Watchlist/Detail side panel is active.
     await client.Runtime.evaluate({
@@ -357,9 +408,18 @@ export async function createWatchlist(client, name) {
 }
 
 /**
- * Delete a watchlist.
+ * Delete an existing watchlist by name.
+ * 
+ * @param {object} client Connected CDP client instance
+ * @param {string} name Watchlist name to delete
+ * @returns {Promise<object>} Status report
  */
 export async function deleteWatchlist(client, name) {
+  /**
+   * Asserts watchlist sidebar panel is open, clicks the dropdown, clicks "Open list...",
+   * finds the named watchlist row in the dialog list, clicks the trash button,
+   * and confirms the delete dialog action.
+   */
   try {
     const safeName = JSON.stringify(name);
 

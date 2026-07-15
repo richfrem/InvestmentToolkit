@@ -111,6 +111,8 @@ try {
         marketValueUSDCombined: t.grandMarketValueUSD,
         totalEquityUSD:         t.grandTotalUSD,
         totalEquityUSDCombined: t.grandTotalUSD,
+        totalEquityCAD:         t.grandTotalCAD,
+        totalEquityCADCombined: t.grandTotalCAD,
         _perAccount:            t.accounts,
         timestamp:              t.timestamp,
     };

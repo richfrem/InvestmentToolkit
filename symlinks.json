@@ -434,6 +434,24 @@
       "description": "ADR-003: alert-sync skill scripts/ symlink \u2192 plugin root scripts/"
     },
     {
+      "src": "plugins/tradingview/scripts/tv_list_alerts.py",
+      "dst": "plugins/tradingview/skills/alert-list/scripts/tv_list_alerts.py",
+      "strategy": "symlink",
+      "description": "ADR-003: alert-list skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_health_check.py",
+      "dst": "plugins/tradingview/skills/alert-list/scripts/tv_health_check.py",
+      "strategy": "symlink",
+      "description": "ADR-003: alert-list skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_launch.py",
+      "dst": "plugins/tradingview/skills/alert-list/scripts/tv_launch.py",
+      "strategy": "symlink",
+      "description": "ADR-003: alert-list skill scripts/ symlink \u2192 plugin root scripts/"
+    },
+    {
       "src": "plugins/tradingview/scripts/tv_health_check.py",
       "dst": "plugins/tradingview/skills/chart-snapshot/scripts/tv_health_check.py",
       "strategy": "symlink",

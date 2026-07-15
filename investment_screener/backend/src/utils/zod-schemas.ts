@@ -1,3 +1,35 @@
+/**
+ * zod-schemas.ts - Shared Zod validation schemas and type inferences.
+ * 
+ * Purpose:
+ *   Validates and parses JSON files (e.g. portfolio.json, target-portfolio.json,
+ *   projections, account policy, health checks) to ensure structure integrity
+ *   across frontend, backend, and agent plugins.
+ * 
+ * Key Input Dependencies:
+ *   None
+ * 
+ * Key Output Dependencies:
+ *   None
+ * 
+ * Schema & Type Index:
+ *   - PriceTierSchema / PriceTier
+ *   - StopLossSchema / StopLoss
+ *   - PriceLevelsSchema / PriceLevels
+ *   - PriceLevelSnapshotSchema / PriceLevelSnapshot
+ *   - ScenarioSchema
+ *   - SnapshotSchema
+ *   - ProjectionSchema / Projection
+ *   - ThesisHoldingSchema / ThesisHolding
+ *   - PortfolioHoldingSchema / PortfolioHolding
+ *   - ThesisPillarSchema / ThesisPillar
+ *   - ThesisSchema / Thesis
+ *   - AccountPolicySchema / AccountPolicy
+ *   - DriftEntrySchema / DriftEntry
+ *   - HoldingHealthSchema / HoldingHealth
+ *   - HealthCheckSchema / HealthCheck
+ */
+
 import { z } from 'zod';
 
 // === PRICE LEVEL SCHEMAS ===

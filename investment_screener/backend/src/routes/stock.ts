@@ -1,14 +1,27 @@
 /**
- * src/routes/stock.ts
- * ===================
- *
+ * stock.ts - Express routing for individual stock/ETF metrics and search.
+ * 
  * Purpose:
  *   Handles Express API routes for looking up stocks, fetching real-time financial metrics,
  *   running valuations, and obtaining ETF allocation details.
- *
- * Key Functions:
+ * 
+ * Layer:
+ *   Backend / Routes / Stock
+ * 
+ * Routes Index:
  *   - GET /stock/lookup - Builds search dictionaries for tickers
- *   - GET /stock/metrics/:ticker - Fetches financial metrics via python bridge
+ *   - GET /stock/:ticker - Fetches financial metrics or ETF profile details
+ *   - POST /portfolio-heatmap - Fetches aggregated heatmap data for portfolio positions
+ *   - GET /market/quotes - Batch quote (bid/ask/price/change) for a comma-separated list of tickers
+ * 
+ * Key Input Dependencies:
+ *   - investment_screener/backend/data/theses/target-portfolio.json
+ *   - investment_screener/backend/data/etf_analysis/ (contains processed ETF JSON results)
+ *   - investment_screener/backend/data/portfolio.json
+ *   - ../services/bridge (for fetch_financials.py, fetch_portfolio_heatmap.py, and fetch_quotes.py)
+ * 
+ * Key Output Dependencies:
+ *   None
  */
 
 import express from 'express';

@@ -1,5 +1,9 @@
+#!/usr/bin/env python3
 """
-ticker_aliases.py — Canonical ticker normalization and special-symbol definitions.
+ticker_aliases.py - Python utility script.
+
+Purpose:
+    ticker_aliases.py — Canonical ticker normalization and special-symbol definitions.
 
 Single source of truth for:
   - Ticker aliases (e.g. PSU.U → PSU-U.TO from the Questrade broker format)
@@ -9,8 +13,23 @@ Import this module instead of scattering inline `if ticker == "USD_CASH"` checks
 
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Maps ticker synonyms)
-"""
 
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    TBD
+
+Key Functions (Index):
+    - normalize_ticker()
+    - is_cash()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
+"""
 # Questrade returns "PSU.U" without the exchange suffix; normalize to the TSX symbol.
 # Add entries here when a new broker alias is discovered.
 TICKER_ALIASES: dict[str, str] = {

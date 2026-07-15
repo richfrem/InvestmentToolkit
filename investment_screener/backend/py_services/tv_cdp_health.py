@@ -1,5 +1,9 @@
+#!/usr/bin/env python3
 """
-TV CDP Health Check Module
+tv_cdp_health.py - Python utility script.
+
+Purpose:
+    TV CDP Health Check Module
 
 Provides health_check() function to verify TradingView CDP engine status.
 Returns structured health status including port connectivity, chart responsiveness,
@@ -8,8 +12,26 @@ and Chrome version information.
 Key Input Dependencies:
     - TradingView CDP engine running on localhost:9222
     - tv_client.py for CDP communication
-"""
 
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    TBD
+
+Key Functions (Index):
+    - HealthCheckResult()
+    - health_check()
+    - _check_port_open()
+    - _get_chrome_version()
+    - _check_chart_responsive()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
+"""
 import json
 import socket
 import urllib.request

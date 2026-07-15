@@ -1,18 +1,26 @@
 /**
- * bridge.ts (TypeScript Service)
- * =====================================
- *
+ * bridge.ts - Express to Python analytical script bridge.
+ * 
  * Purpose:
- *     Execution bridge for spawning and managing Python processes from the Node.js backend.
- *     Handles script location resolution, timeout management, and JSON output parsing.
- *
- * Layer: Backend / Services / Bridge
- *
+ *   Execution bridge for spawning and managing Python processes from the Node.js backend.
+ *   Handles script location resolution, timeout management, and JSON output parsing.
+ * 
+ * Layer:
+ *   Backend / Services / Bridge
+ * 
  * Usage Examples:
- *     const data = await spawnPythonScript('fetch_financials.py', ['AAPL']);
- *
- * Key Functions:
- *     - spawnPythonScript() - Spawns a child process for a given Python script and returns parsed JSON results or handles timeouts/errors
+ *   const data = await spawnPythonScript('fetch_financials.py', ['AAPL']);
+ * 
+ * Key Functions (Index):
+ *   - _cacheKey(scriptName, args) - Generates a cache key for deduplication
+ *   - spawnPythonScript(scriptName, args) - Deduplicated entry point for running a Python analytical script
+ *   - _spawnRaw(scriptName, args) - Spawns a child process for a given Python script, returning parsed JSON
+ * 
+ * Key Input Dependencies:
+ *   - investment_screener/backend/py_services/ (location of executable Python scripts)
+ * 
+ * Key Output Dependencies:
+ *   None
  */
 import { spawn } from 'child_process';
 import path from 'path';

@@ -1,18 +1,16 @@
 /**
- * trading.js — TradingView broker order automation via CDP DOM
- *
- * Automates order placement through TradingView's built-in broker integration
- * (Questrade connected via TradingView's native broker panel). Uses CDP to:
- *   1. Verify Questrade is connected and user is authenticated
- *   2. Read buying power and available accounts from the broker panel DOM
- *   3. Open the floating order dialog by clicking the chart Buy/Sell overlay
- *   4. Fill shares, order type, limit price via React-safe input injection
- *   5. Screenshot the filled form for HITL review
- *   6. Click the submit button on confirmation
- *
- * Architecture note: TradingView's order dialog is triggered by clicking the
- * bid/ask price overlay buttons on the left of the chart (not the bottom panel).
- * These appear when a broker is connected and a chart is open.
+ * trading.js - TradingView broker order automation via CDP DOM.
+ * 
+ * Purpose:
+ *   Automates order placement, cancellation, modification, and list actions through
+ *   TradingView's native connected brokerage panel (Questrade connected via TV panel) via CDP.
+ * 
+ * Key Input Dependencies:
+ *   None (reads live state from TradingView Desktop on port 9222 via CDP)
+ * 
+ * Key Output Dependencies:
+ *   - PortfolioAnalysis/screenshots/ (stores generated png screenshots of orders review)
+ *   - plugins/tradingview/audit/ (appends order events to daily JSONL audit logs)
  */
 
 import { evaluate, evaluateAsync, getClient } from '../connection.js';
@@ -22,13 +20,19 @@ import { appendAuditEvent } from './audit.js';
 // ── symbol switching ──────────────────────────────────────────────────────────
 
 /**
- * switchChartSymbol(ticker) — navigates the active TradingView chart to the
- * specified ticker before opening the order dialog. The order dialog always
- * opens for whatever symbol is currently displayed on the chart, so this must
- * run before openOrderDialog(). Uses CDP Input events to type into TV's symbol
- * search and confirm with Enter.
+ * Change the active chart ticker symbol.
+ * 
+ * Clicks the symbol title overlay, types characters using keyboard events,
+ * and submits with Enter.
+ * 
+ * @param {string} ticker - Target symbol ticker name (e.g. "AAPL")
+ * @returns {Promise<object>} Status report
  */
 export async function switchChartSymbol(ticker) {
+  /**
+   * Asserts whether active title already matches ticker, clicks legends source title
+   * elements if not, types keys sequentially via Input.dispatchKeyEvent, and clicks Enter.
+   */
   const client = await getClient();
   const tickerUpper = ticker.toUpperCase();
 
@@ -108,9 +112,16 @@ export async function switchChartSymbol(ticker) {
 
 const REACT_INPUT_SETTER = `Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set`;
 
-// ── broker status ────────────────────────────────────────────────────────────
-
+/**
+ * Get active connection status and details of the connected broker.
+ * 
+ * @returns {Promise<object>} Status metrics payload including connected status, type and CAD/USD buying power
+ */
 export async function getBrokerStatus() {
+  /**
+   * Evaluates browser DOM to locate Questrade SVG indicators, parse Cash/TFSA account dropdowns,
+   * and read raw text nodes to match CAD/USD buying power levels.
+   */
   return evaluate(`(function() {
     var questradeSvg = [...document.querySelectorAll('img')].find(function(i) {
       return /questrade/i.test(i.src);
@@ -145,9 +156,17 @@ export async function getBrokerStatus() {
   })()`).then(JSON.parse);
 }
 
-// ── account selection ────────────────────────────────────────────────────────
-
+/**
+ * Select the specified account type in the broker panel dropdown.
+ * 
+ * @param {string} targetType Name of the target account type (e.g. TFSA)
+ * @returns {Promise<object>} Status report showing the selected account
+ */
 export async function selectAccount(targetType) {
+  /**
+   * Clicks dropdown button, queries options lists for matching name prefix,
+   * dispatches real mouse event sequence to select it, and waits 300ms.
+   */
   // Click the account dropdown button — must be the one showing TFSA/RRSP/Cash,
   // not the broker selector. Use same heuristic as getBrokerStatus.
   const opened = await evaluate(`(function() {
@@ -197,9 +216,17 @@ export async function selectAccount(targetType) {
   return selected;
 }
 
-// ── open order dialog ────────────────────────────────────────────────────────
-
+/**
+ * Trigger the floating buy/sell order entry dialog.
+ * 
+ * @param {string} action Action command ('buy', 'sell')
+ * @returns {Promise<object>} Status report showing evaluation method and click target
+ */
 export async function openOrderDialog(action) {
+  /**
+   * Checks if dialog is already open, queries buy/sell overlay button classes,
+   * and dispatches a click event to trigger the dialog panel.
+   */
   // If the dialog is already open, skip trying to click the overlay button
   const state = await getOrderDialogState();
   if (state.open) {
@@ -253,9 +280,16 @@ export async function openOrderDialog(action) {
   return result;
 }
 
-// ── verify order dialog is open ──────────────────────────────────────────────
-
+/**
+ * Query structural properties and input values of the active order dialog.
+ * 
+ * @returns {Promise<object>} Order dialog details including open status, inputs list, active tabs
+ */
 export async function getOrderDialogState() {
+  /**
+   * Checks structural dialog elements, retrieves active tabs, reads input value/placeholder
+   * attributes, parses ticker header name, and matches submit buttons.
+   */
   return evaluate(`(function() {
     // Find the floating order dialog
     // It has a ticker header, Sell/Buy toggle, and order type tabs
@@ -312,9 +346,16 @@ export async function getOrderDialogState() {
   })()`).then(JSON.parse);
 }
 
-// ── select order type tab ────────────────────────────────────────────────────
-
+/**
+ * Select the order type tab in the order dialog.
+ * 
+ * @param {string} orderType Target type tab name ('Market', 'Limit', 'Stop', 'Stop Limit')
+ * @returns {Promise<object>} Status report containing the selected tab name
+ */
 export async function selectOrderType(orderType) {
+  /**
+   * Queries list of tab buttons, clicks the element matching order type, and sleeps 200ms.
+   */
   // orderType: 'Market' | 'Limit' | 'Stop' | 'Stop Limit'
   const result = await evaluate(`(function() {
     var target = ${JSON.stringify(orderType)};
@@ -331,9 +372,17 @@ export async function selectOrderType(orderType) {
   return result;
 }
 
-// ── set shares ───────────────────────────────────────────────────────────────
-
+/**
+ * Fill quantity field inside the order dialog.
+ * 
+ * @param {number|string} shares Number of shares to input
+ * @returns {Promise<object>} Status report showing the value set and input descriptor
+ */
 export async function setShares(shares) {
+  /**
+   * Focuses and selects the shares input element, uses React property descriptor setters
+   * to set value safely, and dispatches input/change bubbles events.
+   */
   const result = await evaluate(`(function() {
     var val = ${JSON.stringify(String(shares))};
     var setter = ${REACT_INPUT_SETTER};
@@ -384,9 +433,17 @@ export async function setShares(shares) {
   return result;
 }
 
-// ── set limit price ──────────────────────────────────────────────────────────
-
+/**
+ * Fill limit price field inside the order dialog.
+ * 
+ * @param {number|string} price Limit price target level
+ * @returns {Promise<object>} Status report showing the value set and input descriptor
+ */
 export async function setLimitPrice(price) {
+  /**
+   * Resolves price input inside dialog, injects target price string using React value setters,
+   * and dispatches DOM input/change events.
+   */
   const result = await evaluate(`(function() {
     var val = ${JSON.stringify(String(price))};
     var setter = ${REACT_INPUT_SETTER};
@@ -428,9 +485,16 @@ export async function setLimitPrice(price) {
   return result;
 }
 
-// ── set Good Till Cancelled duration ─────────────────────────────────────────
-
+/**
+ * Set order duration TIF to Good till cancelled.
+ * 
+ * @returns {Promise<object>} Status report containing click results
+ */
 export async function setGoodTillCancelled() {
+  /**
+   * Clicks 'Extra settings' toggle button if closed, clicks TIF dropdown value cell,
+   * finds and clicks the 'Good till cancelled' option span, and sleeps 300ms.
+   */
   // TV order form has an "Extra settings" collapsible section containing a
   // "Time in force" dropdown (default: Day). Steps:
   //   1. Expand "Extra settings" if collapsed
@@ -497,9 +561,16 @@ export async function setGoodTillCancelled() {
   return { open: openResult, select: selectResult };
 }
 
-// ── submit order ─────────────────────────────────────────────────────────────
-
+/**
+ * Submit the active order form by clicking the primary buy/sell button.
+ * 
+ * @returns {Promise<object>} Status report showing the click result and secondary confirmations
+ */
 export async function submitOrder() {
+  /**
+   * Clicks the primary transaction button, polls for the secondary confirmation popover dialog,
+   * clicks 'Confirm/Place Order/Yes', and returns confirmation outcome.
+   */
   // Step 1: click the primary "Buy N TICKER MARKET" button
   const result = await evaluate(`(function() {
     var submitBtn = [...document.querySelectorAll('button')].find(function(b) {
@@ -545,9 +616,15 @@ export async function submitOrder() {
   return result;
 }
 
-// ── close order dialog ────────────────────────────────────────────────────────
-
+/**
+ * Close the floating order dialog.
+ * 
+ * @returns {Promise<object>} Close status detailing method used ('close-button', 'escape')
+ */
 export async function closeOrderDialog() {
+  /**
+   * Locates buttons containing cancel/close aria-labels, clicks it, or dispatches Escape on fallback.
+   */
   return evaluate(`(function() {
     var closeBtn = [...document.querySelectorAll('button, [role="button"]')].find(function(b) {
       var al = b.getAttribute('aria-label') || '';
@@ -564,14 +641,19 @@ export async function closeOrderDialog() {
   })()`).then(JSON.parse);
 }
 
-// ── pre-submission form verification ─────────────────────────────────────────
-
 /**
- * verifyOrderForm() — reads the dialog state after filling and compares to intended values.
- * Throws if shares is unreadable or mismatched; warns if limit price deviates by >$0.01.
- * Call after setShares/setLimitPrice, before screenshot.
+ * Verify form fields inside the order dialog match intended transaction values.
+ * 
+ * @param {object} params Object containing expected metrics
+ * @param {number} params.intendedShares Expected quantity of shares
+ * @param {number|null} params.intendedLimitPrice Expected limit price level
+ * @returns {Promise<object>} Active dialog state report
  */
 export async function verifyOrderForm({ intendedShares, intendedLimitPrice = null } = {}) {
+  /**
+   * Matches shares/price input values against intended parameters. Logs mismatch audit
+   * events and throws on validation errors.
+   */
   const state = await getOrderDialogState();
   if (!state.open) {
     appendAuditEvent('FORM_MISMATCH_ABORTED', { reason: 'Order dialog closed unexpectedly during form fill.' });
@@ -613,13 +695,23 @@ export async function verifyOrderForm({ intendedShares, intendedLimitPrice = nul
   return state;
 }
 
-// ── full order flow ───────────────────────────────────────────────────────────
-
 /**
- * preflight() — checks broker connection, account, and buying power.
- * Does NOT open any dialog. Returns a confirmation card.
+ * Verify account cash balances and margins before launching order dialogs.
+ * 
+ * @param {object} params Parameter configuration
+ * @param {string} params.ticker Target asset ticker symbol
+ * @param {string} params.action Transaction type ('buy', 'sell')
+ * @param {number} params.shares Number of shares
+ * @param {string} params.orderType Order structure tab name
+ * @param {number|null} params.limitPrice Target pricing level
+ * @param {string} params.accountType Target account name (e.g. TFSA)
+ * @returns {Promise<object>} Confirmation report details card
  */
 export async function preflight({ ticker, action, shares, orderType, limitPrice, accountType }) {
+  /**
+   * Resolves connected broker status, maps currency CAD/USD by symbol suffix,
+   * derives cost estimate, validates buying power sufficiency, and logs auditing markers.
+   */
   appendAuditEvent('ORDER_REQUESTED', { ticker, action, shares, orderType, limitPrice, accountType });
 
   const status = await getBrokerStatus();
@@ -673,10 +765,22 @@ export async function preflight({ ticker, action, shares, orderType, limitPrice,
 }
 
 /**
- * executeOrder() — switches chart to ticker, opens dialog, fills form, screenshots.
- * Returns { screenshot, submitText, status }.
+ * Execute order form injection, verification, and review screenshot sequence.
+ * 
+ * @param {object} params Transaction settings
+ * @param {string} params.ticker Symbol ticker name
+ * @param {string} params.action Transaction side ('buy', 'sell')
+ * @param {number} params.shares Quantity of shares
+ * @param {string} params.orderType Order structure tab type
+ * @param {number|null} params.limitPrice Pricing limit level
+ * @param {string} params.accountType Target account label (e.g. RRSP)
+ * @returns {Promise<object>} Dialog details with screenshot path and submit text
  */
 export async function executeOrder({ ticker, action, shares, orderType, limitPrice, accountType }) {
+  /**
+   * Closes any open dialogs, switches active symbol, selects target account, triggers dialog,
+   * configures type, inputs shares and price, checks GTC, verifies form, captures screenshot, and logs.
+   */
   // Ensure any existing order dialog is closed first to guarantee a clean state
   // and prevent stale accounts from leaking between orders
   await closeOrderDialog().catch(() => {});
@@ -759,11 +863,19 @@ export async function executeOrder({ ticker, action, shares, orderType, limitPri
 }
 
 /**
- * verifyOrderInBrokerPanel() — reads the Questrade Orders panel in TradingView
- * after submission to confirm the order appears. Navigates to the Orders tab,
- * clicks the Inactive/Working sub-tab, and searches for the most recent matching row.
+ * Audit Questrade Orders tab to verify order submission registered.
+ * 
+ * @param {object} params Verification parameters
+ * @param {string} params.ticker Target symbol name
+ * @param {string} params.action Transaction side
+ * @param {number|null} params.limitPrice pricing limit level
+ * @returns {Promise<object>} Verification details containing best match row details
  */
 export async function verifyOrderInBrokerPanel({ ticker, action, limitPrice } = {}) {
+  /**
+   * Clicks 'Orders' tab, clicks 'Inactive/Working' sub-tabs, parses transaction rows,
+   * matches symbol name, side, and price thresholds, and returns row details.
+   */
   // Navigate to the Orders tab in the broker panel
   await evaluate(`(function() {
     var tabs = [...document.querySelectorAll('[role="tab"], button')].filter(function(b) {
@@ -820,10 +932,19 @@ export async function verifyOrderInBrokerPanel({ ticker, action, limitPrice } = 
 }
 
 /**
- * confirmAndSubmit() — clicks the submit button after HITL approval,
- * then reads the broker panel to confirm the order was registered.
+ * Trigger order submission and execute verification loop inside broker panel.
+ * 
+ * @param {object} params Verification parameters
+ * @param {string} params.ticker Target symbol name
+ * @param {string} params.action Transaction side
+ * @param {number|null} params.limitPrice pricing limit level
+ * @returns {Promise<object>} Status report
  */
 export async function confirmAndSubmit({ ticker, action, limitPrice } = {}) {
+  /**
+   * Submits form inputs, logs confirmed submit event, waits 1.5s for broker update,
+   * calls verifyOrderInBrokerPanel, and writes audit trail markers.
+   */
   appendAuditEvent('USER_CONFIRMED_SUBMIT', {});
   const result = await submitOrder();
   appendAuditEvent('ORDER_SUBMITTED', { clicked: result.clicked, secondaryConfirm: result.secondaryConfirm ?? null });
@@ -857,9 +978,20 @@ export async function confirmAndSubmit({ ticker, action, limitPrice } = {}) {
  * button. Handles a secondary confirmation dialog if TV shows one.
  * Returns { cancelled, verified, orderId, ticker, reason }.
  */
-// Shared helper: find an order row and click its cancel (×) or edit (✏) button.
-// Returns the CDP evaluate result JSON.
+/**
+ * Locate a specific order row and click its action button.
+ * 
+ * @param {object} params Target parameters
+ * @param {string} params.orderId Order UUID string
+ * @param {string} params.ticker Symbol ticker name
+ * @param {number} params.buttonIndex Button slot offset (-1 = cancel, -2 = edit)
+ * @returns {Promise<object>} Status report
+ */
 async function _findOrderRowAndAct({ orderId, ticker, buttonIndex }) {
+  /**
+   * Filters row table elements matching the target order UUID or symbol name,
+   * locates target action button index, and click it.
+   */
   return evaluate(`(function() {
     var targetId = ${JSON.stringify(orderId || '')};
     var tickerUp = ${JSON.stringify((ticker || '').toUpperCase())};
@@ -897,7 +1029,21 @@ async function _findOrderRowAndAct({ orderId, ticker, buttonIndex }) {
   })()`).then(JSON.parse);
 }
 
+/**
+ * Locate and request cancellation of a specific order.
+ * 
+ * @param {object} params Target parameters
+ * @param {string} params.orderId Order UUID string
+ * @param {string} params.ticker Symbol ticker name
+ * @param {string} params.action Transaction side
+ * @param {number|null} params.limitPrice pricing limit level
+ * @returns {Promise<object>} Cancellation outcome verification details
+ */
 export async function cancelOrder({ orderId, ticker, action, limitPrice } = {}) {
+  /**
+   * Attempts to click cancel button without navigation, falls back to clicking Orders tab
+   * and Inactive/Working, dispatches cancel clicks, polls confirm modal, and verifies disappearance.
+   */
   // Strategy 1: find the row directly without navigating tabs.
   // Rows may already be visible if the broker panel is open.
   // Navigating to "Orders" tab can TOGGLE the panel closed — so try without first.
@@ -978,7 +1124,22 @@ export async function cancelOrder({ orderId, ticker, action, limitPrice } = {}) 
  * React-safe input injection, and screenshots the filled edit form.
  * Caller must invoke submitModify() to confirm the change.
  */
+/**
+ * Load edit form workspace for an active order and inject modified params.
+ * 
+ * @param {object} params Modification parameters
+ * @param {string} params.orderId Order UUID string
+ * @param {string} params.ticker Symbol ticker name
+ * @param {string} params.action Transaction side
+ * @param {number|null} params.newLimitPrice New price target
+ * @param {number|null} params.newShares New quantity
+ * @returns {Promise<object>} Modification details with review screenshot path
+ */
 export async function modifyOrder({ orderId, ticker, action, newLimitPrice, newShares } = {}) {
+  /**
+   * Clicks edit pencil icon, captures initial form state, focuses price/qty inputs,
+   * inputs new values via insertText, and takes a full review screenshot.
+   */
   // Strategy 1: find row directly without nav (same fix as cancelOrder)
   let clickResult = await _findOrderRowAndAct({ orderId, ticker, buttonIndex: -2 });
 
@@ -1083,7 +1244,21 @@ export async function modifyOrder({ orderId, ticker, action, newLimitPrice, newS
  * TV reuses the same order dialog for modifications; the button patterns are
  * the same as submitOrder() but also matches "Save", "Modify", "Apply".
  */
+/**
+ * Submit limit/qty changes on the active modified order.
+ * 
+ * @param {object} params Verification parameters
+ * @param {string} params.ticker Symbol name
+ * @param {string} params.action Transaction side
+ * @param {number|null} params.limitPrice pricing limit level
+ * @param {number|null} params.newPrice New price level fallback
+ * @returns {Promise<object>} Status report
+ */
 export async function submitModify({ ticker, action, limitPrice, newPrice } = {}) {
+  /**
+   * Resolves submit/apply modify buttons, confirms sub-dialogs, waits 1.5s,
+   * verify changes inside Orders panel, and appends audit logs.
+   */
   // Support both newPrice and limitPrice parameters for backward compatibility
   if (limitPrice === undefined && newPrice !== undefined) {
     limitPrice = newPrice;
@@ -1150,7 +1325,16 @@ export async function submitModify({ ticker, action, limitPrice, newPrice } = {}
  * Returns: { found: true, orders: [{orderId, ticker, side, limitPrice, status, text}] }
  *       or { found: false, error: string }
  */
+/**
+ * List all active/inactive open orders listed in the broker panel.
+ * 
+ * @returns {Promise<object>} Status report containing orders list
+ */
 export async function listOpenOrders() {
+  /**
+   * Clicks Orders tab, traverses Working and Inactive rows sequentially,
+   * parses symbol, side, limitPrice, and orderId columns, and aggregates results.
+   */
   // Click the Orders tab in the broker panel
   await evaluate(`(function() {
     var tabs = [...document.querySelectorAll('[role="tab"], button')].filter(function(b) {
@@ -1204,7 +1388,16 @@ export async function listOpenOrders() {
 }
 
 /** sniffDropdownOptions — opens TIF dropdown and reads all option texts (for diagnostics) */
+/**
+ * Sniff options list inside TIF dropdown menu for diagnostics.
+ * 
+ * @returns {Promise<string[]>} List of TIF options strings
+ */
 export async function sniffDropdownOptions() {
+  /**
+   * Clicks TIF value dropdown, queries DOM for visible short text nodes,
+   * and returns unique strings containing Day/GTC indicators.
+   */
   // First click the Day button to open the dropdown
   await evaluate(`(function() {
     var tifLabel = [...document.querySelectorAll('*')].find(function(el) {
@@ -1235,7 +1428,15 @@ export async function sniffDropdownOptions() {
 }
 
 /** clickDayAndSnapshot — diagnostic: clicks the Day TIF button, screenshots the open menu */
+/**
+ * Click Day TIF button and capture diagnostic screenshot of open menu list.
+ * 
+ * @returns {Promise<object>} Diagnostics result containing click output and screenshot path
+ */
 export async function clickDayAndSnapshot() {
+  /**
+   * Clicks TIF Day button element, sleeps 600ms, and captures full window screenshot.
+   */
   const clickResult = await evaluate(`(function() {
     var tifLabel = [...document.querySelectorAll('*')].find(function(el) {
       return el.offsetParent !== null && /^time.in.force$/i.test(el.textContent.trim());

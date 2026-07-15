@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-dcf_scenarios.py (Python Service)
-=====================================
+dcf_scenarios.py - Discounted Cash Flow scenario calculator.
 
 Purpose:
     Canonical calculation engine for 5-year Discounted Cash Flow (DCF) scenario valuations.
     Supports bear, base, and bull scenarios with probability weighting and structural validation.
 
-Layer: Backend / Python Services / Valuation Math
+Layer:
+    Backend / Python Services / Valuation Math
 
 Usage Examples:
     # With raw financial data file + inline scenario JSON
@@ -19,13 +19,19 @@ Usage Examples:
     # Pipe scenarios via stdin
     echo '<scenarios_json>' | python3 dcf_scenarios.py --raw AAPL_raw.json --scenarios -
 
-Key Functions:
-    - compute_scenario() - Calculates all derived 5-year values (EPS, Undiscounted Price, PV) for a single scenario
-    - validate_scenarios() - Enforces ordering constraints and probability weight sums to ensure model integrity
-    - run() - Primary orchestrator that merges scenario outputs into a single weighted fair value and determines the recommended action
+Key Functions (Index):
+    - compute_scenario(base_revenue, base_shares, discount_rate, horizon, params) - Compute all derived values for one scenario
+    - validate_scenarios(results) - Validate ordering and weight constraints
+    - run(ticker, base_revenue, base_shares, scenario_params, discount_rate, horizon, price) - Main calculation entry point
+    - load_raw_json(path) - Extract ticker, revenue, shares, price from fetch_financials output
+    - _resolve_discount_rate(explicit_rate, wacc_file) - Resolve discount-rate from inputs
+    - main() - Main CLI entry point
 
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Internal state database)
+
+Key Output Dependencies:
+    None
 """
 
 import argparse

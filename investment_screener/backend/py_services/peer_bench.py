@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-peer_bench.py (Python Service)
-=====================================
+peer_bench.py - Python utility script.
 
 Purpose:
     Automates the framework doc's Phase-2 "Peer Benchmarking" table: for
@@ -10,19 +9,23 @@ Purpose:
     rank. Reuses framework_score.compute_raw_metrics() as the single source
     of truth for every metric formula — never re-derives them.
 
-Layer: Backend / Python Services / Valuation Math
+Layer:
+    Backend / Python Services
 
-Usage:
+Usage Examples:
     python3 peer_bench.py --ticker NVDA --peers AMD,AVGO,QCOM --sector chips_ai \
         --projections-dir investment_screener/backend/data/projections --pretty
 
-Key Functions:
-    - compute_peer_benchmark() - Primary orchestrator: target + peer raw metrics -> benchmarking table
+Key Functions (Index):
+    - compute_peer_benchmark()
+    - main()
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Benchmarks holdings performance)
-"""
+    None
 
+Key Output Dependencies:
+    None
+"""
 import argparse
 import json
 import statistics

@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-verify_portfolio_total.py — Audit script: TV live account totals vs our computed total.
+verify_portfolio_total.py - Python utility script.
+
+Purpose:
+    verify_portfolio_total.py — Audit script: TV live account totals vs our computed total.
 
 Fetches Total Equity USD from every TradingView account via CDP (live, authoritative),
 then computes what our single portfolio database (portfolio.json) says, and shows the diff.
@@ -14,8 +17,26 @@ Usage:
 
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Audits equity sum verification)
-"""
 
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    python3 verify_portfolio_total.py            # live TV + stored prices
+    python3 verify_portfolio_total.py --live     # live TV + live yfinance prices
+
+Key Functions (Index):
+    - get_tv_totals_live()
+    - get_tv_totals_cached()
+    - compute_our_total()
+    - main()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
+"""
 import sys
 import json
 import argparse

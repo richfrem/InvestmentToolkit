@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-extract_portfolio_symbols.py - Extracts stock symbols from portfolio Excel file.
+extract_portfolio_symbols.py - Python utility script.
+
+Purpose:
+    extract_portfolio_symbols.py - Extracts stock symbols from portfolio Excel file.
 
 Reads from temp/stocks.xlsx, table TABLE_PORTFOLIO_SUMMARY, extracts stock symbols 
 from the 2nd column, and outputs to a JSON file.
@@ -10,8 +13,23 @@ Usage:
 
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Extracts active tickers)
-"""
 
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    python3 investment_screener/backend/py_services/extract_portfolio_symbols.py
+
+Key Functions (Index):
+    - extract_symbols()
+    - main()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
+"""
 import json
 import pandas as pd
 from pathlib import Path

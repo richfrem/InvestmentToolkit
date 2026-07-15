@@ -1,4 +1,9 @@
-"""Actionable recommendation builder for the Daily Brief.
+#!/usr/bin/env python3
+"""
+brief_recommendations.py - Python utility script.
+
+Purpose:
+    Actionable recommendation builder for the Daily Brief.
 
 Converts conviction scores + standing decisions + macro gate + earnings flags
 into per-ticker recommendation cards: action, plain-language rationale, and a
@@ -16,6 +21,24 @@ Usage (library only — wired into daily_brief.py):
 
 Key Input Dependencies:
     - investment_screener/backend/data/daily-briefs/ (Reads conviction data)
+
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    TBD
+
+Key Functions (Index):
+    - load_standing_decisions()
+    - _signal_summary()
+    - _earnings_note()
+    - build_recommendations()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
 """
 from __future__ import annotations
 

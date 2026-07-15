@@ -48,6 +48,7 @@ InvestmentToolkit/                         ← repo root
 │
 ├── tradingview-cdp/                       ← standalone CDP engine (npm ci once)
 │   ├── cli.js                            ← CLI entry: `node tradingview-cdp/cli.js <cmd>`
+│   ├── README.md                         ← Engine setup, architecture, and CLI documentation
 │   ├── core/
 │   │   ├── trading.js                    ← order placement / cancellation / modification
 │   │   ├── broker_data.js                ← account balances, positions snapshot
@@ -332,7 +333,7 @@ pytest plugins/tradingview/tests/            # TV CDP unit tests
 **Project:** InvestmentToolkit  
 **Owner:** richfrem  
 **Primary AI context files:** `.claude/CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md`  
-**Last updated:** 2026-07-01
+**Last updated:** 2026-07-14
 
 ---
 

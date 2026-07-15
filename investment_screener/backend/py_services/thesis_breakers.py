@@ -1,4 +1,9 @@
-"""thesis_breakers.py — B5: structured, evaluated thesis breakers.
+#!/usr/bin/env python3
+"""
+thesis_breakers.py - Python utility script.
+
+Purpose:
+    thesis_breakers.py — B5: structured, evaluated thesis breakers.
 
 Evaluates each holding's `thesisBreakers` (target-portfolio.json) against data
 `daily_brief.py` already computes this run (conviction scores, market_regime,
@@ -12,6 +17,29 @@ Usage:
 
 Key Input Dependencies:
     - investment_screener/backend/data/thesis_breaker_state.json (Evaluates thesis logic)
+
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    python3 investment_screener/backend/py_services/thesis_breakers.py
+
+Key Functions (Index):
+    - evaluate_condition()
+    - resolve_auto_metric_value()
+    - _evaluate_auto_breaker()
+    - _evaluate_manual_breaker()
+    - evaluate_breakers()
+    - compute_breaker_state()
+    - log_breaker_override()
+    - _cli_log_override()
+    - main()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
 """
 from __future__ import annotations
 

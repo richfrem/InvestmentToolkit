@@ -1,4 +1,9 @@
-"""Prediction ledger — E3 append-only claim/grade store and grading primitive.
+#!/usr/bin/env python3
+"""
+prediction_ledger.py - Python utility script.
+
+Purpose:
+    Prediction ledger — E3 append-only claim/grade store and grading primitive.
 
 Two append-only JSONL files, never rewritten in place:
   - data/predictions.jsonl        one record per harvested claim
@@ -13,6 +18,31 @@ Usage:
 
 Key Input Dependencies:
     - investment_screener/backend/data/daily-briefs/ (Maintains prediction schema)
+
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    python3 prediction_ledger.py --validate
+
+Key Functions (Index):
+    - make_prediction_id()
+    - _append_jsonl()
+    - _load_jsonl()
+    - append_prediction()
+    - append_grade()
+    - load_predictions()
+    - load_graded()
+    - latest_prediction_for()
+    - grade_claim()
+    - _validate_all()
+    - main()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
 """
 from __future__ import annotations
 

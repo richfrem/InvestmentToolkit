@@ -1,22 +1,25 @@
 /**
- * QuestradeSyncService.ts (TypeScript Service)
- * =====================================
- *
+ * QuestradeSyncService.ts - Questrade background python sync runner.
+ * 
  * Purpose:
- *     Manages the lifecycle and execution of the Python Questrade Data Engine.
- *     Coordinates the synchronization of brokerage holdings into the application's unified portfolio format.
- *
- * Layer: Backend / Services / Data Sync
- *
+ *   Manages the lifecycle and execution of the Python Questrade Data Engine.
+ *   Coordinates the synchronization of brokerage holdings into the application's unified portfolio format.
+ * 
+ * Layer:
+ *   Backend / Services / Data Sync
+ * 
  * Usage Examples:
- *     await questradeSyncService.runSync();
- *
+ *   await questradeSyncService.runSync();
+ * 
+ * Key Functions (Index):
+ *   - runSync() - Spawns the QuestradeDataEngine.py process with appropriate environment context and CLI arguments
+ * 
  * Key Input Dependencies:
- *     - investment_screener/backend/.questrade_cache (Stores encrypted API access tokens)
- *     - investment_screener/backend/data/portfolio.json (Writes synchronized holdings output)
- *
- * Key Functions:
- *     - runSync() - Spawns the QuestradeDataEngine.py process with appropriate environment context and CLI arguments
+ *   - investment_screener/backend/.questrade_cache (Stores encrypted API access tokens)
+ *   - investment_screener/backend/data/portfolio.json (Writes synchronized holdings output)
+ * 
+ * Key Output Dependencies:
+ *   - investment_screener/backend/data/portfolio.json
  */
 import { spawn } from 'child_process';
 import path from 'path';
