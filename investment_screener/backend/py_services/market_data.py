@@ -1,6 +1,6 @@
+#!/usr/bin/env python3
 """
-market_data.py (Python Service)
-=====================================
+market_data.py - Python utility script.
 
 Purpose:
     Single provider-abstracted interface for prices, quotes, analyst estimates,
@@ -10,18 +10,32 @@ Purpose:
     real multi-provider waterfall (EDGAR primary, yfinance supplement) — see
     docs/superpowers/specs/2026-07-02-data-layer-design.md.
 
-    Never returns a zeroed/defaulted value for missing data — a missing field is
-    absent from the response, not present-and-wrong. This applies equally to
-    partial/NaN rows from upstream providers: a NaN value must never be
-    silently coerced to zero, and must never crash the whole batch request
-    either — the affected row is simply omitted for that ticker.
+Layer:
+    Backend / Python Services
 
-Layer: Backend / Python Services / Data Layer
+Usage Examples:
+    TBD
+
+Key Functions (Index):
+    - _now_iso()
+    - _price_staleness()
+    - _with_data_quality()
+    - get_prices()
+    - get_quote()
+    - _extract_avg_estimate()
+    - get_estimates()
+    - _safe_float()
+    - _safe_edgar_facts()
+    - _safe_yf_info()
+    - _safe_yf_annual_financials()
+    - get_fundamentals()
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Pulls yfinance sector data)
-"""
+    None
 
+Key Output Dependencies:
+    None
+"""
 import sys
 from datetime import datetime, timezone
 from pathlib import Path

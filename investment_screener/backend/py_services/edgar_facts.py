@@ -1,21 +1,30 @@
+#!/usr/bin/env python3
 """
-edgar_facts.py (Python Service)
-=====================================
+edgar_facts.py - Python utility script.
 
 Purpose:
     SEC EDGAR XBRL companyfacts client. Point-in-time-correct fundamentals
     (each datapoint carries its actual filing date) for US filers only —
     yfinance is the fallback/supplement for non-US listings in market_data.py.
 
-Layer: Backend / Python Services / Data Layer
+Layer:
+    Backend / Python Services
 
 Usage Examples:
-    python3 edgar_facts.py 0000320193
+    TBD
+
+Key Functions (Index):
+    - _throttled_get()
+    - _extract_metric()
+    - get_company_facts()
+    - main()
 
 Key Input Dependencies:
-    - investment_screener/backend/data/13f/ (Downloads SEC EDGAR filing details)
-"""
+    None
 
+Key Output Dependencies:
+    None
+"""
 import sys
 import time
 from pathlib import Path

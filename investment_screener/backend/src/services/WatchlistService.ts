@@ -1,6 +1,34 @@
+/**
+ * WatchlistService.ts - Watchlist data store persistence and operations manager.
+ * 
+ * Purpose:
+ *   Handles operations on the user's ticker watchlist including checking, adding, and removing items.
+ *   Implements file locking to guard against concurrent edit corruption.
+ * 
+ * Layer:
+ *   Backend / Services / Data Persistence
+ * 
+ * Usage Examples:
+ *   const list = await watchlistService.getWatchlist();
+ *   await watchlistService.addToWatchlist('MSFT');
+ * 
+ * Key Functions (Index):
+ *   - ensureFileExists() - Creates a blank watchlist structure if missing
+ *   - getWatchlist() - Reads all watchlist items
+ *   - addToWatchlist(ticker: string) - Appends a ticker if not already present
+ *   - removeFromWatchlist(ticker: string) - Deletes a ticker from the list
+ * 
+ * Key Input Dependencies:
+ *   - investment_screener/backend/data/watchlist.json (Reads/writes watchlist array)
+ * 
+ * Key Output Dependencies:
+ *   - investment_screener/backend/data/watchlist.json
+ */
+
 import fs from 'fs';
 import { lock } from 'proper-lockfile';
 import { WATCHLIST_FILE } from '../utils/paths';
+
 
 export interface WatchlistItem {
     ticker: string;

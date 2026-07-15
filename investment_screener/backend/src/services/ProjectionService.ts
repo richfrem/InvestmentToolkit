@@ -1,21 +1,30 @@
 /**
- * ProjectionService.ts (TypeScript Service)
- * =====================================
- *
+ * ProjectionService.ts - DCF Projections persistence and lifecycle manager.
+ * 
  * Purpose:
- *     Manages the lifecycle of DCF projections, including validation, versioning, and file-system persistence.
- *     Implements atomic writes and file locking to ensure data integrity during concurrent edits.
- *
- * Layer: Backend / Services / Data Persistence
- *
+ *   Manages the lifecycle of DCF projections, including validation, versioning, and file-system persistence.
+ *   Implements atomic writes and file locking to ensure data integrity during concurrent edits.
+ * 
+ * Layer:
+ *   Backend / Services / Data Persistence
+ * 
  * Usage Examples:
- *     await projectionService.saveProjection(projectionData);
- *     const list = await projectionService.getProjections('AAPL');
- *
- * Key Functions:
- *     - saveProjection() - Validates incoming data against Zod schemas, manages version increments, and performs atomic writes
- *     - getProjections() - Retrieves all stored projection versions for a specific ticker symbol
- *     - getAllProjections() - Aggregates projections across all tickers for portfolio-wide analysis
+ *   await projectionService.saveProjection(projectionData);
+ *   const list = await projectionService.getProjections('AAPL');
+ * 
+ * Key Functions (Index):
+ *   - getFilePath(ticker: string) - Resolves filesystem path for ticker projection JSON
+ *   - getProjections(ticker: string) - Retrieves all stored projection versions for a specific ticker symbol
+ *   - getAllProjections() - Aggregates projections across all tickers for portfolio-wide analysis
+ *   - saveProjection(projection: Projection) - Validates incoming data, manages version increments, and performs atomic writes
+ *   - deleteProjection(ticker: string, id: string) - Locates and deletes a specific projection version
+ * 
+ * Key Input Dependencies:
+ *   - investment_screener/backend/data/projections/ (filesystem storage folder)
+ *   - ../utils/zod-schemas (Projection, ProjectionSchema validation)
+ * 
+ * Key Output Dependencies:
+ *   - investment_screener/backend/data/projections/ (writes projections JSON data)
  */
 import fs from 'fs';
 import path from 'path';

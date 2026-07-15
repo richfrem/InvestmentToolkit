@@ -1,14 +1,27 @@
 /**
- * src/routes/screener.ts
- * =====================
- *
+ * screener.ts - Express routing for investment screener operations.
+ * 
  * Purpose:
  *   Handles Express API routes for watchlist management, screener calculations,
  *   and fetching python-based actionable opportunities.
- *
- * Key Functions:
+ * 
+ * Layer:
+ *   Backend / Routes / Screener
+ * 
+ * Routes Index:
  *   - GET /watchlist - Retrieves user watchlist
- *   - POST /watchlist - Adds a ticker to the watchlist
+ *   - POST /watchlist/add - Adds a ticker to the watchlist
+ *   - POST /watchlist/remove - Removes a ticker from the watchlist
+ *   - GET /all-holdings - Aggregates data from watchlist, thesis, actual portfolio, and reviews into a unified map
+ * 
+ * Key Input Dependencies:
+ *   - investment_screener/backend/data/portfolio.json (Live portfolio status)
+ *   - investment_screener/backend/data/theses/target-portfolio.json (Conviction targets)
+ *   - investment_screener/backend/data/portfolio-reviews/ (Review logs)
+ *   - ../services/WatchlistService (watchlistService operations)
+ * 
+ * Key Output Dependencies:
+ *   None
  */
 
 import express from 'express';

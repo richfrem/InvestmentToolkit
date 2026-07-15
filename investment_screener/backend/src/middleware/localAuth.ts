@@ -1,14 +1,28 @@
 /**
- * localAuth.ts — Single-user local API bearer token middleware
- *
- * Generates a random token on first run, persists it to .runtime/api-token
- * (gitignored). All /api/* requests must include:
- *   Authorization: Bearer <token>
- *
- * The Vite dev proxy reads the same file and forwards the header automatically.
- * AI agents and curl scripts: read the token with $(cat .runtime/api-token).
- *
- * Exempt: GET /health  (monitoring probes don't need auth)
+ * localAuth.ts - Single-user local API bearer token middleware.
+ * 
+ * Purpose:
+ *   Generates a random token on first run, persists it to .runtime/api-token
+ *   (gitignored). All /api/* requests must include:
+ *     Authorization: Bearer <token>
+ * 
+ *   The Vite dev proxy reads the same file and forwards the header automatically.
+ *   AI agents and curl scripts: read the token with $(cat .runtime/api-token).
+ * 
+ *   Exempt: GET /health  (monitoring probes don't need auth)
+ * 
+ * Layer:
+ *   Backend / Middleware / Auth
+ * 
+ * Key Functions (Index):
+ *   - loadOrCreateToken() - Reads cached token from runtime directory or generates a fresh one
+ *   - localAuthMiddleware(req, res, next) - Express auth gateway verifying bearer token match
+ * 
+ * Key Input Dependencies:
+ *   - .runtime/api-token (token storage path)
+ * 
+ * Key Output Dependencies:
+ *   - .runtime/api-token
  */
 import { Request, Response, NextFunction } from 'express';
 import fs from 'fs';

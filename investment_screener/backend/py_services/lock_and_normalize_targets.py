@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-lock_and_normalize_targets.py — Precision target weight modifier with support for locks and custom adjusts.
+lock_and_normalize_targets.py - Python utility script.
+
+Purpose:
+    lock_and_normalize_targets.py — Precision target weight modifier with support for locks and custom adjusts.
 
 Designed to:
 1. Zero out specified tickers.
@@ -12,8 +15,26 @@ This is compliant with Gate 7 actual broker-weight locks and the Aschenbrenner 1
 
 Key Input Dependencies:
     - investment_screener/backend/data/theses/target-portfolio.json (Locks weights)
-"""
 
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    TBD
+
+Key Functions (Index):
+    - load_portfolio()
+    - save_portfolio()
+    - parse_pairs()
+    - parse_tickers()
+    - main()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
+"""
 import argparse
 import json
 import sys

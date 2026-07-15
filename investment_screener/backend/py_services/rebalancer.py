@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-rebalancer.py (Python Service)
-=====================================
+rebalancer.py - Python utility script.
 
 Purpose:
     Formalizes /rebalance + portfolio_action.py's informal drift/capital/
@@ -12,14 +11,34 @@ Purpose:
     data/rebalance_plan.json exclusively. See docs/superpowers/specs/
     2026-07-09-rebalancer-v2-design.md.
 
-Layer: Backend / Python Services / Rebalancer
+Layer:
+    Backend / Python Services
 
-Usage:
+Usage Examples:
     python3 rebalancer.py --pretty
     python3 rebalancer.py --no-save --pretty
 
+Key Functions (Index):
+    - compute_bands()
+    - get_latest_valuation_action()
+    - compute_candidate_orders()
+    - load_account_positions()
+    - compute_account_routing()
+    - preferred_account()
+    - compute_capital_gains_estimate()
+    - compute_risk_budget_check()
+    - compute_breaker_warnings()
+    - _now_iso()
+    - _check_no_trade_conditions()
+    - _build_order_entries()
+    - compute_rebalance_plan()
+    - main()
+
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Calculates target weight rebalancing)
+    None
+
+Key Output Dependencies:
+    None
 """
 import argparse
 import json

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-risk_officer.py (Python Service)
-=====================================
+risk_officer.py - Python utility script.
 
 Purpose:
     Turns E2's warn-only riskGateWarnings/breakerWarnings (rebalance_plan.json)
@@ -13,20 +12,27 @@ Purpose:
     exclusively. See docs/superpowers/specs/
     2026-07-10-g2-risk-officer-red-team-design.md.
 
-Layer: Backend / Python Services / Risk
+Layer:
+    Backend / Python Services
 
-Usage:
+Usage Examples:
     python3 risk_officer.py --pretty
     python3 risk_officer.py --log-override --ticker CORZ --action buy \
         --account TFSA --rationale "Conviction unchanged, MRC estimate is first-order only"
 
-Key Functions:
-    - classify_orders() - Splits rebalance_plan.json's orders into (vetoed, approved)
-    - compute_risk_officer_review() - Primary orchestrator: plan -> risk_officer_review.json
-    - log_risk_officer_override() - Appends one accountability-trail record for an override
+Key Functions (Index):
+    - _now_iso()
+    - classify_orders()
+    - compute_risk_officer_review()
+    - log_risk_officer_override()
+    - _cli_log_override()
+    - main()
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Validates position risk limits)
+    None
+
+Key Output Dependencies:
+    None
 """
 import argparse
 import json

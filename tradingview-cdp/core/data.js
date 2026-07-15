@@ -1,5 +1,14 @@
 /**
- * Core data access — OHLCV, quotes, Pine Script graphics, indicator values.
+ * data.js - Core data access — OHLCV, quotes, Pine Script graphics, indicator values.
+ * 
+ * Purpose:
+ *   Retrieves quotes, OHLCV bars, graphics items, and study values from the active chart context.
+ * 
+ * Key Input Dependencies:
+ *   None (reads live state from TradingView Desktop on port 9222 via CDP)
+ * 
+ * Key Output Dependencies:
+ *   None (returns JSON data structures)
  */
 import { evaluate, evaluateAsync, KNOWN_PATHS, safeString } from '../connection.js';
 
@@ -8,7 +17,19 @@ const MAX_TRADES = 20;
 const CHART_API = KNOWN_PATHS.chartApi;
 const BARS_PATH = KNOWN_PATHS.mainSeriesBars;
 
+/**
+ * Generate JS string to query the graphics primitives collection for drawings.
+ * 
+ * @param {string} collectionName Target property name (e.g. dwgtablecells)
+ * @param {string} mapKey Target map key name inside the primitives collection
+ * @param {string} filter Optional string prefix to filter drawings by source name
+ * @returns {string} Evaluatable JS string
+ */
 function buildGraphicsJS(collectionName, mapKey, filter) {
+  /**
+   * Helper that returns a stringified IIFE which traverses dataSources in the model
+   * to locate graphics primitives collections matching the map key.
+   */
   return `
     (function() {
       var chart = window.TradingViewApi._activeChartWidgetWV.value()._chartWidget;
@@ -59,7 +80,19 @@ function buildGraphicsJS(collectionName, mapKey, filter) {
   `;
 }
 
+/**
+ * Fetch OHLCV historical price bars from the active main series.
+ * 
+ * @param {object} params Parameter object
+ * @param {number} params.count Number of historical bars to fetch
+ * @param {boolean} params.summary Generate aggregate statistics summary report
+ * @returns {Promise<object>} OHLCV bars list or statistical summary object
+ */
 export async function getOhlcv({ count, summary } = {}) {
+  /**
+   * Evaluates bar arrays on the active main series object in the browser
+   * and normalizes open, high, low, close, volume formats.
+   */
   const limit = Math.min(count || 100, MAX_OHLCV_BARS);
   let data;
   try {
@@ -106,7 +139,18 @@ export async function getOhlcv({ count, summary } = {}) {
   return { success: true, bar_count: data.bars.length, total_available: data.total_bars, source: data.source, bars: data.bars };
 }
 
+/**
+ * Fetch a quote for a symbol, matching active chart symbol if omitted.
+ * 
+ * @param {object} params Parameter object
+ * @param {string} params.symbol Target symbol ticker name to lookup
+ * @returns {Promise<object>} Normalized quote price details
+ */
 export async function getQuote({ symbol } = {}) {
+  /**
+   * Queries both active bars and DOM bid/ask elements to return the latest
+   * price, change percentage, exchange, and description keys.
+   */
   const data = await evaluate(`
     (function() {
       var api = ${CHART_API};
@@ -149,7 +193,16 @@ export async function getQuote({ symbol } = {}) {
   };
 }
 
+/**
+ * Retrieve active values of indicator studies loaded on the chart.
+ * 
+ * @returns {Promise<object>} Object listing study counts and formatted titles/values
+ */
 export async function getStudyValues() {
+  /**
+   * Traverses dataSources in the browser context, extracts loaded study data window
+   * view items, and maps active non-empty value fields.
+   */
   const data = await evaluate(`
     (function() {
       var chart = window.TradingViewApi._activeChartWidgetWV.value()._chartWidget;

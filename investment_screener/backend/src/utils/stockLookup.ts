@@ -1,10 +1,33 @@
 /**
- * stockLookup.ts
- * =====================================
- * Utility functions for compiling and normalizing a fuzzy stock ticker lookup dictionary.
+ * stockLookup.ts - Fuzzy stock ticker lookup helper.
+ * 
+ * Purpose:
+ *   Builds a dictionary and normalizes search terms to resolve ticker symbols from company names
+ *   or search queries (fuzzy matching).
+ * 
+ * Key Input Dependencies:
+ *   None
+ * 
+ * Key Output Dependencies:
+ *   None
+ * 
+ * Functions Index:
+ *   - normalizeSearchTerm(term: string) - Normalize search term string
+ *   - stripSuffixesStages(normalizedName: string) - Strip common corporate suffixes sequentially, listing each stage
+ *   - stripSuffixes(normalizedName: string) - Strip common corporate suffixes to produce a base company name
+ *   - buildLookupDictionary(holdings: any[]) - Build a proxy-backed dictionary for resolving fuzzy names
  */
 
+/**
+ * Normalize search term string by converting to uppercase, removing punctuation, and trimming.
+ * 
+ * @param {string} term - Search query or company name
+ * @returns {string} Normalized string
+ */
 export function normalizeSearchTerm(term: string): string {
+    /**
+     * Replaces standard punctuation characters and spaces with singular blank characters.
+     */
     return term
         .toUpperCase()
         .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '') // remove punctuation
@@ -12,7 +35,16 @@ export function normalizeSearchTerm(term: string): string {
         .trim();
 }
 
+/**
+ * Strip common corporate suffixes sequentially, listing each intermediate string stage.
+ * 
+ * @param {string} normalizedName - Pre-normalized company name
+ * @returns {string[]} Mapped stages of suffix stripping
+ */
 export function stripSuffixesStages(normalizedName: string): string[] {
+    /**
+     * Loops checking trailing words against suffixes list, popping matches, and collecting stages.
+     */
     const suffixes = [
         'INCORPORATED', 'CORPORATION', 'COMMON STOCK', 'CLASS A', 
         'GLOBAL', 'SYSTEMS', 'COMMON', 'CORP', 'INC', 'LTD', 'SYS', 'CO'
@@ -31,12 +63,31 @@ export function stripSuffixesStages(normalizedName: string): string[] {
     return stages;
 }
 
+/**
+ * Strip common corporate suffixes to produce a base company name.
+ * 
+ * @param {string} normalizedName - Pre-normalized company name
+ * @returns {string} Fully stripped company name string
+ */
 export function stripSuffixes(normalizedName: string): string {
+    /**
+     * Delegates to stripSuffixesStages and returns the final element.
+     */
     const stages = stripSuffixesStages(normalizedName);
     return stages[stages.length - 1];
 }
 
+/**
+ * Build a proxy-backed dictionary for resolving fuzzy company names to ticker symbols.
+ * 
+ * @param {any[]} holdings - List of portfolio holdings object entries
+ * @returns {Record<string, string>} Proxy-wrapped dictionary map
+ */
 export function buildLookupDictionary(holdings: any[]): Record<string, string> {
+    /**
+     * Initializes manual aliases, loops holdings to register names and stages of corporate names,
+     * and returns a Proxy intercepting GET lookups to apply name normalization.
+     */
     const dict: Record<string, string> = {};
 
     // 1. Pre-populate manual alias overrides for typos and phonetic matches

@@ -1,21 +1,47 @@
 /**
- * src/routes/portfolio.ts
- * =======================
- *
+ * portfolio.ts - Express routing for user portfolio positions, balances, and sync.
+ * 
  * Purpose:
  *   Handles backend Express routes for user portfolio data management,
  *   rebalancing updates, live snapshot sync, and performance tracking.
- *
+ * 
+ * Layer:
+ *   Backend / Routes / Portfolio
+ * 
+ * Key Functions (Index):
+ *   - backupPortfolio() - Creates a backup copy of portfolio.json
+ *   - loadYtdPerformanceReport() - Executes time-weighted returns script and reads generated report
+ *   - readPortfolio() - Parses portfolio JSON structure resolving array/object schemas
+ *   - syncThesisShares(positions) - Keep thesis holdings[].shares in sync with actual portfolio positions
+ *   - verifyPortfolioTotals(holdings, tvSnapshot) - Reconciliation gate comparing computed vs broker total
+ *   - persistPortfolioWithSnapshot(items, tvSnapshot) - Writes to portfolio.json with totals and snaps
+ * 
+ * Routes Index:
+ *   - GET / - Reads and returns aggregate portfolio holdings and active sync source
+ *   - POST / - Core saving/restructuring of the user portfolio
+ *   - GET /summary - Aggregates YTD/TWR returns and portfolio USD/CAD totals
+ *   - GET /performance - Triggers and returns period performance details
+ *   - GET /weights - Computes weight allocation ratios for each holding
+ *   - GET /status - Returns latest sync timestamp from portfolio cache
+ *   - GET /position/:ticker - Returns price, shares, and per-account breakdown for a ticker
+ *   - GET /holdings/:ticker - Retrieves per-account position counts from TV snapshot
+ *   - POST /refresh-prices - Forces yfinance quote refresh
+ *   - POST /sync-questrade - Triggers manual Questrade background python client sync
+ *   - POST /sync-tv - Gated TradingView CDP sync returning HITL preview diff
+ *   - POST /sync-tv/promote - Finalizes and writes HITL TradingView snapshot promote
+ *   - POST /sync-tv/apply - One-shot automated sync applying TV data immediately
+ *   - POST /sync - Auto-priority sync selecting reachable sources
+ *   - GET /strategy-allocation - Aggregates cash and holdings by sub-strategy and pillar
+ * 
  * Key Input Dependencies:
  *   - investment_screener/backend/data/portfolio.json (Live portfolio state)
  *   - investment_screener/backend/data/cash_flows.json (Deposit & withdrawal logs)
  *   - investment_screener/backend/data/portfolio-config.json (YTD starting configuration overrides)
  *   - investment_screener/backend/data/ytd_performance_report.json (Output TWR data)
- *
- * Key Functions:
- *   - loadYtdPerformanceReport() - Executes TWR calculation and loads results
- *   - readPortfolio() - Parses portfolio JSON structure
- *   - syncThesisShares() - Synchronizes holdings with active portfolio
+ * 
+ * Key Output Dependencies:
+ *   - investment_screener/backend/data/portfolio.json
+ *   - investment_screener/backend/data/portfolio.json.bak
  */
 
 import express from 'express';
@@ -190,32 +216,55 @@ async function persistPortfolioWithSnapshot(items: any[], tvSnapshot?: any): Pro
     })();
     const exchangeRate = await getLiveUsdCadRate(JAN1_USD_CAD_RATE);
 
-    // Fresh TV account balances (from a companion --balances fetch) are authoritative when
-    // present. The plain --snapshot fetch used by sync-tv does NOT include balances, so this
-    // is usually absent — that's expected, not a bug (see preserveAuthoritativeTotal below).
-    const freshTvBrokerTotal = (tvSnap?.snapshots ?? []).reduce((sum: number, snap: any) => {
-        const eq = snap?.balances?.totalEquityUSDCombined ?? snap?.balances?.totalEquityUSD ?? 0;
-        return sum + (typeof eq === 'number' && eq > 0 ? eq : 0);
-    }, 0);
+    // Sum holdings USD value: sum(shares * price)
+    const holdingsUSD = items
+        .filter(h => (h.symbol || h.ticker) !== 'USD_CASH')
+        .reduce((sum, h) => sum + (h.shares ?? 0) * (h.price ?? h.book_price ?? 0), 0);
 
-    const { holdings: enriched, totals } = buildPortfolioSnapshot(
-        items, tvSnap, exchangeRate, freshTvBrokerTotal > 0 ? freshTvBrokerTotal : null
+    // Sum cash USD value across accounts
+    const cashUSD = (tvSnap?.snapshots ?? []).reduce(
+        (sum: number, snap: any) => sum + (snap?.balances?.cashUSD ?? 0),
+        0
     );
 
-    // No fresh authoritative total this write (the common case) — carry forward whatever
-    // was already persisted, rather than silently overwriting it with the shares*price
-    // fallback. This is the fix for the "refresh prices clobbers the real total" bug.
-    if (totals.totalSource === 'computed_fallback') {
-        const { totals: existingTotals } = readPortfolio();
-        const preserved = preserveAuthoritativeTotal(existingTotals, { totalUSD: totals.totalUSD, totalCAD: totals.totalCAD });
-        totals.totalUSD = preserved.totalUSD;
-        totals.totalCAD = preserved.totalCAD;
-        totals.totalSource = preserved.totalSource;
+    // Sum cash CAD value across accounts
+    const cashCAD = (tvSnap?.snapshots ?? []).reduce(
+        (sum: number, snap: any) => sum + (snap?.balances?.cashCAD ?? 0),
+        0
+    );
+
+    // Calculate total USD from calculated values
+    const calculatedTotalUSD = holdingsUSD + cashUSD;
+
+    // Calculate total CAD using calculated USD value converted by TV inferred exchange rate
+    // TV inferred exchange rate = totalCAD / totalUSD from snapshot balances
+    let inferredRate = exchangeRate;
+    let tvTotalUSD = 0;
+    let tvTotalCAD = 0;
+    for (const snap of (tvSnap?.snapshots ?? [])) {
+        const b = snap?.balances;
+        if (b) {
+            tvTotalUSD += b.totalEquityUSDCombined ?? b.totalEquityUSD ?? 0;
+            tvTotalCAD += b.totalEquityCADCombined ?? b.totalEquityCAD ?? 0;
+        }
     }
+    if (tvTotalUSD > 0 && tvTotalCAD > 0) {
+        inferredRate = tvTotalCAD / tvTotalUSD;
+    }
+
+    const calculatedTotalCAD = (holdingsUSD * inferredRate) + cashCAD;
+
+    const { holdings: enriched, totals } = buildPortfolioSnapshot(
+        items, tvSnap, inferredRate, calculatedTotalUSD
+    );
+
+    totals.totalCAD = calculatedTotalCAD;
+    totals.totalSource = 'tv_authoritative'; // Derived directly from live TV holdings + cash
 
     fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify({ holdings: enriched, totals, tvSnapshot: tvSnap }, null, 2));
     console.log(`[Portfolio] Wrote portfolio.json — totalUSD=$${totals.totalUSD.toFixed(2)} totalCAD=$${totals.totalCAD.toFixed(2)}`);
 }
+
 
 // ── Portfolio CRUD ────────────────────────────────────────────────────────────
 

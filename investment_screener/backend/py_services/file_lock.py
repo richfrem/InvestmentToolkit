@@ -1,5 +1,9 @@
+#!/usr/bin/env python3
 """
-file_lock.py — Cross-process file locking for JSON writes.
+file_lock.py - Python utility script.
+
+Purpose:
+    file_lock.py — Cross-process file locking for JSON writes.
 
 Uses fcntl.flock() (POSIX) or a .lock sentinel file (Windows fallback).
 Works alongside Node's proper-lockfile, which uses the same .lock file convention.
@@ -11,8 +15,23 @@ Usage:
 
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Internal state database)
-"""
 
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    from file_lock import locked_write_json
+
+Key Functions (Index):
+    - file_lock()
+    - locked_write_json()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
+"""
 import json
 import os
 import sys

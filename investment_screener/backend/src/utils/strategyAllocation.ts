@@ -1,3 +1,21 @@
+/**
+ * strategyAllocation.ts - Portfolio allocation metrics calculator.
+ * 
+ * Purpose:
+ *   Pure function to aggregate holding positions by sub-strategy, sector, and thesis pillars,
+ *   using authoritative total parameters.
+ * 
+ * Key Input Dependencies:
+ *   None
+ * 
+ * Key Output Dependencies:
+ *   None
+ * 
+ * Functions Index:
+ *   - normalizeTicker(sym: string) - Standardize ticker symbol for strategy mapping
+ *   - computeStrategyAllocation(positions, totals, thesis) - Calculate strategy allocation categories across active portfolio holdings
+ */
+
 export interface StrategyHolding {
     symbol: string;
     name: string;
@@ -23,23 +41,38 @@ export interface StrategyAllocation {
 }
 
 /**
- * Pure calculation logic for computing the strategy allocation.
- * Aggregates portfolio positions by thesis pillars, sub-strategies, and sectors.
- * - Uses pos.price ?? pos.book_price ?? 0 to match total summary and prevent new synced positions from being zeroed out.
- * - Uses authoritative totals.totalUSD if available to align with the summary card total.
+ * Standardize ticker symbol for strategy mapping.
+ * 
+ * @param {string} sym - Input ticker symbol
+ * @returns {string} Standardized ticker string
  */
 function normalizeTicker(sym: string): string {
+    /**
+     * Maps variations of PSU/ETH symbols to their canonical tsx formatting.
+     */
     const s = (sym || '').toUpperCase();
     if (s === 'PSU.U' || s === 'PSU.U.TO' || s === 'PSU-U.TO') return 'PSU-U.TO';
     if (s === 'ETH.U' || s === 'ETH.U.TO' || s === 'ETH-U.TO') return 'ETH-U.TO';
     return sym;
 }
 
+/**
+ * Calculate strategy allocation categories across active portfolio holdings.
+ * 
+ * @param {any[]} positions - Active portfolio holdings positions list
+ * @param {any|null} totals - Persisted totals snapshot details
+ * @param {any|null} thesis - Investment thesis configuration object
+ * @returns {StrategyAllocation} Strategy allocation stats report
+ */
 export function computeStrategyAllocation(
     positions: any[],
     totals: any | null,
     thesis: any | null
 ): StrategyAllocation {
+    /**
+     * Constructs maps of pillars and strategies, iterates positions to sum USD values by pillar,
+     * resolves totalUSD, and projects percentage metrics before sorting by valueUSD.
+     */
     const pillarMap: Record<string, string> = {};
     const subStrategyMap: Record<string, string> = {};
     let pillars: Array<{ id: string; name: string }> = [];

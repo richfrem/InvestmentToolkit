@@ -1,3 +1,22 @@
+/**
+ * portfolioSnapshot.ts - Portfolio totals and snapshots computation engine.
+ * 
+ * Purpose:
+ *   Pure utility to calculate market values, USD/CAD totals, actual allocation weights,
+ *   and preserve authoritative broker totals without I/O side-effects.
+ * 
+ * Key Input Dependencies:
+ *   None
+ * 
+ * Key Output Dependencies:
+ *   None
+ * 
+ * Functions Index:
+ *   - buildPortfolioSnapshot(holdings, tvSnapshot, exchangeRate, authoritativeTotalUSD) - Compute market values and aggregates portfolio totals
+ *   - preserveAuthoritativeTotal(existing, fallback) - Decide whether to preserve previously fetched authoritative TV totals
+ *   - computeWeightsMap(holdings, totals) - Compute the actual percentage weights for each ticker holding
+ */
+
 export interface PortfolioTotals {
     holdingsUSD: number;
     cashUSD: number;
@@ -14,16 +33,15 @@ export interface PortfolioSnapshot {
 }
 
 /**
- * Pure function — no I/O. Computes market_value per holding and all
- * portfolio totals in one pass. Call once at sync time; persist the
- * result; read it everywhere else.
- *
- * `authoritativeTotalUSD` — the TV broker's real combined equity (e.g. from
- * getAccountTotals()/totalEquityUSDCombined), when known. Never recompute
- * totalUSD from shares*price when this is available — the broker figure
- * includes cash and live pricing the holdings array doesn't fully capture,
- * and silently overwriting it with a weaker approximation is the exact
- * portfolio-total-validation bug this project has hit repeatedly.
+ * Compute market value per holding and aggregated portfolio totals.
+ * 
+ * Denominated in USD, and uses authoritative broker totals when available.
+ * 
+ * @param {any[]} holdings - Holdings entries to compile
+ * @param {any} tvSnapshot - Active TradingView broker snapshot info
+ * @param {number} exchangeRate - USD/CAD exchange multiplier
+ * @param {number|null} [authoritativeTotalUSD] - Real broker combined equity total, if available
+ * @returns {PortfolioSnapshot} Enriched snapshot object containing holding data and totals
  */
 export function buildPortfolioSnapshot(
     holdings: any[],
@@ -31,6 +49,10 @@ export function buildPortfolioSnapshot(
     exchangeRate: number,
     authoritativeTotalUSD?: number | null
 ): PortfolioSnapshot {
+    /**
+     * Maps holdings to derive market_value, aggregates cash balances, checks
+     * for authoritative broker total, and returns populated totals.
+     */
     const enriched = holdings.map(h => ({
         ...h,
         market_value: (h.shares ?? 0) * (h.price ?? h.book_price ?? 0),
@@ -73,20 +95,24 @@ export function buildPortfolioSnapshot(
 }
 
 /**
- * Decides whether a write should carry forward a previously-known TV-authoritative
- * total, or use a freshly computed shares*price fallback.
- *
- * A write path (e.g. refresh-prices, sync-tv/promote) often has no fresh broker fetch
- * to work with — only updated share/price data. Without this, that write would silently
- * replace a genuine broker-authoritative total with a weaker approximation, which is the
- * exact portfolio-total-validation bug this project has hit repeatedly. If the existing
- * persisted total was itself only ever a fallback, there's nothing authoritative to
- * preserve, so the fresh fallback is used as normal.
+ * Decide whether to preserve previously fetched authoritative TV totals.
+ * 
+ * Prevents updated calculations from overwriting a genuine broker balance figure.
+ * 
+ * @param {PortfolioTotals|null} existing - Previous totals configuration
+ * @param {object} fallback - Freshly calculated fallback total
+ * @param {number} fallback.totalUSD - Recomputed USD holdings + cash sum
+ * @param {number} fallback.totalCAD - Recomputed CAD holdings + cash sum
+ * @returns {object} Selected totals to persist with source metadata
  */
 export function preserveAuthoritativeTotal(
     existing: PortfolioTotals | null,
     fallback: { totalUSD: number; totalCAD: number }
 ): { totalUSD: number; totalCAD: number; totalSource: 'tv_authoritative' | 'computed_fallback' } {
+    /**
+     * Checks if existing source is 'tv_authoritative', returning it if true,
+     * otherwise defaulting to the freshly computed shares*price fallback.
+     */
     if (existing?.totalSource === 'tv_authoritative') {
         return { totalUSD: existing.totalUSD, totalCAD: existing.totalCAD, totalSource: 'tv_authoritative' };
     }
@@ -94,15 +120,17 @@ export function preserveAuthoritativeTotal(
 }
 
 /**
- * Single canonical "actual weight %" calculator. Every consumer (Express routes,
- * chat-agent Python scripts via the parity-tested mirror in validate_weights.py,
- * conviction scoring) must go through this formula — not recompute independently.
- *
- * Denominator is the persisted totals.totalUSD (TV-authoritative when available,
- * per buildPortfolioSnapshot/preserveAuthoritativeTotal) — falls back to a locally
- * recomputed shares*price sum only when totals is unavailable or zero.
+ * Compute the actual percentage weights for each ticker holding.
+ * 
+ * @param {any[]} holdings - Holdings entries list
+ * @param {PortfolioTotals|null} totals - Persisted totals configurations
+ * @returns {Record<string, number>} Ticker mapped allocation percentage levels
  */
 export function computeWeightsMap(holdings: any[], totals: PortfolioTotals | null): Record<string, number> {
+    /**
+     * Resolves denominator using authoritative total, loops holdings, and maps
+     * percentage allocations relative to denominator.
+     */
     const marketValue = (h: any) => (h.shares ?? 0) * (h.price ?? h.book_price ?? 0);
     const denominator = totals?.totalUSD && totals.totalUSD > 0
         ? totals.totalUSD
@@ -116,3 +144,4 @@ export function computeWeightsMap(holdings: any[], totals: PortfolioTotals | nul
     }
     return map;
 }
+
