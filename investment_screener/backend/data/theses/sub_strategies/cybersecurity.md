@@ -60,15 +60,15 @@ Maintained as core defensive pillar.
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-12 19:17 by TV sync · Portfolio total: $30,355 USD*
+*Auto-updated 2026-07-14 20:51 by TV sync · Portfolio total: $30,566 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **ZS** | 12 | 5.5% | 4.5% | +1.0pp | 🟡 TRIM | — |
-| **PANW** | 3.5 | 3.8% | 4.5% | -0.7pp | 🔵 ACCUMULATE | — |
-| **PLTR** | 4.5 | 1.9% | 2.4% | -0.6pp | 🔵 ACCUMULATE | ≤$125 |
+| **ZS** | 12 | 6.0% | 4.4% | +1.5pp | 🟡 TRIM | — |
+| **PANW** | 3.5 | 4.0% | 4.4% | -0.4pp | ⚪ MAINTAIN | — |
+| **PLTR** | 5.5 | 2.4% | 2.4% | -0.0pp | ⚪ MAINTAIN | ≤$125 |
 
-**Pillar total — Actual: 11.1% · Target: 11.4% · Gap: -0.3pp**
+**Pillar total — Actual: 12.4% · Target: 11.3% · Gap: +1.1pp**
 <!-- AUTO_UPDATE_END: current_positions -->

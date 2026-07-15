@@ -1,49 +1,134 @@
 # Session Start Briefing — InvestmentToolkit
-_Last updated: 2026-07-12 | Phase 4: COMPLETE (shipped) | Phase 5: ACTIVE (1/40 tasks done, 39 remaining) | Thesis v10.8 | Portfolio value: check live snapshot (user actively trading — do not trust a stale figure here)_
+_Last updated: 2026-07-15 | Phase 4: COMPLETE (shipped) | Phase 5: ALL 40 TASKS DONE, individually
+reviewed and approved (5A 8/8, 5B 8/8, 5C 7/8+1 intentionally skipped, 5D 8/8, 5E 8/8) — only the
+whole-branch review → merge → push sequence remains, and the whole-branch review is IN PROGRESS
+(interrupted mid-run by an account-level usage limit, needs to be re-dispatched fresh, see below)._
 
 > **Read this first at the start of every new session.**
 
 ---
 
-## 🔄 ACTIVE: Fable5 Elevation Guide — Phase 5 (TradingView/Pine Hardening) — 1 of 40 tasks complete
+## 🔄 ACTIVE: Fable5 Elevation Guide — Phase 5 (TradingView/Pine Hardening) — all 40 tasks done, final whole-branch review in progress
 
-**⚡ PHASE 5 CONTINUATION (for fresh sessions):**
+**⚡ PHASE 5 IS FUNCTIONALLY DONE. Do not dispatch any more per-task implementer/reviewer cycles —
+there are none left.** The only remaining work is: (1) finish the whole-branch review, (2) merge
+the worktree branch to local `main`, (3) push to `origin/main`, (4) update this file to Phase 5
+COMPLETE. Everything below tells you exactly how to resume step (1).
 
-**Status as of 2026-07-12T23:30 UTC:**
-- ✅ **Task 5A-1 COMPLETE** (commit: 4170ad54) — TV CDP health check, 10/10 tests passing, APPROVED, merged to origin/main
-- 🔄 **Task 5A-2 IN PROGRESS** (agent: a21d32f48e722eebb) — Chrome session recovery (implementer running)
-- 📋 **Tasks 5A-3 through 5E-8 READY** — 39 briefs prepared in `.superpowers/sdd/` (task-5a-3-brief.md through task-5e-1-brief.md)
+### Why the whole-branch review isn't finished yet
 
-**To pick up Phase 5 in a fresh session:**
-1. Read this file (you are here)
-2. Read progress ledger: `cat .superpowers/sdd/progress.md` — shows all 40 tasks + completion status
-3. **Locate active task:** Check the ledger for the first incomplete task (search for `[ ]`)
-4. **Recover worktree:** `git worktree list` → worktree at `.worktrees/feature-fable5-phase5-tradingview-pine-hardening` (created 2026-07-12)
-5. **Verify git state:** `cd .worktrees/feature-fable5-phase5-tradingview-pine-hardening && git log --oneline -3` → should show 4170ad54 (Phase 5 task 1)
-6. **Review spec + plan:** `docs/superpowers/specs/2026-07-12-phase5-tradingview-pine-hardening-design.md` and `docs/superpowers/plans/2026-07-12-phase5-tradingview-pine-hardening.md`
-7. **Dispatch next implementer:** Use brief at `.superpowers/sdd/task-5X-Y-brief.md` (e.g., task-5a-2-brief.md if 5A-1 is complete)
-8. **Continuous execution:** Implement → Review → Approve → Dispatch next task, repeat until all 40 tasks complete
-9. **Final step:** Merge branch to main, push to origin/main, update this file with completion status
+A final-review subagent (model: `opus`, via `superpowers:subagent-driven-development`'s whole-branch
+review step) was dispatched with the full diff package and design spec, and got through most of its
+work, but was cut off mid-run by an **account-level API usage limit** (not a bug, not a context
+limit — a plan/quota limit that resets at a fixed wall-clock time and applies across the whole
+account, not per-conversation). **Starting a fresh Claude Code session does NOT bypass this** — the
+limit is tied to account usage over a rolling window, not to which conversation you're typing in.
+Just wait for the reset and retry (whichever session is active when the limit clears).
 
-**Workflow (same as Phase 4):**
-- Use `superpowers:subagent-driven-development` skill with the plan and worktree paths
-- Each task: TDD implementer → generate review package → task reviewer → approve/fix → mark complete
-- All briefs ready; no waiting on spec documents
-- Expected time: ~10 hours for 40 tasks (Phase 4 was ~8 hours for 36 tasks)
+**One finding it already reached before being cut off, so it doesn't need to be re-derived**: the
+5C-6 "gap" (5C shipped 7/8 tasks) is NOT a real problem — 5C-6 was the Webhook Receiver, explicitly
+skipped per user decision (see the 5C entry in `.superpowers/sdd/progress.md`), and the reviewer
+independently confirmed this before being cut off.
 
-**Key files:**
-- **Progress ledger (durable recovery map):** `.superpowers/sdd/progress.md` — update after each task review approval
+**What it had NOT yet finished checking** when cut off: whether 5D's Data Window output actually
+flows into 5E as the task briefs assumed (real integration vs. a standalone unused function),
+schema/convention consistency across all 5 sub-specs, and a full run of
+`investment_screener/backend/tests/py_services/`.
+
+### How to resume the whole-branch review
+
+The original dispatch (now stale — a fresh subagent should be dispatched, not resumed, since the
+old one's agent handle doesn't carry across sessions) used this exact setup — reuse it verbatim:
+
+- **Worktree:** `.worktrees/feature-fable5-phase5-tradingview-pine-hardening`, branch
+  `feature/fable5-phase5-tradingview-pine-hardening`, **HEAD = `b3b799e`**. `git log --oneline -1`
+  in the worktree must show this SHA — if it doesn't, stop and reconcile against
+  `.superpowers/sdd/progress.md` before doing anything else.
+- **Merge-base with local `main`:** `4170ad5` (NOT `96961e6` — verified this session; local `main`
+  and this branch share `4170ad5` as their nearest common ancestor, not the older Phase-4-complete
+  commit. See "main branch divergence" note below — it's harmless, but use the right merge-base or
+  the review diff will be wrong.)
+- **Pre-generated review diff** (regenerate if stale, via `scripts/review-package 4170ad5 HEAD` from
+  the worktree root — the skill's helper script, path:
+  `~/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/review-package`):
+  `.superpowers/sdd/review-4170ad5..b3b799e.diff` (~570KB, 51 commits)
 - **Spec:** `docs/superpowers/specs/2026-07-12-phase5-tradingview-pine-hardening-design.md`
+  (section 7 = acceptance criteria, section 6 = known limitations — the review should walk through
+  section 7 explicitly)
 - **Plan:** `docs/superpowers/plans/2026-07-12-phase5-tradingview-pine-hardening.md`
-- **Briefs:** `.superpowers/sdd/task-5[A-E]-[1-8]-brief.md` (40 total)
-- **Reports:** `.superpowers/sdd/task-5[A-E]-[1-8]-report.md` (generated during execution)
+- **Progress ledger** (reconstructed this session after the original was lost to an environment
+  reset — trust `git log` over this file's narrative detail for anything before 5E, but the 5E
+  entries are fresh and detailed): `.superpowers/sdd/progress.md`
+- **Already-assessed, do-not-re-flag-as-new findings** (all disclosed/traced during task review,
+  all deliberately left as-is): a cosmetic `Any | None` → `str` type-checker warning on
+  `order.get("ticker")` in three 5E call sites (zero crash risk, traced); 5E-8's `log_order_execution()`
+  catching only `OSError` not `TypeError` from a hypothetical non-JSON-serializable input
+  (unreachable in practice — the only two real producers only ever emit JSON-safe dicts); a couple
+  of cosmetic unused-fixture-parameter static-analysis false positives in 5E-7/5E-8 tests (traced,
+  confirmed harmless); a pre-existing stale docstring in `trading.ts` referring to `trade_log.json`
+  (underscore) when the real file is `trade-log.json` (hyphen) — not introduced by this branch, not
+  fixed, out of scope.
+- Dispatch it exactly like the interrupted one: `general-purpose` subagent, model `opus`, using the
+  `superpowers:requesting-code-review` code-reviewer template (Strengths / Issues by severity /
+  Recommendations / Assessment with a Ready-to-merge verdict). If you need the exact prompt used
+  last time, it's recoverable from this conversation's own history — but reconstructing it fresh
+  from the spec + diff package above is equally valid and arguably safer (avoids anchoring on a
+  prompt written before the interruption).
 
-**Phase 5 at a glance:**
-- **5A (8 tasks):** TV CDP Resilience — health checks, recovery, retry logic, circuit breaker, caching, error logging, integration
-- **5B (8 tasks):** Pine Script Manager — registry, validation, injection, versioning, rollback, library management, auto-discovery, /daily integration
-- **5C (8 tasks):** Alert & Signal Sync — creation, dedup, state sync, metadata, E3 linking, webhook receiver, correlation, /daily integration
-- **5D (8 tasks):** Data Window Extraction — reader, OHLCV validation, indicator extraction, caching, lag tolerance, validation harness, order integration
-- **5E (8 tasks):** Order Execution & Risk Gates — MRC, cluster variance, breaker veto, size, balance, composite check, post-trade validation, audit trail
+### After the whole-branch review comes back
+
+- If **Critical/Important** findings: dispatch ONE fix subagent with the complete findings list (not
+  one fixer per finding — this project's own subagent-driven-development skill guidance), re-run
+  the covering tests, re-review.
+- If **clean or Minor-only**: proceed straight to merge. Merge the worktree branch into local
+  `main`, then push straight to `origin/main` — this project's standing git policy (established
+  across Phase 3/Phase 4/Phase 5) is to push directly after a worktree merge, no separate PR-wait
+  step, for every phase. Then update this file's header and this whole section to Phase 5 COMPLETE,
+  matching the style of the "✅ COMPLETE: Phase 4" section further down this file.
+
+### Main branch divergence (harmless, already investigated — don't re-investigate)
+
+Local `main` currently has 3 commits past the true merge-base (`4170ad5`) that the worktree branch
+doesn't share: `7d69ee0` (a real, additive `start_here.md` docs edit), and `0f5a369` + `11486c9`
+(an early, duplicate attempt at Task 5A-2 made directly on `main`, immediately reverted). The
+feat+revert pair nets to **zero diff** (verified via `git diff 4170ad5 main --stat` → only
+`start_here.md` shows as changed). This means a merge of the worktree branch into `main` should be
+clean — `main`'s only real content difference from the shared ancestor is this file's own history,
+which the merge will reconcile normally. Not a conflict, not a red flag — already confirmed this
+session, no need to re-derive.
+
+### Established gotchas worth keeping in mind for the remaining steps
+
+- **Bash cwd drift**: the shell's cwd has repeatedly drifted back to the main checkout mid-session
+  (usually after a `cd <main-checkout> && ...` compound command elsewhere runs earlier). **Always
+  run `pwd` immediately before any `git log -1` / `review-package` / merge-related git command** —
+  this bit the review-package generation at least twice this session already.
+- **Worktree isolation**: after any subagent dispatch, check `git status --short` in the **main
+  checkout** (not just the worktree) for the specific files that subagent touched. Zero leaks this
+  entire Phase 5 session (40/40 tasks) — keep the discipline through the merge step too.
+- **Sacred gitignored data files** (`portfolio.json`, `trade-log.json`, `orders_executed.jsonl`,
+  `.env`, etc.) — never overwrite/delete without explicit user approval, per CLAUDE.md. None were
+  touched by any Phase 5 task; the merge step itself won't touch them either (they're gitignored,
+  not tracked, so a branch merge can't affect them).
+- **Model choice**: `sonnet` for implementers/fixers, `opus` for the whole-branch review (already
+  the plan above) — this project's own history found `haiku`-tier dispatches leaked to `main`
+  twice; `sonnet`-tier never has, across all of Phase 5.
+
+**Phase 5 at a glance (all done):**
+- **5A (8 tasks): ✅ DONE** — TV CDP Resilience: health checks, recovery, retry logic, circuit
+  breaker, caching, error logging, integration into the real 19-call-site `tv_call()`.
+- **5B (8 tasks): ✅ DONE** — Pine Script Manager: registry, validation, injection, version
+  control, rollback, library management, auto-discovery, `/daily` integration.
+- **5C (7/8 tasks, 1 intentionally skipped): ✅ RESOLVED** — Alert & Signal Sync: creation (+
+  condition-shape bugfix), dedup, state sync, metadata, E3 linking, webhook receiver ⏭️ (skipped,
+  user decision), correlation, advisory-only `/daily` integration.
+- **5D (8 tasks): ✅ DONE** — Data Window Extraction: reader, OHLCV validation, indicator
+  extraction, caching, cache-hit logic, lag-tolerant wrapper, validation harness, order-execution
+  integration (liquidity score + RSI veto).
+- **5E (8 tasks): ✅ DONE** — Order Execution & Risk Gates: MRC gate, cluster variance gate,
+  thesis breaker veto, order-size gate, balance gate, composite gate check, post-trade validation
+  (trade log matching + slippage check), non-blocking audit trail logger. All in
+  `investment_screener/backend/py_services/order_risk_gates.py`.
 
 ---
 

@@ -1,21 +1,46 @@
 /**
- * ThesisService.ts (TypeScript Service)
- * =====================================
- *
+ * ThesisService.ts - Core engine for managing investment theses, strategy pillars, and portfolio drift.
+ * 
  * Purpose:
- *     The core engine for managing investment theses, strategy pillars, and portfolio drift analysis.
- *     Orchestrates health checks, strategic reviews via AI, and trade optimization logic.
- *
- * Layer: Backend / Services / Strategy
- *
+ *   The core engine for managing investment theses, strategy pillars, and portfolio drift analysis.
+ *   Orchestrates health checks, strategic reviews via AI, and trade optimization logic.
+ * 
+ * Layer:
+ *   Backend / Services / Strategy
+ * 
  * Usage Examples:
- *     const health = await thesisService.computeHealthCheck(thesisId);
- *     const review = await thesisService.performStrategicReview(thesisId);
- *
- * Key Functions:
- *     - computeHealthCheck() - Calculates portfolio drift at both holding and pillar levels, generating actionable alerts
- *     - performStrategicReview() - Combines thesis targets with AI valuation data to produce a qualitative adversarial report
- *     - optimizePortfolio() - Generates specific trade recommendations to restore thesis alignment
+ *   const health = await thesisService.computeHealthCheck(thesisId);
+ *   const review = await thesisService.performStrategicReview(thesisId);
+ * 
+ * Key Functions (Index):
+ *   - getFilePath(id: string) - Resolves file path for thesis JSON data
+ *   - normalizeTicker(ticker: string) - Substitute Questrade formats with canonical ones
+ *   - getProjectionPath(ticker: string) - Resolves file path for stock projection JSON data
+ *   - getLatestAIProjection(ticker: string) - Retrieve the latest versioned AI projection for a ticker
+ *   - getPortfolioItems() - Retrieves all items in the portfolio
+ *   - getAccountPolicy() - Returns the parsed account policy configuration
+ *   - computeBandPct(targetPct, bandConfig) - Computes absolute percentage bands
+ *   - computeHealthCheck(thesisId: string) - Calculates portfolio drift at both holding and pillar levels, generating alerts
+ *   - getThesis(id: string) - Fetches a thesis configuration by its ID
+ *   - listTheses() - Retrieves a list of all theses
+ *   - saveThesis(thesis: Thesis) - Saves a thesis with version verification and lock protection
+ *   - updateHolding(thesisId, ticker, updates) - Updates a single holding's details in a thesis
+ *   - addHolding(thesisId, holding) - Adds a new holding to a thesis
+ *   - removeHolding(thesisId, ticker) - Removes a holding from a thesis
+ *   - replaceHoldings(thesisId, newHoldings) - Replaces the entire holding list in a thesis
+ *   - performStrategicReview(thesisId: string) - Combines thesis targets with AI valuation data to produce a qualitative adversarial report
+ *   - deleteThesis(id: string) - Deletes a thesis file
+ *   - optimizePortfolio(thesisId: string) - Generates specific trade recommendations to restore thesis alignment
+ *   - parseResponse(text: string) - Helper to clean and parse JSON blocks from LLM responses
+ * 
+ * Key Input Dependencies:
+ *   - investment_screener/backend/data/theses/ (stores theses JSON)
+ *   - investment_screener/backend/data/projections/ (stores projections JSON)
+ *   - investment_screener/backend/data/portfolio.json (reads portfolio holdings)
+ *   - investment_screener/backend/data/account_policy.json (reads drift config)
+ * 
+ * Key Output Dependencies:
+ *   - investment_screener/backend/data/theses/ (writes theses JSON)
  */
 import fs from 'fs';
 import path from 'path';

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-portfolio_performance.py (Python Service)
-=====================================
+portfolio_performance.py - Python utility script.
 
 Purpose:
     Calculates aggregate portfolio performance over standard horizons (1d, 1w, 1m).
@@ -9,15 +8,24 @@ Purpose:
     baseline to ensure accuracy independent of brokerage sync staleness.
 
 Layer:
-    Backend / Python Services / Performance Analytics
+    Backend / Python Services
+
+Usage Examples:
+    python3 portfolio_performance.py investment_screener/backend/data/portfolio.json
+
+Key Functions (Index):
+    - safe_float()
+    - load_portfolio_data()
+    - fetch_history_dataframe()
+    - compute_performance()
+    - main()
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Live portfolio state)
+    None
 
-Usage:
-    python3 portfolio_performance.py investment_screener/backend/data/portfolio.json
+Key Output Dependencies:
+    None
 """
-
 import json
 import sys
 import math

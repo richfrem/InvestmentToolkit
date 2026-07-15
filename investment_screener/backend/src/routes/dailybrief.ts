@@ -1,14 +1,27 @@
 /**
- * src/routes/dailybrief.ts
- * =======================
- *
+ * dailybrief.ts - Express routing for daily-brief snapshot metrics.
+ * 
  * Purpose:
  *   Serves today's conviction scores, macro regime, pillar health, and earnings
  *   flags from the daily-briefs/ snapshot directory.
- *
- * Key Functions:
+ * 
+ * Layer:
+ *   Backend / Routes / Daily Brief
+ * 
+ * Key Functions (Index):
  *   - todayStr() - Formats current date
  *   - latestBriefPath() - Resolves path to the most recent brief
+ * 
+ * Routes Index:
+ *   - GET /latest - Returns today's brief or the most recent available
+ *   - GET /history - Returns metadata for all available snapshots
+ *   - GET /conviction/:ticker - Historical conviction score for one ticker
+ * 
+ * Key Input Dependencies:
+ *   - investment_screener/backend/data/daily-briefs/ (folder containing briefs JSON snapshots)
+ * 
+ * Key Output Dependencies:
+ *   None
  */
 import { Router } from 'express';
 import fs from 'fs';

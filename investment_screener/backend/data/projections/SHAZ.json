@@ -1,0 +1,101 @@
+[
+  {
+    "ticker": "SHAZ",
+    "id": "e0b96b0f-b4df-41ed-a16f-7b1bb363a035",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-07-14T06:31:00Z",
+    "updatedAt": "2026-07-14T06:31:00Z",
+    "name": "AI Deep Dive — SHAZ — 2026-07-14",
+    "rationale": "SharonAI Holdings (SHAZ) is a pure-play neocloud and accelerated compute provider anchored by Situational Awareness L.P.'s 19.9% stake and a $1.6B capital raise. The company's strategic collaboration with Nvidia to deploy a 72MW AI factory and 40,000 Grace Blackwell GB300 GPUs in Australia positions it for an explosive revenue ramp from TTM $1.57M to over $1.35B by 2027. We model a hypergrowth-exception 5-year CAGR, factoring in high initial growth and long-term dilution from Senior Notes/Warrants.",
+    "snapshot": {
+      "price": 68.26,
+      "currency": "USD",
+      "shares": 30977329,
+      "revenue": 1566631,
+      "lastActualPS": 1361.6,
+      "fiscalPeriod": "TTM",
+      "analystGrowthEstimate": 8400.0,
+      "analystMarginEstimate": 18.0
+    },
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.3,
+        "growthRate": 250,
+        "netMargin": 10,
+        "exitPE": 12,
+        "qualityMultiplier": 0.9,
+        "shareChange": 5.0,
+        "rationale": "Bear case models severe dilution from convertible senior notes (+5%/year) and intense GPU cloud pricing pressure as hyperscalers enter the market. Year 5 revenue reaches $750M with exit margins depressed to 10% and a low 12x P/E multiplier.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 750000.0,
+        "year5NetIncome": 75000.0,
+        "year5EPS": 1.9,
+        "scenarioPrice": 12.76,
+        "risks": [
+          "Hyperscaler price wars erode GPU cloud rental yields",
+          "Excessive share dilution from warrant and senior note conversions"
+        ]
+      },
+      "base": {
+        "weight": 0.5,
+        "growthRate": 330,
+        "netMargin": 18,
+        "exitPE": 20,
+        "qualityMultiplier": 1.15,
+        "shareChange": 2.0,
+        "rationale": "Base case models successful deployment of the 72MW AI factory in Australia, matching analyst forecasts of $1.35B in 2027 and expanding to $2.50B in Year 5. Exit net margin of 18% is typical for scaled neocloud providers, and 20x P/E reflects premium sovereign positioning.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 2500000.0,
+        "year5NetIncome": 450000.0,
+        "year5EPS": 13.16,
+        "scenarioPrice": 187.94,
+        "risks": [
+          "Construction or power hookup delays at the Australian datacenter site",
+          "Nvidia Blackwell shipment delays"
+        ]
+      },
+      "bull": {
+        "weight": 0.2,
+        "growthRate": 360,
+        "netMargin": 25,
+        "exitPE": 28,
+        "qualityMultiplier": 1.25,
+        "shareChange": 1.0,
+        "rationale": "Bull case models SHAZ maintaining its lead in APAC sovereign AI cloud capacity. Year 5 revenue reaches $3.2B with high-margin premium Blackwell leases achieving 25% net margins. Capped dilution at 1% and premium 28x exit P/E.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 3200000.0,
+        "year5NetIncome": 800000.0,
+        "year5EPS": 24.58,
+        "scenarioPrice": 535.15,
+        "risks": [
+          "Extreme macro supply chain disruptions in the APAC region"
+        ]
+      }
+    },
+    "aiThesis": {
+      "model": "Claude Sonnet 4.6",
+      "rationale": "SharonAI represents a high-conviction bet on BTM AI infrastructure buildout. Backed by Aschenbrenner's 19.9% stake, it is positioned to be a dominant neocloud player in Australia.",
+      "fairValue": 204.83,
+      "action": "BUY",
+      "analyzedAt": "2026-07-14T06:31:00Z",
+      "researchReport": "SHAZ_2026-07-13.md"
+    },
+    "globalSettings": {
+      "discountRate": 10,
+      "timeHorizon": 5
+    },
+    "analyticsLog": {
+      "shareCountMethod": "Diluted share count adjusted for private placement",
+      "marginAnchor": "Consensus neocloud operating margins"
+    }
+  }
+]

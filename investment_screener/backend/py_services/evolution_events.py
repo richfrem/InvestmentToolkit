@@ -1,4 +1,9 @@
-"""Evolution events — G4 append-only event ledger and tracking system.
+#!/usr/bin/env python3
+"""
+evolution_events.py - Python utility script.
+
+Purpose:
+    Evolution events — G4 append-only event ledger and tracking system.
 
 Tracks six types of portfolio evolution events with append-only JSONL storage:
   - data/evolution_events.jsonl    one record per event
@@ -25,6 +30,44 @@ Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json
     - investment_screener/backend/data/ta-sweep-results.json
     - yfinance for historical price data
+
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    from evolution_events import (
+        emit_earnings_event, emit_breaker_override_event,
+        emit_rebalance_event, emit_price_move_event,
+        emit_dividend_event, emit_forced_exit_event,
+        populate_event_outcomes, generate_evolution_correlation_report
+    )
+
+Key Functions (Index):
+    - EventType()
+    - EarningsGrade()
+    - _make_event_context()
+    - _make_event_outcome()
+    - _make_evolution_event()
+    - _append_jsonl()
+    - _load_jsonl()
+    - _dedup_key()
+    - _should_append_event()
+    - emit_earnings_event()
+    - emit_breaker_override_event()
+    - emit_rebalance_event()
+    - emit_price_move_event()
+    - emit_dividend_event()
+    - emit_forced_exit_event()
+    - populate_event_outcomes()
+    - generate_evolution_correlation_report()
+    - load_events()
+    - main()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
 """
 from __future__ import annotations
 

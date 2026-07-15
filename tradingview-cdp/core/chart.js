@@ -1,33 +1,33 @@
 /**
- * chart.js — TradingView chart control and data extraction via CDP
- *
- * Provides timeframe switching and Data Window reading.
- * Functions accept an explicit CDP client for testability; production callers
- * should pass the result of getClient() from connection.js.
- *
- * Timeframe approach: clicks the interval button in the chart header by matching
- * the resolution text (e.g., "D", "1D", "60", "240"). Falls back to the interval
- * dialog button if no direct match is found in the toolbar.
- *
- * Data Window approach: traverses all visible rows in the Data Window panel
- * and returns every label/value pair as a flat object.
- *
- * process.exit() is NOT needed here — the CLI router (execute() in router.js)
- * handles exit after awaiting the handler result.
+ * chart.js - TradingView chart control and data extraction via CDP.
+ * 
+ * Purpose:
+ *   Provides timeframe switching, symbol changes, layout saving, indicator loading/unloading,
+ *   and Data Window values extraction via CDP.
+ * 
+ * Key Input Dependencies:
+ *   None (reads live state from TradingView Desktop on port 9222 via CDP)
+ * 
+ * Key Output Dependencies:
+ *   None (manipulates the active chart layouts in the user's browser)
  */
 
 /**
  * Change the active chart timeframe.
+ * 
+ * Clicks the interval button in the chart header by matching
+ * the resolution text (e.g., "D", "1D", "60", "240"). Falls back to the interval
+ * dialog button if no direct match is found in the toolbar.
  *
- * Args:
- *   client: CDP client instance (from connection.js getClient())
- *   resolution: timeframe string — e.g. "1D", "D", "W", "60", "240", "15"
- *
- * Returns:
- *   { success: true, resolution: string } on success
- *   { success: false, error: string } on failure
+ * @param {object} client - CDP client instance (from connection.js getClient())
+ * @param {string|number} resolution - Timeframe string (e.g. "1D", "W", "60", "240")
+ * @returns {Promise<object>} Status report containing success status and timeframe changed
  */
 export async function changeTimeframe(client, resolution) {
+  /**
+   * Evaluates UI toolbar buttons matching the resolution, falls back to interval dropdown dialog,
+   * clicks matching row, and closes dialog via Escape on failure.
+   */
   try {
     const safeRes = JSON.stringify(String(resolution).trim().toUpperCase());
 
@@ -139,18 +139,18 @@ export async function changeTimeframe(client, resolution) {
 
 /**
  * Read all active indicator values from the TradingView Data Window panel.
- *
+ * 
  * Traverses every visible row in the Data Window and returns all label/value
  * pairs as a flat object. Works with both built-in and custom indicators.
- *
- * Args:
- *   client: CDP client instance
- *
- * Returns:
- *   { success: true, data: object } keyed by indicator label
- *   { success: false, error: string } if the Data Window panel is not visible
+ * 
+ * @param {object} client - CDP client instance
+ * @returns {Promise<object>} Status report mapping indicator name keys to value strings
  */
 export async function readDataWindow(client) {
+  /**
+   * Asserts the Data Window panel element is visible in the DOM, then uses
+   * data-test-id semantic attribute queries to parse and accumulate loaded values.
+   */
   try {
     const result = await client.Runtime.evaluate({
       expression: `(function() {
@@ -200,14 +200,18 @@ export async function readDataWindow(client) {
 
 /**
  * Open the TradingView Data Window panel if not already visible.
- *
+ * 
  * Strategy: check if visible, then try right-sidebar toggle button,
  * then fall back to Alt+W keyboard shortcut.
- *
+ * 
  * @param {object} client - CDP client instance
- * @returns {{ success: true, wasAlreadyOpen: boolean } | { success: false, error: string }}
+ * @returns {Promise<object>} Status report showing wasAlreadyOpen indicator
  */
 export async function openDataWindow(client) {
+  /**
+   * Evaluates if object_tree widget is displayed, clicks sidebar button/triggers
+   * Alt+W if closed, verifies visibility, and switches tab focus to "data-window".
+   */
   try {
     // TradingView uses "Object tree and data window" panel — data-name="object_tree"
     const DW_PANEL_SEL = '[class*="widgetbar-widget-object_tree"]';
@@ -288,9 +292,13 @@ export async function openDataWindow(client) {
  *
  * @param {object} client - CDP client instance
  * @param {string} [name] - layout name (default: 'agent-layout')
- * @returns {{ success: true, layoutName: string, action: string } | { success: false, error: string }}
+ * @returns {Promise<object>} Status report showing layoutName, action taken ('saved', 'switched', 'created')
  */
 export async function saveLayout(client, name) {
+  /**
+   * Checks current active layout name, presses Cmd/Ctrl+S if matches, otherwise
+   * clicks layout menu to switch or enters name and clicks "Create" in dialog.
+   */
   try {
     const targetName = name || 'agent-layout';
     const safeName = JSON.stringify(targetName);
@@ -438,17 +446,19 @@ const CHART_TYPE_LABELS = {
 
 /**
  * Change the active chart type (candle style).
+ * 
+ * Friendly names mapped include: "heikin-ashi", "line", "area", "renko", or any
+ * explicit TV aria-label like "Hollow candles".
  *
- * Args:
- *   client: CDP client instance
- *   type: friendly name — e.g. "heikin-ashi", "line", "area", "renko",
- *         or any TV aria-label like "Hollow candles"
- *
- * Returns:
- *   { success: true, type: string }
- *   { success: false, error: string }
+ * @param {object} client - CDP client instance
+ * @param {string} type - Friendly chart type name
+ * @returns {Promise<object>} Status report showing the changed chart type
  */
 export async function changeChartType(client, type) {
+  /**
+   * Translates the chart type name into TV aria-label representation, clicks the layout
+   * button with matching label, or clicks Undo if candle style has no button.
+   */
   try {
     const key = String(type).trim().toLowerCase().replace(/\s+/g, '-');
     const label = CHART_TYPE_LABELS[key] || String(type).trim();
@@ -494,19 +504,19 @@ export async function changeChartType(client, type) {
 
 /**
  * Change the active chart symbol.
- *
+ * 
  * Strategy: click the "Change symbol" button in the chart header, type the
  * symbol in the search box that appears, then confirm with Enter.
  *
- * Args:
- *   client: CDP client instance
- *   symbol: ticker string — e.g. "AAPL", "TSLA", "NVDA"
- *
- * Returns:
- *   { success: true, symbol: string }
- *   { success: false, error: string }
+ * @param {object} client - CDP client instance
+ * @param {string} symbol - Ticker symbol string to search for (e.g. "NVDA")
+ * @returns {Promise<object>} Status report showing the updated symbol
  */
 export async function changeSymbol(client, symbol) {
+  /**
+   * Clicks 'Change symbol' toolbar button, focuses and fills the search input
+   * with the target symbol name, and triggers Enter to submit.
+   */
   try {
     const safeSymbol = JSON.stringify(String(symbol).trim().toUpperCase());
 
@@ -579,15 +589,15 @@ export async function changeSymbol(client, symbol) {
  *
  * Opens the Indicators dialog, searches by name, and clicks the first result.
  *
- * Args:
- *   client: CDP client instance
- *   name: indicator name — e.g. "RSI", "MACD", "Bollinger Bands", "Volume"
- *
- * Returns:
- *   { success: true, added: string }
- *   { success: false, error: string }
+ * @param {object} client - CDP client instance
+ * @param {string} name - Indicator name to load (e.g. "RSI")
+ * @returns {Promise<object>} Status report showing the name of the added indicator
  */
 export async function addIndicator(client, name) {
+  /**
+   * Dispatches left mouse click Center-coordinates of the Indicators button in the toolbar,
+   * types search term, clicks the best-matching result row, and presses Escape.
+   */
   try {
     const safeName = JSON.stringify(name);
 
@@ -680,14 +690,15 @@ export async function addIndicator(client, name) {
  *   2. Dispatch a synthetic mouseover to reveal the legend action buttons.
  *   3. Find the button with aria-label="Remove" in the same vertical band and click it.
  *
- * Args:
- *   client: CDP client instance
- *   name:   Indicator name as shown in the chart legend (e.g. "RSI")
- *
- * Returns:
- *   { success: true, removed: string } | { success: false, error: string }
+ * @param {object} client - CDP client instance
+ * @param {string} name - Indicator name as shown in the chart legend (e.g. "RSI")
+ * @returns {Promise<object>} Status report showing the name of the removed indicator
  */
 export async function removeIndicator(client, name) {
+  /**
+   * Finds matching indicator title block in chart legend, dispatches a mouseMoved
+   * hover center coordinate event to reveal buttons, and clicks the Remove button.
+   */
   try {
     const safeName = JSON.stringify(name.toLowerCase());
 
@@ -745,13 +756,14 @@ export async function removeIndicator(client, name) {
  *
  * Reads indicator names from the chart legend (top-left overlay).
  *
- * Args:
- *   client: CDP client instance
- *
- * Returns:
- *   { success: true, indicators: string[] }
+ * @param {object} client - CDP client instance
+ * @returns {Promise<object>} Status report mapping active indicators names list
  */
 export async function listIndicators(client) {
+  /**
+   * Reads indicators from the Data Window if available, or falls back to scraping
+   * indicator names out of the top-left chart legend DOM.
+   */
   try {
     const result = await client.Runtime.evaluate({
       expression: `(function() {

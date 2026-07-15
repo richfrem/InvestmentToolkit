@@ -1,9 +1,10 @@
 /**
- * Batch portfolio TA sweep — scans multiple tickers in one CDP session.
- *
- * For each ticker: switches chart symbol, waits for data, reads Data Window,
- * and computes technical flags. Returns a structured JSON array.
- *
+ * sweep.js - Batch portfolio TA sweep — scans multiple tickers in one CDP session.
+ * 
+ * Purpose:
+ *   Cycles through multiple symbols, extracts active indicator values from the Data Window,
+ *   and outputs structured technical indicator flags for analysis.
+ * 
  * Flags emitted:
  *   RSI_OB        RSI > 72 — overbought, watch for fade
  *   RSI_OS        RSI < 30 — oversold, potential entry
@@ -16,25 +17,33 @@
  *   VOLUME_SPIKE  Volume > 1.8× MA — institutional activity
  *   VOLUME_DRY    Volume < 0.5× MA AND day move > 2% — weak conviction
  *   BIG_DAY       |daily %| > 4 — outsized move, needs context
+ * 
+ * Key Input Dependencies:
+ *   None (reads live state from TradingView Desktop on port 9222 via CDP)
+ * 
+ * Key Output Dependencies:
+ *   None (returns array of diagnostic result objects)
  */
 
 import { changeSymbol, openDataWindow, readDataWindow } from './chart.js';
 
 /**
- * Parse a Data Window value string to float.
+ * Parse a Data Window value string to a float, scaling large units.
+ * 
  * Handles commas, % signs, unicode minus (−), and K/M/B suffixes.
  *
  * TV shows large numbers with suffixes (e.g. "363K", "1.29M") — these must be
  * converted to their true magnitude before dividing vol/volMA, otherwise a ratio
  * of 363K/1.29M = 281× (false spike) appears instead of the correct 0.28×.
  *
- * Args:
- *   raw: raw string from Data Window (e.g. "23.74%", "1,234.56", "−108.51%", "363K", "1.29M")
- *
- * Returns:
- *   Parsed float, or null if unparseable.
+ * @param {string} raw Raw value string from the Data Window
+ * @returns {number|null} Parsed numeric float value, or null if invalid
  */
 function parseNum(raw) {
+  /**
+   * Cleans punctuation, handles unicode minus sign, and normalizes K/M/B suffixes
+   * into their true numeric magnitudes (1e3, 1e6, 1e9).
+   */
   if (raw === null || raw === undefined || raw === '') return null;
   const s = String(raw)
     .replace(/,/g, '')
@@ -56,15 +65,16 @@ function parseNum(raw) {
 
 /**
  * Extract the percentage change from a TV "Change" field.
+ * 
  * e.g. "+82.68 (+5.30%)" → 5.30
  *
- * Args:
- *   changeStr: raw Change or "Last day change" string from Data Window
- *
- * Returns:
- *   Change percent as a float (signed), or null.
+ * @param {string} changeStr Raw change value string containing percentage in parens
+ * @returns {number|null} Change percentage as signed float
  */
 function extractChangePct(changeStr) {
+  /**
+   * Matches regex pattern against parentheses to extract signed float.
+   */
   if (!changeStr) return null;
   const m = String(changeStr).match(/\(([-+]?\d+\.?\d*)%\)/);
   return m ? parseFloat(m[1]) : null;
@@ -73,16 +83,21 @@ function extractChangePct(changeStr) {
 /**
  * Compute technical flags from parsed Data Window values.
  *
- * Args:
- *   rsi, rsima, volBias, adx: numeric values (may be null)
- *   squeezeOn: boolean
- *   volumeRatio: vol / volMA (may be null)
- *   changePct: daily % change (may be null)
- *
- * Returns:
- *   Array of flag strings.
+ * @param {object} params Object containing indicator values
+ * @param {number|null} params.rsi Relative Strength Index
+ * @param {number|null} params.rsima RSI Simple Moving Average
+ * @param {number|null} params.volBias Volume accumulation/distribution bias %
+ * @param {number|null} params.adx Average Directional Index
+ * @param {boolean} params.squeezeOn Bollinger/Keltner squeeze trigger active
+ * @param {number|null} params.volumeRatio Volume to Volume MA ratio
+ * @param {number|null} params.changePct Daily change percentage
+ * @returns {string[]} Set of generated signal flag tags
  */
 function computeFlags({ rsi, rsima, volBias, adx, squeezeOn, volumeRatio, changePct }) {
+  /**
+   * Applies conditional thresholds (e.g. OB > 72, OS < 30, Squeeze) and accumulates
+   * matching flag labels into a string array.
+   */
   const flags = [];
 
   if (rsi !== null) {
@@ -114,16 +129,18 @@ function computeFlags({ rsi, rsima, volBias, adx, squeezeOn, volumeRatio, change
  * Opens the Data Window once, then for each ticker: switches symbol,
  * waits for data to load, reads the Data Window, and computes flags.
  *
- * Args:
- *   client:              connected CDP client
- *   tickers:             array of ticker strings
- *   options.delayMs:     ms to wait after symbol switch (default 1500)
- *   options.onProgress:  optional callback(ticker, index, total)
- *
- * Returns:
- *   Array of per-ticker result objects.
+ * @param {object} client Connected CDP client instance
+ * @param {string[]} tickers List of symbols to evaluate
+ * @param {object} options Optional parameters configuration
+ * @param {number} options.delayMs Ms to wait for loading after changing symbol
+ * @param {Function} options.onProgress Callback for updating index progress
+ * @returns {Promise<object[]>} Array of per-ticker technical analysis outputs
  */
 export async function scanPortfolio(client, tickers, { delayMs = 1500, onProgress } = {}) {
+  /**
+   * Iterates through the list of symbols, requesting symbol change, waiting,
+   * reading values, parsing data keys, and calling computeFlags.
+   */
   await openDataWindow(client);
   await new Promise(r => setTimeout(r, 400));
 

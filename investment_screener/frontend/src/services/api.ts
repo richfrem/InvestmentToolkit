@@ -253,25 +253,30 @@ export const refreshPrices = async (): Promise<{ success: boolean; updated: numb
 };
 
 export const syncAndRefreshPortfolio = async (): Promise<{ success: boolean; dataSource: string; message: string }> => {
-    let syncResult: { success: boolean; dataSource: string; message: string } | null = null;
+    // TradingView is the primary source. Only fall back to yfinance if TV sync fails.
     try {
-        syncResult = await syncPortfolio();
+        const syncResult = await syncPortfolio();
+        return {
+            success: syncResult.success,
+            dataSource: syncResult.dataSource ?? 'tradingview-cdp',
+            message: `TV sync completed: ${syncResult.positionCount ?? ''} positions`,
+        };
     } catch (e) {
-        console.warn('TradingView CDP sync failed or not available, proceeding with price refresh', e);
+        console.warn('TradingView CDP sync failed, falling back to yfinance price refresh', e);
     }
 
-    let refreshResult: { success: boolean; updated: number; heatmap: any } | null = null;
     try {
-        refreshResult = await refreshPrices();
+        const refreshResult = await refreshPrices();
+        return {
+            success: refreshResult.success,
+            dataSource: 'yfinance',
+            message: `Price refresh completed (yfinance fallback): ${refreshResult.updated} updated`,
+        };
     } catch (e) {
-        console.warn('Yahoo price refresh failed', e);
+        console.warn('yfinance fallback also failed', e);
     }
 
-    return {
-        success: (syncResult?.success || refreshResult?.success) ?? false,
-        dataSource: syncResult?.dataSource ?? 'questrade',
-        message: `Sync completed (TV CDP: ${syncResult?.success ? 'Success' : 'Failed/Unavailable'}, Prices: ${refreshResult?.success ? 'Success' : 'Failed'})`
-    };
+    return { success: false, dataSource: 'none', message: 'Sync failed — TradingView unavailable and yfinance fallback failed' };
 };
 
 export const seedQuestradeToken = async (refreshToken: string): Promise<{ success: boolean; message: string }> => {

@@ -1,6 +1,15 @@
 /**
- * CLI command router using node:util parseArgs.
- * Zero dependencies — uses only Node.js built-ins.
+ * router.js - CLI command router using node:util parseArgs.
+ * 
+ * Purpose:
+ *   Handles CLI subcommand routing and parsing for the CDP client application.
+ *   Zero dependencies — uses only Node.js built-ins.
+ * 
+ * Key Input Dependencies:
+ *   None
+ * 
+ * Key Output Dependencies:
+ *   None
  */
 import { parseArgs } from 'node:util';
 
@@ -104,17 +113,31 @@ export async function run(argv) {
   }
 }
 
+/**
+ * Execute the registered handler and write results to stdout.
+ */
 async function execute(handler, values, positionals) {
+  /**
+   * Helper function to execute command handler, stringify the JSON result,
+   * flush to stdout, and cleanly exit.
+   */
   try {
     const result = await handler(values, positionals);
-    console.log(JSON.stringify(result, null, 2));
-    process.exit(0);
+    process.stdout.write(JSON.stringify(result, null, 2) + '\n', () => {
+      process.exit(0);
+    });
   } catch (err) {
     handleError(err);
   }
 }
 
+/**
+ * Handle execution errors and write JSON error message to stderr.
+ */
 function handleError(err) {
+  /**
+   * Helper function to format and log execution errors, exiting with code 1 or 2.
+   */
   const message = err.message || String(err);
   if (/CDP|connection|ECONNREFUSED|not running/i.test(message)) {
     console.error(JSON.stringify({ success: false, error: message }, null, 2));

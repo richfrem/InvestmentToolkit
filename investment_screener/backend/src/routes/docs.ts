@@ -1,14 +1,29 @@
 /**
- * src/routes/docs.ts
- * ==================
- *
+ * docs.ts - Express routing for qualitative reports and markdown documentation.
+ * 
  * Purpose:
  *   Handles Express API routes for reading investment thesis, portfolio reviews,
  *   agent guides, and qualitative research reports.
- *
- * Key Functions:
- *   - GET /research - Lists all available research files
+ * 
+ * Layer:
+ *   Backend / Routes / Docs
+ * 
+ * Routes Index:
  *   - GET /research/:filename - Fetches a specific research report
+ *   - GET /research - Lists all available research files
+ *   - GET /docs/investment-thesis - Reads the main markdown thesis documentation
+ *   - GET /docs/latest-review - Loads the latest markdown portfolio review
+ *   - GET /docs/latest-review-data - Generates structured JSON portfolio review statistics
+ *   - GET /docs/agent-guide - Serves the agent reference documentation
+ * 
+ * Key Input Dependencies:
+ *   - investment_screener/backend/data/research/ (folder containing research MD files)
+ *   - investment_screener/backend/data/portfolio-reviews/ (folder containing review MD files)
+ *   - investment_screener/backend/data/theses/target-portfolio.json
+ *   - investment_screener/backend/src/utils/paths (RESEARCH_DIR, etc.)
+ * 
+ * Key Output Dependencies:
+ *   None
  */
 
 import express from 'express';

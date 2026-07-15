@@ -1,14 +1,43 @@
 /**
- * src/routes/trading.ts
- * =====================
- *
+ * trading.ts - Express routing for broker order execution and trade logs.
+ * 
  * Purpose:
  *   Handles Express API routes for live order execution, checking open orders,
  *   cancelling working orders, and accessing trade execution logs.
- *
- * Key Functions:
- *   - POST /place-order - Places broker orders via TradingView CDP
- *   - GET /orders - Retrieves working and inactive orders
+ * 
+ * Layer:
+ *   Backend / Routes / Trading
+ * 
+ * Key Functions (Index):
+ *   - makeSession(params) - Spawns a new TradeSession tracker in local state map
+ *   - patchSession(id, updates) - Modifies an existing TradeSession's status
+ *   - runPy(args, timeoutMs) - Spawns place_order.py and handles runtime timeouts
+ *   - extractJson(stdout) - Resolves and extracts clean JSON block from process stdout
+ *   - readLog() - Reads entries from trade_log.json
+ *   - writeLog(entries) - Writes updated entries to trade_log.json
+ *   - makeLogEntry(fields) - Scaffolds a standardized manual/automatic trade log record
+ * 
+ * Routes Index:
+ *   - POST /preflight - Executes preflight checks (size caps, stale data flags) for a trade
+ *   - POST /execute - Form-fills order details in TradingView's panel via CDP
+ *   - POST /submit - Submits the filled order and captures the TV order ID
+ *   - GET /session/:id - Queries local state for an active TradeSession
+ *   - GET /log - Reads and returns manual/automatic trade logs
+ *   - POST /log - Appends a manual trade log record
+ *   - POST /log/suggest - Bulk suggests rebalancing trades
+ *   - PATCH /log/:id - Modifies a trade log record (notes, filled price)
+ *   - POST /modify - Modifies limit price/shares of a working TV order via CDP
+ *   - POST /cancel - Cancels a working TV order via CDP
+ *   - POST /log/sync-from-tv - Synchronizes trade logs with working TV orders
+ *   - GET /audit/today - Reads daily TV order action event streams
+ *   - GET /tv-quote - Fetches quote from TradingView chart
+ * 
+ * Key Input Dependencies:
+ *   - investment_screener/backend/data/trade_log.json (Reads/writes execution logs)
+ *   - plugins/tradingview/audit/ (reads logs)
+ * 
+ * Key Output Dependencies:
+ *   - investment_screener/backend/data/trade_log.json
  */
 
 import express from 'express';

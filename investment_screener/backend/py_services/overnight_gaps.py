@@ -1,4 +1,9 @@
-"""Overnight / extended-hours gap scanner for portfolio holdings.
+#!/usr/bin/env python3
+"""
+overnight_gaps.py - Python utility script.
+
+Purpose:
+    Overnight / extended-hours gap scanner for portfolio holdings.
 
 Uses yfinance fast_info.last_price (which reflects extended-hours price when
 the regular market is closed) vs previous_close to detect significant overnight
@@ -11,6 +16,27 @@ Usage:
 
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Measures pre-market gaps)
+
+Layer:
+    Backend / Python Services
+
+Usage Examples:
+    python3 overnight_gaps.py                  # scan all portfolio holdings
+    python3 overnight_gaps.py NVDA,AAPL,TSLA   # explicit ticker list
+    python3 overnight_gaps.py --threshold 3.0  # custom threshold (default: 2.0%)
+
+Key Functions (Index):
+    - _is_scannable()
+    - _load_tickers()
+    - _fetch_gap()
+    - get_overnight_gaps()
+    - main()
+
+Key Input Dependencies:
+    None
+
+Key Output Dependencies:
+    None
 """
 from __future__ import annotations
 
@@ -18,7 +44,7 @@ import json
 import sys
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError, as_completed
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import yfinance as yf
 
@@ -30,6 +56,7 @@ SKIP_SUFFIXES = (".TO", ".V")          # Canadian markets — no extended-hours 
 SKIP_PATTERNS = ("!", )                # Futures contracts (NQ1!, GC1!) — not supported by yfinance
 
 
+# Check if a ticker is scannable via extended-hours yfinance
 def _is_scannable(ticker: str) -> bool:
     """Return True if ticker is a US equity that yfinance can fetch extended-hours data for.
 
@@ -47,6 +74,7 @@ def _is_scannable(ticker: str) -> bool:
     return True
 
 
+# Load active tickers from portfolio and watchlist configs
 def _load_tickers() -> list[str]:
     """Load scannable tickers from portfolio.json union watchlist.json.
 
@@ -78,7 +106,8 @@ def _load_tickers() -> list[str]:
     return tickers
 
 
-def _fetch_gap(ticker: str) -> Optional[dict]:
+# Fetch extended-hours gap data for one ticker
+def _fetch_gap(ticker: str) -> Optional[dict[str, Any]]:
     """Fetch extended-hours gap data for one ticker.
 
     Args:
@@ -113,10 +142,11 @@ def _fetch_gap(ticker: str) -> Optional[dict]:
         return None
 
 
+# Filter and retrieve portfolio holdings with substantial overnight gaps
 def get_overnight_gaps(
     tickers: list[str] | None = None,
     threshold_pct: float = 2.0,
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """Return portfolio holdings with extended-hours moves >= threshold_pct.
 
     Args:
@@ -131,7 +161,7 @@ def get_overnight_gaps(
     us_tickers = [t for t in tickers if _is_scannable(t)]
     if not us_tickers:
         return []
-    results: list[dict] = []
+    results: list[dict[str, Any]] = []
     with ThreadPoolExecutor(max_workers=min(len(us_tickers), 8)) as pool:
         futures = {pool.submit(_fetch_gap, t): t for t in us_tickers}
         try:
@@ -144,7 +174,9 @@ def get_overnight_gaps(
     return sorted(results, key=lambda x: abs(x["change_pct"]), reverse=True)
 
 
+# Main entry point for CLI scanner execution
 def main() -> None:
+    """Parses command line options and prints the gap scanner results in JSON format."""
     args = sys.argv[1:]
     threshold: float = 2.0
     explicit_tickers: list[str] | None = None
