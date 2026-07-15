@@ -1,5 +1,6 @@
 """
-Order Risk Gates — MRC Risk Gate (Task 5E-1) + Cluster Variance Gate (Task 5E-2)
+Order Risk Gates — MRC Risk Gate (Task 5E-1) + Cluster Variance Gate (Task
+5E-2) + Thesis Breaker Veto (Task 5E-3)
 
 check_mrc_limit() (5E-1) checks whether a single, ad-hoc order would push
 its ticker's real Marginal Risk Contribution (MRC) — Phase 3 E1's
@@ -16,16 +17,26 @@ projection: it mirrors rebalancer.py's compute_risk_budget_check() (E2)
 exactly, which only checks the pillar's CURRENT variance contribution,
 never a simulated post-trade increase.
 
+check_breaker_veto() (5E-3) checks whether a single, ad-hoc BUY order's
+ticker has a TRIGGERED thesis breaker (Phase 3 B5) and vetoes if so. It
+reads the REAL data/thesis_breaker_state.json (machine-owned by
+thesis_breakers.py) — NEVER target-portfolio.json, which only stores
+human-authored breaker DEFINITIONS, never live triggered/OK status.
+Unlike rebalancer.py's compute_breaker_warnings() (Phase 3 E2, warn-only,
+never vetoes, batch-shaped), this function returns a REAL veto for a
+single ad-hoc order — Task 5E's own veto authority.
+
 This module reuses the same real data sources (risk_snapshot.json's
-"marginalRiskContribution" and "clusterExposure" fields, Phase 3 E1)
-and the same real check logic from rebalancer.py's
-compute_risk_budget_check() (Phase 3 E2) but does NOT call into or
-modify rebalancer.py or risk_engine.py — their real signatures are
-batch-shaped (routed_orders/bands from a full rebalance-plan run) and
-not directly reusable for a single ad-hoc order without a larger
-refactor of already-shipped, already-reviewed code (out of scope here).
-These functions independently apply the identical logic against the
-identical real data sources instead.
+"marginalRiskContribution" and "clusterExposure" fields, Phase 3 E1;
+thesis_breaker_state.json's "holdings" map, Phase 3 B5) and the same
+real check logic from rebalancer.py's compute_risk_budget_check() and
+compute_breaker_warnings() (Phase 3 E2) but does NOT call into or
+modify rebalancer.py, risk_engine.py, or thesis_breakers.py — their
+real signatures are batch-shaped (routed_orders/bands from a full
+rebalance-plan run) and not directly reusable for a single ad-hoc order
+without a larger refactor of already-shipped, already-reviewed code
+(out of scope here). These functions independently apply the identical
+logic against the identical real data sources instead.
 
 Only the traded ticker (and its pillar) is evaluated — no cascade check
 across all holdings, matching E2's own real per-ticker scope.
@@ -33,9 +44,10 @@ across all holdings, matching E2's own real per-ticker scope.
 Layer: Backend / Python Services / Risk
 
 Usage:
-    from order_risk_gates import check_mrc_limit, check_cluster_variance
+    from order_risk_gates import check_mrc_limit, check_cluster_variance, check_breaker_veto
     result = check_mrc_limit(order, portfolio_state, risk_snapshot=snapshot)
     result = check_cluster_variance(order, portfolio_state, risk_snapshot=snapshot)
+    result = check_breaker_veto(order, thesis_breaker_state=state)
 
 Key Input Dependencies:
     - investment_screener/backend/data/risk_snapshot.json (Phase 3 E1's
@@ -44,6 +56,9 @@ Key Input Dependencies:
       real "maxMarginalRiskContributionPct" and
       "maxClusterVarianceContributionPct" defaults mirrored here as
       mrc_cap_pct's / cluster_cap_pct's own defaults)
+    - investment_screener/backend/data/thesis_breaker_state.json (Phase 3
+      B5's real live triggered/OK breaker status, machine-owned by
+      thesis_breakers.py — never target-portfolio.json)
 """
 from __future__ import annotations
 
@@ -53,6 +68,7 @@ from typing import Any, Dict, Optional
 
 RISK_SNAPSHOT_PATH = Path(__file__).resolve().parents[1] / "data" / "risk_snapshot.json"
 ACCOUNT_POLICY_PATH = Path(__file__).resolve().parents[1] / "data" / "account_policy.json"
+THESIS_BREAKER_STATE_PATH = Path(__file__).resolve().parents[1] / "data" / "thesis_breaker_state.json"
 
 
 def _load_risk_snapshot() -> Dict[str, Any]:
@@ -265,3 +281,80 @@ def check_cluster_variance(
         }
 
     return {"passed": True, "pillar": pillar, "variance_pct": variance_pct, "reason": "Within cluster variance budget"}
+
+
+def _load_thesis_breaker_state() -> Dict[str, Any]:
+    """Load the real data/thesis_breaker_state.json, never raising.
+
+    Mirrors _load_risk_snapshot()'s (Task 5E-1) exact pattern for a
+    different real data file — machine-owned by thesis_breakers.py
+    (Phase 3 B5).
+
+    Returns:
+        Parsed dict, or {} if the file is missing, unreadable, or
+        malformed JSON.
+    """
+    try:
+        if not THESIS_BREAKER_STATE_PATH.exists():
+            return {}
+        return json.loads(THESIS_BREAKER_STATE_PATH.read_text())
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def check_breaker_veto(
+    order: Dict[str, Any],
+    thesis_breaker_state: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Check whether a BUY order's ticker has a TRIGGERED thesis breaker
+    (Phase 3 B5) and veto if so.
+
+    Reads the real data/thesis_breaker_state.json (machine-owned by
+    thesis_breakers.py, B5) — NOT target-portfolio.json, which only
+    stores breaker DEFINITIONS, never live triggered/OK status. A
+    breaker is TRIGGERED iff its "status" field is the literal string
+    "TRIGGERED", matching rebalancer.py's real
+    compute_breaker_warnings() check exactly.
+
+    Unlike E2's compute_breaker_warnings() (warn-only, never vetoes,
+    batch-shaped), this function returns a REAL veto for a single
+    ad-hoc order — Task 5E's own veto authority, analogous to how G2's
+    risk_officer.py already turns E2's warnings into a real veto for
+    the batch rebalance-plan workflow.
+
+    SELL orders are never vetoed — matches E2's own real "buy actions
+    only" scope for the equivalent check.
+
+    Never raises: missing state file, a ticker with no breaker entries,
+    or no TRIGGERED breaker for this ticker all degrade to passed=True.
+
+    Args:
+        order: {"ticker": str, "side": "BUY"|"SELL", ...}.
+        thesis_breaker_state: Parsed thesis_breaker_state.json. If
+            None, loaded via _load_thesis_breaker_state().
+
+    Returns:
+        {"passed": bool, "breaker": str | None, "reason": str} —
+        "breaker" is the FIRST TRIGGERED breaker_id found for this
+        ticker (a ticker could theoretically have multiple triggered
+        breakers; only the first is surfaced, matching the plan's own
+        singular "breaker: str or None" return contract, not a list).
+    """
+    if order.get("side") != "BUY":
+        return {"passed": True, "breaker": None, "reason": "Not a buy order — breaker veto only applies to buys"}
+
+    if thesis_breaker_state is None:
+        thesis_breaker_state = _load_thesis_breaker_state()
+
+    ticker = order.get("ticker")
+    breakers = (thesis_breaker_state or {}).get("holdings", {}).get(ticker, {})
+
+    for breaker_id, entry in breakers.items():
+        if isinstance(entry, dict) and entry.get("status") == "TRIGGERED":
+            return {
+                "passed": False,
+                "breaker": breaker_id,
+                "reason": f"TRIGGERED breaker '{breaker_id}' for {ticker} (current value {entry.get('currentValue')!r})",
+            }
+
+    return {"passed": True, "breaker": None, "reason": "No triggered breaker for this ticker"}
