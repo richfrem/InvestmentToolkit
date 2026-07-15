@@ -852,3 +852,151 @@ def get_validated_data_window(ticker: str, timeframe: str = "1D") -> Dict[str, A
         "indicators": indicators,
         "warnings": list(ohlcv_result["errors"]),
     }
+
+
+# --- Task 5D-8: Integration into Order Execution ---
+#
+# This is the LAST task in sub-spec 5D. The three functions below are
+# self-contained and importable, ready for a FUTURE order_risk_gates.py
+# (Task 5E's own scope to create — that file does not exist yet, 0 of 5E's
+# 8 tasks done) to import and call. This module has no order-placement
+# authority and does not create order_risk_gates.py itself — see this
+# task's brief.
+#
+# compute_liquidity_score() substitutes Volume + intraday range for the
+# plan's literal "bid/ask spread analysis" checklist item, since
+# extract_data_window()'s real output (Task 5D-1, confirmed live) has no
+# bid/ask fields at all — the same class of data-availability gap already
+# resolved for 5D-2's own "spread" ambiguity. This is a documented,
+# best-effort heuristic, NOT a calibrated financial liquidity metric.
+
+_HIGH_VOLUME_THRESHOLD = 1_000_000
+_LOW_VOLUME_THRESHOLD = 100_000
+
+
+def compute_liquidity_score(candle: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Estimate a liquidity score from a candle's Volume and intraday
+    range — proxies for the "bid/ask spread analysis" the plan's
+    checklist names, since extract_data_window()'s real output has no
+    bid/ask fields at all (confirmed live, Task 5D-1's brief). This is
+    a documented, best-effort heuristic, NOT a calibrated financial
+    liquidity metric.
+
+    Score tiers (informal thresholds, not derived from real market
+    microstructure research): volume >= 1,000,000 -> 1.0 (liquid);
+    volume >= 100,000 -> 0.5 (moderate); below that, or volume
+    missing/unparseable -> 0.0 or 0.2 respectively (see below) —
+    missing volume is treated conservatively (as if illiquid), since
+    an unknown liquidity state should never be assumed favorable for
+    an order-sizing decision.
+
+    Never raises: a non-dict `candle`, or one missing/malformed
+    price/volume fields, degrades to a low/zero score with `None`
+    range_pct rather than raising.
+
+    Args:
+        candle: A candle dict matching extract_data_window()'s output
+            shape (or `{}`/malformed input, handled defensively).
+
+    Returns:
+        {"score": float, "volume": int | None, "range_pct": float | None}
+        — range_pct is (high - low) / low * 100 when both are valid
+        positive numbers, else None.
+    """
+    if not isinstance(candle, dict):
+        return {"score": 0.0, "volume": None, "range_pct": None}
+
+    volume = candle.get("volume")
+    high = candle.get("high")
+    low = candle.get("low")
+
+    range_pct = None
+    if (
+        isinstance(high, (int, float)) and not isinstance(high, bool)
+        and isinstance(low, (int, float)) and not isinstance(low, bool)
+        and low > 0
+    ):
+        range_pct = (high - low) / low * 100
+
+    if not isinstance(volume, (int, float)) or isinstance(volume, bool):
+        score = 0.0
+    elif volume >= _HIGH_VOLUME_THRESHOLD:
+        score = 1.0
+    elif volume >= _LOW_VOLUME_THRESHOLD:
+        score = 0.5
+    else:
+        score = 0.2
+
+    return {"score": score, "volume": volume if isinstance(volume, (int, float)) and not isinstance(volume, bool) else None, "range_pct": range_pct}
+
+
+def check_overbought_veto(
+    indicators: Dict[str, Any], threshold: float = 80.0
+) -> Dict[str, Any]:
+    """
+    Veto check for extreme RSI conditions — "RSI > 80 = overbought
+    veto" per the plan's literal example. Uses >= (inclusive) at the
+    threshold, matching this module's existing convention for boundary
+    inclusivity in 5D-2's range checks.
+
+    A missing RSI (None — extract_indicators()'s own real contract
+    when RSI isn't available on the chart, Task 5D-3) does NOT trigger
+    a veto — absence of data is "unknown," not "evidence of an
+    overbought condition," matching how every other function in this
+    module treats a missing value.
+
+    Never raises.
+
+    Args:
+        indicators: An indicators dict matching extract_indicators()'s
+            output shape (must have an "rsi" key; missing key or
+            non-dict input handled defensively).
+        threshold: RSI value at/above which the veto triggers (default
+            80.0, the plan's literal example).
+
+    Returns:
+        {"vetoed": bool, "reason": str | None, "rsi": float | None}
+    """
+    rsi = indicators.get("rsi") if isinstance(indicators, dict) else None
+    if isinstance(rsi, (int, float)) and not isinstance(rsi, bool) and rsi >= threshold:
+        return {"vetoed": True, "reason": f"RSI {rsi:.1f} >= {threshold} (overbought)", "rsi": rsi}
+    return {"vetoed": False, "reason": None, "rsi": rsi if isinstance(rsi, (int, float)) and not isinstance(rsi, bool) else None}
+
+
+def check_order_data_readiness(
+    ticker: str, timeframe: str = "1D", rsi_veto_threshold: float = 80.0
+) -> Dict[str, Any]:
+    """
+    Full pre-order data-quality check: extracts fresh, validated OHLCV
+    + indicators (get_validated_data_window(), Task 5D-7), computes a
+    liquidity score, and checks for an RSI overbought veto — everything
+    a future order-execution risk gate (Task 5E's order_risk_gates.py —
+    not yet built; this function is designed to be imported and called
+    FROM there once it exists) needs to assess a proposed order's
+    data-quality/liquidity/momentum basis.
+
+    This function does NOT itself gate/block any order — it reports
+    data, a proposed veto flag, and a liquidity score. The actual
+    decision of whether to honor a veto or reject low liquidity is a
+    Task 5E concern; this module has no order-placement authority.
+
+    Never raises: get_validated_data_window() (5D-7) itself never
+    raises; this function adds no new exception surface.
+
+    Args:
+        ticker: Ticker symbol for the proposed order.
+        timeframe: Real TV resolution string (default "1D").
+        rsi_veto_threshold: RSI value at/above which "rsi_veto"'s
+            "vetoed" flag is set (default 80.0).
+
+    Returns:
+        get_validated_data_window()'s own {"valid", "candle",
+        "indicators", "warnings"} keys, PLUS two new keys:
+        "liquidity" (compute_liquidity_score()'s result) and
+        "rsi_veto" (check_overbought_veto()'s result).
+    """
+    result = get_validated_data_window(ticker, timeframe)
+    liquidity = compute_liquidity_score(result["candle"] or {})
+    rsi_veto = check_overbought_veto(result["indicators"], threshold=rsi_veto_threshold)
+    return {**result, "liquidity": liquidity, "rsi_veto": rsi_veto}
