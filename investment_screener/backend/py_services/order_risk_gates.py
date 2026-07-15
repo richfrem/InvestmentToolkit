@@ -573,3 +573,99 @@ def check_available_balance(
         }
 
     return {"passed": True, "cash_required": cash_required, "cash_available": questrade_cash, "reason": "Sufficient cash"}
+
+
+# --- Task 5E-6: Composite Gate Check ---
+#
+# check_risk_gates() is the natural composition point for all five gates
+# built across 5E-1 through 5E-5: it calls check_mrc_limit(),
+# check_cluster_variance(), check_breaker_veto(), check_order_size(), and
+# check_available_balance() unchanged — pure composition, no new gate
+# logic of its own. See this task's brief for the full design rationale.
+
+
+def check_risk_gates(
+    order: Dict[str, Any],
+    portfolio_state: Dict[str, Any],
+    risk_snapshot: Optional[Dict[str, Any]] = None,
+    thesis_breaker_state: Optional[Dict[str, Any]] = None,
+    daily_volume: Optional[float] = None,
+    questrade_cash: Optional[float] = None,
+) -> Dict[str, Any]:
+    """
+    Run all 5 order risk gates (Tasks 5E-1 through 5E-5) against a
+    single order and aggregate results.
+
+    Composes check_mrc_limit(), check_cluster_variance(),
+    check_breaker_veto(), check_order_size(), check_available_balance()
+    unchanged — no new gate logic, this function only orchestrates and
+    aggregates.
+
+    risk_snapshot and thesis_breaker_state are each loaded AT MOST ONCE
+    here (if not supplied) and shared across the gates that use them
+    (MRC + cluster variance both need risk_snapshot) — avoids each gate
+    independently re-reading the same real file twice per
+    check_risk_gates() call. daily_volume and questrade_cash are each
+    only used by one gate (size, balance respectively), so no sharing
+    concern applies to them.
+
+    Never raises by design: every individual gate already never raises
+    (5E-1 through 5E-5's own "never raises" contracts), so this
+    function adds no new exception surface in practice. If a gate's own
+    contract were ever violated and it DID raise, this function
+    deliberately does NOT catch it — matching Task 5D-7's own precedent
+    (get_validated_data_window(), which composes several "never raises"
+    functions without adding a defensive try/except around them). A
+    gate raising is treated as a genuine regression in that gate's own
+    contract and is allowed to surface loudly, rather than being
+    silently swallowed into a misleading passed=True/False result for
+    a real trading decision.
+
+    Args:
+        order: {"ticker": str, "side": "BUY"|"SELL", "shares": float, "price": float}.
+        portfolio_state: Shared input for the MRC and cluster-variance
+            gates (see Tasks 5E-1/5E-2's own real field requirements).
+        risk_snapshot: Shared MRC/cluster data source. If None, loaded
+            once via _load_risk_snapshot() (5E-1) and reused for both.
+        thesis_breaker_state: See Task 5E-3. If None, loaded once via
+            _load_thesis_breaker_state() (5E-3).
+        daily_volume: See Task 5E-4. If None, check_order_size() fetches
+            it internally via get_average_daily_volume().
+        questrade_cash: See Task 5E-5. If None, check_available_balance()
+            fetches it internally via get_available_cash().
+
+    Returns:
+        {
+            "passed": bool,  # True only if ALL 5 gates passed
+            "gates": [{"name": str, "passed": bool, "reason": str, ...}],
+                # one entry per gate, in a fixed order: mrc, cluster_variance,
+                # breaker_veto, size, balance — each entry is that gate's
+                # own full result dict with a "name" key added
+            "reasons": [str],  # "reason" strings from FAILING gates only,
+                # in the same fixed gate order
+        }
+    """
+    if risk_snapshot is None:
+        risk_snapshot = _load_risk_snapshot()
+    if thesis_breaker_state is None:
+        thesis_breaker_state = _load_thesis_breaker_state()
+
+    mrc_result = check_mrc_limit(order, portfolio_state, risk_snapshot=risk_snapshot)
+    cluster_result = check_cluster_variance(order, portfolio_state, risk_snapshot=risk_snapshot)
+    breaker_result = check_breaker_veto(order, thesis_breaker_state=thesis_breaker_state)
+    size_result = check_order_size(order, daily_volume=daily_volume)
+    balance_result = check_available_balance(order, questrade_cash=questrade_cash)
+
+    gates = [
+        {"name": "mrc", **mrc_result},
+        {"name": "cluster_variance", **cluster_result},
+        {"name": "breaker_veto", **breaker_result},
+        {"name": "size", **size_result},
+        {"name": "balance", **balance_result},
+    ]
+
+    return {
+        "passed": all(g["passed"] for g in gates),
+        "gates": gates,
+        "reasons": [g["reason"] for g in gates if not g["passed"]],
+    }
