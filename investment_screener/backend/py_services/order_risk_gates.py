@@ -1,7 +1,7 @@
 """
 Order Risk Gates — MRC Risk Gate (Task 5E-1) + Cluster Variance Gate (Task
 5E-2) + Thesis Breaker Veto (Task 5E-3) + Order Size Gate (Task 5E-4) +
-Balance Gate (Task 5E-5)
+Balance Gate (Task 5E-5) + Post-Trade Validation (Task 5E-7)
 
 check_mrc_limit() (5E-1) checks whether a single, ad-hoc order would push
 its ticker's real Marginal Risk Contribution (MRC) — Phase 3 E1's
@@ -63,6 +63,29 @@ specific account's tvSnapshot.snapshots[].balances.cashUSD (matched by
 accountType). Read-only — never writes to portfolio.json, which is
 gitignored, sacred user data per this project's own CLAUDE.md rule.
 
+get_trade_log_entries() / find_matching_trade_log_entry() /
+wait_for_trade_log_entry() / validate_trade_execution() (Task 5E-7)
+reconcile a placed order against the real trade log (investment_screener/
+backend/data/trade-log.json — this project's existing manual/CDP-synced
+trade log, written by trading.ts's makeLogEntry(), NOT a new store).
+get_trade_log_entries() reads it; find_matching_trade_log_entry() finds
+the newest entry matching an order's ticker/side/(account) that is in a
+real executed state — entries with status in {"suggested", "cancelled",
+"inactive", "submitted"} are excluded, since this project's real schema
+has no "filled"/"executed" status and a cancelled, price=0 CDP-logged
+entry would otherwise silently corrupt a slippage calculation (a real,
+observed shape in the live trade log, not a defensive guess).
+wait_for_trade_log_entry() polls the two above until a match appears or
+a timeout elapses, since an order placed via CDP is logged
+asynchronously. validate_trade_execution() is a pure comparison (no I/O)
+between an order and its already-matched trade log entry: shares must
+reconcile exactly (a float-epsilon check, not a percentage tolerance),
+while price slippage is flagged only above a percentage cap (default
+2.0%, exclusive — matches this module's `>` not `>=` boundary
+convention elsewhere). Never raises — a zero/missing order price skips
+the slippage calculation entirely rather than raising or reporting
+100%/undefined slippage.
+
 Layer: Backend / Python Services / Risk
 
 Usage:
@@ -72,6 +95,10 @@ Usage:
     result = check_breaker_veto(order, thesis_breaker_state=state)
     result = check_order_size(order, daily_volume=avg_volume)
     result = check_available_balance(order, questrade_cash=cash)
+
+    from order_risk_gates import wait_for_trade_log_entry, validate_trade_execution
+    matched_entry = wait_for_trade_log_entry(order, account="TFSA")
+    result = validate_trade_execution(order, matched_entry)
 
 Key Input Dependencies:
     - investment_screener/backend/data/risk_snapshot.json (Phase 3 E1's
@@ -89,17 +116,23 @@ Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (gitignored, the
       real, already-synced broker snapshot — "totals.cashUSD" and
       "tvSnapshot.snapshots[].balances.cashUSD", never written to)
+    - investment_screener/backend/data/trade-log.json (gitignored, the
+      real manual/CDP-synced trade log, written by trading.ts's
+      makeLogEntry() — "TRADE_LOG_FILE" in paths.ts — never written to
+      by this module, only read)
 """
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 RISK_SNAPSHOT_PATH = Path(__file__).resolve().parents[1] / "data" / "risk_snapshot.json"
 ACCOUNT_POLICY_PATH = Path(__file__).resolve().parents[1] / "data" / "account_policy.json"
 THESIS_BREAKER_STATE_PATH = Path(__file__).resolve().parents[1] / "data" / "thesis_breaker_state.json"
 PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "portfolio.json"
+TRADE_LOG_PATH = Path(__file__).resolve().parents[1] / "data" / "trade-log.json"
 
 
 def _load_risk_snapshot() -> Dict[str, Any]:
@@ -668,4 +701,213 @@ def check_risk_gates(
         "passed": all(g["passed"] for g in gates),
         "gates": gates,
         "reasons": [g["reason"] for g in gates if not g["passed"]],
+    }
+
+
+# --- Task 5E-7: Post-Trade Validation ---
+#
+# Three genuinely separate concerns, matching this module's established
+# fetch/compute split (e.g. _load_risk_snapshot() vs. check_mrc_limit()):
+# get_trade_log_entries() fetches, find_matching_trade_log_entry() finds
+# a match among fetched entries, wait_for_trade_log_entry() polls the
+# two above until a match appears or a timeout elapses, and
+# validate_trade_execution() is a pure comparison with no I/O of its own.
+
+_NON_EXECUTED_STATUSES = {"suggested", "cancelled", "inactive", "submitted"}
+
+
+def get_trade_log_entries(trade_log_path: Optional[Path] = None) -> List[Dict[str, Any]]:
+    """Read all entries from the real trade log (investment_screener/
+    backend/data/trade-log.json — this project's existing manual/CDP-synced
+    trade log, not a new store).
+
+    Never raises: missing file or malformed JSON degrades to [].
+
+    Args:
+        trade_log_path: Override path (tests pass a tmp_path fixture);
+            None reads the real TRADE_LOG_PATH.
+
+    Returns:
+        List of trade log entry dicts, or [] if unavailable.
+    """
+    path = trade_log_path or TRADE_LOG_PATH
+    try:
+        if not path.exists():
+            return []
+        data = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return []
+    return data if isinstance(data, list) else []
+
+
+def find_matching_trade_log_entry(
+    order: Dict[str, Any],
+    entries: List[Dict[str, Any]],
+    account: Optional[str] = None,
+    after_timestamp: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
+    """Find the most recent trade log entry that matches an order's
+    ticker, side, and (if supplied) account — restricted to entries in a
+    real executed state.
+
+    A trade log entry's status defaults to "logged" for both manual and
+    CDP-auto-logged entries (there is no "filled"/"executed" status in
+    this codebase's real schema). Entries with status in
+    {"suggested", "cancelled", "inactive", "submitted"} are NEVER
+    executed trades and are excluded, even if they are the most recent
+    match by ticker/account/side — matching one of these (e.g. a
+    cancelled, price=0 CDP entry, a real shape observed in the live
+    trade log) would silently misreport slippage on a trade that never
+    happened.
+
+    Never raises.
+
+    Args:
+        order: {"ticker": str, "side": "BUY"|"SELL", "shares": float,
+            "price": float}.
+        entries: Trade log entries, e.g. from get_trade_log_entries().
+        account: If supplied, only match entries for this account
+            (case-insensitive vs. the entry's UPPERCASE account field).
+        after_timestamp: If supplied (ISO 8601 str), only match entries
+            with loggedAt > after_timestamp — avoids matching a stale
+            prior trade for the same ticker.
+
+    Returns:
+        The newest matching entry (by loggedAt), or None.
+    """
+    ticker = str(order.get("ticker", "")).upper()
+    side = str(order.get("side", "")).lower()
+    candidates = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        if str(entry.get("ticker", "")).upper() != ticker:
+            continue
+        if str(entry.get("action", "")).lower() != side:
+            continue
+        if entry.get("status") in _NON_EXECUTED_STATUSES:
+            continue
+        if account is not None and str(entry.get("account", "")).upper() != str(account).upper():
+            continue
+        if after_timestamp is not None and str(entry.get("loggedAt", "")) <= after_timestamp:
+            continue
+        candidates.append(entry)
+    if not candidates:
+        return None
+    return max(candidates, key=lambda e: str(e.get("loggedAt", "")))
+
+
+def wait_for_trade_log_entry(
+    order: Dict[str, Any],
+    account: Optional[str] = None,
+    after_timestamp: Optional[str] = None,
+    timeout: float = 60.0,
+    poll_interval: float = 2.0,
+    trade_log_path: Optional[Path] = None,
+) -> Optional[Dict[str, Any]]:
+    """Poll the real trade log until a matching entry appears or timeout
+    elapses — an order placed via CDP is logged asynchronously (this
+    project's real cdp_execution sync flow), so no matching entry may
+    exist yet at call time.
+
+    Never raises: any I/O failure inside get_trade_log_entries() already
+    degrades to [] (no match), so this function's own failure surface is
+    just "timed out, return None".
+
+    Args:
+        order: {"ticker": str, "side": "BUY"|"SELL", "shares": float, "price": float}.
+        account: Forwarded to find_matching_trade_log_entry().
+        after_timestamp: Forwarded to find_matching_trade_log_entry().
+        timeout: Max seconds to poll (default 60, per the plan's literal value).
+        poll_interval: Seconds between polls (default 2).
+        trade_log_path: Forwarded to get_trade_log_entries() (tests override).
+
+    Returns:
+        The matching entry, or None if not found within timeout.
+    """
+    deadline = time.monotonic() + timeout
+    while True:
+        entries = get_trade_log_entries(trade_log_path)
+        match = find_matching_trade_log_entry(order, entries, account=account, after_timestamp=after_timestamp)
+        if match is not None:
+            return match
+        if time.monotonic() >= deadline:
+            return None
+        time.sleep(poll_interval)
+
+
+def validate_trade_execution(
+    order: Dict[str, Any],
+    trade_log_entry: Optional[Dict[str, Any]],
+    slippage_cap_pct: float = 2.0,
+) -> Dict[str, Any]:
+    """Compare an order to its matched trade log entry — pure comparison,
+    no I/O. Pass the entry found by wait_for_trade_log_entry()/
+    find_matching_trade_log_entry(); this function performs no lookup
+    itself.
+
+    shares_delta is trade_log_entry.shares - order.shares (fractional
+    shares are valid per this project's convention — CLAUDE.md pitfall
+    #21). matched requires an exact shares match (delta within a small
+    float epsilon, not a percentage tolerance — a hard reconciliation
+    check, distinct from the SEPARATE price-slippage tolerance which is
+    scoped to price only).
+
+    price_slippage_pct is None (not flagged) when order price is 0 or
+    missing — matches this module's consistent "can't evaluate, don't
+    fail on a data gap" posture (5E-1 through 5E-6 all do the same).
+
+    Never raises.
+
+    Args:
+        order: {"ticker": str, "side": "BUY"|"SELL", "shares": float, "price": float}.
+        trade_log_entry: A matched entry (see find_matching_trade_log_entry()/
+            wait_for_trade_log_entry()), or None if no match was found.
+        slippage_cap_pct: Max acceptable price slippage percent (default 2.0,
+            per the plan's literal example).
+
+    Returns:
+        {
+            "matched": bool,  # False if trade_log_entry is None, or shares don't reconcile
+            "shares_delta": float | None,
+            "price_slippage_pct": float | None,
+            "slippage_flagged": bool,
+            "reason": str,
+        }
+    """
+    if trade_log_entry is None:
+        return {
+            "matched": False,
+            "shares_delta": None,
+            "price_slippage_pct": None,
+            "slippage_flagged": False,
+            "reason": "No matching trade log entry found",
+        }
+
+    order_shares = order.get("shares", 0.0)
+    logged_shares = trade_log_entry.get("shares", 0.0)
+    shares_delta = logged_shares - order_shares
+    shares_match = abs(shares_delta) < 1e-6
+
+    order_price = order.get("price", 0.0)
+    logged_price = trade_log_entry.get("price", 0.0)
+    price_slippage_pct = None
+    slippage_flagged = False
+    if order_price:
+        price_slippage_pct = abs(logged_price - order_price) / order_price * 100
+        slippage_flagged = price_slippage_pct > slippage_cap_pct
+
+    if not shares_match:
+        reason = f"Shares mismatch: ordered {order_shares}, logged {logged_shares}"
+    elif slippage_flagged:
+        reason = f"Price slippage {price_slippage_pct:.2f}% exceeds {slippage_cap_pct}% cap"
+    else:
+        reason = "Trade execution matches order"
+
+    return {
+        "matched": shares_match,
+        "shares_delta": shares_delta,
+        "price_slippage_pct": price_slippage_pct,
+        "slippage_flagged": slippage_flagged,
+        "reason": reason,
     }
