@@ -56,6 +56,16 @@ AI training and inference demand is creating an unprecedented surge in electrici
 | **PSIX** | Growth — AI power grid infra | 2.3% | AI-native grid optimization; small-cap upside |
 | **OKLO** | Speculative — micro-nuclear | 1.9% | First commercial micro-reactor; 2027-2028 deployment gate |
 
+### Onsite Generation & Grid Infrastructure Watchlist
+To address **Time-to-Power** constraints (4-7 year utility grid queue delays), the strategy incorporates behind-the-meter (BTM) onsite generation, pipeline infrastructure, and power distribution hardware:
+
+*   **`GEV` (GE Vernova)** & **`BKR` (Baker Hughes)**: Direct suppliers of heavy-duty and aeroderivative gas turbines. GEV's turbine capacity is sold out through 2030, reflecting immediate onsite power demand.
+*   **`HWM` (Howmet Aerospace)**: Key supply chain partner for GEV; manufactures superalloy airfoils and precision turbine blades essential for high-temperature gas turbines.
+*   **`CMI` (Cummins)**: Industrial backup and prime natural gas/diesel generator sets (gensets) used to bridge the gap until grid/nuclear power arrives.
+*   **`ETN` (Eaton)**: Electrical equipment monopoly providing the physical switchgear, transformers, and power distribution units required to handle gigawatt-scale datacenter loads.
+*   **`WMB` (Williams Companies)** & **`ET` (Energy Transfer)**: Midstream natural gas pipeline networks that transport raw gas directly to BTM power installations.
+*   **`EQT` (EQT Corp)**: Largest U.S. natural gas producer, representing raw upstream fuel security for onsite generators.
+
 **Total target**: 14.7% — second-largest pillar after ASI Race. Reflects conviction that power is the binding constraint on AI scaling.
 
 ---
@@ -85,17 +95,17 @@ VST position is above target — monitor for trim opportunity on continued stren
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-12 19:17 by TV sync · Portfolio total: $30,355 USD*
+*Auto-updated 2026-07-14 20:51 by TV sync · Portfolio total: $30,566 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
 | **BE** | 5 | 4.0% | 2.1% | +1.9pp | 🟡 TRIM | — |
-| **CEG** | 3.3 | 2.7% | 2.5% | +0.2pp | ⚪ MAINTAIN | — |
+| **CEG** | 3.3 | 2.8% | 2.5% | +0.3pp | ⚪ MAINTAIN | — |
 | **VST** | 4 | 2.1% | 1.9% | +0.2pp | ⚪ MAINTAIN | — |
-| **OKLO** | 10 | 1.6% | 1.5% | +0.1pp | ⚪ MAINTAIN | — |
-| **PSIX** | 14 | 1.6% | 2.0% | -0.4pp | 🔵 ACCUMULATE | — |
+| **OKLO** | 10 | 1.5% | 1.5% | +0.0pp | ⚪ MAINTAIN | — |
+| **PSIX** | 14 | 1.5% | 2.0% | -0.5pp | 🔵 ACCUMULATE | — |
 
-**Pillar total — Actual: 12.1% · Target: 9.9% · Gap: +2.1pp**
+**Pillar total — Actual: 11.8% · Target: 9.9% · Gap: +2.0pp**
 <!-- AUTO_UPDATE_END: current_positions -->

@@ -108,14 +108,14 @@ Robotics & Physical AI is confirmed as a standalone thesis, separate from Applie
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-12 19:17 by TV sync · Portfolio total: $30,355 USD*
+*Auto-updated 2026-07-14 20:51 by TV sync · Portfolio total: $30,566 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **KOID** | 22 | 2.9% | 2.5% | +0.4pp | 🟡 TRIM | — |
-| **HUMN** | 26 | 2.8% | 2.5% | +0.4pp | ⚪ MAINTAIN | — |
+| **KOID** | 22 | 2.8% | 2.5% | +0.3pp | ⚪ MAINTAIN | — |
+| **HUMN** | 26 | 2.7% | 2.5% | +0.2pp | ⚪ MAINTAIN | — |
 
-**Pillar total — Actual: 5.7% · Target: 5.0% · Gap: +0.8pp**
+**Pillar total — Actual: 5.5% · Target: 4.9% · Gap: +0.5pp**
 <!-- AUTO_UPDATE_END: current_positions -->
