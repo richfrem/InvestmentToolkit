@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Briefcase, AlertTriangle, Wifi, WifiOff, Link2, ExternalLink } from 'lucide-react';
+import { Briefcase, AlertTriangle, Wifi, WifiOff, ExternalLink } from 'lucide-react';
 import { PortfolioModal } from '../components/PortfolioModal';
-import { QuestradeSetupModal } from '../components/QuestradeSetupModal';
 
 export default function Settings() {
     const [isPortfolioOpen, setIsPortfolioOpen] = useState(false);
-    const [isQuestradeOpen, setIsQuestradeOpen] = useState(false);
     const [tvStatus, setTvStatus] = useState<'checking' | 'live' | 'offline'>('checking');
 
     useEffect(() => {
@@ -80,28 +78,6 @@ export default function Settings() {
                             </p>
                         </div>
                     )}
-
-                    {/* Questrade */}
-                    <div className="px-6 py-4 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center">
-                                <Link2 size={18} className="text-slate-400" />
-                            </div>
-                            <div>
-                                <div className="text-sm font-semibold text-slate-200">Questrade Account</div>
-                                <div className="text-xs text-slate-500 mt-0.5">
-                                    OAuth2 token for portfolio sync via TradingView
-                                </div>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => setIsQuestradeOpen(true)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition-colors"
-                        >
-                            <Link2 size={13} />
-                            Link Account…
-                        </button>
-                    </div>
                 </div>
             </section>
 
@@ -133,11 +109,6 @@ export default function Settings() {
             </section>
 
             <PortfolioModal isOpen={isPortfolioOpen} onClose={() => setIsPortfolioOpen(false)} />
-            <QuestradeSetupModal
-                isOpen={isQuestradeOpen}
-                onClose={() => setIsQuestradeOpen(false)}
-                onSyncComplete={() => {}}
-            />
         </div>
     );
 }

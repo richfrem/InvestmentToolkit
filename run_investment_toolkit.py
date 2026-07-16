@@ -191,7 +191,6 @@ def preflight_checks(process_env: Dict[str, str]) -> None:
     env_file = os.path.join(ROOT_DIR, ".env")
     if not os.path.exists(env_file):
         Colors.print("Note: No .env file found — copy .env.example to configure optional services.", Colors.YELLOW)
-        Colors.print("Tip: TradingView sync (/tv-portfolio-sync) works without Questrade credentials.", Colors.YELLOW)
     
     portfolio_path = os.path.join("frontend", "src", "data", "portfolio.json")
     portfolio_example = os.path.join("frontend", "src", "data", "portfolio.json.example")

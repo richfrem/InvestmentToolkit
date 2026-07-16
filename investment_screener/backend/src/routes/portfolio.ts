@@ -26,7 +26,6 @@
  *   - GET /position/:ticker - Returns price, shares, and per-account breakdown for a ticker
  *   - GET /holdings/:ticker - Retrieves per-account position counts from TV snapshot
  *   - POST /refresh-prices - Forces yfinance quote refresh
- *   - POST /sync-questrade - Triggers manual Questrade background python client sync
  *   - POST /sync-tv - Gated TradingView CDP sync returning HITL preview diff
  *   - POST /sync-tv/promote - Finalizes and writes HITL TradingView snapshot promote
  *   - POST /sync-tv/apply - One-shot automated sync applying TV data immediately
@@ -48,7 +47,6 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { spawnPythonScript } from '../services/bridge';
-import { questradeSyncService } from '../services/QuestradeSyncService';
 import { brokerSyncService, mergeIntoPortfolio } from '../services/BrokerSyncService';
 import { getLiveUsdCadRate, isTradingViewConnected } from '../utils/helpers';
 import { PORTFOLIO_FILE, PORTFOLIO_CONFIG_FILE, THESIS_FILE } from '../utils/paths';
@@ -505,17 +503,6 @@ router.post('/refresh-prices', async (_req, res) => {
     }
 });
 
-router.post('/sync-questrade', async (_req, res) => {
-    console.log(`[API] Triggering Questrade Portfolio Sync...`);
-    try {
-        await questradeSyncService.runSync();
-        res.json({ success: true, message: 'Questrade portfolio sync completed successfully.' });
-    } catch (error: any) {
-        console.error(`[API] Questrade Sync Error: `, error);
-        res.status(500).json({ error: 'Questrade sync failed', details: error.message });
-    }
-});
-
 router.post('/sync-tv', async (_req, res) => {
     console.log('[API] Triggering TradingView portfolio sync...');
     try {
@@ -585,9 +572,9 @@ router.post('/sync-tv/apply', async (_req, res) => {
 });
 
 router.post('/sync', async (_req, res) => {
-    console.log('[API] Auto portfolio sync (TV → Questrade → cache)...');
+    console.log('[API] Auto portfolio sync (TV → cache)...');
     try {
-        const result = await brokerSyncService.syncAuto(() => questradeSyncService.runSync());
+        const result = await brokerSyncService.syncAuto();
         res.json({ success: true, ...result });
     } catch (error: any) {
         console.error('[API] Auto sync error:', error);

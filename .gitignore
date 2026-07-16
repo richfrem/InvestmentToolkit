@@ -1,3 +1,6 @@
+# Archived/retired code (kept locally, never tracked)
+ARCHIVE/
+
 # Dependencies
 node_modules/
 npm-debug.log*

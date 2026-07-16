@@ -24,7 +24,7 @@ This skill follows the **browser-harness** paradigm:
 - **Trigger**: `/place-order` or natural language ("buy 5 NVDA in TFSA", "sell 10 WYFI")
 - **Execution path**: Python `place_order.py` → Node.js `trading.js` → CDP → TradingView order dialog
 - **HITL Gate**: 3-step — preflight card → form-fill + screenshot → CONFIRM to submit
-- **Post-execution**: Auto-syncs portfolio.json via live TradingView CDP sync (or Questrade REST API fallback)
+- **Post-execution**: Auto-syncs portfolio.json via live TradingView CDP sync
 
 ---
 
@@ -140,7 +140,7 @@ cat plugins/tradingview/audit/orders-$(date +%Y-%m-%d).jsonl | python3 -m json.t
 
 Every response that leads to a trade recommendation must state its data source:
 
-> "Based on portfolio.json synced at {timestamp} via {TradingView CDP | Questrade API | cache}."
+> "Based on portfolio.json synced at {timestamp} via {TradingView CDP | cache}."
 
 If the data source is `cache` (no recent sync), add:
 > "⚠️ Prices are from cache. Run `/tv-portfolio-sync` for live positions before trading."

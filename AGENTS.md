@@ -21,11 +21,6 @@ Two dedicated onboarding agents handle setup. Always route new users here first.
 
 **Programmatic Check**: Run `/setup-tradingview` to trigger the `tv_setup` skill, which programmatically checks port `9222` health and `tradingview-cdp` node module dependencies.
 
-### Questrade API (⚠️ DEPRECATED — legacy fallback, not actively used)
-The toolkit has pivoted fully to TradingView CDP; Questrade sync is retained as an untested fallback only.
-**Trigger**: `/setup-questrade`
-**Skill**: `questrade-token-setup` — interactive wizard for AES-256-GCM encrypted token setup. Use only if TradingView is unavailable.
-
 ## 🛠️ Available Agent Capabilities
 
 This workstation is built on a modular plugin architecture. You have access to the following specialized skills, organized by plugin:
@@ -117,7 +112,6 @@ node tradingview-cdp/cli.js pine save "Name"            # save to TV personal li
 ### 5. Toolkit Manager (`plugins/toolkit-manager`)
 *Orchestrator.*
 - `/start-screener`: Launch full suite (frontend + backend) via `run_investment_toolkit.py`. Also triggered by natural language ("run the screener", "start the app").
-- `/setup-questrade` (⚠️ DEPRECATED — legacy fallback, not actively used): Handle OAuth2 exchange for backup API sync. Also triggered by natural language ("set up questrade", "re-seed token").
 
 ## 📜 Agent Operating Guidelines
 
@@ -142,12 +136,11 @@ As an AI agent operating in this repository, you **MUST** adhere to the followin
 
 ### 4. State Awareness & The Bridge Pattern
 - Live brokerage state is maintained in `backend/data/*.ts` singletons.
-- Portfolio syncing uses a source waterfall: TradingView CDP → Questrade API Fallback → Cached data.
+- Portfolio syncing uses a source waterfall: TradingView CDP → Cached data.
 - All Python-based analytical logic MUST be invoked via the `bridge.ts` service.
 - **Initialize missing private data**: If any local gitignored data files (e.g., `portfolio.json`, `cash_flows.json`) are missing from `investment_screener/backend/data/`, initialize them by copying their corresponding `.example` files.
 
 ### 5. Security & Objectivity
-- **Security**: Never prompt users to paste raw Questrade tokens or API keys. Always use built-in wizards that handle secure encryption.
 - **Objectivity**: When running valuations, adhere to the **Adversarial Objectivity Constraint** to prevent sycophancy. Challenge the user's assumptions and ensure reports remain fiercely objective.
 
 ### 6. TradingView CDP — Critical Node.js Rules
@@ -162,7 +155,7 @@ As an AI agent operating in this repository, you **MUST** adhere to the followin
 - **PSU.U.TO = PSU-U.TO**: Same fund (Purpose US Cash Fund). Broker panel returns `PSU.U.TO` (dot); canonical thesis uses `PSU-U.TO` (hyphen). Alias hardcoded in `fetch_broker_data.py`. Never create a duplicate thesis entry for `PSU.U.TO`.
 - **targetEntryPrice field**: `target-portfolio.json` holdings have an optional `targetEntryPrice` float — the GTC limit order price for accumulating. Set via `update_targets.py --set-entry TICKER=PRICE --write`. The Grok prompt surfaces existing entry prices and asks for suggestions on ACCUMULATE rows.
 - **Limit orders are Day by default**: CDP order automation does not yet set GTC. After placing a long-dated limit via `/place-order`, manually change it to "Good till cancelled" in TradingView broker panel → Orders tab.
-- **Portfolio sync fallback**: After fills, tries (1) Express API, (2) `fetch_broker_data.py --snapshot` (direct CDP — updates cash + holdings without the backend running), (3) Questrade REST.
+- **Portfolio sync fallback**: After fills, tries (1) Express API, (2) `fetch_broker_data.py --snapshot` (direct CDP — updates cash + holdings without the backend running).
 - **Fractional shares**: `place_order.py --shares` accepts float (e.g. `0.2`). TradingView/Questrade supports fractional orders.
 
 ---

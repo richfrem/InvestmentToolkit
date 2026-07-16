@@ -4,7 +4,7 @@
  *
  * Purpose:
  *     Broker-agnostic portfolio sync. Resolves the data source in priority order:
- *     TradingView CDP (primary) → Questrade REST API (optional fallback) → portfolio.json cache.
+ *     TradingView CDP (primary) → portfolio.json cache.
  *     TV CDP is the default and works for any TradingView-connected broker.
  *
  * Layer: Backend / Services / Data Sync
@@ -15,7 +15,7 @@
  *
  * Key Functions:
  *     - syncFromTV()      — Fetches all accounts from TradingView broker panel via CDP
- *     - syncAuto()        — Auto-picks source (TV if reachable, else Questrade, else cache)
+ *     - syncAuto()        — Auto-picks source (TV if reachable, else cache)
  *     - mergeIntoPortfolio() — Merges TV positions into portfolio.json format (preserves thesis/pillar/price)
  */
 
@@ -100,7 +100,7 @@ export interface TVSnapshot {
 }
 
 export interface SyncResult {
-    dataSource:    'tradingview-cdp' | 'questrade' | 'cache';
+    dataSource:    'tradingview-cdp' | 'cache';
     positionCount: number;
     message:       string;
     tvSnapshot?:   TVSnapshot;
@@ -221,9 +221,9 @@ export function mergeIntoPortfolio(tvSnapshot: TVSnapshot, existing: any[]): {
 
 /**
  * Auto-pick source and sync portfolio.json.
- * Priority: TV CDP → cache (Questrade fallback disabled for pure TV mode).
+ * Priority: TV CDP → cache.
  */
-export async function syncAuto(_questradeSyncFn?: () => Promise<void>): Promise<SyncResult> {
+export async function syncAuto(): Promise<SyncResult> {
     const tvReachable = await isTVReachable();
 
     if (tvReachable) {
@@ -251,16 +251,6 @@ export async function syncAuto(_questradeSyncFn?: () => Promise<void>): Promise<
             console.warn(`[BrokerSync] TV sync failed: ${err.message}`);
         }
     }
-
-    // Questrade fallback disabled per user request (pure TradingView mode)
-    /*
-    if (questradeSyncFn) {
-        try {
-            await questradeSyncFn();
-            ...
-        }
-    }
-    */
 
     const rawExisting = fs.existsSync(PORTFOLIO_FILE)
         ? JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'))

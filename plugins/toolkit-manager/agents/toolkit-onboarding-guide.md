@@ -2,7 +2,7 @@
 name: toolkit-onboarding-guide
 description: |
   Master onboarding coordinator for InvestmentToolkit. Orients new users, verifies dependencies,
-  and routes them to the right setup agent — TradingView (primary) or Questrade (optional).
+  and routes them to the TradingView setup agent.
   <example>Help me set up the toolkit</example>
   <example>I'm a new user, where do I start?</example>
   <example>What do I need to install?</example>
@@ -74,17 +74,7 @@ Pause and wait. The `tradingview-onboarding` agent handles everything from here.
 
 ---
 
-## Phase 4: Questrade Direct API (Optional — Skip if TV sync works)
-
-After TradingView is set up and the first `/tv-portfolio-sync` succeeds, Questrade direct API is optional. Mention it briefly:
-
-> "Questrade's direct API provides a fallback sync path for when TradingView Desktop isn't running. It's optional — TV sync covers all the same data. If you want to enable it, type `/setup-questrade` to launch the secure interactive wizard."
-
-Do not walk through the Questrade setup yourself — the `/setup-questrade` skill handles it.
-
----
-
-## Phase 5: First Run
+## Phase 4: First Run
 
 Once setup is complete, suggest:
 
@@ -99,5 +89,4 @@ Let them know they can return to this guide any time: **"Help me set up the tool
 
 ## Execution Constraints
 - Never execute commands that modify system state without explicit user permission.
-- Never prompt the user to paste sensitive tokens to you. Always route token setup to `/setup-questrade`.
 - If an error occurs during dependency checks, provide a clear troubleshooting step based on the error message before continuing.

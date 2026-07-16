@@ -17,7 +17,6 @@ graph TD
     subgraph "External Providers & Brokers"
         TV[TradingView Desktop\nPremium]
         YF[yfinance API]
-        QT[Questrade REST API]
     end
 
     %% State & Data
@@ -25,7 +24,6 @@ graph TD
         PortfolioDB[(portfolio.json)]
         TargetDB[(target-portfolio.json)]
         ProjectionsDB[(projections/)]
-        Cache[(.questrade_cache)]
     end
 
     %% Interactions
@@ -38,9 +36,6 @@ graph TD
 
     %% External Data
     PyLayer -->|Fetch fundamentals/delayed| YF
-    PyLayer -->|Fallback Sync| QT
-    Backend -->|Refresh Token| QT
-    Backend <-->|Read/Write| Cache
 
     %% Local DB access
     Backend <-->|Read/Write| PortfolioDB
@@ -59,5 +54,5 @@ graph TD
 
     class UI,Backend,PyLayer core;
     class AIAgent agent;
-    class TV,YF,QT external;
-    class PortfolioDB,TargetDB,ProjectionsDB,Cache db;
+    class TV,YF external;
+    class PortfolioDB,TargetDB,ProjectionsDB db;
