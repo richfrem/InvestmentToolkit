@@ -1,7 +1,7 @@
 # Session Start Briefing — InvestmentToolkit
-_Last updated: 2026-07-15 | Phase 5: COMPLETE (shipped, merged to `origin/main` at `8e02771`) |
-Phase 6: NOT YET STARTED — no spec, no plan, not even brainstormed. Read the section immediately
-below before touching any code._
+_Last updated: 2026-07-15 | Phase 5: COMPLETE (shipped, merged to `origin/main`; worktree/branches
+cleaned up at `fd2bfaa`) | Phase 6: NOT YET STARTED — no spec, no plan, not even brainstormed. Read
+the section immediately below before touching any code._
 
 > **Read this first at the start of every new session.**
 
