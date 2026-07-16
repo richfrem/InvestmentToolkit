@@ -58,7 +58,7 @@ TradingView Desktop is the primary layer for live prices, portfolio sync, order 
 
 ### 5. Toolkit Manager (`plugins/toolkit-manager`)
 Orchestrator for managing server startup and fallback API token seeding.
-- **Commands/Skills**: `/start-screener`, `/setup-questrade`
+- **Commands/Skills**: `/start-screener`, `/setup-questrade` (⚠️ DEPRECATED — legacy fallback, not actively used; TradingView CDP is the sole actively-used broker/data path)
 
 ---
 
@@ -72,7 +72,7 @@ The `investment_screener/` app is the web-based financial analysis dashboard.
 - **Analytical Engine**: Python 3.11 Utility Layer (`py_services/`) leveraging `yfinance` for math, validation, and historical financials.
 
 ### Key Features
-- **Portfolio Summary & Table**: Live views synced from TV CDP or Questrade API.
+- **Portfolio Summary & Table**: Live views synced from TV CDP (primary; Questrade API is a deprecated legacy fallback).
 - **Market Heatmap**: Real-time sector performance mapping.
 - **Stock Analysis & Metrics**: Deep-dive AI Expert Thesis and 15+ fundamental metrics.
 - **Valuation Modeler**: Interactive Bear/Base/Bull scenario modeling with automatic persistence to projection JSON files.
@@ -102,11 +102,11 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richf
 - **Required for real-time market data and live order execution.** The toolkit integrates directly with TradingView Desktop (running with `--remote-debugging-port=9222`).
 - **Free/Essential Plans**: yfinance remains the fallback source for delayed data (15-20 min).
 
-### Questrade API (Fallback)
-- **Optional — TradingView handles sync and execution natively.**
-- If TradingView Desktop is not running, the toolkit can fall back to the Questrade REST API.
+### Questrade API (⚠️ DEPRECATED — legacy fallback, not actively used)
+- The toolkit has pivoted fully to TradingView CDP, which handles sync and execution natively.
+- Questrade REST integration is retained as an untested legacy fallback, not routine workflow.
 - Token storage uses AES-256-GCM hardware-backed encryption (macOS Keychain).
-- Run `/setup-questrade` to handle the OAuth2 exchange.
+- Run `/setup-questrade` to handle the OAuth2 exchange, if ever needed.
 
 ---
 

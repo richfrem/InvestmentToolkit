@@ -21,7 +21,8 @@ Two dedicated onboarding agents handle setup. Always route new users here first.
 
 **Programmatic Check**: Run `/setup-tradingview` to trigger the `tv_setup` skill, which programmatically checks port `9222` health and `tradingview-cdp` node module dependencies.
 
-### Questrade API (Optional — fallback only)
+### Questrade API (⚠️ DEPRECATED — legacy fallback, not actively used)
+The toolkit has pivoted fully to TradingView CDP; Questrade sync is retained as an untested fallback only.
 **Trigger**: `/setup-questrade`
 **Skill**: `questrade-token-setup` — interactive wizard for AES-256-GCM encrypted token setup. Use only if TradingView is unavailable.
 
@@ -116,7 +117,7 @@ node tradingview-cdp/cli.js pine save "Name"            # save to TV personal li
 ### 5. Toolkit Manager (`plugins/toolkit-manager`)
 *Orchestrator.*
 - `/start-screener`: Launch full suite (frontend + backend) via `run_investment_toolkit.py`. Also triggered by natural language ("run the screener", "start the app").
-- `/setup-questrade`: Handle OAuth2 exchange for backup API sync. Also triggered by natural language ("set up questrade", "re-seed token").
+- `/setup-questrade` (⚠️ DEPRECATED — legacy fallback, not actively used): Handle OAuth2 exchange for backup API sync. Also triggered by natural language ("set up questrade", "re-seed token").
 
 ## 📜 Agent Operating Guidelines
 
