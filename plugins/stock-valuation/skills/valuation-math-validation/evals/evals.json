@@ -1,0 +1,71 @@
+{
+    "skill": "valuation_math_validation",
+    "version": "1.0.0",
+    "description": "Benchmark evaluation suite for activation-condition accuracy and validation-rule enforcement of the valuation_math_validation skill, which is auto-activating (no slash command) and MUST run as a post-computation gate on every single valuation, regardless of ticker or sector.",
+    "scoring_version": "v2.0",
+    "evals": [
+        {
+            "id": "EVAL-001",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "Run a valuation for a boring, low-growth utility company (e.g. a regulated water utility) with no AI exposure at all",
+            "expected_trigger": "valuation_math_validation",
+            "expected_not_trigger": [],
+            "pass_condition": "Skill activates as the post-computation validation gate even though the ticker has no AI/growth angle — per 'When This Skill Activates', it MUST run on every single valuation run regardless of ticker, sector, or model type. Required Computation Trace is produced for each scenario."
+        },
+        {
+            "id": "EVAL-002",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "Run a full valuation for NVDA with bear/base/bull scenarios",
+            "expected_trigger": "valuation_math_validation",
+            "expected_not_trigger": [],
+            "pass_condition": "Skill activates unconditionally as the mandatory post-computation gate, independent of the forward_valuation_challenge skill also firing — both are complementary per the 'Integration' section, and math validation runs AFTER inputs are adjusted, not instead of it."
+        },
+        {
+            "id": "EVAL-003",
+            "type": "near_miss",
+            "category": "rule_enforcement",
+            "prompt": "Validate a scenario where netMargin was entered as 10 (intending 10%) instead of 0.10, and discountRate was entered as 10 instead of 0.10",
+            "expected_trigger": "valuation_math_validation",
+            "pass_condition": "Per Rule 1 (Input Normalization), agent detects netMargin > 1.0 and discountRate > 1.0, raises ERROR 'appears to be in percent form, expected decimal', and HALTS — does not proceed to display a valuation computed with margin=1000% or discount=1000%."
+        },
+        {
+            "id": "EVAL-004",
+            "type": "near_miss",
+            "category": "rule_enforcement",
+            "prompt": "Validate a computed scenario set where increasing revCAGR by 5 percentage points (holding all else constant) produces a LOWER target price than the base case",
+            "expected_trigger": "valuation_math_validation",
+            "pass_condition": "Per Rule 3 (Monotonicity Checks — 'THE most important validation'), agent runs the sensitivity perturbation test, detects test_price <= base_price, raises ERROR 'Monotonicity violation — increasing revCAGR by 5% did not increase target price' with both prices logged, and marks the valuation INVALID."
+        },
+        {
+            "id": "EVAL-005",
+            "type": "negative",
+            "category": "rule_enforcement",
+            "prompt": "Validate a scenario set with bull target $44.48 and bear target $0.23 (the documented APLD example, a 193x spread ratio)",
+            "expected_trigger": "valuation_math_validation",
+            "pass_condition": "Per Rule 5 (Spread Ratio Bounds), agent computes spread_ratio = 193x, classifies it as '> 100x — Definitely a bug', raises ERROR, and per the Error Handling Protocol does NOT display the valuation results — it reports the specific error with the computation trace instead of presenting $0.23/$44.48 as legitimate bear/bull targets."
+        },
+        {
+            "id": "EVAL-006",
+            "type": "negative",
+            "category": "rule_enforcement",
+            "prompt": "Validate a bear scenario where the computed equity_value is negative, and the raw model wants to display a bear target price of $0.23",
+            "expected_trigger": "valuation_math_validation",
+            "pass_condition": "Per Rule 10 (Negative Value Handling), agent detects equity_value < 0 and does NOT allow a small positive residual like $0.23 to be displayed (explicitly called out as implying residual equity that doesn't exist). Target price is clamped to $0.00 and the scenario is labeled 'equity wipeout / restructuring'."
+        },
+        {
+            "id": "EVAL-007",
+            "type": "positive",
+            "category": "output_requirements",
+            "prompt": "Validate a clean, correctly-computed base-case scenario (rev_t0=$144M, revCAGR=0.65, netMargin=0.10, exitPE=18x, discountRate=0.10, horizon=5, shares_current=260M)",
+            "expected_trigger": "valuation_math_validation",
+            "pass_condition": "Agent produces the full Required Computation Trace JSON (inputs, derived, validation blocks) matching the documented Trace Schema, with all validation sub-checks (input_ranges, unit_consistency, monotonicity, scenario_ordering, spread_check, fv_reconciliation, double_discount_check, share_count_check) reported as PASS, and results ARE displayed since no ERROR fired."
+        }
+    ],
+    "benchmark_targets": {
+        "activation_accuracy": "100% of EVAL-001/002 pass — fires on every valuation regardless of sector",
+        "rule_enforcement": "100% of EVAL-003/004/005/006 pass — HALT on percent/decimal, monotonicity, spread-ratio, and negative-value violations",
+        "output_completeness": "100% of EVAL-007 pass — full computation trace produced and results displayed only when validation passes"
+    }
+}
