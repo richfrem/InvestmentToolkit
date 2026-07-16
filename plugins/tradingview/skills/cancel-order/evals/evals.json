@@ -1,0 +1,59 @@
+{
+    "skill": "cancel-order",
+    "version": "1.0.0",
+    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and adversarial robustness of the cancel-order skill (cancel a Working/Inactive TradingView order via CDP and mark it cancelled in the Trade Log).",
+    "scoring_version": "v2.0",
+    "evals": [
+        {
+            "id": "EVAL-001",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "Cancel my open INTC limit order",
+            "expected_trigger": "cancel-order",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent invokes cancel-order, calls cancelOrder() (or POST /api/trading/cancel), clicks the × button and confirms via the 'Cancel order' secondary dialog, then verifies the row is gone from the DOM."
+        },
+        {
+            "id": "EVAL-002",
+            "type": "positive",
+            "category": "schema_compliance",
+            "prompt": "Cancel order 292b5304-0c3d-42c2-02c0-290f6d322c12 for INTC buy at $47.00",
+            "expected_trigger": "cancel-order",
+            "pass_condition": "Agent supplies --order-id, --ticker, --action, and --limit-price to tv_cancel_order.py (or the equivalent API payload), and the response includes `cancelled` and `verified` fields that the agent reports back to the user, not just a generic 'done'."
+        },
+        {
+            "id": "EVAL-003",
+            "type": "negative",
+            "category": "edge_case",
+            "prompt": "Cancel my WYFI order",
+            "setup": "TradingView is not connected (CDP unreachable)",
+            "expected_trigger": "cancel-order",
+            "pass_condition": "Agent reports the asymmetric outcome accurately: the Trade Log entry is still marked cancelled regardless of TV result, but the agent must state that TV-side cancellation could not be verified — it must not claim the order was cancelled in the broker without qualification."
+        },
+        {
+            "id": "EVAL-004",
+            "type": "negative",
+            "category": "hallucination",
+            "prompt": "Cancel my SHOP.TO order — it should still be sitting there from this morning",
+            "setup": "Order not found in DOM — likely already filled or expired",
+            "expected_trigger": "cancel-order",
+            "pass_condition": "Agent reports `{ cancelled: false }` truthfully and explains the order may have already filled or expired. Does not fabricate a successful cancellation."
+        },
+        {
+            "id": "EVAL-005",
+            "type": "near_miss",
+            "category": "trigger_conflict",
+            "prompt": "Actually, don't cancel it — just move the price down to $45 instead",
+            "expected_trigger": "modify-order",
+            "expected_not_trigger": [
+                "cancel-order"
+            ],
+            "pass_condition": "Agent routes to modify-order (reprice), not cancel-order, since the user wants the order to persist at a new price rather than be removed."
+        }
+    ],
+    "benchmark_targets": {
+        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
+        "schema_compliance": "100% of EVAL-002 pass",
+        "adversarial_robustness": "100% of EVAL-003/004 pass"
+    }
+}

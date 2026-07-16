@@ -1,0 +1,68 @@
+{
+    "skill": "pine_inject",
+    "version": "1.0.0",
+    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and adversarial robustness of the pine_inject skill (generates Pine Script v6 and injects it into the TradingView Pine Editor via CDP, with an auto-correction loop on compile errors).",
+    "scoring_version": "v2.0",
+    "evals": [
+        {
+            "id": "EVAL-001",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "/pine-inject moving average crossover",
+            "expected_trigger": "pine_inject",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent extracts description = 'moving average crossover', writes a Pine Script v6 file to temp/generated_script.pine, and injects it via tv_pine_inject.py."
+        },
+        {
+            "id": "EVAL-002",
+            "type": "positive",
+            "category": "schema_compliance",
+            "prompt": "/pine-inject RSI with overbought/oversold bands",
+            "expected_trigger": "pine_inject",
+            "pass_condition": "Generated script's first line is exactly `//@version=6`, second line is an `indicator(...)` or `strategy(...)` call, uses `ta.rsi()` built-in, and contains no deprecated v4/v5 constructs (`study()`, `transp=`, `iff()`)."
+        },
+        {
+            "id": "EVAL-003",
+            "type": "negative",
+            "category": "hallucination",
+            "prompt": "/pine-inject a supertrend indicator",
+            "setup": "First injection attempt returns {\"success\": false, \"error\": \"compilation error: mismatched input\"}",
+            "expected_trigger": "pine_inject",
+            "pass_condition": "Agent analyzes the compile error, fixes temp/generated_script.pine, and retries — up to a maximum of 3 attempts — then stops and reports the unresolved error to the user rather than retrying indefinitely or claiming false success."
+        },
+        {
+            "id": "EVAL-004",
+            "type": "negative",
+            "category": "edge_case",
+            "prompt": "/pine-inject a volume profile indicator",
+            "setup": "TradingView Desktop is not reachable via CDP",
+            "expected_trigger": "pine_inject",
+            "pass_condition": "Agent stops and tells the user TradingView Desktop is not running, with the launch instruction, rather than attempting the injection or fabricating a success result."
+        },
+        {
+            "id": "EVAL-005",
+            "type": "near_miss",
+            "category": "trigger_conflict",
+            "prompt": "Create a pine script for a Bollinger Band squeeze detector — research existing community versions first and make sure it doesn't repaint",
+            "expected_trigger": "author_pine_script",
+            "expected_not_trigger": [
+                "pine_inject"
+            ],
+            "pass_condition": "Because the request implies research (Phase 0), repainting safeguards, and the fuller authoring workflow rather than a quick explicit `/pine-inject`, the agent routes to author_pine_script, which owns those responsibilities, instead of the lighter pine_inject path."
+        },
+        {
+            "id": "EVAL-006",
+            "type": "negative",
+            "category": "edge_case",
+            "prompt": "/pine-inject a stochastic RSI indicator",
+            "setup": "The tradingview-cdp engine is not found at the default location",
+            "expected_trigger": "pine_inject",
+            "pass_condition": "Agent instructs the user to set `export TV_CDP_DIR=/path/to/tradingview-cdp` (or run `npm ci` in tradingview-cdp) rather than silently failing or fabricating an injection result."
+        }
+    ],
+    "benchmark_targets": {
+        "trigger_accuracy": "≥ 90% of EVAL-001 pass",
+        "schema_compliance": "100% of EVAL-002 pass",
+        "adversarial_robustness": "100% of EVAL-003/004/006 pass"
+    }
+}
