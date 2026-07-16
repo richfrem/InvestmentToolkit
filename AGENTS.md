@@ -22,7 +22,7 @@ Two dedicated onboarding agents handle setup. Always route new users here first.
 **Programmatic Check**: Run `/setup-tradingview` to trigger the `tv_setup` skill, which programmatically checks port `9222` health and `tradingview-cdp` node module dependencies.
 
 ### Questrade API (Optional — fallback only)
-**Trigger**: natural language — "set up questrade", "fix my questrade token", "re-seed token" (no slash command; `toolkit-manager` has no `commands/` directory)
+**Trigger**: `/setup-questrade`
 **Skill**: `questrade-token-setup` — interactive wizard for AES-256-GCM encrypted token setup. Use only if TradingView is unavailable.
 
 ## 🛠️ Available Agent Capabilities
@@ -53,7 +53,7 @@ This workstation is built on a modular plugin architecture. You have access to t
 - **`risk-officer-agent`**: Enforces the rebalancer's risk-gate and thesis-breaker warnings as real vetoes (25% MRC / 60% cluster-variance caps, `TRIGGERED` thesis breakers), one order at a time, with override logging. Dispatched by `/rebalance` (real enforcement) and `/daily` (read-only banner). `plugins/portfolio-advisor/agents/risk-officer-agent.md`.
 - **`red-team-agent`**: Adversarial reviewer producing ≥3 falsifiable objections to a completed valuation or rebalance plan, plus a "what would change my mind" list. Never proposes trades; output is conversational only. Dispatched mandatorily by `/evaluate-stock` and `/rebalance`. `plugins/portfolio-advisor/agents/red-team-agent.md`.
 - **`data-quality-agent`**: Decides degrade-gracefully vs. halt when a valuation-committee script (WACC, comps, peer bench, technicals) flags staleness or a cross-source data conflict. Read-only; dispatched by `/evaluate-stock` only when a flag fires. `plugins/portfolio-advisor/agents/data-quality-agent.md`.
-- **`single-stock-advisor`**: Interactive sub-agent guiding a full single-equity workflow — thesis writing/challenge, valuation math verification, technical entry charting, target sizing, order drafting. `plugins/portfolio-advisor/agents/single-stock-advisor.md`.
+- `/single-stock-advisor {TICKER}`: Interactive sub-agent guiding a full single-equity workflow — thesis writing/challenge, valuation math verification, technical entry charting, target sizing, order drafting. Agent: `plugins/portfolio-advisor/agents/single-stock-advisor.md`.
 
 ### 2. Stock Valuation Analyst (`plugins/stock-valuation`)
 *Autonomous buy-side analyst.*
@@ -115,8 +115,8 @@ node tradingview-cdp/cli.js pine save "Name"            # save to TV personal li
 
 ### 5. Toolkit Manager (`plugins/toolkit-manager`)
 *Orchestrator.*
-- **`run-screener`** (no slash command — trigger by natural language: "run the screener", "start the app", "launch investment toolkit"): Launch full suite (frontend + backend) via `run_investment_toolkit.py`.
-- **`questrade-token-setup`** (no slash command — trigger by natural language: "set up questrade", "fix my questrade token", "re-seed token"): Handle OAuth2 exchange for backup API sync.
+- `/start-screener`: Launch full suite (frontend + backend) via `run_investment_toolkit.py`. Also triggered by natural language ("run the screener", "start the app").
+- `/setup-questrade`: Handle OAuth2 exchange for backup API sync. Also triggered by natural language ("set up questrade", "re-seed token").
 
 ## 📜 Agent Operating Guidelines
 
