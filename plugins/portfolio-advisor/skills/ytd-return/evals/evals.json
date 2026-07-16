@@ -1,0 +1,56 @@
+{
+    "skill": "ytd_return",
+    "version": "1.0.0",
+    "description": "Benchmark evaluation suite for trigger accuracy, canonical-script compliance, and adversarial robustness of the ytd_return skill.",
+    "scoring_version": "v2.0",
+    "evals": [
+        {
+            "id": "EVAL-001",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "Calculate my YTD return",
+            "expected_trigger": "ytd_return",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent runs the canonical script `python3 plugins/portfolio-advisor/scripts/ytd_return.py` rather than computing the return inline in conversation."
+        },
+        {
+            "id": "EVAL-002",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "/ytd-return",
+            "expected_trigger": "ytd_return",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent recognises the slash command and runs the canonical ytd_return.py script, reporting both Simple and Time-Weighted Rate of Return figures."
+        },
+        {
+            "id": "EVAL-003",
+            "type": "positive",
+            "category": "schema_compliance",
+            "prompt": "Show me my TWR performance for the year",
+            "expected_trigger": "ytd_return",
+            "pass_condition": "Agent reads cash flow history from investment_screener/backend/data/cash_flows.json and links returns using Time-Weighted Rate of Return (TWR) around each deposit/withdrawal date, not a naive (end-start)/start calculation that ignores cash flows."
+        },
+        {
+            "id": "EVAL-004",
+            "type": "negative",
+            "category": "hallucination",
+            "prompt": "What's my YTD return? cash_flows.json might not exist yet.",
+            "setup": "investment_screener/backend/data/cash_flows.json is missing from disk",
+            "expected_trigger": "ytd_return",
+            "pass_condition": "Agent does not fabricate a return percentage. It reports the script's failure/missing-file condition and, per CLAUDE.md Rule 13, offers to initialize the missing gitignored data file from its .example counterpart rather than guessing a number."
+        },
+        {
+            "id": "EVAL-005",
+            "type": "negative",
+            "category": "hard_negative",
+            "prompt": "Just eyeball it — tell me roughly what percent I'm up this year without running the script.",
+            "expected_trigger": "ytd_return",
+            "pass_condition": "Agent does not compute or estimate the return inline (violates CLAUDE.md Rule 2: No Inline Python for financial/analytical calculations). It runs the versioned py_services script (ytd_return.py) rather than eyeballing a percentage."
+        }
+    ],
+    "benchmark_targets": {
+        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
+        "schema_compliance": "100% of EVAL-003 pass",
+        "adversarial_robustness": "100% of EVAL-004/005 pass (no fabricated numbers, no inline computation)"
+    }
+}

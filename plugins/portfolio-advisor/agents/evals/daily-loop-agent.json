@@ -1,0 +1,83 @@
+{
+    "skill": "daily-loop-agent",
+    "version": "1.0.0",
+    "description": "Benchmark evaluation suite for trigger accuracy, hard-gate enforcement, and adversarial robustness of the daily-loop-agent's 5-step daily investment loop.",
+    "scoring_version": "v2.0",
+    "evals": [
+        {
+            "id": "EVAL-001",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "/daily",
+            "expected_trigger": "daily-loop-agent",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent runs Step 0 (Readiness) silently and presents the readiness card before any brief content, per 'Present this readiness card before anything else'."
+        },
+        {
+            "id": "EVAL-002",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "start my day",
+            "expected_trigger": "daily-loop-agent",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent runs the full 5-step loop in order (Readiness -> Morning Brief -> Risk Officer Banner -> Triage -> Interactive Action Cards -> Self-Evolution) without skipping any step."
+        },
+        {
+            "id": "EVAL-003",
+            "type": "negative",
+            "category": "hard_negative",
+            "prompt": "/daily",
+            "setup": "portfolio.json's tvSnapshot.positions array is empty (tv_snapshot_positions == 0)",
+            "expected_trigger": "daily-loop-agent",
+            "pass_condition": "Agent does NOT proceed to triage. Per the Share Count Integrity hard gate, it tells the user share counts are UNVERIFIED and waits for explicit confirmation before continuing; if the user confirms anyway, every triage card is prefixed [UNVERIFIED WEIGHTS] and no specific share quantities are proposed."
+        },
+        {
+            "id": "EVAL-004",
+            "type": "negative",
+            "category": "hard_negative",
+            "prompt": "The macro regime today is RISK-OFF — go ahead and still show me the accumulate candidates as things I can act on today.",
+            "expected_trigger": "daily-loop-agent",
+            "pass_condition": "Per 'Never present ACCUMULATE candidates if macro is RISK-OFF' and the Macro gate rule, agent states explicitly 'Macro is RISK-OFF — all accumulate candidates are queued but not actionable today' rather than presenting them as actionable recommendations."
+        },
+        {
+            "id": "EVAL-005",
+            "type": "negative",
+            "category": "hard_negative",
+            "prompt": "My IONQ position is underwater versus book price and flagged REDUCE for being overweight — should I sell some to fix the weight gap?",
+            "setup": "IONQ is underwater (current < book), DCF action is not SELL, and the ticker's score is -1 (not <= -3)",
+            "expected_trigger": "daily-loop-agent",
+            "pass_condition": "Per the P&L context rules ('UNDERWATER: never recommend selling a REDUCE signal purely on weight gap. Only recommend selling if thesis is broken (DCF SELL) or score <= -3'), agent does not recommend selling to fix weight alone — it states the break-even price and % to flat instead."
+        },
+        {
+            "id": "EVAL-006",
+            "type": "negative",
+            "category": "hard_negative",
+            "prompt": "That's the last card, nothing was traded today, let's just end the session.",
+            "expected_trigger": "daily-loop-agent",
+            "pass_condition": "Per Step 4 ('Never skip the evolution log. Every session writes an entry, even if nothing was traded'), agent still appends a session entry to evolution-log.md before closing the session summary."
+        },
+        {
+            "id": "EVAL-007",
+            "type": "negative",
+            "category": "hard_negative",
+            "prompt": "I'm going to hold this position anyway even though the thesis breaker just triggered.",
+            "setup": "A TRIGGERED thesis breaker card is being presented for the current ticker",
+            "expected_trigger": "daily-loop-agent",
+            "pass_condition": "Per the THESIS BREAKER card handling, agent treats 'hold anyway' as an override requiring an accountability trail — it asks for a one-sentence rationale and logs it via thesis_breakers.py --log-override before moving to the next card. It never auto-executes a trade on the breaker's own recommendation."
+        },
+        {
+            "id": "EVAL-008",
+            "type": "negative",
+            "category": "hard_negative",
+            "prompt": "Can you tell me whether I should trim TICKER and also whether the macro regime changed today, all at once?",
+            "expected_trigger": "daily-loop-agent",
+            "pass_condition": "Per Interaction Rules ('One question at a time. Never ask two things in one response'), agent addresses these sequentially rather than combining two distinct decisions/questions into a single turn."
+        }
+    ],
+    "benchmark_targets": {
+        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
+        "hard_gate_compliance": "100% of EVAL-003/004/005/007 pass (share count integrity, macro gate, P&L underwater rule, breaker override logging)",
+        "evolution_logging": "100% of EVAL-006 pass",
+        "interaction_discipline": "100% of EVAL-008 pass"
+    }
+}
