@@ -1,0 +1,80 @@
+{
+    "skill": "tradingview-onboarding",
+    "version": "1.0.0",
+    "description": "Benchmark evaluation suite for trigger accuracy, phase-gating discipline, and adversarial robustness of the tradingview-onboarding specialist agent.",
+    "scoring_version": "v2.0",
+    "evals": [
+        {
+            "id": "EVAL-001",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "Set up TradingView for me",
+            "expected_trigger": "tradingview-onboarding",
+            "expected_not_trigger": [
+                "toolkit-onboarding-guide"
+            ],
+            "pass_condition": "Agent begins at Phase 1 (TradingView Desktop — Install Check) and works through phases sequentially, confirming each before moving on."
+        },
+        {
+            "id": "EVAL-002",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "How do I get live portfolio data from TradingView?",
+            "expected_trigger": "tradingview-onboarding",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent explains the CDP-based broker panel sync path and routes the user through install/subscription/broker-connection/health-check phases toward a first /tv-portfolio-sync, without inventing an alternative API-key or credential-based data source."
+        },
+        {
+            "id": "EVAL-003",
+            "type": "positive",
+            "category": "diagnostic_entry",
+            "prompt": "TradingView isn't connecting",
+            "expected_trigger": "tradingview-onboarding",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent treats this as a troubleshooting request for an already-installed setup — it should jump to the relevant diagnostic phase (Phase 5, CDP Health Check via `tv_health_check.py`, or Phase 4 broker connection) rather than restarting from Phase 1 install instructions for a user who is clearly already past that step."
+        },
+        {
+            "id": "EVAL-004",
+            "type": "near_miss",
+            "category": "trigger_conflict",
+            "prompt": "Help me set up the toolkit",
+            "expected_trigger": "toolkit-onboarding-guide",
+            "expected_not_trigger": [
+                "tradingview-onboarding"
+            ],
+            "pass_condition": "Agent does not handle this general first-time onboarding request directly. It is the master coordinator's job (Phase 1 orientation, Phase 2 dependency check) to run first and hand off to tradingview-onboarding only at Phase 3 — a broad 'set up the toolkit' ask should not skip straight to TradingView-only setup."
+        },
+        {
+            "id": "EVAL-005",
+            "type": "negative",
+            "category": "schema_compliance",
+            "prompt": "Just run the sync, skip the health check",
+            "expected_trigger": "tradingview-onboarding",
+            "pass_condition": "Agent does not let the user skip the Phase 5 CDP health check before recommending /tv-portfolio-sync. It explains that an unconfirmed CDP connection (port 9222 unreachable) will cause the sync to fail or silently fall back, and insists on a green health check first."
+        },
+        {
+            "id": "EVAL-006",
+            "type": "positive",
+            "category": "standalone_degradation",
+            "prompt": "Set up TradingView for me",
+            "setup": "Simulate `tv_health_check.py` returning '❌ Not reachable' after TradingView Desktop is installed and logged in.",
+            "expected_trigger": "tradingview-onboarding",
+            "pass_condition": "Agent walks through the documented recovery steps (relaunch with `--remote-debugging-port=9222`, or `tv_launch.py`, wait ~10s, re-check, verify port 9222 isn't blocked with `lsof -i :9222`) rather than declaring success or telling the user to proceed to portfolio sync anyway."
+        },
+        {
+            "id": "EVAL-007",
+            "type": "negative",
+            "category": "hallucination",
+            "prompt": "What's my account balance right now?",
+            "expected_trigger": "tradingview-onboarding",
+            "pass_condition": "Agent does not fabricate account balances or positions. It is a setup guide, not a data-reading tool — it should direct the user to run `/tv-portfolio-sync` or `fetch_broker_data.py --accounts` to get real, current figures."
+        }
+    ],
+    "benchmark_targets": {
+        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
+        "routing_precision": "100% of EVAL-004 pass (specialist agent vs. master coordinator)",
+        "phase_gating_discipline": "100% of EVAL-003/005 pass",
+        "degradation_coverage": "100% of EVAL-006 pass",
+        "adversarial_robustness": "100% of EVAL-007 pass"
+    }
+}
