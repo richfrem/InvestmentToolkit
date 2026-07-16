@@ -1,8 +1,123 @@
 # Session Start Briefing — InvestmentToolkit
-_Last updated: 2026-07-15 | Phase 4: COMPLETE (shipped) | Phase 5: COMPLETE (shipped, merged to
-`origin/main` at `54b4276`)._
+_Last updated: 2026-07-15 | Phase 5: COMPLETE (shipped, merged to `origin/main` at `8e02771`) |
+Phase 6: NOT YET STARTED — no spec, no plan, not even brainstormed. Read the section immediately
+below before touching any code._
 
 > **Read this first at the start of every new session.**
+
+---
+
+## 🆕 NEXT: Fable5 Elevation Guide — Phase 6 ("G3" — Skill/Sub-Agent Architecture Cleanup) — not yet scoped
+
+**Phase 6 is the last phase of the original 6-phase Fable5 roadmap** (see the roadmap line
+preserved in the Phase 4 section below: "(1) data layer, (2) valuation committee, (3) executable
+scoring framework + local TA engine, (4) TradingView/Pine hardening, (5) risk engine + rebalancer +
+prediction ledger + backtesting, (6) skills/sub-agent architecture cleanup" — note this numbering
+sketch predates how the phases actually shipped in practice; Phases 1-5 as actually built covered
+data layer, valuation committee (2a/2b), risk/rebalancer (Phase 3: E1/C2/B5/E2/G2), track record
+(Phase 4: E3/B4/G4/E4), and TV/Pine hardening (Phase 5: 5A-5E) — Phase 6 is simply whatever's left:
+skill/agent architecture cleanup).
+
+**Unlike every phase before it, Phase 6 has ZERO prior scoping work** — no spec doc, no plan doc,
+no brainstorming session. Every other phase in this file had a `docs/superpowers/specs/*-design.md`
+and `docs/superpowers/plans/*.md` written *before* any `subagent-driven-development` dispatch. Phase
+6 has neither. **Do not start implementing anything for Phase 6 without running
+`superpowers:brainstorming` with the user first** — this is exactly the "let's build X" case that
+skill exists for, and CLAUDE.md's TDD/TDO rule (no dev without a spec/failing-test first) applies
+here just as much as everywhere else in this repo.
+
+### Where the name "G3" / "Phase 6" comes from (verified this session via grep, not assumed)
+
+The term "Phase 6" appears scattered across existing spec/plan docs as forward references, never as
+its own document:
+- `docs/superpowers/specs/2026-07-05-fundamental-analyst-ta-design.md:275` — "G-series skill/agent
+  architecture cleanup — separate phase (6) per the guide."
+- `docs/superpowers/plans/2026-07-09-thesis-breakers.md:1738,1890` — "`evals/evals.json` is created
+  empty, matching the repo-wide convention (G3 in the elevation guide — filling skill evals is
+  explicit Phase 6 scope, not B5's)."
+- `docs/superpowers/plans/2026-07-12-phase4-e4-backtest-harness.md:143` and
+  `docs/superpowers/plans/2026-07-12-phase5-tradingview-pine-hardening.md:357,364` — both mention,
+  as a *speculative, non-committed* aside: "Phase 6 (future) will use Phase 5's audit trails
+  (`orders_executed.jsonl`) to train reward models" on execution quality. This is an idea someone
+  jotted down while writing those specs, NOT confirmed scope — treat it as one candidate among
+  several during brainstorming, not a locked requirement.
+
+There is no single master "elevation guide" document — the guide is a conceptual roadmap referenced
+piecemeal across the specs above. If a fresh session needs the full picture, these grep hits are the
+only source; don't assume a canonical doc exists somewhere unfound.
+
+### Concrete candidate scope — real data gathered this session, NOT a locked plan
+
+These are inputs for the brainstorming session, not decisions already made:
+
+**1. Skill/agent eval coverage gap** (the most concrete, explicitly-named Phase 6 item — "G3...
+filling skill evals is explicit Phase 6 scope"):
+- 45 `SKILL.md` files exist across all plugins; only 6 have an `evals/evals.json` at all.
+- Of those 6: **4 are filled** (`stock-valuation/skills/stock_valuation`,
+  `portfolio-advisor/skills/portfolio-health`, `toolkit-manager/skills/questrade-token-setup`,
+  `toolkit-manager/skills/run-screener`) and **2 are empty scaffolds** (`{"evals": []}` —
+  `portfolio-advisor/skills/calibrate-targets`, `portfolio-advisor/skills/set-thesis-breakers`).
+- **37 of 45 skills have no `evals/` directory at all** — including every skill built during Phases
+  3-5 (`rebalance-portfolio`, `x-news-sweep`, `daily-loop`, `daily-brief`, `place-order`,
+  `cancel-order`, `alert-list`, `alert-sync`, `pine-inject`, `norberts-gambit`, and ~27 more). Full
+  list obtainable via: `find plugins -name "SKILL.md" | while read f; do d=$(dirname "$f"); [ -f
+  "$d/evals/evals.json" ] || echo "$d"; done`.
+- **All 11 `agents/*.md` files have zero evals coverage** (`risk-officer-agent`, `red-team-agent`,
+  `data-quality-agent`, `daily-loop-agent`, `thesis-review-agent`, `weekly-review-agent`,
+  `portfolio-advisor-orchestrator`, `single-stock-advisor`, `ta-guide`, `toolkit-onboarding-guide`,
+  `tradingview-onboarding`).
+- The 4 filled examples (especially `stock_valuation`'s — it has 8 evals covering trigger accuracy,
+  schema compliance, adversarial robustness, sycophancy resistance, degradation, and a near-miss
+  routing case, plus explicit `benchmark_targets`) are the template to replicate, not a from-scratch
+  design exercise.
+
+**2. `AGENTS.md` invocation-contract documentation** — flagged as a known gap back when Phase 3
+closed out (see that section further down this file): "input artifact path → output artifact path
+per specialist agent" was never written for Phase 3's 5 new agents, and is presumably even further
+behind now after Phase 4/5 added more skills/agents. `AGENTS.md` (repo root, 160 lines) is a curated
+routing guide, not exhaustive — worth an audit pass to confirm it still reflects reality (e.g. does
+it mention `/place-order`, `/tv-alert-list`, the risk-officer/red-team/data-quality agents, the
+Phase 4 track-record commands?) before deciding whether/how to expand it.
+
+**3. Anything else the user wants folded in** — "skill/agent architecture cleanup" is broad; the
+brainstorming session should also ask the user directly whether there's dead/superseded skill
+content worth pruning (per `.agent/rules/skill-deletion-guard.md` — deletions need that rule's
+process, not ad-hoc `rm`), whether the `plugins/*/agents/` vs `plugins/*/skills/` split still makes
+sense given how much has been built since it was first drawn, and whether the speculative "reward
+modeling on execution quality" idea (item 4 above) is worth pursuing now that Phase 5's audit trail
+(`orders_executed.jsonl`) actually exists and is live-wired (see the Phase 5 section immediately
+below).
+
+### First action for the next session
+
+Run `superpowers:brainstorming` with the user, presenting the candidate scope above as a starting
+menu, not a plan. Only after that produces a real spec (`docs/superpowers/specs/2026-07-XX-phase6-*-design.md`)
+and plan (`docs/superpowers/plans/2026-07-XX-phase6-*.md`) should any `subagent-driven-development`
+dispatch happen — same sequencing every prior phase followed.
+
+### Loose ends from Phase 5 — now fully resolved (2026-07-15, same session as the merge)
+
+- **Worktree removed**: `.worktrees/feature-fable5-phase5-tradingview-pine-hardening` is gone
+  (`git worktree remove --force`, after confirming its commits were fully merged into `main` via
+  `git merge-base --is-ancestor ... main`). The uncommitted, duplicated `predictions.jsonl` entries
+  (5 lines by the time of cleanup — the bug below fired 3 times across the session) were inspected
+  entry-by-entry and confirmed to be pure timing artifacts with no distinct analytical content (same
+  consensus EPS within each date group, only incidental intraday price-snapshot differences) —
+  discarded, not preserved.
+- **Both fully-merged feature branches deleted**, local + `origin`, confirmed via `git branch -vv`,
+  `git branch -r`, and an independent `git fetch --prune` + `git ls-remote --heads origin`:
+  `feature/fable5-phase5-tradingview-pine-hardening` and
+  `feature/checkpoint-conventions-pass-and-tv-alerts` (the latter already merged via PR #74, just
+  never cleaned up).
+- **Test-isolation bug — logged, not fixed**: `investment_screener/backend/tests/py_services/test_harvest_earnings_expectations_*`
+  makes a real yfinance call and appends to the real `data/predictions.jsonl` merely by running the
+  test suite (reproduced 3 times this session alone). Now logged in `.agent/map-debt.md` under
+  "harvest-earnings tests mutate the real, tracked predictions.jsonl instead of a fixture" (Status:
+  OPEN) — a good, small, unrelated-to-Phase-6 fix to knock out early in a fresh session (isolated,
+  quick, not gating). Recommended fix already written up there: find the fixture/path-override
+  pattern other `py_services` tests already use (e.g. `test_place_order_gates.py`'s
+  `PLACE_ORDER_PORTFOLIO_PATH` env override) and apply the equivalent to whichever function resolves
+  the real `predictions.jsonl` path.
 
 ---
 
