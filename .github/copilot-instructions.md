@@ -1,7 +1,7 @@
 # GitHub Copilot Instructions — InvestmentToolkit
 
 ## Overview
-High-end investment analysis suite: React 19 dashboard (port 5173), Node.js/Express backend (port 3001), Python yfinance bridge, Questrade brokerage sync, TradingView CDP automation.
+High-end investment analysis suite: React 19 dashboard (port 5173), Node.js/Express backend (port 3001), Python yfinance bridge, TradingView CDP automation.
 
 **Startup**: `python3 run_investment_toolkit.py` — creates venv, installs deps, launches frontend + backend + TradingView Desktop (CDP port 9222).
 
@@ -10,8 +10,7 @@ High-end investment analysis suite: React 19 dashboard (port 5173), Node.js/Expr
 InvestmentToolkit/
 ├── investment_screener/frontend/   ← React 19 + Vite + Tailwind CSS 4.0
 ├── investment_screener/backend/    ← Node.js Express (port 3001)
-│   ├── src/services/              ← QuestradeSyncService.ts
-│   ├── src/utils/                 ← QuestradeAPIClient.py
+│   ├── src/services/              ← BrokerSyncService.ts
 │   └── data/projections/          ← per-ticker DCF + thesis JSON
 ├── tradingview-cdp/               ← CDP engine (standalone, `npm ci` once)
 ├── plugins/                        ← AI agent plugins
@@ -66,18 +65,15 @@ Create a new `py_services/` script + ADR in `docs/architecture/` whenever you'd 
 ## Capital Sourcing
 All cash is in **PSU-U.TO** (~$100 USD/share, TSX). To fund any buy: sell PSU-U.TO in the **same account** first (never cross-account). Shares to sell ≈ `ceil(N × price / 100)`. TFSA is primary (larger); RRSP mirrors at ~1/3 share count — separate trade log entries per account for both buy and PSU sell. TSX observes Canadian holidays — PSU-U.TO can't trade those days; defer or check for leftover USD cash.
 
-## Questrade Auth
-On `Token rotation failed: 400`: tell user token expired, guide to apphub.questrade.com, then re-seed via curl OAuth exchange → `QuestradeDataEngine.py --seed <token> --cache-dir investment_screener/backend/`. Full protocol: `docs/architecture/Questrade/questrade_token_setup.md`.
-
 ## Known Pitfalls
 
-**1. `__dirname` in TS backend**: `dist/index.js` resolves to `backend/dist/`, not `backend/src/`. Use `path.resolve(__dirname, '../src/script.py')`. Follow `QuestradeSyncService.ts` pattern (`../../src/QuestradeDataEngine.py`).
+**1. `__dirname` in TS backend**: `dist/index.js` resolves to `backend/dist/`, not `backend/src/`. Use `path.resolve(__dirname, '../src/script.py')`.
 
 **2. Venv gaps**: New Python imports must be in `requirements.in`. Required pkgs: `keyring cryptography yfinance pandas fastapi uvicorn pydantic rich typer python-dotenv`. After edit: `venv/bin/pip-compile requirements.in -o requirements.txt`.
 
 **3. Backend restart required**: Production runs `node dist/index.js`. Changes → `npm run build -w backend` → restart. Frontend hot-reloads; backend does not.
 
-**4. Questrade seed**: `/api/questrade/seed` does OAuth exchange internally. Don't `--seed` raw one-week tokens via `QuestradeDataEngine.py` unless you did the curl exchange first.
+**4. (Retired)**: The Questrade seed endpoint this pitfall described was removed when the standalone Questrade REST integration was archived (2026-07-16). Number kept unused, not reassigned — other docs reference pitfalls by number (e.g. #7, #27).
 
 **5. `lastActualPS` nullable**: In `zod-schemas.ts` use `.nullable().transform(v => v ?? 0)`. Strict `z.number()` causes 400s for pre-revenue/mining stocks.
 
@@ -109,7 +105,7 @@ On `Token rotation failed: 400`: tell user token expired, guide to apphub.questr
 
 **19. `targetEntryPrice`**: Optional float in `target-portfolio.json`. Set via `update_targets.py --set-entry TICKER=PRICE --write`. Never buy above this price.
 
-**20. Portfolio sync fallback**: (1) Express API POST sync-tv/apply → (2) `fetch_broker_data.py --snapshot` (CDP, works without backend) → (3) Questrade REST. Run `--snapshot` directly when backend is down.
+**20. Portfolio sync fallback**: (1) Express API POST sync-tv/apply → (2) `fetch_broker_data.py --snapshot` (CDP, works without backend). Run `--snapshot` directly when backend is down.
 
 **21. Fractional shares**: `place_order.py --shares` accepts float (e.g. `0.5`).
 
@@ -135,5 +131,4 @@ On `Token rotation failed: 400`: tell user token expired, guide to apphub.questr
 | `investment_screener/backend/data/target-portfolio.json` | Targets + standing decisions |
 | `investment_screener/backend/data/ta-sweep-results.json` | Latest TA sweep output |
 | `plugins/tradingview/scripts/ta_sweep_batch.py` | TA sweep orchestrator |
-| `docs/architecture/Questrade/questrade_token_setup.md` | Full Questrade protocol |
 | `.agents/` | All skills/agents (Claude, Gemini, Copilot) |

@@ -4,7 +4,7 @@
  *
  * Purpose:
  *     Central API client for interacting with the Node.js backend. Handles data fetching for stocks, portfolio summaries,
- *     Questrade synchronization, and DCF projections.
+ *     TradingView portfolio sync, and DCF projections.
  *
  * Layer: Frontend / Services / API
  *
@@ -16,7 +16,6 @@
  *     - fetchStockData() - Retrieves comprehensive financial and profile data for a specific ticker
  *     - fetchPortfolioSummary() - Fetches account-level valuation metrics (USD/CAD) and YTD performance
  *     - saveProjection() - Persists a versioned DCF projection object to the backend
- *     - syncQuestrade() - Triggers the background brokerage sync process via the QuestradeDataEngine
  */
 export interface StockData {
     symbol: string;
@@ -218,18 +217,7 @@ export const fetchStockData = async (ticker: string): Promise<StockData> => {
     }
 };
 
-export const syncQuestrade = async (): Promise<{ success: boolean; message: string }> => {
-    const response = await fetch('/api/portfolio/sync-questrade', {
-        method: 'POST',
-    });
-    const data = await response.json();
-    if (!response.ok) {
-        throw new Error(data.details || data.error || 'Sync failed');
-    }
-    return data;
-};
-
-// Auto-pick source: TradingView CDP (primary) → Questrade → cache
+// Auto-pick source: TradingView CDP (primary) → cache
 export const syncPortfolio = async (): Promise<{ success: boolean; dataSource: string; message: string }> => {
     const response = await fetch('/api/portfolio/sync-tv/apply', {
         method: 'POST',
@@ -277,19 +265,6 @@ export const syncAndRefreshPortfolio = async (): Promise<{ success: boolean; dat
     }
 
     return { success: false, dataSource: 'none', message: 'Sync failed — TradingView unavailable and yfinance fallback failed' };
-};
-
-export const seedQuestradeToken = async (refreshToken: string): Promise<{ success: boolean; message: string }> => {
-    const response = await fetch('/api/questrade/seed', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-    });
-    const data = await response.json();
-    if (!response.ok) {
-        throw new Error(data.error || 'Seeding failed');
-    }
-    return data;
 };
 
 export interface ValuationResult {

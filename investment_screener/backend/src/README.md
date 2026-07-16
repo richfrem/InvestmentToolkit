@@ -26,7 +26,6 @@ src/
 │   ├── BrokerSyncService.ts # TV CDP waterfall sync orchestrator
 │   ├── GeminiService.ts     # Client interface for Google Gemini models
 │   ├── ProjectionService.ts # DCF projection file CRUD & atomic locks
-│   ├── QuestradeSyncService.ts  # Python Questrade Client sync supervisor
 │   ├── ThesisService.ts     # Health checks, optimization prompts, and reviews
 │   ├── ValuationService.ts  # Freshness cached AI valuation analyst
 │   ├── WatchlistService.ts  # Watchlist array database CRUD & locking
@@ -39,7 +38,6 @@ src/
 │   ├── strategyAllocation.ts# Holding categorizer by strategy/pillar
 │   ├── tickerAliases.ts     # Normalizer maps for broker symbols
 │   └── zod-schemas.ts       # Central zod validation schemas (E2/Rebalancer schemas)
-└── QuestradeDataEngine.py   # Questrade REST CLI engine (python process sync)
 ```
 
 ---

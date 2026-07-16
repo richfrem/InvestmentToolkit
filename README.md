@@ -57,8 +57,8 @@ TradingView Desktop is the primary layer for live prices, portfolio sync, order 
 - **Pine Script tools**: `pine_linter.py` (static v6 linter — version, declaration, lookahead, drawing-var checks), `pine_source_reader.py` (fetch any community indicator's source directly from TV's Indicators dialog)
 
 ### 5. Toolkit Manager (`plugins/toolkit-manager`)
-Orchestrator for managing server startup and fallback API token seeding.
-- **Commands/Skills**: `/start-screener`, `/setup-questrade` (⚠️ DEPRECATED — legacy fallback, not actively used; TradingView CDP is the sole actively-used broker/data path)
+Orchestrator for managing server startup.
+- **Commands/Skills**: `/start-screener`
 
 ---
 
@@ -72,7 +72,7 @@ The `investment_screener/` app is the web-based financial analysis dashboard.
 - **Analytical Engine**: Python 3.11 Utility Layer (`py_services/`) leveraging `yfinance` for math, validation, and historical financials.
 
 ### Key Features
-- **Portfolio Summary & Table**: Live views synced from TV CDP (primary; Questrade API is a deprecated legacy fallback).
+- **Portfolio Summary & Table**: Live views synced from TV CDP.
 - **Market Heatmap**: Real-time sector performance mapping.
 - **Stock Analysis & Metrics**: Deep-dive AI Expert Thesis and 15+ fundamental metrics.
 - **Valuation Modeler**: Interactive Bear/Base/Bull scenario modeling with automatic persistence to projection JSON files.
@@ -101,12 +101,6 @@ uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add richf
 ### TradingView Premium (Primary Layer)
 - **Required for real-time market data and live order execution.** The toolkit integrates directly with TradingView Desktop (running with `--remote-debugging-port=9222`).
 - **Free/Essential Plans**: yfinance remains the fallback source for delayed data (15-20 min).
-
-### Questrade API (⚠️ DEPRECATED — legacy fallback, not actively used)
-- The toolkit has pivoted fully to TradingView CDP, which handles sync and execution natively.
-- Questrade REST integration is retained as an untested legacy fallback, not routine workflow.
-- Token storage uses AES-256-GCM hardware-backed encryption (macOS Keychain).
-- Run `/setup-questrade` to handle the OAuth2 exchange, if ever needed.
 
 ---
 

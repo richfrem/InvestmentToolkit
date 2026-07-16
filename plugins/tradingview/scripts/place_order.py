@@ -32,7 +32,7 @@ Usage Examples:
 Key Functions:
     - preflight() - Checks TV broker status, buying power, returns confirmation card
     - execute_order() - Runs Node.js trading.js to fill + submit the TV order dialog
-    - sync_portfolio() - Triggers QuestradeDataEngine sync after fill
+    - sync_portfolio() - Refreshes portfolio.json after fill (Express API, else direct CDP snapshot)
 
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Internal state database)
@@ -335,7 +335,6 @@ def sync_portfolio() -> bool:
     Priority:
       1. Express API  /api/portfolio/sync-tv/apply  (backend running)
       2. fetch_broker_data.py --snapshot             (direct CDP — always available)
-      3. QuestradeDataEngine.py                      (legacy REST fallback)
     """
     import urllib.request
 
@@ -361,20 +360,8 @@ def sync_portfolio() -> bool:
         if result.returncode == 0:
             print("✓ Sync complete: portfolio.json updated via direct CDP snapshot (cash + holdings refreshed).")
             return True
-        print(f"⚠️  Direct CDP snapshot failed ({result.stderr.strip()[:120]}). Falling back to Questrade...")
+        print(f"⚠️  Direct CDP snapshot failed ({result.stderr.strip()[:120]}).")
 
-    # 3. Legacy Questrade REST API
-    engine_path = os.path.abspath(os.path.join(BACKEND_SRC, "QuestradeDataEngine.py"))
-    cache_dir   = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
-    portfolio_path = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "data", "portfolio.json"))
-    result = subprocess.run(
-        [sys.executable, engine_path, "--cache-dir",
-         os.path.join(cache_dir, "backend"), "--output", portfolio_path],
-        capture_output=True, text=True,
-    )
-    if result.returncode == 0:
-        print("✓ Sync complete: portfolio.json updated via Questrade REST API.")
-        return True
     print("⚠️  Portfolio sync failed — retry manually with /tv-portfolio-sync.")
     return False
 

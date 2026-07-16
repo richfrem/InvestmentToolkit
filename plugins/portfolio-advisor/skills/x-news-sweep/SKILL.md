@@ -387,7 +387,7 @@ Data provenance:
   Prompt generated:    {timestamp} from target-portfolio.json (v{version}, {N} holdings)
   Grok response:       {timestamp} (paste received, {N} rows parsed)
   DCF projections:     {N}/{M} holdings on file (oldest: {date}, newest: {date})
-  portfolio.json:      {timestamp} ({source: TradingView CDP | Questrade API | cache})
+  portfolio.json:      {timestamp} ({source: TradingView CDP | cache})
 ```
 
 If any data source is older than 7 days for DCF or 24 hours for portfolio weights, add:

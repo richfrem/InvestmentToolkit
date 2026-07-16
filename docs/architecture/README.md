@@ -18,7 +18,6 @@ The web-based financial analysis dashboard.
 ### B. The Data & Execution Layer
 - **TradingView Desktop (Primary)**: Connected via Chrome DevTools Protocol (CDP) on port 9222. Used for real-time prices (Premium), portfolio sync, and live order execution directly through the TV DOM.
 - **yfinance (Fundamentals & Fallback)**: Provides historical data, ratios, and fallback pricing when TradingView is disconnected.
-- **Questrade API (Fallback)**: A direct REST API connection using AES-256-GCM encrypted tokens, used for portfolio syncing if TradingView Desktop is not running.
 
 ### C. The Agentic OS (`plugins/` & `.agents/`)
 A modular ecosystem of AI agents that operate alongside the user via CLI tools (Claude Code, Gemini CLI, Copilot CLI). Agents perform autonomous research, adversarial thesis review, and data fetching.
@@ -45,7 +44,6 @@ graph TD
     subgraph "External Providers & Brokers"
         TV[TradingView Desktop\nPremium]
         YF[yfinance API]
-        QT[Questrade REST API]
     end
 
     %% State & Data
@@ -53,7 +51,6 @@ graph TD
         PortfolioDB[(portfolio.json)]
         TargetDB[(target-portfolio.json)]
         ProjectionsDB[(projections/)]
-        Cache[(.questrade_cache)]
     end
 
     %% Interactions
@@ -66,9 +63,6 @@ graph TD
 
     %% External Data
     PyLayer -->|Fetch fundamentals/delayed| YF
-    PyLayer -->|Fallback Sync| QT
-    Backend -->|Refresh Token| QT
-    Backend <-->|Read/Write| Cache
 
     %% Local DB access
     Backend <-->|Read/Write| PortfolioDB
@@ -87,8 +81,8 @@ graph TD
 
     class UI,Backend,PyLayer core;
     class AIAgent agent;
-    class TV,YF,QT external;
-    class PortfolioDB,TargetDB,ProjectionsDB,Cache db;
+    class TV,YF external;
+    class PortfolioDB,TargetDB,ProjectionsDB db;
 ```
 
 ---
@@ -136,7 +130,7 @@ graph LR
         PortfolioAdvisor[portfolio-advisor\n- /strategic-review\n- /rebalance\n- /x-news-sweep]
         TradingViewBridge[tradingview\n- /tv-portfolio-sync\n- /place-order]
         ETFAnalysis[etf-analysis\n- /analyze-etf]
-        ToolkitManager[toolkit-manager\n- /setup-questrade\n- /start-screener]
+        ToolkitManager[toolkit-manager\n- /start-screener]
     end
 
     %% File System
@@ -198,6 +192,5 @@ For detailed design decisions and component-specific architecture, refer to the 
 
 *   **Architecture Decision Records (ADRs)**: [ADRs/](../../ADRs/) - Immutable records of significant design choices (e.g., `020-robust-valuation-persistence.md`).
 *   **Stock Valuation**: [plugins/stock-valuation/references/](../../plugins/stock-valuation/references/) - Details on DCF calculation methodology, persistence, and the AI analyst interaction flow.
-*   **Questrade Authentication**: [plugins/toolkit-manager/references/Questrade/](../../plugins/toolkit-manager/references/Questrade/) - Details the AES-256-GCM encryption and stateful token rotation process.
 *   **Agent Guidelines**: [AGENTS.md](../../AGENTS.md) - Operating rules for AI agents.
 *   **Test Suite Vision**: `docs/superpowers/specs/2026-05-17-test-suite-vision-design.md` - The comprehensive roadmap for the TDD harness.

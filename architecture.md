@@ -23,14 +23,13 @@ InvestmentToolkit/                         ← repo root
 │       ├── src/
 │       │   ├── index.ts                  ← Express entry point, route registration
 │       │   ├── routes/                   ← /api/portfolio, /api/stock/:ticker, /api/ta-sweep
-│       │   ├── services/                 ← QuestradeSyncService.ts (spawns Python)
-│       │   └── utils/                    ← zod-schemas.ts, QuestradeAPIClient.py
+│       │   ├── services/                 ← BrokerSyncService.ts (TV CDP waterfall sync)
+│       │   └── utils/                    ← zod-schemas.ts, tickerAliases.ts
 │       ├── py_services/                  ← canonical Python scripts (never inline)
 │       │   ├── portfolio_action.py       ← drift + DCF → BUY/HOLD/SELL actions
 │       │   ├── fetch_financials.py       ← yfinance raw data fetch
 │       │   ├── dcf_scenarios.py          ← DCF math (bear/base/bull)
 │       │   └── extract_portfolio_symbols.py
-│       ├── src/QuestradeDataEngine.py    ← OAuth2 token engine + brokerage data
 │       ├── data/
 │       │   ├── portfolio.json            ← live positions (gitignored)
 │       │   ├── trade-log.json            ← order history (gitignored)
@@ -112,22 +111,22 @@ InvestmentToolkit/                         ← repo root
 │  Express Backend  ·  Node.js / TypeScript  ·  port 3001        │
 │                                                                 │
 │  Routes: /api/portfolio  /api/stock/:ticker  /api/ta-sweep     │
-│  QuestradeSyncService.ts — spawns Python via child_process     │
-└──────┬────────────────────────────┬────────────────────────────┘
-       │ spawn                      │ spawn
-       ▼                            ▼
-┌──────────────────┐    ┌──────────────────────────────────────┐
-│  py_services/    │    │  QuestradeDataEngine.py              │
-│  fetch_financials│    │  OAuth2 token rotation               │
-│  dcf_scenarios   │    │  AES-256-GCM · macOS Keychain        │
-│  portfolio_action│    └──────────────┬───────────────────────┘
-└──────┬───────────┘                   │ REST
-       │ HTTP                          ▼
-       ▼                    ┌──────────────────────┐
-┌──────────────────┐        │  Questrade API       │
-│  yfinance        │        │  (read-only positions│
-│  (market data)   │        │   + account data)    │
-└──────────────────┘        └──────────────────────┘
+│  BrokerSyncService.ts — TV CDP waterfall sync orchestrator     │
+└──────┬──────────────────────────────────────────────────────────┘
+       │ spawn
+       ▼
+┌──────────────────┐
+│  py_services/    │
+│  fetch_financials│
+│  dcf_scenarios   │
+│  portfolio_action│
+└──────┬───────────┘
+       │ HTTP
+       ▼
+┌──────────────────┐
+│  yfinance        │
+│  (market data)   │
+└──────────────────┘
 
 ─────────────────── TradingView CDP Layer ────────────────────────
 
@@ -172,10 +171,9 @@ InvestmentToolkit/                         ← repo root
 - `GET /api/portfolio` — reads `portfolio.json` + `target-portfolio.json`, computes drift
 - `GET /api/stock/:ticker` — reads `projections/{TICKER}.json` or `etf_analysis/{TICKER}.json`
 - `POST /api/portfolio/sync-tv/apply` — applies TV broker snapshot to `portfolio.json`
-- `POST /api/questrade/seed` — seeds Questrade token (does OAuth exchange internally)
 - `GET /api/ta-sweep/results` — reads `ta-sweep-results.json`
 
-**Python bridge pattern:** `QuestradeSyncService.ts` spawns Python scripts via `child_process.spawn`. Scripts live in `src/` (NOT copied to `dist/`); always reference via `path.resolve(__dirname, '../src/script.py')`.
+**Python bridge pattern:** `bridge.ts` spawns Python scripts via `child_process.spawn`. Scripts live in `src/` (NOT copied to `dist/`); always reference via `path.resolve(__dirname, '../src/script.py')`.
 
 ### 3.3. Python Services Layer
 **Location:** `investment_screener/backend/py_services/`  
@@ -212,7 +210,7 @@ InvestmentToolkit/                         ← repo root
 | `stock-valuation` | `/evaluate-stock`, `/research-stock` | `validate_projection.py` |
 | `tradingview` | `/place-order`, `/tv-ta-deep`, `/tv-portfolio-sync`, `/pine-inject` | `ta_sweep_batch.py`, `place_order.py`, `tv_launch.py` |
 | `etf-analysis` | `/analyze-etf` | `persist_etf_analysis.py` |
-| `toolkit-manager` | `/start-screener`, `/setup-questrade` | — |
+| `toolkit-manager` | `/start-screener` | — |
 
 ---
 
@@ -228,7 +226,6 @@ All persistence is flat-file JSON (no database). No server infrastructure requir
 | `backend/data/etf_analysis/*.json` | JSON | ETF holdings analysis (versioned array) | No |
 | `backend/data/trade-log.json` | JSON | Order history: suggested → submitted → inactive/filled/cancelled | Yes |
 | `backend/data/ta-sweep-results.json` | JSON | Latest batch TA sweep (RSI, ADX, Vol Bias, Squeeze per ticker) | No |
-| `backend/.questrade_cache` | Binary | AES-256-GCM encrypted Questrade refresh token | Yes |
 | `backend/data/theses/` | Markdown + JSON | Investment thesis narrative + sub-strategies | No |
 | `plugins/portfolio-advisor/assets/templates/` | Markdown | Grok sweep prompt templates (daily + weekly) | No |
 | `plugins/portfolio-advisor/references/evolution-log.md` | Markdown | Daily session log (scores, overrides, tool failures) | No |
@@ -244,8 +241,7 @@ All persistence is flat-file JSON (no database). No server infrastructure requir
 | Service | Purpose | Method |
 |---------|---------|--------|
 | **yfinance** (Python) | Market data: OHLCV, financials, balance sheet, income statement | Python library — `fetch_financials.py` |
-| **Questrade API** | Brokerage account positions, balances (read-only via personal token) | OAuth2 REST — `QuestradeDataEngine.py` |
-| **TradingView Desktop** | Live chart prices, order execution, broker panel sync | Chrome DevTools Protocol (WebSocket port 9222) |
+| **TradingView Desktop** | Live chart prices, order execution, broker panel sync (broker: Questrade) | Chrome DevTools Protocol (WebSocket port 9222) |
 | **X.com / Grok** | News sweep and portfolio analysis | Manual paste workflow — agent generates prompt, user pastes to grok.com |
 | **SEC EDGAR** | 13F institutional filing downloads | REST (`/13f-tracker` skill) |
 
@@ -271,11 +267,9 @@ This is a **local-only** personal investment toolkit — no cloud infrastructure
 
 | Concern | Implementation |
 |---------|---------------|
-| Questrade token storage | AES-256-GCM encryption, key in macOS Keychain via `keyring` library. Binary cache at `backend/.questrade_cache` (gitignored). |
 | Order execution | Human-in-the-loop (HITL) at every trade: preflight card → explicit CONFIRM before CDP submits. |
 | API keys / secrets | `.env` at repo root (gitignored). `.env.example` is tracked. |
 | Scope | Personal local tool — no network exposure, no auth layer on Express. |
-| Token rotation | Questrade refresh tokens are single-use. `QuestradeDataEngine.py` auto-rotates on every sync. On `400` error: token expired, re-seed required. |
 
 ---
 

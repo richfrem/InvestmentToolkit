@@ -52,11 +52,16 @@ These are inputs for the brainstorming session, not decisions already made:
 
 **1. Skill/agent eval coverage gap** (the most concrete, explicitly-named Phase 6 item — "G3...
 filling skill evals is explicit Phase 6 scope"):
-- 45 `SKILL.md` files exist across all plugins; only 6 have an `evals/evals.json` at all.
-- Of those 6: **4 are filled** (`stock-valuation/skills/stock_valuation`,
-  `portfolio-advisor/skills/portfolio-health`, `toolkit-manager/skills/questrade-token-setup`,
-  `toolkit-manager/skills/run-screener`) and **2 are empty scaffolds** (`{"evals": []}` —
-  `portfolio-advisor/skills/calibrate-targets`, `portfolio-advisor/skills/set-thesis-breakers`).
+- 45 `SKILL.md` files exist across all plugins; only 6 have an `evals/evals.json` at all
+  (this count is now stale as of 2026-07-16 — `questrade-token-setup` was archived to
+  `ARCHIVE/questrade/` as part of a full Questrade REST integration removal, so it no longer
+  counts toward either the numerator or denominator; see the Questrade archive spec/plan under
+  `docs/superpowers/specs/` and `docs/superpowers/plans/` dated 2026-07-16).
+- Of the original 6: **4 were filled** (`stock-valuation/skills/stock_valuation`,
+  `portfolio-advisor/skills/portfolio-health`, `toolkit-manager/skills/questrade-token-setup`
+  — now archived, no longer applicable — `toolkit-manager/skills/run-screener`) and **2 were empty
+  scaffolds** (`{"evals": []}` — `portfolio-advisor/skills/calibrate-targets`,
+  `portfolio-advisor/skills/set-thesis-breakers`).
 - **37 of 45 skills have no `evals/` directory at all** — including every skill built during Phases
   3-5 (`rebalance-portfolio`, `x-news-sweep`, `daily-loop`, `daily-brief`, `place-order`,
   `cancel-order`, `alert-list`, `alert-sync`, `pine-inject`, `norberts-gambit`, and ~27 more). Full
@@ -851,7 +856,7 @@ TradingView broker panel → Orders tab.
 - **Strict Compliance instructions**: Anti-laziness rules prevent Grok from outputting lazy placeholders and enforce single-ticker entries for all listed stocks.
 - **`targetEntryPrice` field** — GTC limit price per holding in `target-portfolio.json`
 - **Fractional shares** — `place_order.py --shares 0.2` now works
-- **Portfolio sync fallback** — after fills: Express API → direct CDP snapshot → Questrade REST
+- **Portfolio sync fallback** — after fills: Express API → direct CDP snapshot (Questrade REST tier retired 2026-07-16 — see Questrade archive spec/plan)
 - **`fetch_broker_data.py --snapshot`** — now fetches balances BEFORE positions, writes live `cashUSD` + `totalUSD` to portfolio.json
 - **Auto-proceed in `/x-news-sweep`** — no longer waits for "apply" when all items APPROVED/WARN-allowlisted. Only gates on CONFIRM/BLOCKED.
 
