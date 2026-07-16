@@ -22,8 +22,8 @@ Two dedicated onboarding agents handle setup. Always route new users here first.
 **Programmatic Check**: Run `/setup-tradingview` to trigger the `tv_setup` skill, which programmatically checks port `9222` health and `tradingview-cdp` node module dependencies.
 
 ### Questrade API (Optional — fallback only)
-**Trigger**: `/setup-questrade`  
-**Skill**: Interactive wizard for AES-256-GCM encrypted token setup. Use only if TradingView is unavailable.
+**Trigger**: natural language — "set up questrade", "fix my questrade token", "re-seed token" (no slash command; `toolkit-manager` has no `commands/` directory)
+**Skill**: `questrade-token-setup` — interactive wizard for AES-256-GCM encrypted token setup. Use only if TradingView is unavailable.
 
 ## 🛠️ Available Agent Capabilities
 
@@ -41,13 +41,26 @@ This workstation is built on a modular plugin architecture. You have access to t
 - `/x-news-sweep`: Daily news processing via Grok/X.com. Called by `/daily` agent on news days.
 - `/bundle-thesis-review`: Package thesis/DCF for external LLMs.
 - `/13f-tracker` & `/13f-analyze`: Poll and analyze SEC 13F EDGAR filings.
-- `/run-advisor`: Full 5-phase orchestrator — use post-catalyst (after 13F or news sweep), not daily.
+- `/run-advisor`: Full 5-phase orchestrator (Ingest → Calibrate → Review → Rebalance → Execution) — use post-catalyst (after 13F or news sweep), not daily. Agent: `plugins/portfolio-advisor/agents/portfolio-advisor-orchestrator.md`.
 - `/weekly-review`: Weekend review cycle — range-based drift audit, weekly Grok sweep prompt generation, and TradingView technical checks. Agent: `plugins/portfolio-advisor/agents/weekly-review-agent.md`.
+- `/set-thesis-breakers`: Interactive session defining 2-3 structured, measurable thesis-breaker conditions per holding (auto-checked metrics like RSI/DCF gap/trend state, or manual with a review-cadence staleness flag). A `TRIGGERED` breaker surfaces at the top of `/daily`'s triage.
+- `/adversarial-review`: Package a projection or rebalance plan into an external-LLM adversarial-review prompt bundle.
+- `/pitch-thesis`: Propose a new investment thesis or challenge an existing one. Triggers the Investment Committee agent to intake and validate it. Agent: `plugins/portfolio-advisor/agents/thesis-review-agent.md`.
+- `/norberts-gambit`: Guide for converting cash between CAD and USD via the DLR.TO/DLR.U ETF pair.
+- `/ytd-return`: Calculate Simple and Time-Weighted YTD returns, adjusted for cash flows.
+
+**Specialist sub-agents** (not directly triggered by command — dispatched by the skills above):
+- **`risk-officer-agent`**: Enforces the rebalancer's risk-gate and thesis-breaker warnings as real vetoes (25% MRC / 60% cluster-variance caps, `TRIGGERED` thesis breakers), one order at a time, with override logging. Dispatched by `/rebalance` (real enforcement) and `/daily` (read-only banner). `plugins/portfolio-advisor/agents/risk-officer-agent.md`.
+- **`red-team-agent`**: Adversarial reviewer producing ≥3 falsifiable objections to a completed valuation or rebalance plan, plus a "what would change my mind" list. Never proposes trades; output is conversational only. Dispatched mandatorily by `/evaluate-stock` and `/rebalance`. `plugins/portfolio-advisor/agents/red-team-agent.md`.
+- **`data-quality-agent`**: Decides degrade-gracefully vs. halt when a valuation-committee script (WACC, comps, peer bench, technicals) flags staleness or a cross-source data conflict. Read-only; dispatched by `/evaluate-stock` only when a flag fires. `plugins/portfolio-advisor/agents/data-quality-agent.md`.
+- **`single-stock-advisor`**: Interactive sub-agent guiding a full single-equity workflow — thesis writing/challenge, valuation math verification, technical entry charting, target sizing, order drafting. `plugins/portfolio-advisor/agents/single-stock-advisor.md`.
 
 ### 2. Stock Valuation Analyst (`plugins/stock-valuation`)
 *Autonomous buy-side analyst.*
 - `/evaluate-stock {TICKER}`: Deep-dive Bear/Base/Bull DCF modeling and research report generation.
 - `/research-stock {TICKER}`: Qualitative catalyst and risk sweep.
+- **`forward-valuation-challenge`** (auto-activating, no direct trigger): Challenges valuations overly anchored on historical financials for AI infrastructure / data center names, forcing forward-looking demand signals and secular growth drivers into bear/base/bull scenario construction. Activates automatically whenever the analyzed company falls in that sector.
+- **`valuation-math-validation`** (auto-activating, no direct trigger): Deterministic math validation gate that MUST run on every valuation, catching unit mismatches, percent/decimal errors, double-discounting, and share-count explosions before results are displayed or saved.
 
 ### 3. ETF Analysis (`plugins/etf-analysis`)
 *Thematic, closed-end, and cash fund analyst.*
@@ -57,17 +70,27 @@ This workstation is built on a modular plugin architecture. You have access to t
 *Execution, live pricing, chart control, and Pine Script layer via CDP.*
 - `/setup-tradingview`: Programmatic diagnostics check for `tradingview-cdp` installation and Port 9222 health.
 - `/tv-portfolio-sync`: Syncs all accounts (TFSA + RRSP + Cash) from TV broker panel via CDP.
-- `/tv-watchlist-sync`: Syncs and aligns TradingView watchlists (`TA-Full Watchlist` and `TA-Current Holdings`) with `watchlist.json` / projections and `portfolio.json`. Direct script: `watchlist_manager.py`.
+- `/tv-watchlist-sync`: Syncs and aligns TradingView watchlists (`TA-Full Watchlist`, `TA-Current Holdings`, `TA-BOATS-Watchlist`) with `watchlist.json` / projections and `portfolio.json`. Invokes the `tv_manage_watchlists` skill. Direct script: `plugins/tradingview/scripts/watchlist_manager.py`.
 - `/place-order`: Live order execution via CDP DOM automation. 3-step HITL confirmation.
 - `/modify-order` & `/cancel-order`: Order management via CDP.
 - `/get-orders`: Fetch current working/inactive orders.
 - `/tv-alert-sync`: Sync DCF targets to TradingView price alerts.
+- `/tv-alert-list`: List/fetch currently active TradingView price alerts.
 - `/tv-price-refresh`: Pulls real-time prices.
 - `/tv-snapshot` & `/tv-ta`: Capture technical charts and perform basic technical analysis.
+- `ta-red-team` (internal, no direct trigger): Adversarial red-team pass on a completed TA thesis — challenges price levels against cited evidence. Dispatched internally by `technical-analysis-expert`, never invoked directly by the user.
 - `/pine-inject {description}`: Generate a custom Pine Script v6 indicator from a description and inject it via CDP. Preflight validates version/indicator declarations.
 - `/author-pine-script {description}`: **Full Pine Script v6 authoring workflow.** Phase 0 source research (reads community indicator source via `pine_source_reader.py` directly from TV Indicators dialog), Phase 2.5 lint gate (`pine_linter.py`), inject, and save to TV library. Studies top-10 indicators before writing.
 - `/tv-ta-deep {TICKER} [TIMEFRAME]`: **Deep TA with custom view construction.** Builds the optimal indicator set for the analysis (adds built-ins, injects custom bundle, or authors Pine Script), multi-timeframe macro context check, synthesizes entry/accumulate/trim/exit levels, adversarial red-team review. Use `ta-guide` agent for an interactive guided session.
+- **`ta-guide` agent**: Interactive, conversational TA tutor — walks through reading live chart indicators step by step in plain language, then dispatches the full `/tv-ta-deep` pipeline and explains the red-team verdict. `plugins/tradingview/agents/ta-guide.md`.
 - `/ta-daily-sweep`: **Batch TA scan of all portfolio holdings in one CDP session** via `ta_sweep_batch.py`. Reads Data Window (RSI, Vol Bias %, ADX, Squeeze) per ticker. Flags momentum extremes, distribution signals, squeeze setups, DCF proximity. Outputs ranked REDUCE / MONITOR / ACCUMULATE / HOLD report. Auto-saves to `investment_screener/backend/data/ta-sweep-results.json`. Complements `/x-news-sweep`. Note: ADX values outside 0–100 are auto-nulled (`validate_adx()` inside `enrich_results()` — the nulled copy is what gets persisted); volume ratios use K/M-scaled parsing to prevent false VOLUME_SPIKE flags; `pctToFV` is price-denominated (`(FV − price) / price`) — values below −100% indicate the old FV-denominated bug.
+
+**Dedicated skills wrapping the raw CDP commands below** (each also invokable via its own slash command, not just the low-level CLI):
+- `/add-indicator {NAME}` — `tv-add-indicator` skill
+- `/change-symbol {TICKER}` — `tv-change-symbol` skill
+- `/change-chart-type {TYPE}` — `tv-change-type` skill
+- `/tv-chart-setup {SYMBOL} {TIMEFRAME}` — `tv-chart-setup` skill
+- `/save-indicator {NAME}` — `tv-save-indicator` skill
 
 **CDP chart control (low-level, used by skills):**
 ```bash
@@ -92,8 +115,8 @@ node tradingview-cdp/cli.js pine save "Name"            # save to TV personal li
 
 ### 5. Toolkit Manager (`plugins/toolkit-manager`)
 *Orchestrator.*
-- `/start-screener`: Launch full suite (frontend + backend).
-- `/setup-questrade`: Handle OAuth2 exchange for backup API sync.
+- **`run-screener`** (no slash command — trigger by natural language: "run the screener", "start the app", "launch investment toolkit"): Launch full suite (frontend + backend) via `run_investment_toolkit.py`.
+- **`questrade-token-setup`** (no slash command — trigger by natural language: "set up questrade", "fix my questrade token", "re-seed token"): Handle OAuth2 exchange for backup API sync.
 
 ## 📜 Agent Operating Guidelines
 
