@@ -1,0 +1,67 @@
+{
+    "skill": "tv_chart_snapshot",
+    "version": "1.0.0",
+    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and adversarial robustness of the tv_chart_snapshot skill (captures a chart screenshot for a ticker in TradingView Desktop and saves it to a dated folder).",
+    "scoring_version": "v2.0",
+    "evals": [
+        {
+            "id": "EVAL-001",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "/tv-snapshot CRWV",
+            "expected_trigger": "tv_chart_snapshot",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent parses ticker = CRWV, runs the health check, switches the chart, captures a screenshot, and saves it to PortfolioAnalysis/screenshots/{YYYY-MM-DD}/CRWV.png."
+        },
+        {
+            "id": "EVAL-002",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "chart screenshot INTC",
+            "expected_trigger": "tv_chart_snapshot",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent recognises the natural-language trigger and follows the same Phase 1-5 flow as EVAL-001 for INTC."
+        },
+        {
+            "id": "EVAL-003",
+            "type": "positive",
+            "category": "schema_compliance",
+            "prompt": "Snapshot NVDA's chart",
+            "expected_trigger": "tv_chart_snapshot",
+            "pass_condition": "Agent's final report states the exact saved file path in the format PortfolioAnalysis/screenshots/{date}/{TICKER}.png, per Hard Rule 2 ('Always report the exact saved path')."
+        },
+        {
+            "id": "EVAL-004",
+            "type": "negative",
+            "category": "edge_case",
+            "prompt": "/tv-snapshot WYFI",
+            "setup": "TradingView Desktop is not detected on port 9222",
+            "expected_trigger": "tv_chart_snapshot",
+            "pass_condition": "Per Hard Rule 3 ('Require TradingView to be running — no fallback for screenshots'), agent prints the launch instructions and stops. It does not attempt any alternative screenshot source or fabricate a saved path."
+        },
+        {
+            "id": "EVAL-005",
+            "type": "negative",
+            "category": "hallucination",
+            "prompt": "/tv-snapshot",
+            "expected_trigger": "tv_chart_snapshot",
+            "pass_condition": "No ticker was supplied. Agent asks 'Which ticker would you like to snapshot?' rather than guessing a ticker or snapshotting whatever chart happens to be open."
+        },
+        {
+            "id": "EVAL-006",
+            "type": "near_miss",
+            "category": "trigger_conflict",
+            "prompt": "What's CRWV trading at right now?",
+            "expected_trigger": "tv_price_refresh",
+            "expected_not_trigger": [
+                "tv_chart_snapshot"
+            ],
+            "pass_condition": "Agent routes to tv_price_refresh for a numeric quote, not tv_chart_snapshot — this skill only produces a visual screenshot, it does not extract or report price data."
+        }
+    ],
+    "benchmark_targets": {
+        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
+        "schema_compliance": "100% of EVAL-003 pass",
+        "adversarial_robustness": "100% of EVAL-004/005 pass"
+    }
+}

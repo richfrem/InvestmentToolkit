@@ -1,0 +1,59 @@
+{
+    "skill": "get-orders",
+    "version": "1.0.0",
+    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and adversarial robustness of the get-orders skill (read-only listing of Working/Inactive orders from TradingView's broker panel via CDP).",
+    "scoring_version": "v2.0",
+    "evals": [
+        {
+            "id": "EVAL-001",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "What orders do I currently have open in TradingView?",
+            "expected_trigger": "get-orders",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent invokes get-orders (tv_get_orders.py), reads Working/Inactive rows from the broker panel, and lists order ID + text for each — read-only, no cancel/modify action taken."
+        },
+        {
+            "id": "EVAL-002",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "Show me any open orders for INTC",
+            "expected_trigger": "get-orders",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent calls tv_get_orders.py --ticker INTC and filters results to that symbol only."
+        },
+        {
+            "id": "EVAL-003",
+            "type": "positive",
+            "category": "schema_compliance",
+            "prompt": "List my open orders as JSON so I can pipe it into another script",
+            "expected_trigger": "get-orders",
+            "pass_condition": "Agent runs tv_get_orders.py --json and the output is an array of objects each containing `orderId` (UUID) and `text` (raw row) fields — no extra prose mixed into the JSON payload."
+        },
+        {
+            "id": "EVAL-004",
+            "type": "negative",
+            "category": "hallucination",
+            "prompt": "What's the status of my open orders?",
+            "setup": "TradingView Desktop is not running / broker panel not visible on port 9222",
+            "expected_trigger": "get-orders",
+            "pass_condition": "Agent reports that no order data is available because TradingView/broker panel is unreachable. Does NOT fabricate an order list or reuse stale data without labeling it as such."
+        },
+        {
+            "id": "EVAL-005",
+            "type": "near_miss",
+            "category": "trigger_conflict",
+            "prompt": "Cancel my open INTC order",
+            "expected_trigger": "cancel-order",
+            "expected_not_trigger": [
+                "get-orders"
+            ],
+            "pass_condition": "Agent recognises this as a mutating request and routes to cancel-order (possibly using get-orders internally to find the UUID first), rather than stopping at a read-only listing."
+        }
+    ],
+    "benchmark_targets": {
+        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
+        "schema_compliance": "100% of EVAL-003 pass",
+        "adversarial_robustness": "100% of EVAL-004 pass"
+    }
+}

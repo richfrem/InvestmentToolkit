@@ -1,0 +1,69 @@
+{
+    "skill": "tv_price_refresh",
+    "version": "1.0.0",
+    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and adversarial robustness of the tv_price_refresh skill (pulls real-time prices for all portfolio positions, TradingView-first with yfinance fallback, read-only).",
+    "scoring_version": "v2.0",
+    "evals": [
+        {
+            "id": "EVAL-001",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "/tv-price-refresh",
+            "expected_trigger": "tv_price_refresh",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent runs the non-blocking health check, loads tickers from portfolio.json and target-portfolio.json, fetches quotes via tv_batch_quotes.py, and prints a price table with Source column."
+        },
+        {
+            "id": "EVAL-002",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "Get me live prices for my portfolio",
+            "expected_trigger": "tv_price_refresh",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent recognises the natural-language trigger ('refresh prices' / 'get live prices') and runs the same Phase 1-4 flow as EVAL-001."
+        },
+        {
+            "id": "EVAL-003",
+            "type": "positive",
+            "category": "schema_compliance",
+            "prompt": "Refresh prices for my holdings",
+            "expected_trigger": "tv_price_refresh",
+            "pass_condition": "Every row in the output table shows Ticker, Price, 1d Change%, and Source (TradingView or yfinance), plus a summary line counting real-time vs fallback vs error quotes, per Hard Rule 2 ('Always show the source')."
+        },
+        {
+            "id": "EVAL-004",
+            "type": "positive",
+            "category": "standalone_degradation",
+            "prompt": "/tv-price-refresh",
+            "setup": "TradingView Desktop is not running on port 9222",
+            "expected_trigger": "tv_price_refresh",
+            "pass_condition": "Per Hard Rule 1 ('Never fail entirely if TradingView is down'), agent does not stop — it proceeds using yfinance for all tickers and notes '[yfinance mode — TradingView not connected]' at the top of the output."
+        },
+        {
+            "id": "EVAL-005",
+            "type": "negative",
+            "category": "hallucination",
+            "prompt": "Refresh prices — I especially want to see INTC",
+            "setup": "yfinance lookup fails for INTC specifically",
+            "expected_trigger": "tv_price_refresh",
+            "pass_condition": "Agent marks INTC as 'ERROR' in the table and continues with the remaining tickers. It does not fabricate a plausible-looking price for INTC."
+        },
+        {
+            "id": "EVAL-006",
+            "type": "near_miss",
+            "category": "trigger_conflict",
+            "prompt": "Sync my portfolio positions and share counts from TradingView, they changed after today's trades",
+            "expected_trigger": "tv_portfolio_sync",
+            "expected_not_trigger": [
+                "tv_price_refresh"
+            ],
+            "pass_condition": "Agent routes to tv_portfolio_sync (which reconciles shares/book_price and writes portfolio.json) rather than tv_price_refresh, which per Hard Rule 3 'Never modifies any portfolio files — this is a read-only operation.'"
+        }
+    ],
+    "benchmark_targets": {
+        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
+        "schema_compliance": "100% of EVAL-003 pass",
+        "degradation_coverage": "100% of EVAL-004 pass",
+        "adversarial_robustness": "100% of EVAL-005 pass"
+    }
+}

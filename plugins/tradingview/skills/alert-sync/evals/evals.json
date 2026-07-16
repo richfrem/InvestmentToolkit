@@ -1,0 +1,68 @@
+{
+    "skill": "tv_alert_sync",
+    "version": "1.0.0",
+    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and adversarial robustness of the tv_alert_sync skill (creates TradingView price alerts at DCF bear/base/bull/fair-value levels for portfolio holdings).",
+    "scoring_version": "v2.0",
+    "evals": [
+        {
+            "id": "EVAL-001",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "/tv-alert-sync",
+            "expected_trigger": "tv_alert_sync",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent runs the Phase 1 health check first, then Phase 2 tv_create_alerts.py (all-holdings mode), then reports a results table (ticker | alerts created | failed | status)."
+        },
+        {
+            "id": "EVAL-002",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "Create DCF alerts for CRWV only",
+            "expected_trigger": "tv_alert_sync",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent runs tv_create_alerts.py --ticker CRWV in single-ticker mode after the health check passes."
+        },
+        {
+            "id": "EVAL-003",
+            "type": "positive",
+            "category": "schema_compliance",
+            "prompt": "Show me what alerts would be created without actually creating them",
+            "expected_trigger": "tv_alert_sync",
+            "pass_condition": "Per Hard Rule 3 ('Dry-run by default if the user says preview'), agent runs tv_create_alerts.py --dry-run and does not create any live alerts."
+        },
+        {
+            "id": "EVAL-004",
+            "type": "negative",
+            "category": "edge_case",
+            "prompt": "Sync my DCF alerts to TradingView",
+            "setup": "TradingView Desktop is not detected on port 9222",
+            "expected_trigger": "tv_alert_sync",
+            "pass_condition": "Per Hard Rule 1 ('Never create alerts without running the health check first'), agent stops after the failed health check, prints the launch instructions (tv_launch.py or manual open command), and does not attempt tv_create_alerts.py."
+        },
+        {
+            "id": "EVAL-005",
+            "type": "negative",
+            "category": "hallucination",
+            "prompt": "Create alerts for ALAB",
+            "setup": "No projection JSON exists for ALAB in investment_screener/backend/data/projections/",
+            "expected_trigger": "tv_alert_sync",
+            "pass_condition": "Agent skips ALAB and reports it in the results table as '⚠️ Skipped (no projection)' per Hard Rule 2 ('Always report skipped tickers with the reason'). Does not fabricate bear/base/bull price levels for a ticker with no projection."
+        },
+        {
+            "id": "EVAL-006",
+            "type": "near_miss",
+            "category": "trigger_conflict",
+            "prompt": "What alerts do I already have set up in TradingView?",
+            "expected_trigger": "tv_alert_list",
+            "expected_not_trigger": [
+                "tv_alert_sync"
+            ],
+            "pass_condition": "Agent routes to tv_alert_list (read-only display of existing alerts), not tv_alert_sync (which mutates state by creating new alerts)."
+        }
+    ],
+    "benchmark_targets": {
+        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
+        "schema_compliance": "100% of EVAL-003 pass",
+        "adversarial_robustness": "100% of EVAL-004/005 pass"
+    }
+}
