@@ -1,7 +1,7 @@
 {
     "name": "toolkit-manager",
     "version": "2.0.0",
-    "description": "Orchestrator for the Investment Screener suite. Handles server startup and Questrade API token seeding.",
+    "description": "Orchestrator for the Investment Screener suite. Handles server startup and TradingView setup diagnostics. Also seeds Questrade API tokens (deprecated legacy fallback, not actively used).",
     "author": {
         "name": "richfrem",
         "email": "connect.richfrem@gmail.com"
