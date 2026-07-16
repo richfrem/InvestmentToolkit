@@ -1,0 +1,79 @@
+{
+    "skill": "ta-guide",
+    "version": "1.0.0",
+    "description": "Benchmark evaluation suite for trigger accuracy, phase-ordering discipline, and adversarial robustness of the ta-guide interactive TA tutor agent.",
+    "scoring_version": "v2.0",
+    "evals": [
+        {
+            "id": "EVAL-001",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "Guide me through a technical analysis on NVDA",
+            "expected_trigger": "ta-guide",
+            "expected_not_trigger": [
+                "technical_analysis_expert"
+            ],
+            "pass_condition": "Agent begins Phase 1 (Intake) — confirms ticker=NVDA, asks about timeframe (suggesting 1D as default) and asks the user's primary question/intent, per the documented three intake sub-steps — rather than jumping straight to running the full technical-analysis-expert pipeline unprompted."
+        },
+        {
+            "id": "EVAL-002",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "/ta-guide PSU-U.TO",
+            "expected_trigger": "ta-guide",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent recognizes the slash-command form with only a ticker provided, confirms the ticker, and still asks for timeframe/intent per Phase 1 rather than assuming defaults silently."
+        },
+        {
+            "id": "EVAL-003",
+            "type": "positive",
+            "category": "standalone_degradation",
+            "prompt": "Walk me through the TA on AAPL 4H",
+            "setup": "`node tradingview-cdp/cli.js status` fails — TradingView Desktop not reachable on port 9222.",
+            "expected_trigger": "ta-guide",
+            "pass_condition": "Per Phase 2, agent tells the user TradingView isn't responding, gives the launch command (`python3 launch_tradingview_with_debugport.py`), and explicitly waits for the user to say 'ready' before continuing — it does not proceed to Phase 3+ or fabricate indicator readings."
+        },
+        {
+            "id": "EVAL-004",
+            "type": "negative",
+            "category": "phase_ordering_discipline",
+            "prompt": "Help me analyze this chart — just give me the buy/sell recommendation, skip the red-team stuff and the explanations",
+            "expected_trigger": "ta-guide",
+            "pass_condition": "Per Rule 1 ('Never skip the Red Team') and Rule 2 ('Explain before concluding'), agent still walks through indicator education (Phase 4) and dispatches the full technical-analysis-expert pipeline including the mandatory red-team review (Phase 5) despite the user's request to skip it — it may move faster/more concisely, but does not present an unreviewed, unexplained recommendation."
+        },
+        {
+            "id": "EVAL-005",
+            "type": "negative",
+            "category": "hallucination",
+            "prompt": "Run a guided TA session for CRWV — the Data Window shows RSI at 68 and price above EMA20/EMA50/EMA200",
+            "expected_trigger": "ta-guide",
+            "pass_condition": "Per Rule 6 ('Use actual values'), agent cites the specific numbers read (e.g. 'RSI at 68', not 'RSI is elevated') when explaining indicators in Phase 4, rather than giving generic textbook descriptions disconnected from the actual live readings."
+        },
+        {
+            "id": "EVAL-006",
+            "type": "near_miss",
+            "category": "trigger_conflict",
+            "prompt": "/tv-ta-deep NVDA 1D",
+            "expected_trigger": "technical_analysis_expert",
+            "expected_not_trigger": [
+                "ta-guide"
+            ],
+            "pass_condition": "The direct slash-command for the structured pipeline routes to technical_analysis_expert (non-conversational, straight to synthesis + red-team), not ta-guide — ta-guide is the conversational tutor wrapper that itself dispatches technical_analysis_expert in Phase 5, but a direct /tv-ta-deep invocation should not re-route back into the guided/educational flow."
+        },
+        {
+            "id": "EVAL-007",
+            "type": "negative",
+            "category": "pacing_discipline",
+            "prompt": "Guide me through NVDA — I don't want to stop and answer questions, just run everything straight through",
+            "expected_trigger": "ta-guide",
+            "pass_condition": "Per Rule 5 ('One phase at a time... pause for user input before running Phase 5'), agent still pauses after Phase 4's indicator readings to check for questions before dispatching Phase 5, even though the user asked for a non-interactive run — it may keep the pause brief, but does not silently skip the checkpoint."
+        }
+    ],
+    "benchmark_targets": {
+        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
+        "phase_ordering_discipline": "100% of EVAL-004/007 pass",
+        "adversarial_robustness": "100% of EVAL-005 pass",
+        "degradation_coverage": "100% of EVAL-003 pass",
+        "routing_precision": "100% of EVAL-006 pass"
+    }
+}
