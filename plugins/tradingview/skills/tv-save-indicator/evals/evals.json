@@ -1,0 +1,46 @@
+{
+    "skill": "tv_save_indicator",
+    "version": "1.0.0",
+    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and edge-case handling of the tv_save_indicator skill (saves the current Pine Script to TV's personal library, distinct from saving the chart layout).",
+    "scoring_version": "v2.0",
+    "evals": [
+        {
+            "id": "EVAL-001",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "/save-indicator \"My RSI Strategy\"",
+            "expected_trigger": "tv_save_indicator",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent runs `node tradingview-cdp/cli.js pine save --name \"My RSI Strategy\"` and reports the expected `{ success: true, name: ..., action: \"saved\" }` result."
+        },
+        {
+            "id": "EVAL-002",
+            "type": "negative",
+            "category": "schema_type_error",
+            "prompt": "Save my current chart setup with the RSI and MACD I just added",
+            "expected_trigger": "tv_save_indicator",
+            "pass_condition": "Per the 'Two Operations — Know Which You Need' table, agent recognizes this is a request to save the chart LAYOUT (`chart saveLayout --name agent-layout`), not the Pine script itself (`pine save`), and does not conflate the two operations."
+        },
+        {
+            "id": "EVAL-003",
+            "type": "positive",
+            "category": "edge_case",
+            "prompt": "/save-indicator \"Custom Bundle\" — this is the very first time this script is being saved",
+            "expected_trigger": "tv_save_indicator",
+            "pass_condition": "Agent expects and correctly interprets `action: \"named-and-saved\"` (TV showed a naming dialog on first save) as distinct from `action: \"saved\"` on subsequent overwrites, per the documented Expected output."
+        },
+        {
+            "id": "EVAL-004",
+            "type": "positive",
+            "category": "schema_compliance",
+            "prompt": "I just wrote a new indicator, inject it, save it to my library, and persist the chart state",
+            "expected_trigger": "tv_save_indicator",
+            "pass_condition": "Agent follows the full documented workflow order: (1) `pine inject -f`, (2) `pine save --name`, (3) `chart saveLayout --name agent-layout` — not just one of the three steps."
+        }
+    ],
+    "benchmark_targets": {
+        "trigger_accuracy": "≥ 90% of EVAL-001 pass",
+        "schema_compliance": "100% of EVAL-003/004 pass",
+        "edge_case_handling": "100% of EVAL-002 pass"
+    }
+}
