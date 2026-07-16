@@ -23,7 +23,6 @@
  *   - GET /health - Simple application availability ping
  *   - GET /api/tv-status - Checks whether TradingView CDP client is online
  *   - POST /api/analysis/valuation - Standalone AI Valuation calculation request
- *   - POST /api/questrade/seed - Seeds and exchanges new Questrade portal refresh token
  *   - app.use('/api/portfolio', portfolioRouter)
  *   - app.use('/api/projections', projectionsRouter)
  *   - app.use('/api/theses', thesesRouter)
@@ -98,46 +97,6 @@ app.post('/api/analysis/valuation', async (req, res) => {
     } catch (error: any) {
         console.error(`[API] Valuation Error: `, error);
         res.status(500).json({ error: 'AI Analysis Failed', details: error.message });
-    }
-});
-
-// ── Questrade seed ────────────────────────────────────────────────────────────
-
-app.post('/api/questrade/seed', async (req, res) => {
-    const { refreshToken } = req.body;
-    if (!refreshToken) { res.status(400).json({ error: 'refreshToken is required' }); return; }
-    console.log(`[API] Seeding Questrade refresh token...`);
-    try {
-        const exchangeUrl = `https://login.questrade.com/oauth2/token?grant_type=refresh_token&refresh_token=${encodeURIComponent(refreshToken)}`;
-        const exchangeRes = await fetch(exchangeUrl, {
-            method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: '',
-        });
-        if (!exchangeRes.ok) {
-            const errText = await exchangeRes.text();
-            console.error(`[API][Seed] Token exchange failed: ${errText}`);
-            res.status(400).json({ error: 'Token exchange failed. Ensure you are using a fresh one-week token from the Questrade portal.', details: errText });
-            return;
-        }
-        const exchangeData: any = await exchangeRes.json();
-        const seedToken: string = exchangeData.refresh_token;
-        if (!seedToken) { res.status(400).json({ error: 'Token exchange did not return a refresh_token.' }); return; }
-        console.log(`[API][Seed] Token exchanged successfully.`);
-
-        const { spawn } = require('child_process');
-        const enginePath = path.resolve(__dirname, '../src/QuestradeDataEngine.py');
-        const args = ['--cache-dir', path.resolve(__dirname, '../'), '--seed', seedToken];
-        const pythonProcess = spawn('python3', [enginePath, ...args]);
-        let output = '';
-        let errorOutput = '';
-        pythonProcess.stdout.on('data', (data: any) => { output += data.toString(); console.log(`[API][Seed][Python] ${data.toString().trim()}`); });
-        pythonProcess.stderr.on('data', (data: any) => { errorOutput += data.toString(); console.error(`[API][Seed][Error] ${data.toString().trim()}`); });
-        pythonProcess.on('close', (code: number) => {
-            if (code === 0) { res.json({ success: true, message: 'Refresh token seeded successfully.' }); }
-            else { res.status(500).json({ error: `Seeding failed with code ${code}`, details: errorOutput || 'Unknown error' }); }
-        });
-    } catch (error: any) {
-        console.error(`[API] Seeding Error: `, error);
-        res.status(500).json({ error: error.message });
     }
 });
 

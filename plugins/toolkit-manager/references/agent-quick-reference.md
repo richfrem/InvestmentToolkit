@@ -154,13 +154,6 @@ python3 investment_screener/backend/py_services/update_thesis.py --list
 
 ## Setup & Infrastructure
 
-### `/setup-questrade`
-**Interactive Questrade token setup.** Guides you through seeding a new one-week app token into the encrypted local cache. Required once per machine or when the token expires.
-
-> Token expired? Visit [apphub.questrade.com](https://apphub.questrade.com/UI/UserApps.aspx), generate a new one-week token, then run `/setup-questrade`.
-
----
-
 ### `/start-screener`
 **Launch the full suite.** Starts backend (port 3001) and frontend (port 5173). TradingView Desktop is auto-launched with `--remote-debugging-port=9222` if installed.
 
