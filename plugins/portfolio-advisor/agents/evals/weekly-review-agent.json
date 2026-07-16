@@ -1,0 +1,70 @@
+{
+    "skill": "weekly-review-agent",
+    "version": "1.0.0",
+    "description": "Benchmark evaluation suite for trigger accuracy, range-based drift discipline, and adversarial robustness of the weekly-review-agent's 4-phase weekend review lifecycle.",
+    "scoring_version": "v2.0",
+    "evals": [
+        {
+            "id": "EVAL-001",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "It's the weekend, let's do the weekly portfolio review.",
+            "expected_trigger": "weekly-review-agent",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent runs Phase 1 (weekly_review.py --prompt-output) and presents the range-based drift audit before moving to the Grok catalyst sweep."
+        },
+        {
+            "id": "EVAL-002",
+            "type": "negative",
+            "category": "hard_negative",
+            "prompt": "My CRWV position is 1.5% overweight versus target this week — should we trim it?",
+            "setup": "CRWV's actual-to-target ratio is 1.08 (within the 0.80-1.20 band) and absolute drift is 0.7% (within ±1.0%)",
+            "expected_trigger": "weekly-review-agent",
+            "pass_condition": "Per the Drift Policy ('In-Range: drift within ±1.0% absolute OR ratio between 0.80 and 1.20. No action recommended; price fluctuations are normal market noise'), agent does not flag this as actionable drift — both bands are satisfied, so it treats this as noise, not a sizing review candidate."
+        },
+        {
+            "id": "EVAL-003",
+            "type": "negative",
+            "category": "hallucination",
+            "prompt": "The track record report looks almost empty this week — is something broken?",
+            "setup": "The report has very few or zero graded predictions because most claims are still within their 90-180 day maturation window",
+            "expected_trigger": "weekly-review-agent",
+            "pass_condition": "Per Phase 1b ('This will be sparse or empty for a while — claims need 90-180 days to mature before they're gradable... That's expected, not a bug'), agent explains the sparse report is expected given claim maturation timelines, not a system failure."
+        },
+        {
+            "id": "EVAL-004",
+            "type": "positive",
+            "category": "schema_compliance",
+            "prompt": "PLTR had strong news this week and looks technically extended — what's your final read?",
+            "expected_trigger": "weekly-review-agent",
+            "pass_condition": "Per the Confluence gate in Phase 3, agent merges the Phase 2 news read with the Phase 3 technical read and states an explicit verdict ([CONFLUENCE]/[PARTIAL]/[CONFLICT]) rather than picking a side silently when news is bullish but TA is extended."
+        },
+        {
+            "id": "EVAL-005",
+            "type": "near_miss",
+            "category": "agent_conflict",
+            "prompt": "It's Tuesday — can you check my portfolio drift and tell me if anything needs action today?",
+            "expected_trigger": "daily-loop-agent",
+            "expected_not_trigger": [
+                "weekly-review-agent"
+            ],
+            "pass_condition": "Agent routes to daily-loop-agent, not weekly-review-agent. The weekly review is explicitly a weekend/range-tolerant cadence (drift bands ±1.0%/0.80-1.20 ratio) — a weekday request for today's actionable items belongs to the daily loop's stricter, more time-sensitive triage."
+        },
+        {
+            "id": "EVAL-006",
+            "type": "negative",
+            "category": "hard_negative",
+            "prompt": "Log the weekly takeaways but skip the evolution log entry since nothing major happened this week.",
+            "expected_trigger": "weekly-review-agent",
+            "pass_condition": "Per Phase 4 ('Log the weekly takeaways into weekly-evolution-log.md'), agent still writes an entry covering performance direction, thesis revisions (or none), target changes (or none), and updated support levels — it does not skip logging just because the week was uneventful."
+        }
+    ],
+    "benchmark_targets": {
+        "trigger_accuracy": "≥ 90% of EVAL-001 pass",
+        "drift_policy_compliance": "100% of EVAL-002 pass (in-range drift never flagged as actionable)",
+        "adversarial_robustness": "100% of EVAL-003 pass (sparse track record correctly explained, not treated as failure)",
+        "confluence_compliance": "100% of EVAL-004 pass",
+        "agent_disambiguation": "100% of EVAL-005 pass",
+        "logging_compliance": "100% of EVAL-006 pass"
+    }
+}

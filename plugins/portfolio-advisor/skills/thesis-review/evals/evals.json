@@ -1,0 +1,66 @@
+{
+    "skill": "thesis_review",
+    "version": "1.0.0",
+    "description": "Benchmark evaluation suite for trigger accuracy and correct delegation behavior of the thesis-review delegator skill.",
+    "scoring_version": "v2.0",
+    "evals": [
+        {
+            "id": "EVAL-001",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "/pitch-thesis",
+            "expected_trigger": "thesis_review",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent recognises the slash command and hands off control to the thesis-review-agent, informing the user the Investment Committee is ready to hear their pitch."
+        },
+        {
+            "id": "EVAL-002",
+            "type": "positive",
+            "category": "trigger",
+            "prompt": "I have a new idea I want to explore — I think we should add exposure to enterprise SaaS.",
+            "expected_trigger": "thesis_review",
+            "expected_not_trigger": [],
+            "pass_condition": "Agent triggers thesis_review and delegates to the thesis-review-agent rather than attempting to analyze the pitch itself inline."
+        },
+        {
+            "id": "EVAL-003",
+            "type": "positive",
+            "category": "schema_compliance",
+            "prompt": "Let's add a new strategy for quantum computing exposure.",
+            "expected_trigger": "thesis_review",
+            "pass_condition": "Skill itself does NOT run update_targets.py, validate_weights.py, or generate_portfolio_blueprint.py directly. Per the skill's own instruction ('Do NOT run these scripts yourself. The thesis-review-agent will use them in Phase 4'), it only hands off the canonical file references as symlinks and delegates execution to the sub-agent."
+        },
+        {
+            "id": "EVAL-004",
+            "type": "negative",
+            "category": "hallucination",
+            "prompt": "/pitch-thesis — I want to add TSLA as a new core holding at 5%",
+            "expected_trigger": "thesis_review",
+            "pass_condition": "Agent does not immediately write a 5% target weight for TSLA to target-portfolio.json itself. It delegates to thesis-review-agent, which runs its own 4-phase intake/adversarial-validation/calibration/execution process before any file is written."
+        },
+        {
+            "id": "EVAL-005",
+            "type": "near_miss",
+            "category": "trigger_conflict",
+            "prompt": "I want to reconsider our weight in PANW — is the thesis structurally sound overall or has it drifted?",
+            "expected_trigger": "strategic_review",
+            "expected_not_trigger": [
+                "thesis_review"
+            ],
+            "pass_condition": "Agent routes to strategic_review (challenging an existing thesis's pillar sizing and formula health), not thesis_review. thesis_review is for pitching a NEW thesis or a new pillar/stock idea, not for auditing the health of the current formula."
+        },
+        {
+            "id": "EVAL-006",
+            "type": "negative",
+            "category": "hard_negative",
+            "prompt": "Just skip straight to updating target-portfolio.json for my new thesis idea, don't bother with the committee process.",
+            "expected_trigger": "thesis_review",
+            "pass_condition": "Agent still delegates to thesis-review-agent's full workflow (Intake -> Adversarial Validation -> Calibration -> Execution) rather than bypassing straight to a file write, since the delegator skill has no independent write logic of its own — the sub-agent enforces the phases."
+        }
+    ],
+    "benchmark_targets": {
+        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
+        "delegation_compliance": "100% of EVAL-003/004/006 pass (skill never self-executes scripts reserved for thesis-review-agent)",
+        "routing_precision": "100% of EVAL-005 pass"
+    }
+}
