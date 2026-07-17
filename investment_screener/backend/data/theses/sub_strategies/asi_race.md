@@ -67,24 +67,25 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-14 20:51 by TV sync · Portfolio total: $30,566 USD*
+*Auto-updated 2026-07-16 13:42 by TV sync · Portfolio total: $28,504 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **CRWV** | 24 | 6.3% | 3.7% | +2.5pp ⚠ | 🟡 TRIM | — |
-| **SNDK** | 0.94 | 5.4% | 3.3% | +2.1pp ⚠ | 🟡 TRIM | ≤$1,350 |
-| **NBIS** | 7.5 | 4.8% | 3.0% | +1.8pp | 🟡 TRIM | — |
-| **GOOG** | 4 | 4.7% | 4.0% | +0.7pp | 🟡 TRIM | — |
-| **IREN** | 31 | 3.9% | 3.6% | +0.3pp | ⚪ MAINTAIN | — |
-| **SKHY** | 6 | 3.8% | 3.1% | +0.7pp | 🟡 TRIM | — |
-| **CORZ** | 46 | 3.3% | 3.7% | -0.4pp | ⚪ MAINTAIN | — |
-| **CBRS** | 4.5 | 3.0% | 2.5% | +0.5pp | 🟡 TRIM | — |
-| **MU** | 0.8999999999999999 | 2.9% | 2.6% | +0.3pp | ⚪ MAINTAIN | — |
-| **MSFT** | 2 | 2.5% | 2.2% | +0.3pp | ⚪ MAINTAIN | — |
-| **APLD** | 22 | 2.0% | 2.5% | -0.4pp | 🔵 ACCUMULATE | — |
-| **BTDR** | 45 | 1.8% | 1.9% | -0.1pp | ⚪ MAINTAIN | — |
+| **NBIS** | 10 | 6.8% | 3.0% | +3.8pp ⚠ | 🟡 TRIM | — |
+| **CRWV** | 24 | 6.7% | 3.7% | +3.0pp ⚠ | 🟡 TRIM | — |
+| **SNDK** | 0.94 | 5.8% | 3.3% | +2.5pp ⚠ | 🟡 TRIM | ≤$1,350 |
+| **GOOG** | 4 | 5.0% | 4.0% | +1.1pp | 🟡 TRIM | — |
+| **IREN** | 31 | 5.0% | 3.6% | +1.4pp | 🟡 TRIM | — |
+| **SKHY** | 6 | 4.1% | 3.1% | +1.0pp | 🟡 TRIM | — |
+| **CORZ** | 46 | 3.6% | 3.7% | -0.1pp | ⚪ MAINTAIN | — |
+| **CBRS** | 4.5 | 3.2% | 2.5% | +0.7pp | 🟡 TRIM | — |
+| **MU** | 0.8999999999999999 | 3.1% | 2.6% | +0.5pp | 🟡 TRIM | — |
+| **MSFT** | 2 | 2.7% | 2.2% | +0.5pp | 🟡 TRIM | — |
+| **APLD** | 22 | 2.2% | 2.5% | -0.3pp | ⚪ MAINTAIN | — |
+| **SHAZ** | 9 | 2.1% | 0.0% | +2.1pp ⚠ | 🔴 EXIT | — |
+| **BTDR** | 45 | 2.0% | 1.9% | +0.1pp | ⚪ MAINTAIN | — |
 
 **Pending Initiation**
 
@@ -100,5 +101,5 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 |--------|---------|--------|-------------|------|
 | META | 1.9% | WATCHLIST | — | Social monopoly + AI ad flywheel. |
 
-**Pillar total — Actual: 44.4% · Target: 39.9% · Gap: +4.6pp**
+**Pillar total — Actual: 52.3% · Target: 39.9% · Gap: +12.4pp**
 <!-- AUTO_UPDATE_END: current_positions -->
