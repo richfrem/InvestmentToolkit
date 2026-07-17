@@ -4,7 +4,7 @@
   "schemaVersion": "1.0",
   "version": 10.8,
   "createdAt": "2026-02-14T12:00:00Z",
-  "updatedAt": "2026-07-15T00:52:15.144Z",
+  "updatedAt": "2026-07-16T20:42:16.621Z",
   "description": "Investment thesis focused on the dual infrastructure buildout for ASI Compute (Primary) and Sovereign Finance (Secondary).",
   "pillars": [
     {
@@ -87,7 +87,7 @@
       "subStrategyId": "cash",
       "thesisForInclusion": "USD cash reserve (Purpose US Cash Fund) — holds short-term USD treasuries on TSX. Primary purpose: USD currency exposure + interest income while awaiting deployment into thesis positions. Monthly dividend ~$0.31-0.33/share (~$3.68-3.90 USD annualized). ENTRY RULE: always buy 1-2 days AFTER the ex-dividend date (typically last Tuesday of month) to get the cycle-low reset price and capture the full next month of accrual. Buying mid-cycle or just before ex-date overpays for already-accrued dividend. Ex-dates: ~Jan 28, Feb 25, Mar 31, Apr 28, May 28, Jun 30 pattern. Next planned entry: May 29, 2026 (post May 28 ex-date).",
       "agentRationale": "MAINTAIN. 56 shares held (PSU.U.TO in broker = same fund, hyphen/dot notation only). Purpose US Cash Fund — USD HISA equivalent, monthly dividend ~$0.31-0.33/share. Core cash reserve position. Entry rule: buy 1-2 days after ex-dividend date (last Tuesday of month). Updated 2026-07-05: absorbed 4.5% back from LLY/CRSP (13.925%→18.425%) — user decided not to initiate either name right now, holding both as watchlist while the metabolic-rewriting sub-strategy evaluates entry over time. biohealth pillar target stays registered at 4.5% for future deployment.",
-      "shares": 32
+      "shares": 23
     },
     {
       "ticker": "INTC",
@@ -229,7 +229,7 @@
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Micro-nuclear reactor commercialization. Power pillar speculative play — same theme as BE and CEG. AI data center power demand requires diverse nuclear supply; OKLO's micro-reactor model targets co-location with data centers.",
       "agentRationale": "HOLD — do not accumulate. Trim on strength when position returns to green (break-even ~$101). OKLO entered at avg $101.23; currently -37%. Nuclear/AI power long-term play; high execution risk. DCF SELL -91%. No new buys until profit recovery. 2026-06-08: Acquired ARMEC for manufacturing capability; DOE plutonium fuel selection positive. Execution milestones improving but valuation concerns persist. HOLD.",
-      "shares": 10,
+      "shares": 13,
       "standingDecision": {
         "type": "DCF_GATE_SUSPENDED",
         "reason": "OKLO held as power pillar speculative play — AI data center power narrative, same bucket as BE and CEG. DCF -91% is acknowledged but overridden because this is a pre-revenue nuclear microreactor thesis where DCF is not the right valuation tool. Exit gate: if OKLO has no commercial revenue contract signed by end of 2027, exit. The CRWD -66% exit precedent does NOT apply here — CRWD had alternatives (PANW/ZS) and a direct market comparison; OKLO is a different risk class (early-stage nuclear, no direct public comps).",
@@ -386,29 +386,27 @@
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "European AI infrastructure.",
       "agentRationale": "2026-05-13 Grok sweep: MSFT/NVIDIA deals intact; strong AI cloud momentum; DCF BUY +185.6%. Target bumped 2.55% → 2.85% (post-normalize). High conviction AI-native cloud infrastructure. 2026-06-03: SA LP 5.6% passive stake + explosive Q1 growth validates AI cloud capacity thesis. 2026-06-05: SA LP new 5.6% stake established May 2026; Q1 hyper-growth continuation; power deals (Bloom Energy). 2026-06-08: UK infrastructure expansion underway; AI cloud momentum continues. ACCUMULATE thesis confirmed.",
-      "shares": 7.5
+      "shares": 10
     },
     {
       "ticker": "CRM",
       "name": "Salesforce, Inc.",
       "subStrategyId": "quality-saas",
       "targetWeight": 1.878,
-      "role": "accumulate",
+      "role": "initiate",
       "thesisForInclusion": "Agentforce AI platform.",
       "agentRationale": "2026-05-14: Trimmed. At 1.5% vs 1.2% target — near target. SA LP: not a holding. DCF: BUY +53.1% (conflicts with trim direction). Trim driven by thesis focus not DCF. Continue light trimming or hold at current weight.",
-      "pillarId": "quality_saas",
-      "shares": 4
+      "pillarId": "quality_saas"
     },
     {
       "ticker": "NOW",
       "name": "ServiceNow, Inc.",
       "subStrategyId": "quality-saas",
       "targetWeight": 1.878,
-      "role": "accumulate",
+      "role": "initiate",
       "thesisForInclusion": "AI workflow automation.",
       "agentRationale": "DCF: BUY | FV $132 vs $91 price | +45.2% upside.",
-      "pillarId": "quality_saas",
-      "shares": 6
+      "pillarId": "quality_saas"
     },
     {
       "ticker": "SOLZ",
@@ -428,7 +426,7 @@
       "role": "accumulate",
       "thesisForInclusion": "AI GPU cloud pivot — 800MW Australia campus + Blackwell GPU deployment. Increased target weight to 3.638% (31 shares) to accumulate on dilution dip in RRSP (+3) and TFSA (+6) as execution play.",
       "agentRationale": "2026-05-13 Grok sweep: exit flag reversed 2026-05-07; $3.4B 5yr AI cloud contract + NVIDIA partnership + 480MW Sweetwater expansion on track. SA LP aligned. 2026-06-03: 800MW Australia campus + $3.65B GPU financing confirms global AI pivot execution. 2026-06-08: Awaken acquisition closed; $4.4B ARR target set with Blackwell GPU deployment. 2026-06-21: Standing decision updated to HOLD/REDUCE — prior 'EXIT: Liquidation finalized' note was stale and contradicted actual position. Position at target 2.4%.",
-      "shares": 31,
+      "shares": 37,
       "pillarId": "compute",
       "standingDecision": {
         "type": "HOLD_AT_TARGET",
@@ -716,11 +714,10 @@
       "name": "Atlassian Corporation",
       "pillarId": "quality_saas",
       "targetWeight": 1.878,
-      "role": "accumulate",
+      "role": "initiate",
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Human-agentic collaboration platform.",
-      "agentRationale": "DCF: BUY | FV $105 vs $86 price | +22.5% upside.",
-      "shares": 8
+      "agentRationale": "DCF: BUY | FV $105 vs $86 price | +22.5% upside."
     },
     {
       "ticker": "TSM",
@@ -1296,7 +1293,7 @@
       "subStrategyId": "photonics-optical",
       "thesisForInclusion": "Primary photonics sector vehicle. Copper-to-optical interconnect transition is live — GPU cluster bandwidth demands are hitting copper walls now. ETF approach avoids individual name binary risk (COHR, LITE, CIEN all above DCF fair value) while capturing the secular shift.",
       "agentRationale": "ETF_ANALYSIS: HOLD | alignment 62% | Pure-play photonics basket (COHR/LITE/CIEN/AAOI/VIAV); entry gate <$19 not met at $23.65; AUM tiny — size carefully | analyzed 2026-06-21",
-      "shares": 18
+      "shares": 21
     },
     {
       "ticker": "QBTS",
@@ -1636,10 +1633,11 @@
       "ticker": "SHAZ",
       "name": "SharonAI Holdings Inc.",
       "targetWeight": 0,
-      "role": "watchlist",
+      "role": "exit",
       "subStrategyId": "sa-asi-race",
       "pillarId": "compute",
-      "thesisForInclusion": "Situational Awareness LP 19.9% stake. 72MW AI factory."
+      "thesisForInclusion": "Situational Awareness LP 19.9% stake. 72MW AI factory.",
+      "shares": 9
     }
   ],
   "globalSettings": {
