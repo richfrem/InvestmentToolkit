@@ -4,7 +4,7 @@
   "schemaVersion": "1.0",
   "version": 10.8,
   "createdAt": "2026-02-14T12:00:00Z",
-  "updatedAt": "2026-07-16T20:42:16.621Z",
+  "updatedAt": "2026-07-17T16:56:17.371Z",
   "description": "Investment thesis focused on the dual infrastructure buildout for ASI Compute (Primary) and Sovereign Finance (Secondary).",
   "pillars": [
     {
@@ -299,7 +299,7 @@
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "GPU cloud provider.",
       "agentRationale": "DCF: ACCUMULATE | FV $163 vs $119 price | +36.6% upside. 2026-05-07: Q1 2026: revenue $2.08B +112% YoY; RPO backlog $42.4B +50% QoQ demand de-risked; NVIDIA confirmed top customer; losses wider but demand trajectory offsets. 2026-06-05: $8.5B IG GPU-backed financing; total ~$28B capital stack; backlog scale reinforced. 2026-06-08: NVIDIA Vera Rubin NVL72 bring-up/validation complete — confirms cutting-edge GPU deployment on latest architecture. ACCUMULATE on pullbacks.",
-      "shares": 24
+      "shares": 25
     },
     {
       "ticker": "ANET",
@@ -426,7 +426,7 @@
       "role": "accumulate",
       "thesisForInclusion": "AI GPU cloud pivot — 800MW Australia campus + Blackwell GPU deployment. Increased target weight to 3.638% (31 shares) to accumulate on dilution dip in RRSP (+3) and TFSA (+6) as execution play.",
       "agentRationale": "2026-05-13 Grok sweep: exit flag reversed 2026-05-07; $3.4B 5yr AI cloud contract + NVIDIA partnership + 480MW Sweetwater expansion on track. SA LP aligned. 2026-06-03: 800MW Australia campus + $3.65B GPU financing confirms global AI pivot execution. 2026-06-08: Awaken acquisition closed; $4.4B ARR target set with Blackwell GPU deployment. 2026-06-21: Standing decision updated to HOLD/REDUCE — prior 'EXIT: Liquidation finalized' note was stale and contradicted actual position. Position at target 2.4%.",
-      "shares": 37,
+      "shares": 38,
       "pillarId": "compute",
       "standingDecision": {
         "type": "HOLD_AT_TARGET",
@@ -1136,7 +1136,7 @@
       "name": "Space Exploration Technologies Corp. (SpaceX)",
       "pillarId": "defense",
       "targetWeight": 0,
-      "role": "watchlist",
+      "role": "exit",
       "subStrategyId": "defense-ai-space",
       "thesisForInclusion": "Dominant LEO launch provider, Starlink constellation, xAI/Grok AI integration. Now public (IPO 2026-06-12). Pre-IPO secondary market BUY signal at $161 was based on 1.16B diluted share count assumption — at public share count of 7.57B, DCF restates to $31/share. Monitoring for post-IPO correction and lock-up expiry selling.",
       "agentRationale": "IPO: 2026-06-12 at ~$185. DCF FV (restated for 7.57B public shares): ~$31. Current $185 = 5.9x restated FV. 75x P/S ratio. SELL at current price. Pre-IPO BUY signal ( secondary) was share-count ambiguity error. Lock-up expiry Sep-Dec 2026 is key risk event.",
@@ -1146,7 +1146,8 @@
         "source": "updated 2026-06-19 post-IPO",
         "entryTrigger": null,
         "review": "Revisit after SPCX lock-up expiry (est Sep-Dec 2026). Re-run DCF once audited S-1 financials clarify true diluted share count and segment revenue. No initiation without audited financials and price < 20x P/S."
-      }
+      },
+      "shares": 4.5
     },
     {
       "ticker": "LDOS",
