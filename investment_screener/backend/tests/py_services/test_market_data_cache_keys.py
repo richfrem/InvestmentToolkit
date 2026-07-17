@@ -4,7 +4,9 @@ Both previously called cache_get/cache_set(ticker, "fundamentals") — whichever
 given ticker silently overwrote the other's cache entry, defeating caching for any pipeline (e.g.
 a full /evaluate-stock pass) that needs both.
 """
+import os
 import sys
+import time
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
@@ -72,3 +74,29 @@ def test_calling_get_fundamentals_after_get_estimates_does_not_clobber_estimates
     cached_estimates = cache.cache_get("NVDA", "estimates")
     assert cached_estimates is not None
     assert cached_estimates["y1RevEstimate"] == 7716355790.0
+
+
+def test_estimates_cache_ttl_is_24h_not_default_1h(tmp_path, monkeypatch):
+    """Regression: get_estimates() previously rode on the "fundamentals" cache
+    key, which had an 86400s (24h) TTL. After giving it its own "estimates" key
+    (the fix above), CACHE_TTL_SECONDS must register "estimates" explicitly —
+    otherwise cache_get() silently falls back to its 3600s (1h) default,
+    quietly shortening the cache lifetime and causing far more yfinance calls
+    than before. A cached entry aged 2 hours (past the wrong 1h default, well
+    within the correct 24h TTL) must still be served from cache.
+    """
+    monkeypatch.setattr("cache.CACHE_DIR", tmp_path)
+
+    with patch("market_data.yf.Ticker", return_value=_fake_estimates_ticker()):
+        get_estimates("PLTR")
+
+    cache_path = tmp_path / "estimates_PLTR.json"
+    assert cache_path.exists(), "expected get_estimates to write under the 'estimates' data class"
+    two_hours_ago = time.time() - (2 * 3600)
+    os.utime(cache_path, (two_hours_ago, two_hours_ago))
+
+    with patch("market_data.yf.Ticker") as mock_ticker:
+        result = get_estimates("PLTR")
+
+    mock_ticker.assert_not_called()
+    assert result["y1RevEstimate"] == 7716355790.0
