@@ -9,7 +9,7 @@
  * Layer: Frontend / UI / Components
  *
  * Usage Examples:
- *     <StrategyAllocationChart data={allocationData} totalUSD={1000} usdCadRate={1.35} />
+ *     <StrategyAllocationChart data={allocationData} totalCAD={1350} usdCadRate={1.35} />
  *
  * Key Functions:
  *     - shortLabel() - Maps long IDs/names to display labels
@@ -141,13 +141,18 @@ function groupBySubStrategy(data: StrategyAllocationItem[]): ChartItem[] {
 
 interface Props {
     data: StrategyAllocationItem[];
-    totalUSD: number;
+    /** Single source of truth for the portfolio's CAD total — must come from
+     * the same /api/portfolio/summary field the Total Market Value card
+     * reads (totalMarketValueCAD), never re-derived from totalUSD * rate.
+     * That derivation double-converts native CAD cash, producing a total
+     * that silently disagrees with the rest of the page. */
+    totalCAD: number;
     usdCadRate: number;
 }
 
 // GroupBy is declared above alongside the helpers
 
-export default function StrategyAllocationChart({ data, totalUSD, usdCadRate }: Props) {
+export default function StrategyAllocationChart({ data, totalCAD, usdCadRate }: Props) {
     const [groupBy, setGroupBy] = useState<GroupBy>('pillar');
     const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -155,8 +160,6 @@ export default function StrategyAllocationChart({ data, totalUSD, usdCadRate }: 
     const holdingsWrapRef = useRef<HTMLDivElement>(null);
     const donutSvgRef     = useRef<SVGSVGElement>(null);
     const holdingsSvgRef  = useRef<SVGSVGElement>(null);
-
-    const totalCAD = totalUSD * usdCadRate;
 
     // Reset selection when mode switches
     useEffect(() => { setSelectedId(null); }, [groupBy]);
