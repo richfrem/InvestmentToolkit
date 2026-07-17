@@ -124,6 +124,7 @@ As an AI agent operating in this repository, you **MUST** adhere to the followin
 - **Dependency Management (`dependency-management.md`)**: No manual `pip install`. Edit `.in` files and use `pip-compile`.
 - **Plugin Architecture (`plugin-architecture.md` & `symlink-cross-platform.md`)**: File-level symlinks ONLY via `symlink_manager.py`. No cross-plugin script execution.
 - **Self-Evolution (`self-evolution-policy.md`)**: Classify failures, max 3 repair attempts, update playbooks. Deletions are strictly forbidden.
+- **Worktree-first (`git-operations.md` & `worktree-subagent-isolation.md`, Failure Mode 2)**: Create a git worktree BEFORE any code/script/multi-file change — never decide unilaterally that a task is "small enough" to skip it and work directly on the main checkout. Only a single trivial doc-typo fix is exempt.
 
 ### 2. Agent Calculation Policy
 - Always use or create versioned `.py` scripts in `investment_screener/backend/py_services/`.

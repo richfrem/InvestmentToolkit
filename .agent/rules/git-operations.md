@@ -7,6 +7,28 @@ globs: ["**/*"]
 
 ## Hard Rules (never violate)
 
+### Worktree creation is mandatory, not a judgment call
+Before any code, script, or multi-file content-authoring task, create a git worktree
+(`superpowers:using-git-worktrees`, or `git worktree add` directly) **before starting work** — do
+this every time, unconditionally. Never decide unilaterally that a task is "small enough" or "low
+risk enough" to skip worktree creation and work directly in the shared main checkout instead. If
+genuinely unsure whether a worktree is warranted for a given task, ask the user — don't decide
+silently and proceed.
+
+**Reason:** 2026-07-17 — an entire multi-sub-project phase of work (Phase 6: an `AGENTS.md` audit,
+an eval-coverage backfill touching 53 files, a Questrade REST integration removal touching ~51
+files including live-order fallback code, an agent relocation between plugins, and a new Python
+script + test suite) was done directly on the shared main checkout and pushed straight to
+`origin/main` every time, with zero worktree ever created — because each individual task was
+separately judged "small enough" to skip it. This left no reviewable feature branch for any of it,
+caused real confusion and rework reconciling local `main` vs. `origin/main` state after the fact,
+and directly contradicted the project's own established Phase 1-5 pattern (worktree → review →
+merge to local main → push). See `.agent/rules/worktree-subagent-isolation.md`'s "Failure Mode 2"
+section for the full incident writeup.
+
+A trivial single-line doc typo fix does not need this. Anything else — a bug fix, a new script, a
+multi-file docs pass, an agent/skill relocation — does, regardless of how contained it looks.
+
 ### No git stash without explicit instruction
 Never run `git stash`, `git stash pop`, or `git stash apply` unless the user explicitly says to.
 **Reason:** A stash pop in a prior session applied content from an old unrelated stash onto the
