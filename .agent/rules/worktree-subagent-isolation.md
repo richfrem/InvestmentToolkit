@@ -1,9 +1,11 @@
 ---
-description: A subagent's pwd/git-branch confirmation does not guarantee its Edit/Write calls stay inside the assigned worktree — a mandatory post-task check does.
+description: Two related but distinct failure modes — (1) a subagent's pwd/git-branch confirmation does not guarantee its Edit/Write calls stay inside an assigned worktree, and (2) the controller itself may skip creating a worktree at all. Both need their own mandatory check.
 globs: ["**/*"]
 ---
 
 # Worktree/Subagent Isolation
+
+## Failure Mode 1: Subagent Leaks Outside an Existing Worktree
 
 ## The Problem This Rule Solves
 
@@ -82,3 +84,67 @@ landed in the main checkout anyway.
 - Applies to every task in a plan, not just the first or last — the leak in the C2
   incident happened during a mid-plan fix round (Task 7's second fix dispatch), not at
   the boundaries.
+
+---
+
+## Failure Mode 2: Controller Never Creates the Worktree At All
+
+### The Problem This Section Solves
+
+Failure Mode 1 above assumes a worktree already exists and a subagent's write leaked outside it.
+This is a different, upstream failure: the **controller** (not a subagent) decides, task by task,
+that a piece of work is "small enough" or "low risk enough" to skip worktree creation entirely and
+just work directly in the shared main checkout — then commits and pushes straight to `origin/main`.
+
+**Occurrence 1 — Phase 6, entire phase (2026-07-16 to 2026-07-17).** Four sub-projects (an
+`AGENTS.md` audit, an eval-coverage backfill across 53 files via `subagent-driven-development`, a
+Questrade REST integration removal across ~51 files including live-order fallback code and a
+frontend modal deletion, an agent relocation between plugins, and a new Python script + test
+suite) were each individually judged low-risk enough to skip worktree creation, and were committed
+directly onto the shared main checkout and pushed straight to `origin/main`, every time. Notably,
+one of these sub-projects explicitly invoked `superpowers:subagent-driven-development`, whose own
+documented required workflow dependencies list `superpowers:using-git-worktrees` — that
+requirement was skipped too, not just the general policy.
+
+**Why this matters, concretely, beyond "it's the documented policy":**
+- There is no reviewable feature branch for any of it — the user cannot review a diff and merge it
+  themselves; it is simply already in `main`'s history by the time they see it.
+- A change later described as "small" (the `AGENTS.md` audit) can grow substantially mid-task (the
+  Questrade removal ballooned from an assumed docs-labeling pass into a ~51-file full-stack code
+  removal once real scope surfaced) — by which point work is already committed directly to `main`,
+  with no isolation boundary to fall back to.
+- Reconciling local `main` against `origin/main` after the fact (e.g. when a separately-created
+  feature branch's PR gets merged on GitHub directly, or a `git pull` happens on the wrong branch)
+  becomes genuinely confusing without the clean "one worktree, one branch, one merge" checkpoint
+  the documented process provides.
+
+### The Law
+
+> **Worktree creation is not a risk assessment the controller performs per task — it is a fixed,
+> unconditional step that happens before any code, script, or multi-file content change, every
+> time.** The only exception is a genuinely trivial single-line documentation fix. Everything else
+> — bug fixes, new scripts, multi-file docs passes, agent/skill relocations, eval-file authoring —
+> gets a real worktree first, no exceptions based on how contained the task looks.
+
+### Non-Negotiables
+
+1. **Before starting any qualifying task, create the worktree first.** Use
+   `superpowers:using-git-worktrees`, or `git worktree add <path> -b <branch>` directly. Do this
+   even if the task looks like "just a docs edit" or "just one script" — the Questrade incident
+   above is the concrete proof that scope assessments made before starting are unreliable.
+2. **If `subagent-driven-development` or `executing-plans` is invoked, follow its own listed
+   required workflow dependencies without skipping any of them** — in particular
+   `superpowers:using-git-worktrees`. Do not treat a skill's documented dependency list as
+   optional because the task feels small.
+3. **When in doubt, ask the user** whether a worktree is warranted for a specific task, rather than
+   deciding silently and proceeding directly on the main checkout.
+4. **The completion sequence is always: work in the worktree → whole-branch review → merge the
+   worktree's branch into local `main` → push local `main` to `origin/main`.** There is no valid
+   sequence where work lands as commits directly on the main checkout's `main` branch.
+
+### Where This Applies
+
+- Every task that isn't a single trivial documentation line-edit, regardless of the plugin,
+  sub-project, or perceived size.
+- Applies before `subagent-driven-development`/`executing-plans` is even invoked, not just within
+  them — the worktree must exist first, before any implementer subagent is dispatched into it.
