@@ -66,6 +66,22 @@ def test_gate_blocks_when_only_one_of_three_agrees():
     assert result["lensesAgreeing"] == 1
 
 
+def test_gate_treats_non_converged_reverse_dcf_as_impliedgrowth_lens_disagreeing():
+    """Regression: reverse_dcf.py now nulls impliedGrowthVsBaseCase when its bisection
+    doesn't converge (previously it returned a numeric value even when unconverged, which
+    could silently satisfy this lens). This gate must correctly treat that null the same
+    as "no reverseDcf data at all" — never agreeing, never crashing on the missing key."""
+    proj = _projection(
+        action="ACCUMULATE", dcf_upside=20.0, comps_low=110.0, comps_high=130.0,
+        implied_growth_vs_base=None,  # simulates a non-converged reverse_dcf result
+        current_price=100.0,
+    )
+    result = check_accumulate_gate(proj)
+    assert result["lensResults"]["impliedGrowth"] is False
+    assert result["lensesAgreeing"] == 2  # dcf + comps only
+    assert result["gatePassed"] is True  # 2 of 3 still passes the gate
+
+
 def test_gate_blocks_when_zero_lenses_agree():
     proj = _projection(
         action="ACCUMULATE", dcf_upside=5.0, comps_low=70.0, comps_high=90.0,

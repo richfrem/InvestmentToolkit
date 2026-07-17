@@ -265,7 +265,7 @@ def get_estimates(ticker: str) -> dict:
             - "source": "yfinance" or "cache".
             - "asOf": ISO 8601 timestamp of fetch/cache.
     """
-    cached = cache_get(ticker, "fundamentals")
+    cached = cache_get(ticker, "estimates")
     if cached is not None and "y1RevEstimate" in cached:
         return {**cached, "source": "cache"}
 
@@ -284,7 +284,7 @@ def get_estimates(ticker: str) -> dict:
     y2 = _extract_avg_estimate(df, "+1y")
 
     entry = {"y1RevEstimate": y1, "y2RevEstimate": y2, "asOf": _now_iso()}
-    cache_set(ticker, "fundamentals", entry)
+    cache_set(ticker, "estimates", entry)
     return {**entry, "source": "yfinance"}
 
 
