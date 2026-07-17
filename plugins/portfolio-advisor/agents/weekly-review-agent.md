@@ -33,6 +33,13 @@ python3 investment_screener/backend/py_services/generate_track_record_report.py 
 ```
 Present the hit-rate table (per claim type: correct / incorrect / inconclusive / hit rate) alongside the drift audit. **This will be sparse or empty for a while** — claims need 90-180 days to mature before they're gradable, and harvesting only started once E3 shipped. That's expected, not a bug; don't treat an empty report as a failure.
 
+### Phase 1c: Execution Quality Scorecard (Phase 6 — additive, sparse initially)
+Surface risk-gate audit-trail stats from live order attempts this week:
+```bash
+python3 investment_screener/backend/py_services/execution_quality_scorecard.py --json
+```
+Present the decision breakdown (executed/blocked/overridden) and per-gate fail rates alongside the track-record hit-rate table. If any orders were `OVERRIDDEN`, list them as a manual-review worklist — this is informational only, never a verdict on whether the override was correct (no return/P&L computation happens here). **This will likely be empty or sparse for a while** — real order flow through the risk gates needs to accumulate first. That's expected, not a bug.
+
 ### Phase 2: Weekly Catalyst Sweep (Grok News Sweep)
 1. Present the range audit.
 2. Present the generated prompt in `temp/weekly_grok_prompt.md`.
