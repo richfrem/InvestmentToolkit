@@ -26,8 +26,13 @@ and directly contradicted the project's own established Phase 1-5 pattern (workt
 merge to local main → push). See `.agent/rules/worktree-subagent-isolation.md`'s "Failure Mode 2"
 section for the full incident writeup.
 
-A trivial single-line doc typo fix does not need this. Anything else — a bug fix, a new script, a
-multi-file docs pass, an agent/skill relocation — does, regardless of how contained it looks.
+**The actual boundary:** pure documentation/markdown edits (rule files, specs, plans, READMEs) never
+need a worktree, regardless of file count — commit those directly. Anything touching real code —
+Python, TypeScript, JS, executable scripts, config that changes runtime behavior — needs a worktree,
+especially anything substantial enough to warrant `subagent-driven-development`. When a worktree is
+used, follow the full protocol properly (worktree → work → review → merge to local main → push) —
+not a shortcut where work happens in the main checkout first and gets relabeled as a branch after
+the fact.
 
 ### No git stash without explicit instruction
 Never run `git stash`, `git stash pop`, or `git stash apply` unless the user explicitly says to.
