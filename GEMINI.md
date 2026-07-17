@@ -43,6 +43,7 @@ InvestmentToolkit/
 11. **Sync sweep templates**: When target weights/pillars/sub-strategies change, update "Core Portfolio Thesis Background" in both `daily_sweep.md.template` and `weekly_sweep.md.template`.
 12. **Refine templates on Grok ingest**: After each Grok response, improve prompt templates to guard against observed gaps (grouped tickers, lazy placeholders, TA errors).
 13. **Initialize missing private data**: If any local gitignored data files (e.g., `portfolio.json`, `cash_flows.json`) are missing from `investment_screener/backend/data/`, initialize them by copying their corresponding `.example` files.
+14. **Worktree-first is mandatory, not a judgment call**: Before any code/script/multi-file change, create a git worktree first — never decide unilaterally that a task is "small enough" to skip it and work directly on the main checkout. Only a single trivial doc-typo fix is exempt. See `.agent/rules/git-operations.md` and `.agent/rules/worktree-subagent-isolation.md` (Failure Mode 2) — an entire phase of work was done directly on `main` in violation of this before the rule existed in writing.
 
 ## Canonical Scripts
 | Script | Purpose |
