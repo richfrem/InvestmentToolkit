@@ -1,104 +1,68 @@
 # Session Start Briefing — InvestmentToolkit
-_Last updated: 2026-07-15 | Phase 5: COMPLETE (shipped, merged to `origin/main`; worktree/branches
-cleaned up at `fd2bfaa`) | Phase 6: NOT YET STARTED — no spec, no plan, not even brainstormed. Read
-the section immediately below before touching any code._
+_Last updated: 2026-07-17 | Phase 5: COMPLETE (shipped, merged to `origin/main`; worktree/branches
+cleaned up at `fd2bfaa`) | Phase 6: COMPLETE — all 4 sub-projects shipped, merged to `origin/main`.
+This was the last phase of the original 6-phase Fable5 roadmap. Read the section immediately below
+for what's next._
 
 > **Read this first at the start of every new session.**
 
 ---
 
-## 🆕 NEXT: Fable5 Elevation Guide — Phase 6 ("G3" — Skill/Sub-Agent Architecture Cleanup) — not yet scoped
+## ✅ COMPLETE: Fable5 Elevation Guide — Phase 6 (Skill/Sub-Agent Architecture Cleanup) — all 4 sub-projects shipped
 
-**Phase 6 is the last phase of the original 6-phase Fable5 roadmap** (see the roadmap line
-preserved in the Phase 4 section below: "(1) data layer, (2) valuation committee, (3) executable
-scoring framework + local TA engine, (4) TradingView/Pine hardening, (5) risk engine + rebalancer +
-prediction ledger + backtesting, (6) skills/sub-agent architecture cleanup" — note this numbering
-sketch predates how the phases actually shipped in practice; Phases 1-5 as actually built covered
-data layer, valuation committee (2a/2b), risk/rebalancer (Phase 3: E1/C2/B5/E2/G2), track record
-(Phase 4: E3/B4/G4/E4), and TV/Pine hardening (Phase 5: 5A-5E) — Phase 6 is simply whatever's left:
-skill/agent architecture cleanup).
+**Phase 6 was the last phase of the original 6-phase Fable5 roadmap** (data layer → valuation
+committee → risk/rebalancer → track record → TV/Pine hardening → skill/agent architecture cleanup).
+Unlike every other phase, it started this session with zero prior scoping — brainstorming produced
+4 independent sub-projects, each with its own spec + plan, built and merged in sequence.
 
-**Unlike every phase before it, Phase 6 has ZERO prior scoping work** — no spec doc, no plan doc,
-no brainstorming session. Every other phase in this file had a `docs/superpowers/specs/*-design.md`
-and `docs/superpowers/plans/*.md` written *before* any `subagent-driven-development` dispatch. Phase
-6 has neither. **Do not start implementing anything for Phase 6 without running
-`superpowers:brainstorming` with the user first** — this is exactly the "let's build X" case that
-skill exists for, and CLAUDE.md's TDD/TDO rule (no dev without a spec/failing-test first) applies
-here just as much as everywhere else in this repo.
+**1. AGENTS.md audit** — Spec/plan: `docs/superpowers/specs/2026-07-15-phase6-agents-md-audit-design.md`.
+Cross-referenced every `SKILL.md`, `agents/*.md`, and `commands/*.md` on disk against `AGENTS.md`.
+Added 7 missing agents (risk-officer, red-team, data-quality, thesis-review,
+portfolio-advisor-orchestrator, single-stock-advisor, ta-guide) plus 14 more missing skills, fixed
+2 genuinely stale entries. One real ground-truth gap found and corrected in a follow-up commit
+(the first pass missed `plugin.json`'s `skills[].trigger` field as a third source-of-truth layer
+alongside `SKILL.md` and `commands/*.md`).
 
-### Where the name "G3" / "Phase 6" comes from (verified this session via grep, not assumed)
+**2. Eval coverage backfill** — Spec/plan: `docs/superpowers/specs/2026-07-16-phase6-eval-coverage-backfill-design.md`.
+53 skill/agent targets (39 skills with zero coverage, 2 empty scaffolds filled, 1 upgraded from
+simple to rich schema, 11 agents — new `plugins/<plugin>/agents/evals/<agent-name>.json`
+convention established since agents don't have their own folder like skills do) now have rich
+8-category eval files matching `stock_valuation`'s template. Built via `subagent-driven-development`,
+7 tasks batched by plugin, every task individually reviewed and approved (zero Critical/Important
+findings), plus a final whole-branch review confirming cross-task consistency. Two trivial Minor
+findings fixed directly after the final review.
 
-The term "Phase 6" appears scattered across existing spec/plan docs as forward references, never as
-its own document:
-- `docs/superpowers/specs/2026-07-05-fundamental-analyst-ta-design.md:275` — "G-series skill/agent
-  architecture cleanup — separate phase (6) per the guide."
-- `docs/superpowers/plans/2026-07-09-thesis-breakers.md:1738,1890` — "`evals/evals.json` is created
-  empty, matching the repo-wide convention (G3 in the elevation guide — filling skill evals is
-  explicit Phase 6 scope, not B5's)."
-- `docs/superpowers/plans/2026-07-12-phase4-e4-backtest-harness.md:143` and
-  `docs/superpowers/plans/2026-07-12-phase5-tradingview-pine-hardening.md:357,364` — both mention,
-  as a *speculative, non-committed* aside: "Phase 6 (future) will use Phase 5's audit trails
-  (`orders_executed.jsonl`) to train reward models" on execution quality. This is an idea someone
-  jotted down while writing those specs, NOT confirmed scope — treat it as one candidate among
-  several during brainstorming, not a locked requirement.
+**3. Dead/superseded skill pruning** — Two concrete actions, not a broad open-ended audit:
+   - **Questrade REST integration archived** (docs: `docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md`).
+     User confirmed a full pivot to TradingView CDP; the standalone Questrade REST integration
+     (OAuth token exchange, direct API calls bypassing TradingView) was archived — not deleted —
+     to a gitignored `ARCHIVE/questrade/` (paths preserved, git history also preserves it). This
+     grew from an initially-assumed "docs labeling" task into a genuine full-stack removal once
+     the real scope surfaced (~51 files: backend services/routes, a frontend Settings modal,
+     `place_order.py`'s tier-3 fallback which would have hard-failed once the engine moved, and
+     doc/manifest mentions across the repo) — every reference to the user's *actual* live
+     Questrade brokerage identity via TradingView (broker panel, credentials, settlement rules,
+     `norberts-gambit`'s appendix) was deliberately left untouched. Verified via backend test
+     suite + frontend build, zero regressions.
+   - **`tradingview-onboarding` agent moved from `toolkit-manager` into `tradingview`** — the only
+     genuinely TradingView-scoped piece of `toolkit-manager` (which also has `run_screener`, a
+     generic whole-app launcher, and `toolkit-onboarding-guide`, a generic master coordinator —
+     neither of which fit a full merge). `toolkit-manager` remains a lean bootstrap/meta plugin.
 
-There is no single master "elevation guide" document — the guide is a conceptual roadmap referenced
-piecemeal across the specs above. If a fresh session needs the full picture, these grep hits are the
-only source; don't assume a canonical doc exists somewhere unfound.
+**4. Reward-modeling groundwork** — Spec/plan: `docs/superpowers/specs/2026-07-17-phase6-execution-quality-scorecard-design.md`.
+Resolved the key fork during brainstorming: this repo has zero ML training infrastructure, so
+"reward modeling" became `execution_quality_scorecard.py` — a deterministic script (matching
+`risk_engine.py`/`generate_track_record_report.py`'s exact pattern) that finally reads Phase
+5E-8's `orders_executed.jsonl` audit trail (logged since Phase 5 shipped, explicitly never read
+by any script until now — `log_order_execution()`'s own docstring called this out as YAGNI at
+the time). Computes decision breakdown (EXECUTED/BLOCKED/OVERRIDDEN), per-gate fail rate, and an
+overridden-order manual-review worklist — no ML, no return/P&L correlation (deliberately out of
+scope). TDD (11 tests, all via `tmp_path` fixtures), wired into `/weekly-review` as a new
+advisory-only Phase 1c, degrades gracefully on today's sparse data (5 sandbox `BLOCKED` entries,
+zero real executions yet).
 
-### Concrete candidate scope — real data gathered this session, NOT a locked plan
-
-These are inputs for the brainstorming session, not decisions already made:
-
-**1. Skill/agent eval coverage gap** (the most concrete, explicitly-named Phase 6 item — "G3...
-filling skill evals is explicit Phase 6 scope"):
-- 45 `SKILL.md` files exist across all plugins; only 6 have an `evals/evals.json` at all
-  (this count is now stale as of 2026-07-16 — `questrade-token-setup` was archived to
-  `ARCHIVE/questrade/` as part of a full Questrade REST integration removal, so it no longer
-  counts toward either the numerator or denominator; see the Questrade archive spec/plan under
-  `docs/superpowers/specs/` and `docs/superpowers/plans/` dated 2026-07-16).
-- Of the original 6: **4 were filled** (`stock-valuation/skills/stock_valuation`,
-  `portfolio-advisor/skills/portfolio-health`, `toolkit-manager/skills/questrade-token-setup`
-  — now archived, no longer applicable — `toolkit-manager/skills/run-screener`) and **2 were empty
-  scaffolds** (`{"evals": []}` — `portfolio-advisor/skills/calibrate-targets`,
-  `portfolio-advisor/skills/set-thesis-breakers`).
-- **37 of 45 skills have no `evals/` directory at all** — including every skill built during Phases
-  3-5 (`rebalance-portfolio`, `x-news-sweep`, `daily-loop`, `daily-brief`, `place-order`,
-  `cancel-order`, `alert-list`, `alert-sync`, `pine-inject`, `norberts-gambit`, and ~27 more). Full
-  list obtainable via: `find plugins -name "SKILL.md" | while read f; do d=$(dirname "$f"); [ -f
-  "$d/evals/evals.json" ] || echo "$d"; done`.
-- **All 11 `agents/*.md` files have zero evals coverage** (`risk-officer-agent`, `red-team-agent`,
-  `data-quality-agent`, `daily-loop-agent`, `thesis-review-agent`, `weekly-review-agent`,
-  `portfolio-advisor-orchestrator`, `single-stock-advisor`, `ta-guide`, `toolkit-onboarding-guide`,
-  `tradingview-onboarding`).
-- The 4 filled examples (especially `stock_valuation`'s — it has 8 evals covering trigger accuracy,
-  schema compliance, adversarial robustness, sycophancy resistance, degradation, and a near-miss
-  routing case, plus explicit `benchmark_targets`) are the template to replicate, not a from-scratch
-  design exercise.
-
-**2. `AGENTS.md` invocation-contract documentation** — flagged as a known gap back when Phase 3
-closed out (see that section further down this file): "input artifact path → output artifact path
-per specialist agent" was never written for Phase 3's 5 new agents, and is presumably even further
-behind now after Phase 4/5 added more skills/agents. `AGENTS.md` (repo root, 160 lines) is a curated
-routing guide, not exhaustive — worth an audit pass to confirm it still reflects reality (e.g. does
-it mention `/place-order`, `/tv-alert-list`, the risk-officer/red-team/data-quality agents, the
-Phase 4 track-record commands?) before deciding whether/how to expand it.
-
-**3. Anything else the user wants folded in** — "skill/agent architecture cleanup" is broad; the
-brainstorming session should also ask the user directly whether there's dead/superseded skill
-content worth pruning (per `.agent/rules/skill-deletion-guard.md` — deletions need that rule's
-process, not ad-hoc `rm`), whether the `plugins/*/agents/` vs `plugins/*/skills/` split still makes
-sense given how much has been built since it was first drawn, and whether the speculative "reward
-modeling on execution quality" idea (item 4 above) is worth pursuing now that Phase 5's audit trail
-(`orders_executed.jsonl`) actually exists and is live-wired (see the Phase 5 section immediately
-below).
-
-### First action for the next session
-
-Run `superpowers:brainstorming` with the user, presenting the candidate scope above as a starting
-menu, not a plan. Only after that produces a real spec (`docs/superpowers/specs/2026-07-XX-phase6-*-design.md`)
-and plan (`docs/superpowers/plans/2026-07-XX-phase6-*.md`) should any `subagent-driven-development`
-dispatch happen — same sequencing every prior phase followed.
+**Next session**: no committed next phase. If the user wants to continue evolving this repo, that
+needs its own fresh brainstorming session — there is no "Phase 7" queued anywhere.
 
 ### Loose ends from Phase 5 — now fully resolved (2026-07-15, same session as the merge)
 
