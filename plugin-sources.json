@@ -9,7 +9,6 @@
         "agent-memory",
         "agent-scaffolders",
         "claude-cli",
-        "cli-agents",
         "coding-conventions",
         "context-bundler",
         "copilot-cli",
@@ -39,6 +38,12 @@
         "stock-valuation",
         "toolkit-manager",
         "tradingview"
+      ]
+    },
+    {
+      "source": "/Users/richardfremmerlid/Projects/agent-plugins-skills/plugins",
+      "plugins": [
+        "cli-agents"
       ]
     }
   ]

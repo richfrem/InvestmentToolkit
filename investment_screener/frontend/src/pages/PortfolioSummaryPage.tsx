@@ -185,7 +185,7 @@ export default function PortfolioSummaryPage() {
                 ) : allocation && allocation.allocation.length > 0 ? (
                     <StrategyAllocationChart
                         data={allocation.allocation}
-                        totalUSD={summary.totalMarketValueUSD}
+                        totalCAD={summary.totalMarketValueCAD}
                         usdCadRate={summary.liveUsdCadRate}
                     />
                 ) : (
