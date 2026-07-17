@@ -86,13 +86,18 @@ def _peer_ev_sales(ticker: str, projections_dir: str) -> float | None:
     return compute_ev(price, shares, debt, cash) / revenue
 
 
-def comps_implied_range(ticker: str, peer_tickers: list[str], projections_dir: str) -> dict:
+def comps_implied_range(
+    ticker: str, peer_tickers: list[str], projections_dir: str, cik: str | None = None,
+) -> dict:
     """Peer-median EV/Sales applied to the target's own revenue -> implied price range.
 
     Args:
         ticker: Target ticker.
         peer_tickers: Curated peer ticker list (from projections/{TICKER}.json's `peers` field).
         projections_dir: Path to the projections directory.
+        cik: SEC CIK for EDGAR cross-checking of the target's fundamentals, or None.
+            Peer fundamentals are never threaded with a cik — peers are only used
+            for their EV/Sales multiple, not compared against EDGAR filings directly.
 
     Returns:
         {"status": "ok", "impliedPriceRange": {"low": float, "high": float},
@@ -123,7 +128,7 @@ def comps_implied_range(ticker: str, peer_tickers: list[str], projections_dir: s
 
     ev_sales_median = statistics.median(peer_multiples.values())
 
-    fundamentals = get_fundamentals(ticker)
+    fundamentals = get_fundamentals(ticker, cik=cik)
     target_debt = fundamentals.get("totalDebt", {}).get("value") or 0.0
     target_cash = fundamentals.get("cashAndEquivalents", {}).get("value") or 0.0
 
@@ -158,11 +163,12 @@ def main() -> None:
     parser.add_argument("--ticker", required=True)
     parser.add_argument("--peers", required=True, help="Comma-separated peer tickers")
     parser.add_argument("--projections-dir", required=True)
+    parser.add_argument("--cik", default=None, help="SEC CIK for the target ticker, omit for non-US tickers")
     parser.add_argument("--pretty", action="store_true")
     args = parser.parse_args()
 
     peer_tickers = [p.strip() for p in args.peers.split(",") if p.strip()]
-    result = comps_implied_range(args.ticker, peer_tickers, args.projections_dir)
+    result = comps_implied_range(args.ticker, peer_tickers, args.projections_dir, cik=args.cik)
     print(json.dumps(result, indent=2 if args.pretty else None))
 
 
