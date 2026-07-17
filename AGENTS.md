@@ -12,7 +12,7 @@ Two dedicated onboarding agents handle setup. Always route new users here first.
 
 ### TradingView Setup (Primary — all users)
 **Trigger**: `"Set up TradingView for me"` or `"Help me connect TradingView"`  
-**Agent**: `tradingview-onboarding` (`plugins/toolkit-manager`) — dedicated 8-phase guide covering:
+**Agent**: `tradingview-onboarding` (`plugins/tradingview`) — dedicated 8-phase guide covering:
 1. TradingView Desktop install check
 2. Subscription tier verification (Premium recommended)
 3. Broker panel connection inside TradingView
