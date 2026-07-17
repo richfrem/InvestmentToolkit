@@ -2,6 +2,9 @@
 
 Validates that harvest_earnings_expectations() appends new claim when
 consensus updates mid-week (multi-source scenario).
+
+Every call below passes predictions_path=tmp_path/... so no test in this file
+can ever write to the real, tracked predictions.jsonl.
 """
 import json
 import sys
@@ -21,7 +24,7 @@ from earnings_expectations import harvest_earnings_expectations  # noqa: E402
 class TestHarvestEarningsExpectationsConsensusChange:
     """Verify harvest logs when consensus updates."""
 
-    def test_harvest_logs_eps_estimate_revision(self):
+    def test_harvest_logs_eps_estimate_revision(self, tmp_path):
         """When EPS estimate is revised mid-week, new claim is logged."""
         # Prior consensus (Monday)
         prior_pred = {
@@ -60,20 +63,20 @@ class TestHarvestEarningsExpectationsConsensusChange:
              patch("earnings_expectations.date") as mock_date_class, \
              patch("earnings_expectations.yf.Ticker") as mock_ticker:
 
-            mock_date.today.return_value.isoformat.return_value = "2026-07-10"
+            mock_date_class.today.return_value.isoformat.return_value = "2026-07-10"
 
             mock_ticker_inst = MagicMock()
             mock_ticker_inst.info = {"currentPrice": 125.00, "regularMarketPrice": 125.00}
             mock_ticker.return_value = mock_ticker_inst
 
-            result = harvest_earnings_expectations(["NVDA"])
+            result = harvest_earnings_expectations(["NVDA"], predictions_path=tmp_path / "predictions.jsonl")
 
         # Should log new claim
         mock_append.assert_called_once()
         appended_claim = mock_append.call_args[0][0]
         assert appended_claim["claim"]["consensus_eps"] == 0.55
 
-    def test_harvest_logs_revenue_estimate_revision(self):
+    def test_harvest_logs_revenue_estimate_revision(self, tmp_path):
         """When revenue estimate is revised, new claim is logged."""
         prior_pred = {
             "v": 1,
@@ -111,19 +114,19 @@ class TestHarvestEarningsExpectationsConsensusChange:
              patch("earnings_expectations.date") as mock_date_class, \
              patch("earnings_expectations.yf.Ticker") as mock_ticker:
 
-            mock_date.today.return_value.isoformat.return_value = "2026-07-10"
+            mock_date_class.today.return_value.isoformat.return_value = "2026-07-10"
 
             mock_ticker_inst = MagicMock()
             mock_ticker_inst.info = {"currentPrice": 210.0}
             mock_ticker.return_value = mock_ticker_inst
 
-            result = harvest_earnings_expectations(["AAPL"])
+            result = harvest_earnings_expectations(["AAPL"], predictions_path=tmp_path / "predictions.jsonl")
 
         mock_append.assert_called_once()
         appended_claim = mock_append.call_args[0][0]
         assert appended_claim["claim"]["consensus_revenue"] == 3.75e11
 
-    def test_harvest_appends_multiple_revisions_same_ticker(self):
+    def test_harvest_appends_multiple_revisions_same_ticker(self, tmp_path):
         """Multiple revisions for same ticker on different days are all logged."""
         # Monday consensus
         monday_pred = {
@@ -182,13 +185,13 @@ class TestHarvestEarningsExpectationsConsensusChange:
              patch("earnings_expectations.date") as mock_date_class, \
              patch("earnings_expectations.yf.Ticker") as mock_ticker:
 
-            mock_date.today.return_value.isoformat.return_value = "2026-07-12"
+            mock_date_class.today.return_value.isoformat.return_value = "2026-07-12"
 
             mock_ticker_inst = MagicMock()
             mock_ticker_inst.info = {"currentPrice": 125.00}
             mock_ticker.return_value = mock_ticker_inst
 
-            result = harvest_earnings_expectations(["NVDA"])
+            result = harvest_earnings_expectations(["NVDA"], predictions_path=tmp_path / "predictions.jsonl")
 
         # Should append new claim (Friday's revision)
         mock_append.assert_called_once()
@@ -196,7 +199,7 @@ class TestHarvestEarningsExpectationsConsensusChange:
         assert appended_claim["claim"]["consensus_eps"] == 0.56
         assert appended_claim["claim"]["consensus_revenue"] == 9.6e9
 
-    def test_harvest_dedupes_same_consensus_across_sources(self):
+    def test_harvest_dedupes_same_consensus_across_sources(self, tmp_path):
         """If consensus is the same from multiple sources, no new claim."""
         prior_pred = {
             "v": 1,
@@ -230,7 +233,7 @@ class TestHarvestEarningsExpectationsConsensusChange:
                    return_value=[prior_pred]), \
              patch("earnings_expectations._append_prediction") as mock_append:
 
-            result = harvest_earnings_expectations(["MSFT"])
+            result = harvest_earnings_expectations(["MSFT"], predictions_path=tmp_path / "predictions.jsonl")
 
         # Should NOT append (consensus unchanged)
         mock_append.assert_not_called()

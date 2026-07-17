@@ -286,7 +286,7 @@ try:
     from prediction_ledger import load_graded as _load_graded
     from prediction_ledger import append_grade as _append_grade
     from prediction_ledger import grade_claim as _grade_claim
-    PREDICTIONS_PATH = None  # Will be imported via prediction_ledger as needed
+    from prediction_ledger import PREDICTIONS_PATH
 except ImportError:
     _load_predictions = None
     _make_prediction_id = None
@@ -294,9 +294,13 @@ except ImportError:
     _load_graded = None
     _append_grade = None
     _grade_claim = None
+    PREDICTIONS_PATH = None
 
 
-def harvest_earnings_expectations(tickers: list[str] | None = None) -> list[dict]:
+def harvest_earnings_expectations(
+    tickers: list[str] | None = None,
+    predictions_path: Path = PREDICTIONS_PATH,
+) -> list[dict]:
     """Harvest earnings expectations for given tickers, deduping on unchanged consensus.
 
     Main function for B4 Task 3-4. Compares current consensus to last-logged value
@@ -306,6 +310,9 @@ def harvest_earnings_expectations(tickers: list[str] | None = None) -> list[dict
     Args:
         tickers: List of ticker symbols to harvest. If None, uses all holdings
             from target-portfolio.json.
+        predictions_path: Path to the prediction ledger file. Defaults to the
+            real, tracked predictions.jsonl; tests should override this with a
+            tmp_path fixture so they never write to the real ledger.
 
     Returns:
         List of newly appended prediction dicts (empty if all were unchanged).
@@ -318,7 +325,7 @@ def harvest_earnings_expectations(tickers: list[str] | None = None) -> list[dict
 
     # Load existing predictions (limit to last 1000 for efficiency)
     try:
-        all_preds = _load_predictions()
+        all_preds = _load_predictions(predictions_path)
         # Tail: keep only the last 1000
         recent_preds = all_preds[-1000:] if len(all_preds) > 1000 else all_preds
     except Exception:
@@ -426,7 +433,7 @@ def harvest_earnings_expectations(tickers: list[str] | None = None) -> list[dict
                 harvestedAt=datetime.now(timezone.utc).isoformat(),
             )
 
-            _append_prediction(prediction.model_dump())
+            _append_prediction(prediction.model_dump(), predictions_path)
             newly_appended.append(prediction.model_dump())
 
         except Exception:
