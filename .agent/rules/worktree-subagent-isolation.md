@@ -122,9 +122,12 @@ requirement was skipped too, not just the general policy.
 
 > **Worktree creation is not a risk assessment the controller performs per task — it is a fixed,
 > unconditional step that happens before any code, script, or multi-file content change, every
-> time.** The only exception is a genuinely trivial single-line documentation fix. Everything else
-> — bug fixes, new scripts, multi-file docs passes, agent/skill relocations, eval-file authoring —
-> gets a real worktree first, no exceptions based on how contained the task looks.
+> time.** The boundary is content type, not file count: pure documentation/markdown edits (rule
+> files, specs, plans, READMEs) never need a worktree, however many files they touch — commit those
+> directly. Anything touching real code — bug fixes, new scripts, agent/skill relocations that
+> change executable behavior, eval-file authoring that's substantial enough to warrant
+> `subagent-driven-development` — gets a real worktree first, no exceptions based on how contained
+> the task looks.
 
 ### Non-Negotiables
 
@@ -144,7 +147,8 @@ requirement was skipped too, not just the general policy.
 
 ### Where This Applies
 
-- Every task that isn't a single trivial documentation line-edit, regardless of the plugin,
-  sub-project, or perceived size.
+- Every task that touches real code, scripts, or executable behavior, regardless of the plugin,
+  sub-project, or perceived size. Pure documentation/markdown-only edits are exempt regardless of
+  file count.
 - Applies before `subagent-driven-development`/`executing-plans` is even invoked, not just within
   them — the worktree must exist first, before any implementer subagent is dispatched into it.
