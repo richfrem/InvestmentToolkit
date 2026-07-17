@@ -36,6 +36,7 @@ CACHE_TTL_SECONDS = {
     "quote": 900,          # 15 min
     "ohlcv": 86400,         # 24h
     "fundamentals": 86400,  # 24h
+    "estimates": 86400,     # 24h — matches the TTL estimates rode on before it got its own cache key
     "edgar": 604800,        # 7d
 }
 
