@@ -183,5 +183,5 @@
 - **link-checker-link-checker-agent.md**: None | 
 - **portfolio-advisor-portfolio-advisor-orchestrator.md**: portfolio-advisor-orchestrator | Interactive sub-agent that guides the user through the full Portfolio Advisor workflow (Ingest -> Calibrate -> Review -> Rebalance -> Execution).
 - **toolkit-manager-toolkit-onboarding-guide.md**: toolkit-onboarding-guide | |
-- **toolkit-manager-tradingview-onboarding.md**: tradingview-onboarding | |
 - **tradingview-ta-guide.md**: ta-guide | |
+- **tradingview-tradingview-onboarding.md**: tradingview-onboarding | |

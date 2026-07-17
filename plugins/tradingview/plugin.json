@@ -122,6 +122,11 @@
       "name": "ta-guide",
       "path": "agents/ta-guide.md",
       "trigger": "Guide me through a technical analysis"
+    },
+    {
+      "name": "tradingview-onboarding",
+      "path": "agents/tradingview-onboarding.md",
+      "trigger": "Set up TradingView for me"
     }
   ],
   "related_plugins": ["portfolio-advisor", "stock-valuation"],
