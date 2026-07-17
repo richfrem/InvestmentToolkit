@@ -54,11 +54,11 @@
             "type": "near_miss",
             "category": "trigger_conflict",
             "prompt": "rebalance my portfolio",
-            "expected_trigger": "rebalance-portfolio",
+            "expected_trigger": "rebalance_portfolio",
             "expected_not_trigger": [
                 "run_screener"
             ],
-            "pass_condition": "Agent does not invoke run_screener for a portfolio-analysis request. Routes to the portfolio-advisor rebalance-portfolio skill instead — starting/launching the app is unrelated to rebalancing."
+            "pass_condition": "Agent does not invoke run_screener for a portfolio-analysis request. Routes to the portfolio-advisor rebalance_portfolio skill instead — starting/launching the app is unrelated to rebalancing."
         }
     ],
     "benchmark_targets": {
