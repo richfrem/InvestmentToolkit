@@ -93,6 +93,7 @@ def solve_implied_growth(
     tolerance = RELATIVE_TOLERANCE * max(price, 1.0)
     iterations = 0
     converged = False
+    mid = (lo + hi) / 2  # defined even if MAX_ITERATIONS is 0 or the loop never converges
     while iterations < MAX_ITERATIONS:
         mid = (lo + hi) / 2
         pv_mid = pv_at(mid)
@@ -104,6 +105,18 @@ def solve_implied_growth(
         else:
             hi = mid
         iterations += 1
+
+    if not converged:
+        # Iteration-exhausted non-convergence (practically unreachable given a 550pp
+        # bracket and 200 iterations on a monotonic PV function — but if it ever
+        # happens, `mid` is an arbitrary bisection midpoint, not a solved value.
+        # Null it the same way OUT_OF_BRACKET_RANGE already does, rather than
+        # returning a number that looks solved but isn't.
+        return {
+            "impliedGrowth": None, "impliedGrowthVsBaseCase": None,
+            "impliedGrowthVsGuidance": None, "verdict": "NON_CONVERGENT",
+            "converged": False, "iterations": iterations,
+        }
 
     implied_growth = round(mid, 4)
 
