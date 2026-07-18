@@ -119,6 +119,70 @@ def test_classify_file_recognizes_test_fixture():
     assert result == "ALLOWED_TEST_FIXTURE_JSON"
 
 
+def test_classify_file_recognizes_plugin_manifest():
+    assert classify_file("plugins/tradingview/plugin.json", references=[]) == "ALLOWED_CONFIGURATION_JSON"
+    assert classify_file("plugins/tradingview/.claude-plugin/plugin.json", references=[]) == "ALLOWED_CONFIGURATION_JSON"
+    assert classify_file(".claude-plugin/marketplace.json", references=[]) == "ALLOWED_CONFIGURATION_JSON"
+
+
+def test_classify_file_recognizes_eval_fixtures():
+    assert classify_file("plugins/portfolio-advisor/skills/daily-brief/evals/evals.json", references=[]) == "ALLOWED_TEST_FIXTURE_JSON"
+    assert classify_file("plugins/tradingview/agents/evals/ta-guide.json", references=[]) == "ALLOWED_TEST_FIXTURE_JSON"
+
+
+def test_classify_file_recognizes_templates_and_examples():
+    assert classify_file("plugins/portfolio-advisor/assets/templates/target_portfolio_template.json", references=[]) == "ALLOWED_CONFIGURATION_JSON"
+    assert classify_file("plugins/stock-valuation/skills/stock_valuation/references/examples/example_NVDA_2026-05-02.json", references=[]) == "ALLOWED_TEST_FIXTURE_JSON"
+
+
+def test_classify_file_flags_vite_cache_as_archive_candidate():
+    result = classify_file("investment_screener/frontend/.vite/deps/_metadata.json", references=[])
+    assert result == "ARCHIVE_LEGACY_READ_ONLY"
+
+
+def test_classify_file_flags_ta_sweep_as_migrate_candidate():
+    result = classify_file("investment_screener/backend/data/ta-sweep-results.json", references=[])
+    assert result == "MIGRATE_TO_INTELLIGENCE_LEDGER"
+
+
+def test_classify_file_flags_etf_and_13f_as_out_of_scope():
+    assert classify_file("investment_screener/backend/data/etf_analysis/FOTO.json", references=[]) == "OUT_OF_SCOPE_FOR_THIS_PHASE"
+    assert classify_file("investment_screener/backend/data/13f/0002045724_index.json", references=[]) == "OUT_OF_SCOPE_FOR_THIS_PHASE"
+
+
+def test_migrate_candidate_reports_not_migrated_status(tmp_path):
+    repo = _make_repo(tmp_path)
+    (repo / "investment_screener").mkdir()
+    (repo / "investment_screener" / "backend").mkdir()
+    (repo / "investment_screener" / "backend" / "data").mkdir()
+    (repo / "investment_screener" / "backend" / "data" / "ta-sweep-results.json").write_text("{}")
+
+    result = run_audit(str(repo))
+    entry = next(f for f in result["files"] if f["path"].endswith("ta-sweep-results.json"))
+
+    assert entry["classification"] == "MIGRATE_TO_INTELLIGENCE_LEDGER"
+    assert "NOT_MIGRATED" in entry["migration_status"]
+
+
+def test_temp_folder_with_no_json_files_reported_as_empty(tmp_path):
+    repo = _make_repo(tmp_path)
+    (repo / "portfolio.json").write_text("{}")
+
+    result = run_audit(str(repo))
+
+    assert result["temp_folder_files"] == []
+
+
+def test_temp_folder_json_files_are_captured_separately(tmp_path):
+    repo = _make_repo(tmp_path)
+    (repo / "temp").mkdir()
+    (repo / "temp" / "scratch.json").write_text("{}")
+
+    result = run_audit(str(repo))
+
+    assert any(f["path"] == "temp/scratch.json" for f in result["temp_folder_files"])
+
+
 def test_run_audit_does_not_modify_or_delete_any_file(tmp_path):
     repo = _make_repo(tmp_path)
     target = repo / "data.json"

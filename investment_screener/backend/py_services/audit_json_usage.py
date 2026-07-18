@@ -202,8 +202,18 @@ def classify_file(path: str, references: list) -> str:
         One of the CLASSIFICATIONS constants.
     """
     p = path.replace("\\", "/")
+    name = Path(p).name
 
-    if "/tests/fixtures/" in p or "/__fixtures__/" in p or Path(p).name.startswith("sample"):
+    if p.startswith("docs/superpowers/audits/"):
+        return "ALLOWED_GENERATED_CACHE_JSON"
+
+    if "/.vite/" in p or "/dist/" in p or "/node_modules/" in p:
+        return "ARCHIVE_LEGACY_READ_ONLY"
+
+    if "/tests/fixtures/" in p or "/__fixtures__/" in p or name.startswith("sample"):
+        return "ALLOWED_TEST_FIXTURE_JSON"
+
+    if "/evals/" in p or "/references/examples/" in p:
         return "ALLOWED_TEST_FIXTURE_JSON"
 
     if p.endswith("predictions.jsonl") or p.endswith("evolution_events.jsonl") or p.endswith("context/events.jsonl"):
@@ -212,7 +222,10 @@ def classify_file(path: str, references: list) -> str:
     if "/data/projections/" in p:
         return "ALLOWED_MODEL_ARTIFACT_JSON"
 
-    if "/data/cache/" in p or p.endswith(".metrics.json") or Path(p).name.startswith("latest-"):
+    if "/etf_analysis/" in p or "/13f/" in p:
+        return "OUT_OF_SCOPE_FOR_THIS_PHASE"
+
+    if "/data/cache/" in p or "/scripts/cache/" in p or p.endswith(".metrics.json") or name.startswith("latest-"):
         return "ALLOWED_GENERATED_CACHE_JSON"
 
     if p.endswith("ta-sweep-results.json"):
@@ -224,12 +237,26 @@ def classify_file(path: str, references: list) -> str:
     portfolio_domain_names = {
         "portfolio.json", "watchlist.json", "watchlists.json",
         "target-portfolio.json", "trade-log.json", "cash_flows.json",
+        "account_policy.json", "thesis_breaker_state.json",
+        "tradingview_alerts_actual.json",
     }
-    if Path(p).name in portfolio_domain_names:
+    if name in portfolio_domain_names:
         return "ALLOWED_AUTHORITATIVE_JSON"
 
-    config_names = {"package.json", "package-lock.json", "tsconfig.json", "symlinks.json", "skills-lock.json"}
-    if Path(p).name in config_names:
+    if name == "plugin.json" or p.endswith(".claude-plugin/plugin.json") or p.endswith(".claude-plugin/marketplace.json"):
+        return "ALLOWED_CONFIGURATION_JSON"
+
+    if "/assets/templates/" in p:
+        return "ALLOWED_CONFIGURATION_JSON"
+
+    if p.startswith("schemas/") or "/schemas/" in p:
+        return "ALLOWED_CONFIGURATION_JSON"
+
+    config_names = {
+        "package.json", "package-lock.json", "tsconfig.json", "tsconfig.node.json",
+        "tsconfig.app.json", "symlinks.json", "skills-lock.json", "plugin-sources.json",
+    }
+    if name in config_names:
         return "ALLOWED_CONFIGURATION_JSON"
 
     return "UNKNOWN_REQUIRES_REVIEW"
@@ -262,12 +289,32 @@ def run_audit(root: str) -> dict:
         f["classification"] = classify_file(f["path"], related_refs)
         f["known_producers"] = [r for r in related_refs if r["operation"] == "write"]
         f["known_consumers"] = [r for r in related_refs if r["operation"] == "read"]
+        f["migration_status"] = _migration_status(f)
 
     return {
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "files": files,
         "references": references,
+        "temp_folder_files": [f for f in files if f["path"].startswith("temp/")],
     }
+
+
+def _migration_status(f: dict) -> str:
+    """Assign a plain-language migration status for MIGRATE_TO_INTELLIGENCE_LEDGER files.
+
+    Args:
+        f: A file entry dict (already classified).
+
+    Returns:
+        Human-readable migration status string, or "n/a" if not applicable.
+    """
+    if f["classification"] != "MIGRATE_TO_INTELLIGENCE_LEDGER":
+        return "n/a"
+    # As of this audit, Phase 3 (Tasks 12A/14-19, which would perform the actual
+    # JSON-to-ledger migration) has not started. Phase 1/2 only migrated dated
+    # research Markdown, never JSON. So every MIGRATE_TO_INTELLIGENCE_LEDGER file
+    # is, by construction, not yet migrated — still the sole copy of its data.
+    return "NOT_MIGRATED — still the only copy of this data; do not remove"
 
 
 def render_discovery_md(result: dict) -> str:
@@ -283,10 +330,105 @@ def render_discovery_md(result: dict) -> str:
     for c in CLASSIFICATIONS:
         lines.append(f"| Files classified {c} | {counts.get(c, 0)} |")
 
+    lines += [
+        "",
+        "## High-Risk Findings",
+        "",
+        "- **Nothing has been migrated to SQLite/the intelligence ledger yet.** Phase 3 "
+        "(the tasks that would actually move JSON data into `intelligence.sqlite` and "
+        "retire the JSON source) has not started. Every file classified "
+        "`MIGRATE_TO_INTELLIGENCE_LEDGER` below is still the sole, authoritative copy of "
+        "its data — none are safe to remove.",
+    ]
+    vite_hits = [f for f in files if "/.vite/" in f["path"]]
+    if vite_hits:
+        lines.append(
+            f"- **{len(vite_hits)} Vite dev-server cache file(s) are git-tracked and not "
+            "gitignored** (e.g. `investment_screener/frontend/.vite/deps/_metadata.json`). "
+            "This is a build tool artifact that should never be committed — worth adding to "
+            "`.gitignore` and removing from git tracking (a separate, low-risk cleanup task, "
+            "not part of this discovery pass)."
+        )
+    temp_files = result.get("temp_folder_files", [])
+    if temp_files:
+        lines.append(
+            f"- **{len(temp_files)} JSON/JSONL file(s) found under `temp/`** — see the "
+            "Temp Folder Analysis section below."
+        )
+    else:
+        lines.append(
+            "- **No JSON/JSONL files currently exist under `temp/`** at audit time — the "
+            "concern (durable data accidentally living in scratch space) does not apply "
+            "right now, though `temp/` is gitignored so this can change between runs."
+        )
+    unknown_count = counts.get("UNKNOWN_REQUIRES_REVIEW", 0)
+    lines.append(
+        f"- **{unknown_count} file(s) remain `UNKNOWN_REQUIRES_REVIEW`** after heuristic "
+        "classification — see 'Files Requiring Human Review' below."
+    )
+
+    legit = [f for f in files if f["classification"].startswith(ALLOWED_PREFIX)]
+    lines += [
+        "",
+        "## Files That Should Legitimately Exist",
+        "",
+        "| File | Classification | Why it stays JSON |",
+        "|---|---|---|",
+    ]
+    _WHY = {
+        "ALLOWED_AUTHORITATIVE_JSON": "Live portfolio/execution-domain state, outside the qualitative intelligence ledger's scope.",
+        "ALLOWED_CONFIGURATION_JSON": "Static configuration/manifest/schema/template — not durable observation data.",
+        "ALLOWED_MODEL_ARTIFACT_JSON": "Versioned DCF/model output artifact, consumed directly by valuation workflows.",
+        "ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL": "Its own append-only ledger for a different domain (predictions, agent telemetry) — not merged into observations.jsonl without a separate ADR.",
+        "ALLOWED_TEST_FIXTURE_JSON": "Test/eval fixture or prompt reference example, not application state.",
+        "ALLOWED_GENERATED_CACHE_JSON": "Regenerable cache — safe to exist as long as its generating source is known.",
+    }
+    for f in legit:
+        lines.append(f"| `{f['path']}` | {f['classification']} | {_WHY.get(f['classification'], '')} |")
+
+    not_long_term = [
+        f for f in files
+        if f["classification"] in ("MIGRATE_TO_INTELLIGENCE_LEDGER", "ARCHIVE_LEGACY_READ_ONLY", "DELETE_AFTER_VERIFIED_ARCHIVE")
+    ]
+    lines += [
+        "",
+        "## Files That Likely Should Not Exist Long-Term",
+        "",
+        "| File | Reason | Required next action |",
+        "|---|---|---|",
+    ]
+    for f in not_long_term:
+        if f["classification"] == "MIGRATE_TO_INTELLIGENCE_LEDGER":
+            reason = "Durable observation data that belongs in the intelligence ledger once Phase 3 migration tooling runs."
+            action = f["migration_status"]
+        elif f["classification"] == "ARCHIVE_LEGACY_READ_ONLY":
+            reason = "Build-tool cache artifact, checked into git by mistake." if "/.vite/" in f["path"] else "Legacy artifact."
+            action = "Add to .gitignore, git rm --cached (separate low-risk task)"
+        else:
+            reason = "Verified-archived, deletion candidate."
+            action = "Confirm archive exists, then delete per the Task 19 cleanup gate."
+        lines.append(f"| `{f['path']}` | {reason} | {action} |")
+    if not not_long_term:
+        lines.append("| (none) | | |")
+
     lines += ["", "## Files Requiring Human Review", "", "| File | Reason | Suggested next action |", "|---|---|---|"]
     for f in files:
         if f["classification"] == "UNKNOWN_REQUIRES_REVIEW":
             lines.append(f"| `{f['path']}` | No known heuristic match | INVESTIGATE |")
+
+    lines += ["", "## Temp Folder Analysis", ""]
+    if temp_files:
+        lines.append("| File | Assessment |")
+        lines.append("|---|---|")
+        for f in temp_files:
+            lines.append(f"| `{f['path']}` | {f['classification']} |")
+    else:
+        lines.append(
+            "No `.json`/`.jsonl` files currently exist under `temp/` (which is gitignored "
+            "scratch space per `.gitignore`). Re-run this audit periodically if `temp/` is "
+            "suspected of accumulating durable data over time — nothing to report as of "
+            f"{result['generated_at']}."
+        )
 
     lines += ["", "## Per-File Inventory", ""]
     for f in files:

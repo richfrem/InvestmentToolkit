@@ -1,8 +1,15 @@
 {
-  "generated_at": "2026-07-18T22:50:00Z",
+  "generated_at": "2026-07-18T22:59:32Z",
   "allowed_files": [
     {
       "path_or_pattern": "skills-lock.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugin-sources.json",
       "classification": "ALLOWED_CONFIGURATION_JSON",
       "git_tracked": true,
       "producers": [],
@@ -23,6 +30,20 @@
       "consumers": []
     },
     {
+      "path_or_pattern": "schemas/market_data_response.schema.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "schemas/prediction.schema.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
       "path_or_pattern": "investment_screener/package-lock.json",
       "classification": "ALLOWED_CONFIGURATION_JSON",
       "git_tracked": true,
@@ -37,6 +58,13 @@
       "consumers": []
     },
     {
+      "path_or_pattern": ".claude-plugin/marketplace.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
       "path_or_pattern": "tradingview-cdp/package-lock.json",
       "classification": "ALLOWED_CONFIGURATION_JSON",
       "git_tracked": true,
@@ -45,6 +73,20 @@
     },
     {
       "path_or_pattern": "tradingview-cdp/package.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/frontend/tsconfig.node.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/frontend/tsconfig.app.json",
       "classification": "ALLOWED_CONFIGURATION_JSON",
       "git_tracked": true,
       "producers": [],
@@ -79,6 +121,13 @@
       "consumers": []
     },
     {
+      "path_or_pattern": "investment_screener/backend/data/thesis_breaker_state.json",
+      "classification": "ALLOWED_AUTHORITATIVE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
       "path_or_pattern": "investment_screener/backend/data/predictions.jsonl",
       "classification": "ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL",
       "git_tracked": true,
@@ -86,7 +135,21 @@
       "consumers": []
     },
     {
+      "path_or_pattern": "investment_screener/backend/data/tradingview_alerts_actual.json",
+      "classification": "ALLOWED_AUTHORITATIVE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
       "path_or_pattern": "investment_screener/backend/data/watchlist.json",
+      "classification": "ALLOWED_AUTHORITATIVE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/account_policy.json",
       "classification": "ALLOWED_AUTHORITATIVE_JSON",
       "git_tracked": true,
       "producers": [],
@@ -709,8 +772,568 @@
       "consumers": []
     },
     {
-      "path_or_pattern": "investment_screener/frontend/.vite/deps/package.json",
+      "path_or_pattern": "docs/superpowers/audits/json-discovery-audit.json",
+      "classification": "ALLOWED_GENERATED_CACHE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "docs/superpowers/audits/allowed-json-register.json",
+      "classification": "ALLOWED_GENERATED_CACHE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/etf-analysis/plugin.json",
       "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/plugin.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/toolkit-manager/plugin.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/stock-valuation/plugin.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/plugin.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/.claude-plugin/plugin.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/assets/templates/target_portfolio_template.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/assets/templates/portfolio_analysis_recommendations_template.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/assets/templates/ytd_performance_report_template.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/13f-tracker/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/thesis-review/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/thesis-review/assets/templates/target_portfolio_template.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/strategic-review/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/strategic-review/assets/templates/portfolio_analysis_recommendations_template.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/portfolio-health/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/rebalance-portfolio/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/thesis-challenge-bundler/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/set-thesis-breakers/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/adversarial-review/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/daily-brief/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/calibrate-targets/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/norberts-gambit/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/daily-loop/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/x-news-sweep/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/update-portfolio-targets/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/update-portfolio-targets/assets/templates/target_portfolio_template.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/ytd-return/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/ytd-return/assets/templates/ytd_performance_report_template.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/skills/13f-analyze/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/agents/evals/weekly-review-agent.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/agents/evals/thesis-review-agent.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/agents/evals/risk-officer-agent.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/agents/evals/portfolio-advisor-orchestrator.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/agents/evals/single-stock-advisor.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/agents/evals/data-quality-agent.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/agents/evals/red-team-agent.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/portfolio-advisor/agents/evals/daily-loop-agent.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/stock-valuation/.claude-plugin/plugin.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/stock-valuation/assets/templates/projection_template.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/stock-valuation/skills/valuation-math-validation/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/stock-valuation/skills/stock_valuation/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/stock-valuation/skills/stock_valuation/assets/templates/projection_template.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/stock-valuation/skills/stock_valuation/references/examples/example_NVDA_placeholder.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/stock-valuation/skills/stock_valuation/references/examples/example_NVDA_2026-05-02.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/stock-valuation/skills/stock_valuation/references/examples/example_GOOG_2026-05-02.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/stock-valuation/skills/stock_valuation/references/examples/example_PANW_2026-05-02.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/stock-valuation/skills/forward-valuation-challenge/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/stock-valuation/skills/stock-research/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/stock-valuation/scripts/cache/SKHY.json",
+      "classification": "ALLOWED_GENERATED_CACHE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/toolkit-manager/.claude-plugin/plugin.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/toolkit-manager/skills/run-screener/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/toolkit-manager/agents/evals/toolkit-onboarding-guide.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/.claude-plugin/plugin.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/pine-inject/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/tv-save-indicator/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/ta-red-team/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/chart-snapshot/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/modify-order/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/tv-add-indicator/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/cancel-order/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/ta-snapshot/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/tv-setup/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/tv-change-symbol/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/ta-daily-sweep/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/tv-change-type/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/alert-list/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/alert-sync/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/author-pine-script/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/tv-manage-watchlists/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/get-orders/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/tv-chart-setup/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/technical-analysis-expert/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/tv-portfolio-sync/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/price-refresh/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/skills/place-order/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/agents/evals/tradingview-onboarding.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/tradingview/agents/evals/ta-guide.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/etf-analysis/assets/templates/etf_analysis_template.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "plugins/etf-analysis/skills/etf_analysis/evals/evals.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
       "git_tracked": true,
       "producers": [],
       "consumers": []
