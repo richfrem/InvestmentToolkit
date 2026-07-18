@@ -37,10 +37,21 @@ const router = express.Router();
 
 // ── Research reports ──────────────────────────────────────────────────────────
 
+export const DATED_FILENAME_RE = /^[A-Z0-9.-]{1,10}_\d{4}-\d{2}-\d{2}\.md$/;
+export const CANONICAL_FILENAME_RE = /^[A-Z0-9.-]{1,10}\.(summary|timeline)\.md$/;
+
+export function parseResearchFilename(filename: string): { ticker: string; date: string | null } {
+    const datedMatch = filename.match(/^([A-Z0-9.-]{1,10})_(\d{4}-\d{2}-\d{2})\.md$/);
+    if (datedMatch) return { ticker: datedMatch[1], date: datedMatch[2] };
+    const canonicalMatch = filename.match(/^([A-Z0-9.-]{1,10})\.(summary|timeline)\.md$/);
+    if (canonicalMatch) return { ticker: canonicalMatch[1], date: null };
+    return { ticker: filename, date: null };
+}
+
 router.get('/research/:filename', async (req, res) => {
     try {
         const { filename } = req.params;
-        if (!/^[A-Z0-9.-]{1,10}_\d{4}-\d{2}-\d{2}\.md$/.test(filename)) {
+        if (!DATED_FILENAME_RE.test(filename) && !CANONICAL_FILENAME_RE.test(filename)) {
             res.status(400).json({ error: 'Invalid filename format. Expected: TICKER_YYYY-MM-DD.md' });
             return;
         }
@@ -50,7 +61,8 @@ router.get('/research/:filename', async (req, res) => {
             return;
         }
         const content = await fs.promises.readFile(filepath, 'utf-8');
-        res.json({ filename, content, ticker: filename.split('_')[0], date: filename.split('_')[1].replace('.md', '') });
+        const { ticker, date } = parseResearchFilename(filename);
+        res.json({ filename, content, ticker, date });
     } catch (err: any) {
         if (err.code === 'ENOENT') { res.status(404).json({ error: 'Research report not found' }); return; }
         console.error(`[API] Error reading research report:`, err);
@@ -64,8 +76,8 @@ router.get('/research', async (_req, res) => {
         const files = await fs.promises.readdir(RESEARCH_DIR);
         const reports = files
             .filter(f => f.endsWith('.md'))
-            .map(f => ({ filename: f, ticker: f.split('_')[0], date: f.split('_')[1].replace('.md', '') }))
-            .sort((a, b) => b.date.localeCompare(a.date));
+            .map(f => ({ filename: f, ...parseResearchFilename(f) }))
+            .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''));
         res.json({ reports });
     } catch (err: any) {
         console.error(`[API] Error listing research reports:`, err);

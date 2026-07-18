@@ -393,12 +393,17 @@ curl -s -X POST http://localhost:3001/api/projections \
 - If any other failure → invoke **FB-03** from `references/fallback-tree.md`
 
 ## Step 7: Generate Deep-Dive Research Report
-**Iteration Directory Isolation**: Write to dated path to prevent overwrites.
+**Shared Intelligence Ledger**: Append to the event ledger and regenerate the canonical views
+(never write dated markdown directly — per ADR-028's anti-duplication rule).
 ```bash
-mkdir -p investment_screener/backend/data/research
-cat > investment_screener/backend/data/research/{TICKER}_{YYYY-MM-DD}.md << 'REPORT_EOF'
+mkdir -p temp
+cat > temp/research_body.md << 'REPORT_EOF'
 <MARKDOWN_CONTENT>
 REPORT_EOF
+PYTHONPATH=investment_screener/backend/py_services python3 -m intelligence.event_store \
+  --event-type RESEARCH_IMPORT --ticker {TICKER} --effective-at "$(date +%F)" \
+  --status ACTIVE --title "{TICKER} research update" --body-file temp/research_body.md
+PYTHONPATH=investment_screener/backend/py_services python3 -m intelligence.view_generator {TICKER}
 ```
 If write fails → invoke **FB-04** from `references/fallback-tree.md`.
 
