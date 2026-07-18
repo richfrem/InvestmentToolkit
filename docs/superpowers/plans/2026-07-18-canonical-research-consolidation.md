@@ -1381,3 +1381,303 @@ Expected: PASS. Also re-run any existing `daily_brief.py` tests
 git add plugins/portfolio-advisor/scripts/daily_brief.py investment_screener/backend/tests/py_services/test_daily_brief_ta_sweep_delegates.py
 git commit -m "fix: daily_brief.py delegates ta-sweep-results.json write to ta_sweep_batch.py (removes duplicate writer)"
 ```
+
+---
+
+## Phase 3: JSON Persistence Inventory, Migration, and Cleanup (added 2026-07-18)
+
+User-supplied addendum (`temp/json-to-ledger-migration-followup-tasks.md`), appended verbatim
+in structure. Explicitly sequenced **after** Phase 1 (Tasks 0-4, 1A) and Phase 2 (Tasks 5-11)
+are complete and proven — not to be started early. This phase exists because Phase 1/2
+establish the ledger/repository foundation and migrate research Markdown, but do not classify
+or migrate the rest of the codebase's JSON persistence (`ta-sweep-results.json`, daily/weekly
+brief JSON, `projections/*.json`, etc.). Its own Task 14 already specifies imports
+(`from intelligence.event_store import append_event`, `from intelligence.replay_ledger import
+replay_events_to_db`, `from intelligence.db_client import initialize_db`) that independently
+converged on the exact `py_services/intelligence/` package convention Task 1A/ADR-028
+established — no path reconciliation needed.
+
+**Purpose:** perform a one-time migration of eligible existing JSON stores into the event
+ledger. The goal is not to move every JSON file into SQLite — it's to classify every existing
+JSON persistence path and decide whether it stays source-specific JSON, becomes an
+authoritative JSONL event stream, becomes a SQLite projection, or becomes a generated artifact.
+This phase must prevent hidden dual-source-of-truth problems after the SQLite migration.
+
+**Core rule:** do not delete, rewrite, or retire any existing JSON store until it has been
+classified and a deterministic migration/validation gate has passed. Every JSON store gets one
+status: `KEEP_AS_AUTHORITATIVE_JSON`, `MIGRATE_TO_INTELLIGENCE_LEDGER`,
+`GENERATE_FROM_LEDGER_OR_SQLITE`, `ARCHIVE_LEGACY_READ_ONLY`, `DELETE_AFTER_VERIFIED_ARCHIVE`,
+or `OUT_OF_SCOPE_FOR_THIS_PHASE`. No file is cleaned up purely because it looks obsolete.
+
+---
+
+### Task 12: Inventory Existing JSON Persistence and Assign Data Ownership
+
+**Purpose:** create a complete map of existing JSON persistence points before migrating or
+deleting anything.
+
+**Areas to audit:** `investment_screener/backend/data/*.json`, `data/projections/*.json`,
+`data/etf_analysis/*.json`, `data/daily-briefs/*.json`, `data/history/**/*.json`,
+`data/cache/**/*.json`, `data/ta-sweep-results.json`, `plugins/**/data/**/*.json`,
+`plugins/**/scripts/**/*.py`, `investment_screener/backend/src/**/*.ts`,
+`investment_screener/frontend/src/**/*.tsx`.
+
+**Required output:** create `docs/superpowers/audits/json-persistence-ownership-map.md` with a
+row per discovered JSON store:
+
+```md
+| Current file/path | Producer(s) | Consumer(s) | Current purpose | Future status | Future owner | Migration task | Cleanup rule |
+|---|---|---|---|---|---|---|---|
+```
+
+**Expected classification examples** (illustrative, not binding — the actual audit governs):
+- `portfolio.json` — likely `KEEP_AS_AUTHORITATIVE_JSON`: live broker position state, outside
+  qualitative intelligence ledger scope.
+- `trade-log.json` — likely `KEEP_AS_AUTHORITATIVE_JSON` or `OUT_OF_SCOPE_FOR_THIS_PHASE`: has
+  its own lifecycle, may need a separate execution ledger later.
+- `target-portfolio.json` — likely `KEEP_AS_AUTHORITATIVE_JSON`: target weights, standing
+  decisions, user-confirmed strategy remain governed by the portfolio subsystem.
+- `projections/*.json` — likely `KEEP_AS_AUTHORITATIVE_JSON` for model outputs, with selected
+  valuation snapshots optionally projected into `valuation_version` later (see Task 17).
+- `ta-sweep-results.json` — likely `MIGRATE_TO_INTELLIGENCE_LEDGER` if durable technical
+  observations are needed; otherwise keep only as latest cache/generated snapshot.
+- `daily-briefs/*.json` — classify case-by-case: durable observations move to intelligence
+  events; ephemeral generated summaries may archive.
+- `etf_analysis/*.json` — likely `OUT_OF_SCOPE_FOR_THIS_PHASE` unless ETF qualitative
+  conclusions are intentionally unified into the ledger.
+
+**Tests/validation:** add
+`investment_screener/backend/tests/py_services/test_json_persistence_inventory.py` asserting
+every JSON path matching the inventory glob appears in the ownership map or an explicit ignore
+list.
+
+**Completion gate:** no migration task may delete or retire JSON files until this ownership map
+exists and has been reviewed.
+
+---
+
+### Task 13: Define JSON-to-Event Mapping Rules
+
+**Purpose:** before migrating data, define exactly how each eligible JSON structure maps to the
+event ledger.
+
+**Create:** `docs/superpowers/specs/json-to-intelligence-event-mapping.md`, one section per
+`MIGRATE_TO_INTELLIGENCE_LEDGER` source, in this format:
+
+```md
+## Source: ta-sweep-results.json
+
+Future status: MIGRATE_TO_INTELLIGENCE_LEDGER or GENERATED_FROM_LEDGER
+
+Event mapping:
+- event_type: TECHNICAL_SWEEP
+- ticker source: results[].ticker
+- effective_at: scan_date or timestamp
+- title: "{TICKER} technical sweep"
+- body_markdown: generated prose summary of RSI / ADX / squeeze / DCF proximity
+- payload_json: original structured result row
+- idempotency_key: "ta-sweep:{scan_date}:{ticker}:{content_hash}"
+- content_hash: sha256 of normalized payload
+
+Validation:
+- every ticker row becomes one event or is explicitly skipped
+- duplicate idempotency keys do not create duplicate events
+- original file is archived before cleanup
+```
+
+**Modeling rule (same as ADR-028):** do not create a unique table per JSON source. If the
+target is a durable observation, write it as an `IntelligenceEvent` row in `intelligence_event`
+— use `event_type` and `payload_json` to preserve source-specific detail. Only create a
+separate table if the source is a materially different domain object (valuation, portfolio
+decision, instrument identity, thesis synthesis).
+
+---
+
+### Task 14: Build One-Time JSON Migration Runner
+
+**Purpose:** implement a deterministic, repeatable migration script for eligible JSON sources.
+
+**Create:** `investment_screener/backend/py_services/migrate_json_to_ledger.py`,
+`investment_screener/backend/tests/py_services/test_migrate_json_to_ledger.py`.
+
+**Required design:** uses the shared intelligence data layer only —
+```python
+from intelligence.event_store import append_event
+from intelligence.replay_ledger import replay_events_to_db
+from intelligence.db_client import initialize_db
+```
+Must not write raw SQLite and must not manually append JSONL outside `event_store.py`.
+
+**CLI:**
+```bash
+python3 investment_screener/backend/py_services/migrate_json_to_ledger.py \
+  --source-map docs/superpowers/audits/json-persistence-ownership-map.md \
+  --mapping docs/superpowers/specs/json-to-intelligence-event-mapping.md \
+  --ledger investment_screener/backend/data/history/events/observations.jsonl \
+  --db investment_screener/backend/data/intelligence.sqlite \
+  --dry-run
+# then, once verified:
+python3 investment_screener/backend/py_services/migrate_json_to_ledger.py \
+  --source-map docs/superpowers/audits/json-persistence-ownership-map.md \
+  --mapping docs/superpowers/specs/json-to-intelligence-event-mapping.md \
+  --ledger investment_screener/backend/data/history/events/observations.jsonl \
+  --db investment_screener/backend/data/intelligence.sqlite \
+  --write
+```
+
+**Required behaviours:** dry-run support; writes a migration manifest; appends via
+`append_event`; replays into SQLite after append; records idempotency keys; preserves original
+payload in `payload_json`; archives source files before cleanup; produces a skipped-record
+report; never deletes source files in the first write pass.
+
+**Manifest:** `investment_screener/backend/data/history/migration-manifests/json-to-ledger-{DATE}.json`:
+```json
+{
+  "source_path": "...", "source_hash": "sha256:...",
+  "future_status": "MIGRATE_TO_INTELLIGENCE_LEDGER",
+  "event_ids": ["evt_..."], "event_sequences": [123],
+  "records_seen": 10, "records_migrated": 10, "records_skipped": 0,
+  "archive_path": "...", "migration_tool_version": "..."
+}
+```
+
+---
+
+### Task 15: Migrate Durable Technical Sweep JSON Where Appropriate
+
+**Purpose:** decide and implement migration for `ta-sweep-results.json` if it represents
+durable technical intelligence rather than only latest-cache state. Builds on Task 11 (dedupe
+writers) — this task decides whether sweep results become durable events.
+
+Each ticker row becomes `IntelligenceEvent(event_type="TECHNICAL_SWEEP")` in
+`intelligence_event`. Do not create a `technical_sweep` table unless a separate ADR explicitly
+justifies it.
+
+**Validation tests:** migrating a sample `ta-sweep-results.json` creates one `TECHNICAL_SWEEP`
+event per ticker row; rerunning migration does not duplicate events; `payload_json` preserves
+original indicator data; FTS search finds generated technical summary text; source file is
+archived, not deleted.
+
+**Cleanup rule:** after migration, decide (and document in the ownership map) whether
+`ta-sweep-results.json` remains a latest-generated cache or is replaced by a SQLite query +
+generated metrics snapshot.
+
+---
+
+### Task 16: Migrate Durable Daily/Weekly Brief JSON Where Appropriate
+
+**Purpose:** if daily/weekly JSON briefs contain durable observations, migrate them into the
+ledger. Event mapping: daily brief observation → `REVIEW_DAILY`; weekly brief observation →
+`REVIEW_WEEKLY`; macro regime note → `MACRO_EVENT`; holding-specific news/thesis note →
+`NEWS_SWEEP` or `THESIS_UPDATE`.
+
+**Important:** do not blindly migrate generated presentation text if the underlying source
+observation already exists as a more specific event — avoid duplicate memory.
+
+**Validation tests:** sample daily brief migrates expected durable observations; generated
+summary-only sections can be skipped with a reason; skipped records appear in the migration
+manifest; rerunning migration is idempotent.
+
+---
+
+### Task 17: Evaluate Projections JSON and Valuation Version Migration
+
+**Purpose:** decide whether `projections/*.json` remains the canonical DCF projection store or
+whether selected valuation snapshots should be projected into `valuation_version`. **Do not
+blindly migrate all projections JSON** — they may remain flat-file JSON if already versioned
+model artifacts consumed directly by valuation workflows.
+
+If migrating selected fields to SQLite, treat them as domain records
+(`ValuationVersion` → `valuation_version`), not generic intelligence events — except where an
+event-history marker is also wanted (`IntelligenceEvent(event_type="VALUATION_UPDATE")` →
+`intelligence_event`).
+
+**Recommended approach:** keep full `projections/*.json` as canonical model artifacts for now;
+optionally add a derived `valuation_version` projection for query/search/reporting; preserve
+source projection file path and content hash; do not delete projection JSON in this phase
+unless a separate ADR explicitly replaces it.
+
+**Validation tests:** every `valuation_version` row links back to source projection file/hash;
+projection JSON remains readable by existing DCF workflows; no frontend regression in
+`DeepDiveModal`/stock analysis pages.
+
+---
+
+### Task 18: Refactor Existing Readers from Direct JSON to Repositories Where In Scope
+
+**Purpose:** after migrating eligible JSON data, update consumers to use the shared data layer
+or generated views where appropriate.
+
+**Candidate areas:** `plugins/portfolio-advisor/scripts/generate_reports.py`,
+`weekly_review.py`, `daily_brief.py`, `investment_screener/backend/src/routes/*.ts`,
+`investment_screener/frontend/src/pages/*.tsx`, `frontend/src/services/api.ts`.
+
+**Rule:** only refactor a reader when its data source has been moved to the ledger or generated
+views. Do not refactor portfolio/trade/target JSON readers if those stores remain authoritative
+JSON.
+
+**Validation tests:** no direct reads of migrated JSON stores remain outside approved
+compatibility shims; report generation still works; frontend routes still return expected
+payloads; migrated source data can be queried from SQLite.
+
+---
+
+### Task 19: Legacy JSON Archive and Cleanup Gate
+
+**Purpose:** archive or remove old JSON files only after migration and consumer refactoring are
+verified.
+
+**Archive location:** `investment_screener/backend/data/history/archive/json-legacy/{DATE}/`.
+
+**Cleanup gate (all required before any deletion or file move):** ownership map complete;
+migration manifest exists; source file hash recorded; migrated event count validated; skipped
+records reviewed; SQLite rebuild from JSONL passes; generated views/reports pass tests;
+consumers no longer read the migrated legacy file directly; original file archived in a
+git-visible or explicitly backed-up location.
+
+**No immediate deletion:** first cleanup pass archives old JSON files, never deletes. Deletion,
+if ever desired, is a later explicit task after archive verification.
+
+---
+
+### Task 20: Update Architecture, Agent Guidance, and Completion Gate
+
+**Purpose:** document the final state after JSON migration. This is where the Phase 2 "deferred"
+ecosystem doc sweep (ADR-028's Node layer + `architecture.md`/`AGENTS.md`/`GEMINI.md`/
+`.github/copilot-instructions.md` items) actually gets done, once there's a proven end state to
+document rather than a moving target.
+
+**Update:** `architecture.md`, `AGENTS.md`, `GEMINI.md`, `.github/copilot-instructions.md` (if
+present), relevant plugin `SKILL.md` files, relevant agent instruction files.
+
+**Required additions:** classify which JSON files remain authoritative vs. became ledger-backed;
+document the JSONL → SQLite → generated view flow; document the repository/service layer as the
+mandatory access path; document that `event_type` is metadata, not table-selection; document
+the legacy JSON archive policy; document the rebuild procedure; document the cleanup gate.
+
+**Final completion gate:** all JSON stores classified; eligible durable JSON migrated to the
+JSONL ledger; SQLite rebuild verifies migrated data; consumers refactored or explicitly marked
+out of scope; legacy JSON archived, not silently deleted; architecture and agent docs updated;
+no duplicated raw SQLite/JSONL access introduced.
+
+---
+
+## Final Review Note
+
+This plan deliberately separates three concerns:
+
+```text
+Phase 1 (Tasks 0-4, 1A):
+Build the ledger, SQLite read model, FTS5, and the shared repository/service data layer.
+
+Phase 2 (Tasks 5-11):
+Migrate research Markdown, wire real writers/readers, fix the researchReport/docs.ts/
+ta-sweep-results.json issues the audit surfaced.
+
+Phase 3 (Tasks 12-20):
+Classify and migrate eligible JSON stores, then clean up legacy JSON paths safely.
+```
+
+Do not combine these into one uncontrolled migration. Phase 3's one-time JSON cleanup happens
+only after the shared data layer exists and the research-ledger migration (Phase 1/2) is
+proven.
