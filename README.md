@@ -68,8 +68,8 @@ The `investment_screener/` app is the web-based financial analysis dashboard.
 
 ### Tech Stack
 - **Frontend**: React 19, Vite, Tailwind CSS 4.0
-- **Backend**: Node.js (Express), TypeScript
-- **Analytical Engine**: Python 3.11 Utility Layer (`py_services/`) leveraging `yfinance` for math, validation, and historical financials.
+- **Backend**: Node.js (Express), TypeScript, SQLite (WAL mode indexing via `better-sqlite3`)
+- **Analytical Engine**: Python 3.11 Utility Layer (`py_services/`) leveraging standard `sqlite3` for local indexing and `yfinance` for math, validation, and historical financials.
 
 ### Key Features
 - **Portfolio Summary & Table**: Live views synced from TV CDP.
