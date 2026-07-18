@@ -45,8 +45,8 @@ def get_recent_reviews_context(repo_root):
     import glob
     from datetime import datetime, timedelta
     
-    daily_path = os.path.join(repo_root, "temp/daily-reviews/*.md")
-    weekly_path = os.path.join(repo_root, "temp/weekly-reviews/*.md")
+    daily_path = os.path.join(repo_root, "investment_screener/backend/data/history/reviews/daily/*.md")
+    weekly_path = os.path.join(repo_root, "investment_screener/backend/data/history/reviews/weekly/*.md")
     files = glob.glob(daily_path) + glob.glob(weekly_path)
     
     cutoff = datetime.now() - timedelta(days=14)
