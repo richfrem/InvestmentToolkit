@@ -57,8 +57,26 @@ REFERENCE_PATTERNS = [
     (re.compile(r"\bfs\.writeFile(Sync)?\("), "write"),
     (re.compile(r"\breadFileSync\("), "read"),
     (re.compile(r"\bwriteFileSync\("), "write"),
+    (re.compile(r"\bopen\("), "open"),  # mode-dependent — resolved by _classify_open_mode
     (re.compile(r"\.jsonl?\b"), "mention"),
 ]
+
+WRITE_MODE_RE = re.compile(r"""["\']w[b]?["\']|["\']a[b]?["\']""")
+STRING_LITERAL_RE = re.compile(r"""["\']([^"\']+)["\']""")
+IDENTIFIER_RE = re.compile(r"\b[A-Za-z_][A-Za-z0-9_]*\b")
+CONST_ASSIGN_RE = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_]*)\s*(?::\s*[\w\[\], .\"']+)?\s*=\s*(.+?)\s*$")
+
+DOC_EXTENSIONS = {".md"}
+DOC_FILENAMES = {"AGENTS.md", "CLAUDE.md", "GEMINI.md", "README.md", "SKILL.md", "architecture.md"}
+
+
+def _classify_open_line_operation(op: str, line: str) -> str:
+    """Resolve a raw matched operation into read/write, given the full line text."""
+    if op == "open":
+        return "write" if WRITE_MODE_RE.search(line) else "read"
+    if op == "mention":
+        return "mention"
+    return op
 
 CLASSIFICATIONS = [
     "ALLOWED_AUTHORITATIVE_JSON",
@@ -143,12 +161,17 @@ def scan_json_files(root: str) -> list:
 def scan_references(root: str, include_globs: list) -> list:
     """Scan code/doc files for references to JSON/JSONL paths and operations.
 
+    Captures the full line text (not just the matched operation token) so
+    the linking pass can resolve the actual file being read/written, via
+    either a literal path substring or a same-file constant assignment.
+
     Args:
         root: Repository root directory to scan.
         include_globs: Filename glob patterns to scan (e.g. ["*.py", "*.ts"]).
 
     Returns:
-        List of dicts: referencing_file, line, matched_text, operation.
+        List of dicts: referencing_file, line, matched_text, operation,
+        line_text.
     """
     root_path = Path(root)
     refs = []
@@ -173,7 +196,7 @@ def scan_references(root: str, include_globs: list) -> list:
                 for regex, op in REFERENCE_PATTERNS:
                     m = regex.search(line)
                     if m:
-                        matched_op = op
+                        matched_op = _classify_open_line_operation(op, line)
                         matched_text = m.group(0)
                         break
                 if matched_op:
@@ -182,8 +205,130 @@ def scan_references(root: str, include_globs: list) -> list:
                         "line": lineno,
                         "matched_text": matched_text,
                         "operation": matched_op,
+                        "line_text": line.strip(),
                     })
     return refs
+
+
+def _build_constants_map(root: str, referencing_files: set) -> dict:
+    """Build a per-file map of {CONST_NAME: json_filename} from assignment lines.
+
+    Scans every line of every referencing file (not just operation-matched
+    lines) for a `NAME = <expr>` assignment whose right-hand side contains a
+    string literal ending in a known-looking `.json`/`.jsonl` filename.
+
+    Args:
+        root: Repository root directory.
+        referencing_files: Set of repo-relative file path strings to scan.
+
+    Returns:
+        Dict of {file_path: {const_name: json_filename}}.
+    """
+    root_path = Path(root)
+    result = {}
+    for rel in referencing_files:
+        path = root_path / rel
+        try:
+            lines = path.read_text(errors="replace").splitlines()
+        except Exception:
+            continue
+        file_consts = {}
+        for line in lines:
+            m = CONST_ASSIGN_RE.match(line)
+            if not m:
+                continue
+            name, expr = m.group(1), m.group(2)
+            for literal in STRING_LITERAL_RE.findall(expr):
+                if literal.endswith(".json") or literal.endswith(".jsonl"):
+                    file_consts[name] = Path(literal).name
+        if file_consts:
+            result[rel] = file_consts
+    return result
+
+
+def _resolve_reference(ref: dict, known_names: set, constants_by_file: dict):
+    """Resolve a raw reference line to a target JSON filename + confidence.
+
+    Args:
+        ref: A raw reference dict from scan_references().
+        known_names: Set of every discovered JSON/JSONL filename (basenames).
+        constants_by_file: Output of _build_constants_map().
+
+    Returns:
+        (resolved_filename, confidence) tuple, or (None, None) if unresolved.
+        confidence is one of "exact", "probable".
+    """
+    line_text = ref["line_text"]
+
+    # Exact: a string literal on this line ends with a known filename.
+    for literal in STRING_LITERAL_RE.findall(line_text):
+        name = Path(literal).name
+        if name in known_names:
+            return name, "exact"
+
+    # Probable: an identifier token on this line resolves via a same-file constant.
+    file_consts = constants_by_file.get(ref["referencing_file"], {})
+    if file_consts:
+        for token in IDENTIFIER_RE.findall(line_text):
+            if token in file_consts:
+                return file_consts[token], "probable"
+
+    # Fallback: a known filename appears as bare, unquoted text on the line
+    # (typical of prose/Markdown documentation mentions, e.g.
+    # "Read ta-sweep-results.json before generating the report.").
+    for name in known_names:
+        if name in line_text:
+            return name, "exact"
+
+    return None, None
+
+
+def link_references_to_files(root: str, files: list, raw_refs: list) -> None:
+    """Link raw reference lines to their target JSON file entries, in place.
+
+    Populates each file entry's known_producers, known_consumers, and
+    doc_references lists with {referencing_file, line, confidence} dicts.
+
+    Args:
+        root: Repository root directory.
+        files: List of file entries from scan_json_files() (mutated in place).
+        raw_refs: Output of scan_references().
+    """
+    known_names = {Path(f["path"]).name for f in files}
+    files_by_name = {}
+    for f in files:
+        files_by_name.setdefault(Path(f["path"]).name, []).append(f)
+        f["known_producers"] = []
+        f["known_consumers"] = []
+        f["doc_references"] = []
+
+    referencing_files = {r["referencing_file"] for r in raw_refs}
+    constants_by_file = _build_constants_map(root, referencing_files)
+
+    for ref in raw_refs:
+        resolved_name, confidence = _resolve_reference(ref, known_names, constants_by_file)
+        if not resolved_name:
+            continue
+        referencing_path = Path(ref["referencing_file"])
+        is_doc = referencing_path.suffix in DOC_EXTENSIONS or referencing_path.name in DOC_FILENAMES
+
+        entry = {
+            "referencing_file": ref["referencing_file"],
+            "line": ref["line"],
+            "confidence": confidence,
+        }
+        for target in files_by_name.get(resolved_name, []):
+            if is_doc:
+                target["doc_references"].append({**entry, "confidence": "mention_only"})
+            elif ref["operation"] == "write":
+                target["known_producers"].append(entry)
+            elif ref["operation"] == "read":
+                target["known_consumers"].append(entry)
+            else:
+                # Path constructed/referenced but no explicit read/write call
+                # on this line (e.g. `Path(...) / "file.json"`) — still a real
+                # reference, default-bucketed as a consumer.
+                target["known_consumers"].append(entry)
 
 
 def classify_file(path: str, references: list) -> str:
@@ -277,18 +422,11 @@ def run_audit(root: str) -> dict:
         root, include_globs=["*.py", "*.js", "*.ts", "*.tsx", "*.md", "*.yml", "*.yaml", "*.sh"]
     )
 
-    refs_by_target = {}
-    for ref in references:
-        for f in files:
-            fname = Path(f["path"]).name
-            if fname and fname in (ref["matched_text"] or ""):
-                refs_by_target.setdefault(f["path"], []).append(ref)
+    link_references_to_files(root, files, references)
 
     for f in files:
-        related_refs = refs_by_target.get(f["path"], [])
-        f["classification"] = classify_file(f["path"], related_refs)
-        f["known_producers"] = [r for r in related_refs if r["operation"] == "write"]
-        f["known_consumers"] = [r for r in related_refs if r["operation"] == "read"]
+        combined_refs = f["known_producers"] + f["known_consumers"]
+        f["classification"] = classify_file(f["path"], combined_refs)
         f["migration_status"] = _migration_status(f)
 
     return {
