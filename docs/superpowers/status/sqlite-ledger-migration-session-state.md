@@ -20,14 +20,30 @@ actual, verified state — not the intended or in-progress state.
   **All of the above was built and unit-tested — against fake/`tmp_path` test data only.**
 - **PR #78** (merged to `main`) — unrelated 1-line TypeScript type fix (`positionCount` missing
   from `syncPortfolio()`'s return type), found via a post-merge `run_tests.py` audit.
+- **PR #79** (merged to `main`) — Task 12A's repository-wide JSON/JSONL discovery audit script
+  (`audit_json_usage.py`), run against the real repository (212 files found and classified),
+  including the reference-linking bug fix (see Known Defects) with regenerated output.
+- **PR #80** (merged to `main`) — a review-fix commit that had been pushed to PR #79's branch
+  before that PR was merged, and was missed by the merge timing; carried forward separately.
+- **Task 18 consumer inventory** (`build_consumer_inventory.py`) — built, tested (11 tests), run
+  for real against the fixed discovery audit's output: **151 real code consumers** (readers/
+  writers, doc-only mentions excluded) found and classified. 10 `MIGRATION_REQUIRED`
+  (2 of which are known false positives — the audit script itself and a docstring-only mention,
+  disclosed in the report), 130 `REMAINS_JSON_BY_DESIGN`, 1 `OUT_OF_SCOPE`, 10
+  `UNKNOWN_REQUIRES_REVIEW`. **This closes the specific gaps the user named**
+  (`weekly_review.py`, `generate_reports.py` — both now confirmed `REMAINS_JSON_BY_DESIGN`,
+  touching only portfolio-domain JSON). Still not merged as of this update — see Open Work.
 
 ## Open Work
 
-- **PR #79** (`worktree-json-discovery-audit`, open, not merged) — Task 12A's repository-wide
-  JSON/JSONL discovery audit script (`audit_json_usage.py`), run against the real repository
-  (212 files found and classified). This corrective pass fixed a confirmed reference-linking
-  bug in it (see Known Defects) and regenerated its output. **Not yet merged.**
-- **Task 18** (rewiring remaining JSON readers/writers to the SQL layer) — not started.
+- **PR for Task 18 consumer inventory** — built and run, not yet committed/pushed/reviewed as
+  of this status-doc update (in progress in the same corrective pass).
+- **Skill/sub-agent/backend-route/frontend sub-categorization** (corrective instructions §6) —
+  the consumer inventory reports one combined classification per consumer file; it does not yet
+  separately tag "this is a SKILL.md" vs. "this is a backend route" vs. "this is a frontend
+  component" as distinct fields. A real gap, not yet closed.
+- **Architecture adoption matrix** — not started.
+- **Migration dry-run report** — not started.
 - **Actual data migration** (Task 6, Task 9) — scripts exist, never run against real data.
 
 ## Work Incorrectly Implied Complete Earlier
@@ -155,12 +171,13 @@ status` must be checked immediately before and after each regeneration step.
    pointer rewrite) be run now? If yes, a dry-run report (exact command, files affected, backup/
    archive strategy, expected event count, rollback plan) must be produced and reviewed first —
    per corrective instructions §5, no unilateral execution.
-2. Should Task 18 (rewiring remaining JSON readers/writers) begin, and if so, should the
-   consumer-by-consumer inventory table (per corrective instructions §7) be built first?
-3. Should the audit script be extended to sub-categorize skill/sub-agent/backend-route/frontend
-   references as distinct fields (Known Defect #3)?
+2. Should the 10 `MIGRATION_REQUIRED` and 10 `UNKNOWN_REQUIRES_REVIEW` consumers in the Task 18
+   inventory be worked through individually before any broader Task 18 refactor begins?
+3. Should the audit be extended to sub-categorize skill/sub-agent/backend-route/frontend
+   references as distinct fields (still open — see Open Work)?
 4. Should any of the lost files (§ above) be regenerated, and via which specific commands?
-5. Should PR #79 be merged now that the reference-linking bug is fixed?
+5. Should the architecture adoption matrix and migration dry-run report (both still not started)
+   be produced next?
 
 ## Blockers Before Cleanup
 
@@ -174,7 +191,9 @@ migration) may occur until:
 - [x] Every JSON/JSONL file classified (210/212; 2 remain genuinely `UNKNOWN_REQUIRES_REVIEW`,
       correctly left as such rather than force-classified)
 - [x] Producers/consumers identified or marked unknown (fixed this pass)
-- [ ] Task 18 consumer inventory completed
+- [x] Task 18 consumer inventory completed (151 code consumers classified; 10
+      `MIGRATION_REQUIRED` + 10 `UNKNOWN_REQUIRES_REVIEW` still need individual resolution
+      before Task 18's actual refactor work — "inventory complete" is not "consumers migrated")
 - [ ] Real migration decision made by user
 - [ ] Dry-run migration report reviewed
 - [ ] Backup/archive plan documented
