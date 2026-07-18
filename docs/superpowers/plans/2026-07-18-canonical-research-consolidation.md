@@ -32,7 +32,7 @@ or writes the files this migration touches found real, previously-undocumented c
   of the 72 already-consolidated files are servable today. This is a pre-existing bug, not
   something the ledger migration introduces, but Phase 2 fixes it since generated views make
   it worse.
-- Every historical `projections/{TICKER}.json` version has a `researchReport` field
+- Every historical `projections/{TICKER}.json` version has an `aiThesis.researchReport` field
   hard-pointing at a dated filename, consumed directly by `DeepDiveModal.tsx`. Phase 2
   rewrites these to point at the canonical generated file (confirmed with user: losing
   point-in-time historical linkage is acceptable — the modal will always show current state).
@@ -1201,7 +1201,7 @@ git commit -m "fix: serve canonical {TICKER}.summary/timeline.md research filena
 - Test: `investment_screener/backend/tests/py_services/test_migrate_research_report_pointers.py`
 
 **Interfaces:**
-- Consumes/Produces: every version entry's `researchReport` field across
+- Consumes/Produces: every version entry's `aiThesis.researchReport` field across
   `investment_screener/backend/data/projections/{TICKER}.json`.
 - User-confirmed resolution: every historical projection version is rewritten to point at the
   ticker's single canonical `{TICKER}.summary.md` — point-in-time linkage to the specific
@@ -1229,17 +1229,19 @@ def test_migrate_pointers_rewrites_all_versions_to_canonical(tmp_path):
     projections_dir = tmp_path / "projections"
     projections_dir.mkdir()
     (projections_dir / "PLTR.json").write_text(json.dumps([
-        {"version": 1, "researchReport": "PLTR_2026-05-01.md"},
-        {"version": 2, "researchReport": "PLTR_2026-07-02.md"},
-        {"version": 3},  # no researchReport field — must be left untouched
+        {"version": 1, "aiThesis": {"researchReport": "PLTR_2026-05-01.md"}},
+        {"version": 2, "aiThesis": {"researchReport": "PLTR_2026-07-02.md"}},
+        {"version": 3, "aiThesis": {}},  # aiThesis present, no researchReport — untouched
+        {"version": 4},  # no aiThesis key at all — must be left untouched, no crash
     ]))
 
     result = migrate_pointers(str(projections_dir))
 
     updated = json.loads((projections_dir / "PLTR.json").read_text())
-    assert updated[0]["researchReport"] == "PLTR.summary.md"
-    assert updated[1]["researchReport"] == "PLTR.summary.md"
-    assert "researchReport" not in updated[2]
+    assert updated[0]["aiThesis"]["researchReport"] == "PLTR.summary.md"
+    assert updated[1]["aiThesis"]["researchReport"] == "PLTR.summary.md"
+    assert "researchReport" not in updated[2]["aiThesis"]
+    assert "aiThesis" not in updated[3]
     assert result["rewritten_count"] == 2
 ```
 
@@ -1267,13 +1269,16 @@ def migrate_pointers(projections_dir: str) -> dict:
         versions = json.loads(path.read_text())
         changed = False
         for version in versions:
-            report = version.get("researchReport")
+            ai_thesis = version.get("aiThesis")
+            if not isinstance(ai_thesis, dict):
+                continue
+            report = ai_thesis.get("researchReport")
             if not report:
                 continue
             match = DATED_RE.match(report)
             if not match:
                 continue
-            version["researchReport"] = f"{match.group(1)}.summary.md"
+            ai_thesis["researchReport"] = f"{match.group(1)}.summary.md"
             changed = True
             rewritten += 1
         if changed:
