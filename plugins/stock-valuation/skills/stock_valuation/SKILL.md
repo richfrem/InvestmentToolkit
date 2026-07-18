@@ -396,14 +396,14 @@ curl -s -X POST http://localhost:3001/api/projections \
 **Shared Intelligence Ledger**: Append to the event ledger and regenerate the canonical views
 (never write dated markdown directly — per ADR-028's anti-duplication rule).
 ```bash
-mkdir -p InvestmentToolkit/temp
-cat > InvestmentToolkit/temp/research_body.md << 'REPORT_EOF'
+mkdir -p temp
+cat > temp/research_body.md << 'REPORT_EOF'
 <MARKDOWN_CONTENT>
 REPORT_EOF
 cd investment_screener/backend/py_services
 python3 -m intelligence.event_store \
   --event-type RESEARCH_IMPORT --ticker {TICKER} --effective-at "$(date +%F)" \
-  --status ACTIVE --title "{TICKER} research update" --body-file InvestmentToolkit/temp/research_body.md
+  --status ACTIVE --title "{TICKER} research update" --body-file temp/research_body.md
 python3 -m intelligence.view_generator {TICKER}
 ```
 If write fails → invoke **FB-04** from `references/fallback-tree.md`.
