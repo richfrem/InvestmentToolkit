@@ -37,6 +37,16 @@ Run these steps in order. Never skip a step. Never ask multiple questions at onc
 Run silently. Show a one-line status block at the end.
 
 ```bash
+# Check if Investment Toolkit server (backend/frontend) is running
+python3 -c "
+import urllib.request
+try:
+    urllib.request.urlopen('http://localhost:3001/api/health', timeout=2)
+    print('server_running=true')
+except:
+    print('server_running=false')
+"
+
 # Check portfolio.json age AND tvSnapshot integrity
 python3 -c "
 import json, os
@@ -72,31 +82,29 @@ except:
 **Present this readiness card before anything else:**
 ```
 ─── Daily Loop — [DATE] ──────────────────────────────────
+  Server:       [RUNNING / OFFLINE]
   Portfolio:    [X.Xh old — CURRENT / STALE]
   TV Snapshot:  [N positions · last synced TIMESTAMP — VERIFIED / ⚠ UNVERIFIED]
   TradingView:  [CONNECTED / OFFLINE]
 ─────────────────────────────────────────────────────────
 ```
 
-**⚠ HARD GATE — Share Count Integrity:**
-`portfolio.json` is refreshed continuously by yfinance (prices), but share counts
-only update via a successful TV broker sync. A fresh file timestamp does NOT mean
-share counts are current. Always check `tvSnapshot.positions`.
+**⚠ HARD GATE — Server Status & Startup:**
+- If `server_running == false`:
+  > "⚠ Investment Toolkit backend/frontend server is NOT running.
+  > Starting the server now via `python3 run_investment_toolkit.py` in the background..."
+  > Propose and launch `python3 run_investment_toolkit.py` as a background task. Wait 5 seconds for it to initialize.
 
-- If `tv_snapshot_positions == 0`: Share counts are UNVERIFIED. The last TV sync
-  returned no positions (broker panel may be disconnected or showing a login dialog).
-  **DO NOT proceed to triage.** Tell the user:
-  > "⚠ Portfolio share counts are UNVERIFIED — the last TV sync returned 0 positions.
-  > Weight-based recommendations will be wrong and could cause over/under-trading.
-  > Please reconnect Questrade in TradingView's broker panel and run `/tv-portfolio-sync`,
-  > or confirm your current share counts manually before I proceed."
-  Wait for explicit user confirmation before continuing. If they confirm to proceed anyway,
-  prefix every triage card with **[UNVERIFIED WEIGHTS]** and do not propose specific share
-  quantities to buy or sell.
-
-- If `tv_snapshot_positions > 0` AND portfolio is > 8h old AND TradingView is connected:
-  > "Portfolio data is [X]h old. Syncing from TradingView now."
-  > Run `/tv-portfolio-sync` and wait for confirmation before proceeding.
+**⚠ HARD GATE — Broker Login & Share Count Integrity:**
+- Always remind the user to log in to their broker inside TradingView Desktop (e.g., Questrade panel) so the CDP can read the actual positions and synchronize correctly.
+- If `tv_snapshot_positions == 0` or portfolio is stale (> 8h old) AND TradingView is connected:
+  > "Portfolio data is [X]h old or unverified. Syncing from TradingView now..."
+  > Trigger a `/tv-portfolio-sync` command immediately.
+  > If that sync still returns 0 positions:
+    > "⚠ Portfolio share counts are UNVERIFIED — the last TV sync returned 0 positions.
+    > Weight-based recommendations will be wrong and could cause over/under-trading.
+    > Please make sure you are logged into your broker in TradingView's broker panel, and then run `/tv-portfolio-sync`, or confirm your current share counts manually before I proceed."
+    Wait for explicit user confirmation before continuing. If they confirm to proceed anyway, prefix every triage card with **[UNVERIFIED WEIGHTS]** and do not propose specific share quantities to buy or sell.
 
 - If portfolio is > 8h old AND TradingView is offline:
   > "Portfolio data is stale and TradingView isn't running. Proceeding with last known positions."
