@@ -449,7 +449,307 @@ git commit -m "feat: implement JSONL event ledger replay loop and checkpoints"
 
 ---
 
+## Plan Amendment (added 2026-07-18, post-Task-3): Shared Intelligence Data Layer
+
+Per ADR-026 (`ADRs/026_canonical_research_consolidation_and_unified_ingest.md`, hybrid ledger
+architecture), ADR-027 (`ADRs/027_sqlite_database_selection.md`, SQLite engine selection), and
+ADR-028 (`ADRs/028_shared_intelligence_data_access_layer.md`, repository/service layer + the
+event-modeling and anti-duplication rules below), this plan is a **full shared data-layer
+refactor**, not a one-off SQLite migration. The failure mode being prevented: every future
+plugin/skill/route growing its own ad hoc SQLite or JSONL access, recreating the exact
+file-sprawl problem this migration exists to fix.
+
+**Package convention (binds Task 1A onward):** `db_client.py`, `event_store.py`,
+`replay_ledger.py`, `event_repository.py`, `instrument_repository.py`, `view_generator.py`,
+and `models.py` live under `investment_screener/backend/py_services/intelligence/` (a proper
+package with `__init__.py`, not flat modules in `py_services/` root). Tests `sys.path.insert`
+at `investment_screener/backend/py_services` (the package's parent, not the package itself) and
+import as `from intelligence.db_client import initialize_db`,
+`from intelligence.event_store import append_event`, etc. — matching how a real package import
+resolves, not a repeat of the flat-module `sys.path` hack.
+
+**Anti-duplication rule (binds every task from here on, including Phase 2):** No new direct
+SQLite access or JSONL event parsing outside `py_services/intelligence/`, unless explicitly
+documented as an exception. A script that needs intelligence data calls the repository/service
+layer — it does not open its own SQLite connection or write its own JSONL line.
+
+**Event modeling rule (already satisfied by Tasks 1-2's schema, stated here for enforcement
+going forward):** `event_type` is classification metadata on `intelligence_event` rows, not a
+table-selection mechanism. `NEWS_SWEEP`, `EARNINGS`, `TECHNICAL_SWEEP`, `MACRO_EVENT`,
+`THESIS_UPDATE`, `RESEARCH_IMPORT`, `REVIEW_DAILY`, `REVIEW_WEEKLY` all write to
+`intelligence_event`. Do not create `news_sweep`/`earnings`/etc. tables. A new table is only
+justified for a domain object with a materially different shape/lifecycle (e.g.
+`research_thesis`, `valuation_version`, `portfolio_decision` — none exist yet in this plan;
+adding one requires a documented ADR-level exception, not a quiet per-task decision).
+
+**Deferred, not built in this pass (see ADR-028's "Deferred" section for the full rationale):**
+Node/Express service layer (`src/services/intelligence/`) — nothing in this plan has Node
+querying SQLite directly yet, only reading generated Markdown files (Task 8); full
+`architecture.md`/`AGENTS.md`/`GEMINI.md` ecosystem rewrite — ADR-028 is the durable record in
+the interim; a `generated_research_view` provenance table — noted as a legitimate future
+addition, not required for the first working version.
+
+**Retrofit of already-completed work:** Tasks 1-3 built `db_client.py` and `replay_ledger.py`
+flat in `py_services/`, already reviewed and approved before this amendment landed. Task 1A
+below moves them into the package (cheap now — ~150 lines, not merged anywhere durable yet — vs.
+expensive after Phase 2 builds 7 more tasks on the flat structure) and folds in a required bug
+fix.
+
+---
+
+### Task 1A: Establish Shared Intelligence Data Access Layer
+
+**Files:**
+- Create: `investment_screener/backend/py_services/intelligence/__init__.py` (empty)
+- Move + modify: `investment_screener/backend/py_services/db_client.py` →
+  `investment_screener/backend/py_services/intelligence/db_client.py` (content unchanged from
+  Task 1-2's implementation)
+- Move + modify: `investment_screener/backend/py_services/replay_ledger.py` →
+  `investment_screener/backend/py_services/intelligence/replay_ledger.py` (content from Task 3,
+  PLUS the bug fix described below)
+- Create: `investment_screener/backend/py_services/intelligence/event_store.py`
+- Create: `investment_screener/backend/py_services/intelligence/event_repository.py`
+- Create: `investment_screener/backend/py_services/intelligence/instrument_repository.py`
+- Create: `investment_screener/backend/py_services/intelligence/models.py`
+- Move + modify: `investment_screener/backend/tests/py_services/test_db_client.py` (update
+  imports to package form)
+- Move + modify: `investment_screener/backend/tests/py_services/test_replay_ledger.py` (update
+  imports to package form; add the incremental-resume test described below)
+- Create: `investment_screener/backend/tests/py_services/test_event_store.py`
+- Create: `investment_screener/backend/tests/py_services/test_event_repository.py`
+- Create: `investment_screener/backend/tests/py_services/test_instrument_repository.py`
+
+**Interfaces:**
+- `models.py`: `@dataclass IntelligenceEvent` (mirrors `intelligence_event` columns) and
+  `@dataclass Instrument` (mirrors `instrument` columns). No `SourceRecord`/`ValuationVersion`/
+  `PortfolioDecision`/`ResearchThesis` dataclasses yet — those tables don't exist in this plan.
+- `event_store.py`: `append_event(jsonl_path, event_type, effective_at, status, title,
+  body_markdown, ticker=None, source_id=None, payload=None, supersedes_event_id=None,
+  idempotency_key=None) -> str` — same contract originally specified for the now-superseded
+  Phase 2 Task 5, relocated here since it's foundational, not writer-migration work.
+- `event_repository.py`: `insert_event(conn, event: dict) -> bool` (returns whether a row was
+  actually inserted, i.e. `cursor.rowcount == 1` — the caller, `replay_ledger.py`, uses this to
+  decide whether to advance the checkpoint) and `search_fts(conn, query: str) -> list[dict]`
+  (wraps the `intelligence_event_fts MATCH` query so callers never write raw FTS5 SQL).
+- `instrument_repository.py`: `resolve_instrument(conn, ticker: str, exchange: str | None =
+  None, name: str | None = None) -> str` — returns `instrument_id`, inserting a new `instrument`
+  row if the ticker isn't already known (idempotent: calling it twice for the same ticker
+  returns the same `instrument_id`, does not insert twice).
+- `replay_ledger.py`'s `replay_events_to_db(jsonl_path, conn) -> dict` — same as Task 3, but now
+  (a) calls `event_repository.insert_event()` instead of raw `INSERT OR IGNORE` SQL directly,
+  (b) only advances checkpoint bookkeeping (`max_processed_sequence`, `last_event_id`) for
+  events `insert_event()` reports as actually inserted, (c) returns
+  `{"processed": N, "skipped": [...]}` where `skipped` lists any event dicts that were rejected
+  (duplicate sequence, taxonomy violation) so they are never silently lost.
+
+This closes the Task 3 reviewer's Important finding (silent checkpoint advancement past
+rejected events) as a natural consequence of routing inserts through `event_repository.py`
+instead of duplicating the same `INSERT OR IGNORE` call site.
+
+- [ ] **Step 1: Write the failing tests**
+
+For `event_store.py` — reuse the exact two tests originally written for the now-superseded
+Phase 2 Task 5 (`test_append_event_assigns_incrementing_sequence`,
+`test_append_event_idempotency_key_dedups`), placed in
+`investment_screener/backend/tests/py_services/test_event_store.py`, importing as
+`from intelligence.event_store import append_event`.
+
+For `event_repository.py`:
+```python
+# test_event_repository.py
+from intelligence.db_client import initialize_db
+from intelligence.event_repository import insert_event, search_fts
+
+def test_insert_event_returns_true_when_row_inserted(tmp_path):
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    conn.execute("INSERT INTO instrument VALUES ('us-pltr', 'PLTR', 'NASDAQ', 'Palantir', '2026-07-18', NULL);")
+    conn.commit()
+    result = insert_event(conn, {
+        "event_id": "evt_1", "event_sequence": 1, "instrument_id": "us-pltr",
+        "event_type": "NEWS_SWEEP", "effective_at": "2026-07-18", "ingested_at": "2026-07-18",
+        "status": "ACTIVE", "title": "T1", "body_markdown": "B1", "content_hash": "h1",
+    })
+    assert result is True
+
+def test_insert_event_returns_false_when_sequence_duplicate(tmp_path):
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    conn.execute("INSERT INTO instrument VALUES ('us-pltr', 'PLTR', 'NASDAQ', 'Palantir', '2026-07-18', NULL);")
+    conn.commit()
+    base = {
+        "event_sequence": 1, "instrument_id": "us-pltr", "event_type": "NEWS_SWEEP",
+        "effective_at": "2026-07-18", "ingested_at": "2026-07-18", "status": "ACTIVE",
+        "title": "T1", "body_markdown": "B1",
+    }
+    assert insert_event(conn, {**base, "event_id": "evt_1", "content_hash": "h1"}) is True
+    assert insert_event(conn, {**base, "event_id": "evt_2", "content_hash": "h2"}) is False
+
+def test_search_fts_returns_matching_events(tmp_path):
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    conn.execute("INSERT INTO instrument VALUES ('us-pltr', 'PLTR', 'NASDAQ', 'Palantir', '2026-07-18', NULL);")
+    conn.commit()
+    insert_event(conn, {
+        "event_id": "evt_1", "event_sequence": 1, "instrument_id": "us-pltr",
+        "event_type": "NEWS_SWEEP", "effective_at": "2026-07-18", "ingested_at": "2026-07-18",
+        "status": "ACTIVE", "title": "Nvidia Partnership", "body_markdown": "Palantir and Nvidia.",
+        "content_hash": "h1",
+    })
+    results = search_fts(conn, "Nvidia")
+    assert len(results) == 1
+    assert results[0]["title"] == "Nvidia Partnership"
+```
+
+For `instrument_repository.py`:
+```python
+# test_instrument_repository.py
+from intelligence.db_client import initialize_db
+from intelligence.instrument_repository import resolve_instrument
+
+def test_resolve_instrument_creates_new_and_is_idempotent(tmp_path):
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    id_1 = resolve_instrument(conn, "PLTR", exchange="NASDAQ", name="Palantir Technologies")
+    id_2 = resolve_instrument(conn, "PLTR", exchange="NASDAQ", name="Palantir Technologies")
+    assert id_1 == id_2
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM instrument WHERE ticker = 'PLTR';")
+    assert cursor.fetchone()[0] == 1
+```
+
+For the retrofitted `replay_ledger.py` (Task 3 bug fix, incorporated here) — add to
+`test_replay_ledger.py`:
+```python
+def test_replay_skips_and_reports_taxonomy_violation_without_advancing_checkpoint(tmp_path):
+    jsonl_path = tmp_path / "observations.jsonl"
+    jsonl_path.write_text(
+        '{"event_id": "evt_1", "event_sequence": 1, "event_type": "BOGUS_NOT_IN_TAXONOMY", '
+        '"effective_at": "2026-07-18", "ingested_at": "2026-07-18", "status": "ACTIVE", '
+        '"title": "T", "body_markdown": "B", "content_hash": "h1"}\n'
+    )
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    result = replay_events_to_db(str(jsonl_path), conn)
+    assert result["processed"] == 0
+    assert len(result["skipped"]) == 1
+    assert result["skipped"][0]["event_id"] == "evt_1"
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM ledger_checkpoint;")
+    assert cursor.fetchone()[0] == 0  # checkpoint must not advance past a rejected event
+
+def test_replay_incremental_resume_picks_up_newly_appended_events(tmp_path):
+    jsonl_path = tmp_path / "observations.jsonl"
+    jsonl_path.write_text(
+        '{"event_id": "evt_1", "event_sequence": 1, "event_type": "NEWS_SWEEP", '
+        '"effective_at": "2026-07-18", "ingested_at": "2026-07-18", "status": "ACTIVE", '
+        '"title": "T1", "body_markdown": "B1", "content_hash": "h1"}\n'
+    )
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    replay_events_to_db(str(jsonl_path), conn)
+
+    with open(jsonl_path, "a") as f:
+        f.write(
+            '{"event_id": "evt_2", "event_sequence": 2, "event_type": "NEWS_SWEEP", '
+            '"effective_at": "2026-07-18", "ingested_at": "2026-07-18", "status": "ACTIVE", '
+            '"title": "T2", "body_markdown": "B2", "content_hash": "h2"}\n'
+        )
+    replay_events_to_db(str(jsonl_path), conn)
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM intelligence_event;")
+    assert cursor.fetchone()[0] == 2
+    cursor.execute("SELECT last_event_sequence FROM ledger_checkpoint WHERE checkpoint_id = 'global';")
+    assert cursor.fetchone()[0] == 2
+```
+
+- [ ] **Step 2: Run tests to verify they fail**
+
+Run: `pytest investment_screener/backend/tests/py_services/test_event_store.py investment_screener/backend/tests/py_services/test_event_repository.py investment_screener/backend/tests/py_services/test_instrument_repository.py -v`
+Expected: FAIL with `ModuleNotFoundError` (package doesn't exist yet).
+
+Run: `pytest investment_screener/backend/tests/py_services/test_replay_ledger.py -v -k "taxonomy_violation or incremental_resume"`
+Expected: FAIL — either `ModuleNotFoundError` (imports not yet updated to package form) or, once
+imports are fixed, `KeyError`/`AssertionError` against the current flat implementation's
+unconditional-checkpoint-advance behavior.
+
+- [ ] **Step 3: Move existing modules, then implement the new ones**
+
+1. `git mv` (preserves history) `db_client.py` and `replay_ledger.py` into
+   `py_services/intelligence/`; same for their two existing test files. Add empty
+   `__init__.py`. Update the `sys.path.insert` line in both test files to point at
+   `investment_screener/backend/py_services` (one level up from `intelligence/`), and change
+   their imports to `from intelligence.db_client import initialize_db` /
+   `from intelligence.replay_ledger import replay_events_to_db`.
+2. Create `event_store.py` — same implementation the plan originally specified for Task 5
+   (sequence assignment, content hash, idempotency-key dedup via linear scan of the JSONL
+   file), just relocated and import-adjusted.
+3. Create `event_repository.py`:
+```python
+def insert_event(conn, event: dict) -> bool:
+    cursor = conn.execute("""
+        INSERT OR IGNORE INTO intelligence_event
+        (event_id, event_sequence, instrument_id, event_type, effective_at, ingested_at,
+         status, title, body_markdown, content_hash)
+        VALUES (:event_id, :event_sequence, :instrument_id, :event_type, :effective_at,
+                :ingested_at, :status, :title, :body_markdown, :content_hash);
+    """, {**event, "instrument_id": event.get("instrument_id")})
+    conn.commit()
+    return cursor.rowcount == 1
+
+
+def search_fts(conn, query: str) -> list[dict]:
+    cursor = conn.execute("""
+        SELECT ie.event_id, ie.title, ie.body_markdown, ie.effective_at
+        FROM intelligence_event_fts fts
+        JOIN intelligence_event ie ON ie.rowid = fts.rowid
+        WHERE intelligence_event_fts MATCH ?;
+    """, (query,))
+    columns = [d[0] for d in cursor.description]
+    return [dict(zip(columns, row)) for row in cursor.fetchall()]
+```
+4. Create `instrument_repository.py`:
+```python
+def resolve_instrument(conn, ticker: str, exchange: str | None = None, name: str | None = None) -> str:
+    cursor = conn.execute("SELECT instrument_id FROM instrument WHERE ticker = ?;", (ticker,))
+    row = cursor.fetchone()
+    if row:
+        return row[0]
+    instrument_id = f"{(exchange or 'na').lower()}-{ticker.lower()}"
+    conn.execute(
+        "INSERT INTO instrument (instrument_id, ticker, exchange, name, active_from, active_to) "
+        "VALUES (?, ?, ?, ?, date('now'), NULL);",
+        (instrument_id, ticker, exchange, name or ticker),
+    )
+    conn.commit()
+    return instrument_id
+```
+5. Rewrite `replay_ledger.py`'s `replay_events_to_db` to call `event_repository.insert_event()`
+   per row (instead of its own inline `INSERT OR IGNORE`), only advance
+   `max_processed_sequence`/`last_event_id` when `insert_event()` returns `True`, collect
+   rejected events into a `skipped` list, and return `{"processed": N, "skipped": [...]}`.
+
+- [ ] **Step 4: Run tests to verify they pass**
+
+Run: `pytest investment_screener/backend/tests/py_services/test_db_client.py investment_screener/backend/tests/py_services/test_replay_ledger.py investment_screener/backend/tests/py_services/test_event_store.py investment_screener/backend/tests/py_services/test_event_repository.py investment_screener/backend/tests/py_services/test_instrument_repository.py -v`
+Expected: PASS, all tests, pristine output.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add investment_screener/backend/py_services/intelligence/ investment_screener/backend/tests/py_services/test_db_client.py investment_screener/backend/tests/py_services/test_replay_ledger.py investment_screener/backend/tests/py_services/test_event_store.py investment_screener/backend/tests/py_services/test_event_repository.py investment_screener/backend/tests/py_services/test_instrument_repository.py
+git rm investment_screener/backend/py_services/db_client.py investment_screener/backend/py_services/replay_ledger.py 2>/dev/null || true
+git commit -m "refactor: establish py_services/intelligence/ shared data layer (ADR-028)
+
+Retrofits Tasks 1-3's flat db_client.py/replay_ledger.py into a proper
+package. Adds event_store.py, event_repository.py, instrument_repository.py.
+Fixes Task 3 review finding: replay now only advances the checkpoint for
+events actually inserted, never for silently-rejected ones."
+```
+
+---
+
 ### Task 4: Rebuild DB & Backup Verification Script
+
+**Path update (per Task 1A):** all file paths below resolve under
+`investment_screener/backend/py_services/intelligence/`, not bare `py_services/`. Imports use
+`from intelligence.db_client import initialize_db` and
+`from intelligence.replay_ledger import replay_events_to_db`.
 
 **Files:**
 - Create: `investment_screener/backend/py_services/rebuild_db.py`
