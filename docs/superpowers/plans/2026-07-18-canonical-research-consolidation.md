@@ -67,8 +67,6 @@ git commit -m "chore: add better-sqlite3 package dependency to backend workspace
 
 ```python
 # test_db_client.py
-import pytest
-import sqlite3
 from db_client import initialize_db
 
 def test_db_initialization(tmp_path):
@@ -77,25 +75,13 @@ def test_db_initialization(tmp_path):
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='instrument';")
     assert cursor.fetchone() is not None
-
-def test_sequence_uniqueness_constraint(tmp_path):
-    db_path = tmp_path / "test_intelligence.sqlite"
-    conn = initialize_db(str(db_path))
-    
-    conn.execute("INSERT INTO instrument VALUES ('us-pltr', 'PLTR', 'NASDAQ', 'Palantir', '2026-07-18', NULL);")
-    conn.execute("""
-        INSERT INTO intelligence_event (event_id, event_sequence, instrument_id, event_type, effective_at, ingested_at, status, title, body_markdown, content_hash)
-        VALUES ('evt_1', 1, 'us-pltr', 'NEWS_SWEEP', '2026-07-18', '2026-07-18', 'ACTIVE', 'Title 1', 'Body 1', 'hash_1');
-    """)
-    conn.commit()
-    
-    with pytest.raises(sqlite3.IntegrityError):
-        conn.execute("""
-            INSERT INTO intelligence_event (event_id, event_sequence, instrument_id, event_type, effective_at, ingested_at, status, title, body_markdown, content_hash)
-            VALUES ('evt_2', 1, 'us-pltr', 'NEWS_SWEEP', '2026-07-18', '2026-07-18', 'ACTIVE', 'Title 2', 'Body 2', 'hash_2');
-        """)
-        conn.commit()
 ```
+
+> **Plan correction (pre-flight review, 2026-07-18):** `test_sequence_uniqueness_constraint`
+> was originally listed here, but it inserts into `intelligence_event`, which this task's
+> minimal implementation does not create (that table is introduced in Task 2). The test has
+> been moved to Task 2 Step 1 so each task's failing test matches what that task actually
+> builds. User-confirmed resolution — see Task 2 Step 1 below.
 
 - [ ] **Step 2: Run test to verify it fails**
 
@@ -165,6 +151,9 @@ git commit -m "feat: setup SQLite database initialization schema and tests"
 
 Add to `test_db_client.py`:
 ```python
+import pytest
+import sqlite3
+
 def test_fts_search_sync(tmp_path):
     db_path = tmp_path / "test_intelligence.sqlite"
     conn = initialize_db(str(db_path))
@@ -180,11 +169,33 @@ def test_fts_search_sync(tmp_path):
     cursor = conn.cursor()
     cursor.execute("SELECT rowid FROM intelligence_event_fts WHERE intelligence_event_fts MATCH 'Nvidia';")
     assert cursor.fetchone() is not None
+
+def test_sequence_uniqueness_constraint(tmp_path):
+    db_path = tmp_path / "test_intelligence.sqlite"
+    conn = initialize_db(str(db_path))
+    
+    conn.execute("INSERT INTO instrument VALUES ('us-pltr', 'PLTR', 'NASDAQ', 'Palantir', '2026-07-18', NULL);")
+    conn.execute("""
+        INSERT INTO intelligence_event (event_id, event_sequence, instrument_id, event_type, effective_at, ingested_at, status, title, body_markdown, content_hash)
+        VALUES ('evt_1', 1, 'us-pltr', 'NEWS_SWEEP', '2026-07-18', '2026-07-18', 'ACTIVE', 'Title 1', 'Body 1', 'hash_1');
+    """)
+    conn.commit()
+    
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute("""
+            INSERT INTO intelligence_event (event_id, event_sequence, instrument_id, event_type, effective_at, ingested_at, status, title, body_markdown, content_hash)
+            VALUES ('evt_2', 1, 'us-pltr', 'NEWS_SWEEP', '2026-07-18', '2026-07-18', 'ACTIVE', 'Title 2', 'Body 2', 'hash_2');
+        """)
+        conn.commit()
 ```
+
+> **Plan correction (pre-flight review, 2026-07-18):** `test_sequence_uniqueness_constraint`
+> moved here from Task 1 — it depends on `intelligence_event`, which is this task's table, not
+> Task 1's.
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `pytest investment_screener/backend/tests/py_services/test_db_client.py -k test_fts_search_sync -v`
+Run: `pytest investment_screener/backend/tests/py_services/test_db_client.py -k "test_fts_search_sync or test_sequence_uniqueness_constraint" -v`
 Expected: FAIL due to missing `intelligence_event` tables and triggers.
 
 - [ ] **Step 3: Write minimal implementation**
@@ -255,8 +266,8 @@ Add full database schema (including `intelligence_event` and Triggers) in `db_cl
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `pytest investment_screener/backend/tests/py_services/test_db_client.py -k test_fts_search_sync -v`
-Expected: PASS
+Run: `pytest investment_screener/backend/tests/py_services/test_db_client.py -v`
+Expected: PASS (all tests in the file, including the Task 1 tests and both tests added in this task)
 
 - [ ] **Step 5: Commit**
 
