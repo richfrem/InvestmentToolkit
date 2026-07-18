@@ -249,8 +249,8 @@ Append a "Research Update" event to the shared intelligence ledger and regenerat
 canonical views (never write dated markdown directly — per ADR-028's anti-duplication rule):
 
 ```bash
-mkdir -p InvestmentToolkit/temp
-cat > InvestmentToolkit/temp/research_body.md << 'EOF'
+mkdir -p temp
+cat > temp/research_body.md << 'EOF'
 
 ---
 
@@ -269,7 +269,7 @@ EOF
 cd investment_screener/backend/py_services
 python3 -m intelligence.event_store \
   --event-type RESEARCH_IMPORT --ticker {TICKER} --effective-at "$(date +%F)" \
-  --status ACTIVE --title "{TICKER} research update" --body-file InvestmentToolkit/temp/research_body.md
+  --status ACTIVE --title "{TICKER} research update" --body-file temp/research_body.md
 python3 -m intelligence.view_generator {TICKER}
 ```
 
