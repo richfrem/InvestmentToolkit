@@ -5,9 +5,10 @@ Based on the adversarial feedback from GPT-5.6, we reject the model where mutabl
 
 Our target architecture transitions to a **Hybrid Structured Intelligence Ledger**:
 1. **Authoritative Write Store:** SQLite is the transactional ledger for structural observations, instrument metadata, and valuation versions.
-2. **Append-Only Interchange Logs:** Events are logged sequentially as Git-diffable JSONLines format for easy versioning and recovery.
-3. **Generated Views (Markdown):** Markdown files in `research/{TICKER}.md` are **reproducible, materialized views** generated from the SQLite ledger and projections DB. They are never edited manually.
-4. **Clutter-Free Caching:** Loose JSON dumps in `temp/` are swept into structured, gitignored subdirectories.
+2. **Event Ledger (Event Sourcing Lite):** Immutable, chronologically ordered JSONLines logs act as the master log. SQLite is a projection/index built by replaying this ledger.
+3. **FTS5 Search Index:** A virtual SQLite search table enables prefix/relevance matching, resolving query issues over thousands of prose observations.
+4. **Generated Views (Markdown):** Markdown files in `research/{TICKER}.md` are **reproducible, materialized views** generated from the SQLite ledger and projections DB. They are split into `.summary.md`, `.timeline.md`, and `.metrics.json` to control agent token limits.
+5. **Clutter-Free Caching:** Loose JSON dumps in `temp/` are swept into structured, gitignored subdirectories.
 
 ---
 
@@ -20,9 +21,12 @@ investment_screener/backend/data/
 ├── intelligence.sqlite        ← Authoritative transactional index & query store
 ├── projections/               ← Canonical JSON DCF version logs (unchanged)
 ├── research/                  ← Generated human-readable views (re-created on demand)
-│   ├── PLTR.md                ← Generated from DB; contains revision hash metadata
-│   └── SNDK.md
+│   ├── PLTR.summary.md        ← Generated from DB (core thesis, catalysts, risks)
+│   ├── PLTR.timeline.md       ← Generated from DB (chronological audit history)
+│   └── PLTR.metrics.json      ← Machine-readable generated snapshot data
 ├── history/                   ← Git-committed historical records
+│   ├── events/                ← Append-only JSONL event logs (Authoritative recovery source)
+│   │   └── observations.jsonl
 │   ├── reviews/               ← Daily/Weekly confluence reviews (generated)
 │   │   ├── daily/
 │   │   └── weekly/
@@ -36,9 +40,10 @@ investment_screener/backend/data/
 
 ## 3. SQLite Database Schema
 
-We define a minimal relational schema in `intelligence.sqlite` to track instruments, events, source provenance, and valuations:
+We define a relational schema in `intelligence.sqlite` to track instruments, events, source provenance, and valuations:
 
 ```sql
+-- Core instrument mapping
 CREATE TABLE IF NOT EXISTS instrument (
     instrument_id TEXT PRIMARY KEY,
     ticker TEXT NOT NULL,
@@ -49,6 +54,19 @@ CREATE TABLE IF NOT EXISTS instrument (
     UNIQUE(ticker, exchange, active_from)
 );
 
+-- Ticker aliases for symbols that change over time (e.g. FB -> META)
+CREATE TABLE IF NOT EXISTS instrument_alias (
+    alias_id TEXT PRIMARY KEY,
+    instrument_id TEXT NOT NULL,
+    alias_ticker TEXT NOT NULL,
+    exchange TEXT,
+    effective_from TEXT NOT NULL,
+    effective_to TEXT,
+    FOREIGN KEY(instrument_id) REFERENCES instrument(instrument_id),
+    UNIQUE(alias_ticker, exchange, effective_from)
+);
+
+-- Provenance tracking
 CREATE TABLE IF NOT EXISTS source (
     source_id TEXT PRIMARY KEY,
     source_type TEXT NOT NULL,
@@ -60,25 +78,55 @@ CREATE TABLE IF NOT EXISTS source (
     content_hash TEXT NOT NULL
 );
 
+-- Core event stream data with corrections logic
 CREATE TABLE IF NOT EXISTS intelligence_event (
     event_id TEXT PRIMARY KEY,
     instrument_id TEXT,
-    event_type TEXT NOT NULL,
+    event_type TEXT NOT NULL CHECK (
+        event_type IN (
+            'RESEARCH_IMPORT', 'NEWS_SWEEP', 'EARNINGS', 
+            'VALUATION_UPDATE', 'TECHNICAL_SWEEP', 'PORTFOLIO_DECISION', 
+            'THESIS_UPDATE', 'MACRO_EVENT', 'REVIEW_DAILY', 'REVIEW_WEEKLY'
+        )
+    ),
     effective_at TEXT NOT NULL,
     observed_at TEXT,
     ingested_at TEXT NOT NULL,
     source_id TEXT,
     confidence REAL,
-    status TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (
+        status IN ('ACTIVE', 'SUPERSEDED', 'RETRACTED', 'INVALIDATED', 'DRAFT')
+    ),
     title TEXT,
     body_markdown TEXT,
     payload_json TEXT,
     supersedes_event_id TEXT,
+    idempotency_key TEXT UNIQUE,
     content_hash TEXT NOT NULL,
     FOREIGN KEY(instrument_id) REFERENCES instrument(instrument_id),
     FOREIGN KEY(source_id) REFERENCES source(source_id),
     FOREIGN KEY(supersedes_event_id) REFERENCES intelligence_event(event_id),
     UNIQUE(content_hash, source_id)
+);
+
+-- FTS5 search index table
+CREATE VIRTUAL TABLE IF NOT EXISTS intelligence_event_fts USING fts5(
+    title,
+    body_markdown,
+    content='intelligence_event',
+    content_rowid='rowid'
+);
+
+-- Current synthesized thesis (avoids rebuilding from history on every run)
+CREATE TABLE IF NOT EXISTS research_thesis (
+    thesis_id TEXT PRIMARY KEY,
+    instrument_id TEXT NOT NULL,
+    core_thesis TEXT NOT NULL,
+    key_risks TEXT NOT NULL,
+    key_catalysts TEXT NOT NULL,
+    validation_breakers TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY(instrument_id) REFERENCES instrument(instrument_id)
 );
 
 CREATE TABLE IF NOT EXISTS valuation_version (
@@ -97,7 +145,9 @@ CREATE TABLE IF NOT EXISTS portfolio_decision (
     decision_id TEXT PRIMARY KEY,
     instrument_id TEXT NOT NULL,
     valuation_id TEXT,
-    action TEXT NOT NULL,
+    action TEXT NOT NULL CHECK (
+        action IN ('BUY', 'ADD', 'HOLD', 'TRIM', 'EXIT', 'WATCH')
+    ),
     reason_code TEXT NOT NULL,
     policy_version TEXT NOT NULL,
     effective_at TEXT NOT NULL,
@@ -108,14 +158,12 @@ CREATE TABLE IF NOT EXISTS portfolio_decision (
 
 ---
 
-## 4. Generated Profile Metadata Envelope (`research/{TICKER}.md`)
-
-Markdown profiles are generated by query compilers. The frontmatter header explicitly marks them as generated views to prevent human edit conflicts:
+## 4. Generated Profile Metadata Envelope (`research/{TICKER}.summary.md`)
 
 ```yaml
 ---
 schemaVersion: 1
-documentType: generated-research-profile
+documentType: generated-research-summary
 instrumentId: us-xnas-pltr
 ticker: "PLTR"
 generatedAt: "2026-07-18T09:30:00Z"
@@ -127,13 +175,12 @@ valuationSnapshot:
   action: HOLD
 ---
 
-# PLTR Canonical Research History
+# PLTR Canonical Research Summary
 
 *This file is a generated view. Do not edit directly. Authoritative observations are stored in `intelligence.sqlite`.*
 
-## Research Sweep — 2026-07-18
-* **Source Event:** `evt_01J...` (ingested from `weekly-jul18-2026.md`)
-* ...
+## Current Thesis Summary
+...
 ```
 
 ---

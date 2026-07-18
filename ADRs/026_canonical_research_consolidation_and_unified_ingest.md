@@ -14,12 +14,14 @@ An adversarial review by GPT-5.6 revealed critical systemic flaws in this design
 ## Decision
 We reject flat Markdown profiles as our primary write target. Instead, we implement a **Hybrid SQLite Ledger and Generated View** architecture:
 
-1. **Transactional SQLite Index:** We establish `investment_screener/backend/data/intelligence.sqlite` as the authoritative write path and query engine for qualitative updates, valuations, and portfolio decisions.
-2. **Immutable Event Capture:** Observations from sweeps (e.g. Grok news sweeps) are stored as immutable, content-addressed event records in the database with clear separation of timestamps (`effective_at`, `observed_at`, `ingested_at`).
-3. **Reproducible Materialized Views:** Markdown profiles in `research/{TICKER}.md` are downgraded to read-only, generated views compiled programmatically from SQLite and the projections JSON. They carry generation timestamps and content hashes, and are never edited manually.
-4. **Decoupled Financial Logic:** Valuation signals (`fairValue`) are strictly version-linked in the valuation history and separated from execution actions (`BUY|HOLD|SELL`), preventing misleading data alignments.
-5. **Multi-Phase Non-Destructive Migration:** Legacy files are imported using a deterministic gate pipeline (`scan -> classify -> manifest -> stage -> validate -> publish -> archive`). Legacy files are moved to a git-committed archive directory, not deleted immediately.
-6. **Relocate Cluttered Caches:** Loose raw JSON outputs (`*_raw.json`) in the root of `temp/` are redirected to a structured, gitignored backend cache directory (`backend/data/cache/yfinance/`).
+1. **Transactional SQLite Index with WAL Mode:** We establish `investment_screener/backend/data/intelligence.sqlite` as the authoritative index and query engine for qualitative updates, valuations, and portfolio decisions.
+2. **Immutable Event Sourcing Ledger:** Observations from sweeps (e.g. Grok news sweeps) are stored as append-only, chronologically ordered logs in `history/events/observations.jsonl`. SQLite acts as a queryable read model rebuilt by replaying this ledger.
+3. **FTS5 Search Indexing:** We integrate a dedicated `intelligence_event_fts` virtual table using SQLite FTS5 to enable fast prefix and relevance-based keyword matching over historical prose updates.
+4. **Instrument Alias Mapping:** Tickers are mapped through an `instrument_alias` table to ensure historical data does not break when company symbols change or merge (e.g. `FB` -> `META`).
+5. **Decoupled Financial Logic & Enums:** Valuation signals (`fairValue`) are strictly version-linked in the valuation history and separated from execution actions (`BUY|HOLD|SELL`), using strict event taxonomy (`RESEARCH_IMPORT`, `NEWS_SWEEP`, `EARNINGS`, etc.) and status enums (`ACTIVE`, `SUPERSEDED`, `RETRACTED`, `INVALIDATED`, `DRAFT`).
+6. **Reproducible Materialized Views:** Generated Markdown views in `research/{TICKER}.summary.md` and `research/{TICKER}.timeline.md` are compiled programmatically from the ledger to prevent file size bloat. They are read-only and never edited manually.
+7. **Multi-Phase Non-Destructive Migration:** Legacy files are imported using a deterministic gate pipeline (`scan -> classify -> manifest -> stage -> validate -> publish -> archive`). Legacy files are moved to a git-committed archive directory, not deleted immediately.
+8. **Relocate Cluttered Caches:** Loose raw JSON outputs (`*_raw.json`) in the root of `temp/` are redirected to a structured, gitignored backend cache directory (`backend/data/cache/yfinance/`).
 
 ## Consequences
 * **No Write Contention:** Writes are transactional via SQLite WAL mode, eliminating read-modify-write file corruption.
