@@ -18,6 +18,55 @@
 
 ---
 
+## Phase 2 Scope Note (added 2026-07-18, post-audit)
+
+An audit of every `.py` script, `SKILL.md`, Express route, and frontend component that reads
+or writes the files this migration touches found real, previously-undocumented coupling:
+
+- `plugins/portfolio-advisor/scripts/consolidate_research.py` already merges dated
+  `{TICKER}_{DATE}.md` files into a canonical `{TICKER}.md` (72 of 152 research files on disk
+  already have both forms — the dated originals were never deleted). Phase 2 refactors this
+  script's proven scan/group/parse logic into the ledger migrator rather than discarding it.
+- `investment_screener/backend/src/routes/docs.ts`'s `GET /research/:filename` regex
+  (`^[A-Z0-9.-]{1,10}_\d{4}-\d{2}-\d{2}\.md$`) structurally rejects canonical filenames — none
+  of the 72 already-consolidated files are servable today. This is a pre-existing bug, not
+  something the ledger migration introduces, but Phase 2 fixes it since generated views make
+  it worse.
+- Every historical `projections/{TICKER}.json` version has a `researchReport` field
+  hard-pointing at a dated filename, consumed directly by `DeepDiveModal.tsx`. Phase 2
+  rewrites these to point at the canonical generated file (confirmed with user: losing
+  point-in-time historical linkage is acceptable — the modal will always show current state).
+- `predictions.jsonl` (`py_services/prediction_ledger.py`) and `evolution_events.jsonl`
+  (`py_services/evolution_events.py`) are two pre-existing, independently-implemented
+  append-only JSONL ledgers with the same `_append_jsonl`/`_load_jsonl` idiom. They are
+  **domain-separate from `observations.jsonl`** (quantitative backtesting claims and agent
+  self-evolution telemetry, respectively, vs. qualitative research/thesis/valuation events) —
+  Phase 2 does not merge them, only notes them as prior art.
+- `context/events.jsonl` at the repo root is a **false lead** — it's the unrelated
+  `agent-agentic-os` plugin's generic session/lock event bus (`kernel.py`), not an
+  investment-domain ledger. No overlap, no action needed. (Its rotate-on-size-threshold and
+  per-consumer cursor-file pattern is useful prior art for `replay_ledger.py`'s own checkpoint
+  design, already covered in Phase 1.)
+- `ta-sweep-results.json` is written by two independent code paths
+  (`ta_sweep_batch.py:save_sweep_results()` and a re-implementation inlined in
+  `daily_brief.py`) that build the identical payload shape — a duplicate-write hazard flagged
+  during the audit. Phase 2 includes a small, independent fix (Task 11) since it surfaced from
+  the same audit, but it does not depend on or block the ledger work.
+- `theses/investment_thesis.md`, `theses/sub_strategies/*.md`, and `target-portfolio.json`
+  remain **explicitly out of scope** — unchanged per the design spec. They already have their
+  own generated-view mechanism (`AUTO_UPDATE` block regeneration) and drift-checker
+  (`verify_thesis_sync.py`); folding them into this ledger is a candidate for a future,
+  separate plan, not this one.
+
+---
+
+## Phase 1: Read-Model Infrastructure (Tasks 0-4)
+
+Builds the SQLite read-model plumbing only: schema, FTS5 index, JSONL replay, rebuild/backup
+verification. Assumes `observations.jsonl` exists; does not yet write to it. Tasks 0-4 below.
+
+---
+
 ### Task 0: Lock Node.js Backend Dependencies
 
 **Files:**
@@ -457,4 +506,706 @@ Expected: PASS
 ```bash
 git add investment_screener/backend/py_services/rebuild_db.py investment_screener/backend/tests/py_services/test_rebuild_db.py
 git commit -m "feat: implement SQLite database rebuild from plain text JSONL ledger backup"
+```
+
+---
+
+## Phase 2: Writer & Reader Migration (Tasks 5-11)
+
+Wires actual producers/consumers to the ledger built in Phase 1: a shared append helper,
+migration of the 152 existing dated research files, generated-view rendering, the backend
+route fix, projection pointer rewrite, `SKILL.md` updates, and the `ta-sweep-results.json`
+duplicate-write fix. Depends on Phase 1 (`db_client.py`, `replay_ledger.py`) being complete.
+
+---
+
+### Task 5: Shared Event-Append Helper
+
+**Files:**
+- Create: `investment_screener/backend/py_services/append_event.py`
+- Test: `investment_screener/backend/tests/py_services/test_append_event.py`
+
+**Interfaces:**
+- Consumes: `investment_screener/backend/data/history/events/observations.jsonl` (append-only).
+- Produces: `append_event(jsonl_path, event_type, effective_at, status, title, body_markdown, ticker=None, source_id=None, payload=None, supersedes_event_id=None, idempotency_key=None) -> event_id`.
+
+Every future writer (Task 10's `SKILL.md` updates, Task 6's migrator) goes through this
+function — it is the single place `event_sequence` assignment, `content_hash` computation, and
+idempotency-key dedup logic live, per the Global Constraint "Replay-first authority flow."
+
+- [ ] **Step 1: Write the failing test**
+
+```python
+# test_append_event.py
+import json
+from append_event import append_event
+
+def test_append_event_assigns_incrementing_sequence(tmp_path):
+    jsonl_path = tmp_path / "observations.jsonl"
+    event_id_1 = append_event(
+        str(jsonl_path), event_type="NEWS_SWEEP", effective_at="2026-07-18",
+        status="ACTIVE", title="First", body_markdown="Body 1", ticker="PLTR",
+    )
+    event_id_2 = append_event(
+        str(jsonl_path), event_type="NEWS_SWEEP", effective_at="2026-07-18",
+        status="ACTIVE", title="Second", body_markdown="Body 2", ticker="PLTR",
+    )
+    lines = [json.loads(l) for l in jsonl_path.read_text().splitlines()]
+    assert len(lines) == 2
+    assert lines[0]["event_sequence"] == 1
+    assert lines[1]["event_sequence"] == 2
+    assert lines[0]["event_id"] == event_id_1
+    assert lines[1]["event_id"] == event_id_2
+    assert lines[0]["content_hash"] != lines[1]["content_hash"]
+
+def test_append_event_idempotency_key_dedups(tmp_path):
+    jsonl_path = tmp_path / "observations.jsonl"
+    id_1 = append_event(
+        str(jsonl_path), event_type="NEWS_SWEEP", effective_at="2026-07-18",
+        status="ACTIVE", title="First", body_markdown="Body 1", ticker="PLTR",
+        idempotency_key="dedup-key-1",
+    )
+    id_2 = append_event(
+        str(jsonl_path), event_type="NEWS_SWEEP", effective_at="2026-07-18",
+        status="ACTIVE", title="First (retry)", body_markdown="Body 1", ticker="PLTR",
+        idempotency_key="dedup-key-1",
+    )
+    lines = jsonl_path.read_text().splitlines()
+    assert len(lines) == 1
+    assert id_1 == id_2
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `pytest investment_screener/backend/tests/py_services/test_append_event.py -v`
+Expected: FAIL with `ModuleNotFoundError`.
+
+- [ ] **Step 3: Write minimal implementation**
+
+Create `investment_screener/backend/py_services/append_event.py`:
+```python
+import json
+import hashlib
+import uuid
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+def _last_sequence(jsonl_path: str) -> int:
+    path = Path(jsonl_path)
+    if not path.exists():
+        return 0
+    last = 0
+    for line in path.read_text().splitlines():
+        if not line.strip():
+            continue
+        last = json.loads(line)["event_sequence"]
+    return last
+
+
+def _find_by_idempotency_key(jsonl_path: str, idempotency_key: str):
+    path = Path(jsonl_path)
+    if not path.exists():
+        return None
+    for line in path.read_text().splitlines():
+        if not line.strip():
+            continue
+        record = json.loads(line)
+        if record.get("idempotency_key") == idempotency_key:
+            return record["event_id"]
+    return None
+
+
+def append_event(
+    jsonl_path: str,
+    event_type: str,
+    effective_at: str,
+    status: str,
+    title: str,
+    body_markdown: str,
+    ticker: str | None = None,
+    source_id: str | None = None,
+    payload: dict | None = None,
+    supersedes_event_id: str | None = None,
+    idempotency_key: str | None = None,
+) -> str:
+    if idempotency_key:
+        existing = _find_by_idempotency_key(jsonl_path, idempotency_key)
+        if existing:
+            return existing
+
+    event_id = f"evt_{uuid.uuid4().hex[:12]}"
+    content_hash = hashlib.sha256(
+        f"{event_type}|{effective_at}|{title}|{body_markdown}".encode("utf-8")
+    ).hexdigest()
+    record = {
+        "event_id": event_id,
+        "event_sequence": _last_sequence(jsonl_path) + 1,
+        "ticker": ticker,
+        "event_type": event_type,
+        "effective_at": effective_at,
+        "ingested_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "source_id": source_id,
+        "status": status,
+        "title": title,
+        "body_markdown": body_markdown,
+        "payload_json": json.dumps(payload) if payload is not None else None,
+        "supersedes_event_id": supersedes_event_id,
+        "idempotency_key": idempotency_key,
+        "content_hash": content_hash,
+    }
+    path = Path(jsonl_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "a") as f:
+        f.write(json.dumps(record) + "\n")
+    return event_id
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `pytest investment_screener/backend/tests/py_services/test_append_event.py -v`
+Expected: PASS
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add investment_screener/backend/py_services/append_event.py investment_screener/backend/tests/py_services/test_append_event.py
+git commit -m "feat: add shared event-append helper for observations.jsonl writers"
+```
+
+---
+
+### Task 6: Migrate Existing Dated Research Files into the Ledger
+
+**Files:**
+- Create: `investment_screener/backend/py_services/migrate_research_to_ledger.py`
+- Test: `investment_screener/backend/tests/py_services/test_migrate_research_to_ledger.py`
+- Reference (do not delete): `plugins/portfolio-advisor/scripts/consolidate_research.py`
+
+**Interfaces:**
+- Consumes: `investment_screener/backend/data/research/{TICKER}_{YYYY-MM-DD}.md` (152 files:
+  80 dated-only, 72 with an existing but now-superseded canonical `{TICKER}.md` alongside).
+- Produces: one `RESEARCH_IMPORT` event per dated file appended to `observations.jsonl` via
+  `append_event()` (Task 5); a migration manifest; archived originals moved to
+  `investment_screener/backend/data/history/archive/research/`.
+
+Implements Design Spec §5's 6-phase protocol (Scan → Classify → Manifest → Stage → Validate →
+Publish & Archive), reusing `consolidate_research.py`'s existing file-discovery glob
+(`*_202[0-9]-[0-9][0-9]-[0-9][0-9].md`) and ticker/date parsing instead of re-deriving them.
+Global Constraint: **no raw dated research markdown files are deleted** — `Publish & Archive`
+moves them, it never removes them, until the deterministic migration verification gate passes.
+
+- [ ] **Step 1: Write the failing test**
+
+```python
+# test_migrate_research_to_ledger.py
+import json
+from migrate_research_to_ledger import scan_dated_files, migrate_to_ledger
+
+def test_scan_dated_files_parses_ticker_and_date(tmp_path):
+    research_dir = tmp_path / "research"
+    research_dir.mkdir()
+    (research_dir / "PLTR_2026-07-02.md").write_text("# PLTR notes\nSome research.")
+    (research_dir / "PLTR_2026-05-01.md").write_text("# PLTR notes\nOlder research.")
+    (research_dir / "PLTR.md").write_text("# canonical, not dated - should be skipped")
+
+    found = scan_dated_files(str(research_dir))
+    assert len(found) == 2
+    assert {f["ticker"] for f in found} == {"PLTR"}
+    assert sorted(f["effective_at"] for f in found) == ["2026-05-01", "2026-07-02"]
+
+def test_migrate_to_ledger_appends_one_event_per_file_and_archives_originals(tmp_path):
+    research_dir = tmp_path / "research"
+    research_dir.mkdir()
+    (research_dir / "PLTR_2026-07-02.md").write_text("# PLTR notes\nSome research.")
+    jsonl_path = tmp_path / "observations.jsonl"
+    archive_dir = tmp_path / "archive"
+
+    manifest = migrate_to_ledger(str(research_dir), str(jsonl_path), str(archive_dir))
+
+    events = [json.loads(l) for l in jsonl_path.read_text().splitlines()]
+    assert len(events) == 1
+    assert events[0]["event_type"] == "RESEARCH_IMPORT"
+    assert events[0]["ticker"] == "PLTR"
+    assert manifest["migrated_count"] == 1
+
+    # Non-destructive: original still readable at its archived location, not deleted outright
+    assert (archive_dir / "PLTR_2026-07-02.md").exists()
+    assert not (research_dir / "PLTR_2026-07-02.md").exists()
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `pytest investment_screener/backend/tests/py_services/test_migrate_research_to_ledger.py -v`
+Expected: FAIL with `ModuleNotFoundError`.
+
+- [ ] **Step 3: Write minimal implementation**
+
+Create `investment_screener/backend/py_services/migrate_research_to_ledger.py`. Reuse the glob
+pattern and ticker/date split from `consolidate_research.py` for `scan_dated_files()`. Then:
+
+```python
+import json
+import re
+import shutil
+from pathlib import Path
+from append_event import append_event
+
+DATED_FILE_RE = re.compile(r"^([A-Z0-9.\-]+)_(\d{4}-\d{2}-\d{2})\.md$")
+
+
+def scan_dated_files(research_dir: str) -> list[dict]:
+    found = []
+    for path in Path(research_dir).glob("*.md"):
+        match = DATED_FILE_RE.match(path.name)
+        if not match:
+            continue
+        found.append({
+            "ticker": match.group(1),
+            "effective_at": match.group(2),
+            "path": str(path),
+        })
+    return found
+
+
+def migrate_to_ledger(research_dir: str, jsonl_path: str, archive_dir: str) -> dict:
+    files = scan_dated_files(research_dir)
+    Path(archive_dir).mkdir(parents=True, exist_ok=True)
+    migrated = 0
+    for entry in files:
+        source_path = Path(entry["path"])
+        body = source_path.read_text()
+        append_event(
+            jsonl_path,
+            event_type="RESEARCH_IMPORT",
+            effective_at=entry["effective_at"],
+            status="ACTIVE",
+            title=f"{entry['ticker']} research import ({entry['effective_at']})",
+            body_markdown=body,
+            ticker=entry["ticker"],
+            idempotency_key=f"research-import-{source_path.name}",
+        )
+        shutil.move(str(source_path), str(Path(archive_dir) / source_path.name))
+        migrated += 1
+    return {"migrated_count": migrated}
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `pytest investment_screener/backend/tests/py_services/test_migrate_research_to_ledger.py -v`
+Expected: PASS
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add investment_screener/backend/py_services/migrate_research_to_ledger.py investment_screener/backend/tests/py_services/test_migrate_research_to_ledger.py
+git commit -m "feat: migrate dated research files into observations.jsonl ledger (non-destructive)"
+```
+
+---
+
+### Task 7: Generated Research View Renderer
+
+**Files:**
+- Create: `investment_screener/backend/py_services/render_research_views.py`
+- Test: `investment_screener/backend/tests/py_services/test_render_research_views.py`
+
+**Interfaces:**
+- Consumes: `intelligence.sqlite` (`intelligence_event` table, replayed by Phase 1).
+- Produces: `investment_screener/backend/data/research/{TICKER}.summary.md` and
+  `{TICKER}.timeline.md` per Design Spec §4's YAML frontmatter envelope.
+
+- [ ] **Step 1: Write the failing test**
+
+```python
+# test_render_research_views.py
+from db_client import initialize_db
+from render_research_views import render_ticker_views
+
+def test_render_ticker_views_writes_summary_and_timeline(tmp_path):
+    db_path = tmp_path / "test_intelligence.sqlite"
+    conn = initialize_db(str(db_path))
+    conn.execute("INSERT INTO instrument VALUES ('us-pltr', 'PLTR', 'NASDAQ', 'Palantir', '2026-07-18', NULL);")
+    conn.execute("""
+        INSERT INTO intelligence_event (event_id, event_sequence, instrument_id, event_type, effective_at, ingested_at, status, title, body_markdown, content_hash)
+        VALUES ('evt_1', 1, 'us-pltr', 'RESEARCH_IMPORT', '2026-07-18', '2026-07-18', 'ACTIVE', 'PLTR research import', 'Palantir ontology builds secure node.', 'hash_1');
+    """)
+    conn.commit()
+
+    output_dir = tmp_path / "research"
+    output_dir.mkdir()
+    render_ticker_views("PLTR", conn, str(output_dir))
+
+    summary = (output_dir / "PLTR.summary.md").read_text()
+    timeline = (output_dir / "PLTR.timeline.md").read_text()
+    assert "ticker: \"PLTR\"" in summary
+    assert "documentType: generated-research-summary" in summary
+    assert "Palantir ontology builds secure node." in timeline
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `pytest investment_screener/backend/tests/py_services/test_render_research_views.py -v`
+Expected: FAIL with `ModuleNotFoundError`.
+
+- [ ] **Step 3: Write minimal implementation**
+
+Create `investment_screener/backend/py_services/render_research_views.py`:
+```python
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+def _fetch_active_events(ticker: str, conn) -> list[dict]:
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT ie.effective_at, ie.title, ie.body_markdown
+        FROM intelligence_event ie
+        JOIN instrument i ON ie.instrument_id = i.instrument_id
+        WHERE i.ticker = ? AND ie.status = 'ACTIVE'
+        ORDER BY ie.effective_at DESC, ie.event_sequence DESC;
+    """, (ticker,))
+    return [
+        {"effective_at": r[0], "title": r[1], "body_markdown": r[2]}
+        for r in cursor.fetchall()
+    ]
+
+
+def render_ticker_views(ticker: str, conn, output_dir: str) -> None:
+    events = _fetch_active_events(ticker, conn)
+    generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    out = Path(output_dir)
+
+    summary = (
+        "---\n"
+        "schemaVersion: 1\n"
+        "documentType: generated-research-summary\n"
+        f"ticker: \"{ticker}\"\n"
+        f"generatedAt: \"{generated_at}\"\n"
+        "---\n\n"
+        f"# {ticker} Canonical Research Summary\n\n"
+        "*This file is a generated view. Do not edit directly. Authoritative observations are "
+        "stored in the JSONL event ledger and indexed in `intelligence.sqlite`.*\n\n"
+        f"{events[0]['body_markdown'] if events else '_No active research events yet._'}\n"
+    )
+    (out / f"{ticker}.summary.md").write_text(summary)
+
+    timeline_lines = [f"# {ticker} Research Timeline\n"]
+    for event in events:
+        timeline_lines.append(f"\n## {event['effective_at']} — {event['title']}\n\n{event['body_markdown']}\n")
+    (out / f"{ticker}.timeline.md").write_text("".join(timeline_lines))
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `pytest investment_screener/backend/tests/py_services/test_render_research_views.py -v`
+Expected: PASS
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add investment_screener/backend/py_services/render_research_views.py investment_screener/backend/tests/py_services/test_render_research_views.py
+git commit -m "feat: render generated research summary/timeline views from intelligence.sqlite"
+```
+
+---
+
+### Task 8: Fix Backend Research Route for Canonical Filenames
+
+**Files:**
+- Modify: `investment_screener/backend/src/routes/docs.ts`
+- Test: `investment_screener/backend/tests/api/docs.research.spec.ts`
+
+**Interfaces:**
+- `GET /research/:filename` — currently rejects any filename without a `_YYYY-MM-DD` suffix
+  (regex `^[A-Z0-9.-]{1,10}_\d{4}-\d{2}-\d{2}\.md$`, `docs.ts` line ~40-59). Must also accept
+  `{TICKER}.summary.md` and `{TICKER}.timeline.md` (Task 7's output).
+- `GET /research` — currently derives `ticker`/`date` by splitting the filename on `_`
+  (`docs.ts` line ~61-74), producing `undefined` dates for canonical filenames. Must branch on
+  filename shape instead of assuming one.
+
+- [ ] **Step 1: Write the failing test**
+
+```typescript
+// docs.research.spec.ts
+import request from 'supertest';
+import { app } from '../../src/index'; // adjust import to this project's actual app export
+
+describe('GET /api/research/:filename', () => {
+  it('serves a canonical {TICKER}.summary.md filename', async () => {
+    const res = await request(app).get('/api/research/PLTR.summary.md');
+    expect(res.status).not.toBe(400);
+  });
+});
+
+describe('GET /api/research', () => {
+  it('lists canonical files with a non-undefined ticker and a null (not undefined) date', async () => {
+    const res = await request(app).get('/api/research');
+    const canonical = res.body.find((f: any) => f.filename === 'PLTR.summary.md');
+    expect(canonical).toBeDefined();
+    expect(canonical.ticker).toBe('PLTR');
+    expect(canonical.date).toBeNull();
+  });
+});
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `npm run test -w backend -- docs.research.spec.ts`
+Expected: FAIL — canonical filename rejected with 400, or `date` is `undefined` not `null`.
+
+- [ ] **Step 3: Write minimal implementation**
+
+In `docs.ts`, replace the single dated-only regex with two patterns and branch the listing
+logic on which one matches:
+```typescript
+const DATED_FILENAME_RE = /^[A-Z0-9.-]{1,10}_\d{4}-\d{2}-\d{2}\.md$/;
+const CANONICAL_FILENAME_RE = /^[A-Z0-9.-]{1,10}\.(summary|timeline)\.md$/;
+
+// GET /research/:filename validation:
+if (!DATED_FILENAME_RE.test(filename) && !CANONICAL_FILENAME_RE.test(filename)) {
+  return res.status(400).json({ error: 'Invalid research filename' });
+}
+
+// GET /research listing — replace naive split('_') with:
+function parseResearchFilename(filename: string): { ticker: string; date: string | null } {
+  const datedMatch = filename.match(/^([A-Z0-9.-]{1,10})_(\d{4}-\d{2}-\d{2})\.md$/);
+  if (datedMatch) return { ticker: datedMatch[1], date: datedMatch[2] };
+  const canonicalMatch = filename.match(/^([A-Z0-9.-]{1,10})\.(summary|timeline)\.md$/);
+  if (canonicalMatch) return { ticker: canonicalMatch[1], date: null };
+  return { ticker: filename, date: null };
+}
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `npm run test -w backend -- docs.research.spec.ts`
+Expected: PASS
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add investment_screener/backend/src/routes/docs.ts investment_screener/backend/tests/api/docs.research.spec.ts
+git commit -m "fix: serve canonical {TICKER}.summary/timeline.md research filenames"
+```
+
+---
+
+### Task 9: Rewrite `researchReport` Pointers to Canonical Filenames
+
+**Files:**
+- Create: `investment_screener/backend/py_services/migrate_research_report_pointers.py`
+- Test: `investment_screener/backend/tests/py_services/test_migrate_research_report_pointers.py`
+
+**Interfaces:**
+- Consumes/Produces: every version entry's `researchReport` field across
+  `investment_screener/backend/data/projections/{TICKER}.json`.
+- User-confirmed resolution: every historical projection version is rewritten to point at the
+  ticker's single canonical `{TICKER}.summary.md` — point-in-time linkage to the specific
+  dated file a projection was written against is intentionally not preserved.
+
+- [ ] **Step 1: Write the failing test**
+
+```python
+# test_migrate_research_report_pointers.py
+import json
+from migrate_research_report_pointers import migrate_pointers
+
+def test_migrate_pointers_rewrites_all_versions_to_canonical(tmp_path):
+    projections_dir = tmp_path / "projections"
+    projections_dir.mkdir()
+    (projections_dir / "PLTR.json").write_text(json.dumps([
+        {"version": 1, "researchReport": "PLTR_2026-05-01.md"},
+        {"version": 2, "researchReport": "PLTR_2026-07-02.md"},
+        {"version": 3},  # no researchReport field — must be left untouched
+    ]))
+
+    result = migrate_pointers(str(projections_dir))
+
+    updated = json.loads((projections_dir / "PLTR.json").read_text())
+    assert updated[0]["researchReport"] == "PLTR.summary.md"
+    assert updated[1]["researchReport"] == "PLTR.summary.md"
+    assert "researchReport" not in updated[2]
+    assert result["rewritten_count"] == 2
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `pytest investment_screener/backend/tests/py_services/test_migrate_research_report_pointers.py -v`
+Expected: FAIL with `ModuleNotFoundError`.
+
+- [ ] **Step 3: Write minimal implementation**
+
+Create `investment_screener/backend/py_services/migrate_research_report_pointers.py`. Use an
+atomic write (temp file + rename, matching `update_thesis.py`'s existing pattern) to avoid
+partial writes on a crash mid-migration:
+```python
+import json
+import re
+from pathlib import Path
+
+DATED_RE = re.compile(r"^([A-Z0-9.\-]+)_\d{4}-\d{2}-\d{2}\.md$")
+
+
+def migrate_pointers(projections_dir: str) -> dict:
+    rewritten = 0
+    for path in Path(projections_dir).glob("*.json"):
+        versions = json.loads(path.read_text())
+        changed = False
+        for version in versions:
+            report = version.get("researchReport")
+            if not report:
+                continue
+            match = DATED_RE.match(report)
+            if not match:
+                continue
+            version["researchReport"] = f"{match.group(1)}.summary.md"
+            changed = True
+            rewritten += 1
+        if changed:
+            tmp_path = path.with_suffix(".json.tmp")
+            tmp_path.write_text(json.dumps(versions, indent=2))
+            tmp_path.replace(path)
+    return {"rewritten_count": rewritten}
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `pytest investment_screener/backend/tests/py_services/test_migrate_research_report_pointers.py -v`
+Expected: PASS
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add investment_screener/backend/py_services/migrate_research_report_pointers.py investment_screener/backend/tests/py_services/test_migrate_research_report_pointers.py
+git commit -m "feat: rewrite historical researchReport pointers to canonical research views"
+```
+
+---
+
+### Task 10: Wire Research-Writing Skills to the Event Ledger
+
+**Files:**
+- Modify: `plugins/stock-valuation/skills/stock_valuation/SKILL.md` (Step 7, currently
+  `cat > research/{TICKER}_{YYYY-MM-DD}.md`)
+- Modify: `plugins/stock-valuation/skills/stock-research/SKILL.md` (currently
+  `cat >> research/{TICKER}_{DATE}.md`)
+
+**Interfaces:**
+- Replaces direct markdown writes with `python3 py_services/append_event.py` calls (Task 5),
+  followed by `python3 py_services/render_research_views.py {TICKER}` (Task 7) to regenerate
+  the canonical views. This is the orchestration/prompt-change case in
+  `.agent/rules/test-driven-development.md` — TDD's Iron Law does not apply verbatim to prose
+  instructions, but a success contract is still required per that rule's TDO section.
+
+This task edits `SKILL.md` files only (no executable code) — per
+`.agent/rules/worktree-subagent-isolation.md`, pure documentation/markdown edits are exempt
+from the worktree requirement, but stay in this plan/worktree for ledger consistency with
+Tasks 5-9's shared context.
+
+- [ ] **Step 1: Write the success contract (TDO, not TDD — no test framework applies to prose)**
+
+Before editing, define the pass/fail check:
+```bash
+# Must find zero remaining direct dated-markdown writes in either skill:
+grep -rn 'cat > research/\|cat >> research/' \
+  plugins/stock-valuation/skills/stock_valuation/SKILL.md \
+  plugins/stock-valuation/skills/stock-research/SKILL.md
+# Expected before the edit: 2 matches (one per file).
+# Expected after the edit: 0 matches, replaced by append_event.py + render_research_views.py calls.
+```
+
+- [ ] **Step 2: Run the check to confirm the "before" state**
+
+Run the `grep` above. Expected: 2 matches (proves the old pattern exists before the edit).
+
+- [ ] **Step 3: Edit both `SKILL.md` files**
+
+Replace the `cat > research/{TICKER}_{YYYY-MM-DD}.md` / `cat >> research/{TICKER}_{DATE}.md`
+instructions with:
+```bash
+python3 investment_screener/backend/py_services/append_event.py \
+  --event-type RESEARCH_IMPORT --ticker {TICKER} --effective-at "$(date +%F)" \
+  --status ACTIVE --title "{TICKER} research update" --body-file /tmp/research_body.md
+python3 investment_screener/backend/py_services/render_research_views.py {TICKER}
+```
+(`append_event.py`'s Task 5 implementation is a Python function; add a thin `if __name__ ==
+"__main__":` CLI wrapper with `argparse` mirroring the flags above as part of this task, since
+Task 5 only specifies the importable function signature.)
+
+Preserve every other instruction in both files unmodified — this task touches only the
+research-file-write steps, per the coding-conventions "Index & Preservation Directive."
+
+- [ ] **Step 4: Run the check to confirm the "after" state**
+
+Run the `grep` from Step 1 again. Expected: 0 matches.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add plugins/stock-valuation/skills/stock_valuation/SKILL.md plugins/stock-valuation/skills/stock-research/SKILL.md investment_screener/backend/py_services/append_event.py
+git commit -m "docs: wire stock_valuation/stock-research skills to append_event ledger writer"
+```
+
+---
+
+### Task 11: Deduplicate `ta-sweep-results.json` Writers (independent cleanup)
+
+**Files:**
+- Modify: `plugins/portfolio-advisor/scripts/daily_brief.py`
+- Test: `investment_screener/backend/tests/py_services/test_daily_brief_ta_sweep_delegates.py`
+
+**Interfaces:**
+- `daily_brief.py` currently runs `ta_sweep_batch.py --no-save`, parses its stdout, and
+  re-implements the exact `{timestamp, scan_date, count, results}` write that
+  `ta_sweep_batch.py:save_sweep_results()` already performs (lines ~403-411 vs. ~279-298) — two
+  independent code paths writing the same file shape is a drift hazard, not a ledger-design
+  issue. This task is **independent of Phase 2's ledger work** — it can be done in any order
+  relative to Tasks 5-10, included here because it surfaced from the same audit.
+
+- [ ] **Step 1: Write the failing test**
+
+```python
+# test_daily_brief_ta_sweep_delegates.py
+import ast
+from pathlib import Path
+
+def test_daily_brief_does_not_reimplement_ta_sweep_json_dump():
+    source = Path("plugins/portfolio-advisor/scripts/daily_brief.py").read_text()
+    tree = ast.parse(source)
+    # No direct `json.dump(..., f)` call against a payload dict built inline in daily_brief.py —
+    # the file must call ta_sweep_batch.save_sweep_results() instead.
+    dump_calls = [
+        node for node in ast.walk(tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "dump"
+    ]
+    assert len(dump_calls) == 0, "daily_brief.py must delegate to ta_sweep_batch.save_sweep_results(), not reimplement json.dump"
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `pytest investment_screener/backend/tests/py_services/test_daily_brief_ta_sweep_delegates.py -v`
+Expected: FAIL — the existing inline `json.dump(payload, f, indent=2)` call is found.
+
+- [ ] **Step 3: Refactor `daily_brief.py`**
+
+Remove `--no-save` from the `ta_sweep_batch.py` subprocess invocation (let it write
+`ta-sweep-results.json` itself via its own `save_sweep_results()`), delete `daily_brief.py`'s
+inlined payload-construction and `json.dump` block, and read the file back in after the
+subprocess completes instead of holding the parsed stdout as the write source.
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `pytest investment_screener/backend/tests/py_services/test_daily_brief_ta_sweep_delegates.py -v`
+Expected: PASS. Also re-run any existing `daily_brief.py` tests
+(`test_daily_brief_rebalance_event_emission.py`, `test_daily_brief_thesis_breakers.py`,
+`test_daily_brief_prediction_harvest.py`) to confirm no regression from removing `--no-save`.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add plugins/portfolio-advisor/scripts/daily_brief.py investment_screener/backend/tests/py_services/test_daily_brief_ta_sweep_delegates.py
+git commit -m "fix: daily_brief.py delegates ta-sweep-results.json write to ta_sweep_batch.py (removes duplicate writer)"
 ```
