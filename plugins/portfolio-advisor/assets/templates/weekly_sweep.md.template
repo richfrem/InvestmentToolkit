@@ -23,6 +23,9 @@ You are analyzing a highly sophisticated, institutionally structured investment 
 ## Instructions for Grok
 Please review all material news, earnings, filings, and macro developments for the following portfolio positions and targets over the **last 7 days**. 
 
+> **NOTE:** This is Round 1 of our interaction. After analyzing your response, I will send up to 3 rounds of detailed, clarifying follow-up questions to flush out quantitative metrics, deal specifics, and technical values. Please structure your answers clearly to facilitate this process.
+
+
 ### ⚠️ STRICT COMPLIANCE MANDATE:
 - **FOR EVERY SINGLE TICKER** listed below, you **MUST** provide a detailed row in the table. 
 - **DO NOT group tickers** together (e.g. "Miners: CORZ, IREN, CLSK - Volatile"). 
