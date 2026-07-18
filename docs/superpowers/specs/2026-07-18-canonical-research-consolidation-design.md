@@ -242,3 +242,14 @@ To prevent repository bloat while ensuring absolute data durability:
 * **Database Schema Backup (`schema.sql`):** Exported on database migrations to keep a plain text history of index changes on GitHub.
 * **Gitignored Binary DB (`intelligence.sqlite`):** Excluded from Git (`.gitignore`).
 * **Deterministic Rebuild:** A rebuild script `py_services/rebuild_db.py` will read the committed `observations.jsonl` ledger from scratch, replaying events to regenerate `intelligence.sqlite` locally and verify its checksums.
+
+---
+
+## 7. Dependency Management & Governance
+We enforce strict compliance with `.agent/rules/dependency-management.md`:
+* **Python:** Standard library `sqlite3` is used. No external pip packages are introduced (keeping `requirements.txt` unchanged).
+* **Node.js:** The Express backend will use the `better-sqlite3` native bindings for high-performance WAL mode indexing. Install via:
+  ```bash
+  npm install better-sqlite3 -w backend
+  ```
+  All changes will lock in `package-lock.json` and be committed. No manual overrides are permitted.

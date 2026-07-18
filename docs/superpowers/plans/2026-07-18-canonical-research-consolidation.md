@@ -16,6 +16,40 @@
 
 ---
 
+### Task 0: Lock Node.js Backend Dependencies
+
+**Files:**
+- Modify: `investment_screener/backend/package.json`
+- Modify: `package-lock.json`
+
+**Interfaces:**
+- Consumes: npm registry.
+- Produces: `better-sqlite3` module node dependency.
+
+- [ ] **Step 1: Check existing dependencies**
+
+Run: `node -e "require('better-sqlite3')"`
+Expected: FAIL with `Cannot find module 'better-sqlite3'`
+
+- [ ] **Step 2: Install better-sqlite3 workspace package**
+
+Run: `npm install better-sqlite3 -w backend`
+Expected: Installation completes, lockfile updates.
+
+- [ ] **Step 3: Verify module load**
+
+Run: `node -e "require('better-sqlite3')"`
+Expected: PASS with exit code 0.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add investment_screener/backend/package.json package-lock.json
+git commit -m "chore: add better-sqlite3 package dependency to backend workspace"
+```
+
+---
+
 ### Task 1: Setup SQLite DB Schema, Triggers, and Tests
 
 **Files:**
