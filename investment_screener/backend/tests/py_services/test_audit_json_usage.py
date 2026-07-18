@@ -291,6 +291,14 @@ def test_real_ta_sweep_results_json_has_known_producers_and_consumers():
     This is the exact case that exposed the original bug: ta-sweep-results.json
     showed zero producers/consumers despite real, verified references in
     ta_sweep_batch.py, daily_brief.py, and compute_conviction_scores.py.
+
+    NOTE: this test is intentionally coupled to real repo content, which is
+    unusual for this suite. It will legitimately start failing once Task 18
+    (plan: docs/superpowers/plans/2026-07-18-canonical-research-consolidation.md)
+    rewires these three files off ta-sweep-results.json onto the ledger — that
+    is expected, not a regression. Update or retire this test at that point;
+    the tmp_path-based tests above cover the resolution LOGIC independent of
+    real repo content and do not need to change.
     """
     result = run_audit(str(REPO_ROOT))
     entry = _target_entry(result, "ta-sweep-results.json")
