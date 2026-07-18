@@ -6,8 +6,8 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 SCRIPT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from replay_ledger import replay_events_to_db  # noqa: E402
-from db_client import initialize_db  # noqa: E402
+from intelligence.replay_ledger import replay_events_to_db  # noqa: E402
+from intelligence.db_client import initialize_db  # noqa: E402
 
 
 def test_replay_loop(tmp_path):
@@ -90,3 +90,45 @@ def test_replay_loop_is_idempotent_on_rerun(tmp_path):
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(*) FROM intelligence_event;")
     assert cursor.fetchone()[0] == 1
+
+
+def test_replay_skips_and_reports_taxonomy_violation_without_advancing_checkpoint(tmp_path):
+    jsonl_path = tmp_path / "observations.jsonl"
+    jsonl_path.write_text(
+        '{"event_id": "evt_1", "event_sequence": 1, "event_type": "BOGUS_NOT_IN_TAXONOMY", '
+        '"effective_at": "2026-07-18", "ingested_at": "2026-07-18", "status": "ACTIVE", '
+        '"title": "T", "body_markdown": "B", "content_hash": "h1"}\n'
+    )
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    result = replay_events_to_db(str(jsonl_path), conn)
+    assert result["processed"] == 0
+    assert len(result["skipped"]) == 1
+    assert result["skipped"][0]["event_id"] == "evt_1"
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM ledger_checkpoint;")
+    assert cursor.fetchone()[0] == 0  # checkpoint must not advance past a rejected event
+
+
+def test_replay_incremental_resume_picks_up_newly_appended_events(tmp_path):
+    jsonl_path = tmp_path / "observations.jsonl"
+    jsonl_path.write_text(
+        '{"event_id": "evt_1", "event_sequence": 1, "event_type": "NEWS_SWEEP", '
+        '"effective_at": "2026-07-18", "ingested_at": "2026-07-18", "status": "ACTIVE", '
+        '"title": "T1", "body_markdown": "B1", "content_hash": "h1"}\n'
+    )
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    replay_events_to_db(str(jsonl_path), conn)
+
+    with open(jsonl_path, "a") as f:
+        f.write(
+            '{"event_id": "evt_2", "event_sequence": 2, "event_type": "NEWS_SWEEP", '
+            '"effective_at": "2026-07-18", "ingested_at": "2026-07-18", "status": "ACTIVE", '
+            '"title": "T2", "body_markdown": "B2", "content_hash": "h2"}\n'
+        )
+    replay_events_to_db(str(jsonl_path), conn)
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM intelligence_event;")
+    assert cursor.fetchone()[0] == 2
+    cursor.execute("SELECT last_event_sequence FROM ledger_checkpoint WHERE checkpoint_id = 'global';")
+    assert cursor.fetchone()[0] == 2

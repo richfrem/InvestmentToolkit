@@ -9,10 +9,15 @@ number (idempotent re-runs).
 
 import hashlib
 import json
+import logging
 from datetime import datetime, timezone
+
+from .event_repository import insert_event
 
 CHECKPOINT_ID = "global"
 SCHEMA_VERSION = 1
+
+logger = logging.getLogger(__name__)
 
 
 def _compute_file_hash(jsonl_path):
@@ -53,13 +58,22 @@ def replay_events_to_db(jsonl_path, conn):
 
     Reads each line of the ledger as a JSON event object, skips any event
     whose ``event_sequence`` is not greater than the last recorded
-    checkpoint, and inserts the remainder into ``intelligence_event``.
-    ``INSERT OR IGNORE`` makes re-inserting an already-present event_id a
-    no-op, so replaying the same file twice does not duplicate rows. On
-    completion, upserts a single 'global' row in ``ledger_checkpoint``
-    recording the highest sequence processed, the corresponding event_id,
-    the schema version, a UTC timestamp, and a sha256 hash of the ledger
-    file's contents.
+    checkpoint, and routes the remainder through
+    ``event_repository.insert_event()`` (which uses ``INSERT OR IGNORE``
+    under the hood). Re-inserting an already-present event_id is a no-op,
+    so replaying the same file twice does not duplicate rows. It also
+    means a row that violates a UNIQUE or CHECK constraint (e.g. an
+    invalid ``event_type``/``status`` value, or a duplicate
+    ``event_sequence``) is skipped rather than raising ``IntegrityError``.
+    To avoid the checkpoint permanently advancing past such a row (which
+    would make it unrecoverable on future replays), this function only
+    advances the in-memory checkpoint bookkeeping for rows
+    ``insert_event()`` reports as actually inserted. Rows that were
+    rejected are logged at WARNING level and collected into the returned
+    ``skipped`` list instead. On completion, upserts a single 'global' row
+    in ``ledger_checkpoint`` recording the highest *actually-inserted*
+    sequence processed, the corresponding event_id, the schema version, a
+    UTC timestamp, and a sha256 hash of the ledger file's contents.
 
     Args:
         jsonl_path: Path to the JSONL ledger file to replay.
@@ -67,12 +81,18 @@ def replay_events_to_db(jsonl_path, conn):
             (see db_client.initialize_db).
 
     Returns:
-        None. Mutates the database in place and commits the transaction
-        only if new events were processed.
+        A dict ``{"processed": int, "skipped": list[dict]}`` where
+        ``processed`` is the count of rows actually inserted and
+        ``skipped`` contains one entry per rejected event with keys
+        ``event_id``, ``event_sequence``, and ``reason``. Mutates the
+        database in place and commits the transaction only if new events
+        were actually inserted.
     """
     last_seq = _get_last_checkpoint_sequence(conn)
     max_processed_sequence = last_seq
     last_event_id = None
+    processed_count = 0
+    skipped_events = []
 
     file_hash = _compute_file_hash(jsonl_path)
 
@@ -86,32 +106,35 @@ def replay_events_to_db(jsonl_path, conn):
                 if seq <= last_seq:
                     continue
 
-                conn.execute(
-                    """
-                    INSERT OR IGNORE INTO intelligence_event (
-                        event_id, event_sequence, event_type, effective_at,
-                        ingested_at, status, title, body_markdown, content_hash
-                    )
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
-                    """,
-                    (
-                        event["event_id"],
-                        event["event_sequence"],
-                        event["event_type"],
-                        event["effective_at"],
-                        event["ingested_at"],
-                        event["status"],
-                        event["title"],
-                        event["body_markdown"],
-                        event["content_hash"],
-                    ),
-                )
+                inserted = insert_event(conn, event)
 
-                if seq > max_processed_sequence:
-                    max_processed_sequence = seq
-                    last_event_id = event["event_id"]
+                if inserted:
+                    processed_count += 1
+                    if seq > max_processed_sequence:
+                        max_processed_sequence = seq
+                        last_event_id = event["event_id"]
+                else:
+                    reason = (
+                        "constraint violation (UNIQUE event_sequence/event_id "
+                        "or CHECK event_type/status taxonomy) — row not inserted"
+                    )
+                    logger.warning(
+                        "Skipped event_id=%s event_sequence=%s during replay of "
+                        "%s: %s",
+                        event.get("event_id"),
+                        seq,
+                        jsonl_path,
+                        reason,
+                    )
+                    skipped_events.append(
+                        {
+                            "event_id": event.get("event_id"),
+                            "event_sequence": seq,
+                            "reason": reason,
+                        }
+                    )
     except FileNotFoundError:
-        return
+        return {"processed": processed_count, "skipped": skipped_events}
 
     if max_processed_sequence > last_seq:
         processed_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -133,3 +156,5 @@ def replay_events_to_db(jsonl_path, conn):
             ),
         )
         conn.commit()
+
+    return {"processed": processed_count, "skipped": skipped_events}
