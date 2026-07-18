@@ -24,6 +24,9 @@ You are analyzing a highly concentrated, institutional-grade AI infrastructure p
 ## Instructions for Grok
 Please search X posts, earnings releases, SEC filings, and analyst notes for **material updates only** from the **last 7–14 days**.
 
+> **NOTE:** This is Round 1 of our interaction. After analyzing your response, I will send up to 3 rounds of detailed, clarifying follow-up questions to flush out quantitative metrics, deal specifics, and technical values. Please structure your answers clearly to facilitate this process.
+
+
 ### ⚠️ STRICT COMPLIANCE MANDATE:
 - **FOR EVERY SINGLE TICKER** listed below, you **MUST** provide a detailed row in the table.
 - **DO NOT group tickers** together.
