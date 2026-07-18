@@ -218,7 +218,7 @@ export const fetchStockData = async (ticker: string): Promise<StockData> => {
 };
 
 // Auto-pick source: TradingView CDP (primary) → cache
-export const syncPortfolio = async (): Promise<{ success: boolean; dataSource: string; message: string }> => {
+export const syncPortfolio = async (): Promise<{ success: boolean; dataSource: string; message: string; positionCount?: number }> => {
     const response = await fetch('/api/portfolio/sync-tv/apply', {
         method: 'POST',
     });
