@@ -135,6 +135,32 @@ def test_replay_incremental_resume_picks_up_newly_appended_events(tmp_path):
     assert cursor.fetchone()[0] == 2
 
 
+def test_replay_supersession_flips_prior_event_status(tmp_path):
+    """When a replayed event carries a truthy supersedes_event_id, the
+    referenced prior event's status must be flipped to SUPERSEDED after the
+    new event is inserted, while the new event stays ACTIVE."""
+    jsonl_path = tmp_path / "observations.jsonl"
+    jsonl_path.write_text(
+        '{"event_id": "evt_1", "event_sequence": 1, "ticker": "PLTR", '
+        '"event_type": "RESEARCH_IMPORT", "effective_at": "2026-07-01", '
+        '"ingested_at": "2026-07-01", "status": "ACTIVE", "title": "Old research", '
+        '"body_markdown": "Old body", "content_hash": "h1"}\n'
+        '{"event_id": "evt_2", "event_sequence": 2, "ticker": "PLTR", '
+        '"event_type": "RESEARCH_IMPORT", "effective_at": "2026-07-18", '
+        '"ingested_at": "2026-07-18", "status": "ACTIVE", "title": "New research", '
+        '"body_markdown": "New body", "supersedes_event_id": "evt_1", '
+        '"content_hash": "h2"}\n'
+    )
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    replay_events_to_db(str(jsonl_path), conn)
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT status FROM intelligence_event WHERE event_id = 'evt_1';")
+    assert cursor.fetchone()[0] == "SUPERSEDED"
+    cursor.execute("SELECT status FROM intelligence_event WHERE event_id = 'evt_2';")
+    assert cursor.fetchone()[0] == "ACTIVE"
+
+
 def test_replay_resolves_ticker_to_instrument_id(tmp_path):
     """append_event() writes a "ticker" field, not "instrument_id". Replay
     must resolve the ticker string to a real instrument_id via

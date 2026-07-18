@@ -18,21 +18,36 @@ def insert_event(conn, event: dict) -> bool:
 
     Args:
         conn: Open sqlite3 connection with the read-model schema applied.
-        event: Dict with keys matching (a subset of) the
-            ``intelligence_event`` columns. Missing optional keys are
-            treated as ``NULL``.
+        event: Dict with keys matching the ``intelligence_event`` columns.
+            All nullable columns (``instrument_id``, ``observed_at``,
+            ``source_id``, ``confidence_score``, ``payload_json``,
+            ``supersedes_event_id``, ``idempotency_key``) are persisted;
+            any missing optional key is treated as ``NULL``.
 
     Returns:
         True if the row was actually inserted (``cursor.rowcount == 1``),
         False if it was rejected/ignored.
     """
+    params = {
+        "instrument_id": event.get("instrument_id"),
+        "observed_at": event.get("observed_at"),
+        "source_id": event.get("source_id"),
+        "confidence_score": event.get("confidence_score"),
+        "payload_json": event.get("payload_json"),
+        "supersedes_event_id": event.get("supersedes_event_id"),
+        "idempotency_key": event.get("idempotency_key"),
+        **event,
+    }
     cursor = conn.execute("""
         INSERT OR IGNORE INTO intelligence_event
-        (event_id, event_sequence, instrument_id, event_type, effective_at, ingested_at,
-         status, title, body_markdown, content_hash)
+        (event_id, event_sequence, instrument_id, event_type, effective_at, observed_at,
+         ingested_at, source_id, confidence_score, status, title, body_markdown,
+         payload_json, supersedes_event_id, idempotency_key, content_hash)
         VALUES (:event_id, :event_sequence, :instrument_id, :event_type, :effective_at,
-                :ingested_at, :status, :title, :body_markdown, :content_hash);
-    """, {**event, "instrument_id": event.get("instrument_id")})
+                :observed_at, :ingested_at, :source_id, :confidence_score, :status, :title,
+                :body_markdown, :payload_json, :supersedes_event_id, :idempotency_key,
+                :content_hash);
+    """, params)
     conn.commit()
     return cursor.rowcount == 1
 
