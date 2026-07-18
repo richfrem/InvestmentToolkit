@@ -491,6 +491,13 @@ After logging, check these conditions:
 - Macro has been RISK-OFF for 3+ consecutive sessions →
   "We've been RISK-OFF for 3 sessions. Time to review whether any positions need defensive trimming via `/strategic-review`."
 
+**4e. Generate structured daily report:**
+Run the report generator to compile daily scans:
+```bash
+python3 plugins/portfolio-advisor/scripts/generate_reports.py
+```
+This parses daily brief outputs and compiles the structured markdown reports into gitignored `temp/daily-reviews/` and `temp/weekly-reviews/` folders.
+
 ---
 
 ### Step 5 — Session Summary
