@@ -15,8 +15,9 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(o
 PORTFOLIO_PATH = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/portfolio.json")
 TARGET_PORTFOLIO_PATH = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/theses/target-portfolio.json")
 DAILY_BRIEFS_DIR = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/daily-briefs")
-TEMP_DAILY_DIR = os.path.join(PROJECT_ROOT, "temp/daily-reviews")
-TEMP_WEEKLY_DIR = os.path.join(PROJECT_ROOT, "temp/weekly-reviews")
+DAILY_REVIEWS_DIR = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/history/reviews/daily")
+WEEKLY_REVIEWS_DIR = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/history/reviews/weekly")
+
 
 
 def load_latest_brief():
@@ -202,15 +203,15 @@ def main():
     daily_tmpl = os.path.join(PROJECT_ROOT, "plugins/portfolio-advisor/assets/templates/daily_report.md.template")
     weekly_tmpl = os.path.join(PROJECT_ROOT, "plugins/portfolio-advisor/assets/templates/weekly_report.md.template")
 
-    os.makedirs(TEMP_DAILY_DIR, exist_ok=True)
-    os.makedirs(TEMP_WEEKLY_DIR, exist_ok=True)
+    os.makedirs(DAILY_REVIEWS_DIR, exist_ok=True)
+    os.makedirs(WEEKLY_REVIEWS_DIR, exist_ok=True)
 
     date_str = brief.get("date", datetime.now().strftime("%Y-%m-%d"))
 
     # Daily Report
     if os.path.exists(daily_tmpl):
         daily_out = generate_report(brief, target_portfolio, portfolio, daily_tmpl)
-        out_path = os.path.join(TEMP_DAILY_DIR, f"daily_confluence_scan_{date_str}.md")
+        out_path = os.path.join(DAILY_REVIEWS_DIR, f"daily_confluence_scan_{date_str}.md")
         with open(out_path, "w") as f:
             f.write(daily_out)
         print(f"✅ Generated daily report: {out_path}")
@@ -218,7 +219,7 @@ def main():
     # Weekly Report
     if os.path.exists(weekly_tmpl):
         weekly_out = generate_report(brief, target_portfolio, portfolio, weekly_tmpl)
-        out_path = os.path.join(TEMP_WEEKLY_DIR, f"weekly_confluence_scan_{date_str}.md")
+        out_path = os.path.join(WEEKLY_REVIEWS_DIR, f"weekly_confluence_scan_{date_str}.md")
         with open(out_path, "w") as f:
             f.write(weekly_out)
         print(f"✅ Generated weekly report: {out_path}")

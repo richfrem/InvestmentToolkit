@@ -497,7 +497,7 @@ Run the report generator to compile daily scans:
 ```bash
 python3 plugins/portfolio-advisor/scripts/generate_reports.py
 ```
-This parses daily brief outputs and compiles the structured markdown reports into gitignored `temp/daily-reviews/` and `temp/weekly-reviews/` folders.
+This parses daily brief outputs and compiles the structured markdown reports into `investment_screener/backend/data/history/reviews/daily/` and `weekly/` folders.
 
 ---
 
