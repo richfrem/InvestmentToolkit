@@ -749,10 +749,12 @@ events actually inserted, never for silently-rejected ones."
 
 ### Task 4: Rebuild DB & Backup Verification Script
 
-**Path update (per Task 1A):** all file paths below resolve under
-`investment_screener/backend/py_services/intelligence/`, not bare `py_services/`. Imports use
+**Package convention (per Task 1A/ADR-028):** `rebuild_db.py` is a standalone utility script at
+`py_services/` root (same pattern as Task 6's `migrate_research_to_ledger.py` — not one of
+Task 1A's package modules itself, but a caller of them). It imports
 `from intelligence.db_client import initialize_db` and
-`from intelligence.replay_ledger import replay_events_to_db`.
+`from intelligence.replay_ledger import replay_events_to_db`, never opening its own SQLite
+connection logic or duplicating replay logic.
 
 **Files:**
 - Create: `investment_screener/backend/py_services/rebuild_db.py`
@@ -764,10 +766,17 @@ events actually inserted, never for silently-rejected ones."
 
 - [ ] **Step 1: Write failing test for Rebuild DB**
 
-Create `test_rebuild_db.py`:
+Create `test_rebuild_db.py` (`sys.path.insert` at `investment_screener/backend/py_services`,
+same convention as every other test in this suite):
 ```python
-import os
-from rebuild_db import run_rebuild
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[4]
+SCRIPT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
+sys.path.insert(0, str(SCRIPT_DIR))
+
+from rebuild_db import run_rebuild  # noqa: E402
 
 def test_run_rebuild(tmp_path):
     db_path = tmp_path / "rebuilt_intelligence.sqlite"
@@ -788,8 +797,8 @@ Expected: FAIL with `ModuleNotFoundError`.
 Create `investment_screener/backend/py_services/rebuild_db.py`:
 ```python
 import os
-from db_client import initialize_db
-from replay_ledger import replay_events_to_db
+from intelligence.db_client import initialize_db
+from intelligence.replay_ledger import replay_events_to_db
 
 def run_rebuild(jsonl_path, db_path):
     if os.path.exists(db_path):
