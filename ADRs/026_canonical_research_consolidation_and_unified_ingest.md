@@ -25,7 +25,7 @@ We reject flat Markdown profiles as our primary write target. Instead, we implem
 9. **Relocate Cluttered Caches:** Loose raw JSON outputs (`*_raw.json`) in the root of `temp/` are redirected to a structured, gitignored backend cache directory (`backend/data/cache/yfinance/`).
 
 ## Consequences
-* **No Write Contention:** Writes are transactional via SQLite WAL mode, eliminating read-modify-write file corruption.
+* **Greatly Reduced Contention:** Concurrent reads are permitted during write transactions via WAL mode, protecting Node.js and Python concurrent accesses.
 * **Deterministic Provenance:** Every analysis update can be traced directly back to its source event ID and raw model prompt/response files.
 * **Separation of Concerns:** Markdown remains the ideal presentation layer for humans and LLMs without serving as a fragile storage engine.
 * **Schema Integrity:** YAML headers in generated files are verified against strict schema constraints during generation.
