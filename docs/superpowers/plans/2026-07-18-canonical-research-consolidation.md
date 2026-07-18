@@ -1342,11 +1342,15 @@ Replace the `cat > investment_screener/backend/data/research/{TICKER}_{YYYY-MM-D
 ```bash
 python3 -m intelligence.event_store \
   --event-type RESEARCH_IMPORT --ticker {TICKER} --effective-at "$(date +%F)" \
-  --status ACTIVE --title "{TICKER} research update" --body-file InvestmentToolkit/temp/research_body.md
+  --status ACTIVE --title "{TICKER} research update" --body-file temp/research_body.md
 python3 -m intelligence.view_generator {TICKER}
 ```
-(per `.claude/CLAUDE.md` Pitfall #16 — temp files use `InvestmentToolkit/temp/<artifact>`,
-never raw `/tmp/`.)
+(per `.claude/CLAUDE.md` Pitfall #16 — temp files use the project's `temp/<artifact>` directory
+at repo root, never raw `/tmp/`. Path is relative to repo root, matching every other path in
+this file, e.g. `investment_screener/backend/data/research/...` — NOT literally prefixed with
+`InvestmentToolkit/`, which would double-nest since these commands already run with cwd at the
+repo root. See `plugins/portfolio-advisor/skills/thesis-challenge-bundler/SKILL.md` for the
+established `temp/...` convention this should match.)
 (both invoked with cwd `investment_screener/backend/py_services/` so `-m intelligence.X`
 resolves the package. `event_store.py`'s Task 1A implementation is a Python function; add a
 thin `if __name__ == "__main__":` CLI wrapper with `argparse` mirroring the flags above as part
