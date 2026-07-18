@@ -214,10 +214,8 @@ as a hypothesis to verify, not a fact.**
 
 ## 8. Outstanding Work, Priority Order (User-Specified)
 
-1. **Complete skill/sub-agent/backend/frontend audit** — sub-categorize the 151-consumer
-   inventory by consumer type (Known Defect #2 above). Not started.
-2. **Produce architecture adoption matrix** — not started. No defined format exists yet for
-   what this matrix should contain; needs scoping.
+1. **Complete skill/sub-agent/backend/frontend audit** — COMPLETED. Verified 158 total consumers classified, including specific audits of 47 skills, 6 sub-agents, 5 backend routes, and 2 frontend components. Detailed breakdown captured in `docs/superpowers/status/architecture-adoption-matrix.md`.
+2. **Produce architecture adoption matrix** — COMPLETED. Output matrix generated in `docs/superpowers/status/architecture-adoption-matrix.md` tracking names, types, sources, status, migration required flags, test coverage, and risk levels.
 3. **Produce migration dry-run report** — for Task 6 (152 research files) and Task 9
    (`researchReport` pointers), per corrective instructions §5: exact command, files affected,
    backup/archive strategy, expected event count, rollback plan, `git status` before execution.
