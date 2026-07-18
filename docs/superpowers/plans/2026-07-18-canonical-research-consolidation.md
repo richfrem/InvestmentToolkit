@@ -1387,6 +1387,15 @@ git commit -m "docs: wire stock_valuation/stock-research skills to append_event 
   issue. This task is **independent of Phase 2's ledger work** — it can be done in any order
   relative to Tasks 5-10, included here because it surfaced from the same audit.
 
+**Test design correction (2026-07-18, verified against current file content):** the original
+test asserted zero `json.dump` calls anywhere in `daily_brief.py`. That's wrong — the file has
+a second, unrelated, legitimate `json.dump(brief, f, indent=2)` call (line ~576) that writes
+the daily brief's own snapshot to `DAILY_BRIEFS_DIR`, and must remain after this fix. A
+zero-total-dump-calls assertion could never pass even after a correct fix. Scoped instead to
+the actual defect: `TA_SWEEP_PATH` (the ta-sweep-results.json path variable) must never appear
+as the target of a write-mode `open(...)` call in `daily_brief.py` after the fix — reading it
+is fine and expected, writing it is the duplicate-writer bug.
+
 - [ ] **Step 1: Write the failing test**
 
 ```python
@@ -1394,24 +1403,32 @@ git commit -m "docs: wire stock_valuation/stock-research skills to append_event 
 import ast
 from pathlib import Path
 
-def test_daily_brief_does_not_reimplement_ta_sweep_json_dump():
+def test_daily_brief_does_not_write_ta_sweep_path_directly():
     source = Path("plugins/portfolio-advisor/scripts/daily_brief.py").read_text()
     tree = ast.parse(source)
-    # No direct `json.dump(..., f)` call against a payload dict built inline in daily_brief.py —
-    # the file must call ta_sweep_batch.save_sweep_results() instead.
-    dump_calls = [
+    # daily_brief.py must never open TA_SWEEP_PATH itself in write mode — only
+    # ta_sweep_batch.py's save_sweep_results() is allowed to write that file.
+    # (Other json.dump calls, e.g. for the daily brief's own snapshot file, are unrelated
+    # and must remain untouched — this check is scoped to TA_SWEEP_PATH specifically.)
+    write_opens_on_ta_sweep_path = [
         node for node in ast.walk(tree)
         if isinstance(node, ast.Call)
-        and isinstance(node.func, ast.Attribute)
-        and node.func.attr == "dump"
+        and isinstance(node.func, ast.Name)
+        and node.func.id == "open"
+        and node.args
+        and isinstance(node.args[0], ast.Name)
+        and node.args[0].id == "TA_SWEEP_PATH"
+        and len(node.args) > 1
+        and isinstance(node.args[1], ast.Constant)
+        and "w" in str(node.args[1].value)
     ]
-    assert len(dump_calls) == 0, "daily_brief.py must delegate to ta_sweep_batch.save_sweep_results(), not reimplement json.dump"
+    assert len(write_opens_on_ta_sweep_path) == 0, "daily_brief.py must not open TA_SWEEP_PATH for writing — only ta_sweep_batch.py's save_sweep_results() should write it"
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `pytest investment_screener/backend/tests/py_services/test_daily_brief_ta_sweep_delegates.py -v`
-Expected: FAIL — the existing inline `json.dump(payload, f, indent=2)` call is found.
+Expected: FAIL — the existing `with open(TA_SWEEP_PATH, "w") as f: json.dump(payload, f, indent=2)` block (currently ~line 410-411) is found.
 
 - [ ] **Step 3: Refactor `daily_brief.py`**
 
