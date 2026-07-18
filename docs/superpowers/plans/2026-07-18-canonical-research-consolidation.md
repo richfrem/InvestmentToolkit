@@ -11,7 +11,9 @@
 ## Global Constraints
 * No production code without a failing test first.
 * All SQLite writes must utilize Write-Ahead Logging (WAL) mode for concurrency.
+* SQLite concurrency model: Single writer, many readers. Ensure transactions are kept short to avoid busy lockouts.
 * Strict event type taxonomy and status constraints must be enforced at the database level.
+* Replay-first authority flow: All updates MUST append to the JSONL event ledger first, then replay into the SQLite database.
 * No raw dated research markdown files are to be deleted until the deterministic migration verification gate passes.
 
 ---
@@ -66,6 +68,7 @@ git commit -m "chore: add better-sqlite3 package dependency to backend workspace
 ```python
 # test_db_client.py
 import pytest
+import sqlite3
 from db_client import initialize_db
 
 def test_db_initialization(tmp_path):
@@ -74,6 +77,24 @@ def test_db_initialization(tmp_path):
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='instrument';")
     assert cursor.fetchone() is not None
+
+def test_sequence_uniqueness_constraint(tmp_path):
+    db_path = tmp_path / "test_intelligence.sqlite"
+    conn = initialize_db(str(db_path))
+    
+    conn.execute("INSERT INTO instrument VALUES ('us-pltr', 'PLTR', 'NASDAQ', 'Palantir', '2026-07-18', NULL);")
+    conn.execute("""
+        INSERT INTO intelligence_event (event_id, event_sequence, instrument_id, event_type, effective_at, ingested_at, status, title, body_markdown, content_hash)
+        VALUES ('evt_1', 1, 'us-pltr', 'NEWS_SWEEP', '2026-07-18', '2026-07-18', 'ACTIVE', 'Title 1', 'Body 1', 'hash_1');
+    """)
+    conn.commit()
+    
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute("""
+            INSERT INTO intelligence_event (event_id, event_sequence, instrument_id, event_type, effective_at, ingested_at, status, title, body_markdown, content_hash)
+            VALUES ('evt_2', 1, 'us-pltr', 'NEWS_SWEEP', '2026-07-18', '2026-07-18', 'ACTIVE', 'Title 2', 'Body 2', 'hash_2');
+        """)
+        conn.commit()
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -111,7 +132,8 @@ def initialize_db(db_path):
         last_event_sequence INTEGER NOT NULL,
         last_event_id TEXT NOT NULL,
         schema_version INTEGER NOT NULL,
-        processed_at TEXT NOT NULL
+        processed_at TEXT NOT NULL,
+        ledger_file_hash TEXT NOT NULL
     );
     """)
     
@@ -133,7 +155,7 @@ git commit -m "feat: setup SQLite database initialization schema and tests"
 
 ---
 
-### Task 2: Implement FTS5 Table and Triggers
+### Task 2: Implement FTS5 Table and Triggers (INSERT, UPDATE, DELETE)
 
 **Files:**
 - Modify: `investment_screener/backend/py_services/db_client.py`
@@ -155,7 +177,6 @@ def test_fts_search_sync(tmp_path):
     """)
     conn.commit()
     
-    # Check if FTS indexes automatically
     cursor = conn.cursor()
     cursor.execute("SELECT rowid FROM intelligence_event_fts WHERE intelligence_event_fts MATCH 'Nvidia';")
     assert cursor.fetchone() is not None
@@ -206,9 +227,25 @@ Add full database schema (including `intelligence_event` and Triggers) in `db_cl
     );
     """)
 
-    # Setup triggers
+    # Setup INSERT, UPDATE, DELETE triggers
     conn.execute("""
     CREATE TRIGGER IF NOT EXISTS trg_intelligence_event_ai AFTER INSERT ON intelligence_event BEGIN
+        INSERT INTO intelligence_event_fts(rowid, title, body_markdown)
+        VALUES (new.rowid, new.title, new.body_markdown);
+    END;
+    """)
+
+    conn.execute("""
+    CREATE TRIGGER IF NOT EXISTS trg_intelligence_event_ad AFTER DELETE ON intelligence_event BEGIN
+        INSERT INTO intelligence_event_fts(intelligence_event_fts, rowid, title, body_markdown)
+        VALUES('delete', old.rowid, old.title, old.body_markdown);
+    END;
+    """)
+
+    conn.execute("""
+    CREATE TRIGGER IF NOT EXISTS trg_intelligence_event_au AFTER UPDATE ON intelligence_event BEGIN
+        INSERT INTO intelligence_event_fts(intelligence_event_fts, rowid, title, body_markdown)
+        VALUES('delete', old.rowid, old.title, old.body_markdown);
         INSERT INTO intelligence_event_fts(rowid, title, body_markdown)
         VALUES (new.rowid, new.title, new.body_markdown);
     END;
@@ -280,6 +317,8 @@ Expected: FAIL with `ModuleNotFoundError`.
 Create `investment_screener/backend/py_services/replay_ledger.py`:
 ```python
 import json
+import hashlib
+from datetime import datetime
 
 def replay_events_to_db(jsonl_path, conn):
     # Load last sequence offset from checkpoint
@@ -288,27 +327,52 @@ def replay_events_to_db(jsonl_path, conn):
     row = cursor.fetchone()
     last_seq = row[0] if row and row[0] is not None else 0
     
-    with open(jsonl_path, 'r') as f:
-        for line in f:
-            if not line.strip():
-                continue
-            event = json.loads(line)
-            if event["event_sequence"] <= last_seq:
-                continue
+    max_processed_sequence = last_seq
+    last_event_id = "none"
+    
+    # Calculate file hash for checkpoint safety
+    hasher = hashlib.sha256()
+    
+    try:
+        with open(jsonl_path, 'rb') as f:
+            hasher.update(f.read())
+        file_hash = hasher.hexdigest()
+    except FileNotFoundError:
+        file_hash = "missing"
+    
+    try:
+        with open(jsonl_path, 'r') as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                event = json.loads(line)
+                seq = event["event_sequence"]
+                if seq <= last_seq:
+                    continue
+                
+                # Insert into database
+                conn.execute("""
+                    INSERT OR IGNORE INTO intelligence_event (event_id, event_sequence, event_type, effective_at, ingested_at, status, title, body_markdown, content_hash)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+                """, (
+                    event["event_id"], event["event_sequence"], event["event_type"],
+                    event["effective_at"], event["ingested_at"], event["status"],
+                    event["title"], event["body_markdown"], event["content_hash"]
+                ))
+                
+                if seq > max_processed_sequence:
+                    max_processed_sequence = seq
+                    last_event_id = event["event_id"]
+    except FileNotFoundError:
+        pass
             
-            # Insert into database
-            conn.execute("""
-                INSERT OR IGNORE INTO intelligence_event (event_id, event_sequence, event_type, effective_at, ingested_at, status, title, body_markdown, content_hash)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
-            """, (
-                event["event_id"], event["event_sequence"], event["event_type"],
-                event["effective_at"], event["ingested_at"], event["status"],
-                event["title"], event["body_markdown"], event["content_hash"]
-            ))
-            
-    # Update checkpoint
-    conn.execute("INSERT OR REPLACE INTO ledger_checkpoint VALUES ('global', ?, 'latest', 1, '2026-07-18');", (event["event_sequence"],))
-    conn.commit()
+    # Update checkpoint only if new events processed
+    if max_processed_sequence > last_seq:
+        iso_now = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+        conn.execute("INSERT OR REPLACE INTO ledger_checkpoint VALUES ('global', ?, ?, 1, ?, ?);", (
+            max_processed_sequence, last_event_id, iso_now, file_hash
+        ))
+        conn.commit()
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
