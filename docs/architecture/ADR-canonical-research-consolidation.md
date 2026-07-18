@@ -20,6 +20,7 @@ We propose to unify and structure our data directories under a "Canonical Memory
 ### 2. File Directory Reorganization
 * **Consolidate Sweeps:** Relocate raw sweep responses under `backend/data/history/sweeps/` to keep a permanent, committed record of qualitative model responses.
 * **Rationalize Reviews:** Maintain gitcommitted historical files in `backend/data/history/reviews/` instead of gitignored `temp/` directories, providing a permanent paper trail of weekly audits.
+* **Relocate Temporary Caches:** Move raw JSON cache dumps (e.g. `*_raw.json`) from the root of the `temp/` directory to a structured, gitignored backend cache directory (`backend/data/cache/yfinance/` and `backend/data/cache/tv_snapshots/`). This prevents cluttering the repository root.
 
 ### 3. Automated Ingest Tooling (`py_services/consolidate_research.py`)
 * We will write a python utility script to:
