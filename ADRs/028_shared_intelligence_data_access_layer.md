@@ -43,12 +43,20 @@ repositories, which would defeat the point of a single append-only event ledger.
 2. **`event_type` is classification metadata, not a table-selection mechanism.** All event
    categories in the current taxonomy (`NEWS_SWEEP`, `EARNINGS`, `TECHNICAL_SWEEP`,
    `MACRO_EVENT`, `THESIS_UPDATE`, `RESEARCH_IMPORT`, `REVIEW_DAILY`, `REVIEW_WEEKLY`) are rows
-   in the single `intelligence_event` table. A new table is only justified for a domain object
-   with a materially different shape or lifecycle than "something happened at a point in
-   time" — e.g. a future `research_thesis` (current synthesized state, not event history),
-   `valuation_version`, or `portfolio_decision` table. None of those exist yet; adding one
-   requires its own documented ADR, not a quiet per-task decision. Repository ownership follows
-   the *domain object* the table represents, not the `event_type` value.
+   in the single `intelligence_event` table — never a `news_sweep`/`earnings`/etc. table per
+   type. A new table is only justified for a domain object with a materially different shape or
+   lifecycle than "something happened at a point in time" — e.g. `research_thesis` (current
+   synthesized state, not event history), `valuation_version`, or `portfolio_decision`. These
+   three are **named here as the recognized, pre-approved set of future domain-object tables**
+   (see the design spec's full schema) — they are not yet created because no task in the
+   current plan produces the data they'd hold, not because they're architecturally
+   questionable. Creating one of these three when its data actually exists is expected, ordinary
+   plan work; creating any *other* new table (i.e. anything outside this pre-approved set, most
+   importantly anything that looks like a per-`event_type` table) is what requires its own
+   documented ADR. Target repository count stays small — `EventRepository`,
+   `InstrumentRepository`, and (when their tables exist) `ValuationRepository`,
+   `ThesisRepository`: four to six total, not one per `event_type`. Repository ownership follows
+   the *domain object* the table represents, never the `event_type` value.
 
 3. **Deferred, explicitly scoped, not built in this pass:**
    - A symmetric Node/Express service layer (`src/services/intelligence/`). Nothing in the

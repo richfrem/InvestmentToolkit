@@ -529,8 +529,11 @@ fix.
   Phase 2 Task 5, relocated here since it's foundational, not writer-migration work.
 - `event_repository.py`: `insert_event(conn, event: dict) -> bool` (returns whether a row was
   actually inserted, i.e. `cursor.rowcount == 1` — the caller, `replay_ledger.py`, uses this to
-  decide whether to advance the checkpoint) and `search_fts(conn, query: str) -> list[dict]`
-  (wraps the `intelligence_event_fts MATCH` query so callers never write raw FTS5 SQL).
+  decide whether to advance the checkpoint); `search_fts(conn, query: str) -> list[dict]`
+  (wraps the `intelligence_event_fts MATCH` query so callers never write raw FTS5 SQL); and
+  `list_active_events_for_ticker(conn, ticker: str) -> list[dict]` (ACTIVE events for a ticker,
+  newest first — Task 7's `view_generator.py` calls this instead of its own `SELECT`, keeping
+  every `intelligence_event` query in one file per ADR-028).
 - `instrument_repository.py`: `resolve_instrument(conn, ticker: str, exchange: str | None =
   None, name: str | None = None) -> str` — returns `instrument_id`, inserting a new `instrument`
   row if the ticker isn't already known (idempotent: calling it twice for the same ticker
@@ -819,159 +822,14 @@ duplicate-write fix. Depends on Phase 1 (`db_client.py`, `replay_ledger.py`) bei
 
 ---
 
-### Task 5: Shared Event-Append Helper
+### Task 5: SUPERSEDED — see Task 1A
 
-**Files:**
-- Create: `investment_screener/backend/py_services/append_event.py`
-- Test: `investment_screener/backend/tests/py_services/test_append_event.py`
-
-**Interfaces:**
-- Consumes: `investment_screener/backend/data/history/events/observations.jsonl` (append-only).
-- Produces: `append_event(jsonl_path, event_type, effective_at, status, title, body_markdown, ticker=None, source_id=None, payload=None, supersedes_event_id=None, idempotency_key=None) -> event_id`.
-
-Every future writer (Task 10's `SKILL.md` updates, Task 6's migrator) goes through this
-function — it is the single place `event_sequence` assignment, `content_hash` computation, and
-idempotency-key dedup logic live, per the Global Constraint "Replay-first authority flow."
-
-- [ ] **Step 1: Write the failing test**
-
-```python
-# test_append_event.py
-import json
-from append_event import append_event
-
-def test_append_event_assigns_incrementing_sequence(tmp_path):
-    jsonl_path = tmp_path / "observations.jsonl"
-    event_id_1 = append_event(
-        str(jsonl_path), event_type="NEWS_SWEEP", effective_at="2026-07-18",
-        status="ACTIVE", title="First", body_markdown="Body 1", ticker="PLTR",
-    )
-    event_id_2 = append_event(
-        str(jsonl_path), event_type="NEWS_SWEEP", effective_at="2026-07-18",
-        status="ACTIVE", title="Second", body_markdown="Body 2", ticker="PLTR",
-    )
-    lines = [json.loads(l) for l in jsonl_path.read_text().splitlines()]
-    assert len(lines) == 2
-    assert lines[0]["event_sequence"] == 1
-    assert lines[1]["event_sequence"] == 2
-    assert lines[0]["event_id"] == event_id_1
-    assert lines[1]["event_id"] == event_id_2
-    assert lines[0]["content_hash"] != lines[1]["content_hash"]
-
-def test_append_event_idempotency_key_dedups(tmp_path):
-    jsonl_path = tmp_path / "observations.jsonl"
-    id_1 = append_event(
-        str(jsonl_path), event_type="NEWS_SWEEP", effective_at="2026-07-18",
-        status="ACTIVE", title="First", body_markdown="Body 1", ticker="PLTR",
-        idempotency_key="dedup-key-1",
-    )
-    id_2 = append_event(
-        str(jsonl_path), event_type="NEWS_SWEEP", effective_at="2026-07-18",
-        status="ACTIVE", title="First (retry)", body_markdown="Body 1", ticker="PLTR",
-        idempotency_key="dedup-key-1",
-    )
-    lines = jsonl_path.read_text().splitlines()
-    assert len(lines) == 1
-    assert id_1 == id_2
-```
-
-- [ ] **Step 2: Run test to verify it fails**
-
-Run: `pytest investment_screener/backend/tests/py_services/test_append_event.py -v`
-Expected: FAIL with `ModuleNotFoundError`.
-
-- [ ] **Step 3: Write minimal implementation**
-
-Create `investment_screener/backend/py_services/append_event.py`:
-```python
-import json
-import hashlib
-import uuid
-from datetime import datetime, timezone
-from pathlib import Path
-
-
-def _last_sequence(jsonl_path: str) -> int:
-    path = Path(jsonl_path)
-    if not path.exists():
-        return 0
-    last = 0
-    for line in path.read_text().splitlines():
-        if not line.strip():
-            continue
-        last = json.loads(line)["event_sequence"]
-    return last
-
-
-def _find_by_idempotency_key(jsonl_path: str, idempotency_key: str):
-    path = Path(jsonl_path)
-    if not path.exists():
-        return None
-    for line in path.read_text().splitlines():
-        if not line.strip():
-            continue
-        record = json.loads(line)
-        if record.get("idempotency_key") == idempotency_key:
-            return record["event_id"]
-    return None
-
-
-def append_event(
-    jsonl_path: str,
-    event_type: str,
-    effective_at: str,
-    status: str,
-    title: str,
-    body_markdown: str,
-    ticker: str | None = None,
-    source_id: str | None = None,
-    payload: dict | None = None,
-    supersedes_event_id: str | None = None,
-    idempotency_key: str | None = None,
-) -> str:
-    if idempotency_key:
-        existing = _find_by_idempotency_key(jsonl_path, idempotency_key)
-        if existing:
-            return existing
-
-    event_id = f"evt_{uuid.uuid4().hex[:12]}"
-    content_hash = hashlib.sha256(
-        f"{event_type}|{effective_at}|{title}|{body_markdown}".encode("utf-8")
-    ).hexdigest()
-    record = {
-        "event_id": event_id,
-        "event_sequence": _last_sequence(jsonl_path) + 1,
-        "ticker": ticker,
-        "event_type": event_type,
-        "effective_at": effective_at,
-        "ingested_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "source_id": source_id,
-        "status": status,
-        "title": title,
-        "body_markdown": body_markdown,
-        "payload_json": json.dumps(payload) if payload is not None else None,
-        "supersedes_event_id": supersedes_event_id,
-        "idempotency_key": idempotency_key,
-        "content_hash": content_hash,
-    }
-    path = Path(jsonl_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "a") as f:
-        f.write(json.dumps(record) + "\n")
-    return event_id
-```
-
-- [ ] **Step 4: Run test to verify it passes**
-
-Run: `pytest investment_screener/backend/tests/py_services/test_append_event.py -v`
-Expected: PASS
-
-- [ ] **Step 5: Commit**
-
-```bash
-git add investment_screener/backend/py_services/append_event.py investment_screener/backend/tests/py_services/test_append_event.py
-git commit -m "feat: add shared event-append helper for observations.jsonl writers"
-```
+This task's original scope (a shared event-append helper: `event_sequence` assignment,
+`content_hash` computation, idempotency-key dedup) was pulled forward into Task 1A's
+`event_store.py`, per ADR-028 — it's foundational data-layer work, not writer migration, so it
+belongs before Phase 2's broader migration work, not inside it. **Do not implement a separate
+`append_event.py`.** Every task below that needs to append an event imports
+`from intelligence.event_store import append_event`.
 
 ---
 
@@ -986,8 +844,13 @@ git commit -m "feat: add shared event-append helper for observations.jsonl write
 - Consumes: `investment_screener/backend/data/research/{TICKER}_{YYYY-MM-DD}.md` (152 files:
   80 dated-only, 72 with an existing but now-superseded canonical `{TICKER}.md` alongside).
 - Produces: one `RESEARCH_IMPORT` event per dated file appended to `observations.jsonl` via
-  `append_event()` (Task 5); a migration manifest; archived originals moved to
-  `investment_screener/backend/data/history/archive/research/`.
+  `append_event()` (`intelligence.event_store`, Task 1A); a migration manifest; archived
+  originals moved to `investment_screener/backend/data/history/archive/research/`.
+
+**Package convention:** this script imports `from intelligence.event_store import
+append_event` (per ADR-028 — no ad hoc JSONL writing outside the shared data layer). Its test
+file's `sys.path.insert` points at `investment_screener/backend/py_services` (the `intelligence/`
+package's parent), same as Task 1A's tests.
 
 Implements Design Spec §5's 6-phase protocol (Scan → Classify → Manifest → Stage → Validate →
 Publish & Archive), reusing `consolidate_research.py`'s existing file-discovery glob
@@ -1049,7 +912,7 @@ import json
 import re
 import shutil
 from pathlib import Path
-from append_event import append_event
+from intelligence.event_store import append_event
 
 DATED_FILE_RE = re.compile(r"^([A-Z0-9.\-]+)_(\d{4}-\d{2}-\d{2})\.md$")
 
@@ -1107,20 +970,23 @@ git commit -m "feat: migrate dated research files into observations.jsonl ledger
 ### Task 7: Generated Research View Renderer
 
 **Files:**
-- Create: `investment_screener/backend/py_services/render_research_views.py`
-- Test: `investment_screener/backend/tests/py_services/test_render_research_views.py`
+- Create: `investment_screener/backend/py_services/intelligence/view_generator.py` (part of the
+  Task 1A package, per ADR-028 module list — not a standalone `py_services/` script)
+- Test: `investment_screener/backend/tests/py_services/test_view_generator.py`
 
 **Interfaces:**
-- Consumes: `intelligence.sqlite` (`intelligence_event` table, replayed by Phase 1).
+- Consumes: `intelligence.sqlite` via `event_repository.list_active_events_for_ticker()` (Task
+  1A) — this module does not write its own `SELECT` against `intelligence_event`; that would
+  duplicate the one place ADR-028 designates for `intelligence_event` SQL.
 - Produces: `investment_screener/backend/data/research/{TICKER}.summary.md` and
   `{TICKER}.timeline.md` per Design Spec §4's YAML frontmatter envelope.
 
 - [ ] **Step 1: Write the failing test**
 
 ```python
-# test_render_research_views.py
-from db_client import initialize_db
-from render_research_views import render_ticker_views
+# test_view_generator.py
+from intelligence.db_client import initialize_db
+from intelligence.view_generator import render_ticker_views
 
 def test_render_ticker_views_writes_summary_and_timeline(tmp_path):
     db_path = tmp_path / "test_intelligence.sqlite"
@@ -1145,20 +1011,16 @@ def test_render_ticker_views_writes_summary_and_timeline(tmp_path):
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `pytest investment_screener/backend/tests/py_services/test_render_research_views.py -v`
+Run: `pytest investment_screener/backend/tests/py_services/test_view_generator.py -v`
 Expected: FAIL with `ModuleNotFoundError`.
 
 - [ ] **Step 3: Write minimal implementation**
 
-Create `investment_screener/backend/py_services/render_research_views.py`:
+Add to Task 1A's `event_repository.py` (in the same package, this task extends it rather than
+creating a competing query path):
 ```python
-from datetime import datetime, timezone
-from pathlib import Path
-
-
-def _fetch_active_events(ticker: str, conn) -> list[dict]:
-    cursor = conn.cursor()
-    cursor.execute("""
+def list_active_events_for_ticker(conn, ticker: str) -> list[dict]:
+    cursor = conn.execute("""
         SELECT ie.effective_at, ie.title, ie.body_markdown
         FROM intelligence_event ie
         JOIN instrument i ON ie.instrument_id = i.instrument_id
@@ -1169,10 +1031,17 @@ def _fetch_active_events(ticker: str, conn) -> list[dict]:
         {"effective_at": r[0], "title": r[1], "body_markdown": r[2]}
         for r in cursor.fetchall()
     ]
+```
+
+Create `investment_screener/backend/py_services/intelligence/view_generator.py`:
+```python
+from datetime import datetime, timezone
+from pathlib import Path
+from intelligence.event_repository import list_active_events_for_ticker
 
 
 def render_ticker_views(ticker: str, conn, output_dir: str) -> None:
-    events = _fetch_active_events(ticker, conn)
+    events = list_active_events_for_ticker(conn, ticker)
     generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     out = Path(output_dir)
 
@@ -1198,13 +1067,14 @@ def render_ticker_views(ticker: str, conn, output_dir: str) -> None:
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `pytest investment_screener/backend/tests/py_services/test_render_research_views.py -v`
-Expected: PASS
+Run: `pytest investment_screener/backend/tests/py_services/test_view_generator.py investment_screener/backend/tests/py_services/test_event_repository.py -v`
+Expected: PASS (both — this task added a method to `event_repository.py`, so its existing
+tests must still pass alongside the new `view_generator.py` test).
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add investment_screener/backend/py_services/render_research_views.py investment_screener/backend/tests/py_services/test_render_research_views.py
+git add investment_screener/backend/py_services/intelligence/view_generator.py investment_screener/backend/py_services/intelligence/event_repository.py investment_screener/backend/tests/py_services/test_view_generator.py
 git commit -m "feat: render generated research summary/timeline views from intelligence.sqlite"
 ```
 
@@ -1392,16 +1262,16 @@ git commit -m "feat: rewrite historical researchReport pointers to canonical res
   `cat >> research/{TICKER}_{DATE}.md`)
 
 **Interfaces:**
-- Replaces direct markdown writes with `python3 py_services/append_event.py` calls (Task 5),
-  followed by `python3 py_services/render_research_views.py {TICKER}` (Task 7) to regenerate
-  the canonical views. This is the orchestration/prompt-change case in
+- Replaces direct markdown writes with a `python3 -m intelligence.event_store` CLI call (Task
+  1A's `event_store.py`), followed by `python3 -m intelligence.view_generator {TICKER}` (Task 7)
+  to regenerate the canonical views. This is the orchestration/prompt-change case in
   `.agent/rules/test-driven-development.md` — TDD's Iron Law does not apply verbatim to prose
   instructions, but a success contract is still required per that rule's TDO section.
 
 This task edits `SKILL.md` files only (no executable code) — per
 `.agent/rules/worktree-subagent-isolation.md`, pure documentation/markdown edits are exempt
-from the worktree requirement, but stay in this plan/worktree for ledger consistency with
-Tasks 5-9's shared context.
+from the worktree requirement, but stay in this plan/worktree for ledger consistency with the
+rest of Phase 2's shared context.
 
 - [ ] **Step 1: Write the success contract (TDO, not TDD — no test framework applies to prose)**
 
@@ -1412,7 +1282,7 @@ grep -rn 'cat > research/\|cat >> research/' \
   plugins/stock-valuation/skills/stock_valuation/SKILL.md \
   plugins/stock-valuation/skills/stock-research/SKILL.md
 # Expected before the edit: 2 matches (one per file).
-# Expected after the edit: 0 matches, replaced by append_event.py + render_research_views.py calls.
+# Expected after the edit: 0 matches, replaced by intelligence.event_store + intelligence.view_generator calls.
 ```
 
 - [ ] **Step 2: Run the check to confirm the "before" state**
@@ -1424,14 +1294,16 @@ Run the `grep` above. Expected: 2 matches (proves the old pattern exists before 
 Replace the `cat > research/{TICKER}_{YYYY-MM-DD}.md` / `cat >> research/{TICKER}_{DATE}.md`
 instructions with:
 ```bash
-python3 investment_screener/backend/py_services/append_event.py \
+python3 -m intelligence.event_store \
   --event-type RESEARCH_IMPORT --ticker {TICKER} --effective-at "$(date +%F)" \
   --status ACTIVE --title "{TICKER} research update" --body-file /tmp/research_body.md
-python3 investment_screener/backend/py_services/render_research_views.py {TICKER}
+python3 -m intelligence.view_generator {TICKER}
 ```
-(`append_event.py`'s Task 5 implementation is a Python function; add a thin `if __name__ ==
-"__main__":` CLI wrapper with `argparse` mirroring the flags above as part of this task, since
-Task 5 only specifies the importable function signature.)
+(both invoked with cwd `investment_screener/backend/py_services/` so `-m intelligence.X`
+resolves the package. `event_store.py`'s Task 1A implementation is a Python function; add a
+thin `if __name__ == "__main__":` CLI wrapper with `argparse` mirroring the flags above as part
+of this task, since Task 1A only specifies the importable function signature. Same for
+`view_generator.py` — add a CLI wrapper taking `{TICKER}` as a positional arg.)
 
 Preserve every other instruction in both files unmodified — this task touches only the
 research-file-write steps, per the coding-conventions "Index & Preservation Directive."
@@ -1443,7 +1315,7 @@ Run the `grep` from Step 1 again. Expected: 0 matches.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add plugins/stock-valuation/skills/stock_valuation/SKILL.md plugins/stock-valuation/skills/stock-research/SKILL.md investment_screener/backend/py_services/append_event.py
+git add plugins/stock-valuation/skills/stock_valuation/SKILL.md plugins/stock-valuation/skills/stock-research/SKILL.md investment_screener/backend/py_services/intelligence/event_store.py investment_screener/backend/py_services/intelligence/view_generator.py
 git commit -m "docs: wire stock_valuation/stock-research skills to append_event ledger writer"
 ```
 
