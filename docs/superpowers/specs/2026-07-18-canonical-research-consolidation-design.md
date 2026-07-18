@@ -4,9 +4,9 @@
 Based on the adversarial feedback from GPT-5.6, we reject the model where mutable Markdown files are the primary write targets. Doing so introduces concurrent read-write races, double sources of truth for financial variables, and breaks transaction boundaries.
 
 Our target architecture transitions to a **Hybrid Structured Intelligence Ledger**:
-1. **Authoritative Write Store:** SQLite is the transactional ledger for structural observations, instrument metadata, and valuation versions.
-2. **Event Ledger (Event Sourcing Lite):** Immutable, chronologically ordered JSONLines logs act as the master log. SQLite is a projection/index built by replaying this ledger.
-3. **FTS5 Search Index:** A virtual SQLite search table enables prefix/relevance matching, resolving query issues over thousands of prose observations.
+1. **Authoritative Event Ledger:** Immutable JSONL event streams are the system of record.
+2. **Derived Read Model:** SQLite is a replayable query/index projection built from the event ledger.
+3. **FTS5 Search Index:** A virtual SQLite search table maintained via automated triggers enables prefix/relevance matching, resolving query issues over thousands of prose observations.
 4. **Generated Views (Markdown):** Markdown files in `research/{TICKER}.md` are **reproducible, materialized views** generated from the SQLite ledger and projections DB. They are split into `.summary.md`, `.timeline.md`, and `.metrics.json` to control agent token limits.
 5. **Clutter-Free Caching:** Loose JSON dumps in `temp/` are swept into structured, gitignored subdirectories.
 
@@ -18,14 +18,15 @@ We organize directories under a strict separation of raw data, structured db, an
 
 ```
 investment_screener/backend/data/
-├── intelligence.sqlite        ← Authoritative transactional index & query store
+├── intelligence.sqlite        ← Derived database projection and query index (gitignored)
 ├── projections/               ← Canonical JSON DCF version logs (unchanged)
 ├── research/                  ← Generated human-readable views (re-created on demand)
 │   ├── PLTR.summary.md        ← Generated from DB (core thesis, catalysts, risks)
 │   ├── PLTR.timeline.md       ← Generated from DB (chronological audit history)
 │   └── PLTR.metrics.json      ← Machine-readable generated snapshot data
 ├── history/                   ← Git-committed historical records
-│   ├── events/                ← Append-only JSONL event logs (Authoritative recovery source)
+│   ├── schema.sql             ← Plaintext schema structure dump (Git backed up)
+│   ├── events/                ← Authoritative append-only JSONL event ledger (Git backed up)
 │   │   └── observations.jsonl
 │   ├── reviews/               ← Daily/Weekly confluence reviews (generated)
 │   │   ├── daily/
@@ -38,7 +39,7 @@ investment_screener/backend/data/
 
 ---
 
-## 3. SQLite Database Schema
+## 3. SQLite Database Schema & Triggers
 
 We define a relational schema in `intelligence.sqlite` to track instruments, events, source provenance, and valuations:
 
@@ -81,6 +82,7 @@ CREATE TABLE IF NOT EXISTS source (
 -- Core event stream data with corrections logic
 CREATE TABLE IF NOT EXISTS intelligence_event (
     event_id TEXT PRIMARY KEY,
+    event_sequence INTEGER NOT NULL UNIQUE, -- Monotonic sequence offset for ordering
     instrument_id TEXT,
     event_type TEXT NOT NULL CHECK (
         event_type IN (
@@ -93,7 +95,7 @@ CREATE TABLE IF NOT EXISTS intelligence_event (
     observed_at TEXT,
     ingested_at TEXT NOT NULL,
     source_id TEXT,
-    confidence REAL,
+    confidence_score REAL CHECK (confidence_score >= 0.0 AND confidence_score <= 1.0),
     status TEXT NOT NULL CHECK (
         status IN ('ACTIVE', 'SUPERSEDED', 'RETRACTED', 'INVALIDATED', 'DRAFT')
     ),
@@ -115,6 +117,33 @@ CREATE VIRTUAL TABLE IF NOT EXISTS intelligence_event_fts USING fts5(
     body_markdown,
     content='intelligence_event',
     content_rowid='rowid'
+);
+
+-- FTS5 Synchronization Triggers to prevent index staleness
+CREATE TRIGGER IF NOT EXISTS trg_intelligence_event_ai AFTER INSERT ON intelligence_event BEGIN
+    INSERT INTO intelligence_event_fts(rowid, title, body_markdown)
+    VALUES (new.rowid, new.title, new.body_markdown);
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_intelligence_event_ad AFTER DELETE ON intelligence_event BEGIN
+    INSERT INTO intelligence_event_fts(intelligence_event_fts, rowid, title, body_markdown)
+    VALUES('delete', old.rowid, old.title, old.body_markdown);
+END;
+
+CREATE TRIGGER IF NOT EXISTS trg_intelligence_event_au AFTER UPDATE ON intelligence_event BEGIN
+    INSERT INTO intelligence_event_fts(intelligence_event_fts, rowid, title, body_markdown)
+    VALUES('delete', old.rowid, old.title, old.body_markdown);
+    INSERT INTO intelligence_event_fts(rowid, title, body_markdown)
+    VALUES (new.rowid, new.title, new.body_markdown);
+END;
+
+-- Replay and checkpoint metadata tracking for JSONL replay indexing
+CREATE TABLE IF NOT EXISTS ledger_checkpoint (
+    checkpoint_id TEXT PRIMARY KEY,
+    last_event_sequence INTEGER NOT NULL,
+    last_event_id TEXT NOT NULL,
+    schema_version INTEGER NOT NULL,
+    processed_at TEXT NOT NULL
 );
 
 -- Current synthesized thesis (avoids rebuilding from history on every run)
@@ -160,6 +189,8 @@ CREATE TABLE IF NOT EXISTS portfolio_decision (
 
 ## 4. Generated Profile Metadata Envelope (`research/{TICKER}.summary.md`)
 
+YAML metadata snapshots carry source IDs and verification hashes to guarantee consistency:
+
 ```yaml
 ---
 schemaVersion: 1
@@ -173,11 +204,13 @@ valuationSnapshot:
   valuationAsOf: "2026-07-18T09:30:00Z"
   fairValue: 147.06
   action: HOLD
+  sourceValuationId: "val_01J..."
+  sourceDecisionId: "dec_01J..."
 ---
 
 # PLTR Canonical Research Summary
 
-*This file is a generated view. Do not edit directly. Authoritative observations are stored in `intelligence.sqlite`.*
+*This file is a generated view. Do not edit directly. Authoritative observations are stored in the JSONL event ledger and indexed in `intelligence.sqlite`.*
 
 ## Current Thesis Summary
 ...
@@ -198,4 +231,14 @@ To transition from dated files safely, we enforce a strict 6-phase migration pip
 3. **Manifest:** Write a migration manifest tracking hashes, sizes, and destination IDs.
 4. **Stage:** Populate `intelligence.sqlite` tables and event records in memory or test db.
 5. **Validate:** Confirm no byte count mismatches, verify projection schemas, and check referential integrity.
-6. **Publish & Archive:** Commit to `intelligence.sqlite`. Move legacy source files to `history/archive/` (no immediate deletion).
+6. **Publish & Archive:** Commit to the authoritative `observations.jsonl` ledger, replay to `intelligence.sqlite`. Move legacy source files to `history/archive/` (no immediate deletion).
+
+---
+
+## 6. Backup & Recovery Protocol (GitHub Synced)
+
+To prevent repository bloat while ensuring absolute data durability:
+* **Autoritative Event Ledger (`observations.jsonl`):** Committed directly to GitHub. Every qualitative update is backed up in plain text.
+* **Database Schema Backup (`schema.sql`):** Exported on database migrations to keep a plain text history of index changes on GitHub.
+* **Gitignored Binary DB (`intelligence.sqlite`):** Excluded from Git (`.gitignore`).
+* **Deterministic Rebuild:** A rebuild script `py_services/rebuild_db.py` will read the committed `observations.jsonl` ledger from scratch, replaying events to regenerate `intelligence.sqlite` locally and verify its checksums.

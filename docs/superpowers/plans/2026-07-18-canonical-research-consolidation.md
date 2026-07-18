@@ -288,3 +288,64 @@ Expected: PASS
 git add investment_screener/backend/py_services/replay_ledger.py investment_screener/backend/tests/py_services/test_replay_ledger.py
 git commit -m "feat: implement JSONL event ledger replay loop and checkpoints"
 ```
+
+---
+
+### Task 4: Rebuild DB & Backup Verification Script
+
+**Files:**
+- Create: `investment_screener/backend/py_services/rebuild_db.py`
+- Test: `investment_screener/backend/tests/py_services/test_rebuild_db.py`
+
+**Interfaces:**
+- Consumes: `observations.jsonl` from history ledger.
+- Produces: SQLite binary recreation script.
+
+- [ ] **Step 1: Write failing test for Rebuild DB**
+
+Create `test_rebuild_db.py`:
+```python
+import os
+from rebuild_db import run_rebuild
+
+def test_run_rebuild(tmp_path):
+    db_path = tmp_path / "rebuilt_intelligence.sqlite"
+    jsonl_path = tmp_path / "observations.jsonl"
+    jsonl_path.write_text('{"event_id": "evt_test", "event_sequence": 1, "event_type": "MACRO_EVENT", "effective_at": "2026-07-18", "ingested_at": "2026-07-18", "status": "ACTIVE", "title": "Test event", "body_markdown": "Test body", "content_hash": "hash_val"}\n')
+    
+    run_rebuild(str(jsonl_path), str(db_path))
+    assert db_path.exists()
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `pytest investment_screener/backend/tests/py_services/test_rebuild_db.py -v`
+Expected: FAIL with `ModuleNotFoundError`.
+
+- [ ] **Step 3: Write minimal implementation**
+
+Create `investment_screener/backend/py_services/rebuild_db.py`:
+```python
+import os
+from db_client import initialize_db
+from replay_ledger import replay_events_to_db
+
+def run_rebuild(jsonl_path, db_path):
+    if os.path.exists(db_path):
+        os.remove(db_path)
+    conn = initialize_db(db_path)
+    replay_events_to_db(jsonl_path, conn)
+    conn.close()
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `pytest investment_screener/backend/tests/py_services/test_rebuild_db.py -v`
+Expected: PASS
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add investment_screener/backend/py_services/rebuild_db.py investment_screener/backend/tests/py_services/test_rebuild_db.py
+git commit -m "feat: implement SQLite database rebuild from plain text JSONL ledger backup"
+```
