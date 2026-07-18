@@ -86,6 +86,11 @@ kitty-specs/**/tasks/*.md
 investment_screener/backend/py_services/cache/
 investment_screener/backend/data/cache/
 
+# Intelligence read-model DB (derived/rebuildable from observations.jsonl, never committed — ADRs/026-028)
+investment_screener/backend/data/intelligence.sqlite
+investment_screener/backend/data/intelligence.sqlite-wal
+investment_screener/backend/data/intelligence.sqlite-shm
+
 # Runtime secrets (generated at startup, never committed)
 .runtime/
 
