@@ -1480,6 +1480,137 @@ or `OUT_OF_SCOPE_FOR_THIS_PHASE`. No file is cleaned up purely because it looks 
 
 ---
 
+### Task 12A: Repository-Wide JSON Discovery Audit and Allowed JSON Register (added 2026-07-18)
+
+**Runs before Task 12 and before any Phase 3 migration/archival/cleanup/deletion.** User-supplied
+addendum v2 (`temp/phase-3a-json-discovery-audit-addendum-v2.md`), appended near-verbatim. This
+is a **discovery, ownership, and legitimacy audit only — no JSON/JSONL file may be deleted,
+moved, or archived as part of this task.**
+
+**Editorial note on overlap with Task 12:** both tasks produce a JSON ownership document (Task
+12's `json-persistence-ownership-map.md` vs. this task's broader
+`allowed-json-register.md`/`json-discovery-audit.md`). Task 12A is repository-wide (scans
+`.py`/`.ts`/`.tsx`/`.md`/`.yml`/`.sh`/SKILL.md/etc. across `plugins/**`,
+`investment_screener/**`, `docs/**`, not just `investment_screener/backend/data/`) and produces
+machine-readable output via an automated script; Task 12 is narrower and example-driven. **This
+reconciliation is deliberately left to whoever picks up Phase 3** — do not resolve it
+speculatively now, since Phase 3 hasn't started. A reasonable default: run Task 12A first (it
+subsumes Task 12's scope), then treat Task 12's remaining value as "does the ownership map's
+`investment_screener/backend/data/` classification match Task 12A's register" rather than a
+from-scratch duplicate pass.
+
+**Critical principle:** target state is **zero unclassified JSON**, not zero JSON. Every
+JSON/JSONL file gets an explicit legitimacy decision. Files not understood default to
+`UNKNOWN_REQUIRES_REVIEW` — never silently marked out of scope.
+
+**Purpose:** deterministically audit every `.json`/`.jsonl` file in the repo and every reference
+to those files from code, docs, SKILL.md, sub-agent instructions, backend routes, frontend
+components, and generated-report workflows. Produces a durable answer to: which JSON files
+exist, which are legitimate and why, which duplicate the new ledger architecture, which were
+migrated but not cleaned up, and which code/docs still reference stale paths.
+
+**Create:**
+- `investment_screener/backend/py_services/audit_json_usage.py` — the audit script
+- `docs/superpowers/audits/json-discovery-audit.md` + `.json` — what was discovered
+- `docs/superpowers/audits/allowed-json-register.md` + `.json` — what's permitted to remain, why
+- `investment_screener/backend/tests/py_services/test_audit_json_usage.py`
+
+**Audit scope:** include `*.json`, `*.jsonl`, `*.py`, `*.js`, `*.ts`, `*.tsx`, `*.md`, `*.yml`,
+`*.yaml`, `*.toml`, `*.sh`, `SKILL.md`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `README.md`,
+`architecture.md`, `.github/**/*.md`, `.agent/**/*.md`, `.agents/**/*.md`, `plugins/**`,
+`investment_screener/**`, `docs/**`. Exclude `.git/`, `node_modules/`, `.venv/`, `venv/`,
+`__pycache__/`, `.pytest_cache/`, `dist/`, `build/`, `coverage/`, `.cache/`. **Do not exclude
+`temp/` automatically** — the audit must determine whether temp files are truly temporary or
+accidentally durable.
+
+**Four discovery passes:**
+1. Find all `.json`/`.jsonl` files — capture path, extension, size, line count, sha256, git
+   tracked/ignored status, last commit touching it.
+2. Find references to JSON/JSONL paths in code/docs (`.json`, `.jsonl`, `JSON.parse`,
+   `json.load`, `json.loads`, `json.dump`, `json.dumps`, `fs.readFile`, `fs.writeFile`,
+   `readFileSync`, `writeFileSync`, `open(...json`, `Path(...json`) — capture referencing
+   file, line, matched text, referenced path, operation classification (read/write/append/
+   mention/unknown).
+3. Find references to known legacy directories/files: `backend/data/research/`,
+   `backend/data/history/`, `backend/data/projections/`, `backend/data/ta-sweep-results.json`,
+   `backend/data/daily-briefs/`, `backend/data/cache/`, `temp/`, `temp/daily-reviews/`,
+   `temp/weekly-reviews/`, `temp/news-sweep-responses/`, `observations.jsonl`,
+   `predictions.jsonl`, `evolution_events.jsonl`, `intelligence.sqlite`.
+4. Find generated-artifact assumptions: `.summary.md`, `.timeline.md`, `.metrics.json`,
+   `researchReport`, "canonical research", "legacy research".
+
+**Classification taxonomy (every file gets exactly one):**
+`ALLOWED_AUTHORITATIVE_JSON`, `ALLOWED_CONFIGURATION_JSON`, `ALLOWED_MODEL_ARTIFACT_JSON`,
+`ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL`, `ALLOWED_TEST_FIXTURE_JSON`,
+`ALLOWED_GENERATED_CACHE_JSON`, `MIGRATE_TO_INTELLIGENCE_LEDGER`,
+`GENERATE_FROM_LEDGER_OR_SQLITE`, `ARCHIVE_LEGACY_READ_ONLY`, `DELETE_AFTER_VERIFIED_ARCHIVE`,
+`OUT_OF_SCOPE_FOR_THIS_PHASE`, `UNKNOWN_REQUIRES_REVIEW` (default for anything not understood).
+
+**Illustrative starting classifications (audit governs, these are not binding):**
+- Portfolio/current-state domain (`portfolio.json`, `watchlist.json`, `target-portfolio.json`,
+  `trade-log.json`) — likely `ALLOWED_AUTHORITATIVE_JSON` or `OUT_OF_SCOPE_FOR_THIS_PHASE`:
+  belongs to portfolio/execution domain, not qualitative intelligence history.
+- `projections/*.json` — likely `ALLOWED_MODEL_ARTIFACT_JSON`; do not delete merely because
+  selected valuation snapshots can be queried from a future `valuation_version` table.
+- Separate-domain ledgers (`predictions.jsonl`, `evolution_events.jsonl`,
+  `context/events.jsonl`) — likely `ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL`; do not merge into
+  `observations.jsonl` without a separate ADR (matches this plan's own earlier audit finding
+  in the Phase 2 Scope Note above).
+- Durable intelligence candidates (`ta-sweep-results.json`, daily/weekly review JSON, news
+  sweep JSON, research-derived JSON) — likely `MIGRATE_TO_INTELLIGENCE_LEDGER` or
+  `GENERATE_FROM_LEDGER_OR_SQLITE`.
+- Generated/cache (`backend/data/cache/**`, `*.metrics.json`, `latest-*.json`) — likely
+  `ALLOWED_GENERATED_CACHE_JSON` or `GENERATE_FROM_LEDGER_OR_SQLITE`; may remain only if
+  generating source and cleanup policy are documented.
+- Test fixtures (`tests/fixtures/**`, `**/__fixtures__/**`, `sample*.json`) — likely
+  `ALLOWED_TEST_FIXTURE_JSON`; must not be mistaken for durable application state.
+
+**Illegitimate JSON criteria (flag as `UNKNOWN_REQUIRES_REVIEW`, `MIGRATE_TO_INTELLIGENCE_LEDGER`,
+or `ARCHIVE_LEGACY_READ_ONLY` — never silently ignored):** no known owner; no known
+producer/consumer but appears durable; a migrated replacement exists but the old file remains
+active; read by code but undocumented; written by multiple independent code paths (same class
+as Task 11's finding); duplicates `observations.jsonl`/`intelligence.sqlite`; generated but
+checked into git without rationale; lives in `temp/` but consumed later as if durable; contains
+research/news/review observations not represented in the ledger.
+
+**Allowed JSON Register** (`docs/superpowers/audits/allowed-json-register.md`) — canonical
+register of files/patterns permitted to remain, with columns: File/pattern, Status, Purpose,
+Owner module/workflow, Producers, Consumers, Cleanup rule, Notes. A file appearing here isn't
+exempt forever — it's exempt because its current purpose and ownership are documented.
+
+**Discovery audit report** (`docs/superpowers/audits/json-discovery-audit.md`) — summary counts
+per classification, "High-Risk Findings," "Files Requiring Human Review," "Files That Should
+Legitimately Exist," "Files That Likely Should Not Exist Long-Term," and a per-file inventory
+section (classification, known producers/consumers, doc references, register status, migration
+status, gap-analysis answers, recommended action: KEEP/MIGRATE/ARCHIVE/CLEANUP AFTER
+GATE/DOCUMENT/INVESTIGATE).
+
+**Required tests** (`test_audit_json_usage.py`): finds `.json`/`.jsonl` under a temp repo;
+excludes `.git`/`node_modules`/`__pycache__`; detects Python reads (`json.load`,
+`open(...json...)`) and writes (`json.dump`, `write_text`); detects Node reads/writes
+(`fs.readFile`, `readFileSync`, `writeFile`, `writeFileSync`); detects Markdown/SKILL doc
+references; produces both Markdown and JSON discovery reports and both Markdown and JSON
+allowed-register files; marks unknown files `UNKNOWN_REQUIRES_REVIEW` by default; flags files
+missing from the allowed register; does not delete/move/rewrite any discovered file; includes
+line numbers per reference.
+
+**Completion gate:** all required files exist; every JSON/JSONL file is listed and classified;
+every allowed file has a purpose and owner; producers/consumers identified where detectable;
+documentation references identified; unknown files marked `UNKNOWN_REQUIRES_REVIEW`; files
+missing from the register are highlighted; cleanup candidates are listed but **not removed**;
+no cleanup or deletion occurred; tests pass.
+
+**Cleanup blocker:** no legacy JSON cleanup (`rm`, `mv to archive`, `git rm`, or any "cleanup
+legacy json" action) may occur until this task's audit report has explicitly classified the
+target file and the cleanup gate has passed — this binds every subsequent Phase 3 task (12,
+14-19).
+
+**Final instruction:** optimize for not missing a hidden dependency, not for a short report. A
+long audit with several `UNKNOWN_REQUIRES_REVIEW` entries is acceptable; a confident cleanup
+that missed a consumer is not. The target is zero *unexplained* JSON, not zero JSON.
+
+---
+
 ### Task 12: Inventory Existing JSON Persistence and Assign Data Ownership
 
 **Purpose:** create a complete map of existing JSON persistence points before migrating or
