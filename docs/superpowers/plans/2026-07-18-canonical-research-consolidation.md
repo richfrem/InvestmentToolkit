@@ -1103,62 +1103,86 @@ git commit -m "feat: render generated research summary/timeline views from intel
   (`docs.ts` line ~61-74), producing `undefined` dates for canonical filenames. Must branch on
   filename shape instead of assuming one.
 
+**Testing convention correction (2026-07-18):** the brief originally called for a `supertest`
++ exported-`app` HTTP integration test. This repo has neither: `supertest` isn't a dependency,
+and `src/index.ts` never exports `app` (it only calls `app.listen(...)`). The actual convention
+this test suite uses (see `investment_screener/backend/tests/api/stockLookup.spec.ts`) is
+`mocha`/`chai` unit tests against pure functions extracted from route handlers, not HTTP-level
+integration tests. Extract the validation/parsing logic into an exported, standalone
+`parseResearchFilename()` function (and export the two regexes) so it's directly unit-testable
+without HTTP — the route handlers then just call it.
+
 - [ ] **Step 1: Write the failing test**
 
 ```typescript
 // docs.research.spec.ts
-import request from 'supertest';
-import { app } from '../../src/index'; // adjust import to this project's actual app export
+import { expect } from 'chai';
+import { parseResearchFilename, DATED_FILENAME_RE, CANONICAL_FILENAME_RE } from '../../src/routes/docs';
 
-describe('GET /api/research/:filename', () => {
-  it('serves a canonical {TICKER}.summary.md filename', async () => {
-    const res = await request(app).get('/api/research/PLTR.summary.md');
-    expect(res.status).not.toBe(400);
+describe('DATED_FILENAME_RE / CANONICAL_FILENAME_RE', () => {
+  it('accepts a dated filename', () => {
+    expect(DATED_FILENAME_RE.test('PLTR_2026-07-02.md')).to.equal(true);
+  });
+  it('accepts a canonical summary/timeline filename', () => {
+    expect(CANONICAL_FILENAME_RE.test('PLTR.summary.md')).to.equal(true);
+    expect(CANONICAL_FILENAME_RE.test('PLTR.timeline.md')).to.equal(true);
+  });
+  it('rejects neither shape', () => {
+    expect(DATED_FILENAME_RE.test('PLTR.md')).to.equal(false);
+    expect(CANONICAL_FILENAME_RE.test('PLTR_2026-07-02.md')).to.equal(false);
   });
 });
 
-describe('GET /api/research', () => {
-  it('lists canonical files with a non-undefined ticker and a null (not undefined) date', async () => {
-    const res = await request(app).get('/api/research');
-    const canonical = res.body.find((f: any) => f.filename === 'PLTR.summary.md');
-    expect(canonical).toBeDefined();
-    expect(canonical.ticker).toBe('PLTR');
-    expect(canonical.date).toBeNull();
+describe('parseResearchFilename', () => {
+  it('parses a dated filename into ticker + date', () => {
+    expect(parseResearchFilename('PLTR_2026-07-02.md')).to.deep.equal({ ticker: 'PLTR', date: '2026-07-02' });
+  });
+  it('parses a canonical filename into ticker + null date (not undefined)', () => {
+    expect(parseResearchFilename('PLTR.summary.md')).to.deep.equal({ ticker: 'PLTR', date: null });
+    expect(parseResearchFilename('PLTR.timeline.md')).to.deep.equal({ ticker: 'PLTR', date: null });
   });
 });
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `npm run test -w backend -- docs.research.spec.ts`
-Expected: FAIL — canonical filename rejected with 400, or `date` is `undefined` not `null`.
+Run: `npm run test -w backend -- --grep "parseResearchFilename\|DATED_FILENAME_RE"`
+Expected: FAIL — `parseResearchFilename`/`DATED_FILENAME_RE`/`CANONICAL_FILENAME_RE` are not
+exported from `docs.ts` yet (TypeScript compile error via `ts-node/register`, or `undefined`).
 
 - [ ] **Step 3: Write minimal implementation**
 
-In `docs.ts`, replace the single dated-only regex with two patterns and branch the listing
-logic on which one matches:
+In `docs.ts`, replace the single dated-only regex with two exported patterns, an exported
+`parseResearchFilename()` function, and update both route handlers to use them instead of
+inline regex/`.split('_')`:
 ```typescript
-const DATED_FILENAME_RE = /^[A-Z0-9.-]{1,10}_\d{4}-\d{2}-\d{2}\.md$/;
-const CANONICAL_FILENAME_RE = /^[A-Z0-9.-]{1,10}\.(summary|timeline)\.md$/;
+export const DATED_FILENAME_RE = /^[A-Z0-9.-]{1,10}_\d{4}-\d{2}-\d{2}\.md$/;
+export const CANONICAL_FILENAME_RE = /^[A-Z0-9.-]{1,10}\.(summary|timeline)\.md$/;
 
-// GET /research/:filename validation:
-if (!DATED_FILENAME_RE.test(filename) && !CANONICAL_FILENAME_RE.test(filename)) {
-  return res.status(400).json({ error: 'Invalid research filename' });
-}
-
-// GET /research listing — replace naive split('_') with:
-function parseResearchFilename(filename: string): { ticker: string; date: string | null } {
+export function parseResearchFilename(filename: string): { ticker: string; date: string | null } {
   const datedMatch = filename.match(/^([A-Z0-9.-]{1,10})_(\d{4}-\d{2}-\d{2})\.md$/);
   if (datedMatch) return { ticker: datedMatch[1], date: datedMatch[2] };
   const canonicalMatch = filename.match(/^([A-Z0-9.-]{1,10})\.(summary|timeline)\.md$/);
   if (canonicalMatch) return { ticker: canonicalMatch[1], date: null };
   return { ticker: filename, date: null };
 }
+
+// GET /research/:filename validation — replace the old single-regex check with:
+if (!DATED_FILENAME_RE.test(filename) && !CANONICAL_FILENAME_RE.test(filename)) {
+  res.status(400).json({ error: 'Invalid research filename' });
+  return;
+}
+
+// GET /research listing — replace `f.split('_')` with:
+const reports = files
+    .filter(f => f.endsWith('.md'))
+    .map(f => ({ filename: f, ...parseResearchFilename(f) }))
+    .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''));
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
 
-Run: `npm run test -w backend -- docs.research.spec.ts`
+Run: `npm run test -w backend -- --grep "parseResearchFilename\|DATED_FILENAME_RE"`
 Expected: PASS
 
 - [ ] **Step 5: Commit**
