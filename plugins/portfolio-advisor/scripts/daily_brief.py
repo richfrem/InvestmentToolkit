@@ -396,23 +396,19 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
             age_str = "never" if age is None else f"{age:.1f}h ago"
             print(f"▶ TA sweep (last: {age_str})...", file=sys.stderr)
             result = subprocess.run(
-                [sys.executable, str(TA_SWEEP_SCRIPT), "--no-save"],
+                [sys.executable, str(TA_SWEEP_SCRIPT)],
                 capture_output=True, text=True,
             )
             if result.returncode == 0:
                 try:
-                    scan = json.loads(result.stdout)
-                    payload = {
-                        "timestamp": datetime.now(timezone.utc).isoformat(),
-                        "scan_date": date.today().isoformat(),
-                        "count": len(scan),
-                        "results": scan,
-                    }
-                    with open(TA_SWEEP_PATH, "w") as f:
-                        json.dump(payload, f, indent=2)
+                    # ta_sweep_batch.py auto-saves to TA_SWEEP_PATH itself via
+                    # save_sweep_results() — read it back rather than re-deriving the
+                    # payload from stdout, to avoid two code paths writing the same file.
+                    with open(TA_SWEEP_PATH) as f:
+                        scan = json.loads(f.read())["results"]
                     ran_ta = True
                     print(f"  Scanned {len(scan)} holdings.", file=sys.stderr)
-                except json.JSONDecodeError:
+                except (json.JSONDecodeError, FileNotFoundError, KeyError):
                     ta_skip_reason = "TA sweep output could not be parsed"
             else:
                 ta_skip_reason = "TA sweep exited with error"
