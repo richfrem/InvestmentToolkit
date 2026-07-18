@@ -1,67 +1,154 @@
-# Design Spec: Canonical Research Consolidation & Unified Ingest Pipeline
+# Design Spec: SQLite-Driven Intelligence Ledger & Generated Research Views
 
-## 1. Context & Goal
-Our retail investment workstation has fragmented files containing qualitative analysis, sweeps, and temporary caches. 
-The goal of this project is to consolidate stock-specific research markdown logs into single canonical ticker files (`research/{TICKER}.md`), move review reports from `temp/` to a git-committed history folder, and relocate raw JSON cache dumps to a structured caching path.
+## 1. Context & Architecture Goal
+Based on the adversarial feedback from GPT-5.6, we reject the model where mutable Markdown files are the primary write targets. Doing so introduces concurrent read-write races, double sources of truth for financial variables, and breaks transaction boundaries.
 
----
-
-## 2. Directory Layout Migration Map
-
-We are migrating directories as follows:
-
-| Legacy Gitignored Path | New Committed Path | Purpose |
-|---|---|---|
-| `temp/daily-reviews/` | `investment_screener/backend/data/history/reviews/daily/` | Storing generated daily portfolio confluence scans |
-| `temp/weekly-reviews/` | `investment_screener/backend/data/history/reviews/weekly/` | Storing generated weekly portfolio confluence scans |
-| `temp/news-sweep-responses/` | `investment_screener/backend/data/history/sweeps/` | Archive of raw inputs from Grok/Gemini |
-| `temp/*_raw.json` | `investment_screener/backend/data/cache/yfinance/` | Raw financial metrics caches |
-| `temp/deep_timeframe_ta.json` | `investment_screener/backend/data/cache/tv_snapshots/` | Technical analysis temporary snapshots |
+Our target architecture transitions to a **Hybrid Structured Intelligence Ledger**:
+1. **Authoritative Write Store:** SQLite is the transactional ledger for structural observations, instrument metadata, and valuation versions.
+2. **Append-Only Interchange Logs:** Events are logged sequentially as Git-diffable JSONLines format for easy versioning and recovery.
+3. **Generated Views (Markdown):** Markdown files in `research/{TICKER}.md` are **reproducible, materialized views** generated from the SQLite ledger and projections DB. They are never edited manually.
+4. **Clutter-Free Caching:** Loose JSON dumps in `temp/` are swept into structured, gitignored subdirectories.
 
 ---
 
-## 3. Canonical Research Profile Schema (`research/{TICKER}.md`)
+## 2. Directory Layout & Storage Mapping
 
-Each ticker in `investment_screener/backend/data/research/` will have a single master file named `{TICKER}.md`.
-It will begin with a structured YAML frontmatter block to allow scripts to parse and update metrics programmatically.
+We organize directories under a strict separation of raw data, structured db, and generated views:
+
+```
+investment_screener/backend/data/
+├── intelligence.sqlite        ← Authoritative transactional index & query store
+├── projections/               ← Canonical JSON DCF version logs (unchanged)
+├── research/                  ← Generated human-readable views (re-created on demand)
+│   ├── PLTR.md                ← Generated from DB; contains revision hash metadata
+│   └── SNDK.md
+├── history/                   ← Git-committed historical records
+│   ├── reviews/               ← Daily/Weekly confluence reviews (generated)
+│   │   ├── daily/
+│   │   └── weekly/
+│   └── sweeps/                ← Archive of raw sweep prompt/response inputs (provenance)
+└── cache/                     ← Gitignored raw API cache files
+    ├── yfinance/              ← yfinance fetches (*_raw.json)
+    └── tv_snapshots/          ← Technical analysis temporary snapshots
+```
+
+---
+
+## 3. SQLite Database Schema
+
+We define a minimal relational schema in `intelligence.sqlite` to track instruments, events, source provenance, and valuations:
+
+```sql
+CREATE TABLE IF NOT EXISTS instrument (
+    instrument_id TEXT PRIMARY KEY,
+    ticker TEXT NOT NULL,
+    exchange TEXT,
+    name TEXT NOT NULL,
+    active_from TEXT,
+    active_to TEXT,
+    UNIQUE(ticker, exchange, active_from)
+);
+
+CREATE TABLE IF NOT EXISTS source (
+    source_id TEXT PRIMARY KEY,
+    source_type TEXT NOT NULL,
+    provider TEXT,
+    original_path TEXT,
+    original_uri TEXT,
+    git_commit TEXT,
+    retrieved_at TEXT,
+    content_hash TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS intelligence_event (
+    event_id TEXT PRIMARY KEY,
+    instrument_id TEXT,
+    event_type TEXT NOT NULL,
+    effective_at TEXT NOT NULL,
+    observed_at TEXT,
+    ingested_at TEXT NOT NULL,
+    source_id TEXT,
+    confidence REAL,
+    status TEXT NOT NULL,
+    title TEXT,
+    body_markdown TEXT,
+    payload_json TEXT,
+    supersedes_event_id TEXT,
+    content_hash TEXT NOT NULL,
+    FOREIGN KEY(instrument_id) REFERENCES instrument(instrument_id),
+    FOREIGN KEY(source_id) REFERENCES source(source_id),
+    FOREIGN KEY(supersedes_event_id) REFERENCES intelligence_event(event_id),
+    UNIQUE(content_hash, source_id)
+);
+
+CREATE TABLE IF NOT EXISTS valuation_version (
+    valuation_id TEXT PRIMARY KEY,
+    instrument_id TEXT NOT NULL,
+    model_version TEXT NOT NULL,
+    effective_at TEXT NOT NULL,
+    fair_value_minor_units INTEGER NOT NULL,
+    currency TEXT NOT NULL,
+    assumptions_json TEXT NOT NULL,
+    content_hash TEXT NOT NULL,
+    FOREIGN KEY(instrument_id) REFERENCES instrument(instrument_id)
+);
+
+CREATE TABLE IF NOT EXISTS portfolio_decision (
+    decision_id TEXT PRIMARY KEY,
+    instrument_id TEXT NOT NULL,
+    valuation_id TEXT,
+    action TEXT NOT NULL,
+    reason_code TEXT NOT NULL,
+    policy_version TEXT NOT NULL,
+    effective_at TEXT NOT NULL,
+    FOREIGN KEY(instrument_id) REFERENCES instrument(instrument_id),
+    FOREIGN KEY(valuation_id) REFERENCES valuation_version(valuation_id)
+);
+```
+
+---
+
+## 4. Generated Profile Metadata Envelope (`research/{TICKER}.md`)
+
+Markdown profiles are generated by query compilers. The frontmatter header explicitly marks them as generated views to prevent human edit conflicts:
 
 ```yaml
 ---
-ticker: PLTR
-name: Palantir Technologies
-lastUpdated: 2026-07-18T09:30:00Z
-fairValue: 147.06
-priceAtAnalysis: 130.96
-action: HOLD
-subStrategyId: sa-asi-race
+schemaVersion: 1
+documentType: generated-research-profile
+instrumentId: us-xnas-pltr
+ticker: "PLTR"
+generatedAt: "2026-07-18T09:30:00Z"
+revision: 42
+valuationSnapshot:
+  projectionVersion: 17
+  valuationAsOf: "2026-07-18T09:30:00Z"
+  fairValue: 147.06
+  action: HOLD
 ---
 
 # PLTR Canonical Research History
 
-## Research Sweep — 2026-07-18
-* **Catalysts:** AIP partnership with Nvidia for air-gapped deployments.
-* **Metrics:** 85% YoY revenue growth, US commercial +133%.
+*This file is a generated view. Do not edit directly. Authoritative observations are stored in `intelligence.sqlite`.*
 
-## Research Sweep — 2026-07-02
+## Research Sweep — 2026-07-18
+* **Source Event:** `evt_01J...` (ingested from `weekly-jul18-2026.md`)
 * ...
 ```
 
 ---
 
-## 4. Implementation Steps
+## 5. Non-Destructive Migration Protocol
 
-### Step 1: Write and Verify the Consolidation Script (`consolidate_research.py`)
-* The script groups legacy files by ticker, sorts chronologically, queries the corresponding `projections/{TICKER}.json` to extract YAML metadata, merges the dated markdown logs, writes `{TICKER}.md`, and cleans up dated duplicates with a `--delete-old` flag. *(Done & verified with tests in test_consolidate_research.py)*.
+To transition from dated files safely, we enforce a strict 6-phase migration pipeline:
 
-### Step 2: Update References in Code base
-* Update path mappings in `generate_reports.py` and `weekly_review.py` to point to the new `history/reviews/` directories. *(Done & verified with tests in test_weekly_review.py)*.
+```
+[Scan] ➔ [Classify] ➔ [Manifest] ➔ [Stage] ➔ [Validate] ➔ [Publish & Archive]
+```
 
-### Step 3: Run the Consolidation Script
-* Run `python3 plugins/portfolio-advisor/scripts/consolidate_research.py --delete-old` on the codebase to perform the physical file merge.
-
----
-
-## 5. Spec Self-Review
-1. **Placeholder Scan:** No "TBD" or "TODO" items remain in the implementation scope.
-2. **Internal Consistency:** The YAML schema matches the exact properties exported by yfinance and the DCF model.
-3. **Decomposition:** The scope is small and fully contained within the `portfolio-advisor` plugin environment.
+1. **Scan:** Parse all `{TICKER}_{DATE}.md` files in `backend/data/research/`.
+2. **Classify:** Identify ticker, effective date, and parse content structures.
+3. **Manifest:** Write a migration manifest tracking hashes, sizes, and destination IDs.
+4. **Stage:** Populate `intelligence.sqlite` tables and event records in memory or test db.
+5. **Validate:** Confirm no byte count mismatches, verify projection schemas, and check referential integrity.
+6. **Publish & Archive:** Commit to `intelligence.sqlite`. Move legacy source files to `history/archive/` (no immediate deletion).
