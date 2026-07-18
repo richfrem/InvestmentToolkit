@@ -1300,10 +1300,10 @@ git commit -m "feat: rewrite historical researchReport pointers to canonical res
 ### Task 10: Wire Research-Writing Skills to the Event Ledger
 
 **Files:**
-- Modify: `plugins/stock-valuation/skills/stock_valuation/SKILL.md` (Step 7, currently
-  `cat > research/{TICKER}_{YYYY-MM-DD}.md`)
-- Modify: `plugins/stock-valuation/skills/stock-research/SKILL.md` (currently
-  `cat >> research/{TICKER}_{DATE}.md`)
+- Modify: `plugins/stock-valuation/skills/stock_valuation/SKILL.md` (line ~399, currently
+  `cat > investment_screener/backend/data/research/{TICKER}_{YYYY-MM-DD}.md`)
+- Modify: `plugins/stock-valuation/skills/stock-research/SKILL.md` (line ~251, currently
+  `cat >> investment_screener/backend/data/research/{TICKER}_{DATE}.md`)
 
 **Interfaces:**
 - Replaces direct markdown writes with a `python3 -m intelligence.event_store` CLI call (Task
@@ -1319,10 +1319,12 @@ rest of Phase 2's shared context.
 
 - [ ] **Step 1: Write the success contract (TDO, not TDD — no test framework applies to prose)**
 
-Before editing, define the pass/fail check:
+Before editing, define the pass/fail check (verified 2026-07-18 against the actual current
+file content — the path includes the full `investment_screener/backend/data/` prefix, not a
+short `research/` relative path):
 ```bash
 # Must find zero remaining direct dated-markdown writes in either skill:
-grep -rn 'cat > research/\|cat >> research/' \
+grep -rn 'cat > investment_screener/backend/data/research/\|cat >> investment_screener/backend/data/research/' \
   plugins/stock-valuation/skills/stock_valuation/SKILL.md \
   plugins/stock-valuation/skills/stock-research/SKILL.md
 # Expected before the edit: 2 matches (one per file).
@@ -1335,8 +1337,8 @@ Run the `grep` above. Expected: 2 matches (proves the old pattern exists before 
 
 - [ ] **Step 3: Edit both `SKILL.md` files**
 
-Replace the `cat > research/{TICKER}_{YYYY-MM-DD}.md` / `cat >> research/{TICKER}_{DATE}.md`
-instructions with:
+Replace the `cat > investment_screener/backend/data/research/{TICKER}_{YYYY-MM-DD}.md` /
+`cat >> investment_screener/backend/data/research/{TICKER}_{DATE}.md` instructions with:
 ```bash
 python3 -m intelligence.event_store \
   --event-type RESEARCH_IMPORT --ticker {TICKER} --effective-at "$(date +%F)" \
