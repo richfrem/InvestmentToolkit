@@ -32,3 +32,7 @@ We propose to unify and structure our data directories under a "Canonical Memory
 * **Single Source of Truth:** One file per ticker holds all qualitative notes and history.
 * **Git Cleanliness:** Git history becomes clean, tracking edits to a single `{TICKER}.md` file rather than untracked file clutter.
 * **Programmatic Access:** Scripts can query YAML headers directly to display the latest consensus, conviction, and fair value figures on the frontend dashboard.
+
+## Future Extensions
+* **Sub-Strategy Linkage:** We will create automated checks to verify that strategy markdown profiles in `theses/sub_strategies/` are dynamically synced with the `subStrategyId` field in the `{TICKER}.md` frontmatter headers.
+* **Track-Record Ingestion:** The `consolidate_research.py` script will eventually ingest and display the company's historical prediction hit-rate from `predictions.jsonl` directly in the `{TICKER}.md` profiles during research sweeps.
