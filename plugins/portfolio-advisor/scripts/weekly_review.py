@@ -40,10 +40,58 @@ def get_dynamic_exclusions():
             exclusions.add(p.stem.upper())
     return exclusions
 
+def get_recent_reviews_context(repo_root):
+    """Scans temp/daily-reviews/ and temp/weekly-reviews/ for reviews from the last 14 days and extracts key details to avoid repeating requests."""
+    import glob
+    from datetime import datetime, timedelta
+    
+    daily_path = os.path.join(repo_root, "temp/daily-reviews/*.md")
+    weekly_path = os.path.join(repo_root, "temp/weekly-reviews/*.md")
+    files = glob.glob(daily_path) + glob.glob(weekly_path)
+    
+    cutoff = datetime.now() - timedelta(days=14)
+    recent_context = []
+    
+    # Sort files by modification time, newest first
+    files = sorted(files, key=os.path.getmtime, reverse=True)
+    
+    for fp in files[:5]: # look at the 5 most recent files
+        mtime = datetime.fromtimestamp(os.path.getmtime(fp))
+        if mtime < cutoff:
+            continue
+        try:
+            with open(fp, encoding="utf-8") as f:
+                content = f.read()
+            # Extract bullet points from Executive Summary
+            lines = content.splitlines()
+            bullets = []
+            capture = False
+            for line in lines:
+                if "## Executive Summary" in line:
+                    capture = True
+                    continue
+                if capture:
+                    if line.strip().startswith("##") or line.strip().startswith("---"):
+                        break
+                    if line.strip().startswith("*"):
+                        bullets.append(line.strip())
+            if bullets:
+                fn = os.path.basename(fp)
+                recent_context.append(f"- **From {fn} (Date: {mtime.strftime('%Y-%m-%d')}):**")
+                recent_context.extend([f"  {b}" for b in bullets[:3]])
+        except Exception:
+            pass
+            
+    if recent_context:
+        return "### Recent Summary Context (Already Captured/Do Not Ask Same Details):\n" + "\n".join(recent_context) + "\n\n"
+    return ""
+
 def load_json(path):
-    if not path.exists():
+    import json
+    p = Path(path)
+    if not p.exists():
         return {}
-    with open(path) as f:
+    with open(p, encoding="utf-8") as f:
         return json.load(f)
 
 def run_weekly_review(write_prompt_path=None):
@@ -164,6 +212,11 @@ def run_weekly_review(write_prompt_path=None):
         prompt_content = template
         prompt_content = prompt_content.replace("{{DATE}}", datetime.now().strftime("%Y-%m-%d"))
         prompt_content = prompt_content.replace("{{TICKERS}}", ", ".join(tickers_to_review))
+        
+        # Inject recent summary context
+        recent_ctx = get_recent_reviews_context(REPO_ROOT)
+        if recent_ctx:
+            prompt_content = prompt_content.replace("## Instructions for Grok", recent_ctx + "## Instructions for Grok")
     except Exception as e:
         print(f"Error loading weekly sweep template: {e}")
         prompt_content = f"# Weekly Sweep\n\nInclude: {', '.join(tickers_to_review)}"
