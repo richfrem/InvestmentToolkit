@@ -11,13 +11,16 @@ def migrate_pointers(projections_dir: str) -> dict:
         versions = json.loads(path.read_text())
         changed = False
         for version in versions:
-            report = version.get("researchReport")
+            ai_thesis = version.get("aiThesis")
+            if not isinstance(ai_thesis, dict):
+                continue
+            report = ai_thesis.get("researchReport")
             if not report:
                 continue
             match = DATED_RE.match(report)
             if not match:
                 continue
-            version["researchReport"] = f"{match.group(1)}.summary.md"
+            ai_thesis["researchReport"] = f"{match.group(1)}.summary.md"
             changed = True
             rewritten += 1
         if changed:
