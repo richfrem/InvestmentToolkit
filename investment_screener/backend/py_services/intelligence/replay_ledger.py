@@ -13,6 +13,7 @@ import logging
 from datetime import datetime, timezone
 
 from .event_repository import insert_event
+from .instrument_repository import resolve_instrument
 
 CHECKPOINT_ID = "global"
 SCHEMA_VERSION = 1
@@ -58,8 +59,16 @@ def replay_events_to_db(jsonl_path, conn):
 
     Reads each line of the ledger as a JSON event object, skips any event
     whose ``event_sequence`` is not greater than the last recorded
-    checkpoint, and routes the remainder through
-    ``event_repository.insert_event()`` (which uses ``INSERT OR IGNORE``
+    checkpoint. Events written via ``event_store.append_event()`` carry a
+    ``"ticker"`` string rather than an ``instrument_id`` (JSONL appends must
+    not require a live SQLite connection), so for any event with a truthy
+    ``ticker`` and no ``instrument_id`` already set, this function resolves
+    the ticker to a real ``instrument_id`` via
+    ``instrument_repository.resolve_instrument()`` before insertion. Events
+    with no ticker (e.g. ticker-agnostic ``MACRO_EVENT`` rows) are inserted
+    with ``instrument_id`` left as ``NULL``. The (possibly-augmented) event
+    is then routed through ``event_repository.insert_event()`` (which uses
+    ``INSERT OR IGNORE``
     under the hood). Re-inserting an already-present event_id is a no-op,
     so replaying the same file twice does not duplicate rows. It also
     means a row that violates a UNIQUE or CHECK constraint (e.g. an
@@ -105,6 +114,13 @@ def replay_events_to_db(jsonl_path, conn):
                 seq = event["event_sequence"]
                 if seq <= last_seq:
                     continue
+
+                ticker = event.get("ticker")
+                if ticker and not event.get("instrument_id"):
+                    event = {
+                        **event,
+                        "instrument_id": resolve_instrument(conn, ticker),
+                    }
 
                 inserted = insert_event(conn, event)
 

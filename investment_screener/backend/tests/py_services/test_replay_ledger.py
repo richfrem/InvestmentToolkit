@@ -8,6 +8,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 
 from intelligence.replay_ledger import replay_events_to_db  # noqa: E402
 from intelligence.db_client import initialize_db  # noqa: E402
+from intelligence.instrument_repository import resolve_instrument  # noqa: E402
 
 
 def test_replay_loop(tmp_path):
@@ -132,3 +133,30 @@ def test_replay_incremental_resume_picks_up_newly_appended_events(tmp_path):
     assert cursor.fetchone()[0] == 2
     cursor.execute("SELECT last_event_sequence FROM ledger_checkpoint WHERE checkpoint_id = 'global';")
     assert cursor.fetchone()[0] == 2
+
+
+def test_replay_resolves_ticker_to_instrument_id(tmp_path):
+    """append_event() writes a "ticker" field, not "instrument_id". Replay
+    must resolve the ticker string to a real instrument_id via
+    instrument_repository.resolve_instrument() so that
+    event_repository.list_active_events_for_ticker() (which joins on
+    instrument.instrument_id = intelligence_event.instrument_id) can ever
+    match a row written through the sanctioned append_event() API.
+    """
+    jsonl_path = tmp_path / "observations.jsonl"
+    jsonl_path.write_text(
+        '{"event_id": "evt_1", "event_sequence": 1, "ticker": "PLTR", '
+        '"event_type": "NEWS_SWEEP", "effective_at": "2026-07-18", '
+        '"ingested_at": "2026-07-18", "status": "ACTIVE", "title": "T", '
+        '"body_markdown": "B", "content_hash": "h1"}\n'
+    )
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    replay_events_to_db(str(jsonl_path), conn)
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT instrument_id FROM intelligence_event WHERE event_id = 'evt_1';")
+    instrument_id = cursor.fetchone()[0]
+    assert instrument_id is not None
+
+    expected_instrument_id = resolve_instrument(conn, "PLTR")
+    assert instrument_id == expected_instrument_id
