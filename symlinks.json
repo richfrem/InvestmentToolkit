@@ -780,6 +780,12 @@
       "dst": "plugins/portfolio-advisor/skills/ytd-return/assets/templates/ytd_performance_report_template.json",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_reports.py",
+      "dst": "investment_screener/backend/py_services/generate_reports.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
