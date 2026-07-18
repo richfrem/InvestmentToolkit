@@ -1207,12 +1207,23 @@ git commit -m "fix: serve canonical {TICKER}.summary/timeline.md research filena
   ticker's single canonical `{TICKER}.summary.md` — point-in-time linkage to the specific
   dated file a projection was written against is intentionally not preserved.
 
+**Test file convention:** same `sys.path.insert` pattern as every other test in this suite
+(`test_cache.py`, `test_db_client.py`) — point at `investment_screener/backend/py_services`
+before the bare import.
+
 - [ ] **Step 1: Write the failing test**
 
 ```python
 # test_migrate_research_report_pointers.py
 import json
-from migrate_research_report_pointers import migrate_pointers
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[4]
+SCRIPT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
+sys.path.insert(0, str(SCRIPT_DIR))
+
+from migrate_research_report_pointers import migrate_pointers  # noqa: E402
 
 def test_migrate_pointers_rewrites_all_versions_to_canonical(tmp_path):
     projections_dir = tmp_path / "projections"
