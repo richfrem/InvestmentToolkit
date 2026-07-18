@@ -1,0 +1,112 @@
+# Allowed JSON / JSONL Register
+
+## Purpose
+
+This register identifies JSON and JSONL files that are allowed to remain after the SQLite intelligence ledger migration. A file appearing here is not automatically exempt forever; it is exempt because its current purpose and ownership are documented.
+
+## Register
+
+| File / pattern | Status | Producers | Consumers | Notes |
+|---|---|---|---|---|
+| `skills-lock.json` | ALLOWED_CONFIGURATION_JSON | (none detected) | (none detected) | |
+| `symlinks.json` | ALLOWED_CONFIGURATION_JSON | (none detected) | (none detected) | |
+| `context/events.jsonl` | ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL | (none detected) | (none detected) | |
+| `investment_screener/package-lock.json` | ALLOWED_CONFIGURATION_JSON | (none detected) | (none detected) | |
+| `investment_screener/package.json` | ALLOWED_CONFIGURATION_JSON | (none detected) | (none detected) | |
+| `tradingview-cdp/package-lock.json` | ALLOWED_CONFIGURATION_JSON | (none detected) | (none detected) | |
+| `tradingview-cdp/package.json` | ALLOWED_CONFIGURATION_JSON | (none detected) | (none detected) | |
+| `investment_screener/frontend/package.json` | ALLOWED_CONFIGURATION_JSON | (none detected) | (none detected) | |
+| `investment_screener/frontend/tsconfig.json` | ALLOWED_CONFIGURATION_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/package.json` | ALLOWED_CONFIGURATION_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/tsconfig.json` | ALLOWED_CONFIGURATION_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/predictions.jsonl` | ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL | (none detected) | (none detected) | |
+| `investment_screener/backend/data/watchlist.json` | ALLOWED_AUTHORITATIVE_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/theses/target-portfolio.json` | ALLOWED_AUTHORITATIVE_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/COHR.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/BW.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/ANET.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/RGTI.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/CRCL.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/FOTO.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/KRMN.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/VRT.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/ASML.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/PANW.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/CEG.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/AMD.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/LBRT.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/SHAZ.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/RDW.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/BITF.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/NBIS.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/KRC.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/PUMP.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/RKLB.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/HUT.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/CRSP.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/INTC.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/OKLO.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/WYFI.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/CRWD.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/VST.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/QBTS.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/ASTS.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/POET.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/LITE.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/ETHA.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/MSFT.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/CRWV.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/WQTM.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/TSLA.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/BE.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/LLY.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/DXYZ.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/TSM.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/BTDR.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/CACI.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/AAPL.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/APLD.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/SYM.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/PLTR.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/AMZN.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/MU.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/SNDK.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/CELH.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/KOID.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/EQT.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/NKE.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/IONQ.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/SEI.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/HUMN.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/CRM.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/IREN.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/CLSK.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/RIOT.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/GOOG.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/CAKE.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/CIFR.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/DRAM.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/AVGO.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/TEM.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/NOW.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/ZS.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/IBIT.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/CORZ.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/PSIX.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/TEAM.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/TSEM.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/ORCL.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/NVDA.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/COIN.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/EQIX.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/SKHY.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/ALAB.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/CBRS.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/META.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/data/projections/SPCX.json` | ALLOWED_MODEL_ARTIFACT_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/tests/fixtures/edgar_companyfacts_aapl.json` | ALLOWED_TEST_FIXTURE_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/tests/fixtures/target_portfolio.test.json` | ALLOWED_TEST_FIXTURE_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/tests/fixtures/BROKEN_projection.test.json` | ALLOWED_TEST_FIXTURE_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/tests/fixtures/portfolio_with_totals.test.json` | ALLOWED_TEST_FIXTURE_JSON | (none detected) | (none detected) | |
+| `investment_screener/backend/tests/fixtures/portfolio.test.json` | ALLOWED_TEST_FIXTURE_JSON | (none detected) | (none detected) | |
+| `investment_screener/frontend/.vite/deps/package.json` | ALLOWED_CONFIGURATION_JSON | (none detected) | (none detected) | |

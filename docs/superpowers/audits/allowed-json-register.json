@@ -1,0 +1,719 @@
+{
+  "generated_at": "2026-07-18T22:50:00Z",
+  "allowed_files": [
+    {
+      "path_or_pattern": "skills-lock.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "symlinks.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "context/events.jsonl",
+      "classification": "ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/package-lock.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/package.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "tradingview-cdp/package-lock.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "tradingview-cdp/package.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/frontend/package.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/frontend/tsconfig.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/package.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/tsconfig.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/predictions.jsonl",
+      "classification": "ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/watchlist.json",
+      "classification": "ALLOWED_AUTHORITATIVE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/theses/target-portfolio.json",
+      "classification": "ALLOWED_AUTHORITATIVE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/COHR.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/BW.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/ANET.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/RGTI.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/CRCL.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/FOTO.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/KRMN.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/VRT.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/ASML.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/PANW.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/CEG.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/AMD.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/LBRT.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/SHAZ.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/RDW.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/BITF.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/NBIS.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/KRC.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/PUMP.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/RKLB.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/HUT.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/CRSP.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/INTC.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/OKLO.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/WYFI.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/CRWD.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/VST.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/QBTS.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/ASTS.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/POET.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/LITE.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/ETHA.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/MSFT.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/CRWV.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/WQTM.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/TSLA.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/BE.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/LLY.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/DXYZ.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/TSM.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/BTDR.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/CACI.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/AAPL.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/APLD.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/SYM.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/PLTR.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/AMZN.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/MU.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/SNDK.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/CELH.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/KOID.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/EQT.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/NKE.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/IONQ.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/SEI.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/HUMN.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/CRM.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/IREN.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/CLSK.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/RIOT.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/GOOG.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/CAKE.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/CIFR.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/DRAM.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/AVGO.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/TEM.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/NOW.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/ZS.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/IBIT.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/CORZ.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/PSIX.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/TEAM.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/TSEM.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/ORCL.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/NVDA.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/COIN.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/EQIX.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/SKHY.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/ALAB.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/CBRS.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/META.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/data/projections/SPCX.json",
+      "classification": "ALLOWED_MODEL_ARTIFACT_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/tests/fixtures/edgar_companyfacts_aapl.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/tests/fixtures/target_portfolio.test.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/tests/fixtures/BROKEN_projection.test.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/tests/fixtures/portfolio_with_totals.test.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/backend/tests/fixtures/portfolio.test.json",
+      "classification": "ALLOWED_TEST_FIXTURE_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    },
+    {
+      "path_or_pattern": "investment_screener/frontend/.vite/deps/package.json",
+      "classification": "ALLOWED_CONFIGURATION_JSON",
+      "git_tracked": true,
+      "producers": [],
+      "consumers": []
+    }
+  ]
+}
