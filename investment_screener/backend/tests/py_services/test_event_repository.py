@@ -38,6 +38,41 @@ def test_insert_event_returns_false_when_sequence_duplicate(tmp_path):
     assert insert_event(conn, {**base, "event_id": "evt_2", "content_hash": "h2"}) is False
 
 
+def test_insert_event_persists_all_nullable_columns(tmp_path):
+    """insert_event must persist every column append_event writes to the
+    JSONL ledger — including payload_json, source_id, confidence_score,
+    supersedes_event_id, idempotency_key, and observed_at — not just the
+    10-column subset. Round-trip a fully-populated event and assert each
+    field survives."""
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    conn.execute("INSERT INTO instrument VALUES ('us-pltr', 'PLTR', 'NASDAQ', 'Palantir', '2026-07-18', NULL);")
+    conn.commit()
+    # A prior event the new one can legitimately reference (FK on supersedes_event_id).
+    insert_event(conn, {
+        "event_id": "evt_prior", "event_sequence": 1, "instrument_id": "us-pltr",
+        "event_type": "NEWS_SWEEP", "effective_at": "2026-07-01", "ingested_at": "2026-07-01",
+        "status": "ACTIVE", "title": "Prior", "body_markdown": "Prior body", "content_hash": "h0",
+    })
+    full_event = {
+        "event_id": "evt_full", "event_sequence": 2, "instrument_id": "us-pltr",
+        "event_type": "NEWS_SWEEP", "effective_at": "2026-07-18", "observed_at": "2026-07-17",
+        "ingested_at": "2026-07-18", "source_id": "src_abc", "confidence_score": 0.85,
+        "status": "ACTIVE", "title": "Full", "body_markdown": "Full body",
+        "payload_json": '{"k": "v"}', "supersedes_event_id": "evt_prior",
+        "idempotency_key": "idem_123", "content_hash": "hfull",
+    }
+    assert insert_event(conn, full_event) is True
+
+    cursor = conn.execute(
+        "SELECT payload_json, source_id, confidence_score, supersedes_event_id, "
+        "idempotency_key, observed_at FROM intelligence_event WHERE event_id = 'evt_full';"
+    )
+    row = cursor.fetchone()
+    assert row == (
+        '{"k": "v"}', "src_abc", 0.85, "evt_prior", "idem_123", "2026-07-17",
+    )
+
+
 def test_search_fts_returns_matching_events(tmp_path):
     conn = initialize_db(str(tmp_path / "test.sqlite"))
     conn.execute("INSERT INTO instrument VALUES ('us-pltr', 'PLTR', 'NASDAQ', 'Palantir', '2026-07-18', NULL);")

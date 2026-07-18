@@ -126,6 +126,17 @@ def replay_events_to_db(jsonl_path, conn):
 
                 if inserted:
                     processed_count += 1
+                    superseded_id = event.get("supersedes_event_id")
+                    if superseded_id:
+                        # Only flip the prior event AFTER the new (superseding)
+                        # event was actually persisted — a rejected/skipped
+                        # event must never retroactively supersede anything.
+                        conn.execute(
+                            "UPDATE intelligence_event SET status = 'SUPERSEDED' "
+                            "WHERE event_id = ?;",
+                            (superseded_id,),
+                        )
+                        conn.commit()
                     if seq > max_processed_sequence:
                         max_processed_sequence = seq
                         last_event_id = event["event_id"]
