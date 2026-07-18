@@ -59,8 +59,15 @@ and state a verdict — `[CONFLUENCE]`, `[PARTIAL]`, or `[CONFLICT]`. A `[CONFLI
 silently in either direction.
 
 ### Phase 4: Weekly Evolution & Thesis Update
-Log the weekly takeaways into `plugins/portfolio-advisor/references/weekly-evolution-log.md` (or `evolution-log.md`):
+1. Log the weekly takeaways into `plugins/portfolio-advisor/references/weekly-evolution-log.md` (or `evolution-log.md`):
 - Weekly portfolio performance direction.
 - Key thesis revisions.
 - Target changes applied.
 - Support levels updated.
+
+2. Generate the structured weekly confluence review report:
+```bash
+python3 plugins/portfolio-advisor/scripts/generate_reports.py
+```
+This parses the latest daily brief data, aggregates it by sub-strategy, and saves the output to the gitignored `temp/weekly-reviews/` directory as `weekly_confluence_scan_YYYY-MM-DD.md`.
+
