@@ -127,3 +127,76 @@ def append_event(
     with open(path, "a") as f:
         f.write(json.dumps(record) + "\n")
     return event_id
+
+
+def _default_jsonl_path() -> Path:
+    """Return the canonical ``observations.jsonl`` location.
+
+    Derived from this file's location so the default works regardless of
+    the caller's cwd, per the ``investment_screener/backend/data/``
+    convention used by ``market_regime.py`` et al.
+
+    Returns:
+        The repo-relative default path to the JSONL ledger.
+    """
+    repo_root = Path(__file__).resolve().parents[4]
+    return repo_root / "investment_screener/backend/data/observations.jsonl"
+
+
+def _main() -> None:
+    """CLI entry point: append one event to the ledger from flags.
+
+    Thin wrapper around ``append_event`` for SKILL.md-driven writers (see
+    ``plugins/stock-valuation/skills/stock_valuation/SKILL.md`` and
+    ``.../stock-research/SKILL.md``) that shell out via
+    ``python3 -m intelligence.event_store`` rather than importing this
+    module directly. Body markdown is supplied via ``--body-file`` (a path
+    to a file containing the markdown) or ``--body`` (an inline string);
+    exactly one is required. Prints the resulting ``event_id`` to stdout.
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Append one event to the observations.jsonl ledger."
+    )
+    parser.add_argument("--event-type", required=True, dest="event_type")
+    parser.add_argument("--ticker")
+    parser.add_argument("--effective-at", required=True, dest="effective_at")
+    parser.add_argument("--status", required=True)
+    parser.add_argument("--title", required=True)
+    parser.add_argument("--body-file", dest="body_file", help="Path to a markdown file to use as the event body.")
+    parser.add_argument("--body", help="Inline markdown body (alternative to --body-file).")
+    parser.add_argument("--source-id", dest="source_id")
+    parser.add_argument("--idempotency-key", dest="idempotency_key")
+    parser.add_argument(
+        "--jsonl-path",
+        dest="jsonl_path",
+        default=str(_default_jsonl_path()),
+        help="Path to the observations.jsonl ledger (default: %(default)s).",
+    )
+    args = parser.parse_args()
+
+    if args.body_file:
+        body_markdown = Path(args.body_file).read_text()
+    elif args.body is not None:
+        body_markdown = args.body
+    else:
+        parser.error("one of --body-file or --body is required")
+        return
+
+    event_id = append_event(
+        args.jsonl_path,
+        event_type=args.event_type,
+        effective_at=args.effective_at,
+        status=args.status,
+        title=args.title,
+        body_markdown=body_markdown,
+        ticker=args.ticker,
+        source_id=args.source_id,
+        idempotency_key=args.idempotency_key,
+    )
+    print(event_id)
+
+
+if __name__ == "__main__":
+    _main()
