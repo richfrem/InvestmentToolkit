@@ -5,17 +5,16 @@
 You are analyzing a highly concentrated, institutional-grade AI infrastructure portfolio focused on two civilizational-scale macro pillars:
 
 1. **The ASI Race (Primary: Infrastructure & Compute Buildout)**:
-   - **GPU Cloud & Memory Infrastructure**: Captures GPU supply chains and HBM/NAND scarcity. Tickers include `CRWV` (GPU cloud), `SNDK` (NAND), and `DRAM` (HBM memory proxy).
+   - **GPU Cloud & Memory Infrastructure**: Captures GPU supply chains and HBM/NAND scarcity. Tickers include `CRWV` (GPU cloud), `SNDK` (NAND), and `SKHY` (HBM memory proxy).
    - **AI Power Infrastructure**: Datacenters require massive power grids. Tickers include `CEG`, `VST` (nuclear/merchant power), `OKLO` (micro-nuclear commercialization), `BE` (fuel cells), and `PSIX` (power generation).
-   - **AI Data Center Infrastructure (Bitcoin Miner Pivot)**: High-performance computing (HPC) landlords pivoting from BTC mining to AI compute. Tickers include `CORZ`, `IREN`, `APLD`, and `CLSK`.
-   - **Compute Moats & Foundries**: Foundations of silicon manufacturing. Tickers include `TSM`, `ASML`, `AMD`, `INTC`.
-   - **Quality SaaS (Enterprise AI)**: CRM, NOW, TEAM (Enterprise software platforms adapting AI models).
+   - **AI Data Center Infrastructure (Bitcoin Miner Pivot)**: High-performance computing (HPC) landlords pivoting from BTC mining to AI compute. Tickers include `CORZ`, `IREN`, `APLD`, and `BTDR` (Bitdeer).
+   - **Compute Moats & Foundries**: Foundations of silicon manufacturing. Tickers include `SHAZ` (SharonAI), `MU` (Micron).
 
 2. **Sovereign Finance (Secondary: Rails for Autonomous AI Agents)**:
    - Digital rails built for machine-to-machine autonomous settlement. Tickers include `COIN` and `CRCL`.
 
 3. **Space Infrastructure & Defense AI**:
-   - Government modernization, defense contracts, and space infrastructure. Tickers include `CACI` (Defense IT), `RKLB` (rocket launch/satellites), and `RDW` (space structures).
+   - Government modernization, defense contracts, and space infrastructure. Ticker includes `SPCX` (SpaceX).
 
 4. **Ontological AI & Operating Systems**:
    - Institutional ontologies and operational data execution platforms. Ticker: `PLTR` (Palantir AIP).
