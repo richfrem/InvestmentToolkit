@@ -424,6 +424,7 @@ If no sweep response exists within the last 7 days when the triage queue is buil
 
 If yes: invoke `python3 plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_grok_prompt.py`
 and present the prompt. Wait for the user to paste back the response(s) — Grok, Gemini, or both.
+Review the response(s). If any details are missing, unclear, or lack quantitative numbers, construct and ask follow-up questions to the user (max 3 rounds) to prompt the models for these missing details.
 Parse each response, compute the confluence verdict per ticker (`[CONFLUENCE]` / `[PARTIAL]` /
 `[CONFLICT]`), and fold any EXIT overrides, new ACCUMULATE signals, or conflicts into the
 remaining queue before proceeding. `[CONFLICT]` tickers are surfaced explicitly, never

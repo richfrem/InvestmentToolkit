@@ -44,7 +44,8 @@ Present the decision breakdown (executed/blocked/overridden) and per-gate fail r
 1. Present the range audit.
 2. Present the generated prompt in `temp/weekly_grok_prompt.md`.
 3. Wait for the user to run the prompt on Grok and paste the response back.
-4. Synthesize the news: Filter out noise, highlight structural changes, and cross-reference with the range audit.
+4. **Clarification & Deepening Loop (Max 3 rounds):** Review Grok's output. If any details are missing, unclear, or lack quantitative numbers (e.g. general statements about nuclear PPAs without MW capacity, or miner pivots without MW/EH/s metrics), construct and ask follow-up questions to the user (max 3 rounds) to prompt Grok for the missing details.
+5. Synthesize the news: Filter out noise, highlight structural changes, and cross-reference with the range audit.
 
 ### Phase 3: TradingView Technical Analysis
 For any drifted names, initiates, or major movers (>10% weekly change):
