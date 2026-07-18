@@ -315,6 +315,7 @@ pytest plugins/tradingview/tests/            # TV CDP unit tests
 | ADR | Decision |
 |-----|---------|
 | ADR-024 | CDP engine extracted to `tradingview-cdp/` root ("Thin Skill + Thick Engine") — plugins import via `tv_client.py`, never hardcode paths |
+| ADR-026/027/028 | Intelligence data layer: `observations.jsonl` (authority, ADR-026) → `intelligence.sqlite` (replayable read model, FTS5, SQLite selection rationale in ADR-027) → generated `research/{TICKER}.summary.md` views, behind a shared `py_services/intelligence/` repository layer (ADR-028). See `ADRs/026_canonical_research_consolidation_and_unified_ingest.md`, `ADRs/027_sqlite_database_selection.md`, `ADRs/028_shared_intelligence_data_access_layer.md`. Applies to research/intelligence data only — `portfolio.json`/`target-portfolio.json`/`projections/*.json` remain flat-file JSON. |
 | ADR-dcf-calculator | DCF math lives in `dcf_scenarios.py`, never inlined. One script, one bug surface. |
 | No database | All state in JSON files. Simplicity > scalability for a single-user local tool. |
 | Standing Decision anchor | `standingDecision` in `target-portfolio.json` is the source of truth. A fresh DCF run never silently overrides it — only material delta (>15% FV change) triggers a conflict flag. |
