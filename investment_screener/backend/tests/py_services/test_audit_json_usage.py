@@ -183,6 +183,125 @@ def test_temp_folder_json_files_are_captured_separately(tmp_path):
     assert any(f["path"] == "temp/scratch.json" for f in result["temp_folder_files"])
 
 
+# --- Reference-linking bug fix (corrective pass) -----------------------------
+# Reproduces the confirmed defect: reference detection matched the JSON filename
+# against the matched *regex operation text* (e.g. "json.dump(") instead of the
+# actual line/constant/path, so real references were never linked to their
+# target file. ta-sweep-results.json showed zero producers/consumers despite
+# real references in ta_sweep_batch.py, daily_brief.py, compute_conviction_scores.py.
+
+
+def _target_entry(result, filename):
+    return next(f for f in result["files"] if f["path"].endswith(filename))
+
+
+def test_links_direct_literal_path_reference(tmp_path):
+    repo = _make_repo(tmp_path)
+    (repo / "investment_screener").mkdir()
+    (repo / "investment_screener" / "backend").mkdir()
+    (repo / "investment_screener" / "backend" / "data").mkdir()
+    (repo / "investment_screener" / "backend" / "data" / "ta-sweep-results.json").write_text("{}")
+    (repo / "reader.py").write_text(
+        'open("investment_screener/backend/data/ta-sweep-results.json")\n'
+    )
+
+    result = run_audit(str(repo))
+    entry = _target_entry(result, "ta-sweep-results.json")
+    all_refs = entry["known_producers"] + entry["known_consumers"]
+
+    assert any(r["referencing_file"] == "reader.py" for r in all_refs)
+    assert any(r["confidence"] == "exact" for r in all_refs)
+
+
+def test_links_constant_path_reference(tmp_path):
+    repo = _make_repo(tmp_path)
+    (repo / "investment_screener").mkdir()
+    (repo / "investment_screener" / "backend").mkdir()
+    (repo / "investment_screener" / "backend" / "data").mkdir()
+    (repo / "investment_screener" / "backend" / "data" / "ta-sweep-results.json").write_text("{}")
+    (repo / "writer.py").write_text(
+        'TA_SWEEP_PATH = DATA_DIR / "ta-sweep-results.json"\n'
+        'json.dump(payload, open(TA_SWEEP_PATH, "w"))\n'
+    )
+
+    result = run_audit(str(repo))
+    entry = _target_entry(result, "ta-sweep-results.json")
+    all_refs = entry["known_producers"] + entry["known_consumers"]
+
+    assert any(r["referencing_file"] == "writer.py" for r in all_refs)
+    assert any(r["confidence"] == "probable" for r in all_refs)
+
+
+def test_links_pathlib_construction_reference(tmp_path):
+    repo = _make_repo(tmp_path)
+    (repo / "investment_screener").mkdir()
+    (repo / "investment_screener" / "backend").mkdir()
+    (repo / "investment_screener" / "backend" / "data").mkdir()
+    (repo / "investment_screener" / "backend" / "data" / "ta-sweep-results.json").write_text("{}")
+    (repo / "pathmaker.py").write_text(
+        'p = Path("investment_screener/backend/data") / "ta-sweep-results.json"\n'
+    )
+
+    result = run_audit(str(repo))
+    entry = _target_entry(result, "ta-sweep-results.json")
+    all_refs = entry["known_producers"] + entry["known_consumers"]
+
+    assert any(r["referencing_file"] == "pathmaker.py" for r in all_refs)
+
+
+def test_links_node_read_write_reference(tmp_path):
+    repo = _make_repo(tmp_path)
+    (repo / "investment_screener").mkdir()
+    (repo / "investment_screener" / "backend").mkdir()
+    (repo / "investment_screener" / "backend" / "data").mkdir()
+    (repo / "investment_screener" / "backend" / "data" / "ta-sweep-results.json").write_text("{}")
+    (repo / "route.ts").write_text(
+        'readFileSync("investment_screener/backend/data/ta-sweep-results.json", "utf8");\n'
+    )
+
+    result = run_audit(str(repo))
+    entry = _target_entry(result, "ta-sweep-results.json")
+    all_refs = entry["known_producers"] + entry["known_consumers"]
+
+    assert any(r["referencing_file"] == "route.ts" for r in all_refs)
+    assert any(r["confidence"] == "exact" for r in all_refs)
+
+
+def test_links_markdown_documentation_mention(tmp_path):
+    repo = _make_repo(tmp_path)
+    (repo / "investment_screener").mkdir()
+    (repo / "investment_screener" / "backend").mkdir()
+    (repo / "investment_screener" / "backend" / "data").mkdir()
+    (repo / "investment_screener" / "backend" / "data" / "ta-sweep-results.json").write_text("{}")
+    (repo / "SKILL.md").write_text(
+        "Read ta-sweep-results.json before generating the report.\n"
+    )
+
+    result = run_audit(str(repo))
+    entry = _target_entry(result, "ta-sweep-results.json")
+    all_refs = entry.get("doc_references", [])
+
+    assert any(r["referencing_file"] == "SKILL.md" for r in all_refs)
+    assert any(r["confidence"] == "mention_only" for r in all_refs)
+
+
+def test_real_ta_sweep_results_json_has_known_producers_and_consumers():
+    """End-to-end regression test against the ACTUAL repository (not tmp_path).
+
+    This is the exact case that exposed the original bug: ta-sweep-results.json
+    showed zero producers/consumers despite real, verified references in
+    ta_sweep_batch.py, daily_brief.py, and compute_conviction_scores.py.
+    """
+    result = run_audit(str(REPO_ROOT))
+    entry = _target_entry(result, "ta-sweep-results.json")
+    all_refs = entry["known_producers"] + entry["known_consumers"]
+    referencing_files = {r["referencing_file"] for r in all_refs}
+
+    assert any("ta_sweep_batch.py" in f for f in referencing_files)
+    assert any("daily_brief.py" in f for f in referencing_files)
+    assert any("compute_conviction_scores.py" in f for f in referencing_files)
+
+
 def test_run_audit_does_not_modify_or_delete_any_file(tmp_path):
     repo = _make_repo(tmp_path)
     target = repo / "data.json"
