@@ -8,6 +8,16 @@ regressions. This is the memory that makes the loop smarter over time.
 
 <!-- Sessions are appended below in reverse-chronological order (newest first) -->
 
+## 2026-07-18 — Weekly Review & Target Calibration
+
+**Macro Regime:** RISK-ON (score=2). VIX stable around 15-16, credit yields supportive. Semiconductor rotation and memory consolidation active. Hyperscaler capex remains structurally robust with nuclear and power agreements (Meta/Microsoft PPAs).
+**TA Sweep:** Full batch scan completed for holdings and watchlist. Key levels mapped for major movers (SNDK, PLTR, SPCX, SKHY).
+**Actions taken:** target-portfolio.json updated to establish a clean target baseline. 29 holdings calibrated, unlisted holdings (META, CLSK, CRM, NOW, TEAM, WQTM, CACI) set to 0. USD_CASH added as a target-weight holding (3.0%).
+**User overrides:** n/a (targets calibrated per user's specifications).
+**Tool failures:** none (all script tools executed successfully).
+**Thesis revisions:** templates daily_sweep.md.template and weekly_sweep.md.template updated to align with the new target baseline.
+**Notes:** Portfolio successfully synced from TradingView with 56 verified positions. High-conviction memory/HPC assets maintained. P&L context rules active for underwater positions (OKLO, BE, CEG).
+
 ## 2026-07-02 — Dashboard Data-Integrity Fixes (Tier 2/3 Evolution)
 
 **Trigger:** User caught an impossible "+29.79% today" on the Portfolio Summary dashboard,
