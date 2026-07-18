@@ -70,5 +70,5 @@ silently in either direction.
 ```bash
 python3 plugins/portfolio-advisor/scripts/generate_reports.py
 ```
-This parses the latest daily brief data, aggregates it by sub-strategy, and saves the output to the gitignored `temp/weekly-reviews/` directory as `weekly_confluence_scan_YYYY-MM-DD.md`.
+This parses the latest daily brief data, aggregates it by sub-strategy, and saves the output to the `investment_screener/backend/data/history/reviews/weekly/` directory as `weekly_confluence_scan_YYYY-MM-DD.md`.
 

@@ -10,8 +10,7 @@ from weekly_review import get_recent_reviews_context  # noqa: E402
 
 
 def test_get_recent_reviews_context(tmp_path):
-    # Set up temp folder matching the expected structure
-    temp_daily = tmp_path / "temp/daily-reviews"
+    temp_daily = tmp_path / "investment_screener/backend/data/history/reviews/daily"
     temp_daily.mkdir(parents=True)
     
     mock_review = (
