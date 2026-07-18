@@ -266,11 +266,10 @@ cat > temp/research_body.md << 'EOF'
 
 **Next Review Trigger**: {specific condition that would warrant a full re-valuation}
 EOF
-cd investment_screener/backend/py_services
-python3 -m intelligence.event_store \
+PYTHONPATH=investment_screener/backend/py_services python3 -m intelligence.event_store \
   --event-type RESEARCH_IMPORT --ticker {TICKER} --effective-at "$(date +%F)" \
   --status ACTIVE --title "{TICKER} research update" --body-file temp/research_body.md
-python3 -m intelligence.view_generator {TICKER}
+PYTHONPATH=investment_screener/backend/py_services python3 -m intelligence.view_generator {TICKER}
 ```
 
 ---
