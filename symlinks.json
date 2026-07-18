@@ -786,6 +786,24 @@
       "dst": "investment_screener/backend/py_services/generate_reports.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/generate_reports.py",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/generate_reports.py",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/daily_report.md.template",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/assets/templates/daily_report.md.template",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/assets/templates/weekly_report.md.template",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/assets/templates/weekly_report.md.template",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
