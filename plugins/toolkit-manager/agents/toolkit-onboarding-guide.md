@@ -55,6 +55,16 @@ Once dependencies are confirmed, have them check if the private JSON data files 
 - `cash_flows.json` ← `cash_flows.json.example`
 - `portfolio-config.json` ← `portfolio-config.json.example`
 
+**Data architecture note:** portfolio/target-portfolio/watchlist data is currently JSON-file
+based (the files above). A SQLite-backed data model (`account`/`investment`/
+`account_investment`, replacing the current `portfolio.json`/`target-portfolio.json`/
+`watchlist.json` split) is in active design, not yet implemented — see
+`../references/data-architecture/domain-data-model.md` and the DDL in
+`../references/data-architecture/sql/` for the current design. Do not tell users tables get
+created automatically as part of this onboarding flow; that isn't built yet. If a future
+version of this guide needs to run schema initialization for a clean install, it goes here in
+Phase 2, once the model above is implemented — not before.
+
 Once the files are present, ask if they've run the startup script yet:
 ```bash
 python3 run_investment_toolkit.py

@@ -1,0 +1,1 @@
+../../../../docs/architecture/domain-data-model.md
