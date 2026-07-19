@@ -120,7 +120,6 @@ erDiagram
         TEXT lifecycle_status "INITIATE|ACCUMULATE|MAINTAIN|TRIM|EXIT|WATCHLIST|AVOID|RESEARCH_ONLY"
         REAL target_weight
         TEXT target_action
-        REAL target_entry_price
         TEXT standing_decision_type
         TEXT standing_decision_reason
         TEXT standing_decision_source
@@ -172,6 +171,7 @@ erDiagram
     PRICE_LEVEL_TIER {
         TEXT tier_id PK
         TEXT price_level_set_id FK
+        TEXT tier_kind "BUY_TIER|TARGET_ENTRY|ALERT(reserved)"
         INTEGER tier_number
         REAL price
         TEXT action
@@ -287,7 +287,9 @@ CREATE TABLE investment (
     lifecycle_status                 TEXT,                  -- INITIATE|ACCUMULATE|MAINTAIN|TRIM|EXIT|WATCHLIST|AVOID|RESEARCH_ONLY
     target_weight                     REAL,
     target_action                      TEXT,
-    target_entry_price                  REAL,
+    -- target_entry_price intentionally NOT a column here — moved to price_level_tier
+    -- (tier_kind='TARGET_ENTRY'), since it's a price level like any other, not a scalar
+    -- investment attribute. See price_level_tier below.
     standing_decision_type                TEXT,
     standing_decision_reason               TEXT,
     standing_decision_source                TEXT,
@@ -336,6 +338,7 @@ CREATE TABLE price_level_set (
 CREATE TABLE price_level_tier (
     tier_id               TEXT PRIMARY KEY,
     price_level_set_id      TEXT NOT NULL REFERENCES price_level_set(price_level_set_id),
+    tier_kind                 TEXT NOT NULL DEFAULT 'BUY_TIER',  -- BUY_TIER (from priceLevels.buyTiers) | TARGET_ENTRY (from the old scalar targetEntryPrice — confirmed NOT redundant with BUY_TIER prices: real data shows different values, e.g. SNDK target 1350 vs. buy tiers at 1048/107) | ALERT (reserved: see note below)
     tier_number               INTEGER NOT NULL,
     price                      REAL,
     action                      TEXT,
@@ -347,7 +350,22 @@ CREATE TABLE price_level_tier (
     condition                         TEXT,
     status                             TEXT
 );
+```
 
+**On alerts (`tradingview_alerts_actual.json`) as a possible fourth `tier_kind`:** raised directly
+— should TradingView alert levels (`price`, `condition`, `symbol`, currently 203 real entries)
+join this same table instead of sitting off to the side as pure external cache? Conceptually
+yes — an alert is a price level of interest tied to an investment, the same shape as a buy tier
+or target entry. Not adopted in this pass, for a real reason, not laziness: alerts are
+TradingView-authoritative and synced, not locally authored like `price_level_tier`'s other three
+kinds — migrating them would mean deciding whether `price_level_tier` becomes a mixed
+authoritative/synced table (a modeling smell) or splitting sync-vs-authored into separate tables
+that happen to share a shape. Recommend keeping `ALERT` as a reserved, not-yet-used `tier_kind`
+value in the column comment above (documenting the intent) without actually migrating
+`tradingview_alerts_actual.json` in this pass — a decision worth revisiting once the smaller,
+authored-data domains are proven out, not a default "leave it out" call.
+
+```sql
 CREATE TABLE projection_version (
     projection_id         TEXT PRIMARY KEY,
     investment_id            TEXT NOT NULL REFERENCES investment(investment_id),
@@ -462,10 +480,10 @@ Same `investment_price`/live-price dependency as v2 — unresolved by table coun
 | `holdings[].role` | target-portfolio.json | `investment.lifecycle_status` (real values: accumulate/avoid/watchlist/trim/initiate/exit) |
 | `holdings[].action` | target-portfolio.json | `investment.target_action` |
 | `holdings[].standingDecision.*` | target-portfolio.json | `investment.standing_decision_{type,reason,source,review}` |
-| `holdings[].targetEntryPrice` | target-portfolio.json | `investment.target_entry_price` |
+| `holdings[].targetEntryPrice` | target-portfolio.json | `price_level_tier` row, `tier_kind='TARGET_ENTRY'` — **not** an `investment` column (see below) |
 | `holdings[].thesisForInclusion` | target-portfolio.json | `investment.thesis_for_inclusion` |
 | `holdings[].agentRationale` | target-portfolio.json | `investment.agent_rationale` |
-| `holdings[].priceLevels` | target-portfolio.json | `price_level_set` + `price_level_tier` |
+| `holdings[].priceLevels` | target-portfolio.json | `price_level_set` + `price_level_tier` (`tier_kind='BUY_TIER'`) |
 | `holdings[].shares` | target-portfolio.json | not stored on `investment` — superseded by real-time `account_investment.quantity`, same reasoning as v2 |
 | `symbol`/`shares`/`book_price` | portfolio.json | `account_investment.investment_id`/`quantity`/`average_cost` — **now with real account attribution**, per the resolved `fetch_broker_data.py` finding (v2 §, unchanged) |
 | `market_value`/`price` | portfolio.json | `investment_valuation` view / `investment_price`, not stored |
