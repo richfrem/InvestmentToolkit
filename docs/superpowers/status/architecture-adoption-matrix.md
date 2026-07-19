@@ -6,10 +6,10 @@ This document tracks the migration status of every consumer in the ecosystem, in
 
 | Status | Count | Description |
 |---|---:|---|
-| USES_LEDGER_REPOSITORY | 13 | Actively queries the new SQLite ledger repository layer. |
+| USES_LEDGER_REPOSITORY | 15 | Actively queries the new SQLite ledger repository layer. |
 | USES_GENERATED_VIEW | 2 | Actively queries the generated views (like *.summary.md). |
-| REMAINS_JSON_BY_DESIGN | 148 | Legitimate flat-file configuration/portfolio target JSON (including resolved unknowns). |
-| MIGRATION_REQUIRED | 5 | Legitimate migration candidate that must be rewired. |
+| REMAINS_JSON_BY_DESIGN | 149 | Legitimate flat-file configuration/portfolio target JSON (including resolved unknowns). |
+| MIGRATION_REQUIRED | 2 | Legitimate migration candidate that must be rewired. |
 | OUT_OF_SCOPE | 1 | 13F and other domain data not in-scope for this phase. |
 | UNKNOWN_REQUIRES_REVIEW | 0 | Requires review to determine correct taxonomy status. |
 | **Total Consumers** | **169** | |
@@ -32,9 +32,6 @@ This document tracks the migration status of every consumer in the ecosystem, in
 |---|---|---|---|---|---|---|---|
 | `investment_screener/backend/src/routes/docs.ts` | backend route | data/research/*.md | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | No | Medium |
 | `investment_screener/backend/py_services/evolution_events.py` | plugin script | events.jsonl, ta-sweep-results.json | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | No | Medium |
-| `plugins/portfolio-advisor/skills/daily-loop/SKILL.md` | skill | ta-sweep-results.json / events.jsonl | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | No | Medium |
-| `plugins/portfolio-advisor/skills/daily-loop/scripts/generate_reports.py` | skill | target-portfolio.json | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | Yes | Medium |
-| `plugins/portfolio-advisor/agents/daily-loop-agent.md` | sub-agent | ta-sweep-results.json / events.jsonl | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | No | Medium |
 | `investment_screener/backend/src/routes/thirteenf.ts` | backend route | 0002045724_diff.json, 0002045724_index.json | n/a | OUT_OF_SCOPE | No | n/a | Low |
 | `investment_screener/backend/src/routes/screener.ts` | backend route | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `investment_screener/backend/src/routes/stock.ts` | backend route | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
@@ -141,6 +138,7 @@ This document tracks the migration status of every consumer in the ecosystem, in
 | `plugins/portfolio-advisor/skills/calibrate-targets/scripts/update_thesis.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `plugins/portfolio-advisor/skills/calibrate-targets/scripts/validate_weights.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `plugins/portfolio-advisor/skills/calibrate-targets/scripts/verify_refresh.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
+| `plugins/portfolio-advisor/skills/daily-loop/scripts/generate_reports.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
 | `plugins/portfolio-advisor/skills/portfolio-health/SKILL.md` | skill | n/a | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `plugins/portfolio-advisor/skills/portfolio-health/scripts/apply_catalyst.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `plugins/portfolio-advisor/skills/portfolio-health/scripts/generate_portfolio_blueprint.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
@@ -196,9 +194,11 @@ This document tracks the migration status of every consumer in the ecosystem, in
 | `investment_screener/backend/py_services/daily_brief.py` | report generator | n/a | intelligence.sqlite (ledger) | USES_LEDGER_REPOSITORY | No | Yes | Low |
 | `plugins/portfolio-advisor/scripts/daily_brief.py` | report generator | n/a | intelligence.sqlite (ledger) | USES_LEDGER_REPOSITORY | No | Yes | Low |
 | `plugins/portfolio-advisor/skills/daily-brief/scripts/daily_brief.py` | skill | n/a | intelligence.sqlite (ledger) | USES_LEDGER_REPOSITORY | No | Yes | Low |
+| `plugins/portfolio-advisor/skills/daily-loop/SKILL.md` | skill | n/a | intelligence.sqlite (ledger) | USES_LEDGER_REPOSITORY | No | Yes | Low |
 | `plugins/stock-valuation/skills/stock-research/SKILL.md` | skill | n/a | intelligence.sqlite (ledger) | USES_LEDGER_REPOSITORY | No | Yes | Low |
 | `plugins/stock-valuation/skills/stock_valuation/SKILL.md` | skill | n/a | intelligence.sqlite (ledger) | USES_LEDGER_REPOSITORY | No | Yes | Low |
 | `plugins/tradingview/skills/ta-daily-sweep/scripts/ta_sweep_batch.py` | skill | n/a | intelligence.sqlite (ledger) | USES_LEDGER_REPOSITORY | No | Yes | Low |
+| `plugins/portfolio-advisor/agents/daily-loop-agent.md` | sub-agent | n/a | intelligence.sqlite (ledger) | USES_LEDGER_REPOSITORY | No | Yes | Low |
 
 ## Skill Audit
 
@@ -208,7 +208,7 @@ This section documents the classification of all relevant `SKILL.md` orchestrato
 |---|---|---|---|---|
 | `plugins/stock-valuation/skills/stock_valuation/SKILL.md` | Single stock DCF evaluation | USES_LEDGER_REPOSITORY | intelligence.sqlite | Wired via PR #77 to call ledger CLI |
 | `plugins/stock-valuation/skills/stock-research/SKILL.md` | Qualitative catalyst sweep | USES_LEDGER_REPOSITORY | intelligence.sqlite | Wired via PR #77 to call ledger CLI |
-| `plugins/portfolio-advisor/skills/daily-loop/SKILL.md` | Interactive daily brief and triage | MIGRATION_REQUIRED | intelligence.sqlite (ledger) | Triggers daily_brief.py and ta_sweep_batch.py which are migration candidates |
+| `plugins/portfolio-advisor/skills/daily-loop/SKILL.md` | Interactive daily brief and triage | USES_LEDGER_REPOSITORY | intelligence.sqlite (ledger) | Instructs to run and read daily brief and TA sweeps via SQLite ledger queries |
 | `plugins/portfolio-advisor/skills/portfolio-health/SKILL.md` | Conviction score and targets verify | REMAINS_JSON_BY_DESIGN | n/a | Uses only target-portfolio.json, target weight math is out-of-scope for the ledger |
 | `plugins/portfolio-advisor/skills/rebalance-portfolio/SKILL.md` | Valuation-gated rebalancer | REMAINS_JSON_BY_DESIGN | n/a | Uses target-portfolio.json and account policy JSON, out-of-scope |
 | `plugins/portfolio-advisor/skills/strategic-review/SKILL.md` | Conviction target weighting session | REMAINS_JSON_BY_DESIGN | n/a | Uses target-portfolio.json, out-of-scope |
@@ -219,7 +219,7 @@ Classification of specialized agent instructions:
 
 | Agent | Purpose | Status | Rationale |
 |---|---|---|---|
-| `plugins/portfolio-advisor/agents/daily-loop-agent.md` | Interactive daily workflow engine | MIGRATION_REQUIRED | Operates daily loop, reads TA sweep and daily briefs |
+| `plugins/portfolio-advisor/agents/daily-loop-agent.md` | Interactive daily workflow engine | USES_LEDGER_REPOSITORY | Instructs to check latest TECHNICAL_SWEEP and REVIEW_DAILY entries in ledger |
 | `plugins/portfolio-advisor/agents/weekly-review-agent.md` | Weekend review loop agent | REMAINS_JSON_BY_DESIGN | Reads only portfolio target weight files |
 | `plugins/portfolio-advisor/agents/single-stock-advisor.md` | Single-equity analyst helper | REMAINS_JSON_BY_DESIGN | Focuses on DCF projections JSON and target sizing |
 | `plugins/portfolio-advisor/agents/risk-officer-agent.md` | Risk gating advisor | REMAINS_JSON_BY_DESIGN | Validates target sizes and policies |

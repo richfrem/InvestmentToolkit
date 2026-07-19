@@ -229,8 +229,8 @@ as a hypothesis to verify, not a fact.**
    unchecked).
 
 Also outstanding, not yet sequenced:
-- Resolve the 5 remaining `MIGRATION_REQUIRED` consumers individually (Wave 1: 2, Wave 2: 3).
-- Steps 1, 2, 3, 4, and 5 (dailybrief.ts) of Wave 1 have been completed and verified.
+- Resolve the 2 remaining `MIGRATION_REQUIRED` consumers individually (Wave 2).
+- Wave 1 has been completely executed, verified, and closed out (all 7 steps complete).
 - Human review of the 2 genuinely-unknown JSON files.
 - Decide on regeneration (or not) of the lost files per the recovery plan.
 - Fix the dataflow-tracking limitation (Known Defect #1) if higher accuracy is wanted before
