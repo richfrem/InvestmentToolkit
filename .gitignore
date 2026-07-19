@@ -99,6 +99,11 @@ investment_screener/backend/data/intelligence.sqlite
 investment_screener/backend/data/intelligence.sqlite-wal
 investment_screener/backend/data/intelligence.sqlite-shm
 
+# Domain-model DB (derived/rebuildable from projections/*.json etc., never committed — ADR-029, Wave 1 Task 4)
+investment_screener/backend/data/domain_model.sqlite
+investment_screener/backend/data/domain_model.sqlite-wal
+investment_screener/backend/data/domain_model.sqlite-shm
+
 # Runtime secrets (generated at startup, never committed)
 .runtime/
 
