@@ -177,6 +177,51 @@ class TestSweepResultsPersistence:
         data = json.loads(out_file.read_text())
         assert data["count"] == 2, "Second write must overwrite — not append"
 
+    def test_save_sweep_results_writes_to_ledger_and_sqlite(self, tmp_path: Path):
+        """save_sweep_results() must write TECHNICAL_SWEEP events to the ledger and SQLite DB."""
+        sys.path.insert(0, str(SCRIPT.parent))
+        from ta_sweep_batch import save_sweep_results  # noqa: PLC0415
+        sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+        from intelligence.db_client import initialize_db  # noqa: E402
+        import sqlite3
+
+        out_file = tmp_path / "ta-sweep-results.json"
+        jsonl_path = tmp_path / "observations.jsonl"
+        db_path = tmp_path / "intelligence.sqlite"
+
+        # Initialize the test DB and instrument
+        conn = initialize_db(str(db_path))
+        conn.execute("INSERT INTO instrument VALUES ('us-aapl', 'AAPL', 'NASDAQ', 'Apple', '2026-07-18', NULL);")
+        conn.commit()
+        conn.close()
+
+        save_sweep_results(FIXTURE_RESULTS, out_file, jsonl_path=jsonl_path, db_path=db_path)
+
+        # 1. Verify JSON file still exists (legacy compatibility)
+        assert out_file.exists()
+
+        # 2. Verify JSONL ledger contains the TECHNICAL_SWEEP event
+        assert jsonl_path.exists()
+        lines = jsonl_path.read_text().splitlines()
+        assert len(lines) == 1
+        record = json.loads(lines[0])
+        assert record["event_type"] == "TECHNICAL_SWEEP"
+        assert record["ticker"] == "AAPL"
+        
+        # 3. Verify SQLite DB contains the technical sweep event resolved to instrument
+        conn = sqlite3.connect(str(db_path))
+        cursor = conn.execute("SELECT instrument_id, event_type, status, payload_json FROM intelligence_event;")
+        row = cursor.fetchone()
+        assert row is not None
+        assert row[0] == "us-aapl"
+        assert row[1] == "TECHNICAL_SWEEP"
+        assert row[2] == "ACTIVE"
+        payload = json.loads(row[3])
+        assert payload["ticker"] == "AAPL"
+        assert payload["rsi"] == 45.0
+        conn.close()
+
+
 
 # ── pctToFV denominator tests ─────────────────────────────────────────────────
 
