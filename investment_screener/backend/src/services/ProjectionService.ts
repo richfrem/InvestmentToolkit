@@ -1,84 +1,64 @@
 /**
  * ProjectionService.ts - DCF Projections persistence and lifecycle manager.
- * 
+ *
  * Purpose:
- *   Manages the lifecycle of DCF projections, including validation, versioning, and file-system persistence.
- *   Implements atomic writes and file locking to ensure data integrity during concurrent edits.
- * 
+ *   Manages the lifecycle of DCF projections, including validation, versioning, and
+ *   SQLite persistence (ADR-029). Delegates all storage to `ProjectionRepository`, which
+ *   reads/writes the shared `domain_model.sqlite` `projection_version`/
+ *   `projection_scenario` tables via `better-sqlite3`.
+ *
  * Layer:
  *   Backend / Services / Data Persistence
- * 
+ *
  * Usage Examples:
  *   await projectionService.saveProjection(projectionData);
  *   const list = await projectionService.getProjections('AAPL');
- * 
+ *
+ * Migration note (Task 5, replaces the prior fs.promises + proper-lockfile
+ * implementation that wrote `data/projections/{TICKER}.json`):
+ *   `proper-lockfile` is no longer used in this file. It existed solely to serialize
+ *   concurrent read-modify-write cycles against the ticker's JSON file. SQLite (via
+ *   better-sqlite3's synchronous, single-connection API and `db.transaction()`) makes
+ *   each upsert atomic at the statement/transaction level, so the same class of race this
+ *   file's lock protected against can no longer occur here. `proper-lockfile` remains a
+ *   dependency and is still used elsewhere in the codebase — this note only concerns this
+ *   file.
+ *
  * Key Functions (Index):
- *   - getFilePath(ticker: string) - Resolves filesystem path for ticker projection JSON
  *   - getProjections(ticker: string) - Retrieves all stored projection versions for a specific ticker symbol
  *   - getAllProjections() - Aggregates projections across all tickers for portfolio-wide analysis
  *   - saveProjection(projection: Projection) - Validates incoming data, manages version increments, and performs atomic writes
  *   - deleteProjection(ticker: string, id: string) - Locates and deletes a specific projection version
- * 
+ *
  * Key Input Dependencies:
- *   - investment_screener/backend/data/projections/ (filesystem storage folder)
+ *   - ./ProjectionRepository (SQLite read/write against data/domain_model.sqlite)
  *   - ../utils/zod-schemas (Projection, ProjectionSchema validation)
- * 
+ *
  * Key Output Dependencies:
- *   - investment_screener/backend/data/projections/ (writes projections JSON data)
+ *   - investment_screener/backend/data/domain_model.sqlite (writes projection_version / projection_scenario rows)
  */
-import fs from 'fs';
-import path from 'path';
-import { lock } from 'proper-lockfile';
 import { Projection, ProjectionSchema } from '../utils/zod-schemas';
-const PROJECTIONS_DIR = path.resolve(__dirname, '../../data/projections');
-
-// Ensure directory exists
-if (!fs.existsSync(PROJECTIONS_DIR)) {
-    fs.mkdirSync(PROJECTIONS_DIR, { recursive: true });
-}
+import { ProjectionRepository } from './ProjectionRepository';
+import { DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 
 export class ProjectionService {
+    private repository: ProjectionRepository;
 
-    private getFilePath(ticker: string): string {
-        // Sanitize ticker to prevent path traversal
-        const safeTicker = ticker.replace(/[^A-Z0-9.\-]/g, '');
-        return path.join(PROJECTIONS_DIR, `${safeTicker}.json`);
+    constructor(dbPath: string = DOMAIN_MODEL_DB_FILE) {
+        this.repository = new ProjectionRepository(dbPath);
     }
 
     async getProjections(ticker: string): Promise<Projection[]> {
-        const filePath = this.getFilePath(ticker);
-        if (!fs.existsSync(filePath)) {
-            return [];
-        }
         try {
-            const data = await fs.promises.readFile(filePath, 'utf-8');
-            const json = JSON.parse(data);
-            return Array.isArray(json) ? json : [];
+            return this.repository.findByTicker(ticker);
         } catch (error) {
-            console.error(`[ProjectionService] Error reading file for ${ticker}:`, error);
+            console.error(`[ProjectionService] Error reading projections for ${ticker}:`, error);
             return [];
         }
     }
 
     async getAllProjections(): Promise<Projection[]> {
-        const files = (await fs.promises.readdir(PROJECTIONS_DIR)).filter(f => f.endsWith('.json'));
-        let all: Projection[] = [];
-        
-        // Use Promise.all to read files in parallel for better performance
-        const results = await Promise.all(files.map(async (f) => {
-            try {
-                const data = await fs.promises.readFile(path.join(PROJECTIONS_DIR, f), 'utf-8');
-                return JSON.parse(data);
-            } catch (e) {
-                console.error(`[ProjectionService] Error loading ${f}`, e);
-                return null;
-            }
-        }));
-
-        for (const json of results) {
-            if (Array.isArray(json)) all.push(...json);
-        }
-        return all;
+        return this.repository.findAll();
     }
 
     async saveProjection(projection: Projection): Promise<void> {
@@ -90,85 +70,13 @@ export class ProjectionService {
         }
         const validated = parseResult.data as Projection;
 
-        const ticker = validated.ticker;
-        const filePath = this.getFilePath(ticker);
-
-        if (!fs.existsSync(filePath)) {
-            await fs.promises.writeFile(filePath, '[]');
-        }
-
-        let release: () => Promise<void>;
-        try {
-            release = await lock(filePath, { retries: { retries: 5, maxTimeout: 2000 } });
-        } catch (e) {
-            throw new Error('Could not acquire file lock for saving.');
-        }
-
-        try {
-            const fileContent = await fs.promises.readFile(filePath, 'utf-8');
-            let projections: Projection[] = [];
-            try {
-                projections = JSON.parse(fileContent);
-            } catch (e) {
-                projections = [];
-            }
-
-            const existingIndex = projections.findIndex(p => p.id === validated.id);
-            if (existingIndex !== -1) {
-                const existing = projections[existingIndex];
-                if (existing.version > validated.version) {
-                    throw new Error(
-                        `Conflict: Server has version ${existing.version}, incoming is ${validated.version}`
-                    );
-                }
-                // Server-side increment
-                (validated as any).version = existing.version + 1;
-                (validated as any).updatedAt = new Date().toISOString();
-                projections[existingIndex] = validated;
-            } else {
-                // New projection
-                (validated as any).version = 1;
-                projections.push(validated);
-            }
-
-            // Atomic write
-            const tempPath = `${filePath}.tmp`;
-            await fs.promises.writeFile(tempPath, JSON.stringify(projections, null, 2));
-            await fs.promises.rename(tempPath, filePath);
-        } finally {
-            await release();
-        }
+        // Upsert-by-id-then-version-increment (conflict/version logic lives in the
+        // repository so it can be exercised directly against a real SQLite file in tests).
+        this.repository.upsertProjection(validated);
     }
 
     async deleteProjection(ticker: string, id: string): Promise<boolean> {
-        const filePath = this.getFilePath(ticker);
-        if (!fs.existsSync(filePath)) return false;
-
-        let release: () => Promise<void>;
-        try {
-            release = await lock(filePath, { retries: { retries: 5, maxTimeout: 2000 } });
-        } catch (e) {
-            throw new Error('Could not acquire lock for deletion.');
-        }
-
-        try {
-            const fileContent = await fs.promises.readFile(filePath, 'utf-8');
-            let projections: Projection[] = JSON.parse(fileContent);
-
-            const initialLength = projections.length;
-            projections = projections.filter(p => p.id !== id);
-
-            if (projections.length !== initialLength) {
-                const tempPath = `${filePath}.tmp`;
-                await fs.promises.writeFile(tempPath, JSON.stringify(projections, null, 2));
-                await fs.promises.rename(tempPath, filePath);
-                return true;
-            }
-            return false;
-
-        } finally {
-            await release();
-        }
+        return this.repository.deleteById(ticker, id);
     }
 }
 
