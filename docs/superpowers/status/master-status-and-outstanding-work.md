@@ -214,21 +214,22 @@ as a hypothesis to verify, not a fact.**
 
 ## 8. Outstanding Work, Priority Order (User-Specified)
 
-1. **Complete skill/sub-agent/backend/frontend audit** — COMPLETED. Verified 158 total consumers classified, including specific audits of 47 skills, 6 sub-agents, 5 backend routes, and 2 frontend components. Detailed breakdown captured in `docs/superpowers/status/architecture-adoption-matrix.md`.
+1. **Complete skill/sub-agent/backend/frontend audit** — COMPLETED. Verified 166 total consumers classified, including specific audits of 50 skills, 6 sub-agents, 11 backend routes/services, and 2 frontend components. Detailed breakdown captured in `docs/superpowers/status/architecture-adoption-matrix.md`.
 2. **Produce architecture adoption matrix** — COMPLETED. Output matrix generated in `docs/superpowers/status/architecture-adoption-matrix.md` tracking names, types, sources, status, migration required flags, test coverage, and risk levels.
-3. **Produce migration dry-run report** — for Task 6 (152 research files) and Task 9
+3. **Produce Wave 1 implementation plan** — COMPLETED. Detailed execution plan created in `docs/superpowers/status/wave1-implementation-plan.md` resolving architectural ambiguities and detailing interface/tests/rollbacks for all Wave 1 candidates.
+4. **Produce migration dry-run report** — for Task 6 (152 research files) and Task 9
    (`researchReport` pointers), per corrective instructions §5: exact command, files affected,
    backup/archive strategy, expected event count, rollback plan, `git status` before execution.
    Not started.
-4. **Review dry-run results** — blocked on #3.
-5. **Decide whether to execute real migration** — blocked on #4, requires explicit user
+5. **Review dry-run results** — blocked on #4.
+6. **Decide whether to execute real migration** — blocked on #5, requires explicit user
    approval per corrective instructions §5.
-6. **Cleanup discussion** — explicitly blocked until after successful migration and validation
+7. **Cleanup discussion** — explicitly blocked until after successful migration and validation
    (corrective instructions §10; blocker checklist in the session-state document, mostly
    unchecked).
 
 Also outstanding, not yet sequenced:
-- Resolve the 10 `MIGRATION_REQUIRED` + 10 `UNKNOWN_REQUIRES_REVIEW` consumers individually.
+- Resolve the 13 `MIGRATION_REQUIRED` consumers individually (Wave 1: 6, Wave 2: 7).
 - Human review of the 2 genuinely-unknown JSON files.
 - Decide on regeneration (or not) of the lost files per the recovery plan.
 - Fix the dataflow-tracking limitation (Known Defect #1) if higher accuracy is wanted before
