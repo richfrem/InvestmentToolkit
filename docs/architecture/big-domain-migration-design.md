@@ -182,7 +182,7 @@ CREATE TABLE projection_version (
     fair_value               REAL,
     action                   TEXT,             -- INITIATE|ACCUMULATE|MAINTAIN|TRIM|EXIT|WATCHLIST (CLAUDE.md pitfall #6)
     rationale                 TEXT,
-    research_report_pointer   TEXT,             -- the field this whole session's bug lived in
+    research_event_id        TEXT REFERENCES intelligence_event(event_id),
     snapshot_json             TEXT,             -- price/currency/market-data snapshot at analysis time
     scenarios_json             TEXT,            -- bear/base/bull scenario detail — nested, not flattened to columns
     analytics_log_json         TEXT,
@@ -196,41 +196,88 @@ CREATE INDEX idx_projection_action ON projection_version(action);
 `scenarios_json`/`snapshot_json`/`analytics_log_json` stay JSON columns deliberately — this is
 where the "not everything is a flat row" lesson from the smaller domains applies in reverse: DCF
 scenario math has deeply nested, variable-shape detail that isn't queried field-by-field the way
-`fair_value`/`action`/`research_report_pointer` are. Flattening those into 30+ columns would add
+`fair_value`/`action`/`research_event_id` are. Flattening those into 30+ columns would add
 schema churn every time a valuation script's output shape changes, for no query benefit.
 
-### Migration strategy
+### Fix 1 — `research_report_pointer` redesign (required, was the root cause of this session's bug)
 
-1. `ProjectionService.ts`'s `saveProjection()` — confirmed via code read to be the actual sole
-   producer (validates data, manages version increments, atomic writes) — becomes the only
-   thing that writes `projection_version` rows. This is the cleanest of the three domains
-   because there's already exactly one producer, not 20.
-2. Rewire the `researchReport` pointer mechanism at the same time — this is the field
-   responsible for this entire session's original bug, and it needs to be redesigned as part of
-   this move, not carried over unchanged.
-3. Every consumer switches from reading `projections/{TICKER}.json` to a repository query.
-4. Parity proof per ticker (144 files → 144 row-groups, diffed).
-5. Archive: `git mv investment_screener/backend/data/projections/
-   ARCHIVE/investment_screener/backend/data/projections/` (144 files, one commit, full history
-   preserved).
+**Old design: a free-text filename string** (`"AAPL.summary.md"`), resolved by pattern-matching
+its shape against a regex in `docs.ts` to decide whether to query the ledger or read disk. That
+string-shape dependency is exactly what broke — a script rewrote the string to a shape the query
+layer didn't recognize, and nothing caught it until a live user hit a 404.
 
-### Producer inventory
+**New design: `research_event_id`, a real foreign key into `intelligence_event.event_id`.** Not
+a filename, not a string with an implicit shape contract — a reference that either resolves to a
+real row or is NULL. Resolution to a human-readable view (if one is still needed on disk) becomes
+the repository layer's job at read time, not something encoded and reverse-engineered from a
+string. This eliminates the entire class of bug: there is no filename shape to get wrong,
+because there's no filename in the data model at all. If the referenced event doesn't exist, the
+foreign key constraint (or a repository-level check) says so immediately, instead of failing
+silently as a 404 three layers away.
 
-`ProjectionService.ts` is the real, sole write path (confirmed by code inspection: it owns
-version increments and atomic writes). `audit_json_usage.py`'s 2 write-matches are the
-audit tool's own report generation, not projection data — excluded. **1 real producer.**
+### Fix 2 — precise, non-partial archive trigger
 
-### Consumer inventory
+Archiving `investment_screener/backend/data/projections/` happens **only when every one of these
+is true, checked in order, with evidence recorded for each — not as a single "looks done" call:**
 
-`ThesisService.ts`, `compute_conviction_scores.py`, `rebalancer.py`, `framework_score.py`,
-`ta_sweep_batch.py`, `persist_etf_analysis.py`, `watchlist_manager.py`, `comps_valuation.py`,
-`generate_review.py`, `portfolio_action.py`, `consolidate_research.py`, `scan_opportunities.py`,
-`verify_refresh.py`, `update_price_levels.py`, `generate_portfolio_blueprint.py` — **~15 real
-consumers**, plus `ThesisService.ts` and `ProjectionService.ts` both read as well as write
-(version history lookups). `TradePrepModal.tsx`, `api.ts`, `peer_bench.py`, `local_api.py`,
-`generate_grok_prompt.py`, `apply_catalyst.py` matched the grep by mentioning "projections" as a
-path/type reference with no actual I/O call — need direct confirmation before counting as real
-consumers, flagged rather than assumed.
+1. `projection_version` table exists and passes its own schema tests.
+2. `ProjectionService.ts` writes exclusively to SQLite (no remaining `fs.promises.writeFile` call
+   against the projections directory).
+3. `apply_catalyst.py` — the second real producer, found during this design pass, see below —
+   writes exclusively to SQLite.
+4. Every row in the Consumer Migration Table below shows `Cutover status: DONE`, not just
+   "planned" or "in progress."
+5. Byte/field-level parity proven for all 144 source files against their SQL rows (not a sample).
+6. The live `/api/projections/:ticker` route and the frontend `TradePrepModal.tsx` path are
+   manually exercised against the SQLite-backed service and confirmed working — not just unit
+   tested.
+7. `grep -rn "data/projections" investment_screener plugins` returns zero matches that represent
+   real file I/O (doc/comment mentions excluded, verified individually, not assumed).
+
+Only after all seven are true: `git mv investment_screener/backend/data/projections/
+ARCHIVE/investment_screener/backend/data/projections/` as one commit, full git history preserved.
+**No step is skipped because the ones before it looked fine.**
+
+### Producer inventory (corrected — 2 real producers, not 1)
+
+- `ProjectionService.ts` — `saveProjection()`, confirmed by code read: validates, manages version
+  increments, atomic writes. Reached exclusively through `routes/projections.ts`
+  (`GET /`, `GET /:ticker`, `POST /`, `DELETE /:ticker/:id`) — this route file was missing from
+  the original version of this document; found during verification for this revision.
+- `apply_catalyst.py` — **also missed in the original version of this document.** Confirmed by
+  code read: `json.loads(proj_path.read_text())` then `locked_write_json(proj_path, out)` —
+  reads and writes `projections/{TICKER}.json` directly, bypassing `ProjectionService.ts`
+  entirely. This is a second, independent write path that must be migrated, not just the service.
+
+### Consumer Migration Table (required — no domain moves to done without this)
+
+| Consumer | Current read | New method | Test added | Parity check | Cutover status |
+|---|---|---|---|---|---|
+| `routes/projections.ts` (+ `ProjectionService.ts`) | `fs.readFile` per ticker | `projection_repository` query | not yet written | not yet run | NOT STARTED |
+| `TradePrepModal.tsx`, `api.ts` (frontend) | `fetch('/api/projections/:ticker')` — HTTP only, never touches the file | none needed — already abstracted behind the route above | N/A | covered transitively by the route's own test | NOT STARTED (blocked on route) |
+| `ThesisService.ts` | `fs.readFile` (version history lookups) | `projection_repository` query | not yet written | not yet run | NOT STARTED |
+| `compute_conviction_scores.py` | `json.load` | repository call | not yet written | not yet run | NOT STARTED |
+| `rebalancer.py` | `json.load` | repository call | not yet written | not yet run | NOT STARTED |
+| `framework_score.py` | `json.load` | repository call | not yet written | not yet run | NOT STARTED |
+| `ta_sweep_batch.py` | `json.load` | repository call | not yet written | not yet run | NOT STARTED |
+| `persist_etf_analysis.py` | `json.load` | repository call | not yet written | not yet run | NOT STARTED |
+| `watchlist_manager.py` | `json.load` | repository call | not yet written | not yet run | NOT STARTED |
+| `comps_valuation.py` | `json.load` | repository call | not yet written | not yet run | NOT STARTED |
+| `generate_review.py` | `json.load` | repository call | not yet written | not yet run | NOT STARTED |
+| `portfolio_action.py` | `json.load` | repository call | not yet written | not yet run | NOT STARTED |
+| `consolidate_research.py` | `json.load` | repository call | not yet written | not yet run | NOT STARTED |
+| `scan_opportunities.py` | `json.load` | repository call | not yet written | not yet run | NOT STARTED |
+| `verify_refresh.py` | `json.load` | repository call | not yet written | not yet run | NOT STARTED |
+| `update_price_levels.py` | `json.load` (+ write, see producers) | repository call | not yet written | not yet run | NOT STARTED |
+| `generate_portfolio_blueprint.py` | `json.load` | repository call | not yet written | not yet run | NOT STARTED |
+| `apply_catalyst.py` (as consumer half of its dual role) | `json.load` | repository call | not yet written | not yet run | NOT STARTED |
+| `generate_grok_prompt.py` | `json.loads(path.read_text())` in `load_dcf()` — confirmed real read, was flagged "unconfirmed" in the prior version of this document | repository call | not yet written | not yet run | NOT STARTED |
+| `peer_bench.py` | reads `peers` field via `--projections-dir` CLI arg — confirmed real read | repository call | not yet written | not yet run | NOT STARTED |
+| `local_api.py` | **not a real consumer** — `api_get("/api/projections/NVDA")` appears only in this file's own usage docstring and in `stock_valuation/SKILL.md` as agent-facing documentation, never as an executed call in the repo. Removed from the consumer count. | — | — | — | N/A |
+
+**Corrected total: 2 real producers, 18 real consumers** (was reported as 1 producer / ~15
+consumers with 6 unconfirmed in the prior version — the unconfirmed set resolved to 17 real
+[2 producers double as consumers] plus 1 non-consumer, not left as an assumption).
 
 ### Archive criteria / Rollback strategy
 
