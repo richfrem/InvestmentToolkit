@@ -1,6 +1,6 @@
 # Corrected Persistence Domain Data Model
 
-**Version:** 3
+**Version:** 3.1
 **Status:** design correction pass only. No tables, code, repositories, or archival changed as a
 result of this document. Implementation begins only after this model is explicitly approved.
 
@@ -18,10 +18,18 @@ not as parallel `-v2`/`-v3`-suffixed documents.
   the real evidence this document still relies on: the `exit`/`avoid` role values, the
   `standingDecision`/`priceLevels` structure, the `instrument_price` and account-assignment
   resolutions (see §"Portfolio account-assignment dependency" below).
-- **v3** (current, this document): replaced v2's `INSTRUMENT`+`POSITION` split with a single
-  `INVESTMENT` table (bridged to accounts via `ACCOUNT_INVESTMENT`), after an honest
-  head-to-head comparison found the split added a real join to the two most common query shapes
-  in this app without a requirement forcing it. See "The Core Question, Answered Honestly" below.
+- **v3**: replaced v2's `INSTRUMENT`+`POSITION` split with a single `INVESTMENT` table (bridged
+  to accounts via `ACCOUNT_INVESTMENT`), after an honest head-to-head comparison found the split
+  added a real join to the two most common query shapes in this app without a requirement
+  forcing it. See "The Core Question, Answered Honestly" below.
+- **v3.1** (current): moved `target_entry_price` off `investment` into `price_level_tier`
+  (`tier_kind='TARGET_ENTRY'`) after confirming it's a genuine price level, not a scalar
+  attribute — real data showed it's never present without `priceLevels` and holds a materially
+  different value than the buy tiers (not a duplicate). Added `alert` as its own entity
+  (`tradingview_alerts_actual.json`, 203 real entries, one-to-many from `investment`) rather than
+  a fourth `tier_kind`, since alerts are TradingView-synced/authoritative while the other three
+  kinds are locally authored — different write-ownership, kept as separate tables sharing the
+  same one-to-many relationship shape from `investment`.
 
 ---
 
@@ -95,6 +103,7 @@ erDiagram
     INVESTMENT ||--o{ INTELLIGENCE_EVENT : "researched via"
     INVESTMENT ||--o| PRICE_LEVEL_SET : "may have"
     PRICE_LEVEL_SET ||--o{ PRICE_LEVEL_TIER : contains
+    INVESTMENT ||--o{ ALERT : "has alerts for"
     INVESTMENT }o--|| STRATEGY_PILLAR : "belongs to"
     INVESTMENT }o--o| SUB_STRATEGY : "belongs to"
     PROJECTION_VERSION ||--o{ PROJECTION_SCENARIO : contains
@@ -171,7 +180,7 @@ erDiagram
     PRICE_LEVEL_TIER {
         TEXT tier_id PK
         TEXT price_level_set_id FK
-        TEXT tier_kind "BUY_TIER|TARGET_ENTRY|ALERT(reserved)"
+        TEXT tier_kind "BUY_TIER|TARGET_ENTRY"
         INTEGER tier_number
         REAL price
         TEXT action
@@ -182,6 +191,21 @@ erDiagram
         TEXT source_date
         TEXT condition
         TEXT status
+    }
+
+    ALERT {
+        TEXT alert_id PK
+        TEXT investment_id FK
+        TEXT alert_type
+        TEXT message
+        REAL price
+        TEXT condition_json
+        INTEGER active
+        TEXT resolution
+        TEXT created_at
+        TEXT last_fired_at
+        TEXT expiration_at
+        TEXT synced_at
     }
 
     PROJECTION_VERSION {
@@ -338,7 +362,7 @@ CREATE TABLE price_level_set (
 CREATE TABLE price_level_tier (
     tier_id               TEXT PRIMARY KEY,
     price_level_set_id      TEXT NOT NULL REFERENCES price_level_set(price_level_set_id),
-    tier_kind                 TEXT NOT NULL DEFAULT 'BUY_TIER',  -- BUY_TIER (from priceLevels.buyTiers) | TARGET_ENTRY (from the old scalar targetEntryPrice — confirmed NOT redundant with BUY_TIER prices: real data shows different values, e.g. SNDK target 1350 vs. buy tiers at 1048/107) | ALERT (reserved: see note below)
+    tier_kind                 TEXT NOT NULL DEFAULT 'BUY_TIER',  -- BUY_TIER (from priceLevels.buyTiers) | TARGET_ENTRY (from the old scalar targetEntryPrice — confirmed NOT redundant with BUY_TIER prices: real data shows different values, e.g. SNDK target 1350 vs. buy tiers at 1048/107). Alerts are a separate ALERT table below, not a third tier_kind — different write-ownership (TV-synced vs. locally-authored).
     tier_number               INTEGER NOT NULL,
     price                      REAL,
     action                      TEXT,
@@ -352,18 +376,38 @@ CREATE TABLE price_level_tier (
 );
 ```
 
-**On alerts (`tradingview_alerts_actual.json`) as a possible fourth `tier_kind`:** raised directly
-— should TradingView alert levels (`price`, `condition`, `symbol`, currently 203 real entries)
-join this same table instead of sitting off to the side as pure external cache? Conceptually
-yes — an alert is a price level of interest tied to an investment, the same shape as a buy tier
-or target entry. Not adopted in this pass, for a real reason, not laziness: alerts are
-TradingView-authoritative and synced, not locally authored like `price_level_tier`'s other three
-kinds — migrating them would mean deciding whether `price_level_tier` becomes a mixed
-authoritative/synced table (a modeling smell) or splitting sync-vs-authored into separate tables
-that happen to share a shape. Recommend keeping `ALERT` as a reserved, not-yet-used `tier_kind`
-value in the column comment above (documenting the intent) without actually migrating
-`tradingview_alerts_actual.json` in this pass — a decision worth revisiting once the smaller,
-authored-data domains are proven out, not a default "leave it out" call.
+**Alerts (`tradingview_alerts_actual.json`, 203 real entries) — confirmed as its own entity, not
+a `price_level_tier` row.** Same conceptual shape (a price level of interest tied to an
+investment) but a different data-ownership category: TradingView-authoritative and synced, not
+locally authored like the other three `tier_kind` values. Mixing synced and authored rows in one
+table would be a real modeling smell, so `ALERT` was dropped from `price_level_tier`'s
+`tier_kind` and given its own table instead — same `INVESTMENT ||--o{ ...` one-to-many
+relationship as `price_level_tier`, just a separate table because the write-ownership is
+different (TV sync process vs. locally-authored target/buy-tier entries):
+
+```sql
+CREATE TABLE alert (
+    alert_id        TEXT PRIMARY KEY,        -- TradingView's own alert_id — real external identity, not generated
+    investment_id     TEXT REFERENCES investment(investment_id),  -- resolved from TV's "EXCHANGE:SYMBOL" (e.g. "NASDAQ:IREN" -> IREN)
+    alert_type          TEXT,                 -- 'price', etc. — from TV's own type field
+    message               TEXT,
+    price                  REAL,
+    condition_json           TEXT,             -- variable-shape condition structure (type/series) — kept as JSON, no evidence of field-by-field query need
+    active                    INTEGER NOT NULL DEFAULT 1,
+    resolution                 TEXT,
+    created_at                   TEXT,
+    last_fired_at                  TEXT,
+    expiration_at                    TEXT,
+    synced_at                          TEXT NOT NULL  -- when this row was last refreshed from TV, same role as account_investment.last_synced_at
+);
+
+CREATE INDEX idx_alert_investment ON alert(investment_id);
+```
+
+Classification: not `RETAIN_AS_EXTERNAL_CACHE` (that implies staying JSON) — this is
+`MIGRATE_TO_SQLITE_DOMAIN_TABLE`, same category as `account_investment`: TradingView is the
+upstream authority, this table is the local synced mirror, kept fresh by whatever process already
+calls the TV alerts API today.
 
 ```sql
 CREATE TABLE projection_version (
@@ -488,6 +532,7 @@ Same `investment_price`/live-price dependency as v2 — unresolved by table coun
 | `symbol`/`shares`/`book_price` | portfolio.json | `account_investment.investment_id`/`quantity`/`average_cost` — **now with real account attribution**, per the resolved `fetch_broker_data.py` finding (v2 §, unchanged) |
 | `market_value`/`price` | portfolio.json | `investment_valuation` view / `investment_price`, not stored |
 | `ticker`/`addedAt` | watchlist.json | `investment.is_watchlisted = 1` / `investment.watchlist_added_at` |
+| `alert_id`/`symbol`/`price`/`condition`/`active`/`created`/`last_fired`/`expiration` | tradingview_alerts_actual.json | `alert` table, `investment_id` resolved from `symbol` (strip `EXCHANGE:` prefix) |
 | `fairValue`/`action`/`rationale` | projections/*.json `aiThesis` | `projection_version.fair_value`/`action`/`rationale` |
 | `scenarios.*` | projections/*.json | `projection_scenario`, one row per bear/base/bull |
 | `researchReport` | projections/*.json | `projection_version.research_event_id` (FK, not filename — unchanged from v2) |
