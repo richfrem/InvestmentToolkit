@@ -276,8 +276,14 @@ def enrich_results(
     return enriched
 
 
-def save_sweep_results(results: list[dict[str, Any]], output_path: Path) -> None:
-    """Persist sweep results to a timestamped JSON file for backend/frontend consumption.
+def save_sweep_results(
+    results: list[dict[str, Any]],
+    output_path: Path,
+    jsonl_path: Path | None = None,
+    db_path: Path | None = None,
+) -> None:
+    """Persist sweep results to a timestamped JSON file for backend/frontend consumption
+    AND write TECHNICAL_SWEEP events to the ledger and SQLite read-model (dual-write).
 
     Writes {timestamp, scan_date, count, results} — overwrites any prior file.
     Consumed by the backend /api/ta-sweep/results endpoint and the TA Summary panel.
@@ -285,17 +291,60 @@ def save_sweep_results(results: list[dict[str, Any]], output_path: Path) -> None
     Args:
         results:     Enriched per-ticker sweep results from main sweep loop.
         output_path: Destination file path (default: ta-sweep-results.json in backend/data/).
+        jsonl_path:  Optional path to observations.jsonl ledger.
+        db_path:     Optional path to intelligence.sqlite database.
     """
     now = datetime.now(timezone.utc)
+    scan_date = now.strftime("%Y-%m-%d")
     payload: dict[str, Any] = {
         "timestamp": now.isoformat(),
-        "scan_date": now.strftime("%Y-%m-%d"),
+        "scan_date": scan_date,
         "count":     len(results),
         "results":   results,
     }
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w") as f:
         json.dump(payload, f, indent=2)
+
+    # 2. Append TECHNICAL_SWEEP events to observations.jsonl ledger
+    from intelligence.event_store import append_event, _default_jsonl_path
+    from intelligence.replay_ledger import replay_events_to_db
+    from intelligence.db_client import initialize_db
+    import sqlite3
+    import sys
+
+    # Testing guardrail: bypass writing to real ledger during generic tests that do not configure mock paths
+    if "pytest" in sys.modules and jsonl_path is None and db_path is None:
+        return
+
+    resolved_jsonl_path = jsonl_path or _default_jsonl_path()
+    resolved_db_path = db_path or (REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite")
+
+
+    for res in results:
+        ticker = res["ticker"]
+        # Convert any negative or invalid ADX/RSI values to string or omit if not matching bounds,
+        # but the payload_json will contain the full dict cleanly.
+        append_event(
+            str(resolved_jsonl_path),
+            event_type="TECHNICAL_SWEEP",
+            effective_at=scan_date,
+            status="ACTIVE",
+            title=f"TA Sweep for {ticker}",
+            body_markdown=f"Batch technical indicators for {ticker}.",
+            ticker=ticker,
+            source_id="tradingview-cdp",
+            payload=res,
+            idempotency_key=f"ta-sweep-{ticker}-{scan_date}",
+        )
+
+    # 3. Replay to SQLite read-model
+    conn = initialize_db(str(resolved_db_path))
+    try:
+        replay_events_to_db(str(resolved_jsonl_path), conn)
+    finally:
+        conn.close()
+
 
 
 # ── Main ───────────────────────────────────────────────────────────────────────

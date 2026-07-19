@@ -87,7 +87,7 @@
       "fairValue": 1184.9,
       "action": "BUY",
       "analyzedAt": "2026-05-02T19:16:32.961Z",
-      "researchReport": "META_2026-05-02.md"
+      "researchReport": "META.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -193,7 +193,7 @@
       "fairValue": 1105.3,
       "action": "BUY",
       "analyzedAt": "2026-05-02T21:25:00Z",
-      "researchReport": "META_2026-05-02.md"
+      "researchReport": "META.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -315,7 +315,7 @@
       "fairValue": 1105.3,
       "action": "INITIATE",
       "analyzedAt": "2026-05-02T21:25:00Z",
-      "researchReport": "META_2026-05-02.md"
+      "researchReport": "META.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

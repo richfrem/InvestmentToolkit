@@ -89,7 +89,7 @@
       "fairValue": 233.02,
       "action": "BUY",
       "analyzedAt": "2026-05-02T19:09:35Z",
-      "researchReport": "ZS_2026-05-02.md"
+      "researchReport": "ZS.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -233,7 +233,7 @@
       "fairValue": 233.02,
       "action": "ACCUMULATE",
       "analyzedAt": "2026-05-02T19:09:35Z",
-      "researchReport": "ZS_2026-05-02.md"
+      "researchReport": "ZS.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

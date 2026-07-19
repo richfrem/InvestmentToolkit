@@ -87,7 +87,7 @@
       "fairValue": 198.76,
       "action": "BUY",
       "analyzedAt": "2026-05-02T19:16:32.961Z",
-      "researchReport": "ANET_2026-05-02.md"
+      "researchReport": "ANET.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -193,7 +193,7 @@
       "fairValue": 173.71,
       "action": "HOLD",
       "analyzedAt": "2026-05-02T21:15:00.000Z",
-      "researchReport": "ANET_2026-05-02.md"
+      "researchReport": "ANET.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -298,7 +298,7 @@
       "fairValue": 173.71,
       "action": "INITIATE",
       "analyzedAt": "2026-05-02T21:15:00.000Z",
-      "researchReport": "ANET_2026-05-02.md"
+      "researchReport": "ANET.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

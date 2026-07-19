@@ -1,0 +1,127 @@
+---
+schemaVersion: 1
+documentType: generated-research-summary
+ticker: "IREN"
+generatedAt: "2026-07-19T03:27:19Z"
+---
+
+# IREN Canonical Research Summary
+
+*This file is a generated view. Do not edit directly. Authoritative observations are stored in the JSONL event ledger and indexed in `intelligence.sqlite`.*
+
+# IREN Limited (IREN) — Deep-Dive Research Report
+**Date**: 2026-07-02  
+**Analyst**: Antigravity Gemini 3.5  
+**Verdict**: **SELL** (Fair Value **$20.43** vs Current Price **$38.27**, **-46.6%** downside)
+
+---
+
+## TL;DR
+IREN Limited faces a severe valuation contraction driven by a **38.4% share count dilution** (shares outstanding rising from 258M to 357.38M), critical corporate governance concerns surrounding an **$800 million CEO RSU compensation package**, and structural threats to GPU rental margins from **Meta’s entry** into the AI cloud infrastructure market. We downgrade IREN to **SELL** with a weighted fair value of **$20.43**.
+
+---
+
+## Company Snapshot
+
+| Metric | Value | Source / Note |
+|--------|-------|---------------|
+| Current Price | $38.265 | July 2, 2026 Close |
+| Shares Outstanding | 357,378,674 | Basic outstanding (overriding yfinance's stale 258M diluted count) |
+| TTM Revenue | $501.02M | yfinance |
+| TTM Revenue Growth | +167.65% | Hypergrowth due to mining capacity & initial AI cloud deployments |
+| TTM Net Profit Margin | 20.88% | yfinance |
+| Trailing P/E | 94.45x | Based on corrected basic share count earnings |
+| **Weighted Fair Value** | **$20.43** | **SELL (-46.6%)** |
+
+---
+
+## Investment Thesis
+
+### The Dilution Trap & Capital Structure Shock
+IREN is expanding its megawatt data center capacities rapidly. However, to fund this buildout, management has aggressively utilized its ATM equity programs. Basic shares outstanding have ballooned from **258M to 357.38M** in a very short period. yfinance continues to distribute a stale `shares_diluted` count of 258.2M, meaning many automated screens and models are severely overstating IREN's per-share earnings power. Adjusting for the actual capital structure reduces the base case fair value significantly.
+
+### Corporate Governance Concerns
+The approval of an **$800 million RSU package** for Co-CEOs William and Daniel Roberts represents an extreme case of shareholder dilution and poor board alignment. A compensation package of this magnitude is highly unusual for a company generating ~$500M in trailing revenues. It adds a major structural overhead to net income margins and signals capital allocation that is hostile to public shareholders.
+
+### Meta Competitive Threat & GPU Commoditization
+Recent reports that Meta plans to build and offer its own AI cloud infrastructure introduce a massive, deep-pocketed competitor to the market. Meta can afford to subsidize compute rentals at scale, threatening to compress GPU lease margins for smaller providers like IREN that do not have custom silicon or proprietary software moats.
+
+---
+
+## Scenario Analysis
+
+### 🐻 Bear Case Scenario (20% Probability) — Present Value: $0.70
+A severe correction in Bitcoin price (60%+) combines with rising network difficulty, compressing mining margins to cash-trough levels. Grid interconnection delays and equipment delivery backlogs stall the AI cloud rollout. Continued dilution of 5%/year is required to fund operations.
+
+| Assumption | Value | Rationale |
+|-----------|-------|-----------|
+| 5-yr Revenue CAGR | 15% | BTC bear market slows growth; AI rollout delayed |
+| Year 5 Revenue | $1,007.7M | Severe deceleration from capacity expansion stalls |
+| Net Margin (Yr 5) | 5% | Cyclical trough mining margins |
+| Exit P/E | 12x | Cyclical commodity infrastructure trough multiple |
+| Quality Multiplier | 0.85x | Corporate governance discount and high beta risk |
+| Share Change | 5.0%/yr | High dilution to bridge capital shortfalls |
+| **Year 5 EPS** | **$0.11** | — |
+| **Year 5 Price** | **$1.13** | — |
+| **Present Value** | **$0.70** | — |
+
+### ⚖️ Base Case Scenario (45% Probability) — Present Value: $10.85
+Through-cycle normalization of Bitcoin prices ($60k–$120k). The AI cloud hosting pivot scales to 35-40% of the revenue mix, stabilizing blended margins. Revenue grows at a 35% CAGR (decelerated from 167% TTM). Dilution continues at 3.5%/year to fund megawatt capacity additions.
+
+| Assumption | Value | Rationale |
+|-----------|-------|-----------|
+| 5-yr Revenue CAGR | 35% | Decelerated from 167% hypergrowth baseline |
+| Year 5 Revenue | $2,246.6M | Solid capacity execution on Texas/Australia campuses |
+| Net Margin (Yr 5) | 15% | Blended rate reflecting stabilized AI hosting margins |
+| Exit P/E | 22x | Digital infrastructure benchmark with commodity discount |
+| Quality Multiplier | 1.00x | Standard business quality |
+| Share Change | 3.5%/yr | Continuous equity issuance for data center CapEx |
+| **Year 5 EPS** | **$0.79** | — |
+| **Year 5 Price** | **$17.47** | — |
+| **Present Value** | **$10.85** | — |
+
+### 🚀 Bull Case Scenario (35% Probability) — Present Value: $44.01
+Bitcoin price appreciates to $200k+ driven by global institutional adoption, while AI hosting scales rapidly (targeting 1+ GW of compute capacity). High-margin GPU contracts are executed at scale. Renewable PPAs in British Columbia and Texas supply sub-$0.03/kWh energy, providing a strong cost moat.
+
+| Assumption | Value | Rationale |
+|-----------|-------|-----------|
+| 5-yr Revenue CAGR | 50% | Successful execution of the full GW-scale backlog |
+| Year 5 Revenue | $3,804.6M | AI cloud contracts fully ramp alongside high BTC prices |
+| Net Margin (Yr 5) | 25% | High-profit hosting blended with peak mining margins |
+| Exit P/E | 28x | Premium AI infrastructure multiple |
+| Quality Multiplier | 1.05x | Moat from sub-$0.03/kWh hydroelectric power contracts |
+| Share Change | 2.0%/yr | Self-funding cash flow reduces dilution rate |
+| **Year 5 EPS** | **$2.41** | — |
+| **Year 5 Price** | **$70.87** | — |
+| **Present Value** | **$44.01** | — |
+
+---
+
+## Valuation Arithmetic
+$$\text{Weighted Fair Value} = (0.20 \times \$0.70) + (0.45 \times \$10.85) + (0.35 \times \$44.01) = \$0.14 + \$4.88 + \$15.40 = \$20.43$$
+
+---
+
+## Key Risks & What to Watch
+1. **Bitcoin Volatility**: IREN remains heavily exposed to BTC price cycles. Any sharp downturn instantly degrades mining cash flows.
+2. **GPU Leasing Commoditization**: Meta, Amazon, and Google Cloud expanding their custom silicon compute capacity could significantly drive down GPU pricing power.
+3. **Execution Delay**: Developing GW-scale power interconnections is subject to utility grid backlogs and equipment shortages (transformers, cooling infrastructure).
+4. **Governance Overhang**: The $800M CEO compensation plan may lead to further shareholder unfriendly moves or executive flight if targets are unachievable.
+
+---
+
+## Data Quality & Confidence Score
+**Confidence Score**: **0.55 / 1.0**
+* **Positive factors**: Clear TTM financial numbers and established yfinance revenue trend.
+* **Negative factors**: 
+  * Severe discrepancy in API share counts (diluted vs outstanding) requiring manual intervention.
+  * Extremely high cyclical volatility makes margin projection highly speculative.
+  * Governance and executive compensation red flags discount management's projections.
+
+---
+
+## Discussion Log
+* **2026-07-02 (Antigravity Gemini 3.5)**: Initial post-dilution review and Meta threat downgrade to SELL. Stale share counts corrected to basic outstanding count of 357.38M.
+
+REPORT_EOF
+

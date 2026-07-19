@@ -76,7 +76,7 @@
       "fairValue": 53.26,
       "action": "TRIM",
       "analyzedAt": "2026-05-07T15:35:09Z",
-      "researchReport": "EQT_2026-05-02.md"
+      "researchReport": "EQT.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

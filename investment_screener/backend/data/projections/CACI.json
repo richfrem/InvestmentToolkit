@@ -70,7 +70,7 @@
       "fairValue": 458.43,
       "action": "MAINTAIN",
       "analyzedAt": "2026-06-27T15:09:16Z",
-      "researchReport": "CACI_2026-06-22.md"
+      "researchReport": "CACI.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
