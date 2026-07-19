@@ -7,7 +7,7 @@
     "version": 1,
     "savedAt": "2026-05-02T19:16:32.961Z",
     "updatedAt": "2026-05-02T19:16:32.961Z",
-    "name": "AI Deep Dive — NKE — 2026-05-02",
+    "name": "AI Deep Dive \u2014 NKE \u2014 2026-05-02",
     "rationale": "Nike is struggling with a profound growth stall and margin compression. Trailing revenue growth is near zero (0.1%), and TTM net margins have contracted to ~7%. The Rule of 40 score is an abysmal 9.84. While the brand is iconic, increased competition from agile upstarts (On, Hoka) and a challenging macro environment for consumer discretionary goods are weighing heavily on performance. Even with the stock price battered down to $44.40, a conservative base case projecting 1% growth and a modest margin recovery yields a fair value of $40.01. The stock remains slightly overvalued. SELL.",
     "snapshot": {
       "price": 44.4,
@@ -87,7 +87,7 @@
       "fairValue": 40.01,
       "action": "SELL",
       "analyzedAt": "2026-05-02T19:16:32.961Z",
-      "researchReport": "NKE_2026-05-02.md"
+      "researchReport": "NKE.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -97,7 +97,7 @@
       "shareCountMethod": "Used 1.483B (shares_diluted). Reflects the expanded share count metric provided by the API.",
       "marginAnchor": "TTM 6.95% used as historical anchor. Margins have compressed significantly from historical highs of 12.9% four years ago. Base case models a modest recovery to 8%.",
       "growthDerivation": "Analyst Y1 revenue implies virtually flat growth ($46.26B vs $46.3B TTM). Y2 implies 0.77% growth. Blended consensus is ~0%. Modeled Base case slightly optimistically at 1.0%.",
-      "sectorBenchmarkRow": "Consumer Discretionary — Apparel & Footwear: median P/E 18-20, growth 0-5%; net margin typical 5-10%. Base case uses 20x.",
+      "sectorBenchmarkRow": "Consumer Discretionary \u2014 Apparel & Footwear: median P/E 18-20, growth 0-5%; net margin typical 5-10%. Base case uses 20x.",
       "dataQualityFlags": [
         "The massive negative performance (-63% over 5 years) and terrible Rule of 40 score (9.84) highlight severe fundamental deterioration."
       ],
@@ -128,7 +128,7 @@
         3.76,
         2.17
       ],
-      "confidenceBreakdown": "0.80/1.0 — +0.10 for relatively predictable albeit stagnant revenues, -0.20 for margin uncertainty in a highly competitive and promotional retail environment."
+      "confidenceBreakdown": "0.80/1.0 \u2014 +0.10 for relatively predictable albeit stagnant revenues, -0.20 for margin uncertainty in a highly competitive and promotional retail environment."
     }
   },
   {
@@ -139,8 +139,8 @@
     "version": 1,
     "savedAt": "2026-05-02T21:25:00Z",
     "updatedAt": "2026-05-02T21:25:00Z",
-    "name": "AI Deep Dive — NKE — 2026-05-02",
-    "rationale": "Nike is in a genuine turnaround under new CEO Elliott Hill after years of DTC over-rotation and innovation stagnation. Revenue has declined 10% from its $51B peak. Margins are compressing (12.9%→6.95% TTM). However, the brand is intact, market position is defensible, and analyst consensus is Buy (target $61.68). At $44.40, DCF weighted fair value is $46.13 (+3.9%, HOLD) — the stock is approximately fairly valued with a wide outcome range: bear $12 if turnaround fails, bull $111 if Nike innovation reset works.",
+    "name": "AI Deep Dive \u2014 NKE \u2014 2026-05-02",
+    "rationale": "Nike is in a genuine turnaround under new CEO Elliott Hill after years of DTC over-rotation and innovation stagnation. Revenue has declined 10% from its $51B peak. Margins are compressing (12.9%\u21926.95% TTM). However, the brand is intact, market position is defensible, and analyst consensus is Buy (target $61.68). At $44.40, DCF weighted fair value is $46.13 (+3.9%, HOLD) \u2014 the stock is approximately fairly valued with a wide outcome range: bear $12 if turnaround fails, bull $111 if Nike innovation reset works.",
     "snapshot": {
       "price": 44.4,
       "currency": "USD",
@@ -173,7 +173,7 @@
         "exitPE": 22,
         "qualityMultiplier": 1.05,
         "shareChange": -1,
-        "rationale": "Turnaround partially succeeds. Analyst consensus: FY2026 $46.26B (-0.1%), FY2027 $46.62B (+0.8%) — analysts expect flat revenue near-term. 5-yr base CAGR 3% implies recovery begins FY2028-2030 as product pipeline refreshes and China stabilizes. Net margin 8%: recovery toward mid-cycle (4-yr avg 10.22% partially recovered; analyst FY2026 implies 4.8%, so base 8% reflects Y5 exit after stabilization). Exit PE 22x = footwear brand median. QM 1.05: Jordan Brand and core Nike brand retain premium positioning despite turmoil. Year 5 rev $53.7B, EPS $3.04, price $70.33, PV $43.67. Note: PV $43.67 ≈ current price $44.40 — stock is essentially fairly valued at current price in base case.",
+        "rationale": "Turnaround partially succeeds. Analyst consensus: FY2026 $46.26B (-0.1%), FY2027 $46.62B (+0.8%) \u2014 analysts expect flat revenue near-term. 5-yr base CAGR 3% implies recovery begins FY2028-2030 as product pipeline refreshes and China stabilizes. Net margin 8%: recovery toward mid-cycle (4-yr avg 10.22% partially recovered; analyst FY2026 implies 4.8%, so base 8% reflects Y5 exit after stabilization). Exit PE 22x = footwear brand median. QM 1.05: Jordan Brand and core Nike brand retain premium positioning despite turmoil. Year 5 rev $53.7B, EPS $3.04, price $70.33, PV $43.67. Note: PV $43.67 \u2248 current price $44.40 \u2014 stock is essentially fairly valued at current price in base case.",
         "scenarioPrice": 43.67
       },
       "bull": {
@@ -183,34 +183,34 @@
         "exitPE": 28,
         "qualityMultiplier": 1.1,
         "shareChange": -2,
-        "rationale": "Catalyst: Elliott Hill executes a full innovation reset — new performance running franchise (competitor to On Running/Hoka), significant Jordan Brand commercial expansion, and China market stabilization driven by local athlete campaigns. Revenue grows 7% CAGR (returns toward historic pace). Net margin returns to 12% = FY2022 peak level, driven by DTC mix improvement and manufacturing scale recovery. Exit PE 28x = premium footwear/sports brand. QM 1.10: Jordan Brand moat (iconic, irreplicable cultural positioning) + Nike's global athlete endorsement network. Year 5 rev $65.0B, EPS $5.81, price $179.03, PV $111.16.",
+        "rationale": "Catalyst: Elliott Hill executes a full innovation reset \u2014 new performance running franchise (competitor to On Running/Hoka), significant Jordan Brand commercial expansion, and China market stabilization driven by local athlete campaigns. Revenue grows 7% CAGR (returns toward historic pace). Net margin returns to 12% = FY2022 peak level, driven by DTC mix improvement and manufacturing scale recovery. Exit PE 28x = premium footwear/sports brand. QM 1.10: Jordan Brand moat (iconic, irreplicable cultural positioning) + Nike's global athlete endorsement network. Year 5 rev $65.0B, EPS $5.81, price $179.03, PV $111.16.",
         "scenarioPrice": 111.16
       }
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "Nike is the most iconic sports brand in history, facing its worst fundamental deterioration in two decades. Revenue is down 10% from its $51B peak, margins have collapsed from 13% to 7%, EPS has declined from $3.83 to $2.17, and analysts project continued compression in FY2026 ($1.50 EPS). The root cause is clear in retrospect: former CEO John Donahoe's aggressive DTC-over-wholesale pivot cut Nike out of tens of thousands of retail storefronts precisely as competitors (On Running, Hoka, New Balance, Saucony) filled the innovation vacuum with genuinely new products that captured the running and athleisure consumer. New CEO Elliott Hill (Nike veteran, returned Oct 2024) has reversed the DTC obsession and is rebuilding wholesale relationships, but product development cycles are 18-24 months — FY2026 results will still reflect Donahoe-era products. The turnaround signal won't be visible until FY2027-2028. At $44.40, the stock is essentially fairly valued (base DCF $43.67) with a wide asymmetric outcome: bear -73% if turnaround fails (brand erosion accelerates), bull +150% if Hill delivers a successful innovation reset. HOLD with a preference for accumulating below $40 (provides margin of safety against bear case) and selling above $55 (above fair value into bull case territory).",
+      "rationale": "Nike is the most iconic sports brand in history, facing its worst fundamental deterioration in two decades. Revenue is down 10% from its $51B peak, margins have collapsed from 13% to 7%, EPS has declined from $3.83 to $2.17, and analysts project continued compression in FY2026 ($1.50 EPS). The root cause is clear in retrospect: former CEO John Donahoe's aggressive DTC-over-wholesale pivot cut Nike out of tens of thousands of retail storefronts precisely as competitors (On Running, Hoka, New Balance, Saucony) filled the innovation vacuum with genuinely new products that captured the running and athleisure consumer. New CEO Elliott Hill (Nike veteran, returned Oct 2024) has reversed the DTC obsession and is rebuilding wholesale relationships, but product development cycles are 18-24 months \u2014 FY2026 results will still reflect Donahoe-era products. The turnaround signal won't be visible until FY2027-2028. At $44.40, the stock is essentially fairly valued (base DCF $43.67) with a wide asymmetric outcome: bear -73% if turnaround fails (brand erosion accelerates), bull +150% if Hill delivers a successful innovation reset. HOLD with a preference for accumulating below $40 (provides margin of safety against bear case) and selling above $55 (above fair value into bull case territory).",
       "fairValue": 46.13,
       "action": "HOLD",
       "analyzedAt": "2026-05-02T21:25:00Z",
-      "researchReport": "NKE_2026-05-02.md"
+      "researchReport": "NKE.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "API shares_diluted 1,483.4M. Mktcap-implied: $65.75B / $44.40 = 1,481M — 0.2% discrepancy. Clean.",
-      "marginAnchor": "Declining trend (NOT mean-reverting to prior avg). Historical: 12.94% → 9.90% → 11.10% → 6.95% (TTM). The TTM margin 6.95% is well below 4-yr avg 10.22% and BELOW the prior low of 9.90%. Analyst FY2026 EPS $1.50 × 1,483M shares = $2,225M NI / $46,260M = 4.81% — analysts project CONTINUED compression. Using declining-trend framework: bear 5% (stagnation near analyst trough), base 8% (Y5 recovery to mid-cycle after turnaround), bull 12% (peak restoration).",
-      "growthDerivation": "Y1 analyst $46.26B (-0.1%), Y2 $46.62B (+0.8%). Revenue flat/declining near-term — Nike in turnaround, not growth. 5-yr base 3% CAGR acknowledges recovery doesn't start until FY2028+. Bear -1% CAGR = continued erosion. Bull 7% = successful innovation reset.",
-      "sectorBenchmarkRow": "Consumer Cyclical — Footwear & Accessories: conservative P/E 15, median P/E 22-25, growth P/E 30-35. Nike currently 29.2x trailing on depressed EPS. Bear exit 15x (distress), base 22x (median), bull 28x (brand recovery premium).",
+      "shareCountMethod": "API shares_diluted 1,483.4M. Mktcap-implied: $65.75B / $44.40 = 1,481M \u2014 0.2% discrepancy. Clean.",
+      "marginAnchor": "Declining trend (NOT mean-reverting to prior avg). Historical: 12.94% \u2192 9.90% \u2192 11.10% \u2192 6.95% (TTM). The TTM margin 6.95% is well below 4-yr avg 10.22% and BELOW the prior low of 9.90%. Analyst FY2026 EPS $1.50 \u00d7 1,483M shares = $2,225M NI / $46,260M = 4.81% \u2014 analysts project CONTINUED compression. Using declining-trend framework: bear 5% (stagnation near analyst trough), base 8% (Y5 recovery to mid-cycle after turnaround), bull 12% (peak restoration).",
+      "growthDerivation": "Y1 analyst $46.26B (-0.1%), Y2 $46.62B (+0.8%). Revenue flat/declining near-term \u2014 Nike in turnaround, not growth. 5-yr base 3% CAGR acknowledges recovery doesn't start until FY2028+. Bear -1% CAGR = continued erosion. Bull 7% = successful innovation reset.",
+      "sectorBenchmarkRow": "Consumer Cyclical \u2014 Footwear & Accessories: conservative P/E 15, median P/E 22-25, growth P/E 30-35. Nike currently 29.2x trailing on depressed EPS. Bear exit 15x (distress), base 22x (median), bull 28x (brand recovery premium).",
       "dataQualityFlags": [
         "UUID collision: Prior NKE had same UUID (e0b96b0f). Fresh UUID assigned.",
         "Revenue DECLINING: Nike peak was $51.4B (FY2023), TTM $46.3B = -10% decline. Current trajectory is down, not flat. Analyst expects continued flat-to-slight-decline.",
-        "Analyst FY2026 EPS $1.50 implies FURTHER margin compression to 4.8% — below TTM 6.95%. Turnaround pain continues in near-term before any recovery.",
+        "Analyst FY2026 EPS $1.50 implies FURTHER margin compression to 4.8% \u2014 below TTM 6.95%. Turnaround pain continues in near-term before any recovery.",
         "Piotroski 4/9: Same weak score as CELH. ROA not improving, leverage increasing, current ratio declining, dilution occurring. Flags financial health deterioration.",
-        "Prior Gemini bear weight only 0.2 — severely underweighted turnaround risk. Corrected to 0.35.",
-        "Elliott Hill (new CEO Oct 2024) turnaround timeline is genuinely uncertain — product development cycles are 18-24 months, so results won't be visible until FY2027-2028."
+        "Prior Gemini bear weight only 0.2 \u2014 severely underweighted turnaround risk. Corrected to 0.35.",
+        "Elliott Hill (new CEO Oct 2024) turnaround timeline is genuinely uncertain \u2014 product development cycles are 18-24 months, so results won't be visible until FY2027-2028."
       ],
       "analystInputs": {
         "y1RevEstimate": 46260000000,
@@ -245,13 +245,13 @@
         "priorPrice": 44.4,
         "priorFairValue": 40.01,
         "priorAction": "SELL",
-        "priceDelta": "0% — same day",
-        "assumptionAudit": "Prior SELL at $40.01 vs our HOLD at $46.13. Difference driven by: (1) prior base margin 8% — we agree; (2) prior base growth 1% vs our 3% — minor; (3) bear weight 20% raised to 35% (major — turnaround risk higher than Gemini allowed); (4) bull QM 1.1 needs Jordan Brand moat citation. The SELL vs HOLD difference is within model uncertainty for a turnaround stock — both reflect fair-valued to slightly overvalued. We call HOLD because base PV ($43.67) is essentially at current price, making SELL too directional for a stock this close to fair value.",
-        "modelQualityFlag": "UNVALIDATED — Gemini 1.5 Pro",
-        "thesisOutcome": "N/A — same day",
-        "fundamentalChanges": "Elliott Hill new CEO since Oct 2024 — wholesale partnership restoration, brand realignment underway. On Running, Hoka, New Balance structural share gains documented. China market deteriorating. FY2026 product pipeline not yet visible to market."
+        "priceDelta": "0% \u2014 same day",
+        "assumptionAudit": "Prior SELL at $40.01 vs our HOLD at $46.13. Difference driven by: (1) prior base margin 8% \u2014 we agree; (2) prior base growth 1% vs our 3% \u2014 minor; (3) bear weight 20% raised to 35% (major \u2014 turnaround risk higher than Gemini allowed); (4) bull QM 1.1 needs Jordan Brand moat citation. The SELL vs HOLD difference is within model uncertainty for a turnaround stock \u2014 both reflect fair-valued to slightly overvalued. We call HOLD because base PV ($43.67) is essentially at current price, making SELL too directional for a stock this close to fair value.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Gemini 1.5 Pro",
+        "thesisOutcome": "N/A \u2014 same day",
+        "fundamentalChanges": "Elliott Hill new CEO since Oct 2024 \u2014 wholesale partnership restoration, brand realignment underway. On Running, Hoka, New Balance structural share gains documented. China market deteriorating. FY2026 product pipeline not yet visible to market."
       },
-      "confidenceBreakdown": "0.68/1.0 — Base 1.0. +0.08 brand moat (Jordan Brand particularly iconic); +0.04 33 analyst coverage; -0.10 ongoing revenue decline (from $51B peak); -0.08 margin collapse (12.9% to 6.95% with more compression projected); -0.06 Piotroski 4/9; -0.05 turnaround timeline uncertainty (Elliott Hill's plan won't show results until FY2028+); -0.05 competitive share loss to On/Hoka is structural not cyclical; +0.05 analyst Buy consensus despite weakness suggests option value in turnaround; -0.05 further near-term EPS decline expected (analyst $1.50 vs TTM $2.17)"
+      "confidenceBreakdown": "0.68/1.0 \u2014 Base 1.0. +0.08 brand moat (Jordan Brand particularly iconic); +0.04 33 analyst coverage; -0.10 ongoing revenue decline (from $51B peak); -0.08 margin collapse (12.9% to 6.95% with more compression projected); -0.06 Piotroski 4/9; -0.05 turnaround timeline uncertainty (Elliott Hill's plan won't show results until FY2028+); -0.05 competitive share loss to On/Hoka is structural not cyclical; +0.05 analyst Buy consensus despite weakness suggests option value in turnaround; -0.05 further near-term EPS decline expected (analyst $1.50 vs TTM $2.17)"
     }
   }
 ]

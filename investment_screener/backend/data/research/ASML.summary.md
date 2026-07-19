@@ -1,0 +1,231 @@
+---
+schemaVersion: 1
+documentType: generated-research-summary
+ticker: "ASML"
+generatedAt: "2026-07-19T03:27:19Z"
+---
+
+# ASML Canonical Research Summary
+
+*This file is a generated view. Do not edit directly. Authoritative observations are stored in the JSONL event ledger and indexed in `intelligence.sqlite`.*
+
+# ASML Holding N.V. (ASML) — Deep-Dive Research Report
+**Date**: 2026-05-02 | **Model**: Claude Sonnet 4.6 | **Version**: 2 (upgraded from Gemini 1.5 Pro v1)
+
+---
+
+## TL;DR
+ASML is the world's only manufacturer of EUV lithography machines — the mandatory bottleneck technology for all leading-edge semiconductors below 7nm. Fundamentals are exceptional: 29% net margins, $11B TTM FCF, Piotroski score 8/9, and the most durable moat in our coverage universe. However at $1,427/share (47x trailing P/E), the market is pricing in flawless execution. Weighted DCF fair value is **$1,353 (-5.2%), SELL** — but this is a marginal SELL, and the bull case ($2,629) reflects genuine platform optionality from High-NA EUV that a point estimate cannot fully capture.
+
+---
+
+## Company Snapshot
+
+| Item | Value |
+|------|-------|
+| Ticker | ASML |
+| Price | $1,427.02 |
+| Market Cap | $550B |
+| TTM Revenue | $32.67B |
+| Revenue Growth (YoY) | 13.2% |
+| TTM Net Margin | 29.42% |
+| 4-yr Avg Net Margin | 27.80% |
+| TTM FCF | $11.03B |
+| FCF Yield | ~2.0% |
+| P/E (Trailing) | 47.2x |
+| Forward P/E | 29.8x |
+| EPS (TTM) | $24.73 |
+| EBITDA Margin | 38.42% |
+| Piotroski F-Score | 8/9 |
+| Rule of 40 Score | 51.6 |
+| Beta | 1.382 |
+| Shares | 385.4M |
+| Sector | Technology — Semiconductor Equipment |
+| Analyst Consensus | Strong Buy (15 analysts, target mean $1,661) |
+| **Fair Value (DCF)** | **$1,353.07** |
+| **Action** | **SELL** |
+| **Downside** | **−5.2%** |
+
+---
+
+## Investment Thesis
+
+ASML is the only company in the world that manufactures Extreme Ultraviolet (EUV) lithography systems — the equipment required to print circuit patterns on chips at sub-7nm nodes. Every leading-edge semiconductor — TSMC's 3nm and 2nm, Samsung's 4nm, Intel's 18A — is made using ASML machines. There is no alternative supplier, and there will not be one for at least a decade. NXP, ASML's primary competition in the 1970s-1990s, exited the market. Nikon and Canon, once meaningful competitors in DUV lithography, cannot produce EUV. China has invested billions attempting to develop domestic alternatives (SMEE, Shanghai Micro Electronics Equipment) but remains years behind even 28nm-class lithography.
+
+The pricing power this creates is unlike anything else in the semiconductor equipment sector. EUV machine prices have risen from approximately $100M in 2012 to $200M+ in 2020 to $380M+ for High-NA EUV today — a 3.8× increase in 13 years. Chipmakers pay these prices not because they want to, but because they have no choice. This is the textbook definition of a structural moat. Net margins have been stable at 26-30% through multiple industry cycles (2022 boom, 2023 correction, 2024 partial recovery), validating the through-cycle durability of this pricing power.
+
+The current valuation (47x trailing P/E, $1,427/share) fully prices in the base case and part of the bull case. Our 5-year DCF using 17% revenue CAGR (analyst-grounded), 29% margins (TTM anchor), and 30x exit PE yields $1,161/share in the base case — 18.6% below today's price. The 25% bull scenario at $2,629/share reflects the High-NA EUV platform ramp, which could more than double ASML's revenue per machine delivered. The weighted fair value of $1,353 is only 5.2% below market price, making this a conviction SELL only at materially higher prices (>$1,500) or on a bear case catalyst.
+
+**Critical Risk — China Export Restrictions**: China represented approximately $3B of ASML's FY2024 revenue. The US-led export control framework now prohibits: (1) all EUV systems, (2) advanced DUV immersion systems (the tier below EUV). This revenue is permanently at risk of further restriction. A complete block on all DUV sales to China would remove an additional $2-4B of revenue annually. This is the single biggest fundamental risk and is not adequately reflected in current price or analyst models.
+
+**Prior Model Error (Gemini 1.5 Pro)**: Used QM 1.25 (base) and QM 1.30 (bull) with no moat citations. Also underweighted the bear at 20%, minimizing the China restriction risk. Both errors inflated the prior fair value ($1,220.98) via QM inflation rather than legitimate business quality documentation. This analysis corrects to QM 1.10 (base) / 1.15 (bull) with explicit cross-cycle pricing power citations, and bear weight raised to 25%.
+
+---
+
+## Prior Analysis Review (Gemini 1.5 Pro v1 → Claude Sonnet 4.6 v2)
+
+| Item | Gemini 1.5 Pro (v1) | Claude Sonnet 4.6 (v2) | Assessment |
+|------|---------------------|------------------------|------------|
+| Prior price | $1,427.02 | $1,427.02 | Same-day — no movement |
+| Prior FV | $1,220.98 | $1,353.07 | $132 gap driven by QM correction |
+| Base QM | 1.25 | 1.10 | **Critical**: prior exceeded threshold without moat citation |
+| Bull QM | 1.30 | 1.15 | Prior unjustified; this analysis formally cites cross-cycle pricing evidence |
+| Bear weight | 0.20 | 0.25 | Prior underweighted China restriction risk |
+| Conclusion | SELL | SELL | Agreement on direction; methodology diverges |
+
+---
+
+## Scenario Analysis
+
+### 🐻 Bear Case (25% probability) — China Escalation + Capex Cycle Downturn
+
+Further US/allied export controls block remaining DUV systems to China ($2-4B annual revenue risk). Simultaneously, global fab capex enters correction as memory oversupply and AI capex digestion cause customers to defer discretionary orders. Revenue grows only 10% CAGR as volume headwinds offset pricing. Margins compress to 26% — still above equipment industry average (ASML's monopoly provides a floor) — as High-NA ramp costs dilute near-term profitability. Exit PE 22x reflects multiple compression. This scenario mirrors 2024 trajectory extended.
+
+| Assumption | Value | Rationale |
+|------------|-------|-----------|
+| 5-yr Revenue CAGR | 10% | China restrictions + capex cycle; below analyst consensus |
+| Year 5 Revenue | $52.6B | From $32.67B TTM |
+| Net Margin (Yr 5) | 26% | Below TTM; China mix loss + ramp costs |
+| Exit P/E | 22x | Below benchmark median; demand uncertainty discount |
+| Quality Multiplier | 0.95 | Moats intact; no premium during demand headwinds |
+| Share Change | 0%/yr | Buybacks suspended during uncertainty |
+| **Year 5 EPS** | **$35.49** | $13.68B NI / 385.4M shares |
+| **Year 5 Price** | **$741.76** | $35.49 × 22x |
+| **Present Value** | **$460.58** | $741.76 / 1.6105 × Q(0.95) |
+
+---
+
+### ⚖️ Base Case (50% probability) — Through-Cycle Execution, High-NA Begins Ramp
+
+Analyst consensus: FY2026 revenue $38.93B (+19.2%), FY2027 $47.01B (+20.8%). 5-yr CAGR derived at 17% via natural deceleration (Y3→17%, Y4→14%, Y5→12%). Net margin 29% = TTM anchor, stable within 26-30% historical band. Exit PE 30x appropriate for a secular-growth monopoly with recurring service revenue (~25% of total). Two structural moats support QM 1.10: (1) sole EUV supplier — zero alternatives for sub-7nm chipmaking; (2) 5,500+ installed base generating recurring service/upgrade revenue. Moderate buybacks (1%/yr share reduction) from $11B+ FCF.
+
+| Assumption | Value | Rationale |
+|------------|-------|-----------|
+| 5-yr Revenue CAGR | 17% | Analyst-grounded (19-21% Y1/Y2, natural deceleration) |
+| Year 5 Revenue | $71.6B | From $32.67B TTM |
+| Net Margin (Yr 5) | 29% | TTM anchor; stable 26-30% band |
+| Exit P/E | 30x | Benchmark median-top for semiconductor equipment monopoly |
+| Quality Multiplier | 1.10 | Moat 1: sole EUV supplier; Moat 2: 5,500 installed base recurring revenue |
+| Share Change | −1%/yr | Moderate buybacks from FCF generation |
+| **Year 5 EPS** | **$56.67** | $20.77B NI / 366.5M shares |
+| **Year 5 Price** | **$1,870.02** | $56.67 × 30x |
+| **Present Value** | **$1,161.14** | $1,870.02 / 1.6105 × Q(1.10) |
+
+---
+
+### 🚀 Bull Case (25% probability) — High-NA EUV Becomes Dominant Platform
+
+**Catalyst**: High-NA EUV ($380M+/machine, vs $200M standard EUV) is adopted at scale by TSMC, Samsung, and Intel for <2nm chip generations. TSMC orders 10+, Samsung 8+, Intel 5+ High-NA units — each unit ~2× revenue contribution of standard EUV. Additionally, China export regulations see partial relaxation (DUV immersion class systems permitted under audit framework), restoring $2-3B of blocked revenue. Revenue grows 25% CAGR. Net margin expands to 33% as High-NA machines carry higher gross margins. Exit PE 40x = semiconductor equipment growth ceiling.
+
+QM 1.15 formally cited: ASML demonstrates "exceptional durable pricing power across cycles" — the only company in InvestmentToolkit's coverage universe meeting this threshold. Evidence: EUV machine prices increased 3.8× in 13 years ($100M → $380M) while customers had zero ability to defect. This is cross-cycle: it held through the 2019 memory downturn, the 2020 pandemic, the 2022-23 semiconductor correction, and the 2024 capex digestion. The pricing power is structural (monopoly), not cyclical.
+
+| Assumption | Value | Rationale |
+|------------|-------|-----------|
+| 5-yr Revenue CAGR | 25% | High-NA ramp + China partial relief |
+| Year 5 Revenue | $99.7B | From $32.67B TTM |
+| Net Margin (Yr 5) | 33% | High-NA premium margin mix; above TTM justified by richer mix |
+| Exit P/E | 40x | Benchmark growth ceiling; High-NA platform premium |
+| Quality Multiplier | 1.15 | Cross-cycle monopoly pricing power (3.8× price increase in 13 years) |
+| Share Change | −1.5%/yr | Accelerated buybacks from High-NA FCF |
+| **Year 5 EPS** | **$92.06** | $32.90B NI / 357.4M shares |
+| **Year 5 Price** | **$4,234.70** | $92.06 × 40x |
+| **Present Value** | **$2,629.41** | $4,234.70 / 1.6105 × Q(1.15) |
+
+---
+
+## Valuation Math
+
+```
+Bear  (25%):  $460.58   × 0.25 =  $115.15
+Base  (50%):  $1,161.14 × 0.50 =  $580.57
+Bull  (25%):  $2,629.41 × 0.25 =  $657.35
+                                  ─────────
+Weighted Fair Value                = $1,353.07/share
+
+Current Price:  $1,427.02
+Downside:       ($1,353.07 / $1,427.02) − 1  =  −5.2%
+Action:         SELL (marginal)
+
+Analyst Consensus Target: $1,661.53 (+16.4% vs current)
+Our DCF base alone: $1,161.14 (−18.6%)
+Gap explained by: more conservative exit PE (30x vs ~35-40x implied in analyst targets)
+
+Base Year 5 undiscounted price: $1,870.02
+Current price $1,427 is pricing approximately 3.5 years of base-case value
+(comparable insight to VRT analysis: market pricing medium-term base case at today's price)
+```
+
+---
+
+## Key Risks
+
+1. **China export restrictions (primary)**: China ~$3B FY2024 revenue with all EUV + advanced DUV immersion blocked. US administration has repeatedly tightened rules. A complete DUV block would remove 10-15% of revenue with no short-term offset.
+
+2. **High-NA adoption pace**: High-NA EUV machines ($380M+) require chipmakers to redesign lithography stacks for "anamorphic" optics. If TSMC or Samsung delays high-volume High-NA adoption, the bull case timeline extends materially. Early production issues could damage ASML's premium pricing thesis.
+
+3. **Customer concentration**: TSMC alone represents ~30-35% of ASML's revenue. Any TSMC-specific disruption (Taiwan geopolitical risk, fab construction delays) is an ASML revenue event.
+
+4. **Geopolitical supply chain**: ASML's EUV machines contain 100,000+ components from 800+ suppliers across the US, Germany, and Netherlands. Geopolitical disruptions to component supply chains (e.g., US pressure to stop supplying German optical components) would threaten delivery schedules.
+
+5. **Capex cycle timing**: Semiconductor equipment is cyclically volatile (2023 saw significant capex cuts). ASML's backlog provides 12-18 month visibility but not protection from multi-year downturns. A prolonged memory/foundry downturn would delay order placements for FY2027+.
+
+---
+
+## What to Watch
+
+- **High-NA EUV shipment pace**: Quarterly unit deliveries to TSMC/Samsung/Intel — the single best leading indicator for bull case materialization
+- **China revenue quarterly disclosure**: Any change in China revenue (up or down) signals regulatory trajectory
+- **Order intake vs guidance**: ASML guides order intake quarterly; sustained order intake >€7B/quarter supports base case
+- **Gross margin trend**: High-NA should expand gross margins above 52.8% (TTM gross margin); flat gross margins would signal mix underperformance
+- **DUV restriction tightening**: Monitor US Commerce Dept / Dutch government export policy statements
+
+---
+
+## Comparables
+
+| Company | Revenue | P/E | FCF Yield | Gross Margin | Notes |
+|---------|---------|-----|-----------|--------------|-------|
+| ASML | $32.7B | 47.2x | ~2.0% | 52.8% | EUV monopoly |
+| Applied Materials | $27.0B | 18.4x | 5.5% | 47.2% | Diversified equipment; no EUV |
+| Lam Research | $17.0B | 23.1x | 4.1% | 48.1% | Etch/deposition; ASML customer |
+| KLA Corporation | $10.5B | 35.6x | 2.8% | 59.6% | Metrology/inspection; near-monopoly position |
+| Tokyo Electron | $16.8B | 28.7x | 3.1% | 44.5% | Japan equipment; diversified |
+
+ASML commands the highest P/E in semiconductor equipment — justified by monopoly position but also reflecting the highest valuation risk if growth disappoints.
+
+---
+
+## Data Quality & Confidence Score
+
+**Confidence: 0.82/1.0**
+
+| Factor | Impact | Note |
+|--------|--------|------|
+| EUV monopoly moat | +0.08 | No substitutes for sub-7nm; strongest moat in coverage |
+| Piotroski 8/9 | +0.05 | Exceptional financial health |
+| Strong analyst coverage | +0.03 | 15 analysts, tight range ($907-$1,999) |
+| EUR/USD translation uncertainty | −0.05 | API PE metrics may have currency inconsistency |
+| China restriction binary risk | −0.05 | Regulatory event risk not capturable in DCF |
+| High-NA adoption pace | −0.08 | Largest single uncertainty; schedule slip = base case misses |
+| Lumpy FCF ($3.25B → $11.03B) | −0.06 | Capex timing creates multi-year visibility noise |
+| Historical data Year 1 = zeros | −0.05 | Only 3 usable historical years (effective 3-yr avg) |
+| Cross-cycle pricing evidence | +0.02 | 3.8× price increase over 13 years validates QM 1.15 bull |
+
+---
+
+## Discussion Log
+
+*Empty — appended during Q&A sessions*
+
+---
+
+## Sources Checked
+- Financial data: ✅ fetch_financials.py (yfinance)
+- Projection persistence: ✅ Saved (v2, id: e0b96b0f-b4df-41ed-a16f-7b1bb363a033)
+- Research report: ✅ investment_screener/backend/data/research/ASML_2026-05-02.md
+- Valuation benchmarks: ✅ references/valuation-benchmarks.md (Semiconductor Equipment row)
+- Analysis prompt: ✅ references/analysis_prompt.md
+
+## Sources Unavailable
+- None — full data available for this analysis
+

@@ -41,8 +41,29 @@ DAILY_BRIEFS_DIR = REPO_ROOT / "investment_screener/backend/data/daily-briefs"
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
-def _ta_age_hours() -> float | None:
-    """Return hours since last TA sweep, or None if no file."""
+def _ta_age_hours(db_path: str | None = None) -> float | None:
+    """Return hours since last TA sweep from SQLite database, falling back to legacy JSON."""
+    import os
+    import sqlite3
+
+    resolved_db_path = db_path or str(REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite")
+    if os.path.exists(resolved_db_path):
+        try:
+            conn = sqlite3.connect(resolved_db_path)
+            cursor = conn.execute("""
+                SELECT MAX(ingested_at) FROM intelligence_event
+                WHERE event_type = 'TECHNICAL_SWEEP' AND status = 'ACTIVE';
+            """)
+            row = cursor.fetchone()
+            conn.close()
+            if row and row[0]:
+                ts_str = row[0].replace("Z", "+00:00")
+                scanned = datetime.fromisoformat(ts_str)
+                return (datetime.now(timezone.utc) - scanned).total_seconds() / 3600
+        except Exception:
+            pass
+
+    # Fallback to legacy JSON
     if not TA_SWEEP_PATH.exists():
         return None
     with open(TA_SWEEP_PATH) as f:
@@ -330,11 +351,17 @@ def _harvest_predictions_step() -> int | None:
         return None
 
 
-def run(skip_ta: bool = False) -> dict[str, Any]:
+def run(
+    skip_ta: bool = False,
+    db_path: str | None = None,
+    ta_json_path: Path | None = None,
+) -> dict[str, Any]:
     """Execute the full daily brief pipeline.
 
     Args:
         skip_ta: Skip TA sweep refresh even when stale.
+        db_path: Optional override for SQLite read-model database.
+        ta_json_path: Optional override for legacy TA JSON file.
 
     Returns:
         Full brief dict ready for JSON serialisation and terminal rendering.
@@ -388,7 +415,7 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
         risk_snapshot = None
 
     # ── 2. TA sweep (auto-refresh if stale) ───────────────────────────────────
-    age = _ta_age_hours()
+    age = _ta_age_hours(db_path=db_path)
     ran_ta = False
     ta_skip_reason = ""
     if not skip_ta and (age is None or age > 4):
@@ -404,7 +431,8 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
                     # ta_sweep_batch.py auto-saves to TA_SWEEP_PATH itself via
                     # save_sweep_results() — read it back rather than re-deriving the
                     # payload from stdout, to avoid two code paths writing the same file.
-                    with open(TA_SWEEP_PATH) as f:
+                    resolved_json_path = ta_json_path or TA_SWEEP_PATH
+                    with open(resolved_json_path) as f:
                         scan = json.loads(f.read())["results"]
                     ran_ta = True
                     print(f"  Scanned {len(scan)} holdings.", file=sys.stderr)
@@ -423,7 +451,8 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
 
     # ── 3. Conviction scores ──────────────────────────────────────────────────
     print("▶ Conviction scores...", file=sys.stderr)
-    scores = compute_all()
+    scores = compute_all(db_path=db_path, ta_json_path=ta_json_path)
+
     scores_raw = [asdict(s) for s in scores]
 
     # ── 4. Earnings calendar ──────────────────────────────────────────────────
@@ -570,6 +599,39 @@ def run(skip_ta: bool = False) -> dict[str, Any]:
     snap = DAILY_BRIEFS_DIR / f"{date.today().isoformat()}.json"
     with open(snap, "w") as f:
         json.dump(brief, f, indent=2)
+
+    # ── 7a. Dual-write to intelligence ledger ────────────────────────────────
+    try:
+        from intelligence.event_store import append_event, _default_jsonl_path
+        from intelligence.replay_ledger import replay_events_to_db
+        from intelligence.db_client import initialize_db
+
+        # Testing guardrail
+        if not ("pytest" in sys.modules and db_path is None):
+            resolved_jsonl_path = _default_jsonl_path()
+            resolved_db_path = db_path or str(REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite")
+
+            today_str = date.today().isoformat()
+            append_event(
+                str(resolved_jsonl_path),
+                event_type="REVIEW_DAILY",
+                effective_at=today_str,
+                status="ACTIVE",
+                title=f"Daily Brief for {today_str}",
+                body_markdown=f"Generated daily brief summary metrics.",
+                ticker=None,
+                source_id="daily_brief",
+                payload=brief,
+                idempotency_key=f"daily-brief-{today_str}",
+            )
+
+            conn = initialize_db(resolved_db_path)
+            try:
+                replay_events_to_db(str(resolved_jsonl_path), conn)
+            finally:
+                conn.close()
+    except Exception as exc:
+        print(f"  Failed writing REVIEW_DAILY to database: {exc}", file=sys.stderr)
 
     return brief
 

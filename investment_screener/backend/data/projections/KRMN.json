@@ -7,8 +7,8 @@
     "version": 1,
     "savedAt": "2026-05-31T16:30:00.000Z",
     "updatedAt": "2026-05-31T16:30:00.000Z",
-    "name": "AI Deep Dive — KRMN — 2026-05-31",
-    "rationale": "Karman Holdings manufactures the physical structural and propulsion components that go inside hypersonic missiles, strategic defense systems, and space launch vehicles — precisely the hardware the Pentagon is replenishing and expanding at record rates. The fundamentals are genuinely improving: gross margins have expanded every single year (35.8%→40.3%), the company is becoming profitable, and revenue nearly doubles to $730M in 2026E (+55%). The low trailing net margin (3.7%) is artificially depressed by PE-era leverage; the 2026 EPS jump from $0.13→$0.57 reflects debt paydown normalizing net income toward the 15% operating margin. The DCF yields a conservative $18.05 weighted fair value using standard Industrials exit multiples (16-35x P/E), implying 69% downside from $57.50. However, 10 analysts have a consensus target of $105.60 (BUY), reflecting a growth-premium valuation framework that assigns 40-50x exit P/E to a company growing EPS 60%+ per year. The tension between these two frameworks reflects the stock's nature: a genuine defense infrastructure compounder re-rated as a high-growth name. After a 38% pullback from recent highs, the risk-reward has improved materially.",
+    "name": "AI Deep Dive \u2014 KRMN \u2014 2026-05-31",
+    "rationale": "Karman Holdings manufactures the physical structural and propulsion components that go inside hypersonic missiles, strategic defense systems, and space launch vehicles \u2014 precisely the hardware the Pentagon is replenishing and expanding at record rates. The fundamentals are genuinely improving: gross margins have expanded every single year (35.8%\u219240.3%), the company is becoming profitable, and revenue nearly doubles to $730M in 2026E (+55%). The low trailing net margin (3.7%) is artificially depressed by PE-era leverage; the 2026 EPS jump from $0.13\u2192$0.57 reflects debt paydown normalizing net income toward the 15% operating margin. The DCF yields a conservative $18.05 weighted fair value using standard Industrials exit multiples (16-35x P/E), implying 69% downside from $57.50. However, 10 analysts have a consensus target of $105.60 (BUY), reflecting a growth-premium valuation framework that assigns 40-50x exit P/E to a company growing EPS 60%+ per year. The tension between these two frameworks reflects the stock's nature: a genuine defense infrastructure compounder re-rated as a high-growth name. After a 38% pullback from recent highs, the risk-reward has improved materially.",
     "snapshot": {
       "price": 57.5,
       "currency": "USD",
@@ -28,7 +28,7 @@
         "exitPE": 16,
         "qualityMultiplier": 0.95,
         "shareChange": 2.5,
-        "rationale": "Bear anchored to defense budget uncertainty and continued operating margin decline. 14% CAGR assumes program delays push analyst 2026 estimates to the right. Net margin of 5% assumes operating margins settle around 12% (below historical peak of 18.4%) as SG&A for the public company scales and interest expense does not decline as fast as modeled. Exit P/E of 16 is below Industrials conservative benchmark (14 is the floor), reflecting growth disappointment. Quality multiplier 0.95 reflects limited demonstrated moat at this stage — programs are won on competitive bid, not sole-source. Historical bear trough for Industrials net margins is 2%.",
+        "rationale": "Bear anchored to defense budget uncertainty and continued operating margin decline. 14% CAGR assumes program delays push analyst 2026 estimates to the right. Net margin of 5% assumes operating margins settle around 12% (below historical peak of 18.4%) as SG&A for the public company scales and interest expense does not decline as fast as modeled. Exit P/E of 16 is below Industrials conservative benchmark (14 is the floor), reflecting growth disappointment. Quality multiplier 0.95 reflects limited demonstrated moat at this stage \u2014 programs are won on competitive bid, not sole-source. Historical bear trough for Industrials net margins is 2%.",
         "moatScore": 2,
         "managementScore": 2,
         "year5Revenue": 907.8,
@@ -37,7 +37,7 @@
         "scenarioPrice": 2.86,
         "risks": [
           "Defense budget sequestration or continuing resolution delays contract ramps by 1-2 years",
-          "Operating margins compress further (TTM decline from 18.4%→15.5% accelerates) as public company overhead grows",
+          "Operating margins compress further (TTM decline from 18.4%\u219215.5% accelerates) as public company overhead grows",
           "TCFIII Spaceco sponsor exits create stock overhang, depressing price and forcing dilutive equity raises"
         ],
         "year5Shares": 149.9
@@ -49,7 +49,7 @@
         "exitPE": 24,
         "qualityMultiplier": 1,
         "shareChange": 1.5,
-        "rationale": "Base CAGR of 22% derived from analyst trajectory: Y1 +55% ($730.9M), Y2 +27.3% ($930.5M), Y3 +17%, Y4 +12%, Y5 +10% — 5-yr CAGR=(1340/471.5)^0.2-1=22.3%. Hypergrowth exception applies (Y1>40%). Net margin of 10% reflects: operating margin stabilizes at 15.5%, debt paydown from IPO proceeds drops interest expense from ~$55M to ~$10M by Y5, effective tax rate ~25% → steady-state net margin ~11-12% in Y5. Using 10% as conservative target. Exit P/E of 24 aligns with Industrials Growth P/E benchmark. Anchor: TTM net margin 3.7% is artificially low (PE leverage); 2026E analyst consensus implies 10.3% net margin — consistent with this assumption. Quality multiplier 1.0 = average; government defense programs create switching costs once hardware is spec'd-in, but moat is nascent.",
+        "rationale": "Base CAGR of 22% derived from analyst trajectory: Y1 +55% ($730.9M), Y2 +27.3% ($930.5M), Y3 +17%, Y4 +12%, Y5 +10% \u2014 5-yr CAGR=(1340/471.5)^0.2-1=22.3%. Hypergrowth exception applies (Y1>40%). Net margin of 10% reflects: operating margin stabilizes at 15.5%, debt paydown from IPO proceeds drops interest expense from ~$55M to ~$10M by Y5, effective tax rate ~25% \u2192 steady-state net margin ~11-12% in Y5. Using 10% as conservative target. Exit P/E of 24 aligns with Industrials Growth P/E benchmark. Anchor: TTM net margin 3.7% is artificially low (PE leverage); 2026E analyst consensus implies 10.3% net margin \u2014 consistent with this assumption. Quality multiplier 1.0 = average; government defense programs create switching costs once hardware is spec'd-in, but moat is nascent.",
         "moatScore": 3,
         "managementScore": 3,
         "year5Revenue": 1274.3,
@@ -69,7 +69,7 @@
         "exitPE": 35,
         "qualityMultiplier": 1.1,
         "shareChange": 0.5,
-        "rationale": "Bull catalyst: Pentagon missile refresh (aging Minuteman III ICBM fleet + LRSO long-range standoff weapon program + GBSD ground-based strategic deterrent) creates 10+ year demand for Karman's propulsion systems, payload protection structures, and aerodynamic interstage systems. Golden Dome space-based missile defense layer requires 1,000s of interceptors at scale — Karman is a Tier 1 structural/propulsion supplier. 28% CAGR brings revenue to $1.62B (3.4x current). Net margin of 15% achievable with: (a) high-value sole-source classified programs at premium margins, (b) operating leverage on $1.6B revenue base, (c) interest expense fully eliminated. Exit P/E of 35 reflects growth premium — company still growing 18%+ in Y5 with improving margins (PEG ratio at 35x/18% ≈ 1.9x, at the high end but not extreme for defense infrastructure). Quality multiplier 1.10 reflects one specific moat: once Karman's structural components are spec'd into a DoD weapons program (e.g., GBSD interstage), switching costs for a production-phase program are extremely high (re-certification, testing, schedule risk).",
+        "rationale": "Bull catalyst: Pentagon missile refresh (aging Minuteman III ICBM fleet + LRSO long-range standoff weapon program + GBSD ground-based strategic deterrent) creates 10+ year demand for Karman's propulsion systems, payload protection structures, and aerodynamic interstage systems. Golden Dome space-based missile defense layer requires 1,000s of interceptors at scale \u2014 Karman is a Tier 1 structural/propulsion supplier. 28% CAGR brings revenue to $1.62B (3.4x current). Net margin of 15% achievable with: (a) high-value sole-source classified programs at premium margins, (b) operating leverage on $1.6B revenue base, (c) interest expense fully eliminated. Exit P/E of 35 reflects growth premium \u2014 company still growing 18%+ in Y5 with improving margins (PEG ratio at 35x/18% \u2248 1.9x, at the high end but not extreme for defense infrastructure). Quality multiplier 1.10 reflects one specific moat: once Karman's structural components are spec'd into a DoD weapons program (e.g., GBSD interstage), switching costs for a production-phase program are extremely high (re-certification, testing, schedule risk).",
         "moatScore": 4,
         "managementScore": 4,
         "year5Revenue": 1620.1,
@@ -85,11 +85,11 @@
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "Karman Holdings makes the physical structural backbone of modern missiles and rockets: payload fairings, interstage structures, propulsion systems for hypersonics, and aerodynamic assemblies. This is not a narrative play — it is actual hardware inside weapons programs that the Pentagon is funding at record levels. The business is genuinely improving: gross margins expanded from 35.8% to 40.3% over four years, EPS is set to quadruple in 2026 as PE-era debt clears post-IPO, and the company's revenue is on track to double in a single year. The DCF fair value of $18.05 uses standard Industrials exit multiples (16-35x P/E) and produces a technical SELL signal at $57.50. However, this understates the company's value as a high-growth defense infrastructure compounder: 10 analysts target $105.60 using growth-company multiples (40-80x forward P/E) that reflect the EPS CAGR of 60%+ expected through 2027. The critical reconciliation: to justify $57.50 on a 5-year DCF requires roughly 30% CAGR and 15%+ net margins at a 40x terminal P/E — achievable if Pentagon missile refresh programs reach full ramp. At $57.50 (down 38% from recent highs), the stock has already priced out significant optimism. The bear case ($2.86) is severe but requires both growth disappointment AND margin failure simultaneously. SELL per DCF formula, but this is a growth premium business where standard Industrials benchmarks systematically understate value. Would HOLD for investors with conviction on the Pentagon spending thesis.",
+      "rationale": "Karman Holdings makes the physical structural backbone of modern missiles and rockets: payload fairings, interstage structures, propulsion systems for hypersonics, and aerodynamic assemblies. This is not a narrative play \u2014 it is actual hardware inside weapons programs that the Pentagon is funding at record levels. The business is genuinely improving: gross margins expanded from 35.8% to 40.3% over four years, EPS is set to quadruple in 2026 as PE-era debt clears post-IPO, and the company's revenue is on track to double in a single year. The DCF fair value of $18.05 uses standard Industrials exit multiples (16-35x P/E) and produces a technical SELL signal at $57.50. However, this understates the company's value as a high-growth defense infrastructure compounder: 10 analysts target $105.60 using growth-company multiples (40-80x forward P/E) that reflect the EPS CAGR of 60%+ expected through 2027. The critical reconciliation: to justify $57.50 on a 5-year DCF requires roughly 30% CAGR and 15%+ net margins at a 40x terminal P/E \u2014 achievable if Pentagon missile refresh programs reach full ramp. At $57.50 (down 38% from recent highs), the stock has already priced out significant optimism. The bear case ($2.86) is severe but requires both growth disappointment AND margin failure simultaneously. SELL per DCF formula, but this is a growth premium business where standard Industrials benchmarks systematically understate value. Would HOLD for investors with conviction on the Pentagon spending thesis.",
       "fairValue": 18.05,
       "action": "SELL",
       "analyzedAt": "2026-05-31T16:30:00.000Z",
-      "researchReport": "KRMN_2026-05-31.md"
+      "researchReport": "KRMN.summary.md"
     },
     "globalSettings": {
       "discountRate": 0.1,
@@ -97,14 +97,14 @@
     },
     "analyticsLog": {
       "shareCountMethod": "shares_diluted = shares_outstanding = 132.5M (no discrepancy; post-IPO clean capital structure). Used as-is.",
-      "marginAnchor": "Net margin is trending (negative → turning positive); NOT mean-reverting. 4yr avg distorted by PE leverage: -6.2%, +1.6%, +3.7%, +3.7%. True earnings anchor = operating margin (15.5%) net of taxes (~25%) = ~11.6%. Net margin TTM of 3.7% is artificially low. 2026E analyst consensus implies 10.3% net margin, confirming debt paydown thesis. Targets (5%, 10%, 15%) reflect recovery toward operating margin, not reversion to 3.7% average.",
+      "marginAnchor": "Net margin is trending (negative \u2192 turning positive); NOT mean-reverting. 4yr avg distorted by PE leverage: -6.2%, +1.6%, +3.7%, +3.7%. True earnings anchor = operating margin (15.5%) net of taxes (~25%) = ~11.6%. Net margin TTM of 3.7% is artificially low. 2026E analyst consensus implies 10.3% net margin, confirming debt paydown thesis. Targets (5%, 10%, 15%) reflect recovery toward operating margin, not reversion to 3.7% average.",
       "growthDerivation": "Hypergrowth exception (Y1 consensus = +55%). Analyst path: Y1=$730.9M (+55%), Y2=$930.5M (+27.3%). Deceleration: Y3=+17%, Y4=+12%, Y5=+10%. Base 5-yr CAGR=(1340/471.5)^0.2-1=22.3%. Bear=14%. Bull=28% (sustained by Pentagon multi-year programs).",
-      "sectorBenchmarkRow": "Industrials — Conservative P/E 14, Median P/E 18, Growth P/E 24. Net margin typical 6-12%, best-in-class 15%. IMPORTANT CAVEAT: Analysts are applying 50-80x growth-company P/E to KRMN based on EPS CAGR of 60%+, not standard Industrials multiples. This report uses standard Industrials benchmarks (conservative) — see research report for analyst target reconciliation.",
+      "sectorBenchmarkRow": "Industrials \u2014 Conservative P/E 14, Median P/E 18, Growth P/E 24. Net margin typical 6-12%, best-in-class 15%. IMPORTANT CAVEAT: Analysts are applying 50-80x growth-company P/E to KRMN based on EPS CAGR of 60%+, not standard Industrials multiples. This report uses standard Industrials benchmarks (conservative) \u2014 see research report for analyst target reconciliation.",
       "dataQualityFlags": [
-        "Beta = 0 in yfinance — recent IPO, insufficient history for beta calculation. Using default 10% discount rate.",
-        "Net margin 3.7% TTM understates earnings power — PE leverage structure (TCFIII Spaceco SPV) artificially inflates interest expense. True anchor = operating margin (~15.5%) net of taxes (~11-12%).",
-        "FCF negative TTM (-$42.5M) despite positive net income ($17.4M) — likely working capital build for $730M+ 2026 revenue ramp or capex for capacity expansion. Monitor for improvement.",
-        "Operating margin slightly declining (18.4% → 15.5%) even as gross margins improve (35.8%→40.3%). SG&A scaling as a public company is absorbing gross margin gains. Key risk: watch whether operating margin recovers to 17%+ as revenue scales.",
+        "Beta = 0 in yfinance \u2014 recent IPO, insufficient history for beta calculation. Using default 10% discount rate.",
+        "Net margin 3.7% TTM understates earnings power \u2014 PE leverage structure (TCFIII Spaceco SPV) artificially inflates interest expense. True anchor = operating margin (~15.5%) net of taxes (~11-12%).",
+        "FCF negative TTM (-$42.5M) despite positive net income ($17.4M) \u2014 likely working capital build for $730M+ 2026 revenue ramp or capex for capacity expansion. Monitor for improvement.",
+        "Operating margin slightly declining (18.4% \u2192 15.5%) even as gross margins improve (35.8%\u219240.3%). SG&A scaling as a public company is absorbing gross margin gains. Key risk: watch whether operating margin recovers to 17%+ as revenue scales.",
         "Company still majority-owned by PE sponsor (TCFIII Spaceco SPV LP). Sponsor exits can create sustained stock overhang.",
         "Analyst targets ($37-$135, mean $105.60) reflect growth-premium valuation (40-80x P/E), not traditional Industrials DCF. Standard DCF fair value ($18.05) and analyst targets ($105) represent a 5.8x discrepancy that is entirely explained by exit multiple assumptions."
       ],
@@ -141,13 +141,13 @@
         "priorPrice": "N/A",
         "priorFairValue": "N/A",
         "priorAction": "N/A",
-        "priceDelta": "N/A — first analysis",
-        "assumptionAudit": "N/A — no prior projection",
+        "priceDelta": "N/A \u2014 first analysis",
+        "assumptionAudit": "N/A \u2014 no prior projection",
         "modelQualityFlag": "N/A",
-        "thesisOutcome": "N/A — first analysis",
-        "fundamentalChanges": "N/A — establishing baseline"
+        "thesisOutcome": "N/A \u2014 first analysis",
+        "fundamentalChanges": "N/A \u2014 establishing baseline"
       },
-      "confidenceBreakdown": "0.61/1.0 — Base: 1.0. +0.05 strong analyst coverage (10 analysts, consensus BUY). +0.05 gross margins expanding every year — structural improvement. +0.03 clear government demand catalyst (Pentagon missile refresh, hypersonics). -0.10 beta unavailable (limited IPO history). -0.10 net margin distorted by PE leverage (requires judgment about steady-state). -0.10 FCF negative despite profitable (working capital or capex signal unclear). -0.05 PE sponsor overhang. -0.05 operating margin declining trend (18.4% → 15.5%) despite gross margin expansion — SG&A not yet leveraged. +0.03 stock down 38% from highs (downside partially de-risked)."
+      "confidenceBreakdown": "0.61/1.0 \u2014 Base: 1.0. +0.05 strong analyst coverage (10 analysts, consensus BUY). +0.05 gross margins expanding every year \u2014 structural improvement. +0.03 clear government demand catalyst (Pentagon missile refresh, hypersonics). -0.10 beta unavailable (limited IPO history). -0.10 net margin distorted by PE leverage (requires judgment about steady-state). -0.10 FCF negative despite profitable (working capital or capex signal unclear). -0.05 PE sponsor overhang. -0.05 operating margin declining trend (18.4% \u2192 15.5%) despite gross margin expansion \u2014 SG&A not yet leveraged. +0.03 stock down 38% from highs (downside partially de-risked)."
     }
   }
 ]

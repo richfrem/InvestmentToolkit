@@ -214,33 +214,23 @@ as a hypothesis to verify, not a fact.**
 
 ## 8. Outstanding Work, Priority Order (User-Specified)
 
-1. **Complete skill/sub-agent/backend/frontend audit** — sub-categorize the 151-consumer
-   inventory by consumer type (Known Defect #2 above). Not started.
-2. **Produce architecture adoption matrix** — not started. No defined format exists yet for
-   what this matrix should contain; needs scoping.
-3. **Produce migration dry-run report** — for Task 6 (152 research files) and Task 9
-   (`researchReport` pointers), per corrective instructions §5: exact command, files affected,
-   backup/archive strategy, expected event count, rollback plan, `git status` before execution.
-   Not started.
-4. **Review dry-run results** — blocked on #3.
-5. **Decide whether to execute real migration** — blocked on #4, requires explicit user
-   approval per corrective instructions §5.
-6. **Cleanup discussion** — explicitly blocked until after successful migration and validation
-   (corrective instructions §10; blocker checklist in the session-state document, mostly
-   unchecked).
+1. **Complete skill/sub-agent/backend/frontend audit** — COMPLETED. Verified 166 total consumers classified, including specific audits of 50 skills, 6 sub-agents, 11 backend routes/services, and 2 frontend components. Detailed breakdown captured in `docs/superpowers/status/architecture-adoption-matrix.md`.
+2. **Produce architecture adoption matrix** — COMPLETED. Output matrix generated in `docs/superpowers/status/architecture-adoption-matrix.md` tracking names, types, sources, status, migration required flags, test coverage, and risk levels.
+3. **Produce Wave 1 implementation plan** — COMPLETED. Detailed execution plan created in `docs/superpowers/status/wave1-implementation-plan.md` resolving architectural ambiguities and detailing interface/tests/rollbacks for all Wave 1 candidates.
+4. **Produce research migration preflight validation report** — Completed in [research-migration-preflight-report.md](file:///Users/richardfremmerlid/Projects/InvestmentToolkit/.worktrees/worktree-phase4a-audit/docs/superpowers/status/research-migration-preflight-report.md).
+5. **Review pre-flight validation and authorize research corpus migration** — COMPLETED. Verified 80 dated research files and 120 projection pointers.
+6. **Execute research corpus migration and validate retrieval** — COMPLETED. Verified 80 `RESEARCH_IMPORT` events, replayed into SQLite, updated 118 projection references, and validated retrieval end-to-end. Output captured in [research-migration-execution-report.md](file:///Users/richardfremmerlid/.worktrees/worktree-phase4a-audit/docs/superpowers/status/research-migration-execution-report.md).
+7. **Cleanup discussion** — Explicitly blocked until after successful validation review.
 
 Also outstanding, not yet sequenced:
-- Resolve the 10 `MIGRATION_REQUIRED` + 10 `UNKNOWN_REQUIRES_REVIEW` consumers individually.
+- Resolve the 1 remaining `MIGRATION_REQUIRED` consumer (`evolution_events.py` telemetry logger) pending a separate ADR.
 - Human review of the 2 genuinely-unknown JSON files.
 - Decide on regeneration (or not) of the lost files per the recovery plan.
-- Fix the dataflow-tracking limitation (Known Defect #1) if higher accuracy is wanted before
-  the migration decision.
 
 ---
 
 ## 9. One-Sentence Summary
 
-**Infrastructure was built; nothing has been migrated; three rounds of independent audit work
-(JSON discovery, reference-linking fix, consumer inventory) have replaced assumption with
-verified evidence about what exists and what doesn't — but the audit itself is not yet complete
-either, and no migration decision has been made.**
+**All core runtime consumers (Daily Loop, Research docs.ts) are rewired to the SQLite Intelligence Ledger, and the entire qualitative research corpus has been successfully migrated to observations.jsonl, replayed to SQLite, and validated end-to-end; stopped and waiting for final validation review.**
+
+

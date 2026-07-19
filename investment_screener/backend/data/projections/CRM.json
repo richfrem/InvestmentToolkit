@@ -7,7 +7,7 @@
     "version": 1,
     "savedAt": "2026-05-02T19:35:00.000Z",
     "updatedAt": "2026-05-02T19:35:00.000Z",
-    "name": "AI Deep Dive — CRM — 2026-05-02",
+    "name": "AI Deep Dive \u2014 CRM \u2014 2026-05-02",
     "rationale": "Salesforce (CRM) dominates enterprise software with its core CRM and growing Agentforce AI suite. The company has heavily focused on operational efficiency, pushing net margins to nearly 18% and generating massive free cash flow ($14.4B). The market is overly pessimistic about top-line deceleration (pricing the stock at $183 with a forward P/E of 12.3x), ignoring the massive cash generation and share buyback potential. My weighted fair value of $281 indicates a deep 53% upside, making CRM a strong value-oriented BUY.",
     "snapshot": {
       "price": 183.82,
@@ -64,7 +64,7 @@
       "fairValue": 281.49,
       "action": "BUY",
       "analyzedAt": "2026-05-02T19:35:00.000Z",
-      "researchReport": "CRM_2026-05-02.md"
+      "researchReport": "CRM.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

@@ -89,7 +89,7 @@
       "fairValue": 320.12,
       "action": "SELL",
       "analyzedAt": "2026-05-02T20:05:00Z",
-      "researchReport": "AMD_2026-05-02.md"
+      "researchReport": "AMD.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -238,7 +238,7 @@
       "fairValue": 352.63,
       "action": "MAINTAIN",
       "analyzedAt": "2026-05-08T05:21:26Z",
-      "researchReport": "AMD_2026-05-02.md"
+      "researchReport": "AMD.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

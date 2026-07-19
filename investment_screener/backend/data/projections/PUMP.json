@@ -7,8 +7,8 @@
     "version": 4,
     "savedAt": "2026-05-02T22:20:00Z",
     "updatedAt": "2026-05-02T22:01:08.434Z",
-    "name": "AI Deep Dive — PUMP — 2026-05-02",
-    "rationale": "ProPetro Holding is a hydraulic fracturing company in structural decline. Revenue down 24.7% YoY, margins near zero (0.06% TTM), and analyst EPS consensus is NEGATIVE for Y1 (-$0.155) with barely-positive Y2 ($0.296). The analyst mean price target of $15.45 is BELOW the current price of $16.62. Piotroski 4/9. The raw data contained a share count error (shares_diluted 82.4M < shares_outstanding 122.6M — corrected to 122.7M mktcap-implied). Weighted DCF fair value $4.92 vs $16.62 = SELL (-70.4%).",
+    "name": "AI Deep Dive \u2014 PUMP \u2014 2026-05-02",
+    "rationale": "ProPetro Holding is a hydraulic fracturing company in structural decline. Revenue down 24.7% YoY, margins near zero (0.06% TTM), and analyst EPS consensus is NEGATIVE for Y1 (-$0.155) with barely-positive Y2 ($0.296). The analyst mean price target of $15.45 is BELOW the current price of $16.62. Piotroski 4/9. The raw data contained a share count error (shares_diluted 82.4M < shares_outstanding 122.6M \u2014 corrected to 122.7M mktcap-implied). Weighted DCF fair value $4.92 vs $16.62 = SELL (-70.4%).",
     "snapshot": {
       "price": 16.62,
       "currency": "USD",
@@ -41,7 +41,7 @@
         "exitPE": 12,
         "qualityMultiplier": 0.9,
         "shareChange": 0,
-        "rationale": "Analyst revenue recovery: Y1 $1.22B (-3.9%), Y2 $1.43B (+17.3%). Base 5% CAGR from $1.27B = $1.62B by Y5, consistent with Y2 analyst estimate. Net margin 4% = modest recovery from 0.06% TTM. Exit PE 12x = oilfield services median for a low-margin provider. QM 0.90 (no durable moat — commodity service). Year 5: $1,619.8M × 4% / 122.6M shares = $0.53 EPS × 12 × 0.90 / 1.61 = $3.54. Note: analyst Y2 EPS $0.30 implies only 2.6% margin at $1.43B revenue — our base 4% at Y5 may be slightly optimistic.",
+        "rationale": "Analyst revenue recovery: Y1 $1.22B (-3.9%), Y2 $1.43B (+17.3%). Base 5% CAGR from $1.27B = $1.62B by Y5, consistent with Y2 analyst estimate. Net margin 4% = modest recovery from 0.06% TTM. Exit PE 12x = oilfield services median for a low-margin provider. QM 0.90 (no durable moat \u2014 commodity service). Year 5: $1,619.8M \u00d7 4% / 122.6M shares = $0.53 EPS \u00d7 12 \u00d7 0.90 / 1.61 = $3.54. Note: analyst Y2 EPS $0.30 implies only 2.6% margin at $1.43B revenue \u2014 our base 4% at Y5 may be slightly optimistic.",
         "scenarioPrice": 3.54
       },
       "bull": {
@@ -51,32 +51,32 @@
         "exitPE": 18,
         "qualityMultiplier": 1,
         "shareChange": -1,
-        "rationale": "Catalyst: Oil price recovery to $90+ AND ProPetro successfully integrates its recent acquisitions to gain Permian Basin scale advantage. Revenue grows 12% CAGR to $2.24B by Y5. Margin recovers to 8% (FY2022 peak was 5.25%). Exit PE 18x. Bull PV $17.15 — essentially equal to current $16.62, illustrating that even the optimistic scenario barely justifies current price.",
+        "rationale": "Catalyst: Oil price recovery to $90+ AND ProPetro successfully integrates its recent acquisitions to gain Permian Basin scale advantage. Revenue grows 12% CAGR to $2.24B by Y5. Margin recovers to 8% (FY2022 peak was 5.25%). Exit PE 18x. Bull PV $17.15 \u2014 essentially equal to current $16.62, illustrating that even the optimistic scenario barely justifies current price.",
         "scenarioPrice": 17.15
       }
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "ProPetro Holding is a hydraulic fracturing company with near-zero margins, declining revenue, and an analyst price target BELOW the current trading price. The stock at $16.62 trades above the analyst consensus target of $15.45 — a rare and bearish signal. Revenue has declined 24.7% year-over-year. TTM net margin is 0.06% — essentially breakeven. The company is projected to be UNPROFITABLE in FY2026 (analyst EPS -$0.155) before barely recovering to $0.30 EPS in FY2027. A key data quality issue: the API reported shares_diluted (82.4M) below shares_outstanding (122.6M) — an impossible figure (diluted must always exceed outstanding). The DCF was recalculated with the corrected 122.6M share count, giving fair value of $4.92 vs $16.62 (-70.4%). In a commodity service industry with no durable competitive advantage, paying any significant P/E multiple for a company with negative forward earnings is difficult to justify. The bull case at $17.15 (oil price recovery + acquisition synergies) is essentially equal to current price — the risk/reward is deeply asymmetric to the downside. SELL.",
+      "rationale": "ProPetro Holding is a hydraulic fracturing company with near-zero margins, declining revenue, and an analyst price target BELOW the current trading price. The stock at $16.62 trades above the analyst consensus target of $15.45 \u2014 a rare and bearish signal. Revenue has declined 24.7% year-over-year. TTM net margin is 0.06% \u2014 essentially breakeven. The company is projected to be UNPROFITABLE in FY2026 (analyst EPS -$0.155) before barely recovering to $0.30 EPS in FY2027. A key data quality issue: the API reported shares_diluted (82.4M) below shares_outstanding (122.6M) \u2014 an impossible figure (diluted must always exceed outstanding). The DCF was recalculated with the corrected 122.6M share count, giving fair value of $4.92 vs $16.62 (-70.4%). In a commodity service industry with no durable competitive advantage, paying any significant P/E multiple for a company with negative forward earnings is difficult to justify. The bull case at $17.15 (oil price recovery + acquisition synergies) is essentially equal to current price \u2014 the risk/reward is deeply asymmetric to the downside. SELL.",
       "fairValue": 4.92,
       "action": "SELL",
       "analyzedAt": "2026-05-02T22:20:00Z",
-      "researchReport": "PUMP_2026-05-02.md"
+      "researchReport": "PUMP.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "CRITICAL DATA ERROR in API: shares_diluted = 82,400,000 < shares_outstanding = 122,616,976 — impossible (diluted shares must always be >= outstanding). Mktcap-implied: $2.038B / $16.62 = 122.6M. CORRECTED shares to 122,616,976 (= outstanding = mktcap-implied). DCF was re-run with corrected share count. Original erroneous DCF with 82.4M shares gave $7.32 FV — share-count-corrected DCF gives $4.92 FV. The $4.92 FV is the correct figure.",
-      "marginAnchor": "Mean-reverting with extreme volatility. Historical: 0.16% → 5.25% → -9.55% → 0.06% (TTM). 4-yr avg: -1.02% — barely above breakeven averaged. The FY2023 loss (-9.55%) is the risk anchor: when fracking pricing pressure hits, PUMP loses money. Analyst Y1 EPS -$0.155 confirms near-term losses continue. Using near-zero to low positive margins (1%/4%/8%) acknowledging the historically terrible average.",
-      "growthDerivation": "Revenue declining: $1.28B → $1.63B → $1.44B → $1.27B TTM. 24.7% decline YoY. Analyst Y1 $1.22B (-3.9%), Y2 $1.43B (+17.3%) — flat-to-recovery trajectory. Base 5% CAGR from Y2 recovery. Bear -5% = further deterioration. Bull 12% = oil price recovery + acquisition synergies.",
-      "sectorBenchmarkRow": "Energy — Oil & Gas Equipment & Services: conservative P/E 6-8, median 12-18, growth 20+. PUMP's near-zero margins make P/E unreliable as a valuation anchor. Forward PE 57.6x on $0.29 EPS (Y2) = still expensive on normalized earnings.",
+      "shareCountMethod": "CRITICAL DATA ERROR in API: shares_diluted = 82,400,000 < shares_outstanding = 122,616,976 \u2014 impossible (diluted shares must always be >= outstanding). Mktcap-implied: $2.038B / $16.62 = 122.6M. CORRECTED shares to 122,616,976 (= outstanding = mktcap-implied). DCF was re-run with corrected share count. Original erroneous DCF with 82.4M shares gave $7.32 FV \u2014 share-count-corrected DCF gives $4.92 FV. The $4.92 FV is the correct figure.",
+      "marginAnchor": "Mean-reverting with extreme volatility. Historical: 0.16% \u2192 5.25% \u2192 -9.55% \u2192 0.06% (TTM). 4-yr avg: -1.02% \u2014 barely above breakeven averaged. The FY2023 loss (-9.55%) is the risk anchor: when fracking pricing pressure hits, PUMP loses money. Analyst Y1 EPS -$0.155 confirms near-term losses continue. Using near-zero to low positive margins (1%/4%/8%) acknowledging the historically terrible average.",
+      "growthDerivation": "Revenue declining: $1.28B \u2192 $1.63B \u2192 $1.44B \u2192 $1.27B TTM. 24.7% decline YoY. Analyst Y1 $1.22B (-3.9%), Y2 $1.43B (+17.3%) \u2014 flat-to-recovery trajectory. Base 5% CAGR from Y2 recovery. Bear -5% = further deterioration. Bull 12% = oil price recovery + acquisition synergies.",
+      "sectorBenchmarkRow": "Energy \u2014 Oil & Gas Equipment & Services: conservative P/E 6-8, median 12-18, growth 20+. PUMP's near-zero margins make P/E unreliable as a valuation anchor. Forward PE 57.6x on $0.29 EPS (Y2) = still expensive on normalized earnings.",
       "dataQualityFlags": [
-        "CRITICAL: API shares_diluted (82,400,000) < shares_outstanding (122,616,976) — data error. Diluted shares must be >= outstanding. Corrected to 122,616,976. All EPS calculations use 122.6M. Original erroneous DCF would have given $7.32 — corrected is $4.92.",
-        "Revenue declining 24.7% YoY — from $1.44B to $1.27B. This is not just a slowdown; it is active revenue contraction.",
-        "4-yr average net margin of -1.02% — the company is barely profitable on average. FY2023 had -$138M net loss (-9.55% margin).",
-        "Analyst target $15.45 < current $16.62 — the stock is trading ABOVE analyst target. 'Buy' rating with below-target price is contradictory; likely a stale rating.",
+        "CRITICAL: API shares_diluted (82,400,000) < shares_outstanding (122,616,976) \u2014 data error. Diluted shares must be >= outstanding. Corrected to 122,616,976. All EPS calculations use 122.6M. Original erroneous DCF would have given $7.32 \u2014 corrected is $4.92.",
+        "Revenue declining 24.7% YoY \u2014 from $1.44B to $1.27B. This is not just a slowdown; it is active revenue contraction.",
+        "4-yr average net margin of -1.02% \u2014 the company is barely profitable on average. FY2023 had -$138M net loss (-9.55% margin).",
+        "Analyst target $15.45 < current $16.62 \u2014 the stock is trading ABOVE analyst target. 'Buy' rating with below-target price is contradictory; likely a stale rating.",
         "Analyst Y1 EPS -$0.155 means the company is expected to be UNPROFITABLE in the next fiscal year. Any company trading at a positive P/E with negative forward EPS is in a precarious valuation position."
       ],
       "analystInputs": {
@@ -112,13 +112,13 @@
         "priorPrice": 16.62,
         "priorFairValue": 12.5,
         "priorAction": "SELL",
-        "priceDelta": "0% — same day",
-        "assumptionAudit": "Prior Gemini SELL at $12.50 — directionally correct. Gemini base: 5% growth, 5% margin, 12x PE, 0.9 QM. Our base: 5% growth, 4% margin, 12x PE, 0.90 QM — nearly identical except margin (5% vs 4%). This gives Gemini slightly higher base PV. Gemini also used 82.4M shares (the erroneous API data) — giving inflated EPS. With corrected 122.6M shares, our $4.92 FV is lower than Gemini's $12.50. Both are SELL.",
-        "modelQualityFlag": "UNVALIDATED — Gemini 3 Pro",
-        "thesisOutcome": "N/A — same day. SELL confirmed, our FV more bearish due to share count correction.",
-        "fundamentalChanges": "Fracking activity has moderated from 2022 peaks. Natural gas prices remain depressed, reducing incentive for new drilling. Oil prices ranged $65-85/barrel — below the $90+ needed to drive aggressive E&P capex expansion."
+        "priceDelta": "0% \u2014 same day",
+        "assumptionAudit": "Prior Gemini SELL at $12.50 \u2014 directionally correct. Gemini base: 5% growth, 5% margin, 12x PE, 0.9 QM. Our base: 5% growth, 4% margin, 12x PE, 0.90 QM \u2014 nearly identical except margin (5% vs 4%). This gives Gemini slightly higher base PV. Gemini also used 82.4M shares (the erroneous API data) \u2014 giving inflated EPS. With corrected 122.6M shares, our $4.92 FV is lower than Gemini's $12.50. Both are SELL.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Gemini 3 Pro",
+        "thesisOutcome": "N/A \u2014 same day. SELL confirmed, our FV more bearish due to share count correction.",
+        "fundamentalChanges": "Fracking activity has moderated from 2022 peaks. Natural gas prices remain depressed, reducing incentive for new drilling. Oil prices ranged $65-85/barrel \u2014 below the $90+ needed to drive aggressive E&P capex expansion."
       },
-      "confidenceBreakdown": "0.78/1.0 — SELL thesis has multiple strong confirming signals. Base 1.0. +0.10 analyst target BELOW current price is a clear contrarian SELL signal; +0.08 forward EPS negative Y1 with barely-positive Y2; +0.06 4-yr avg margin -1%; -0.08 oil price unpredictability (bull case at $90+ oil is plausible); -0.05 Piotroski 4/9; -0.05 share count data error required manual correction; -0.04 thin profitability makes margin assumptions very sensitive"
+      "confidenceBreakdown": "0.78/1.0 \u2014 SELL thesis has multiple strong confirming signals. Base 1.0. +0.10 analyst target BELOW current price is a clear contrarian SELL signal; +0.08 forward EPS negative Y1 with barely-positive Y2; +0.06 4-yr avg margin -1%; -0.08 oil price unpredictability (bull case at $90+ oil is plausible); -0.05 Piotroski 4/9; -0.05 share count data error required manual correction; -0.04 thin profitability makes margin assumptions very sensitive"
     }
   }
 ]

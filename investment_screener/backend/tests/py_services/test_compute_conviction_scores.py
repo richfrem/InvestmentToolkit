@@ -88,3 +88,57 @@ class TestResolvePctToFV:
 
     def test_returns_none_when_no_data_anywhere(self):
         assert _resolve_pct_to_fv({}, {}) is None
+
+
+class TestScoreLoadTaLedger:
+    """_load_ta must be able to load TECHNICAL_SWEEP events from the SQLite DB."""
+
+    def test_load_ta_from_sqlite(self, tmp_path):
+        import sqlite3
+        sys.path.insert(0, str(PY_SERVICES))
+        from intelligence.db_client import initialize_db  # noqa: E402
+        from intelligence.event_store import append_event  # noqa: E402
+        from compute_conviction_scores import _load_ta  # noqa: PLC0415
+
+        db_path = tmp_path / "intelligence.sqlite"
+        jsonl_path = tmp_path / "observations.jsonl"
+
+        # 1. Initialize the database and instrument
+        conn = initialize_db(str(db_path))
+        conn.execute("INSERT INTO instrument VALUES ('us-msft', 'MSFT', 'NASDAQ', 'Microsoft', '2026-07-18', NULL);")
+        conn.commit()
+        conn.close()
+
+        # 2. Append TECHNICAL_SWEEP event to ledger
+        append_event(
+            str(jsonl_path),
+            event_type="TECHNICAL_SWEEP",
+            effective_at="2026-07-18",
+            status="ACTIVE",
+            title="TA Sweep MSFT",
+            body_markdown="Sweep for MSFT",
+            ticker="MSFT",
+            source_id="tradingview-cdp",
+            payload={
+                "ticker": "MSFT",
+                "close": 420.0,
+                "rsi": 55.0,
+                "adx": 30.0,
+                "flags": ["ACCUM_SIGNAL"]
+            },
+            idempotency_key="ta-sweep-msft-2026-07-18"
+        )
+
+        # 3. Replay event to DB
+        from intelligence.replay_ledger import replay_events_to_db
+        conn = sqlite3.connect(str(db_path))
+        replay_events_to_db(str(jsonl_path), conn)
+        conn.close()
+
+        # 4. Load from DB
+        ta_map, stale_days = _load_ta(db_path=str(db_path))
+        assert "MSFT" in ta_map
+        assert ta_map["MSFT"]["close"] == 420.0
+        assert ta_map["MSFT"]["rsi"] == 55.0
+        assert ta_map["MSFT"]["flags"] == ["ACCUM_SIGNAL"]
+

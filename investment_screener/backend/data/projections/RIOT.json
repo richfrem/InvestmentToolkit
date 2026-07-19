@@ -7,8 +7,8 @@
     "version": 4,
     "savedAt": "2026-05-02T22:15:00.000Z",
     "updatedAt": "2026-05-02T22:26:51.174Z",
-    "name": "AI Deep Dive — RIOT — 2026-05-02",
-    "rationale": "Riot Platforms is a Bitcoin mining company whose GAAP DCF fair value ($1.93) is fundamentally mismatched with how markets price BTC mining companies — on BTC NAV and hash rate, not on GAAP earnings. Revenue is growing ($647M TTM, analyst Y1 $658M) but GAAP net margins are -132.76% due to BTC impairments and mark-to-market losses. Even with optimistic scenarios (15-30% revenue CAGR, 6-15% GAAP margins), the DCF gives SELL. The analyst Strong Buy consensus at $25.39 (19 analysts) reflects BTC price upside optionality that a DCF cannot capture.",
+    "name": "AI Deep Dive \u2014 RIOT \u2014 2026-05-02",
+    "rationale": "Riot Platforms is a Bitcoin mining company whose GAAP DCF fair value ($1.93) is fundamentally mismatched with how markets price BTC mining companies \u2014 on BTC NAV and hash rate, not on GAAP earnings. Revenue is growing ($647M TTM, analyst Y1 $658M) but GAAP net margins are -132.76% due to BTC impairments and mark-to-market losses. Even with optimistic scenarios (15-30% revenue CAGR, 6-15% GAAP margins), the DCF gives SELL. The analyst Strong Buy consensus at $25.39 (19 analysts) reflects BTC price upside optionality that a DCF cannot capture.",
     "snapshot": {
       "price": 18.5,
       "currency": "USD",
@@ -63,25 +63,25 @@
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "**SELL (GAAP DCF) — Fair Value $1.93 vs $18.50 (-89.6%)**\n\nRiot Platforms exemplifies the challenge of applying standard GAAP DCF to Bitcoin mining companies. The TTM net margin of -132.76% is almost entirely driven by BTC mark-to-market impairments, not operational failure. The actual mining operation generates revenue ($647M TTM, growing to $658M Y1 and $821M Y2 per analyst consensus) and has legitimate economic value — but GAAP accounting forces unrealized BTC losses through the income statement.\n\nThe analyst Strong Buy consensus (19 analysts, $25.39 target) is based on BTC NAV methodology: analysts multiply RIOT's BTC holdings and hash rate capacity by expected BTC prices to determine per-share NAV. At BTC $100K, RIOT's 11,000+ BTC on balance sheet alone represents ~$290M, or ~$0.77/share, and its 24 EH/s mining capacity generates substantial revenue at peak cycle.\n\nOur GAAP DCF at $1.93 should be understood as a floor — the minimum value if BTC price is zero and mining generates only minimal GAAP income. The market embeds substantial BTC upside optionality on top of this floor. Given that BTC is at $80-100K range and likely to continue its cyclical patterns, the analyst $25.39 target (18-month forward, BTC-price dependent) is a more appropriate reference than our DCF floor.\n\n**Key risk**: RIOT has diluted shareholders aggressively via ATM offerings (3%+/yr). Each BTC bull run gets captured by new shares, not existing holders.",
+      "rationale": "**SELL (GAAP DCF) \u2014 Fair Value $1.93 vs $18.50 (-89.6%)**\n\nRiot Platforms exemplifies the challenge of applying standard GAAP DCF to Bitcoin mining companies. The TTM net margin of -132.76% is almost entirely driven by BTC mark-to-market impairments, not operational failure. The actual mining operation generates revenue ($647M TTM, growing to $658M Y1 and $821M Y2 per analyst consensus) and has legitimate economic value \u2014 but GAAP accounting forces unrealized BTC losses through the income statement.\n\nThe analyst Strong Buy consensus (19 analysts, $25.39 target) is based on BTC NAV methodology: analysts multiply RIOT's BTC holdings and hash rate capacity by expected BTC prices to determine per-share NAV. At BTC $100K, RIOT's 11,000+ BTC on balance sheet alone represents ~$290M, or ~$0.77/share, and its 24 EH/s mining capacity generates substantial revenue at peak cycle.\n\nOur GAAP DCF at $1.93 should be understood as a floor \u2014 the minimum value if BTC price is zero and mining generates only minimal GAAP income. The market embeds substantial BTC upside optionality on top of this floor. Given that BTC is at $80-100K range and likely to continue its cyclical patterns, the analyst $25.39 target (18-month forward, BTC-price dependent) is a more appropriate reference than our DCF floor.\n\n**Key risk**: RIOT has diluted shareholders aggressively via ATM offerings (3%+/yr). Each BTC bull run gets captured by new shares, not existing holders.",
       "fairValue": 1.93,
       "action": "SELL",
       "analyzedAt": "2026-05-02T22:15:00.000Z",
-      "researchReport": "RIOT_2026-05-02.md"
+      "researchReport": "RIOT.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "Used shares_outstanding = shares_diluted = 379,125,849 (no discrepancy). Share count is inflating via continuous ATM equity offerings — shareChange 3.0%/yr applied in all scenarios.",
+      "shareCountMethod": "Used shares_outstanding = shares_diluted = 379,125,849 (no discrepancy). Share count is inflating via continuous ATM equity offerings \u2014 shareChange 3.0%/yr applied in all scenarios.",
       "marginAnchor": "TTM -132.76% is unusable as DCF anchor (BTC impairment-distorted). Scenarios use forward-looking operational margins (2-15%) reflecting what mining income would be if BTC impairments normalize. This is a necessary methodological adjustment for BTC mining companies.",
       "growthDerivation": "Y1 rev $658M (+1.6%), Y2 $821M (+24.8%). Blended 13.2%. Bear 5% (BTC stagnation), Base 15% (BTC stable), Bull 30% (BTC supercycle). No hypergrowth exception (Y1 <40%).",
-      "sectorBenchmarkRow": "Capital Markets / Financial Services — no direct benchmark row. Closest: Technology — Commodity/Cyclical. Bear PE 8x, Base PE 12x, Bull PE 20x.",
+      "sectorBenchmarkRow": "Capital Markets / Financial Services \u2014 no direct benchmark row. Closest: Technology \u2014 Commodity/Cyclical. Bear PE 8x, Base PE 12x, Bull PE 20x.",
       "dataQualityFlags": [
-        "TTM net margin -132.76% is BTC mark-to-market distorted — not representative of operational cash generation",
-        "No analyst EPS estimates available from data source — analysts likely use NAV/BTC methodology not GAAP EPS",
-        "Historical revenue: [$0, $259M, $281M, $377M, $647M] — first year zero (likely partial year at inception)"
+        "TTM net margin -132.76% is BTC mark-to-market distorted \u2014 not representative of operational cash generation",
+        "No analyst EPS estimates available from data source \u2014 analysts likely use NAV/BTC methodology not GAAP EPS",
+        "Historical revenue: [$0, $259M, $281M, $377M, $647M] \u2014 first year zero (likely partial year at inception)"
       ],
       "analystInputs": {
         "y1RevEstimate": 658078250,
@@ -116,13 +116,13 @@
         "priorPrice": 18.5,
         "priorFairValue": 4.18,
         "priorAction": "SELL",
-        "priceDelta": "0% — price unchanged at $18.50; SELL thesis not validated but not invalidated",
-        "assumptionAudit": "Prior base netMargin 5% was slightly more optimistic than our 6%. Prior base CAGR 15% matches ours. Prior QM 0.8 matches. Main difference: prior bear had -5% growth with 0% margin — unrealistic DCF inputs (near-zero margin still produces very low bear PV). Assumptions broadly consistent with our re-derivation.",
-        "modelQualityFlag": "UNVALIDATED — Gemini 3 Pro",
-        "thesisOutcome": "SELL thesis is price-unchanged — the stock has not moved from $18.50 since analysis. DCF methodology poorly suited for BTC miners regardless of model.",
+        "priceDelta": "0% \u2014 price unchanged at $18.50; SELL thesis not validated but not invalidated",
+        "assumptionAudit": "Prior base netMargin 5% was slightly more optimistic than our 6%. Prior base CAGR 15% matches ours. Prior QM 0.8 matches. Main difference: prior bear had -5% growth with 0% margin \u2014 unrealistic DCF inputs (near-zero margin still produces very low bear PV). Assumptions broadly consistent with our re-derivation.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Gemini 3 Pro",
+        "thesisOutcome": "SELL thesis is price-unchanged \u2014 the stock has not moved from $18.50 since analysis. DCF methodology poorly suited for BTC miners regardless of model.",
         "fundamentalChanges": "BTC remained in $80-100K range. RIOT continued ATM equity dilution. Engineering segment added. Hash rate expanded. GAAP losses continued from BTC impairments."
       },
-      "confidenceBreakdown": "0.41/1.0 — Base: 1.0. -0.25 GAAP DCF fundamentally mismatched for BTC miners. -0.15 no analyst EPS data. -0.10 continuous equity dilution. -0.09 BTC price macro uncertainty."
+      "confidenceBreakdown": "0.41/1.0 \u2014 Base: 1.0. -0.25 GAAP DCF fundamentally mismatched for BTC miners. -0.15 no analyst EPS data. -0.10 continuous equity dilution. -0.09 BTC price macro uncertainty."
     }
   }
 ]
