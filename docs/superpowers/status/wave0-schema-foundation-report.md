@@ -178,6 +178,69 @@ adoption"). The real KPI movement starts in Wave 1.
   cause as the yfinance/CDP categories this task's brief described, and are called out
   here rather than silently folded into that bucket.
 
+## Wave 0 Artifacts Created
+
+A single inventory of everything Wave 0 produced, for quick reference without re-reading
+the task-by-task history.
+
+### New package
+
+- `investment_screener/backend/py_services/domain_model/` — new Python package, mirrors
+  the existing `py_services/intelligence/` package's structure and calling conventions.
+
+### New files
+
+| File | Purpose |
+|---|---|
+| `investment_screener/backend/py_services/domain_model/__init__.py` | Package marker (empty) |
+| `investment_screener/backend/py_services/domain_model/db_client.py` | `initialize_db(db_path) -> sqlite3.Connection` — creates all 17 v3.2 tables + 8 indexes; carries the DDL drift-check comment block documenting 3 real source-doc inconsistencies found during transcription |
+| `investment_screener/backend/py_services/domain_model/investment_repository.py` | `resolve_investment()`, `get_investment()` — sole owner of `investment` table SQL |
+| `investment_screener/backend/py_services/domain_model/account_repository.py` | `upsert_account()`, `get_account()`, `list_accounts()` — sole owner of `account` table SQL |
+| `investment_screener/backend/py_services/domain_model/account_investment_repository.py` | `upsert_account_investment()`, `list_account_investments()` — sole owner of `account_investment` table SQL |
+| `investment_screener/backend/py_services/domain_model/backfill_investment_universe.py` | `backfill_from_ticker_lists()` — one-time-per-wave seed helper for minimal `investment` identity rows (not yet run against real ticker data — a reusable function, not a script exercised in this wave) |
+
+### New tables (via `db_client.py::initialize_db`)
+
+`account`, `strategy_pillar`, `sub_strategy`, `investment`, `investment_price`,
+`account_investment`, `price_level_set`, `price_level_tier`, `alert`, `investment_note`,
+`projection_version`, `projection_scenario`, `trade_log_entry`, `order_execution`,
+`cash_flow`, `cash_flow_baseline`, `portfolio_policy` — all 17 tables from the v3.2 model,
+plus 8 indexes (`idx_investment_pillar`, `idx_investment_lifecycle`,
+`idx_account_investment_account`, `idx_account_investment_investment`,
+`idx_projection_investment`, `idx_projection_scenario_projection`, `idx_alert_investment`,
+`idx_investment_note_investment`).
+
+### New tests (19 total, all passing against real SQLite, no mocks)
+
+| Test file | Count |
+|---|---|
+| `test_domain_model_db_client.py` | 9 (table existence, FK enforcement, idempotency, 4 UNIQUE constraints, index existence) |
+| `test_investment_repository.py` | 3 |
+| `test_account_repository.py` | 3 |
+| `test_account_investment_repository.py` | 2 |
+| `test_backfill_investment_universe.py` | 3 (incl. the CASH_USD/CASH_CAD `asset_class='CASH'` test added per plan-review feedback) |
+
+### Commits
+
+| Commit | Task |
+|---|---|
+| `dc10d595` | Task 1 — schema (`db_client.py`, v3.2 DDL, DDL drift-check comment block) |
+| `e250200d` | Task 2 — `investment_repository.py` |
+| `211b077c` | Task 3 — `account_repository.py` |
+| `166228a3` | Task 4 — `account_investment_repository.py` |
+| `5db38a0f` | Task 5 — `backfill_investment_universe.py` |
+| `78382d15` | Task 6 — this report |
+
+### Wave 1 readiness checklist
+
+- [x] `projection_version` table exists (`db_client.py`, part of the 17-table schema above)
+- [x] `projection_scenario` table exists (same)
+- [x] `investment` repository exists (`investment_repository.py`, `resolve_investment`/`get_investment`)
+- [x] Backfill helper exists (`backfill_investment_universe.py`)
+- [x] All Wave 0 commits pushed to `origin` (`origin/worktree-domain-model-v3-wave0`,
+      verified local/remote HEAD identical at `78382d15`)
+- [x] Worktree clean (`git status --short` empty as of this report)
+
 ## Hard Checkpoint
 
 Per the task brief: **Wave 1 does not begin automatically after this commit.** This
