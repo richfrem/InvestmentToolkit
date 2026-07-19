@@ -178,6 +178,26 @@ currently-held, target-only, watchlist-only, or exited) without forcing a fake a
 giving `ACCOUNT` its own real table and FK relationship, rather than a column that's usually
 NULL.
 
+**Correction to an earlier claim, and the real `role` distribution:** the exited-security role
+value is `exit`, not `exited` as an earlier draft of this analysis said — confirmed directly
+against the live file: `{accumulate: 24, avoid: 6, watchlist: 33, trim: 1, initiate: 8, exit:
+3}`. `avoid` was missing from this document's `lifecycle_status`/`target_action` discussion
+entirely — a sixth value alongside the CLAUDE.md pitfall #6 enum
+(`INITIATE|ACCUMULATE|MAINTAIN|TRIM|EXIT|WATCHLIST`), not currently accounted for and needs
+adding to whichever column ends up holding it.
+
+**Why `instrument` stays a separate table from `position` (not merged into one, larger table):**
+checked empirically rather than argued abstractly. `intelligence_event` (research) currently
+covers 72 tickers; the position-universe (`portfolio.json` ∪ `target-portfolio.json` ∪
+`watchlist.json`, deduplicated) covers 96. **One ticker, `BITF`, has research history but zero
+presence anywhere in the position universe.** That's real, if small (1 of 72), evidence that
+research can exist before or independent of any portfolio stance — `intelligence_event.
+instrument_id` needs somewhere to point that doesn't require a `position` row to exist yet.
+Merging `instrument` into `position` would also require redefining what the already-live
+`intelligence_event` table's foreign key references — a schema change on a table already holding
+real data, in exchange for saving one join in the common case. Not recommended, but a narrow
+tradeoff, not a hard architectural wall — reconsider if you weigh the join cost differently.
+
 Cash is modeled as an `ACCOUNT_POSITION` row with `instrument_id NULL`, `asset_class = 'CASH'`,
 per the corrective instruction's own suggested resolution to design question 6 — confirmed as the
 right call, since `cash_flows.json` already treats cash movements as account-scoped events with
@@ -410,10 +430,21 @@ CREATE TABLE position (
     agent_rationale                          TEXT,
     latest_projection_id                      TEXT REFERENCES projection_version(projection_id),
     latest_research_event_id                   TEXT REFERENCES intelligence_event(event_id),
+    thesis_breaker_status                       TEXT,     -- from thesis_breaker_state.json, §9a — table currently empty in real data, column vs. child table undetermined
     is_watchlisted                              INTEGER NOT NULL DEFAULT 0,
     watchlist_added_at                           TEXT,
     updated_at                                    TEXT NOT NULL,
     UNIQUE(instrument_id)
+    -- target_action / lifecycle_status real values confirmed against live data: accumulate,
+    -- avoid, watchlist, trim, initiate, exit (CLAUDE.md pitfall #6's enum plus 'avoid', which
+    -- that enum doesn't list — both columns need the real 6-value set, not the enum as first drafted)
+);
+
+CREATE TABLE instrument_price (
+    instrument_id   TEXT PRIMARY KEY REFERENCES instrument(instrument_id),
+    price            REAL NOT NULL,
+    currency          TEXT NOT NULL DEFAULT 'USD',
+    fetched_at         TEXT NOT NULL
 );
 
 CREATE TABLE price_level_set (
@@ -552,13 +583,30 @@ SELECT
     / (SELECT total_value FROM portfolio_total_value) AS cash_weight_pct;
 ```
 
-**Open dependency, not resolved by this document:** these views assume an `instrument_price`
-source (current market price per instrument) that does not exist in this schema anywhere —
-prices come from yfinance/TradingView live, not persisted in SQLite today. Either (a) a small
-`instrument_price` cache table needs to be added and kept fresh by whatever already fetches live
-prices, or (b) these views are conceptually correct but must actually be computed in the
-application/repository layer (joining SQL position data against a live price fetch), not as pure
-SQL views. This needs a decision before implementation — flagged, not guessed at.
+**`instrument_price` dependency — recommended resolution, not yet implemented:** the small cache
+table added to §5's schema (`instrument_price`: `instrument_id`, `price`, `currency`,
+`fetched_at`) resolves the joins above.
+
+Kept fresh by whichever existing flow already fetches live prices for a ticker
+(`fetch_quotes.py`, `ta_sweep_batch.py`'s TV pull, `BrokerSyncService.ts`'s sync) — an upsert on
+this table, not a new fetch path. This keeps the views in §6 as real SQL rather than pushing
+valuation logic into the application layer. Recommended over option (b) from the earlier draft
+of this document, but not yet built — a decision to confirm before implementation, not something
+this document unilaterally settles.
+
+**Portfolio account-assignment dependency — resolved, not a hard problem.** The earlier draft of
+this document treated "how do current `portfolio.json` holdings map to accounts" as an open
+inference problem. It isn't. Checked directly against `fetch_broker_data.py` and
+`BrokerSyncService.ts`: **the TradingView CDP sync already receives per-account data**
+(`accountType`/`accountId` per position, confirmed in both files) — `write_snapshot()` in
+`fetch_broker_data.py` explicitly aggregates it away: `agg[sym]["quantity"] += qty` sums across
+accounts by symbol alone before anything is written to `portfolio.json`, and the function's own
+docstring says so directly: *"merges RRSP+TFSA positions."* The account split isn't missing from
+the source of truth — it's discarded by existing code on the way to disk. Resolution: when
+`account_position` is built, `write_snapshot()`'s merge step is removed (or redirected to write
+one `account_position` row per `accountType` instead of one aggregated `portfolio.json` holding
+per symbol) — not an approximation or a reconstruction from `trade_log_entry`, a straightforward
+stop-discarding-data fix.
 
 ---
 
@@ -621,6 +669,25 @@ calls for it yet.
 - **`temp/evaluations/*_raw.json`, `*_dcf_result.json`, `*_scenarios.json`, `*_projection.json`**
   — pipeline intermediates, `temp/` scoped by design, overwritten every run, never meant to
   persist. Not a migration candidate at all.
+- **`tradingview_alerts_actual.json`** (203 entries, checked directly) — confirmed a pure
+  TradingView-synced mirror (`alert_id`, `symbol`, `condition`, `created`, `last_fired`). Same
+  `RETAIN_AS_EXTERNAL_CACHE` reasoning as `portfolio.json`'s price data — TradingView is
+  authoritative, this is a local read cache of alert state, not portfolio/position domain data.
+- **`ytd_performance_report.json`** (checked directly: `starting_balance_cad`,
+  `ending_balance_cad`, deposits/withdrawals, `simple_return_pct`, `time_weighted_return_pct`,
+  `sub_periods`) — a computed report. Per standing instruction on record for this project, YTD
+  return reports are explicitly not wanted generated. This file should stay exactly as-is (or be
+  retired outright, a product decision, not an engineering one) — not pulled into the position
+  model.
+
+## 9a. `thesis_breaker_state.json` — genuinely relevant, not previously covered
+
+Checked directly: `{generatedAt, holdings: {}}` — currently empty in this repo, but its shape
+(a per-holding breaker status, keyed by ticker, written by `thesis_breakers.py`) belongs in the
+position model, not left out. Recommendation: `position.thesis_breaker_status` (or a small child
+table if a holding can have multiple simultaneous breakers — undetermined from the current empty
+file; `thesis_breakers.py`'s actual write shape should be checked before finalizing this as a
+column vs. a table).
 
 ---
 
