@@ -272,15 +272,69 @@ def _band(total: int) -> str:
 
 # ── Data loaders ───────────────────────────────────────────────────────────────
 
-def _load_ta() -> tuple[dict[str, dict[str, Any]], int | None]:
-    """Load TA sweep results keyed by ticker and compute staleness.
+def _load_ta(
+    db_path: str | None = None,
+    ta_json_path: Path | None = None
+) -> tuple[dict[str, dict[str, Any]], int | None]:
+    """Load TA sweep results keyed by ticker and compute staleness from SQLite ledger,
+    falling back to legacy flat-file JSON if the database is missing or empty.
 
     Returns:
         Tuple of (ticker_map, staleness_days).
     """
-    if not TA_SWEEP_PATH.exists():
+    import os
+    import sqlite3
+
+    resolved_db_path = db_path or str(REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite")
+    resolved_json_path = ta_json_path or TA_SWEEP_PATH
+
+    # Try database first
+    if os.path.exists(resolved_db_path):
+        try:
+            conn = sqlite3.connect(resolved_db_path)
+            # Fetch latest sweep per ticker using window partition
+            cursor = conn.execute("""
+                SELECT ticker, payload_json, effective_at, ingested_at FROM (
+                    SELECT i.ticker, ie.payload_json, ie.effective_at, ie.ingested_at,
+                           ROW_NUMBER() OVER (PARTITION BY i.ticker ORDER BY ie.effective_at DESC, ie.ingested_at DESC) as rn
+                    FROM intelligence_event ie
+                    JOIN instrument i ON i.instrument_id = ie.instrument_id
+                    WHERE ie.event_type = 'TECHNICAL_SWEEP' AND ie.status = 'ACTIVE'
+                ) WHERE rn = 1;
+            """)
+            rows = cursor.fetchall()
+            conn.close()
+
+            if rows:
+                ticker_map = {}
+                latest_ts = None
+                for ticker, payload_json, effective_at, ingested_at in rows:
+                    if payload_json:
+                        ticker_map[ticker] = json.loads(payload_json)
+                    # Track latest ingested_at to calculate staleness
+                    ts = ingested_at or effective_at
+                    if ts:
+                        if latest_ts is None or ts > latest_ts:
+                            latest_ts = ts
+
+                stale: int | None = None
+                if latest_ts:
+                    ts_str = latest_ts.replace("Z", "+00:00")
+                    if len(ts_str) == 10:  # YYYY-MM-DD
+                        ts_str += "T00:00:00+00:00"
+                    try:
+                        scanned = datetime.fromisoformat(ts_str)
+                        stale = (datetime.now(timezone.utc) - scanned).days
+                    except ValueError:
+                        pass
+                return ticker_map, stale
+        except Exception:
+            pass
+
+    # Fall back to legacy flat-file JSON
+    if not resolved_json_path.exists():
         return {}, None
-    with open(TA_SWEEP_PATH) as f:
+    with open(resolved_json_path) as f:
         raw = json.load(f)
     results: list[dict[str, Any]] = raw.get("results", [])
     ts = raw.get("timestamp")
@@ -289,6 +343,7 @@ def _load_ta() -> tuple[dict[str, dict[str, Any]], int | None]:
         scanned = datetime.fromisoformat(ts)
         stale = (datetime.now(timezone.utc) - scanned).days
     return {r["ticker"]: r for r in results}, stale
+
 
 
 def _load_dcf(ticker: str) -> dict[str, Any]:
@@ -354,15 +409,19 @@ def _load_target_weights() -> dict[str, float]:
 
 # ── Main compute ───────────────────────────────────────────────────────────────
 
-def compute_all() -> list[ConvictionScore]:
+def compute_all(
+    db_path: str | None = None,
+    ta_json_path: Path | None = None
+) -> list[ConvictionScore]:
     """Compute conviction scores for all active portfolio holdings.
 
     Returns:
         List of ConvictionScore sorted by total score descending.
     """
-    ta_map, stale_days = _load_ta()
+    ta_map, stale_days = _load_ta(db_path=db_path, ta_json_path=ta_json_path)
     actual   = _load_actual_weights()
     targets  = _load_target_weights()
+
 
     all_tickers = (set(targets) | set(ta_map) | set(actual)) - SKIP_TICKERS
 

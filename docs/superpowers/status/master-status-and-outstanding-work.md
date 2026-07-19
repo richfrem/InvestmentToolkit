@@ -228,8 +228,9 @@ as a hypothesis to verify, not a fact.**
    (corrective instructions §10; blocker checklist in the session-state document, mostly
    unchecked).
 
-- Resolve the 10 remaining `MIGRATION_REQUIRED` consumers individually (Wave 1: 5, Wave 2: 5).
-- Step 1 (Prerequisites) and Step 2 (ta_sweep_batch.py) of Wave 1 have been completed and verified.
+Also outstanding, not yet sequenced:
+- Resolve the 9 remaining `MIGRATION_REQUIRED` consumers individually (Wave 1: 4, Wave 2: 5).
+- Steps 1, 2, and 3 (compute_conviction_scores.py) of Wave 1 have been completed and verified.
 - Human review of the 2 genuinely-unknown JSON files.
 - Decide on regeneration (or not) of the lost files per the recovery plan.
 - Fix the dataflow-tracking limitation (Known Defect #1) if higher accuracy is wanted before
