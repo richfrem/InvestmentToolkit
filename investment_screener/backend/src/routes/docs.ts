@@ -55,6 +55,17 @@ router.get('/research/:filename', async (req, res) => {
             res.status(400).json({ error: 'Invalid filename format. Expected: TICKER_YYYY-MM-DD.md' });
             return;
         }
+
+        // Try ledger database query first if it is a dated file
+        if (DATED_FILENAME_RE.test(filename)) {
+            const report = await queryLatestResearchFromLedger(filename);
+            if (report) {
+                res.json(report);
+                return;
+            }
+        }
+
+        // Fallback to legacy filesystem read
         const filepath = path.join(RESEARCH_DIR, filename);
         if (!path.resolve(filepath).startsWith(path.resolve(RESEARCH_DIR))) {
             res.status(403).json({ error: 'Access denied' });
@@ -72,12 +83,28 @@ router.get('/research/:filename', async (req, res) => {
 
 router.get('/research', async (_req, res) => {
     try {
+        // 1. Get ledger research reports
+        const ledgerReports = await queryResearchListFromLedger() || [];
+
+        // 2. Get local filesystem files
         await fs.promises.mkdir(RESEARCH_DIR, { recursive: true });
         const files = await fs.promises.readdir(RESEARCH_DIR);
-        const reports = files
+        const diskReports = files
             .filter(f => f.endsWith('.md'))
-            .map(f => ({ filename: f, ...parseResearchFilename(f) }))
+            .map(f => ({ filename: f, ...parseResearchFilename(f) }));
+
+        // 3. Combine and deduplicate by filename
+        const combinedMap = new Map<string, any>();
+        for (const r of diskReports) {
+            combinedMap.set(r.filename, r);
+        }
+        for (const r of ledgerReports) {
+            combinedMap.set(r.filename, r);
+        }
+
+        const reports = Array.from(combinedMap.values())
             .sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''));
+
         res.json({ reports });
     } catch (err: any) {
         console.error(`[API] Error listing research reports:`, err);
@@ -130,4 +157,33 @@ router.get('/docs/agent-guide', async (_req, res) => {
     } catch { res.status(404).json({ error: 'Agent guide not found' }); }
 });
 
+export async function queryLatestResearchFromLedger(filename: string, dbPath?: string): Promise<any> {
+    try {
+        const args = ['--get', filename];
+        if (dbPath) {
+            args.push('--db-path', dbPath);
+        }
+        const data = await spawnPythonScript('query_ledger_research.py', args);
+        return data || null;
+    } catch (e) {
+        console.warn('Ledger query latest research failed, falling back:', e);
+        return null;
+    }
+}
+
+export async function queryResearchListFromLedger(dbPath?: string): Promise<any[] | null> {
+    try {
+        const args = ['--list'];
+        if (dbPath) {
+            args.push('--db-path', dbPath);
+        }
+        const data = await spawnPythonScript('query_ledger_research.py', args);
+        return Array.isArray(data) ? data : null;
+    } catch (e) {
+        console.warn('Ledger query research list failed, falling back:', e);
+        return null;
+    }
+}
+
 export default router;
+

@@ -229,8 +229,8 @@ as a hypothesis to verify, not a fact.**
    unchecked).
 
 Also outstanding, not yet sequenced:
-- Resolve the 2 remaining `MIGRATION_REQUIRED` consumers individually (Wave 2).
-- Wave 1 has been completely executed, verified, and closed out (all 7 steps complete).
+- Resolve the 1 remaining `MIGRATION_REQUIRED` consumer (evolution_events.py).
+- Wave 1 and Wave 2 (docs.ts route, query_ledger_research.py) are completely executed, verified, and closed out.
 - Human review of the 2 genuinely-unknown JSON files.
 - Decide on regeneration (or not) of the lost files per the recovery plan.
 - Fix the dataflow-tracking limitation (Known Defect #1) if higher accuracy is wanted before
