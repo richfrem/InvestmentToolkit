@@ -6,13 +6,13 @@ This document tracks the migration status of every consumer in the ecosystem, in
 
 | Status | Count | Description |
 |---|---:|---|
-| USES_LEDGER_REPOSITORY | 11 | Actively queries the new SQLite ledger repository layer. |
+| USES_LEDGER_REPOSITORY | 13 | Actively queries the new SQLite ledger repository layer. |
 | USES_GENERATED_VIEW | 2 | Actively queries the generated views (like *.summary.md). |
 | REMAINS_JSON_BY_DESIGN | 148 | Legitimate flat-file configuration/portfolio target JSON (including resolved unknowns). |
-| MIGRATION_REQUIRED | 6 | Legitimate migration candidate that must be rewired. |
+| MIGRATION_REQUIRED | 5 | Legitimate migration candidate that must be rewired. |
 | OUT_OF_SCOPE | 1 | 13F and other domain data not in-scope for this phase. |
 | UNKNOWN_REQUIRES_REVIEW | 0 | Requires review to determine correct taxonomy status. |
-| **Total Consumers** | **168** | |
+| **Total Consumers** | **169** | |
 
 ## Consumer Breakdown by Type
 
@@ -20,7 +20,7 @@ This document tracks the migration status of every consumer in the ecosystem, in
 |---|---:|
 | backend route | 11 |
 | frontend component | 2 |
-| plugin script | 84 |
+| plugin script | 85 |
 | report generator | 13 |
 | skill | 50 |
 | sub-agent | 6 |
@@ -30,7 +30,6 @@ This document tracks the migration status of every consumer in the ecosystem, in
 
 | Consumer | Type | Current Source | Target Source | Status | Migration Required | Test Coverage | Risk |
 |---|---|---|---|---|---|---|---|
-| `investment_screener/backend/src/routes/dailybrief.ts` | backend route | ta-sweep-results.json / events.jsonl | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | No | Medium |
 | `investment_screener/backend/src/routes/docs.ts` | backend route | data/research/*.md | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | No | Medium |
 | `investment_screener/backend/py_services/evolution_events.py` | plugin script | events.jsonl, ta-sweep-results.json | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | No | Medium |
 | `plugins/portfolio-advisor/skills/daily-loop/SKILL.md` | skill | ta-sweep-results.json / events.jsonl | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | No | Medium |
@@ -187,7 +186,9 @@ This document tracks the migration status of every consumer in the ecosystem, in
 | `run_tests.py` | workflow | package.json, portfolio.test.json, symlinks.json, target_portfolio.test.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
 | `investment_screener/frontend/src/components/ResearchReportViewer.tsx` | frontend component | n/a | Markdown View files (*.summary.md) | USES_GENERATED_VIEW | No | Yes | Low |
 | `investment_screener/frontend/src/views/Dashboard.tsx` | frontend component | n/a | Markdown View files (*.summary.md) | USES_GENERATED_VIEW | No | Yes | Low |
+| `investment_screener/backend/src/routes/dailybrief.ts` | backend route | n/a | intelligence.sqlite (ledger) | USES_LEDGER_REPOSITORY | No | Yes | Low |
 | `investment_screener/backend/py_services/compute_conviction_scores.py` | plugin script | n/a | intelligence.sqlite (ledger) | USES_LEDGER_REPOSITORY | No | Yes | Low |
+| `investment_screener/backend/tests/api/dailybrief.spec.ts` | plugin script | n/a | intelligence.sqlite (ledger) | USES_LEDGER_REPOSITORY | No | Yes | Low |
 | `investment_screener/backend/tests/py_services/test_compute_conviction_scores.py` | plugin script | n/a | intelligence.sqlite (ledger) | USES_LEDGER_REPOSITORY | No | Yes | Low |
 | `investment_screener/backend/tests/py_services/test_daily_brief_ta_sweep_delegates.py` | plugin script | n/a | intelligence.sqlite (ledger) | USES_LEDGER_REPOSITORY | No | Yes | Low |
 | `plugins/tradingview/scripts/ta_sweep_batch.py` | plugin script | n/a | intelligence.sqlite (ledger) | USES_LEDGER_REPOSITORY | No | Yes | Low |
@@ -232,7 +233,7 @@ Classification of Express backend routes and core services:
 | Path | Status | Intended Source | Rationale |
 |---|---|---|---|
 | `investment_screener/backend/src/routes/docs.ts` | MIGRATION_REQUIRED | Generated views / SQL queries | Serves research markdown reports from disk, must transition to SQLite/views |
-| `investment_screener/backend/src/routes/dailybrief.ts` | MIGRATION_REQUIRED | intelligence.sqlite | Reads daily brief JSON files from disk, must transition to SQLite |
+| `investment_screener/backend/src/routes/dailybrief.ts` | USES_LEDGER_REPOSITORY | intelligence.sqlite | Active queries SQLite ledger via python bridge wrapper query_ledger_brief.py |
 | `investment_screener/backend/src/routes/screener.ts` | REMAINS_JSON_BY_DESIGN | n/a | Reads target-portfolio.json, out-of-scope |
 | `investment_screener/backend/src/routes/stock.ts` | REMAINS_JSON_BY_DESIGN | n/a | Serves projections/watchlist JSON, out-of-scope |
 | `investment_screener/backend/src/routes/theses.ts` | REMAINS_JSON_BY_DESIGN | n/a | Reads target portfolio and active portfolio JSON, out-of-scope |
