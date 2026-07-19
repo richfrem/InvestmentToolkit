@@ -1,6 +1,6 @@
 # Corrected Persistence Domain Data Model
 
-**Version:** 3.1
+**Version:** 3.2
 **Status:** design correction pass only. No tables, code, repositories, or archival changed as a
 result of this document. Implementation begins only after this model is explicitly approved.
 
@@ -22,7 +22,7 @@ not as parallel `-v2`/`-v3`-suffixed documents.
   to accounts via `ACCOUNT_INVESTMENT`), after an honest head-to-head comparison found the split
   added a real join to the two most common query shapes in this app without a requirement
   forcing it. See "The Core Question, Answered Honestly" below.
-- **v3.1** (current): moved `target_entry_price` off `investment` into `price_level_tier`
+- **v3.1**: moved `target_entry_price` off `investment` into `price_level_tier`
   (`tier_kind='TARGET_ENTRY'`) after confirming it's a genuine price level, not a scalar
   attribute — real data showed it's never present without `priceLevels` and holds a materially
   different value than the buy tiers (not a duplicate). Added `alert` as its own entity
@@ -30,6 +30,15 @@ not as parallel `-v2`/`-v3`-suffixed documents.
   a fourth `tier_kind`, since alerts are TradingView-synced/authoritative while the other three
   kinds are locally authored — different write-ownership, kept as separate tables sharing the
   same one-to-many relationship shape from `investment`.
+- **v3.2** (current): responded to external review with real-data checks, not agreement/disagreement
+  on feel. Did NOT collapse `lifecycle_status`/`target_action`/`is_watchlisted` — confirmed they
+  track genuinely different, sometimes-disagreeing things (`DRAM` has `role='initiate'` but
+  `action='WATCHLIST'`; `watchlist.json`'s 80 tickers and `role='watchlist'`'s 33 tickers overlap
+  by only 20). DID adopt `INVESTMENT_NOTE` as a new history table — `agentRationale` was found to
+  be a single field with dated entries manually concatenated over time (`IREN` has 5, `VST` reads
+  as a literal chronological log), a real un-queryable-history problem the table fixes. Did NOT
+  promote scoring fields (moat/management/conviction) to real columns — checked the frontend
+  directly, found zero sort/filter usage on them today.
 
 ---
 
@@ -104,6 +113,7 @@ erDiagram
     INVESTMENT ||--o| PRICE_LEVEL_SET : "may have"
     PRICE_LEVEL_SET ||--o{ PRICE_LEVEL_TIER : contains
     INVESTMENT ||--o{ ALERT : "has alerts for"
+    INVESTMENT ||--o{ INVESTMENT_NOTE : "has history of"
     INVESTMENT }o--|| STRATEGY_PILLAR : "belongs to"
     INVESTMENT }o--o| SUB_STRATEGY : "belongs to"
     PROJECTION_VERSION ||--o{ PROJECTION_SCENARIO : contains
@@ -206,6 +216,15 @@ erDiagram
         TEXT last_fired_at
         TEXT expiration_at
         TEXT synced_at
+    }
+
+    INVESTMENT_NOTE {
+        TEXT note_id PK
+        TEXT investment_id FK
+        TEXT note_date
+        TEXT note_type
+        TEXT body
+        TEXT source
     }
 
     PROJECTION_VERSION {
@@ -600,3 +619,71 @@ Same real producer/consumer inventory as v2 (21 producers, ~33 consumers across
 count). The only change implementation needs to account for: every reference to `instrument_id`
 in already-built code (`event_repository.py`, `replay_ledger.py`, `models.py`,
 `instrument_repository.py`) needs to point at the renamed/merged `investment` table.
+
+---
+
+## Response to Review — Three Points Checked Against Real Data, Not Accepted or Rejected on Feel
+
+### `lifecycle_status` / `target_action` / `is_watchlisted` — checked, NOT collapsing
+
+The suspicion these three columns duplicate one status model doesn't hold up against real data:
+
+- **`role` and `action` genuinely disagree on the same holding.** `DRAM`: `role: 'initiate'`,
+  `action: 'WATCHLIST'` — if these were one status field, this holding couldn't exist. `role` is
+  a portfolio-construction/strategy classification; `action` tracks the current recommended
+  action (closer to the DCF engine's `aiThesis.action`). Different questions, different answers,
+  on the same row, today.
+- **`watchlist.json` (80 tickers) and `role='watchlist'` in `target-portfolio.json` (33 tickers)
+  overlap by only 20.** 13 tickers carry `role='watchlist'` but aren't in `watchlist.json` at
+  all; 60 tickers are in `watchlist.json` (including active holdings like `ALAB`, `SNDK` with
+  `role='accumulate'`/`'initiate'`) despite not having `role='watchlist'`. These are two
+  substantially different populations tracking two different questions: "what lifecycle stage is
+  this candidate at" vs. "am I actively monitoring this right now" (which can be true for a
+  ticker at any lifecycle stage, including ones already held).
+
+Collapsing these into one enum would lose real, current, disagreeing information. Not adopted —
+this is the one point in the review that real data argues against, not just a design preference.
+
+### `THESIS` as its own table — checked, ADOPTED
+
+Real evidence supports this one directly. `agentRationale` is a single TEXT field that gets
+manually appended to over time as a growing, undated-except-inline-prose string —
+confirmed by counting embedded date-stamps: `IREN` has 5, `BE`/`NBIS` have 4,
+`VST`/`CORZ`/`CRWV` have 3. `VST`'s field literally reads as a chronological log
+(*"2026-05-14: Trimmed... 2026-06-08: Grok ACCUMULATE BLOCKED... 2026-06-19: standingDecision
+added..."*) concatenated into one string. That's a real history being stored as unstructured
+prose inside a single mutable field — you can't query "what was the thesis on 2026-05-14"
+without parsing free text. Adding:
+
+```sql
+CREATE TABLE investment_note (
+    note_id         TEXT PRIMARY KEY,
+    investment_id     TEXT NOT NULL REFERENCES investment(investment_id),
+    note_date           TEXT NOT NULL,
+    note_type             TEXT,        -- e.g. 'THESIS_UPDATE', 'STANDING_DECISION_CHANGE'
+    body                    TEXT NOT NULL,
+    source                    TEXT      -- e.g. 'agent', 'grok_sweep', 'user'
+);
+
+CREATE INDEX idx_investment_note_investment ON investment_note(investment_id, note_date);
+```
+
+`investment.agent_rationale` becomes "most recent note's body" (a denormalized convenience
+field, kept in sync on write) rather than the sole record — the full history moves to
+`investment_note`, one row per dated entry, instead of one ever-growing string. `thesis_for_inclusion`
+stays on `investment` as-is: it's the current, single "why this is in the portfolio at all"
+statement, not a log — no evidence it accumulates the way `agent_rationale` does.
+
+### Analysis/scoring fields (conviction, moat score, management score, quality/risk scores) as
+first-class columns — checked, NOT adopted, but not dismissed either
+
+Checked whether the frontend actually filters or sorts by these today: `moatScore`/
+`managementScore` return zero matches anywhere in `investment_screener/frontend/src`.
+`conviction_scores` appears in `DailyBriefPage.tsx`, but only as a displayed list
+(`brief.conviction_scores ?? []`) — no sort/filter logic found operating on the score values
+client-side (sorting, if any, happens upstream in `compute_conviction_scores.py` before the data
+arrives). The reviewer's own stated condition — "if the app actually filters/sorts on them" —
+isn't currently met. Recommendation: leave these in `projection_scenario`/`analytics_log_json`
+as designed. This isn't "no forever" — if a future filter/sort UI is actually built against
+these, promoting specific fields to real columns at that point is a small, targeted change, not
+a reason to speculatively add columns nothing queries today.
