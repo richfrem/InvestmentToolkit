@@ -91,6 +91,53 @@ Adoption requires:
 **Do not optimize for "keeping compatibility forever."** Compatibility and dual-write are
 temporary migration aids. The end state must be simpler than the start state.
 
+## Context-Bundler / Agent Context Size Benefit
+
+A major expected benefit of this migration is reducing the size and complexity of context
+bundles used by agents and plugins.
+
+Today, many workflows require bundling scattered JSON, JSONL, Markdown, and per-ticker files so
+agents can reason about the portfolio, projections, targets, holdings, TA outputs, research, and
+reports. `investment_screener/backend/data/projections/` alone is 144 files; the plugin/skill
+reference table in §4 shows most portfolio-advisor and tradingview skills bundling several of
+these files together per invocation.
+
+The migration should reduce that burden by moving applicable operational data into SQLite/domain
+tables and exposing compact query/repository outputs. Success should be measured not only by
+application functionality, but also by reduced context-bundler payload size — this is a primary
+success criterion, alongside fewer JSON files, fewer authoritative stores, app/plugin cutover,
+and archive of superseded files, **not a secondary nice-to-have.**
+
+For each migration wave, the implementation plan must report:
+
+- files that no longer need to be bundled
+- JSON/JSONL files removed from typical agent/plugin context bundles
+- Markdown/generated files removed from typical context bundles
+- the replacement query or repository method
+- estimated reduction in bundle file count
+- estimated reduction in bundle size where measurable
+- remaining files that still must be bundled, and why
+
+The target outcome:
+
+- agents retrieve structured data through SQLite/domain repositories
+- plugins query focused slices of data instead of bundling entire folders
+- generated reports are view/output artifacts, not primary context sources
+- context bundles become smaller, more targeted, and less fragile
+
+The reason this matters: the current fragmented file model forces agents to carry too much
+irrelevant context. SQLite/domain repositories should let agents ask for exactly the data they
+need instead of bundling entire JSON folders or per-ticker artifacts.
+
+**Curation opportunity, tied to the same archive step:** when a domain's superseded JSON is moved
+to `ARCHIVE/` (§6 of ADR-029's rule), that is also the natural point to curate the plugins and
+`investment_screener` web app that referenced it — removing dead code paths, stale SKILL.md
+instructions pointing at archived files, and now-unnecessary bundling logic in the same commit
+that does the archive. This directly shrinks what the `context_bundler`/`dev-utils:context-bundler`
+skill packages when bundling code for review — fewer stale files bundled, smaller review payloads.
+This curation is scoped to what each wave actually touches (no unrelated refactoring), tracked as
+part of that wave's completion, not a separate deferred cleanup pass.
+
 ---
 
 ## 1. Purpose and Problem Statement
@@ -579,6 +626,12 @@ per-wave in the implementation plan, not assumed to be a documentation afterthou
   declaring the wave done — restore from `ARCHIVE/`, revert producer/consumer commits, confirm
   the app runs correctly against the old file again. (The prior effort's rollback-exercise
   report is the template for this — it is the one part of that effort that met its own bar.)
+- **Context-bundle verification:** for each domain, confirm which SKILL.md/agent instructions
+  (§4's plugin/skill reference table) previously told an agent to bundle the old file, update
+  those instructions to reference the new query/repository method, and record the file-count/
+  size reduction this produces for a typical bundle of that plugin. This is a required part of
+  each wave's completion evidence (see the implementation plan's per-wave "Context Bundle
+  Completion Bar"), not an optional cleanup step.
 
 ---
 
