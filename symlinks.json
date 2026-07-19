@@ -804,6 +804,24 @@
       "dst": "plugins/portfolio-advisor/skills/daily-loop/assets/templates/weekly_report.md.template",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "docs/architecture/big-domain-migration-design.md",
+      "dst": "plugins/toolkit-manager/references/data-architecture/big-domain-migration-design.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "docs/architecture/persistence-domain-data-model.md",
+      "dst": "plugins/toolkit-manager/references/data-architecture/persistence-domain-data-model.md",
+      "strategy": "symlink",
+      "description": ""
+    },
+    {
+      "src": "docs/architecture/domain-data-model.md",
+      "dst": "plugins/toolkit-manager/references/data-architecture/domain-data-model.md",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }

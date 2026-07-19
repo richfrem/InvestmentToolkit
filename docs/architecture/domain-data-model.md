@@ -7,7 +7,8 @@ result of this document. Implementation begins only after this model is explicit
 ## Revision History
 
 Prior versions are not kept as separate files — this single file is the current model, with
-prior reasoning preserved in git history (`git log -- docs/architecture/corrected-persistence-domain-data-model.md`),
+prior reasoning preserved in git history (`git log -- docs/architecture/domain-data-model.md`,
+file renamed from `corrected-persistence-domain-data-model.md` alongside this v3.2 pass),
 not as parallel `-v2`/`-v3`-suffixed documents.
 
 - **v1** (superseded): modeled `portfolio.json`/`target-portfolio.json`/`watchlist.json` as

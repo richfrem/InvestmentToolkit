@@ -10,6 +10,18 @@ Open **Claude Code** or **GitHub Copilot CLI** in the project terminal and type 
 
 ---
 
+## Data Architecture
+
+Commands below currently read/write JSON files (`portfolio.json`, `target-portfolio.json`,
+`watchlist.json`, `projections/*.json`, etc.) directly. A SQLite-backed domain data model —
+`account` / `investment` / `account_investment`, replacing that JSON split with a queryable
+schema — is in active design, not yet implemented. See
+`data-architecture/domain-data-model.md` for the current model (entities, ERD, rationale) and
+`data-architecture/sql/` for the DDL. Nothing below has been rewired to it yet; commands still
+behave exactly as documented.
+
+---
+
 ## Portfolio Commands
 
 ### `/strategic-review`
