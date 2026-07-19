@@ -75,7 +75,7 @@
       "fairValue": 0,
       "action": "SELL",
       "analyzedAt": "2026-05-02T19:26:33Z",
-      "researchReport": "investment_screener/backend/data/research/OKLO_2026-05-02.md"
+      "researchReport": "OKLO.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

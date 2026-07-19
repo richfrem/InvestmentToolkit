@@ -12,6 +12,7 @@ from intelligence.event_repository import (  # noqa: E402
     search_fts,
     get_latest_event_by_type,
     get_latest_event_by_type_and_ticker,
+    list_tickers_with_active_event_type,
 )
 
 
@@ -177,4 +178,44 @@ def test_get_latest_event_by_type_and_ticker(tmp_path):
     result = get_latest_event_by_type_and_ticker(conn, "TECHNICAL_SWEEP", "PLTR")
     assert result is not None
     assert result["event_id"] == "evt_pltr_new"
+
+
+def test_list_tickers_with_active_event_type_returns_distinct_sorted_tickers(tmp_path):
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    conn.execute("INSERT INTO instrument VALUES ('us-pltr', 'PLTR', 'NASDAQ', 'Palantir', '2026-07-18', NULL);")
+    conn.execute("INSERT INTO instrument VALUES ('us-nvda', 'NVDA', 'NASDAQ', 'Nvidia', '2026-07-18', NULL);")
+    conn.execute("INSERT INTO instrument VALUES ('us-amd', 'AMD', 'NASDAQ', 'AMD', '2026-07-18', NULL);")
+    conn.commit()
+    # Two RESEARCH_IMPORT events for PLTR (must collapse to one ticker), one for NVDA,
+    # and one SUPERSEDED-only AMD (must be excluded), plus a non-matching event_type for NVDA.
+    insert_event(conn, {
+        "event_id": "evt_pltr_1", "event_sequence": 1, "instrument_id": "us-pltr",
+        "event_type": "RESEARCH_IMPORT", "effective_at": "2026-07-01", "ingested_at": "2026-07-01",
+        "status": "ACTIVE", "title": "PLTR research 1", "body_markdown": "Body 1", "content_hash": "h1",
+    })
+    insert_event(conn, {
+        "event_id": "evt_pltr_2", "event_sequence": 2, "instrument_id": "us-pltr",
+        "event_type": "RESEARCH_IMPORT", "effective_at": "2026-07-10", "ingested_at": "2026-07-10",
+        "status": "ACTIVE", "title": "PLTR research 2", "body_markdown": "Body 2", "content_hash": "h2",
+    })
+    insert_event(conn, {
+        "event_id": "evt_nvda_1", "event_sequence": 3, "instrument_id": "us-nvda",
+        "event_type": "RESEARCH_IMPORT", "effective_at": "2026-07-12", "ingested_at": "2026-07-12",
+        "status": "ACTIVE", "title": "NVDA research", "body_markdown": "Body 3", "content_hash": "h3",
+    })
+    insert_event(conn, {
+        "event_id": "evt_amd_superseded", "event_sequence": 4, "instrument_id": "us-amd",
+        "event_type": "RESEARCH_IMPORT", "effective_at": "2026-07-05", "ingested_at": "2026-07-05",
+        "status": "SUPERSEDED", "title": "AMD research (superseded)", "body_markdown": "Body 4",
+        "content_hash": "h4",
+    })
+    insert_event(conn, {
+        "event_id": "evt_nvda_other_type", "event_sequence": 5, "instrument_id": "us-nvda",
+        "event_type": "NEWS_SWEEP", "effective_at": "2026-07-13", "ingested_at": "2026-07-13",
+        "status": "ACTIVE", "title": "NVDA news", "body_markdown": "Body 5", "content_hash": "h5",
+    })
+
+    result = list_tickers_with_active_event_type(conn, "RESEARCH_IMPORT")
+
+    assert result == ["NVDA", "PLTR"]
 
