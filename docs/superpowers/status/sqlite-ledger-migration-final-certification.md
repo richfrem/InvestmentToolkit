@@ -6,6 +6,23 @@ current record; those documents (`master-status-and-outstanding-work.md`,
 `post-migration-validation-report.md`, etc.) remain valid as historical evidence trails, not as
 the current picture.
 
+## 0. Integration & Push Status
+
+- `worktree-phase4a-audit` pushed to `origin` (20 commits) and verified landed by comparing
+  local `HEAD` against `origin/worktree-phase4a-audit` directly, not by trusting the push
+  command's exit status.
+- Merged fast-forward into local `main` (no conflicts — the branch didn't touch any file the
+  local checkout had unrelated uncommitted changes in; those changes were stashed before the
+  merge and popped back afterward, verified byte-identical to before).
+- Opened PR #82 (`worktree-phase4a-audit` → `main`) rather than pushing local `main` directly to
+  `origin/main`, per the standing PR-merge-yourself policy for `origin/main`. Verified every key
+  artifact (observations.jsonl, archive files, the render/pointer fix scripts, all status
+  reports, the gitignore fix) is present on `origin/worktree-phase4a-audit` by checking each
+  file individually with `git cat-file -e`, not by assuming the push succeeded.
+- Manual user verification of the migrated database (`SELECT COUNT(*) FROM intelligence_event;`
+  → 80, all 8 expected tables present including FTS5 support tables) — recorded in the original
+  handoff document, independently re-confirmed by this session's byte-level rebuild proof (§4).
+
 ## 1. Architecture Completion — Done
 
 Per ADRs 026/027/028: event-sourced ledger (`observations.jsonl`, authoritative, append-only) →
