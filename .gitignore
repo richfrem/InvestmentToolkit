@@ -1,5 +1,3 @@
-# Archived/retired code (kept locally, never tracked)
-ARCHIVE/
 
 # Dependencies
 node_modules/
@@ -67,6 +65,12 @@ archive/
 # only copy of the original dated research files moved (not deleted) by the
 # migration — must be tracked, not caught by the generic archive/ rule above.
 !investment_screener/backend/data/research/archive/
+# Exception: repo-root retirement archive (formerly "kept locally, never
+# tracked" — reversed so retired content has git-history durability instead
+# of existing only on local disk, same rationale as the exception above).
+# Case-insensitive filesystems (default macOS) match this against the
+# bare "archive/" rule too, so it needs its own explicit negation.
+!ARCHIVE/
 InvestmentStrategy/
 .claude/
 .agents/

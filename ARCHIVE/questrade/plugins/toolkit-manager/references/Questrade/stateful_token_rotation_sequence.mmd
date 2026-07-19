@@ -1,0 +1,36 @@
+sequenceDiagram
+    participant Agent as AI Agent
+    participant TM as QuestradeTokenManager.py
+    participant KC as macOS Keychain
+    participant Cache as .questrade_cache
+    participant QAuth as Questrade OAuth2 API
+
+    Note over Agent, Cache: Triggered on every sync request
+
+    Agent->>TM: Request token for API call
+    TM->>Cache: Read encrypted binary data
+
+    alt Cache missing or corrupt
+        Cache-->>TM: Error / None
+        TM-->>Agent: Re-seed required — ask user for new one-week token
+        Note over Agent: Agent prompts user to visit portal and generate token
+    else Cache valid
+        Cache-->>TM: Ciphertext + Nonce
+    end
+
+    TM->>KC: keyring.get_password("InvestmentToolkit", "QuestradeMasterKey")
+    KC-->>TM: AES-256 Master Key
+    TM->>TM: AES-256-GCM Decrypt → current refresh_token
+
+    TM->>QAuth: POST /oauth2/token?refresh_token=<current>
+    alt Success (HTTP 200)
+        QAuth-->>TM: New access_token + New refresh_token
+        Note over TM, Cache: Atomic Swap (ADR 015)
+        TM->>Cache: Write new refresh_token encrypted to .tmp
+        TM->>Cache: os.replace(.tmp → .questrade_cache)
+        TM-->>Agent: access_token ready
+    else Failure (HTTP 400)
+        QAuth-->>TM: Bad Request (token expired/already used)
+        TM-->>Agent: Re-seed required — token expired
+        Note over Agent: Agent prompts user to generate new one-week token
+    end
