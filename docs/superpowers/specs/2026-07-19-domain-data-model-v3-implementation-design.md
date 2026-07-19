@@ -8,6 +8,16 @@ reduced JSON dependency — see "Anti-Regression Lessons" below.
 
 ---
 
+## Core Goal — This Is a Pivot, Not an Addition
+
+This migration is a **pivot away from JSON/JSONL-file-based operational persistence and toward
+SQLite/domain-model persistence.** It is not an exercise in adding SQLite beside JSON.
+
+The goal is to make SQLite/domain repositories **the primary persistence layer** for applicable
+operational investment data. JSON/JSONL files inside the app and plugins must **not** remain as
+active operational data stores unless they have a compelling, reviewed, explicitly approved
+reason (see "Retained-JSON Rationale Bar," §2.18, below).
+
 ## Non-Negotiable Goal Statement
 
 The primary goal of this migration is not to add SQLite.
@@ -38,21 +48,39 @@ without reducing JSON dependency.
 The previous failed attempt created a research-ledger sidecar and did not materially reduce JSON
 usage. Do not repeat that.
 
+## No Permanent Hybrid (top-level non-negotiable)
+
+**The final architecture must not be `JSON + JSONL + SQLite`.** Hybrid operation is permitted
+**only** as a temporary migration mechanism inside a wave, never as a resting state. Every domain
+in §2 states, explicitly:
+
+- when JSON stops being authoritative
+- when SQLite becomes authoritative
+- what code path proves SQLite is live (not just present)
+- when old JSON gets archived
+- what retained JSON exception remains, if any, and why
+
+A wave that leaves a domain in permanent dual-write, with no removal trigger, has not completed —
+it has reproduced the prior effort's exact failure mode (§1, Anti-Regression Lessons).
+
 ## Target Architecture Direction
 
 The intended final direction is:
 
 SQLite/domain model as the primary persistence layer for applicable operational investment data.
 
-JSON/JSONL should remain only for explicitly approved cases, such as:
+After migration, **application and plugin runtime code must not use JSON/JSONL files as
+authoritative operational data stores for migrated domains.** Any retained JSON/JSONL use must be
+explicitly approved as one of:
 
-- private local-only broker archives
-- external API raw cache where justified
-- config files where JSON is the right format
-- separate approved ledgers
-- temporary compatibility outputs during migration
+- configuration
+- external API cache
+- private local-only broker archive
+- temporary compatibility output with a named removal trigger
+- separate approved ledger
+- test fixture
 
-Anything else should be migrated, generated from SQLite, or archived.
+**Anything else is migration debt**, not an acceptable resting state.
 
 ## Required Success Metric
 
@@ -67,6 +95,25 @@ For every implementation wave, report:
 - reason each remaining JSON dependency still exists
 
 Do not call a wave complete unless JSON dependency is actually reduced or explicitly justified.
+
+### Wave KPI Table Template (required in the implementation plan for every wave)
+
+| KPI | Value |
+|---|---|
+| Wave | |
+| Active JSON/JSONL files before | |
+| Active JSON/JSONL files after | |
+| Files archived | |
+| JSON reads removed | |
+| JSON writes removed | |
+| Producers migrated (n / total) | |
+| Consumers migrated (n / total) | |
+| Plugin/skill/agent references updated | |
+| Context-bundle files removed | |
+| Remaining JSON exceptions (with rationale) | |
+
+A wave report that cannot fill in every row with a real number or an explicit named exception is
+not a complete wave report.
 
 ## Live Code Requirement
 
@@ -87,6 +134,28 @@ Adoption requires:
 - real consumer reads new model
 - app/plugin/skill/agent references updated
 - old JSON path no longer used as source of truth
+
+**For migrated domains, every normal runtime path must use SQLite/domain repositories or APIs,
+not legacy JSON/JSONL files:**
+
+- backend routes
+- frontend API flows
+- plugin scripts
+- SKILL.md instructions
+- agent markdown prompts
+- report generators
+- test helpers
+
+Generated files may exist only as human-readable exports, temporary compatibility outputs during
+migration, or explicitly retained artifacts — **never** as the live source of truth for a
+runtime path.
+
+**No script or component opens its own SQLite connection outside the owning repository/service
+layer.** This applies identically to Python (`py_services/intelligence/`, and the new
+`py_services/domain_model/`-equivalent package for investment/account/projection tables, per
+ADR-028's anti-duplication rule) and to TypeScript (`ProjectionService.ts`/`BrokerSyncService.ts`-
+equivalent service classes must be the sole callers of the Node SQLite driver for their tables —
+no route file or script queries the database directly).
 
 **Do not optimize for "keeping compatibility forever."** Compatibility and dual-write are
 temporary migration aids. The end state must be simpler than the start state.
@@ -216,6 +285,26 @@ strategy.md` (big three), direct grep against gitignored files not covered by th
 audits, and `task18-consumer-inventory.md`/`json-discovery-audit.md` for git-tracked files. Counts
 are not estimated.
 
+### 2.0 Source-of-Truth Transition Table (required per domain)
+
+| Domain | Before (authoritative) | After (authoritative) | Fallback during migration? | Fallback retirement trigger |
+|---|---|---|---|---|
+| Investment/target/watchlist | `target-portfolio.json`, `watchlist.json` | `investment` table | Yes, Wave 2 only | All 18+6 consumers cut over + `git mv` |
+| Price levels | embedded in `target-portfolio.json` | `price_level_set`/`price_level_tier` | Yes, Wave 2 only | Same as investment domain (same file) |
+| Investment notes | embedded `agentRationale` | `investment_note` | Yes, Wave 2 only | Same as investment domain (same file) |
+| Account holdings | `portfolio.json` (gitignored) | `account_investment`, `investment_price` | Yes, Wave 3 only | All 20 producers + ~32 consumers cut over, one full sync-cycle parity proof |
+| Projections | `projections/*.json` (144 files) | `projection_version`, `projection_scenario` | Yes, Wave 1 only | All 2 producers + 18 consumers cut over, 144-file parity proof |
+| Generated research views | `research/{ticker}.summary.md`/`.timeline.md` | `intelligence_event` (live query) | **No** — this is carried-over debt; the fallback (static-file read) is the bug being fixed, not a sanctioned migration aid | `docs.ts` research route queries the DB unconditionally, no filename-shape branch remains |
+| TradingView alerts | `tradingview_alerts_actual.json` | `alert` table | Yes, Wave 2 only | `tv_list_alerts.py` cut over, sync verified |
+| Trade log | `trade-log.json` | `trade_log_entry` | Yes, Wave 4 only | `routes/trading.ts` + `generate_track_record_report.py` cut over |
+| Order executions | `orders_executed.jsonl` (gitignored) | `order_execution` | Yes, Wave 4 only | Both producer and consumer cut over |
+| Cash flows | `cash_flows.json` (gitignored) | `cash_flow`, `cash_flow_baseline` | Yes, Wave 4 only | New write path built and adopted (no producer to swap — see §2.10) |
+| Predictions | `predictions.jsonl`, `predictions_graded.jsonl` | `intelligence_event` | Yes, Wave 5 only | All 6 consumers cut over |
+| TA sweep results | `ta-sweep-results.json` | `intelligence_event` | Yes, Wave 5 only — **re-verify, do not trust prior "wired" claim** | All 3 consumers cut over, real (not fixture) test passes |
+| Daily briefs | `data/daily-briefs/*.json` (gitignored) | `intelligence_event` | Yes, Wave 5 only — **re-verify, do not trust prior "wired" claim** | Both producer and consumer cut over, real test added |
+| Account/portfolio policy | `account_policy.json` | `portfolio_policy` | Yes, Wave 5 only | All 4 consumers cut over |
+| Thesis breaker state | `thesis_breaker_state.json` | `investment.thesis_breaker_status` | Yes, Wave 2 only (rides with investment domain) | All 4 consumers cut over |
+
 ### 2.1 Investment / target-portfolio / watchlist
 
 - **Current:** `target-portfolio.json` (holdings array + pillars + globalSettings),
@@ -341,8 +430,8 @@ are not estimated.
   (no filename-shape fallback branch at all, removing the exact bug class that started this).
   `research/archive/*.md` and the 72 bare `{TICKER}.md` files are a separate, smaller decision —
   see open items below.
-- **Wave:** 5 (grouped with other `intelligence_event` cutover work, since it reuses the same
-  table and repository layer already built).
+- **Wave:** 5A (this is the first sub-wave of Wave 5, not last — it closes the exact debt that
+  started this whole correction, and the other Wave 5 domains reuse its repository layer).
 
 ### 2.7 TradingView alerts
 
@@ -406,7 +495,7 @@ are not estimated.
 - **Escalation trigger (per your decision):** if prediction analytics ever become a primary
   reporting surface (bulk grading metrics, prediction-accuracy screening, large-scale
   backtesting), extract into dedicated `prediction_fact`/`prediction_grade` tables. Not before.
-- **Wave:** 5.
+- **Wave:** 5D.
 
 ### 2.12 TA sweep results
 
@@ -420,7 +509,7 @@ are not estimated.
   against the 3-part test (producer writes / consumer reads / file archived) from scratch, not
   trust the prior "wired" claim.
 - **Target:** `intelligence_event` (`event_type='TECHNICAL_SWEEP'`).
-- **Wave:** 5.
+- **Wave:** 5B.
 
 ### 2.13 Daily briefs
 
@@ -432,7 +521,7 @@ are not estimated.
   real test exists for this path." Re-verify, don't re-certify.
 - **Target:** `intelligence_event` (`event_type='REVIEW_DAILY'`). The delta-vs-yesterday query
   becomes a real SQL query (`ORDER BY effective_at DESC LIMIT 2`) instead of a file glob + sort.
-- **Wave:** 5.
+- **Wave:** 5C.
 
 ### 2.14 Account/portfolio policy
 
@@ -448,7 +537,15 @@ are not estimated.
   `rebalance_band_critical_multiplier`) get real columns; `accountPreferenceRules` and
   `psuFundingRule` stay as JSON columns deliberately (variable-shape rule lists, not
   column-queried).
-- **Wave:** 5.
+- **Wave:** 5E.
+
+**Wave 5 sub-wave note:** Wave 5 carries five distinct domains with different risk profiles (two
+of them — TA sweep, daily briefs — carry a "re-verify, don't re-certify" caveat from the prior
+effort). Splitting into 5A–5E keeps each cutover independently verifiable and independently
+revertible, rather than one large Wave 5 commit that mixes a debt-closure fix (5A) with net-new
+event-type migrations (5B–5D) and a config-table migration (5E). Order: 5A (research views, closes
+the root-cause debt and builds the `intelligence_event` query pattern the rest reuse) → 5B (TA
+sweep) → 5C (daily briefs) → 5D (predictions) → 5E (account policy).
 
 ### 2.15 Thesis breaker state
 
@@ -478,6 +575,56 @@ are not estimated.
   this spec's scope after migration — every domain above either migrates fully or has its
   non-flat portion kept as a JSON column inside a real table, never as an unaccounted-for loose
   file.
+
+### 2.18 Retained-JSON Rationale Bar (required for any file this spec allows to remain JSON)
+
+Generic labels — `REMAINS_JSON_BY_DESIGN`, "retained by design," "out of scope" — are **not**
+acceptable justification on their own anywhere in this effort's documentation, per the
+Anti-Regression Lessons in §1. Any JSON/JSONL file this spec (or its implementation plan)
+proposes to keep must have this table completed. If the table cannot be completed, the file is
+not approved to remain JSON — it goes back into the migration scope.
+
+| Field | Required answer |
+|---|---|
+| File / pattern | |
+| Why not SQLite? | |
+| Why not event model (`intelligence_event`)? | |
+| Why not generated from SQLite? | |
+| Category | config / cache / private archive / fixture / separate approved ledger |
+| Who writes it? | |
+| Who reads it? | |
+| What breaks if removed? | |
+| User-approved exception? | yes/no |
+| Future migration trigger | |
+
+Domains in this spec's scope that are candidates for this table once implementation reaches
+them: `account_policy.json`'s two rule-blob columns (category: config, already justified in
+§2.14/§2.17), `research/archive/*.md` and the 72 bare `{TICKER}.md` files (§8, product decision
+pending — not yet approved, table not yet completable), and any gitignored private file archived
+under the LOCAL_PRIVATE_ARCHIVE classification (§2.19 below). No domain in §2.1–§2.15 is proposed
+to remain bare JSON outside a table column — each either migrates fully or the residual JSON is a
+column inside a real table (already covered by its own domain section).
+
+### 2.19 Private/Gitignored File Archive Rule
+
+For every gitignored domain in this spec (`portfolio.json`, `orders_executed.jsonl`,
+`trade-log.json`, `cash_flows.json`, `data/daily-briefs/*.json`), the archive step distinguishes
+four things explicitly, per your decision in §3's resolved decisions:
+
+1. **Migrated data** — lives in SQLite (`account_investment`, `order_execution`,
+   `trade_log_entry`, `cash_flow`/`cash_flow_baseline`, `intelligence_event`), which is itself
+   gitignored (the DB file, like `intelligence.sqlite` today) but rebuildable from a durable
+   source per domain (broker re-sync for holdings, the ledger JSONL for events).
+2. **Local-only archive** — the superseded file moves to `ARCHIVE/<mirrored source path>` on
+   disk via `git mv` semantics adapted for an untracked file (i.e., a plain `mv`, since `git mv`
+   on an untracked/gitignored file is a no-op for git — the disk move still happens for rollback
+   purposes).
+3. **No git commit** — the archived copy is never `git add`ed; the privacy boundary that existed
+   before migration (gitignored) is preserved after migration, not weakened by the act of
+   archiving.
+4. **Rollback method still documented** — even though the archive isn't git-tracked, the
+   rollback procedure (restore from `ARCHIVE/`, revert producer/consumer commits) is written down
+   in the wave's implementation record, same as for git-tracked domains.
 
 ---
 
@@ -637,17 +784,26 @@ per-wave in the implementation plan, not assumed to be a documentation afterthou
 
 ## 6. Stop Conditions
 
-Stop and escalate to the user if any of the following occur:
+Stop and escalate to the user if any of the following occur — each is a concrete failure mode,
+not a hypothetical:
 
 - Live app still reads old JSON after a domain is claimed migrated.
 - A plugin/skill/agent still writes old JSON as source of truth after its domain is claimed
-  migrated.
-- Old JSON is retained without a named, written rationale.
+  migrated, or still instructs an agent to inspect/bundle the old file.
+- SQLite tables exist but active runtime code still reads JSON (table existence mistaken for
+  cutover).
+- Data was copied into SQLite but the producer still writes JSON (copy mistaken for migration).
+- A producer writes both JSON and SQLite indefinitely, with no stated removal trigger for the
+  JSON side (permanent dual-write — the exact failure this spec exists to prevent).
+- Generated Markdown/static files are used as a runtime source of truth for any route, skill, or
+  agent (the §2.6 bug class recurring).
+- Old JSON is retained without a completed Retained-JSON Rationale Bar (§2.18).
 - A parity mismatch appears between old and new data during the dual-write/validation window.
 - A consumer is discovered that wasn't in this document's inventory (the inventory must be
   amended, not silently worked around).
 - A domain is labeled `REMAINS_JSON_BY_DESIGN` (or equivalent) without the specific evidence this
-  document requires (real consumer list + reason).
+  document requires (real consumer list + reason + completed rationale table).
+- A wave's JSON file count does not go down and no approved exception (§2.18) explains why.
 - A cleanup/archive step would remove data still needed for rollback.
 
 ---
