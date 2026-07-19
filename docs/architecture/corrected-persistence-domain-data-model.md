@@ -1,0 +1,539 @@
+# Corrected Persistence Domain Data Model
+
+**Version:** 3
+**Status:** design correction pass only. No tables, code, repositories, or archival changed as a
+result of this document. Implementation begins only after this model is explicitly approved.
+
+## Revision History
+
+Prior versions are not kept as separate files — this single file is the current model, with
+prior reasoning preserved in git history (`git log -- docs/architecture/corrected-persistence-domain-data-model.md`),
+not as parallel `-v2`/`-v3`-suffixed documents.
+
+- **v1** (superseded): modeled `portfolio.json`/`target-portfolio.json`/`watchlist.json` as
+  three separate root tables (`holdings`, `target_portfolio_entry`, `watchlist_entry`), mirroring
+  JSON file boundaries rather than the business concept they jointly describe.
+- **v2** (superseded): corrected v1 by unifying those three into one `POSITION` +
+  `ACCOUNT_POSITION` split, with a separate `INSTRUMENT` table for ticker identity. Established
+  the real evidence this document still relies on: the `exit`/`avoid` role values, the
+  `standingDecision`/`priceLevels` structure, the `instrument_price` and account-assignment
+  resolutions (see §"Portfolio account-assignment dependency" below).
+- **v3** (current, this document): replaced v2's `INSTRUMENT`+`POSITION` split with a single
+  `INVESTMENT` table (bridged to accounts via `ACCOUNT_INVESTMENT`), after an honest
+  head-to-head comparison found the split added a real join to the two most common query shapes
+  in this app without a requirement forcing it. See "The Core Question, Answered Honestly" below.
+
+---
+
+## The Core Question, Answered Honestly
+
+v2's reason for keeping `INSTRUMENT` separate from `POSITION` was one piece of real evidence:
+1 of 72 researched tickers (`BITF`) has research history but no presence anywhere in the
+position/target/watchlist universe. That's true and still true. What v2 didn't do was check
+whether that evidence actually *requires* a separate table, versus being solvable a cheaper way.
+
+**It's solvable a cheaper way.** `BITF` doesn't need a separate identity table — it needs one
+more `lifecycle_status` value (`RESEARCH_ONLY`, or similar) on a single `INVESTMENT` row. That
+resolves the one real gap v2's separation existed to cover, at the cost of one enum value instead
+of a whole second table.
+
+**Checked the remaining cost of merging, not just asserted it's small:** `instrument_repository.py`
+(the module that would need renaming/absorbing) has exactly two real dependents in this codebase
+— `models.py` and `replay_ledger.py`. That's a small, contained migration, not a large one.
+
+**Conclusion: v3 is the better model. Recommending replacement of v2's core, not just offering it
+as an alternative.**
+
+---
+
+## Required Comparison: Option A (v2) vs. Option B (v3)
+
+| Dimension | Option A — v2 (`INSTRUMENT`+`POSITION`+`ACCOUNT_POSITION`) | Option B — v3 (`INVESTMENT`+`ACCOUNT_INVESTMENT`) |
+|---|---|---|
+| **Tables for the core concept** | 3 | 2 |
+| **Joins for "show AAPL: name, target weight, current shares, market value"** | 3 (`instrument` for identity, `position` for stance, `account_position` aggregate, `instrument_price`) — 4 total including price | 2 (`account_investment` aggregate, `investment_price`) — identity and stance are already on the one row |
+| **Joins for "list research for a ticker"** | 1 (`instrument` → `intelligence_event`) | 1 (`investment` → `intelligence_event`) — no difference |
+| **Joins for "portfolio drift report, all tracked securities"** | 3 (`position`, `account_position` aggregate, `instrument_price`, plus `instrument` for display name = effectively 3-4) | 2 (`account_investment` aggregate, `investment_price`) |
+| **Migration complexity** | Higher — 3 source concepts (portfolio.json, target-portfolio.json, watchlist.json) map to 2 tables, still requires deciding instrument vs. position boundary per field | Lower — same 3 source files map to 2 tables with a cleaner single boundary: "per-account fact" vs. "everything else" |
+| **Represents watchlist-only items** | Yes — `POSITION` row, zero `ACCOUNT_POSITION` rows | Yes — `INVESTMENT` row, zero `ACCOUNT_INVESTMENT` rows. Identical capability. |
+| **Represents target-only items** | Yes, same mechanism | Yes, same mechanism |
+| **Represents cash** | `ACCOUNT_POSITION` row, `instrument_id NULL`, `asset_class='CASH'` | `ACCOUNT_INVESTMENT` row, `investment_id` pointing at a `CASH_USD`/`CASH_CAD` `INVESTMENT` row (asset_class='CASH') — arguably cleaner: cash gets a real identity row like any other tracked thing, consistent with the corrective instruction's own example list ("CASH_USD" listed as an `INVESTMENT` example) |
+| **Same ticker across multiple accounts** | `ACCOUNT_POSITION` rows keyed by (account_id, instrument_id) | `ACCOUNT_INVESTMENT` rows keyed by (account_id, investment_id) — identical mechanism, no difference |
+| **Projection/research links** | On `POSITION` (`latest_projection_id`, `latest_research_event_id`), referencing `PROJECTION_VERSION`/`INTELLIGENCE_EVENT` which reference `INSTRUMENT` — **two different FK anchors for the same ticker** (`position.instrument_id` and `projection_version.instrument_id` both have to agree) | On `INVESTMENT` directly, and `PROJECTION_VERSION`/`INTELLIGENCE_EVENT` also reference `INVESTMENT` — **one FK anchor**, removing a class of possible drift between "which instrument this position is about" and "which instrument this projection is about" |
+| **Consumer rewrite complexity** | Same real producer/consumer counts as v2 documented (21 producers, ~33 consumers across the 3 files) — no change from that inventory | Same counts — the rewrite surface is the JSON→SQL producer/consumer work, which is identical regardless of which side of the instrument/position line a field lands on |
+| **Archive criteria** | Same rule (producer+consumer+archive), unaffected by table count | Same rule, unaffected |
+| **Risk of over-normalization** | Real — confirmed by the join-count and dual-FK-anchor findings above, not hypothetical | Lower — matches the corrective instruction's explicit design rule: don't split entities the app's actual query patterns don't need |
+
+**Net assessment:** v3 removes 1 real join from the two most common query shapes in this app
+(current status of a security; portfolio drift), removes a dual-FK-anchor class of potential
+data drift, and costs a small, already-measured migration (2 dependent files) to absorb
+`instrument`. v2's only genuine advantage — handling `BITF`-shaped research-only tickers — is
+fully covered by v3's `RESEARCH_ONLY` lifecycle value at no structural cost.
+
+---
+
+## v3 Conceptual Model
+
+- **`ACCOUNT`** — unchanged from v2.
+- **`INVESTMENT`** — one row per tracked thing: a security *or* a cash concept. Absorbs v2's
+  `INSTRUMENT` (identity: symbol, name, currency) and `POSITION` (stance: lifecycle, target,
+  standing decision, strategy links, thesis, watchlist, projection/research pointers) into one
+  table, because in this app's real data every one of those attributes is queried and displayed
+  together, not independently.
+- **`ACCOUNT_INVESTMENT`** — unchanged in role from v2's `ACCOUNT_POSITION`, renamed to match.
+  Per-account fact: quantity, average cost, book value, currency, last sync.
+
+---
+
+## v3 Mermaid Diagram
+
+```mermaid
+erDiagram
+    ACCOUNT ||--o{ ACCOUNT_INVESTMENT : holds
+    INVESTMENT ||--o{ ACCOUNT_INVESTMENT : "is held as"
+    INVESTMENT ||--o{ PROJECTION_VERSION : "valued by"
+    INVESTMENT ||--o{ INTELLIGENCE_EVENT : "researched via"
+    INVESTMENT ||--o| PRICE_LEVEL_SET : "may have"
+    PRICE_LEVEL_SET ||--o{ PRICE_LEVEL_TIER : contains
+    INVESTMENT }o--|| STRATEGY_PILLAR : "belongs to"
+    INVESTMENT }o--o| SUB_STRATEGY : "belongs to"
+    PROJECTION_VERSION ||--o{ PROJECTION_SCENARIO : contains
+    PROJECTION_VERSION }o--o| INTELLIGENCE_EVENT : research_event
+    INVESTMENT ||--o{ TRADE_LOG_ENTRY : "traded as"
+    ACCOUNT ||--o{ TRADE_LOG_ENTRY : "logged against"
+    INVESTMENT ||--o{ ORDER_EXECUTION : "ordered as"
+    ACCOUNT ||--o{ CASH_FLOW : "moves cash in/out of"
+
+    ACCOUNT {
+        TEXT account_id PK
+        TEXT account_name
+        TEXT account_type
+        TEXT base_currency
+    }
+
+    INVESTMENT {
+        TEXT investment_id PK
+        TEXT symbol
+        TEXT name
+        TEXT asset_class
+        TEXT currency
+        TEXT lifecycle_status "INITIATE|ACCUMULATE|MAINTAIN|TRIM|EXIT|WATCHLIST|AVOID|RESEARCH_ONLY"
+        REAL target_weight
+        TEXT target_action
+        REAL target_entry_price
+        TEXT standing_decision_type
+        TEXT standing_decision_reason
+        TEXT standing_decision_source
+        TEXT standing_decision_review
+        TEXT pillar_id FK
+        TEXT sub_strategy_id FK
+        TEXT thesis_for_inclusion
+        TEXT agent_rationale
+        INTEGER is_watchlisted
+        TEXT watchlist_added_at
+        TEXT latest_projection_id FK
+        TEXT latest_research_event_id FK
+        TEXT thesis_breaker_status
+        TEXT updated_at
+    }
+
+    ACCOUNT_INVESTMENT {
+        TEXT account_investment_id PK
+        TEXT account_id FK
+        TEXT investment_id FK
+        REAL quantity
+        REAL average_cost
+        REAL book_value
+        TEXT currency
+        TEXT last_synced_at
+    }
+
+    STRATEGY_PILLAR {
+        TEXT pillar_id PK
+        TEXT name
+        REAL target_weight
+    }
+
+    SUB_STRATEGY {
+        TEXT sub_strategy_id PK
+        TEXT pillar_id FK
+        TEXT name
+    }
+
+    PRICE_LEVEL_SET {
+        TEXT price_level_set_id PK
+        TEXT investment_id FK
+        TEXT schema_version
+        TEXT last_updated
+        TEXT last_updated_by
+        TEXT note
+    }
+
+    PRICE_LEVEL_TIER {
+        TEXT tier_id PK
+        TEXT price_level_set_id FK
+        INTEGER tier_number
+        REAL price
+        TEXT action
+        REAL trim_pct
+        TEXT order_type
+        TEXT basis
+        TEXT source
+        TEXT source_date
+        TEXT condition
+        TEXT status
+    }
+
+    PROJECTION_VERSION {
+        TEXT projection_id PK
+        TEXT investment_id FK
+        INTEGER version
+        TEXT saved_at
+        TEXT model
+        REAL fair_value
+        TEXT action
+        TEXT rationale
+        TEXT research_event_id FK
+        TEXT snapshot_json
+        TEXT analytics_log_json
+    }
+
+    PROJECTION_SCENARIO {
+        TEXT scenario_id PK
+        TEXT projection_id FK
+        TEXT scenario_name
+        REAL weight
+        REAL growth_rate
+        REAL net_margin
+        REAL exit_pe
+        REAL quality_multiplier
+        REAL share_change
+        TEXT rationale
+        INTEGER moat_score
+        INTEGER management_score
+        REAL year5_revenue
+        REAL year5_net_income
+        REAL year5_eps
+        REAL scenario_price
+        TEXT risks_json
+    }
+
+    INTELLIGENCE_EVENT {
+        TEXT event_id PK
+        TEXT event_type
+        TEXT title
+        TEXT body_markdown
+    }
+
+    TRADE_LOG_ENTRY {
+        TEXT entry_id PK
+        TEXT investment_id FK
+        TEXT account_id FK
+        TEXT action
+        REAL shares
+        REAL price
+    }
+
+    ORDER_EXECUTION {
+        TEXT execution_id PK
+        TEXT investment_id FK
+        TEXT side
+        REAL shares
+        TEXT decision
+    }
+
+    CASH_FLOW {
+        TEXT flow_id PK
+        TEXT account_id FK
+        TEXT flow_date
+        TEXT flow_type
+        REAL amount_cad
+    }
+```
+
+No `POSITION` or `INSTRUMENT` root entities — the comparison above is the justification for
+their absence, not an unexamined default.
+
+---
+
+## v3 Column-Level Schema
+
+```sql
+CREATE TABLE account (
+    account_id      TEXT PRIMARY KEY,
+    account_name    TEXT NOT NULL,
+    account_type    TEXT,
+    base_currency   TEXT NOT NULL DEFAULT 'CAD'
+);
+
+CREATE TABLE strategy_pillar (
+    pillar_id       TEXT PRIMARY KEY,
+    name            TEXT NOT NULL,
+    target_weight   REAL
+);
+
+CREATE TABLE sub_strategy (
+    sub_strategy_id TEXT PRIMARY KEY,
+    pillar_id       TEXT REFERENCES strategy_pillar(pillar_id),
+    name            TEXT NOT NULL
+);
+
+CREATE TABLE investment (
+    investment_id              TEXT PRIMARY KEY,          -- generated: ticker, or CASH_USD / CASH_CAD for cash concepts
+    symbol                      TEXT NOT NULL,
+    name                         TEXT,
+    asset_class                   TEXT NOT NULL,           -- EQUITY, ETF, CASH, etc.
+    currency                       TEXT NOT NULL DEFAULT 'USD',
+    lifecycle_status                 TEXT,                  -- INITIATE|ACCUMULATE|MAINTAIN|TRIM|EXIT|WATCHLIST|AVOID|RESEARCH_ONLY
+    target_weight                     REAL,
+    target_action                      TEXT,
+    target_entry_price                  REAL,
+    standing_decision_type                TEXT,
+    standing_decision_reason               TEXT,
+    standing_decision_source                TEXT,
+    standing_decision_review                 TEXT,
+    pillar_id                                 TEXT REFERENCES strategy_pillar(pillar_id),
+    sub_strategy_id                            TEXT REFERENCES sub_strategy(sub_strategy_id),
+    thesis_for_inclusion                        TEXT,
+    agent_rationale                              TEXT,
+    is_watchlisted                                INTEGER NOT NULL DEFAULT 0,
+    watchlist_added_at                             TEXT,
+    latest_projection_id                            TEXT REFERENCES projection_version(projection_id),
+    latest_research_event_id                         TEXT REFERENCES intelligence_event(event_id),
+    thesis_breaker_status                             TEXT,
+    updated_at                                         TEXT NOT NULL,
+    UNIQUE(symbol)
+);
+
+CREATE TABLE investment_price (
+    investment_id   TEXT PRIMARY KEY REFERENCES investment(investment_id),
+    price            REAL NOT NULL,
+    currency          TEXT NOT NULL DEFAULT 'USD',
+    fetched_at         TEXT NOT NULL
+);
+
+CREATE TABLE account_investment (
+    account_investment_id   TEXT PRIMARY KEY,       -- generated: account_id || ':' || investment_id
+    account_id                TEXT NOT NULL REFERENCES account(account_id),
+    investment_id               TEXT NOT NULL REFERENCES investment(investment_id),
+    quantity                      REAL NOT NULL DEFAULT 0,
+    average_cost                    REAL,
+    book_value                        REAL,
+    currency                           TEXT NOT NULL DEFAULT 'USD',
+    last_synced_at                      TEXT NOT NULL,
+    UNIQUE(account_id, investment_id)
+);
+
+CREATE TABLE price_level_set (
+    price_level_set_id  TEXT PRIMARY KEY,
+    investment_id          TEXT NOT NULL REFERENCES investment(investment_id),
+    schema_version           TEXT,
+    last_updated              TEXT,
+    last_updated_by            TEXT,
+    note                         TEXT
+);
+
+CREATE TABLE price_level_tier (
+    tier_id               TEXT PRIMARY KEY,
+    price_level_set_id      TEXT NOT NULL REFERENCES price_level_set(price_level_set_id),
+    tier_number               INTEGER NOT NULL,
+    price                      REAL,
+    action                      TEXT,
+    trim_pct                     REAL,
+    order_type                    TEXT,
+    basis                          TEXT,
+    source                          TEXT,
+    source_date                      TEXT,
+    condition                         TEXT,
+    status                             TEXT
+);
+
+CREATE TABLE projection_version (
+    projection_id         TEXT PRIMARY KEY,
+    investment_id            TEXT NOT NULL REFERENCES investment(investment_id),
+    version                    INTEGER NOT NULL,
+    saved_at                    TEXT NOT NULL,
+    analyzed_at                  TEXT,
+    model                          TEXT,
+    fair_value                      REAL,
+    action                           TEXT,
+    rationale                         TEXT,
+    research_event_id                  TEXT REFERENCES intelligence_event(event_id),
+    snapshot_json                       TEXT,
+    analytics_log_json                    TEXT,
+    UNIQUE(investment_id, version)
+);
+
+CREATE TABLE projection_scenario (
+    scenario_id       TEXT PRIMARY KEY,
+    projection_id       TEXT NOT NULL REFERENCES projection_version(projection_id),
+    scenario_name         TEXT NOT NULL,
+    weight                 REAL,
+    growth_rate              REAL,
+    net_margin                REAL,
+    exit_pe                    REAL,
+    quality_multiplier          REAL,
+    share_change                  REAL,
+    rationale                      TEXT,
+    moat_score                      INTEGER,
+    management_score                 INTEGER,
+    year5_revenue                     REAL,
+    year5_net_income                    REAL,
+    year5_eps                            REAL,
+    scenario_price                        REAL,
+    risks_json                             TEXT,
+    UNIQUE(projection_id, scenario_name)
+);
+
+CREATE INDEX idx_investment_pillar ON investment(pillar_id);
+CREATE INDEX idx_investment_lifecycle ON investment(lifecycle_status);
+CREATE INDEX idx_account_investment_account ON account_investment(account_id);
+CREATE INDEX idx_account_investment_investment ON account_investment(investment_id);
+CREATE INDEX idx_projection_investment ON projection_version(investment_id);
+CREATE INDEX idx_projection_scenario_projection ON projection_scenario(projection_id);
+
+-- Unchanged from v2/prior design: trade_log_entry, order_execution, cash_flow,
+-- cash_flow_baseline — their instrument_id columns now reference investment(investment_id)
+-- instead of the old instrument(instrument_id).
+```
+
+---
+
+## Calculated Views (unchanged in principle from v2, re-pointed at v3 tables)
+
+```sql
+CREATE VIEW account_total_value AS
+SELECT
+    ai.account_id,
+    SUM(CASE WHEN i.asset_class = 'CASH' THEN ai.quantity ELSE ai.quantity * ip.price END) AS total_value,
+    SUM(CASE WHEN i.asset_class = 'CASH' THEN ai.quantity ELSE 0 END) AS cash_value
+FROM account_investment ai
+JOIN investment i ON i.investment_id = ai.investment_id
+LEFT JOIN investment_price ip ON ip.investment_id = ai.investment_id
+GROUP BY ai.account_id;
+
+CREATE VIEW portfolio_total_value AS
+SELECT SUM(total_value) AS total_value FROM account_total_value;
+
+CREATE VIEW investment_valuation AS
+SELECT
+    inv.investment_id,
+    inv.symbol,
+    COALESCE(SUM(ai.quantity), 0) AS current_quantity,
+    ip.price,
+    COALESCE(SUM(ai.quantity), 0) * ip.price AS market_value,
+    COALESCE(SUM(ai.book_value), 0) AS book_value,
+    (COALESCE(SUM(ai.quantity), 0) * ip.price) - COALESCE(SUM(ai.book_value), 0) AS unrealized_gain_loss,
+    inv.target_weight,
+    CASE WHEN pv.total_value > 0
+         THEN (COALESCE(SUM(ai.quantity), 0) * ip.price) / pv.total_value
+         ELSE NULL END AS current_weight,
+    inv.target_weight * pv.total_value AS target_value,
+    CASE WHEN ip.price > 0
+         THEN (inv.target_weight * pv.total_value) / ip.price
+         ELSE NULL END AS target_quantity,
+    (inv.target_weight * pv.total_value) - (COALESCE(SUM(ai.quantity), 0) * ip.price) AS rebalance_amount
+FROM investment inv
+LEFT JOIN account_investment ai ON ai.investment_id = inv.investment_id
+LEFT JOIN investment_price ip ON ip.investment_id = inv.investment_id
+CROSS JOIN portfolio_total_value pv
+GROUP BY inv.investment_id;
+
+CREATE VIEW cash_weight AS
+SELECT
+    (SELECT SUM(quantity) FROM account_investment ai JOIN investment i ON i.investment_id = ai.investment_id WHERE i.asset_class = 'CASH')
+    / (SELECT total_value FROM portfolio_total_value) AS cash_weight_pct;
+```
+
+Same `investment_price`/live-price dependency as v2 — unresolved by table count, resolved by the
+`investment_price` cache table + upsert-on-existing-fetch approach v2 already settled on.
+
+---
+
+## Field Mapping Into v3
+
+| Field | Source | v3 target |
+|---|---|---|
+| `holdings[].ticker` | target-portfolio.json | `investment.symbol` (resolves `investment_id`) |
+| `holdings[].name` | target-portfolio.json | `investment.name` |
+| `holdings[].pillarId` | target-portfolio.json | `investment.pillar_id` |
+| `holdings[].subStrategyId` | target-portfolio.json | `investment.sub_strategy_id` |
+| `holdings[].targetWeight` | target-portfolio.json | `investment.target_weight` |
+| `holdings[].role` | target-portfolio.json | `investment.lifecycle_status` (real values: accumulate/avoid/watchlist/trim/initiate/exit) |
+| `holdings[].action` | target-portfolio.json | `investment.target_action` |
+| `holdings[].standingDecision.*` | target-portfolio.json | `investment.standing_decision_{type,reason,source,review}` |
+| `holdings[].targetEntryPrice` | target-portfolio.json | `investment.target_entry_price` |
+| `holdings[].thesisForInclusion` | target-portfolio.json | `investment.thesis_for_inclusion` |
+| `holdings[].agentRationale` | target-portfolio.json | `investment.agent_rationale` |
+| `holdings[].priceLevels` | target-portfolio.json | `price_level_set` + `price_level_tier` |
+| `holdings[].shares` | target-portfolio.json | not stored on `investment` — superseded by real-time `account_investment.quantity`, same reasoning as v2 |
+| `symbol`/`shares`/`book_price` | portfolio.json | `account_investment.investment_id`/`quantity`/`average_cost` — **now with real account attribution**, per the resolved `fetch_broker_data.py` finding (v2 §, unchanged) |
+| `market_value`/`price` | portfolio.json | `investment_valuation` view / `investment_price`, not stored |
+| `ticker`/`addedAt` | watchlist.json | `investment.is_watchlisted = 1` / `investment.watchlist_added_at` |
+| `fairValue`/`action`/`rationale` | projections/*.json `aiThesis` | `projection_version.fair_value`/`action`/`rationale` |
+| `scenarios.*` | projections/*.json | `projection_scenario`, one row per bear/base/bull |
+| `researchReport` | projections/*.json | `projection_version.research_event_id` (FK, not filename — unchanged from v2) |
+| `snapshot`/`analyticsLog` | projections/*.json | `projection_version.snapshot_json`/`analytics_log_json` |
+| `cash_flows[].*` | cash_flows.json | `cash_flow` table, unchanged — `investment_id` not involved, account-scoped only |
+| `trade-log.json` entries | trade-log.json | `trade_log_entry`, unchanged shape, `instrument_id` column now named/pointed at `investment_id` |
+| `orders_executed.jsonl` entries | orders_executed.jsonl | `order_execution`, unchanged shape, same FK rename |
+
+---
+
+## Answers to the 8 Required Questions
+
+1. **Can INVESTMENT replace both POSITION and INSTRUMENT?** Yes — confirmed above, this is the
+   recommendation.
+2. **Does anything truly need an INSTRUMENT table separately?** No functional need found. The
+   only real distinction (identity vs. stance) is a normalization preference, not a requirement
+   any actual query or consumer in this codebase demonstrates.
+3. **Is research for a ticker with no portfolio/watchlist stance enough reason to keep INSTRUMENT
+   separate?** No — real (1 of 72, `BITF`), but resolved cheaper by a lifecycle value.
+4. **Could INVESTMENT still hold it with `lifecycle_status = RESEARCH_ONLY`?** Yes — adopted
+   directly into the v3 schema above.
+5. **How many joins does v3 remove?** One real join from each of the two most common query
+   shapes in this app (current security status; portfolio drift) — see comparison table.
+6. **Does v3 better reflect the user's mental model?** Yes, on the evidence: the corrective
+   instruction's own example list (`AAPL`, `CRWV`, `CASH_USD`, `SKHY target-only idea`) already
+   describes one concept at different lifecycle stages, which is exactly what `INVESTMENT`
+   models directly, without an extra table to explain the split.
+7. **Does v3 make it easier to archive JSON files after migration?** No material difference —
+   archive criteria (producer+consumer+archive, all three files together) is unaffected by table
+   count. Neither model changes what "done" means.
+8. **Does v3 avoid creating another over-engineered schema?** Yes — that was the central finding
+   of the comparison: v2's split added a join to the two most common queries without a real
+   requirement forcing it, which is the definition of over-normalization the corrective
+   instruction's "Key Design Rule" warns against.
+
+---
+
+## Recommendation
+
+**Replace the v2 core model (`INSTRUMENT`/`POSITION`/`ACCOUNT_POSITION`) with the v3 model
+(`ACCOUNT`/`INVESTMENT`/`ACCOUNT_INVESTMENT`).** The v2 pass's supporting findings — the real
+`role` values, the `standingDecision`/`priceLevels` structure, the `thesis_breaker_state.json`
+and `instrument_price` additions, the resolved account-assignment finding in
+`fetch_broker_data.py` — all carry forward unchanged into this document; only the core
+three-vs-two-table shape changed. This is the current recommended design pending your approval;
+the v1→v2→v3 reasoning trail is in git history (see Revision History above), not a parallel set
+of files to keep in sync.
+
+## Risks
+
+- The `intelligence_event`/`instrument_repository.py` rename-and-repoint is real work, even
+  though small (2 dependent files) — not zero-cost, and touches already-live, tested code.
+- `investment.symbol` uniqueness assumes one row per ticker regardless of exchange — the existing
+  `instrument` table supports `UNIQUE(ticker, exchange, active_from)` for corporate-action
+  history (renames/relistings); v3's schema above simplifies this to `UNIQUE(symbol)` and does
+  not yet handle a ticker rename/relist scenario. Flagged, not resolved — worth a decision before
+  implementation if that's a real scenario for this portfolio (it hasn't come up in the real data
+  inspected so far).
+
+## Migration Implications
+
+Same real producer/consumer inventory as v2 (21 producers, ~33 consumers across
+`portfolio.json`/`target-portfolio.json`/`watchlist.json`), same archive rule, same
+`projection_version` first-implementation recommendation (still the smallest real producer
+count). The only change implementation needs to account for: every reference to `instrument_id`
+in already-built code (`event_repository.py`, `replay_ledger.py`, `models.py`,
+`instrument_repository.py`) needs to point at the renamed/merged `investment` table.
