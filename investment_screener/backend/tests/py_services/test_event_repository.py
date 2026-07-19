@@ -10,6 +10,8 @@ from intelligence.event_repository import (  # noqa: E402
     insert_event,
     list_active_events_for_ticker,
     search_fts,
+    get_latest_event_by_type,
+    get_latest_event_by_type_and_ticker,
 )
 
 
@@ -122,3 +124,57 @@ def test_list_active_events_for_ticker_filters_status_and_ticker(tmp_path):
 
     assert [r["event_id"] for r in results] == ["evt_2", "evt_1"]
     assert all(r["status"] == "ACTIVE" for r in results)
+
+
+def test_get_latest_event_by_type(tmp_path):
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    conn.execute("INSERT INTO instrument VALUES ('us-pltr', 'PLTR', 'NASDAQ', 'Palantir', '2026-07-18', NULL);")
+    conn.commit()
+    # Insert two REVIEW_DAILY events
+    insert_event(conn, {
+        "event_id": "evt_old", "event_sequence": 1, "instrument_id": "us-pltr",
+        "event_type": "REVIEW_DAILY", "effective_at": "2026-07-10", "ingested_at": "2026-07-10",
+        "status": "ACTIVE", "title": "Old Brief", "body_markdown": "Old", "content_hash": "h1",
+    })
+    insert_event(conn, {
+        "event_id": "evt_new", "event_sequence": 2, "instrument_id": "us-pltr",
+        "event_type": "REVIEW_DAILY", "effective_at": "2026-07-18", "ingested_at": "2026-07-18",
+        "status": "ACTIVE", "title": "New Brief", "body_markdown": "New", "content_hash": "h2",
+    })
+    insert_event(conn, {
+        "event_id": "evt_draft", "event_sequence": 3, "instrument_id": "us-pltr",
+        "event_type": "REVIEW_DAILY", "effective_at": "2026-07-20", "ingested_at": "2026-07-20",
+        "status": "DRAFT", "title": "Draft Brief", "body_markdown": "Draft", "content_hash": "h3",
+    })
+
+    result = get_latest_event_by_type(conn, "REVIEW_DAILY")
+    assert result is not None
+    assert result["event_id"] == "evt_new"
+
+
+def test_get_latest_event_by_type_and_ticker(tmp_path):
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    conn.execute("INSERT INTO instrument VALUES ('us-pltr', 'PLTR', 'NASDAQ', 'Palantir', '2026-07-18', NULL);")
+    conn.execute("INSERT INTO instrument VALUES ('us-nvda', 'NVDA', 'NASDAQ', 'Nvidia', '2026-07-18', NULL);")
+    conn.commit()
+    # Insert TECHNICAL_SWEEP events
+    insert_event(conn, {
+        "event_id": "evt_pltr_old", "event_sequence": 1, "instrument_id": "us-pltr",
+        "event_type": "TECHNICAL_SWEEP", "effective_at": "2026-07-10", "ingested_at": "2026-07-10",
+        "status": "ACTIVE", "title": "PLTR Old", "body_markdown": "PLTR Old", "content_hash": "h1",
+    })
+    insert_event(conn, {
+        "event_id": "evt_pltr_new", "event_sequence": 2, "instrument_id": "us-pltr",
+        "event_type": "TECHNICAL_SWEEP", "effective_at": "2026-07-18", "ingested_at": "2026-07-18",
+        "status": "ACTIVE", "title": "PLTR New", "body_markdown": "PLTR New", "content_hash": "h2",
+    })
+    insert_event(conn, {
+        "event_id": "evt_nvda", "event_sequence": 3, "instrument_id": "us-nvda",
+        "event_type": "TECHNICAL_SWEEP", "effective_at": "2026-07-19", "ingested_at": "2026-07-19",
+        "status": "ACTIVE", "title": "NVDA New", "body_markdown": "NVDA New", "content_hash": "h3",
+    })
+
+    result = get_latest_event_by_type_and_ticker(conn, "TECHNICAL_SWEEP", "PLTR")
+    assert result is not None
+    assert result["event_id"] == "evt_pltr_new"
+
