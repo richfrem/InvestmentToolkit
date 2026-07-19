@@ -211,14 +211,51 @@ The existing rule — only `py_services/intelligence/event_repository.py` may ru
 producer or consumer script gets its own `sqlite3.connect()` call against them, same discipline
 as the intelligence ledger.
 
-## What This Document Does Not Cover
+## Domain Retirement Plan
 
-`portfolio.json`, `target-portfolio.json`, `projections/*.json`, and `watchlist.json` — the
-`MIGRATE_TO_SQLITE_DOMAIN_TABLE` candidates with 20–70+ consumer files each — are explicitly out
-of scope here. Those need their own design pass once the smaller domains above are proven out
-end-to-end (data migrated, producers/consumers rewired, app actually depends on the new store).
+The rule going forward, stated explicitly so it can't quietly slide back into another
+accidental hybrid: **no domain is "migrated" because a table exists, a repository exists, or
+data was copied. It is migrated only when the producer writes SQLite, every real consumer reads
+SQLite, and the old JSON/JSONL file is moved to `ARCHIVE/` via `git mv`.** A domain stays at
+"Current: JSON" in the table below until all three of those are true — not until the SQLite
+side merely exists alongside it.
+
+| Domain | Current | Future | Retirement Trigger |
+|---|---|---|---|
+| `predictions.jsonl` | JSONL | `intelligence_event` (`PREDICTION_CLAIM`/`PREDICTION_GRADED`) | producer + all 7 real consumers query SQLite; file archived |
+| `orders_executed.jsonl` | JSONL | `order_execution` table | producer + both real consumers query SQLite; file archived |
+| `trade-log.json` | JSON list | `trade_log_entry` table | producer + all 4 real consumers query SQLite; file archived |
+| `cash_flows.json` | JSON | `cash_flow` + `cash_flow_baseline` tables | producer + all 3 real consumers query SQLite; file archived |
+| `observations.jsonl` / `research/archive/*.md` | JSONL + MD | `intelligence_event` (`RESEARCH_IMPORT`) — **data already migrated, retirement NOT yet met** | `docs.ts` and every real consumer must query SQLite live at request time — today they read static files generated from it once; that gap is the exact failure this whole correction is about |
+| `ta-sweep-results.json` | JSON snapshot | `intelligence_event` (`TECHNICAL_SWEEP`) — code wired, never exercised | real backfill of history, a real non-mocked test, then consumers query SQLite live |
+| `data/daily-briefs/*.json` | JSON per date | `intelligence_event` (`REVIEW_DAILY`) — code wired but **no real test exists** for this path | write the missing test, backfill the 10 historical files, consumers query SQLite live |
+| `portfolio.json` | JSON dict (broker mirror) | `holdings` table: one row per (`instrument_id`, `account`) with `shares`, `avg_price`, `last_synced_at` | full design pass + rewiring all 70+ real consumers — largest domain in the repo, not scheduled, but the target shape is now known, not TBD |
+| `target-portfolio.json` | JSON dict | `target_portfolio_entry` table: one row per `instrument_id` with `target_weight`, `standing_decision`, `pillar`, `updated_at` | full design pass + rewiring all 39 real consumers; the `standingDecision` anchor rule (CLAUDE.md #8) must survive the move unchanged |
+| `projections/*.json` | JSON version-array per ticker | `projection_version` table: one row per (`instrument_id`, `version`) with `fair_value`, `action`, `rationale`, `analyzed_at`, `research_report_pointer`, plus a `full_payload_json` for the less-frequently-queried scenario detail | full design pass + rewiring all 23 real consumers; this is where the `researchReport` pointer mechanism itself would need to change shape |
+| `watchlist.json` | JSON dict | `watchlist_entry` table: one row per `instrument_id` with `added_at`, `notes` | full design pass + rewiring 6 real consumers; small enough to fold into the `portfolio`/`target_portfolio` consolidation you raised earlier rather than build standalone |
+| `thesis_breaker_state.json` | JSON snapshot | `thesis_breaker_state` table: one row per `instrument_id` with breaker status, `generated_at` | low priority, 6 consumers, not scheduled |
+| `tradingview_alerts_actual.json` | JSON list (TV mirror) | stays JSON — `RETAIN_AS_EXTERNAL_CACHE` | none — TradingView is authoritative, this is a synced mirror, same reasoning as `portfolio.json`'s cache role even after `portfolio.json` itself migrates |
+| `account_policy.json` | JSON config | stays JSON — `RETAIN_AS_CONFIGURATION_JSON` | none — static config, never was operational data |
+
+None of the "Future" targets above with real column shapes are placeholders picked to look
+complete — they follow directly from each file's actual on-disk structure, checked this session
+(§ domain-by-domain sections above and the corrected persistence-domain migration plan). The
+ones still marked "not scheduled" are genuinely not designed in column-level detail yet — that
+would be a real design pass, not a one-line guess — but their target table shape is stated
+here so this document can't be used to quietly defer them forever without a stated destination.
+
+## What This Document Does Not Fully Cover
+
+Column-by-column design for `holdings`, `target_portfolio_entry`, `projection_version`, and
+`watchlist_entry` is sketched above at the level needed to prove a destination exists, not built
+out to migration-ready detail (index strategy, exact FK cascade behavior, how `pillars` /
+`globalSettings` / scenario-level DCF detail decompose). That detail is the next design pass for
+those four domains specifically, once the smaller ones in this document are proven out
+end-to-end.
 
 ## Next Step
 
 This is a design for review, not a build. Confirm the table shapes and the two-schema split
-above before any implementation starts.
+above before any implementation starts. When implementation does start, the Domain Retirement
+Plan table above is the acceptance checklist — a domain doesn't move to "done" until producer,
+consumer, and archival are all true, not when SQLite merely has the data.
