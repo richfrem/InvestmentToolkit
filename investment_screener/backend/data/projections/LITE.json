@@ -7,7 +7,7 @@
     "version": 3,
     "savedAt": "2026-05-02T18:45:00.000Z",
     "updatedAt": "2026-05-02T19:01:11.331Z",
-    "name": "AI Deep Dive — LITE — 2026-05-02",
+    "name": "AI Deep Dive \u2014 LITE \u2014 2026-05-02",
     "rationale": "Lumentum (LITE) has experienced a staggering 1444% 1-year surge, riding the wave of optical networking demand for AI data centers. While the $67.8B valuation prices in perfection (58x forward P/E), the fundamentals are rapidly improving, marked by a Piotroski F-Score of 7 and explosive analyst forward revenue estimates. The company is transitioning from a cyclical hardware supplier to a critical AI infrastructure monopoly. Weighted fair value of $917 indicates the current price of $949 is fully valued, making it a HOLD.",
     "snapshot": {
       "price": 949.93,
@@ -64,7 +64,7 @@
       "fairValue": 917,
       "action": "HOLD",
       "analyzedAt": "2026-05-02T18:45:00.000Z",
-      "researchReport": "LITE_2026-05-02.md"
+      "researchReport": "LITE.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -119,8 +119,8 @@
     "version": 1,
     "savedAt": "2026-05-02T19:55:00Z",
     "updatedAt": "2026-05-02T19:55:00Z",
-    "name": "AI Deep Dive — LITE — 2026-05-02",
-    "rationale": "Lumentum is a genuine AI infrastructure beneficiary — optical photonics components are the connective tissue of every GPU cluster — but at $949.93 the stock is priced for the bull scenario to occur with near-certainty. The analyst mean price target of $871.56 is already below the current price, and the stock is up 1,444% in one year. A first-principles DCF using the hypergrowth exception (Y1 +78%, Y2 +74% analyst consensus decelerated to a 46% 5-yr CAGR base) yields a probability-weighted fair value of $432.28, a 55% discount. Even the bull scenario PV ($991) barely exceeds current price. SELL: the good news is priced in and more.",
+    "name": "AI Deep Dive \u2014 LITE \u2014 2026-05-02",
+    "rationale": "Lumentum is a genuine AI infrastructure beneficiary \u2014 optical photonics components are the connective tissue of every GPU cluster \u2014 but at $949.93 the stock is priced for the bull scenario to occur with near-certainty. The analyst mean price target of $871.56 is already below the current price, and the stock is up 1,444% in one year. A first-principles DCF using the hypergrowth exception (Y1 +78%, Y2 +74% analyst consensus decelerated to a 46% 5-yr CAGR base) yields a probability-weighted fair value of $432.28, a 55% discount. Even the bull scenario PV ($991) barely exceeds current price. SELL: the good news is priced in and more.",
     "snapshot": {
       "price": 949.93,
       "currency": "USD",
@@ -143,7 +143,7 @@
         "exitPE": 18,
         "qualityMultiplier": 0.95,
         "shareChange": 2,
-        "rationale": "AI capex cycle peaks in 2026-2027 as hyperscalers reach saturation or pivot to next-generation interconnect architectures. Chinese photonics competitors (e.g. ZTE/HiSilicon optical, Accelink) erode ASP on commodity transceiver lines. Industrial Tech (lasers for EV/semiconductor) remains structurally weak. Revenue grows modestly to ~$3.9B by Y5 — well above trough but far below bull thesis. Net margin 8% reflects ongoing fixed-cost burden and pricing pressure. Exit PE 18 = Technology-Hardware median, appropriate if AI narrative deflates. Q=0.95 = competitive risk to key product lines.",
+        "rationale": "AI capex cycle peaks in 2026-2027 as hyperscalers reach saturation or pivot to next-generation interconnect architectures. Chinese photonics competitors (e.g. ZTE/HiSilicon optical, Accelink) erode ASP on commodity transceiver lines. Industrial Tech (lasers for EV/semiconductor) remains structurally weak. Revenue grows modestly to ~$3.9B by Y5 \u2014 well above trough but far below bull thesis. Net margin 8% reflects ongoing fixed-cost burden and pricing pressure. Exit PE 18 = Technology-Hardware median, appropriate if AI narrative deflates. Q=0.95 = competitive risk to key product lines.",
         "moatScore": 2,
         "managementScore": 3,
         "year5Revenue": 3925.6,
@@ -162,7 +162,7 @@
         "exitPE": 25,
         "qualityMultiplier": 1,
         "shareChange": 1,
-        "rationale": "AI datacenter buildout sustains 800G/1.6T optical transceiver demand through 2030. Lumentum maintains technology leadership in high-speed photonic components. Hypergrowth exception applied: Y1 analyst consensus +77.6%, Y2 +73.7%; derived 5-yr CAGR via deceleration path (Y3 +45%, Y4 +30%, Y5 +20%) gives CAGR 47.9% — using 46%. Y5 revenue ~$10.9B. Net margin 18% anchored to analyst FY2026 implied margin (~19%). Exit PE 25 = Technology-Semiconductors median. Q=1.0 = solid technology but no dominant moat proven yet at scale.",
+        "rationale": "AI datacenter buildout sustains 800G/1.6T optical transceiver demand through 2030. Lumentum maintains technology leadership in high-speed photonic components. Hypergrowth exception applied: Y1 analyst consensus +77.6%, Y2 +73.7%; derived 5-yr CAGR via deceleration path (Y3 +45%, Y4 +30%, Y5 +20%) gives CAGR 47.9% \u2014 using 46%. Y5 revenue ~$10.9B. Net margin 18% anchored to analyst FY2026 implied margin (~19%). Exit PE 25 = Technology-Semiconductors median. Q=1.0 = solid technology but no dominant moat proven yet at scale.",
         "moatScore": 3,
         "managementScore": 3,
         "year5Revenue": 10912.6,
@@ -181,7 +181,7 @@
         "exitPE": 32,
         "qualityMultiplier": 1.1,
         "shareChange": 0,
-        "rationale": "Catalyst: Lumentum becomes the dominant silicon photonics platform supplier for AI interconnect (800G→1.6T→3.2T upgrade cycles) AND Industrial Tech recovers fully. Hyperscalers certify LITE as preferred photonic component supplier for next-gen AI clusters. Y5 revenue ~$14.7B. Net margin 22% from best-in-class modular photonic manufacturing. Exit PE 32 = growth semiconductor premium. Q=1.1 justified: silicon photonics fabrication expertise + proprietary VCSEL arrays create genuine technology switching cost — hyperscalers requalify components every 2-3 years, creating lock-in.",
+        "rationale": "Catalyst: Lumentum becomes the dominant silicon photonics platform supplier for AI interconnect (800G\u21921.6T\u21923.2T upgrade cycles) AND Industrial Tech recovers fully. Hyperscalers certify LITE as preferred photonic component supplier for next-gen AI clusters. Y5 revenue ~$14.7B. Net margin 22% from best-in-class modular photonic manufacturing. Exit PE 32 = growth semiconductor premium. Q=1.1 justified: silicon photonics fabrication expertise + proprietary VCSEL arrays create genuine technology switching cost \u2014 hyperscalers requalify components every 2-3 years, creating lock-in.",
         "moatScore": 4,
         "managementScore": 4,
         "year5Revenue": 14717.2,
@@ -190,33 +190,33 @@
         "scenarioPrice": 991.12,
         "risks": [
           "Valuation re-rates downward even if bull revenue achieved, if AI multiple compression occurs",
-          "Management execution risk scaling from $1.6B to $14B in 5 years — integration and talent constraints"
+          "Management execution risk scaling from $1.6B to $14B in 5 years \u2014 integration and talent constraints"
         ]
       }
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "Lumentum is a legitimate AI infrastructure play — photonic components are essential to every 800G+ optical interconnect in every AI cluster being built today. The business is improving: Piotroski 7/9, revenue recovering from FY2024 trough, analysts projecting near-doubling of revenue in FY2026. However, at $949.93, the market has already priced in extraordinary success with near-certainty. The analyst mean target of $871.56 is below the current price, and even my bull scenario present value ($991) barely exceeds today's quote. The weighted fair value of $432.28 implies 55% downside. The critical data quality issue is that GAAP TTM margin is only 1.57% while FCF remains deeply negative — the reported 12% adjusted margin relies heavily on non-GAAP add-backs. The stock has run 1,444% in one year on the AI theme; any deceleration in hyperscaler capex or competitive pressure from Chinese optical suppliers would trigger severe multiple compression. SELL: good business, terrible entry point.",
+      "rationale": "Lumentum is a legitimate AI infrastructure play \u2014 photonic components are essential to every 800G+ optical interconnect in every AI cluster being built today. The business is improving: Piotroski 7/9, revenue recovering from FY2024 trough, analysts projecting near-doubling of revenue in FY2026. However, at $949.93, the market has already priced in extraordinary success with near-certainty. The analyst mean target of $871.56 is below the current price, and even my bull scenario present value ($991) barely exceeds today's quote. The weighted fair value of $432.28 implies 55% downside. The critical data quality issue is that GAAP TTM margin is only 1.57% while FCF remains deeply negative \u2014 the reported 12% adjusted margin relies heavily on non-GAAP add-backs. The stock has run 1,444% in one year on the AI theme; any deceleration in hyperscaler capex or competitive pressure from Chinese optical suppliers would trigger severe multiple compression. SELL: good business, terrible entry point.",
       "fairValue": 432.28,
       "action": "SELL",
       "analyzedAt": "2026-05-02T19:55:00Z",
-      "researchReport": "LITE_2026-05-02.md"
+      "researchReport": "LITE.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "Used metrics.shares_diluted = 71,400,000. shares_outstanding == shares_diluted (no multi-class discrepancy detected). Piotroski no_dilution=false confirms active dilution — modelled as +0-2%/yr by scenario.",
-      "marginAnchor": "4-yr avg: -8.6% (FY2022 +11.6%, FY2023 -7.4%, FY2024 -40.2%, TTM +1.57%) — distorted by FY2023 -$131M and FY2024 -$547M write-downs/goodwill impairments from Oclaro acquisition. Unusable as anchor per mean-reverting Rule. Used analyst-implied margin trajectory as forward anchor: FY2026 implied ~19.1% ($7.80 EPS ÷ $2.922B = $557M NI), FY2027 implied ~23.1%. Base margin 18% = slightly below FY2026 consensus, appropriate as 5-yr average across the ramp. Flagged: metrics.profit_margin=11.95% (adjusted/non-GAAP) vs GAAP TTM 1.57% — a 10.4pp gap requiring disclosure.",
-      "growthDerivation": "Y1 analyst avg +77.6% ($1.645B→$2.922B); Y2 analyst avg +73.7% ($2.922B→$5.074B). Both well above 40% → hypergrowth exception applies. Cannot use Y1/Y2 directly as 5-yr CAGR. Deceleration path: Y1+77.6%, Y2+73.7%, Y3+45%, Y4+30%, Y5+20% → Y5 revenue $11.48B. 5-yr CAGR = (11.48/1.645)^(1/5)-1 = 47.9%. Used 46% as base. Bear 19% (modest growth, AI cycle slows). Bull 55% (full AI dominance scenario).",
-      "sectorBenchmarkRow": "Technology — Semiconductors (closest to photonic component supplier in AI stack): conservative P/E 15, median P/E 25, growth P/E 40. Bear exitPE=18 (Technology-Hardware median, reflecting AI-narrative deflation). Base exitPE=25 = semiconductor median. Bull exitPE=32 = growth semiconductor premium, below the 40 growth ceiling — justified by Industrial Tech segment that dilutes pure-play AI multiple.",
+      "shareCountMethod": "Used metrics.shares_diluted = 71,400,000. shares_outstanding == shares_diluted (no multi-class discrepancy detected). Piotroski no_dilution=false confirms active dilution \u2014 modelled as +0-2%/yr by scenario.",
+      "marginAnchor": "4-yr avg: -8.6% (FY2022 +11.6%, FY2023 -7.4%, FY2024 -40.2%, TTM +1.57%) \u2014 distorted by FY2023 -$131M and FY2024 -$547M write-downs/goodwill impairments from Oclaro acquisition. Unusable as anchor per mean-reverting Rule. Used analyst-implied margin trajectory as forward anchor: FY2026 implied ~19.1% ($7.80 EPS \u00f7 $2.922B = $557M NI), FY2027 implied ~23.1%. Base margin 18% = slightly below FY2026 consensus, appropriate as 5-yr average across the ramp. Flagged: metrics.profit_margin=11.95% (adjusted/non-GAAP) vs GAAP TTM 1.57% \u2014 a 10.4pp gap requiring disclosure.",
+      "growthDerivation": "Y1 analyst avg +77.6% ($1.645B\u2192$2.922B); Y2 analyst avg +73.7% ($2.922B\u2192$5.074B). Both well above 40% \u2192 hypergrowth exception applies. Cannot use Y1/Y2 directly as 5-yr CAGR. Deceleration path: Y1+77.6%, Y2+73.7%, Y3+45%, Y4+30%, Y5+20% \u2192 Y5 revenue $11.48B. 5-yr CAGR = (11.48/1.645)^(1/5)-1 = 47.9%. Used 46% as base. Bear 19% (modest growth, AI cycle slows). Bull 55% (full AI dominance scenario).",
+      "sectorBenchmarkRow": "Technology \u2014 Semiconductors (closest to photonic component supplier in AI stack): conservative P/E 15, median P/E 25, growth P/E 40. Bear exitPE=18 (Technology-Hardware median, reflecting AI-narrative deflation). Base exitPE=25 = semiconductor median. Bull exitPE=32 = growth semiconductor premium, below the 40 growth ceiling \u2014 justified by Industrial Tech segment that dilutes pure-play AI multiple.",
       "dataQualityFlags": [
         "GAAP vs NON-GAAP MARGIN DIVERGENCE: metrics.profit_margin=11.95% (non-GAAP/adjusted) vs GAAP TTM net margin 1.57% ($25.9M net income / $1.645B revenue). 10.4pp gap. Model uses analyst-implied forward margins (~19% FY2026) as the primary anchor, noting GAAP will lag non-GAAP due to stock-based comp and amortisation.",
-        "FCF NEGATIVE DESPITE GAAP PROFITABILITY: TTM FCF -$104.7M vs net income +$25.9M. Divergence of $130.6M suggests elevated capex (capacity expansion for AI demand ramp) and/or working capital buildup. Free cash flow quality is poor at present — flagged as quality concern.",
-        "HISTORICAL MARGIN VOLATILITY — WRITE-DOWNS: FY2024 net margin -40.2% ($546.5M loss) from goodwill impairment and restructuring charges from Oclaro/Coherent acquisitions. FY2023 also loss year (-$131.6M). 4-yr avg margin -8.6% is distorted and excluded from margin anchor.",
+        "FCF NEGATIVE DESPITE GAAP PROFITABILITY: TTM FCF -$104.7M vs net income +$25.9M. Divergence of $130.6M suggests elevated capex (capacity expansion for AI demand ramp) and/or working capital buildup. Free cash flow quality is poor at present \u2014 flagged as quality concern.",
+        "HISTORICAL MARGIN VOLATILITY \u2014 WRITE-DOWNS: FY2024 net margin -40.2% ($546.5M loss) from goodwill impairment and restructuring charges from Oclaro/Coherent acquisitions. FY2023 also loss year (-$131.6M). 4-yr avg margin -8.6% is distorted and excluded from margin anchor.",
         "PRICE APPRECIATION EXTREME: Stock +1,444% in 1 year, +146% YTD. Current price $949.93 exceeds analyst mean target $871.56 by 9%. The stock is trading above even analyst consensus. Adversarial objectivity flag: do NOT anchor fair value to recent price momentum.",
-        "ANALYST REVENUE ESTIMATE DISPERSION: Y2 FY2027 range $3.697B–$6.636B (1.8x spread between low and high). Very wide dispersion reflects genuine uncertainty about AI buildout trajectory and LITE's market share capture."
+        "ANALYST REVENUE ESTIMATE DISPERSION: Y2 FY2027 range $3.697B\u2013$6.636B (1.8x spread between low and high). Very wide dispersion reflects genuine uncertainty about AI buildout trajectory and LITE's market share capture."
       ],
       "analystInputs": {
         "y1RevEstimate": 2921633700,
@@ -248,7 +248,7 @@
         -8.12,
         0.38
       ],
-      "confidenceBreakdown": "0.52/1.0 — Base: 1.0. +0.05 strong Piotroski 7/9 signalling operational improvement. +0.03 genuine AI tailwind with identified customer base (hyperscalers, Cisco, Arista). -0.15 extreme GAAP margin volatility (write-downs distorting all historical anchors). -0.10 FCF negative despite GAAP profitability — quality gap. -0.10 stock already trading above analyst mean target; priced-in risk dominant. -0.10 very wide analyst revenue dispersion (1.8x Y2 spread) signals high fundamental uncertainty. -0.06 no dilution=false, ongoing equity issuance. Final: 0.52."
+      "confidenceBreakdown": "0.52/1.0 \u2014 Base: 1.0. +0.05 strong Piotroski 7/9 signalling operational improvement. +0.03 genuine AI tailwind with identified customer base (hyperscalers, Cisco, Arista). -0.15 extreme GAAP margin volatility (write-downs distorting all historical anchors). -0.10 FCF negative despite GAAP profitability \u2014 quality gap. -0.10 stock already trading above analyst mean target; priced-in risk dominant. -0.10 very wide analyst revenue dispersion (1.8x Y2 spread) signals high fundamental uncertainty. -0.06 no dilution=false, ongoing equity issuance. Final: 0.52."
     }
   }
 ]

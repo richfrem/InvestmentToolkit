@@ -7,7 +7,7 @@
     "version": 1,
     "savedAt": "2026-05-02T19:16:32.961Z",
     "updatedAt": "2026-05-02T19:16:32.961Z",
-    "name": "AI Deep Dive — SYM — 2026-05-02",
+    "name": "AI Deep Dive \u2014 SYM \u2014 2026-05-02",
     "rationale": "Symbotic is pioneering warehouse automation with a massive $23B+ backlog and a captive customer in Walmart. The company is currently operating near breakeven with a -0.47% TTM profit margin but generated a massive $787M in free cash flow, pointing to structural cash generation capability ahead of accounting profitability. Assuming they execute their backlog and transition to a recurring software/services model, achieving 10%+ net margins is highly probable. Even with significant dilution factored in, our base case yields a fair value of $148.21, suggesting the stock is heavily undervalued at $58.89. BUY.",
     "snapshot": {
       "price": 58.89,
@@ -87,7 +87,7 @@
       "fairValue": 148.21,
       "action": "BUY",
       "analyzedAt": "2026-05-02T19:16:32.961Z",
-      "researchReport": "SYM_2026-05-02.md"
+      "researchReport": "SYM.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -97,7 +97,7 @@
       "shareCountMethod": "Used 105.8M (shares_diluted). API indicated 125.7M outstanding but 105.8M diluted. Used the diluted figure provided by the metrics endpoint.",
       "marginAnchor": "TTM -0.47% used. The company is operating near breakeven but generating massive free cash flow ($787M TTM). The base case target of 10% is a conservative long-term assumption as the business model shifts towards high-margin recurring software and services post-deployment.",
       "growthDerivation": "Analyst Y1 revenue implies 23.1% growth ($2.76B vs $2.24B TTM), Y2 implies 29.0%. Blended consensus ~26%. Base case growth set slightly more conservatively to 23% to account for execution risks on hardware deployment.",
-      "sectorBenchmarkRow": "Industrials — Machinery / Automation: median P/E 25. Used a premium 35x for base case given the AI/Robotics software component.",
+      "sectorBenchmarkRow": "Industrials \u2014 Machinery / Automation: median P/E 25. Used a premium 35x for base case given the AI/Robotics software component.",
       "dataQualityFlags": [
         "Company is currently unprofitable on a GAAP basis, making margin projections highly sensitive to future execution.",
         "Dual-class share structure and heavy insider ownership (Walmart, Cohen) can skew public float metrics."
@@ -129,7 +129,7 @@
         -0.08,
         -0.16
       ],
-      "confidenceBreakdown": "0.75/1.0 — -0.15 due to reliance on future margin expansion from a currently unprofitable base, -0.10 for high customer concentration risk (Walmart)."
+      "confidenceBreakdown": "0.75/1.0 \u2014 -0.15 due to reliance on future margin expansion from a currently unprofitable base, -0.10 for high customer concentration risk (Walmart)."
     }
   },
   {
@@ -140,8 +140,8 @@
     "version": 1,
     "savedAt": "2026-05-02T20:50:00Z",
     "updatedAt": "2026-05-02T20:50:00Z",
-    "name": "AI Deep Dive — SYM — 2026-05-02",
-    "rationale": "Symbotic (SYM) is a pre-profit warehouse automation company with a $23B+ backlog and Walmart as its captive anchor customer, currently generating $2.25B TTM revenue at a -0.75% net margin. Our base case (25% CAGR, in line with analyst consensus of 26.2%) yields a 5-year fair value of $52.27 — about 11% below the current $58.89 — but the probability-weighted fair value of $73.86 implies 25.4% upside, earning a BUY rating. The BUY thesis rests on operating leverage: as revenue scales from $2.2B to $6.9B (3x growth), fixed costs (R&D, SG&A) should shrink as a percentage of revenue, pushing the company from near-breakeven toward the 7% net margin assumed in the base case. The primary risk is that operating leverage fails to materialize — the bear case ($9.08 PV) reflects this scenario at -85% downside from current price.",
+    "name": "AI Deep Dive \u2014 SYM \u2014 2026-05-02",
+    "rationale": "Symbotic (SYM) is a pre-profit warehouse automation company with a $23B+ backlog and Walmart as its captive anchor customer, currently generating $2.25B TTM revenue at a -0.75% net margin. Our base case (25% CAGR, in line with analyst consensus of 26.2%) yields a 5-year fair value of $52.27 \u2014 about 11% below the current $58.89 \u2014 but the probability-weighted fair value of $73.86 implies 25.4% upside, earning a BUY rating. The BUY thesis rests on operating leverage: as revenue scales from $2.2B to $6.9B (3x growth), fixed costs (R&D, SG&A) should shrink as a percentage of revenue, pushing the company from near-breakeven toward the 7% net margin assumed in the base case. The primary risk is that operating leverage fails to materialize \u2014 the bear case ($9.08 PV) reflects this scenario at -85% downside from current price.",
     "snapshot": {
       "price": 58.89,
       "currency": "USD",
@@ -164,7 +164,7 @@
         "exitPE": 14,
         "qualityMultiplier": 0.9,
         "shareChange": 2,
-        "rationale": "Bear case references: the company has never generated positive net income across 4 years of data. Historical net margin trough: -13.3% (FY2022, early scale). Bear assumes slow execution leads to only 15% revenue CAGR (below analyst consensus of 26%), reflecting backlog execution delays, some contract renegotiations, and limited new customer wins post-Walmart. Net margin of 3% assumes gross margins improve modestly to ~21% but SG&A and R&D don't leverage sufficiently at $4.5B scale — just enough to break even on GAAP but not generate material earnings. Exit PE of 14x is the Industrials conservative benchmark — appropriate for a barely-profitable automation company with execution risk. Quality multiplier 0.85 reflects customer concentration and unproven margin delivery. Share change +2%/yr assumes continued dilutive equity compensation in a slow-growth scenario.",
+        "rationale": "Bear case references: the company has never generated positive net income across 4 years of data. Historical net margin trough: -13.3% (FY2022, early scale). Bear assumes slow execution leads to only 15% revenue CAGR (below analyst consensus of 26%), reflecting backlog execution delays, some contract renegotiations, and limited new customer wins post-Walmart. Net margin of 3% assumes gross margins improve modestly to ~21% but SG&A and R&D don't leverage sufficiently at $4.5B scale \u2014 just enough to break even on GAAP but not generate material earnings. Exit PE of 14x is the Industrials conservative benchmark \u2014 appropriate for a barely-profitable automation company with execution risk. Quality multiplier 0.85 reflects customer concentration and unproven margin delivery. Share change +2%/yr assumes continued dilutive equity compensation in a slow-growth scenario.",
         "moatScore": 2,
         "managementScore": 2,
         "year5Revenue": 4519.4,
@@ -184,7 +184,7 @@
         "exitPE": 20,
         "qualityMultiplier": 1,
         "shareChange": 1.5,
-        "rationale": "Base CAGR of 25% is within ±3pp of the analyst blended consensus (26.2%: Y1 +23.2%, Y2 +29.1%). Standard anchoring rules applied — no hypergrowth exception (Y1 < 40%). Year 5 revenue of $6.86B represents ~3x scale from TTM $2.25B, supported by the $23B+ backlog providing multi-year revenue visibility. Net margin of 7%: starting from TTM anchor of -0.75% with +7.75pp expansion justified by operating leverage at 3x revenue scale. At $6.86B revenue with gross margins improving to 23-25% (from 18.8% TTM as software/services mix grows), and SG&A declining from ~22% to ~15% of revenue, operating margin of 8-9% is achievable, supporting ~7% net margin. Exit PE of 20x: 11% above Industrials sector median (18x), justified by tech-forward automation business with recurring software/maintenance revenue. This deviates from sector median by under ±30% — permissible without extensive justification. Quality multiplier 1.0: backlog provides visibility, but customer concentration limits to average quality.",
+        "rationale": "Base CAGR of 25% is within \u00b13pp of the analyst blended consensus (26.2%: Y1 +23.2%, Y2 +29.1%). Standard anchoring rules applied \u2014 no hypergrowth exception (Y1 < 40%). Year 5 revenue of $6.86B represents ~3x scale from TTM $2.25B, supported by the $23B+ backlog providing multi-year revenue visibility. Net margin of 7%: starting from TTM anchor of -0.75% with +7.75pp expansion justified by operating leverage at 3x revenue scale. At $6.86B revenue with gross margins improving to 23-25% (from 18.8% TTM as software/services mix grows), and SG&A declining from ~22% to ~15% of revenue, operating margin of 8-9% is achievable, supporting ~7% net margin. Exit PE of 20x: 11% above Industrials sector median (18x), justified by tech-forward automation business with recurring software/maintenance revenue. This deviates from sector median by under \u00b130% \u2014 permissible without extensive justification. Quality multiplier 1.0: backlog provides visibility, but customer concentration limits to average quality.",
         "moatScore": 3,
         "managementScore": 3,
         "year5Revenue": 6857.1,
@@ -192,7 +192,7 @@
         "year5EPS": 4.21,
         "scenarioPrice": 52.27,
         "risks": [
-          "Revenue growth tracking analyst consensus but margins take longer to inflect — Year 5 margin settles at 5% not 7%, reducing fair value by ~$15/share",
+          "Revenue growth tracking analyst consensus but margins take longer to inflect \u2014 Year 5 margin settles at 5% not 7%, reducing fair value by ~$15/share",
           "Multiple compression: as growth normalizes from 25% toward 15% in years 3-5, market re-rates from 20x toward 15x industrial median"
         ]
       },
@@ -203,7 +203,7 @@
         "exitPE": 28,
         "qualityMultiplier": 1.1,
         "shareChange": 0.5,
-        "rationale": "Catalyst: Beyond Walmart, Symbotic wins 3-5 major additional enterprise retail customers (Target, Kroger, Dollar General, Costco, or international equivalents), each representing multi-billion dollar backlog additions. 33% CAGR from $2.25B yields Year 5 revenue of $9.35B. Net margin 13%: approaching top of Industrials range (12%), achievable if recurring software/maintenance revenue reaches 30-35% of total (at 50%+ gross margin vs hardware at 15%) — blended margin math supports 13%. Exit PE of 28x: above Industrials Growth P/E ceiling (24x), requiring explicit tech platform re-rating. Justified if Symbotic demonstrates network effects: data from 100+ deployed warehouse systems creates a proprietary AI training dataset that new competitors cannot replicate, enabling pricing power and compounding competitive advantage. Quality multiplier 1.1: structural moat from switching costs (once a warehouse is automated with Symbotic, replacement requires multi-year disruption and $50M+ redeployment cost) — specific, verifiable advantage.",
+        "rationale": "Catalyst: Beyond Walmart, Symbotic wins 3-5 major additional enterprise retail customers (Target, Kroger, Dollar General, Costco, or international equivalents), each representing multi-billion dollar backlog additions. 33% CAGR from $2.25B yields Year 5 revenue of $9.35B. Net margin 13%: approaching top of Industrials range (12%), achievable if recurring software/maintenance revenue reaches 30-35% of total (at 50%+ gross margin vs hardware at 15%) \u2014 blended margin math supports 13%. Exit PE of 28x: above Industrials Growth P/E ceiling (24x), requiring explicit tech platform re-rating. Justified if Symbotic demonstrates network effects: data from 100+ deployed warehouse systems creates a proprietary AI training dataset that new competitors cannot replicate, enabling pricing power and compounding competitive advantage. Quality multiplier 1.1: structural moat from switching costs (once a warehouse is automated with Symbotic, replacement requires multi-year disruption and $50M+ redeployment cost) \u2014 specific, verifiable advantage.",
         "moatScore": 4,
         "managementScore": 4,
         "year5Revenue": 9350.7,
@@ -211,34 +211,34 @@
         "year5EPS": 11.2,
         "scenarioPrice": 214.21,
         "risks": [
-          "Bull case requires 33% CAGR for 5 years — demands consistent new enterprise wins beyond Walmart; single large-retailer loss would significantly derate the scenario",
-          "28x exit P/E requires market to re-rate SYM as a tech platform, not an industrial machinery company — depends on software/recurring revenue reaching 30%+ of total"
+          "Bull case requires 33% CAGR for 5 years \u2014 demands consistent new enterprise wins beyond Walmart; single large-retailer loss would significantly derate the scenario",
+          "28x exit P/E requires market to re-rate SYM as a tech platform, not an industrial machinery company \u2014 depends on software/recurring revenue reaching 30%+ of total"
         ]
       }
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "## SYM Investment Thesis\n\n### Summary\nSymbotic (SYM) earns a speculative BUY at $58.89 — our probability-weighted DCF yields $73.86 (+25.4% upside). The thesis rests on operating leverage: a $23B+ backlog and captive Walmart relationship provide 10+ years of revenue visibility, and the 3x revenue scale from $2.25B to $6.86B (base case Year 5) should mathematically compress fixed-cost ratios toward profitability. However, this is a high-uncertainty call with a confidence score of only 0.58/1.0 — the company has never been profitable and the bear case ($9.08 PV) is catastrophic.\n\n### The Backlog Moat\nSymbotic's $23B+ backlog is the core investment thesis. At $2.25B TTM revenue, the backlog represents 10+ years of revenue at current execution pace. The key differentiator from typical industrial automation is the switching cost moat: once a Symbotic system is deployed in a warehouse, replacing it requires multi-year disruption, $50M+ in redeployment costs, and accepting significant supply chain risk. Walmart has already committed to system-wide deployment — as these systems go live, the recurring software, maintenance, and expansion contracts compound the revenue base.\n\n### Operating Leverage: The Make-or-Break Variable\nThe bear case ($9.08) and bull case ($214) are separated almost entirely by whether operating leverage materializes. Current gross margins of 18.8% are low for a technology company. At $6.86B revenue (base Year 5), if gross margins expand to 23-25% as software/services mix increases, and SG&A declines from ~22% to ~15% of revenue through scale, the company reaches ~7% net margin. This is the base case. The bull case (13% margin) requires recurring software reaching 30%+ of revenue with platform pricing power. The bear case (3% margin) assumes this leverage never comes.\n\n### Valuation Context\nAt 78.5x forward PE (on $0.75 FY2027 EPS), SYM is priced for growth execution. The analyst mean price target of $64.81 is conservative — our model at $73.86 suggests the market slightly undervalues the operating leverage optionality. The stock would be a STRONG BUY at $45-50 (base case territory) or if margin inflection evidence accelerates in quarterly results.\n\n### Key Risk\nThe company has never generated GAAP profit. Every year of losses requires additional equity financing, which dilutes existing shareholders. If the margin inflection timeline extends from Year 3 to Year 7, the current DCF assumptions break down entirely.",
+      "rationale": "## SYM Investment Thesis\n\n### Summary\nSymbotic (SYM) earns a speculative BUY at $58.89 \u2014 our probability-weighted DCF yields $73.86 (+25.4% upside). The thesis rests on operating leverage: a $23B+ backlog and captive Walmart relationship provide 10+ years of revenue visibility, and the 3x revenue scale from $2.25B to $6.86B (base case Year 5) should mathematically compress fixed-cost ratios toward profitability. However, this is a high-uncertainty call with a confidence score of only 0.58/1.0 \u2014 the company has never been profitable and the bear case ($9.08 PV) is catastrophic.\n\n### The Backlog Moat\nSymbotic's $23B+ backlog is the core investment thesis. At $2.25B TTM revenue, the backlog represents 10+ years of revenue at current execution pace. The key differentiator from typical industrial automation is the switching cost moat: once a Symbotic system is deployed in a warehouse, replacing it requires multi-year disruption, $50M+ in redeployment costs, and accepting significant supply chain risk. Walmart has already committed to system-wide deployment \u2014 as these systems go live, the recurring software, maintenance, and expansion contracts compound the revenue base.\n\n### Operating Leverage: The Make-or-Break Variable\nThe bear case ($9.08) and bull case ($214) are separated almost entirely by whether operating leverage materializes. Current gross margins of 18.8% are low for a technology company. At $6.86B revenue (base Year 5), if gross margins expand to 23-25% as software/services mix increases, and SG&A declines from ~22% to ~15% of revenue through scale, the company reaches ~7% net margin. This is the base case. The bull case (13% margin) requires recurring software reaching 30%+ of revenue with platform pricing power. The bear case (3% margin) assumes this leverage never comes.\n\n### Valuation Context\nAt 78.5x forward PE (on $0.75 FY2027 EPS), SYM is priced for growth execution. The analyst mean price target of $64.81 is conservative \u2014 our model at $73.86 suggests the market slightly undervalues the operating leverage optionality. The stock would be a STRONG BUY at $45-50 (base case territory) or if margin inflection evidence accelerates in quarterly results.\n\n### Key Risk\nThe company has never generated GAAP profit. Every year of losses requires additional equity financing, which dilutes existing shareholders. If the margin inflection timeline extends from Year 3 to Year 7, the current DCF assumptions break down entirely.",
       "fairValue": 73.86,
       "action": "BUY",
       "analyzedAt": "2026-05-02T20:50:00Z",
-      "researchReport": "SYM_2026-05-02.md"
+      "researchReport": "SYM.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "shares_diluted = 105,856,250 from API. Cross-check: FY2025 NI -$16.9M / EPS -$0.16 = 105.6M — consistent with API figure. Critical flag: market cap ($35.5B) / price ($58.89) = 602M total economic shares. Approximately 496M Class V units held by Warehouse Technologies LLC (Walmart subsidiary) are NOT counted in shares_diluted. EPS calculations (historical and analyst forecasts) appear to use Class A float only (105.9M). DCF uses Class A basis. NCI structure means 82% of economic equity held by Warehouse Technologies; EPS cross-check is consistent with Class A interpretation. Historical EPS/NI implies different share counts across years (FY2023: 64.6M, FY2024: 168.75M, FY2025: 105.6M) — share count has been changing as Class V units are exchanged.",
-      "marginAnchor": "Mean-reverting rule applied. Historical margins: FY2022 -13.3%, FY2023 -2.0%, FY2024 -0.75%, FY2025 -0.75%. Pattern: improving dramatically FY2022-FY2024 (trending upward) but stalled at -0.75% in FY2025. Not definitively trending — stall in FY2025 makes this mean-reverting at -0.75% TTM level. TTM -0.75% used as anchor. Base exit margin of +7.0% represents +7.75pp above TTM; justified by operating leverage at 3x revenue scale ($6.86B vs $2.25B). 4-year average: (-13.3 + -2.0 + -0.75 + -0.75) / 4 = -4.2% — unusable as base anchor because FY2022 reflects early-scale losses not representative of current business model. TTM anchor with forward-looking operating leverage analysis used instead.",
-      "growthDerivation": "Y1 FY2026 analyst consensus: $2.768B (+23.2% from TTM $2.247B). Y2 FY2027: $3.573B (+29.1% from FY2026). Blended consensus: (23.2% + 29.1%) / 2 = 26.15%. No hypergrowth exception (Y1 = 23.2% < 40% threshold). Standard Rule #7 anchoring applied: base CAGR = 25%, within ±3pp of 26.2% blended consensus. No justification required for this small deviation.",
-      "sectorBenchmarkRow": "Industrials — Specialty Industrial Machinery (Technology-enabled). P/E: Conservative 14, Median 18, Growth 24. Net margin: Bear trough 2%, typical 6-12%. Note: Symbotic has tech-enabled characteristics (AI, software, recurring revenue) justifying modestly above-median P/E. Base exitPE 20x is 11% above median (18x) — within ±30% permissible deviation. Bull exitPE 28x exceeds Growth P/E ceiling (24x) — justified by tech platform re-rating thesis (explicitly cited catalyst: proprietary AI data moat from 100+ deployed systems).",
+      "shareCountMethod": "shares_diluted = 105,856,250 from API. Cross-check: FY2025 NI -$16.9M / EPS -$0.16 = 105.6M \u2014 consistent with API figure. Critical flag: market cap ($35.5B) / price ($58.89) = 602M total economic shares. Approximately 496M Class V units held by Warehouse Technologies LLC (Walmart subsidiary) are NOT counted in shares_diluted. EPS calculations (historical and analyst forecasts) appear to use Class A float only (105.9M). DCF uses Class A basis. NCI structure means 82% of economic equity held by Warehouse Technologies; EPS cross-check is consistent with Class A interpretation. Historical EPS/NI implies different share counts across years (FY2023: 64.6M, FY2024: 168.75M, FY2025: 105.6M) \u2014 share count has been changing as Class V units are exchanged.",
+      "marginAnchor": "Mean-reverting rule applied. Historical margins: FY2022 -13.3%, FY2023 -2.0%, FY2024 -0.75%, FY2025 -0.75%. Pattern: improving dramatically FY2022-FY2024 (trending upward) but stalled at -0.75% in FY2025. Not definitively trending \u2014 stall in FY2025 makes this mean-reverting at -0.75% TTM level. TTM -0.75% used as anchor. Base exit margin of +7.0% represents +7.75pp above TTM; justified by operating leverage at 3x revenue scale ($6.86B vs $2.25B). 4-year average: (-13.3 + -2.0 + -0.75 + -0.75) / 4 = -4.2% \u2014 unusable as base anchor because FY2022 reflects early-scale losses not representative of current business model. TTM anchor with forward-looking operating leverage analysis used instead.",
+      "growthDerivation": "Y1 FY2026 analyst consensus: $2.768B (+23.2% from TTM $2.247B). Y2 FY2027: $3.573B (+29.1% from FY2026). Blended consensus: (23.2% + 29.1%) / 2 = 26.15%. No hypergrowth exception (Y1 = 23.2% < 40% threshold). Standard Rule #7 anchoring applied: base CAGR = 25%, within \u00b13pp of 26.2% blended consensus. No justification required for this small deviation.",
+      "sectorBenchmarkRow": "Industrials \u2014 Specialty Industrial Machinery (Technology-enabled). P/E: Conservative 14, Median 18, Growth 24. Net margin: Bear trough 2%, typical 6-12%. Note: Symbotic has tech-enabled characteristics (AI, software, recurring revenue) justifying modestly above-median P/E. Base exitPE 20x is 11% above median (18x) \u2014 within \u00b130% permissible deviation. Bull exitPE 28x exceeds Growth P/E ceiling (24x) \u2014 justified by tech platform re-rating thesis (explicitly cited catalyst: proprietary AI data moat from 100+ deployed systems).",
       "dataQualityFlags": [
-        "SHARE STRUCTURE COMPLEXITY: shares_diluted (105.9M) is Class A public float only; mktcap/price implies 602M total economic shares (496M Class V units held by Walmart/Warehouse Technologies LLC are NCI — not in diluted count). EPS figures are Class A allocated only. Estimated per-economic-share value = DCF fair value × (105.9M / 602M) × 602M / 105.9M = same as stated (DCF is internally consistent on Class A basis).",
-        "Company has never generated positive net income in 4 years of history — earnings-based DCF has inherent high uncertainty for pre-profit companies transitioning to profitability.",
+        "SHARE STRUCTURE COMPLEXITY: shares_diluted (105.9M) is Class A public float only; mktcap/price implies 602M total economic shares (496M Class V units held by Walmart/Warehouse Technologies LLC are NCI \u2014 not in diluted count). EPS figures are Class A allocated only. Estimated per-economic-share value = DCF fair value \u00d7 (105.9M / 602M) \u00d7 602M / 105.9M = same as stated (DCF is internally consistent on Class A basis).",
+        "Company has never generated positive net income in 4 years of history \u2014 earnings-based DCF has inherent high uncertainty for pre-profit companies transitioning to profitability.",
         "historical_revenue[0] = 0 (FY2021 data unavailable from API); 4 years of history only.",
         "Piotroski F-Score 4/9: ROA negative (no profits), leverage increasing, current ratio declining, shares diluting. Financial quality concerns limit confidence.",
-        "Historical EPS/NI share count inconsistency across years (FY2023: 64.6M implied, FY2024: 168.75M implied, FY2025: 105.6M) — reflects Class V unit exchanges changing the Class A count year-to-year."
+        "Historical EPS/NI share count inconsistency across years (FY2023: 64.6M implied, FY2024: 168.75M implied, FY2025: 105.6M) \u2014 reflects Class V unit exchanges changing the Class A count year-to-year."
       ],
       "analystInputs": {
         "y1RevEstimate": 2768165400,
@@ -273,13 +273,13 @@
         "priorPrice": 58.89,
         "priorFairValue": 148.21,
         "priorAction": "BUY",
-        "priceDelta": "0% (same-day analysis — no performance gap)",
-        "assumptionAudit": "Prior base exitPE=35x is nearly 2x the Industrials sector median (18x) with no explicit justification — the primary driver of inflated $148 fair value. Prior bull exitPE=45x exceeds even the Industrials Growth P/E ceiling (24x) with no tech re-rating thesis cited. Prior growthRates (15/23/29%) are reasonable and consistent with analyst consensus. Prior netMargins (5/10/15%) are within plausible range for Industrials at scale. Core issue: unjustified P/E expansion drove the inflated fair value. New analysis uses sector-benchmarked exitPE (14/20/28x) with explicit justification for any above-median multiple. Model quality: UNVALIDATED (Gemini 1.5 Pro). Also note: prior used same UUID as MU projection — UUID collision bug in prior model.",
+        "priceDelta": "0% (same-day analysis \u2014 no performance gap)",
+        "assumptionAudit": "Prior base exitPE=35x is nearly 2x the Industrials sector median (18x) with no explicit justification \u2014 the primary driver of inflated $148 fair value. Prior bull exitPE=45x exceeds even the Industrials Growth P/E ceiling (24x) with no tech re-rating thesis cited. Prior growthRates (15/23/29%) are reasonable and consistent with analyst consensus. Prior netMargins (5/10/15%) are within plausible range for Industrials at scale. Core issue: unjustified P/E expansion drove the inflated fair value. New analysis uses sector-benchmarked exitPE (14/20/28x) with explicit justification for any above-median multiple. Model quality: UNVALIDATED (Gemini 1.5 Pro). Also note: prior used same UUID as MU projection \u2014 UUID collision bug in prior model.",
         "modelQualityFlag": "UNVALIDATED",
-        "thesisOutcome": "Same-day analysis — no price performance data",
+        "thesisOutcome": "Same-day analysis \u2014 no price performance data",
         "fundamentalChanges": "Complete re-analysis using Claude Sonnet 4.6 with Industrials sector-benchmarked exit multiples (14-28x vs prior 25-45x). BUY conclusion preserved but fair value reduced from $148 to $74, reflecting more disciplined PE anchoring."
       },
-      "confidenceBreakdown": "0.58/1.0 — Base 1.0. -0.12 company has never been profitable — pre-profit DCF has high uncertainty; margin expansion thesis is unproven. -0.10 complex NCI/Class V share structure creates per-share valuation ambiguity. -0.08 Piotroski F-Score 4/9 — financial quality flags (ROA negative, leverage increasing, diluting). -0.07 only 4 years of history; limited data for confidence. -0.05 EPS cross-check inconsistency across years indicates changing share structure. Net: 0.58. Note: BUY thesis is high-uncertainty; dependent entirely on operating leverage materializing from backlog execution."
+      "confidenceBreakdown": "0.58/1.0 \u2014 Base 1.0. -0.12 company has never been profitable \u2014 pre-profit DCF has high uncertainty; margin expansion thesis is unproven. -0.10 complex NCI/Class V share structure creates per-share valuation ambiguity. -0.08 Piotroski F-Score 4/9 \u2014 financial quality flags (ROA negative, leverage increasing, diluting). -0.07 only 4 years of history; limited data for confidence. -0.05 EPS cross-check inconsistency across years indicates changing share structure. Net: 0.58. Note: BUY thesis is high-uncertainty; dependent entirely on operating leverage materializing from backlog execution."
     }
   }
 ]

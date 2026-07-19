@@ -79,7 +79,7 @@
       "fairValue": 347.78,
       "action": "ACCUMULATE",
       "analyzedAt": "2026-05-07T15:35:09Z",
-      "researchReport": "COHR_2026-05-02.md"
+      "researchReport": "COHR.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

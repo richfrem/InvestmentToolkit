@@ -79,7 +79,7 @@
       "fairValue": 8.54,
       "action": "SELL",
       "analyzedAt": "2026-05-04T15:09:22Z",
-      "researchReport": "IONQ_2026-05-04.md"
+      "researchReport": "IONQ.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

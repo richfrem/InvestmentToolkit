@@ -7,7 +7,7 @@
     "version": 6,
     "savedAt": "2026-07-02T17:30:00Z",
     "updatedAt": "2026-07-02T17:35:48.738Z",
-    "name": "AI Deep Dive — IREN (Adjusted) — 2026-07-02",
+    "name": "AI Deep Dive \u2014 IREN (Adjusted) \u2014 2026-07-02",
     "rationale": "Adjusted scenario to reflect execution-focused model. If the 38.4% dilution is a front-loading of capital to secure the 5GW+ pipeline and Blackwell deliveries, and ex-OCI/ex-Google hires successfully pivot IREN to direct enterprise AI Cloud offerings, the base/bull CAGR (42%/60%) and margins (18%/28%) are reinstated. The resulting weighted fair value is $32.19 vs $38.27 current price. HOLD (-15.9%).",
     "snapshot": {
       "price": 38.265,
@@ -58,7 +58,7 @@
       "fairValue": 32.19,
       "action": "HOLD",
       "analyzedAt": "2026-07-02T17:30:00Z",
-      "researchReport": "IREN_2026-07-02.md"
+      "researchReport": "IREN.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -68,7 +68,7 @@
       "shareCountMethod": "shares_outstanding (basic 357.38M used to reflect actual capital structure)",
       "marginAnchor": "TTM 20.88%. Reinstated through-cycle base/bull margins (18%/28%) to reflect ex-OCI productized software cloud margins.",
       "growthDerivation": "Restored 42% base and 60% bull CAGR assuming uncontracted GW-scale capacity is front-running massive hyperscaler leasing contracts.",
-      "sectorBenchmarkRow": "Technology — Hardware / Infrastructure (exit PE 12x/24x/28x adjusted upward for OCI/Google leadership addition).",
+      "sectorBenchmarkRow": "Technology \u2014 Hardware / Infrastructure (exit PE 12x/24x/28x adjusted upward for OCI/Google leadership addition).",
       "dataQualityFlags": [
         "INFO: Adjusted model to account for user contrarian thesis and execution hires.",
         "WARNING: 38.4% share count expansion is confirmed in basic outstanding.",
@@ -113,7 +113,7 @@
         "thesisOutcome": "Missed due to capital expansion dilution.",
         "fundamentalChanges": "Shares outstanding rose from 258.2M to 357.38M. Hired ex-OCI and ex-Google execs."
       },
-      "confidenceBreakdown": "0.60/1.0 — Base: 1.0. -0.15 cyclicality, -0.15 dilution, -0.10 governance, +0.05 executive hires execution de-risking."
+      "confidenceBreakdown": "0.60/1.0 \u2014 Base: 1.0. -0.15 cyclicality, -0.15 dilution, -0.10 governance, +0.05 executive hires execution de-risking."
     }
   }
 ]
