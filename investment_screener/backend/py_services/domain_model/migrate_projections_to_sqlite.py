@@ -25,15 +25,28 @@ INTC, IONQ, plus mid-range files FOTO, IBIT, WQTM, APLD, AAPL) found:
   **both** a top-level `fairValue`/`action` and a nested `aiThesis.fairValue`/`action` —
   a third shape not covered by the task brief's two named shapes. In one of these
   (`IONQ.json`) the two `fairValue` values actively disagree (10.24 top-level vs. 8.54
-  nested; `action` agrees as `SELL` in both). Since the overwhelming majority of real
-  entries (130/132) use the nested shape exclusively, and both "both-shape" entries are
-  old (`version: 1`, earliest analyzed dates in the corpus), the nested `aiThesis` fields
-  are treated as authoritative whenever `aiThesis` is present — even when legacy
-  top-level fields also exist and disagree with it. This is proven by
-  `test_parse_projection_entry_prefers_ai_thesis_when_both_shapes_present` in the test
-  file, added before this precedence rule was implemented.
+  nested; `action` agrees as `SELL` in both).
+
+  Precedence is **timestamp-driven, not a blanket "aiThesis wins" rule**. Each shape's
+  write path stamps its own real timestamp (`apply_catalyst.py` `main()`): writing the
+  top-level fields sets `entry["updatedAt"]`; writing the nested fields sets
+  `aiThesis["analyzedAt"]`. `parse_projection_entry` compares the two and prefers
+  whichever was genuinely written more recently. For IONQ.json, `updatedAt`
+  (2026-05-13T15:02:10Z) is later than `aiThesis.analyzedAt` (2026-05-04T15:09:22Z), and
+  `catalystUpdates[0].thesisImpact` literally documents the transition "FV
+  $8.54->$10.24. Action: SELL->SELL." — i.e. the top-level `10.24` is the newer,
+  catalyst-corrected value and the earlier `aiThesis`-wins-always rule would have
+  migrated the stale pre-catalyst `8.54` into `projection_version.fair_value`. QBTS.json's
+  two shapes already agree, so precedence doesn't affect it either way. When one or both
+  timestamps are missing/unparseable, the code falls back to preferring `aiThesis` (the
+  only real conflicting-shape pair this default affects both had `aiThesis` present).
+  Proven by `test_parse_projection_entry_prefers_top_level_when_updated_at_is_newer`,
+  `test_parse_projection_entry_prefers_ai_thesis_when_analyzed_at_is_newer`, and
+  `test_parse_projection_entry_falls_back_to_ai_thesis_when_timestamps_missing` in the
+  test file.
 """
 
+import datetime
 import json
 import sqlite3
 from pathlib import Path
@@ -45,6 +58,17 @@ from domain_model.projection_repository import (
 )
 
 
+def _parse_iso8601(value: object) -> "datetime.datetime | None":
+    """Parse an ISO8601 timestamp string (e.g. `2026-05-04T15:09:22Z`) into a comparable
+    `datetime`, or `None` if `value` is missing/not a string/unparseable."""
+    if not isinstance(value, str):
+        return None
+    try:
+        return datetime.datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
 def parse_projection_entry(entry: dict) -> dict:
     """Normalize one `projections/{TICKER}.json` array-entry into the flat kwargs
     `save_projection_version`/`add_projection_scenario` expect.
@@ -53,15 +77,36 @@ def parse_projection_entry(entry: dict) -> dict:
     this):
       1. Legacy top-level: `fairValue`/`action` at the entry's top level, no `aiThesis`.
       2. Current nested: `aiThesis.fairValue`/`aiThesis.action` (the common case).
-      3. Both present (2/132 real entries): `aiThesis` wins, even if the legacy
-         top-level fields disagree with it.
+      3. Both present (2/132 real entries): each shape carries its own real write
+         timestamp (`entry["updatedAt"]` for top-level writes, `aiThesis["analyzedAt"]`
+         for nested writes — see `apply_catalyst.py` `main()`), so whichever timestamp is
+         genuinely more recent wins. IONQ.json proves this can go either way: its
+         top-level `fairValue=10.24`/`updatedAt=2026-05-13...` is the newer,
+         catalyst-corrected value over the stale `aiThesis.fairValue=8.54` from
+         `analyzedAt=2026-05-04...` (see `catalystUpdates[0].thesisImpact`: "FV
+         $8.54->$10.24"). If either timestamp is missing/unparseable, fall back to
+         "aiThesis wins" — the only real conflicting-shape pair this affects (2/132
+         entries) both had aiThesis present, so that remains the safer default when a
+         genuine comparison isn't possible.
     """
     ai_thesis = entry.get("aiThesis")
-    has_ai_thesis = isinstance(ai_thesis, dict) and (
-        "fairValue" in ai_thesis or "action" in ai_thesis
-    )
+    ai_thesis = ai_thesis if isinstance(ai_thesis, dict) else {}
+    has_ai_thesis = "fairValue" in ai_thesis or "action" in ai_thesis
+    has_top_level = "fairValue" in entry or "action" in entry
 
-    if has_ai_thesis:
+    if has_ai_thesis and has_top_level:
+        updated_at = _parse_iso8601(entry.get("updatedAt"))
+        analyzed_at_ts = _parse_iso8601(ai_thesis.get("analyzedAt"))
+        prefer_top_level = (
+            updated_at is not None
+            and analyzed_at_ts is not None
+            and updated_at > analyzed_at_ts
+        )
+        use_ai_thesis = not prefer_top_level
+    else:
+        use_ai_thesis = has_ai_thesis
+
+    if use_ai_thesis:
         fair_value = ai_thesis.get("fairValue")
         action = ai_thesis.get("action")
         analyzed_at = ai_thesis.get("analyzedAt")
@@ -159,8 +204,10 @@ def migrate_ticker_file(conn: sqlite3.Connection, ticker: str, entries: list[dic
                 )
                 result["scenarios_migrated"] += 1
         except Exception as exc:  # noqa: BLE001 - a real per-entry error must be reported
+            entry_id = entry.get("id") if isinstance(entry, dict) else None
+            entry_version = entry.get("version") if isinstance(entry, dict) else None
             result["errors"].append(
-                f"{ticker} entry id={entry.get('id')!r} version={entry.get('version')!r}: {exc}"
+                f"{ticker} entry id={entry_id!r} version={entry_version!r}: {exc}"
             )
 
     return result
@@ -201,17 +248,22 @@ def run_dry_run(projections_dir: Path) -> dict:
         entries = data if isinstance(data, list) else [data]
 
         for entry in entries:
-            ai_thesis = entry.get("aiThesis")
-            has_ai_thesis = isinstance(ai_thesis, dict) and (
-                "fairValue" in ai_thesis or "action" in ai_thesis
-            )
-            has_top_level = "fairValue" in entry or "action" in entry
-            if has_top_level and has_ai_thesis:
-                report["both_shapes_count"] += 1
-            elif has_top_level and not has_ai_thesis:
-                report["legacy_shape_count"] += 1
-            if not entry.get("scenarios"):
-                report["missing_scenarios_count"] += 1
+            try:
+                ai_thesis = entry.get("aiThesis")
+                has_ai_thesis = isinstance(ai_thesis, dict) and (
+                    "fairValue" in ai_thesis or "action" in ai_thesis
+                )
+                has_top_level = "fairValue" in entry or "action" in entry
+                if has_top_level and has_ai_thesis:
+                    report["both_shapes_count"] += 1
+                elif has_top_level and not has_ai_thesis:
+                    report["legacy_shape_count"] += 1
+                if not entry.get("scenarios"):
+                    report["missing_scenarios_count"] += 1
+            except Exception as exc:  # noqa: BLE001 - a real per-file error must be reported
+                report["file_errors"].append(
+                    f"{path.name}: malformed entry in shape tally: {exc}"
+                )
 
         result = migrate_ticker_file(conn, ticker, entries)
         report["total_versions"] += result["versions_migrated"]
