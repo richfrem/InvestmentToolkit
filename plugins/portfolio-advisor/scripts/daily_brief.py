@@ -600,6 +600,39 @@ def run(
     with open(snap, "w") as f:
         json.dump(brief, f, indent=2)
 
+    # ── 7a. Dual-write to intelligence ledger ────────────────────────────────
+    try:
+        from intelligence.event_store import append_event, _default_jsonl_path
+        from intelligence.replay_ledger import replay_events_to_db
+        from intelligence.db_client import initialize_db
+
+        # Testing guardrail
+        if not ("pytest" in sys.modules and db_path is None):
+            resolved_jsonl_path = _default_jsonl_path()
+            resolved_db_path = db_path or str(REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite")
+
+            today_str = date.today().isoformat()
+            append_event(
+                str(resolved_jsonl_path),
+                event_type="REVIEW_DAILY",
+                effective_at=today_str,
+                status="ACTIVE",
+                title=f"Daily Brief for {today_str}",
+                body_markdown=f"Generated daily brief summary metrics.",
+                ticker=None,
+                source_id="daily_brief",
+                payload=brief,
+                idempotency_key=f"daily-brief-{today_str}",
+            )
+
+            conn = initialize_db(resolved_db_path)
+            try:
+                replay_events_to_db(str(resolved_jsonl_path), conn)
+            finally:
+                conn.close()
+    except Exception as exc:
+        print(f"  Failed writing REVIEW_DAILY to database: {exc}", file=sys.stderr)
+
     return brief
 
 
