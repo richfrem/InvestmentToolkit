@@ -7,8 +7,8 @@
     "version": 1,
     "savedAt": "2026-05-04T15:09:46Z",
     "updatedAt": "2026-05-04T15:09:46Z",
-    "name": "AI Deep Dive — QBTS — 2026-05-04",
-    "rationale": "D-Wave Quantum (QBTS) at $21.60 trades at ~325x TTM revenue of $24.6M and $8.0B market cap. D-Wave is fundamentally different from IONQ and RGTI — it uses quantum annealing rather than gate-based quantum computing. This limits its addressable market to optimization problems (logistics, scheduling, molecular simulation) but enables real commercial applications today. The standout metric is an 82.6% gross margin — the highest in the sector — suggesting premium pricing power in its niche. However, revenue growth decelerated to 19% after flat years ($8.8M→$8.8M→$24.6M), and net losses of -$355M on $24.6M revenue reflect extreme R&D intensity. The DCF model (FV $0.90) yields -96% implied downside. The investment case is narrow: D-Wave must prove that quantum annealing is superior to classical ML for a broad enough optimization market to justify its $8B valuation.",
+    "name": "AI Deep Dive \u2014 QBTS \u2014 2026-05-04",
+    "rationale": "D-Wave Quantum (QBTS) at $21.60 trades at ~325x TTM revenue of $24.6M and $8.0B market cap. D-Wave is fundamentally different from IONQ and RGTI \u2014 it uses quantum annealing rather than gate-based quantum computing. This limits its addressable market to optimization problems (logistics, scheduling, molecular simulation) but enables real commercial applications today. The standout metric is an 82.6% gross margin \u2014 the highest in the sector \u2014 suggesting premium pricing power in its niche. However, revenue growth decelerated to 19% after flat years ($8.8M\u2192$8.8M\u2192$24.6M), and net losses of -$355M on $24.6M revenue reflect extreme R&D intensity. The DCF model (FV $0.90) yields -96% implied downside. The investment case is narrow: D-Wave must prove that quantum annealing is superior to classical ML for a broad enough optimization market to justify its $8B valuation.",
     "snapshot": {
       "price": 21.6,
       "currency": "USD",
@@ -31,7 +31,7 @@
         "exitPE": 10,
         "qualityMultiplier": 0.75,
         "shareChange": 5,
-        "rationale": "Bear: Classical ML and simulated annealing improvements close the gap on D-Wave's optimization advantage. Revenue growth stalls at 10% CAGR as enterprises opt for free/cheap classical alternatives. Net losses remain extreme (-40%) as R&D and hardware costs dwarf revenue. Heavy dilution required for survival. QM 0.75: quantum annealing is a limited niche — cannot address the full QC market, and classical alternatives are improving fast.",
+        "rationale": "Bear: Classical ML and simulated annealing improvements close the gap on D-Wave's optimization advantage. Revenue growth stalls at 10% CAGR as enterprises opt for free/cheap classical alternatives. Net losses remain extreme (-40%) as R&D and hardware costs dwarf revenue. Heavy dilution required for survival. QM 0.75: quantum annealing is a limited niche \u2014 cannot address the full QC market, and classical alternatives are improving fast.",
         "year5Revenue": 39.6,
         "year5NetIncome": 0,
         "year5EPS": 0,
@@ -63,7 +63,7 @@
         "exitPE": 55,
         "qualityMultiplier": 1.05,
         "shareChange": 1,
-        "rationale": "Bull: Quantum annealing proves decisive for a broad class of NP-hard optimization problems — pharma drug discovery, financial portfolio optimization, supply chain. D-Wave becomes the de facto optimization infrastructure for enterprises that cannot wait for gate-based QC. Revenue scales to ~$270M by year 5 with 18% net margin from SaaS-like delivery. QM 1.05: proprietary annealing architecture has no direct quantum-native competitor in its niche. Catalyst: Landmark pharma or logistics optimization proof-of-value with quantified ROI.",
+        "rationale": "Bull: Quantum annealing proves decisive for a broad class of NP-hard optimization problems \u2014 pharma drug discovery, financial portfolio optimization, supply chain. D-Wave becomes the de facto optimization infrastructure for enterprises that cannot wait for gate-based QC. Revenue scales to ~$270M by year 5 with 18% net margin from SaaS-like delivery. QM 1.05: proprietary annealing architecture has no direct quantum-native competitor in its niche. Catalyst: Landmark pharma or logistics optimization proof-of-value with quantified ROI.",
         "year5Revenue": 300.7,
         "year5NetIncome": 54.1,
         "year5EPS": 0.14,
@@ -75,11 +75,11 @@
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "D-Wave (QBTS) at $21.60 vs DCF FV $0.90 implies -96% downside on a 5-year model. The standout positive is 82.6% gross margin — the best in sector — suggesting premium pricing in its optimization niche. But $24.6M revenue growing 19% cannot justify $8B market cap. The technology risk is distinct: quantum annealing cannot solve all QC problems (gate-based is the general solution), and classical ML is improving fast on the same optimization problems D-Wave targets. Of the three quantum names (RGTI/IONQ/QBTS), QBTS has the worst revenue scale and most limited technology addressable market, partially offset by the strongest gross margin profile. The investment case requires the optimization-as-a-service market becoming large enough — and classical alternatives failing to compete — which is the lowest-probability bull case of the three.",
+      "rationale": "D-Wave (QBTS) at $21.60 vs DCF FV $0.90 implies -96% downside on a 5-year model. The standout positive is 82.6% gross margin \u2014 the best in sector \u2014 suggesting premium pricing in its optimization niche. But $24.6M revenue growing 19% cannot justify $8B market cap. The technology risk is distinct: quantum annealing cannot solve all QC problems (gate-based is the general solution), and classical ML is improving fast on the same optimization problems D-Wave targets. Of the three quantum names (RGTI/IONQ/QBTS), QBTS has the worst revenue scale and most limited technology addressable market, partially offset by the strongest gross margin profile. The investment case requires the optimization-as-a-service market becoming large enough \u2014 and classical alternatives failing to compete \u2014 which is the lowest-probability bull case of the three.",
       "fairValue": 0.9,
       "action": "SELL",
       "analyzedAt": "2026-05-04T15:09:46Z",
-      "researchReport": "QBTS_2026-05-04.md"
+      "researchReport": "QBTS.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -87,14 +87,14 @@
     },
     "analyticsLog": {
       "shareCountMethod": "shares_outstanding 367.3M used directly. shares_diluted 367.3M (match). No discrepancy.",
-      "marginAnchor": "Gross margin TTM 82.6% (excellent, improving 59%→53%→63%→82.6%). Net margin TTM ~-1444% (extreme losses). Bear margin 0 per calculator constraint. Base 8% / Bull 18% model the path from stellar gross margins to operating leverage as opex scales slower than revenue.",
-      "growthDerivation": "Historical revenue: $7.2M→$8.8M→$8.8M→$24.6M. Flat 2 years then 2.8x jump. Bear 10% (annealing loses to classical). Base 35% (niche optimization market develops). Bull 65% (broad NP-hard problem dominance). No analyst estimates available.",
-      "sectorBenchmarkRow": "Technology — Software (SaaS): conservative P/E 20, median P/E 30, growth 50+. Applied SaaS benchmarks given 82.6% gross margin profile despite hardware components.",
+      "marginAnchor": "Gross margin TTM 82.6% (excellent, improving 59%\u219253%\u219263%\u219282.6%). Net margin TTM ~-1444% (extreme losses). Bear margin 0 per calculator constraint. Base 8% / Bull 18% model the path from stellar gross margins to operating leverage as opex scales slower than revenue.",
+      "growthDerivation": "Historical revenue: $7.2M\u2192$8.8M\u2192$8.8M\u2192$24.6M. Flat 2 years then 2.8x jump. Bear 10% (annealing loses to classical). Base 35% (niche optimization market develops). Bull 65% (broad NP-hard problem dominance). No analyst estimates available.",
+      "sectorBenchmarkRow": "Technology \u2014 Software (SaaS): conservative P/E 20, median P/E 30, growth 50+. Applied SaaS benchmarks given 82.6% gross margin profile despite hardware components.",
       "dataQualityFlags": [
-        "last_actual_ps $325.42 appears to be P/S ratio not price — field ignored",
-        "Revenue growth 19.2% masks 2-year flat period ($8.8M FY22→FY23) followed by 2.8x jump — watch for one-time factors in the jump year",
-        "Net loss -$355M vs revenue $24.6M = -1444% margin — extreme. Losses accelerating faster than revenue.",
-        "No analyst estimates available — all growth assumptions derived from historical trajectory"
+        "last_actual_ps $325.42 appears to be P/S ratio not price \u2014 field ignored",
+        "Revenue growth 19.2% masks 2-year flat period ($8.8M FY22\u2192FY23) followed by 2.8x jump \u2014 watch for one-time factors in the jump year",
+        "Net loss -$355M vs revenue $24.6M = -1444% margin \u2014 extreme. Losses accelerating faster than revenue.",
+        "No analyst estimates available \u2014 all growth assumptions derived from historical trajectory"
       ],
       "analystInputs": {
         "y1RevEstimate": null,
@@ -132,13 +132,13 @@
         "priorPrice": null,
         "priorFairValue": null,
         "priorAction": "N/A",
-        "priceDelta": "N/A — first analysis",
-        "assumptionAudit": "N/A — first analysis",
+        "priceDelta": "N/A \u2014 first analysis",
+        "assumptionAudit": "N/A \u2014 first analysis",
         "modelQualityFlag": "N/A",
-        "thesisOutcome": "N/A — first analysis",
-        "fundamentalChanges": "First analysis — no prior projection exists"
+        "thesisOutcome": "N/A \u2014 first analysis",
+        "fundamentalChanges": "First analysis \u2014 no prior projection exists"
       },
-      "confidenceBreakdown": "0.48 — Base 1.0. -0.15 no analyst estimates. -0.12 revenue flat 2 years before recent jump (unclear sustainability). -0.10 quantum annealing niche limits TAM vs gate-based QC. -0.10 DCF materially understates optionality. -0.05 extreme loss acceleration."
+      "confidenceBreakdown": "0.48 \u2014 Base 1.0. -0.15 no analyst estimates. -0.12 revenue flat 2 years before recent jump (unclear sustainability). -0.10 quantum annealing niche limits TAM vs gate-based QC. -0.10 DCF materially understates optionality. -0.05 extreme loss acceleration."
     },
     "fairValue": 0.9,
     "action": "SELL"

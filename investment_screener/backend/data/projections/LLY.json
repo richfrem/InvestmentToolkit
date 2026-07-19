@@ -7,7 +7,7 @@
     "version": 1,
     "savedAt": "2026-07-05T15:30:00Z",
     "updatedAt": "2026-07-05T15:30:00Z",
-    "name": "AI Deep Dive — LLY — 2026-07-05",
+    "name": "AI Deep Dive \u2014 LLY \u2014 2026-07-05",
     "rationale": "Eli Lilly (LLY) trades at $1213.91 against a probability-weighted fair value of $1206.93, representing a -0.6% downside and a HOLD action. The company is a clear global leader in the metabolic obesity and diabetes space, powered by its Mounjaro/Zepbound GLP-1 franchise, alongside a growing Alzheimer's franchise (Donanemab). While LLY possesses strong structural moats including scale, brand, patents, and manufacturing complexity, the stock's current multiple of 47.5x P/E already reflects this premium, pricing in a 21.3% implied growth rate. Under our base case scenario, LLY sustains a 20% revenue CAGR and 35% net margin over the next 5 years, yielding a present value of $1148.27.",
     "snapshot": {
       "price": 1213.91,
@@ -88,11 +88,11 @@
     },
     "aiThesis": {
       "model": "Gemini 3.5 Flash",
-      "rationale": "## LLY Investment Thesis\n\n### Summary\nEli Lilly (LLY) is the premier metabolic disease pure play, possessing a dominant duopoly position alongside Novo Nordisk. With a massive demand tailwind for Mounjaro/Zepbound and a pipeline extending into Alzheimer's, LLY is a high-conviction compounder. However, at $1213.91, the stock trades in line with our probability-weighted fair value of $1206.93, indicating no margin of safety and justifying a HOLD.\n\n### MOAT Assessment\nEli Lilly has multiple structural moats: (1) Scaling manufacturing complexity — sterile fill-finish capacity for auto-injectors forms a substantial high-capex barrier to entry. (2) Patent portfolio and brand loyalty. (3) Switching costs for chronic metabolic therapies.\n\n### Financial Quality\nLLY generates best-in-class profitability, with TTM margins reaching 35.0% and strong return on capital. The balance sheet is healthy, supporting massive capacity expansion capex.",
+      "rationale": "## LLY Investment Thesis\n\n### Summary\nEli Lilly (LLY) is the premier metabolic disease pure play, possessing a dominant duopoly position alongside Novo Nordisk. With a massive demand tailwind for Mounjaro/Zepbound and a pipeline extending into Alzheimer's, LLY is a high-conviction compounder. However, at $1213.91, the stock trades in line with our probability-weighted fair value of $1206.93, indicating no margin of safety and justifying a HOLD.\n\n### MOAT Assessment\nEli Lilly has multiple structural moats: (1) Scaling manufacturing complexity \u2014 sterile fill-finish capacity for auto-injectors forms a substantial high-capex barrier to entry. (2) Patent portfolio and brand loyalty. (3) Switching costs for chronic metabolic therapies.\n\n### Financial Quality\nLLY generates best-in-class profitability, with TTM margins reaching 35.0% and strong return on capital. The balance sheet is healthy, supporting massive capacity expansion capex.",
       "fairValue": 1206.93,
       "action": "HOLD",
       "analyzedAt": "2026-07-05T15:30:00Z",
-      "researchReport": "LLY_2026-07-05.md"
+      "researchReport": "LLY.summary.md"
     },
     "globalSettings": {
       "discountRate": 7,
@@ -102,7 +102,7 @@
       "shareCountMethod": "shares_diluted",
       "marginAnchor": "TTM 35.0% net margin used as anchor instead of 4-year average (21.6%). Margins are trending upwards: 15.36% (FY22) -> 23.51% (FY23) -> 31.67% (FY24) -> 34.99% TTM. Standard Rule #9 trending exception applies.",
       "growthDerivation": "Consensus growth is 22.7% (blended 2-year average of Y1 30.8% and Y2 15.1%). Base CAGR 20% is within +-3pp of consensus.",
-      "sectorBenchmarkRow": "Healthcare — Pharma (large cap)",
+      "sectorBenchmarkRow": "Healthcare \u2014 Pharma (large cap)",
       "dataQualityFlags": [
         "No anomalies detected in the raw financial statements.",
         "TTM margin of 34.99% is structurally elevated relative to history, driven by GLP-1 product mix."
@@ -137,7 +137,7 @@
         11.8,
         23.07
       ],
-      "confidenceBreakdown": "0.85/1.0 — Base 1.0. +0.10 for extreme structural moat in metabolic/GLP-1 scale and manufacturing complexity. -0.15 due to high regulatory drug pricing risks and intense biosimilar/competitor pipeline pressure.",
+      "confidenceBreakdown": "0.85/1.0 \u2014 Base 1.0. +0.10 for extreme structural moat in metabolic/GLP-1 scale and manufacturing complexity. -0.15 due to high regulatory drug pricing risks and intense biosimilar/competitor pipeline pressure.",
       "wacc": {
         "wacc": 0.07,
         "riskFreeRate": 0.00449,

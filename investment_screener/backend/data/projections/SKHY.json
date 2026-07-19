@@ -7,7 +7,7 @@
     "version": 1,
     "savedAt": "2026-07-13T14:46:00Z",
     "updatedAt": "2026-07-13T14:46:00Z",
-    "name": "AI Deep Dive — SKHY — 2026-07-13",
+    "name": "AI Deep Dive \u2014 SKHY \u2014 2026-07-13",
     "rationale": "SK Hynix (SKHY) completed its Nasdaq listing in July 2026, raising $26.5B and establishing a direct trading vehicle for U.S. retail and institutional investors. As the clear pioneer and current market leader in High-Bandwidth Memory (HBM3/HBM3e) supply for Nvidia's AI compute platforms, the company enjoys superior yield rates and margin profiles compared to peers. This projection models a base case CAGR of 45% over 5 years, transitioning HBM leadership into sustained long-term earnings power, while the bear case models a standard cyclical consolidation starting in FY2028.",
     "snapshot": {
       "price": 160.73,
@@ -87,7 +87,7 @@
       "fairValue": 366.18,
       "action": "BUY",
       "analyzedAt": "2026-07-13T14:46:00Z",
-      "researchReport": "SKHY_2026-07-13.md"
+      "researchReport": "SKHY.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

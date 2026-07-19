@@ -218,12 +218,12 @@ as a hypothesis to verify, not a fact.**
 2. **Produce architecture adoption matrix** — COMPLETED. Output matrix generated in `docs/superpowers/status/architecture-adoption-matrix.md` tracking names, types, sources, status, migration required flags, test coverage, and risk levels.
 3. **Produce Wave 1 implementation plan** — COMPLETED. Detailed execution plan created in `docs/superpowers/status/wave1-implementation-plan.md` resolving architectural ambiguities and detailing interface/tests/rollbacks for all Wave 1 candidates.
 4. **Produce research migration preflight validation report** — Completed in [research-migration-preflight-report.md](file:///Users/richardfremmerlid/Projects/InvestmentToolkit/.worktrees/worktree-phase4a-audit/docs/superpowers/status/research-migration-preflight-report.md).
-5. **Review pre-flight validation and authorize research corpus migration** — Blocked waiting for explicit user review and approval.
-6. **Execute research corpus migration and validate retrieval** — Blocked waiting for approval.
-7. **Cleanup discussion** — Explicitly blocked until after successful migration and validation (corrective instructions §10; blocker checklist in the session-state document).
+5. **Review pre-flight validation and authorize research corpus migration** — COMPLETED. Verified 80 dated research files and 120 projection pointers.
+6. **Execute research corpus migration and validate retrieval** — COMPLETED. Verified 80 `RESEARCH_IMPORT` events, replayed into SQLite, updated 118 projection references, and validated retrieval end-to-end. Output captured in [research-migration-execution-report.md](file:///Users/richardfremmerlid/.worktrees/worktree-phase4a-audit/docs/superpowers/status/research-migration-execution-report.md).
+7. **Cleanup discussion** — Explicitly blocked until after successful validation review.
 
 Also outstanding, not yet sequenced:
-- Resolve the 1 remaining `MIGRATION_REQUIRED` consumer (`evolution_events.py` telemetry logger).
+- Resolve the 1 remaining `MIGRATION_REQUIRED` consumer (`evolution_events.py` telemetry logger) pending a separate ADR.
 - Human review of the 2 genuinely-unknown JSON files.
 - Decide on regeneration (or not) of the lost files per the recovery plan.
 
@@ -231,5 +231,6 @@ Also outstanding, not yet sequenced:
 
 ## 9. One-Sentence Summary
 
-**Wave 1 (Daily Loop brief, triage, and agent) and Wave 2 (docs.ts retrieval) infrastructure migrations are successfully completed, verified, and ledger-backed, and the preflight validation for the qualitative research corpus migration has been executed and documented; stopped and awaiting authorization before migrating real data.**
+**All core runtime consumers (Daily Loop, Research docs.ts) are rewired to the SQLite Intelligence Ledger, and the entire qualitative research corpus has been successfully migrated to observations.jsonl, replayed to SQLite, and validated end-to-end; stopped and waiting for final validation review.**
+
 

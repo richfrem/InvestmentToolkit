@@ -87,7 +87,7 @@
       "fairValue": 661.65,
       "action": "BUY",
       "analyzedAt": "2026-05-02T19:16:32.961Z",
-      "researchReport": "AVGO_2026-05-02.md"
+      "researchReport": "AVGO.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -193,7 +193,7 @@
       "fairValue": 284.76,
       "action": "SELL",
       "analyzedAt": "2026-05-02T21:15:00.000Z",
-      "researchReport": "AVGO_2026-05-02.md"
+      "researchReport": "AVGO.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -299,7 +299,7 @@
       "fairValue": 284.76,
       "action": "INITIATE",
       "analyzedAt": "2026-05-02T21:15:00.000Z",
-      "researchReport": "AVGO_2026-05-02.md"
+      "researchReport": "AVGO.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

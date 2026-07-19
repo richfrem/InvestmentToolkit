@@ -7,7 +7,7 @@
     "version": 1,
     "savedAt": "2026-05-02T19:16:32.961Z",
     "updatedAt": "2026-05-02T19:16:32.961Z",
-    "name": "AI Deep Dive — CAKE — 2026-05-02",
+    "name": "AI Deep Dive \u2014 CAKE \u2014 2026-05-02",
     "rationale": "The Cheesecake Factory is a mature, slow-growth casual dining restaurant chain operating with thin margins. The company's Rule of 40 score is a very weak 13.13, primarily due to low revenue growth (5.6%) and low margins. While the company produces consistent free cash flow, it is highly sensitive to wage inflation, food costs, and macro-driven consumer discretionary spending pullbacks. The current valuation of ~17.6x trailing P/E is too rich for a business exhibiting these fundamentals. A base case valuation of $48.93 indicates the stock is overvalued by ~18.7%. SELL.",
     "snapshot": {
       "price": 60.2,
@@ -87,7 +87,7 @@
       "fairValue": 48.93,
       "action": "SELL",
       "analyzedAt": "2026-05-02T19:16:32.961Z",
-      "researchReport": "CAKE_2026-05-02.md"
+      "researchReport": "CAKE.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -97,7 +97,7 @@
       "shareCountMethod": "Used 49.8M (shares_diluted). API provided matching figures for outstanding and diluted.",
       "marginAnchor": "TTM 3.96% used as historical anchor. Margins are chronically thin (1.3% -> 2.9% -> 4.4% -> 4.0%). Base case models a slight normalization to 4.5%.",
       "growthDerivation": "Analyst Y1 revenue implies 4.5% growth ($3.92B vs $3.75B TTM), Y2 implies 6.5%. Blended consensus ~5.6%. Base case growth set to 6.0%.",
-      "sectorBenchmarkRow": "Consumer Discretionary — Restaurants: median P/E 15-20, growth 5-10%; net margin typical 5-10%. Base case uses 15x.",
+      "sectorBenchmarkRow": "Consumer Discretionary \u2014 Restaurants: median P/E 15-20, growth 5-10%; net margin typical 5-10%. Base case uses 15x.",
       "dataQualityFlags": [
         "No anomalies detected. However, the business exhibits a very poor Rule of 40 score (13.13), highlighting structural growth/margin challenges."
       ],
@@ -128,7 +128,7 @@
         3.28,
         0
       ],
-      "confidenceBreakdown": "0.80/1.0 — +0.10 for predictable, slow-changing business model, -0.20 due to high sensitivity of thin margins to macro inputs (wages, commodities)."
+      "confidenceBreakdown": "0.80/1.0 \u2014 +0.10 for predictable, slow-changing business model, -0.20 due to high sensitivity of thin margins to macro inputs (wages, commodities)."
     }
   },
   {
@@ -139,8 +139,8 @@
     "version": 1,
     "savedAt": "2026-05-02T21:05:00Z",
     "updatedAt": "2026-05-02T21:05:00Z",
-    "name": "AI Deep Dive — CAKE — 2026-05-02",
-    "rationale": "The Cheesecake Factory is a quality casual dining operator — strong brand, loyal customer base, and a growing Fox Restaurant Concepts portfolio — but GAAP margins are structurally thin (3.96% TTM) in a labor-intensive, company-operated restaurant model. Revenue growth is modest at ~5-6% (analyst consensus), driven by SSS increases and limited new unit growth. At $60.20 (17.6x trailing PE), the stock is slightly above fair value ($51.60); the base case ($45.20) implies 25% downside from current, and only a bull case international expansion + Fox Concepts acceleration brings meaningful upside.",
+    "name": "AI Deep Dive \u2014 CAKE \u2014 2026-05-02",
+    "rationale": "The Cheesecake Factory is a quality casual dining operator \u2014 strong brand, loyal customer base, and a growing Fox Restaurant Concepts portfolio \u2014 but GAAP margins are structurally thin (3.96% TTM) in a labor-intensive, company-operated restaurant model. Revenue growth is modest at ~5-6% (analyst consensus), driven by SSS increases and limited new unit growth. At $60.20 (17.6x trailing PE), the stock is slightly above fair value ($51.60); the base case ($45.20) implies 25% downside from current, and only a bull case international expansion + Fox Concepts acceleration brings meaningful upside.",
     "snapshot": {
       "price": 60.2,
       "currency": "USD",
@@ -173,7 +173,7 @@
         "exitPE": 16,
         "qualityMultiplier": 1,
         "shareChange": -1,
-        "rationale": "Steady execution. Analyst consensus Y1 +4.5% ($3.92B), Y2 +6.5% ($4.18B); 5-yr CAGR 5% (blended within ±3pp). Margin 4.5% = between TTM 3.96% and analyst-implied 5.1%; mean-reverting anchor on 4-yr avg 3.15% plus acknowledged structural improvement in labor/cost efficiency. Exit PE 16x = below restaurant median; no franchise mix premium. No structural moat (Q 1.00). Modest buybacks from FCF ($154M TTM). Year 5 revenue $4.8B, EPS $4.55, price $72.80, PV $45.20.",
+        "rationale": "Steady execution. Analyst consensus Y1 +4.5% ($3.92B), Y2 +6.5% ($4.18B); 5-yr CAGR 5% (blended within \u00b13pp). Margin 4.5% = between TTM 3.96% and analyst-implied 5.1%; mean-reverting anchor on 4-yr avg 3.15% plus acknowledged structural improvement in labor/cost efficiency. Exit PE 16x = below restaurant median; no franchise mix premium. No structural moat (Q 1.00). Modest buybacks from FCF ($154M TTM). Year 5 revenue $4.8B, EPS $4.55, price $72.80, PV $45.20.",
         "scenarioPrice": 45.2
       },
       "bull": {
@@ -189,25 +189,25 @@
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "The Cheesecake Factory is a well-run casual dining operator in a difficult structural environment. Its 250+ item menu creates genuine loyalty and repeat traffic that competitors cannot easily replicate, and the Fox Restaurant Concepts portfolio (North Italia, Flower Child) provides higher-growth, asset-light expansion optionality. FCF has grown consistently from $49M to $154M over four years — a real positive signal in a sector known for capital intensity. However, the fundamental challenge is that company-operated casual dining generates structurally thin margins (3-4% GAAP), and every point of margin improvement requires sustained execution against rising labor costs, food inflation, and consumer frugality. At $60.20 (17.6x trailing, 13.5x forward), the stock is priced for continued modest growth — the forward PE is actually attractive if analyst EPS projections ($4.03 FY2026) materialize. But the base DCF gives $45.20, and the current price $60.20 represents a 33% premium to that base case. SELL at current price; accumulate below $50.",
+      "rationale": "The Cheesecake Factory is a well-run casual dining operator in a difficult structural environment. Its 250+ item menu creates genuine loyalty and repeat traffic that competitors cannot easily replicate, and the Fox Restaurant Concepts portfolio (North Italia, Flower Child) provides higher-growth, asset-light expansion optionality. FCF has grown consistently from $49M to $154M over four years \u2014 a real positive signal in a sector known for capital intensity. However, the fundamental challenge is that company-operated casual dining generates structurally thin margins (3-4% GAAP), and every point of margin improvement requires sustained execution against rising labor costs, food inflation, and consumer frugality. At $60.20 (17.6x trailing, 13.5x forward), the stock is priced for continued modest growth \u2014 the forward PE is actually attractive if analyst EPS projections ($4.03 FY2026) materialize. But the base DCF gives $45.20, and the current price $60.20 represents a 33% premium to that base case. SELL at current price; accumulate below $50.",
       "fairValue": 51.6,
       "action": "SELL",
       "analyzedAt": "2026-05-02T21:05:00Z",
-      "researchReport": "CAKE_2026-05-02.md"
+      "researchReport": "CAKE.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "API shares_diluted 49.8M. Mktcap-implied: $3.001B / $60.20 = 49.86M — 0.1% discrepancy. Clean.",
-      "marginAnchor": "Mean-reverting. Historical margins: 1.31% → 2.95% → 4.38% → 3.96% (TTM). Not consistently trending (dipped in TTM). 4-yr avg 3.15%. Analyst-implied margin for FY2026: NI ~$200M / $3.92B = 5.1%. Base uses 4.5% — bridging TTM 3.96% and analyst-implied 5.1%, acknowledging ongoing cost improvement. Not using TTM as anchor since it's below prior year (non-trending).",
-      "growthDerivation": "Y1 analyst $3.92B (+4.5%), Y2 $4.18B (+6.5%). Blended ~5.5%. Not hypergrowth. Base CAGR 5% within ±3pp of blended consensus. Bear 2% = consumer spending contraction. Bull 9% = international + Fox expansion.",
-      "sectorBenchmarkRow": "Consumer — Restaurants (full-service, company-operated): conservative P/E 12, median P/E 18, growth P/E 25. Net margin typical 3-6% for company-operated full-service; 15%+ for franchise-heavy. CAKE company-operated model caps margin potential.",
+      "shareCountMethod": "API shares_diluted 49.8M. Mktcap-implied: $3.001B / $60.20 = 49.86M \u2014 0.1% discrepancy. Clean.",
+      "marginAnchor": "Mean-reverting. Historical margins: 1.31% \u2192 2.95% \u2192 4.38% \u2192 3.96% (TTM). Not consistently trending (dipped in TTM). 4-yr avg 3.15%. Analyst-implied margin for FY2026: NI ~$200M / $3.92B = 5.1%. Base uses 4.5% \u2014 bridging TTM 3.96% and analyst-implied 5.1%, acknowledging ongoing cost improvement. Not using TTM as anchor since it's below prior year (non-trending).",
+      "growthDerivation": "Y1 analyst $3.92B (+4.5%), Y2 $4.18B (+6.5%). Blended ~5.5%. Not hypergrowth. Base CAGR 5% within \u00b13pp of blended consensus. Bear 2% = consumer spending contraction. Bull 9% = international + Fox expansion.",
+      "sectorBenchmarkRow": "Consumer \u2014 Restaurants (full-service, company-operated): conservative P/E 12, median P/E 18, growth P/E 25. Net margin typical 3-6% for company-operated full-service; 15%+ for franchise-heavy. CAKE company-operated model caps margin potential.",
       "dataQualityFlags": [
-        "UUID collision: Prior CAKE projection had same UUID as ASML and PLTR (e0b96b0f) — Gemini systematic UUID bug. Fresh UUID assigned.",
+        "UUID collision: Prior CAKE projection had same UUID as ASML and PLTR (e0b96b0f) \u2014 Gemini systematic UUID bug. Fresh UUID assigned.",
         "EPS historical array has 5 entries with last entry = 0; TTM EPS likely missing. Computed TTM EPS from PE: $60.20 / 17.65 = $3.41. Cross-check NI/shares: $148.4M / 49.8M = $2.98. Minor discrepancy; used 16x exit PE conservatively.",
-        "Revenue growth 5.6% (metric) vs analyst Y1 4.5% — consistent and reasonable. No major data quality issues."
+        "Revenue growth 5.6% (metric) vs analyst Y1 4.5% \u2014 consistent and reasonable. No major data quality issues."
       ],
       "analystInputs": {
         "y1RevEstimate": 3921164870,
@@ -242,13 +242,13 @@
         "priorPrice": 60.2,
         "priorFairValue": 48.93,
         "priorAction": "SELL",
-        "priceDelta": "0% — same day",
-        "assumptionAudit": "Prior assumptions (2%/2%/10 bear, 6%/4.5%/15 base, 9%/6.5%/18 bull) are directionally reasonable for a casual dining chain. Main corrections: (1) bear weight raised from 20% to 30% — consumer cyclical restaurants warrant higher bear probability in uncertain macro; (2) bull QM 1.1 replaced with 1.05 — CAKE has brand moat and Fox portfolio but no exceptional pricing power warranting 1.1; (3) exit PEs adjusted upward slightly (12/16/20 vs 10/15/18) to align with restaurant sector benchmarks.",
-        "modelQualityFlag": "UNVALIDATED — Gemini 1.5 Pro",
-        "thesisOutcome": "N/A — same day",
+        "priceDelta": "0% \u2014 same day",
+        "assumptionAudit": "Prior assumptions (2%/2%/10 bear, 6%/4.5%/15 base, 9%/6.5%/18 bull) are directionally reasonable for a casual dining chain. Main corrections: (1) bear weight raised from 20% to 30% \u2014 consumer cyclical restaurants warrant higher bear probability in uncertain macro; (2) bull QM 1.1 replaced with 1.05 \u2014 CAKE has brand moat and Fox portfolio but no exceptional pricing power warranting 1.1; (3) exit PEs adjusted upward slightly (12/16/20 vs 10/15/18) to align with restaurant sector benchmarks.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Gemini 1.5 Pro",
+        "thesisOutcome": "N/A \u2014 same day",
         "fundamentalChanges": "FCF growing consistently ($154M TTM, up from $107M prior year). Analyst Hold consensus. Forward PE 13.5x attractive relative to trailing 17.6x if EPS expansion materializes."
       },
-      "confidenceBreakdown": "0.74/1.0 — Base 1.0. +0.05 brand recognition + menu breadth (genuine loyalty driver); +0.04 FCF consistently growing ($49M→$65M→$107M→$154M); +0.03 Piotroski 7/9; -0.08 structurally thin margins (3-4% leaves little buffer); -0.06 consumer cyclical exposure (discretionary dining highly correlated with consumer confidence); -0.05 labor cost inflation structural headwind; -0.03 limited franchise mix (asset-heavy model caps margin expansion); -0.05 mean-reverting margins reduce base case confidence; +0.05 clear analyst consensus and analyst margin visibility"
+      "confidenceBreakdown": "0.74/1.0 \u2014 Base 1.0. +0.05 brand recognition + menu breadth (genuine loyalty driver); +0.04 FCF consistently growing ($49M\u2192$65M\u2192$107M\u2192$154M); +0.03 Piotroski 7/9; -0.08 structurally thin margins (3-4% leaves little buffer); -0.06 consumer cyclical exposure (discretionary dining highly correlated with consumer confidence); -0.05 labor cost inflation structural headwind; -0.03 limited franchise mix (asset-heavy model caps margin expansion); -0.05 mean-reverting margins reduce base case confidence; +0.05 clear analyst consensus and analyst margin visibility"
     }
   }
 ]

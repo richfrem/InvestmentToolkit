@@ -89,7 +89,7 @@
       "fairValue": 155.22,
       "action": "SELL",
       "analyzedAt": "2026-05-02T20:35:00Z",
-      "researchReport": "CRWD_2026-05-02.md"
+      "researchReport": "CRWD.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -238,7 +238,7 @@
       "fairValue": 155.22,
       "action": "EXIT",
       "analyzedAt": "2026-05-02T20:35:00Z",
-      "researchReport": "CRWD_2026-05-02.md"
+      "researchReport": "CRWD.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

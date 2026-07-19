@@ -7,8 +7,8 @@
     "version": 3,
     "savedAt": "2026-05-02T21:57:03.544553Z",
     "updatedAt": "2026-05-02T21:58:16.567Z",
-    "name": "AI Deep Dive — BTDR — 2026-05-02",
-    "rationale": "Bitdeer is the standout BUY in the BTC mining sector due to its proprietary Sealminer ASIC chip design capability. Revenue $620M growing 226% (ASIC launch-driven). Unlike pure miners, BTDR controls its compute stack — a structural cost advantage. DCF FV $24.09 (+103% vs $11.84) on base 45% CAGR + 12% margin. QM 1.05 justified by ASIC moat. BUY.",
+    "name": "AI Deep Dive \u2014 BTDR \u2014 2026-05-02",
+    "rationale": "Bitdeer is the standout BUY in the BTC mining sector due to its proprietary Sealminer ASIC chip design capability. Revenue $620M growing 226% (ASIC launch-driven). Unlike pure miners, BTDR controls its compute stack \u2014 a structural cost advantage. DCF FV $24.09 (+103% vs $11.84) on base 45% CAGR + 12% margin. QM 1.05 justified by ASIC moat. BUY.",
     "snapshot": {
       "price": 11.84,
       "currency": "USD",
@@ -69,11 +69,11 @@
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "Bitdeer is the standout BUY in the BTC mining sector due to its proprietary Sealminer ASIC chip design capability. Revenue $620M growing 226% (ASIC launch-driven). Unlike pure miners, BTDR controls its compute stack — a structural cost advantage. DCF FV $24.09 (+103% vs $11.84) on base 45% CAGR + 12% margin. QM 1.05 justified by ASIC moat. BUY.",
+      "rationale": "Bitdeer is the standout BUY in the BTC mining sector due to its proprietary Sealminer ASIC chip design capability. Revenue $620M growing 226% (ASIC launch-driven). Unlike pure miners, BTDR controls its compute stack \u2014 a structural cost advantage. DCF FV $24.09 (+103% vs $11.84) on base 45% CAGR + 12% margin. QM 1.05 justified by ASIC moat. BUY.",
       "fairValue": 24.09,
       "action": "BUY",
       "analyzedAt": "2026-05-02T21:57:03.544553Z",
-      "researchReport": "BTDR_2026-05-02.md"
+      "researchReport": "BTDR.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -81,7 +81,7 @@
     },
     "analyticsLog": {
       "shareCountMethod": "See dataQualityFlags",
-      "marginAnchor": "Path-to-profitability model applied — see dataQualityFlags",
+      "marginAnchor": "Path-to-profitability model applied \u2014 see dataQualityFlags",
       "growthDerivation": "Derived from TTM growth with deceleration path",
       "sectorBenchmarkRow": "See dataQualityFlags",
       "dataQualityFlags": [
@@ -111,7 +111,7 @@
         "thesisOutcome": "Re-evaluated with current fundamentals",
         "fundamentalChanges": "No new fundamentals; updated for Sonnet 4.6 model consistency"
       },
-      "confidenceBreakdown": "0.55/1.0 — limited historical data; no analyst estimates"
+      "confidenceBreakdown": "0.55/1.0 \u2014 limited historical data; no analyst estimates"
     }
   }
 ]

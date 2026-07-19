@@ -76,7 +76,7 @@
       "fairValue": 223.43,
       "action": "SELL",
       "analyzedAt": "2026-05-02T20:40:00Z",
-      "researchReport": "VRT_2026-05-02.md"
+      "researchReport": "VRT.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -212,7 +212,7 @@
       "fairValue": 223.43,
       "action": "TRIM",
       "analyzedAt": "2026-05-02T20:40:00Z",
-      "researchReport": "VRT_2026-05-02.md"
+      "researchReport": "VRT.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

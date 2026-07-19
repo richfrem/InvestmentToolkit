@@ -86,7 +86,7 @@
       "fairValue": 12.92,
       "action": "SELL",
       "analyzedAt": "2026-05-31T17:46:46Z",
-      "researchReport": "RKLB_2026-05-31.md"
+      "researchReport": "RKLB.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

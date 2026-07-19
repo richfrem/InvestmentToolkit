@@ -64,7 +64,7 @@
       "fairValue": 6.09,
       "action": "SELL",
       "analyzedAt": "2026-05-02T18:05:00.000Z",
-      "researchReport": "CLSK_2026-05-02.md"
+      "researchReport": "CLSK.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -186,7 +186,7 @@
       "fairValue": 15.28,
       "action": "BUY",
       "analyzedAt": "2026-06-27T15:09:23Z",
-      "researchReport": "CLSK_2026-05-02.md"
+      "researchReport": "CLSK.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

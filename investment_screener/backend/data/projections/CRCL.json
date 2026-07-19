@@ -105,7 +105,7 @@
       "fairValue": 142.29,
       "action": "BUY",
       "analyzedAt": "2026-05-02T19:30:00.000Z",
-      "researchReport": "CRCL_2026-05-02.md"
+      "researchReport": "CRCL.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -221,7 +221,7 @@
       "fairValue": 142.29,
       "action": "MAINTAIN",
       "analyzedAt": "2026-05-02T19:30:00.000Z",
-      "researchReport": "CRCL_2026-05-02.md"
+      "researchReport": "CRCL.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
