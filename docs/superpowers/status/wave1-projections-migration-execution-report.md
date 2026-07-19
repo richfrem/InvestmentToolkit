@@ -279,7 +279,7 @@ from `PRAGMA journal_mode=WAL`; none exist (the connection was closed cleanly vi
   `domain_model.sqlite` file, and a real Python duplicate-version scan of the actual
   source files) — none are estimated.
 - The 132-vs-115 delta has a real, verified explanation: 17 exact `(ticker, version)`
-  collisions inside 16 source files (15 tickers with 1 collision, NVDA with 3), confirmed
+  collisions inside 15 source files (14 tickers with 1 collision, NVDA contributing 3), confirmed
   by directly counting duplicate `version` values in the raw JSON, not inferred.
   `projection_scenario`'s 396-vs-345 (51) delta is the same 17 collisions × 3 scenarios
   each.
