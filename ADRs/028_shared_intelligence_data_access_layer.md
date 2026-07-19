@@ -3,6 +3,24 @@
 ## Status
 Accepted
 
+## Amendment (see ADR-029)
+This ADR's Decision §1.2 pre-approved three future domain-object tables — `valuation_version`,
+`portfolio_decision`, `research_thesis` — "not yet created because no task in the current plan
+produces the data they'd hold." Two of those tasks now exist: the `projection_version` table
+designed in `docs/architecture/big-domain-migration-design.md` **is** the pre-approved
+`valuation_version` table (kept the codebase's existing "projection" vocabulary —
+`ProjectionService.ts`, `data/projections/` — rather than diverging to a new name), and
+`target_portfolio_entry` in `docs/architecture/persistence-domain-data-model.md` **is** the
+pre-approved `portfolio_decision` table. `research_thesis` remains unactivated — no task yet
+produces synthesized-thesis data distinct from raw `RESEARCH_IMPORT` events.
+
+The anti-duplication rule in Decision §1 is extended, not replaced: it applies per bounded
+context, not only to `intelligence_event`. A second package,
+`py_services/portfolio_ledger/`, is the sole owner of SQL against the new transactional tables
+(`trade_log_entry`, `order_execution`, `cash_flow`) — these are not `intelligence_event` rows
+(see ADR-029 for why) and do not belong under `EventRepository`. The rule "no producer or
+consumer script opens its own connection" holds for both packages independently.
+
 ## Context
 ADR-026 established the hybrid JSONL-ledger + SQLite-read-model + generated-views
 architecture; ADR-027 selected SQLite as the storage engine. Neither addresses a second,

@@ -3,6 +3,17 @@
 ## Status
 Proposed (Revised after Adversarial Review)
 
+## Amendment (see ADR-029)
+"Hybrid" in this ADR's title and body describes the **event-sourcing shape** (JSONL ledger +
+derived SQLite index + generated views) for the qualitative intelligence domain specifically —
+it does not mean "JSON and SQLite both persist forever as a permanent dual architecture." An
+implementation pass following this ADR built the JSONL/SQLite side but never made the running
+application depend on it for real requests, leaving JSON/generated files as the only thing
+actually read at runtime — a failure mode this ADR did not anticipate or authorize. ADR-029
+("Persistence Domain Rationalization and Retirement-Gated Migration") is the corrective ADR:
+every domain migrated under this architecture must reach a defined retirement state (producer
++ consumer + archive), not stop at "the data was copied."
+
 ## Context
 Our initial proposal in ADR-025 and early drafts of ADR-026 aimed to replace fragmented date-padded files (e.g. `SNDK_2026-05-19.md`) with a single mutable Markdown profile `research/{TICKER}.md` per stock containing a YAML frontmatter block for metrics.
 

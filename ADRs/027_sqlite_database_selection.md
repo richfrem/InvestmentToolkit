@@ -3,6 +3,15 @@
 ## Status
 Proposed
 
+## Amendment (see ADR-029)
+The engine-selection rationale below (SQLite over PostgreSQL/NoSQL for a local desktop
+workstation) stands unchanged. What needed correction was the framing this ADR inherited from
+ADR-026: SQLite existing and holding correct data is not the same as SQLite being what the
+application actually runs on. ADR-029 makes that distinction explicit as a repo-wide rule and
+extends this ADR's scope beyond the original "structured observations" (intelligence ledger)
+domain to the transactional Portfolio Operations domain (trades, cash flows, order executions),
+which was originally out of scope here.
+
 ## Context
 With the decision in ADR-026 to transition to a Hybrid Event Sourcing architecture (with JSONLines logs as the master ledger and a queryable SQL database as the derived read model index), we must select a suitable SQL database engine.
 
