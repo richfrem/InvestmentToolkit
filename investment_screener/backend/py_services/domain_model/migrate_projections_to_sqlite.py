@@ -1,11 +1,21 @@
-"""Dry-run analysis for migrating `projections/{TICKER}.json` array-entries into the
-v3.2 `projection_version`/`projection_scenario` tables (ADR-029, Wave 1 Task 2).
+"""Migrates `projections/{TICKER}.json` array-entries into the v3.2
+`projection_version`/`projection_scenario` tables (ADR-029).
 
-**This module never writes to a real `domain_model.sqlite` file.** `run_dry_run` always
-operates against an in-memory (`:memory:`) SQLite connection created via
-`db_client.initialize_db`. The real migration (writing to the actual database) is a
-separate, later task (Wave 1 Task 4) gated on explicit user approval of this dry run's
-report (Wave 1 Task 3) — no `--write` flag or real-file code path exists here on purpose.
+**Two run modes, sharing the exact same migration code path (`_migrate_all`):**
+
+- `run_dry_run(projections_dir)` — always operates against an in-memory (`:memory:`)
+  SQLite connection. Never touches a real file. This was the only mode that existed
+  through Wave 1 Task 2/3 (dry-run analysis, gated user approval of the real numbers).
+- `run_real_migration(projections_dir, db_path)` — Wave 1 Task 4. Opens (creating if
+  absent) the real `db_path` SQLite file via `db_client.initialize_db` and performs the
+  exact same insert/upsert calls dry-run only simulated. Insert-only against SQLite: this
+  module never reads back or deletes source `projections/*.json` files, so it cannot
+  modify or remove them.
+
+The CLI entry point (`main`, `python -m domain_model.migrate_projections_to_sqlite`)
+defaults to dry-run and requires an explicit `--write` flag to invoke
+`run_real_migration`, following this repo's existing `--dry-run`/`--write` convention
+(see `lock_and_normalize_targets.py`).
 
 Shape handling in `parse_projection_entry`
 -------------------------------------------
@@ -46,6 +56,7 @@ INTC, IONQ, plus mid-range files FOTO, IBIT, WQTM, APLD, AAPL) found:
   test file.
 """
 
+import argparse
 import datetime
 import json
 import sqlite3
@@ -213,16 +224,11 @@ def migrate_ticker_file(conn: sqlite3.Connection, ticker: str, entries: list[dic
     return result
 
 
-def run_dry_run(projections_dir: Path) -> dict:
-    """Walk every `*.json` file in `projections_dir`, migrate its entries against an
-    **in-memory** SQLite connection, and return an aggregate report.
-
-    Never touches the real `domain_model.sqlite` file — this is analysis only.
-    """
-    from domain_model.db_client import initialize_db
-
-    conn = initialize_db(":memory:")
-
+def _migrate_all(conn: sqlite3.Connection, projections_dir: Path) -> dict:
+    """Walk every `*.json` file in `projections_dir`, migrate its entries into `conn`
+    (whatever connection the caller opened — in-memory or a real file), and return an
+    aggregate report. Shared by both `run_dry_run` and `run_real_migration` so the two
+    modes are guaranteed to execute the identical migration logic."""
     report = {
         "total_files": 0,
         "total_versions": 0,
@@ -272,5 +278,82 @@ def run_dry_run(projections_dir: Path) -> dict:
         for err in result["errors"]:
             report["file_errors"].append(f"{path.name}: {err}")
 
-    conn.close()
     return report
+
+
+def run_dry_run(projections_dir: Path) -> dict:
+    """Walk every `*.json` file in `projections_dir`, migrate its entries against an
+    **in-memory** SQLite connection, and return an aggregate report.
+
+    Never touches the real `domain_model.sqlite` file — this is analysis only.
+    """
+    from domain_model.db_client import initialize_db
+
+    conn = initialize_db(":memory:")
+    try:
+        return _migrate_all(conn, projections_dir)
+    finally:
+        conn.close()
+
+
+def run_real_migration(projections_dir: Path, db_path: str) -> dict:
+    """Walk every `*.json` file in `projections_dir`, migrate its entries into the real
+    SQLite database at `db_path` (created if absent, via `db_client.initialize_db`), and
+    return the same aggregate report shape as `run_dry_run`.
+
+    Insert-only against SQLite (upsert on `(investment_id, version)` inside
+    `save_projection_version`/`add_projection_scenario`). Never reads back, modifies, or
+    deletes any file under `projections_dir` — the source JSON files are untouched by
+    this function.
+    """
+    from domain_model.db_client import initialize_db
+
+    conn = initialize_db(db_path)
+    try:
+        return _migrate_all(conn, projections_dir)
+    finally:
+        conn.close()
+
+
+def main() -> None:
+    """CLI entry point. Defaults to dry-run (in-memory, prints the report, writes
+    nothing real); pass `--write` to run the real migration against `--db-path`.
+
+    Follows this repo's existing `--dry-run`/`--write` convention (see
+    `lock_and_normalize_targets.py`): dry-run is the safe default, `--write` is opt-in.
+    """
+    parser = argparse.ArgumentParser(
+        description="Migrate projections/*.json into projection_version/projection_scenario."
+    )
+    parser.add_argument(
+        "--projections-dir",
+        default="investment_screener/backend/data/projections",
+        help="Directory containing {TICKER}.json projection files.",
+    )
+    parser.add_argument(
+        "--db-path",
+        default="investment_screener/backend/data/domain_model.sqlite",
+        help="Path to the real domain_model.sqlite file (created if absent).",
+    )
+    parser.add_argument(
+        "--write",
+        action="store_true",
+        help="Execute the real migration against --db-path. Without this flag, runs a "
+        "safe in-memory dry run and prints the report without touching any real file.",
+    )
+    args = parser.parse_args()
+
+    projections_dir = Path(args.projections_dir)
+
+    if args.write:
+        report = run_real_migration(projections_dir, args.db_path)
+        print(f"[WRITE MODE] Migrated into real database: {args.db_path}")
+    else:
+        report = run_dry_run(projections_dir)
+        print("[DRY RUN — pass --write to persist changes to --db-path]")
+
+    print(json.dumps(report, indent=2))
+
+
+if __name__ == "__main__":
+    main()
