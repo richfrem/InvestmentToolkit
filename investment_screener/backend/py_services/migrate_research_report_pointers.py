@@ -17,7 +17,11 @@ def migrate_pointers(projections_dir: str) -> dict:
             report = ai_thesis.get("researchReport")
             if not report:
                 continue
-            match = DATED_RE.match(report)
+            # researchReport may be stored as a bare filename or a full
+            # (repo-relative) path — match against the basename so a
+            # dated reference isn't silently skipped just because it's
+            # path-qualified.
+            match = DATED_RE.match(Path(report).name)
             if not match:
                 continue
             ai_thesis["researchReport"] = f"{match.group(1)}.summary.md"

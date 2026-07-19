@@ -116,6 +116,26 @@ def get_latest_event_by_type(conn, event_type: str) -> dict | None:
     return dict(zip(columns, row)) if row else None
 
 
+def list_tickers_with_active_event_type(conn, event_type: str) -> list[str]:
+    """Return distinct tickers holding at least one ACTIVE event of the given type.
+
+    Args:
+        conn: Open sqlite3 connection with the read-model schema applied.
+        event_type: Event type to filter on (e.g. ``RESEARCH_IMPORT``).
+
+    Returns:
+        Sorted list of distinct ticker symbols.
+    """
+    cursor = conn.execute("""
+        SELECT DISTINCT i.ticker
+        FROM intelligence_event ie
+        JOIN instrument i ON i.instrument_id = ie.instrument_id
+        WHERE ie.event_type = ? AND ie.status = 'ACTIVE'
+        ORDER BY i.ticker;
+    """, (event_type,))
+    return [row[0] for row in cursor.fetchall()]
+
+
 def get_latest_event_by_type_and_ticker(conn, event_type: str, ticker: str) -> dict | None:
     """Retrieve the latest active event of the specified type for a specific ticker."""
     cursor = conn.execute("""
