@@ -539,7 +539,25 @@ spec was written), total versions, total scenarios, and the full list of any per
 any file errors, this is a real finding to fix in Task 2 before proceeding (re-run Steps 3-5), not
 something to skip.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 6: STOP — do not proceed to Task 3/4 in the same pass**
+
+Task 2 ends here. Present to the user, verbatim from the real dry-run output (not summarized or
+rounded):
+
+- The dry-run report itself (`wave1-projections-migration-dry-run-report.md`).
+- **File count**: total `.json` files found in `projections/`, vs. the expected 144 — call out
+  the delta explicitly if it differs.
+- **Row counts**: total `projection_version` rows the dry run would create, total
+  `projection_scenario` rows the dry run would create.
+- **Shape anomalies**: every file that hit the legacy-shape branch, every file with no
+  `scenarios` block, and any file that didn't fit either known shape (a real error, not a silent
+  skip — see Step 5's error-handling requirement). Report counts per category, not just a pass/
+  fail verdict.
+
+Do not run Task 4 in the same work session unless the user has explicitly reviewed this output
+and approved proceeding — this is a hard stop, not a formality.
+
+- [ ] **Step 7: Commit**
 
 ```bash
 git add investment_screener/backend/py_services/domain_model/migrate_projections_to_sqlite.py \
@@ -552,11 +570,14 @@ git commit -m "feat: add projections migration script (dry-run only, real 144-fi
 
 ## Task 3: HARD GATE — Dry-run review and explicit approval
 
-**This is not a code task.** Present the dry-run report from Task 2 Step 5 to the user. Do not
-proceed to Task 4 (the real migration) without explicit approval. This mirrors the standing rule
-in the Global Constraints (no real migration runs without a prior dry-run report and explicit
-user approval) and the exact corrective instruction that followed the prior effort's data-loss
-incident.
+**This is not a code task, and it does not run automatically after Task 2.** Present the dry-run
+report from Task 2 Step 6 to the user — file count, row counts, and shape anomalies, exactly as
+Task 2 Step 6 specifies, not a paraphrase. Do not proceed to Task 4 (the real migration) without
+explicit, separate approval. This mirrors the standing rule in the Global Constraints (no real
+migration runs without a prior dry-run report and explicit user approval) and the exact corrective
+instruction that followed the prior effort's data-loss incident. **This gate remains a hard stop
+regardless of how clean Task 2's numbers look** — a good dry run is a precondition for asking, not
+a substitute for asking.
 
 ---
 
@@ -591,14 +612,36 @@ from domain_model.migrate_projections_to_sqlite import run_dry_run  # extend wit
 migration scripts in this repo, e.g. `migrate_research_to_ledger.py`'s `--dry-run`/`--write`
 flag convention, for consistency.)
 
-- [ ] **Step 2:** Verify parity — for a sample of at least 20 tickers (not all 144, but a real
+- [ ] **Step 2: Migration parity counts (required, exact numbers, not estimates)**
+
+Record and report every one of these as a real, computed number — not "should match" or
+"approximately":
+
+- **Source count**: total `.json` files in `projections/`, total array-entries summed across all
+  of them (i.e. total source projection versions that exist on disk, counted directly — `python3 -c
+  "import json, pathlib; files = list(pathlib.Path('investment_screener/backend/data/projections').glob('*.json')); print(len(files), sum(len(json.loads(f.read_text())) for f in files))"`
+  or equivalent).
+- **SQLite count**: `SELECT COUNT(*) FROM projection_version;` and
+  `SELECT COUNT(*) FROM projection_scenario;` against the real `domain_model.sqlite` after this
+  task's write step.
+- **Delta**: source entry count vs. `projection_version` row count. These **must match exactly**
+  (accounting for the confirmed upsert-by-`(investment_id, version)` semantics — if the same
+  `(ticker, version)` pair legitimately appears more than once across a file's history, the SQLite
+  count will be lower than the raw entry count by exactly that many duplicates; if so, state the
+  duplicate count explicitly, don't just note "counts differ, that's expected" without the number).
+  If the delta is not fully explained by confirmed upsert collisions, this is a real discrepancy —
+  stop and investigate before writing the execution report, do not paper over it.
+- **Field-level parity sample**: for a sample of at least 20 tickers (not all 144, but a real
   cross-section including at least 3 with the legacy shape and 3 with missing `scenarios`),
   compare the SQLite row's `fair_value`/`action`/`version` against the source JSON file's latest
-  entry, field by field. Record the comparison method and result in the execution report.
+  entry, field by field. Report as a fraction: e.g. "20/20 sampled tickers matched exactly" or
+  "18/20 matched, 2 discrepancies: [ticker, field, source value, SQLite value] for each."
 
 - [ ] **Step 3:** Write `docs/superpowers/status/wave1-projections-migration-execution-report.md`
-  with: files migrated, versions migrated, scenarios migrated, parity-check sample results, any
-  errors encountered and how they were resolved.
+  with: files migrated, versions migrated, scenarios migrated, the full Step 2 parity-count table
+  (source count / SQLite count / delta explanation / sample match fraction), any errors
+  encountered and how they were resolved. A report that states "migration successful" without
+  Step 2's actual numbers is not acceptable evidence.
 
 - [ ] **Step 4: Commit**
 
@@ -755,8 +798,22 @@ fresh (it wasn't grepped for this plan; do so before writing 7C's own task brief
 
 **Only after Tasks 1-7 are complete and Task 7's verification grep returns clean.**
 
-- [ ] Confirm one more time: `grep -rn "data/projections" investment_screener plugins` — zero real
-  I/O matches.
+- [ ] **File-path verification grep**: `grep -rn "data/projections" investment_screener
+  plugins` — zero real I/O matches (doc/comment mentions excluded, each verified individually,
+  not assumed).
+- [ ] **Repository-path verification grep** (the anti-duplication rule, not just the file path):
+  confirm no script outside `projection_repository.py` (Python) or `ProjectionRepository.ts`
+  (TypeScript) opens its own connection to the `projection_version`/`projection_scenario` tables.
+  Run both:
+  - `grep -rn "sqlite3.connect\|initialize_db" investment_screener/backend/py_services plugins
+    --include="*.py" | grep -v "domain_model/db_client.py\|domain_model/projection_repository.py\|domain_model/investment_repository.py\|domain_model/account_repository.py\|domain_model/account_investment_repository.py\|domain_model/migrate_projections_to_sqlite.py\|/tests/"`
+    — every remaining match is a real violation of the repository-only-SQL rule and must be fixed
+    before archiving, not noted as a follow-up.
+  - `grep -rln "better-sqlite3" investment_screener/backend/src` — every match must be either
+    `ProjectionRepository.ts` itself or a file that only imports it (never a route/consumer
+    opening its own `Database(...)` instance against these two tables).
+  - If either grep finds a real violation, that consumer/producer was missed in Tasks 5-7 —
+    fix it there (re-open the relevant task), do not patch around it here.
 - [ ] `git mv investment_screener/backend/data/projections
   ARCHIVE/investment_screener/backend/data/projections` (per this migration's archive convention,
   spec §2.19 — `projections/*.json` is git-tracked, not gitignored, so this is a real `git mv`
