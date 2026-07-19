@@ -63,6 +63,10 @@ kittyclaude/
 kittycopilot/
 kittygemini/
 archive/
+# Exception: the research corpus migration's archive dir (ADRs/026-028) holds the
+# only copy of the original dated research files moved (not deleted) by the
+# migration — must be tracked, not caught by the generic archive/ rule above.
+!investment_screener/backend/data/research/archive/
 InvestmentStrategy/
 .claude/
 .agents/
