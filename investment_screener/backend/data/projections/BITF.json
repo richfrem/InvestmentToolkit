@@ -7,8 +7,8 @@
     "version": 4,
     "savedAt": "2026-05-02T21:57:03.544553Z",
     "updatedAt": "2026-05-02T21:58:16.556Z",
-    "name": "AI Deep Dive — BITF — 2026-05-02",
-    "rationale": "Bitfarms is a mid-scale Bitcoin miner with $229M TTM revenue growing 72%. True diluted share count is 605.9M (mktcap-implied) vs API-reported 401M — a 34% discrepancy that materially reduces per-share value. Applying through-cycle margin normalization, weighted FV $1.62 vs current $1.98. SELL.",
+    "name": "AI Deep Dive \u2014 BITF \u2014 2026-05-02",
+    "rationale": "Bitfarms is a mid-scale Bitcoin miner with $229M TTM revenue growing 72%. True diluted share count is 605.9M (mktcap-implied) vs API-reported 401M \u2014 a 34% discrepancy that materially reduces per-share value. Applying through-cycle margin normalization, weighted FV $1.62 vs current $1.98. SELL.",
     "snapshot": {
       "price": 1.98,
       "currency": "USD",
@@ -69,11 +69,11 @@
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "Bitfarms is a mid-scale Bitcoin miner with $229M TTM revenue growing 72%. True diluted share count is 605.9M (mktcap-implied) vs API-reported 401M — a 34% discrepancy that materially reduces per-share value. Applying through-cycle margin normalization, weighted FV $1.62 vs current $1.98. SELL.",
+      "rationale": "Bitfarms is a mid-scale Bitcoin miner with $229M TTM revenue growing 72%. True diluted share count is 605.9M (mktcap-implied) vs API-reported 401M \u2014 a 34% discrepancy that materially reduces per-share value. Applying through-cycle margin normalization, weighted FV $1.62 vs current $1.98. SELL.",
       "fairValue": 1.62,
       "action": "SELL",
       "analyzedAt": "2026-05-02T21:57:03.544553Z",
-      "researchReport": "BITF_2026-05-02.md"
+      "researchReport": "BITF.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -81,7 +81,7 @@
     },
     "analyticsLog": {
       "shareCountMethod": "See dataQualityFlags",
-      "marginAnchor": "Path-to-profitability model applied — see dataQualityFlags",
+      "marginAnchor": "Path-to-profitability model applied \u2014 see dataQualityFlags",
       "growthDerivation": "Derived from TTM growth with deceleration path",
       "sectorBenchmarkRow": "See dataQualityFlags",
       "dataQualityFlags": [
@@ -111,7 +111,7 @@
         "thesisOutcome": "Re-evaluated with current fundamentals",
         "fundamentalChanges": "No new fundamentals; updated for Sonnet 4.6 model consistency"
       },
-      "confidenceBreakdown": "0.55/1.0 — limited historical data; no analyst estimates"
+      "confidenceBreakdown": "0.55/1.0 \u2014 limited historical data; no analyst estimates"
     }
   }
 ]

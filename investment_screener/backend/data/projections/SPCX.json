@@ -107,7 +107,7 @@
       "fairValue": 204.35,
       "action": "SELL",
       "analyzedAt": "2026-06-19T21:17:22Z",
-      "researchReport": "SPCX_2026-06-13.md",
+      "researchReport": "SPCX.summary.md",
       "ipoNote": "IPO: 2026-06-12 at ~$185. Public share count 7.57B vs secondary-market assumption of 1.16B diluted. Prior DCF FV of $204/share was per-secondary-market-share. Restated per public share: total equity FV $237B / 7.57B shares = $31/share. At $185 public price, market cap is $1.40T vs $237B modeled equity \u2014 ~6x overvalued vs DCF. 75x P/S ratio. Pass at current price. Revisit if price declines toward $30-40 range or after audited S-1 financials clarify true diluted share count."
     },
     "globalSettings": {

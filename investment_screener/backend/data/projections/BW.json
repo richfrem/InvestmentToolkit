@@ -7,7 +7,7 @@
     "version": 3,
     "savedAt": "2026-05-02T17:50:00.000Z",
     "updatedAt": "2026-05-02T19:01:05.996Z",
-    "name": "AI Deep Dive — BW — 2026-05-02",
+    "name": "AI Deep Dive \u2014 BW \u2014 2026-05-02",
     "rationale": "Babcock & Wilcox (BW) has experienced an astonishing 2952% 1-year run, reflecting a dramatic turnaround narrative anchored by its BrightLoop chemical looping technology (hydrogen/syngas). While trailing growth is only 2%, analysts project a massive acceleration (37% next year). The company sits at the nexus of the energy transition, but cash flow remains negative (-$85M FCF). At 3.25x sales, the market is pricing in a successful commercialization phase. Weighted fair value of $27.13 suggests meaningful upside if execution holds.",
     "snapshot": {
       "price": 14.07,
@@ -64,7 +64,7 @@
       "fairValue": 27.13,
       "action": "BUY",
       "analyzedAt": "2026-05-02T17:50:00.000Z",
-      "researchReport": "BW_2026-05-02.md"
+      "researchReport": "BW.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -119,7 +119,7 @@
     "version": 1,
     "savedAt": "2026-05-02T21:57:03.544553Z",
     "updatedAt": "2026-05-02T21:57:03.544553Z",
-    "name": "AI Deep Dive — BW — 2026-05-02",
+    "name": "AI Deep Dive \u2014 BW \u2014 2026-05-02",
     "rationale": "Babcock & Wilcox is a specialty industrial/clean energy company pivoting from legacy boilers to hydrogen and biomass. Revenue $587M growing 2%. While the clean energy narrative is compelling, B&W carries significant balance sheet risk from prior restructurings. Conservative base 10% CAGR and 10% terminal margin yields FV $8.83 vs current $14.07. Prior Gemini BUY $27.13 ignored balance sheet risk. SELL.",
     "snapshot": {
       "price": 14.07,
@@ -185,7 +185,7 @@
       "fairValue": 8.83,
       "action": "SELL",
       "analyzedAt": "2026-05-02T21:57:03.544553Z",
-      "researchReport": "BW_2026-05-02.md"
+      "researchReport": "BW.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -193,7 +193,7 @@
     },
     "analyticsLog": {
       "shareCountMethod": "See dataQualityFlags",
-      "marginAnchor": "Path-to-profitability model applied — see dataQualityFlags",
+      "marginAnchor": "Path-to-profitability model applied \u2014 see dataQualityFlags",
       "growthDerivation": "Derived from TTM growth with deceleration path",
       "sectorBenchmarkRow": "See dataQualityFlags",
       "dataQualityFlags": [
@@ -223,7 +223,7 @@
         "thesisOutcome": "Re-evaluated with current fundamentals",
         "fundamentalChanges": "No new fundamentals; updated for Sonnet 4.6 model consistency"
       },
-      "confidenceBreakdown": "0.55/1.0 — limited historical data; no analyst estimates"
+      "confidenceBreakdown": "0.55/1.0 \u2014 limited historical data; no analyst estimates"
     }
   }
 ]

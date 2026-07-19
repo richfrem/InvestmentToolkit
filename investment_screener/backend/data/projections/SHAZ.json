@@ -7,7 +7,7 @@
     "version": 1,
     "savedAt": "2026-07-14T06:31:00Z",
     "updatedAt": "2026-07-14T06:31:00Z",
-    "name": "AI Deep Dive — SHAZ — 2026-07-14",
+    "name": "AI Deep Dive \u2014 SHAZ \u2014 2026-07-14",
     "rationale": "SharonAI Holdings (SHAZ) is a pure-play neocloud and accelerated compute provider anchored by Situational Awareness L.P.'s 19.9% stake and a $1.6B capital raise. The company's strategic collaboration with Nvidia to deploy a 72MW AI factory and 40,000 Grace Blackwell GB300 GPUs in Australia positions it for an explosive revenue ramp from TTM $1.57M to over $1.35B by 2027. We model a hypergrowth-exception 5-year CAGR, factoring in high initial growth and long-term dilution from Senior Notes/Warrants.",
     "snapshot": {
       "price": 68.26,
@@ -87,7 +87,7 @@
       "fairValue": 204.83,
       "action": "BUY",
       "analyzedAt": "2026-07-14T06:31:00Z",
-      "researchReport": "SHAZ_2026-07-13.md"
+      "researchReport": "SHAZ.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

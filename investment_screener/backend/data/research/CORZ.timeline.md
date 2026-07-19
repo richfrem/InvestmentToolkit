@@ -1,0 +1,168 @@
+# CORZ Research Timeline
+
+## 2026-05-02 — CORZ research import (2026-05-02)
+
+# Core Scientific (CORZ) — Deep-Dive Research Report
+**Date**: 2026-05-02 | **Analyst**: Claude Sonnet 4.6 | **Action**: SELL | **Fair Value**: $10.64 | **Price at Analysis**: $20.35
+
+---
+
+## TL;DR
+Core Scientific emerged from bankruptcy in January 2024 and is pivoting from Bitcoin mining to AI/HPC hosting — a real and compelling thesis backed by ~800 MW of power capacity and signed multi-billion-dollar contracts. But at $20.35 ($6.4B market cap) against $319M declining revenue and -90% net margins, you're paying for bull-case execution at base-case probability. Weighted fair value **$10.64 (-48%)**. SELL. Re-entry at $8-10.
+
+---
+
+## Prior Analysis Review
+**Prior model**: Gemini 3 Pro | **Same day** | **Prior FV**: $5.71 (SELL)
+
+Both analyses agree: SELL. Key corrections:
+1. **Bear margin**: Gemini 5% vs corrected 1% — bear case should be more conservative (slow transition, near-breakeven only). At TTM -90.47%, even 1% by Y5 requires substantial improvement.
+2. **Bull growth/exit**: Gemini 40% CAGR + 25x PE vs corrected 50% CAGR + 35x PE — the AI infrastructure thesis justifies higher multiples in the bull case (Equinix comps at 35-40x). This raises the weighted FV from $5.71 → $10.64.
+3. **Direction**: Both SELL, but different magnitudes. Corrected FV is less pessimistic because the power moat is better documented.
+
+---
+
+## Company Snapshot
+
+| Metric | Value | Note |
+|--------|-------|------|
+| Price | $20.35 | |
+| Market Cap | $6.42B | |
+| TTM Revenue | $319M | |
+| Revenue Growth YoY | -16.0% | Transition period |
+| TTM Net Margin | **-90.47%** | Bankruptcy/transition artifact |
+| Forward P/E | 48.5x | Market expects profitability |
+| P/S Ratio | 20.13x | Expensive on trailing basis |
+| Beta | **6.355** | ⚠️ Extremely volatile |
+| Shares | 315.6M | Post-restructuring |
+
+**The business context**: Revenue is declining because Bitcoin mining revenue fluctuates with BTC price and hash-rate difficulty. The -16% isn't structural demand loss — it's the gap period between mining revenue falling and AI hosting contracts ramping. Forward P/E of 48x tells you the market already sees the profitability transition ahead.
+
+---
+
+## Investment Thesis
+
+Core Scientific's power assets are among the most valuable real estate in the AI economy right now. Long-term power purchase agreements at $0.03-0.05/kWh across Texas, Kentucky, and North Dakota data centers — when the national average power rate for new data center construction is $0.07-0.10/kWh and grid interconnection queues are 5-7 years — represent a legitimate structural competitive advantage.
+
+The pivot thesis: replace ~$0.05-0.10/kWh Bitcoin mining economics (highly commoditized, subject to halvings and difficulty adjustments) with AI/HPC hosting at $2-4M/MW/year in contracted revenue. Every megawatt converted from mining to AI hosting represents roughly a 10-20x revenue per MW improvement.
+
+The CoreWeave-type contracts are the validation signal. Multi-year, pre-paid AI hosting agreements provide revenue visibility that Bitcoin mining never could. The bull case is straightforward: AI compute stays supply-constrained, CORZ completes its conversion, and the PPAs become an enduring moat.
+
+The problem is price. At $20.35, the market has already underwritten this entire story. The weighted fair value analysis ($10.64) shows you're paying a 91% premium to fundamental value. The stock is pricing in the base case executing successfully — leaving you with no margin of safety and meaningful bear case downside.
+
+---
+
+## Scenario Analysis
+
+### 🐻 Bear Case (30% weight) — $0.09
+
+AI hosting contracts face delays due to grid interconnection backlogs, permitting challenges, or equipment shortages. Bitcoin mining economics deteriorate further (next halving, difficulty increases). The pivot stalls — 50%+ of capacity remains on mining by Y5. Continuous equity raises to fund capex dilute existing shareholders heavily.
+
+| Assumption | Value | Rationale |
+|-----------|-------|-----------|
+| 5-yr Revenue CAGR | 15% | Slow transition; mining revenue offsets AI hosting ramp |
+| Year 5 Revenue | $641.7M | From $319M at 15% CAGR |
+| Net Margin (Yr 5) | 1% | Barely breakeven; double-running costs persist |
+| Exit P/E | 12x | Post-transition distressed infrastructure company |
+| Quality Multiplier | 0.75 | Execution risk high; competition from hyperscaler-owned infra |
+| Share Change | +4%/yr | Heavy dilution for ongoing capex needs |
+| **Year 5 EPS** | **$0.02** | $6.4M NI / 384.0M shares |
+| **Year 5 Price** | **$0.15** | — |
+| **Present Value** | **$0.09** | — |
+
+### ⚖️ Base Case (45% weight) — $6.92
+
+AI hosting contracts execute on schedule. CORZ successfully converts majority of power capacity to AI/HPC hosting over 3-4 years. CoreWeave-type contracts provide revenue visibility. Revenue grows from $319M to $1.43B at 35% CAGR as capacity utilization improves. GAAP margins reach 12% as AI hosting gross margins (~30-35%) overcome D&A and SBC.
+
+| Assumption | Value | Rationale |
+|-----------|-------|-----------|
+| 5-yr Revenue CAGR | 35% | Capacity conversion math: ~$2M/MW/yr × 800MW × 60-70% utilization |
+| Year 5 Revenue | $1,430.5M | From $319M at 35% CAGR |
+| Net Margin (Yr 5) | 12% | AI hosting gross margins offset D&A on facility investments |
+| Exit P/E | 25x | Infrastructure company with contracted recurring revenue |
+| Quality Multiplier | 0.95 | Power PPA moat real but not exceptional (replicable with capital) |
+| Share Change | +3%/yr | Ongoing dilution for facility upgrades |
+| **Year 5 EPS** | **$0.47** | $171.7M NI / 365.9M shares |
+| **Year 5 Price** | **$11.14** | — |
+| **Present Value** | **$6.92** | — |
+
+### 🚀 Bull Case (25% weight) — $30.00
+
+**Catalyst**: AI compute demand outstrips supply through 2028+. CORZ's long-term PPAs at sub-market power rates ($0.03-0.05/kWh) become the most valuable assets in AI infrastructure as power costs at new sites reach $0.08-0.12/kWh. Premium pricing on HPC hosting ($3-4/W/month vs typical $1-2/W) drives revenue to $2.42B. Additional capacity expansion funded by pre-paid AI hosting contract cash flows.
+
+| Assumption | Value | Rationale |
+|-----------|-------|-----------|
+| 5-yr Revenue CAGR | 50% | Full capacity + expansion; AI demand stays supply-constrained |
+| Year 5 Revenue | $2,422.6M | From $319M at 50% CAGR |
+| Net Margin (Yr 5) | 18% | Operating leverage + premium contract pricing |
+| Exit P/E | 35x | Approaching Equinix comp (35-40x) for premium AI infra |
+| Quality Multiplier | 1.05 | Moat cited: 10-15yr PPAs at $0.03-0.05/kWh — structural cost advantage |
+| Share Change | +1%/yr | Dilution moderates as pre-paid contracts fund capex |
+| **Year 5 EPS** | **$1.31** | $436.1M NI / 331.7M shares |
+| **Year 5 Price** | **$48.31** | — |
+| **Present Value** | **$30.00** | — |
+
+---
+
+## Valuation Math
+
+| Scenario | PV | Weight | Contribution |
+|----------|-----|--------|-------------|
+| Bear | $0.09 | 30% | $0.03 |
+| Base | $6.92 | 45% | $3.11 |
+| Bull | $30.00 | 25% | $7.50 |
+| **Weighted FV** | | **100%** | **$10.64** |
+
+**Current price**: $20.35 | **Downside**: **-47.7%** | **Action**: **SELL**
+**Re-entry range**: $8-10 (base case approaches margin of safety)
+
+---
+
+## Key Risks
+
+1. **Grid interconnection delays**: New AI data center capacity is constrained by utility grid interconnection queue timelines (5-7 years for new sites). If CORZ's planned capacity expansions face permitting or grid delays, the bull case timeline pushes out significantly — and the stock would re-rate downward.
+2. **Bitcoin price volatility**: Until the pivot is complete, a portion of revenue remains BTC-mining dependent. A Bitcoin bear market (50%+ decline) would further compress mining revenue and force accelerated AI hosting conversion at potentially worse contract terms.
+3. **Post-bankruptcy capital structure complexity**: Warrants, options, and convertibles from the restructuring create additional dilution risk beyond the 315.6M share count. Actual fully diluted count for worst-case modeling should be 350-380M.
+4. **AI hosting pricing pressure**: If AI compute supply catches up (NVIDIA supply chains normalize, new data center builds complete), the premium pricing on AI hosting contracts could compress. $3-4/W/month today could be $1-2/W/month in 3 years if supply normalizes.
+5. **Execution risk on simultaneous BTC→AI transition**: Running down a mining operation while standing up an AI hosting business is operationally complex. Management team's first test of this transition is still ongoing — execution risk is non-trivial for a post-bankruptcy company.
+
+---
+
+## What To Watch
+- **AI hosting contract announcements**: MW committed + $/W pricing tells you the revenue trajectory
+- **Quarterly revenue mix disclosure**: AI hosting % vs Bitcoin mining % is the key transition metric
+- **Power utilization rate**: MW deployed for AI vs total MW capacity — bull case needs >70% AI hosting utilization by 2027
+- **Cash burn rate**: If equity raises accelerate or become more dilutive, the transition is stressed
+- **Re-entry signal**: $8-10 range where base case PV ($6.92) is within 15% — reasonable entry for the bull thesis
+
+---
+
+## Data Quality & Confidence Score
+
+**Confidence**: 0.48/1.0
+
+**Flags**:
+- ⚠️ Net margin -90.47% is transition artifact, not steady-state — all forward margins represent fundamental business model change
+- ⚠️ Revenue -16% YoY (declining), not fundamental demand loss
+- ⚠️ No historical financial data from API (post-bankruptcy data complexity)
+- ⚠️ No analyst estimates
+- ⚠️ Beta 6.355 — extreme volatility; sizing accordingly is critical
+- ⚠️ Post-restructuring dilution risk from warrants/options
+- ✅ Power infrastructure thesis validated by actual contracts (forward P/E 48x = market sees profitability)
+- ✅ Long-term PPAs at sub-market rates are a real, documented structural advantage
+- Prior Gemini v3: SELL $5.71 — directionally correct, bear margin slightly too optimistic, bull too conservative on multiple
+
+---
+
+## Discussion Log
+*Session: 2026-05-02 — Replaced same-day Gemini 3 Pro (v3, $5.71 SELL). No Q&A appended.*
+
+---
+
+## Sources Checked
+- Financial data: ✅ fetch_financials.py | Historical arrays: ❌ Null (restructuring)
+- Analyst estimates: ❌ Unavailable
+- Projection: ✅ CORZ.json v4 | Research: ✅ CORZ_2026-05-02.md
+- Benchmarks: ✅ references/valuation-benchmarks.md
+- Prior: ✅ v3 Gemini 3 Pro — REPLACED
+

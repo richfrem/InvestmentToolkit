@@ -7,7 +7,7 @@
     "version": 4,
     "savedAt": "2026-05-02T22:15:00.000Z",
     "updatedAt": "2026-05-02T22:26:51.220Z",
-    "name": "AI Deep Dive — SEI — 2026-05-02",
+    "name": "AI Deep Dive \u2014 SEI \u2014 2026-05-02",
     "rationale": "Solaris Energy Infrastructure is executing a successful pivot from oilfield equipment to modular data center power solutions. Revenue doubled to $622M TTM (+55.3%) and analysts project $825M Y1 (+32.7%) and $1.22B Y2 (+47.4%). EBITDA margin 29.7%, Rule of 40 score 85. DCF fair value $86.94 vs $72.33 (BUY +20.2%) driven by strong base case with 28% CAGR and 10% net margins. Data center power infrastructure is a multi-year secular tailwind.",
     "snapshot": {
       "price": 72.33,
@@ -63,25 +63,25 @@
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "**BUY — Fair Value $86.94 vs $72.33 (+20.2%)**\n\nSolaris Energy Infrastructure is successfully pivoting from oilfield equipment to modular data center power solutions. Revenue growth of 55.3% YoY, Rule of 40 score of 85, and analyst Strong Buy consensus at $83.57 (12 analysts) all point to a fundamentally sound growth story. The data center power buildout thesis (AI infrastructure requiring massive reliable power delivery) is a multi-year secular tailwind that SEI is well-positioned to capture.\n\nThe BUY at $86.94 (+20.2%) is supported by our base case DCF (28% 5-yr CAGR, 10% margin expansion, 25x exit PE) producing $57.08 present value, offset by a strong bull case ($281.76) on the AI acceleration scenario. The analyst target of $83.57 validates the thesis independently.\n\nKey risks: FCF is deeply negative (-$438M TTM) as SEI deploys capital to build the modular power equipment fleet. If data center capex slows, SEI faces both revenue headwinds and stranded capital. The share count ambiguity is a data quality flag but does not change the directional thesis.",
+      "rationale": "**BUY \u2014 Fair Value $86.94 vs $72.33 (+20.2%)**\n\nSolaris Energy Infrastructure is successfully pivoting from oilfield equipment to modular data center power solutions. Revenue growth of 55.3% YoY, Rule of 40 score of 85, and analyst Strong Buy consensus at $83.57 (12 analysts) all point to a fundamentally sound growth story. The data center power buildout thesis (AI infrastructure requiring massive reliable power delivery) is a multi-year secular tailwind that SEI is well-positioned to capture.\n\nThe BUY at $86.94 (+20.2%) is supported by our base case DCF (28% 5-yr CAGR, 10% margin expansion, 25x exit PE) producing $57.08 present value, offset by a strong bull case ($281.76) on the AI acceleration scenario. The analyst target of $83.57 validates the thesis independently.\n\nKey risks: FCF is deeply negative (-$438M TTM) as SEI deploys capital to build the modular power equipment fleet. If data center capex slows, SEI faces both revenue headwinds and stranded capital. The share count ambiguity is a data quality flag but does not change the directional thesis.",
       "fairValue": 86.94,
       "action": "BUY",
       "analyzedAt": "2026-05-02T22:15:00.000Z",
-      "researchReport": "SEI_2026-05-02.md"
+      "researchReport": "SEI.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "CORRECTED: shares_diluted (43,723,188) was LESS than shares_outstanding (58,138,451) — mathematically impossible. Used shares_outstanding = 58,138,451. Note: mktcap-implied = $6.74B / $72.33 = 93,148,338 — a significant discrepancy vs stated outstanding. May indicate Class A/B share structure or data source issue. EPS-implied shares from reported PE 86.1x = ~49.5M. Used 58.1M as most conservative defensible figure.",
-      "marginAnchor": "TTM 6.69% used as anchor. Historical: 6.6%, 8.2%, 5.1%, 4.8% — mean-reverting ~6.6%. EBITDA margin 29.7% suggests structural net margin expansion capability as capex normalizes. Base/bull scenarios project improvement to 10%/18% — justified by analyst Y1 EPS $1.52 implying ~10.7% forward margin.",
-      "growthDerivation": "Y1 $825.5M (+32.7%), Y2 $1,216.9M (+47.4%). Blended 40.1%. Bear 10% (oilfield slowdown overcomes data center growth), Base 28% (conservative deceleration from 33→47→28), Bull 45% (hyperscaler acceleration). Y1 below 40% strict hypergrowth threshold but Y2 above — treated as high-growth with manual CAGR sanity check.",
-      "sectorBenchmarkRow": "Energy — Oil & Gas Equipment & Services (primary listing) but business is transitioning to Technology — Industrial/Data Center Infrastructure. Used PE range 15-35x reflecting the hybrid nature.",
+      "shareCountMethod": "CORRECTED: shares_diluted (43,723,188) was LESS than shares_outstanding (58,138,451) \u2014 mathematically impossible. Used shares_outstanding = 58,138,451. Note: mktcap-implied = $6.74B / $72.33 = 93,148,338 \u2014 a significant discrepancy vs stated outstanding. May indicate Class A/B share structure or data source issue. EPS-implied shares from reported PE 86.1x = ~49.5M. Used 58.1M as most conservative defensible figure.",
+      "marginAnchor": "TTM 6.69% used as anchor. Historical: 6.6%, 8.2%, 5.1%, 4.8% \u2014 mean-reverting ~6.6%. EBITDA margin 29.7% suggests structural net margin expansion capability as capex normalizes. Base/bull scenarios project improvement to 10%/18% \u2014 justified by analyst Y1 EPS $1.52 implying ~10.7% forward margin.",
+      "growthDerivation": "Y1 $825.5M (+32.7%), Y2 $1,216.9M (+47.4%). Blended 40.1%. Bear 10% (oilfield slowdown overcomes data center growth), Base 28% (conservative deceleration from 33\u219247\u219228), Bull 45% (hyperscaler acceleration). Y1 below 40% strict hypergrowth threshold but Y2 above \u2014 treated as high-growth with manual CAGR sanity check.",
+      "sectorBenchmarkRow": "Energy \u2014 Oil & Gas Equipment & Services (primary listing) but business is transitioning to Technology \u2014 Industrial/Data Center Infrastructure. Used PE range 15-35x reflecting the hybrid nature.",
       "dataQualityFlags": [
-        "shares_diluted (43.7M) < shares_outstanding (58.1M) — corrected to 58.1M (impossible data from API)",
-        "Mktcap-implied shares (93.1M) >> shares_outstanding (58.1M) — possible multi-class share structure; significant share count ambiguity",
-        "FCF deeply negative: -$437.6M TTM despite growing revenue — heavy capital investment in modular equipment for data center buildout"
+        "shares_diluted (43.7M) < shares_outstanding (58.1M) \u2014 corrected to 58.1M (impossible data from API)",
+        "Mktcap-implied shares (93.1M) >> shares_outstanding (58.1M) \u2014 possible multi-class share structure; significant share count ambiguity",
+        "FCF deeply negative: -$437.6M TTM despite growing revenue \u2014 heavy capital investment in modular equipment for data center buildout"
       ],
       "analystInputs": {
         "y1RevEstimate": 825487800,
@@ -116,13 +116,13 @@
         "priorPrice": 72.33,
         "priorFairValue": 67.81,
         "priorAction": "HOLD",
-        "priceDelta": "0% — same price; prior HOLD at $72.33 vs FV $67.81 (modest SELL signal)",
-        "assumptionAudit": "Prior base CAGR 35% was reasonable. Prior base netMargin 10% matches our derivation. Prior QM 1.0 matches. Key difference: prior bull QM 1.1 applied without explicit moat citation — per skill rules, QM >1.1 requires structural moat. We maintain QM 1.05 for bull. Prior HOLD at $67.81 was conservative; our BUY at $86.94 reflects stronger data center secular tailwind recognized.",
-        "modelQualityFlag": "UNVALIDATED — Gemini 3 Pro",
+        "priceDelta": "0% \u2014 same price; prior HOLD at $72.33 vs FV $67.81 (modest SELL signal)",
+        "assumptionAudit": "Prior base CAGR 35% was reasonable. Prior base netMargin 10% matches our derivation. Prior QM 1.0 matches. Key difference: prior bull QM 1.1 applied without explicit moat citation \u2014 per skill rules, QM >1.1 requires structural moat. We maintain QM 1.05 for bull. Prior HOLD at $67.81 was conservative; our BUY at $86.94 reflects stronger data center secular tailwind recognized.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Gemini 3 Pro",
         "thesisOutcome": "Prior HOLD thesis approximately correct at flat price. Re-evaluation upgrades to BUY on stronger analyst consensus and Rule of 40 score 85.",
         "fundamentalChanges": "Revenue doubled in TTM period. Data center pivot confirmed with $825M Y1 guidance. Rule of 40 improved to 85. Analyst recommendation upgraded to Strong Buy (12 analysts)."
       },
-      "confidenceBreakdown": "0.63/1.0 — Base: 1.0. -0.15 significant share count ambiguity. -0.12 deeply negative FCF (capex-intensive growth model). -0.10 business model transition risk (oilfield → data center)."
+      "confidenceBreakdown": "0.63/1.0 \u2014 Base: 1.0. -0.15 significant share count ambiguity. -0.12 deeply negative FCF (capex-intensive growth model). -0.10 business model transition risk (oilfield \u2192 data center)."
     }
   }
 ]

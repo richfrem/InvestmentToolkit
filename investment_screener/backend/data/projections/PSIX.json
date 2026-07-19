@@ -7,8 +7,8 @@
     "version": 4,
     "savedAt": "2026-05-02T22:15:00Z",
     "updatedAt": "2026-05-02T22:01:08.409Z",
-    "name": "AI Deep Dive — PSIX — 2026-05-02",
-    "rationale": "Power Solutions International is one of the most attractively valued industrial growth stories in this analysis session. Revenue grew 32.5% to $722M TTM. Margins have expanded every single year for 4 consecutive years (2.3%→5.7%→14.6%→15.8%). The company makes specialty natural gas and propane engines used in data center backup power, marine, and industrial applications — a direct AI data center infrastructure beneficiary. PE 14.3x trailing on a company with >30% revenue growth and 16% margins. Weighted DCF fair value $107.09 vs $70.50 (+51.9%). BUY.",
+    "name": "AI Deep Dive \u2014 PSIX \u2014 2026-05-02",
+    "rationale": "Power Solutions International is one of the most attractively valued industrial growth stories in this analysis session. Revenue grew 32.5% to $722M TTM. Margins have expanded every single year for 4 consecutive years (2.3%\u21925.7%\u219214.6%\u219215.8%). The company makes specialty natural gas and propane engines used in data center backup power, marine, and industrial applications \u2014 a direct AI data center infrastructure beneficiary. PE 14.3x trailing on a company with >30% revenue growth and 16% margins. Weighted DCF fair value $107.09 vs $70.50 (+51.9%). BUY.",
     "snapshot": {
       "price": 70.5,
       "currency": "USD",
@@ -31,7 +31,7 @@
         "exitPE": 10,
         "qualityMultiplier": 0.9,
         "shareChange": 1,
-        "rationale": "Data center backup power demand peaks earlier than expected as AI capex cycle moderates post-2026. Revenue growth decelerates sharply to 5% CAGR (from 32.5% TTM). Margins compress to 8% as competition intensifies from Cummins, Caterpillar, and international engine manufacturers. Exit PE 10x = industrial equipment in declining growth phase. Note: even at 5% growth and 8% margins, this is a profitable business — bear PV $17.01 implies 76% downside from current $70.50. Year 5: $922M × 8% / 24.2M shares = $3.04 EPS × 10x × 0.90 / 1.61 = $17.01.",
+        "rationale": "Data center backup power demand peaks earlier than expected as AI capex cycle moderates post-2026. Revenue growth decelerates sharply to 5% CAGR (from 32.5% TTM). Margins compress to 8% as competition intensifies from Cummins, Caterpillar, and international engine manufacturers. Exit PE 10x = industrial equipment in declining growth phase. Note: even at 5% growth and 8% margins, this is a profitable business \u2014 bear PV $17.01 implies 76% downside from current $70.50. Year 5: $922M \u00d7 8% / 24.2M shares = $3.04 EPS \u00d7 10x \u00d7 0.90 / 1.61 = $17.01.",
         "scenarioPrice": 17.01
       },
       "base": {
@@ -41,7 +41,7 @@
         "exitPE": 15,
         "qualityMultiplier": 1,
         "shareChange": -1,
-        "rationale": "Analyst-grounded: Y1 $883M (+22%), Y2 $1.026B (+16%). 5-yr CAGR 18% within ±3pp of blended 19% consensus. Base case uses 18% which is close to deceleration path (22% Y1 → 16% Y2 → 13% Y3 → 10% Y4 → 8% Y5 → CAGR 17.7%). Net margin 12% = moderate compression from TTM 15.8% toward analyst-implied Y1 10.3% ($3.95 EPS × 23.05M = $91M NI / $883M = 10.3%). Base uses 12% as the 5-year average (near-term compression, then gradual recovery as scale benefits resume). Exit PE 15x = industrial machinery median. Year 5: $1,652.7M × 12% / 21.9M shares = $9.05 EPS × 15 × 1.00 / 1.61 = $84.26.",
+        "rationale": "Analyst-grounded: Y1 $883M (+22%), Y2 $1.026B (+16%). 5-yr CAGR 18% within \u00b13pp of blended 19% consensus. Base case uses 18% which is close to deceleration path (22% Y1 \u2192 16% Y2 \u2192 13% Y3 \u2192 10% Y4 \u2192 8% Y5 \u2192 CAGR 17.7%). Net margin 12% = moderate compression from TTM 15.8% toward analyst-implied Y1 10.3% ($3.95 EPS \u00d7 23.05M = $91M NI / $883M = 10.3%). Base uses 12% as the 5-year average (near-term compression, then gradual recovery as scale benefits resume). Exit PE 15x = industrial machinery median. Year 5: $1,652.7M \u00d7 12% / 21.9M shares = $9.05 EPS \u00d7 15 \u00d7 1.00 / 1.61 = $84.26.",
         "scenarioPrice": 84.26
       },
       "bull": {
@@ -51,32 +51,32 @@
         "exitPE": 22,
         "qualityMultiplier": 1.05,
         "shareChange": -2,
-        "rationale": "Catalyst: AI data center buildout continues accelerating through 2030 with PSIX engines becoming the de facto standard for backup power in hyperscale data centers (Amazon, Microsoft, Google). Natural gas engine efficiency advantages over diesel (lower emissions, lower fuel cost, longer maintenance cycles) drive replacement cycle. International expansion (European and Asian data centers adopting US-manufactured backup power). Revenue reaches $2.2B by Y5 (25% CAGR). Margins sustain at 16% as scale benefits and product pricing power emerge. Exit PE 22x: growth industrial company at above-median but not premium multiple. Year 5: $2,204.6M × 16% / 20.8M shares = $16.93 EPS × 22 × 1.05 / 1.61 = $242.82.",
+        "rationale": "Catalyst: AI data center buildout continues accelerating through 2030 with PSIX engines becoming the de facto standard for backup power in hyperscale data centers (Amazon, Microsoft, Google). Natural gas engine efficiency advantages over diesel (lower emissions, lower fuel cost, longer maintenance cycles) drive replacement cycle. International expansion (European and Asian data centers adopting US-manufactured backup power). Revenue reaches $2.2B by Y5 (25% CAGR). Margins sustain at 16% as scale benefits and product pricing power emerge. Exit PE 22x: growth industrial company at above-median but not premium multiple. Year 5: $2,204.6M \u00d7 16% / 20.8M shares = $16.93 EPS \u00d7 22 \u00d7 1.05 / 1.61 = $242.82.",
         "scenarioPrice": 242.82
       }
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "Power Solutions International is a small-cap industrial compunder hiding in plain sight. The company makes specialty natural gas and propane engines used in data center backup power generation, marine applications, and industrial equipment. Revenue grew 52% from $476M to $722M in the most recent fiscal year, driven by explosive demand for data center backup power as AI buildout accelerated. Margins have expanded every single year for four consecutive years (2.3%→5.7%→14.6%→15.8%). Despite this track record, the stock trades at 14.3x trailing earnings — below the industrial machinery median of 15-20x and dramatically below technology/growth multiples that comparable data center infrastructure companies command. The valuation discount appears to be a coverage gap artifact: only 3 Wall Street analysts cover the stock. With a market cap of $1.63B, PSIX falls below the minimum coverage threshold for many large institutional research desks, creating a potential alpha opportunity for investors who do the work. The three analysts who do cover it have targets of $92.90-$109.00 (mean $102.97), implying 46% upside from current. Our DCF weighted fair value of $107.09 (+51.9%) aligns with this consensus. The primary risk is that the data center backup power demand surge is cyclical rather than structural — if hyperscaler capex slows post-2026, PSIX revenue could decelerate sharply. This is the bear case at $17.01 (24% weight). The base and bull cases produce $84 and $243 respectively, giving a weighted $107 that represents compelling risk/reward. BUY.",
+      "rationale": "Power Solutions International is a small-cap industrial compunder hiding in plain sight. The company makes specialty natural gas and propane engines used in data center backup power generation, marine applications, and industrial equipment. Revenue grew 52% from $476M to $722M in the most recent fiscal year, driven by explosive demand for data center backup power as AI buildout accelerated. Margins have expanded every single year for four consecutive years (2.3%\u21925.7%\u219214.6%\u219215.8%). Despite this track record, the stock trades at 14.3x trailing earnings \u2014 below the industrial machinery median of 15-20x and dramatically below technology/growth multiples that comparable data center infrastructure companies command. The valuation discount appears to be a coverage gap artifact: only 3 Wall Street analysts cover the stock. With a market cap of $1.63B, PSIX falls below the minimum coverage threshold for many large institutional research desks, creating a potential alpha opportunity for investors who do the work. The three analysts who do cover it have targets of $92.90-$109.00 (mean $102.97), implying 46% upside from current. Our DCF weighted fair value of $107.09 (+51.9%) aligns with this consensus. The primary risk is that the data center backup power demand surge is cyclical rather than structural \u2014 if hyperscaler capex slows post-2026, PSIX revenue could decelerate sharply. This is the bear case at $17.01 (24% weight). The base and bull cases produce $84 and $243 respectively, giving a weighted $107 that represents compelling risk/reward. BUY.",
       "fairValue": 107.09,
       "action": "BUY",
       "analyzedAt": "2026-05-02T22:15:00Z",
-      "researchReport": "PSIX_2026-05-02.md"
+      "researchReport": "PSIX.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "API shares_diluted = shares_outstanding = 23,050,450. Mktcap-implied: $1.625B / $70.50 = 23.05M — 0% discrepancy. Clean. Very low share count — PSIX is a concentrated micro/small-cap. Small float increases volatility.",
-      "marginAnchor": "Strongly trending (every year higher for 4 consecutive years: 2.3%→5.7%→14.6%→15.8%). By the skill rule, TTM 15.8% should be the anchor for trending margins. HOWEVER: analyst Y1 EPS $3.95 × 23.05M = $91M NI / $883M = 10.3% forward GAAP margin — near-term compression. This is similar to META's Year of Efficiency peak-then-compress. The compression is likely from: (1) rapid revenue scaling outpacing cost structure; (2) input cost normalization. Using 12% as base 5-year average (below TTM 15.8%, above analyst Y1 10.3%) — a reasonable midpoint that acknowledges both the trend and the forward compression.",
-      "growthDerivation": "Y1 $883M (+22.3%), Y2 $1,026M (+16.2%). Not hypergrowth exception (<40%). Blended consensus ~19%. Deceleration path: Y1→22%, Y2→16%, Y3→13%, Y4→10%, Y5→8%. CAGR from TTM $722M to Y5 revenue: target $1,625M = ($1,625M/$722M)^0.2-1 = 17.6% ≈ 18%. Base 18% is within ±1pp of derived CAGR.",
-      "sectorBenchmarkRow": "Industrials — Specialty Industrial Machinery: conservative P/E 10, median P/E 15-20, growth P/E 25+. PSIX at 14.3x trailing PE is below the median for specialty industrial machinery, despite above-median growth (32.5% TTM vs sector ~5-10%). This valuation discount appears to be a coverage gap (only 3 analysts) + small-cap discount ($1.63B market cap).",
+      "shareCountMethod": "API shares_diluted = shares_outstanding = 23,050,450. Mktcap-implied: $1.625B / $70.50 = 23.05M \u2014 0% discrepancy. Clean. Very low share count \u2014 PSIX is a concentrated micro/small-cap. Small float increases volatility.",
+      "marginAnchor": "Strongly trending (every year higher for 4 consecutive years: 2.3%\u21925.7%\u219214.6%\u219215.8%). By the skill rule, TTM 15.8% should be the anchor for trending margins. HOWEVER: analyst Y1 EPS $3.95 \u00d7 23.05M = $91M NI / $883M = 10.3% forward GAAP margin \u2014 near-term compression. This is similar to META's Year of Efficiency peak-then-compress. The compression is likely from: (1) rapid revenue scaling outpacing cost structure; (2) input cost normalization. Using 12% as base 5-year average (below TTM 15.8%, above analyst Y1 10.3%) \u2014 a reasonable midpoint that acknowledges both the trend and the forward compression.",
+      "growthDerivation": "Y1 $883M (+22.3%), Y2 $1,026M (+16.2%). Not hypergrowth exception (<40%). Blended consensus ~19%. Deceleration path: Y1\u219222%, Y2\u219216%, Y3\u219213%, Y4\u219210%, Y5\u21928%. CAGR from TTM $722M to Y5 revenue: target $1,625M = ($1,625M/$722M)^0.2-1 = 17.6% \u2248 18%. Base 18% is within \u00b11pp of derived CAGR.",
+      "sectorBenchmarkRow": "Industrials \u2014 Specialty Industrial Machinery: conservative P/E 10, median P/E 15-20, growth P/E 25+. PSIX at 14.3x trailing PE is below the median for specialty industrial machinery, despite above-median growth (32.5% TTM vs sector ~5-10%). This valuation discount appears to be a coverage gap (only 3 analysts) + small-cap discount ($1.63B market cap).",
       "dataQualityFlags": [
         "THIN ANALYST COVERAGE: Only 3 analysts (target range $92.90-$109.00, mean $102.97). Small-cap with limited Wall Street visibility. Coverage gap likely explains the valuation discount (PE 14.3x vs median 15-20x for industrials). This is a potential alpha opportunity.",
-        "Analyst EPS Y1 $3.95 < TTM EPS $4.95 — forward EPS DECLINING despite revenue growing +22%. Suggests significant margin compression in Y1. Check: $3.95 × 23.05M shares = $91M NI / $883M revenue = 10.3% margin vs TTM 15.8%. This is a real margin compression concern, not a data artifact.",
-        "FCF: -$10M → $65M → $58M → $14M (TTM). FCF declining from $65M peak despite profitability improvement. Likely capital investment in capacity expansion (new manufacturing, tooling). This is growth capex, not a quality concern, but bears watching.",
-        "Revenue $481M → $459M → $476M → $722M: small dip in FY2022, then explosive growth in FY2023-2024. The explosive recent growth appears to be from data center backup power demand. If this demand is cyclical (not structural), the bear case is more likely."
+        "Analyst EPS Y1 $3.95 < TTM EPS $4.95 \u2014 forward EPS DECLINING despite revenue growing +22%. Suggests significant margin compression in Y1. Check: $3.95 \u00d7 23.05M shares = $91M NI / $883M revenue = 10.3% margin vs TTM 15.8%. This is a real margin compression concern, not a data artifact.",
+        "FCF: -$10M \u2192 $65M \u2192 $58M \u2192 $14M (TTM). FCF declining from $65M peak despite profitability improvement. Likely capital investment in capacity expansion (new manufacturing, tooling). This is growth capex, not a quality concern, but bears watching.",
+        "Revenue $481M \u2192 $459M \u2192 $476M \u2192 $722M: small dip in FY2022, then explosive growth in FY2023-2024. The explosive recent growth appears to be from data center backup power demand. If this demand is cyclical (not structural), the bear case is more likely."
       ],
       "analystInputs": {
         "y1RevEstimate": 883400000,
@@ -111,13 +111,13 @@
         "priorPrice": 70.5,
         "priorFairValue": 122.28,
         "priorAction": "BUY",
-        "priceDelta": "0% — same day",
-        "assumptionAudit": "Prior Gemini BUY at $122.28 — directionally correct. Gemini base: 15% growth, 16% margin, 18x PE, QM 1.0. Our base: 18% growth, 12% margin, 15x PE. Gemini's higher margin (16% vs our 12%) and exit PE (18x vs 15x) drives the higher FV ($122 vs $84 base). Both confirm BUY. Gemini may be using TTM margin (15.8%) as the anchor without accounting for analyst-implied Y1 compression to 10.3%. Our 12% is more conservative and defensible. Gemini's $122 is the upper end of what's realistic; our $107 weighted FV is more conservative.",
-        "modelQualityFlag": "UNVALIDATED — Gemini 3 Pro",
-        "thesisOutcome": "N/A — same day. BUY confirmed with $107 FV vs Gemini's $122 FV.",
-        "fundamentalChanges": "AI data center buildout accelerating globally — PSIX's natural gas backup generators are direct beneficiaries. Hyperscalers (Amazon, Microsoft, Google) building massive data center capacity requiring reliable backup power. LNG/natural gas infrastructure expansion also supports PSIX engine demand."
+        "priceDelta": "0% \u2014 same day",
+        "assumptionAudit": "Prior Gemini BUY at $122.28 \u2014 directionally correct. Gemini base: 15% growth, 16% margin, 18x PE, QM 1.0. Our base: 18% growth, 12% margin, 15x PE. Gemini's higher margin (16% vs our 12%) and exit PE (18x vs 15x) drives the higher FV ($122 vs $84 base). Both confirm BUY. Gemini may be using TTM margin (15.8%) as the anchor without accounting for analyst-implied Y1 compression to 10.3%. Our 12% is more conservative and defensible. Gemini's $122 is the upper end of what's realistic; our $107 weighted FV is more conservative.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Gemini 3 Pro",
+        "thesisOutcome": "N/A \u2014 same day. BUY confirmed with $107 FV vs Gemini's $122 FV.",
+        "fundamentalChanges": "AI data center buildout accelerating globally \u2014 PSIX's natural gas backup generators are direct beneficiaries. Hyperscalers (Amazon, Microsoft, Google) building massive data center capacity requiring reliable backup power. LNG/natural gas infrastructure expansion also supports PSIX engine demand."
       },
-      "confidenceBreakdown": "0.71/1.0 — Base 1.0. +0.10 strongly trending margins 4 years consecutive; +0.08 PE 14.3x cheap for 32.5% growth rate; +0.07 analyst $102.97 target provides external BUY confirmation; +0.05 AI data center structural tailwind for backup power; -0.10 thin coverage (3 analysts) increases uncertainty; -0.09 forward EPS compression ($4.95 TTM → $3.95 Y1) despite revenue growth; -0.06 FCF declining despite profit growth (growth capex concern); -0.05 small cap ($1.63B) concentration/liquidity risk; -0.05 data center backup power demand may be cyclical not structural; -0.04 Piotroski 6/9 (solid but not exceptional)"
+      "confidenceBreakdown": "0.71/1.0 \u2014 Base 1.0. +0.10 strongly trending margins 4 years consecutive; +0.08 PE 14.3x cheap for 32.5% growth rate; +0.07 analyst $102.97 target provides external BUY confirmation; +0.05 AI data center structural tailwind for backup power; -0.10 thin coverage (3 analysts) increases uncertainty; -0.09 forward EPS compression ($4.95 TTM \u2192 $3.95 Y1) despite revenue growth; -0.06 FCF declining despite profit growth (growth capex concern); -0.05 small cap ($1.63B) concentration/liquidity risk; -0.05 data center backup power demand may be cyclical not structural; -0.04 Piotroski 6/9 (solid but not exceptional)"
     }
   }
 ]

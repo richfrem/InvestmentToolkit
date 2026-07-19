@@ -7,7 +7,7 @@
     "version": 1,
     "savedAt": "2026-05-02T19:16:32.961Z",
     "updatedAt": "2026-05-02T19:16:32.961Z",
-    "name": "AI Deep Dive — AMZN — 2026-05-02",
+    "name": "AI Deep Dive \u2014 AMZN \u2014 2026-05-02",
     "rationale": "Amazon presents an incredibly compelling risk/reward profile. TTM net margins have exploded to 10.8% (up from -0.5% in 2022) as the high-margin AWS and advertising businesses scale to offset retail fulfillment costs. Their Rule of 40 score stands at 39.66 with a perfect 9 on the Piotroski F-Score, signaling outstanding fundamental health. As AWS captures enterprise AI workloads, margins and cash flow should continue structural expansion. A conservative base case targeting 13.5% growth and a 13% net margin yields a fair value of $352.36, offering over 30% upside from the current price.",
     "snapshot": {
       "price": 268.26,
@@ -87,7 +87,7 @@
       "fairValue": 352.36,
       "action": "BUY",
       "analyzedAt": "2026-05-02T19:16:32.961Z",
-      "researchReport": "AMZN_2026-05-02.md"
+      "researchReport": "AMZN.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -128,7 +128,7 @@
         5.66,
         7.29
       ],
-      "confidenceBreakdown": "0.95/1.0 — +0.10 for Piotroski 9 score and clean data, +0.05 for highly predictable AWS contract revenue."
+      "confidenceBreakdown": "0.95/1.0 \u2014 +0.10 for Piotroski 9 score and clean data, +0.05 for highly predictable AWS contract revenue."
     }
   },
   {
@@ -139,8 +139,8 @@
     "version": 1,
     "savedAt": "2026-05-02T21:15:00.000Z",
     "updatedAt": "2026-05-02T21:15:00.000Z",
-    "name": "AI Deep Dive — AMZN — 2026-05-02",
-    "rationale": "Amazon is AWS + advertising + retail flywheel — three distinct margin-accretive businesses compounding together. TTM net margin ~12.6% (P/E-derived) still early in the margin expansion story as AWS and ads become larger % of revenue. BUY at $347.80 vs $268.26 (+29.7%). Prior Gemini BUY $352 is largely validated — QM correction from 1.3 to 1.15 reduces but does not change the action.",
+    "name": "AI Deep Dive \u2014 AMZN \u2014 2026-05-02",
+    "rationale": "Amazon is AWS + advertising + retail flywheel \u2014 three distinct margin-accretive businesses compounding together. TTM net margin ~12.6% (P/E-derived) still early in the margin expansion story as AWS and ads become larger % of revenue. BUY at $347.80 vs $268.26 (+29.7%). Prior Gemini BUY $352 is largely validated \u2014 QM correction from 1.3 to 1.15 reduces but does not change the action.",
     "snapshot": {
       "price": 268.26,
       "currency": "USD",
@@ -189,23 +189,23 @@
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "Amazon is AWS + advertising + retail flywheel — three distinct margin-accretive businesses compounding together. TTM net margin ~12.6% (P/E-derived) still early in the margin expansion story as AWS and ads become larger % of revenue. BUY at $347.80 vs $268.26 (+29.7%). Prior Gemini BUY $352 is largely validated — QM correction from 1.3 to 1.15 reduces but does not change the action.",
+      "rationale": "Amazon is AWS + advertising + retail flywheel \u2014 three distinct margin-accretive businesses compounding together. TTM net margin ~12.6% (P/E-derived) still early in the margin expansion story as AWS and ads become larger % of revenue. BUY at $347.80 vs $268.26 (+29.7%). Prior Gemini BUY $352 is largely validated \u2014 QM correction from 1.3 to 1.15 reduces but does not change the action.",
       "fairValue": 347.8,
       "action": "BUY",
       "analyzedAt": "2026-05-02T21:15:00.000Z",
-      "researchReport": "AMZN_2026-05-02.md"
+      "researchReport": "AMZN.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "Used metrics.shares_diluted. Mktcap-implied cross-check: $2880B / $268.26 = 10.736B shares vs API 10.754B — consistent.",
-      "marginAnchor": "TTM 12.6% (P/E-derived: $2.88T / 32x = $90B NI / $716.9B = 12.6%). Historical improvement: FY2022 -0.5%, FY2023 5.3%, FY2024 9.3%, TTM 12.6% — strong upward trend. All scenarios above TTM reflect continued AWS+ads mix shift (justified).",
+      "shareCountMethod": "Used metrics.shares_diluted. Mktcap-implied cross-check: $2880B / $268.26 = 10.736B shares vs API 10.754B \u2014 consistent.",
+      "marginAnchor": "TTM 12.6% (P/E-derived: $2.88T / 32x = $90B NI / $716.9B = 12.6%). Historical improvement: FY2022 -0.5%, FY2023 5.3%, FY2024 9.3%, TTM 12.6% \u2014 strong upward trend. All scenarios above TTM reflect continued AWS+ads mix shift (justified).",
       "growthDerivation": "No analyst estimates. TTM growth 16.6%. Base 13% = modest deceleration; AWS offsets retail slowdown. Bull 17% requires AWS AI services acceleration. Bear 9% = tariff/cloud optimization repeat.",
-      "sectorBenchmarkRow": "Technology — Internet / Platforms: conservative P/E 18, median 28, growth 45. AWS and Ads justify platform premium over retail multiple.",
+      "sectorBenchmarkRow": "Technology \u2014 Internet / Platforms: conservative P/E 18, median 28, growth 45. AWS and Ads justify platform premium over retail multiple.",
       "dataQualityFlags": [
-        "net_income, net_margin, eps, financials all null — P/E-derived metrics used",
+        "net_income, net_margin, eps, financials all null \u2014 P/E-derived metrics used",
         "No analyst estimates or financial history available",
         "GAAP margin (12.6%) reflects retail mix; AWS standalone margin would be much higher"
       ],
@@ -227,13 +227,13 @@
         "priorPrice": 268.26,
         "priorFairValue": 352.36,
         "priorAction": "BUY",
-        "priceDelta": "0% — same-day analysis",
-        "assumptionAudit": "Prior BUY $352 (same day, same price). Thesis largely correct — our $347 is within 2% of Gemini. Main correction: bull QM 1.3 → 1.15 (Exceptional tier requires extraordinary evidence; Amazon has strong moats but 1.3 is NVIDIA/Apple tier). Bear margin 10% < TTM 12.6% — correct. Base margin 13% just above TTM 12.6% — directionally reasonable.",
-        "modelQualityFlag": "UNVALIDATED — Gemini 1.5 Pro",
-        "thesisOutcome": "Same-day analysis — no price movement. Prior BUY $352.36 vs our BUY $347.8.",
-        "fundamentalChanges": "Same-day analysis — no fundamental changes. Differences reflect QM recalibration, growth rate adjustment, and margin anchoring corrections."
+        "priceDelta": "0% \u2014 same-day analysis",
+        "assumptionAudit": "Prior BUY $352 (same day, same price). Thesis largely correct \u2014 our $347 is within 2% of Gemini. Main correction: bull QM 1.3 \u2192 1.15 (Exceptional tier requires extraordinary evidence; Amazon has strong moats but 1.3 is NVIDIA/Apple tier). Bear margin 10% < TTM 12.6% \u2014 correct. Base margin 13% just above TTM 12.6% \u2014 directionally reasonable.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Gemini 1.5 Pro",
+        "thesisOutcome": "Same-day analysis \u2014 no price movement. Prior BUY $352.36 vs our BUY $347.8.",
+        "fundamentalChanges": "Same-day analysis \u2014 no fundamental changes. Differences reflect QM recalibration, growth rate adjustment, and margin anchoring corrections."
       },
-      "confidenceBreakdown": "0.67/1.0 — Base: 1.0. -0.12 no net_margin in API (P/E-derived); -0.10 tariff uncertainty (US retail exposure); -0.08 no financials history; -0.05 GAAP margin influenced by AWS capex amortization pace; +0.12 AWS competitive moat well-established"
+      "confidenceBreakdown": "0.67/1.0 \u2014 Base: 1.0. -0.12 no net_margin in API (P/E-derived); -0.10 tariff uncertainty (US retail exposure); -0.08 no financials history; -0.05 GAAP margin influenced by AWS capex amortization pace; +0.12 AWS competitive moat well-established"
     }
   }
 ]

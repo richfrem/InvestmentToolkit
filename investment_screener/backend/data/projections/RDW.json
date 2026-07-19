@@ -7,8 +7,8 @@
     "version": 1,
     "savedAt": "2026-05-31T16:15:00.000Z",
     "updatedAt": "2026-05-31T16:15:00.000Z",
-    "name": "AI Deep Dive — RDW — 2026-05-31",
-    "rationale": "Redwire Corporation (RDW) is a pre-profit space infrastructure and defense technology company that has experienced a parabolic +167% rally in one month driven by the Golden Dome missile defense initiative narrative. Fundamentals are deeply inconsistent with current valuation: TTM gross margin has collapsed from 23.8% (2023) to 5.2% (2025), FCF burn accelerated to -$200.6M on $335M revenue, and analyst mean target of $14.33 (high of $22) sits well below the current price. The weighted DCF fair value of $4.73 implies 81% downside. Even the most optimistic bull scenario — assuming 24% revenue CAGR, successful path to 10% net margin, and a 25x exit P/E — produces only $13.46 present value, still 45% below current market price. This is a narrative-driven trade, not a fundamentals-driven buy.",
+    "name": "AI Deep Dive \u2014 RDW \u2014 2026-05-31",
+    "rationale": "Redwire Corporation (RDW) is a pre-profit space infrastructure and defense technology company that has experienced a parabolic +167% rally in one month driven by the Golden Dome missile defense initiative narrative. Fundamentals are deeply inconsistent with current valuation: TTM gross margin has collapsed from 23.8% (2023) to 5.2% (2025), FCF burn accelerated to -$200.6M on $335M revenue, and analyst mean target of $14.33 (high of $22) sits well below the current price. The weighted DCF fair value of $4.73 implies 81% downside. Even the most optimistic bull scenario \u2014 assuming 24% revenue CAGR, successful path to 10% net margin, and a 25x exit P/E \u2014 produces only $13.46 present value, still 45% below current market price. This is a narrative-driven trade, not a fundamentals-driven buy.",
     "snapshot": {
       "price": 24.57,
       "currency": "USD",
@@ -28,7 +28,7 @@
         "exitPE": 12,
         "qualityMultiplier": 0.85,
         "shareChange": 4,
-        "rationale": "Bear anchored to 2023 revenue trough growth rate (~11% CAGR). Net margin of 1% requires gross margin to recover from TTM 5.2% to ~18% — a 13pp recovery that the current trajectory does not support. Historical operating margin trough of -51.8% (2025) makes this the 'best realistic bad outcome' — company barely reaches profitability through aggressive cost cuts. Exit P/E of 12 is below Industrials conservative benchmark (14) reflecting persistent uncertainty. Quality multiplier 0.85 reflects structurally challenged economics: collapsing gross margins, no FCF generation, and continuing dilution. Share change +4%/yr reflects need for ongoing equity raises to fund operations (FY2025 diluted weighted avg 99M vs 199M outstanding implies mid-year $200M+ capital raise already occurred).",
+        "rationale": "Bear anchored to 2023 revenue trough growth rate (~11% CAGR). Net margin of 1% requires gross margin to recover from TTM 5.2% to ~18% \u2014 a 13pp recovery that the current trajectory does not support. Historical operating margin trough of -51.8% (2025) makes this the 'best realistic bad outcome' \u2014 company barely reaches profitability through aggressive cost cuts. Exit P/E of 12 is below Industrials conservative benchmark (14) reflecting persistent uncertainty. Quality multiplier 0.85 reflects structurally challenged economics: collapsing gross margins, no FCF generation, and continuing dilution. Share change +4%/yr reflects need for ongoing equity raises to fund operations (FY2025 diluted weighted avg 99M vs 199M outstanding implies mid-year $200M+ capital raise already occurred).",
         "moatScore": 1,
         "managementScore": 2,
         "year5Revenue": 565.1,
@@ -49,7 +49,7 @@
         "exitPE": 18,
         "qualityMultiplier": 0.95,
         "shareChange": 3,
-        "rationale": "Base CAGR of 18% derived from analyst trajectory: Y1 consensus +40% ($469M), Y2 +20% ($564M), natural deceleration Y3 +14%, Y4 +11%, Y5 +9% — 5-yr CAGR = (778/335)^0.2-1 = 18.3%. This satisfies the hypergrowth anchoring rule (Y1>40%). Net margin of 4% by Y5 requires gross margin recovery from 5.2% to ~22% and operating cost leverage — achievable if Golden Dome and Space Force programs drive high-value sensor/avionics contracts. Exit P/E of 18 aligns with Industrials sector median. Quality multiplier 0.95 reflects nascent government defense positioning (switching costs emerge once systems are embedded in DoD programs) but insufficient track record to assign moat premium. Share dilution slows to +3%/yr as company approaches cash-flow breakeven.",
+        "rationale": "Base CAGR of 18% derived from analyst trajectory: Y1 consensus +40% ($469M), Y2 +20% ($564M), natural deceleration Y3 +14%, Y4 +11%, Y5 +9% \u2014 5-yr CAGR = (778/335)^0.2-1 = 18.3%. This satisfies the hypergrowth anchoring rule (Y1>40%). Net margin of 4% by Y5 requires gross margin recovery from 5.2% to ~22% and operating cost leverage \u2014 achievable if Golden Dome and Space Force programs drive high-value sensor/avionics contracts. Exit P/E of 18 aligns with Industrials sector median. Quality multiplier 0.95 reflects nascent government defense positioning (switching costs emerge once systems are embedded in DoD programs) but insufficient track record to assign moat premium. Share dilution slows to +3%/yr as company approaches cash-flow breakeven.",
         "moatScore": 2,
         "managementScore": 2,
         "year5Revenue": 767.3,
@@ -69,7 +69,7 @@
         "exitPE": 24,
         "qualityMultiplier": 1.05,
         "shareChange": 1,
-        "rationale": "Bull catalyst: Golden Dome missile defense program ($175B+ authorized) drives multi-year demand for Redwire's satellite sensors, star trackers, avionics, and ISR payloads. Pentagon missile refresh cycle (aging Minuteman III/ICBM fleet modernization) creates additional demand for RDW's defense tech segment. 24% CAGR brings revenue to ~$983M — roughly 3x current. Net margin of 10% achievable with >60% high-margin defense contracts, approaching Industrials best-in-class 15%. Exit P/E of 24 uses Industrials Growth P/E benchmark with justified premium for defense contractor recurring revenue. Quality multiplier 1.05 reflects one demonstrable moat: sole-source government defense contracts that embed switching costs once systems are certified for DoD use (e.g., RDW's star tracker on classified satellites). Dilution slows to +1%/yr as FCF turns positive. NOTE: Even this optimistic scenario — requiring near-perfect execution — yields only $13.46 PV, still 45% below today's $24.57.",
+        "rationale": "Bull catalyst: Golden Dome missile defense program ($175B+ authorized) drives multi-year demand for Redwire's satellite sensors, star trackers, avionics, and ISR payloads. Pentagon missile refresh cycle (aging Minuteman III/ICBM fleet modernization) creates additional demand for RDW's defense tech segment. 24% CAGR brings revenue to ~$983M \u2014 roughly 3x current. Net margin of 10% achievable with >60% high-margin defense contracts, approaching Industrials best-in-class 15%. Exit P/E of 24 uses Industrials Growth P/E benchmark with justified premium for defense contractor recurring revenue. Quality multiplier 1.05 reflects one demonstrable moat: sole-source government defense contracts that embed switching costs once systems are certified for DoD use (e.g., RDW's star tracker on classified satellites). Dilution slows to +1%/yr as FCF turns positive. NOTE: Even this optimistic scenario \u2014 requiring near-perfect execution \u2014 yields only $13.46 PV, still 45% below today's $24.57.",
         "moatScore": 3,
         "managementScore": 3,
         "year5Revenue": 983.2,
@@ -85,30 +85,30 @@
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "Redwire Corporation is a deeply unprofitable space defense contractor whose stock has been propelled 167% higher in one month by the Golden Dome narrative — one of the hottest defense spending themes of 2026. While the addressable market is real (Pentagon missile defense, Space Force expansion, ISR satellite infrastructure), the company's fundamentals are deteriorating: gross margins have collapsed to 5.2% (from 23.8% in 2023), FCF burn accelerated 7x to -$200M in FY2025, and EPS is expected to remain negative through at least 2027. Even under a generous bull scenario assuming 24% revenue CAGR and eventual 10% net margins — which requires near-perfect execution over 5 years — the present value is only $13.46 per share, 45% below today's price. The base case of $2.59 reflects the more probable path where margin recovery is slow and dilution continues. Analyst consensus target of $14.33 (mean) / $22 (high) — both already below current price — confirms the market has run past the fundamentals. The stock is pricing in Golden Dome contract wins, margin recovery, and sustained growth simultaneously: this combination requires flawless execution in an industry with a history of cost overruns and contract delays. SELL on any strength; this is a trading position, not an investment.",
+      "rationale": "Redwire Corporation is a deeply unprofitable space defense contractor whose stock has been propelled 167% higher in one month by the Golden Dome narrative \u2014 one of the hottest defense spending themes of 2026. While the addressable market is real (Pentagon missile defense, Space Force expansion, ISR satellite infrastructure), the company's fundamentals are deteriorating: gross margins have collapsed to 5.2% (from 23.8% in 2023), FCF burn accelerated 7x to -$200M in FY2025, and EPS is expected to remain negative through at least 2027. Even under a generous bull scenario assuming 24% revenue CAGR and eventual 10% net margins \u2014 which requires near-perfect execution over 5 years \u2014 the present value is only $13.46 per share, 45% below today's price. The base case of $2.59 reflects the more probable path where margin recovery is slow and dilution continues. Analyst consensus target of $14.33 (mean) / $22 (high) \u2014 both already below current price \u2014 confirms the market has run past the fundamentals. The stock is pricing in Golden Dome contract wins, margin recovery, and sustained growth simultaneously: this combination requires flawless execution in an industry with a history of cost overruns and contract delays. SELL on any strength; this is a trading position, not an investment.",
       "fairValue": 4.73,
       "action": "SELL",
       "analyzedAt": "2026-05-31T16:15:00.000Z",
-      "researchReport": "RDW_2026-05-31.md"
+      "researchReport": "RDW.summary.md"
     },
     "globalSettings": {
       "discountRate": 0.12,
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "shares_diluted (99.4M weighted avg from yfinance) — NOTE: shares_outstanding = 198.9M, indicating a major mid-FY2025 equity offering (~$200M raise). DCF uses 99.4M diluted weighted avg consistent with historical EPS basis; actual per-share value at 198.9M outstanding would be ~50% lower, making fair value ~$2.37. Either way: SELL.",
-      "marginAnchor": "Mean-reverting, high volatility (-81% → -11% → -38% → -68%). 4yr avg = -49.5%. Cannot use avg as anchor for targets — company must BUILD a positive margin from scratch. Targets (1%, 4%, 10%) represent achievable recovery milestones given gross margin history peak of 23.8% in 2023.",
-      "growthDerivation": "Hypergrowth exception applies: Y1 analyst consensus = +40% ($335M→$469M). Y2 = +20.2% ($564M). Deceleration path: Y3 ~14%, Y4 ~11%, Y5 ~9%. Base 5-yr CAGR = (778/335)^0.2 - 1 = 18.3%. Bear = 11% (contract delays). Bull = 24% (Golden Dome catalyst). All three anchored to analyst revenue estimates.",
-      "sectorBenchmarkRow": "Industrials — Conservative P/E 14, Median P/E 18, Growth P/E 24. Net margin typical range: 6-12%, best-in-class 15%. Bear trough: 2%.",
+      "shareCountMethod": "shares_diluted (99.4M weighted avg from yfinance) \u2014 NOTE: shares_outstanding = 198.9M, indicating a major mid-FY2025 equity offering (~$200M raise). DCF uses 99.4M diluted weighted avg consistent with historical EPS basis; actual per-share value at 198.9M outstanding would be ~50% lower, making fair value ~$2.37. Either way: SELL.",
+      "marginAnchor": "Mean-reverting, high volatility (-81% \u2192 -11% \u2192 -38% \u2192 -68%). 4yr avg = -49.5%. Cannot use avg as anchor for targets \u2014 company must BUILD a positive margin from scratch. Targets (1%, 4%, 10%) represent achievable recovery milestones given gross margin history peak of 23.8% in 2023.",
+      "growthDerivation": "Hypergrowth exception applies: Y1 analyst consensus = +40% ($335M\u2192$469M). Y2 = +20.2% ($564M). Deceleration path: Y3 ~14%, Y4 ~11%, Y5 ~9%. Base 5-yr CAGR = (778/335)^0.2 - 1 = 18.3%. Bear = 11% (contract delays). Bull = 24% (Golden Dome catalyst). All three anchored to analyst revenue estimates.",
+      "sectorBenchmarkRow": "Industrials \u2014 Conservative P/E 14, Median P/E 18, Growth P/E 24. Net margin typical range: 6-12%, best-in-class 15%. Bear trough: 2%.",
       "dataQualityFlags": [
-        "Gross margin collapsed from 23.8% (2023) to 5.2% (2025) — severe deterioration, not one-off",
-        "FCF burn accelerated to -$200.6M (FY2025) vs -$28.3M prior year — 7x worsening",
-        "Share count discrepancy: shares_diluted=99.4M vs market_cap-implied=198.9M — major mid-year equity offering",
+        "Gross margin collapsed from 23.8% (2023) to 5.2% (2025) \u2014 severe deterioration, not one-off",
+        "FCF burn accelerated to -$200.6M (FY2025) vs -$28.3M prior year \u2014 7x worsening",
+        "Share count discrepancy: shares_diluted=99.4M vs market_cap-implied=198.9M \u2014 major mid-year equity offering",
         "Analyst consensus SELL target ($14.33 mean, $22 high) already below current price BEFORE this month's +167% rally",
-        "Forward P/E is negative (-59.9x) — no earnings expected through at least 2027E",
-        "Piotroski F-Score: 4/9 — negative ROA, negative CFO, gross margin declining, asset turnover declining",
-        "Revenue growth 57.9% (latest quarter) vs 10% annual cadence — suggests lumpy contract recognition, not structural acceleration",
-        "Stock beta 2.42 — extreme volatility; momentum-driven price action divorced from fundamentals"
+        "Forward P/E is negative (-59.9x) \u2014 no earnings expected through at least 2027E",
+        "Piotroski F-Score: 4/9 \u2014 negative ROA, negative CFO, gross margin declining, asset turnover declining",
+        "Revenue growth 57.9% (latest quarter) vs 10% annual cadence \u2014 suggests lumpy contract recognition, not structural acceleration",
+        "Stock beta 2.42 \u2014 extreme volatility; momentum-driven price action divorced from fundamentals"
       ],
       "analystInputs": {
         "y1RevEstimate": 469406980,
@@ -146,13 +146,13 @@
         "priorPrice": "N/A",
         "priorFairValue": "N/A",
         "priorAction": "N/A",
-        "priceDelta": "N/A — first analysis",
-        "assumptionAudit": "N/A — no prior projection",
+        "priceDelta": "N/A \u2014 first analysis",
+        "assumptionAudit": "N/A \u2014 no prior projection",
         "modelQualityFlag": "N/A",
-        "thesisOutcome": "N/A — first analysis",
-        "fundamentalChanges": "N/A — establishing baseline"
+        "thesisOutcome": "N/A \u2014 first analysis",
+        "fundamentalChanges": "N/A \u2014 establishing baseline"
       },
-      "confidenceBreakdown": "0.52/1.0 — Base: 1.0. +0.05 defense contractor sector with growing TAM. -0.10 gross margin collapse (5.2% TTM) with no sign of reversal. -0.15 FCF burn accelerating (-$200M, 7x worsening YoY). -0.10 shares discrepancy suggests opaque capital structure. -0.05 analyst coverage thin (9 analysts) for a $4.9B market cap company. -0.05 stock up 167% in 1 month — momentum divorced from fundamentals creates extrapolation risk. -0.05 pre-profit status limits earnings-based DCF reliability. +0.02 Golden Dome/Space Force narrative is real and addressable market is large."
+      "confidenceBreakdown": "0.52/1.0 \u2014 Base: 1.0. +0.05 defense contractor sector with growing TAM. -0.10 gross margin collapse (5.2% TTM) with no sign of reversal. -0.15 FCF burn accelerating (-$200M, 7x worsening YoY). -0.10 shares discrepancy suggests opaque capital structure. -0.05 analyst coverage thin (9 analysts) for a $4.9B market cap company. -0.05 stock up 167% in 1 month \u2014 momentum divorced from fundamentals creates extrapolation risk. -0.05 pre-profit status limits earnings-based DCF reliability. +0.02 Golden Dome/Space Force narrative is real and addressable market is large."
     }
   }
 ]
