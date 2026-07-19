@@ -1516,8 +1516,8 @@ migrated but not cleaned up, and which code/docs still reference stale paths.
 
 **Create:**
 - `investment_screener/backend/py_services/audit_json_usage.py` — the audit script
-- `docs/superpowers/audits/json-discovery-audit.md` + `.json` — what was discovered
-- `docs/superpowers/audits/allowed-json-register.md` + `.json` — what's permitted to remain, why
+- `docs/architecture/json-discovery-audit.md` + `.json` — what was discovered
+- `docs/architecture/allowed-json-register.md` + `.json` — what's permitted to remain, why
 - `investment_screener/backend/tests/py_services/test_audit_json_usage.py`
 
 **Audit scope:** include `*.json`, `*.jsonl`, `*.py`, `*.js`, `*.ts`, `*.tsx`, `*.md`, `*.yml`,
@@ -1578,12 +1578,12 @@ as Task 11's finding); duplicates `observations.jsonl`/`intelligence.sqlite`; ge
 checked into git without rationale; lives in `temp/` but consumed later as if durable; contains
 research/news/review observations not represented in the ledger.
 
-**Allowed JSON Register** (`docs/superpowers/audits/allowed-json-register.md`) — canonical
+**Allowed JSON Register** (`docs/architecture/allowed-json-register.md`) — canonical
 register of files/patterns permitted to remain, with columns: File/pattern, Status, Purpose,
 Owner module/workflow, Producers, Consumers, Cleanup rule, Notes. A file appearing here isn't
 exempt forever — it's exempt because its current purpose and ownership are documented.
 
-**Discovery audit report** (`docs/superpowers/audits/json-discovery-audit.md`) — summary counts
+**Discovery audit report** (`docs/architecture/json-discovery-audit.md`) — summary counts
 per classification, "High-Risk Findings," "Files Requiring Human Review," "Files That Should
 Legitimately Exist," "Files That Likely Should Not Exist Long-Term," and a per-file inventory
 section (classification, known producers/consumers, doc references, register status, migration

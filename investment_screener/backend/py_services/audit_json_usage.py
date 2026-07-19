@@ -13,11 +13,11 @@ Key Input Dependencies:
     - The full repository tree (scanned in place, no external data files required)
 
 Key Output Dependencies:
-    - docs/superpowers/audits/json-discovery-audit.md / .json
-    - docs/superpowers/audits/allowed-json-register.md / .json
+    - docs/architecture/json-discovery-audit.md / .json
+    - docs/architecture/allowed-json-register.md / .json
 
 Usage:
-    python3 audit_json_usage.py --root <repo_root> --out docs/superpowers/audits
+    python3 audit_json_usage.py --root <repo_root> --out docs/architecture
 
 Index:
     - EXCLUDED_DIRS, JSON_EXTENSIONS, CODE_GLOBS, DOC_GLOBS
@@ -42,6 +42,7 @@ from pathlib import Path
 EXCLUDED_DIRS = {
     ".git", "node_modules", ".venv", "venv", "__pycache__",
     ".pytest_cache", "dist", "build", "coverage", ".cache",
+    ".worktrees", "worktrees",
 }
 
 JSON_EXTENSIONS = {".json", ".jsonl"}
@@ -94,6 +95,36 @@ CLASSIFICATIONS = [
 ]
 
 ALLOWED_PREFIX = "ALLOWED_"
+
+# One-line purpose text per ALLOWED_* classification, shown in the register's
+# Purpose column. Mirrors the rationale coded into classify_file()'s matching
+# rules rather than restating the classification name.
+CLASSIFICATION_PURPOSE = {
+    "ALLOWED_AUTHORITATIVE_JSON": (
+        "Live application/execution state (portfolio holdings, targets, watchlist, "
+        "trade log, cash flows, alerts) — outside the qualitative intelligence "
+        "ledger's scope; mutated in place, not event-sourced."
+    ),
+    "ALLOWED_CONFIGURATION_JSON": (
+        "Static configuration: plugin manifests, lockfiles, tsconfig, schemas, or "
+        "template assets — not runtime data."
+    ),
+    "ALLOWED_MODEL_ARTIFACT_JSON": (
+        "Generated valuation/projection artifact (e.g., data/projections/*.json) — "
+        "model output, not source data."
+    ),
+    "ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL": (
+        "An independent JSONL ledger for a different domain than the intelligence "
+        "ledger (predictions, evolution/self-improvement events, context events)."
+    ),
+    "ALLOWED_TEST_FIXTURE_JSON": (
+        "Test fixture, eval, or example data — not production data."
+    ),
+    "ALLOWED_GENERATED_CACHE_JSON": (
+        "Regenerable cache or report output — safe to exist as long as its "
+        "generating source is known."
+    ),
+}
 
 
 def _is_excluded(path: Path) -> bool:
@@ -349,7 +380,10 @@ def classify_file(path: str, references: list) -> str:
     p = path.replace("\\", "/")
     name = Path(p).name
 
-    if p.startswith("docs/superpowers/audits/"):
+    if p in (
+        "docs/architecture/json-discovery-audit.json",
+        "docs/architecture/allowed-json-register.json",
+    ):
         return "ALLOWED_GENERATED_CACHE_JSON"
 
     if "/.vite/" in p or "/dist/" in p or "/node_modules/" in p:
@@ -604,13 +638,14 @@ def render_register_md(result: dict) -> str:
         "",
         "## Register",
         "",
-        "| File / pattern | Status | Producers | Consumers | Notes |",
-        "|---|---|---|---|---|",
+        "| File / pattern | Status | Purpose | Producers | Consumers | Notes |",
+        "|---|---|---|---|---|---|",
     ]
     for f in allowed:
-        producers = ", ".join(f"{r['referencing_file']}:{r['line']}" for r in f["known_producers"]) or "(none detected)"
-        consumers = ", ".join(f"{r['referencing_file']}:{r['line']}" for r in f["known_consumers"]) or "(none detected)"
-        lines.append(f"| `{f['path']}` | {f['classification']} | {producers} | {consumers} | |")
+        purpose = CLASSIFICATION_PURPOSE.get(f["classification"], "")
+        producers = "<br>".join(f"{r['referencing_file']}:{r['line']}" for r in f["known_producers"]) or "(none detected)"
+        consumers = "<br>".join(f"{r['referencing_file']}:{r['line']}" for r in f["known_consumers"]) or "(none detected)"
+        lines.append(f"| `{f['path']}` | {f['classification']} | {purpose} | {producers} | {consumers} | |")
     return "\n".join(lines) + "\n"
 
 
@@ -648,7 +683,7 @@ def write_reports(result: dict, out_dir: str) -> None:
 def main():
     parser = argparse.ArgumentParser(description="Repository-wide JSON/JSONL discovery audit.")
     parser.add_argument("--root", default=".", help="Repository root to scan.")
-    parser.add_argument("--out", default="docs/superpowers/audits", help="Output directory for reports.")
+    parser.add_argument("--out", default="docs/architecture", help="Output directory for reports.")
     args = parser.parse_args()
 
     result = run_audit(args.root)

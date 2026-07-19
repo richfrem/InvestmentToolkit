@@ -25,10 +25,10 @@ re-run the command or open the file.
 | Architecture decision: hybrid ledger | `ADRs/026_canonical_research_consolidation_and_unified_ingest.md` | Earlier session |
 | Architecture decision: SQLite engine selection | `ADRs/027_sqlite_database_selection.md` | Earlier session |
 | Architecture decision: shared repository/service layer | `ADRs/028_shared_intelligence_data_access_layer.md` | This session |
-| Repo-wide JSON/JSONL discovery audit (Markdown) | `docs/superpowers/audits/json-discovery-audit.md` | `audit_json_usage.py`, PR #79 |
-| Repo-wide JSON/JSONL discovery audit (machine-readable) | `docs/superpowers/audits/json-discovery-audit.json` | Same |
-| Allowed JSON register (Markdown) | `docs/superpowers/audits/allowed-json-register.md` | Same |
-| Allowed JSON register (machine-readable) | `docs/superpowers/audits/allowed-json-register.json` | Same |
+| Repo-wide JSON/JSONL discovery audit (Markdown) | `docs/architecture/json-discovery-audit.md` | `audit_json_usage.py`, PR #79 |
+| Repo-wide JSON/JSONL discovery audit (machine-readable) | `docs/architecture/json-discovery-audit.json` | Same |
+| Allowed JSON register (Markdown) | `docs/architecture/allowed-json-register.md` | Same |
+| Allowed JSON register (machine-readable) | `docs/architecture/allowed-json-register.json` | Same |
 | Task 18 consumer inventory (Markdown) | `docs/superpowers/audits/task18-consumer-inventory.md` | `build_consumer_inventory.py`, PR #81 |
 | Task 18 consumer inventory (machine-readable) | `docs/superpowers/audits/task18-consumer-inventory.json` | Same |
 | Corrective session-state document | `docs/superpowers/status/sqlite-ledger-migration-session-state.md` | Corrective pass, PR #79/#80 |
@@ -70,7 +70,7 @@ Verify: `gh pr list --state merged --limit 10`.
   instrument_repository,replay_ledger,view_generator}.py`, `rebuild_db.py`.
 - **JSON discovery audit is real and correct.** Run against the actual repository: **210 JSON +
   2 JSONL = 212 files found**, every one classified (0 forced/guessed — 2 remain honestly
-  `UNKNOWN_REQUIRES_REVIEW`). Verify: `python3 investment_screener/backend/py_services/audit_json_usage.py --root . --out /tmp/verify-audit` and diff against the committed output, or just read `docs/superpowers/audits/json-discovery-audit.md`'s Summary table.
+  `UNKNOWN_REQUIRES_REVIEW`). Verify: `python3 investment_screener/backend/py_services/audit_json_usage.py --root . --out /tmp/verify-audit` and diff against the committed output, or just read `docs/architecture/json-discovery-audit.md`'s Summary table.
 - **The reference-linking bug is fixed and independently re-verified**, not just claimed. Before
   the fix, `ta-sweep-results.json` showed 0 producers/consumers despite 3 known real
   referencing files. After the fix: `ta_sweep_batch.py`, `daily_brief.py`, and

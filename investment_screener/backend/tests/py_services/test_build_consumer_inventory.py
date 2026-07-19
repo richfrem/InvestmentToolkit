@@ -113,7 +113,7 @@ def test_build_consumer_inventory_real_repo_finds_ta_sweep_consumers():
     inversion correctly surfaces the same 3 real consumers of ta-sweep-results.json
     that the fixed audit now detects, and correctly classifies them MIGRATION_REQUIRED.
     """
-    audit_path = REPO_ROOT / "docs/superpowers/audits/json-discovery-audit.json"
+    audit_path = REPO_ROOT / "docs/architecture/json-discovery-audit.json"
     discovery_result = json.loads(audit_path.read_text())
 
     inventory = build_consumer_inventory(discovery_result)
