@@ -7,8 +7,8 @@
     "version": 4,
     "savedAt": "2026-05-02T20:25:00Z",
     "updatedAt": "2026-05-02T20:11:38.796Z",
-    "name": "AI Deep Dive — CEG — 2026-05-02",
-    "rationale": "Constellation Energy operates the largest US nuclear fleet (21 reactors) with a genuine structural moat: NRC licenses, irreplaceable infrastructure, and a skilled workforce that cannot be replicated for decades. The AI data center PPA thesis is real — the Microsoft/TMI deal proves premium pricing is achievable. However, at $307.81 (22.5x forward P/E), CEG is priced for a bull scenario that requires margin recovery AND multiple AI data center contracts AND sustained elevated power prices all materializing simultaneously. Net margins are declining (15.9%→9.1% TTM) and FCF only just turned positive after years of negative. Our probability-weighted fair value of $174.96 implies 43% downside. The nuclear moat is real — but there is a price for everything.",
+    "name": "AI Deep Dive \u2014 CEG \u2014 2026-05-02",
+    "rationale": "Constellation Energy operates the largest US nuclear fleet (21 reactors) with a genuine structural moat: NRC licenses, irreplaceable infrastructure, and a skilled workforce that cannot be replicated for decades. The AI data center PPA thesis is real \u2014 the Microsoft/TMI deal proves premium pricing is achievable. However, at $307.81 (22.5x forward P/E), CEG is priced for a bull scenario that requires margin recovery AND multiple AI data center contracts AND sustained elevated power prices all materializing simultaneously. Net margins are declining (15.9%\u21929.1% TTM) and FCF only just turned positive after years of negative. Our probability-weighted fair value of $174.96 implies 43% downside. The nuclear moat is real \u2014 but there is a price for everything.",
     "snapshot": {
       "price": 307.81,
       "currency": "USD",
@@ -31,7 +31,7 @@
         "exitPE": 14,
         "qualityMultiplier": 0.95,
         "shareChange": 1,
-        "rationale": "Bear: Power price cycle reverses as renewable supply growth outpaces demand; CEG's above-market PPAs roll off and re-price lower. Revenue grows only 3% CAGR (utility-like). Net margin 7% — below 4yr adj avg of 7.7% (adj for FY2024 outlier), reflecting compressed electricity prices. Exit PE 14x = traditional utility trough multiple. QM 0.95 (slight discount to average): nuclear moat is real but political risk overhang (anti-nuclear sentiment, NRC regulatory friction) creates uncertainty.",
+        "rationale": "Bear: Power price cycle reverses as renewable supply growth outpaces demand; CEG's above-market PPAs roll off and re-price lower. Revenue grows only 3% CAGR (utility-like). Net margin 7% \u2014 below 4yr adj avg of 7.7% (adj for FY2024 outlier), reflecting compressed electricity prices. Exit PE 14x = traditional utility trough multiple. QM 0.95 (slight discount to average): nuclear moat is real but political risk overhang (anti-nuclear sentiment, NRC regulatory friction) creates uncertainty.",
         "moatScore": 3,
         "managementScore": 3,
         "year5Revenue": 29599.7,
@@ -39,9 +39,9 @@
         "year5EPS": 5.44,
         "scenarioPrice": 44.94,
         "risks": [
-          "Nuclear plant unplanned outage (capacity factor below 85%) — reference: 2012 Crystal River 3 permanent closure after botched steam generator replacement cost $835M write-down",
+          "Nuclear plant unplanned outage (capacity factor below 85%) \u2014 reference: 2012 Crystal River 3 permanent closure after botched steam generator replacement cost $835M write-down",
           "Power price mean-reversion as renewable oversupply (solar + wind LCOE now below $30/MWh) compresses wholesale electricity prices, eroding nuclear PPA premium",
-          "Nuclear safety incident at any US plant triggers regulatory standdown across fleet — even without a Constellation plant being the cause"
+          "Nuclear safety incident at any US plant triggers regulatory standdown across fleet \u2014 even without a Constellation plant being the cause"
         ]
       },
       "base": {
@@ -51,7 +51,7 @@
         "exitPE": 20,
         "qualityMultiplier": 1.05,
         "shareChange": 0,
-        "rationale": "Base: Modest recovery in margins from TTM trough as old below-market contracts roll off and new premium-priced AI data center PPAs (following Microsoft/TMI model) gradually take hold. Revenue 8% CAGR — above utility-like 3% due to price uplift from PPA repricing; below bull case which requires multiple large contracts. Margin anchor: 4yr adj avg 7.71% (excluding FY2024 outlier at 15.9% — exceptional year due to high power prices; not representative of normalized earnings power). Base margin 10% = +2.3pp above adj avg, justified by structural nuclear premium in power markets. Exit PE 20x = utilities-IPP median. QM 1.05: nuclear moat explicitly cited — NRC operating licenses for 21 reactors are irreplaceable infrastructure requiring 10-20 years and billions to replicate; the Microsoft Three Mile Island restart PPA (20-year, signed Oct 2023) demonstrates market willingness to pay structural premium.",
+        "rationale": "Base: Modest recovery in margins from TTM trough as old below-market contracts roll off and new premium-priced AI data center PPAs (following Microsoft/TMI model) gradually take hold. Revenue 8% CAGR \u2014 above utility-like 3% due to price uplift from PPA repricing; below bull case which requires multiple large contracts. Margin anchor: 4yr adj avg 7.71% (excluding FY2024 outlier at 15.9% \u2014 exceptional year due to high power prices; not representative of normalized earnings power). Base margin 10% = +2.3pp above adj avg, justified by structural nuclear premium in power markets. Exit PE 20x = utilities-IPP median. QM 1.05: nuclear moat explicitly cited \u2014 NRC operating licenses for 21 reactors are irreplaceable infrastructure requiring 10-20 years and billions to replicate; the Microsoft Three Mile Island restart PPA (20-year, signed Oct 2023) demonstrates market willingness to pay structural premium.",
         "moatScore": 4,
         "managementScore": 3,
         "year5Revenue": 37516.4,
@@ -59,7 +59,7 @@
         "year5EPS": 10.36,
         "scenarioPrice": 135.03,
         "risks": [
-          "AI data center PPA pipeline moves slower than market expects — hyperscaler procurement cycles are 18-36 months; CEG's next major contract may not materialize until 2027-2028",
+          "AI data center PPA pipeline moves slower than market expects \u2014 hyperscaler procurement cycles are 18-36 months; CEG's next major contract may not materialize until 2027-2028",
           "Nuclear capacity factor remains flat at 92-94%; limited ability to expand output without new builds (decade-long timeline)"
         ]
       },
@@ -70,7 +70,7 @@
         "exitPE": 27,
         "qualityMultiplier": 1.1,
         "shareChange": -1,
-        "rationale": "Catalyst: CEG signs 3+ additional hyperscaler data center PPAs (following Microsoft TMI model) totaling 5+ GW of long-term committed nuclear capacity, establishing a recurring high-margin revenue stream anchored in 20-year contracts. Revenue 15% CAGR reflects PPA re-pricing plus Crane Clean Energy Center (restarted TMI) and potential license extensions for additional plants. Net margin 14% = below FY2024 peak 15.9% but achievable if premium data center PPAs constitute 25%+ of total revenue by Y5. QM 1.10: nuclear moat strengthens under AI power demand — 21 reactors with NRC licenses, proven operating record, and unique 24/7 carbon-free power profile that no other source can replicate at scale. Exit PE 27x: CEG re-rates as 'critical digital infrastructure' play (comparable to tower/data center REITs at 25-30x) rather than traditional utility. Buybacks of 1%/yr as FCF turns strongly positive.",
+        "rationale": "Catalyst: CEG signs 3+ additional hyperscaler data center PPAs (following Microsoft TMI model) totaling 5+ GW of long-term committed nuclear capacity, establishing a recurring high-margin revenue stream anchored in 20-year contracts. Revenue 15% CAGR reflects PPA re-pricing plus Crane Clean Energy Center (restarted TMI) and potential license extensions for additional plants. Net margin 14% = below FY2024 peak 15.9% but achievable if premium data center PPAs constitute 25%+ of total revenue by Y5. QM 1.10: nuclear moat strengthens under AI power demand \u2014 21 reactors with NRC licenses, proven operating record, and unique 24/7 carbon-free power profile that no other source can replicate at scale. Exit PE 27x: CEG re-rates as 'critical digital infrastructure' play (comparable to tower/data center REITs at 25-30x) rather than traditional utility. Buybacks of 1%/yr as FCF turns strongly positive.",
         "moatScore": 5,
         "managementScore": 4,
         "year5Revenue": 51356,
@@ -78,35 +78,35 @@
         "year5EPS": 20.87,
         "scenarioPrice": 384.83,
         "risks": [
-          "Re-rating to 27x requires CEG to be reclassified from 'utility' to 'critical AI infrastructure' — multiple expansion is dependent on narrative sustaining",
+          "Re-rating to 27x requires CEG to be reclassified from 'utility' to 'critical AI infrastructure' \u2014 multiple expansion is dependent on narrative sustaining",
           "Nuclear renaissance accelerates construction of new builds from competitors, eventually diluting CEG's moat after 2030+"
         ]
       }
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "Constellation Energy owns the most valuable energy infrastructure in the United States — 21 nuclear reactors that cannot be replicated for 20+ years. The AI data center PPA thesis is proven: Microsoft committed to a 20-year clean energy agreement for the restarted Three Mile Island. Additional hyperscaler contracts are plausible and would be transformative. But at $307.81 — 43% above our fair value — the stock is pricing in multiple large contracts, margin recovery, and a utility-to-infrastructure multiple re-rating all happening simultaneously. Net margins are declining, not recovering. FCF only just turned positive after years of capital destruction. The prior Gemini 3 Pro analysis inflated the fair value by using QM 1.2 (exceptional tier) without citing a specific moat that justifies that tier. CEG's nuclear moat is real but does not meet the 'exceptional durable pricing power across all cycles' definition given regulatory, political, and safety risks inherent to nuclear operations. The honest result is SELL at -43%.",
+      "rationale": "Constellation Energy owns the most valuable energy infrastructure in the United States \u2014 21 nuclear reactors that cannot be replicated for 20+ years. The AI data center PPA thesis is proven: Microsoft committed to a 20-year clean energy agreement for the restarted Three Mile Island. Additional hyperscaler contracts are plausible and would be transformative. But at $307.81 \u2014 43% above our fair value \u2014 the stock is pricing in multiple large contracts, margin recovery, and a utility-to-infrastructure multiple re-rating all happening simultaneously. Net margins are declining, not recovering. FCF only just turned positive after years of capital destruction. The prior Gemini 3 Pro analysis inflated the fair value by using QM 1.2 (exceptional tier) without citing a specific moat that justifies that tier. CEG's nuclear moat is real but does not meet the 'exceptional durable pricing power across all cycles' definition given regulatory, political, and safety risks inherent to nuclear operations. The honest result is SELL at -43%.",
       "fairValue": 174.96,
       "action": "SELL",
       "analyzedAt": "2026-05-02T20:25:00Z",
-      "researchReport": "CEG_2026-05-02.md"
+      "researchReport": "CEG.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "shares_diluted = 362,294,672 per API. NI/EPS derived: $2.319B / $7.40 = 313.4M — discrepancy 15.7% (just above 15% threshold, flagged). EPS may be basic not fully diluted; actual diluted count may be higher. Used API shares_diluted (362M) per protocol.",
-      "marginAnchor": "Mean-reverting (volatile utility margins driven by electricity price cycles). 4yr history: -0.65% (FY2022), 6.51% (FY2023), 15.91% (FY2024, high power prices), 9.08% (TTM, declining). FY2024 15.91% is an identifiable cycle outlier (electricity prices peaked with gas prices still elevated, before renewables oversupply). Excluding: 3yr adj avg = (-0.65 + 6.51 + 9.08)/3 = 4.98%. Full 4yr avg = 7.71%. Used 4yr avg 7.71% as more representative (includes both a trough and recovery year). Base margin 10% = +2.3pp above 4yr avg, justified by structural nuclear premium pricing (AI data center PPA trend). Within ±5pp mean-reverting rule.",
-      "growthDerivation": "No API analyst estimates. Revenue historically stable ($23-25B utility-like). YoY growth 12.9% reflects electricity price uplift — not volume growth. No hypergrowth exception (12.9% < 40%). Bear 3% = utility-like flat (price normalization). Base 8% = modest PPA repricing benefit. Bull 15% = multiple data center contract wins creating above-utility growth.",
-      "sectorBenchmarkRow": "Utilities — Independent Power Producers: conservative P/E 12-14, median P/E 18-22, growth P/E 25-30. CEG currently at 22.5x forward — already at/above median, pricing in nuclear premium. Bear 14x (trough utility), base 20x (median), bull 27x (critical infrastructure re-rating).",
+      "shareCountMethod": "shares_diluted = 362,294,672 per API. NI/EPS derived: $2.319B / $7.40 = 313.4M \u2014 discrepancy 15.7% (just above 15% threshold, flagged). EPS may be basic not fully diluted; actual diluted count may be higher. Used API shares_diluted (362M) per protocol.",
+      "marginAnchor": "Mean-reverting (volatile utility margins driven by electricity price cycles). 4yr history: -0.65% (FY2022), 6.51% (FY2023), 15.91% (FY2024, high power prices), 9.08% (TTM, declining). FY2024 15.91% is an identifiable cycle outlier (electricity prices peaked with gas prices still elevated, before renewables oversupply). Excluding: 3yr adj avg = (-0.65 + 6.51 + 9.08)/3 = 4.98%. Full 4yr avg = 7.71%. Used 4yr avg 7.71% as more representative (includes both a trough and recovery year). Base margin 10% = +2.3pp above 4yr avg, justified by structural nuclear premium pricing (AI data center PPA trend). Within \u00b15pp mean-reverting rule.",
+      "growthDerivation": "No API analyst estimates. Revenue historically stable ($23-25B utility-like). YoY growth 12.9% reflects electricity price uplift \u2014 not volume growth. No hypergrowth exception (12.9% < 40%). Bear 3% = utility-like flat (price normalization). Base 8% = modest PPA repricing benefit. Bull 15% = multiple data center contract wins creating above-utility growth.",
+      "sectorBenchmarkRow": "Utilities \u2014 Independent Power Producers: conservative P/E 12-14, median P/E 18-22, growth P/E 25-30. CEG currently at 22.5x forward \u2014 already at/above median, pricing in nuclear premium. Bear 14x (trough utility), base 20x (median), bull 27x (critical infrastructure re-rating).",
       "dataQualityFlags": [
-        "Share count discrepancy: API 362M vs NI/EPS derived 313M = 15.7% (above 15% threshold). Flagged — forward EPS may be overstated if actual diluted count is higher.",
-        "Net margin declining sharply: 15.91% (FY2024) → 9.08% TTM — FY2024 was a high-power-price year; margins now normalizing downward. Current TTM not representative of either trough or bull.",
+        "Share count discrepancy: API 362M vs NI/EPS derived 313M = 15.7% (above 15% threshold). Flagged \u2014 forward EPS may be overstated if actual diluted count is higher.",
+        "Net margin declining sharply: 15.91% (FY2024) \u2192 9.08% TTM \u2014 FY2024 was a high-power-price year; margins now normalizing downward. Current TTM not representative of either trough or bull.",
         "FCF only just turned positive ($1.29B TTM) after 3 years deeply negative (-$4B to -$7.7B). Capital-intensive nuclear maintenance/upgrade cycle may resume.",
-        "Historical data has leading zero (FY2021 unavailable from API) — 4yr history used from FY2022.",
+        "Historical data has leading zero (FY2021 unavailable from API) \u2014 4yr history used from FY2022.",
         "No API analyst estimates returned. Growth and margin anchors derived from internal analysis only.",
-        "Prior Gemini 3 Pro (v3): bull QM 1.2 = 'exceptional durable pricing power' tier — overstated; corrected to 1.10 with explicit NRC license moat citation. Base QM 1.1 → 1.05. Action flips BUY → SELL."
+        "Prior Gemini 3 Pro (v3): bull QM 1.2 = 'exceptional durable pricing power' tier \u2014 overstated; corrected to 1.10 with explicit NRC license moat citation. Base QM 1.1 \u2192 1.05. Action flips BUY \u2192 SELL."
       ],
       "analystInputs": {
         "y1RevEstimate": null,
@@ -141,13 +141,13 @@
         "priorPrice": 307.81,
         "priorFairValue": 341.5,
         "priorAction": "BUY",
-        "priceDelta": "0% — same day replacement",
-        "assumptionAudit": "Bull QM 1.2 requires 'exceptional durable pricing power across cycles' — CEG's nuclear moat is real but nuclear plants face regulatory, safety, and political risks that prevent 'exceptional' classification. Corrected to QM 1.10 with explicit NRC license citation. Base QM 1.1 lacks documented moat citation; corrected to 1.05. These QM corrections, combined with slightly lower margins, flip the result from BUY $341 to SELL $175. The prior result was inflated by unconstrained QM multipliers compounding through bull and base cases.",
-        "modelQualityFlag": "UNVALIDATED — Gemini 3 Pro in flagged non-Sonnet list. All assumptions re-derived.",
-        "thesisOutcome": "Same day replacement. Prior BUY $341 → Sonnet SELL $175. Nuclear moat is real but QM values were the critical error.",
-        "fundamentalChanges": "Same day. Key analytical correction: QM values brought within documented rules, explicit moat citation required. Margin declining trend (15.9%→9.1%) more conservatively reflected in base case."
+        "priceDelta": "0% \u2014 same day replacement",
+        "assumptionAudit": "Bull QM 1.2 requires 'exceptional durable pricing power across cycles' \u2014 CEG's nuclear moat is real but nuclear plants face regulatory, safety, and political risks that prevent 'exceptional' classification. Corrected to QM 1.10 with explicit NRC license citation. Base QM 1.1 lacks documented moat citation; corrected to 1.05. These QM corrections, combined with slightly lower margins, flip the result from BUY $341 to SELL $175. The prior result was inflated by unconstrained QM multipliers compounding through bull and base cases.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Gemini 3 Pro in flagged non-Sonnet list. All assumptions re-derived.",
+        "thesisOutcome": "Same day replacement. Prior BUY $341 \u2192 Sonnet SELL $175. Nuclear moat is real but QM values were the critical error.",
+        "fundamentalChanges": "Same day. Key analytical correction: QM values brought within documented rules, explicit moat citation required. Margin declining trend (15.9%\u21929.1%) more conservatively reflected in base case."
       },
-      "confidenceBreakdown": "0.62/1.0 — Base: 1.0. -0.12 no API analyst estimates. -0.10 electricity price cycle creates significant margin uncertainty (15.9% to 9.1% in one year). -0.08 share count discrepancy 15.7%. -0.05 FCF only just turned positive — sustainability uncertain. -0.03 nuclear plant operational risk (unplanned outages). +0.10 positive: nuclear moat is objectively real (21 NRC-licensed reactors, irreplaceable); Microsoft TMI PPA validates premium pricing thesis; 24/7 carbon-free power is unique attribute."
+      "confidenceBreakdown": "0.62/1.0 \u2014 Base: 1.0. -0.12 no API analyst estimates. -0.10 electricity price cycle creates significant margin uncertainty (15.9% to 9.1% in one year). -0.08 share count discrepancy 15.7%. -0.05 FCF only just turned positive \u2014 sustainability uncertain. -0.03 nuclear plant operational risk (unplanned outages). +0.10 positive: nuclear moat is objectively real (21 NRC-licensed reactors, irreplaceable); Microsoft TMI PPA validates premium pricing thesis; 24/7 carbon-free power is unique attribute."
     }
   },
   {
@@ -158,8 +158,8 @@
     "version": 5,
     "savedAt": "2026-05-02T22:55:00Z",
     "updatedAt": "2026-05-02T22:55:00Z",
-    "name": "AI Deep Dive — CEG — 2026-05-02",
-    "rationale": "Constellation Energy operates the largest US nuclear fleet (21 reactors) with a genuine structural moat: NRC licenses, irreplaceable infrastructure, and a skilled workforce that cannot be replicated for decades. The AI data center PPA thesis is real — the Microsoft/TMI deal proves premium pricing is achievable. However, at $307.81 (22.5x forward P/E), CEG is priced for a bull scenario that requires margin recovery AND multiple AI data center contracts AND sustained elevated power prices all materializing simultaneously. Net margins are declining (15.9%→9.1% TTM) and FCF only just turned positive after years of negative. Our probability-weighted fair value of $174.96 implies 43% downside. The nuclear moat is real — but there is a price for everything.",
+    "name": "AI Deep Dive \u2014 CEG \u2014 2026-05-02",
+    "rationale": "Constellation Energy operates the largest US nuclear fleet (21 reactors) with a genuine structural moat: NRC licenses, irreplaceable infrastructure, and a skilled workforce that cannot be replicated for decades. The AI data center PPA thesis is real \u2014 the Microsoft/TMI deal proves premium pricing is achievable. However, at $307.81 (22.5x forward P/E), CEG is priced for a bull scenario that requires margin recovery AND multiple AI data center contracts AND sustained elevated power prices all materializing simultaneously. Net margins are declining (15.9%\u21929.1% TTM) and FCF only just turned positive after years of negative. Our probability-weighted fair value of $174.96 implies 43% downside. The nuclear moat is real \u2014 but there is a price for everything.",
     "snapshot": {
       "price": 307.81,
       "currency": "USD",
@@ -182,7 +182,7 @@
         "exitPE": 14,
         "qualityMultiplier": 0.95,
         "shareChange": 1,
-        "rationale": "Bear: Power price cycle reverses as renewable supply growth outpaces demand; CEG's above-market PPAs roll off and re-price lower. Revenue grows only 3% CAGR (utility-like). Net margin 7% — below 4yr adj avg of 7.7% (adj for FY2024 outlier), reflecting compressed electricity prices. Exit PE 14x = traditional utility trough multiple. QM 0.95 (slight discount to average): nuclear moat is real but political risk overhang (anti-nuclear sentiment, NRC regulatory friction) creates uncertainty.",
+        "rationale": "Bear: Power price cycle reverses as renewable supply growth outpaces demand; CEG's above-market PPAs roll off and re-price lower. Revenue grows only 3% CAGR (utility-like). Net margin 7% \u2014 below 4yr adj avg of 7.7% (adj for FY2024 outlier), reflecting compressed electricity prices. Exit PE 14x = traditional utility trough multiple. QM 0.95 (slight discount to average): nuclear moat is real but political risk overhang (anti-nuclear sentiment, NRC regulatory friction) creates uncertainty.",
         "moatScore": 3,
         "managementScore": 3,
         "year5Revenue": 29599.7,
@@ -190,9 +190,9 @@
         "year5EPS": 5.44,
         "scenarioPrice": 44.94,
         "risks": [
-          "Nuclear plant unplanned outage (capacity factor below 85%) — reference: 2012 Crystal River 3 permanent closure after botched steam generator replacement cost $835M write-down",
+          "Nuclear plant unplanned outage (capacity factor below 85%) \u2014 reference: 2012 Crystal River 3 permanent closure after botched steam generator replacement cost $835M write-down",
           "Power price mean-reversion as renewable oversupply (solar + wind LCOE now below $30/MWh) compresses wholesale electricity prices, eroding nuclear PPA premium",
-          "Nuclear safety incident at any US plant triggers regulatory standdown across fleet — even without a Constellation plant being the cause"
+          "Nuclear safety incident at any US plant triggers regulatory standdown across fleet \u2014 even without a Constellation plant being the cause"
         ]
       },
       "base": {
@@ -202,7 +202,7 @@
         "exitPE": 20,
         "qualityMultiplier": 1.05,
         "shareChange": 0,
-        "rationale": "Base: Modest recovery in margins from TTM trough as old below-market contracts roll off and new premium-priced AI data center PPAs (following Microsoft/TMI model) gradually take hold. Revenue 8% CAGR — above utility-like 3% due to price uplift from PPA repricing; below bull case which requires multiple large contracts. Margin anchor: 4yr adj avg 7.71% (excluding FY2024 outlier at 15.9% — exceptional year due to high power prices; not representative of normalized earnings power). Base margin 10% = +2.3pp above adj avg, justified by structural nuclear premium in power markets. Exit PE 20x = utilities-IPP median. QM 1.05: nuclear moat explicitly cited — NRC operating licenses for 21 reactors are irreplaceable infrastructure requiring 10-20 years and billions to replicate; the Microsoft Three Mile Island restart PPA (20-year, signed Oct 2023) demonstrates market willingness to pay structural premium.",
+        "rationale": "Base: Modest recovery in margins from TTM trough as old below-market contracts roll off and new premium-priced AI data center PPAs (following Microsoft/TMI model) gradually take hold. Revenue 8% CAGR \u2014 above utility-like 3% due to price uplift from PPA repricing; below bull case which requires multiple large contracts. Margin anchor: 4yr adj avg 7.71% (excluding FY2024 outlier at 15.9% \u2014 exceptional year due to high power prices; not representative of normalized earnings power). Base margin 10% = +2.3pp above adj avg, justified by structural nuclear premium in power markets. Exit PE 20x = utilities-IPP median. QM 1.05: nuclear moat explicitly cited \u2014 NRC operating licenses for 21 reactors are irreplaceable infrastructure requiring 10-20 years and billions to replicate; the Microsoft Three Mile Island restart PPA (20-year, signed Oct 2023) demonstrates market willingness to pay structural premium.",
         "moatScore": 4,
         "managementScore": 3,
         "year5Revenue": 37516.4,
@@ -210,7 +210,7 @@
         "year5EPS": 10.36,
         "scenarioPrice": 135.03,
         "risks": [
-          "AI data center PPA pipeline moves slower than market expects — hyperscaler procurement cycles are 18-36 months; CEG's next major contract may not materialize until 2027-2028",
+          "AI data center PPA pipeline moves slower than market expects \u2014 hyperscaler procurement cycles are 18-36 months; CEG's next major contract may not materialize until 2027-2028",
           "Nuclear capacity factor remains flat at 92-94%; limited ability to expand output without new builds (decade-long timeline)"
         ]
       },
@@ -221,7 +221,7 @@
         "exitPE": 27,
         "qualityMultiplier": 1.1,
         "shareChange": -1,
-        "rationale": "Catalyst: CEG signs 3+ additional hyperscaler data center PPAs (following Microsoft TMI model) totaling 5+ GW of long-term committed nuclear capacity, establishing a recurring high-margin revenue stream anchored in 20-year contracts. Revenue 15% CAGR reflects PPA re-pricing plus Crane Clean Energy Center (restarted TMI) and potential license extensions for additional plants. Net margin 14% = below FY2024 peak 15.9% but achievable if premium data center PPAs constitute 25%+ of total revenue by Y5. QM 1.10: nuclear moat strengthens under AI power demand — 21 reactors with NRC licenses, proven operating record, and unique 24/7 carbon-free power profile that no other source can replicate at scale. Exit PE 27x: CEG re-rates as 'critical digital infrastructure' play (comparable to tower/data center REITs at 25-30x) rather than traditional utility. Buybacks of 1%/yr as FCF turns strongly positive.",
+        "rationale": "Catalyst: CEG signs 3+ additional hyperscaler data center PPAs (following Microsoft TMI model) totaling 5+ GW of long-term committed nuclear capacity, establishing a recurring high-margin revenue stream anchored in 20-year contracts. Revenue 15% CAGR reflects PPA re-pricing plus Crane Clean Energy Center (restarted TMI) and potential license extensions for additional plants. Net margin 14% = below FY2024 peak 15.9% but achievable if premium data center PPAs constitute 25%+ of total revenue by Y5. QM 1.10: nuclear moat strengthens under AI power demand \u2014 21 reactors with NRC licenses, proven operating record, and unique 24/7 carbon-free power profile that no other source can replicate at scale. Exit PE 27x: CEG re-rates as 'critical digital infrastructure' play (comparable to tower/data center REITs at 25-30x) rather than traditional utility. Buybacks of 1%/yr as FCF turns strongly positive.",
         "moatScore": 5,
         "managementScore": 4,
         "year5Revenue": 51356,
@@ -229,35 +229,35 @@
         "year5EPS": 20.87,
         "scenarioPrice": 384.83,
         "risks": [
-          "Re-rating to 27x requires CEG to be reclassified from 'utility' to 'critical AI infrastructure' — multiple expansion is dependent on narrative sustaining",
+          "Re-rating to 27x requires CEG to be reclassified from 'utility' to 'critical AI infrastructure' \u2014 multiple expansion is dependent on narrative sustaining",
           "Nuclear renaissance accelerates construction of new builds from competitors, eventually diluting CEG's moat after 2030+"
         ]
       }
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "Constellation Energy owns the most valuable energy infrastructure in the United States — 21 nuclear reactors that cannot be replicated for 20+ years. The AI data center PPA thesis is proven: Microsoft committed to a 20-year clean energy agreement for the restarted Three Mile Island. Additional hyperscaler contracts are plausible and would be transformative. But at $307.81 — 43% above our fair value — the stock is pricing in multiple large contracts, margin recovery, and a utility-to-infrastructure multiple re-rating all happening simultaneously. Net margins are declining, not recovering. FCF only just turned positive after years of capital destruction. The prior Gemini 3 Pro analysis inflated the fair value by using QM 1.2 (exceptional tier) without citing a specific moat that justifies that tier. CEG's nuclear moat is real but does not meet the 'exceptional durable pricing power across all cycles' definition given regulatory, political, and safety risks inherent to nuclear operations. The honest result is SELL at -43%. [2026-05-02 13F Update: Situational Awareness LP held CEG in Q2 2025 (4.9%, $103M) but EXITED by Q4 2025. CEG does not appear in the Q4 2025 13F. This independently confirms the SELL rating: the thesis fund that originally i...]",
+      "rationale": "Constellation Energy owns the most valuable energy infrastructure in the United States \u2014 21 nuclear reactors that cannot be replicated for 20+ years. The AI data center PPA thesis is proven: Microsoft committed to a 20-year clean energy agreement for the restarted Three Mile Island. Additional hyperscaler contracts are plausible and would be transformative. But at $307.81 \u2014 43% above our fair value \u2014 the stock is pricing in multiple large contracts, margin recovery, and a utility-to-infrastructure multiple re-rating all happening simultaneously. Net margins are declining, not recovering. FCF only just turned positive after years of capital destruction. The prior Gemini 3 Pro analysis inflated the fair value by using QM 1.2 (exceptional tier) without citing a specific moat that justifies that tier. CEG's nuclear moat is real but does not meet the 'exceptional durable pricing power across all cycles' definition given regulatory, political, and safety risks inherent to nuclear operations. The honest result is SELL at -43%. [2026-05-02 13F Update: Situational Awareness LP held CEG in Q2 2025 (4.9%, $103M) but EXITED by Q4 2025. CEG does not appear in the Q4 2025 13F. This independently confirms the SELL rating: the thesis fund that originally i...]",
       "fairValue": 174.96,
       "action": "SELL",
       "analyzedAt": "2026-05-02T22:55:00Z",
-      "researchReport": "CEG_2026-05-02.md"
+      "researchReport": "CEG.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "shares_diluted = 362,294,672 per API. NI/EPS derived: $2.319B / $7.40 = 313.4M — discrepancy 15.7% (just above 15% threshold, flagged). EPS may be basic not fully diluted; actual diluted count may be higher. Used API shares_diluted (362M) per protocol.",
-      "marginAnchor": "Mean-reverting (volatile utility margins driven by electricity price cycles). 4yr history: -0.65% (FY2022), 6.51% (FY2023), 15.91% (FY2024, high power prices), 9.08% (TTM, declining). FY2024 15.91% is an identifiable cycle outlier (electricity prices peaked with gas prices still elevated, before renewables oversupply). Excluding: 3yr adj avg = (-0.65 + 6.51 + 9.08)/3 = 4.98%. Full 4yr avg = 7.71%. Used 4yr avg 7.71% as more representative (includes both a trough and recovery year). Base margin 10% = +2.3pp above 4yr avg, justified by structural nuclear premium pricing (AI data center PPA trend). Within ±5pp mean-reverting rule.",
-      "growthDerivation": "No API analyst estimates. Revenue historically stable ($23-25B utility-like). YoY growth 12.9% reflects electricity price uplift — not volume growth. No hypergrowth exception (12.9% < 40%). Bear 3% = utility-like flat (price normalization). Base 8% = modest PPA repricing benefit. Bull 15% = multiple data center contract wins creating above-utility growth.",
-      "sectorBenchmarkRow": "Utilities — Independent Power Producers: conservative P/E 12-14, median P/E 18-22, growth P/E 25-30. CEG currently at 22.5x forward — already at/above median, pricing in nuclear premium. Bear 14x (trough utility), base 20x (median), bull 27x (critical infrastructure re-rating).",
+      "shareCountMethod": "shares_diluted = 362,294,672 per API. NI/EPS derived: $2.319B / $7.40 = 313.4M \u2014 discrepancy 15.7% (just above 15% threshold, flagged). EPS may be basic not fully diluted; actual diluted count may be higher. Used API shares_diluted (362M) per protocol.",
+      "marginAnchor": "Mean-reverting (volatile utility margins driven by electricity price cycles). 4yr history: -0.65% (FY2022), 6.51% (FY2023), 15.91% (FY2024, high power prices), 9.08% (TTM, declining). FY2024 15.91% is an identifiable cycle outlier (electricity prices peaked with gas prices still elevated, before renewables oversupply). Excluding: 3yr adj avg = (-0.65 + 6.51 + 9.08)/3 = 4.98%. Full 4yr avg = 7.71%. Used 4yr avg 7.71% as more representative (includes both a trough and recovery year). Base margin 10% = +2.3pp above 4yr avg, justified by structural nuclear premium pricing (AI data center PPA trend). Within \u00b15pp mean-reverting rule.",
+      "growthDerivation": "No API analyst estimates. Revenue historically stable ($23-25B utility-like). YoY growth 12.9% reflects electricity price uplift \u2014 not volume growth. No hypergrowth exception (12.9% < 40%). Bear 3% = utility-like flat (price normalization). Base 8% = modest PPA repricing benefit. Bull 15% = multiple data center contract wins creating above-utility growth.",
+      "sectorBenchmarkRow": "Utilities \u2014 Independent Power Producers: conservative P/E 12-14, median P/E 18-22, growth P/E 25-30. CEG currently at 22.5x forward \u2014 already at/above median, pricing in nuclear premium. Bear 14x (trough utility), base 20x (median), bull 27x (critical infrastructure re-rating).",
       "dataQualityFlags": [
-        "Share count discrepancy: API 362M vs NI/EPS derived 313M = 15.7% (above 15% threshold). Flagged — forward EPS may be overstated if actual diluted count is higher.",
-        "Net margin declining sharply: 15.91% (FY2024) → 9.08% TTM — FY2024 was a high-power-price year; margins now normalizing downward. Current TTM not representative of either trough or bull.",
+        "Share count discrepancy: API 362M vs NI/EPS derived 313M = 15.7% (above 15% threshold). Flagged \u2014 forward EPS may be overstated if actual diluted count is higher.",
+        "Net margin declining sharply: 15.91% (FY2024) \u2192 9.08% TTM \u2014 FY2024 was a high-power-price year; margins now normalizing downward. Current TTM not representative of either trough or bull.",
         "FCF only just turned positive ($1.29B TTM) after 3 years deeply negative (-$4B to -$7.7B). Capital-intensive nuclear maintenance/upgrade cycle may resume.",
-        "Historical data has leading zero (FY2021 unavailable from API) — 4yr history used from FY2022.",
+        "Historical data has leading zero (FY2021 unavailable from API) \u2014 4yr history used from FY2022.",
         "No API analyst estimates returned. Growth and margin anchors derived from internal analysis only.",
-        "Prior Gemini 3 Pro (v3): bull QM 1.2 = 'exceptional durable pricing power' tier — overstated; corrected to 1.10 with explicit NRC license moat citation. Base QM 1.1 → 1.05. Action flips BUY → SELL."
+        "Prior Gemini 3 Pro (v3): bull QM 1.2 = 'exceptional durable pricing power' tier \u2014 overstated; corrected to 1.10 with explicit NRC license moat citation. Base QM 1.1 \u2192 1.05. Action flips BUY \u2192 SELL."
       ],
       "analystInputs": {
         "y1RevEstimate": null,
@@ -292,13 +292,13 @@
         "priorPrice": 307.81,
         "priorFairValue": 341.5,
         "priorAction": "BUY",
-        "priceDelta": "0% — same day replacement",
-        "assumptionAudit": "Bull QM 1.2 requires 'exceptional durable pricing power across cycles' — CEG's nuclear moat is real but nuclear plants face regulatory, safety, and political risks that prevent 'exceptional' classification. Corrected to QM 1.10 with explicit NRC license citation. Base QM 1.1 lacks documented moat citation; corrected to 1.05. These QM corrections, combined with slightly lower margins, flip the result from BUY $341 to SELL $175. The prior result was inflated by unconstrained QM multipliers compounding through bull and base cases.",
-        "modelQualityFlag": "UNVALIDATED — Gemini 3 Pro in flagged non-Sonnet list. All assumptions re-derived.",
-        "thesisOutcome": "Same day replacement. Prior BUY $341 → Sonnet SELL $175. Nuclear moat is real but QM values were the critical error.",
-        "fundamentalChanges": "Same day. Key analytical correction: QM values brought within documented rules, explicit moat citation required. Margin declining trend (15.9%→9.1%) more conservatively reflected in base case."
+        "priceDelta": "0% \u2014 same day replacement",
+        "assumptionAudit": "Bull QM 1.2 requires 'exceptional durable pricing power across cycles' \u2014 CEG's nuclear moat is real but nuclear plants face regulatory, safety, and political risks that prevent 'exceptional' classification. Corrected to QM 1.10 with explicit NRC license citation. Base QM 1.1 lacks documented moat citation; corrected to 1.05. These QM corrections, combined with slightly lower margins, flip the result from BUY $341 to SELL $175. The prior result was inflated by unconstrained QM multipliers compounding through bull and base cases.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Gemini 3 Pro in flagged non-Sonnet list. All assumptions re-derived.",
+        "thesisOutcome": "Same day replacement. Prior BUY $341 \u2192 Sonnet SELL $175. Nuclear moat is real but QM values were the critical error.",
+        "fundamentalChanges": "Same day. Key analytical correction: QM values brought within documented rules, explicit moat citation required. Margin declining trend (15.9%\u21929.1%) more conservatively reflected in base case."
       },
-      "confidenceBreakdown": "0.62/1.0 — Base: 1.0. -0.12 no API analyst estimates. -0.10 electricity price cycle creates significant margin uncertainty (15.9% to 9.1% in one year). -0.08 share count discrepancy 15.7%. -0.05 FCF only just turned positive — sustainability uncertain. -0.03 nuclear plant operational risk (unplanned outages). +0.10 positive: nuclear moat is objectively real (21 NRC-licensed reactors, irreplaceable); Microsoft TMI PPA validates premium pricing thesis; 24/7 carbon-free power is unique attribute.",
+      "confidenceBreakdown": "0.62/1.0 \u2014 Base: 1.0. -0.12 no API analyst estimates. -0.10 electricity price cycle creates significant margin uncertainty (15.9% to 9.1% in one year). -0.08 share count discrepancy 15.7%. -0.05 FCF only just turned positive \u2014 sustainability uncertain. -0.03 nuclear plant operational risk (unplanned outages). +0.10 positive: nuclear moat is objectively real (21 NRC-licensed reactors, irreplaceable); Microsoft TMI PPA validates premium pricing thesis; 24/7 carbon-free power is unique attribute.",
       "sa13fInsight": {
         "researchDate": "2026-05-02",
         "source": "Situational Awareness LP 13F Q4 2025 (filed 2026-02-11), Q2 2025 (filed 2025-08-14)",
@@ -316,8 +316,8 @@
     "version": 6,
     "savedAt": "2026-05-02T23:05:00Z",
     "updatedAt": "2026-05-02T23:05:00Z",
-    "name": "AI Deep Dive — CEG — 2026-05-02",
-    "rationale": "Constellation Energy operates the largest US nuclear fleet (21 reactors) with a genuine structural moat: NRC licenses, irreplaceable infrastructure, and a skilled workforce that cannot be replicated for decades. The AI data center PPA thesis is real — the Microsoft/TMI deal proves premium pricing is achievable. However, at $307.81 (22.5x forward P/E), CEG is priced for a bull scenario that requires margin recovery AND multiple AI data center contracts AND sustained elevated power prices all materializing simultaneously. Net margins are declining (15.9%→9.1% TTM) and FCF only just turned positive after years of negative. Our probability-weighted fair value of $174.96 implies 43% downside. The nuclear moat is real — but there is a price for everything.",
+    "name": "AI Deep Dive \u2014 CEG \u2014 2026-05-02",
+    "rationale": "Constellation Energy operates the largest US nuclear fleet (21 reactors) with a genuine structural moat: NRC licenses, irreplaceable infrastructure, and a skilled workforce that cannot be replicated for decades. The AI data center PPA thesis is real \u2014 the Microsoft/TMI deal proves premium pricing is achievable. However, at $307.81 (22.5x forward P/E), CEG is priced for a bull scenario that requires margin recovery AND multiple AI data center contracts AND sustained elevated power prices all materializing simultaneously. Net margins are declining (15.9%\u21929.1% TTM) and FCF only just turned positive after years of negative. Our probability-weighted fair value of $174.96 implies 43% downside. The nuclear moat is real \u2014 but there is a price for everything.",
     "snapshot": {
       "price": 307.81,
       "currency": "USD",
@@ -340,7 +340,7 @@
         "exitPE": 14,
         "qualityMultiplier": 0.95,
         "shareChange": 1,
-        "rationale": "Bear: Power price cycle reverses as renewable supply growth outpaces demand; CEG's above-market PPAs roll off and re-price lower. Revenue grows only 3% CAGR (utility-like). Net margin 7% — below 4yr adj avg of 7.7% (adj for FY2024 outlier), reflecting compressed electricity prices. Exit PE 14x = traditional utility trough multiple. QM 0.95 (slight discount to average): nuclear moat is real but political risk overhang (anti-nuclear sentiment, NRC regulatory friction) creates uncertainty.",
+        "rationale": "Bear: Power price cycle reverses as renewable supply growth outpaces demand; CEG's above-market PPAs roll off and re-price lower. Revenue grows only 3% CAGR (utility-like). Net margin 7% \u2014 below 4yr adj avg of 7.7% (adj for FY2024 outlier), reflecting compressed electricity prices. Exit PE 14x = traditional utility trough multiple. QM 0.95 (slight discount to average): nuclear moat is real but political risk overhang (anti-nuclear sentiment, NRC regulatory friction) creates uncertainty.",
         "moatScore": 3,
         "managementScore": 3,
         "year5Revenue": 29599.7,
@@ -348,9 +348,9 @@
         "year5EPS": 5.44,
         "scenarioPrice": 44.94,
         "risks": [
-          "Nuclear plant unplanned outage (capacity factor below 85%) — reference: 2012 Crystal River 3 permanent closure after botched steam generator replacement cost $835M write-down",
+          "Nuclear plant unplanned outage (capacity factor below 85%) \u2014 reference: 2012 Crystal River 3 permanent closure after botched steam generator replacement cost $835M write-down",
           "Power price mean-reversion as renewable oversupply (solar + wind LCOE now below $30/MWh) compresses wholesale electricity prices, eroding nuclear PPA premium",
-          "Nuclear safety incident at any US plant triggers regulatory standdown across fleet — even without a Constellation plant being the cause"
+          "Nuclear safety incident at any US plant triggers regulatory standdown across fleet \u2014 even without a Constellation plant being the cause"
         ]
       },
       "base": {
@@ -360,7 +360,7 @@
         "exitPE": 20,
         "qualityMultiplier": 1.05,
         "shareChange": 0,
-        "rationale": "Base: Modest recovery in margins from TTM trough as old below-market contracts roll off and new premium-priced AI data center PPAs (following Microsoft/TMI model) gradually take hold. Revenue 8% CAGR — above utility-like 3% due to price uplift from PPA repricing; below bull case which requires multiple large contracts. Margin anchor: 4yr adj avg 7.71% (excluding FY2024 outlier at 15.9% — exceptional year due to high power prices; not representative of normalized earnings power). Base margin 10% = +2.3pp above adj avg, justified by structural nuclear premium in power markets. Exit PE 20x = utilities-IPP median. QM 1.05: nuclear moat explicitly cited — NRC operating licenses for 21 reactors are irreplaceable infrastructure requiring 10-20 years and billions to replicate; the Microsoft Three Mile Island restart PPA (20-year, signed Oct 2023) demonstrates market willingness to pay structural premium.",
+        "rationale": "Base: Modest recovery in margins from TTM trough as old below-market contracts roll off and new premium-priced AI data center PPAs (following Microsoft/TMI model) gradually take hold. Revenue 8% CAGR \u2014 above utility-like 3% due to price uplift from PPA repricing; below bull case which requires multiple large contracts. Margin anchor: 4yr adj avg 7.71% (excluding FY2024 outlier at 15.9% \u2014 exceptional year due to high power prices; not representative of normalized earnings power). Base margin 10% = +2.3pp above adj avg, justified by structural nuclear premium in power markets. Exit PE 20x = utilities-IPP median. QM 1.05: nuclear moat explicitly cited \u2014 NRC operating licenses for 21 reactors are irreplaceable infrastructure requiring 10-20 years and billions to replicate; the Microsoft Three Mile Island restart PPA (20-year, signed Oct 2023) demonstrates market willingness to pay structural premium.",
         "moatScore": 4,
         "managementScore": 3,
         "year5Revenue": 37516.4,
@@ -368,7 +368,7 @@
         "year5EPS": 10.36,
         "scenarioPrice": 135.03,
         "risks": [
-          "AI data center PPA pipeline moves slower than market expects — hyperscaler procurement cycles are 18-36 months; CEG's next major contract may not materialize until 2027-2028",
+          "AI data center PPA pipeline moves slower than market expects \u2014 hyperscaler procurement cycles are 18-36 months; CEG's next major contract may not materialize until 2027-2028",
           "Nuclear capacity factor remains flat at 92-94%; limited ability to expand output without new builds (decade-long timeline)"
         ]
       },
@@ -379,7 +379,7 @@
         "exitPE": 27,
         "qualityMultiplier": 1.1,
         "shareChange": -1,
-        "rationale": "Catalyst: CEG signs 3+ additional hyperscaler data center PPAs (following Microsoft TMI model) totaling 5+ GW of long-term committed nuclear capacity, establishing a recurring high-margin revenue stream anchored in 20-year contracts. Revenue 15% CAGR reflects PPA re-pricing plus Crane Clean Energy Center (restarted TMI) and potential license extensions for additional plants. Net margin 14% = below FY2024 peak 15.9% but achievable if premium data center PPAs constitute 25%+ of total revenue by Y5. QM 1.10: nuclear moat strengthens under AI power demand — 21 reactors with NRC licenses, proven operating record, and unique 24/7 carbon-free power profile that no other source can replicate at scale. Exit PE 27x: CEG re-rates as 'critical digital infrastructure' play (comparable to tower/data center REITs at 25-30x) rather than traditional utility. Buybacks of 1%/yr as FCF turns strongly positive.",
+        "rationale": "Catalyst: CEG signs 3+ additional hyperscaler data center PPAs (following Microsoft TMI model) totaling 5+ GW of long-term committed nuclear capacity, establishing a recurring high-margin revenue stream anchored in 20-year contracts. Revenue 15% CAGR reflects PPA re-pricing plus Crane Clean Energy Center (restarted TMI) and potential license extensions for additional plants. Net margin 14% = below FY2024 peak 15.9% but achievable if premium data center PPAs constitute 25%+ of total revenue by Y5. QM 1.10: nuclear moat strengthens under AI power demand \u2014 21 reactors with NRC licenses, proven operating record, and unique 24/7 carbon-free power profile that no other source can replicate at scale. Exit PE 27x: CEG re-rates as 'critical digital infrastructure' play (comparable to tower/data center REITs at 25-30x) rather than traditional utility. Buybacks of 1%/yr as FCF turns strongly positive.",
         "moatScore": 5,
         "managementScore": 4,
         "year5Revenue": 51356,
@@ -387,35 +387,35 @@
         "year5EPS": 20.87,
         "scenarioPrice": 384.83,
         "risks": [
-          "Re-rating to 27x requires CEG to be reclassified from 'utility' to 'critical AI infrastructure' — multiple expansion is dependent on narrative sustaining",
+          "Re-rating to 27x requires CEG to be reclassified from 'utility' to 'critical AI infrastructure' \u2014 multiple expansion is dependent on narrative sustaining",
           "Nuclear renaissance accelerates construction of new builds from competitors, eventually diluting CEG's moat after 2030+"
         ]
       }
     },
     "aiThesis": {
       "model": "Claude Sonnet 4.6",
-      "rationale": "Constellation Energy owns the most valuable energy infrastructure in the United States — 21 nuclear reactors that cannot be replicated for 20+ years. The AI data center PPA thesis is proven: Microsoft committed to a 20-year clean energy agreement for the restarted Three Mile Island. Additional hyperscaler contracts are plausible and would be transformative. But at $307.81 — 43% above our fair value — the stock is pricing in multiple large contracts, margin recovery, and a utility-to-infrastructure multiple re-rating all happening simultaneously. Net margins are declining, not recovering. FCF only just turned positive after years of capital destruction. The prior Gemini 3 Pro analysis inflated the fair value by using QM 1.2 (exceptional tier) without citing a specific moat that justifies that tier. CEG's nuclear moat is real but does not meet the 'exceptional durable pricing power across all cycles' definition given regulatory, political, and safety risks inherent to nuclear operations. The honest result is SELL at -43%. [2026-05-02 13F Update: Situational Awareness LP held CEG in Q2 2025 (4.9%, $103M) but EXITED by Q4 2025. CEG does not appear in the Q4 2025 13F. This independently confirms the SELL rating: the thesis fund that originally i...]",
+      "rationale": "Constellation Energy owns the most valuable energy infrastructure in the United States \u2014 21 nuclear reactors that cannot be replicated for 20+ years. The AI data center PPA thesis is proven: Microsoft committed to a 20-year clean energy agreement for the restarted Three Mile Island. Additional hyperscaler contracts are plausible and would be transformative. But at $307.81 \u2014 43% above our fair value \u2014 the stock is pricing in multiple large contracts, margin recovery, and a utility-to-infrastructure multiple re-rating all happening simultaneously. Net margins are declining, not recovering. FCF only just turned positive after years of capital destruction. The prior Gemini 3 Pro analysis inflated the fair value by using QM 1.2 (exceptional tier) without citing a specific moat that justifies that tier. CEG's nuclear moat is real but does not meet the 'exceptional durable pricing power across all cycles' definition given regulatory, political, and safety risks inherent to nuclear operations. The honest result is SELL at -43%. [2026-05-02 13F Update: Situational Awareness LP held CEG in Q2 2025 (4.9%, $103M) but EXITED by Q4 2025. CEG does not appear in the Q4 2025 13F. This independently confirms the SELL rating: the thesis fund that originally i...]",
       "fairValue": 174.96,
       "action": "TRIM",
       "analyzedAt": "2026-05-02T22:55:00Z",
-      "researchReport": "CEG_2026-05-02.md"
+      "researchReport": "CEG.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "shares_diluted = 362,294,672 per API. NI/EPS derived: $2.319B / $7.40 = 313.4M — discrepancy 15.7% (just above 15% threshold, flagged). EPS may be basic not fully diluted; actual diluted count may be higher. Used API shares_diluted (362M) per protocol.",
-      "marginAnchor": "Mean-reverting (volatile utility margins driven by electricity price cycles). 4yr history: -0.65% (FY2022), 6.51% (FY2023), 15.91% (FY2024, high power prices), 9.08% (TTM, declining). FY2024 15.91% is an identifiable cycle outlier (electricity prices peaked with gas prices still elevated, before renewables oversupply). Excluding: 3yr adj avg = (-0.65 + 6.51 + 9.08)/3 = 4.98%. Full 4yr avg = 7.71%. Used 4yr avg 7.71% as more representative (includes both a trough and recovery year). Base margin 10% = +2.3pp above 4yr avg, justified by structural nuclear premium pricing (AI data center PPA trend). Within ±5pp mean-reverting rule.",
-      "growthDerivation": "No API analyst estimates. Revenue historically stable ($23-25B utility-like). YoY growth 12.9% reflects electricity price uplift — not volume growth. No hypergrowth exception (12.9% < 40%). Bear 3% = utility-like flat (price normalization). Base 8% = modest PPA repricing benefit. Bull 15% = multiple data center contract wins creating above-utility growth.",
-      "sectorBenchmarkRow": "Utilities — Independent Power Producers: conservative P/E 12-14, median P/E 18-22, growth P/E 25-30. CEG currently at 22.5x forward — already at/above median, pricing in nuclear premium. Bear 14x (trough utility), base 20x (median), bull 27x (critical infrastructure re-rating).",
+      "shareCountMethod": "shares_diluted = 362,294,672 per API. NI/EPS derived: $2.319B / $7.40 = 313.4M \u2014 discrepancy 15.7% (just above 15% threshold, flagged). EPS may be basic not fully diluted; actual diluted count may be higher. Used API shares_diluted (362M) per protocol.",
+      "marginAnchor": "Mean-reverting (volatile utility margins driven by electricity price cycles). 4yr history: -0.65% (FY2022), 6.51% (FY2023), 15.91% (FY2024, high power prices), 9.08% (TTM, declining). FY2024 15.91% is an identifiable cycle outlier (electricity prices peaked with gas prices still elevated, before renewables oversupply). Excluding: 3yr adj avg = (-0.65 + 6.51 + 9.08)/3 = 4.98%. Full 4yr avg = 7.71%. Used 4yr avg 7.71% as more representative (includes both a trough and recovery year). Base margin 10% = +2.3pp above 4yr avg, justified by structural nuclear premium pricing (AI data center PPA trend). Within \u00b15pp mean-reverting rule.",
+      "growthDerivation": "No API analyst estimates. Revenue historically stable ($23-25B utility-like). YoY growth 12.9% reflects electricity price uplift \u2014 not volume growth. No hypergrowth exception (12.9% < 40%). Bear 3% = utility-like flat (price normalization). Base 8% = modest PPA repricing benefit. Bull 15% = multiple data center contract wins creating above-utility growth.",
+      "sectorBenchmarkRow": "Utilities \u2014 Independent Power Producers: conservative P/E 12-14, median P/E 18-22, growth P/E 25-30. CEG currently at 22.5x forward \u2014 already at/above median, pricing in nuclear premium. Bear 14x (trough utility), base 20x (median), bull 27x (critical infrastructure re-rating).",
       "dataQualityFlags": [
-        "Share count discrepancy: API 362M vs NI/EPS derived 313M = 15.7% (above 15% threshold). Flagged — forward EPS may be overstated if actual diluted count is higher.",
-        "Net margin declining sharply: 15.91% (FY2024) → 9.08% TTM — FY2024 was a high-power-price year; margins now normalizing downward. Current TTM not representative of either trough or bull.",
+        "Share count discrepancy: API 362M vs NI/EPS derived 313M = 15.7% (above 15% threshold). Flagged \u2014 forward EPS may be overstated if actual diluted count is higher.",
+        "Net margin declining sharply: 15.91% (FY2024) \u2192 9.08% TTM \u2014 FY2024 was a high-power-price year; margins now normalizing downward. Current TTM not representative of either trough or bull.",
         "FCF only just turned positive ($1.29B TTM) after 3 years deeply negative (-$4B to -$7.7B). Capital-intensive nuclear maintenance/upgrade cycle may resume.",
-        "Historical data has leading zero (FY2021 unavailable from API) — 4yr history used from FY2022.",
+        "Historical data has leading zero (FY2021 unavailable from API) \u2014 4yr history used from FY2022.",
         "No API analyst estimates returned. Growth and margin anchors derived from internal analysis only.",
-        "Prior Gemini 3 Pro (v3): bull QM 1.2 = 'exceptional durable pricing power' tier — overstated; corrected to 1.10 with explicit NRC license moat citation. Base QM 1.1 → 1.05. Action flips BUY → SELL."
+        "Prior Gemini 3 Pro (v3): bull QM 1.2 = 'exceptional durable pricing power' tier \u2014 overstated; corrected to 1.10 with explicit NRC license moat citation. Base QM 1.1 \u2192 1.05. Action flips BUY \u2192 SELL."
       ],
       "analystInputs": {
         "y1RevEstimate": null,
@@ -450,13 +450,13 @@
         "priorPrice": 307.81,
         "priorFairValue": 341.5,
         "priorAction": "BUY",
-        "priceDelta": "0% — same day replacement",
-        "assumptionAudit": "Bull QM 1.2 requires 'exceptional durable pricing power across cycles' — CEG's nuclear moat is real but nuclear plants face regulatory, safety, and political risks that prevent 'exceptional' classification. Corrected to QM 1.10 with explicit NRC license citation. Base QM 1.1 lacks documented moat citation; corrected to 1.05. These QM corrections, combined with slightly lower margins, flip the result from BUY $341 to SELL $175. The prior result was inflated by unconstrained QM multipliers compounding through bull and base cases.",
-        "modelQualityFlag": "UNVALIDATED — Gemini 3 Pro in flagged non-Sonnet list. All assumptions re-derived.",
-        "thesisOutcome": "Same day replacement. Prior BUY $341 → Sonnet SELL $175. Nuclear moat is real but QM values were the critical error.",
-        "fundamentalChanges": "Same day. Key analytical correction: QM values brought within documented rules, explicit moat citation required. Margin declining trend (15.9%→9.1%) more conservatively reflected in base case."
+        "priceDelta": "0% \u2014 same day replacement",
+        "assumptionAudit": "Bull QM 1.2 requires 'exceptional durable pricing power across cycles' \u2014 CEG's nuclear moat is real but nuclear plants face regulatory, safety, and political risks that prevent 'exceptional' classification. Corrected to QM 1.10 with explicit NRC license citation. Base QM 1.1 lacks documented moat citation; corrected to 1.05. These QM corrections, combined with slightly lower margins, flip the result from BUY $341 to SELL $175. The prior result was inflated by unconstrained QM multipliers compounding through bull and base cases.",
+        "modelQualityFlag": "UNVALIDATED \u2014 Gemini 3 Pro in flagged non-Sonnet list. All assumptions re-derived.",
+        "thesisOutcome": "Same day replacement. Prior BUY $341 \u2192 Sonnet SELL $175. Nuclear moat is real but QM values were the critical error.",
+        "fundamentalChanges": "Same day. Key analytical correction: QM values brought within documented rules, explicit moat citation required. Margin declining trend (15.9%\u21929.1%) more conservatively reflected in base case."
       },
-      "confidenceBreakdown": "0.62/1.0 — Base: 1.0. -0.12 no API analyst estimates. -0.10 electricity price cycle creates significant margin uncertainty (15.9% to 9.1% in one year). -0.08 share count discrepancy 15.7%. -0.05 FCF only just turned positive — sustainability uncertain. -0.03 nuclear plant operational risk (unplanned outages). +0.10 positive: nuclear moat is objectively real (21 NRC-licensed reactors, irreplaceable); Microsoft TMI PPA validates premium pricing thesis; 24/7 carbon-free power is unique attribute.",
+      "confidenceBreakdown": "0.62/1.0 \u2014 Base: 1.0. -0.12 no API analyst estimates. -0.10 electricity price cycle creates significant margin uncertainty (15.9% to 9.1% in one year). -0.08 share count discrepancy 15.7%. -0.05 FCF only just turned positive \u2014 sustainability uncertain. -0.03 nuclear plant operational risk (unplanned outages). +0.10 positive: nuclear moat is objectively real (21 NRC-licensed reactors, irreplaceable); Microsoft TMI PPA validates premium pricing thesis; 24/7 carbon-free power is unique attribute.",
       "sa13fInsight": {
         "researchDate": "2026-05-02",
         "source": "Situational Awareness LP 13F Q4 2025 (filed 2026-02-11), Q2 2025 (filed 2025-08-14)",
@@ -465,7 +465,7 @@
         "portfolioValueAtQ4": "$5.52B"
       },
       "valuationAction": "SELL",
-      "portfolioRationale": "SELL-rated at $174.96 FV vs price $307.81 (−43.2%). Situational Awareness LP EXITED CEG between Q2 and Q4 2025 — independent confirmation from the thesis fund. Nuclear power thesis is valid but CEG is overpriced. Trim from 4.33% to 2.0%. Freed weight → VST.",
+      "portfolioRationale": "SELL-rated at $174.96 FV vs price $307.81 (\u221243.2%). Situational Awareness LP EXITED CEG between Q2 and Q4 2025 \u2014 independent confirmation from the thesis fund. Nuclear power thesis is valid but CEG is overpriced. Trim from 4.33% to 2.0%. Freed weight \u2192 VST.",
       "portfolioUrgency": "NORMAL"
     },
     "taLevels": {
@@ -480,7 +480,7 @@
         "accumulateAt": null
       },
       "source": "daily-loop-agent",
-      "notes": "SELL_ONLY_WHEN_GREEN. Underwater -28.8%, break-even $364. Trim only above $364 (book) or $385 (bull FV). SQUEEZE_ON — watch for coil resolution. No accumulate: DCF TRIM, stock above $175 FV."
+      "notes": "SELL_ONLY_WHEN_GREEN. Underwater -28.8%, break-even $364. Trim only above $364 (book) or $385 (bull FV). SQUEEZE_ON \u2014 watch for coil resolution. No accumulate: DCF TRIM, stock above $175 FV."
     },
     "peers": [
       "VST",

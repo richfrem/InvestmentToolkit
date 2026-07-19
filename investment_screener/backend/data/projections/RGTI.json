@@ -79,7 +79,7 @@
       "fairValue": 1.05,
       "action": "SELL",
       "analyzedAt": "2026-05-02T20:19:45Z",
-      "researchReport": "RGTI_2026-05-02.md"
+      "researchReport": "RGTI.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

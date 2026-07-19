@@ -89,7 +89,7 @@
       "fairValue": 124.29,
       "action": "SELL",
       "analyzedAt": "2026-05-02T20:15:00Z",
-      "researchReport": "COIN_2026-05-02.md"
+      "researchReport": "COIN.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -239,7 +239,7 @@
       "fairValue": 185.06,
       "action": "MAINTAIN",
       "analyzedAt": "2026-05-08T13:47:36Z",
-      "researchReport": "COIN_2026-05-02.md"
+      "researchReport": "COIN.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,

@@ -7,7 +7,7 @@
     "version": 1,
     "savedAt": "2026-05-02T19:16:32.961Z",
     "updatedAt": "2026-05-02T19:16:32.961Z",
-    "name": "AI Deep Dive — PLTR — 2026-05-02",
+    "name": "AI Deep Dive \u2014 PLTR \u2014 2026-05-02",
     "rationale": "Palantir is experiencing a massive growth inflection driven by its Artificial Intelligence Platform (AIP). Trailing revenue grew 70% to $4.48B, and the company has achieved structural profitability with a 36.3% TTM net margin, yielding an exceptional 102.18 Rule of 40 score. However, this hypergrowth is entirely priced in at the current valuation (228.7x trailing P/E, 77.2x forward P/E). Even applying generous hypergrowth assumptions (34% CAGR) and a premium 50x exit multiple, our base case fair value sits at $122.92. The stock trades at a ~15% premium to this base case, making it slightly overvalued despite the phenomenal underlying business execution. SELL.",
     "snapshot": {
       "price": 144.07,
@@ -87,7 +87,7 @@
       "fairValue": 122.92,
       "action": "SELL",
       "analyzedAt": "2026-05-02T19:16:32.961Z",
-      "researchReport": "PLTR_2026-05-02.md"
+      "researchReport": "PLTR.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
@@ -97,7 +97,7 @@
       "shareCountMethod": "Used 2.295B (shares_diluted). Matches API output.",
       "marginAnchor": "TTM 36.31% used. Palantir has structurally inflected from heavy losses (-19.6% two years ago) to massive profitability. Base case holds margin flat at 36% as a conservative estimate of steady-state SaaS operating leverage.",
       "growthDerivation": "Hypergrowth exception applied. Analyst Y1 revenue implies 62.6% growth ($7.27B vs $4.47B TTM). Y2 implies 43.1%. Projecting a natural deceleration path (30%, 20%, 15% in years 3-5) yields a 5-yr CAGR of ~34%. Base case growth set to 34%.",
-      "sectorBenchmarkRow": "Technology — Software (SaaS): median P/E 30, best-in-class 50+. Used 50x for base case due to hypergrowth and AI premium.",
+      "sectorBenchmarkRow": "Technology \u2014 Software (SaaS): median P/E 30, best-in-class 50+. Used 50x for base case due to hypergrowth and AI premium.",
       "dataQualityFlags": [
         "The massive divergence between trailing P/E (228x) and current margins indicates the market is entirely pricing the stock on future hypergrowth and its AI narrative."
       ],
@@ -128,7 +128,7 @@
         0.21,
         0.69
       ],
-      "confidenceBreakdown": "0.85/1.0 — +0.10 for clean recent GAAP profitability and cash flow, -0.15 for the high sensitivity of the valuation to terminal growth and multiple assumptions."
+      "confidenceBreakdown": "0.85/1.0 \u2014 +0.10 for clean recent GAAP profitability and cash flow, -0.15 for the high sensitivity of the valuation to terminal growth and multiple assumptions."
     }
   },
   {
@@ -139,8 +139,8 @@
     "version": 2,
     "savedAt": "2026-07-02T14:43:58.000Z",
     "updatedAt": "2026-07-02T14:45:09.416Z",
-    "name": "AI Deep Dive — PLTR — 2026-07-02",
-    "rationale": "Palantir remains a genuinely profitable, structurally-moated AI/data platform (82%+ gross margin, 43.7% TTM net margin, government + commercial lock-in via Gotham/Foundry ontology), but the market is pricing it at 147-154x trailing earnings — a multiple a 5-year DCF cannot justify carrying forward. A refreshed, independently-derived model puts fair value at $147.06 against $130.96, a modest 12.3% upside — HOLD, not the SELL the 60-day-stale prior model showed, and not the outright buy that recent bullish news coverage implied either.",
+    "name": "AI Deep Dive \u2014 PLTR \u2014 2026-07-02",
+    "rationale": "Palantir remains a genuinely profitable, structurally-moated AI/data platform (82%+ gross margin, 43.7% TTM net margin, government + commercial lock-in via Gotham/Foundry ontology), but the market is pricing it at 147-154x trailing earnings \u2014 a multiple a 5-year DCF cannot justify carrying forward. A refreshed, independently-derived model puts fair value at $147.06 against $130.96, a modest 12.3% upside \u2014 HOLD, not the SELL the 60-day-stale prior model showed, and not the outright buy that recent bullish news coverage implied either.",
     "snapshot": {
       "price": 130.96,
       "currency": "USD",
@@ -186,25 +186,25 @@
     },
     "aiThesis": {
       "model": "Claude Sonnet 5",
-      "rationale": "Palantir has continued its transformation into a genuinely profitable software platform: TTM net margin of 43.7% (up from 36.3% a year ago, -19.6% four years ago), 82%+ gross margins, and FY2026 analyst revenue guidance of $7.72B (+72.5% YoY). The structural moat is real — Gotham and Foundry create deep government/enterprise ontology lock-in with high switching costs, which justifies a qualityMultiplier above 1.1 in the base and bull cases. However, the market is currently pricing PLTR at 147-154x trailing earnings, a multiple no reasonable 5-year DCF exit assumption can sustain — even the bull case caps exit P/E at 65x. A refreshed valuation (independently re-derived, not anchored to the 60-day-stale prior SELL call or to today's price) lands at a weighted fair value of $147.06 against a $130.96 price: 12.3% upside, HOLD. This sits between the stale DCF's prior SELL and the recent Grok/Gemini news sweeps' bullish 'INITIATE NOW' calls — the fundamentals genuinely improved and justify a higher fair value than the prior model found, but the current price already captures most of that improvement. Not a compelling initiation at today's price; would become one on a pullback toward the mid-$110s (base-case entry with margin of safety) or on evidence that Y3-Y5 growth decelerates slower than the modeled path.",
+      "rationale": "Palantir has continued its transformation into a genuinely profitable software platform: TTM net margin of 43.7% (up from 36.3% a year ago, -19.6% four years ago), 82%+ gross margins, and FY2026 analyst revenue guidance of $7.72B (+72.5% YoY). The structural moat is real \u2014 Gotham and Foundry create deep government/enterprise ontology lock-in with high switching costs, which justifies a qualityMultiplier above 1.1 in the base and bull cases. However, the market is currently pricing PLTR at 147-154x trailing earnings, a multiple no reasonable 5-year DCF exit assumption can sustain \u2014 even the bull case caps exit P/E at 65x. A refreshed valuation (independently re-derived, not anchored to the 60-day-stale prior SELL call or to today's price) lands at a weighted fair value of $147.06 against a $130.96 price: 12.3% upside, HOLD. This sits between the stale DCF's prior SELL and the recent Grok/Gemini news sweeps' bullish 'INITIATE NOW' calls \u2014 the fundamentals genuinely improved and justify a higher fair value than the prior model found, but the current price already captures most of that improvement. Not a compelling initiation at today's price; would become one on a pullback toward the mid-$110s (base-case entry with margin of safety) or on evidence that Y3-Y5 growth decelerates slower than the modeled path.",
       "fairValue": 147.06,
       "action": "HOLD",
       "analyzedAt": "2026-07-02T14:43:58.000Z",
-      "researchReport": "PLTR_2026-07-02.md"
+      "researchReport": "PLTR.summary.md"
     },
     "globalSettings": {
       "discountRate": 10,
       "timeHorizon": 5
     },
     "analyticsLog": {
-      "shareCountMethod": "shares_diluted (2,296,071,334 shares — direct from raw metrics)",
-      "marginAnchor": "TTM (43.67%) — margin has expanded every year for 4 consecutive years (-19.6% -> 9.4% -> 16.1% -> 36.3% -> 43.67% TTM), qualifies as trending per anchoring rule. Base case set to 44% (near TTM, no material deviation). Bear deviates to 27% (>5pp below TTM) to reflect competitive/execution risk from hyperscaler-native AI agent platforms and government spending pressure compressing margins back toward sector-typical levels; bull expands modestly to 47% on continued operating leverage.",
+      "shareCountMethod": "shares_diluted (2,296,071,334 shares \u2014 direct from raw metrics)",
+      "marginAnchor": "TTM (43.67%) \u2014 margin has expanded every year for 4 consecutive years (-19.6% -> 9.4% -> 16.1% -> 36.3% -> 43.67% TTM), qualifies as trending per anchoring rule. Base case set to 44% (near TTM, no material deviation). Bear deviates to 27% (>5pp below TTM) to reflect competitive/execution risk from hyperscaler-native AI agent platforms and government spending pressure compressing margins back toward sector-typical levels; bull expands modestly to 47% on continued operating leverage.",
       "growthDerivation": "Analyst consensus: FY2026 (Y1) revenue $7.72B avg (+72.5% vs TTM $4.48B), FY2027 (Y2) $11.20B avg (+45.1% YoY). Hypergrowth exception applied (Y1 consensus >40%): growth increment (72.5% -> 45.1%, a 27.4pp drop) halved each subsequent year -> Y3 ~31.4%, Y4 ~24.6%, Y5 ~21.1%. Derived 5yr revenue CAGR from (Y5 rev / TTM rev)^(1/5)-1 = ~37.8%. Base case growthRate set to 36% (close to derived CAGR, slightly conservative). Bear (18%) reflects deceleration overshooting consensus on commercial competition; bull (48%) reflects accelerating commercial AIP adoption beyond backlog trajectory (named catalyst).",
-      "sectorBenchmarkRow": "Technology — Software (SaaS): Conservative P/E 20, Median P/E 30, Growth P/E 50+ | Net margin Bear Trough 0%, Typical 15-25%, Best-in-Class 30%+. PLTR's TTM margin (43.7%) already exceeds best-in-class SaaS, so base/bull exitPE anchored at the top of the Growth P/E band (50/65) rather than extrapolating today's 147-154x trailing multiple.",
+      "sectorBenchmarkRow": "Technology \u2014 Software (SaaS): Conservative P/E 20, Median P/E 30, Growth P/E 50+ | Net margin Bear Trough 0%, Typical 15-25%, Best-in-Class 30%+. PLTR's TTM margin (43.7%) already exceeds best-in-class SaaS, so base/bull exitPE anchored at the top of the Growth P/E band (50/65) rather than extrapolating today's 147-154x trailing multiple.",
       "dataQualityFlags": [
-        "TTM profit_margin (43.67%) initially computed as 0.0 by standardize_metrics.py because raw fetch_financials.py output omits a 'net_income' key for PLTR (only provides profit_margin + pe_ratio) — root-caused and fixed in this session (net_income now derived from profit_margin x revenue when missing); net_income now correctly resolves to ~$1.95B.",
-        "Current market multiple (147-154x trailing P/E) is extreme relative to even the bull-case exit P/E (65x) — DCF intentionally does not extrapolate this multiple 5 years forward.",
-        "rev_cagr_3yr from historical data reports 0.0 due to a leading zero-padded entry in historical_revenue array — not used as the growth anchor; analyst-consensus-derived CAGR used instead."
+        "TTM profit_margin (43.67%) initially computed as 0.0 by standardize_metrics.py because raw fetch_financials.py output omits a 'net_income' key for PLTR (only provides profit_margin + pe_ratio) \u2014 root-caused and fixed in this session (net_income now derived from profit_margin x revenue when missing); net_income now correctly resolves to ~$1.95B.",
+        "Current market multiple (147-154x trailing P/E) is extreme relative to even the bull-case exit P/E (65x) \u2014 DCF intentionally does not extrapolate this multiple 5 years forward.",
+        "rev_cagr_3yr from historical data reports 0.0 due to a leading zero-padded entry in historical_revenue array \u2014 not used as the growth anchor; analyst-consensus-derived CAGR used instead."
       ],
       "analystInputs": {
         "y1RevEstimate": 7716355790,
@@ -240,12 +240,12 @@
         "priorFairValue": "96.54",
         "priorAction": "SELL",
         "priceDelta": "-9.1% (144.07 -> 130.96)",
-        "assumptionAudit": "Prior base growthRate 34% and netMargin 35% were reasonable directionally but netMargin was anchored below the trending TTM figure without the anchoring-rule framework applied consistently. Prior exitPE (30/45/60) was slightly more conservative than this run's (35/50/65) — re-derived independently rather than carried forward, landing close but not identical.",
-        "modelQualityFlag": "Sonnet 4.6 — valid model, but 60 days stale; treated as informative context only, not a starting point.",
-        "thesisOutcome": "Partially played out — price fell 9.1% toward (but did not reach) the prior $96.54 fair value, consistent with the prior SELL direction. However, a full re-derivation with corrected fundamentals data lands at a materially different fair value ($147.06 vs $96.54), driven primarily by the net_income/profit_margin bug fix (prior run likely also affected) and updated analyst consensus.",
-        "fundamentalChanges": "Two AI News sweeps (Grok + Gemini, 2026-07-01) both independently rated PLTR 'INITIATE NOW' citing FY2026 revenue guidance raised to $7.66B (71% YoY) and a zero-debt balance sheet — this news read conflicted with the stale DCF's SELL rating, which is what triggered this refresh."
+        "assumptionAudit": "Prior base growthRate 34% and netMargin 35% were reasonable directionally but netMargin was anchored below the trending TTM figure without the anchoring-rule framework applied consistently. Prior exitPE (30/45/60) was slightly more conservative than this run's (35/50/65) \u2014 re-derived independently rather than carried forward, landing close but not identical.",
+        "modelQualityFlag": "Sonnet 4.6 \u2014 valid model, but 60 days stale; treated as informative context only, not a starting point.",
+        "thesisOutcome": "Partially played out \u2014 price fell 9.1% toward (but did not reach) the prior $96.54 fair value, consistent with the prior SELL direction. However, a full re-derivation with corrected fundamentals data lands at a materially different fair value ($147.06 vs $96.54), driven primarily by the net_income/profit_margin bug fix (prior run likely also affected) and updated analyst consensus.",
+        "fundamentalChanges": "Two AI News sweeps (Grok + Gemini, 2026-07-01) both independently rated PLTR 'INITIATE NOW' citing FY2026 revenue guidance raised to $7.66B (71% YoY) and a zero-debt balance sheet \u2014 this news read conflicted with the stale DCF's SELL rating, which is what triggered this refresh."
       },
-      "confidenceBreakdown": "0.65/1.0 — Base 1.0. -0.15 for extreme current market multiple (147-154x) creating wide dispersion between scenarios. -0.10 for reliance on only 2 years of forward analyst estimates (Y3-Y5 are deceleration-modeled, not consensus). -0.10 for government-contract revenue concentration risk (budget/political exposure). +0.10 for genuine trending margin expansion (4 consecutive years) and 82%+ gross margin structural moat (Gotham/Foundry ontology lock-in, high switching costs)."
+      "confidenceBreakdown": "0.65/1.0 \u2014 Base 1.0. -0.15 for extreme current market multiple (147-154x) creating wide dispersion between scenarios. -0.10 for reliance on only 2 years of forward analyst estimates (Y3-Y5 are deceleration-modeled, not consensus). -0.10 for government-contract revenue concentration risk (budget/political exposure). +0.10 for genuine trending margin expansion (4 consecutive years) and 82%+ gross margin structural moat (Gotham/Foundry ontology lock-in, high switching costs)."
     }
   }
 ]
