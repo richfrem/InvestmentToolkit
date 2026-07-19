@@ -97,3 +97,40 @@ def list_active_events_for_ticker(conn, ticker: str) -> list[dict]:
     """, (ticker,))
     columns = [d[0] for d in cursor.description]
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+
+def get_latest_event_by_type(conn, event_type: str) -> dict | None:
+    """Retrieve the latest active event of the specified event_type."""
+    cursor = conn.execute("""
+        SELECT ie.event_id, ie.event_sequence, ie.instrument_id, ie.event_type,
+               ie.effective_at, ie.observed_at, ie.ingested_at, ie.source_id,
+               ie.confidence_score, ie.status, ie.title, ie.body_markdown,
+               ie.payload_json, ie.supersedes_event_id, ie.idempotency_key,
+               ie.content_hash
+        FROM intelligence_event ie
+        WHERE ie.event_type = ? AND ie.status = 'ACTIVE'
+        ORDER BY ie.effective_at DESC, ie.ingested_at DESC LIMIT 1;
+    """, (event_type,))
+    columns = [d[0] for d in cursor.description]
+    row = cursor.fetchone()
+    return dict(zip(columns, row)) if row else None
+
+
+def get_latest_event_by_type_and_ticker(conn, event_type: str, ticker: str) -> dict | None:
+    """Retrieve the latest active event of the specified type for a specific ticker."""
+    cursor = conn.execute("""
+        SELECT ie.event_id, ie.event_sequence, ie.instrument_id, ie.event_type,
+               ie.effective_at, ie.observed_at, ie.ingested_at, ie.source_id,
+               ie.confidence_score, ie.status, ie.title, ie.body_markdown,
+               ie.payload_json, ie.supersedes_event_id, ie.idempotency_key,
+               ie.content_hash
+        FROM intelligence_event ie
+        JOIN instrument i ON i.instrument_id = ie.instrument_id
+        WHERE ie.event_type = ? AND i.ticker = ? AND ie.status = 'ACTIVE'
+        ORDER BY ie.effective_at DESC, ie.ingested_at DESC LIMIT 1;
+    """, (event_type, ticker))
+    columns = [d[0] for d in cursor.description]
+    row = cursor.fetchone()
+    return dict(zip(columns, row)) if row else None
+
+
