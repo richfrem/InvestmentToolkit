@@ -28,3 +28,29 @@ def test_migrate_pointers_rewrites_all_versions_to_canonical(tmp_path):
     assert "researchReport" not in updated[2]["aiThesis"]
     assert "aiThesis" not in updated[3]
     assert result["rewritten_count"] == 2
+
+
+def test_migrate_pointers_rewrites_full_path_dated_references(tmp_path):
+    """A researchReport value stored as a full repo-relative path (e.g.
+    'investment_screener/backend/data/research/OKLO_2026-05-02.md') must
+    still be recognized as a dated reference and rewritten to the bare
+    canonical filename — the same as a bare dated filename would be.
+    Found via real production data: OKLO.json version 1 held this shape
+    and was silently skipped by the original anchored-basename-only regex.
+    """
+    projections_dir = tmp_path / "projections"
+    projections_dir.mkdir()
+    (projections_dir / "OKLO.json").write_text(json.dumps([
+        {
+            "version": 1,
+            "aiThesis": {
+                "researchReport": "investment_screener/backend/data/research/OKLO_2026-05-02.md"
+            },
+        },
+    ]))
+
+    result = migrate_pointers(str(projections_dir))
+
+    updated = json.loads((projections_dir / "OKLO.json").read_text())
+    assert updated[0]["aiThesis"]["researchReport"] == "OKLO.summary.md"
+    assert result["rewritten_count"] == 1

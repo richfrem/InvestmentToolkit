@@ -1,0 +1,108 @@
+# BTDR Research Timeline
+
+## 2026-05-02 — BTDR research import (2026-05-02)
+
+# BTDR — Bitdeer Technologies Group
+**Date**: 2026-05-02 | **Model**: Claude Sonnet 4.6 | **Action**: BUY | **Fair Value**: $24.09 vs $11.84 (+103.5%)
+
+## TL;DR
+Bitdeer is the standout BUY in the BTC mining sector, differentiated by its proprietary Sealminer ASIC chip design capability. Revenue of $620M growing 226% reflects the Sealminer launch. Unlike pure miners, BTDR controls its own compute stack — a structural moat. DCF yields $24.09 fair value (+103% vs $11.84 current). BUY.
+
+## Company Snapshot
+| Metric | Value |
+|--------|-------|
+| Price | $11.84 |
+| Market Cap | $2.88B |
+| Revenue (TTM) | $620.3M |
+| Revenue Growth | 225.8% YoY |
+| Net Margin | Negative (PE=0, forward PE negative) |
+| P/S Ratio | 4.6x |
+| Shares (Diluted, patched) | 243.0M |
+| Shares (API-reported) | 198.6M |
+
+## Investment Thesis
+Bitdeer occupies a unique position in the BTC mining ecosystem: it designs, manufactures, and deploys its own ASIC chips (Sealminer A2, A3 series) in addition to operating mining farms and expanding into AI HPC hosting. This vertical integration is a genuine structural moat — BTDR can optimize chip design for its own mining workloads, reduce procurement costs, and potentially sell excess ASIC capacity to third parties.
+
+The 225.8% TTM growth is driven by the ASIC launch (hypergrowth exception applied — cannot use TTM as 5-yr CAGR). Deceleration path: Y1 ~90%, Y2 ~60%, Y3 ~40%, Y4 ~25%, Y5 ~18% → 5-yr base CAGR 45%. At $620M base, this implies $4.1B Y5 revenue — ambitious but credible if ASIC chip sales scale.
+
+Share count patched from API 198.6M to mktcap-implied 243.0M (18.3% discrepancy — likely convertible notes). The patched count reduces per-share EPS but the BUY thesis holds: P/S 4.6x is cheap vs APLD (66.5x), CIFR (30.9x), even CLSK (4.1x). BTDR has a higher-quality revenue mix.
+
+At $11.84, the market is pricing BTDR as a commodity BTC miner. The ASIC chip business changes the calculus — a $24 fair value reflects a modest 15x exit PE on 12% margins, not speculative pricing.
+
+## Scenario Analysis
+
+### 🐻 Bear (35% weight): BTC bear market + ASIC ramp stalls
+BTC price mean-reverts to $40K; ASIC chip demand softens as mining ROI collapses; BTDR loses mining cost advantage.
+
+| Assumption | Value | Rationale |
+|-----------|-------|-----------|
+| 5-yr Revenue CAGR | 20% | ASIC pivot momentum + BTC pressure |
+| Year 5 Revenue | $1.54B | $620M × 1.20⁵ |
+| Net Margin (Yr 5) | 5% | Mining margin trough + ASIC margin diluted |
+| Exit P/E | 10x | Trough mining multiple |
+| Quality Multiplier | 0.90 | Bear: ASIC moat not yet validated |
+| Share Change | +2%/yr | Dilutive raises |
+| **Year 5 EPS** | **$0.29** | — |
+| **Year 5 Price** | **$2.58** | — |
+| **Present Value** | **$1.61** | — |
+
+### ⚖️ Base (45% weight): ASIC + HPC revenue scales
+BTDR scales Sealminer ASIC sales + AI HPC hosting; dual revenue streams compound at 45% CAGR to $4.1B at 12% blended margin.
+
+| Assumption | Value | Rationale |
+|-----------|-------|-----------|
+| 5-yr Revenue CAGR | 45% | ASIC chip + mining + HPC hosting growth |
+| Year 5 Revenue | $4.06B | $620M × 1.45⁵ |
+| Net Margin (Yr 5) | 12% | Blended ASIC + mining margin |
+| Exit P/E | 15x | ASIC+mining hybrid multiple |
+| Quality Multiplier | 1.05 | Sealminer ASIC design moat: named structural advantage |
+| Share Change | +1%/yr | Moderate dilution |
+| **Year 5 EPS** | **$1.87** | — |
+| **Year 5 Price** | **$29.47** | — |
+| **Present Value** | **$18.27** | — |
+
+### 🚀 Bull (20% weight): Sealminer captures ASIC market
+Sealminer ASICs capture 15%+ of addressable ASIC market; BTDR AI cloud materializes; $7B+ Y5 revenue with 20% premium margin.
+
+| Assumption | Value | Rationale |
+|-----------|-------|-----------|
+| 5-yr Revenue CAGR | 60% | ASIC market share capture + HPC hosting scale |
+| Year 5 Revenue | $6.53B | $620M × 1.60⁵ |
+| Net Margin (Yr 5) | 20% | Premium margin as ASIC chip mix dominates |
+| Exit P/E | 22x | Semiconductor/HPC platform multiple |
+| Quality Multiplier | 1.10 | Strong ASIC moat + AI HPC pivot validated |
+| Share Change | +1%/yr | Moderate dilution |
+| **Year 5 EPS** | **$5.09** | — |
+| **Year 5 Price** | **$123.18** | — |
+| **Present Value** | **$76.53** | — |
+
+## Valuation Math
+- Bear: $1.61 × 35% = $0.56
+- Base: $18.27 × 45% = $8.22
+- Bull: $76.53 × 20% = $15.31
+- **Weighted Fair Value: $24.09** vs $11.84 current → **BUY +103.5%**
+
+## Key Risks
+1. **BTC price cycle** — Mining revenue dominates; BTC bear market would compress near-term earnings
+2. **ASIC competition** — Bitmain (Antminer) dominates ASIC market; BTDR must prove Sealminer competitive
+3. **Share dilution** — Convertibles and warrants (18.3% share count discrepancy) could dilute returns
+4. **Execution** — Dual pivot (ASIC chips + AI HPC) requires simultaneous execution across different technical disciplines
+5. **Capital intensity** — Both chip design and HPC data centers require massive capex
+
+## What to Watch
+- Sealminer A3 chip sales volume (key moat validation metric)
+- AI HPC hosting revenue as % of total (mix shift away from commodity mining)
+- BTC price sustainability at $70K+ (mining revenue floor)
+- Third-party ASIC sales announcements
+
+## Data Quality & Confidence: 0.55/1.0
+- Share count discrepancy 18.3% — patched to mktcap-implied 243.0M
+- No historical financial data; hypergrowth CAGR derivation speculative
+- QM 1.05/1.1 grounded in Sealminer ASIC moat (verifiable differentiator)
+
+## Prior Analysis
+**Gemini 3 Pro** (2026-05-02): BUY $29.21 at $11.84 — both BUY, different FV. My lower FV ($24.09) reflects patched share count (243M vs likely API 198.6M used by Gemini).
+
+## Discussion Log
+*(empty)*
+
