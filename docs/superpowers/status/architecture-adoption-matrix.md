@@ -8,11 +8,11 @@ This document tracks the migration status of every consumer in the ecosystem, in
 |---|---:|---|
 | USES_LEDGER_REPOSITORY | 2 | Actively queries the new SQLite ledger repository layer. |
 | USES_GENERATED_VIEW | 2 | Actively queries the generated views (like *.summary.md). |
-| REMAINS_JSON_BY_DESIGN | 132 | Legitimate flat-file configuration/portfolio target JSON. |
-| MIGRATION_REQUIRED | 11 | Legitimate migration candidate that must be rewired. |
+| REMAINS_JSON_BY_DESIGN | 148 | Legitimate flat-file configuration/portfolio target JSON (including resolved unknowns). |
+| MIGRATION_REQUIRED | 13 | Legitimate migration candidate that must be rewired. |
 | OUT_OF_SCOPE | 1 | 13F and other domain data not in-scope for this phase. |
-| UNKNOWN_REQUIRES_REVIEW | 10 | Requires review to determine correct taxonomy status. |
-| **Total Consumers** | **158** | |
+| UNKNOWN_REQUIRES_REVIEW | 0 | Requires review to determine correct taxonomy status. |
+| **Total Consumers** | **166** | |
 
 ## Consumer Breakdown by Type
 
@@ -22,15 +22,16 @@ This document tracks the migration status of every consumer in the ecosystem, in
 | frontend component | 2 |
 | plugin script | 82 |
 | report generator | 13 |
-| skill | 47 |
-| sub-agent | 1 |
+| skill | 50 |
+| sub-agent | 6 |
 | workflow | 2 |
 
 ## Complete Architecture Adoption Matrix
 
 | Consumer | Type | Current Source | Target Source | Status | Migration Required | Test Coverage | Risk |
 |---|---|---|---|---|---|---|---|
-| `investment_screener/backend/src/routes/dailybrief.ts` | backend route | n/a | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | No | Medium |
+| `investment_screener/backend/src/routes/dailybrief.ts` | backend route | ta-sweep-results.json / events.jsonl | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | No | Medium |
+| `investment_screener/backend/src/routes/docs.ts` | backend route | data/research/*.md | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | No | Medium |
 | `investment_screener/backend/py_services/compute_conviction_scores.py` | plugin script | ta-sweep-results.json, target-portfolio.json | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | Yes | Medium |
 | `investment_screener/backend/py_services/evolution_events.py` | plugin script | events.jsonl, ta-sweep-results.json | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | No | Medium |
 | `plugins/tradingview/scripts/ta_sweep_batch.py` | plugin script | ta-sweep-results.json, target-portfolio.json | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | Yes | High |
@@ -38,11 +39,11 @@ This document tracks the migration status of every consumer in the ecosystem, in
 | `investment_screener/backend/py_services/daily_brief.py` | report generator | ta-sweep-results.json, target-portfolio.json | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | Yes | High |
 | `plugins/portfolio-advisor/scripts/daily_brief.py` | report generator | ta-sweep-results.json, target-portfolio.json | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | Yes | High |
 | `plugins/portfolio-advisor/skills/daily-brief/scripts/daily_brief.py` | skill | ta-sweep-results.json, target-portfolio.json | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | Yes | High |
-| `plugins/portfolio-advisor/skills/daily-loop/SKILL.md` | skill | n/a | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | No | Medium |
+| `plugins/portfolio-advisor/skills/daily-loop/SKILL.md` | skill | ta-sweep-results.json / events.jsonl | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | No | Medium |
+| `plugins/portfolio-advisor/skills/daily-loop/scripts/generate_reports.py` | skill | target-portfolio.json | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | Yes | Medium |
 | `plugins/tradingview/skills/ta-daily-sweep/scripts/ta_sweep_batch.py` | skill | ta-sweep-results.json, target-portfolio.json | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | Yes | High |
-| `plugins/portfolio-advisor/agents/daily-loop-agent.md` | sub-agent | n/a | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | No | Medium |
+| `plugins/portfolio-advisor/agents/daily-loop-agent.md` | sub-agent | ta-sweep-results.json / events.jsonl | intelligence.sqlite (ledger) | MIGRATION_REQUIRED | Yes | No | Medium |
 | `investment_screener/backend/src/routes/thirteenf.ts` | backend route | 0002045724_diff.json, 0002045724_index.json | n/a | OUT_OF_SCOPE | No | n/a | Low |
-| `investment_screener/backend/src/routes/docs.ts` | backend route | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `investment_screener/backend/src/routes/screener.ts` | backend route | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `investment_screener/backend/src/routes/stock.ts` | backend route | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `investment_screener/backend/src/routes/theses.ts` | backend route | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
@@ -63,6 +64,7 @@ This document tracks the migration status of every consumer in the ecosystem, in
 | `investment_screener/backend/py_services/migrations/remove_drift_threshold_fields.py` | plugin script | account_policy.json, target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
 | `investment_screener/backend/py_services/order_risk_gates.py` | plugin script | account_policy.json, target-portfolio.json, thesis_breaker_state.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `investment_screener/backend/py_services/overnight_gaps.py` | plugin script | watchlist.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
+| `investment_screener/backend/py_services/pine_script_manager.py` | plugin script | registry.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
 | `investment_screener/backend/py_services/prediction_ledger.py` | plugin script | prediction.schema.json, predictions.jsonl | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
 | `investment_screener/backend/py_services/rebalancer.py` | plugin script | account_policy.json, target-portfolio.json, thesis_breaker_state.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
 | `investment_screener/backend/py_services/risk_engine.py` | plugin script | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
@@ -95,6 +97,12 @@ This document tracks the migration status of every consumer in the ecosystem, in
 | `investment_screener/backend/tests/py_services/test_order_risk_gates_builds_portfolio_state.py` | plugin script | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
 | `investment_screener/backend/tests/py_services/test_order_risk_gates_checks_breaker_veto.py` | plugin script | target-portfolio.json, thesis_breaker_state.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
 | `investment_screener/backend/tests/py_services/test_overnight_gaps.py` | plugin script | watchlist.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
+| `investment_screener/backend/tests/py_services/test_pine_auto_discovery_registers_scripts.py` | plugin script | registry.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
+| `investment_screener/backend/tests/py_services/test_pine_injection_auto_clicks.py` | plugin script | registry.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
+| `investment_screener/backend/tests/py_services/test_pine_library_manages_multiple_scripts.py` | plugin script | registry.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
+| `investment_screener/backend/tests/py_services/test_pine_registry_reads_writes_json.py` | plugin script | registry.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
+| `investment_screener/backend/tests/py_services/test_pine_rollback_on_error.py` | plugin script | registry.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
+| `investment_screener/backend/tests/py_services/test_pine_version_history_from_git.py` | plugin script | registry.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
 | `investment_screener/backend/tests/py_services/test_portfolio_action_import.py` | plugin script | portfolio.test.json, target_portfolio.test.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
 | `investment_screener/backend/tests/py_services/test_portfolio_io.py` | plugin script | portfolio.test.json, portfolio_with_totals.test.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
 | `investment_screener/backend/tests/py_services/test_prediction_ledger.py` | plugin script | predictions.jsonl | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
@@ -122,6 +130,7 @@ This document tracks the migration status of every consumer in the ecosystem, in
 | `plugins/tradingview/scripts/watchlist_manager.py` | plugin script | watchlist.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
 | `plugins/tradingview/tests/test_tv_list_alerts.py` | plugin script | tradingview_alerts_actual.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
 | `tradingview-cdp/cli.js` | plugin script | watchlist.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
+| `investment_screener/backend/py_services/brief_recommendations.py` | report generator | standing-decisions.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
 | `investment_screener/backend/py_services/generate_reports.py` | report generator | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
 | `investment_screener/backend/py_services/generate_review_json.py` | report generator | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `investment_screener/backend/py_services/generate_track_record_report.py` | report generator | predictions.jsonl | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
@@ -140,7 +149,7 @@ This document tracks the migration status of every consumer in the ecosystem, in
 | `plugins/portfolio-advisor/skills/calibrate-targets/scripts/update_thesis.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `plugins/portfolio-advisor/skills/calibrate-targets/scripts/validate_weights.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `plugins/portfolio-advisor/skills/calibrate-targets/scripts/verify_refresh.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
-| `plugins/portfolio-advisor/skills/daily-loop/scripts/generate_reports.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
+| `plugins/portfolio-advisor/skills/portfolio-health/SKILL.md` | skill | n/a | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `plugins/portfolio-advisor/skills/portfolio-health/scripts/apply_catalyst.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `plugins/portfolio-advisor/skills/portfolio-health/scripts/generate_portfolio_blueprint.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `plugins/portfolio-advisor/skills/portfolio-health/scripts/generate_review.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
@@ -148,8 +157,10 @@ This document tracks the migration status of every consumer in the ecosystem, in
 | `plugins/portfolio-advisor/skills/portfolio-health/scripts/scan_opportunities.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `plugins/portfolio-advisor/skills/portfolio-health/scripts/validate_weights.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `plugins/portfolio-advisor/skills/portfolio-health/scripts/verify_refresh.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
+| `plugins/portfolio-advisor/skills/rebalance-portfolio/SKILL.md` | skill | n/a | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `plugins/portfolio-advisor/skills/rebalance-portfolio/scripts/update_targets.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `plugins/portfolio-advisor/skills/rebalance-portfolio/scripts/validate_weights.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
+| `plugins/portfolio-advisor/skills/strategic-review/SKILL.md` | skill | n/a | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `plugins/portfolio-advisor/skills/strategic-review/scripts/apply_catalyst.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `plugins/portfolio-advisor/skills/strategic-review/scripts/generate_portfolio_blueprint.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `plugins/portfolio-advisor/skills/strategic-review/scripts/generate_review.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
@@ -174,16 +185,13 @@ This document tracks the migration status of every consumer in the ecosystem, in
 | `plugins/portfolio-advisor/skills/x-news-sweep/scripts/verify_refresh.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
 | `plugins/tradingview/skills/alert-list/scripts/tv_list_alerts.py` | skill | tradingview_alerts_actual.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
 | `plugins/tradingview/skills/alert-sync/scripts/tv_create_alerts.py` | skill | target-portfolio.json | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
-| `investment_screener/backend/py_services/pine_script_manager.py` | plugin script | registry.json | Unknown | UNKNOWN_REQUIRES_REVIEW | Yes | No | Medium |
-| `investment_screener/backend/tests/py_services/test_pine_auto_discovery_registers_scripts.py` | plugin script | registry.json | Unknown | UNKNOWN_REQUIRES_REVIEW | Yes | Yes | Medium |
-| `investment_screener/backend/tests/py_services/test_pine_injection_auto_clicks.py` | plugin script | registry.json | Unknown | UNKNOWN_REQUIRES_REVIEW | Yes | Yes | Medium |
-| `investment_screener/backend/tests/py_services/test_pine_library_manages_multiple_scripts.py` | plugin script | registry.json | Unknown | UNKNOWN_REQUIRES_REVIEW | Yes | Yes | Medium |
-| `investment_screener/backend/tests/py_services/test_pine_registry_reads_writes_json.py` | plugin script | registry.json | Unknown | UNKNOWN_REQUIRES_REVIEW | Yes | Yes | Medium |
-| `investment_screener/backend/tests/py_services/test_pine_rollback_on_error.py` | plugin script | registry.json | Unknown | UNKNOWN_REQUIRES_REVIEW | Yes | Yes | Medium |
-| `investment_screener/backend/tests/py_services/test_pine_version_history_from_git.py` | plugin script | registry.json | Unknown | UNKNOWN_REQUIRES_REVIEW | Yes | Yes | Medium |
-| `investment_screener/backend/py_services/brief_recommendations.py` | report generator | standing-decisions.json | Unknown | UNKNOWN_REQUIRES_REVIEW | Yes | Yes | Medium |
-| `run_investment_toolkit.py` | workflow | package.json | Unknown | UNKNOWN_REQUIRES_REVIEW | Yes | No | Medium |
-| `run_tests.py` | workflow | package.json, portfolio.test.json, symlinks.json, target_portfolio.test.json | Unknown | UNKNOWN_REQUIRES_REVIEW | Yes | No | Medium |
+| `plugins/portfolio-advisor/agents/data-quality-agent.md` | sub-agent | n/a | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
+| `plugins/portfolio-advisor/agents/red-team-agent.md` | sub-agent | n/a | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
+| `plugins/portfolio-advisor/agents/risk-officer-agent.md` | sub-agent | n/a | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
+| `plugins/portfolio-advisor/agents/single-stock-advisor.md` | sub-agent | n/a | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
+| `plugins/portfolio-advisor/agents/weekly-review-agent.md` | sub-agent | n/a | n/a | REMAINS_JSON_BY_DESIGN | No | No | Low |
+| `run_investment_toolkit.py` | workflow | package.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
+| `run_tests.py` | workflow | package.json, portfolio.test.json, symlinks.json, target_portfolio.test.json | n/a | REMAINS_JSON_BY_DESIGN | No | Yes | Low |
 | `investment_screener/frontend/src/components/ResearchReportViewer.tsx` | frontend component | n/a | Markdown View files (*.summary.md) | USES_GENERATED_VIEW | No | Yes | Low |
 | `investment_screener/frontend/src/views/Dashboard.tsx` | frontend component | n/a | Markdown View files (*.summary.md) | USES_GENERATED_VIEW | No | Yes | Low |
 | `plugins/stock-valuation/skills/stock-research/SKILL.md` | skill | n/a | intelligence.sqlite (ledger) | USES_LEDGER_REPOSITORY | No | Yes | Low |
@@ -225,7 +233,13 @@ Classification of Express backend routes and core services:
 | `investment_screener/backend/src/routes/dailybrief.ts` | MIGRATION_REQUIRED | intelligence.sqlite | Reads daily brief JSON files from disk, must transition to SQLite |
 | `investment_screener/backend/src/routes/screener.ts` | REMAINS_JSON_BY_DESIGN | n/a | Reads target-portfolio.json, out-of-scope |
 | `investment_screener/backend/src/routes/stock.ts` | REMAINS_JSON_BY_DESIGN | n/a | Serves projections/watchlist JSON, out-of-scope |
+| `investment_screener/backend/src/routes/theses.ts` | REMAINS_JSON_BY_DESIGN | n/a | Reads target portfolio and active portfolio JSON, out-of-scope |
 | `investment_screener/backend/src/routes/thirteenf.ts` | OUT_OF_SCOPE | n/a | Parses SEC filings separate from ledger domain |
+| `investment_screener/backend/src/services/BrokerSyncService.ts` | REMAINS_JSON_BY_DESIGN | n/a | Live brokerage/target integration service, out-of-scope |
+| `investment_screener/backend/src/services/ThesisService.ts` | REMAINS_JSON_BY_DESIGN | n/a | Handles account target policies, out-of-scope |
+| `investment_screener/backend/src/services/WatchlistService.ts` | REMAINS_JSON_BY_DESIGN | n/a | Manages flat-file watchlist data, out-of-scope |
+| `investment_screener/backend/src/utils/paths.ts` | REMAINS_JSON_BY_DESIGN | n/a | Helper containing static folder pathways, out-of-scope |
+| `investment_screener/backend/src/utils/zod-schemas.ts` | REMAINS_JSON_BY_DESIGN | n/a | Zod schema validation constructs, out-of-scope |
 
 ## Frontend Audit
 
