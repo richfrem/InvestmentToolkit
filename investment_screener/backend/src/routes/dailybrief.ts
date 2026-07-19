@@ -26,6 +26,7 @@
 import { Router } from 'express';
 import fs from 'fs';
 import path from 'path';
+import { spawnPythonScript } from '../services/bridge';
 
 const router = Router();
 
@@ -44,30 +45,88 @@ function latestBriefPath(): string | null {
     return files.length ? path.join(BRIEFS_DIR, files[0]) : null;
 }
 
-/** GET /api/daily-brief/latest — returns today's brief or the most recent available. */
-router.get('/latest', (_req, res) => {
+export async function queryLatestBriefFromLedger(dbPath?: string): Promise<any> {
     try {
+        const args = ['--latest'];
+        if (dbPath) {
+            args.push('--db-path', dbPath);
+        }
+        const data = await spawnPythonScript('query_ledger_brief.py', args);
+        return data || null;
+    } catch (e) {
+        console.warn('Ledger query latest brief failed, falling back:', e);
+        return null;
+    }
+}
+
+export async function queryBriefHistoryFromLedger(dbPath?: string): Promise<any[] | null> {
+    try {
+        const args = ['--history'];
+        if (dbPath) {
+            args.push('--db-path', dbPath);
+        }
+        const data = await spawnPythonScript('query_ledger_brief.py', args);
+        return Array.isArray(data) ? data : null;
+    } catch (e) {
+        console.warn('Ledger query history failed, falling back:', e);
+        return null;
+    }
+}
+
+export async function queryTickerConvictionFromLedger(ticker: string, dbPath?: string): Promise<any[] | null> {
+    try {
+        const args = ['--conviction', ticker];
+        if (dbPath) {
+            args.push('--db-path', dbPath);
+        }
+        const data = await spawnPythonScript('query_ledger_brief.py', args);
+        return Array.isArray(data) ? data : null;
+    } catch (e) {
+        console.warn('Ledger query ticker conviction failed, falling back:', e);
+        return null;
+    }
+}
+
+/** GET /api/daily-brief/latest — returns today's brief or the most recent available. */
+router.get('/latest', async (_req, res) => {
+    try {
+        // Try ledger first
+        const brief = await queryLatestBriefFromLedger();
+        if (brief) {
+            res.json(brief);
+            return;
+        }
+
+        // Fallback to legacy filesystem
         const briefPath = latestBriefPath();
         if (!briefPath) {
             res.status(404).json({ error: 'No daily brief found. Run: python3 plugins/portfolio-advisor/scripts/daily_brief.py' });
             return;
         }
-        const brief = JSON.parse(fs.readFileSync(briefPath, 'utf-8'));
-        res.json(brief);
+        const fallbackBrief = JSON.parse(fs.readFileSync(briefPath, 'utf-8'));
+        res.json(fallbackBrief);
     } catch (e: any) {
         res.status(500).json({ error: e.message });
     }
 });
 
 /** GET /api/daily-brief/history — returns metadata for all available snapshots. */
-router.get('/history', (_req, res) => {
+router.get('/history', async (_req, res) => {
     try {
+        // Try ledger first
+        const history = await queryBriefHistoryFromLedger();
+        if (history) {
+            res.json(history);
+            return;
+        }
+
+        // Fallback to legacy filesystem
         if (!fs.existsSync(BRIEFS_DIR)) { res.json([]); return; }
         const files = fs.readdirSync(BRIEFS_DIR)
             .filter(f => f.endsWith('.json'))
             .sort()
             .reverse();
-        const history = files.map(f => {
+        const fallbackHistory = files.map(f => {
             const d = JSON.parse(fs.readFileSync(path.join(BRIEFS_DIR, f), 'utf-8'));
             return {
                 date: d.date,
@@ -77,29 +136,40 @@ router.get('/history', (_req, res) => {
                 ta_refreshed: d.ta_refreshed,
             };
         });
-        res.json(history);
+        res.json(fallbackHistory);
     } catch (e: any) {
         res.status(500).json({ error: e.message });
     }
 });
 
 /** GET /api/daily-brief/conviction/:ticker — historical conviction score for one ticker. */
-router.get('/conviction/:ticker', (req, res) => {
+router.get('/conviction/:ticker', async (req, res) => {
     try {
         const ticker = req.params.ticker.toUpperCase();
+
+        // Try ledger first
+        const convictionHistory = await queryTickerConvictionFromLedger(ticker);
+        if (convictionHistory) {
+            res.json(convictionHistory);
+            return;
+        }
+
+        // Fallback to legacy filesystem
         if (!fs.existsSync(BRIEFS_DIR)) { res.json([]); return; }
         const files = fs.readdirSync(BRIEFS_DIR)
             .filter(f => f.endsWith('.json'))
             .sort();
-        const history = files.flatMap(f => {
+        const fallbackConvictionHistory = files.flatMap(f => {
             const d = JSON.parse(fs.readFileSync(path.join(BRIEFS_DIR, f), 'utf-8'));
             const score = (d.conviction_scores ?? []).find((s: any) => s.ticker === ticker);
             return score ? [{ date: d.date, ...score }] : [];
         });
-        res.json(history);
+        res.json(fallbackConvictionHistory);
     } catch (e: any) {
         res.status(500).json({ error: e.message });
     }
 });
 
 export default router;
+
+
