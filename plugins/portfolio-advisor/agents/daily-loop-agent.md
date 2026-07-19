@@ -301,7 +301,7 @@ signal in this loop.
    - RSI > 70 and COOLING → trim zone is at or above current price
    - RSI < 35 → accumulate zone is at or near current price
    - ADX > 40 → strong trend; widen hold zone by ~10%
-4. If `ta-sweep-results.json` has a recent entry (< 2 days old), read EMA/support values from it.
+4. Read EMA/support values from the latest `TECHNICAL_SWEEP` event in the SQLite database ledger (via `event_repository.py` or `query_ledger_brief.py`).
 5. When levels are DCF-derived (not live TA), label them: `(DCF ref)` vs `(TA ref)`.
 
 **P&L context rules:**
