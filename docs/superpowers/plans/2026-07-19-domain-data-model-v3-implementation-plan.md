@@ -120,7 +120,101 @@ def test_initialize_db_is_idempotent(tmp_path):
     conn2 = initialize_db(db_path)  # must not raise on re-open of existing file
     cursor = conn2.execute("SELECT COUNT(*) FROM investment;")
     assert cursor.fetchone()[0] == 0
+
+
+def test_investment_symbol_unique_constraint_enforced(tmp_path):
+    conn = initialize_db(str(tmp_path / "domain_model_test.sqlite"))
+    conn.execute(
+        "INSERT INTO investment (investment_id, symbol, asset_class, currency, updated_at) "
+        "VALUES ('aapl-1', 'AAPL', 'EQUITY', 'USD', '2026-07-19T00:00:00Z');"
+    )
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(
+            "INSERT INTO investment (investment_id, symbol, asset_class, currency, updated_at) "
+            "VALUES ('aapl-2', 'AAPL', 'EQUITY', 'USD', '2026-07-19T00:00:00Z');"
+        )
+
+
+def test_account_investment_unique_account_plus_investment_enforced(tmp_path):
+    conn = initialize_db(str(tmp_path / "domain_model_test.sqlite"))
+    conn.execute(
+        "INSERT INTO account (account_id, account_name, account_type) VALUES ('TFSA', 'TFSA', 'TFSA');"
+    )
+    conn.execute(
+        "INSERT INTO investment (investment_id, symbol, asset_class, currency, updated_at) "
+        "VALUES ('aapl-1', 'AAPL', 'EQUITY', 'USD', '2026-07-19T00:00:00Z');"
+    )
+    conn.execute(
+        "INSERT INTO account_investment "
+        "(account_investment_id, account_id, investment_id, quantity, last_synced_at) "
+        "VALUES ('TFSA:aapl-1', 'TFSA', 'aapl-1', 10, '2026-07-19T00:00:00Z');"
+    )
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(
+            "INSERT INTO account_investment "
+            "(account_investment_id, account_id, investment_id, quantity, last_synced_at) "
+            "VALUES ('TFSA:aapl-1-dup', 'TFSA', 'aapl-1', 5, '2026-07-19T01:00:00Z');"
+        )
+
+
+def test_projection_version_unique_investment_plus_version_enforced(tmp_path):
+    conn = initialize_db(str(tmp_path / "domain_model_test.sqlite"))
+    conn.execute(
+        "INSERT INTO investment (investment_id, symbol, asset_class, currency, updated_at) "
+        "VALUES ('aapl-1', 'AAPL', 'EQUITY', 'USD', '2026-07-19T00:00:00Z');"
+    )
+    conn.execute(
+        "INSERT INTO projection_version (projection_id, investment_id, version, saved_at) "
+        "VALUES ('p1', 'aapl-1', 1, '2026-07-19T00:00:00Z');"
+    )
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(
+            "INSERT INTO projection_version (projection_id, investment_id, version, saved_at) "
+            "VALUES ('p2', 'aapl-1', 1, '2026-07-19T01:00:00Z');"
+        )
+
+
+def test_projection_scenario_unique_projection_plus_scenario_name_enforced(tmp_path):
+    conn = initialize_db(str(tmp_path / "domain_model_test.sqlite"))
+    conn.execute(
+        "INSERT INTO investment (investment_id, symbol, asset_class, currency, updated_at) "
+        "VALUES ('aapl-1', 'AAPL', 'EQUITY', 'USD', '2026-07-19T00:00:00Z');"
+    )
+    conn.execute(
+        "INSERT INTO projection_version (projection_id, investment_id, version, saved_at) "
+        "VALUES ('p1', 'aapl-1', 1, '2026-07-19T00:00:00Z');"
+    )
+    conn.execute(
+        "INSERT INTO projection_scenario (scenario_id, projection_id, scenario_name) "
+        "VALUES ('s1', 'p1', 'base');"
+    )
+    with pytest.raises(sqlite3.IntegrityError):
+        conn.execute(
+            "INSERT INTO projection_scenario (scenario_id, projection_id, scenario_name) "
+            "VALUES ('s2', 'p1', 'base');"
+        )
+
+
+def test_expected_indexes_exist(tmp_path):
+    conn = initialize_db(str(tmp_path / "domain_model_test.sqlite"))
+    cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='index';")
+    actual_indexes = {row[0] for row in cursor.fetchall()}
+    expected_indexes = {
+        "idx_investment_pillar",
+        "idx_investment_lifecycle",
+        "idx_account_investment_account",
+        "idx_account_investment_investment",
+        "idx_projection_investment",
+        "idx_projection_scenario_projection",
+        "idx_alert_investment",
+        "idx_investment_note_investment",
+    }
+    missing = expected_indexes - actual_indexes
+    assert not missing, f"Missing indexes: {missing}"
 ```
+
+Add `import sqlite3` and `import pytest` to the top of this test file alongside the existing
+imports (both are needed for the `IntegrityError`/`raises` assertions above).
 
 - [ ] **Step 2: Run test to verify it fails**
 
@@ -428,9 +522,39 @@ def initialize_db(db_path: str) -> sqlite3.Connection:
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `cd investment_screener/backend && python3 -m pytest tests/py_services/test_domain_model_db_client.py -v`
-Expected: `3 passed`
+Expected: `9 passed`
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 5: DDL drift check against the approved schema documents**
+
+The DDL in `db_client.py` was hand-transcribed from `docs/architecture/domain-data-model.md` and
+`docs/architecture/supplementary-domain-schemas.md`. Hand-transcription is a real risk (a dropped
+column, a renamed constraint) — do not skip this step. For every table, diff the column list,
+types, and constraints in `db_client.py` against the source document column-for-column. Record
+the result as a comment block at the top of `db_client.py`:
+
+```python
+# DDL drift check (performed at authoring time, re-run whenever this file changes):
+# Source: docs/architecture/domain-data-model.md (account, strategy_pillar, sub_strategy,
+#   investment, investment_price, account_investment, price_level_set, price_level_tier,
+#   alert, investment_note, projection_version, projection_scenario, portfolio_policy)
+#   + docs/architecture/supplementary-domain-schemas.md (trade_log_entry, order_execution,
+#   cash_flow, cash_flow_baseline).
+# Deviations from source documents (must be empty, or each entry must be justified):
+#   - projection_version.research_event_id: source docs show this as
+#     "REFERENCES intelligence_event(event_id)" but that table lives in a different SQLite
+#     file (intelligence.sqlite) than this one (domain_model's own .sqlite) — SQLite cannot
+#     enforce a cross-database FK, so this column is declared without a REFERENCES clause here.
+#     Referential integrity for this link is enforced at the repository layer (Wave 1's
+#     projection repository must validate the event_id exists before insert), not by SQLite.
+#     Same reasoning applies to investment.latest_research_event_id.
+#   - (no other deviations found as of this transcription)
+```
+
+If a second reviewer (or a future re-read of this file) finds any other deviation from the two
+source documents, it must be added to this list with the same justify-or-fix treatment — silently
+differing from the approved schema is exactly the kind of unverified claim ADR-029 warns against.
+
+- [ ] **Step 6: Commit**
 
 ```bash
 git add investment_screener/backend/py_services/domain_model/__init__.py \
@@ -865,10 +989,23 @@ from domain_model.backfill_investment_universe import (  # noqa: E402
 
 def test_backfill_creates_one_row_per_new_ticker(tmp_path):
     conn = initialize_db(str(tmp_path / "test.sqlite"))
-    created = backfill_from_ticker_lists(conn, ["AAPL", "MSFT", "CASH_USD"])
-    assert created == 3
+    created = backfill_from_ticker_lists(conn, ["AAPL", "MSFT"])
+    assert created == 2
     assert get_investment(conn, "AAPL") is not None
-    assert get_investment(conn, "CASH_USD")["asset_class"] == "EQUITY"  # default unless overridden
+    assert get_investment(conn, "AAPL")["asset_class"] == "EQUITY"
+
+
+def test_backfill_cash_concepts_use_asset_class_cash(tmp_path):
+    """CASH_USD/CASH_CAD are real INVESTMENT rows per the v3.2 model (spec §3, resolved
+    decision 5) — they must never silently default to EQUITY. The caller is responsible for
+    passing asset_class="CASH" explicitly; this test guards against that contract being
+    dropped, since a default-to-EQUITY cash row would be a real data-modeling bug, not a
+    cosmetic one (it would corrupt asset_class-based portfolio composition queries).
+    """
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    backfill_from_ticker_lists(conn, ["CASH_USD", "CASH_CAD"], asset_class="CASH")
+    assert get_investment(conn, "CASH_USD")["asset_class"] == "CASH"
+    assert get_investment(conn, "CASH_CAD")["asset_class"] == "CASH"
 
 
 def test_backfill_is_idempotent_on_rerun(tmp_path):
@@ -917,7 +1054,7 @@ def backfill_from_ticker_lists(
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `cd investment_screener/backend && python3 -m pytest tests/py_services/test_backfill_investment_universe.py -v`
-Expected: `2 passed`
+Expected: `3 passed`
 
 - [ ] **Step 5: Commit**
 
@@ -997,6 +1134,16 @@ git add docs/superpowers/status/wave0-schema-foundation-report.md
 git commit -m "docs: Wave 0 schema/repository foundation exit report"
 ```
 
+### Hard Checkpoint — Do Not Start Wave 1 Until This Is Reviewed
+
+**Wave 1 does not begin automatically after Task 6's commit.** The Wave 0 exit report above must
+be presented to the user for explicit review and sign-off before any Wave 1 work (including
+writing Wave 1's own detailed task plan) starts. This is not a formality: Wave 0 introduces a new
+package, a new schema, and a new anti-duplication rule that every later wave depends on — a
+mistake here (a missing index, a wrong constraint, a repository function signature later waves
+build against) is far cheaper to catch before Wave 1 starts consuming it than after. Treat the end
+of Task 6 as a full stop, not a soft pause.
+
 ---
 
 ## Waves 1 Through 5E — Roadmap (detailed task breakdown written immediately before each wave starts)
@@ -1064,6 +1211,13 @@ fallback remains indefinitely
   `routes/projections.ts`, and `apply_catalyst.py` fresh (do not trust this document's producer
   description as gospel — it summarizes `migration-inventory-and-strategy.md`, which itself
   should be re-verified against current code before task-level steps are written).
+- **Repeated, because this is the first real test of it:** every one of Wave 1's 2 producers and
+  18 consumers must call into a `projection_repository.py`/`ProjectionRepository.ts`-equivalent
+  module — no script or route gets its own `sqlite3.connect()`/DB driver call against
+  `projection_version`/`projection_scenario`. This is the same anti-duplication rule Wave 0
+  established for `investment`/`account`/`account_investment` (Global Constraints, above); Wave 1
+  is where it gets tested against real, messy, 18-consumer rewiring pressure for the first time,
+  so it is restated here explicitly rather than assumed to carry over silently.
 
 ### Wave 2 — Investment / Target / Watchlist / Price Levels / Notes / Alerts / Thesis Breaker State
 
