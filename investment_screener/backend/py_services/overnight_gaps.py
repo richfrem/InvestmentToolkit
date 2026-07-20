@@ -48,9 +48,13 @@ from typing import Any, Optional
 
 import yfinance as yf
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import list_investments  # noqa: E402
+
 REPO_ROOT      = Path(__file__).resolve().parents[3]
 PORTFOLIO_PATH = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
-WATCHLIST_PATH = REPO_ROOT / "investment_screener/backend/data/watchlist.json"
+DB_PATH        = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
 SKIP_SUFFIXES = (".TO", ".V")          # Canadian markets — no extended-hours data via yfinance
 SKIP_PATTERNS = ("!", )                # Futures contracts (NQ1!, GC1!) — not supported by yfinance
@@ -75,11 +79,14 @@ def _is_scannable(ticker: str) -> bool:
 
 
 # Load active tickers from portfolio and watchlist configs
-def _load_tickers() -> list[str]:
-    """Load scannable tickers from portfolio.json union watchlist.json.
+def _load_tickers(db_path: Path = DB_PATH) -> list[str]:
+    """Load scannable tickers from portfolio.json union the watchlisted investments.
 
     Mirrors the user's curated TradingView BOATS-mylist: active holdings
     plus researched watchlist names, minus Canadian and futures symbols.
+
+    Watchlist membership is read from ``investment.is_watchlisted`` in
+    domain_model.sqlite (Wave 2 Task 10 cutover) instead of watchlist.json.
 
     Returns:
         Deduplicated list of US equity ticker symbols, order: holdings first.
@@ -95,13 +102,16 @@ def _load_tickers() -> list[str]:
                     seen.add(sym)
                     tickers.append(sym)
 
-    if WATCHLIST_PATH.exists():
-        with open(WATCHLIST_PATH) as f:
-            for entry in json.load(f).get("watchlist", []):
-                sym = entry.get("ticker", "")
+    if db_path.exists():
+        conn = initialize_db(str(db_path))
+        try:
+            for inv in list_investments(conn, is_watchlisted=True):
+                sym = inv.get("symbol", "")
                 if sym and _is_scannable(sym) and sym not in seen:
                     seen.add(sym)
                     tickers.append(sym)
+        finally:
+            conn.close()
 
     return tickers
 
