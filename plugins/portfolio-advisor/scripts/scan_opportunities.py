@@ -34,11 +34,16 @@ from pathlib import Path
 REPO_ROOT      = Path(__file__).resolve().parents[3]
 PORTFOLIO_PATH = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 THESIS_PATH    = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
-PROJECTIONS    = REPO_ROOT / "investment_screener/backend/data/projections"
+DB_PATH        = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 STALE_DAYS     = 90
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from ticker_aliases import is_cash  # noqa: E402
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.projection_repository import (  # noqa: E402
+    get_latest_projection_by_source,
+    list_symbols_with_projections,
+)
 
 
 # ── Loaders ────────────────────────────────────────────────────────────────────
@@ -108,19 +113,41 @@ def load_thesis(path: Path) -> dict:
     return out
 
 
-def load_projection(ticker: str) -> dict | None:
-    """Load the most recent AI_AGENT projection for a ticker. Returns None if absent."""
-    path = PROJECTIONS / f"{ticker}.json"
-    if not path.exists():
-        return None
+def load_projection(ticker: str, db_path: Path | None = None) -> dict | None:
+    """Load the most recent AI_AGENT projection for a ticker. Returns None if absent.
+
+    Storage backend (Wave 1 Task 7B): reads `projection_version` via
+    `domain_model.projection_repository`, not `projections/{TICKER}.json`
+    directly (ADR-029). The original code filtered strictly by
+    `source == "AI_AGENT"` with no fallback to other sources (returns `None`
+    if no AI_AGENT row exists), so this uses `get_latest_projection_by_source`
+    only — no fallback to `get_latest_projection`, unlike consumers whose
+    original code did fall back.
+    """
+    conn = initialize_db(str(db_path or DB_PATH))
     try:
-        projections = load_json(path)
-        ai = [p for p in projections if p.get("source") == "AI_AGENT"]
-        if not ai:
+        row = conn.execute(
+            "SELECT investment_id FROM investment WHERE symbol = ?;", (ticker,)
+        ).fetchone()
+        if row is None:
             return None
-        return max(ai, key=lambda x: x.get("savedAt", ""))
-    except Exception:
-        return None
+        investment_id = row[0]
+        entry = get_latest_projection_by_source(conn, investment_id, "AI_AGENT")
+        if entry is None:
+            return None
+        return {
+            "savedAt": entry.get("saved_at", ""),
+            "aiThesis": {
+                "fairValue": entry.get("fair_value"),
+                "action": entry.get("action"),
+                "analyzedAt": entry.get("analyzed_at"),
+                "model": entry.get("model"),
+            },
+            "snapshot": json.loads(entry["snapshot_json"]) if entry.get("snapshot_json") else {},
+            "analyticsLog": json.loads(entry["analytics_log_json"]) if entry.get("analytics_log_json") else {},
+        }
+    finally:
+        conn.close()
 
 
 def _days_old(date_str: str) -> int:
@@ -277,12 +304,12 @@ def scan_initiate(portfolio: dict, thesis: dict, top: int = 15) -> list:
     """Unowned tickers in projections with BUY/INITIATE rating, ranked by upside × confidence."""
     held = set(portfolio.keys()) - {"_meta"}
     results = []
-    if not PROJECTIONS.exists():
-        return results
-    for fname in PROJECTIONS.iterdir():
-        if fname.suffix != ".json":
-            continue
-        ticker = fname.stem
+    conn = initialize_db(str(DB_PATH))
+    try:
+        all_tickers = list_symbols_with_projections(conn)
+    finally:
+        conn.close()
+    for ticker in all_tickers:
         if ticker in held:
             continue
         proj = load_projection(ticker)

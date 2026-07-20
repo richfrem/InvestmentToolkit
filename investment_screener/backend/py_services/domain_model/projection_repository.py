@@ -98,6 +98,26 @@ def get_latest_projection_by_source(
     return dict(row) if row else None
 
 
+def list_symbols_with_projections(conn: sqlite3.Connection) -> list[str]:
+    """Return every investment symbol that has at least one ``projection_version``
+    row, sorted ascending by symbol.
+
+    SQL equivalent of glob-ing ``projections/*.json`` for filenames (Wave 1 Task
+    7B): several consumers (``watchlist_manager.py``'s researched-watchlist
+    fallback, ``scan_opportunities.py``'s unowned-INITIATE scan) previously
+    enumerated every ticker with an on-disk projection file, regardless of that
+    projection's ``source``, before filtering per-ticker. This is the
+    ``investment``/``projection_version`` join that reproduces that enumeration
+    against the database.
+    """
+    cursor = conn.execute(
+        "SELECT DISTINCT i.symbol FROM investment i "
+        "JOIN projection_version pv ON pv.investment_id = i.investment_id "
+        "ORDER BY i.symbol ASC;"
+    )
+    return [row[0] for row in cursor.fetchall()]
+
+
 def list_projection_versions(conn: sqlite3.Connection, investment_id: str) -> list[dict]:
     """Return all projection versions for an investment, ascending by version.
 

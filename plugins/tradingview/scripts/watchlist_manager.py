@@ -13,7 +13,7 @@ Layer:
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Reads holdings)
     - investment_screener/backend/data/watchlist.json (Reads watched tickers list)
-    - investment_screener/backend/data/projections/ (Reads target projections)
+    - investment_screener/backend/data/domain_model.sqlite (Reads target projections, ADR-029)
 
 Usage:
     python3 plugins/tradingview/scripts/watchlist_manager.py
@@ -29,7 +29,7 @@ from typing import Any, Dict, List
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PORTFOLIO_PATH = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 TARGET_WATCHLIST_PATH = REPO_ROOT / "investment_screener/backend/data/watchlist.json"
-PROJECTIONS_DIR = REPO_ROOT / "investment_screener/backend/data/projections"
+DB_PATH = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
 # BOATS ATS eligibility — US equities only (no Canadian, no futures)
 _BOATS_SKIP_SUFFIXES = (".TO", ".V")
@@ -37,6 +37,10 @@ _BOATS_SKIP_PATTERNS = ("!",)
 
 sys.path.insert(0, str(REPO_ROOT / "plugins/tradingview/scripts"))
 from tv_client import tv_call, is_tv_running
+
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.projection_repository import list_symbols_with_projections  # noqa: E402
 
 _BOATS_EXCLUDE = {"USD_CASH"}
 
@@ -61,8 +65,14 @@ def _is_boats_eligible(ticker: str) -> bool:
 
 
 # External comment: Retrieve researched symbols from file or projections directory
-def load_researched_watchlist() -> List[str]:
-    """Retrieve full list of researched symbols."""
+def load_researched_watchlist(db_path: Path | None = None) -> List[str]:
+    """Retrieve full list of researched symbols.
+
+    Storage backend (Wave 1 Task 7B): the fallback path (no watchlist.json)
+    reads `investment`/`projection_version` via
+    `domain_model.projection_repository.list_symbols_with_projections`, not
+    `projections/*.json` filenames directly (ADR-029).
+    """
     if TARGET_WATCHLIST_PATH.exists():
         try:
             with open(TARGET_WATCHLIST_PATH) as f:
@@ -77,15 +87,13 @@ def load_researched_watchlist() -> List[str]:
         except Exception:
             pass
 
-    # Fallback to projections directory
-    if PROJECTIONS_DIR.exists():
-        tickers = []
-        for p in PROJECTIONS_DIR.glob("*.json"):
-            name = p.stem
-            if name != "target-portfolio" and name != "portfolio":
-                tickers.append(name.upper())
-        return sorted(tickers)
-    return []
+    # Fallback: every ticker with at least one projection row in domain_model.sqlite
+    conn = initialize_db(str(db_path or DB_PATH))
+    try:
+        symbols = list_symbols_with_projections(conn)
+    finally:
+        conn.close()
+    return sorted(s.upper() for s in symbols)
 
 
 # External comment: Load US equities for BOATS ATS watchlists
