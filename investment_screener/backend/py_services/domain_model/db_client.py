@@ -80,11 +80,63 @@
 #     `--record-sweep` and the catalyst-apply write path have somewhere to persist their
 #     stamped date / appended catalyst-log entries, matching the JSON model's fields
 #     one-for-one. `migrate_projections_to_sqlite.py` is updated to populate all three for
-#     future migration runs; the real file's 115 already-migrated rows predate this change
-#     and have `NULL` in all three columns until a follow-up backfill re-migration is run
-#     (out of scope for Task 6 — flagged for the reviewer, not silently assumed backfilled).
+#     future migration runs. CORRECTION (Wave 1 Task 6 follow-up fix): the original note
+#     here claimed the real file's 115 already-migrated rows "have NULL in these columns"
+#     — that was wrong. `CREATE TABLE IF NOT EXISTS` is a no-op against a table that
+#     already exists, so the three columns did not exist in the real file's schema at
+#     all (verified via `PRAGMA table_info`/`.schema projection_version`), not merely
+#     NULL-valued. Fixed via the schema self-heal in `_evolve_schema`/`SCHEMA_EVOLUTIONS`
+#     below, which runs an `ALTER TABLE ... ADD COLUMN` for any table+column pair
+#     registered there that is missing from an existing file. The real file's `source`
+#     column has since been backfilled from `projections/*.json` (see
+#     `migrate_projections_to_sqlite.py --backfill-source`); `last_grok_sweep`/
+#     `catalyst_updates_json` remain NULL on those 115 pre-existing rows (optional/future
+#     backfill, not required for `apply_catalyst.py` to function).
 #   - (no other deviations found as of this transcription)
 import sqlite3
+
+# Schema-evolution registry: for each table, the set of (column, type) pairs that
+# `CREATE TABLE IF NOT EXISTS` cannot add to a file that already exists with an older
+# shape of that table (SQLite silently no-ops the CREATE when the table is already
+# present, even if its column list is missing newer columns declared here). Every column
+# added to `projection_version` (or any future table) alongside a real DDL change should
+# be added here as well as in the `CREATE TABLE IF NOT EXISTS` block above, so existing
+# real database files self-heal to the current schema on their very next
+# `initialize_db()` call instead of silently drifting from the canonical DDL.
+#
+# `_evolve_schema` (below) is intentionally general — it will diff and patch any table
+# listed here, not just `projection_version` — but only `projection_version` is
+# populated today. This closes the real gap found in Wave 1 Task 6 review: the
+# `source`/`last_grok_sweep`/`catalyst_updates_json` columns were added to this file's
+# canonical DDL but never actually reached the real, already-existing
+# `domain_model.sqlite` file because `CREATE TABLE IF NOT EXISTS` is a no-op against it.
+SCHEMA_EVOLUTIONS: dict[str, list[tuple[str, str]]] = {
+    "projection_version": [
+        ("source", "TEXT"),
+        ("last_grok_sweep", "TEXT"),
+        ("catalyst_updates_json", "TEXT"),
+    ],
+}
+
+
+def _evolve_schema(conn: sqlite3.Connection) -> None:
+    """Self-heal an existing database file's schema against `SCHEMA_EVOLUTIONS`.
+
+    For each table listed in `SCHEMA_EVOLUTIONS`, reads the table's actual columns via
+    `PRAGMA table_info(<table>)` and runs `ALTER TABLE <table> ADD COLUMN <col> <type>`
+    for any declared column missing from the real file. Idempotent and safe to call on
+    every `initialize_db()` invocation, against a brand-new file (where `CREATE TABLE IF
+    NOT EXISTS` already created the column and this is a no-op) or an existing file
+    created under an older schema (where this is the only thing that actually adds the
+    column). Additive only — never drops or alters an existing column, so no data loss.
+    """
+    for table, columns in SCHEMA_EVOLUTIONS.items():
+        existing = {
+            row[1] for row in conn.execute(f"PRAGMA table_info({table});").fetchall()
+        }
+        for column, col_type in columns:
+            if column not in existing:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {col_type};")
 
 
 def initialize_db(db_path: str) -> sqlite3.Connection:
@@ -369,6 +421,8 @@ def initialize_db(db_path: str) -> sqlite3.Connection:
         "CREATE INDEX IF NOT EXISTS idx_projection_scenario_projection "
         "ON projection_scenario(projection_id);"
     )
+
+    _evolve_schema(conn)
 
     conn.commit()
     return conn
