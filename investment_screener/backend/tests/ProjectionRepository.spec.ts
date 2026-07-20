@@ -108,22 +108,43 @@ describe('ProjectionRepository', () => {
             expect(repo.findByTicker('NOPE')).to.deep.equal([]);
         });
 
-        it('returns all versions for a ticker, ascending by version', () => {
+        it('returns ONE current-state entry when the same id is saved twice (Finding 2 regression)', () => {
+            // Restores the old filesystem-JSON model's semantics: re-saving the same
+            // `Projection.id` replaced the array entry in place (array length = number of
+            // distinct identities), it did not append a growing history. The repository
+            // internally creates a new (investment_id, version) row per save, but
+            // findByTicker/findAll must collapse rows sharing an identity down to the
+            // single MAX-version row.
             const parsed = ProjectionSchema.safeParse(makeProjection()).data as Projection;
             const v1 = repo.upsertProjection(parsed);
-            repo.upsertProjection({ ...v1 } as Projection);
+            const v2 = repo.upsertProjection({ ...v1 } as Projection);
+
+            const list = repo.findByTicker('TEST');
+            expect(list).to.have.lengthOf(1);
+            expect(list[0].version).to.equal(v2.version);
+            expect(list[0].version).to.equal(2);
+            expect(list[0].id).to.equal(parsed.id);
+        });
+
+        it('returns TWO entries when two distinct ids are saved for the same ticker (Finding 2 regression)', () => {
+            const first = ProjectionSchema.safeParse(makeProjection({ id: '11111111-1111-4111-8111-111111111111' })).data as Projection;
+            const second = ProjectionSchema.safeParse(makeProjection({ id: '22222222-2222-4222-8222-222222222222' })).data as Projection;
+
+            repo.upsertProjection(first);
+            repo.upsertProjection(second);
 
             const list = repo.findByTicker('TEST');
             expect(list).to.have.lengthOf(2);
-            expect(list[0].version).to.equal(1);
-            expect(list[1].version).to.equal(2);
+            const ids = list.map(p => p.id).sort();
+            expect(ids).to.deep.equal([first.id, second.id].sort());
         });
 
-        it('aggregates projections across all tickers', () => {
+        it('aggregates current-state-per-identity projections across all tickers', () => {
             repo.upsertProjection(ProjectionSchema.safeParse(makeProjection({ ticker: 'AAA', id: '11111111-1111-4111-8111-111111111111' })).data as Projection);
             repo.upsertProjection(ProjectionSchema.safeParse(makeProjection({ ticker: 'BBB', id: '22222222-2222-4222-8222-222222222222' })).data as Projection);
 
             const all = repo.findAll();
+            expect(all).to.have.lengthOf(2);
             const tickers = all.map(p => p.ticker).sort();
             expect(tickers).to.deep.equal(['AAA', 'BBB']);
         });
