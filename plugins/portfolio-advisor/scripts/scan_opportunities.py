@@ -44,6 +44,8 @@ from domain_model.projection_repository import (  # noqa: E402
     get_latest_projection_by_source,
     list_symbols_with_projections,
 )
+from domain_model.investment_repository import list_investments  # noqa: E402
+from domain_model.pillar_repository import list_pillars  # noqa: E402
 
 
 # ── Loaders ────────────────────────────────────────────────────────────────────
@@ -85,30 +87,42 @@ def load_portfolio(path: Path) -> dict:
     return out
 
 
-def load_thesis(path: Path) -> dict:
-    """Returns {TICKER: {targetPct, pillarName, pillarId, thesisFor}}"""
-    if not path.exists():
+def load_thesis(db_path: Path | None = None) -> dict:
+    """Returns {TICKER: {targetPct, pillarName, pillarId, thesisFor}}
+
+    Storage backend (Wave 2 rewire): reads per-investment thesis fields from
+    ``investment`` via ``domain_model.investment_repository.list_investments``,
+    joined against ``strategy_pillar`` for the display name, instead of
+    ``target-portfolio.json`` (ADR-029). Field mapping confirmed against
+    ``migrate_target_portfolio_to_sqlite.py``'s write path: ``targetWeight`` ->
+    ``target_weight``, ``pillarId`` -> ``pillar_id``, ``thesisForInclusion`` ->
+    ``thesis_for_inclusion``, ``role`` -> ``lifecycle_status``. Only rows with a
+    ``pillar_id`` are included, matching the original JSON read's implicit scope
+    (``target_portfolio_data.get("holdings", [])`` only).
+    """
+    db_path = db_path or DB_PATH
+    if not Path(db_path).exists():
         return {}
-    raw = load_json(path)
+
+    conn = initialize_db(str(db_path))
+    try:
+        rows = list_investments(conn)
+        pillar_names = {p["pillar_id"]: p["name"] for p in list_pillars(conn)}
+    finally:
+        conn.close()
+
     out = {}
-    
-    # Map pillar IDs to names
-    pillar_names = {}
-    for pillar in raw.get("pillars", []):
-        if "id" in pillar and "name" in pillar:
-            pillar_names[pillar["id"]] = pillar["name"]
-            
-    for h in raw.get("holdings", []):
-        ticker = h.get("ticker", "")
-        if not ticker:
+    for row in rows:
+        pillar_id = row.get("pillar_id")
+        if pillar_id is None:
             continue
-        pillar_id = h.get("pillarId", "")
+        ticker = row["symbol"]
         out[ticker] = {
-            "targetPct":  h.get("targetWeight", 0),
+            "targetPct":  row.get("target_weight") or 0,
             "pillarName": pillar_names.get(pillar_id, "Unclassified"),
             "pillarId":   pillar_id,
-            "thesisFor":  h.get("thesisForInclusion", ""),
-            "role":       h.get("role", ""),
+            "thesisFor":  row.get("thesis_for_inclusion") or "",
+            "role":       row.get("lifecycle_status") or "",
         }
     return out
 
@@ -556,11 +570,16 @@ def main():
     parser.add_argument("--category", choices=["exit", "trim", "accumulate", "initiate", "conflicts", "stale", "all"],
                         default="all")
     parser.add_argument("--portfolio", default=str(PORTFOLIO_PATH))
-    parser.add_argument("--thesis",    default=str(THESIS_PATH))
+    parser.add_argument(
+        "--thesis", default=str(THESIS_PATH),
+        help="Legacy target-portfolio.json path, kept for CLI back-compat; "
+             "no longer read directly. Thesis fields now come from --db.",
+    )
+    parser.add_argument("--db", default=str(DB_PATH), help="Path to domain_model.sqlite")
     args = parser.parse_args()
 
     portfolio = load_portfolio(Path(args.portfolio))
-    thesis    = load_thesis(Path(args.thesis))
+    thesis    = load_thesis(Path(args.db))
     meta      = portfolio.pop("_meta", {})
 
     data = {

@@ -16,10 +16,12 @@
  * 
  * Key Input Dependencies:
  *   - investment_screener/backend/data/portfolio.json (Live portfolio status)
- *   - investment_screener/backend/data/theses/target-portfolio.json (Conviction targets)
+ *   - investment_screener/backend/data/domain_model.sqlite (Conviction targets,
+ *     via InvestmentRepository.listThesisHoldings() — rewired off
+ *     target-portfolio.json in Wave 2 Task 10/11)
  *   - investment_screener/backend/data/portfolio-reviews/ (Review logs)
  *   - ../services/WatchlistService (watchlistService operations)
- * 
+ *
  * Key Output Dependencies:
  *   None
  */
@@ -28,8 +30,9 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { getPythonActions } from '../utils/helpers';
-import { PORTFOLIO_FILE, TARGET_PORTFOLIO_FILE, PORTFOLIO_REVIEWS_DIR } from '../utils/paths';
+import { PORTFOLIO_FILE, PORTFOLIO_REVIEWS_DIR, DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 import { watchlistService } from '../services/WatchlistService';
+import { InvestmentRepository } from '../services/InvestmentRepository';
 
 const router = express.Router();
 
@@ -80,8 +83,13 @@ router.get('/all-holdings', async (_req, res) => {
         const watchlistItems = await watchlistService.getWatchlist();
         const watchedTickers = new Set(watchlistItems.map(item => item.ticker));
 
-        const targetPortfolio = JSON.parse(await fs.promises.readFile(TARGET_PORTFOLIO_FILE, 'utf-8'));
-        const thesisHoldings: any[] = targetPortfolio.holdings ?? [];
+        const repo = new InvestmentRepository(DOMAIN_MODEL_DB_FILE);
+        let thesisHoldings;
+        try {
+            thesisHoldings = repo.listThesisHoldings();
+        } finally {
+            repo.close();
+        }
         const thesisMap = new Map(thesisHoldings.map(h => [h.ticker, h]));
 
         const rawPortfolio = fs.existsSync(PORTFOLIO_FILE)

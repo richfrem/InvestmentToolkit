@@ -19,11 +19,17 @@
  * Key Input Dependencies:
  *   - investment_screener/backend/data/research/ (folder containing research MD files)
  *   - investment_screener/backend/data/portfolio-reviews/ (folder containing review MD files)
- *   - investment_screener/backend/data/theses/target-portfolio.json
- *   - investment_screener/backend/src/utils/paths (RESEARCH_DIR, etc.)
- * 
+ *   - investment_screener/backend/src/utils/paths (RESEARCH_DIR, THESIS_DOC_PATH, AGENT_GUIDE_PATH)
+ *
  * Key Output Dependencies:
  *   None
+ *
+ * Wave 2 Task 10/11 investigation: this file does NOT read
+ * target-portfolio.json or watchlist.json directly (confirmed by full read +
+ * `grep -n "TARGET_PORTFOLIO_FILE\|THESIS_FILE\|WATCHLIST_FILE" docs.ts` —
+ * zero hits). GET /docs/investment-thesis reads THESIS_DOC_PATH, a markdown
+ * file, and calls thesisService.getThesis() only for a display name/
+ * description fallback. No rewire needed here.
  */
 
 import express from 'express';

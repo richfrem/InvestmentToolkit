@@ -57,6 +57,12 @@ import yfinance as yf
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from market_data import get_prices  # noqa: E402
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import list_investments  # noqa: E402
+
+_DB_PATH = Path(__file__).resolve().parents[1] / "data" / "domain_model.sqlite"
 from macro_regime import (  # noqa: E402
     MacroRegimeResult, get_macro_regime, _classify_vix, _classify_spy, _classify_credit,
 )
@@ -64,7 +70,6 @@ from technicals import _true_range, _wilder_smooth  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
-TARGET_PATH = DATA_DIR / "theses/target-portfolio.json"
 MARKET_REGIME_PATH = DATA_DIR / "market_regime.json"
 
 INACTIVE_ROLES = {"exit", "exited", "avoid"}
@@ -160,29 +165,39 @@ def _classify_regime_v2(score: int, unavailable: int) -> tuple[str, bool]:
     return "STRESS", False
 
 
-def _load_active_tickers(target_portfolio_path: Path) -> list[str]:
-    """Read target-portfolio.json and return active-holding tickers.
+def _load_active_tickers(db_path: Path = _DB_PATH) -> list[str]:
+    """Read domain_model.sqlite's investment table and return active-holding
+    tickers (Wave 2 consumer cutover -- previously read target-portfolio.json
+    directly; this function was missed by the Wave 2 plan's original
+    producer/consumer inventory and found only by the archive-readiness grep).
 
-    Active = role not in INACTIVE_ROLES. update_thesis.py's VALID_ROLES is a
-    different enum for a different file and doesn't apply here; the real
-    values observed in target-portfolio.json's live data are {watchlist,
-    accumulate, trim, initiate, exit, avoid}. `exited` is also excluded
-    defensively per CLAUDE.md rule 9's documented sold-position convention,
-    even though it hasn't appeared in live data yet. Not
+    Active = lifecycle_status not in INACTIVE_ROLES. target-portfolio.json's
+    "role" field maps 1:1 to investment.lifecycle_status per
+    migrate_target_portfolio_to_sqlite.py's own field mapping. update_thesis.py's
+    VALID_ROLES is a different enum for a different file and doesn't apply
+    here; the real values observed in target-portfolio.json's live data are
+    {watchlist, accumulate, trim, initiate, exit, avoid}. `exited` is also
+    excluded defensively per CLAUDE.md rule 9's documented sold-position
+    convention, even though it hasn't appeared in live data yet. Not
     portfolio_io.load_portfolio_state(): that loader reads portfolio.json
     (broker shares/prices) and has no role field.
 
     Args:
-        target_portfolio_path: Path to target-portfolio.json.
+        db_path: Path to domain_model.sqlite.
 
     Returns:
-        List of ticker strings (uses the "ticker" key, never "symbol" —
-        CLAUDE.md rule 10).
+        List of ticker strings (uses the "symbol" column, never a "ticker"
+        alias, matching CLAUDE.md rule 10's ticker-key-not-symbol convention
+        applied to the investment table's own column name).
     """
-    data = json.loads(Path(target_portfolio_path).read_text())
+    conn = initialize_db(str(db_path))
+    try:
+        investments = list_investments(conn)
+    finally:
+        conn.close()
     return [
-        h["ticker"] for h in data.get("holdings", [])
-        if h.get("role") not in INACTIVE_ROLES
+        inv["symbol"] for inv in investments
+        if inv.get("lifecycle_status") not in INACTIVE_ROLES
     ]
 
 
@@ -509,7 +524,7 @@ def _build_ticker_regimes(tickers: list[str], prices: dict[str, dict]) -> list[d
     return ticker_regimes
 
 
-def compute_market_regime(target_portfolio_path: Path = TARGET_PATH) -> dict[str, Any]:
+def compute_market_regime(db_path: Path = _DB_PATH) -> dict[str, Any]:
     """Primary orchestrator — 4-tier composite regime + per-ticker regime layer.
 
     Reuses macro_regime.get_macro_regime() for 3 of the 6 macro signals,
@@ -520,14 +535,14 @@ def compute_market_regime(target_portfolio_path: Path = TARGET_PATH) -> dict[str
     compute_risk_snapshot().
 
     Args:
-        target_portfolio_path: Path to target-portfolio.json.
+        db_path: Path to domain_model.sqlite (Wave 2 consumer cutover).
 
     Returns:
         Full market regime snapshot dict — see docs/superpowers/specs/
         2026-07-06-market-regime-classifier-design.md for the field-by-field shape.
     """
     macro = get_macro_regime()
-    tickers = _load_active_tickers(target_portfolio_path)
+    tickers = _load_active_tickers(db_path)
     prices = get_prices(tickers, period="2y", interval="1d") if tickers else {}
 
     warnings: list[str] = []
