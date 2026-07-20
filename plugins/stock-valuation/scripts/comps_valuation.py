@@ -14,16 +14,17 @@ Layer: Backend / Python Services / Valuation Math
 
 Usage:
     python3 comps_valuation.py --ticker NVDA --peers AMD,AVGO,QCOM \
-        --projections-dir investment_screener/backend/data/projections --pretty
+        --db-path investment_screener/backend/data/domain_model.sqlite --pretty
 
 Key Functions:
-    - load_latest_projection() - Reads the latest AI_AGENT (or [0]) entry from a
-      versioned projections/{TICKER}.json file
+    - load_latest_projection() - Reads the latest AI_AGENT (or latest-any-source)
+      projection_version row for a ticker from domain_model.sqlite
     - compute_ev() - Enterprise value from price * shares + debt - cash
     - comps_implied_range() - Primary orchestrator: peer-median EV/Sales -> implied price range
 
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Internal state database)
+    - investment_screener/backend/data/domain_model.sqlite (projection_version, ADR-029)
 """
 
 import argparse
@@ -35,31 +36,52 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from market_data import get_fundamentals  # noqa: E402
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.projection_repository import (  # noqa: E402
+    get_latest_projection,
+    get_latest_projection_by_source,
+)
 
-def load_latest_projection(ticker: str, projections_dir: str) -> dict | None:
-    """Load the latest AI_AGENT entry (or the only entry) from projections/{TICKER}.json.
 
-    Mirrors portfolio_action.py._load_ai_upside()'s established read pattern
-    for this repo's versioned-list projection file format.
+def load_latest_projection(ticker: str, db_path: str) -> dict | None:
+    """Load the latest AI_AGENT projection_version row (or the latest of any
+    source) for a ticker, reshaped to the legacy `{"snapshot": {...}}` dict
+    shape this module's callers expect.
+
+    Storage backend (Wave 1 Task 7A): reads `projection_version` via
+    `domain_model.projection_repository`, not `projections/{TICKER}.json`
+    directly (ADR-029). Mirrors portfolio_action.py's `_load_ai_upside()`
+    Task 6 fix — prefers `get_latest_projection_by_source(..., "AI_AGENT")`
+    over plain `MAX(version)`, since version numbers are not always
+    chronological, falling back to `get_latest_projection` (any source) when
+    no AI_AGENT row exists (mirroring the original file-based code's
+    `projs[0]` fallback).
 
     Args:
         ticker: Ticker symbol.
-        projections_dir: Path to the projections directory.
+        db_path: Path to domain_model.sqlite.
 
     Returns:
-        The latest projection dict, or None if the file doesn't exist or is empty.
+        `{"snapshot": {"price", "shares", "revenue", ...}}`, or None if the
+        investment has no projection rows at all.
     """
-    path = Path(projections_dir) / f"{ticker}.json"
-    if not path.exists():
-        return None
-    with open(path) as f:
-        projs = json.load(f)
-    if isinstance(projs, list):
-        if not projs:
+    conn = initialize_db(str(db_path))
+    try:
+        row = conn.execute("SELECT investment_id FROM investment WHERE symbol = ?;", (ticker,)).fetchone()
+        if row is None:
             return None
-        ai = [p for p in projs if p.get("source") == "AI_AGENT"]
-        return max(ai, key=lambda x: x.get("savedAt", "")) if ai else projs[0]
-    return projs
+        investment_id = row[0]
+        entry = get_latest_projection_by_source(conn, investment_id, "AI_AGENT")
+        if entry is None:
+            entry = get_latest_projection(conn, investment_id)
+        if entry is None:
+            return None
+        snapshot = json.loads(entry["snapshot_json"]) if entry.get("snapshot_json") else {}
+        return {"snapshot": snapshot}
+    finally:
+        conn.close()
 
 
 def compute_ev(price: float, shares: float, debt: float, cash: float) -> float:
@@ -67,9 +89,9 @@ def compute_ev(price: float, shares: float, debt: float, cash: float) -> float:
     return price * shares + debt - cash
 
 
-def _peer_ev_sales(ticker: str, projections_dir: str) -> float | None:
+def _peer_ev_sales(ticker: str, db_path: str) -> float | None:
     """EV/Sales for one peer ticker, or None if its data is unusable."""
-    proj = load_latest_projection(ticker, projections_dir)
+    proj = load_latest_projection(ticker, db_path)
     if proj is None:
         return None
     snapshot = proj.get("snapshot", {})
@@ -87,14 +109,15 @@ def _peer_ev_sales(ticker: str, projections_dir: str) -> float | None:
 
 
 def comps_implied_range(
-    ticker: str, peer_tickers: list[str], projections_dir: str, cik: str | None = None,
+    ticker: str, peer_tickers: list[str], db_path: str, cik: str | None = None,
 ) -> dict:
     """Peer-median EV/Sales applied to the target's own revenue -> implied price range.
 
     Args:
         ticker: Target ticker.
-        peer_tickers: Curated peer ticker list (from projections/{TICKER}.json's `peers` field).
-        projections_dir: Path to the projections directory.
+        peer_tickers: Curated peer ticker list (from the target's projection's
+            `peers` field).
+        db_path: Path to domain_model.sqlite.
         cik: SEC CIK for EDGAR cross-checking of the target's fundamentals, or None.
             Peer fundamentals are never threaded with a cik — peers are only used
             for their EV/Sales multiple, not compared against EDGAR filings directly.
@@ -107,7 +130,7 @@ def comps_implied_range(
         than 2 peers have usable data. dataQuality is keyed by every ticker
         whose get_fundamentals() was actually consulted (target + peersUsed).
     """
-    target_proj = load_latest_projection(ticker, projections_dir)
+    target_proj = load_latest_projection(ticker, db_path)
     if target_proj is None:
         return {"status": "insufficient_peer_data", "peersUsed": []}
 
@@ -119,7 +142,7 @@ def comps_implied_range(
 
     peer_multiples = {}
     for peer in peer_tickers:
-        multiple = _peer_ev_sales(peer, projections_dir)
+        multiple = _peer_ev_sales(peer, db_path)
         if multiple is not None:
             peer_multiples[peer] = multiple
 
@@ -162,13 +185,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Peer-multiple (EV/Sales) comps cross-check")
     parser.add_argument("--ticker", required=True)
     parser.add_argument("--peers", required=True, help="Comma-separated peer tickers")
-    parser.add_argument("--projections-dir", required=True)
+    parser.add_argument("--db-path", required=True)
     parser.add_argument("--cik", default=None, help="SEC CIK for the target ticker, omit for non-US tickers")
     parser.add_argument("--pretty", action="store_true")
     args = parser.parse_args()
 
     peer_tickers = [p.strip() for p in args.peers.split(",") if p.strip()]
-    result = comps_implied_range(args.ticker, peer_tickers, args.projections_dir, cik=args.cik)
+    result = comps_implied_range(args.ticker, peer_tickers, args.db_path, cik=args.cik)
     print(json.dumps(result, indent=2 if args.pretty else None))
 
 

@@ -35,7 +35,8 @@
  * 
  * Key Input Dependencies:
  *   - investment_screener/backend/data/theses/ (stores theses JSON)
- *   - investment_screener/backend/data/projections/ (stores projections JSON)
+ *   - ./ProjectionService (reads AI projections from data/domain_model.sqlite, ADR-029 —
+ *     migrated off data/projections/*.json in Task 7C; see getLatestAIProjection)
  *   - investment_screener/backend/data/portfolio.json (reads portfolio holdings)
  *   - investment_screener/backend/data/account_policy.json (reads drift config)
  * 
@@ -52,9 +53,9 @@ import {
     AccountPolicy, AccountPolicySchema
 } from '../utils/zod-schemas';
 import { geminiService } from './GeminiService';
+import { projectionService, ProjectionService } from './ProjectionService';
 
 const THESES_DIR = path.resolve(__dirname, '../../data/theses');
-const PROJECTIONS_DIR = path.resolve(__dirname, '../../data/projections');
 const PORTFOLIO_FILE = path.resolve(__dirname, '../../data/portfolio.json');
 const ACCOUNT_POLICY_FILE = path.resolve(__dirname, '../../data/account_policy.json');
 const REBALANCE_PROMPT_PATH = path.resolve(__dirname, '../../../.agent/skills/portfolio-advisor/references/rebalance_prompt.md');
@@ -64,6 +65,11 @@ if (!fs.existsSync(THESES_DIR)) {
 }
 
 export class ThesisService {
+
+    /** Defaults to the shared `projectionService` singleton (SQLite-backed, ADR-029).
+     * Constructor-injectable so tests can pass a fake/temp-db-backed instance without
+     * ThesisService opening its own database connection or reading the filesystem. */
+    constructor(private projections: Pick<ProjectionService, 'getProjections'> = projectionService) {}
 
     private getFilePath(id: string): string {
         // Sanitize ID to prevent path traversal (UUIDs should be safe, but good practice)
@@ -81,18 +87,9 @@ export class ThesisService {
         return mapping[ticker] || ticker;
     }
 
-    private getProjectionPath(ticker: string): string {
-        const safeTicker = ticker.replace(/[^A-Z0-9.\-]/g, '');
-        return path.join(PROJECTIONS_DIR, `${safeTicker}.json`);
-    }
-
     async getLatestAIProjection(ticker: string): Promise<Projection | null> {
-        const filePath = this.getProjectionPath(ticker);
-        if (!fs.existsSync(filePath)) return null;
-
         try {
-            const content = fs.readFileSync(filePath, 'utf-8');
-            const projections: Projection[] = JSON.parse(content);
+            const projections = await this.projections.getProjections(ticker);
 
             // Find latest AI execution
             const aiProjections = projections.filter(p => p.source === 'AI_AGENT');

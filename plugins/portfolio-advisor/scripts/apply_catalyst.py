@@ -5,9 +5,24 @@ apply_catalyst.py (Python Service)
 
 Purpose:
     Adjusts DCF scenario probability weights based on material market catalysts (e.g., contract wins, earnings beats).
-    Recalculates weighted fair values and updates projection JSON files and thesis rationale.
+    Recalculates weighted fair values and updates projection records and thesis rationale.
 
 Layer: Backend / Python Services / Valuation Adjustment
+
+Storage backend (Wave 1 Task 6):
+    Reads/writes the `projection_version`/`projection_scenario` tables in
+    `investment_screener/backend/data/domain_model.sqlite` via
+    `domain_model.projection_repository`, not `projections/{TICKER}.json` directly
+    (ADR-029). A real-data investigation found `_find_latest_ai_agent`'s
+    source-filtered-then-latest-by-savedAt selection has no SQL equivalent in
+    `get_latest_projection` (which is `MAX(version)` only, ignoring source) — 8/82 real
+    tickers have zero `AI_AGENT`-sourced projections (only `ETF_ANALYSIS`), and 3 more
+    (`BW`, `CLSK`, `LITE`) have non-chronological version numbers where the highest
+    version is not the most recently saved `AI_AGENT` entry. `db_client.py`'s
+    `projection_version` table gained `source`/`last_grok_sweep`/`catalyst_updates_json`
+    columns to close this gap; `get_latest_projection_by_source` is the new lookup this
+    module uses in place of `_find_latest_ai_agent`. See `db_client.py`'s DDL-drift-check
+    header for the full writeup.
 
 Usage Examples:
     # Major contract win (shifts Bull +8pp, Bear -5pp)
@@ -28,23 +43,30 @@ Key Functions:
     - main() - CLI orchestrator for applying catalysts and persisting changes to data storage
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
+    - investment_screener/backend/data/domain_model.sqlite (projection_version / projection_scenario)
+    - investment_screener/backend/data/theses/target-portfolio.json (only for --update-thesis)
 """
 
 import argparse
 import datetime
 import json
-import os
 import sys
 from pathlib import Path
 
 
 REPO_ROOT   = Path(__file__).resolve().parents[3]
-PROJ_DIR    = REPO_ROOT / "investment_screener/backend/data/projections"
+DB_PATH     = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 THESIS_JSON = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from file_lock import locked_write_json  # noqa: E402
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.projection_repository import (  # noqa: E402
+    get_latest_projection_by_source,
+    save_projection_version,
+    get_projection_scenarios,
+    add_projection_scenario,
+)
 
 PRESETS: dict[str, dict[str, float] | None] = {
     "design_win":      {"bull": +10, "bear": -5},
@@ -90,18 +112,44 @@ def _compute_fv(scenarios: dict, new_weights: dict[str, float]) -> float:
     return round(sum(new_weights[n] * (s.get("scenarioPrice") or s.get("presentValue") or 0.0) for n, s in scenarios.items()), 2)
 
 
-def _find_latest_ai_agent(data: list) -> tuple[int, dict]:
-    ai = [(i, p) for i, p in enumerate(data) if p.get("source") == "AI_AGENT"]
-    if not ai:
-        raise ValueError("No AI_AGENT entries found in projection JSON")
-    return max(ai, key=lambda x: x[1].get("savedAt", ""))
+def _resolve_investment_id_readonly(conn, ticker: str) -> str | None:
+    """Look up an existing investment's id by symbol without creating one.
+
+    Deliberately does NOT use `investment_repository.resolve_investment` (which
+    inserts a new row for an unknown symbol) — the original file-based tool treated a
+    missing `projections/{TICKER}.json` as a hard error, not something to silently
+    create, and this preserves that read-only-lookup behavior against SQLite.
+    """
+    cursor = conn.execute("SELECT investment_id FROM investment WHERE symbol = ?;", (ticker,))
+    row = cursor.fetchone()
+    return row[0] if row else None
 
 
-def _get_fv_action(entry: dict) -> tuple[float, str]:
-    if "fairValue" in entry:
-        return entry["fairValue"], entry.get("action", "")
-    th = entry.get("aiThesis", {})
-    return th.get("fairValue", 0.0), th.get("action", "")
+def _find_latest_ai_agent(conn, investment_id: str) -> dict:
+    """Return the latest `AI_AGENT`-sourced projection_version row for an investment.
+
+    SQL equivalent of the original array-scanning `_find_latest_ai_agent(data)` —
+    filters by `source == "AI_AGENT"`, picks the newest by `saved_at`. Raises
+    `ValueError` (uncaught, matching original behavior) if no such row exists — this is
+    the real, expected outcome for the 8 real tickers whose only projection rows are
+    `ETF_ANALYSIS`-sourced (see module docstring).
+    """
+    row = get_latest_projection_by_source(conn, investment_id, "AI_AGENT")
+    if row is None:
+        raise ValueError("No AI_AGENT entries found in projection_version for this investment")
+    return row
+
+
+def _load_scenarios(conn, projection_id: str) -> dict:
+    """Reconstruct the `{name: {"weight": ..., "scenarioPrice": ...}}` shape
+    `_shift_weights`/`_compute_fv` expect from `projection_scenario` rows. Empty dict
+    for legacy rows with no scenario rows (mirrors the original 'scenarios' key
+    missing-from-JSON legacy-format case)."""
+    rows = get_projection_scenarios(conn, projection_id)
+    return {
+        r["scenario_name"]: {"weight": r["weight"], "scenarioPrice": r["scenario_price"]}
+        for r in rows
+    }
 
 
 def main() -> None:
@@ -129,56 +177,73 @@ def main() -> None:
                              "finds no material catalyst)")
     args = parser.parse_args()
 
-    # --record-sweep mode: just stamp lastGrokSweep, no catalyst required
-    if args.record_sweep:
-        proj_path = PROJ_DIR / f"{args.ticker}.json"
-        if not proj_path.exists():
-            print(f"✗ No projection file: {proj_path}", file=sys.stderr)
-            sys.exit(1)
-        raw = json.loads(proj_path.read_text())
-        data: list = raw if isinstance(raw, list) else [raw]
-        idx, entry = _find_latest_ai_agent(data)
-        entry["lastGrokSweep"] = args.date
-        data[idx] = entry
-        out = data if isinstance(raw, list) else data[0]
-        locked_write_json(proj_path, out)
-        print(f"✅ {args.ticker}: lastGrokSweep stamped {args.date} (no catalyst applied)")
-        return
+    conn = initialize_db(str(DB_PATH))
+    try:
+        if args.record_sweep:
+            _run_record_sweep(conn, args)
+            return
 
-    if args.catalyst_type is None:
-        parser.error("--type is required unless using --record-sweep")
-    if args.note is None:
-        parser.error("--note is required unless using --record-sweep")
+        if args.catalyst_type is None:
+            parser.error("--type is required unless using --record-sweep")
+        if args.note is None:
+            parser.error("--note is required unless using --record-sweep")
 
-    if args.catalyst_type == "custom":
-        if args.shift_bull is None or args.shift_bear is None:
-            parser.error("--shift-bull and --shift-bear are required for --type custom")
-        bull_delta = args.shift_bull
-        bear_delta = args.shift_bear
-    else:
-        preset = PRESETS[args.catalyst_type]
-        assert preset is not None
-        bull_delta = args.shift_bull if args.shift_bull is not None else preset["bull"]
-        bear_delta = args.shift_bear if args.shift_bear is not None else preset["bear"]
+        if args.catalyst_type == "custom":
+            if args.shift_bull is None or args.shift_bear is None:
+                parser.error("--shift-bull and --shift-bear are required for --type custom")
+            bull_delta = args.shift_bull
+            bear_delta = args.shift_bear
+        else:
+            preset = PRESETS[args.catalyst_type]
+            assert preset is not None
+            bull_delta = args.shift_bull if args.shift_bull is not None else preset["bull"]
+            bear_delta = args.shift_bear if args.shift_bear is not None else preset["bear"]
 
-    proj_path = PROJ_DIR / f"{args.ticker}.json"
-    if not proj_path.exists():
-        print(f"✗ No projection file: {proj_path}", file=sys.stderr)
+        _run_apply_catalyst(conn, args, bull_delta, bear_delta)
+    finally:
+        conn.close()
+
+
+def _run_record_sweep(conn, args) -> None:
+    """`--record-sweep` mode: stamp `last_grok_sweep` only, no catalyst required."""
+    investment_id = _resolve_investment_id_readonly(conn, args.ticker)
+    if investment_id is None:
+        print(f"✗ No projection record for ticker: {args.ticker}", file=sys.stderr)
         sys.exit(1)
 
-    raw = json.loads(proj_path.read_text())
-    data: list = raw if isinstance(raw, list) else [raw]
-    idx, entry = _find_latest_ai_agent(data)
+    row = _find_latest_ai_agent(conn, investment_id)
+    save_projection_version(
+        conn, investment_id, version=row["version"], saved_at=row["saved_at"],
+        analyzed_at=row["analyzed_at"], model=row["model"], fair_value=row["fair_value"],
+        action=row["action"], rationale=row["rationale"],
+        research_event_id=row["research_event_id"], snapshot_json=row["snapshot_json"],
+        analytics_log_json=row["analytics_log_json"], source=row["source"],
+        last_grok_sweep=args.date, catalyst_updates_json=row["catalyst_updates_json"],
+    )
+    print(f"✅ {args.ticker}: lastGrokSweep stamped {args.date} (no catalyst applied)")
 
-    old_fv, old_action = _get_fv_action(entry)
-    price = entry.get("snapshot", {}).get("price", 0.0)
 
-    if "scenarios" not in entry:
+def _run_apply_catalyst(conn, args, bull_delta: float, bear_delta: float) -> None:
+    investment_id = _resolve_investment_id_readonly(conn, args.ticker)
+    if investment_id is None:
+        print(f"✗ No projection record for ticker: {args.ticker}", file=sys.stderr)
+        sys.exit(1)
+
+    row = _find_latest_ai_agent(conn, investment_id)
+
+    old_fv = row["fair_value"] or 0.0
+    old_action = row["action"] or ""
+    snapshot = json.loads(row["snapshot_json"]) if row["snapshot_json"] else {}
+    price = snapshot.get("price", 0.0)
+
+    scenarios = _load_scenarios(conn, row["projection_id"])
+
+    if not scenarios:
         print(f"⚠  {args.ticker}: no 'scenarios' block — cannot shift weights (legacy format).")
         print("   Only a catalystUpdate note will be appended.")
         new_fv, new_action, new_weights = old_fv, old_action, None
+        old_upside = new_upside = (old_fv - price) / price * 100 if price else 0.0
     else:
-        scenarios = entry["scenarios"]
         new_weights = _shift_weights(scenarios, bull_delta, bear_delta)
         new_fv = _compute_fv(scenarios, new_weights)
         old_upside = (old_fv - price) / price * 100 if price else 0.0
@@ -219,31 +284,41 @@ def main() -> None:
             f"FV ${old_fv:.2f}→${new_fv:.2f}. Action: {old_action}→{new_action}."
         ),
     }
+    existing_updates = (
+        json.loads(row["catalyst_updates_json"]) if row["catalyst_updates_json"] else []
+    )
+    existing_updates.append(catalyst_block)
 
-    # Update fairValue / action
-    if "fairValue" in entry:
-        entry["fairValue"] = new_fv
-        entry["action"] = new_action
-        entry["updatedAt"] = now
-    else:
-        th = entry.setdefault("aiThesis", {})
-        th["fairValue"] = new_fv
-        th["action"] = new_action
-        th["analyzedAt"] = now
+    save_projection_version(
+        conn, investment_id, version=row["version"], saved_at=row["saved_at"],
+        analyzed_at=now, model=row["model"], fair_value=new_fv, action=new_action,
+        rationale=row["rationale"], research_event_id=row["research_event_id"],
+        snapshot_json=row["snapshot_json"], analytics_log_json=row["analytics_log_json"],
+        source=row["source"], last_grok_sweep=args.date,
+        catalyst_updates_json=json.dumps(existing_updates),
+    )
 
-    # Update scenario weights
-    if new_weights and "scenarios" in entry:
-        for name, w in new_weights.items():
-            entry["scenarios"][name]["weight"] = w
+    if new_weights:
+        existing_scenarios = {
+            s["scenario_name"]: s for s in get_projection_scenarios(conn, row["projection_id"])
+        }
+        for name, weight in new_weights.items():
+            existing = existing_scenarios.get(name, {})
+            add_projection_scenario(
+                conn, row["projection_id"], name, weight=weight,
+                growth_rate=existing.get("growth_rate"), net_margin=existing.get("net_margin"),
+                exit_pe=existing.get("exit_pe"),
+                quality_multiplier=existing.get("quality_multiplier"),
+                share_change=existing.get("share_change"), rationale=existing.get("rationale"),
+                moat_score=existing.get("moat_score"),
+                management_score=existing.get("management_score"),
+                year5_revenue=existing.get("year5_revenue"),
+                year5_net_income=existing.get("year5_net_income"),
+                year5_eps=existing.get("year5_eps"), scenario_price=existing.get("scenario_price"),
+                risks_json=existing.get("risks_json"),
+            )
 
-    # Append to catalystUpdates log; always stamp last sweep date
-    entry.setdefault("catalystUpdates", []).append(catalyst_block)
-    entry["lastGrokSweep"] = args.date
-    data[idx] = entry
-
-    out = data if isinstance(raw, list) else data[0]
-    locked_write_json(proj_path, out)
-    print(f"\n✅ {proj_path.name} updated  FV ${old_fv:.2f}→${new_fv:.2f}  action {old_action}→{new_action}")
+    print(f"\n✅ {args.ticker} updated  FV ${old_fv:.2f}→${new_fv:.2f}  action {old_action}→{new_action}")
 
     if args.update_thesis:
         thesis = json.loads(THESIS_JSON.read_text())

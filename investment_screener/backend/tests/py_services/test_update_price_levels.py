@@ -10,6 +10,11 @@ Tests cover:
   - Denormalized snapshot write to portfolio.json
   - Dry-run safety (no file modification)
   - Error handling for missing projections
+
+Wave 1 Task 7B rewired `load_latest_projection` off `projections/{TICKER}.json`
+onto `domain_model.sqlite` (ADR-029) — projection fixtures below seed a
+`tmp_path`-backed SQLite database via `initialize_db` instead of writing a
+projections directory, never touching the real `data/domain_model.sqlite` file.
 """
 
 import json
@@ -22,6 +27,14 @@ import pytest
 # ── Import the module under test ────────────────────────────────────────────
 REPO_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(REPO_ROOT / "plugins/portfolio-advisor/scripts"))
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import resolve_investment  # noqa: E402
+from domain_model.projection_repository import (  # noqa: E402
+    save_projection_version,
+    add_projection_scenario,
+)
 
 from update_price_levels import (  # noqa: E402
     compute_proximity_flags,
@@ -113,11 +126,33 @@ SAMPLE_PORTFOLIO = {
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
-def _make_proj_dir(tmp_path: Path) -> Path:
-    proj_dir = tmp_path / "projections"
-    proj_dir.mkdir()
-    (proj_dir / "GOOG.json").write_text(json.dumps(SAMPLE_PROJECTION))
-    return proj_dir
+def _make_db(tmp_path: Path, ticker: str = "GOOG") -> Path:
+    """Seed a tmp_path-backed SQLite DB with one AI_AGENT projection + bear/base/bull
+    scenarios, mirroring SAMPLE_PROJECTION's shape."""
+    entry = SAMPLE_PROJECTION[0]
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    try:
+        investment_id = resolve_investment(conn, ticker, asset_class="EQUITY", currency="USD")
+        save_projection_version(
+            conn, investment_id, version=entry["version"], saved_at=entry["savedAt"],
+            analyzed_at=entry["aiThesis"]["analyzedAt"], model=entry["aiThesis"]["model"],
+            fair_value=entry["aiThesis"]["fairValue"], action=entry["aiThesis"]["action"],
+            rationale=entry["aiThesis"]["rationale"],
+            snapshot_json=json.dumps(entry["snapshot"]), source="AI_AGENT",
+        )
+        projection_id = f"{investment_id}:{entry['version']}"
+        for name, scen in entry["scenarios"].items():
+            add_projection_scenario(
+                conn, projection_id, name,
+                weight=scen.get("weight"), growth_rate=scen.get("growthRate"),
+                net_margin=scen.get("netMargin"), exit_pe=scen.get("exitPE"),
+                quality_multiplier=scen.get("qualityMultiplier"),
+                share_change=scen.get("shareChange"), scenario_price=scen.get("scenarioPrice"),
+            )
+    finally:
+        conn.close()
+    return db_path
 
 
 def _make_target_json(tmp_path: Path) -> Path:
@@ -300,26 +335,26 @@ class TestComputeProximityFlags:
 
 class TestLoadLatestProjection:
     def test_loads_ai_agent_entry(self, tmp_path):
-        proj_dir = _make_proj_dir(tmp_path)
-        entry = load_latest_projection("GOOG", proj_dir=proj_dir)
+        db_path = _make_db(tmp_path)
+        entry = load_latest_projection("GOOG", db_path=db_path)
         assert entry is not None
         assert entry["source"] == "AI_AGENT"
 
     def test_case_insensitive_ticker(self, tmp_path):
-        proj_dir = _make_proj_dir(tmp_path)
-        entry = load_latest_projection("goog", proj_dir=proj_dir)
+        db_path = _make_db(tmp_path)
+        entry = load_latest_projection("goog", db_path=db_path)
         assert entry is not None
 
     def test_returns_none_for_missing_file(self, tmp_path):
-        proj_dir = tmp_path / "projections"
-        proj_dir.mkdir()
-        entry = load_latest_projection("NVDA", proj_dir=proj_dir)
+        db_path = tmp_path / "test.sqlite"
+        initialize_db(str(db_path)).close()
+        entry = load_latest_projection("NVDA", db_path=db_path)
         assert entry is None
 
     def test_returns_none_for_empty_dir(self, tmp_path):
-        proj_dir = tmp_path / "projections"
-        proj_dir.mkdir()
-        entry = load_latest_projection("GOOG", proj_dir=proj_dir)
+        db_path = tmp_path / "test.sqlite"
+        initialize_db(str(db_path)).close()
+        entry = load_latest_projection("GOOG", db_path=db_path)
         assert entry is None
 
 
@@ -327,7 +362,7 @@ class TestLoadLatestProjection:
 
 class TestDeriveAndWrite:
     def test_write_price_levels_to_target_portfolio(self, tmp_path):
-        proj_dir = _make_proj_dir(tmp_path)
+        db_path = _make_db(tmp_path)
         target_path = _make_target_json(tmp_path)
         portfolio_path = _make_portfolio_json(tmp_path)
 
@@ -337,7 +372,7 @@ class TestDeriveAndWrite:
             dry_run=False,
             target_json_path=target_path,
             portfolio_json_path=portfolio_path,
-            proj_dir=proj_dir,
+            db_path=db_path,
         )
 
         assert result["dry_run"] is False
@@ -351,7 +386,7 @@ class TestDeriveAndWrite:
         assert "stopLoss" in pl
 
     def test_write_snapshot_to_portfolio_json(self, tmp_path):
-        proj_dir = _make_proj_dir(tmp_path)
+        db_path = _make_db(tmp_path)
         target_path = _make_target_json(tmp_path)
         portfolio_path = _make_portfolio_json(tmp_path)
 
@@ -361,7 +396,7 @@ class TestDeriveAndWrite:
             dry_run=False,
             target_json_path=target_path,
             portfolio_json_path=portfolio_path,
-            proj_dir=proj_dir,
+            db_path=db_path,
         )
 
         written = json.loads(portfolio_path.read_text())
@@ -382,7 +417,7 @@ class TestDeriveAndWrite:
         assert "proximityFlags" in snap
 
     def test_dry_run_does_not_write_target(self, tmp_path):
-        proj_dir = _make_proj_dir(tmp_path)
+        db_path = _make_db(tmp_path)
         target_path = _make_target_json(tmp_path)
         portfolio_path = _make_portfolio_json(tmp_path)
 
@@ -395,7 +430,7 @@ class TestDeriveAndWrite:
             dry_run=True,
             target_json_path=target_path,
             portfolio_json_path=portfolio_path,
-            proj_dir=proj_dir,
+            db_path=db_path,
         )
 
         assert result["dry_run"] is True
@@ -403,8 +438,8 @@ class TestDeriveAndWrite:
         assert portfolio_path.read_text() == original_portfolio
 
     def test_invalid_projection_raises(self, tmp_path):
-        proj_dir = tmp_path / "projections"
-        proj_dir.mkdir()
+        db_path = tmp_path / "test.sqlite"
+        initialize_db(str(db_path)).close()
         target_path = _make_target_json(tmp_path)
         portfolio_path = _make_portfolio_json(tmp_path)
 
@@ -415,11 +450,11 @@ class TestDeriveAndWrite:
                 dry_run=False,
                 target_json_path=target_path,
                 portfolio_json_path=portfolio_path,
-                proj_dir=proj_dir,
+                db_path=db_path,
             )
 
     def test_result_contains_price_levels(self, tmp_path):
-        proj_dir = _make_proj_dir(tmp_path)
+        db_path = _make_db(tmp_path)
         target_path = _make_target_json(tmp_path)
         portfolio_path = _make_portfolio_json(tmp_path)
 
@@ -429,14 +464,14 @@ class TestDeriveAndWrite:
             dry_run=True,
             target_json_path=target_path,
             portfolio_json_path=portfolio_path,
-            proj_dir=proj_dir,
+            db_path=db_path,
         )
 
         assert "price_levels" in result
         assert result["price_levels"]["schemaVersion"] == "1.0"
 
     def test_updatedAt_written_to_target(self, tmp_path):
-        proj_dir = _make_proj_dir(tmp_path)
+        db_path = _make_db(tmp_path)
         target_path = _make_target_json(tmp_path)
         portfolio_path = _make_portfolio_json(tmp_path)
 
@@ -446,7 +481,7 @@ class TestDeriveAndWrite:
             dry_run=False,
             target_json_path=target_path,
             portfolio_json_path=portfolio_path,
-            proj_dir=proj_dir,
+            db_path=db_path,
         )
 
         written = json.loads(target_path.read_text())
@@ -454,7 +489,7 @@ class TestDeriveAndWrite:
 
     def test_missing_portfolio_holding_does_not_crash(self, tmp_path):
         """derive_and_write should warn but not fail if ticker not in portfolio.json."""
-        proj_dir = _make_proj_dir(tmp_path)
+        db_path = _make_db(tmp_path)
         target_path = _make_target_json(tmp_path)
         # Portfolio with no GOOG holding
         portfolio_path = tmp_path / "portfolio.json"
@@ -467,6 +502,6 @@ class TestDeriveAndWrite:
             dry_run=False,
             target_json_path=target_path,
             portfolio_json_path=portfolio_path,
-            proj_dir=proj_dir,
+            db_path=db_path,
         )
         assert result["ticker"] == "GOOG"

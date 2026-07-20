@@ -17,9 +17,9 @@ Layer:
 
 Usage Examples:
     python3 framework_score.py --ticker NVDA --sector chips_ai \
-        --projections-dir investment_screener/backend/data/projections --pretty
+        --db-path investment_screener/backend/data/domain_model.sqlite --pretty
     python3 framework_score.py --ticker NVDA --sector chips_ai \
-        --projections-dir DIR --qualitative-file qual.json --pretty
+        --db-path DB --qualitative-file qual.json --pretty
 
 Key Functions (Index):
     - score_higher_better()
@@ -152,20 +152,23 @@ def _score_qualitative(qualitative: dict | None, field: str) -> tuple[str | None
 
 
 def compute_raw_metrics(
-    ticker: str, sector: str, projections_dir: str, cik: str | None = None
+    ticker: str, sector: str, db_path: str, cik: str | None = None
 ) -> dict[str, Any]:
     """Pull every raw (unscored) fundamental metric needed for the composite.
 
     Shares/price come from the ticker's persisted projection snapshot (the
     same agent-curated source comps_valuation.py already reads) since
     market_data.py has no shares-outstanding getter. A ticker with no
-    projection on disk yields an all-None metrics dict rather than raising —
-    peer_bench.py (Task 4) relies on this to skip peers with no usable data.
+    projection rows in the DB yields an all-None metrics dict rather than
+    raising — peer_bench.py (Task 4) relies on this to skip peers with no
+    usable data.
 
     Args:
         ticker: Ticker symbol.
         sector: One of "saas_cyber", "chips_ai", "energy_infra".
-        projections_dir: Path to the projections directory.
+        db_path: Path to domain_model.sqlite (Wave 1 Task 7A — see
+            comps_valuation.py's load_latest_projection() docstring for the
+            storage-backend rationale).
         cik: SEC CIK for EDGAR-preferred fundamentals, or None.
 
     Returns:
@@ -173,7 +176,7 @@ def compute_raw_metrics(
         ruleOf40Method, operatingMargin, roic, evSales, fcfYield, debtEbitda,
         interestCoverage, currentRatio.
     """
-    projection = load_latest_projection(ticker, projections_dir)
+    projection = load_latest_projection(ticker, db_path)
     snapshot = (projection or {}).get("snapshot", {})
     price = snapshot.get("price")
     shares = snapshot.get("shares")
@@ -239,7 +242,7 @@ def compute_raw_metrics(
 def compute_framework_score(
     ticker: str,
     sector: str,
-    projections_dir: str,
+    db_path: str,
     qualitative: dict | None = None,
     cik: str | None = None,
 ) -> dict[str, Any]:
@@ -254,7 +257,7 @@ def compute_framework_score(
     Args:
         ticker: Ticker symbol.
         sector: One of "saas_cyber", "chips_ai", "energy_infra".
-        projections_dir: Path to the projections directory.
+        db_path: Path to domain_model.sqlite.
         qualitative: Parsed --qualitative-file dict, or None.
         cik: SEC CIK for EDGAR-preferred fundamentals, or None.
 
@@ -262,7 +265,7 @@ def compute_framework_score(
         {"sector", "metrics": {...per-metric raw/score...}, "composite",
          "band", "excludedMetrics", "reweighted"}.
     """
-    raw = compute_raw_metrics(ticker, sector, projections_dir, cik=cik)
+    raw = compute_raw_metrics(ticker, sector, db_path, cik=cik)
     thresholds = SECTOR_THRESHOLDS[sector]
 
     moat_rating, moat_score = _score_qualitative(qualitative, "competitiveMoat")
@@ -356,7 +359,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Sector-aware weighted composite framework score")
     parser.add_argument("--ticker", required=True)
     parser.add_argument("--sector", required=True, choices=list(SECTOR_THRESHOLDS))
-    parser.add_argument("--projections-dir", required=True)
+    parser.add_argument("--db-path", required=True)
     parser.add_argument("--qualitative-file", default=None)
     parser.add_argument("--cik", default=None)
     parser.add_argument("--pretty", action="store_true")
@@ -368,7 +371,7 @@ def main() -> None:
             qualitative = json.load(f)
 
     result = compute_framework_score(
-        args.ticker, args.sector, args.projections_dir, qualitative=qualitative, cik=args.cik
+        args.ticker, args.sector, args.db_path, qualitative=qualitative, cik=args.cik
     )
     print(json.dumps(result, indent=2 if args.pretty else None))
 
