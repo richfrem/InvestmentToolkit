@@ -287,9 +287,52 @@ def test_latest_by_source_picks_latest_saved_at_among_ai_agent_rows(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# --update-thesis path is explicitly out of scope — not exercised here beyond
-# confirming the flag still exists on the parser (CLI surface preserved).
+# --update-thesis (Wave 2 Task 10 cutover): agentRationale now becomes an
+# append-only investment_note row + investment.agent_rationale refresh,
+# instead of a string-concatenated write into target-portfolio.json.
 # ---------------------------------------------------------------------------
+
+def test_update_thesis_adds_note_and_refreshes_agent_rationale(tmp_path):
+    from domain_model.investment_note_repository import list_notes
+    from domain_model.investment_repository import get_investment
+
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    investment_id, _ = _seed_ai_agent_projection(conn)
+
+    preset = apply_catalyst.PRESETS["major_contract"]
+    args = _args(catalyst_type="major_contract", note="Cloud expansion deal", write=True,
+                 update_thesis=True, date="2026-07-19")
+    apply_catalyst._run_apply_catalyst(conn, args, preset["bull"], preset["bear"])
+
+    notes = list_notes(conn, investment_id)
+    assert len(notes) == 1
+    assert notes[0]["note_type"] == "AGENT_RATIONALE"
+    assert notes[0]["source"] == "apply_catalyst.py"
+    assert "Cloud expansion deal" in notes[0]["body"]
+
+    row = get_investment(conn, investment_id)
+    assert "Cloud expansion deal" in row["agent_rationale"]
+
+
+def test_update_thesis_skips_duplicate_note(tmp_path):
+    from domain_model.investment_note_repository import list_notes
+
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    investment_id, _ = _seed_ai_agent_projection(conn)
+
+    preset = apply_catalyst.PRESETS["earnings_beat"]
+    args = _args(catalyst_type="earnings_beat", note="Beat estimates", write=True,
+                 update_thesis=True, date="2026-07-19")
+    apply_catalyst._run_apply_catalyst(conn, args, preset["bull"], preset["bear"])
+    # Re-running _run_apply_catalyst a second time re-seeds a fresh AI_AGENT row is not
+    # realistic here (in-place update), but the dedup check reads investment.agent_rationale
+    # directly, so calling update_thesis logic twice with the same note must not duplicate.
+    args2 = _args(catalyst_type="earnings_beat", note="Beat estimates", write=True,
+                  update_thesis=True, date="2026-07-19")
+    apply_catalyst._run_apply_catalyst(conn, args2, preset["bull"], preset["bear"])
+
+    notes = list_notes(conn, investment_id)
+    assert len(notes) == 1  # second call detected duplicate note text, skipped insert
 
 def test_cli_flags_still_present():
     import subprocess
