@@ -6,13 +6,19 @@ Accepted
 ## Amendment (see ADR-029)
 This ADR's Decision §1.2 pre-approved three future domain-object tables — `valuation_version`,
 `portfolio_decision`, `research_thesis` — "not yet created because no task in the current plan
-produces the data they'd hold." Two of those tasks now exist: the `projection_version` table
-designed in `docs/architecture/big-domain-migration-design.md` **is** the pre-approved
-`valuation_version` table (kept the codebase's existing "projection" vocabulary —
-`ProjectionService.ts`, `data/projections/` — rather than diverging to a new name), and
-`target_portfolio_entry` in `docs/architecture/persistence-domain-data-model.md` **is** the
-pre-approved `portfolio_decision` table. `research_thesis` remains unactivated — no task yet
-produces synthesized-thesis data distinct from raw `RESEARCH_IMPORT` events.
+produces the data they'd hold." Two of those tasks now exist, both currently designed in
+`docs/architecture/domain-data-model.md` (the design evolved twice since first written here —
+see that document's own Revision History): the `projection_version` table **is** the
+pre-approved `valuation_version` table (kept the codebase's existing "projection" vocabulary —
+`ProjectionService.ts`, `data/projections/` — rather than diverging to a new name), and the
+`investment` table's `target_weight`/`target_action`/`standing_decision_*` columns **are** the
+pre-approved `portfolio_decision` concept (folded into `investment` rather than kept as a
+separate `target_portfolio_entry` table, after real-data review found the separate-table split
+added a real join to the two most common query shapes in this app without a requirement forcing
+it). `research_thesis` remains unactivated — no task yet produces synthesized-thesis data
+distinct from raw `RESEARCH_IMPORT` events, though `domain-data-model.md`'s `investment_note`
+table (added for a different reason — thesis/rationale history) may end up being where that
+lands.
 
 The anti-duplication rule in Decision §1 is extended, not replaced: it applies per bounded
 context, not only to `intelligence_event`. A second package,

@@ -1,0 +1,1 @@
+../../../../docs/architecture/migration-inventory-and-strategy.md

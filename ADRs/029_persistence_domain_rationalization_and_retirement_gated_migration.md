@@ -71,14 +71,23 @@ transactional types it wasn't designed for, or burying real, queryable fields
 Column-level schemas, indexes, migration strategy, producer/consumer inventories (gathered by
 direct code inspection, not estimated), archive criteria, and rollback strategy for every
 in-scope domain live in:
-- `docs/architecture/persistence-domain-data-model.md` — `predictions.jsonl` (maps into
-  `intelligence_event` via new `PREDICTION_CLAIM`/`PREDICTION_GRADED` event types, not a
-  separate table — it's narrative/analytical in shape, not transactional) and the Portfolio
-  Operations schema (`trade_log_entry`, `order_execution`, `cash_flow`, `cash_flow_baseline`).
-- `docs/architecture/big-domain-migration-design.md` — `holdings` (`portfolio.json`),
-  `target_portfolio_entry` (`target-portfolio.json`, activates ADR-028's pre-approved
-  `portfolio_decision`), `projection_version` (`projections/*.json`, activates ADR-028's
-  pre-approved `valuation_version`).
+- **`docs/architecture/domain-data-model.md`** (current, Version 3.2 as of this ADR) —
+  the `account`/`investment`/`account_investment` model replacing `portfolio.json` +
+  `target-portfolio.json` + `watchlist.json`, plus `projection_version`/`projection_scenario`
+  (`projections/*.json`, activates ADR-028's pre-approved `valuation_version`), price levels,
+  alerts, and investment notes. Supersedes the original `holdings`+`target_portfolio_entry`
+  split below for these domains — see its own Revision History for the full v1→v3.2 reasoning
+  trail.
+- `docs/architecture/supplementary-domain-schemas.md` (formerly
+  `persistence-domain-data-model.md`) — `predictions.jsonl` (maps into `intelligence_event` via
+  new `PREDICTION_CLAIM`/`PREDICTION_GRADED` event types, not a separate table) and the
+  Portfolio Operations schema (`trade_log_entry`, `order_execution`, `cash_flow`,
+  `cash_flow_baseline`) — not superseded, still current.
+- `docs/architecture/migration-inventory-and-strategy.md` (formerly
+  `big-domain-migration-design.md`) — retains its real producer/consumer inventories and
+  migration-strategy detail; its `holdings`/`target_portfolio_entry` table designs are
+  superseded by `domain-data-model.md` above, kept here only as historical record of how the
+  model evolved.
 
 Both documents carry a **Domain Retirement Plan** table (current state → future table → explicit
 retirement trigger) for every domain they cover, including ones deferred to future phases —
