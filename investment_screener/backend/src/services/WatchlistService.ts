@@ -19,22 +19,22 @@
  *   - removeFromWatchlist(ticker: string) - Deletes a ticker from the list
  *
  * Key Input Dependencies:
- *   - investment_screener/backend/data/watchlist.json (Reads watchlist array — read side
- *     stays on JSON until Task 11's watchlist-consumer cutover)
+ *   - investment_screener/backend/data/domain_model.sqlite (Wave 2 Task 10/11 read-path
+ *     cutover: getWatchlist() now reads `investment.is_watchlisted` /
+ *     `investment.watchlist_added_at` via InvestmentRepository.listWatchlisted()
+ *     instead of watchlist.json. Verified byte-identical ticker set and addedAt
+ *     timestamps against watchlist.json before the cutover — see
+ *     InvestmentRepository.ts's module docstring. watchlist.json itself is left
+ *     untouched on disk, unmodified and unread by this service now.)
  *
  * Key Output Dependencies:
  *   - investment_screener/backend/data/domain_model.sqlite (Wave 2 Task 9.4 producer
- *     cutover: addToWatchlist/removeFromWatchlist now write `investment.is_watchlisted`
- *     / `investment.watchlist_added_at` via InvestmentRepository instead of rewriting
- *     watchlist.json in place. watchlist.json itself is intentionally left untouched by
- *     this write path — the read side (getWatchlist) still serves it, so this is a
- *     necessarily transitional state within Wave 2, not a bug: full parity returns once
- *     Task 11 cuts the read side over too.)
+ *     cutover: addToWatchlist/removeFromWatchlist write `investment.is_watchlisted`
+ *     / `investment.watchlist_added_at` via InvestmentRepository)
  */
 
-import fs from 'fs';
 import { InvestmentRepository } from './InvestmentRepository';
-import { DOMAIN_MODEL_DB_FILE, WATCHLIST_FILE } from '../utils/paths';
+import { DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 
 
 export interface WatchlistItem {
@@ -49,21 +49,15 @@ export class WatchlistService {
         this.dbPath = dbPath;
     }
 
-    private async ensureFileExists(): Promise<void> {
-        if (!fs.existsSync(WATCHLIST_FILE)) {
-            await fs.promises.writeFile(WATCHLIST_FILE, JSON.stringify({ watchlist: [] }, null, 2));
-        }
-    }
-
     async getWatchlist(): Promise<WatchlistItem[]> {
-        await this.ensureFileExists();
+        const repo = new InvestmentRepository(this.dbPath);
         try {
-            const content = await fs.promises.readFile(WATCHLIST_FILE, 'utf-8');
-            const data = JSON.parse(content);
-            return data.watchlist || [];
+            return repo.listWatchlisted();
         } catch (error) {
             console.error('[WatchlistService] Error reading watchlist:', error);
             return [];
+        } finally {
+            repo.close();
         }
     }
 

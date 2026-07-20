@@ -21,11 +21,11 @@ describe('WatchlistService', () => {
         }
     });
 
-    // Wave 2 Task 9.4 producer cutover: addToWatchlist/removeFromWatchlist now
+    // Wave 2 Task 9.4 producer cutover: addToWatchlist/removeFromWatchlist
     // write investment.is_watchlisted / investment.watchlist_added_at in
     // domain_model.sqlite via InvestmentRepository, instead of rewriting
-    // watchlist.json in place. getWatchlist() (the read side) stays on
-    // watchlist.json until Task 11 — not exercised here.
+    // watchlist.json in place. getWatchlist() (read side) is cut over onto
+    // the same sqlite table in Task 10/11 — see the describe block below.
 
     it('marks a ticker as watchlisted in sqlite', async () => {
         await service.addToWatchlist('AAPL');
@@ -79,5 +79,36 @@ describe('WatchlistService', () => {
         repo.close();
         expect(row).to.not.be.null;
         expect(row!.is_watchlisted).to.equal(1);
+    });
+
+    // Wave 2 Task 10/11 read-path cutover: getWatchlist() now reads
+    // investment.is_watchlisted / investment.watchlist_added_at via
+    // InvestmentRepository.listWatchlisted() instead of watchlist.json.
+    describe('getWatchlist (read-path cutover)', () => {
+        it('returns an empty array when nothing is watchlisted', async () => {
+            const list = await service.getWatchlist();
+            expect(list).to.deep.equal([]);
+        });
+
+        it('returns watchlisted tickers with their addedAt timestamps', async () => {
+            await service.addToWatchlist('AAPL');
+            await service.addToWatchlist('MSFT');
+
+            const list = await service.getWatchlist();
+            const tickers = list.map(i => i.ticker).sort();
+            expect(tickers).to.deep.equal(['AAPL', 'MSFT']);
+            for (const item of list) {
+                expect(item.addedAt).to.be.a('string').that.is.not.empty;
+            }
+        });
+
+        it('excludes tickers after they are removed from the watchlist', async () => {
+            await service.addToWatchlist('AAPL');
+            await service.addToWatchlist('MSFT');
+            await service.removeFromWatchlist('AAPL');
+
+            const list = await service.getWatchlist();
+            expect(list.map(i => i.ticker)).to.deep.equal(['MSFT']);
+        });
     });
 });
