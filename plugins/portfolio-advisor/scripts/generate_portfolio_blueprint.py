@@ -41,6 +41,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 THESIS_JSON   = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 PORTFOLIO_JSON = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 THESIS_MD     = REPO_ROOT / "investment_screener/backend/data/theses/investment_thesis.md"
+DOMAIN_DB     = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from ticker_aliases import is_cash  # noqa: E402
@@ -63,6 +64,68 @@ from portfolio_action import derive_action, ACTION_EMOJI
 def load_json(path: Path) -> dict | list:
     with open(path) as f:
         return json.load(f)
+
+
+def _resolve_investment_id(conn, ticker: str) -> str | None:
+    """Look up investment_id for a symbol without inserting (read-only lookup)."""
+    row = conn.execute("SELECT investment_id FROM investment WHERE symbol = ?;", (ticker,)).fetchone()
+    return row[0] if row else None
+
+
+def _get_latest_ai_projection(ticker: str, db_path: Path | None = None) -> dict | None:
+    """Fetch the latest projection for ``ticker`` from the domain model DB, preferring
+    the latest ``AI_AGENT``-sourced row and falling back to the latest row of any source.
+
+    Storage backend (Wave 1 Task 7C): reads `projection_version` via
+    `domain_model.projection_repository` instead of `projections/{TICKER}.json`
+    (ADR-029). Mirrors `portfolio_action.py`'s `_load_ai_upside` — same
+    AI_AGENT-preferred / any-source-fallback lookup, used here for both the AI
+    signal action and the fair-value upside computation. Returns ``None`` on any
+    lookup failure so callers fall back to "—" placeholders.
+    """
+    try:
+        sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+        from domain_model.db_client import initialize_db
+        from domain_model.projection_repository import get_latest_projection, get_latest_projection_by_source
+
+        conn = initialize_db(str(db_path or DOMAIN_DB))
+        try:
+            investment_id = _resolve_investment_id(conn, ticker)
+            if investment_id is None:
+                return None
+            entry = get_latest_projection_by_source(conn, investment_id, "AI_AGENT")
+            if entry is None:
+                entry = get_latest_projection(conn, investment_id)
+            return entry
+        finally:
+            conn.close()
+    except Exception:
+        return None
+
+
+def _get_latest_ai_agent_projection(ticker: str, db_path: Path | None = None) -> dict | None:
+    """Fetch the latest ``AI_AGENT``-sourced projection for ``ticker``, strictly —
+    no fallback to other sources. Returns ``None`` if no AI_AGENT row exists.
+
+    Storage backend (Wave 1 Task 7C): reads `projection_version` via
+    `domain_model.projection_repository` (ADR-029), replacing the prior
+    `[p for p in projs if p.get("source") == "AI_AGENT"]` file-based filter.
+    """
+    try:
+        sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+        from domain_model.db_client import initialize_db
+        from domain_model.projection_repository import get_latest_projection_by_source
+
+        conn = initialize_db(str(db_path or DOMAIN_DB))
+        try:
+            investment_id = _resolve_investment_id(conn, ticker)
+            if investment_id is None:
+                return None
+            return get_latest_projection_by_source(conn, investment_id, "AI_AGENT")
+        finally:
+            conn.close()
+    except Exception:
+        return None
 
 
 def build_actual_map(portfolio: dict | list) -> tuple[dict, float]:
@@ -195,25 +258,19 @@ def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> 
             actual_str = f"{actual_pct:.2f}%" if actual_pct else "—"
             target_str = f"{target_pct:.2f}%" if target_pct else "—"
             
-            # Fetch DCF projection for AI Signal & Upside
-            proj_path = REPO_ROOT / f"investment_screener/backend/data/projections/{ticker}.json"
+            # Fetch DCF projection for AI Signal & Upside (domain_model.sqlite, ADR-029)
             ai_signal = "—"
             upside_str = "—"
-            if proj_path.exists():
-                try:
-                    proj = load_json(proj_path)
-                    thesis_obj = proj.get("aiThesis", {})
-                    if thesis_obj:
-                        fv = thesis_obj.get("fairValue")
-                        curr_price = a.get("price") or thesis_obj.get("currentPrice")
-                        if fv and curr_price and curr_price > 0:
-                            upside = ((fv - curr_price) / curr_price) * 100
-                            upside_str = f"+{upside:.1f}%" if upside >= 0 else f"{upside:.1f}%"
-                        ai_action = thesis_obj.get("action")
-                        if ai_action:
-                            ai_signal = ai_action
-                except Exception:
-                    pass
+            entry = _get_latest_ai_projection(ticker)
+            if entry:
+                fv = entry.get("fair_value")
+                curr_price = a.get("price")
+                if fv and curr_price and curr_price > 0:
+                    upside = ((fv - curr_price) / curr_price) * 100
+                    upside_str = f"+{upside:.1f}%" if upside >= 0 else f"{upside:.1f}%"
+                ai_action = entry.get("action")
+                if ai_action:
+                    ai_signal = ai_action
 
             sub_actual += actual_pct
             sub_target += target_pct
@@ -276,19 +333,11 @@ def update_section_tables(content: str, current_data: dict, target_data: dict) -
     )
 
     def get_ai_signal(ticker: str) -> str:
-        proj_path = REPO_ROOT / f"investment_screener/backend/data/projections/{ticker}.json"
-        if proj_path.exists():
-            try:
-                proj = load_json(proj_path)
-                projs = proj if isinstance(proj, list) else [proj]
-                ai = [p for p in projs if p.get("source") == "AI_AGENT"]
-                if ai:
-                    latest = max(ai, key=lambda x: x.get("savedAt", ""))
-                    action = latest.get("aiThesis", {}).get("action")
-                    if action:
-                        return action
-            except Exception:
-                pass
+        entry = _get_latest_ai_agent_projection(ticker)
+        if entry:
+            action = entry.get("action")
+            if action:
+                return action
         return "—"
 
     def build_enriched_row(ticker: str, role: str, conviction: str) -> str:
