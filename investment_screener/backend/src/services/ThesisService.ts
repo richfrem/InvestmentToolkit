@@ -39,9 +39,32 @@
  *     migrated off data/projections/*.json in Task 7C; see getLatestAIProjection)
  *   - investment_screener/backend/data/portfolio.json (reads portfolio holdings)
  *   - investment_screener/backend/data/account_policy.json (reads drift config)
- * 
+ *
  * Key Output Dependencies:
  *   - investment_screener/backend/data/theses/ (writes theses JSON)
+ *
+ * Wave 2 Task 10/11 investigation (NOT rewired — documented stop, not an oversight):
+ *   getThesis()/listTheses()/saveThesis()/updateHolding()/addHolding()/removeHolding()/
+ *   replaceHoldings() read and write the FULL target-portfolio.json Thesis document
+ *   (and any other file under data/theses/*.json addressed by id). This is a lossy,
+ *   non-mechanical rewire target: the JSON document carries fields with no SQLite
+ *   column anywhere in domain_model.sqlite today — `globalSettings`, `changeLog`,
+ *   `schemaVersion`, per-pillar `bandConfig`, per-holding `shares`, and the full
+ *   structured `thesisBreakers`/`standingDecision` sub-objects (SQLite only stores
+ *   4 flat `standing_decision_*` scalar columns on `investment`, consumed
+ *   read-only elsewhere — see InvestmentRepository.ts's `getInvestment()` and its
+ *   dedicated standingDecision byte-for-byte test in
+ *   tests/InvestmentRepository.spec.ts). Reconstructing the full Thesis document
+ *   from SQLite would either drop these fields (breaking the frontend + other
+ *   consumers of GET /api/theses/:id) or require new schema columns, which is out
+ *   of scope for this wave (no schema changes permitted). computeHealthCheck()
+ *   itself never reads `standingDecision` or `thesisBreakers` today — verified via
+ *   `grep -rn "standingDecision" src/`, zero hits outside this note — so there is
+ *   no active standingDecision *read* path in this class to cut over; the narrower
+ *   partial-field reads (pillars, holdings summary for stock-lookup/all-holdings)
+ *   were cut over instead, in theses.ts's GET /pillars route and
+ *   InvestmentRepository.listThesisHoldings() (consumed by stock.ts and
+ *   screener.ts), not here.
  */
 import fs from 'fs';
 import path from 'path';
