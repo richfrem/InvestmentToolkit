@@ -25,7 +25,12 @@ REPO_ROOT = Path(__file__).resolve().parents[3]  # plugins/portfolio-advisor/scr
 TEMPLATE_PATH = REPO_ROOT / "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md"
 PORTFOLIO_PATH = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 THESIS_PATH    = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
+DB_PATH        = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 OUTPUT_DIR     = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
+
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import list_investments  # noqa: E402
 # Note (Wave 1 Task 7B): PROJECTIONS_DIR was declared here but never read by this
 # file — DCF/projection data reaches this script only indirectly, via
 # scan_opportunities.py's subprocess call in get_action_subsections(), which is
@@ -55,14 +60,37 @@ def compute_portfolio_summary(portfolio: list) -> dict:
     }
 
 
-def compute_thesis_summary(thesis: dict, portfolio: list) -> dict:
-    """Derive EXIT/INITIATE counts and thesis metadata."""
+def compute_thesis_summary(thesis: dict, portfolio: list, db_path: Path = DB_PATH) -> dict:
+    """Derive EXIT/INITIATE counts and thesis metadata.
+
+    Storage backend (Wave 2 Task 10 rewire): per-ticker thesis fields
+    (targetWeight) are read from ``investment.target_weight`` via
+    ``domain_model.investment_repository.list_investments`` instead of
+    target-portfolio.json's holdings. ``thesis`` (the parsed JSON) is only
+    used for document-level metadata (name/version) that has no equivalent
+    investment-table column, matching generate_portfolio_blueprint.py's
+    established Task 10 pattern.
+
+    Bug fix: the pre-rewire version iterated
+    ``thesis["pillars"][i]["holdings"]``, but target-portfolio.json's
+    pillar entries never have a "holdings" key (only top-level
+    ``thesis["holdings"]`` does) — so ``all_thesis_holdings`` was always
+    empty and EXIT/INITIATE counts were always 0. Fixed by reading
+    per-investment rows directly.
+    """
     held_tickers = {h["symbol"] for h in portfolio if h.get("shares", 0) > 0}
 
     all_thesis_holdings = []
-    for pillar in thesis.get("pillars", []):
-        for h in pillar.get("holdings", []):
-            all_thesis_holdings.append(h)
+    if Path(db_path).exists():
+        conn = initialize_db(str(db_path))
+        try:
+            for row in list_investments(conn):
+                all_thesis_holdings.append({
+                    "ticker": row["symbol"],
+                    "targetWeight": row.get("target_weight") or 0,
+                })
+        finally:
+            conn.close()
 
     thesis_tickers = {h["ticker"] for h in all_thesis_holdings}
     target_zero = [h["ticker"] for h in all_thesis_holdings if h.get("targetWeight", 1) == 0]

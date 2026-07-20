@@ -27,10 +27,53 @@ try:
 except ImportError:
     generate_evolution_correlation_report = None
 
-TARGET_JSON = REPO_ROOT / 'investment_screener/backend/data/theses/target-portfolio.json'
 PORTFOLIO_JSON = REPO_ROOT / 'investment_screener/backend/data/portfolio.json'
-WATCHLIST_JSON = REPO_ROOT / 'investment_screener/backend/data/watchlist.json'
 ETF_ANALYSIS_DIR = REPO_ROOT / 'investment_screener/backend/data/etf_analysis'
+DOMAIN_DB = REPO_ROOT / 'investment_screener/backend/data/domain_model.sqlite'
+
+
+def load_target_holdings(db_path=None) -> list:
+    """Load target-portfolio-shaped holdings (ticker, targetWeight) from the
+    domain-model DB (Wave 2 rewire), replacing the direct
+    ``target-portfolio.json`` holdings read. Only rows with a ``pillar_id``
+    are included, matching the migration write path's real-thesis-holding
+    scope (watchlist-only rows get no ``pillar_id``)."""
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import list_investments
+
+    path = db_path or DOMAIN_DB
+    if not Path(path).exists():
+        return []
+
+    conn = initialize_db(str(path))
+    try:
+        rows = list_investments(conn)
+    finally:
+        conn.close()
+
+    return [
+        {"ticker": row["symbol"], "targetWeight": row.get("target_weight") or 0.0}
+        for row in rows if row.get("pillar_id") is not None
+    ]
+
+
+def load_watchlist_items(db_path=None) -> list:
+    """Load watchlisted tickers from the domain-model DB (Wave 2 rewire),
+    replacing the direct ``watchlist.json`` read."""
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import list_investments
+
+    path = db_path or DOMAIN_DB
+    if not Path(path).exists():
+        return []
+
+    conn = initialize_db(str(path))
+    try:
+        rows = list_investments(conn, is_watchlisted=True)
+    finally:
+        conn.close()
+
+    return [{"ticker": row["symbol"]} for row in rows]
 
 def get_dynamic_exclusions():
     """Build exclusion list dynamically by scanning etf_analysis directory and cash reserves."""
@@ -94,14 +137,12 @@ def load_json(path):
     with open(p, encoding="utf-8") as f:
         return json.load(f)
 
-def run_weekly_review(write_prompt_path=None):
+def run_weekly_review(write_prompt_path=None, db_path=None):
     portfolio = load_json(PORTFOLIO_JSON)
-    targets = load_json(TARGET_JSON)
-    watchlist_data = load_json(WATCHLIST_JSON)
-    
+
     holdings_map = {h['symbol'].upper(): h for h in portfolio.get('holdings', [])}
-    target_holdings = targets.get('holdings', [])
-    watchlist_items = watchlist_data.get('watchlist', [])
+    target_holdings = load_target_holdings(db_path)
+    watchlist_items = load_watchlist_items(db_path)
     
     total_equity = portfolio.get('totals', {}).get('totalUSD', 0.0)
     if total_equity == 0:
@@ -266,5 +307,6 @@ def run_weekly_review(write_prompt_path=None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--prompt-output", default=str(REPO_ROOT / "temp/grok-prompts/weekly_grok_prompt.md"))
+    parser.add_argument("--db", default=str(DOMAIN_DB), help="Path to domain_model.sqlite")
     args = parser.parse_args()
-    run_weekly_review(write_prompt_path=args.prompt_output)
+    run_weekly_review(write_prompt_path=args.prompt_output, db_path=args.db)

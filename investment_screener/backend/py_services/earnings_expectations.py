@@ -34,11 +34,21 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sys
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
+
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_PY_SERVICES_DIR = str(_REPO_ROOT / "investment_screener/backend/py_services")
+if _PY_SERVICES_DIR not in sys.path:
+    sys.path.insert(0, _PY_SERVICES_DIR)
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import list_investments  # noqa: E402
+
+_DB_PATH = _REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
 # Optional yfinance import for graceful degradation
 try:
@@ -331,16 +341,17 @@ def harvest_earnings_expectations(
     except Exception:
         recent_preds = []
 
-    # If tickers not provided, load from target-portfolio.json
+    # If tickers not provided, load from domain_model.sqlite's investment table
+    # (Wave 2 consumer cutover — previously read target-portfolio.json's
+    # holdings[].ticker directly).
     if tickers is None:
         try:
-            from pathlib import Path
-            repo_root = Path(__file__).resolve().parents[3]
-            target_path = repo_root / "investment_screener/backend/data/theses/target-portfolio.json"
-            with open(target_path) as f:
-                target_data = json.load(f)
-            tickers = [h.get("ticker") for h in target_data.get("holdings", [])
-                      if h.get("ticker")]
+            conn = initialize_db(str(_DB_PATH))
+            try:
+                investments = list_investments(conn)
+            finally:
+                conn.close()
+            tickers = [inv.get("symbol") for inv in investments if inv.get("symbol")]
         except Exception:
             tickers = []
 
@@ -620,23 +631,28 @@ def get_earnings_context(ticker: str, days_ahead: int = 7) -> dict | None:
             # Outside window
             return None
 
-        # Load target portfolio
+        # Load the investment row from domain_model.sqlite (Wave 2 consumer
+        # cutover — previously read target-portfolio.json's holdings[] directly).
+        # "role" (target-portfolio.json) maps to the investment table's
+        # lifecycle_status column per migrate_target_portfolio_to_sqlite.py's
+        # own field mapping (holding.get("role") -> lifecycle_status); this
+        # function's local variable name "target_action" is inherited verbatim
+        # from the pre-migration code and is a naming quirk, not a semantic
+        # target_action-column read (preserved exactly, not fixed here).
         try:
-            from pathlib import Path
-            repo_root = Path(__file__).resolve().parents[3]
-            target_path = repo_root / "investment_screener/backend/data/theses/target-portfolio.json"
-            with open(target_path) as f:
-                target_data = json.load(f)
+            conn = initialize_db(str(_DB_PATH))
+            try:
+                investments = list_investments(conn)
+            finally:
+                conn.close()
+            holding = next(
+                (inv for inv in investments if inv.get("symbol") == ticker), None
+            )
         except Exception:
-            target_data = {}
+            holding = None
 
-        # Find holding entry
-        holding = next(
-            (h for h in target_data.get("holdings", []) if h.get("ticker") == ticker),
-            None
-        )
-        portfolio_weight = holding.get("targetWeight", 0.0) if holding else 0.0
-        target_action = holding.get("role", "unknown") if holding else "unknown"
+        portfolio_weight = (holding.get("target_weight") or 0.0) if holding else 0.0
+        target_action = (holding.get("lifecycle_status") or "unknown") if holding else "unknown"
 
         # Calculate prior beat rate from graded predictions
         try:
