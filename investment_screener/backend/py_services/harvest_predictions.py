@@ -26,7 +26,7 @@ Usage Examples:
 Key Functions (Index):
     - _now_iso()
     - _hash_claim()
-    - _load_projection()
+    - _load_projection_from_db()
     - build_action_rating_claim()
     - build_dcf_fair_value_claim()
     - build_rebalance_order_claims()
@@ -67,7 +67,14 @@ from prediction_ledger import (  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
-PROJECTIONS_DIR = DATA_DIR / "projections"
+DB_PATH = DATA_DIR / "domain_model.sqlite"
+
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.projection_repository import (  # noqa: E402
+    get_latest_projection_by_source,
+    list_symbols_with_projections,
+)
 
 _BULLISH_ACTIONS = {"INITIATE", "ACCUMULATE"}
 _BEARISH_ACTIONS = {"TRIM", "EXIT"}
@@ -83,22 +90,38 @@ def _hash_claim(claim: dict[str, Any]) -> str:
     return hashlib.sha256(canonical.encode()).hexdigest()
 
 
-def _load_projection(path: Path) -> dict[str, Any] | None:
-    """Load a projection file, selecting the latest AI_AGENT revision if a list.
+def _load_projection_from_db(conn, investment_id: str) -> dict[str, Any] | None:
+    """Load the latest AI_AGENT projection for an investment from
+    domain_model.sqlite's ``projection_version`` table (Wave 2 consumer
+    cutover), reconstructing the same {"aiThesis", "analyticsLog", "snapshot"}
+    shape ``build_action_rating_claim``/``build_dcf_fair_value_claim`` expect —
+    those two builder functions are unchanged.
 
-    Projection files are often arrays of revision entries (multiple versions,
-    human vs. AI_AGENT sources). Mirrors ThesisService.getLatestAIProjection():
-    filter to source == "AI_AGENT", sort descending by version, return the
-    highest-version entry, or None if no AI_AGENT entry exists.
+    Replaces the former ``projections/{TICKER}.json`` flat-file read (the
+    ``projections/`` directory was archived after the Wave 1 SQLite cutover
+    and no longer exists on disk — this was a real, confirmed-dead read path).
+    Mirrors ``get_latest_projection_by_source(..., "AI_AGENT")``'s existing
+    "prefer the latest AI_AGENT-sourced row" convention (same as
+    ``compute_conviction_scores.py``'s ``_load_dcf``), and preserves this
+    function's own pre-migration "no AI_AGENT entry -> None, skip this
+    ticker" behavior exactly (no fallback to a non-AI_AGENT row, unlike
+    ``compute_conviction_scores.py``'s fallback -- the original
+    ``_load_projection`` never fell back either).
     """
-    with open(path) as f:
-        data = json.load(f)
-    if isinstance(data, list):
-        ai_entries = [entry for entry in data if entry.get("source") == "AI_AGENT"]
-        if not ai_entries:
-            return None
-        return sorted(ai_entries, key=lambda entry: entry.get("version", 0), reverse=True)[0]
-    return data
+    entry = get_latest_projection_by_source(conn, investment_id, "AI_AGENT")
+    if entry is None:
+        return None
+    analytics_log = json.loads(entry["analytics_log_json"]) if entry.get("analytics_log_json") else {}
+    snapshot = json.loads(entry["snapshot_json"]) if entry.get("snapshot_json") else {}
+    return {
+        "aiThesis": {
+            "action": entry.get("action"),
+            "analyzedAt": entry.get("analyzed_at"),
+            "fairValue": entry.get("fair_value"),
+        },
+        "analyticsLog": analytics_log,
+        "snapshot": snapshot,
+    }
 
 
 def build_action_rating_claim(ticker: str, projection: dict[str, Any]) -> dict[str, Any] | None:
@@ -312,13 +335,16 @@ def _append_if_new(
 
 
 def harvest_action_and_dcf_claims(
-    projections_dir: Path = PROJECTIONS_DIR,
+    db_path: Path = DB_PATH,
     predictions_path: Path = PREDICTIONS_PATH,
 ) -> list[dict[str, Any]]:
-    """Harvest action_rating and dcf_fair_value claims from every projection file.
+    """Harvest action_rating and dcf_fair_value claims from every investment
+    with at least one projection_version row in domain_model.sqlite.
 
     Args:
-        projections_dir: Directory of per-ticker projection JSON files.
+        db_path: Path to domain_model.sqlite (Wave 2 consumer cutover --
+            replaces the former projections/*.json directory glob, which no
+            longer exists on disk since Wave 1's archive).
         predictions_path: Ledger path to read existing state from and append to.
 
     Returns:
@@ -326,9 +352,9 @@ def harvest_action_and_dcf_claims(
     """
     existing = load_predictions(predictions_path)
     new_records: list[dict[str, Any]] = []
-    for proj_file in sorted(projections_dir.glob("*.json")):
-        ticker = proj_file.stem
-        projection = _load_projection(proj_file)
+    conn = initialize_db(str(db_path))
+    for ticker in list_symbols_with_projections(conn):
+        projection = _load_projection_from_db(conn, ticker)
         if projection is None:
             continue
         for builder in (build_action_rating_claim, build_dcf_fair_value_claim):
