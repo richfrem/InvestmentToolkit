@@ -16,7 +16,7 @@ WATCHLIST_SCRIPT = REPO_ROOT / "plugins/tradingview/scripts/watchlist_manager.py
 sys.path.insert(0, str(REPO_ROOT / "plugins/tradingview/scripts"))
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
-from domain_model.investment_repository import resolve_investment  # noqa: E402
+from domain_model.investment_repository import resolve_investment, update_investment_fields  # noqa: E402
 from domain_model.projection_repository import save_projection_version  # noqa: E402
 import watchlist_manager  # noqa: E402
 
@@ -84,6 +84,49 @@ class TestLoadResearchedWatchlistDbFallback(unittest.TestCase):
                 watchlist_manager.TARGET_WATCHLIST_PATH = original_target_path
 
             self.assertEqual(tickers, [])
+
+
+class TestLoadWatchlistedSymbols(unittest.TestCase):
+    """Wave 2 Task 10 — watchlist membership reads investment.is_watchlisted
+    via list_investments(), not watchlist.json."""
+
+    def test_reads_watchlisted_symbols_from_sqlite(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "test.sqlite"
+            conn = initialize_db(str(db_path))
+            try:
+                for ticker in ("MSFT", "TSLA"):
+                    investment_id = resolve_investment(conn, ticker, asset_class="EQUITY")
+                    update_investment_fields(conn, investment_id, is_watchlisted=True)
+                # Not watchlisted — must be excluded.
+                resolve_investment(conn, "AAPL", asset_class="EQUITY")
+            finally:
+                conn.close()
+
+            tickers = watchlist_manager.load_researched_watchlist(db_path=db_path)
+            self.assertEqual(tickers, ["MSFT", "TSLA"])
+
+    def test_boats_watchlist_includes_watchlisted_us_equities(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "test.sqlite"
+            conn = initialize_db(str(db_path))
+            try:
+                for ticker in ("MSFT", "SHOP.TO"):
+                    investment_id = resolve_investment(conn, ticker, asset_class="EQUITY")
+                    update_investment_fields(conn, investment_id, is_watchlisted=True)
+            finally:
+                conn.close()
+
+            original_portfolio_path = watchlist_manager.PORTFOLIO_PATH
+            watchlist_manager.PORTFOLIO_PATH = Path(tmp) / "does_not_exist.json"
+            try:
+                tickers = watchlist_manager.load_boats_watchlist(db_path=db_path)
+            finally:
+                watchlist_manager.PORTFOLIO_PATH = original_portfolio_path
+
+            self.assertEqual(tickers, ["BOATS:MSFT"])
 
 
 if __name__ == "__main__":
