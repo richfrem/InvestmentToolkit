@@ -20,13 +20,25 @@ from pathlib import Path
 
 
 DATA_DIR = Path(__file__).resolve().parents[5] / "investment_screener" / "backend" / "data" / "etf_analysis"
-PROJ_DIR = Path(__file__).resolve().parents[5] / "investment_screener" / "backend" / "data" / "projections"
+REPO_ROOT = Path(__file__).resolve().parents[5]
+DB_PATH = REPO_ROOT / "investment_screener" / "backend" / "data" / "domain_model.sqlite"
+
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import resolve_investment  # noqa: E402
+from domain_model.projection_repository import (  # noqa: E402
+    get_latest_projection_by_source,
+    list_projection_versions,
+    save_projection_version,
+    add_projection_scenario,
+)
 
 
 def _build_projection(data: dict, version: int) -> dict:
     """Synthesise a projection-format record from an ETF analysis so the
-    Dashboard's loadAIThesis (which reads data/projections/) shows the
-    AI Expert Thesis panel for every ETF that has been analysed."""
+    Dashboard's AI Expert Thesis panel (backed by `projection_version` in
+    domain_model.sqlite as of Wave 1 Task 7B — ADR-029) shows this analysis
+    for every ETF that has been analysed."""
     snap = data.get("snapshot", {})
     price = snap.get("price", 0)
     ha = data.get("holdingsAnalysis", {})
@@ -121,7 +133,63 @@ def _build_projection(data: dict, version: int) -> dict:
     }
 
 
-def persist(data: dict, dry_run: bool = False) -> str:
+def _sync_projection_db(data: dict, next_version: int, db_path: Path, dry_run: bool = False) -> None:
+    """Write/replace this ticker's ETF_ANALYSIS projection row in domain_model.sqlite.
+
+    Storage backend (Wave 1 Task 7B): writes the `projection_version`/
+    `projection_scenario` tables via `domain_model.projection_repository`, not
+    `data/projections/{TICKER}.json` directly (ADR-029) — this was the second half
+    of pitfall #8's "ETF dual-write" (the `data/etf_analysis/` versions file itself
+    stays a plain JSON write; only the Dashboard-facing projection sync moved to
+    SQLite). Mirrors the original file-based behavior of keeping only ONE
+    ETF_ANALYSIS entry per ticker (old entries removed before the new one is
+    appended): if a prior ETF_ANALYSIS row exists for this investment, its version
+    number is reused (upsert replaces it in place); otherwise a new version number
+    one past the investment's current MAX(version) is assigned so it never collides
+    with an AI_AGENT-sourced row.
+    """
+    if dry_run:
+        return
+    conn = initialize_db(str(db_path))
+    try:
+        ticker = data["ticker"].upper()
+        investment_id = resolve_investment(conn, ticker, asset_class="ETF")
+        proj_record = _build_projection(data, next_version)
+
+        existing_etf = get_latest_projection_by_source(conn, investment_id, "ETF_ANALYSIS")
+        if existing_etf is not None:
+            db_version = existing_etf["version"]
+        else:
+            all_versions = list_projection_versions(conn, investment_id)
+            db_version = max((v["version"] for v in all_versions), default=0) + 1
+
+        snapshot = proj_record["snapshot"]
+        ai_thesis = proj_record["aiThesis"]
+        projection_id = save_projection_version(
+            conn, investment_id, version=db_version,
+            saved_at=proj_record["savedAt"], analyzed_at=ai_thesis["analyzedAt"],
+            model=ai_thesis["model"], fair_value=ai_thesis["fairValue"],
+            action=ai_thesis["action"], rationale=ai_thesis["rationale"],
+            snapshot_json=json.dumps(snapshot),
+            analytics_log_json=json.dumps(proj_record["analyticsLog"]),
+            source="ETF_ANALYSIS",
+        )
+        for name, scen in proj_record["scenarios"].items():
+            add_projection_scenario(
+                conn, projection_id, name,
+                weight=scen.get("weight"), growth_rate=scen.get("growthRate"),
+                net_margin=scen.get("netMargin"), exit_pe=scen.get("exitPE"),
+                quality_multiplier=scen.get("qualityMultiplier"),
+                share_change=scen.get("shareChange"), rationale=scen.get("rationale"),
+                year5_revenue=scen.get("year5Revenue"), year5_net_income=scen.get("year5NetIncome"),
+                year5_eps=scen.get("year5EPS"), scenario_price=scen.get("scenarioPrice"),
+            )
+        print(f"✅ Projection synced to domain_model.sqlite: {ticker} (version {db_version})")
+    finally:
+        conn.close()
+
+
+def persist(data: dict, dry_run: bool = False, db_path: Path | None = None) -> str:
     ticker = data.get("ticker", "UNKNOWN").upper()
     out_path = DATA_DIR / f"{ticker}.json"
 
@@ -146,25 +214,10 @@ def persist(data: dict, dry_run: bool = False) -> str:
     out_path.write_text(json.dumps(existing, indent=2))
     print(f"✅ Written: {out_path}  (version {next_version})")
 
-    # Also write/update data/projections/{ticker}.json so the Dashboard's
-    # AI Expert Thesis panel shows this analysis automatically.
-    PROJ_DIR.mkdir(parents=True, exist_ok=True)
-    proj_path = PROJ_DIR / f"{ticker}.json"
-    proj_existing = []
-    if proj_path.exists():
-        try:
-            proj_existing = json.loads(proj_path.read_text())
-            if not isinstance(proj_existing, list):
-                proj_existing = [proj_existing]
-            # Remove any previous ETF_ANALYSIS entries (keep user projections)
-            proj_existing = [p for p in proj_existing if p.get("source") != "ETF_ANALYSIS"]
-        except Exception:
-            proj_existing = []
-
-    proj_record = _build_projection(data, next_version)
-    proj_existing.append(proj_record)
-    proj_path.write_text(json.dumps(proj_existing, indent=2))
-    print(f"✅ Projection synced: {proj_path}")
+    # Also sync the Dashboard-facing projection (AI Expert Thesis panel reads
+    # projection_version/projection_scenario in domain_model.sqlite — ADR-029,
+    # Wave 1 Task 7B). Previously wrote data/projections/{ticker}.json directly.
+    _sync_projection_db(data, next_version, db_path or DB_PATH, dry_run=dry_run)
 
     return str(out_path)
 
