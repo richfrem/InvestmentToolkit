@@ -31,6 +31,7 @@ sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.investment_repository import resolve_investment  # noqa: E402
+from domain_model.price_level_repository import get_price_levels  # noqa: E402
 from domain_model.projection_repository import (  # noqa: E402
     save_projection_version,
     add_projection_scenario,
@@ -361,10 +362,15 @@ class TestLoadLatestProjection:
 # ── Tests: derive_and_write ───────────────────────────────────────────────────
 
 class TestDeriveAndWrite:
-    def test_write_price_levels_to_target_portfolio(self, tmp_path):
+    def test_write_price_levels_to_sqlite(self, tmp_path):
+        """Wave 2 Task 9 producer cutover: priceLevels now persist via
+        replace_price_levels() into domain_model.sqlite, not a rewrite of
+        target-portfolio.json (which stays untouched by this write path until
+        Task 10's consumer cutover)."""
         db_path = _make_db(tmp_path)
         target_path = _make_target_json(tmp_path)
         portfolio_path = _make_portfolio_json(tmp_path)
+        original_target = target_path.read_text()
 
         result = derive_and_write(
             "GOOG",
@@ -376,14 +382,50 @@ class TestDeriveAndWrite:
         )
 
         assert result["dry_run"] is False
-        written = json.loads(target_path.read_text())
-        holding = next(h for h in written["holdings"] if h["ticker"] == "GOOG")
-        assert "priceLevels" in holding
-        pl = holding["priceLevels"]
-        assert pl["schemaVersion"] == "1.0"
-        assert len(pl["buyTiers"]) == 2
-        assert len(pl["sellTiers"]) == 3
-        assert "stopLoss" in pl
+        # target-portfolio.json is no longer rewritten by this producer.
+        assert target_path.read_text() == original_target
+
+        conn = initialize_db(str(db_path))
+        investment_id = resolve_investment(conn, "GOOG")
+        stored = get_price_levels(conn, investment_id)
+        conn.close()
+
+        assert stored is not None
+        assert stored["price_level_set"]["schema_version"] == "1.0"
+        assert len(stored["buy_tiers"]) == 2
+        assert len(stored["sell_tiers"]) == 3
+        assert stored["stop_loss"] is not None
+
+    def test_replace_preserves_existing_target_entry_price(self, tmp_path):
+        """A pre-existing targetEntryPrice (a separate TARGET_ENTRY-kind row this
+        script never sets) must survive a priceLevels replace, not be silently
+        wiped by the full-object-rewrite semantics of replace_price_levels()."""
+        from domain_model.price_level_repository import replace_price_levels
+
+        db_path = _make_db(tmp_path)
+        target_path = _make_target_json(tmp_path)
+        portfolio_path = _make_portfolio_json(tmp_path)
+
+        conn = initialize_db(str(db_path))
+        investment_id = resolve_investment(conn, "GOOG")
+        replace_price_levels(
+            conn, investment_id, schema_version="0.9", last_updated="2026-01-01",
+            last_updated_by="manual", note=None, buy_tiers=[], sell_tiers=[],
+            stop_loss=None, target_entry_price=250.0,
+        )
+        conn.close()
+
+        derive_and_write(
+            "GOOG", source="dcf", dry_run=False,
+            target_json_path=target_path, portfolio_json_path=portfolio_path,
+            db_path=db_path,
+        )
+
+        conn = initialize_db(str(db_path))
+        stored = get_price_levels(conn, investment_id)
+        conn.close()
+        assert stored["target_entry"] is not None
+        assert stored["target_entry"]["price"] == 250.0
 
     def test_write_snapshot_to_portfolio_json(self, tmp_path):
         db_path = _make_db(tmp_path)
@@ -470,7 +512,11 @@ class TestDeriveAndWrite:
         assert "price_levels" in result
         assert result["price_levels"]["schemaVersion"] == "1.0"
 
-    def test_updatedAt_written_to_target(self, tmp_path):
+    def test_target_portfolio_json_untouched(self, tmp_path):
+        """Since priceLevels now round-trips through domain_model.sqlite
+        (Wave 2 Task 9), target-portfolio.json's updatedAt is no longer bumped
+        by this producer — the JSON file is intentionally left as-is until
+        Task 10's consumer cutover."""
         db_path = _make_db(tmp_path)
         target_path = _make_target_json(tmp_path)
         portfolio_path = _make_portfolio_json(tmp_path)
@@ -485,7 +531,7 @@ class TestDeriveAndWrite:
         )
 
         written = json.loads(target_path.read_text())
-        assert written["updatedAt"] != "2026-01-01T00:00:00Z"
+        assert written["updatedAt"] == "2026-01-01T00:00:00Z"
 
     def test_missing_portfolio_holding_does_not_crash(self, tmp_path):
         """derive_and_write should warn but not fail if ticker not in portfolio.json."""
