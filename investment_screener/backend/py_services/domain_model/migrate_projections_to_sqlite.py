@@ -323,6 +323,72 @@ def run_real_migration(projections_dir: Path, db_path: str) -> dict:
         conn.close()
 
 
+def run_backfill_source(projections_dir: Path, db_path: str) -> dict:
+    """Backfill the `source` column on already-migrated `projection_version` rows.
+
+    Scoped fix for Wave 1 Task 6's real-data gap: `source`/`last_grok_sweep`/
+    `catalyst_updates_json` were added to the canonical DDL after 115 real rows had
+    already been migrated into `domain_model.sqlite` by an earlier run of
+    `run_real_migration`, so those 115 rows predate the columns entirely (see
+    `db_client.py`'s DDL-drift-check header / `_evolve_schema`). This function does NOT
+    re-run the full migration (which could double-insert/upsert scenario rows or shift
+    other columns) — it only re-reads each `projections/{TICKER}.json` file, matches
+    each JSON entry to its already-existing SQLite row by `(investment_id, version)`,
+    and `UPDATE`s just that row's `source` column from the JSON entry's real `source`
+    field. `last_grok_sweep`/`catalyst_updates_json` are intentionally left untouched —
+    they are not required for `apply_catalyst.py`'s `get_latest_projection_by_source`
+    path (only `source` is), and backfilling them is optional follow-up work.
+
+    Read-only against `projections/*.json` (never writes there); the only real-file
+    write is the `UPDATE ... SET source = ?` against `domain_model.sqlite`.
+    """
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import resolve_investment
+
+    conn = initialize_db(db_path)
+    report = {
+        "total_files": 0,
+        "rows_updated": 0,
+        "rows_skipped_no_match": 0,
+        "file_errors": [],
+    }
+    try:
+        for path in sorted(Path(projections_dir).glob("*.json")):
+            report["total_files"] += 1
+            ticker = path.stem
+            try:
+                with open(path, encoding="utf-8") as f:
+                    data = json.load(f)
+            except Exception as exc:  # noqa: BLE001 - a real per-file error must be reported
+                report["file_errors"].append(f"{path.name}: failed to read/parse JSON: {exc}")
+                continue
+
+            entries = data if isinstance(data, list) else [data]
+            investment_id = resolve_investment(conn, ticker)
+
+            for entry in entries:
+                parsed = parse_projection_entry(entry)
+                version = parsed.get("version")
+                source = parsed.get("source")
+                if version is None or source is None:
+                    report["rows_skipped_no_match"] += 1
+                    continue
+                cursor = conn.execute(
+                    "UPDATE projection_version SET source = ? "
+                    "WHERE investment_id = ? AND version = ?;",
+                    (source, investment_id, version),
+                )
+                if cursor.rowcount > 0:
+                    report["rows_updated"] += cursor.rowcount
+                else:
+                    report["rows_skipped_no_match"] += 1
+        conn.commit()
+    finally:
+        conn.close()
+
+    return report
+
+
 def main() -> None:
     """CLI entry point. Defaults to dry-run (in-memory, prints the report, writes
     nothing real); pass `--write` to run the real migration against `--db-path`.
@@ -349,11 +415,21 @@ def main() -> None:
         help="Execute the real migration against --db-path. Without this flag, runs a "
         "safe in-memory dry run and prints the report without touching any real file.",
     )
+    parser.add_argument(
+        "--backfill-source",
+        action="store_true",
+        help="Backfill the `source` column on already-migrated projection_version rows "
+        "in --db-path from --projections-dir, instead of running a full migration. "
+        "See run_backfill_source's docstring.",
+    )
     args = parser.parse_args()
 
     projections_dir = Path(args.projections_dir)
 
-    if args.write:
+    if args.backfill_source:
+        report = run_backfill_source(projections_dir, args.db_path)
+        print(f"[BACKFILL SOURCE] Updated real database: {args.db_path}")
+    elif args.write:
         report = run_real_migration(projections_dir, args.db_path)
         print(f"[WRITE MODE] Migrated into real database: {args.db_path}")
     else:
