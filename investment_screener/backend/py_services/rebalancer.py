@@ -52,6 +52,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from portfolio_io import load_portfolio_state, compute_weights  # noqa: E402
 from ticker_aliases import normalize_ticker  # noqa: E402
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.projection_repository import (  # noqa: E402
+    get_latest_projection,
+    get_latest_projection_by_source,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
@@ -60,7 +65,7 @@ PORTFOLIO_PATH = DATA_DIR / "portfolio.json"
 RISK_SNAPSHOT_PATH = DATA_DIR / "risk_snapshot.json"
 THESIS_BREAKER_STATE_PATH = DATA_DIR / "thesis_breaker_state.json"
 ACCOUNT_POLICY_PATH = DATA_DIR / "account_policy.json"
-PROJECTIONS_DIR = DATA_DIR / "projections"
+DB_PATH = DATA_DIR / "domain_model.sqlite"
 REBALANCE_PLAN_PATH = DATA_DIR / "rebalance_plan.json"
 
 DEFAULT_BAND_CONFIG: dict[str, float] = {"relativePct": 20.0, "absolutePct": 1.5, "criticalMultiplier": 2.0}
@@ -105,35 +110,53 @@ def compute_bands(
     return result
 
 
-def get_latest_valuation_action(ticker: str, projections_dir: Path) -> str | None:
-    """Latest AI projection's aiThesis.action for a ticker, or None if unavailable.
+def _resolve_investment_id_readonly(conn, ticker: str) -> str | None:
+    """Look up an existing investment's id by symbol without creating one.
 
-    Mirrors portfolio_action.py's _load_ai_upside() latest-AI_AGENT-projection
-    selection, but returns the raw action string instead of computed upside —
-    this is the actual "EXIT/SELL-gated" signal the rebalancer must never buy
-    against (not derive_action()'s portfolio-weight ratio label).
+    Read-only lookup (mirrors apply_catalyst.py's helper of the same name) —
+    a ticker with no `investment` row is treated the same as "no projection
+    file on disk" was in the original file-based code, not an error.
+    """
+    cursor = conn.execute("SELECT investment_id FROM investment WHERE symbol = ?;", (ticker,))
+    row = cursor.fetchone()
+    return row[0] if row else None
+
+
+def get_latest_valuation_action(ticker: str, db_path: Path) -> str | None:
+    """Latest AI projection's action for a ticker, or None if unavailable.
+
+    Storage backend (Wave 1 Task 7A): reads `projection_version` via
+    `domain_model.projection_repository`, not `projections/{TICKER}.json`
+    directly (ADR-029). Mirrors portfolio_action.py's `_load_ai_upside()`
+    latest-AI_AGENT-projection selection (Task 6 finding: prefer
+    `get_latest_projection_by_source(..., "AI_AGENT")` over `MAX(version)`,
+    since version numbers are not always chronological) — this is the actual
+    "EXIT/SELL-gated" signal the rebalancer must never buy against (not
+    derive_action()'s portfolio-weight ratio label).
 
     Args:
         ticker: Ticker to look up.
-        projections_dir: Path to data/projections/.
+        db_path: Path to domain_model.sqlite.
 
     Returns:
-        The latest AI_AGENT projection's aiThesis.action, or None if the
-        projection file is missing, empty, or malformed.
+        The latest AI_AGENT projection's action, or the latest projection of
+        any source if no AI_AGENT row exists, or None if the investment has
+        no projection rows at all.
     """
-    path = projections_dir / f"{ticker}.json"
-    if not path.exists():
-        return None
     try:
-        projs = json.loads(path.read_text())
-        if isinstance(projs, list):
-            if not projs:
+        conn = initialize_db(str(db_path))
+        try:
+            investment_id = _resolve_investment_id_readonly(conn, ticker)
+            if investment_id is None:
                 return None
-            ai = [p for p in projs if p.get("source") == "AI_AGENT"]
-            proj = max(ai, key=lambda x: x.get("savedAt", "")) if ai else projs[0]
-        else:
-            proj = projs
-        return proj.get("aiThesis", {}).get("action")
+            entry = get_latest_projection_by_source(conn, investment_id, "AI_AGENT")
+            if entry is None:
+                entry = get_latest_projection(conn, investment_id)
+            if entry is None:
+                return None
+            return entry.get("action")
+        finally:
+            conn.close()
     except Exception:
         return None
 
@@ -143,7 +166,7 @@ def compute_candidate_orders(
     target_data: dict[str, Any],
     prices: dict[str, float],
     total_usd: float,
-    projections_dir: Path,
+    db_path: Path,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Turn out-of-band holdings into raw candidate orders (pre-account-routing).
 
@@ -161,7 +184,7 @@ def compute_candidate_orders(
             standingDecision per holding).
         prices: {ticker: current_price}.
         total_usd: Broker-authoritative portfolio total (never shares×price).
-        projections_dir: Path to data/projections/.
+        db_path: Path to domain_model.sqlite.
 
     Returns:
         (candidate_orders, skipped_restores).
@@ -192,7 +215,7 @@ def compute_candidate_orders(
         # Buy-side hard gates are evaluated before the zero-share check so a
         # skip reason is still recorded even when the drift-dollar amount
         # floors to 0 shares at the current price (e.g. high-priced tickers).
-        valuation_action = get_latest_valuation_action(ticker, projections_dir)
+        valuation_action = get_latest_valuation_action(ticker, db_path)
         if valuation_action in ("EXIT", "SELL"):
             skipped.append({"ticker": ticker, "reason": f"{valuation_action}-rated — not restoring"})
             continue
@@ -539,8 +562,29 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
+def _has_any_projection(db_path: Path, ticker: str) -> bool:
+    """True if `ticker` has at least one `projection_version` row (any source).
+
+    Existence-only check for `_check_no_trade_conditions`'s missing-valuations
+    gate — this does NOT need the AI_AGENT-vs-any-source distinction that
+    `get_latest_valuation_action` needs, it only needs "has a DCF projection
+    ever been recorded", mirroring the original file-based `.exists()` check.
+    """
+    try:
+        conn = initialize_db(str(db_path))
+        try:
+            investment_id = _resolve_investment_id_readonly(conn, ticker)
+            if investment_id is None:
+                return False
+            return get_latest_projection(conn, investment_id) is not None
+        finally:
+            conn.close()
+    except Exception:
+        return False
+
+
 def _check_no_trade_conditions(
-    target_data: dict[str, Any], portfolio_path: Path, projections_dir: Path,
+    target_data: dict[str, Any], portfolio_path: Path, db_path: Path,
 ) -> str | None:
     """Returns a blockedReason string, or None if clear to trade.
 
@@ -550,7 +594,7 @@ def _check_no_trade_conditions(
     Args:
         target_data: Parsed target-portfolio.json.
         portfolio_path: Path to portfolio.json.
-        projections_dir: Path to data/projections/.
+        db_path: Path to domain_model.sqlite.
 
     Returns:
         A human-readable blockedReason, or None.
@@ -571,7 +615,7 @@ def _check_no_trade_conditions(
 
     thesis_tickers = [h for h in holdings if h.get("targetWeight", 0) > 0]
     if thesis_tickers:
-        missing = sum(1 for h in thesis_tickers if not (Path(projections_dir) / f"{h['ticker']}.json").exists())
+        missing = sum(1 for h in thesis_tickers if not _has_any_projection(db_path, h["ticker"]))
         if missing / len(thesis_tickers) > 0.3:
             return f"MISSING_VALUATIONS — {missing}/{len(thesis_tickers)} thesis holdings have no DCF projection"
 
@@ -644,7 +688,7 @@ def compute_rebalance_plan(
     risk_snapshot_path: Path = RISK_SNAPSHOT_PATH,
     thesis_breaker_state_path: Path = THESIS_BREAKER_STATE_PATH,
     account_policy_path: Path = ACCOUNT_POLICY_PATH,
-    projections_dir: Path = PROJECTIONS_DIR,
+    db_path: Path = DB_PATH,
 ) -> dict[str, Any]:
     """Primary orchestrator — builds the full rebalance order plan.
 
@@ -658,7 +702,7 @@ def compute_rebalance_plan(
         risk_snapshot_path: Path to risk_snapshot.json (E1 output).
         thesis_breaker_state_path: Path to thesis_breaker_state.json (B5 output).
         account_policy_path: Path to account_policy.json.
-        projections_dir: Path to data/projections/.
+        db_path: Path to domain_model.sqlite.
 
     Returns:
         The full rebalance plan dict — see docs/superpowers/specs/
@@ -667,7 +711,7 @@ def compute_rebalance_plan(
     target_data = json.loads(Path(target_portfolio_path).read_text())
     account_policy = json.loads(Path(account_policy_path).read_text())
 
-    blocked = _check_no_trade_conditions(target_data, Path(portfolio_path), Path(projections_dir))
+    blocked = _check_no_trade_conditions(target_data, Path(portfolio_path), Path(db_path))
     if blocked:
         return {
             "generatedAt": _now_iso(), "blockedReason": blocked, "bands": {},
@@ -682,7 +726,7 @@ def compute_rebalance_plan(
 
     bands = compute_bands(current_weights, target_weights, band_config)
     candidates, skipped = compute_candidate_orders(
-        bands, target_data, state["prices"], state["total_usd"], Path(projections_dir)
+        bands, target_data, state["prices"], state["total_usd"], Path(db_path)
     )
 
     account_positions, account_cash_usd, account_source = load_account_positions(Path(portfolio_path))

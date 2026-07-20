@@ -8,14 +8,29 @@ SCRIPT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from comps_valuation import comps_implied_range, compute_ev, load_latest_projection  # noqa: E402
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import resolve_investment  # noqa: E402
+from domain_model.projection_repository import save_projection_version  # noqa: E402
 
 
-def _write_projection(dirpath, ticker, price, shares, revenue, source="AI_AGENT", saved_at="2026-01-01T00:00:00Z"):
-    proj = [{
-        "ticker": ticker, "source": source, "savedAt": saved_at,
-        "snapshot": {"price": price, "shares": shares, "revenue": revenue},
-    }]
-    (dirpath / f"{ticker}.json").write_text(json.dumps(proj))
+def _domain_db(tmp_path) -> Path:
+    """Path to this tmp_path's (not-yet-created) domain_model.sqlite fixture DB."""
+    return tmp_path / "domain_model.sqlite"
+
+
+def _write_projection(tmp_path, ticker, price, shares, revenue, source="AI_AGENT",
+                       saved_at="2026-01-01T00:00:00Z", version=1):
+    """Insert a projection_version row for `ticker` (Wave 1 Task 7A: replaces the
+    old projections/{TICKER}.json fixture writer)."""
+    db_path = _domain_db(tmp_path)
+    conn = initialize_db(str(db_path))
+    investment_id = resolve_investment(conn, ticker)
+    save_projection_version(
+        conn, investment_id, version=version, saved_at=saved_at, source=source,
+        snapshot_json=json.dumps({"price": price, "shares": shares, "revenue": revenue}),
+    )
+    conn.close()
+    return db_path
 
 
 def test_compute_ev_combines_market_cap_debt_and_cash():
@@ -24,26 +39,33 @@ def test_compute_ev_combines_market_cap_debt_and_cash():
 
 
 def test_load_latest_projection_prefers_ai_agent_entry(tmp_path):
-    proj = [
-        {"ticker": "T", "source": "USER", "savedAt": "2026-01-01T00:00:00Z", "snapshot": {"price": 1}},
-        {"ticker": "T", "source": "AI_AGENT", "savedAt": "2026-02-01T00:00:00Z", "snapshot": {"price": 2}},
-    ]
-    (tmp_path / "T.json").write_text(json.dumps(proj))
-    result = load_latest_projection("T", str(tmp_path))
+    db_path = _write_projection(tmp_path, "T", price=1, shares=None, revenue=None,
+                                 source="USER", version=1)
+    # Second row: AI_AGENT-sourced, newer saved_at, higher version, different price —
+    # must win over the USER-sourced row regardless of version ordering.
+    conn = initialize_db(str(db_path))
+    investment_id = resolve_investment(conn, "T")
+    save_projection_version(
+        conn, investment_id, version=2, saved_at="2026-02-01T00:00:00Z", source="AI_AGENT",
+        snapshot_json=json.dumps({"price": 2}),
+    )
+    conn.close()
+
+    result = load_latest_projection("T", str(db_path))
     assert result["snapshot"]["price"] == 2
 
 
 def test_load_latest_projection_returns_none_when_file_missing(tmp_path):
-    assert load_latest_projection("MISSING", str(tmp_path)) is None
+    assert load_latest_projection("MISSING", str(_domain_db(tmp_path))) is None
 
 
 def test_comps_implied_range_computes_median_ev_sales(tmp_path):
-    _write_projection(tmp_path, "TARGET", price=100.0, shares=10_000_000.0, revenue=500_000_000.0)
+    db_path = _write_projection(tmp_path, "TARGET", price=100.0, shares=10_000_000.0, revenue=500_000_000.0)
     _write_projection(tmp_path, "PEERA", price=50.0, shares=20_000_000.0, revenue=400_000_000.0)
     _write_projection(tmp_path, "PEERB", price=80.0, shares=15_000_000.0, revenue=600_000_000.0)
 
     with patch("comps_valuation.get_fundamentals", return_value={}):
-        result = comps_implied_range("TARGET", ["PEERA", "PEERB"], str(tmp_path))
+        result = comps_implied_range("TARGET", ["PEERA", "PEERB"], str(db_path))
 
     assert result["status"] == "ok"
     assert result["peersUsed"] == ["PEERA", "PEERB"]
@@ -52,23 +74,23 @@ def test_comps_implied_range_computes_median_ev_sales(tmp_path):
 
 
 def test_comps_implied_range_insufficient_with_zero_peers(tmp_path):
-    _write_projection(tmp_path, "TARGET", price=100.0, shares=10_000_000.0, revenue=500_000_000.0)
-    result = comps_implied_range("TARGET", [], str(tmp_path))
+    db_path = _write_projection(tmp_path, "TARGET", price=100.0, shares=10_000_000.0, revenue=500_000_000.0)
+    result = comps_implied_range("TARGET", [], str(db_path))
     assert result["status"] == "insufficient_peer_data"
     assert result["peersUsed"] == []
 
 
 def test_comps_implied_range_insufficient_with_only_one_usable_peer(tmp_path):
-    _write_projection(tmp_path, "TARGET", price=100.0, shares=10_000_000.0, revenue=500_000_000.0)
+    db_path = _write_projection(tmp_path, "TARGET", price=100.0, shares=10_000_000.0, revenue=500_000_000.0)
     _write_projection(tmp_path, "PEERA", price=50.0, shares=20_000_000.0, revenue=400_000_000.0)
     with patch("comps_valuation.get_fundamentals", return_value={}):
-        result = comps_implied_range("TARGET", ["PEERA", "MISSINGPEER"], str(tmp_path))
+        result = comps_implied_range("TARGET", ["PEERA", "MISSINGPEER"], str(db_path))
     assert result["status"] == "insufficient_peer_data"
     assert result["peersUsed"] == ["PEERA"]
 
 
 def test_comps_implied_range_incorporates_target_debt_and_cash(tmp_path):
-    _write_projection(tmp_path, "TARGET", price=100.0, shares=10_000_000.0, revenue=500_000_000.0)
+    db_path = _write_projection(tmp_path, "TARGET", price=100.0, shares=10_000_000.0, revenue=500_000_000.0)
     _write_projection(tmp_path, "PEERA", price=50.0, shares=20_000_000.0, revenue=400_000_000.0)
     _write_projection(tmp_path, "PEERB", price=80.0, shares=15_000_000.0, revenue=600_000_000.0)
 
@@ -81,7 +103,7 @@ def test_comps_implied_range_incorporates_target_debt_and_cash(tmp_path):
         return {}
 
     with patch("comps_valuation.get_fundamentals", side_effect=fake_fundamentals):
-        result = comps_implied_range("TARGET", ["PEERA", "PEERB"], str(tmp_path))
+        result = comps_implied_range("TARGET", ["PEERA", "PEERB"], str(db_path))
 
     # evSalesMedian=2.25 -> impliedEV=2.25*500M=1125M
     # impliedPrice = (1125M - 100M + 300M)/10M = 132.5
@@ -92,18 +114,9 @@ def test_comps_implied_range_incorporates_target_debt_and_cash(tmp_path):
 def test_comps_implied_range_includes_data_quality_per_ticker_used(tmp_path, monkeypatch):
     import comps_valuation
 
-    (tmp_path / "NVDA.json").write_text(json.dumps([{
-        "source": "AI_AGENT", "savedAt": "2026-07-01",
-        "snapshot": {"price": 100.0, "shares": 1000.0, "revenue": 5000.0},
-    }]))
-    (tmp_path / "AMD.json").write_text(json.dumps([{
-        "source": "AI_AGENT", "savedAt": "2026-07-01",
-        "snapshot": {"price": 50.0, "shares": 2000.0, "revenue": 3000.0},
-    }]))
-    (tmp_path / "AVGO.json").write_text(json.dumps([{
-        "source": "AI_AGENT", "savedAt": "2026-07-01",
-        "snapshot": {"price": 200.0, "shares": 500.0, "revenue": 4000.0},
-    }]))
+    db_path = _write_projection(tmp_path, "NVDA", price=100.0, shares=1000.0, revenue=5000.0)
+    _write_projection(tmp_path, "AMD", price=50.0, shares=2000.0, revenue=3000.0)
+    _write_projection(tmp_path, "AVGO", price=200.0, shares=500.0, revenue=4000.0)
 
     quality_by_ticker = {
         "NVDA": {"staleness": True, "dataConflicts": [], "flags": []},
@@ -119,7 +132,7 @@ def test_comps_implied_range_includes_data_quality_per_ticker_used(tmp_path, mon
 
     monkeypatch.setattr(comps_valuation, "get_fundamentals", fake_get_fundamentals)
 
-    result = comps_valuation.comps_implied_range("NVDA", ["AMD", "AVGO"], str(tmp_path))
+    result = comps_valuation.comps_implied_range("NVDA", ["AMD", "AVGO"], str(db_path))
 
     assert result["status"] == "ok"
     assert result["dataQuality"]["NVDA"]["staleness"] is True

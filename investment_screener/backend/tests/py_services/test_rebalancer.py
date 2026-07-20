@@ -56,26 +56,47 @@ def test_compute_bands_ticker_missing_from_one_side_defaults_to_zero():
     assert bands["ORPHAN"]["bandPct"] == pytest.approx(1.5)  # absolute floor, target*rel=0
 
 
-def _write_projection(path: Path, ticker: str, action: str) -> None:
-    (path / f"{ticker}.json").write_text(json.dumps([{
-        "source": "AI_AGENT", "savedAt": "2026-07-01T00:00:00Z",
-        "aiThesis": {"action": action},
-    }]))
+def _domain_db(tmp_path) -> Path:
+    """Path to this tmp_path's (not-yet-created) domain_model.sqlite fixture DB."""
+    return tmp_path / "domain_model.sqlite"
+
+
+def _write_projection(tmp_path: Path, ticker: str, action: str) -> Path:
+    """Insert a single AI_AGENT-sourced projection_version row for `ticker`.
+
+    Wave 1 Task 7A: replaces the old `projections/{TICKER}.json` fixture writer —
+    `get_latest_valuation_action`/`_has_any_projection` now read the domain model
+    SQLite DB, never the flat-file JSON. Returns the DB path so callers can pass it
+    straight through as `db_path`.
+    """
+    from domain_model.db_client import initialize_db  # noqa: PLC0415
+    from domain_model.investment_repository import resolve_investment  # noqa: PLC0415
+    from domain_model.projection_repository import save_projection_version  # noqa: PLC0415
+
+    db_path = _domain_db(tmp_path)
+    conn = initialize_db(str(db_path))
+    investment_id = resolve_investment(conn, ticker)
+    save_projection_version(
+        conn, investment_id, version=1, saved_at="2026-07-01T00:00:00Z",
+        action=action, source="AI_AGENT",
+    )
+    conn.close()
+    return db_path
 
 
 def test_get_latest_valuation_action_reads_latest_ai_agent_entry(tmp_path):
-    _write_projection(tmp_path, "NBIS", "ACCUMULATE")
-    assert get_latest_valuation_action("NBIS", tmp_path) == "ACCUMULATE"
+    db_path = _write_projection(tmp_path, "NBIS", "ACCUMULATE")
+    assert get_latest_valuation_action("NBIS", db_path) == "ACCUMULATE"
 
 
 def test_get_latest_valuation_action_missing_file_returns_none(tmp_path):
-    assert get_latest_valuation_action("NOPE", tmp_path) is None
+    assert get_latest_valuation_action("NOPE", _domain_db(tmp_path)) is None
 
 
 def test_candidate_orders_sell_when_overweight(tmp_path):
     bands = {"CRWD": {"currentWeight": 7.8, "targetWeight": 4.0, "bandPct": 1.5, "driftPct": 3.8, "inBand": False}}
     target_data = {"holdings": [{"ticker": "CRWD", "targetWeight": 4.0}]}
-    candidates, skipped = compute_candidate_orders(bands, target_data, {"CRWD": 100.0}, 10000.0, tmp_path)
+    candidates, skipped = compute_candidate_orders(bands, target_data, {"CRWD": 100.0}, 10000.0, _domain_db(tmp_path))
     assert skipped == []
     assert candidates[0]["ticker"] == "CRWD"
     assert candidates[0]["action"] == "sell"
@@ -83,19 +104,19 @@ def test_candidate_orders_sell_when_overweight(tmp_path):
 
 
 def test_candidate_orders_buy_when_underweight_and_clean(tmp_path):
-    _write_projection(tmp_path, "NBIS", "ACCUMULATE")
+    db_path = _write_projection(tmp_path, "NBIS", "ACCUMULATE")
     bands = {"NBIS": {"currentWeight": 2.1, "targetWeight": 5.5, "bandPct": 1.5, "driftPct": -3.4, "inBand": False}}
     target_data = {"holdings": [{"ticker": "NBIS", "targetWeight": 5.5}]}
-    candidates, skipped = compute_candidate_orders(bands, target_data, {"NBIS": 20.0}, 10000.0, tmp_path)
+    candidates, skipped = compute_candidate_orders(bands, target_data, {"NBIS": 20.0}, 10000.0, db_path)
     assert skipped == []
     assert candidates[0]["action"] == "buy"
 
 
 def test_candidate_orders_skips_exit_rated_underweight(tmp_path):
-    _write_projection(tmp_path, "INTC", "EXIT")
+    db_path = _write_projection(tmp_path, "INTC", "EXIT")
     bands = {"INTC": {"currentWeight": 1.0, "targetWeight": 4.0, "bandPct": 1.5, "driftPct": -3.0, "inBand": False}}
     target_data = {"holdings": [{"ticker": "INTC", "targetWeight": 4.0}]}
-    candidates, skipped = compute_candidate_orders(bands, target_data, {"INTC": 30.0}, 10000.0, tmp_path)
+    candidates, skipped = compute_candidate_orders(bands, target_data, {"INTC": 30.0}, 10000.0, db_path)
     assert candidates == []
     assert skipped[0]["ticker"] == "INTC"
     assert "EXIT" in skipped[0]["reason"]
@@ -104,7 +125,7 @@ def test_candidate_orders_skips_exit_rated_underweight(tmp_path):
 def test_candidate_orders_skips_above_target_entry_price(tmp_path):
     bands = {"SNDK": {"currentWeight": 4.2, "targetWeight": 6.0, "bandPct": 1.5, "driftPct": -1.8, "inBand": False}}
     target_data = {"holdings": [{"ticker": "SNDK", "targetWeight": 6.0, "targetEntryPrice": 1350.0}]}
-    candidates, skipped = compute_candidate_orders(bands, target_data, {"SNDK": 1741.0}, 10000.0, tmp_path)
+    candidates, skipped = compute_candidate_orders(bands, target_data, {"SNDK": 1741.0}, 10000.0, _domain_db(tmp_path))
     assert candidates == []
     assert "targetEntryPrice" in skipped[0]["reason"]
 
@@ -115,7 +136,7 @@ def test_candidate_orders_skips_when_standing_decision_conflicts(tmp_path):
         "ticker": "VST", "targetWeight": 2.27,
         "standingDecision": {"type": "SA_LP_EXIT_OVERRIDE", "reason": "DO NOT ADD"},
     }]}
-    candidates, skipped = compute_candidate_orders(bands, target_data, {"VST": 50.0}, 10000.0, tmp_path)
+    candidates, skipped = compute_candidate_orders(bands, target_data, {"VST": 50.0}, 10000.0, _domain_db(tmp_path))
     assert candidates == []
     assert "Standing decision" in skipped[0]["reason"]
 
@@ -124,7 +145,7 @@ def test_candidate_orders_skips_zero_share_orders(tmp_path):
     # Tiny drift dollar amount rounds down to 0 shares — must not emit a phantom order.
     bands = {"TINY": {"currentWeight": 0.01, "targetWeight": 1.5, "bandPct": 1.5, "driftPct": -1.49, "inBand": False}}
     target_data = {"holdings": [{"ticker": "TINY", "targetWeight": 1.5}]}
-    candidates, skipped = compute_candidate_orders(bands, target_data, {"TINY": 5000.0}, 100.0, tmp_path)
+    candidates, skipped = compute_candidate_orders(bands, target_data, {"TINY": 5000.0}, 100.0, _domain_db(tmp_path))
     assert candidates == []
 
 
@@ -444,8 +465,6 @@ def _write_full_fixture(tmp_path):
     risk_path = tmp_path / "risk_snapshot.json"
     breaker_path = tmp_path / "thesis_breaker_state.json"
     policy_path = tmp_path / "account_policy.json"
-    proj_dir = tmp_path / "projections"
-    proj_dir.mkdir()
 
     target_path.write_text(json.dumps({
         "holdings": [
@@ -479,22 +498,22 @@ def _write_full_fixture(tmp_path):
         "riskBudgetCaps": {"maxMarginalRiskContributionPct": 25, "maxClusterVarianceContributionPct": 60},
         "bandConfig": {"relativePct": 20.0, "absolutePct": 1.5, "criticalMultiplier": 2.0},
     }))
-    # All three thesis holdings need a projection on disk, or the >30%-missing
-    # no-trade check (_check_no_trade_conditions) blocks the plan before any
-    # of the "happy path" assertions below get a chance to run — a 1-of-3
-    # missing count is already 33% in this tiny fixture.
-    _write_projection(proj_dir, "CRWD", "MAINTAIN")
-    _write_projection(proj_dir, "NBIS", "ACCUMULATE")
-    _write_projection(proj_dir, "PSU-U.TO", "MAINTAIN")
-    return target_path, portfolio_path, risk_path, breaker_path, policy_path, proj_dir
+    # All three thesis holdings need a projection row in the DB, or the
+    # >30%-missing no-trade check (_check_no_trade_conditions) blocks the plan
+    # before any of the "happy path" assertions below get a chance to run — a
+    # 1-of-3 missing count is already 33% in this tiny fixture.
+    _write_projection(tmp_path, "CRWD", "MAINTAIN")
+    _write_projection(tmp_path, "NBIS", "ACCUMULATE")
+    db_path = _write_projection(tmp_path, "PSU-U.TO", "MAINTAIN")
+    return target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path
 
 
 def test_compute_rebalance_plan_full_shape(tmp_path):
-    target_path, portfolio_path, risk_path, breaker_path, policy_path, proj_dir = _write_full_fixture(tmp_path)
+    target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
     plan = compute_rebalance_plan(
         target_portfolio_path=target_path, portfolio_path=portfolio_path,
         risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
-        account_policy_path=policy_path, projections_dir=proj_dir,
+        account_policy_path=policy_path, db_path=db_path,
     )
     expected_keys = {"generatedAt", "blockedReason", "bands", "orders", "skippedRestores", "accountDataSource", "warnings"}
     assert expected_keys <= set(plan.keys())
@@ -506,12 +525,12 @@ def test_compute_rebalance_plan_full_shape(tmp_path):
 
 
 def test_compute_rebalance_plan_blocked_when_targets_dont_sum_to_100(tmp_path):
-    target_path, portfolio_path, risk_path, breaker_path, policy_path, proj_dir = _write_full_fixture(tmp_path)
+    target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
     target_path.write_text(json.dumps({"holdings": [{"ticker": "CRWD", "targetWeight": 4.0, "pillarId": "cyber"}]}))
     plan = compute_rebalance_plan(
         target_portfolio_path=target_path, portfolio_path=portfolio_path,
         risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
-        account_policy_path=policy_path, projections_dir=proj_dir,
+        account_policy_path=policy_path, db_path=db_path,
     )
     assert plan["blockedReason"] is not None
     assert "TARGETS_INVALID" in plan["blockedReason"]
@@ -519,32 +538,32 @@ def test_compute_rebalance_plan_blocked_when_targets_dont_sum_to_100(tmp_path):
 
 
 def test_compute_rebalance_plan_blocked_when_portfolio_stale(tmp_path):
-    target_path, portfolio_path, risk_path, breaker_path, policy_path, proj_dir = _write_full_fixture(tmp_path)
+    target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
     stale = json.loads(portfolio_path.read_text())
     stale["totals"]["timestamp"] = "2020-01-01T00:00:00Z"
     portfolio_path.write_text(json.dumps(stale))
     plan = compute_rebalance_plan(
         target_portfolio_path=target_path, portfolio_path=portfolio_path,
         risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
-        account_policy_path=policy_path, projections_dir=proj_dir,
+        account_policy_path=policy_path, db_path=db_path,
     )
     assert "DATA_STALE" in plan["blockedReason"]
 
 
 def test_compute_rebalance_plan_degrades_when_risk_snapshot_missing(tmp_path):
-    target_path, portfolio_path, risk_path, breaker_path, policy_path, proj_dir = _write_full_fixture(tmp_path)
+    target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
     risk_path.unlink()
     plan = compute_rebalance_plan(
         target_portfolio_path=target_path, portfolio_path=portfolio_path,
         risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
-        account_policy_path=policy_path, projections_dir=proj_dir,
+        account_policy_path=policy_path, db_path=db_path,
     )
     assert plan["blockedReason"] is None
     assert any("risk_snapshot" in w for w in plan["warnings"])
 
 
 def test_compute_rebalance_plan_order_carries_risk_and_breaker_warnings(tmp_path):
-    target_path, portfolio_path, risk_path, breaker_path, policy_path, proj_dir = _write_full_fixture(tmp_path)
+    target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
     risk_path.write_text(json.dumps({
         "marginalRiskContribution": {"NBIS": 0.20},
         "clusterExposure": [{"pillarId": "ai_infra", "weight": 0.3, "varianceContributionPct": 30.0}],
@@ -553,7 +572,7 @@ def test_compute_rebalance_plan_order_carries_risk_and_breaker_warnings(tmp_path
     plan = compute_rebalance_plan(
         target_portfolio_path=target_path, portfolio_path=portfolio_path,
         risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
-        account_policy_path=policy_path, projections_dir=proj_dir,
+        account_policy_path=policy_path, db_path=db_path,
     )
     nbis_order = next(o for o in plan["orders"] if o["ticker"] == "NBIS")
     assert len(nbis_order["riskGateWarnings"]) >= 1  # cap-breaching, deliberately not vetoed

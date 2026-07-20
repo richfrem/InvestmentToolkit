@@ -58,6 +58,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -65,10 +66,17 @@ from typing import Any
 
 REPO_ROOT        = Path(__file__).resolve().parents[3]
 TA_SWEEP_PATH    = REPO_ROOT / "investment_screener/backend/data/ta-sweep-results.json"
-PROJECTIONS_DIR  = REPO_ROOT / "investment_screener/backend/data/projections"
+DB_PATH          = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 TARGET_PATH      = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 PORTFOLIO_PATH   = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 SKIP_TICKERS     = frozenset({"PSU-U.TO", "PSU.U.TO", "USD_CASH", "USD_CASH_TFSA"})
+
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.projection_repository import (  # noqa: E402
+    get_latest_projection,
+    get_latest_projection_by_source,
+)
 
 
 @dataclass
@@ -346,29 +354,46 @@ def _load_ta(
 
 
 
-def _load_dcf(ticker: str) -> dict[str, Any]:
-    """Load latest AI_AGENT DCF projection for ticker.
+def _load_dcf(ticker: str, db_path: Path | None = None) -> dict[str, Any]:
+    """Load latest AI_AGENT DCF projection for ticker from the domain model DB.
+
+    Storage backend (Wave 1 Task 7A): reads `projection_version` via
+    `domain_model.projection_repository`, not `projections/{TICKER}.json` directly
+    (ADR-029). Mirrors `apply_catalyst.py`'s Task 6 finding — prefers the latest
+    `AI_AGENT`-sourced row (`get_latest_projection_by_source`) over plain
+    `MAX(version)`, since version numbers are not always chronological. Falls back to
+    `get_latest_projection` (any source) if no `AI_AGENT` row exists, mirroring the
+    original file-based code's `entries[-1]` fallback when no entry had
+    `source == "AI_AGENT"`.
 
     Args:
         ticker: Stock ticker symbol.
+        db_path: Optional override of the domain model DB path (for tests).
 
     Returns:
-        Dict with action, fairValue, pctToFV keys (empty if missing).
+        Dict with action, fairValue, pctToFV keys (empty if no investment/projection
+        row exists for this ticker).
     """
-    path = PROJECTIONS_DIR / f"{ticker}.json"
-    if not path.exists():
-        return {}
-    with open(path) as f:
-        raw = json.load(f)
-    entries: list[dict[str, Any]] = raw if isinstance(raw, list) else [raw]
-    ai = [e for e in entries if e.get("source") == "AI_AGENT"]
-    entry = (ai[-1] if ai else entries[-1]) if entries else {}
-    thesis = entry.get("aiThesis", {})
-    snap = entry.get("snapshot", {})
-    price = snap.get("price") or 0
-    fv = thesis.get("fairValue")
-    pct = round((fv - price) / price * 100, 1) if fv and price else None
-    return {"action": thesis.get("action"), "fairValue": fv, "pctToFV": pct}
+    conn = initialize_db(str(db_path or DB_PATH))
+    try:
+        row = conn.execute(
+            "SELECT investment_id FROM investment WHERE symbol = ?;", (ticker,)
+        ).fetchone()
+        if row is None:
+            return {}
+        investment_id = row[0]
+        entry = get_latest_projection_by_source(conn, investment_id, "AI_AGENT")
+        if entry is None:
+            entry = get_latest_projection(conn, investment_id)
+        if entry is None:
+            return {}
+        snap = json.loads(entry["snapshot_json"]) if entry.get("snapshot_json") else {}
+        price = snap.get("price") or 0
+        fv = entry.get("fair_value")
+        pct = round((fv - price) / price * 100, 1) if fv and price else None
+        return {"action": entry.get("action"), "fairValue": fv, "pctToFV": pct}
+    finally:
+        conn.close()
 
 
 def _load_actual_weights() -> dict[str, float]:
