@@ -58,13 +58,13 @@ Next planned entry: May 29, 2026 (post May 28 ex-date).
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-17 09:56 by TV sync · Portfolio total: $28,677 USD*
+*Auto-updated 2026-07-19 17:10 by TV sync · Portfolio total: $28,548 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **PSU-U.TO** | 23 | 8.0% | 17.8% | -9.8pp ⚠ | 🔵 ACCUMULATE | — |
+| **PSU-U.TO** | 23 | 8.1% | 17.8% | -9.7pp ⚠ | 🔵 ACCUMULATE | — |
 
-**Pillar total — Actual: 8.0% · Target: 17.8% · Gap: -9.8pp**
+**Pillar total — Actual: 8.1% · Target: 17.8% · Gap: -9.7pp**
 <!-- AUTO_UPDATE_END: current_positions -->

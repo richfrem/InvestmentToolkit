@@ -34,3 +34,10 @@ Orchestrates the startup of the backend and frontend services via the unified py
 ## Common Failures
 - **Port Conflict**: If 3001 or 5173 are occupied. The script should handle clearing them, but if it fails, advise the user to check active processes.
 - **Node/Python missing**: Ensure both runtimes are available in the shell path.
+
+## Data Architecture Note
+
+Startup today only initializes JSON data files (see the onboarding guide's Phase 2). A
+SQLite-backed domain data model is in active design (`../../references/data-architecture/domain-data-model.md`)
+but not yet implemented — this skill does not run any schema initialization. If/when that model
+is implemented, a schema-init step belongs in the Launch step above, not before.
