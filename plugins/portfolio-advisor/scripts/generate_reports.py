@@ -6,6 +6,7 @@ Generates daily/weekly portfolio reports from templates in plugins/portfolio-adv
 Organizes holdings and watchlist tickers by sub-strategy, combines fundamentals, news, and technical analysis.
 """
 import os
+import sys
 import json
 import glob
 from datetime import datetime
@@ -13,10 +14,53 @@ from datetime import datetime
 # Paths relative to project root
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 PORTFOLIO_PATH = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/portfolio.json")
-TARGET_PORTFOLIO_PATH = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/theses/target-portfolio.json")
+DOMAIN_DB_PATH = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/domain_model.sqlite")
 DAILY_BRIEFS_DIR = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/daily-briefs")
 DAILY_REVIEWS_DIR = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/history/reviews/daily")
 WEEKLY_REVIEWS_DIR = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/history/reviews/weekly")
+
+
+def load_target_holdings_from_db(db_path=DOMAIN_DB_PATH):
+    """Load target-portfolio-shaped holdings from the domain-model DB (Wave 2 rewire).
+
+    Replaces the direct ``target-portfolio.json`` read. Returns the same
+    ``{"holdings": [...]}`` shape the JSON file used to provide (ticker, name,
+    subStrategyId, targetWeight, role, thesisForInclusion) so ``generate_report``'s
+    body needs no further changes. Field mapping confirmed against
+    ``migrate_target_portfolio_to_sqlite.py``'s write path: ``role`` ->
+    ``lifecycle_status``, ``targetWeight`` -> ``target_weight``,
+    ``thesisForInclusion`` -> ``thesis_for_inclusion``, ``subStrategyId`` ->
+    ``sub_strategy_id``. Only rows with a ``pillar_id`` are included — the
+    migration only sets ``pillar_id`` for real thesis holdings (watchlist-only
+    rows get none), mirroring the original JSON read's implicit scope
+    (``target_portfolio_data.get("holdings", [])`` only, not every investment).
+    """
+    sys.path.insert(0, os.path.join(PROJECT_ROOT, "investment_screener/backend/py_services"))
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import list_investments
+
+    if not os.path.exists(db_path):
+        return {}
+
+    conn = initialize_db(str(db_path))
+    try:
+        rows = list_investments(conn)
+    finally:
+        conn.close()
+
+    holdings = []
+    for row in rows:
+        if row.get("pillar_id") is None:
+            continue
+        holdings.append({
+            "ticker": row["symbol"],
+            "name": row.get("name") or row["symbol"],
+            "subStrategyId": row.get("sub_strategy_id") or "unassigned",
+            "targetWeight": row.get("target_weight") or 0.0,
+            "role": row.get("lifecycle_status") or "watchlist",
+            "thesisForInclusion": row.get("thesis_for_inclusion") or "",
+        })
+    return {"holdings": holdings}
 
 
 
@@ -192,7 +236,7 @@ def generate_report(brief_data, target_portfolio_data, portfolio_data, template_
 def main():
     # Load authoritative inputs
     brief = load_latest_brief()
-    target_portfolio = load_json(TARGET_PORTFOLIO_PATH)
+    target_portfolio = load_target_holdings_from_db()
     portfolio = load_json(PORTFOLIO_PATH)
 
     if not brief or not target_portfolio or not portfolio:
