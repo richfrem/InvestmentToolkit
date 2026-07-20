@@ -92,6 +92,30 @@ def test_load_ai_agent_upside_computes_negative_upside(tmp_path, monkeypatch):
     assert upside == -50.0
 
 
+def test_load_holdings_map_reads_target_weight_and_rationale_from_sqlite(tmp_path):
+    """Wave 2 Task 10 rewire: _load_holdings_map() reads target_weight and
+    agent_rationale from investment via list_investments(), not
+    target-portfolio.json's holdings array."""
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    try:
+        aapl_id = resolve_investment(conn, "AAPL")
+        from domain_model.investment_repository import update_investment_fields
+        update_investment_fields(
+            conn, aapl_id, target_weight=12.5, agent_rationale="Core holding."
+        )
+    finally:
+        conn.close()
+
+    holdings_map = verify_refresh._load_holdings_map(db_path)
+    assert holdings_map["AAPL"] == {"targetWeight": 12.5, "agentRationale": "Core holding."}
+
+
+def test_load_holdings_map_missing_db_returns_empty(tmp_path):
+    missing_db = tmp_path / "missing.sqlite"
+    assert verify_refresh._load_holdings_map(missing_db) == {}
+
+
 def test_load_ai_agent_upside_none_when_missing_price_or_fv(tmp_path, monkeypatch):
     db_path = tmp_path / "test.sqlite"
     conn = initialize_db(str(db_path))

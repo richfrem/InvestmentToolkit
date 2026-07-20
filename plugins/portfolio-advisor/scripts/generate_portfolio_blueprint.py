@@ -58,7 +58,7 @@ SUB_STRATEGY_NAMES = {
     "untracked":           "Untracked / Thesis Pending",
 }
 
-from portfolio_action import derive_action, ACTION_EMOJI
+from portfolio_action import derive_action, ACTION_EMOJI, _load_target_weights
 
 
 def load_json(path: Path) -> dict | list:
@@ -171,24 +171,54 @@ def build_actual_map(portfolio: dict | list) -> tuple[dict, float]:
     return actual, total
 
 
-def build_thesis_map(thesis: dict) -> dict:
-    """Returns {ticker: {subStrategyId, targetPct, role, thesisNote, thesisBreakers}}"""
+def build_thesis_map(db_path: Path | None = None) -> dict:
+    """Returns {ticker: {subStrategyId, targetPct, role, thesisNote, thesisBreakers}}
+
+    Storage backend (Wave 2 rewire): reads per-investment thesis fields from
+    ``investment`` via ``domain_model.investment_repository.list_investments``
+    instead of ``target-portfolio.json`` holdings (ADR-029). Field mapping
+    confirmed against ``migrate_target_portfolio_to_sqlite.py``'s write path:
+    ``role`` -> ``lifecycle_status``, ``targetWeight`` -> ``target_weight``,
+    ``thesisForInclusion`` -> ``thesis_for_inclusion``, ``subStrategyId`` ->
+    ``sub_strategy_id``. ``thesisBreakers`` has no real-data usage (0/75 real
+    holdings carry it as of this migration) and no list-shaped column exists
+    on ``investment`` (only the scalar ``thesis_breaker_status``), so it is
+    always returned as ``[]`` here — this mirrors the thesis_breakers.py /
+    update_thesis.py exception rather than forcing a lossy scalar mapping.
+    """
+    sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import list_investments
+
+    conn = initialize_db(str(db_path or DOMAIN_DB))
+    try:
+        rows = list_investments(conn)
+    finally:
+        conn.close()
+
     holdings = {}
-    for h in thesis.get("holdings", []):
-        ticker = h["ticker"]
-        sid = h.get("subStrategyId", h.get("pillarId", "untracked"))
+    for row in rows:
+        # Only rows that actually came from target-portfolio.json's holdings[]
+        # array carry a pillar_id (migration write path only sets pillar_id
+        # for real thesis holdings — watchlist-only rows get none). This
+        # mirrors the original JSON read's implicit scope (thesis.holdings
+        # only, not every watchlist/investment row).
+        if row.get("pillar_id") is None:
+            continue
+        ticker = row["symbol"]
+        sid = row.get("sub_strategy_id") or row.get("pillar_id") or "untracked"
         # Map sub-strategies to avoid orphan sections or omissions
         if sid in ("preipo-access", "quantum-compute", "frontier-bets"):
             sid = "frontier-bets"
         elif sid == "other":
             sid = "untracked"
-        
+
         holdings[ticker] = {
             "subStrategyId": sid,
-            "targetPct":     h.get("targetWeight", h.get("targetPct", 0)),
-            "role":          h.get("role", ""),
-            "thesisNote":    h.get("thesisForInclusion", h.get("thesisNote", "")),
-            "thesisBreakers": h.get("thesisBreakers", []),
+            "targetPct":     row.get("target_weight") or 0,
+            "role":          row.get("lifecycle_status") or "",
+            "thesisNote":    row.get("thesis_for_inclusion") or "",
+            "thesisBreakers": [],
         }
     return holdings
 
@@ -200,11 +230,12 @@ def assign_action(ticker: str, actual_pct: float, target_pct: float, existing_ac
 def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> str:
     today = date.today().isoformat()
 
-    # ── Import shared weight computation from validate_weights ──────────────
+    # ── Current % still from portfolio.json (broker holdings, not migrated);
+    #    target % now sourced from investment.target_weight (Wave 2 rewire).
     sys.path.insert(0, str(Path(__file__).parent))
-    from validate_weights import compute_current, compute_target
+    from validate_weights import compute_current
     current_data = compute_current(PORTFOLIO_JSON)
-    target_data  = compute_target(THESIS_JSON)
+    target_data  = {"holdings": _load_target_weights(DOMAIN_DB)}
 
     # Group by sub-strategy
     groups: dict[str, list] = {}
@@ -424,23 +455,23 @@ def main():
     parser.add_argument("--portfolio", default=str(PORTFOLIO_JSON))
     parser.add_argument("--thesis-json", default=str(THESIS_JSON))
     parser.add_argument("--thesis-md", default=str(THESIS_MD))
+    parser.add_argument("--db", default=str(DOMAIN_DB), help="Path to domain_model.sqlite")
     args = parser.parse_args()
 
-    thesis_json = load_json(Path(args.thesis_json))
-    portfolio   = load_json(Path(args.portfolio))
+    portfolio = load_json(Path(args.portfolio))
 
     actual_map, total_value = build_actual_map(portfolio)
-    thesis_map = build_thesis_map(thesis_json)
+    thesis_map = build_thesis_map(Path(args.db))
 
     section = generate_section(thesis_map, actual_map, total_value)
 
     if args.write:
         md_path = Path(args.thesis_md)
-        # 1. Load weights via validate_weights for accuracy
+        # 1. Load weights: current % from portfolio.json, target % from sqlite
         sys.path.insert(0, str(Path(__file__).parent))
-        from validate_weights import compute_current, compute_target
+        from validate_weights import compute_current
         current_data = compute_current(PORTFOLIO_JSON)
-        target_data  = compute_target(THESIS_JSON)
+        target_data  = {"holdings": _load_target_weights(Path(args.db))}
 
         # 2. Update Section IV (blueprint)
         update_thesis_md(section, md_path)

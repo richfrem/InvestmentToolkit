@@ -212,3 +212,38 @@ class TestLoadDcf:
 
         assert _load_dcf("NOPE", db_path=db_path) == {}
 
+
+class TestLoadTargetWeights:
+    """_load_target_weights must read investment.target_weight from
+    domain_model.sqlite (Wave 2 consumer cutover), not target-portfolio.json."""
+
+    def test_reads_target_weight_from_sqlite(self, tmp_path):
+        from domain_model.db_client import initialize_db  # noqa: PLC0415
+        from domain_model.investment_repository import (  # noqa: PLC0415
+            resolve_investment,
+            update_investment_fields,
+        )
+        from compute_conviction_scores import _load_target_weights  # noqa: PLC0415
+
+        db_path = tmp_path / "domain_model.sqlite"
+        conn = initialize_db(str(db_path))
+        investment_id = resolve_investment(conn, "MSFT")
+        update_investment_fields(conn, investment_id, target_weight=5.5)
+        conn.close()
+
+        targets = _load_target_weights(db_path=str(db_path))
+        assert targets["MSFT"] == 5.5
+
+    def test_missing_target_weight_defaults_to_zero(self, tmp_path):
+        from domain_model.db_client import initialize_db  # noqa: PLC0415
+        from domain_model.investment_repository import resolve_investment  # noqa: PLC0415
+        from compute_conviction_scores import _load_target_weights  # noqa: PLC0415
+
+        db_path = tmp_path / "domain_model.sqlite"
+        conn = initialize_db(str(db_path))
+        resolve_investment(conn, "ZZZ")
+        conn.close()
+
+        targets = _load_target_weights(db_path=str(db_path))
+        assert targets["ZZZ"] == 0
+

@@ -10,9 +10,12 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(PY_SERVICES))
 
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import resolve_investment  # noqa: E402
+from domain_model.projection_repository import save_projection_version  # noqa: E402
 from harvest_predictions import (  # noqa: E402
     _append_if_new,
-    _load_projection,
+    _load_projection_from_db,
     build_action_rating_claim,
     build_dcf_fair_value_claim,
     harvest_action_and_dcf_claims,
@@ -24,34 +27,35 @@ from harvest_predictions import (  # noqa: E402
 )
 
 
-class TestLoadProjection:
-    def test_selects_highest_version_ai_agent_entry(self, tmp_path):
-        """Mirrors real ANET.json: 3 revisions, latest AI_AGENT version wins, not index 0."""
-        path = tmp_path / "ANET.json"
-        entries = [
-            {"source": "AI_AGENT", "version": 1, "aiThesis": {"action": "BUY"}},
-            {"source": "AI_AGENT", "version": 1, "aiThesis": {"action": "HOLD"}},
-            {"source": "AI_AGENT", "version": 2, "aiThesis": {"action": "INITIATE"}},
-        ]
-        path.write_text(json.dumps(entries))
-        result = _load_projection(path)
-        assert result == entries[2]
+class TestLoadProjectionFromDb:
+    def test_selects_latest_ai_agent_entry_by_saved_at(self, tmp_path):
+        """Mirrors real ANET.json history: multiple AI_AGENT revisions, latest
+        saved_at wins (get_latest_projection_by_source's convention -- NOT
+        MAX(version), per that function's own real-data-investigation docstring).
+        """
+        conn = initialize_db(str(tmp_path / "test.sqlite"))
+        investment_id = resolve_investment(conn, "ANET", asset_class="EQUITY", currency="USD")
+        save_projection_version(conn, investment_id, version=1, saved_at="2026-01-01T00:00:00Z",
+                                 action="BUY", source="AI_AGENT")
+        save_projection_version(conn, investment_id, version=2, saved_at="2026-03-01T00:00:00Z",
+                                 action="INITIATE", source="AI_AGENT")
+        result = _load_projection_from_db(conn, investment_id)
         assert result["aiThesis"]["action"] == "INITIATE"
 
-    def test_single_entry_list_still_works(self, tmp_path):
-        path = tmp_path / "SINGLE.json"
-        entries = [{"source": "AI_AGENT", "version": 1, "aiThesis": {"action": "ACCUMULATE"}}]
-        path.write_text(json.dumps(entries))
-        assert _load_projection(path) == entries[0]
+    def test_single_entry_still_works(self, tmp_path):
+        conn = initialize_db(str(tmp_path / "test.sqlite"))
+        investment_id = resolve_investment(conn, "SINGLE", asset_class="EQUITY", currency="USD")
+        save_projection_version(conn, investment_id, version=1, saved_at="2026-01-01T00:00:00Z",
+                                 action="ACCUMULATE", source="AI_AGENT")
+        result = _load_projection_from_db(conn, investment_id)
+        assert result["aiThesis"]["action"] == "ACCUMULATE"
 
     def test_no_ai_agent_entries_returns_none(self, tmp_path):
-        path = tmp_path / "NOAI.json"
-        entries = [
-            {"source": "HUMAN", "version": 1, "aiThesis": {"action": "BUY"}},
-            {"source": "HUMAN", "version": 2, "aiThesis": {"action": "TRIM"}},
-        ]
-        path.write_text(json.dumps(entries))
-        assert _load_projection(path) is None
+        conn = initialize_db(str(tmp_path / "test.sqlite"))
+        investment_id = resolve_investment(conn, "NOAI", asset_class="EQUITY", currency="USD")
+        save_projection_version(conn, investment_id, version=1, saved_at="2026-01-01T00:00:00Z",
+                                 action="BUY", source="HUMAN")
+        assert _load_projection_from_db(conn, investment_id) is None
 
 
 class TestBuildActionRatingClaim:
@@ -156,24 +160,25 @@ class TestAppendIfNew:
 class TestHarvestActionAndDcfClaims:
     @patch("harvest_predictions._fetch_base_prices", return_value=(5.32, 612.40))
     def test_harvests_both_claim_types_from_one_projection(self, _mock_prices, tmp_path):
-        projections_dir = tmp_path / "projections"
-        projections_dir.mkdir()
-        (projections_dir / "CORZ.json").write_text(json.dumps([{
-            "source": "AI_AGENT", "version": 1,
-            "aiThesis": {"action": "TRIM", "fairValue": 10.64,
-                          "analyzedAt": "2026-05-02T15:35:09Z"},
-            "analyticsLog": {"dcf": None},
-            "snapshot": {"price": 15.0},
-        }]))
+        db_path = tmp_path / "test.sqlite"
+        conn = initialize_db(str(db_path))
+        investment_id = resolve_investment(conn, "CORZ", asset_class="EQUITY", currency="USD")
+        save_projection_version(
+            conn, investment_id, version=1, saved_at="2026-05-02T15:35:09Z",
+            analyzed_at="2026-05-02T15:35:09Z", action="TRIM", fair_value=10.64,
+            source="AI_AGENT",
+            snapshot_json=json.dumps({"price": 15.0}),
+            analytics_log_json=json.dumps({"dcf": None}),
+        )
         predictions_path = tmp_path / "predictions.jsonl"
-        result = harvest_action_and_dcf_claims(projections_dir, predictions_path)
+        result = harvest_action_and_dcf_claims(db_path, predictions_path)
         types = {r["type"] for r in result}
         assert types == {"action_rating", "dcf_fair_value"}
 
-    def test_handles_empty_projections_dir(self, tmp_path):
-        projections_dir = tmp_path / "projections"
-        projections_dir.mkdir()
-        result = harvest_action_and_dcf_claims(projections_dir, tmp_path / "predictions.jsonl")
+    def test_handles_no_investments_with_projections(self, tmp_path):
+        db_path = tmp_path / "test.sqlite"
+        initialize_db(str(db_path))
+        result = harvest_action_and_dcf_claims(db_path, tmp_path / "predictions.jsonl")
         assert result == []
 
 

@@ -14,6 +14,18 @@ PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(PY_SERVICES))
 
 import overnight_gaps  # noqa: E402
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import resolve_investment, update_investment_fields  # noqa: E402
+
+
+def _make_db_with_watchlisted(tmp_path, tickers):
+    db_path = tmp_path / "domain_model.sqlite"
+    conn = initialize_db(str(db_path))
+    for t in tickers:
+        investment_id = resolve_investment(conn, t)
+        update_investment_fields(conn, investment_id, is_watchlisted=True)
+    conn.close()
+    return db_path
 
 
 class TestImport:
@@ -44,43 +56,32 @@ class TestLoadTickers:
         portfolio.write_text(json.dumps({"holdings": [
             {"symbol": "NVDA"}, {"symbol": "AAPL"}
         ]}))
-        watchlist = tmp_path / "watchlist.json"
-        watchlist.write_text(json.dumps({"watchlist": [
-            {"ticker": "MSFT"}, {"ticker": "TSLA"}
-        ]}))
+        db_path = _make_db_with_watchlisted(tmp_path, ["MSFT", "TSLA"])
         monkeypatch.setattr(overnight_gaps, "PORTFOLIO_PATH", portfolio)
-        monkeypatch.setattr(overnight_gaps, "WATCHLIST_PATH", watchlist)
-        result = overnight_gaps._load_tickers()
+        result = overnight_gaps._load_tickers(db_path)
         assert result == ["NVDA", "AAPL", "MSFT", "TSLA"]
 
     def test_deduplicates_across_sources(self, tmp_path, monkeypatch):
         portfolio = tmp_path / "portfolio.json"
         portfolio.write_text(json.dumps({"holdings": [{"symbol": "NVDA"}]}))
-        watchlist = tmp_path / "watchlist.json"
-        watchlist.write_text(json.dumps({"watchlist": [
-            {"ticker": "NVDA"}, {"ticker": "AAPL"}
-        ]}))
+        db_path = _make_db_with_watchlisted(tmp_path, ["NVDA", "AAPL"])
         monkeypatch.setattr(overnight_gaps, "PORTFOLIO_PATH", portfolio)
-        monkeypatch.setattr(overnight_gaps, "WATCHLIST_PATH", watchlist)
-        result = overnight_gaps._load_tickers()
+        result = overnight_gaps._load_tickers(db_path)
         assert result == ["NVDA", "AAPL"]
 
     def test_missing_portfolio_returns_watchlist_only(self, tmp_path, monkeypatch):
         missing = tmp_path / "missing.json"
-        watchlist = tmp_path / "watchlist.json"
-        watchlist.write_text(json.dumps({"watchlist": [{"ticker": "MSFT"}]}))
+        db_path = _make_db_with_watchlisted(tmp_path, ["MSFT"])
         monkeypatch.setattr(overnight_gaps, "PORTFOLIO_PATH", missing)
-        monkeypatch.setattr(overnight_gaps, "WATCHLIST_PATH", watchlist)
-        result = overnight_gaps._load_tickers()
+        result = overnight_gaps._load_tickers(db_path)
         assert result == ["MSFT"]
 
     def test_missing_watchlist_returns_portfolio_only(self, tmp_path, monkeypatch):
         portfolio = tmp_path / "portfolio.json"
         portfolio.write_text(json.dumps({"holdings": [{"symbol": "NVDA"}]}))
-        missing = tmp_path / "missing.json"
+        missing_db = tmp_path / "missing.sqlite"
         monkeypatch.setattr(overnight_gaps, "PORTFOLIO_PATH", portfolio)
-        monkeypatch.setattr(overnight_gaps, "WATCHLIST_PATH", missing)
-        result = overnight_gaps._load_tickers()
+        result = overnight_gaps._load_tickers(missing_db)
         assert result == ["NVDA"]
 
 
@@ -149,7 +150,7 @@ class TestGetOvernightGaps:
     def test_explicit_tickers_override_load(self, monkeypatch, tmp_path):
         # Patch PORTFOLIO_PATH to a missing file so _load_tickers would return []
         monkeypatch.setattr(overnight_gaps, "PORTFOLIO_PATH", tmp_path / "missing.json")
-        monkeypatch.setattr(overnight_gaps, "WATCHLIST_PATH", tmp_path / "missing.json")
+        monkeypatch.setattr(overnight_gaps, "DB_PATH", tmp_path / "missing.sqlite")
         monkeypatch.setattr(overnight_gaps, "_fetch_gap",
                             lambda t: self._make_gap(t, 3.0))
         result = overnight_gaps.get_overnight_gaps(["NVDA"], threshold_pct=2.0)

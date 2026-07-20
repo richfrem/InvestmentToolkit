@@ -67,12 +67,12 @@ from typing import Any
 REPO_ROOT        = Path(__file__).resolve().parents[3]
 TA_SWEEP_PATH    = REPO_ROOT / "investment_screener/backend/data/ta-sweep-results.json"
 DB_PATH          = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
-TARGET_PATH      = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 PORTFOLIO_PATH   = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 SKIP_TICKERS     = frozenset({"PSU-U.TO", "PSU.U.TO", "USD_CASH", "USD_CASH_TFSA"})
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import list_investments  # noqa: E402
 from domain_model.projection_repository import (  # noqa: E402
     get_latest_projection,
     get_latest_projection_by_source,
@@ -420,16 +420,24 @@ def _load_actual_weights() -> dict[str, float]:
     }
 
 
-def _load_target_weights() -> dict[str, float]:
-    """Load target weight per ticker from target-portfolio.json.
+def _load_target_weights(db_path: str | None = None) -> dict[str, float]:
+    """Load target weight per ticker from the domain_model SQLite ``investment``
+    table (``target_weight`` column), replacing the former
+    ``target-portfolio.json`` read (Wave 2 consumer cutover).
 
     Returns:
-        Dict of ticker → target weight percentage.
+        Dict of ticker (symbol) → target weight percentage.
     """
-    with open(TARGET_PATH) as f:
-        data = json.load(f)
-    return {h["ticker"]: h.get("targetWeight", 0)
-            for h in data.get("holdings", [])}
+    conn = initialize_db(str(db_path or DB_PATH))
+    try:
+        rows = list_investments(conn)
+    finally:
+        conn.close()
+    return {
+        row["symbol"]: row.get("target_weight") or 0
+        for row in rows
+        if row.get("symbol")
+    }
 
 
 # ── Main compute ───────────────────────────────────────────────────────────────
@@ -445,7 +453,7 @@ def compute_all(
     """
     ta_map, stale_days = _load_ta(db_path=db_path, ta_json_path=ta_json_path)
     actual   = _load_actual_weights()
-    targets  = _load_target_weights()
+    targets  = _load_target_weights()  # domain_model.sqlite (not TA sweep db_path)
 
 
     all_tickers = (set(targets) | set(ta_map) | set(actual)) - SKIP_TICKERS
