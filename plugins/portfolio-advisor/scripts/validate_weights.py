@@ -29,6 +29,14 @@ from pathlib import Path
 REPO_ROOT     = Path(__file__).resolve().parents[3]
 PORTFOLIO_JSON   = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 TARGET_JSON      = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
+DB_PATH          = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
+
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import (  # noqa: E402
+    resolve_investment,
+    update_investment_fields,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -105,6 +113,25 @@ def normalize_target(target_path: Path) -> tuple:
     return data, round(new_total, 4)
 
 
+def write_normalized_weights_to_db(data: dict, db_path: Path = DB_PATH) -> None:
+    """Persist normalised ``targetWeight`` values via the domain-model repository.
+
+    Replaces the old direct-JSON-write path (Wave 2 Task 9 producer cutover):
+    every holding's rescaled targetWeight is written to
+    ``investment.target_weight`` via ``update_investment_fields`` instead of
+    rewriting target-portfolio.json in place.
+    """
+    conn = initialize_db(str(db_path))
+    try:
+        for h in data["holdings"]:
+            ticker = h["ticker"]
+            weight = h.get("targetWeight", 0) or 0
+            investment_id = resolve_investment(conn, ticker)
+            update_investment_fields(conn, investment_id, target_weight=weight)
+    finally:
+        conn.close()
+
+
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
@@ -115,6 +142,7 @@ def main():
     parser.add_argument("--write",     action="store_true", help="Write normalised weights back to target-portfolio.json")
     parser.add_argument("--portfolio", default=str(PORTFOLIO_JSON))
     parser.add_argument("--target",    default=str(TARGET_JSON))
+    parser.add_argument("--db",        default=str(DB_PATH), help="Path to domain_model.sqlite")
     args = parser.parse_args()
 
     output = {}
@@ -122,9 +150,12 @@ def main():
     if args.normalize:
         normalised_data, new_total = normalize_target(Path(args.target))
         if args.write:
-            with open(args.target, "w") as f:
-                json.dump(normalised_data, f, indent=2)
-            print(f"✅ Wrote normalised weights to {args.target}  (sum={new_total:.4f}%)", file=sys.stderr)
+            write_normalized_weights_to_db(normalised_data, Path(args.db))
+            print(
+                f"✅ Wrote normalised weights to {args.db} (investment.target_weight, "
+                f"sum={new_total:.4f}%)",
+                file=sys.stderr,
+            )
         output["normalised_total"] = new_total
         output["target"] = compute_target(Path(args.target))
     else:
