@@ -26,4 +26,5 @@ export const AGENT_GUIDE_PATH      = path.resolve(__dirname, '../../../../plugin
 export const PORTFOLIO_CONFIG_FILE = path.join(__dirname, '../../data/portfolio-config.json');
 export const TRADE_LOG_FILE        = path.join(__dirname, '../../data/trade-log.json');
 export const WATCHLIST_FILE        = path.join(__dirname, '../../data/watchlist.json');
+export const DOMAIN_MODEL_DB_FILE  = path.resolve(__dirname, '../../data/domain_model.sqlite');
 

@@ -14,7 +14,7 @@ Layer:
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Reads holdings)
     - investment_screener/backend/data/theses/target-portfolio.json (Reads target weights)
-    - investment_screener/backend/data/projections/ (Reads DCF valuations)
+    - investment_screener/backend/data/domain_model.sqlite (Reads DCF valuations, ADR-029)
 
 Usage:
     python3 plugins/tradingview/scripts/ta_sweep_batch.py [--skip TICKERS]
@@ -33,7 +33,7 @@ from typing import Any
 REPO_ROOT       = Path(__file__).resolve().parents[3]
 PORTFOLIO_PATH  = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 TARGET_PATH     = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
-PROJECTIONS_DIR = REPO_ROOT / "investment_screener/backend/data/projections"
+DB_PATH         = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 TV_CLI          = REPO_ROOT / "tradingview-cdp/cli.js"
 
 # Default output path — served by backend as /api/ta-sweep/results
@@ -47,6 +47,11 @@ DIVERGENCE_THRESHOLD_PTS = 2.0
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from technicals import compute_technical_snapshot  # noqa: E402
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.projection_repository import (  # noqa: E402
+    get_latest_projection,
+    get_projection_scenarios,
+)
 
 
 # ── Data loaders ───────────────────────────────────────────────────────────────
@@ -64,23 +69,39 @@ def load_target_portfolio() -> dict[str, dict[str, Any]]:
     return {h["ticker"]: h for h in data.get("holdings", [])}
 
 
-def load_dcf(ticker: str) -> dict[str, Any] | None:
-    """Load the most recent DCF projection for ticker, or None if not found."""
-    path = PROJECTIONS_DIR / f"{ticker}.json"
-    if not path.exists():
-        return None
-    with open(path) as f:
-        raw = json.load(f)
-    entry = raw[-1] if isinstance(raw, list) else raw
-    thesis    = entry.get("aiThesis", {})
-    scenarios = entry.get("scenarios", {})
-    return {
-        "fairValue": thesis.get("fairValue"),
-        "action":    thesis.get("action"),
-        "bear":      (scenarios.get("bear") or {}).get("scenarioPrice"),
-        "base":      (scenarios.get("base") or {}).get("scenarioPrice"),
-        "bull":      (scenarios.get("bull") or {}).get("scenarioPrice"),
-    }
+def load_dcf(ticker: str, db_path: Path | None = None) -> dict[str, Any] | None:
+    """Load the most recent DCF projection for ticker, or None if not found.
+
+    Storage backend (Wave 1 Task 7B): reads `projection_version`/
+    `projection_scenario` via `domain_model.projection_repository`, not
+    `projections/{TICKER}.json` directly (ADR-029). The original code took
+    `raw[-1]` (the last array element, i.e. highest MAX(version) for an
+    append-only file) with no `source` filter, so this uses plain
+    `get_latest_projection` — no AI_AGENT preference, matching the original's
+    lack of source filtering.
+    """
+    conn = initialize_db(str(db_path or DB_PATH))
+    try:
+        row = conn.execute(
+            "SELECT investment_id FROM investment WHERE symbol = ?;", (ticker,)
+        ).fetchone()
+        if row is None:
+            return None
+        investment_id = row[0]
+        entry = get_latest_projection(conn, investment_id)
+        if entry is None:
+            return None
+        scenario_rows = get_projection_scenarios(conn, entry["projection_id"])
+        scenarios = {r["scenario_name"]: r for r in scenario_rows}
+        return {
+            "fairValue": entry.get("fair_value"),
+            "action":    entry.get("action"),
+            "bear":      (scenarios.get("bear") or {}).get("scenario_price"),
+            "base":      (scenarios.get("base") or {}).get("scenario_price"),
+            "bull":      (scenarios.get("bull") or {}).get("scenario_price"),
+        }
+    finally:
+        conn.close()
 
 
 # ── CDP sweep ──────────────────────────────────────────────────────────────────

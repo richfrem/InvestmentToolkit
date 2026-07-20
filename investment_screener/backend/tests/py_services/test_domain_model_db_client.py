@@ -129,6 +129,99 @@ def test_projection_scenario_unique_projection_plus_scenario_name_enforced(tmp_p
         )
 
 
+def test_initialize_db_self_heals_missing_projection_version_columns_on_existing_file(
+    tmp_path,
+):
+    """Reproduces the real Wave 1 Task 6 review gap: an existing SQLite file whose
+    `projection_version` table predates the `source`/`last_grok_sweep`/
+    `catalyst_updates_json` columns. `CREATE TABLE IF NOT EXISTS` alone is a no-op
+    against such a file (SQLite does not diff column lists), so `initialize_db()` must
+    add the missing columns itself, without touching existing row data.
+    """
+    db_path = str(tmp_path / "domain_model_old_shape.sqlite")
+
+    # Simulate a database file created under an OLDER schema version: build
+    # projection_version by hand, without the three newer columns, and insert a row
+    # (mirrors the real file's 115 pre-existing rows).
+    old_conn = sqlite3.connect(db_path)
+    old_conn.execute(
+        """
+        CREATE TABLE investment (
+            investment_id TEXT PRIMARY KEY,
+            symbol TEXT NOT NULL,
+            asset_class TEXT NOT NULL,
+            currency TEXT NOT NULL DEFAULT 'USD',
+            lifecycle_status TEXT,
+            pillar_id TEXT,
+            sub_strategy_id TEXT,
+            updated_at TEXT NOT NULL,
+            UNIQUE(symbol)
+        );
+        """
+    )
+    old_conn.execute(
+        """
+        CREATE TABLE projection_version (
+            projection_id      TEXT PRIMARY KEY,
+            investment_id      TEXT NOT NULL REFERENCES investment(investment_id),
+            version             INTEGER NOT NULL,
+            saved_at            TEXT NOT NULL,
+            analyzed_at         TEXT,
+            model               TEXT,
+            fair_value          REAL,
+            action              TEXT,
+            rationale           TEXT,
+            research_event_id   TEXT,
+            snapshot_json       TEXT,
+            analytics_log_json  TEXT,
+            raw_json            TEXT,
+            legacy_id           TEXT,
+            UNIQUE(investment_id, version)
+        );
+        """
+    )
+    old_conn.execute(
+        "INSERT INTO investment (investment_id, symbol, asset_class, currency, updated_at) "
+        "VALUES ('bw-1', 'BW', 'EQUITY', 'USD', '2026-05-01T00:00:00Z');"
+    )
+    old_conn.execute(
+        "INSERT INTO projection_version "
+        "(projection_id, investment_id, version, saved_at, fair_value, action) "
+        "VALUES ('bw-1:1', 'bw-1', 1, '2026-05-01T00:00:00Z', 8.83, 'SELL');"
+    )
+    old_conn.commit()
+    old_conn.close()
+
+    # Pre-condition: the three columns genuinely do not exist yet (not merely NULL).
+    pre_columns = {
+        row[1]
+        for row in sqlite3.connect(db_path).execute(
+            "PRAGMA table_info(projection_version);"
+        ).fetchall()
+    }
+    assert "source" not in pre_columns
+    assert "last_grok_sweep" not in pre_columns
+    assert "catalyst_updates_json" not in pre_columns
+
+    # Re-running initialize_db against the same existing file must self-heal the schema.
+    conn = initialize_db(db_path)
+    post_columns = {
+        row[1]
+        for row in conn.execute("PRAGMA table_info(projection_version);").fetchall()
+    }
+    assert {"source", "last_grok_sweep", "catalyst_updates_json"} <= post_columns
+
+    # No data loss: the pre-existing row survives with its original values intact, and
+    # the new columns default to NULL until backfilled.
+    conn.row_factory = sqlite3.Row
+    row = conn.execute(
+        "SELECT * FROM projection_version WHERE projection_id = 'bw-1:1';"
+    ).fetchone()
+    assert row["fair_value"] == 8.83
+    assert row["action"] == "SELL"
+    assert row["source"] is None
+
+
 def test_expected_indexes_exist(tmp_path):
     conn = initialize_db(str(tmp_path / "domain_model_test.sqlite"))
     cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='index';")

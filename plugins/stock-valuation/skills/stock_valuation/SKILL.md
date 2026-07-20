@@ -263,10 +263,10 @@ python3 investment_screener/backend/py_services/dcf_sensitivity.py \
   --price <current_price> --mode montecarlo --pretty
 # -> analyticsLog.sensitivity, analyticsLog.monteCarlo
 
-# 5. Comps cross-check (only if projections/{TICKER}.json already has a peers list)
+# 5. Comps cross-check (only if the ticker's latest projection already has a peers list)
 python3 investment_screener/backend/py_services/comps_valuation.py \
   --ticker TICKER --peers <comma_separated_peers> \
-  --projections-dir investment_screener/backend/data/projections --pretty
+  --db-path investment_screener/backend/data/domain_model.sqlite --pretty
 # -> analyticsLog.comps ; {"status": "insufficient_peer_data"} is expected and fine
 # for any ticker without a curated peers list yet — do not fabricate one.
 ```
@@ -301,7 +301,7 @@ Step 3.5, none of these gate `aiThesis.action` — they are informational, surfa
 #    projection — set it once, agent-curated, same pattern as `peers`)
 python3 investment_screener/backend/py_services/framework_score.py \
   --ticker TICKER --sector {saas_cyber,chips_ai,energy_infra} \
-  --projections-dir investment_screener/backend/data/projections \
+  --db-path investment_screener/backend/data/domain_model.sqlite \
   [--qualitative-file <qualitative.json>] --pretty
 # -> analyticsLog.framework
 

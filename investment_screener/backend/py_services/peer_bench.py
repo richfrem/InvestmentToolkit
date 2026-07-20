@@ -14,7 +14,7 @@ Layer:
 
 Usage Examples:
     python3 peer_bench.py --ticker NVDA --peers AMD,AVGO,QCOM --sector chips_ai \
-        --projections-dir investment_screener/backend/data/projections --pretty
+        --db-path investment_screener/backend/data/domain_model.sqlite --pretty
 
 Key Functions (Index):
     - compute_peer_benchmark()
@@ -40,7 +40,7 @@ MIN_USABLE_PEERS = 2
 
 
 def compute_peer_benchmark(
-    ticker: str, peers: list[str], sector: str, projections_dir: str
+    ticker: str, peers: list[str], sector: str, db_path: str
 ) -> dict:
     """Build the peer benchmarking table: target value + peer median/Z-score/percentile.
 
@@ -56,9 +56,15 @@ def compute_peer_benchmark(
 
     Args:
         ticker: Target ticker.
-        peers: Curated peer ticker list (from projections/{TICKER}.json's `peers` field).
+        peers: Curated peer ticker list (from the target's projection's `peers` field).
         sector: One of "saas_cyber", "chips_ai", "energy_infra".
-        projections_dir: Path to the projections directory.
+        db_path: Path to domain_model.sqlite (Wave 1 Task 7B — this used to be
+            `projections_dir`, a stale leftover from before Task 7A rewired
+            `framework_score.compute_raw_metrics`'s positional second arg from a
+            projections directory path to a `domain_model.sqlite` path; that stale
+            call site silently passed a directory into a function now expecting a
+            DB path, so every `peer_bench.py` call returned empty metrics for
+            every ticker until this fix).
 
     Returns:
         {"status": "ok", "peersUsed": [...], "table": [{"metric", "ticker",
@@ -66,8 +72,8 @@ def compute_peer_benchmark(
         {"status": "insufficient_peer_data", "peersUsed": []} when fewer
         than MIN_USABLE_PEERS peers have any usable metric at all.
     """
-    target_metrics = compute_raw_metrics(ticker, sector, projections_dir)
-    peer_metrics = {p: compute_raw_metrics(p, sector, projections_dir) for p in peers}
+    target_metrics = compute_raw_metrics(ticker, sector, db_path)
+    peer_metrics = {p: compute_raw_metrics(p, sector, db_path) for p in peers}
 
     peers_used = sorted({
         p for p, m in peer_metrics.items() if any(isinstance(v, (int, float)) for v in m.values())
@@ -117,12 +123,12 @@ def main() -> None:
     parser.add_argument("--ticker", required=True)
     parser.add_argument("--peers", required=True, help="Comma-separated peer tickers")
     parser.add_argument("--sector", required=True, choices=["saas_cyber", "chips_ai", "energy_infra"])
-    parser.add_argument("--projections-dir", required=True)
+    parser.add_argument("--db-path", required=True)
     parser.add_argument("--pretty", action="store_true")
     args = parser.parse_args()
 
     peer_tickers = [p.strip() for p in args.peers.split(",") if p.strip()]
-    result = compute_peer_benchmark(args.ticker, peer_tickers, args.sector, args.projections_dir)
+    result = compute_peer_benchmark(args.ticker, peer_tickers, args.sector, args.db_path)
     print(json.dumps(result, indent=2 if args.pretty else None))
 
 

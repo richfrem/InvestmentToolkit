@@ -26,7 +26,11 @@ TEMPLATE_PATH = REPO_ROOT / "plugins/portfolio-advisor/assets/templates/Portfoli
 PORTFOLIO_PATH = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 THESIS_PATH    = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 OUTPUT_DIR     = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
-PROJECTIONS_DIR = REPO_ROOT / "investment_screener/backend/data/projections"
+# Note (Wave 1 Task 7B): PROJECTIONS_DIR was declared here but never read by this
+# file — DCF/projection data reaches this script only indirectly, via
+# scan_opportunities.py's subprocess call in get_action_subsections(), which is
+# rewired onto domain_model.sqlite separately. Removed as dead code (ADR-029
+# archive-readiness gate: no real `data/projections` file I/O should remain).
 
 
 def load_json(path: Path) -> dict | list:
