@@ -52,6 +52,17 @@
 #     isn't there), not a schema-content issue — the columns below are internally consistent with
 #     every real design document that discusses `portfolio_policy`, just not literally
 #     "transcribed verbatim" from either of the two files named for that purpose in Step 3.
+#   - projection_version.raw_json / projection_version.legacy_id: not present in the
+#     source design documents. Added post-hoc (Wave 1 Task 5 review fix) so this file
+#     stays the single source of truth for the shared schema — these two nullable
+#     columns previously existed ONLY as a runtime `ALTER TABLE` issued by
+#     `ProjectionRepository.ts`'s constructor against the real, shared
+#     `domain_model.sqlite` file, which is what let a TypeScript import silently mutate
+#     production schema outside this module. `raw_json` holds the full validated
+#     `Projection` object (round-trip fidelity for `.passthrough()` fields the
+#     structured columns don't model); `legacy_id` holds the original Zod `Projection.id`
+#     UUID used to group version rows by projection identity. See ProjectionRepository.ts
+#     module docstring for the full design rationale.
 #   - (no other deviations found as of this transcription)
 import sqlite3
 
@@ -218,6 +229,8 @@ def initialize_db(db_path: str) -> sqlite3.Connection:
         research_event_id     TEXT,
         snapshot_json         TEXT,
         analytics_log_json    TEXT,
+        raw_json               TEXT,
+        legacy_id               TEXT,
         UNIQUE(investment_id, version)
     );
     """)
