@@ -171,7 +171,7 @@ from portfolio_io import compute_weights, load_portfolio_state
 RISK_SNAPSHOT_PATH = Path(__file__).resolve().parents[1] / "data" / "risk_snapshot.json"
 ACCOUNT_POLICY_PATH = Path(__file__).resolve().parents[1] / "data" / "account_policy.json"
 THESIS_BREAKER_STATE_PATH = Path(__file__).resolve().parents[1] / "data" / "thesis_breaker_state.json"
-TARGET_PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "target-portfolio.json"
+TARGET_PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "theses" / "target-portfolio.json"
 PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "portfolio.json"
 TRADE_LOG_PATH = Path(__file__).resolve().parents[1] / "data" / "trade-log.json"
 ORDERS_EXECUTED_PATH = Path(__file__).resolve().parents[1] / "data" / "orders_executed.jsonl"
