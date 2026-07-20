@@ -12,10 +12,45 @@ sys.path.insert(0, str(REPO_ROOT / "plugins/portfolio-advisor/scripts"))
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 
 from domain_model.db_client import initialize_db  # noqa: E402
-from domain_model.investment_repository import resolve_investment  # noqa: E402
+from domain_model.investment_repository import resolve_investment, update_investment_fields  # noqa: E402
+from domain_model.pillar_repository import resolve_pillar  # noqa: E402
 from domain_model.projection_repository import save_projection_version  # noqa: E402
 
 import scan_opportunities  # noqa: E402
+
+
+def test_load_thesis_reads_from_sqlite_not_json(tmp_path):
+    """Wave 2 rewire: thesis fields must come from investment.target_weight
+    et al. via the domain-model repository, not target-portfolio.json."""
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    try:
+        resolve_pillar(conn, "ai-compute", "AI Compute")
+        nvda_id = resolve_investment(conn, "NVDA", asset_class="EQUITY")
+        update_investment_fields(
+            conn, nvda_id,
+            pillar_id="ai-compute", target_weight=5.5, lifecycle_status="accumulate",
+            thesis_for_inclusion="Highest-conviction BUY.",
+        )
+        # Watchlist-only row (no pillar_id) must be excluded.
+        wl_id = resolve_investment(conn, "ZZZZ", asset_class="EQUITY")
+        update_investment_fields(conn, wl_id, is_watchlisted=True)
+    finally:
+        conn.close()
+
+    thesis = scan_opportunities.load_thesis(db_path)
+    assert thesis["NVDA"] == {
+        "targetPct": 5.5,
+        "pillarName": "AI Compute",
+        "pillarId": "ai-compute",
+        "thesisFor": "Highest-conviction BUY.",
+        "role": "accumulate",
+    }
+    assert "ZZZZ" not in thesis
+
+
+def test_load_thesis_missing_db_returns_empty(tmp_path):
+    assert scan_opportunities.load_thesis(tmp_path / "does_not_exist.sqlite") == {}
 
 
 def test_load_projection_returns_none_when_no_ai_agent_row(tmp_path):
