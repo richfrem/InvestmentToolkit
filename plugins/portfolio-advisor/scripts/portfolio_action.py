@@ -61,30 +61,46 @@ def derive_action(ticker: str, current_pct: float, target_pct: float, ai_upside:
     return action
 
 
-def _load_ai_upside(ticker: str, projections_dir) -> float | None:
-    """Load latest AI projection upside for ticker. Returns None on any failure."""
+def _load_ai_upside(ticker: str, db_path) -> float | None:
+    """Load latest AI projection upside for ticker. Returns None on any failure.
+
+    Storage backend (Wave 1 Task 7A): reads `projection_version` via
+    `domain_model.projection_repository`, not `projections/{TICKER}.json`
+    directly (ADR-029). Prefers the latest `AI_AGENT`-sourced row
+    (`get_latest_projection_by_source`) over plain `MAX(version)` (Task 6
+    finding: version numbers are not always chronological), falling back to
+    `get_latest_projection` (any source) when no `AI_AGENT` row exists —
+    mirroring the original file-based code's `projs[0]` fallback for a
+    projection file with no `source == "AI_AGENT"` entry.
+    """
     try:
-        from pathlib import Path
         import json
-        proj_path = Path(projections_dir) / f"{ticker}.json"
-        if not proj_path.exists():
-            return None
-        with open(proj_path) as f:
-            projs = json.load(f)
-        if isinstance(projs, list):
-            if not projs:
+        import sys
+        from pathlib import Path
+
+        sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "investment_screener/backend/py_services"))
+        from domain_model.db_client import initialize_db
+        from domain_model.projection_repository import get_latest_projection, get_latest_projection_by_source
+
+        conn = initialize_db(str(db_path))
+        try:
+            row = conn.execute("SELECT investment_id FROM investment WHERE symbol = ?;", (ticker,)).fetchone()
+            if row is None:
                 return None
-            ai = [p for p in projs if p.get("source") == "AI_AGENT"]
-            proj: dict = max(ai, key=lambda x: x.get("savedAt", "")) if ai else projs[0]
-        else:
-            proj = projs
-        pf = proj.get("aiThesis", {})
-        sn = proj.get("snapshot", {})
-        if pf.get("action") in ("BUY", "ACCUMULATE", "INITIATE"):
-            fv = pf.get("fairValue")
-            curr = sn.get("price") or pf.get("currentPrice")
-            if fv and curr and curr > 0:
-                return ((fv - curr) / curr) * 100
+            investment_id = row[0]
+            entry = get_latest_projection_by_source(conn, investment_id, "AI_AGENT")
+            if entry is None:
+                entry = get_latest_projection(conn, investment_id)
+            if entry is None:
+                return None
+            snap = json.loads(entry["snapshot_json"]) if entry.get("snapshot_json") else {}
+            if entry.get("action") in ("BUY", "ACCUMULATE", "INITIATE"):
+                fv = entry.get("fair_value")
+                curr = snap.get("price")
+                if fv and curr and curr > 0:
+                    return ((fv - curr) / curr) * 100
+        finally:
+            conn.close()
     except Exception:
         pass
     return None
@@ -107,9 +123,9 @@ if __name__ == "__main__":
     th = compute_target(args.target)["holdings"]
     all_tickers = set(list(ch.keys()) + list(th.keys()))
 
-    projections_dir = Path(__file__).resolve().parents[3] / "investment_screener/backend/data/projections"
+    db_path = Path(__file__).resolve().parents[3] / "investment_screener/backend/data/domain_model.sqlite"
     result = {
-        t: derive_action(t, ch.get(t, 0.0), th.get(t, 0.0), ai_upside=_load_ai_upside(t, projections_dir))
+        t: derive_action(t, ch.get(t, 0.0), th.get(t, 0.0), ai_upside=_load_ai_upside(t, db_path))
         for t in all_tickers
     }
     print(json.dumps(result))
