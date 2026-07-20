@@ -160,6 +160,26 @@ def test_execute_migration_migrates_thesis_breaker_status(tmp_path):
     assert row["thesis_breaker_status"] == "TRIGGERED"
 
 
+def test_execute_migration_auto_creates_pillar_for_undefined_pillar_id(tmp_path):
+    """Real data confirmed a holding referencing pillarId="other" -- not present
+    in the pillars[] definition array (Norbert's Gambit conversion vehicles
+    DLR.U.TO/DLR.TO in the real file). Must not FK-fail; must auto-create a
+    minimal placeholder pillar row.
+    """
+    target_path, watchlist_path, alerts_path, breaker_path = _write_fixture(tmp_path)
+    target = json.loads(Path(target_path).read_text())
+    target["holdings"].append({
+        "ticker": "DLR.TO", "role": "active", "targetWeight": 0.01,
+        "pillarId": "other",
+    })
+    Path(target_path).write_text(json.dumps(target))
+
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    execute_migration(conn, target_path, watchlist_path, alerts_path, breaker_path)
+    row = get_investment(conn, "DLR.TO")
+    assert row["pillar_id"] == "other"
+
+
 def test_execute_migration_is_idempotent_on_rerun(tmp_path):
     paths = _write_fixture(tmp_path)
     conn = initialize_db(str(tmp_path / "test.sqlite"))
