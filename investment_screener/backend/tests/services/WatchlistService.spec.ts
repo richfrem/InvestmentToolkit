@@ -1,62 +1,114 @@
 import { expect } from 'chai';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { WatchlistService } from '../../src/services/WatchlistService';
-import { WATCHLIST_FILE } from '../../src/utils/paths';
+import { InvestmentRepository } from '../../src/services/InvestmentRepository';
 
 describe('WatchlistService', () => {
     let service: WatchlistService;
-    const testFile = WATCHLIST_FILE;
-    const backupFile = testFile + '.test.bak';
-
-    before(() => {
-        // Backup existing watchlist file
-        if (fs.existsSync(testFile)) {
-            fs.copyFileSync(testFile, backupFile);
-        }
-    });
-
-    after(() => {
-        // Restore watchlist file
-        if (fs.existsSync(backupFile)) {
-            fs.copyFileSync(backupFile, testFile);
-            fs.unlinkSync(backupFile);
-        } else if (fs.existsSync(testFile)) {
-            fs.unlinkSync(testFile);
-        }
-    });
+    let dbPath: string;
 
     beforeEach(() => {
-        // Reset watchlist file to empty array
-        fs.writeFileSync(testFile, JSON.stringify({ watchlist: [] }, null, 2));
-        service = new WatchlistService();
+        dbPath = path.join(os.tmpdir(), `watchlist-service-test-${Date.now()}-${Math.random()}.sqlite`);
+        service = new WatchlistService(dbPath);
     });
 
-    it('should return empty watchlist initially', async () => {
-        const list = await service.getWatchlist();
-        expect(list).to.be.an('array').that.is.empty;
+    afterEach(() => {
+        for (const suffix of ['', '-wal', '-shm']) {
+            const p = dbPath + suffix;
+            if (fs.existsSync(p)) fs.unlinkSync(p);
+        }
     });
 
-    it('should add a ticker to watchlist', async () => {
+    // Wave 2 Task 9.4 producer cutover: addToWatchlist/removeFromWatchlist
+    // write investment.is_watchlisted / investment.watchlist_added_at in
+    // domain_model.sqlite via InvestmentRepository, instead of rewriting
+    // watchlist.json in place. getWatchlist() (read side) is cut over onto
+    // the same sqlite table in Task 10/11 — see the describe block below.
+
+    it('marks a ticker as watchlisted in sqlite', async () => {
         await service.addToWatchlist('AAPL');
-        const list = await service.getWatchlist();
-        expect(list).to.have.lengthOf(1);
-        expect(list[0].ticker).to.equal('AAPL');
+
+        const repo = new InvestmentRepository(dbPath);
+        const row = repo.getInvestment('AAPL');
+        repo.close();
+
+        expect(row).to.not.be.null;
+        expect(row!.is_watchlisted).to.equal(1);
+        expect(row!.watchlist_added_at).to.be.a('string');
     });
 
-    it('should not add duplicate tickers', async () => {
+    it('is idempotent — adding the same ticker twice does not reset watchlist_added_at', async () => {
         await service.addToWatchlist('AAPL');
+        const repo1 = new InvestmentRepository(dbPath);
+        const firstAddedAt = repo1.getInvestment('AAPL')!.watchlist_added_at;
+        repo1.close();
+
+        await new Promise(resolve => setTimeout(resolve, 5));
         await service.addToWatchlist('AAPL');
-        const list = await service.getWatchlist();
-        expect(list).to.have.lengthOf(1);
+
+        const repo2 = new InvestmentRepository(dbPath);
+        const secondAddedAt = repo2.getInvestment('AAPL')!.watchlist_added_at;
+        repo2.close();
+
+        expect(secondAddedAt).to.equal(firstAddedAt);
     });
 
-    it('should remove a ticker from watchlist', async () => {
+    it('removes a ticker from the watchlist (is_watchlisted=0)', async () => {
         await service.addToWatchlist('AAPL');
-        await service.addToWatchlist('MSFT');
         await service.removeFromWatchlist('AAPL');
-        const list = await service.getWatchlist();
-        expect(list).to.have.lengthOf(1);
-        expect(list[0].ticker).to.equal('MSFT');
+
+        const repo = new InvestmentRepository(dbPath);
+        const row = repo.getInvestment('AAPL');
+        repo.close();
+
+        expect(row!.is_watchlisted).to.equal(0);
+        expect(row!.watchlist_added_at).to.be.null;
+    });
+
+    it('creates the investment row if it does not already exist', async () => {
+        const repo0 = new InvestmentRepository(dbPath);
+        expect(repo0.getInvestment('NEWTICKER')).to.be.null;
+        repo0.close();
+
+        await service.addToWatchlist('NEWTICKER');
+
+        const repo = new InvestmentRepository(dbPath);
+        const row = repo.getInvestment('NEWTICKER');
+        repo.close();
+        expect(row).to.not.be.null;
+        expect(row!.is_watchlisted).to.equal(1);
+    });
+
+    // Wave 2 Task 10/11 read-path cutover: getWatchlist() now reads
+    // investment.is_watchlisted / investment.watchlist_added_at via
+    // InvestmentRepository.listWatchlisted() instead of watchlist.json.
+    describe('getWatchlist (read-path cutover)', () => {
+        it('returns an empty array when nothing is watchlisted', async () => {
+            const list = await service.getWatchlist();
+            expect(list).to.deep.equal([]);
+        });
+
+        it('returns watchlisted tickers with their addedAt timestamps', async () => {
+            await service.addToWatchlist('AAPL');
+            await service.addToWatchlist('MSFT');
+
+            const list = await service.getWatchlist();
+            const tickers = list.map(i => i.ticker).sort();
+            expect(tickers).to.deep.equal(['AAPL', 'MSFT']);
+            for (const item of list) {
+                expect(item.addedAt).to.be.a('string').that.is.not.empty;
+            }
+        });
+
+        it('excludes tickers after they are removed from the watchlist', async () => {
+            await service.addToWatchlist('AAPL');
+            await service.addToWatchlist('MSFT');
+            await service.removeFromWatchlist('AAPL');
+
+            const list = await service.getWatchlist();
+            expect(list.map(i => i.ticker)).to.deep.equal(['MSFT']);
+        });
     });
 });

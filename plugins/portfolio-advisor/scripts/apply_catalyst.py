@@ -43,8 +43,10 @@ Key Functions:
     - main() - CLI orchestrator for applying catalysts and persisting changes to data storage
 
 Key Input Dependencies:
-    - investment_screener/backend/data/domain_model.sqlite (projection_version / projection_scenario)
-    - investment_screener/backend/data/theses/target-portfolio.json (only for --update-thesis)
+    - investment_screener/backend/data/domain_model.sqlite (projection_version / projection_scenario /
+      investment / investment_note; Wave 2 Task 10 cutover: --update-thesis now appends an
+      investment_note row + refreshes investment.agent_rationale instead of rewriting
+      target-portfolio.json directly)
 """
 
 import argparse
@@ -56,10 +58,8 @@ from pathlib import Path
 
 REPO_ROOT   = Path(__file__).resolve().parents[3]
 DB_PATH     = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
-THESIS_JSON = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
-from file_lock import locked_write_json  # noqa: E402
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.projection_repository import (  # noqa: E402
     get_latest_projection_by_source,
@@ -67,6 +67,8 @@ from domain_model.projection_repository import (  # noqa: E402
     get_projection_scenarios,
     add_projection_scenario,
 )
+from domain_model.investment_repository import get_investment, update_investment_fields  # noqa: E402
+from domain_model.investment_note_repository import add_note  # noqa: E402
 
 PRESETS: dict[str, dict[str, float] | None] = {
     "design_win":      {"bull": +10, "bear": -5},
@@ -321,16 +323,22 @@ def _run_apply_catalyst(conn, args, bull_delta: float, bear_delta: float) -> Non
     print(f"\n✅ {args.ticker} updated  FV ${old_fv:.2f}→${new_fv:.2f}  action {old_action}→{new_action}")
 
     if args.update_thesis:
-        thesis = json.loads(THESIS_JSON.read_text())
-        for h in thesis.get("holdings", []):
-            if h["ticker"] == args.ticker:
-                old_rat = h.get("agentRationale", "").rstrip(". ")
-                suffix = f" {args.date}: {args.note}."
-                if args.note not in old_rat:
-                    h["agentRationale"] = old_rat + "." + suffix
-                break
-        locked_write_json(THESIS_JSON, thesis)
-        print(f"✅ agentRationale updated in target-portfolio.json for {args.ticker}")
+        # Wave 2 Task 10 cutover: agentRationale is no longer hand-concatenated into
+        # target-portfolio.json. Each new catalyst note becomes its own append-only
+        # investment_note row (note_type=AGENT_RATIONALE), and investment.agent_rationale
+        # is refreshed as the denormalized "latest note body" convenience column.
+        existing_investment = get_investment(conn, investment_id)
+        old_rat = (existing_investment or {}).get("agent_rationale") or ""
+        if args.note not in old_rat:
+            note_body = f"{args.date}: {args.note}"
+            add_note(
+                conn, investment_id, note_date=args.date, body=note_body,
+                note_type="AGENT_RATIONALE", source="apply_catalyst.py",
+            )
+            update_investment_fields(conn, investment_id, agent_rationale=note_body)
+            print(f"✅ agentRationale note added to domain_model.sqlite for {args.ticker}")
+        else:
+            print(f"ℹ  {args.ticker}: note already present, skipping duplicate insert")
 
 
 if __name__ == "__main__":

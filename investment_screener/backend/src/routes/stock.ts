@@ -15,11 +15,13 @@
  *   - GET /market/quotes - Batch quote (bid/ask/price/change) for a comma-separated list of tickers
  * 
  * Key Input Dependencies:
- *   - investment_screener/backend/data/theses/target-portfolio.json
+ *   - investment_screener/backend/data/domain_model.sqlite (thesis holdings,
+ *     via InvestmentRepository.listThesisHoldings() — rewired off
+ *     target-portfolio.json in Wave 2 Task 10/11)
  *   - investment_screener/backend/data/etf_analysis/ (contains processed ETF JSON results)
  *   - investment_screener/backend/data/portfolio.json
  *   - ../services/bridge (for fetch_financials.py, fetch_portfolio_heatmap.py, and fetch_quotes.py)
- * 
+ *
  * Key Output Dependencies:
  *   None
  */
@@ -30,20 +32,22 @@ import path from 'path';
 import { spawnPythonScript } from '../services/bridge';
 import { getLiveUsdCadRate } from '../utils/helpers';
 import { isValidTicker } from '../utils/helpers';
-import { ETF_ANALYSIS_DIR, PORTFOLIO_FILE, TARGET_PORTFOLIO_FILE } from '../utils/paths';
+import { ETF_ANALYSIS_DIR, PORTFOLIO_FILE, DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 import { buildLookupDictionary } from '../utils/stockLookup';
+import { InvestmentRepository } from '../services/InvestmentRepository';
 
 const router = express.Router();
 
 router.get('/stock/lookup', async (req, res) => {
     try {
-        if (!fs.existsSync(TARGET_PORTFOLIO_FILE)) {
-            res.json({});
-            return;
+        const repo = new InvestmentRepository(DOMAIN_MODEL_DB_FILE);
+        let holdings;
+        try {
+            holdings = repo.listThesisHoldings();
+        } finally {
+            repo.close();
         }
-        const raw = fs.readFileSync(TARGET_PORTFOLIO_FILE, 'utf-8');
-        const target = JSON.parse(raw);
-        const dict = buildLookupDictionary(target.holdings ?? []);
+        const dict = buildLookupDictionary(holdings);
         res.json(dict);
     } catch (e: any) {
         console.error(`[API] Error building stock lookup: `, e);

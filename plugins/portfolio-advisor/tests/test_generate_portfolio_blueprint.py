@@ -4,6 +4,11 @@ projections/{TICKER}.json read sites onto domain_model.sqlite (ADR-029):
 column) and `_get_latest_ai_agent_projection` (used by update_section_tables's
 `get_ai_signal`, which must stay strictly AI_AGENT-only, no fallback).
 
+Also covers the Wave 2 rewire of `build_thesis_map`, which used to read
+`target-portfolio.json` holdings directly and now reads per-investment thesis
+fields (target_weight, lifecycle_status, thesis_for_inclusion, sub_strategy_id/
+pillar_id) via `domain_model.investment_repository.list_investments`.
+
 All tests run against a `tmp_path`-backed SQLite database via `initialize_db` —
 never the real `data/domain_model.sqlite` file.
 """
@@ -16,10 +21,47 @@ sys.path.insert(0, str(REPO_ROOT / "plugins/portfolio-advisor/scripts"))
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 
 from domain_model.db_client import initialize_db  # noqa: E402
-from domain_model.investment_repository import resolve_investment  # noqa: E402
+from domain_model.investment_repository import (  # noqa: E402
+    resolve_investment,
+    update_investment_fields,
+)
+from domain_model.pillar_repository import resolve_pillar, resolve_sub_strategy  # noqa: E402
 from domain_model.projection_repository import save_projection_version  # noqa: E402
 
 import generate_portfolio_blueprint as gpb  # noqa: E402
+
+
+def test_build_thesis_map_reads_from_sqlite_not_json(tmp_path):
+    """build_thesis_map must source targetPct/role/thesisNote/subStrategyId
+    from investment columns, not target-portfolio.json."""
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    try:
+        resolve_pillar(conn, "ai-compute", "AI Compute")
+        resolve_sub_strategy(conn, "sa-asi-race", "ai-compute", "SA / ASI Race")
+        nvda_id = resolve_investment(conn, "NVDA", asset_class="EQUITY")
+        update_investment_fields(
+            conn, nvda_id,
+            pillar_id="ai-compute", sub_strategy_id="sa-asi-race",
+            target_weight=5.5, lifecycle_status="accumulate",
+            thesis_for_inclusion="Highest-conviction BUY.",
+        )
+        # Watchlist-only row (no pillar_id) must be excluded, matching the
+        # original JSON read's implicit scope (thesis.holdings only).
+        wl_id = resolve_investment(conn, "ZZZZ", asset_class="EQUITY")
+        update_investment_fields(conn, wl_id, is_watchlisted=True)
+    finally:
+        conn.close()
+
+    thesis_map = gpb.build_thesis_map(db_path)
+    assert thesis_map["NVDA"] == {
+        "subStrategyId": "sa-asi-race",
+        "targetPct": 5.5,
+        "role": "accumulate",
+        "thesisNote": "Highest-conviction BUY.",
+        "thesisBreakers": [],
+    }
+    assert "ZZZZ" not in thesis_map
 
 
 def test_get_latest_ai_projection_returns_none_for_unknown_ticker(tmp_path):

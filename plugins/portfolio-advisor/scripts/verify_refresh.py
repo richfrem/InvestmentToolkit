@@ -39,6 +39,32 @@ from portfolio_action import derive_action
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.projection_repository import get_latest_projection_by_source  # noqa: E402
+from domain_model.investment_repository import list_investments  # noqa: E402
+
+
+def _load_holdings_map(db_path: Path = DB_PATH) -> dict:
+    """Return {ticker: {targetWeight, agentRationale}} from investment.
+
+    Storage backend (Wave 2 Task 10 rewire): replaces the direct
+    target-portfolio.json ``holdings`` read (targetWeight, agentRationale
+    fields) with ``investment.target_weight`` / ``investment.agent_rationale``
+    via ``list_investments`` (ADR-029). Document-level fields (name, version,
+    updatedAt) have no investment-table equivalent and are still read
+    straight from target-portfolio.json below.
+    """
+    if not Path(db_path).exists():
+        return {}
+    conn = initialize_db(str(db_path))
+    try:
+        return {
+            row["symbol"]: {
+                "targetWeight": row.get("target_weight") or 0,
+                "agentRationale": row.get("agent_rationale") or "",
+            }
+            for row in list_investments(conn)
+        }
+    finally:
+        conn.close()
 
 
 def _load_ai_agent_upside(ticker: str) -> float | None:
@@ -88,7 +114,7 @@ json_version = thesis.get("version", 0)
 json_updated = thesis.get("updatedAt", "")[:10]
 ok(f"Loaded: {json_name}  (version={json_version}, updatedAt={json_updated})")
 
-holdings_map = {h["ticker"]: h for h in thesis.get("holdings", [])}
+holdings_map = _load_holdings_map()
 non_zero = {t: h for t, h in holdings_map.items() if h.get("targetWeight", 0) > 0}
 exited   = {t: h for t, h in holdings_map.items() if h.get("targetWeight", 0) == 0}
 

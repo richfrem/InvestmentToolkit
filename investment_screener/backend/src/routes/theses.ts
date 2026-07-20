@@ -30,7 +30,11 @@
  * Key Input Dependencies:
  *   - investment_screener/backend/data/theses/sub_strategies/ (location of markdown files)
  *   - ../services/ThesisService (thesisService operations)
- *   - investment_screener/backend/data/theses/target-portfolio.json (primary thesis file)
+ *   - investment_screener/backend/data/theses/target-portfolio.json (primary thesis file,
+ *     still the source for all routes except GET /pillars — see ThesisService.ts's
+ *     module docstring for why the full-document read isn't SQLite-backed)
+ *   - investment_screener/backend/data/domain_model.sqlite (GET /pillars, via
+ *     InvestmentRepository.listPillars() — rewired in Wave 2 Task 10/11)
  * 
  * Key Output Dependencies:
  *   - investment_screener/backend/data/theses/
@@ -40,7 +44,8 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { thesisService } from '../services/ThesisService';
-import { THESIS_FILE } from '../utils/paths';
+import { DOMAIN_MODEL_DB_FILE } from '../utils/paths';
+import { InvestmentRepository } from '../services/InvestmentRepository';
 
 const router = express.Router();
 const SUB_STRATEGIES_DIR = path.resolve(__dirname, '../../data/theses/sub_strategies');
@@ -119,9 +124,14 @@ router.get('/', async (_req, res) => {
 
 router.get('/pillars', async (_req, res) => {
     try {
-        if (!fs.existsSync(THESIS_FILE)) { res.json([]); return; }
-        const thesis = JSON.parse(fs.readFileSync(THESIS_FILE, 'utf-8'));
-        res.json(thesis.pillars ?? []);
+        const repo = new InvestmentRepository(DOMAIN_MODEL_DB_FILE);
+        let pillars;
+        try {
+            pillars = repo.listPillars();
+        } finally {
+            repo.close();
+        }
+        res.json(pillars);
     } catch (err: any) { res.status(500).json({ error: err.message }); }
 });
 
