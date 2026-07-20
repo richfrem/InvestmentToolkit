@@ -16,10 +16,20 @@
  *   statements as `db_client.py::initialize_db` for `investment`, `strategy_pillar`,
  *   `sub_strategy`, `projection_version`, and `projection_scenario` (idempotent no-ops
  *   against the real, already-initialized file; load-bearing for fresh temp/`:memory:`
- *   test databases that have no schema yet). Do not invent a parallel/divergent schema —
- *   any column added here (`raw_json`, `legacy_id`, see below) is an ADDITIVE column on
- *   the existing shared tables, applied via idempotent `ALTER TABLE ... ADD COLUMN`,
- *   never a rename/removal of a Python-owned column.
+ *   test databases that have no schema yet). Do not invent a parallel/divergent schema.
+ *   Python (`db_client.py`) is the single source of truth for this shared schema —
+ *   `ensureSchema()` below must ONLY ever run `CREATE TABLE IF NOT EXISTS` /
+ *   `CREATE INDEX IF NOT EXISTS` matching that file's DDL verbatim, column-for-column,
+ *   including `raw_json`/`legacy_id` on `projection_version` (see below). It must NEVER
+ *   run `ALTER TABLE` against the shared file as a side effect of construction — an
+ *   earlier version of this file did exactly that (unconditional `ALTER TABLE
+ *   projection_version ADD COLUMN ...` in the constructor), which silently mutated the
+ *   real production `domain_model.sqlite` the moment anything imported this module,
+ *   before `db_client.py` even knew those columns existed. Fixed in the Task 5 review
+ *   pass: `db_client.py::initialize_db` now declares `raw_json`/`legacy_id` directly in
+ *   its own `CREATE TABLE IF NOT EXISTS projection_version` DDL, and this file's
+ *   `ensureSchema()` mirrors that DDL as a plain (no-op-if-already-there) `CREATE TABLE
+ *   IF NOT EXISTS`, not a runtime schema migration.
  *
  * Round-trip fidelity design decision (`raw_json` / `legacy_id` columns):
  *   The Python schema's `projection_version` table (Task 1/4) has no column for the
@@ -56,14 +66,15 @@
  *   preserved unchanged for the common case (same `id` being re-saved).
  *
  * Key Functions (Index):
- *   - findByTicker(ticker) - All projection rows for one ticker, version-ascending
- *   - findAll() - All projection rows across all tickers
+ *   - findByTicker(ticker) - Current-state-per-identity rows for one ticker (MAX version
+ *     per distinct `legacy_id`/synthetic identity — see Finding 2 fix note), version-ascending
+ *   - findAll() - Current-state-per-identity rows across all tickers
  *   - upsertProjection(validated) - Upsert-by-id-then-version-increment (see above)
  *   - deleteById(ticker, id) - Delete one projection row + its scenarios, returns found/not-found
  */
 import Database from 'better-sqlite3';
 import crypto from 'crypto';
-import { Projection } from '../utils/zod-schemas';
+import { Projection, ProjectionSchema } from '../utils/zod-schemas';
 
 interface ProjectionVersionRow {
     projection_id: string;
@@ -186,6 +197,8 @@ export class ProjectionRepository {
                 research_event_id     TEXT,
                 snapshot_json         TEXT,
                 analytics_log_json    TEXT,
+                raw_json              TEXT,
+                legacy_id             TEXT,
                 UNIQUE(investment_id, version)
             );
 
@@ -215,17 +228,6 @@ export class ProjectionRepository {
             CREATE INDEX IF NOT EXISTS idx_projection_scenario_projection
                 ON projection_scenario(projection_id);
         `);
-
-        // Additive columns for full round-trip fidelity (see module docstring). Guarded by
-        // pragma table_info since SQLite's ALTER TABLE ADD COLUMN has no IF NOT EXISTS form.
-        const columns = this.db.prepare('PRAGMA table_info(projection_version)').all() as Array<{ name: string }>;
-        const columnNames = new Set(columns.map(c => c.name));
-        if (!columnNames.has('raw_json')) {
-            this.db.exec('ALTER TABLE projection_version ADD COLUMN raw_json TEXT;');
-        }
-        if (!columnNames.has('legacy_id')) {
-            this.db.exec('ALTER TABLE projection_version ADD COLUMN legacy_id TEXT;');
-        }
     }
 
     /** Mirrors `investment_repository.py::resolve_investment` — idempotent lookup-or-insert
@@ -315,8 +317,50 @@ export class ProjectionRepository {
             };
         }
 
+        // Validation gate (Task 5 review, Finding 3): a reconstructed legacy row
+        // synthesizes placeholder values for required Zod fields (name, dataPreferences,
+        // globalSettings, etc.) since the structured columns don't carry them. Never
+        // serve a malformed reconstruction silently — run safeParse and log loudly (with
+        // ticker/id) if it fails, matching this project's standing rule against silently
+        // degraded data being served as if it were complete. We still return the
+        // best-effort object even on failure: some legacy fields genuinely can't be
+        // recovered, and callers historically tolerated this shape.
+        const validation = ProjectionSchema.safeParse(reconstructed);
+        if (!validation.success) {
+            console.warn(
+                `[ProjectionRepository] Reconstructed legacy projection failed schema validation ` +
+                `(ticker=${row.investment_id}, id=${reconstructed.id}, projection_id=${row.projection_id}): ` +
+                validation.error.message
+            );
+        }
+
         return reconstructed as Projection;
     }
+
+    /** Groups `projection_version` rows by `(investment_id, identity)` — where
+     * `identity` is `legacy_id` when present (all rows saved through `upsertProjection`
+     * going forward), or the row's own `projection_id` when absent (pre-existing
+     * migrated rows that predate the `legacy_id` column, each treated as its own
+     * distinct identity — see module docstring) — and keeps only the MAX-`version` row
+     * per group. Restores the old filesystem-JSON model's "array length = number of
+     * distinct projection identities" semantics (Task 5 review, Finding 2): a ticker
+     * re-saved under the same `id` N times must return ONE current-state entry, not N
+     * stale version rows. */
+    private static readonly CURRENT_PER_IDENTITY_SQL = `
+        SELECT pv.* FROM projection_version pv
+        INNER JOIN (
+            SELECT investment_id,
+                   COALESCE(legacy_id, projection_id) AS identity,
+                   MAX(version) AS max_version
+            FROM projection_version
+            {WHERE_CLAUSE}
+            GROUP BY investment_id, identity
+        ) latest
+            ON pv.investment_id = latest.investment_id
+           AND COALESCE(pv.legacy_id, pv.projection_id) = latest.identity
+           AND pv.version = latest.max_version
+        ORDER BY pv.investment_id ASC, pv.version ASC
+    `;
 
     findByTicker(ticker: string): Projection[] {
         const investment = this.db
@@ -324,16 +368,17 @@ export class ProjectionRepository {
             .get(ticker) as { investment_id: string } | undefined;
         if (!investment) return [];
 
-        const rows = this.db
-            .prepare('SELECT * FROM projection_version WHERE investment_id = ? ORDER BY version ASC')
-            .all(investment.investment_id) as ProjectionVersionRow[];
+        const sql = ProjectionRepository.CURRENT_PER_IDENTITY_SQL.replace(
+            '{WHERE_CLAUSE}',
+            'WHERE investment_id = ?'
+        );
+        const rows = this.db.prepare(sql).all(investment.investment_id) as ProjectionVersionRow[];
         return rows.map(r => this.rowToProjection(r));
     }
 
     findAll(): Projection[] {
-        const rows = this.db
-            .prepare('SELECT * FROM projection_version ORDER BY investment_id ASC, version ASC')
-            .all() as ProjectionVersionRow[];
+        const sql = ProjectionRepository.CURRENT_PER_IDENTITY_SQL.replace('{WHERE_CLAUSE}', '');
+        const rows = this.db.prepare(sql).all() as ProjectionVersionRow[];
         return rows.map(r => this.rowToProjection(r));
     }
 
