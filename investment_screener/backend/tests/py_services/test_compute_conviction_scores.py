@@ -142,3 +142,73 @@ class TestScoreLoadTaLedger:
         assert ta_map["MSFT"]["rsi"] == 55.0
         assert ta_map["MSFT"]["flags"] == ["ACCUM_SIGNAL"]
 
+
+class TestLoadDcf:
+    """_load_dcf must read from the domain_model SQLite `projection_version` table
+    (Wave 1 Task 7A), preferring the latest AI_AGENT-sourced row over MAX(version)."""
+
+    def _init_domain_db(self, tmp_path):
+        import json as _json
+        from domain_model.db_client import initialize_db  # noqa: PLC0415
+        from domain_model.investment_repository import resolve_investment  # noqa: PLC0415
+        from domain_model.projection_repository import save_projection_version  # noqa: PLC0415
+
+        db_path = tmp_path / "domain_model.sqlite"
+        conn = initialize_db(str(db_path))
+        investment_id = resolve_investment(conn, "MSFT")
+        # version 1: AI_AGENT, older
+        save_projection_version(
+            conn, investment_id, version=1, saved_at="2026-01-01T00:00:00Z",
+            fair_value=300.0, action="HOLD", source="AI_AGENT",
+            snapshot_json=_json.dumps({"price": 280.0}),
+        )
+        # version 2: ETF_ANALYSIS, newer, HIGHER version — must be ignored in favor
+        # of the AI_AGENT row (Task 6 finding: MAX(version) alone is unsafe).
+        save_projection_version(
+            conn, investment_id, version=2, saved_at="2026-02-01T00:00:00Z",
+            fair_value=999.0, action="SELL", source="ETF_ANALYSIS",
+            snapshot_json=_json.dumps({"price": 280.0}),
+        )
+        conn.close()
+        return db_path
+
+    def test_prefers_latest_ai_agent_over_higher_version_other_source(self, tmp_path):
+        from compute_conviction_scores import _load_dcf  # noqa: PLC0415
+
+        db_path = self._init_domain_db(tmp_path)
+        result = _load_dcf("MSFT", db_path=db_path)
+
+        assert result["action"] == "HOLD"
+        assert result["fairValue"] == 300.0
+        assert result["pctToFV"] == round((300.0 - 280.0) / 280.0 * 100, 1)
+
+    def test_falls_back_to_latest_version_when_no_ai_agent_row(self, tmp_path):
+        import json as _json
+        from domain_model.db_client import initialize_db  # noqa: PLC0415
+        from domain_model.investment_repository import resolve_investment  # noqa: PLC0415
+        from domain_model.projection_repository import save_projection_version  # noqa: PLC0415
+        from compute_conviction_scores import _load_dcf  # noqa: PLC0415
+
+        db_path = tmp_path / "domain_model.sqlite"
+        conn = initialize_db(str(db_path))
+        investment_id = resolve_investment(conn, "ETFX")
+        save_projection_version(
+            conn, investment_id, version=1, saved_at="2026-01-01T00:00:00Z",
+            fair_value=50.0, action="MAINTAIN", source="ETF_ANALYSIS",
+            snapshot_json=_json.dumps({"price": 45.0}),
+        )
+        conn.close()
+
+        result = _load_dcf("ETFX", db_path=db_path)
+        assert result["action"] == "MAINTAIN"
+        assert result["fairValue"] == 50.0
+
+    def test_returns_empty_dict_when_ticker_unknown(self, tmp_path):
+        from domain_model.db_client import initialize_db  # noqa: PLC0415
+        from compute_conviction_scores import _load_dcf  # noqa: PLC0415
+
+        db_path = tmp_path / "domain_model.sqlite"
+        initialize_db(str(db_path)).close()
+
+        assert _load_dcf("NOPE", db_path=db_path) == {}
+
