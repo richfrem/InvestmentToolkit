@@ -23,7 +23,7 @@ THESIS_JSON = REPO_ROOT / "investment_screener/backend/data/theses/target-portfo
 THESIS_MD   = REPO_ROOT / "investment_screener/backend/data/theses/investment_thesis.md"
 PORTFOLIO   = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 REVIEWS_DIR = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
-PROJ_DIR    = REPO_ROOT / "investment_screener/backend/data/projections"
+DB_PATH     = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
 # Positions user locked to "no change" — must stay at MAINTAIN
 NO_CHANGE = {"GOOG", "HUMN", "KOID"}
@@ -35,6 +35,41 @@ SA_DCF_CONFLICTS = {"CORZ", "LITE", "BE", "INTC", "IONQ", "QBTS", "OKLO", "CEG",
 sys.path.insert(0, str(Path(__file__).parent))
 from validate_weights import compute_current, compute_target
 from portfolio_action import derive_action
+
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.projection_repository import get_latest_projection_by_source  # noqa: E402
+
+
+def _load_ai_agent_upside(ticker: str) -> float | None:
+    """Return `(fairValue - price) / price * 100` for the latest AI_AGENT
+    projection, or None if no AI_AGENT row (or no fairValue/price) exists.
+
+    Storage backend (Wave 1 Task 7B): reads `projection_version` via
+    `domain_model.projection_repository`, not `projections/{TICKER}.json`
+    directly (ADR-029). Factors out the two duplicated file-read blocks the
+    original script had (false-ACCUMULATE and false-INITIATE checks), both of
+    which filtered strictly by `source == "AI_AGENT"` with no fallback.
+    """
+    conn = initialize_db(str(DB_PATH))
+    try:
+        row = conn.execute(
+            "SELECT investment_id FROM investment WHERE symbol = ?;", (ticker,)
+        ).fetchone()
+        if row is None:
+            return None
+        entry = get_latest_projection_by_source(conn, row[0], "AI_AGENT")
+        if entry is None:
+            return None
+        fv = entry.get("fair_value")
+        snapshot = json.loads(entry["snapshot_json"]) if entry.get("snapshot_json") else {}
+        price = snapshot.get("price")
+        if not fv or not price:
+            return None
+        return (fv - price) / price * 100
+    finally:
+        conn.close()
+
 
 errors   = []
 warnings = []
@@ -169,53 +204,25 @@ for ticker, h in holdings_map.items():
 
     # Check for false ACCUMULATE: target > actual AND DCF is SELL-rated (< -15% upside)
     if action == "ACCUMULATE":
-        proj_file = PROJ_DIR / f"{ticker}.json"
-        if proj_file.exists():
-            try:
-                with open(proj_file) as f:
-                    data = json.load(f)
-                projs = data if isinstance(data, list) else [data]
-                ai = [p for p in projs if p.get("source") == "AI_AGENT"]
-                if ai:
-                    latest = max(ai, key=lambda x: x.get("savedAt", ""))
-                    th = latest.get("aiThesis", {})
-                    sn = latest.get("snapshot", {})
-                    fv = th.get("fairValue", 0)
-                    price = sn.get("price", 0)
-                    if fv and price:
-                        upside = (fv - price) / price * 100
-                        if upside < -15:
-                            msg = f"{ticker}(ACCUMULATE but DCF {upside:+.1f}%)"
-                            if ticker in SA_DCF_CONFLICTS:
-                                warnings.append(f"  ⚠ Known SA/DCF conflict: {msg}")
-                            else:
-                                false_accumulate.append(msg)
-            except Exception:
-                pass
+        try:
+            upside = _load_ai_agent_upside(ticker)
+            if upside is not None and upside < -15:
+                msg = f"{ticker}(ACCUMULATE but DCF {upside:+.1f}%)"
+                if ticker in SA_DCF_CONFLICTS:
+                    warnings.append(f"  ⚠ Known SA/DCF conflict: {msg}")
+                else:
+                    false_accumulate.append(msg)
+        except Exception:
+            pass
 
     # Check for false INITIATE: target > 0 but DCF is strongly negative (< -20%)
     if action == "INITIATE" and target > 0:
-        proj_file = PROJ_DIR / f"{ticker}.json"
-        if proj_file.exists():
-            try:
-                with open(proj_file) as f:
-                    data = json.load(f)
-                projs = data if isinstance(data, list) else [data]
-                ai = [p for p in projs if p.get("source") == "AI_AGENT"]
-                if ai:
-                    latest = max(ai, key=lambda x: x.get("savedAt", ""))
-                    th = latest.get("aiThesis", {})
-                    sn = latest.get("snapshot", {})
-                    fv = th.get("fairValue", 0)
-                    price = sn.get("price", 0)
-                    if fv and price:
-                        upside = (fv - price) / price * 100
-                        if upside < -20:
-                            false_initiate.append(
-                                f"{ticker}(INITIATE but DCF {upside:+.1f}%)"
-                            )
-            except Exception:
-                pass
+        try:
+            upside = _load_ai_agent_upside(ticker)
+            if upside is not None and upside < -20:
+                false_initiate.append(f"{ticker}(INITIATE but DCF {upside:+.1f}%)")
+        except Exception:
+            pass
 
 if no_change_broken:
     fail(f"No-change positions not at MAINTAIN: {no_change_broken}")

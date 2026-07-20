@@ -14,14 +14,23 @@ from framework_score import (  # noqa: E402
     score_higher_better,
     score_lower_better,
 )
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import resolve_investment  # noqa: E402
+from domain_model.projection_repository import save_projection_version  # noqa: E402
 
 
-def _write_projection(dirpath, ticker, price, shares):
-    proj = [{
-        "ticker": ticker, "source": "AI_AGENT", "savedAt": "2026-01-01T00:00:00Z",
-        "snapshot": {"price": price, "shares": shares},
-    }]
-    (dirpath / f"{ticker}.json").write_text(json.dumps(proj))
+def _write_projection(tmp_path, ticker, price, shares):
+    """Insert a single AI_AGENT-sourced projection_version row for `ticker`
+    (Wave 1 Task 7A: replaces the old projections/{TICKER}.json fixture writer)."""
+    db_path = tmp_path / "domain_model.sqlite"
+    conn = initialize_db(str(db_path))
+    investment_id = resolve_investment(conn, ticker)
+    save_projection_version(
+        conn, investment_id, version=1, saved_at="2026-01-01T00:00:00Z", source="AI_AGENT",
+        snapshot_json=json.dumps({"price": price, "shares": shares}),
+    )
+    conn.close()
+    return db_path
 
 
 def _fundamentals_fixture(**overrides):
@@ -66,11 +75,11 @@ def test_score_returns_none_for_none_input():
 # ── compute_raw_metrics ───────────────────────────────────────────────────────
 
 def test_compute_raw_metrics_computes_expected_values(tmp_path):
-    _write_projection(tmp_path, "TEST", price=100.0, shares=10_000_000.0)
+    db_path = _write_projection(tmp_path, "TEST", price=100.0, shares=10_000_000.0)
     estimates = {"y1RevEstimate": 1_000_000_000.0, "y2RevEstimate": 1_300_000_000.0}
     with patch("framework_score.get_fundamentals", return_value=_fundamentals_fixture()), \
          patch("framework_score.get_estimates", return_value=estimates):
-        metrics = compute_raw_metrics("TEST", "chips_ai", str(tmp_path))
+        metrics = compute_raw_metrics("TEST", "chips_ai", str(db_path))
 
     # marketCap = 100 * 10M = 1_000_000_000
     # investedCapital = 300M + 1_000_000_000 - 150M = 1_150_000_000
@@ -86,9 +95,11 @@ def test_compute_raw_metrics_computes_expected_values(tmp_path):
 
 
 def test_compute_raw_metrics_returns_none_for_missing_projection(tmp_path):
+    db_path = tmp_path / "domain_model.sqlite"
+    initialize_db(str(db_path)).close()
     with patch("framework_score.get_fundamentals", return_value=_fundamentals_fixture()), \
          patch("framework_score.get_estimates", return_value={}):
-        metrics = compute_raw_metrics("MISSING", "chips_ai", str(tmp_path))
+        metrics = compute_raw_metrics("MISSING", "chips_ai", str(db_path))
     assert metrics["revenueGrowth"] is None
     assert metrics["roic"] is None  # no shares -> no market cap -> no invested capital
 
@@ -96,14 +107,14 @@ def test_compute_raw_metrics_returns_none_for_missing_projection(tmp_path):
 # ── compute_framework_score — composite ──────────────────────────────────────
 
 def test_compute_framework_score_saas_cyber_composite(tmp_path):
-    _write_projection(tmp_path, "SAAS", price=100.0, shares=10_000_000.0)
+    db_path = _write_projection(tmp_path, "SAAS", price=100.0, shares=10_000_000.0)
     estimates = {"y1RevEstimate": 1_000_000_000.0, "y2RevEstimate": 1_250_000_000.0}
     fundamentals = _fundamentals_fixture(
         freeCashflow={"value": 60_000_000.0, "source": "yfinance", "asOf": "2026-01-01"},
     )
     with patch("framework_score.get_fundamentals", return_value=fundamentals), \
          patch("framework_score.get_estimates", return_value=estimates):
-        result = compute_framework_score("SAAS", "saas_cyber", str(tmp_path))
+        result = compute_framework_score("SAAS", "saas_cyber", str(db_path))
 
     assert result["sector"] == "saas_cyber"
     assert result["metrics"]["revenueGrowth"]["raw"] == 0.25
@@ -116,7 +127,7 @@ def test_compute_framework_score_saas_cyber_composite(tmp_path):
 
 def test_compute_framework_score_boundary_ro40_exactly_40_scores_90(tmp_path):
     """Design decision: exactly at the sector threshold scores the top band (>=, not >)."""
-    _write_projection(tmp_path, "BOUND", price=50.0, shares=1_000_000.0)
+    db_path = _write_projection(tmp_path, "BOUND", price=50.0, shares=1_000_000.0)
     # Ro40 Method A = revenueGrowth + fcfMargin (FCF / revenue), must equal exactly
     # 40.0 for saas_cyber. revenueGrowth = 0.30 (30%), fcfMargin must be 0.10 (10%)
     # of the 100_000_000 revenue below -> fcf = 10_000_000.
@@ -127,20 +138,20 @@ def test_compute_framework_score_boundary_ro40_exactly_40_scores_90(tmp_path):
     )
     with patch("framework_score.get_fundamentals", return_value=fundamentals), \
          patch("framework_score.get_estimates", return_value=estimates):
-        result = compute_framework_score("BOUND", "saas_cyber", str(tmp_path))
+        result = compute_framework_score("BOUND", "saas_cyber", str(db_path))
 
     assert result["metrics"]["ruleOf40"]["raw"] == 0.40
     assert result["metrics"]["ruleOf40"]["score"] == 90
 
 
 def test_compute_framework_score_reweights_when_qualitative_missing(tmp_path):
-    _write_projection(tmp_path, "RW", price=100.0, shares=10_000_000.0)
+    db_path = _write_projection(tmp_path, "RW", price=100.0, shares=10_000_000.0)
     estimates = {"y1RevEstimate": 1_000_000_000.0, "y2RevEstimate": 1_200_000_000.0}
     with patch("framework_score.get_fundamentals", return_value=_fundamentals_fixture()), \
          patch("framework_score.get_estimates", return_value=estimates):
-        no_qual = compute_framework_score("RW", "chips_ai", str(tmp_path))
+        no_qual = compute_framework_score("RW", "chips_ai", str(db_path))
         with_qual = compute_framework_score(
-            "RW", "chips_ai", str(tmp_path),
+            "RW", "chips_ai", str(db_path),
             qualitative={
                 "competitiveMoat": {"rating": "high", "source": "10-K", "asOf": "2026-01-01"},
                 "newsImpact": {"rating": "positive", "source": "call", "asOf": "2026-01-01"},
@@ -156,14 +167,14 @@ def test_compute_framework_score_reweights_when_qualitative_missing(tmp_path):
 
 def test_compute_framework_score_composite_invariant_to_dict_ordering(tmp_path):
     """Property test: reordering metrics dict keys must not change the composite."""
-    _write_projection(tmp_path, "ORD", price=100.0, shares=10_000_000.0)
+    db_path = _write_projection(tmp_path, "ORD", price=100.0, shares=10_000_000.0)
     estimates = {"y1RevEstimate": 1_000_000_000.0, "y2RevEstimate": 1_200_000_000.0}
     fundamentals = _fundamentals_fixture()
     reversed_fundamentals = dict(reversed(list(fundamentals.items())))
     with patch("framework_score.get_estimates", return_value=estimates):
         with patch("framework_score.get_fundamentals", return_value=fundamentals):
-            result_a = compute_framework_score("ORD", "chips_ai", str(tmp_path))
+            result_a = compute_framework_score("ORD", "chips_ai", str(db_path))
         with patch("framework_score.get_fundamentals", return_value=reversed_fundamentals):
-            result_b = compute_framework_score("ORD", "chips_ai", str(tmp_path))
+            result_b = compute_framework_score("ORD", "chips_ai", str(db_path))
 
     assert result_a["composite"] == result_b["composite"]
