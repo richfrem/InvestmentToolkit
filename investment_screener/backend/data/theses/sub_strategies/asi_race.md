@@ -67,19 +67,19 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-17 09:56 by TV sync · Portfolio total: $28,677 USD*
+*Auto-updated 2026-07-19 17:10 by TV sync · Portfolio total: $28,548 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **CRWV** | 24 | 7.0% | 3.7% | +3.2pp ⚠ | 🟡 TRIM | — |
+| **CRWV** | 25 | 7.0% | 3.7% | +3.3pp ⚠ | 🟡 TRIM | — |
 | **NBIS** | 10 | 6.8% | 3.0% | +3.8pp ⚠ | 🟡 TRIM | — |
 | **SNDK** | 0.94 | 5.8% | 3.3% | +2.5pp ⚠ | 🟡 TRIM | ≤$1,350 |
-| **IREN** | 37 | 5.1% | 3.6% | +1.5pp | 🟡 TRIM | — |
-| **GOOG** | 4 | 5.0% | 4.0% | +1.0pp | 🟡 TRIM | — |
+| **IREN** | 38 | 5.1% | 3.6% | +1.5pp | 🟡 TRIM | — |
+| **GOOG** | 4 | 5.0% | 4.0% | +1.1pp | 🟡 TRIM | — |
 | **SKHY** | 6 | 4.1% | 3.1% | +1.0pp | 🟡 TRIM | — |
-| **CORZ** | 46 | 3.5% | 3.7% | -0.2pp | ⚪ MAINTAIN | — |
+| **CORZ** | 46 | 3.6% | 3.7% | -0.1pp | ⚪ MAINTAIN | — |
 | **CBRS** | 4.5 | 3.2% | 2.5% | +0.7pp | 🟡 TRIM | — |
 | **MU** | 0.8999999999999999 | 3.1% | 2.6% | +0.5pp | 🟡 TRIM | — |
 | **MSFT** | 2 | 2.7% | 2.2% | +0.5pp | 🟡 TRIM | — |
@@ -101,5 +101,5 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 |--------|---------|--------|-------------|------|
 | META | 1.9% | WATCHLIST | — | Social monopoly + AI ad flywheel. |
 
-**Pillar total — Actual: 52.4% · Target: 39.9% · Gap: +12.5pp**
+**Pillar total — Actual: 52.6% · Target: 39.9% · Gap: +12.8pp**
 <!-- AUTO_UPDATE_END: current_positions -->

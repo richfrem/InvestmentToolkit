@@ -688,3 +688,47 @@ isn't currently met. Recommendation: leave these in `projection_scenario`/`analy
 as designed. This isn't "no forever" — if a future filter/sort UI is actually built against
 these, promoting specific fields to real columns at that point is a small, targeted change, not
 a reason to speculatively add columns nothing queries today.
+
+### Missing top-level `PORTFOLIO`/config entity — checked, ADOPTED as `portfolio_policy`
+
+Raised as a question ("do you eventually need a top-level portfolio configuration object for
+global settings, cash targets, rebalance rules, constraints") — checked directly rather than
+answered from theory. `account_policy.json`, real content:
+
+```json
+{
+  "accountPreferenceRules": [{"match": "usDividendPayer", "prefer": "RRSP", "reason": "..."}, ...],
+  "psuFundingRule": {"ticker": "PSU-U.TO", "sameAccountOnly": true, "sharesFormula": "ceil(N * price / 100)"},
+  "riskBudgetCaps": {"maxMarginalRiskContributionPct": 25, "maxClusterVarianceContributionPct": 60},
+  "bandConfig": {"relativePct": 20, "absolutePct": 1.5, "criticalMultiplier": 2.0}
+}
+```
+
+This is exactly the "rebalance rules"/"portfolio constraints" concept the review asked about —
+real, not hypothetical, and it had no representation anywhere in this model, not even as a
+"stays JSON" entity with a name. `target-portfolio.json`'s `globalSettings` (`rebalanceFrequency`,
+`portfolioValueUSD`) is the same category of thing at smaller scale. Adopted as a real (if
+mostly-JSON) entity rather than left unmodeled:
+
+```sql
+CREATE TABLE portfolio_policy (
+    policy_id                          TEXT PRIMARY KEY,   -- fixed singleton row, e.g. 'default'
+    rebalance_frequency                  TEXT,               -- from target-portfolio.json globalSettings
+    portfolio_value_usd_target             REAL,             -- from target-portfolio.json globalSettings
+    max_marginal_risk_contribution_pct       REAL,           -- from account_policy.json riskBudgetCaps — simple scalar, real column
+    max_cluster_variance_contribution_pct      REAL,         -- from account_policy.json riskBudgetCaps
+    rebalance_band_relative_pct                  REAL,       -- from account_policy.json bandConfig
+    rebalance_band_absolute_pct                    REAL,     -- from account_policy.json bandConfig
+    rebalance_band_critical_multiplier               REAL,   -- from account_policy.json bandConfig
+    account_preference_rules_json                      TEXT, -- variable-length rule list, kept as JSON
+    psu_funding_rule_json                                TEXT, -- small but free-form rule, kept as JSON
+    updated_at                                             TEXT NOT NULL
+);
+```
+
+The four numeric caps/bands get real columns (fixed shape, simple scalars, genuinely the kind of
+thing you'd want to query/validate against) while the two rule structures
+(`accountPreferenceRules`, `psuFundingRule`) stay JSON — same "flat scalar vs. variable-shape
+rule" reasoning applied everywhere else in this document, not a special case. This is a singleton
+table (one row), not per-investment or per-account — a genuine top-level config object, exactly
+what was missing.
