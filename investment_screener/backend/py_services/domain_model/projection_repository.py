@@ -18,6 +18,9 @@ def save_projection_version(
     research_event_id: str | None = None,
     snapshot_json: str | None = None,
     analytics_log_json: str | None = None,
+    source: str | None = None,
+    last_grok_sweep: str | None = None,
+    catalyst_updates_json: str | None = None,
 ) -> str:
     """Insert or update a projection version row.
 
@@ -25,21 +28,33 @@ def save_projection_version(
     number it is given and does not compute the next version itself — that
     responsibility stays with the caller, mirroring ``ProjectionService.ts``'s existing
     upsert-by-id-then-version-increment split.
+
+    ``source``/``last_grok_sweep``/``catalyst_updates_json`` mirror the JSON model's
+    ``entry.source``/``entry.lastGrokSweep``/``entry.catalystUpdates`` fields (see
+    ``db_client.py``'s DDL-drift-check header for the real-data investigation that added
+    these columns). Like every other column here, this is a full-row upsert — a caller
+    that omits one of these on an update will null it out, so callers updating an
+    existing row must pass through the row's current values for anything they don't
+    intend to change.
     """
     projection_id = f"{investment_id}:{version}"
     conn.execute(
         "INSERT INTO projection_version "
         "(projection_id, investment_id, version, saved_at, analyzed_at, model, fair_value, "
-        "action, rationale, research_event_id, snapshot_json, analytics_log_json) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+        "action, rationale, research_event_id, snapshot_json, analytics_log_json, source, "
+        "last_grok_sweep, catalyst_updates_json) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
         "ON CONFLICT(investment_id, version) DO UPDATE SET "
         "saved_at=excluded.saved_at, analyzed_at=excluded.analyzed_at, model=excluded.model, "
         "fair_value=excluded.fair_value, action=excluded.action, rationale=excluded.rationale, "
         "research_event_id=excluded.research_event_id, snapshot_json=excluded.snapshot_json, "
-        "analytics_log_json=excluded.analytics_log_json;",
+        "analytics_log_json=excluded.analytics_log_json, source=excluded.source, "
+        "last_grok_sweep=excluded.last_grok_sweep, "
+        "catalyst_updates_json=excluded.catalyst_updates_json;",
         (
             projection_id, investment_id, version, saved_at, analyzed_at, model, fair_value,
-            action, rationale, research_event_id, snapshot_json, analytics_log_json,
+            action, rationale, research_event_id, snapshot_json, analytics_log_json, source,
+            last_grok_sweep, catalyst_updates_json,
         ),
     )
     conn.commit()
@@ -53,6 +68,31 @@ def get_latest_projection(conn: sqlite3.Connection, investment_id: str) -> dict 
         "SELECT * FROM projection_version WHERE investment_id = ? "
         "ORDER BY version DESC LIMIT 1;",
         (investment_id,),
+    )
+    row = cursor.fetchone()
+    return dict(row) if row else None
+
+
+def get_latest_projection_by_source(
+    conn: sqlite3.Connection, investment_id: str, source: str
+) -> dict | None:
+    """Return the ``source``-matching projection row with the latest ``saved_at`` for an
+    investment, or ``None`` if no row for this investment has that ``source``.
+
+    This is the SQL equivalent of ``apply_catalyst.py``'s ``_find_latest_ai_agent``
+    (called with ``source="AI_AGENT"``): filter by source first, then pick the newest by
+    ``saved_at`` — deliberately NOT ``MAX(version)`` (``get_latest_projection``'s
+    criterion). A real-data investigation (Task 6) found these two criteria disagree for
+    real tickers: version numbers are not always chronological (e.g. ``BW``, ``CLSK``,
+    ``LITE`` in the real ``projections/`` corpus each have a higher-numbered version with
+    an earlier ``savedAt`` than a lower-numbered one), so ``MAX(version)`` alone is not a
+    safe substitute for "latest AI_AGENT entry by save time".
+    """
+    conn.row_factory = sqlite3.Row
+    cursor = conn.execute(
+        "SELECT * FROM projection_version WHERE investment_id = ? AND source = ? "
+        "ORDER BY saved_at DESC LIMIT 1;",
+        (investment_id, source),
     )
     row = cursor.fetchone()
     return dict(row) if row else None

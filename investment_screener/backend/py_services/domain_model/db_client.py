@@ -63,6 +63,26 @@
 #     structured columns don't model); `legacy_id` holds the original Zod `Projection.id`
 #     UUID used to group version rows by projection identity. See ProjectionRepository.ts
 #     module docstring for the full design rationale.
+#   - projection_version.source / last_grok_sweep / catalyst_updates_json: not present in
+#     the source design documents. Added post-hoc (Wave 1 Task 6, apply_catalyst.py
+#     rewire) after a real-data investigation found `projection_version` had no way to
+#     represent the JSON model's `entry.source` (`AI_AGENT`/`USER`/`SYSTEM`/`ETF_ANALYSIS`),
+#     `entry.lastGrokSweep`, or `entry.catalystUpdates` fields — all three are read/written
+#     by `apply_catalyst.py` and are real, present data (19/132 and 18/132 real
+#     `projections/*.json` entries carry `lastGrokSweep`/`catalystUpdates` respectively; 8
+#     of 82 real tickers have zero `AI_AGENT`-sourced entries, only `ETF_ANALYSIS`). Without
+#     `source`, `apply_catalyst.py`'s `_find_latest_ai_agent` (source-filtered, latest by
+#     `savedAt`) has no SQL equivalent — `get_latest_projection`'s `MAX(version)` alone
+#     silently picks a non-`AI_AGENT` row for those 8 tickers and, separately, a
+#     stale/wrong-source row for 3 more real tickers whose version numbers are not
+#     chronological (`BW`, `CLSK`, `LITE` — confirmed by direct comparison against real
+#     `projections/*.json`). `last_grok_sweep`/`catalyst_updates_json` are added so
+#     `--record-sweep` and the catalyst-apply write path have somewhere to persist their
+#     stamped date / appended catalyst-log entries, matching the JSON model's fields
+#     one-for-one. `migrate_projections_to_sqlite.py` is updated to populate all three for
+#     future migration runs; the real file's 115 already-migrated rows predate this change
+#     and have `NULL` in all three columns until a follow-up backfill re-migration is run
+#     (out of scope for Task 6 — flagged for the reviewer, not silently assumed backfilled).
 #   - (no other deviations found as of this transcription)
 import sqlite3
 
@@ -231,6 +251,9 @@ def initialize_db(db_path: str) -> sqlite3.Connection:
         analytics_log_json    TEXT,
         raw_json               TEXT,
         legacy_id               TEXT,
+        source                   TEXT,
+        last_grok_sweep          TEXT,
+        catalyst_updates_json    TEXT,
         UNIQUE(investment_id, version)
     );
     """)

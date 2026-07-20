@@ -132,6 +132,7 @@ def parse_projection_entry(entry: dict) -> dict:
 
     snapshot = entry.get("snapshot")
     analytics_log = entry.get("analyticsLog")
+    catalyst_updates = entry.get("catalystUpdates")
 
     parsed = {
         "id": entry.get("id"),
@@ -147,6 +148,10 @@ def parse_projection_entry(entry: dict) -> dict:
         "snapshot_json": json.dumps(snapshot) if snapshot is not None else None,
         "analytics_log_json": json.dumps(analytics_log) if analytics_log is not None else None,
         "scenarios": entry.get("scenarios"),
+        "last_grok_sweep": entry.get("lastGrokSweep"),
+        "catalyst_updates_json": (
+            json.dumps(catalyst_updates) if catalyst_updates is not None else None
+        ),
     }
     return parsed
 
@@ -187,6 +192,9 @@ def migrate_ticker_file(conn: sqlite3.Connection, ticker: str, entries: list[dic
                 rationale=parsed["rationale"],
                 snapshot_json=parsed["snapshot_json"],
                 analytics_log_json=parsed["analytics_log_json"],
+                source=parsed["source"],
+                last_grok_sweep=parsed["last_grok_sweep"],
+                catalyst_updates_json=parsed["catalyst_updates_json"],
             )
             result["versions_migrated"] += 1
 
