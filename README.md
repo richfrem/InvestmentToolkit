@@ -78,6 +78,50 @@ The `investment_screener/` app is the web-based financial analysis dashboard.
 - **Valuation Modeler**: Interactive Bear/Base/Bull scenario modeling with automatic persistence to projection JSON files.
 - **Trade Log**: Real-time mirror of the TradingView order panel via CDP.
 
+### Querying the SQLite Databases
+
+The backend is mid-migration from JSON/JSONL files to SQLite (`docs/superpowers/specs/2026-07-19-domain-data-model-v3-implementation-design.md`), so there are currently **two separate SQLite files** under `investment_screener/backend/data/` — don't assume one covers both:
+
+| File | Domain | Key tables |
+|---|---|---|
+| `domain_model.sqlite` | Investment/target/watchlist/pillars/price-levels/notes/alerts/projections (Waves 0-2) | `investment`, `strategy_pillar`, `sub_strategy`, `price_level_set`, `price_level_tier`, `investment_note`, `alert`, `projection_version`, `projection_scenario` |
+| `intelligence.sqlite` | Research/TA-sweep/event ledger (prior effort, pre-dates this migration) | event/observation tables, queried via `py_services/intelligence/` |
+
+Both are **gitignored** — a fresh checkout won't have them. Rebuild `domain_model.sqlite` via:
+```bash
+cd investment_screener/backend/py_services
+python3 -m domain_model.migrate_projections_to_sqlite --write
+python3 -m domain_model.migrate_target_portfolio_to_sqlite --write
+```
+
+Common read-only inspection commands (never open a write transaction by hand — always go through
+the `py_services/domain_model/` repository layer for real writes):
+```bash
+# Open a shell against the domain model
+sqlite3 investment_screener/backend/data/domain_model.sqlite
+
+# List all tables
+sqlite3 investment_screener/backend/data/domain_model.sqlite ".tables"
+
+# Row counts across every table
+sqlite3 investment_screener/backend/data/domain_model.sqlite \
+  "SELECT 'investment', COUNT(*) FROM investment
+   UNION ALL SELECT 'projection_version', COUNT(*) FROM projection_version
+   UNION ALL SELECT 'alert', COUNT(*) FROM alert;"
+
+# Look up one ticker's full row
+sqlite3 -header -column investment_screener/backend/data/domain_model.sqlite \
+  "SELECT * FROM investment WHERE symbol = 'NVDA';"
+
+# Same pattern for the research/event ledger
+sqlite3 investment_screener/backend/data/intelligence.sqlite ".tables"
+```
+
+Not every JSON file has been migrated yet — some remain intentionally authoritative (e.g.
+`target-portfolio.json`'s full-document CRUD, `thesis_breaker_state.json`'s per-breaker detail).
+See each wave's exit report under `docs/superpowers/status/` for exactly what's cut over vs.
+retained, with rationale.
+
 ---
 
 ## 🔌 How to Install Plugins
