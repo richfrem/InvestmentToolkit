@@ -111,8 +111,10 @@ def execute_migration(
 
     watchlist = watchlist_doc.get("watchlist", []) if isinstance(watchlist_doc, dict) else watchlist_doc
 
+    known_pillar_ids: set[str] = set()
     for pillar in target.get("pillars", []):
         resolve_pillar(conn, pillar["id"], pillar["name"], pillar.get("targetWeight"))
+        known_pillar_ids.add(pillar["id"])
 
     watchlist_tickers = {
         item["ticker"] for item in watchlist if isinstance(item, dict) and item.get("ticker")
@@ -137,6 +139,16 @@ def execute_migration(
         investment_id = resolve_investment(
             conn, ticker, asset_class="EQUITY", currency="USD", name=holding.get("name"),
         )
+
+        pillar_id = holding.get("pillarId")
+        if pillar_id and pillar_id not in known_pillar_ids:
+            # Real data confirmed a holding referencing a pillarId ("other") not
+            # present in the pillars[] definition array (e.g. DLR.U.TO/DLR.TO,
+            # Norbert's Gambit conversion vehicles outside the normal pillar
+            # taxonomy). Auto-create a minimal placeholder pillar so the FK
+            # resolves, same pattern as the sub_strategy gap below.
+            resolve_pillar(conn, pillar_id, pillar_id)
+            known_pillar_ids.add(pillar_id)
 
         sub_strategy_id = holding.get("subStrategyId")
         if sub_strategy_id and sub_strategy_id not in known_sub_strategies:
