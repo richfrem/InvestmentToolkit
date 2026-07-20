@@ -106,6 +106,36 @@ def _load_ai_upside(ticker: str, db_path) -> float | None:
     return None
 
 
+def _load_target_weights(db_path) -> dict:
+    """Load per-symbol target weights from ``investment.target_weight`` (Wave 2 rewire).
+
+    Replaces the old ``validate_weights.compute_target(target_json)`` JSON read —
+    target weights are now sourced from the domain-model repository
+    (``investment_repository.list_investments``) instead of
+    ``target-portfolio.json`` directly, mirroring the ``validate_weights.py``
+    Task 9 write-path cutover on the read side.
+    """
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "investment_screener/backend/py_services"))
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import list_investments
+
+    conn = initialize_db(str(db_path))
+    try:
+        rows = list_investments(conn)
+    finally:
+        conn.close()
+
+    result = {}
+    for row in rows:
+        weight = row.get("target_weight") or 0
+        if weight and weight > 0:
+            result[row["symbol"]] = round(weight, 4)
+    return result
+
+
 if __name__ == "__main__":
     import argparse, json, sys
     from pathlib import Path
@@ -113,19 +143,29 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--all", action="store_true", required=True)
     parser.add_argument("--portfolio", required=True)
-    parser.add_argument("--target", required=True)
+    parser.add_argument(
+        "--target",
+        required=True,
+        help="Legacy target-portfolio.json path, kept for CLI back-compat; "
+             "no longer read directly. Target weights now come from the "
+             "domain-model sqlite DB (see --db).",
+    )
+    parser.add_argument(
+        "--db",
+        default=str(Path(__file__).resolve().parents[3] / "investment_screener/backend/data/domain_model.sqlite"),
+        help="Path to domain_model.sqlite (source of target weights + AI upside).",
+    )
     args = parser.parse_args()
 
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from validate_weights import compute_current, compute_target
+    from validate_weights import compute_current
 
     ch = compute_current(args.portfolio)["holdings"]
-    th = compute_target(args.target)["holdings"]
+    th = _load_target_weights(args.db)
     all_tickers = set(list(ch.keys()) + list(th.keys()))
 
-    db_path = Path(__file__).resolve().parents[3] / "investment_screener/backend/data/domain_model.sqlite"
     result = {
-        t: derive_action(t, ch.get(t, 0.0), th.get(t, 0.0), ai_upside=_load_ai_upside(t, db_path))
+        t: derive_action(t, ch.get(t, 0.0), th.get(t, 0.0), ai_upside=_load_ai_upside(t, args.db))
         for t in all_tickers
     }
     print(json.dumps(result))

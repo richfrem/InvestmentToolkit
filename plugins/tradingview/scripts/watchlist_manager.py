@@ -41,6 +41,22 @@ from tv_client import tv_call, is_tv_running
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.projection_repository import list_symbols_with_projections  # noqa: E402
+from domain_model.investment_repository import list_investments  # noqa: E402
+
+
+def _load_watchlisted_symbols(db_path: Path | None = None) -> List[str]:
+    """Return upper-cased symbols with ``investment.is_watchlisted`` set.
+
+    Storage backend (Wave 2 Task 10 rewire): replaces the watchlist.json
+    read (list, {"watchlist": [...]}, or {"tickers": [...]} shapes) with
+    ``investment.is_watchlisted`` via ``list_investments`` (ADR-029).
+    """
+    conn = initialize_db(str(db_path or DB_PATH))
+    try:
+        rows = list_investments(conn, is_watchlisted=True)
+    finally:
+        conn.close()
+    return [row["symbol"].upper() for row in rows if row.get("symbol") and row["symbol"] != "USD_CASH"]
 
 _BOATS_EXCLUDE = {"USD_CASH"}
 
@@ -68,24 +84,16 @@ def _is_boats_eligible(ticker: str) -> bool:
 def load_researched_watchlist(db_path: Path | None = None) -> List[str]:
     """Retrieve full list of researched symbols.
 
-    Storage backend (Wave 1 Task 7B): the fallback path (no watchlist.json)
+    Storage backend (Wave 2 Task 10 rewire): the primary path reads
+    ``investment.is_watchlisted`` via ``_load_watchlisted_symbols`` instead
+    of watchlist.json (ADR-029). The fallback path (no watchlisted rows)
     reads `investment`/`projection_version` via
     `domain_model.projection_repository.list_symbols_with_projections`, not
-    `projections/*.json` filenames directly (ADR-029).
+    `projections/*.json` filenames directly (Wave 1 Task 7B, unchanged).
     """
-    if TARGET_WATCHLIST_PATH.exists():
-        try:
-            with open(TARGET_WATCHLIST_PATH) as f:
-                data = json.load(f)
-                if isinstance(data, list):
-                    return [str(s).upper() for s in data if s and s != "USD_CASH"]
-                elif isinstance(data, dict) and "watchlist" in data:
-                    return [e["ticker"].upper() for e in data["watchlist"]
-                            if isinstance(e, dict) and e.get("ticker") and e["ticker"] != "USD_CASH"]
-                elif isinstance(data, dict) and "tickers" in data:
-                    return [str(s).upper() for s in data["tickers"] if s and s != "USD_CASH"]
-        except Exception:
-            pass
+    watchlisted = _load_watchlisted_symbols(db_path)
+    if watchlisted:
+        return watchlisted
 
     # Fallback: every ticker with at least one projection row in domain_model.sqlite
     conn = initialize_db(str(db_path or DB_PATH))
@@ -97,8 +105,13 @@ def load_researched_watchlist(db_path: Path | None = None) -> List[str]:
 
 
 # External comment: Load US equities for BOATS ATS watchlists
-def load_boats_watchlist() -> List[str]:
-    """US equities from portfolio + watchlist eligible for BOATS ATS after-hours trading."""
+def load_boats_watchlist(db_path: Path | None = None) -> List[str]:
+    """US equities from portfolio + watchlist eligible for BOATS ATS after-hours trading.
+
+    Storage backend (Wave 2 Task 10 rewire): the watchlist half reads
+    ``investment.is_watchlisted`` via ``_load_watchlisted_symbols`` instead
+    of watchlist.json (ADR-029).
+    """
     seen: set[str] = set()
     tickers: List[str] = []
 
@@ -113,18 +126,13 @@ def load_boats_watchlist() -> List[str]:
         except Exception:
             pass
 
-    if TARGET_WATCHLIST_PATH.exists():
-        try:
-            with open(TARGET_WATCHLIST_PATH) as f:
-                data = json.load(f)
-                entries = data.get("watchlist", []) if isinstance(data, dict) else (data if isinstance(data, list) else [])
-                for entry in entries:
-                    sym = (entry.get("ticker", "") if isinstance(entry, dict) else str(entry)).upper()
-                    if sym and _is_boats_eligible(sym) and sym not in seen:
-                        seen.add(sym)
-                        tickers.append(f"BOATS:{sym}")
-        except Exception:
-            pass
+    try:
+        for sym in _load_watchlisted_symbols(db_path):
+            if sym and _is_boats_eligible(sym) and sym not in seen:
+                seen.add(sym)
+                tickers.append(f"BOATS:{sym}")
+    except Exception:
+        pass
 
     return sorted(tickers)
 

@@ -60,7 +60,6 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
-import tempfile
 from dataclasses import dataclass, asdict
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -96,6 +95,21 @@ class RebalanceSnapshot:
     realized_pnl: Optional[float] = None  # Sum of order P&Ls
 
 
+def candidate_target_portfolio_paths() -> list[str]:
+    """Repo-relative paths to try when reading target-portfolio.json out of a
+    historical git commit, post-move path first.
+
+    The file moved from investment_screener/backend/data/target-portfolio.json to
+    investment_screener/backend/data/theses/target-portfolio.json partway through
+    this repo's history. A historical reader has no way to know a priori whether a
+    given commit predates the move, so it must try both paths.
+    """
+    return [
+        "investment_screener/backend/data/theses/target-portfolio.json",
+        "investment_screener/backend/data/target-portfolio.json",
+    ]
+
+
 def extract_historical_targets(commit_hash: str) -> dict[str, float]:
     """Extract target portfolio weights from a historical git commit.
 
@@ -109,33 +123,37 @@ def extract_historical_targets(commit_hash: str) -> dict[str, float]:
         Dict of {ticker: targetWeight} for all holdings, or {} on error.
     """
     try:
-        with tempfile.TemporaryDirectory() as tmpdir:
-            tmpdir_path = Path(tmpdir)
-            target_path = tmpdir_path / "target-portfolio.json"
-
-            # Use git show to extract file without cloning
+        # target-portfolio.json moved from data/ to data/theses/ partway through
+        # this repo's history -- try the post-move path first, fall back to the
+        # pre-move path so this reader works against commits on either side of
+        # the move (Wave 2 investigation finding; see
+        # candidate_target_portfolio_paths()).
+        result = None
+        for repo_path in candidate_target_portfolio_paths():
             result = subprocess.run(
-                ["git", "show", f"{commit_hash}:investment_screener/backend/data/target-portfolio.json"],
+                ["git", "show", f"{commit_hash}:{repo_path}"],
                 cwd=str(REPO_ROOT),
                 capture_output=True,
                 text=True,
                 timeout=30,
             )
+            if result.returncode == 0:
+                break
 
-            if result.returncode != 0:
-                return {}
+        if result is None or result.returncode != 0:
+            return {}
 
-            try:
-                data = json.loads(result.stdout)
-                targets = {}
-                for holding in data.get("holdings", []):
-                    ticker = holding.get("ticker")
-                    weight = holding.get("targetWeight")
-                    if ticker and weight is not None:
-                        targets[ticker] = float(weight)
-                return targets
-            except (json.JSONDecodeError, ValueError):
-                return {}
+        try:
+            data = json.loads(result.stdout)
+            targets = {}
+            for holding in data.get("holdings", []):
+                ticker = holding.get("ticker")
+                weight = holding.get("targetWeight")
+                if ticker and weight is not None:
+                    targets[ticker] = float(weight)
+            return targets
+        except (json.JSONDecodeError, ValueError):
+            return {}
 
     except Exception:
         return {}

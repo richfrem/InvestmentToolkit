@@ -36,35 +36,63 @@ sys.path.insert(0, str(_find_scripts_dir()))
 from tv_client import TV_NODE_DIR, tv_call, is_tv_running
 
 REPO_ROOT = TV_NODE_DIR.parent
-PROJECTIONS_DIR = REPO_ROOT / "investment_screener" / "backend" / "data" / "projections"
-TARGET_JSON_PATH = REPO_ROOT / "investment_screener" / "backend" / "data" / "theses" / "target-portfolio.json"
+DB_PATH = REPO_ROOT / "investment_screener" / "backend" / "data" / "domain_model.sqlite"
+
+sys.path.insert(0, str(REPO_ROOT / "investment_screener" / "backend" / "py_services"))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.projection_repository import (  # noqa: E402
+    get_latest_projection,
+    get_latest_projection_by_source,
+    get_projection_scenarios,
+    list_symbols_with_projections,
+)
+from domain_model.price_level_repository import get_price_levels  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def load_latest_ai_entry(ticker: str) -> dict | None:
-    """Load the latest AI_AGENT projection entry for a ticker."""
-    proj_file = PROJECTIONS_DIR / f"{ticker.upper()}.json"
-    if not proj_file.exists():
-        return None
+def load_latest_ai_entry(ticker: str, db_path: Path = DB_PATH) -> dict | None:
+    """Load the latest projection entry for a ticker, with its scenarios.
 
+    Storage backend (Wave 2 Task 10 rewire): reads `projection_version` /
+    `projection_scenario` via `domain_model.projection_repository`, not
+    `projections/{TICKER}.json` (that directory was archived at the end of
+    Wave 1 — see `730daddb refactor: archive projections/ after Wave 1
+    SQLite cutover`, meaning this function always returned None from that
+    point on until this rewire). Preserves the original fallback: prefer an
+    AI_AGENT-sourced entry, else fall back to the latest entry from any source.
+    """
+    conn = initialize_db(str(db_path))
     try:
-        with open(proj_file) as f:
-            entries = json.load(f)
-    except Exception:
-        return None
+        row = conn.execute(
+            "SELECT investment_id FROM investment WHERE symbol = ?;", (ticker.upper(),)
+        ).fetchone()
+        if row is None:
+            return None
+        investment_id = row[0]
 
-    if not isinstance(entries, list) or not entries:
-        return None
+        entry = get_latest_projection_by_source(conn, investment_id, "AI_AGENT")
+        if entry is None:
+            entry = get_latest_projection(conn, investment_id)
+        if entry is None:
+            return None
 
-    ai_entries = [e for e in entries if e.get("source") == "AI_AGENT"]
-    if not ai_entries:
-        # Fall back to any entry if no AI_AGENT tagged entries
-        ai_entries = entries
+        scenario_rows = get_projection_scenarios(conn, entry["projection_id"])
+        scenarios = {
+            s["scenario_name"]: {"scenarioPrice": s.get("scenario_price")}
+            for s in scenario_rows
+        }
 
-    return max(ai_entries, key=lambda x: x.get("savedAt", ""))
+        return {
+            "ticker": ticker.upper(),
+            "savedAt": entry.get("saved_at", ""),
+            "scenarios": scenarios,
+            "aiThesis": {"fairValue": entry.get("fair_value")},
+        }
+    finally:
+        conn.close()
 
 
 def get_alert_levels(entry: dict) -> list[tuple[str, float]]:
@@ -93,42 +121,49 @@ def get_alert_levels(entry: dict) -> list[tuple[str, float]]:
     return levels
 
 
-def get_tier_alert_levels(ticker: str, target_json: dict) -> list[tuple[str, float]]:
-    """Extract (label, price) tuples from priceLevels blocks in target-portfolio.json.
+def get_tier_alert_levels(ticker: str, db_path: Path = DB_PATH) -> list[tuple[str, float]]:
+    """Extract (label, price) tuples from investment.price_level_set/tier rows.
+
+    Storage backend (Wave 2 Task 10 rewire): reads
+    ``price_level_set``/``price_level_tier`` via
+    ``domain_model.price_level_repository.get_price_levels`` instead of
+    target-portfolio.json's ``holdings[].priceLevels`` block (ADR-029).
 
     Returns richer tiered alerts: buy tiers, sell tiers with trim%, and stop loss.
-    Returns empty list if no priceLevels block found for this ticker.
+    Returns empty list if no price-level row exists for this ticker.
     Priority over DCF scenario prices when available.
     """
-    holding = next(
-        (h for h in target_json.get("holdings", [])
-         if h.get("ticker", "").upper() == ticker.upper()),
-        None
-    )
-    if not holding:
-        return []
+    conn = initialize_db(str(db_path))
+    try:
+        row = conn.execute(
+            "SELECT investment_id FROM investment WHERE symbol = ?;", (ticker.upper(),)
+        ).fetchone()
+        if row is None:
+            return []
+        price_levels = get_price_levels(conn, row[0])
+    finally:
+        conn.close()
 
-    price_levels = holding.get("priceLevels")
     if not price_levels:
         return []
 
     levels = []
 
-    for tier in price_levels.get("buyTiers", []):
+    for tier in price_levels.get("buy_tiers", []):
         if tier.get("status") != "active":
             continue
         price = tier.get("price")
-        n = tier.get("tier", "?")
+        n = tier.get("tier_number", "?")
         if price and price > 0:
             label = f"{ticker} Buy Tier {n} — Accumulate at ${price:.2f}"
             levels.append((label, float(price)))
 
-    for tier in price_levels.get("sellTiers", []):
+    for tier in price_levels.get("sell_tiers", []):
         if tier.get("status") != "active":
             continue
         price = tier.get("price")
-        n = tier.get("tier", "?")
-        trim_pct = tier.get("trimPct")
+        n = tier.get("tier_number", "?")
+        trim_pct = tier.get("trim_pct")
         action = tier.get("action", "trim")
         if price and price > 0:
             if action == "exit" or trim_pct == 100:
@@ -137,7 +172,7 @@ def get_tier_alert_levels(ticker: str, target_json: dict) -> list[tuple[str, flo
                 label = f"{ticker} Sell Tier {n} — Trim {trim_pct or 30}% at ${price:.2f}"
             levels.append((label, float(price)))
 
-    stop = price_levels.get("stopLoss")
+    stop = price_levels.get("stop_loss")
     if stop and stop.get("status") == "active":
         price = stop.get("price")
         if price and price > 0:
@@ -164,24 +199,31 @@ def create_alert(ticker: str, price: float, message: str, dry_run: bool = False)
 # Main logic
 # ---------------------------------------------------------------------------
 
-def get_all_tickers() -> list[str]:
-    """Return all tickers that have projection JSON files."""
-    return [p.stem for p in PROJECTIONS_DIR.glob("*.json")]
+def get_all_tickers(db_path: Path = DB_PATH) -> list[str]:
+    """Return all tickers that have at least one projection row in domain_model.sqlite.
+
+    Storage backend (Wave 2 Task 10 rewire): replaces globbing the (now
+    archived) ``projections/*.json`` directory with
+    ``domain_model.projection_repository.list_symbols_with_projections``.
+    """
+    conn = initialize_db(str(db_path))
+    try:
+        return list_symbols_with_projections(conn)
+    finally:
+        conn.close()
 
 
-def process_ticker(ticker: str, dry_run: bool, target_json: dict | None = None) -> dict:
+def process_ticker(ticker: str, dry_run: bool, db_path: Path = DB_PATH) -> dict:
     """Create alerts for a single ticker. Returns a result summary dict.
 
-    Priority: priceLevels tiers from target-portfolio.json (richer labels + trim%).
-    Fallback: scenarioPrice levels from projection JSON.
+    Priority: priceLevels tiers from domain_model.sqlite (richer labels + trim%).
+    Fallback: scenarioPrice levels from the latest projection row.
     """
-    # --- Primary source: priceLevels from target-portfolio.json ---
-    tier_levels: list[tuple[str, float]] = []
-    if target_json:
-        tier_levels = get_tier_alert_levels(ticker, target_json)
+    # --- Primary source: price_level_set/tier rows ---
+    tier_levels: list[tuple[str, float]] = get_tier_alert_levels(ticker, db_path)
 
-    # --- Fallback source: DCF scenario prices from projections/ ---
-    entry = load_latest_ai_entry(ticker)
+    # --- Fallback source: DCF scenario prices from projection_version/scenario ---
+    entry = load_latest_ai_entry(ticker, db_path)
     dcf_levels = get_alert_levels(entry) if entry else []
 
     # Use tier levels if available, otherwise fall back to DCF scenario levels
@@ -242,15 +284,6 @@ def main():
         )
         sys.exit(1)
 
-    # Load target-portfolio.json once for priceLevels tier alerts
-    target_json = None
-    if TARGET_JSON_PATH.exists():
-        try:
-            with open(TARGET_JSON_PATH) as f:
-                target_json = json.load(f)
-        except Exception:
-            pass  # proceed without tier alerts if file unreadable
-
     tickers = [args.ticker.upper()] if args.ticker else get_all_tickers()
 
     if not tickers:
@@ -259,7 +292,7 @@ def main():
 
     results = []
     for ticker in sorted(tickers):
-        result = process_ticker(ticker, dry_run=args.dry_run, target_json=target_json)
+        result = process_ticker(ticker, dry_run=args.dry_run)
         results.append(result)
 
     # Summary table

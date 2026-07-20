@@ -1,5 +1,4 @@
 """Tests for market_regime.py — 4-tier composite regime classifier (Phase 3, C2)."""
-import json
 import sys
 from pathlib import Path
 
@@ -19,6 +18,20 @@ from market_regime import (  # noqa: E402
     _sma,
     compute_breadth,
 )
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import (  # noqa: E402
+    resolve_investment,
+    update_investment_fields,
+)
+
+
+def _seed(db_path, holdings):
+    """holdings: list of (ticker, lifecycle_status)."""
+    conn = initialize_db(str(db_path))
+    for ticker, lifecycle_status in holdings:
+        investment_id = resolve_investment(conn, ticker, asset_class="EQUITY", currency="USD")
+        update_investment_fields(conn, investment_id, lifecycle_status=lifecycle_status)
+    conn.close()
 
 
 class TestClassifyTermSlope:
@@ -87,37 +100,35 @@ def _price_rows(closes: list[float], start_day: int = 1) -> list[dict]:
 
 class TestLoadActiveTickers:
     def test_excludes_exit_and_avoid_roles(self, tmp_path):
-        target = {"holdings": [
-            {"ticker": "NVDA", "role": "accumulate"},
-            {"ticker": "OLD1", "role": "exit"},
-            {"ticker": "OLD2", "role": "avoid"},
-            {"ticker": "CBRS", "role": "watchlist"},
-        ]}
-        path = tmp_path / "target-portfolio.json"
-        path.write_text(json.dumps(target))
+        db_path = tmp_path / "test.sqlite"
+        _seed(db_path, [
+            ("NVDA", "accumulate"),
+            ("OLD1", "exit"),
+            ("OLD2", "avoid"),
+            ("CBRS", "watchlist"),
+        ])
 
-        tickers = _load_active_tickers(path)
+        tickers = _load_active_tickers(db_path)
 
         assert set(tickers) == {"NVDA", "CBRS"}
 
     def test_excludes_exited_role_defensively(self, tmp_path):
         # CLAUDE.md rule 9: sold positions get tagged role: "exited". Not yet
         # observed in live data, but INACTIVE_ROLES excludes it defensively.
-        target = {"holdings": [
-            {"ticker": "NVDA", "role": "accumulate"},
-            {"ticker": "SOLD", "role": "exited"},
-        ]}
-        path = tmp_path / "target-portfolio.json"
-        path.write_text(json.dumps(target))
+        db_path = tmp_path / "test.sqlite"
+        _seed(db_path, [
+            ("NVDA", "accumulate"),
+            ("SOLD", "exited"),
+        ])
 
-        tickers = _load_active_tickers(path)
+        tickers = _load_active_tickers(db_path)
 
         assert set(tickers) == {"NVDA"}
 
     def test_empty_holdings_returns_empty_list(self, tmp_path):
-        path = tmp_path / "target-portfolio.json"
-        path.write_text(json.dumps({"holdings": []}))
-        assert _load_active_tickers(path) == []
+        db_path = tmp_path / "test.sqlite"
+        initialize_db(str(db_path))
+        assert _load_active_tickers(db_path) == []
 
 
 class TestSma:
@@ -306,8 +317,10 @@ def _fixture_prices(n: int, base: float, spread: float = 1.0) -> dict:
 
 class TestComputeMarketRegime:
     def test_full_snapshot_shape(self, tmp_path):
-        target_path = tmp_path / "target-portfolio.json"
-        target_path.write_text(json.dumps(FIXTURE_TARGET))
+        db_path = tmp_path / "test.sqlite"
+        _seed(db_path, [
+            (h["ticker"], h["role"]) for h in FIXTURE_TARGET["holdings"]
+        ])
 
         macro_result = type("M", (), {
             "regime": "RISK-ON", "score": 2, "vix": 14.0, "vix_signal": "LOW",
@@ -328,7 +341,7 @@ class TestComputeMarketRegime:
              patch("market_regime.get_prices", side_effect=fake_get_prices), \
              patch("market_regime._fetch_ratio_trend", return_value=0.8), \
              patch("market_regime._fetch_dxy_vs_200d", return_value=3.0):
-            result = compute_market_regime(target_portfolio_path=target_path)
+            result = compute_market_regime(db_path=db_path)
 
         assert result["regime"] in {"RISK_ON", "NEUTRAL", "RISK_OFF", "STRESS"}
         assert "signals" in result

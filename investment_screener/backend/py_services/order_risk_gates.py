@@ -168,10 +168,19 @@ from typing import Any, Dict, List, Optional
 # compute_weights() for its own compute_risk_snapshot()).
 from portfolio_io import compute_weights, load_portfolio_state
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
+sys_path_entry = str(REPO_ROOT / "investment_screener/backend/py_services")
+import sys  # noqa: E402
+if sys_path_entry not in sys.path:
+    sys.path.insert(0, sys_path_entry)
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import list_investments  # noqa: E402
+
 RISK_SNAPSHOT_PATH = Path(__file__).resolve().parents[1] / "data" / "risk_snapshot.json"
 ACCOUNT_POLICY_PATH = Path(__file__).resolve().parents[1] / "data" / "account_policy.json"
 THESIS_BREAKER_STATE_PATH = Path(__file__).resolve().parents[1] / "data" / "thesis_breaker_state.json"
-TARGET_PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "target-portfolio.json"
+TARGET_PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "theses" / "target-portfolio.json"
+DB_PATH = Path(__file__).resolve().parents[1] / "data" / "domain_model.sqlite"
 PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "portfolio.json"
 TRADE_LOG_PATH = Path(__file__).resolve().parents[1] / "data" / "trade-log.json"
 ORDERS_EXECUTED_PATH = Path(__file__).resolve().parents[1] / "data" / "orders_executed.jsonl"
@@ -220,32 +229,34 @@ def _project_new_weight(
 
 
 def build_portfolio_state_for_order(
-    target_portfolio_path: Optional[Path] = None,
+    db_path: Optional[Path] = None,
     portfolio_path: Optional[Path] = None,
 ) -> Dict[str, Any]:
     """Build the real portfolio_state dict check_mrc_limit()/
-    check_cluster_variance() require, from the REAL data files — this is the
+    check_cluster_variance() require, from the REAL data sources — this is the
     missing "real caller convenience" these gates never had until now (every
     existing test constructs portfolio_state by hand).
 
-    Reuses the EXACT same pattern already established in risk_engine.py's
-    compute_risk_snapshot(): loads target-portfolio.json to build a
-    ticker -> pillarId map, loads portfolio.json via portfolio_io's
-    load_portfolio_state()/compute_weights() for actual weights — no weight
-    math is reimplemented here, both real, already-reviewed functions are
-    reused unchanged.
+    Reads the ticker -> pillar_id map from domain_model.sqlite's
+    `investment` table (Wave 2 consumer cutover — previously read
+    target-portfolio.json's "pillarId" field directly, mirroring
+    risk_engine.py's compute_risk_snapshot() pattern; now reads the same
+    data via investment_repository.list_investments()). Loads portfolio.json
+    via portfolio_io's load_portfolio_state()/compute_weights() for actual
+    weights, unchanged — no weight math is reimplemented here.
 
-    Never raises: a missing/unreadable/malformed target-portfolio.json OR
-    portfolio.json (or a portfolio_io failure of any kind) degrades to
-    {"holdings": {}, "total_value": 0.0} — matches how every gate that
-    consumes portfolio_state already treats a zero/missing weight or
-    total_value (check_mrc_limit/check_cluster_variance both degrade to
-    passed=True in that case), so this degradation is a safe, intentional
-    "can't evaluate, don't block" fallback, not a new failure mode.
+    Never raises: a missing/unreadable portfolio.json (or a portfolio_io
+    failure of any kind) degrades to {"holdings": {}, "total_value": 0.0} —
+    matches how every gate that consumes portfolio_state already treats a
+    zero/missing weight or total_value (check_mrc_limit/check_cluster_variance
+    both degrade to passed=True in that case), so this degradation is a safe,
+    intentional "can't evaluate, don't block" fallback, not a new failure mode.
+    A missing/fresh domain_model.sqlite degrades to an empty pillar map
+    (initialize_db() creates the schema fresh if the file doesn't exist yet).
 
     Args:
-        target_portfolio_path: Override path (tests use tmp_path); None reads
-            the real TARGET_PORTFOLIO_PATH.
+        db_path: Override path (tests use tmp_path); None reads the real
+            DB_PATH (domain_model.sqlite).
         portfolio_path: Override path (tests use tmp_path); None reads the
             real PORTFOLIO_PATH.
 
@@ -257,15 +268,16 @@ def build_portfolio_state_for_order(
         pillar-assigned ticker not currently held gets weight_pct=0.0 rather
         than being omitted).
     """
-    target_path = target_portfolio_path or TARGET_PORTFOLIO_PATH
+    conn = initialize_db(str(db_path or DB_PATH))
     try:
-        target_data = json.loads(Path(target_path).read_text())
-    except (OSError, json.JSONDecodeError):
-        return {"holdings": {}, "total_value": 0.0}
+        investments = list_investments(conn)
+    finally:
+        conn.close()
 
     pillar_map = {
-        h["ticker"]: h.get("pillarId", "unassigned")
-        for h in target_data.get("holdings", [])
+        inv["symbol"]: inv.get("pillar_id") or "unassigned"
+        for inv in investments
+        if inv.get("symbol")
     }
 
     try:
