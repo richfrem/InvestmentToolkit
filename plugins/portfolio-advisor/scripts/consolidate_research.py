@@ -10,30 +10,63 @@ import os
 import re
 import glob
 import json
+import sys
 import argparse
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.projection_repository import list_projection_versions  # noqa: E402
 
-def load_latest_projection(ticker, projections_dir):
-    """Loads the most recent projection for the ticker to populate metadata."""
-    p_path = Path(projections_dir) / f"{ticker}.json"
-    if not p_path.exists():
-        return {}
+
+def load_latest_projection(ticker, db_path):
+    """Loads the most recent projection for the ticker to populate metadata.
+
+    Storage backend (Wave 1 Task 7B): reads `projection_version` via
+    `domain_model.projection_repository`, not `projections/{TICKER}.json`
+    directly (ADR-029). The original code sorted ALL entries (any `source`) by
+    `savedAt` descending and took the newest — no AI_AGENT filter — so this
+    reproduces that exact selection (`list_projection_versions` + max by
+    `saved_at`) rather than using `get_latest_projection_by_source`.
+
+    Args:
+        ticker: Ticker symbol.
+        db_path: Path to domain_model.sqlite.
+
+    Returns:
+        `{"name", "savedAt", "aiThesis": {"fairValue","action"}, "snapshot":
+        {"price"}}`, or `{}` if the investment has no projection rows at all.
+    """
+    conn = initialize_db(str(db_path))
     try:
-        with open(p_path) as f:
-            data = json.load(f)
-        if isinstance(data, list) and data:
-            # Sort by savedAt, newest first
-            data = sorted(data, key=lambda x: x.get("savedAt", ""), reverse=True)
-            return data[0]
-        elif isinstance(data, dict):
-            return data
-    except Exception:
-        pass
-    return {}
+        row = conn.execute(
+            "SELECT investment_id, name FROM investment WHERE symbol = ?;", (ticker,)
+        ).fetchone()
+        if row is None:
+            return {}
+        investment_id, name = row
+        versions = list_projection_versions(conn, investment_id)
+        if not versions:
+            return {}
+        latest = max(versions, key=lambda v: v.get("saved_at") or "")
+        snapshot = json.loads(latest["snapshot_json"]) if latest.get("snapshot_json") else {}
+        ai_thesis = {}
+        if latest.get("fair_value") is not None:
+            ai_thesis["fairValue"] = latest["fair_value"]
+        if latest.get("action") is not None:
+            ai_thesis["action"] = latest["action"]
+        return {
+            "name": name,
+            "savedAt": latest.get("saved_at", ""),
+            "aiThesis": ai_thesis,
+            "snapshot": snapshot,
+        }
+    finally:
+        conn.close()
 
 
-def run_consolidation(research_dir, projections_dir, delete_old=False):
+def run_consolidation(research_dir, db_path, delete_old=False):
     """Groups dated research files, merges them, and builds canonical ticker files."""
     r_path = Path(research_dir)
     files = glob.glob(os.path.join(research_dir, "*_202[0-9]-[0-9][0-9]-[0-9][0-9].md"))
@@ -54,7 +87,7 @@ def run_consolidation(research_dir, projections_dir, delete_old=False):
         entries = sorted(entries, key=lambda x: x[0])
         
         # Load latest projection metadata
-        proj = load_latest_projection(ticker, projections_dir)
+        proj = load_latest_projection(ticker, db_path)
         ai_thesis = proj.get("aiThesis", {})
         snapshot = proj.get("snapshot", {})
         
@@ -110,7 +143,7 @@ def run_consolidation(research_dir, projections_dir, delete_old=False):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--research-dir", default=None)
-    parser.add_argument("--projections-dir", default=None)
+    parser.add_argument("--db-path", default=None)
     parser.add_argument("--delete-old", action="store_true")
     args = parser.parse_args()
 
@@ -119,9 +152,9 @@ def main():
     repo_root = os.path.dirname(os.path.dirname(os.path.dirname(script_dir)))
 
     res_dir = args.research_dir or os.path.join(repo_root, "investment_screener/backend/data/research")
-    proj_dir = args.projections_dir or os.path.join(repo_root, "investment_screener/backend/data/projections")
+    db_path = args.db_path or os.path.join(repo_root, "investment_screener/backend/data/domain_model.sqlite")
 
-    run_consolidation(res_dir, proj_dir, delete_old=args.delete_old)
+    run_consolidation(res_dir, db_path, delete_old=args.delete_old)
 
 
 if __name__ == "__main__":

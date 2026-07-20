@@ -31,12 +31,16 @@ from pathlib import Path
 REPO_ROOT   = Path(__file__).resolve().parents[3]
 THESIS_JSON = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 PORTFOLIO   = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
-PROJ_DIR    = REPO_ROOT / "investment_screener/backend/data/projections"
+DB_PATH     = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 ETF_ANALYSIS_DIR = REPO_ROOT / "investment_screener/backend/data/etf_analysis"
 
 sys.path.insert(0, str(Path(__file__).parent))
 from validate_weights import compute_current, compute_target
 from portfolio_action import derive_action
+
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.projection_repository import get_latest_projection_by_source  # noqa: E402
 
 
 def get_dynamic_exclusions():
@@ -48,32 +52,40 @@ def get_dynamic_exclusions():
     return exclusions
 
 
-def load_dcf(ticker: str) -> dict:
-    """Return latest AI_AGENT DCF for ticker, or empty dict."""
-    path = PROJ_DIR / f"{ticker}.json"
-    if not path.exists():
-        return {}
+def load_dcf(ticker: str, db_path: Path | None = None) -> dict:
+    """Return latest AI_AGENT DCF for ticker, or empty dict.
+
+    Storage backend (Wave 1 Task 7B): reads `projection_version` via
+    `domain_model.projection_repository`, not `projections/{TICKER}.json`
+    directly (ADR-029). The original code filtered strictly by
+    `source == "AI_AGENT"` with no fallback to other sources, so this uses
+    `get_latest_projection_by_source` only.
+    """
+    conn = initialize_db(str(db_path or DB_PATH))
     try:
-        data = json.loads(path.read_text())
-        projs = data if isinstance(data, list) else [data]
-        ai = [p for p in projs if p.get("source") == "AI_AGENT"]
-        if not ai:
+        row = conn.execute(
+            "SELECT investment_id FROM investment WHERE symbol = ?;", (ticker,)
+        ).fetchone()
+        if row is None:
             return {}
-        latest = max(ai, key=lambda x: x.get("savedAt", ""))
-        th = latest.get("aiThesis", {})
-        sn = latest.get("snapshot", {})
-        fv = th.get("fairValue", 0)
-        price = sn.get("price", 0)
+        latest = get_latest_projection_by_source(conn, row[0], "AI_AGENT")
+        if latest is None:
+            return {}
+        snapshot = json.loads(latest["snapshot_json"]) if latest.get("snapshot_json") else {}
+        fv = latest.get("fair_value") or 0
+        price = snapshot.get("price") or 0
         upside = round((fv - price) / price * 100, 1) if fv and price else None
         return {
-            "action": th.get("action", ""),
+            "action": latest.get("action", ""),
             "fairValue": fv,
             "price": price,
             "upside": upside,
-            "savedAt": latest.get("savedAt", "")[:10],
+            "savedAt": (latest.get("saved_at") or "")[:10],
         }
     except Exception:
         return {}
+    finally:
+        conn.close()
 
 
 def _dcf_label(dcf: dict) -> str:

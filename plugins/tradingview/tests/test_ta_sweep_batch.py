@@ -359,3 +359,70 @@ def test_add_local_validation_handles_missing_tv_values():
     enriched = add_local_validation(result, snapshot_fn=fake_snapshot)
     assert enriched["localValidation"]["rsi"]["tv"] is None
     assert enriched["localValidation"]["rsi"]["flag"] is False  # can't flag without a TV value
+
+
+# ── load_dcf — Wave 1 Task 7B rewire onto domain_model.sqlite (ADR-029) ───────
+
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import resolve_investment  # noqa: E402
+from domain_model.projection_repository import (  # noqa: E402
+    save_projection_version,
+    add_projection_scenario,
+)
+
+from ta_sweep_batch import load_dcf  # noqa: E402
+
+
+def test_load_dcf_returns_latest_projection_fields(tmp_path):
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    try:
+        investment_id = resolve_investment(conn, "NVDA", asset_class="EQUITY")
+        save_projection_version(
+            conn, investment_id, version=1, saved_at="2026-06-01T00:00:00Z",
+            fair_value=200.0, action="ACCUMULATE", source="AI_AGENT",
+        )
+        projection_id = f"{investment_id}:1"
+        add_projection_scenario(conn, projection_id, "bear", scenario_price=150.0)
+        add_projection_scenario(conn, projection_id, "base", scenario_price=200.0)
+        add_projection_scenario(conn, projection_id, "bull", scenario_price=260.0)
+    finally:
+        conn.close()
+
+    dcf = load_dcf("NVDA", db_path=db_path)
+    assert dcf["fairValue"] == 200.0
+    assert dcf["action"] == "ACCUMULATE"
+    assert dcf["bear"] == 150.0
+    assert dcf["base"] == 200.0
+    assert dcf["bull"] == 260.0
+
+
+def test_load_dcf_returns_none_for_unknown_ticker(tmp_path):
+    db_path = tmp_path / "test.sqlite"
+    initialize_db(str(db_path)).close()
+
+    assert load_dcf("ZZZZ", db_path=db_path) is None
+
+
+def test_load_dcf_uses_highest_version_regardless_of_source(tmp_path):
+    """Original code took raw[-1] (last array element = highest version) with no
+    source filter — this must not prefer AI_AGENT over a newer non-AI_AGENT row."""
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    try:
+        investment_id = resolve_investment(conn, "DXYZ", asset_class="ETF")
+        save_projection_version(
+            conn, investment_id, version=1, saved_at="2026-06-01T00:00:00Z",
+            fair_value=40.0, action="HOLD", source="AI_AGENT",
+        )
+        save_projection_version(
+            conn, investment_id, version=2, saved_at="2026-07-01T00:00:00Z",
+            fair_value=45.0, action="INITIATE", source="ETF_ANALYSIS",
+        )
+    finally:
+        conn.close()
+
+    dcf = load_dcf("DXYZ", db_path=db_path)
+    assert dcf["fairValue"] == 45.0
+    assert dcf["action"] == "INITIATE"

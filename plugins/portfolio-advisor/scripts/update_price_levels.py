@@ -31,7 +31,7 @@ from typing import Any, Dict, List, Optional, Tuple
 REPO_ROOT = Path(__file__).resolve().parents[3]
 TARGET_JSON = REPO_ROOT / 'investment_screener/backend/data/theses/target-portfolio.json'
 PORTFOLIO_JSON = REPO_ROOT / 'investment_screener/backend/data/portfolio.json'
-PROJ_DIR = REPO_ROOT / 'investment_screener/backend/data/projections'
+DB_PATH = REPO_ROOT / 'investment_screener/backend/data/domain_model.sqlite'
 
 # Import locked_write_json
 sys.path.insert(0, str(REPO_ROOT / 'investment_screener/backend/py_services'))
@@ -42,6 +42,9 @@ except ImportError:
     def locked_write_json(file_path: Path, data: Any) -> None:
         with open(file_path, 'w') as f:
             json.dump(data, f, indent=2)
+
+from domain_model.db_client import initialize_db
+from domain_model.projection_repository import get_latest_projection_by_source, get_projection_scenarios
 
 def derive_tiers_from_dcf(bear_fv: float, base_fv: float, bull_fv: float, source_date: str, note: str = '') -> dict:
     """Returns complete priceLevels dict derived from bear, base, and bull scenario prices."""
@@ -164,28 +167,38 @@ def compute_proximity_flags(current_price: float, price_levels: dict | None) -> 
                 
     return flags
 
-def load_latest_projection(ticker: str, proj_dir: Path | None = None) -> dict | None:
-    """Reads latest AI_AGENT projection entry for a given ticker."""
-    pdir = proj_dir or PROJ_DIR
-    pfile = pdir / f"{ticker.upper()}.json"
-    if not pfile.exists():
-        return None
+def load_latest_projection(ticker: str, db_path: Path | None = None) -> dict | None:
+    """Reads latest AI_AGENT projection entry for a given ticker.
+
+    Storage backend (Wave 1 Task 7B): reads `projection_version`/
+    `projection_scenario` via `domain_model.projection_repository`, not
+    `projections/{TICKER}.json` directly (ADR-029). The original code filtered
+    strictly by `source == 'AI_AGENT'` with no fallback to other sources, so
+    this uses `get_latest_projection_by_source` only.
+
+    Returns:
+        `{"source": "AI_AGENT", "scenarios": {"bear"/"base"/"bull": {
+        "scenarioPrice": float}}}`, or None if no AI_AGENT projection exists.
+    """
+    dbp = db_path or DB_PATH
+    conn = initialize_db(str(dbp))
     try:
-        with open(pfile) as f:
-            data = json.load(f)
-        if isinstance(data, list):
-            # find latest AI_AGENT entry by savedAt
-            ai_entries = [e for e in data if e.get('source') == 'AI_AGENT']
-            if not ai_entries:
-                return None
-            return max(ai_entries, key=lambda x: x.get('savedAt', ''))
-        elif isinstance(data, dict):
-            if data.get('source') == 'AI_AGENT':
-                return data
+        row = conn.execute(
+            "SELECT investment_id FROM investment WHERE symbol = ?;", (ticker.upper(),)
+        ).fetchone()
+        if row is None:
             return None
-    except Exception:
-        return None
-    return None
+        entry = get_latest_projection_by_source(conn, row[0], "AI_AGENT")
+        if entry is None:
+            return None
+        scenario_rows = get_projection_scenarios(conn, entry["projection_id"])
+        scenarios = {
+            r["scenario_name"]: {"scenarioPrice": r["scenario_price"]}
+            for r in scenario_rows
+        }
+        return {"source": "AI_AGENT", "scenarios": scenarios}
+    finally:
+        conn.close()
 
 def derive_and_write(
     ticker: str,
@@ -195,23 +208,23 @@ def derive_and_write(
     dry_run: bool = False,
     target_json_path: Path | None = None,
     portfolio_json_path: Path | None = None,
-    proj_dir: Path | None = None
+    db_path: Path | None = None
 ) -> dict:
     """Derives price levels for a ticker and updates the files."""
     tpath = target_json_path or TARGET_JSON
     ppath = portfolio_json_path or PORTFOLIO_JSON
-    
-    proj = load_latest_projection(ticker, proj_dir)
+
+    proj = load_latest_projection(ticker, db_path)
     if not proj:
         raise ValueError(f"No projection found for {ticker}")
-        
+
     scenarios = proj.get('scenarios', {})
     if 'bear' not in scenarios or 'base' not in scenarios or 'bull' not in scenarios:
         raise ValueError(f"Incomplete scenarios in projection for {ticker}")
-        
-    bear_fv = scenarios['bear'].get('scenarioPrice') or scenarios['bear'].get('presentValue')
-    base_fv = scenarios['base'].get('scenarioPrice') or scenarios['base'].get('presentValue')
-    bull_fv = scenarios['bull'].get('scenarioPrice') or scenarios['bull'].get('presentValue')
+
+    bear_fv = scenarios['bear'].get('scenarioPrice')
+    base_fv = scenarios['base'].get('scenarioPrice')
+    bull_fv = scenarios['bull'].get('scenarioPrice')
     
     if bear_fv is None or base_fv is None or bull_fv is None:
         raise ValueError(f"Could not find scenarioPrice or presentValue in scenarios for {ticker}")
