@@ -343,10 +343,24 @@ import json
 from unittest.mock import patch
 
 from risk_engine import compute_risk_snapshot  # noqa: E402
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import (  # noqa: E402
+    resolve_investment,
+    update_investment_fields,
+)
+from domain_model.pillar_repository import resolve_pillar  # noqa: E402
 
 
-def _write_target_portfolio(path: Path, holdings: list[dict]) -> None:
-    path.write_text(json.dumps({"holdings": holdings, "pillars": []}))
+def _seed_pillar_map(db_path: Path, holdings: list[dict]) -> None:
+    """holdings: list of {"ticker": ..., "pillarId": ...} dicts, matching the
+    real target-portfolio.json holding shape. compute_risk_snapshot() now
+    reads pillar_id from domain_model.sqlite (Wave 2 consumer cutover)."""
+    conn = initialize_db(str(db_path))
+    for h in holdings:
+        resolve_pillar(conn, h["pillarId"], h["pillarId"])
+        investment_id = resolve_investment(conn, h["ticker"], asset_class="EQUITY", currency="USD")
+        update_investment_fields(conn, investment_id, pillar_id=h["pillarId"])
+    conn.close()
 
 
 def _write_portfolio(path: Path, shares: dict, prices: dict, total_usd: float) -> None:
@@ -368,9 +382,9 @@ def _bdate_rows(n: int, start_price: float, drift: float) -> list[dict]:
 
 
 def test_compute_risk_snapshot_full_shape(tmp_path):
-    target_path = tmp_path / "target-portfolio.json"
+    db_path = tmp_path / "test.sqlite"
     portfolio_path = tmp_path / "portfolio.json"
-    _write_target_portfolio(target_path, [
+    _seed_pillar_map(db_path, [
         {"ticker": "NVDA", "pillarId": "ai_infra"},
         {"ticker": "PANW", "pillarId": "cyber"},
     ])
@@ -391,7 +405,7 @@ def test_compute_risk_snapshot_full_shape(tmp_path):
 
     with patch("risk_engine.get_prices", side_effect=fake_get_prices):
         snapshot = compute_risk_snapshot(
-            target_portfolio_path=target_path, portfolio_path=portfolio_path, benchmark="SPY",
+            db_path=db_path, portfolio_path=portfolio_path, benchmark="SPY",
         )
 
     expected_keys = {
@@ -411,9 +425,9 @@ def test_compute_risk_snapshot_full_shape(tmp_path):
 
 
 def test_compute_risk_snapshot_excludes_short_history_ticker_with_warning(tmp_path):
-    target_path = tmp_path / "target-portfolio.json"
+    db_path = tmp_path / "test.sqlite"
     portfolio_path = tmp_path / "portfolio.json"
-    _write_target_portfolio(target_path, [
+    _seed_pillar_map(db_path, [
         {"ticker": "NVDA", "pillarId": "ai_infra"},
         {"ticker": "CBRS", "pillarId": "power"},
     ])
@@ -434,7 +448,7 @@ def test_compute_risk_snapshot_excludes_short_history_ticker_with_warning(tmp_pa
 
     with patch("risk_engine.get_prices", side_effect=fake_get_prices):
         snapshot = compute_risk_snapshot(
-            target_portfolio_path=target_path, portfolio_path=portfolio_path, benchmark="SPY",
+            db_path=db_path, portfolio_path=portfolio_path, benchmark="SPY",
         )
 
     assert any("CBRS" in w for w in snapshot["warnings"])

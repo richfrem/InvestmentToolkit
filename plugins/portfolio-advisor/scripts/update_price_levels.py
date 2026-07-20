@@ -45,6 +45,8 @@ except ImportError:
 
 from domain_model.db_client import initialize_db
 from domain_model.projection_repository import get_latest_projection_by_source, get_projection_scenarios
+from domain_model.investment_repository import resolve_investment
+from domain_model.price_level_repository import replace_price_levels, get_price_levels
 
 def derive_tiers_from_dcf(bear_fv: float, base_fv: float, bull_fv: float, source_date: str, note: str = '') -> dict:
     """Returns complete priceLevels dict derived from bear, base, and bull scenario prices."""
@@ -236,25 +238,49 @@ def derive_and_write(
         # Merge or append TA levels if provided
         pass
         
-    # 1. Update target-portfolio.json
-    target_data = {}
+    # 1. Persist priceLevels via the domain-model repository (Wave 2 Task 9 producer
+    #    cutover) instead of rewriting target-portfolio.json in place. Full-object
+    #    replace semantics preserved exactly: replace_price_levels() deletes and
+    #    re-inserts the whole price_level_set for this investment, matching the old
+    #    JSON write's "always rewrite the whole priceLevels block" behavior. Any
+    #    pre-existing targetEntryPrice (a separate, TARGET_ENTRY-kind row this script
+    #    never sets) is read back first and carried through unchanged so this write
+    #    doesn't silently wipe it out.
     holding_found = False
     if tpath.exists():
         with open(tpath) as f:
             target_data = json.load(f)
-        
-        for holding in target_data.get('holdings', []):
-            if holding.get('ticker', '').upper() == ticker.upper():
-                holding['priceLevels'] = price_levels
-                holding_found = True
-        
-        if holding_found:
-            target_data['updatedAt'] = datetime.now(timezone.utc).isoformat()
-            if not dry_run:
-                locked_write_json(tpath, target_data)
-        else:
-            print(f"Warning: Holding {ticker} not found in target portfolio holdings.")
-            
+        holding_found = any(
+            h.get('ticker', '').upper() == ticker.upper() for h in target_data.get('holdings', [])
+        )
+
+    if holding_found:
+        if not dry_run:
+            dbp = db_path or DB_PATH
+            conn = initialize_db(str(dbp))
+            try:
+                investment_id = resolve_investment(conn, ticker)
+                existing = get_price_levels(conn, investment_id)
+                existing_target_entry = (
+                    existing['target_entry']['price'] if existing and existing.get('target_entry') else None
+                )
+                replace_price_levels(
+                    conn,
+                    investment_id,
+                    schema_version=price_levels['schemaVersion'],
+                    last_updated=price_levels['lastUpdated'],
+                    last_updated_by=price_levels['lastUpdatedBy'],
+                    note=price_levels['note'],
+                    buy_tiers=price_levels['buyTiers'],
+                    sell_tiers=price_levels['sellTiers'],
+                    stop_loss=price_levels['stopLoss'],
+                    target_entry_price=existing_target_entry,
+                )
+            finally:
+                conn.close()
+    else:
+        print(f"Warning: Holding {ticker} not found in target portfolio holdings.")
+
     # 2. Update portfolio.json snapshot
     portfolio_data = {}
     current_price = 0.0

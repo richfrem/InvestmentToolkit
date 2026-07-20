@@ -40,17 +40,34 @@ import json
 import sys
 from pathlib import Path
 
-# Add root directory to sys.path so we can import file_lock
+# Add root directory to sys.path so we can import domain_model repositories
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "investment_screener" / "backend" / "py_services"))
-from file_lock import locked_write_json  # noqa: E402
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import (  # noqa: E402
+    resolve_investment,
+    update_investment_fields,
+)
+
+DB_PATH = REPO_ROOT / "investment_screener" / "backend" / "data" / "domain_model.sqlite"
 
 def load_portfolio(path: Path) -> dict:
     with open(path) as f:
         return json.load(f)
 
-def save_portfolio(path: Path, data: dict) -> None:
-    locked_write_json(path, data)
+def save_portfolio(data: dict, db_path: Path = DB_PATH) -> None:
+    """Persist each holding's rescaled ``targetWeight`` via the domain-model
+    repository (``investment.target_weight``) instead of rewriting
+    target-portfolio.json in place (Wave 2 Task 10 producer cutover).
+    """
+    conn = initialize_db(str(db_path))
+    try:
+        for h in data["holdings"]:
+            investment_id = resolve_investment(conn, h["ticker"])
+            weight = h.get("targetWeight", 0) or 0
+            update_investment_fields(conn, investment_id, target_weight=weight)
+    finally:
+        conn.close()
 
 def parse_pairs(args_list: list[str] | None) -> dict[str, float]:
     """Parse list of TICKER=WEIGHT strings into a dict."""
@@ -89,6 +106,7 @@ def main():
     parser.add_argument("--locks", nargs="*", help="List of locked TICKER=WEIGHT pairs (comma/space-separated)")
     parser.add_argument("--adjusts", nargs="*", help="List of adjusted TICKER=WEIGHT pairs (comma/space-separated)")
     parser.add_argument("--write", action="store_true", help="Write changes to the target file")
+    parser.add_argument("--db", default=str(DB_PATH), help="Path to domain_model.sqlite")
 
     args = parser.parse_args()
 
@@ -168,8 +186,8 @@ def main():
     print(f"\n  Final target sum: {total_sum:.4f}%")
 
     if args.write:
-        save_portfolio(target_path, data)
-        print("✅ target-portfolio.json updated successfully!")
+        save_portfolio(data, Path(args.db))
+        print(f"✅ Wrote normalised weights to {args.db} (investment.target_weight)!")
     else:
         print("  [DRY RUN — pass --write to persist changes]")
 

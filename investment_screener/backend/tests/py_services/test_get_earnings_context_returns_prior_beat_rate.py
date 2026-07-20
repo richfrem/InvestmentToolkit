@@ -16,13 +16,34 @@ PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"
 
 sys.path.insert(0, str(PY_SERVICES))
 
+import earnings_expectations  # noqa: E402
 from earnings_expectations import get_earnings_context  # noqa: E402
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import (  # noqa: E402
+    resolve_investment,
+    update_investment_fields,
+)
+
+
+def _seed_holding(db_path, ticker, target_weight, lifecycle_status):
+    """get_earnings_context() reads holding data from domain_model.sqlite (Wave 2
+    consumer cutover) via the module-level, monkeypatchable _DB_PATH -- no longer
+    from target-portfolio.json, so `patch("builtins.open", ...)` has no effect on
+    this part of the function anymore. Tests must seed a real (tmp) SQLite db and
+    monkeypatch _DB_PATH to it instead.
+    """
+    conn = initialize_db(str(db_path))
+    investment_id = resolve_investment(conn, ticker, asset_class="EQUITY", currency="USD")
+    update_investment_fields(
+        conn, investment_id, target_weight=target_weight, lifecycle_status=lifecycle_status,
+    )
+    conn.close()
 
 
 class TestGetEarningsContext:
     """Verify context aggregator returns prior beat rate and portfolio data."""
 
-    def test_get_earnings_context_returns_upcoming_earnings(self):
+    def test_get_earnings_context_returns_upcoming_earnings(self, tmp_path, monkeypatch):
         """Get earnings context for ticker with upcoming earnings."""
         earnings_date = (date.today() + timedelta(days=3)).isoformat()
 
@@ -32,19 +53,12 @@ class TestGetEarningsContext:
             "earnings_date": earnings_date
         }
 
-        target_data = {
-            "holdings": [
-                {
-                    "ticker": "NVDA",
-                    "targetWeight": 5.5,
-                    "role": "accumulate"
-                }
-            ]
-        }
+        db_path = tmp_path / "test.sqlite"
+        _seed_holding(db_path, "NVDA", target_weight=5.5, lifecycle_status="accumulate")
+        monkeypatch.setattr(earnings_expectations, "_DB_PATH", db_path)
 
         with patch("earnings_expectations._fetch_consensus_for_ticker",
                    return_value=consensus), \
-             patch("builtins.open", mock_open(read_data=json.dumps(target_data))), \
              patch("earnings_expectations._load_graded", return_value=[]):
 
             result = get_earnings_context("NVDA")
@@ -140,7 +154,7 @@ class TestGetEarningsContext:
 
         assert result is None
 
-    def test_get_earnings_context_handles_missing_holding(self):
+    def test_get_earnings_context_handles_missing_holding(self, tmp_path, monkeypatch):
         """Get earnings context returns defaults when holding not in portfolio."""
         earnings_date = (date.today() + timedelta(days=3)).isoformat()
 
@@ -150,19 +164,12 @@ class TestGetEarningsContext:
             "earnings_date": earnings_date
         }
 
-        target_data = {
-            "holdings": [
-                {
-                    "ticker": "AAPL",
-                    "targetWeight": 5.0,
-                    "role": "maintain"
-                }
-            ]
-        }
+        db_path = tmp_path / "test.sqlite"
+        _seed_holding(db_path, "AAPL", target_weight=5.0, lifecycle_status="maintain")
+        monkeypatch.setattr(earnings_expectations, "_DB_PATH", db_path)
 
         with patch("earnings_expectations._fetch_consensus_for_ticker",
                    return_value=consensus), \
-             patch("builtins.open", mock_open(read_data=json.dumps(target_data))), \
              patch("earnings_expectations._load_graded", return_value=[]):
 
             result = get_earnings_context("NVDA")  # Not in holdings

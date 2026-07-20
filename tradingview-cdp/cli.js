@@ -10,7 +10,14 @@
  * 
  * Key Input Dependencies:
  *   - ../investment_screener/backend/data/portfolio.json (for alert filtering)
- *   - ../investment_screener/backend/data/watchlist.json (for alert filtering)
+ *   - GET http://localhost:3001/api/screener/watchlist (for alert filtering --
+ *     Wave 2 Task 10/11 cutover: watchlist.json is no longer read directly by
+ *     this file. Node cannot import the Python domain_model package, and a
+ *     direct Node sqlite3 read against domain_model.sqlite would bypass the
+ *     repository-only rule this migration enforces, so the Express backend's
+ *     already-SQLite-backed /api/screener/watchlist endpoint is called
+ *     instead. Requires the backend running on :3001; degrades to an empty
+ *     watchlist symbol set (not an error) if the backend is unreachable.)
  * 
  * Key Output Dependencies:
  *   - None (writes to stdout)
@@ -67,17 +74,31 @@ register('alert', {
             const { dirname, join } = await import('path');
             const __dirname = dirname(fileURLToPath(import.meta.url));
             const portPath = join(__dirname, '../investment_screener/backend/data/portfolio.json');
-            const watchPath = join(__dirname, '../investment_screener/backend/data/watchlist.json');
             const port = JSON.parse(readFileSync(portPath, 'utf8'));
-            const watch = JSON.parse(readFileSync(watchPath, 'utf8'));
             const portSyms = (port.holdings || []).map(h => {
               const sym = h.symbol || h.ticker;
               return sym ? sym.split('.')[0].split('-')[0].toUpperCase() : null;
             }).filter(Boolean);
-            const watchSyms = (watch.watchlist || []).map(w => {
-              const sym = w.ticker || w.symbol;
-              return sym ? sym.split('.')[0].split('-')[0].toUpperCase() : null;
-            }).filter(Boolean);
+
+            // watchlist.json is archived after Wave 2 -- read the same data via
+            // the backend's already-SQLite-backed endpoint instead (see file
+            // docstring). Degrades to [] (not an error) if unreachable.
+            let watchSyms = [];
+            try {
+              const resp = await fetch('http://localhost:3001/api/screener/watchlist');
+              if (resp.ok) {
+                const watch = await resp.json();
+                watchSyms = (watch || []).map(w => {
+                  const sym = w.ticker || w.symbol;
+                  return sym ? sym.split('.')[0].split('-')[0].toUpperCase() : null;
+                }).filter(Boolean);
+              } else {
+                process.stderr.write(`Watchlist fetch returned ${resp.status}\n`);
+              }
+            } catch (fetchErr) {
+              process.stderr.write(`Watchlist fetch error (is the backend running on :3001?): ${fetchErr.message}\n`);
+            }
+
             symbols = [...new Set([...portSyms, ...watchSyms])];
           } catch (e) {
             process.stderr.write(`Filter loading error: ${e.message}\n`);
