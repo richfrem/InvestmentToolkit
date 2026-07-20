@@ -1,10 +1,20 @@
 import subprocess
 import json
+import sys
 from pathlib import Path
 
 # Paths to script
 REPO_ROOT = Path(__file__).resolve().parents[4]
 SCRIPT_PATH = REPO_ROOT / "investment_screener" / "backend" / "py_services" / "verify_thesis_sync.py"
+PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"
+sys.path.insert(0, str(PY_SERVICES))
+
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import (  # noqa: E402
+    resolve_investment,
+    update_investment_fields,
+)
+from domain_model.projection_repository import save_projection_version  # noqa: E402
 
 def run_sync_checker(thesis_json: Path, thesis_md: Path, projections_dir: Path) -> subprocess.CompletedProcess:
     """Helper to execute verify_thesis_sync.py with customized paths via subprocess."""
@@ -149,3 +159,74 @@ def test_verify_thesis_sync_spot_and_cash_exemption(tmp_path):
     assert r.returncode == 0, f"Sync check failed: {r.stdout}\n{r.stderr}"
     assert "Found 1 active equity/business thesis holdings requiring DCF projections." in r.stdout
     assert "All Synchronization Checks Passed successfully!" in r.stdout
+
+
+def _make_db(tmp_path: Path, holdings: list[dict]) -> Path:
+    """holdings: list of {ticker, target_weight, lifecycle_status, sub_strategy_id,
+    has_projection}."""
+    db_path = tmp_path / "domain_model.sqlite"
+    conn = initialize_db(str(db_path))
+    for h in holdings:
+        investment_id = resolve_investment(conn, h["ticker"])
+        update_investment_fields(
+            conn, investment_id,
+            target_weight=h.get("target_weight", 0),
+            lifecycle_status=h.get("lifecycle_status", ""),
+        )
+        if h.get("has_projection"):
+            save_projection_version(
+                conn, investment_id, version=1, saved_at="2026-07-01T00:00:00Z",
+                fair_value=100.0, action="HOLD", source="AI_AGENT",
+                snapshot_json="{}",
+            )
+    conn.close()
+    return db_path
+
+
+def test_verify_thesis_sync_reads_holdings_from_sqlite_by_default(tmp_path):
+    """Wave 2 consumer cutover: when --thesis-json/--projections-dir are NOT
+    passed, holdings and projection existence are read from domain_model.sqlite
+    (the projections/ flat-file directory was archived after Wave 1 and no
+    longer exists on disk -- this is the real bug this cutover fixes)."""
+    db_path = _make_db(tmp_path, [
+        {"ticker": "AAPL", "target_weight": 40.0, "lifecycle_status": "core", "has_projection": True},
+        {"ticker": "MSFT", "target_weight": 60.0, "lifecycle_status": "core", "has_projection": True},
+    ])
+
+    thesis_md = tmp_path / "investment_thesis.md"
+    thesis_md.write_text("Conviction Pillars:\n- AAPL is leading mobile ecosystem.\n- MSFT dominates cloud software.")
+
+    r = subprocess.run(
+        [
+            "python3", str(SCRIPT_PATH),
+            "--db", str(db_path),
+            "--thesis-md", str(thesis_md),
+        ],
+        capture_output=True, text=True, cwd=str(REPO_ROOT),
+    )
+    assert r.returncode == 0, f"Sync check failed but expected to pass: {r.stdout}\n{r.stderr}"
+    assert "All Synchronization Checks Passed successfully!" in r.stdout
+
+
+def test_verify_thesis_sync_sqlite_default_flags_missing_projection(tmp_path):
+    """A holding present in the investment table but with no projection_version
+    row is flagged as missing a DCF projection, sourced from SQLite."""
+    db_path = _make_db(tmp_path, [
+        {"ticker": "AAPL", "target_weight": 40.0, "lifecycle_status": "core", "has_projection": True},
+        {"ticker": "MSFT", "target_weight": 60.0, "lifecycle_status": "core", "has_projection": False},
+    ])
+
+    thesis_md = tmp_path / "investment_thesis.md"
+    thesis_md.write_text("- AAPL\n- MSFT")
+
+    r = subprocess.run(
+        [
+            "python3", str(SCRIPT_PATH),
+            "--db", str(db_path),
+            "--thesis-md", str(thesis_md),
+        ],
+        capture_output=True, text=True, cwd=str(REPO_ROOT),
+    )
+    assert r.returncode == 1
+    assert "are missing DCF projections" in r.stdout
+    assert "['MSFT']" in r.stdout
