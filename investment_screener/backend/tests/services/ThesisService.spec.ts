@@ -4,6 +4,8 @@ import os from 'os';
 import path from 'path';
 import { ThesisService } from '../../src/services/ThesisService';
 import { ProjectionService } from '../../src/services/ProjectionService';
+import { PortfolioRepository } from '../../src/services/PortfolioRepository';
+import { InvestmentRepository } from '../../src/services/InvestmentRepository';
 import { ProjectionSchema, Projection } from '../../src/utils/zod-schemas';
 
 /**
@@ -106,5 +108,58 @@ describe('ThesisService.getLatestAIProjection', () => {
         const bogusTicker = `NOFILE_${Date.now()}`;
         const result = await thesisService.getLatestAIProjection(bogusTicker);
         expect(result).to.be.null;
+    });
+});
+
+/**
+ * Wave 3 Task 6: proves ThesisService.getPortfolioItems() reads through
+ * PortfolioRepository (account_investment JOIN investment_price on a tmp-scoped
+ * SQLite file) rather than opening data/portfolio.json directly. The service's
+ * `dbPath` constructor param points it at the tmp file so this never touches the
+ * real production domain_model.sqlite.
+ */
+describe('ThesisService.getPortfolioItems (Wave 3 Task 6)', () => {
+    let dbPath: string;
+    let thesisService: ThesisService;
+
+    beforeEach(() => {
+        dbPath = path.join(os.tmpdir(), `thesis-service-portfolio-test-${Date.now()}-${Math.random()}.sqlite`);
+        thesisService = new ThesisService(undefined, dbPath);
+    });
+
+    afterEach(() => {
+        for (const suffix of ['', '-wal', '-shm']) {
+            const p = dbPath + suffix;
+            if (fs.existsSync(p)) fs.unlinkSync(p);
+        }
+    });
+
+    it('returns [] when the tmp SQLite db has no priced positions and no portfolio.json fallback data', async () => {
+        // Touch the file so ensureSchema runs, but write nothing -- and since dbPath is
+        // a tmp file, there is no sibling portfolio.json for the JSON fallback to find.
+        const repo = new PortfolioRepository(dbPath);
+        repo.close();
+        const items = await thesisService.getPortfolioItems();
+        expect(items).to.deep.equal([]);
+    });
+
+    it('reads per-symbol quantity/price aggregated from account_investment/investment_price, not portfolio.json', async () => {
+        const investmentRepo = new InvestmentRepository(dbPath);
+        const portfolioRepo = new PortfolioRepository(dbPath);
+        const nvdaId = investmentRepo.resolveInvestmentId('NVDA', 'EQUITY', 'USD');
+        const now = new Date().toISOString();
+        portfolioRepo.upsertAccount('TFSA', 'TFSA', 'TFSA');
+        portfolioRepo.upsertAccount('RRSP', 'RRSP', 'RRSP');
+        portfolioRepo.upsertAccountInvestment('TFSA', nvdaId, 3, 800, 2400, 'USD', now);
+        portfolioRepo.upsertAccountInvestment('RRSP', nvdaId, 1, 800, 800, 'USD', now);
+        portfolioRepo.upsertInvestmentPrice(nvdaId, 900, 'USD', now);
+        investmentRepo.close();
+        portfolioRepo.close();
+
+        const items = await thesisService.getPortfolioItems();
+        expect(items).to.have.lengthOf(1);
+        expect(items[0].symbol).to.equal('NVDA');
+        expect(items[0].quantity).to.equal(4); // 3 (TFSA) + 1 (RRSP), account boundaries preserved then summed
+        expect(items[0].price).to.equal(900);
     });
 });

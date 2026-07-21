@@ -19,7 +19,11 @@
  *     via InvestmentRepository.listThesisHoldings() — rewired off
  *     target-portfolio.json in Wave 2 Task 10/11)
  *   - investment_screener/backend/data/etf_analysis/ (contains processed ETF JSON results)
- *   - investment_screener/backend/data/portfolio.json
+ *   - investment_screener/backend/data/domain_model.sqlite (portfolio-wide USD
+ *     total, via PortfolioRepository.getPortfolioTotalValue() — rewired off
+ *     portfolio.json's `totals` block in Wave 3 Task 6, see
+ *     getStockTotalsFromDb; falls back to portfolio.json only when SQLite has
+ *     no priced position data yet)
  *   - ../services/bridge (for fetch_financials.py, fetch_portfolio_heatmap.py, and fetch_quotes.py)
  *
  * Key Output Dependencies:
@@ -35,8 +39,26 @@ import { isValidTicker } from '../utils/helpers';
 import { ETF_ANALYSIS_DIR, PORTFOLIO_FILE, DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 import { buildLookupDictionary } from '../utils/stockLookup';
 import { InvestmentRepository } from '../services/InvestmentRepository';
+import { PortfolioRepository } from '../services/PortfolioRepository';
 
 const router = express.Router();
+
+/** Wave 3 Task 6: portfolio-wide USD total computed live from
+ * domain_model.sqlite (account_investment JOIN investment_price, GROUP BY
+ * account_id then summed), reusing PortfolioRepository.getPortfolioTotalValue()
+ * — the same function routes/portfolio.ts's /summary calls (per ADR-030 /
+ * portfolio_repository.py::get_portfolio_total_value: never a stored `totals`
+ * value). Returns null (not 0) when there's no priced position data yet, so
+ * POST /portfolio-heatmap falls back to portfolio.json's `totals` block. */
+export function getStockTotalsFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE): number | null {
+    const repo = new PortfolioRepository(dbPath);
+    try {
+        const total = repo.getPortfolioTotalValue();
+        return total > 0 ? total : null;
+    } finally {
+        repo.close();
+    }
+}
 
 router.get('/stock/lookup', async (req, res) => {
     try {
@@ -117,12 +139,24 @@ router.post('/portfolio-heatmap', async (req, res) => {
             res.status(400).json({ error: `Invalid ticker symbols: ${invalidTickers.map((i: any) => i.symbol).join(', ')}` });
             return;
         }
-        // Read totals from portfolio.json — same source as /summary so all pages agree.
+        // Wave 3 Task 6: totalUSD computed live from domain_model.sqlite (same
+        // getPortfolioTotalValue() source as /summary, so all pages agree),
+        // falling back to portfolio.json's `totals` block only when SQLite has
+        // no priced position data yet. exchangeRate has no SQLite equivalent
+        // (TV broker per-currency balance totals are not a stored table —
+        // documented gap, see portfolio_repository.py's load_portfolio_state_from_db
+        // and helpers.ts's getLiveUsdCadRate), so it is still inferred/fetched
+        // via getLiveUsdCadRate() regardless of totals source.
         let exchangeRate = 1.38;
         let snapshotTotalUSD = 0;
         let snapshotTotalCAD = 0;
         try {
-            if (fs.existsSync(PORTFOLIO_FILE)) {
+            const dbTotalUSD = getStockTotalsFromDb();
+            if (dbTotalUSD != null) {
+                exchangeRate = await getLiveUsdCadRate(1.38);
+                snapshotTotalUSD = dbTotalUSD;
+                snapshotTotalCAD = Math.round(dbTotalUSD * exchangeRate);
+            } else if (fs.existsSync(PORTFOLIO_FILE)) {
                 const raw = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
                 const totals = Array.isArray(raw) ? null : raw.totals;
                 if (totals?.exchangeRate > 0) exchangeRate = totals.exchangeRate;

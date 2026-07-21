@@ -13,7 +13,6 @@ from datetime import datetime
 
 # Paths relative to project root
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-PORTFOLIO_PATH = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/portfolio.json")
 DOMAIN_DB_PATH = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/domain_model.sqlite")
 DAILY_BRIEFS_DIR = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/daily-briefs")
 DAILY_REVIEWS_DIR = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/history/reviews/daily")
@@ -62,6 +61,37 @@ def load_target_holdings_from_db(db_path=DOMAIN_DB_PATH):
         })
     return {"holdings": holdings}
 
+
+def load_portfolio_from_db(db_path=DOMAIN_DB_PATH):
+    """Load actual-holdings-shaped portfolio data from domain_model.sqlite
+    (Wave 3 Task 6 cutover — previously portfolio.json).
+
+    Returns the same ``{"totals": {"totalUSD": ...}, "holdings": [{"symbol",
+    "market_value"}, ...]}`` shape ``generate_report()`` expects, sourced from
+    ``load_portfolio_state_from_db()`` (shares/prices aggregated across
+    accounts) so the total is always ``get_portfolio_total_value()``, never a
+    re-sum here.
+    """
+    sys.path.insert(0, os.path.join(PROJECT_ROOT, "investment_screener/backend/py_services"))
+    from domain_model.db_client import initialize_db
+    from domain_model.portfolio_repository import load_portfolio_state_from_db
+
+    if not os.path.exists(db_path):
+        return {}
+
+    conn = initialize_db(str(db_path))
+    try:
+        state = load_portfolio_state_from_db(conn)
+    finally:
+        conn.close()
+
+    shares = state["shares"]
+    prices = state["prices"]
+    holdings = [
+        {"symbol": sym, "market_value": shares[sym] * prices.get(sym, 0.0)}
+        for sym in shares
+    ]
+    return {"totals": {"totalUSD": state["total_usd"]}, "holdings": holdings}
 
 
 def load_latest_brief():
@@ -237,7 +267,7 @@ def main():
     # Load authoritative inputs
     brief = load_latest_brief()
     target_portfolio = load_target_holdings_from_db()
-    portfolio = load_json(PORTFOLIO_PATH)
+    portfolio = load_portfolio_from_db()
 
     if not brief or not target_portfolio or not portfolio:
         print("Error: authoritative JSON inputs are missing or empty.")

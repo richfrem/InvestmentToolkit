@@ -27,6 +27,11 @@ from domain_model.investment_repository import (  # noqa: E402
     update_investment_fields,
 )
 from domain_model.pillar_repository import resolve_pillar  # noqa: E402
+from domain_model.account_repository import upsert_account  # noqa: E402
+from domain_model.investment_price_repository import upsert_investment_price  # noqa: E402
+from domain_model.account_investment_repository import upsert_account_investment  # noqa: E402
+
+import portfolio_io  # noqa: E402
 
 
 def _write_json(path: Path, data) -> Path:
@@ -44,6 +49,28 @@ def _make_db(tmp_path: Path, holdings: list[tuple[str, str]]) -> Path:
         update_investment_fields(conn, investment_id, pillar_id=pillar_id)
     conn.close()
     return db_path
+
+
+def _seed_positions(db_path: Path, rows: list[tuple[str, str, float, float]]) -> None:
+    """Seed SQLite-backed portfolio positions (account, symbol, qty, price)
+    into the same domain_model.sqlite used for the pillar map, matching what
+    the old portfolio.json "holdings" fixture used to encode. This is the
+    real data source load_portfolio_state() now reads post-Wave-3 (see
+    test_portfolio_io.py's _build_test_db for the same pattern).
+    """
+    conn = initialize_db(str(db_path))
+    seen_accounts: set[str] = set()
+    for account_id, symbol, qty, price in rows:
+        if account_id not in seen_accounts:
+            upsert_account(conn, account_id, account_id, account_id)
+            seen_accounts.add(account_id)
+        inv_id = resolve_investment(conn, symbol, asset_class="EQUITY", currency="USD")
+        upsert_investment_price(conn, inv_id, price=price, currency="USD", fetched_at="2026-07-20T00:00:00Z")
+        upsert_account_investment(
+            conn, account_id, inv_id, quantity=qty, average_cost=price,
+            book_value=qty * price, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
+        )
+    conn.close()
 
 
 def test_missing_files_degrade_to_empty_state(tmp_path):
@@ -71,40 +98,44 @@ def test_malformed_portfolio_json_degrades_to_empty_state(tmp_path):
     assert result == {"holdings": {}, "total_value": 0.0}
 
 
-def test_realistic_two_holding_fixture_produces_correct_weight_and_pillar(tmp_path):
-    """A realistic 2-holding fixture -> correct weight_pct/pillar_id per ticker."""
+def test_realistic_two_holding_fixture_produces_correct_weight_and_pillar(tmp_path, monkeypatch):
+    """A realistic 2-holding fixture -> correct weight_pct/pillar_id per ticker.
+
+    Positions are seeded into the same domain_model.sqlite used for the
+    pillar map (post-Wave-3, load_portfolio_state() reads SQLite via
+    portfolio_io._DB_PATH, not portfolio.json -- monkeypatched here exactly
+    as test_portfolio_io.py does).
+    """
     db_path = _make_db(tmp_path, [
         ("AAPL", "core-compounders"),
         ("MSFT", "core-compounders"),
     ])
-    portfolio = _write_json(tmp_path / "portfolio.json", {
-        "holdings": [
-            {"symbol": "AAPL", "shares": 10, "price": 150.0},
-            {"symbol": "MSFT", "shares": 5, "price": 400.0},
-        ],
-        "totals": {"totalUSD": 4000.0},
-    })
+    _seed_positions(db_path, [
+        ("TFSA", "AAPL", 10, 150.0),
+        ("TFSA", "MSFT", 5, 400.0),
+    ])
+    monkeypatch.setattr(portfolio_io, "_DB_PATH", str(db_path))
 
-    result = build_portfolio_state_for_order(db_path=db_path, portfolio_path=portfolio)
+    result = build_portfolio_state_for_order(db_path=db_path, portfolio_path=tmp_path / "unused.json")
 
-    assert result["total_value"] == 4000.0
-    # AAPL: 10*150/4000*100 = 37.5%; MSFT: 5*400/4000*100 = 50.0%
-    assert abs(result["holdings"]["AAPL"]["weight_pct"] - 37.5) < 0.01
+    # total_value is the real account rollup: 10*150 + 5*400 = 3500.0
+    assert result["total_value"] == 3500.0
+    # AAPL: 1500/3500*100 = 42.857...%; MSFT: 2000/3500*100 = 57.142...%
+    assert abs(result["holdings"]["AAPL"]["weight_pct"] - (1500 / 3500 * 100)) < 0.01
     assert result["holdings"]["AAPL"]["pillar_id"] == "core-compounders"
-    assert abs(result["holdings"]["MSFT"]["weight_pct"] - 50.0) < 0.01
+    assert abs(result["holdings"]["MSFT"]["weight_pct"] - (2000 / 3500 * 100)) < 0.01
     assert result["holdings"]["MSFT"]["pillar_id"] == "core-compounders"
 
 
-def test_ticker_with_no_pillar_assignment_falls_back_to_unassigned(tmp_path):
-    """A ticker held in portfolio.json but absent from the investment table
-    gets pillar_id="unassigned" (matches E1's own convention)."""
+def test_ticker_with_no_pillar_assignment_falls_back_to_unassigned(tmp_path, monkeypatch):
+    """A ticker held in domain_model.sqlite's positions but absent from the
+    investment table's pillar assignment gets pillar_id="unassigned" (matches
+    E1's own convention)."""
     db_path = _make_db(tmp_path, [])
-    portfolio = _write_json(tmp_path / "portfolio.json", {
-        "holdings": [{"symbol": "NBIS", "shares": 20, "price": 50.0}],
-        "totals": {"totalUSD": 1000.0},
-    })
+    _seed_positions(db_path, [("TFSA", "NBIS", 20, 50.0)])
+    monkeypatch.setattr(portfolio_io, "_DB_PATH", str(db_path))
 
-    result = build_portfolio_state_for_order(db_path=db_path, portfolio_path=portfolio)
+    result = build_portfolio_state_for_order(db_path=db_path, portfolio_path=tmp_path / "unused.json")
 
     assert result["holdings"]["NBIS"]["pillar_id"] == "unassigned"
     assert abs(result["holdings"]["NBIS"]["weight_pct"] - 100.0) < 0.01

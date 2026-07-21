@@ -27,9 +27,44 @@ try:
 except ImportError:
     generate_evolution_correlation_report = None
 
-PORTFOLIO_JSON = REPO_ROOT / 'investment_screener/backend/data/portfolio.json'
 ETF_ANALYSIS_DIR = REPO_ROOT / 'investment_screener/backend/data/etf_analysis'
 DOMAIN_DB = REPO_ROOT / 'investment_screener/backend/data/domain_model.sqlite'
+
+
+def load_portfolio_holdings(db_path=None) -> dict:
+    """Load holdings data (shares, price, market_value) from domain_model.sqlite
+    (Wave 3 Task 6 cutover — previously portfolio.json).
+
+    Returns:
+        {"holdings": [{"symbol", "shares", "price", "market_value"}, ...],
+         "totals": {"totalUSD": ...}} — the same shape run_weekly_review()
+        expects from the old portfolio.json read.
+    """
+    from domain_model.db_client import initialize_db
+    from domain_model.portfolio_repository import load_portfolio_state_from_db
+
+    path = db_path or DOMAIN_DB
+    if not Path(path).exists():
+        return {"holdings": [], "totals": {"totalUSD": 0.0}}
+
+    conn = initialize_db(str(path))
+    try:
+        state = load_portfolio_state_from_db(conn)
+    finally:
+        conn.close()
+
+    shares = state["shares"]
+    prices = state["prices"]
+    holdings = [
+        {
+            "symbol": sym,
+            "shares": shares[sym],
+            "price": prices.get(sym, 0.0),
+            "market_value": shares[sym] * prices.get(sym, 0.0),
+        }
+        for sym in shares
+    ]
+    return {"holdings": holdings, "totals": {"totalUSD": state["total_usd"]}}
 
 
 def load_target_holdings(db_path=None) -> list:
@@ -138,7 +173,7 @@ def load_json(path):
         return json.load(f)
 
 def run_weekly_review(write_prompt_path=None, db_path=None):
-    portfolio = load_json(PORTFOLIO_JSON)
+    portfolio = load_portfolio_holdings(db_path)
 
     holdings_map = {h['symbol'].upper(): h for h in portfolio.get('holdings', [])}
     target_holdings = load_target_holdings(db_path)
