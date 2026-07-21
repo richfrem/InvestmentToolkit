@@ -29,6 +29,20 @@
  *     one `account_investment` row keyed by (account_id, investment_id), mirrors
  *     account_investment_repository.py::upsert_account_investment
  *   - listAccountInvestments(accountId?) - Read helper for tests/verification
+ *   - upsertInvestmentPrice(investmentId, price, currency, fetchedAt) - Insert-or-update
+ *     one `investment_price` row, mirrors
+ *     investment_price_repository.py::upsert_investment_price. Nothing in the TS
+ *     producer rewire (Wave 3 Task 5) writes prices yet -- this exists so tests and
+ *     any future TS price-writer have a single, non-duplicated write path, per
+ *     ADR-029's "one writer per table" rule.
+ *   - getAccountMarketValues() - SUM(quantity*price) GROUP BY account_id, mirrors
+ *     portfolio_repository.py::get_account_market_values (Wave 3 Task 6)
+ *   - getPortfolioTotalValue() - sum of getAccountMarketValues()'s own values, never
+ *     an independent flat query, mirrors portfolio_repository.py::get_portfolio_total_value
+ *   - listPositionsBySymbol() - per-symbol aggregate (quantity summed across accounts,
+ *     latest average_cost, price) for weights/strategy-allocation call sites
+ *   - getPerAccountPositions(symbol) - per-account quantity/average_cost for one
+ *     symbol, used by /position/:ticker and /holdings/:ticker
  */
 import Database from 'better-sqlite3';
 
@@ -78,6 +92,13 @@ export class PortfolioRepository {
                 currency                    TEXT NOT NULL DEFAULT 'USD',
                 updated_at                  TEXT NOT NULL,
                 UNIQUE(symbol)
+            );
+
+            CREATE TABLE IF NOT EXISTS investment_price (
+                investment_id   TEXT PRIMARY KEY REFERENCES investment(investment_id),
+                price           REAL NOT NULL,
+                currency        TEXT NOT NULL DEFAULT 'USD',
+                fetched_at      TEXT NOT NULL
             );
 
             CREATE TABLE IF NOT EXISTS account_investment (
@@ -152,5 +173,84 @@ export class PortfolioRepository {
                 .all(accountId) as AccountInvestmentRow[];
         }
         return this.db.prepare('SELECT * FROM account_investment ORDER BY account_id, investment_id').all() as AccountInvestmentRow[];
+    }
+
+    /** Mirrors `investment_price_repository.py::upsert_investment_price` — insert-
+     * or-update the single `investment_price` row for `investmentId`. */
+    upsertInvestmentPrice(investmentId: string, price: number, currency = 'USD', fetchedAt: string = new Date().toISOString()): void {
+        this.db
+            .prepare(
+                `INSERT INTO investment_price (investment_id, price, currency, fetched_at)
+                 VALUES (?, ?, ?, ?)
+                 ON CONFLICT(investment_id) DO UPDATE SET
+                 price = excluded.price,
+                 currency = excluded.currency,
+                 fetched_at = excluded.fetched_at`
+            )
+            .run(investmentId, price, currency, fetchedAt);
+    }
+
+    /** Mirrors `portfolio_repository.py::get_account_market_values` — SUM(quantity*price)
+     * GROUP BY account_id via an INNER JOIN against investment_price (a position with no
+     * price row yet contributes zero rather than a fabricated value, matching the Python
+     * reference's documented behavior). */
+    getAccountMarketValues(): Record<string, number> {
+        const rows = this.db
+            .prepare(
+                `SELECT ai.account_id AS account_id, SUM(ai.quantity * ip.price) AS market_value
+                 FROM account_investment ai
+                 JOIN investment_price ip ON ip.investment_id = ai.investment_id
+                 GROUP BY ai.account_id`
+            )
+            .all() as Array<{ account_id: string; market_value: number }>;
+        const result: Record<string, number> = {};
+        for (const r of rows) result[r.account_id] = r.market_value;
+        return result;
+    }
+
+    /** Mirrors `portfolio_repository.py::get_portfolio_total_value` — the sum of
+     * getAccountMarketValues()'s own results. Deliberately NOT an independent flat
+     * query with no GROUP BY: the portfolio total must always be traceable as a
+     * rollup of account-level totals, never a query that can silently cross
+     * account lines (this migration's standing rule). */
+    getPortfolioTotalValue(): number {
+        return Object.values(this.getAccountMarketValues()).reduce((a, b) => a + b, 0);
+    }
+
+    /** Per-symbol aggregate across all accounts: summed quantity, a representative
+     * average_cost, and the latest price (LEFT JOIN — a symbol with no price row
+     * yet still appears, with price = null), for /weights and /strategy-allocation
+     * call sites which need one row per ticker rather than per (account, ticker). */
+    listPositionsBySymbol(): Array<{ symbol: string; quantity: number; averageCost: number | null; price: number | null }> {
+        const rows = this.db
+            .prepare(
+                `SELECT i.symbol AS symbol,
+                        SUM(ai.quantity) AS quantity,
+                        MAX(ai.average_cost) AS average_cost,
+                        MAX(ip.price) AS price
+                 FROM account_investment ai
+                 JOIN investment i ON i.investment_id = ai.investment_id
+                 LEFT JOIN investment_price ip ON ip.investment_id = ai.investment_id
+                 GROUP BY i.symbol
+                 ORDER BY i.symbol`
+            )
+            .all() as Array<{ symbol: string; quantity: number; average_cost: number | null; price: number | null }>;
+        return rows.map(r => ({ symbol: r.symbol, quantity: r.quantity, averageCost: r.average_cost, price: r.price }));
+    }
+
+    /** Per-account quantity/average_cost for one symbol (resolved via `investment`),
+     * used by /position/:ticker and /holdings/:ticker to replace tvSnapshot.positions[]
+     * reads. Returns [] if the symbol has no investment row at all. */
+    getPerAccountPositions(symbol: string): Array<{ accountId: string; quantity: number; averageCost: number | null }> {
+        const rows = this.db
+            .prepare(
+                `SELECT ai.account_id AS account_id, ai.quantity AS quantity, ai.average_cost AS average_cost
+                 FROM account_investment ai
+                 JOIN investment i ON i.investment_id = ai.investment_id
+                 WHERE i.symbol = ?
+                 ORDER BY ai.account_id`
+            )
+            .all(symbol) as Array<{ account_id: string; quantity: number; average_cost: number | null }>;
+        return rows.map(r => ({ accountId: r.account_id, quantity: r.quantity, averageCost: r.average_cost }));
     }
 }
