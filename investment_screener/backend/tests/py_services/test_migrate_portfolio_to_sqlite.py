@@ -65,7 +65,9 @@ def test_real_migration_writes_account_investments_per_real_account(tmp_path):
 
     conn = initialize_db(db_path)
     accounts = {a["account_id"] for a in list_accounts(conn)}
-    assert accounts == {"TFSA", "RRSP"}
+    # CASH is always seeded by seed_real_accounts() even when the fixture has no
+    # CASH snapshot -- it just has no positions/cash rows in that case.
+    assert accounts == {"TFSA", "RRSP", "CASH"}
     rows = {r["account_id"]: r for r in list_account_investments(conn)}
     assert rows["TFSA"]["quantity"] == 10
     assert rows["TFSA"]["average_cost"] == 140.0
@@ -116,3 +118,45 @@ def test_real_migration_is_idempotent(tmp_path):
     conn = initialize_db(db_path)
     rows = list_account_investments(conn)
     assert len(rows) == 4  # TFSA:AAPL, TFSA:CASH_USD, RRSP:AAPL, RRSP:CASH_USD -- re-run does not duplicate
+
+
+def test_real_migration_includes_cash_account():
+    """Per explicit user decision (Wave 3 scope extension): the CASH broker
+    sub-account, previously excluded, must now be migrated like TFSA/RRSP --
+    its own cash balance and positions become account_investment rows, not
+    silently skipped."""
+    import tempfile
+
+    fixture = json.loads(json.dumps(FIXTURE_PORTFOLIO))
+    fixture["tvSnapshot"]["accounts"].append(
+        {"accountType": "CASH", "accountId": "acct-cash-1", "displayText": "Cash - acct-cash-1"}
+    )
+    fixture["tvSnapshot"]["snapshots"].append(
+        {
+            "accountType": "CASH", "accountId": "acct-cash-1",
+            "balances": {"cashUSD": 500.0, "cashCAD": 0.0},
+            "positions": [
+                {"symbol": "AAPL", "direction": "Long", "quantity": 2, "avgFillPrice": 145.0, "positionId": "p4"},
+            ],
+        }
+    )
+    with tempfile.TemporaryDirectory() as tmp:
+        portfolio_path = Path(tmp) / "portfolio.json"
+        portfolio_path.write_text(json.dumps(fixture))
+        db_path = str(Path(tmp) / "test.sqlite")
+
+        dry_run_report = run_dry_run_migration(str(portfolio_path))
+        assert dry_run_report["accounts_found"] == {"TFSA", "RRSP", "CASH"}
+
+        report = run_real_migration(str(portfolio_path), db_path)
+        assert report["account_investments_written"] == 3  # TFSA:AAPL, RRSP:AAPL, CASH:AAPL (cash rows aren't counted in this metric)
+
+        conn = initialize_db(db_path)
+        accounts = {a["account_id"] for a in list_accounts(conn)}
+        assert accounts == {"TFSA", "RRSP", "CASH"}
+
+        cash_rows = {r["investment_id"]: r for r in list_account_investments(conn, account_id="CASH")}
+        assert cash_rows["AAPL"]["quantity"] == 2
+        assert cash_rows["AAPL"]["average_cost"] == 145.0
+        assert "CASH_USD" in cash_rows  # CASH account's own $500 cash balance migrated too
+        assert cash_rows["CASH_USD"]["quantity"] == 500.0

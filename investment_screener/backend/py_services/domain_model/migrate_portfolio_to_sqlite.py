@@ -66,9 +66,9 @@ def run_real_migration(portfolio_path: str, db_path: str) -> dict:
     positions_written = 0
     for snap in snapshots:
         account_id = snap["accountType"]
-        if account_id not in ("TFSA", "RRSP"):
-            continue  # CASH account (a real broker sub-account, not TFSA/RRSP) is out of this
-            # wave's seeded-account scope; named in the exit report, not silently dropped.
+        if account_id not in ("TFSA", "RRSP", "CASH"):
+            continue  # Only the three real, seeded broker sub-accounts (TFSA/RRSP/CASH)
+            # are in scope; anything else is unrecognized and intentionally skipped.
         upsert_account(conn, account_id, account_id, account_id)
 
         cash_usd = float(snap.get("balances", {}).get("cashUSD") or 0)
