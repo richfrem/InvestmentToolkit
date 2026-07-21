@@ -1255,6 +1255,12 @@ Leave it JSON-only with the inline comment Task 5 already added; do not force a 
    migration's standing discipline (Wave 2 caught a real test-leak regression exactly this way).
 6. Commit with a message following the pattern `feat: rewire <file> onto domain_model.sqlite (Wave 3 Task 6)`.
 
+**When reducing Task 5's 4 dual-write producers to SQLite-only**: also update
+`test_fetch_broker_data_persist.py::test_write_snapshot_also_persists_to_domain_model_sqlite`, which
+currently asserts the JSON `tvSnapshot` write is unchanged (`written_json["tvSnapshot"] == SNAPSHOT`)
+— a one-line assertion that will need updating once the JSON write is actually dropped for this
+producer, flagged by Task 5's review so it doesn't silently block the removal.
+
 **Batch these commits by natural grouping** (TS route/component files together, Python
 portfolio-advisor scripts together, tradingview scripts together) rather than one commit per file,
 mirroring Wave 2's `26056cba`/`6658883f`-style grouped commits — but each file still gets its own
