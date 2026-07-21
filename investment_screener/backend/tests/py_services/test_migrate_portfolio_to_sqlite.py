@@ -86,6 +86,27 @@ def test_real_migration_writes_cash_as_investment_rows(tmp_path):
     assert cash_investment_ids  # TFSA's $100 cash balance became a CASH_USD account_investment row
 
 
+def test_real_migration_excludes_zero_quantity_positions(tmp_path):
+    """A closed/flattened position (quantity: 0) still present in a stale snapshot
+    must not produce a noise row in account_investment, but real positions in the
+    same account/snapshot must still be written."""
+    fixture = json.loads(json.dumps(FIXTURE_PORTFOLIO))
+    fixture["tvSnapshot"]["snapshots"][1]["positions"].append(
+        {"symbol": "MSFT", "direction": "Long", "quantity": 0, "avgFillPrice": 300.0, "positionId": "p3"}
+    )
+    portfolio_path = tmp_path / "portfolio.json"
+    portfolio_path.write_text(json.dumps(fixture))
+    db_path = str(tmp_path / "test.sqlite")
+    report = run_real_migration(str(portfolio_path), db_path)
+    assert report["account_investments_written"] == 2  # MSFT excluded, RRSP:AAPL still written
+
+    conn = initialize_db(db_path)
+    rows = list_account_investments(conn, account_id="RRSP")
+    investment_ids = {r["investment_id"] for r in rows}
+    assert "MSFT" not in investment_ids
+    assert "AAPL" in investment_ids
+
+
 def test_real_migration_is_idempotent(tmp_path):
     portfolio_path = tmp_path / "portfolio.json"
     portfolio_path.write_text(json.dumps(FIXTURE_PORTFOLIO))
