@@ -21,6 +21,15 @@ def get_account_market_values(conn: sqlite3.Connection) -> dict[str, float]:
     like any other position, per Wave 0's resolved decision 5) -- no special-casing,
     the JOIN treats them identically to equity positions.
     """
+    # Deliberate inner JOIN (not LEFT JOIN): a position with an account_investment
+    # row but no investment_price row yet (e.g. a symbol just synced from the
+    # broker before its first price fetch) contributes zero to this total rather
+    # than a fabricated price or a crash -- it simply drops out of the SUM until a
+    # price is synced. This is intentional, not a bug: see
+    # test_position_with_no_price_row_contributes_zero_but_still_appears_in_shares
+    # in test_portfolio_repository.py, which also documents that the same symbol
+    # still appears in load_portfolio_state_from_db()'s shares dict (LEFT JOIN),
+    # so shares and total_usd can legitimately disagree on coverage for that symbol.
     cursor = conn.execute(
         """
         SELECT ai.account_id AS account_id, SUM(ai.quantity * ip.price) AS market_value
@@ -72,6 +81,15 @@ def load_portfolio_state_from_db(conn: sqlite3.Connection) -> dict:
         "shares": shares,
         "prices": prices,
         "total_usd": get_portfolio_total_value(conn),
+        # PLACEHOLDER, not sourced FX data: portfolio_io.py's load_portfolio_state()
+        # (the JSON-backed function this module replaces per Task 4's plan) reads
+        # totals.exchangeRate from portfolio.json and only falls back to this same
+        # 1.38 literal when that key is absent -- this module has no equivalent
+        # totals/exchangeRate column to read from yet, so it always uses the
+        # fallback. Real FX-rate sourcing is out of this task's scope: per
+        # CLAUDE.md pitfall #27, it must be inferred from TradingView's own native
+        # values (e.g. totalEquityCADCombined / totalEquityUSDCombined), never an
+        # external FX API call. Wiring that in is a known gap for a later task.
         "exchange_rate": 1.38,
         "_totals_from_broker": False,  # per ADR-030: always computed, never stored/read from a broker column
     }

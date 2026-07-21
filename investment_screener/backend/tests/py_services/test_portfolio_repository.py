@@ -89,3 +89,31 @@ def test_load_portfolio_state_from_db_returns_shares_prices_and_total(tmp_path):
     assert state["prices"]["AAPL"] == 150.0
     assert state["total_usd"] == get_portfolio_total_value(conn) == 1950.0
     assert state["_totals_from_broker"] is False  # per ADR-030: always computed, never a stored broker column
+
+
+def test_position_with_no_price_row_contributes_zero_but_still_appears_in_shares(tmp_path):
+    """Finding 1 regression guard: a newly synced position (account_investment row
+    exists) with no investment_price row yet (price not fetched) must NOT
+    contribute to get_account_market_values()/get_portfolio_total_value() (inner
+    JOIN excludes it), but MUST still appear in load_portfolio_state_from_db()'s
+    shares dict (LEFT JOIN includes it) with no corresponding prices entry. This
+    is intentional -- see the comment above get_account_market_values()'s query --
+    not a bug, but previously undocumented and untested.
+    """
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    _seed_two_accounts(conn)
+    new_id = resolve_investment(conn, "NEWSYM", asset_class="EQUITY", currency="USD")
+    # Deliberately no upsert_investment_price call for NEWSYM.
+    upsert_account_investment(
+        conn, "TFSA", new_id, quantity=5, average_cost=10.0,
+        book_value=50.0, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
+    )
+
+    account_values = get_account_market_values(conn)
+    assert account_values["TFSA"] == 1500.0  # unchanged -- NEWSYM contributes 0, not a phantom value
+    assert get_portfolio_total_value(conn) == 1950.0  # unchanged
+
+    state = load_portfolio_state_from_db(conn)
+    assert state["shares"]["NEWSYM"] == 5  # still visible via LEFT JOIN
+    assert "NEWSYM" not in state["prices"]  # no price row yet -- no fabricated price
+    assert state["total_usd"] == 1950.0  # NEWSYM still contributes 0 to the total
