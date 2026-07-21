@@ -20,7 +20,41 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(PY_SERVICES))
 
-from compute_conviction_scores import _resolve_pct_to_fv, _score_momentum  # noqa: E402
+from compute_conviction_scores import _load_actual_weights, _resolve_pct_to_fv, _score_momentum  # noqa: E402
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.account_repository import upsert_account  # noqa: E402
+from domain_model.investment_repository import resolve_investment  # noqa: E402
+from domain_model.investment_price_repository import upsert_investment_price  # noqa: E402
+from domain_model.account_investment_repository import upsert_account_investment  # noqa: E402
+
+
+class TestLoadActualWeightsReadsSqlite:
+    """Wave 3 Task 6: _load_actual_weights() must read domain_model.sqlite,
+    never portfolio.json."""
+
+    def test_computes_weight_pct_from_sqlite_holdings(self, tmp_path):
+        db_path = tmp_path / "domain_model.sqlite"
+        conn = initialize_db(str(db_path))
+        upsert_account(conn, "TFSA", "TFSA", "TFSA")
+        aapl_id = resolve_investment(conn, "AAPL", asset_class="EQUITY", currency="USD")
+        msft_id = resolve_investment(conn, "MSFT", asset_class="EQUITY", currency="USD")
+        upsert_investment_price(conn, aapl_id, price=100.0, currency="USD", fetched_at="2026-07-20T00:00:00Z")
+        upsert_investment_price(conn, msft_id, price=100.0, currency="USD", fetched_at="2026-07-20T00:00:00Z")
+        upsert_account_investment(
+            conn, "TFSA", aapl_id, quantity=10, average_cost=90.0,
+            book_value=900.0, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
+        )
+        upsert_account_investment(
+            conn, "TFSA", msft_id, quantity=10, average_cost=90.0,
+            book_value=900.0, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
+        )
+        conn.close()
+
+        result = _load_actual_weights(db_path)
+        assert result == {"AAPL": 50.0, "MSFT": 50.0}
+
+    def test_missing_db_returns_empty(self, tmp_path):
+        assert _load_actual_weights(tmp_path / "missing.sqlite") == {}
 
 
 class TestScoreMomentumDirection:
