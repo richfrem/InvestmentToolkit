@@ -10,15 +10,15 @@ from domain_model.account_repository import list_accounts  # noqa: E402
 from domain_model.seed_real_accounts import seed_real_accounts  # noqa: E402
 
 
-def test_seed_creates_tfsa_and_rrsp(tmp_path):
+def test_seed_creates_tfsa_rrsp_and_cash(tmp_path):
     conn = initialize_db(str(tmp_path / "test.sqlite"))
     seed_real_accounts(conn)
     accounts = {a["account_id"] for a in list_accounts(conn)}
-    assert accounts == {"TFSA", "RRSP"}
+    assert accounts == {"TFSA", "RRSP", "CASH"}
 
 
 def test_seed_is_idempotent(tmp_path):
     conn = initialize_db(str(tmp_path / "test.sqlite"))
     seed_real_accounts(conn)
     seed_real_accounts(conn)
-    assert len(list_accounts(conn)) == 2
+    assert len(list_accounts(conn)) == 3
