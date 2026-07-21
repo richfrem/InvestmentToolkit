@@ -15,7 +15,11 @@
  *   - GET /all-holdings - Aggregates data from watchlist, thesis, actual portfolio, and reviews into a unified map
  * 
  * Key Input Dependencies:
- *   - investment_screener/backend/data/portfolio.json (Live portfolio status)
+ *   - investment_screener/backend/data/domain_model.sqlite (Live portfolio
+ *     positions, via PortfolioRepository.listPositionsBySymbol() — rewired off
+ *     portfolio.json in Wave 3 Task 6, see getScreenerPositionsFromDb; falls
+ *     back to investment_screener/backend/data/portfolio.json only when
+ *     SQLite has no priced position data yet)
  *   - investment_screener/backend/data/domain_model.sqlite (Conviction targets,
  *     via InvestmentRepository.listThesisHoldings() — rewired off
  *     target-portfolio.json in Wave 2 Task 10/11)
@@ -33,8 +37,33 @@ import { getPythonActions } from '../utils/helpers';
 import { PORTFOLIO_FILE, PORTFOLIO_REVIEWS_DIR, DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 import { watchlistService } from '../services/WatchlistService';
 import { InvestmentRepository } from '../services/InvestmentRepository';
+import { PortfolioRepository } from '../services/PortfolioRepository';
 
 const router = express.Router();
+
+/** Wave 3 Task 6: per-symbol {symbol, shares, price} aggregated across accounts
+ * from account_investment/investment_price, replacing GET /all-holdings' direct
+ * portfolio.json `holdings`/flat-array read. Mirrors routes/portfolio.ts's
+ * getWeightsFromDb/getStrategyAllocationInputFromDb pattern: reuses
+ * PortfolioRepository.listPositionsBySymbol() rather than new raw SQL, returns
+ * null (not []) when SQLite has no priced position data yet so the caller falls
+ * back to portfolio.json. */
+export function getScreenerPositionsFromDb(
+    dbPath: string = DOMAIN_MODEL_DB_FILE
+): Array<{ symbol: string; shares: number; price: number }> | null {
+    const repo = new PortfolioRepository(dbPath);
+    try {
+        const positions = repo.listPositionsBySymbol();
+        if (positions.length === 0) return null;
+        return positions.map(p => ({
+            symbol: p.symbol,
+            shares: p.quantity,
+            price: p.price ?? p.averageCost ?? 0,
+        }));
+    } finally {
+        repo.close();
+    }
+}
 
 // GET /api/screener/watchlist
 router.get('/watchlist', async (_req, res) => {
@@ -92,10 +121,18 @@ router.get('/all-holdings', async (_req, res) => {
         }
         const thesisMap = new Map(thesisHoldings.map(h => [h.ticker, h]));
 
-        const rawPortfolio = fs.existsSync(PORTFOLIO_FILE)
-            ? JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8')) : [];
-        const positions: any[] = Array.isArray(rawPortfolio) ? rawPortfolio : (rawPortfolio.holdings ?? []);
-        
+        // Wave 3 Task 6: positions sourced live from domain_model.sqlite
+        // (account_investment JOIN investment_price via PortfolioRepository),
+        // falling back to portfolio.json only when SQLite has no priced
+        // position data yet.
+        const dbPositions = getScreenerPositionsFromDb();
+        const positions: any[] = dbPositions ?? (fs.existsSync(PORTFOLIO_FILE)
+            ? (() => {
+                const rawPortfolio = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
+                return Array.isArray(rawPortfolio) ? rawPortfolio : (rawPortfolio.holdings ?? []);
+            })()
+            : []);
+
         const totalValue = positions.reduce((s, p) => s + (p.shares || 0) * (p.price || 0), 0);
         const actualMap: Record<string, { pct: number; price: number }> = {};
         for (const p of positions) {
