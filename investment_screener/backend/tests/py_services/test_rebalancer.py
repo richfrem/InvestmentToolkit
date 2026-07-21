@@ -62,14 +62,23 @@ def _domain_db(tmp_path) -> Path:
     return tmp_path / "domain_model.sqlite"
 
 
-def _seed_positions(db_path: Path, rows: list[tuple[str, str, float, float]]) -> None:
+def _seed_positions(
+    db_path: Path,
+    rows: list[tuple[str, str, float, float]],
+    last_synced_at: str | None = None,
+) -> None:
     """Seed SQLite-backed portfolio positions (account, symbol, qty, price) into
-    domain_model.sqlite -- the real source load_portfolio_state() now reads
-    post-Wave-3 (see test_portfolio_io.py's _build_test_db for the same
-    pattern). Replaces the old portfolio.json "holdings"/"totals" fixture for
-    the purposes of computing CURRENT weights (load_account_positions() still
-    reads portfolio.json's tvSnapshot for account routing, unaffected).
+    domain_model.sqlite -- the real source load_portfolio_state() AND
+    load_account_positions() now read post-Wave-3 (see test_portfolio_io.py's
+    _build_test_db for the same pattern). Replaces the old portfolio.json
+    "holdings"/"totals" + tvSnapshot fixtures.
+
+    ``last_synced_at`` defaults to a fresh (now) timestamp so the SQLite-backed
+    staleness check in _check_no_trade_conditions() does not trip DATA_STALE;
+    pass an old ISO string to deliberately exercise the stale path.
     """
+    if last_synced_at is None:
+        last_synced_at = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     from domain_model.db_client import initialize_db  # noqa: PLC0415
     from domain_model.account_repository import upsert_account  # noqa: PLC0415
     from domain_model.investment_repository import resolve_investment  # noqa: PLC0415
@@ -83,10 +92,10 @@ def _seed_positions(db_path: Path, rows: list[tuple[str, str, float, float]]) ->
             upsert_account(conn, account_id, account_id, account_id)
             seen_accounts.add(account_id)
         inv_id = resolve_investment(conn, symbol, asset_class="EQUITY", currency="USD")
-        upsert_investment_price(conn, inv_id, price=price, currency="USD", fetched_at="2026-07-20T00:00:00Z")
+        upsert_investment_price(conn, inv_id, price=price, currency="USD", fetched_at=last_synced_at)
         upsert_account_investment(
             conn, account_id, inv_id, quantity=qty, average_cost=price,
-            book_value=qty * price, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
+            book_value=qty * price, currency="USD", last_synced_at=last_synced_at,
         )
     conn.close()
 
@@ -179,57 +188,90 @@ def test_candidate_orders_skips_zero_share_orders(tmp_path):
     assert candidates == []
 
 
-def _write_portfolio_with_tvsnapshot(path: Path, accounts: list[dict]) -> None:
-    path.write_text(json.dumps({
-        "holdings": [], "totals": {"totalUSD": 1000.0},
-        "tvSnapshot": {"snapshots": accounts},
-    }))
+def _seed_account_positions_db(
+    db_path: Path,
+    rows: list[tuple[str, str, float, float]],
+    cash: dict[str, float] | None = None,
+    last_synced_at: str = "2026-07-20T00:00:00Z",
+) -> None:
+    """Seed per-account positions + cash into domain_model.sqlite for
+    load_account_positions() (Wave 3 cutover — reads account_investment, not
+    portfolio.json's tvSnapshot). rows: (account, symbol, qty, avg_cost).
+    cash: {account: usd_amount} seeded as CASH_USD account_investment rows."""
+    from domain_model.db_client import initialize_db  # noqa: PLC0415
+    from domain_model.account_repository import upsert_account  # noqa: PLC0415
+    from domain_model.investment_repository import resolve_investment  # noqa: PLC0415
+    from domain_model.investment_price_repository import upsert_investment_price  # noqa: PLC0415
+    from domain_model.account_investment_repository import upsert_account_investment  # noqa: PLC0415
+
+    conn = initialize_db(str(db_path))
+    seen: set[str] = set()
+
+    def _ensure_account(acct: str) -> None:
+        if acct not in seen:
+            upsert_account(conn, acct, acct, acct)
+            seen.add(acct)
+
+    for account_id, symbol, qty, avg_cost in rows:
+        _ensure_account(account_id)
+        inv_id = resolve_investment(conn, symbol, asset_class="EQUITY", currency="USD")
+        upsert_investment_price(conn, inv_id, price=avg_cost, currency="USD", fetched_at=last_synced_at)
+        upsert_account_investment(
+            conn, account_id, inv_id, quantity=qty, average_cost=avg_cost,
+            book_value=qty * avg_cost, currency="USD", last_synced_at=last_synced_at,
+        )
+    if cash:
+        cash_id = resolve_investment(conn, "CASH_USD", asset_class="CASH", currency="USD")
+        upsert_investment_price(conn, cash_id, price=1.0, currency="USD", fetched_at=last_synced_at)
+        for account_id, amount in cash.items():
+            _ensure_account(account_id)
+            upsert_account_investment(
+                conn, account_id, cash_id, quantity=amount, average_cost=1.0,
+                book_value=amount, currency="USD", last_synced_at=last_synced_at,
+            )
+    conn.close()
 
 
-def test_load_account_positions_reads_tvsnapshot_per_account(tmp_path):
-    portfolio_path = tmp_path / "portfolio.json"
-    _write_portfolio_with_tvsnapshot(portfolio_path, [
-        {
-            "accountType": "TFSA",
-            "positions": [{"symbol": "NBIS", "quantity": 10, "avgFillPrice": 20.0}],
-            "balances": {"cashUSDCombined": 500.0},
-        },
-        {
-            "accountType": "RRSP",
-            "positions": [{"symbol": "NBIS", "quantity": 3, "avgFillPrice": 22.0}],
-            "balances": {"cashUSDCombined": 100.0},
-        },
-    ])
-    positions, cash, source = load_account_positions(portfolio_path)
+def test_load_account_positions_reads_sqlite_per_account(tmp_path):
+    db_path = _domain_db(tmp_path)
+    _seed_account_positions_db(
+        db_path,
+        [("TFSA", "NBIS", 10, 20.0), ("RRSP", "NBIS", 3, 22.0)],
+        cash={"TFSA": 500.0, "RRSP": 100.0},
+    )
+    positions, cash, source = load_account_positions(db_path)
     assert positions["TFSA"]["NBIS"] == {"shares": 10.0, "costBasis": 20.0}
     assert positions["RRSP"]["NBIS"] == {"shares": 3.0, "costBasis": 22.0}
     assert cash["TFSA"] == 500.0
     assert cash["RRSP"] == 100.0
-    assert source == {"TFSA": "tvSnapshot", "RRSP": "tvSnapshot"}
+    assert source == {"TFSA": "sqlite", "RRSP": "sqlite"}
 
 
 def test_load_account_positions_falls_back_to_heuristic_when_rrsp_missing(tmp_path):
-    portfolio_path = tmp_path / "portfolio.json"
-    _write_portfolio_with_tvsnapshot(portfolio_path, [
-        {
-            "accountType": "TFSA",
-            "positions": [{"symbol": "NBIS", "quantity": 9, "avgFillPrice": 20.0}],
-            "balances": {"cashUSDCombined": 500.0},
-        },
-    ])
-    positions, cash, source = load_account_positions(portfolio_path)
+    db_path = _domain_db(tmp_path)
+    _seed_account_positions_db(db_path, [("TFSA", "NBIS", 9, 20.0)], cash={"TFSA": 500.0})
+    positions, cash, source = load_account_positions(db_path)
     assert positions["RRSP"]["NBIS"]["shares"] == 3.0  # floor(9/3)
     assert cash["RRSP"] == 0.0
     assert source["RRSP"] == "heuristic_1_3_mirror"
 
 
-def test_load_account_positions_no_tvsnapshot_returns_empty(tmp_path):
-    portfolio_path = tmp_path / "portfolio.json"
-    portfolio_path.write_text(json.dumps({"holdings": [], "totals": {"totalUSD": 1000.0}}))
-    positions, cash, source = load_account_positions(portfolio_path)
+def test_load_account_positions_no_positions_returns_empty(tmp_path):
+    db_path = _domain_db(tmp_path)
+    _seed_account_positions_db(db_path, [])
+    positions, cash, source = load_account_positions(db_path)
     assert positions == {}
     assert cash == {}
     assert source == {}
+
+
+def test_load_account_positions_excludes_cash_from_positions(tmp_path):
+    """CASH_USD is cash, never a tradeable position row."""
+    db_path = _domain_db(tmp_path)
+    _seed_account_positions_db(db_path, [("TFSA", "NBIS", 10, 20.0)], cash={"TFSA": 500.0})
+    positions, cash, _source = load_account_positions(db_path)
+    assert "CASH_USD" not in positions["TFSA"]
+    assert cash["TFSA"] == 500.0
 
 
 def test_routing_sells_go_to_the_account_that_holds_shares():
@@ -563,7 +605,7 @@ def test_compute_rebalance_plan_full_shape(tmp_path, monkeypatch):
     tickers_in_orders = {o["ticker"] for o in plan["orders"]}
     assert "CRWD" in tickers_in_orders  # overweight (14.3% actual vs 4.0% target) -> sell
     assert "NBIS" in tickers_in_orders  # underweight (0.19% actual vs 5.5% target) -> buy
-    assert plan["accountDataSource"] == {"TFSA": "tvSnapshot", "RRSP": "heuristic_1_3_mirror"}
+    assert plan["accountDataSource"] == {"TFSA": "sqlite", "RRSP": "heuristic_1_3_mirror"}
 
 
 def test_compute_rebalance_plan_blocked_when_targets_dont_sum_to_100(tmp_path):
@@ -581,9 +623,14 @@ def test_compute_rebalance_plan_blocked_when_targets_dont_sum_to_100(tmp_path):
 
 def test_compute_rebalance_plan_blocked_when_portfolio_stale(tmp_path):
     target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
-    stale = json.loads(portfolio_path.read_text())
-    stale["totals"]["timestamp"] = "2020-01-01T00:00:00Z"
-    portfolio_path.write_text(json.dumps(stale))
+    # Wave 3: staleness is now derived from account_investment.last_synced_at,
+    # not portfolio.json's totals.timestamp — re-seed positions with an old
+    # last_synced_at to exercise the DATA_STALE path.
+    _seed_positions(
+        db_path,
+        [("TFSA", "CRWD", 15.0, 100.0), ("TFSA", "NBIS", 1.0, 20.0), ("TFSA", "PSU-U.TO", 90.0, 100.0)],
+        last_synced_at="2020-01-01T00:00:00Z",
+    )
     plan = compute_rebalance_plan(
         target_portfolio_path=target_path, portfolio_path=portfolio_path,
         risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
