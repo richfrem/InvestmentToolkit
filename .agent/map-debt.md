@@ -77,3 +77,43 @@ Do not delete resolved items; set `Status: RESOLVED` to maintain history.
 - Severity: S (test-only correctness gap; no data corruption, no production code path affected beyond the documented degrade behavior)
 - Repeat: NO (isolated to these 2 specific test cases)
 - Status: OPEN — flagged during Task 5, deferred as a dedicated follow-up per the same "not required, worth a dedicated fix" pattern as the entry above
+
+### Entry: verify_thesis_sync.py requires thesis-doc mention for pure watchlist candidates
+
+- Logged: 2026-07-21
+- Cycle/Session: Domain Data Model v3.2 Wave 3 (account holdings) — discovered while committing an
+  unrelated real-sync side effect during Task 7's live parity proof, when the pre-commit hook
+  blocked the commit.
+- Artifact affected: `investment_screener/backend/py_services/verify_thesis_sync.py`'s
+  `_load_holdings_from_db()` (calls `list_investments(conn)` with no filter) and its
+  "tickers missing in thesis documentation" check.
+- Friction observed: the check requires EVERY row in the `investment` table — including pure
+  watchlist candidates (`is_watchlisted=1`, `target_weight=NULL`, never actually held or targeted)
+  — to be mentioned by name in `investment_thesis.md`/sub-strategy markdown files. ~17 real
+  watchlist tickers (AAPL, ALAB, AMZN, BW, CAKE, CELH, CIFR, HUT, KRC, LBRT, NKE, PUMP, RIOT, SEI,
+  SYM, TSEM, plus BITF/ANET/EQIX/DLR.U.TO/DLR.TO variants) are real, user-confirmed watchlist
+  entries the user hasn't written thesis prose for yet — not phantom/stale data, confirmed via
+  `is_watchlisted=1` in `domain_model.sqlite`. The hook currently treats "not yet researched
+  watchlist candidate" identically to "real holding/target with no thesis," blocking any commit
+  that touches `investment_thesis.md`/sub-strategy files until every watchlist ticker ever added
+  gets a real write-up.
+- Why it was not fixed now: user explicitly decided the check's current behavior (require
+  documentation for every tracked ticker including watchlist) is correct and intends to write the
+  missing ~17 real watchlist entries themselves — this is real investment-research content only the
+  user can produce accurately, not something to fix by loosening the check or writing placeholder
+  content. Also out of Wave 3's scope (Wave 3 is the account-holdings/portfolio.json migration; this
+  check concerns `target-portfolio.json`/thesis docs, Wave 2's domain).
+- Recommended fix: none — this is the user's own content backlog, not a code fix. If it recurs as
+  blocking friction, consider whether `_load_holdings_from_db()` should accept an optional
+  `include_watchlist_only` param so future automated commits (e.g. broker-sync side effects) aren't
+  blocked on this specific content gap while a real fix (or the user's write-up) is pending —
+  named as an option, not a recommendation, since the user's stated preference is to keep the check
+  strict.
+- Evidence: `python3 verify_thesis_sync.py` (both in the Wave 3 worktree and on `main` independently)
+  → `ERROR: The following tickers exist in target portfolio but are missing in thesis documentation:
+  [...]`; `SELECT symbol, is_watchlisted, target_weight FROM investment WHERE symbol IN (...)` confirms
+  `is_watchlisted=1, target_weight=NULL` for the named tickers.
+- Severity: M
+- Repeat: YES — will recur on any future commit touching `investment_thesis.md`/sub-strategy files
+  until the user writes the missing watchlist entries.
+- Status: OPEN

@@ -14,7 +14,8 @@ Usage:
     python3 earnings_calendar.py --days 14 --json
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Finds upcoming holdings earnings)
+    - investment_screener/backend/data/domain_model.sqlite (Finds upcoming holdings
+      earnings; Wave 3 Task 6 cutover — previously portfolio.json)
 
 Layer:
     Backend / Python Services
@@ -41,13 +42,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PORTFOLIO_PATH = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
+DB_PATH = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 SKIP_TICKERS: frozenset[str] = frozenset({"PSU-U.TO", "PSU.U.TO", "USD_CASH"})
 
 # ETFs and funds — no earnings dates exist; excluding them avoids yfinance 404s
@@ -68,19 +73,23 @@ class EarningsEntry:
     flag: str  # IMMINENT | APPROACHING | UPCOMING | OK | UNKNOWN
 
 
-def _load_tickers() -> list[str]:
-    """Load active ticker list from portfolio.json.
+def _load_tickers(db_path: Path = DB_PATH) -> list[str]:
+    """Load active ticker list from domain_model.sqlite (Wave 3 Task 6 cutover
+    — previously portfolio.json).
 
     Returns:
         Sorted list of equity ticker symbols.
     """
-    with open(PORTFOLIO_PATH) as f:
-        data = json.load(f)
+    if not db_path.exists():
+        return []
+    conn = initialize_db(str(db_path))
+    try:
+        symbols = load_portfolio_state_from_db(conn)["shares"].keys()
+    finally:
+        conn.close()
     return sorted(
-        h["symbol"] for h in data.get("holdings", [])
-        if h.get("symbol")
-        and h["symbol"] not in SKIP_TICKERS
-        and h["symbol"] not in ETF_TICKERS
+        s for s in symbols
+        if s and s not in SKIP_TICKERS and s not in ETF_TICKERS
     )
 
 
