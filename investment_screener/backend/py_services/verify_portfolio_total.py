@@ -6,17 +6,26 @@ Purpose:
     verify_portfolio_total.py — Audit script: TV live account totals vs our computed total.
 
 Fetches Total Equity USD from every TradingView account via CDP (live, authoritative),
-then computes what our single portfolio database (portfolio.json) says, and shows the diff.
-Note: portfolio.json is the sole portfolio database for the web app and analytics,
-and it stores the raw account-level breakdowns (TFSA vs RRSP vs Cash balances) inside
-the tvSnapshot root key.
+then computes what our single portfolio database says, and shows the diff.
+
+Per ADR-030 (Wave 3 Task 6 cutover), "our computed total" is
+domain_model.sqlite's ``get_portfolio_total_value()`` — a live, read-time-only
+rollup of account_investment x investment_price, never a stored total and
+never independently re-summed here. The cached TV-side comparison total
+(``get_tv_totals_cached()``) still reads portfolio.json's ``tvSnapshot`` root
+key, since that raw broker-sync cache has no domain_model.sqlite equivalent
+yet (out of this task's scope — it is the broker's own reported figure being
+audited against, not the consumer side of this migration).
 
 Usage:
     python3 verify_portfolio_total.py            # live TV + stored prices
     python3 verify_portfolio_total.py --live     # live TV + live yfinance prices
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Audits equity sum verification)
+    - investment_screener/backend/data/domain_model.sqlite (Audits equity sum
+      verification; Wave 3 Task 6 cutover — previously portfolio.json)
+    - investment_screener/backend/data/portfolio.json (tvSnapshot cache only —
+      the broker-reported comparison side, not migrated)
 
 Layer:
     Backend / Python Services
@@ -50,8 +59,13 @@ TV_CLIENT_DIR = REPO_ROOT / "plugins" / "tradingview" / "scripts"
 sys.path.insert(0, str(TV_CLIENT_DIR))
 from tv_client import run_node_module
 
+sys.path.insert(0, str(SCRIPT_DIR))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
+
 DATA_DIR      = SCRIPT_DIR.parent / "data"
 PORTFOLIO_FILE = DATA_DIR / "portfolio.json"
+DB_PATH        = DATA_DIR / "domain_model.sqlite"
 
 
 # ── TV live totals ────────────────────────────────────────────────────────────
@@ -102,26 +116,34 @@ def get_tv_totals_cached() -> dict:
 
 # ── our computed total ────────────────────────────────────────────────────────
 
-def compute_our_total(use_live_prices: bool = False) -> tuple:
+def compute_our_total(use_live_prices: bool = False, db_path: Path = DB_PATH) -> tuple:
     """
     Returns (total_usd, breakdown_list).
     breakdown_list: [{symbol, shares, price, value, price_source}]
+
+    Per ADR-030 (Wave 3 Task 6 cutover): with stored prices (the default),
+    ``total`` is ``load_portfolio_state_from_db()``'s own ``total_usd`` —
+    i.e. ``get_portfolio_total_value()`` — never an independent shares*price
+    re-sum here. ``--live-prices`` is this diagnostic's one intentional
+    exception: it recomputes a *comparison* total using fresh yfinance quotes
+    specifically to detect stale-price drift, and is reported as a distinct,
+    clearly-labeled figure, not a silent substitute for the SQLite total.
     """
-    if not PORTFOLIO_FILE.exists():
+    if not db_path.exists():
         return 0.0, []
 
-    with open(PORTFOLIO_FILE) as f:
-        data = json.load(f)
+    conn = initialize_db(str(db_path))
+    try:
+        state = load_portfolio_state_from_db(conn)
+    finally:
+        conn.close()
 
-    if isinstance(data, dict):
-        positions = data.get("holdings", [])
-    else:
-        positions = data
+    shares_map = state["shares"]
+    prices_map = state["prices"]
 
     live_quotes: dict = {}
     if use_live_prices:
-        tickers = [p["symbol"] for p in positions
-                   if p.get("symbol") and p["symbol"] != "USD_CASH"]
+        tickers = [sym for sym in shares_map if sym and sym != "USD_CASH"]
         if tickers:
             result = subprocess.run(
                 [sys.executable, str(SCRIPT_DIR / "fetch_quotes.py"), ",".join(tickers)],
@@ -132,21 +154,29 @@ def compute_our_total(use_live_prices: bool = False) -> tuple:
 
     total = 0.0
     breakdown = []
-    for p in positions:
-        sym    = p.get("symbol") or p.get("ticker", "?")
-        shares = p.get("shares", 0) or 0
+    for sym, shares in shares_map.items():
         if sym == "USD_CASH":
-            price  = 1.0
+            price  = prices_map.get(sym, 1.0)
             source = "cash"
         elif use_live_prices and sym in live_quotes and live_quotes[sym].get("price"):
             price  = live_quotes[sym]["price"]
             source = "yfinance-live"
+        elif sym in prices_map:
+            price  = prices_map[sym]
+            source = "stored"
         else:
-            price  = p.get("price") or p.get("book_price") or 0
-            source = "stored" if p.get("price") else "book_price"
+            price  = 0
+            source = "no_price"
         val = shares * price
         total += val
         breakdown.append({"symbol": sym, "shares": shares, "price": price, "value": val, "source": source})
+
+    # Stored-price mode: total is the authoritative SQLite rollup
+    # (get_portfolio_total_value(), via load_portfolio_state_from_db), never
+    # this loop's own re-sum -- see ADR-030. Live-price mode is the
+    # deliberate diagnostic exception described above.
+    if not use_live_prices:
+        total = state["total_usd"]
 
     return total, breakdown
 
@@ -174,7 +204,7 @@ def main():
         sys.exit(1)
 
     # Our total
-    label = "live yfinance prices" if args.live_prices else "stored portfolio.json prices"
+    label = "live yfinance prices" if args.live_prices else "stored domain_model.sqlite prices"
     print(f"Computing our portfolio total ({label})…\n")
     our_total, breakdown = compute_our_total(use_live_prices=args.live_prices)
 
@@ -208,9 +238,9 @@ def main():
         print(f"❌  FAIL — ${abs(diff):,.2f} gap")
         # Find the biggest contributors missing price
         no_price = [(b["symbol"], b["shares"]) for b in breakdown
-                    if b["source"] == "book_price" and b["symbol"] != "USD_CASH"]
+                    if b["source"] == "no_price" and b["symbol"] != "USD_CASH"]
         if no_price:
-            print(f"\n   Positions missing live price (using book_price):")
+            print(f"\n   Positions missing a price row (contributing $0 to the total):")
             for sym, shares in no_price:
                 print(f"     {sym}: {shares} shares")
 
