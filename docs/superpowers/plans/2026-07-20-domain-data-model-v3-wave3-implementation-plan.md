@@ -418,34 +418,58 @@ git commit -m "feat: add investment_price_repository + real TFSA/RRSP account se
 
 ---
 
-## Task 2: `portfolio_repository.py` — the `load_portfolio_state()`-compatible SQLite reader
+## Task 2: `portfolio_repository.py` — SQL aggregation expressed against the relational model
 
 **Files:**
 - Create: `investment_screener/backend/py_services/domain_model/portfolio_repository.py`
 - Test: `investment_screener/backend/tests/py_services/test_portfolio_repository.py`
 
 **Interfaces:**
-- Consumes: `account_investment_repository.list_account_investments` (Wave 0),
-  `investment_price_repository.get_investment_price` (Task 1), `investment_repository.get_investment` (Wave 0).
-- Produces: `load_portfolio_state_from_db(conn) -> dict` — same return shape as
-  `portfolio_io.py::load_portfolio_state()` (`shares`, `prices`, `total_usd`, `exchange_rate`,
-  `_totals_from_broker`), so `portfolio_io.py` can delegate to this function without changing its own
-  public signature (Task 4 does that rewire).
+- Consumes: `account_investment`/`investment`/`investment_price` tables directly via SQL (Wave 0 +
+  Task 1's schema) — this module queries the tables itself rather than looping over rows fetched
+  through `list_account_investments()`/`get_investment_price()` one at a time (see design note
+  below for why).
+- Produces:
+  - `get_account_market_values(conn) -> dict[str, float]` — `{account_id: market_value_usd}`, one
+    row per real account, via a single `GROUP BY account_id` SQL query.
+  - `get_portfolio_total_value(conn) -> float` — the portfolio-wide total, computed by summing
+    `get_account_market_values()`'s own per-account results (account boundaries are rolled up into
+    the portfolio total, never computed as a separate flat query that could silently cross account
+    lines — see design note below).
+  - `load_portfolio_state_from_db(conn) -> dict` — same return shape as
+    `portfolio_io.py::load_portfolio_state()` (`shares`, `prices`, `total_usd`, `exchange_rate`,
+    `_totals_from_broker`), a thin compatibility shim over the two functions above, so
+    `portfolio_io.py` can delegate here without changing its own public signature (Task 4 does that
+    rewire) and its 7+ real callers keep working unchanged.
 
-**Design settled by ADR-030 (`ADRs/030_portfolio_totals_computed_not_stored.md`) — read it before
-this task.** CLAUDE.md rule 27 already mandates the formula this function implements: *"cash value
-all accounts + sum(portfolio holding price × shares)."* `total_usd` is **always** computed this way
-— `SUM(quantity × price)` across every `account_investment` row (holdings **and** cash, which is
-itself a real `investment` row per Wave 0's resolved decision 5), never read from a stored
-broker-total column, because no such column exists in this schema and ADR-030 settled that none
-should be added. This is not a "fallback" path — it is the only path. `_totals_from_broker` is
-therefore always `False` for this function (unlike `portfolio_io.py`'s original JSON-backed version,
-which had a real broker-total field to prefer); Task 4's rewire of `portfolio_io.py` must not treat
-this as a regression — it is the intended post-ADR-030 behavior. Reconciling this computed total
-against the broker's own reported figure (`totals.totalUSD` from the live sync payload) remains
-`verify_portfolio_total.py`'s job (already a confirmed real consumer in this wave's inventory), not
-this function's — a large variance there is a signal to investigate (stale price, missed sync), not
-something `load_portfolio_state_from_db()` should silently paper over.
+**Design note — align the calculation with the SQLite relational model, not a reconstructed JSON
+tree.** The old JSON model was a nested tree (`portfolio → accounts → holdings`), and the original
+draft of this task's code walked it the same way in Python (`for ai in account_investments: ...`,
+fetching one row at a time via repository helper calls and summing in application code). That is
+the wrong shape for the new model. The SQLite schema is relational
+(`account` / `account_investment` / `investment` / `investment_price`), and the calculations belong
+expressed as SQL against those relations — `JOIN account_investment TO investment_price, GROUP BY`
+— not as nested Python loops reconstructing the old tree. This is not a performance optimization;
+it is matching the calculation's shape to the data's actual shape.
+
+**Design note — preserve account boundaries before rolling up to a portfolio total.** This is the
+direct lesson from Task 0's real finding: the original plan's bug was treating all holdings as one
+flat, unscoped collection and only discovering afterward that real per-account attribution mattered
+(every RRSP holding would have silently landed in TFSA). To make that class of bug structurally
+harder to reintroduce, `get_portfolio_total_value()` is **not** its own independent flat
+`SUM(quantity × price)` query across every row regardless of account — it is explicitly the sum of
+`get_account_market_values()`'s per-account results. Every portfolio-level number in this module
+must be derivable by summing account-level numbers this module already computed, never by a
+separate query that skips the account grouping step.
+
+**Design note — no persistence for totals (ADR-030, unchanged, restated for this task
+specifically).** `ADRs/030_portfolio_totals_computed_not_stored.md` settled: store accounts,
+holdings, quantities, prices, and cash facts; compute account market value, portfolio total value,
+and allocation percentages live; do not store account totals, portfolio totals, or other calculated
+aggregates in any table. This task's two new functions are pure read-time SQL queries — neither
+writes anything. Reconciling the computed total against the broker's own reported figure
+(`totals.totalUSD` from the live sync payload) remains `verify_portfolio_total.py`'s job (Task 7),
+not this module's.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -463,84 +487,85 @@ from domain_model.account_repository import upsert_account  # noqa: E402
 from domain_model.investment_repository import resolve_investment  # noqa: E402
 from domain_model.investment_price_repository import upsert_investment_price  # noqa: E402
 from domain_model.account_investment_repository import upsert_account_investment  # noqa: E402
-from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
+from domain_model.portfolio_repository import (  # noqa: E402
+    get_account_market_values,
+    get_portfolio_total_value,
+    load_portfolio_state_from_db,
+)
 
 
-def _seed(conn):
+def _seed_two_accounts(conn):
+    """AAPL held in both TFSA (10 sh @ $150) and RRSP (3 sh @ $150) -- deliberately
+    the exact shape Task 0 found real data has (same symbol, different accounts,
+    different quantities), to guard against the RRSP-collapses-into-TFSA bug class.
+    """
     upsert_account(conn, "TFSA", "TFSA", "TFSA")
+    upsert_account(conn, "RRSP", "RRSP", "RRSP")
     aapl_id = resolve_investment(conn, "AAPL", asset_class="EQUITY", currency="USD")
     upsert_investment_price(conn, aapl_id, price=150.0, currency="USD", fetched_at="2026-07-20T00:00:00Z")
     upsert_account_investment(
         conn, "TFSA", aapl_id, quantity=10, average_cost=140.0,
         book_value=1400.0, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
     )
-    return aapl_id
-
-
-def test_load_portfolio_state_from_db_returns_shares_and_prices(tmp_path):
-    conn = initialize_db(str(tmp_path / "test.sqlite"))
-    _seed(conn)
-    state = load_portfolio_state_from_db(conn)
-    assert state["shares"]["AAPL"] == 10
-    assert state["prices"]["AAPL"] == 150.0
-
-
-def test_load_portfolio_state_from_db_falls_back_to_shares_times_price_when_no_broker_total(tmp_path):
-    conn = initialize_db(str(tmp_path / "test.sqlite"))
-    _seed(conn)
-    state = load_portfolio_state_from_db(conn)
-    # No broker-reported total wired up yet in this minimal fixture -> fallback computation.
-    assert state["total_usd"] == 1500.0
-    assert state["_totals_from_broker"] is False
-
-
-def test_load_portfolio_state_from_db_aggregates_across_accounts(tmp_path):
-    conn = initialize_db(str(tmp_path / "test.sqlite"))
-    aapl_id = _seed(conn)
-    upsert_account(conn, "RRSP", "RRSP", "RRSP")
     upsert_account_investment(
         conn, "RRSP", aapl_id, quantity=3, average_cost=140.0,
         book_value=420.0, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
     )
-    state = load_portfolio_state_from_db(conn)
-    assert state["shares"]["AAPL"] == 13  # 10 (TFSA) + 3 (RRSP), same aggregation portfolio_io.py does
+    return aapl_id
 
 
-def test_load_portfolio_state_from_db_total_usd_matches_hand_computed_sum_across_symbols_and_cash(tmp_path):
-    """Direct test of the account-value calculation itself (CLAUDE.md rule 27's formula:
-    cash value all accounts + sum(holding price x shares)), not just individual dict keys --
-    this is the specific computation ADR-030 settled must never be replaced by a stored
-    broker figure, so it gets its own hand-computed-expected-value test, not just a
-    shares/prices structural check.
+def test_get_account_market_values_keeps_accounts_separate(tmp_path):
+    """The direct regression guard for Task 0's real finding: TFSA and RRSP must
+    never be collapsed into a single figure before the account-level query returns.
     """
     conn = initialize_db(str(tmp_path / "test.sqlite"))
-    upsert_account(conn, "TFSA", "TFSA", "TFSA")
+    _seed_two_accounts(conn)
+    values = get_account_market_values(conn)
+    assert values == {"TFSA": 1500.0, "RRSP": 450.0}  # 10*150, 3*150 -- never summed together here
 
-    aapl_id = resolve_investment(conn, "AAPL", asset_class="EQUITY", currency="USD")
-    upsert_investment_price(conn, aapl_id, price=150.0, currency="USD", fetched_at="2026-07-20T00:00:00Z")
-    upsert_account_investment(
-        conn, "TFSA", aapl_id, quantity=10, average_cost=140.0,
-        book_value=1400.0, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
-    )
 
-    msft_id = resolve_investment(conn, "MSFT", asset_class="EQUITY", currency="USD")
-    upsert_investment_price(conn, msft_id, price=420.0, currency="USD", fetched_at="2026-07-20T00:00:00Z")
-    upsert_account_investment(
-        conn, "TFSA", msft_id, quantity=2, average_cost=400.0,
-        book_value=800.0, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
-    )
+def test_get_portfolio_total_value_is_the_sum_of_account_values(tmp_path):
+    """The portfolio total must be traceable as SUM(per-account values), not an
+    independent flat query -- this is what "preserve account boundaries before
+    rolling up" means concretely.
+    """
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    _seed_two_accounts(conn)
+    account_values = get_account_market_values(conn)
+    total = get_portfolio_total_value(conn)
+    assert total == sum(account_values.values()) == 1950.0
 
+
+def test_get_portfolio_total_value_includes_cash_investment_rows(tmp_path):
+    """Cash is a real INVESTMENT row (asset_class='CASH', Wave 0 resolved decision 5),
+    held via account_investment like any other position -- it must count toward the
+    account and portfolio totals the same way a stock position does.
+    """
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    _seed_two_accounts(conn)
     cash_id = resolve_investment(conn, "CASH_USD", asset_class="CASH", currency="USD")
     upsert_investment_price(conn, cash_id, price=1.0, currency="USD", fetched_at="2026-07-20T00:00:00Z")
     upsert_account_investment(
         conn, "TFSA", cash_id, quantity=250.0, average_cost=1.0,
         book_value=250.0, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
     )
+    account_values = get_account_market_values(conn)
+    assert account_values["TFSA"] == 1750.0  # 1500 (AAPL) + 250 (cash)
+    assert get_portfolio_total_value(conn) == 2200.0  # 1750 (TFSA) + 450 (RRSP)
 
+
+def test_load_portfolio_state_from_db_returns_shares_prices_and_total(tmp_path):
+    """The portfolio_io.py-compatible shape -- shares/prices aggregated across
+    accounts by symbol (portfolio_io.py's own existing aggregation contract),
+    total_usd delegated to get_portfolio_total_value() (single source of truth
+    for the total, not a second independent computation)."""
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    _seed_two_accounts(conn)
     state = load_portfolio_state_from_db(conn)
-    expected_total = (10 * 150.0) + (2 * 420.0) + (250.0 * 1.0)  # 1500 + 840 + 250 = 2590.0
-    assert state["total_usd"] == expected_total
-    assert state["_totals_from_broker"] is False  # per ADR-030, always computed, never a stored broker column
+    assert state["shares"]["AAPL"] == 13  # 10 (TFSA) + 3 (RRSP), aggregated by symbol across accounts
+    assert state["prices"]["AAPL"] == 150.0
+    assert state["total_usd"] == get_portfolio_total_value(conn) == 1950.0
+    assert state["_totals_from_broker"] is False  # per ADR-030: always computed, never a stored broker column
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -552,52 +577,80 @@ Expected: FAIL with `ModuleNotFoundError`.
 
 ```python
 # investment_screener/backend/py_services/domain_model/portfolio_repository.py
-"""SQLite-backed replacement for ``portfolio_io.py::load_portfolio_state()``.
+"""Portfolio/account value calculations expressed against the relational model
+(account_investment JOIN investment_price, GROUP BY account_id), not as Python
+loops reconstructing the old JSON tree shape.
 
-Returns the identical dict shape so ``portfolio_io.py`` can delegate here
-(Task 4) without changing its own public signature, keeping all 7+ real
-callers of ``load_portfolio_state()`` working unchanged.
-
-Per ADR-030: total_usd is always SUM(quantity * price) across every
-account_investment row (holdings + cash), matching CLAUDE.md rule 27's
-formula exactly. This is not a fallback -- no stored broker-total column
-exists or should exist. Reconciliation against the broker's own reported
-total is verify_portfolio_total.py's job, not this function's.
+Per ADR-030: these are read-time-only queries. No table stores an account or
+portfolio total -- every number here is computed fresh from account_investment/
+investment_price on each call. Account boundaries are preserved first
+(get_account_market_values' GROUP BY), and the portfolio total is always the
+sum of those per-account results (get_portfolio_total_value), never an
+independent flat query -- this is the direct fix for the bug class Task 0
+found (RRSP holdings silently collapsing into TFSA).
 """
 
 import sqlite3
 
-from account_investment_repository import list_account_investments
-from investment_price_repository import get_investment_price
-from investment_repository import get_investment
+
+def get_account_market_values(conn: sqlite3.Connection) -> dict[str, float]:
+    """Market value per real account: SUM(quantity * price), grouped by account_id.
+
+    Includes cash rows (asset_class='CASH' investments held via account_investment
+    like any other position, per Wave 0's resolved decision 5) -- no special-casing,
+    the JOIN treats them identically to equity positions.
+    """
+    cursor = conn.execute(
+        """
+        SELECT ai.account_id AS account_id, SUM(ai.quantity * ip.price) AS market_value
+        FROM account_investment ai
+        JOIN investment_price ip ON ip.investment_id = ai.investment_id
+        GROUP BY ai.account_id;
+        """
+    )
+    return {row[0]: row[1] for row in cursor.fetchall()}
+
+
+def get_portfolio_total_value(conn: sqlite3.Connection) -> float:
+    """Portfolio-wide total: the sum of get_account_market_values()'s own results.
+
+    Deliberately not a separate flat SUM(quantity * price) query with no
+    GROUP BY -- the portfolio total must always be traceable as a rollup of
+    account-level totals, never a query that can silently ignore account
+    boundaries.
+    """
+    return sum(get_account_market_values(conn).values())
 
 
 def load_portfolio_state_from_db(conn: sqlite3.Connection) -> dict:
-    account_investments = list_account_investments(conn)
+    """portfolio_io.py::load_portfolio_state()-compatible shape.
 
+    shares/prices are aggregated across accounts by symbol (matching
+    portfolio_io.py's own existing aggregation contract for its 7+ real
+    callers); total_usd delegates to get_portfolio_total_value() so there is
+    exactly one computation of the total in this codebase, not two.
+    """
+    cursor = conn.execute(
+        """
+        SELECT i.symbol AS symbol, SUM(ai.quantity) AS total_shares, MAX(ip.price) AS price
+        FROM account_investment ai
+        JOIN investment i ON i.investment_id = ai.investment_id
+        LEFT JOIN investment_price ip ON ip.investment_id = ai.investment_id
+        GROUP BY i.symbol;
+        """
+    )
     shares: dict[str, float] = {}
     prices: dict[str, float] = {}
-
-    for ai in account_investments:
-        investment = get_investment(conn, ai["investment_id"])
-        if investment is None:
-            continue
-        symbol = investment["symbol"]
-        qty = float(ai["quantity"] or 0)
-        if qty <= 0:
-            continue
-        shares[symbol] = shares.get(symbol, 0.0) + qty
-
-        price_row = get_investment_price(conn, ai["investment_id"])
-        if price_row is not None and price_row["price"] > 0:
-            prices[symbol] = price_row["price"]
-
-    total_usd = sum(shares.get(s, 0) * prices.get(s, 0) for s in shares)
+    for symbol, total_shares, price in cursor.fetchall():
+        if total_shares and total_shares > 0:
+            shares[symbol] = total_shares
+        if price and price > 0:
+            prices[symbol] = price
 
     return {
         "shares": shares,
         "prices": prices,
-        "total_usd": total_usd,
+        "total_usd": get_portfolio_total_value(conn),
         "exchange_rate": 1.38,
         "_totals_from_broker": False,  # per ADR-030: always computed, never stored/read from a broker column
     }
@@ -613,7 +666,7 @@ Expected: `4 passed`.
 ```bash
 git add investment_screener/backend/py_services/domain_model/portfolio_repository.py \
         investment_screener/backend/tests/py_services/test_portfolio_repository.py
-git commit -m "feat: add portfolio_repository.load_portfolio_state_from_db (Wave 3 Task 2)"
+git commit -m "feat: add portfolio_repository — SQL aggregation against the relational model, account boundaries preserved before rollup (Wave 3 Task 2)"
 ```
 
 ---
