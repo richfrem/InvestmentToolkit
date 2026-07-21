@@ -21,7 +21,6 @@ from pathlib import Path
 REPO_ROOT   = Path(__file__).resolve().parents[3]
 THESIS_JSON = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 THESIS_MD   = REPO_ROOT / "investment_screener/backend/data/theses/investment_thesis.md"
-PORTFOLIO   = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 REVIEWS_DIR = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
 DB_PATH     = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
@@ -33,13 +32,37 @@ NO_CHANGE = {"GOOG", "HUMN", "KOID"}
 SA_DCF_CONFLICTS = {"CORZ", "LITE", "BE", "INTC", "IONQ", "QBTS", "OKLO", "CEG", "IREN", "EQT"}
 
 sys.path.insert(0, str(Path(__file__).parent))
-from validate_weights import compute_current, compute_target
+from validate_weights import compute_target
 from portfolio_action import derive_action
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.projection_repository import get_latest_projection_by_source  # noqa: E402
 from domain_model.investment_repository import list_investments  # noqa: E402
+from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
+from portfolio_io import compute_weights  # noqa: E402
+
+
+def compute_current_from_db(db_path: Path = DB_PATH) -> dict:
+    """Actual-weight equivalent of validate_weights.compute_current(), sourced
+    from domain_model.sqlite (Wave 3 Task 6 cutover — previously portfolio.json).
+
+    Reuses ``portfolio_io.compute_weights`` for the weight-% formula so this
+    never re-derives its own shares*price/total computation.
+    """
+    if not Path(db_path).exists():
+        return {"total": 0.0, "holdings": {}, "total_value": 0.0}
+    conn = initialize_db(str(db_path))
+    try:
+        state = load_portfolio_state_from_db(conn)
+    finally:
+        conn.close()
+    result = compute_weights(state["shares"], state["prices"], state["total_usd"])
+    return {
+        "total": round(sum(result.values()), 4),
+        "holdings": result,
+        "total_value": round(state["total_usd"], 2),
+    }
 
 
 def _load_holdings_map(db_path: Path = DB_PATH) -> dict:
@@ -152,7 +175,7 @@ else:
     warn(f"Last Updated is {md_date}, not today ({today}) — run --write to fix")
 
 # Check stale table data for a sample of key tickers
-current_data = compute_current(PORTFOLIO)
+current_data = compute_current_from_db()
 target_data  = compute_target(THESIS_JSON)
 
 stale = []
