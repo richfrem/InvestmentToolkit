@@ -39,14 +39,17 @@ TV_CLI          = REPO_ROOT / "tradingview-cdp/cli.js"
 # Default output path — served by backend as /api/ta-sweep/results
 TA_SWEEP_RESULTS_PATH = REPO_ROOT / "investment_screener/backend/data/ta-sweep-results.json"
 
-# Always skip — cash / non-equity entries
-DEFAULT_SKIP: set[str] = {"PSU.U.TO", "PSU-U.TO", "USD_CASH"}
+# Always skip — cash / non-equity entries. "CASH_USD" is the domain_model.sqlite
+# symbol for the cash position (Wave 3 cutover); "USD_CASH" was the legacy
+# portfolio.json symbol — both kept so neither source can leak a cash "ticker".
+DEFAULT_SKIP: set[str] = {"PSU.U.TO", "PSU-U.TO", "USD_CASH", "CASH_USD"}
 
 # --validate mode: local (technicals.py) vs. TV Data Window cross-check
 DIVERGENCE_THRESHOLD_PTS = 2.0
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from technicals import compute_technical_snapshot  # noqa: E402
+from portfolio_io import load_portfolio_state  # noqa: E402
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.projection_repository import (  # noqa: E402
     get_latest_projection,
@@ -57,9 +60,17 @@ from domain_model.projection_repository import (  # noqa: E402
 # ── Data loaders ───────────────────────────────────────────────────────────────
 
 def load_portfolio() -> list[dict[str, Any]]:
-    """Return holdings list from portfolio.json."""
-    with open(PORTFOLIO_PATH) as f:
-        return json.load(f).get("holdings", [])
+    """Return current holdings as ``[{"symbol": ...}, ...]`` from domain_model.sqlite.
+
+    Wave 3 cutover: the holdings universe is read from SQLite via
+    ``portfolio_io.load_portfolio_state()`` (whose ``shares`` dict is keyed by
+    the aggregated-across-accounts symbol), not the plain ``holdings`` array in
+    portfolio.json. The only field this consumer needs is ``symbol`` (see
+    main()'s ticker-filtering loop), so each holding is projected down to that
+    single key rather than reconstructing the full JSON holding shape.
+    """
+    state = load_portfolio_state(PORTFOLIO_PATH)
+    return [{"symbol": symbol} for symbol in state["shares"]]
 
 
 def load_target_portfolio() -> dict[str, dict[str, Any]]:
