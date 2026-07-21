@@ -25,15 +25,16 @@ from domain_model.db_client import initialize_db
 from domain_model.seed_real_accounts import seed_real_accounts
 
 
-def _load_snapshots(portfolio_path: str) -> list[dict]:
+def _load_portfolio_json(portfolio_path: str) -> dict:
     with open(portfolio_path) as f:
-        data = json.load(f)
+        return json.load(f)
+
+
+def _load_snapshots(data: dict) -> list[dict]:
     return data.get("tvSnapshot", {}).get("snapshots", [])
 
 
-def _load_prices_by_symbol(portfolio_path: str) -> dict[str, float]:
-    with open(portfolio_path) as f:
-        data = json.load(f)
+def _load_prices_by_symbol(data: dict) -> dict[str, float]:
     prices = {}
     for h in data.get("holdings", []):
         symbol = h.get("symbol") or h.get("ticker")
@@ -44,7 +45,8 @@ def _load_prices_by_symbol(portfolio_path: str) -> dict[str, float]:
 
 
 def run_dry_run_migration(portfolio_path: str) -> dict:
-    snapshots = _load_snapshots(portfolio_path)
+    data = _load_portfolio_json(portfolio_path)
+    snapshots = _load_snapshots(data)
     accounts_found = {s["accountType"] for s in snapshots}
     positions_count = sum(len(s.get("positions", [])) for s in snapshots)
     return {
@@ -54,8 +56,9 @@ def run_dry_run_migration(portfolio_path: str) -> dict:
 
 
 def run_real_migration(portfolio_path: str, db_path: str) -> dict:
-    snapshots = _load_snapshots(portfolio_path)
-    prices_by_symbol = _load_prices_by_symbol(portfolio_path)
+    data = _load_portfolio_json(portfolio_path)
+    snapshots = _load_snapshots(data)
+    prices_by_symbol = _load_prices_by_symbol(data)
     conn = initialize_db(db_path)
     seed_real_accounts(conn)
 
@@ -77,6 +80,9 @@ def run_real_migration(portfolio_path: str, db_path: str) -> dict:
             )
 
         for pos in snap.get("positions", []):
+            quantity = float(pos.get("quantity") or 0)
+            if quantity <= 0:
+                continue  # closed/flattened position in a stale snapshot -- no noise row
             symbol = pos["symbol"]
             investment_id = resolve_investment(conn, symbol, asset_class="EQUITY", currency="USD")
             price = prices_by_symbol.get(symbol, 0)
@@ -86,7 +92,7 @@ def run_real_migration(portfolio_path: str, db_path: str) -> dict:
                 conn,
                 account_id,
                 investment_id,
-                quantity=float(pos.get("quantity") or 0),
+                quantity=quantity,
                 average_cost=pos.get("avgFillPrice"),
                 book_value=None,
                 currency="USD",
