@@ -24,10 +24,15 @@ import path from 'path';
 import net from 'net';
 import fs from 'fs';
 import { normalizeTicker } from '../utils/tickerAliases';
+import { InvestmentRepository } from './InvestmentRepository';
+import { PortfolioRepository } from './PortfolioRepository';
+import { DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 
 const PORTFOLIO_FILE    = path.resolve(__dirname, '../../data/portfolio.json');
 const PY_SERVICES_DIR   = path.resolve(__dirname, '../../py_services');
 const FETCH_BROKER_PY   = path.join(PY_SERVICES_DIR, 'fetch_broker_data.py');
+
+const REAL_ACCOUNTS = new Set(['TFSA', 'RRSP', 'CASH']);
 
 function isTVReachable(port = 9222): Promise<boolean> {
     return new Promise((resolve) => {
@@ -220,6 +225,56 @@ export function mergeIntoPortfolio(tvSnapshot: TVSnapshot, existing: any[]): {
 }
 
 /**
+ * Persist a raw TV snapshot's real per-account facts (positions + cash balances)
+ * into `account_investment`/`investment` rows, mirroring
+ * `migrate_portfolio_to_sqlite.py::run_real_migration`'s per-holding write shape:
+ * one `upsertAccountInvestment` call per real position, cash written via the
+ * same path as a CASH_USD investment row (not a special-cased column). Only
+ * the three real, seeded broker sub-accounts (TFSA/RRSP/CASH) are in scope —
+ * anything else is unrecognized and intentionally skipped, matching the
+ * migration script's own account allowlist.
+ *
+ * This does NOT replace the existing `portfolio.json` `tvSnapshot` cache write
+ * in `syncAuto()` below — that JSON write is left intact because
+ * `routes/portfolio.ts`'s `/position/:ticker` and `/holdings/:ticker` routes
+ * still read per-account quantities directly off `tvSnapshot.positions` and
+ * were not part of this wave's read-side cutover. This function makes the
+ * write ALSO land in SQLite going forward, additive rather than a replacement,
+ * so a future read-side migration for those two routes has real data waiting.
+ */
+export function persistSnapshotToDb(snapshot: TVSnapshot, dbPath: string = DOMAIN_MODEL_DB_FILE): void {
+    const investmentRepo = new InvestmentRepository(dbPath);
+    const portfolioRepo = new PortfolioRepository(dbPath);
+    try {
+        const now = new Date().toISOString();
+        for (const snap of (snapshot as any).snapshots ?? []) {
+            const accountId: string = snap.accountType;
+            if (!REAL_ACCOUNTS.has(accountId)) continue;
+            portfolioRepo.upsertAccount(accountId, accountId, accountId);
+
+            const cashUsd = Number(snap.balances?.cashUSD ?? 0);
+            if (cashUsd > 0) {
+                const cashInvestmentId = investmentRepo.resolveInvestmentId('CASH_USD', 'CASH', 'USD');
+                portfolioRepo.upsertAccountInvestment(accountId, cashInvestmentId, cashUsd, 1.0, cashUsd, 'USD', now);
+            }
+
+            for (const pos of snap.positions ?? []) {
+                const quantity = Number(pos.quantity ?? 0);
+                if (quantity <= 0) continue; // closed/flattened position — no noise row
+                const symbol = normalizeTicker(pos.symbol);
+                const investmentId = investmentRepo.resolveInvestmentId(symbol, 'EQUITY', 'USD');
+                portfolioRepo.upsertAccountInvestment(
+                    accountId, investmentId, quantity, pos.avgFillPrice ?? null, null, 'USD', now
+                );
+            }
+        }
+    } finally {
+        investmentRepo.close();
+        portfolioRepo.close();
+    }
+}
+
+/**
  * Auto-pick source and sync portfolio.json.
  * Priority: TV CDP → cache.
  */
@@ -239,7 +294,12 @@ export async function syncAuto(): Promise<SyncResult> {
                 const data = Array.isArray(existing) ? { holdings: existing } : existing;
                 data.tvSnapshot = snapshot;
                 fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(data, null, 2));
-                console.log(`[BrokerSync] TV sync complete: ${posCount} positions → portfolio.json (tvSnapshot key)`);
+                try {
+                    persistSnapshotToDb(snapshot);
+                } catch (dbErr: any) {
+                    console.warn(`[BrokerSync] Failed to persist snapshot to domain_model.sqlite:`, dbErr.message);
+                }
+                console.log(`[BrokerSync] TV sync complete: ${posCount} positions → portfolio.json (tvSnapshot key) + domain_model.sqlite`);
                 return {
                     dataSource:    'tradingview-cdp',
                     positionCount: posCount,
@@ -265,4 +325,4 @@ export async function syncAuto(): Promise<SyncResult> {
     };
 }
 
-export const brokerSyncService = { syncFromTV, syncAuto, mergeIntoPortfolio };
+export const brokerSyncService = { syncFromTV, syncAuto, mergeIntoPortfolio, persistSnapshotToDb };
