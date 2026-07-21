@@ -27,6 +27,9 @@ sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.investment_repository import resolve_investment  # noqa: E402
 from domain_model.projection_repository import save_projection_version  # noqa: E402
+from domain_model.account_repository import upsert_account  # noqa: E402
+from domain_model.investment_price_repository import upsert_investment_price  # noqa: E402
+from domain_model.account_investment_repository import upsert_account_investment  # noqa: E402
 
 # Pre-existing, unrelated to this rewire: PortfolioAnalysis/ is gitignored
 # (personal workspace artifacts) and may not exist in a fresh worktree, but
@@ -130,3 +133,29 @@ def test_load_ai_agent_upside_none_when_missing_price_or_fv(tmp_path, monkeypatc
     monkeypatch.setattr(verify_refresh, "DB_PATH", db_path)
 
     assert verify_refresh._load_ai_agent_upside("NVDA") is None
+
+
+class TestComputeCurrentFromDb:
+    """Wave 3 Task 6: current-weight computation must come from
+    domain_model.sqlite, never portfolio.json (validate_weights.compute_current
+    is no longer called here)."""
+
+    def test_computes_weight_pct_from_sqlite(self, tmp_path):
+        db_path = tmp_path / "test.sqlite"
+        conn = initialize_db(str(db_path))
+        upsert_account(conn, "TFSA", "TFSA", "TFSA")
+        aapl_id = resolve_investment(conn, "AAPL", asset_class="EQUITY", currency="USD")
+        upsert_investment_price(conn, aapl_id, price=100.0, currency="USD", fetched_at="2026-07-20T00:00:00Z")
+        upsert_account_investment(
+            conn, "TFSA", aapl_id, quantity=10, average_cost=90.0,
+            book_value=900.0, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
+        )
+        conn.close()
+
+        result = verify_refresh.compute_current_from_db(db_path)
+        assert result["holdings"] == {"AAPL": 100.0}
+        assert result["total_value"] == 1000.0
+
+    def test_missing_db_returns_zeroed_result(self, tmp_path):
+        result = verify_refresh.compute_current_from_db(tmp_path / "missing.sqlite")
+        assert result == {"total": 0.0, "holdings": {}, "total_value": 0.0}
