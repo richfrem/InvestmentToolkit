@@ -32,7 +32,6 @@ from pathlib import Path
 
 # ── Repo paths ──────────────────────────────────────────────────────────────────
 REPO_ROOT      = Path(__file__).resolve().parents[3]
-PORTFOLIO_PATH = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 THESIS_PATH    = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 DB_PATH        = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 STALE_DAYS     = 90
@@ -46,6 +45,8 @@ from domain_model.projection_repository import (  # noqa: E402
 )
 from domain_model.investment_repository import list_investments  # noqa: E402
 from domain_model.pillar_repository import list_pillars  # noqa: E402
+from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
+from portfolio_io import compute_weights  # noqa: E402
 
 
 # ── Loaders ────────────────────────────────────────────────────────────────────
@@ -55,30 +56,75 @@ def load_json(path: Path) -> dict | list:
         return json.load(f)
 
 
-def load_portfolio(path: Path) -> dict:
-    """Returns {TICKER: {shares, price, value, actualPct, bookPL}}"""
-    portfolio_data = load_json(path)
-    raw = portfolio_data.get("holdings", []) if isinstance(portfolio_data, dict) else portfolio_data
-    total = sum(h.get("shares", 0) * h.get("price", 0) for h in raw)
+def _load_book_values_and_currency(conn) -> dict:
+    """Return {symbol: {"book_value": sum(book_value), "currency": ...}}, aggregated
+    across accounts — the account_investment/investment_price fields
+    load_portfolio_state_from_db() doesn't carry (it only returns shares/prices).
+    """
+    cursor = conn.execute(
+        """
+        SELECT i.symbol AS symbol, SUM(ai.book_value) AS book_value,
+               MAX(i.currency) AS currency
+        FROM account_investment ai
+        JOIN investment i ON i.investment_id = ai.investment_id
+        GROUP BY i.symbol;
+        """
+    )
+    return {
+        row[0]: {"book_value": row[1], "currency": row[2] or "USD"}
+        for row in cursor.fetchall()
+    }
+
+
+def load_portfolio(db_path: Path = DB_PATH) -> dict:
+    """Returns {TICKER: {shares, price, value, actualPct, bookPL}}, sourced
+    from domain_model.sqlite (Wave 3 Task 6 cutover — previously portfolio.json).
+
+    ``value``/``actualPct``/``_meta.totalValue`` are derived from
+    ``load_portfolio_state_from_db()`` (via ``portfolio_io.compute_weights``
+    for the %), never an independent shares*price re-sum — per ADR-030.
+    ``bookPL``/``currency`` have no equivalent in that shared shape, so they
+    are sourced from a local account_investment/investment aggregate query.
+    """
+    if not Path(db_path).exists():
+        return {}
+
+    conn = initialize_db(str(db_path))
+    try:
+        state = load_portfolio_state_from_db(conn)
+        book_info = _load_book_values_and_currency(conn)
+    finally:
+        conn.close()
+
+    shares_map = state["shares"]
+    prices_map = state["prices"]
+    total = state["total_usd"]
+    weights = compute_weights(shares_map, prices_map, total)
+
     out = {}
-    for h in raw:
-        ticker = h.get("symbol") or h.get("ticker", "")
+    for ticker, shares in shares_map.items():
         if not ticker or is_cash(ticker):
             continue
-        shares = h.get("shares", 0)
-        price  = h.get("price", 0)
-        value  = shares * price
+        price = prices_map.get(ticker, 0)
+        value = shares * price
+        info = book_info.get(ticker, {})
+        book_value = info.get("book_value")
+        book_pl = (
+            round((value - book_value) / book_value * 100, 2)
+            if book_value else None
+        )
         out[ticker] = {
             "shares":    shares,
             "price":     price,
             "value":     round(value, 2),
-            "actualPct": round(value / total * 100, 2) if total else 0,
-            "bookPL":    h.get("bookPL") or h.get("bookPl") or h.get("book_pl"),
-            "currency":  h.get("currency", "USD"),
+            "actualPct": weights.get(ticker, 0),
+            "bookPL":    book_pl,
+            "currency":  info.get("currency", "USD"),
         }
+
     # Also store cash
-    cash = next((h for h in raw if is_cash(h.get("symbol") or h.get("ticker", ""))), None)
-    cash_value = cash.get("shares", 0) * cash.get("price", 1) if cash else 0
+    cash_symbols = [s for s in shares_map if is_cash(s)]
+    cash_value = sum(shares_map[s] * prices_map.get(s, 1.0) for s in cash_symbols)
     out["_meta"] = {
         "totalValue": round(total, 2),
         "cashValue":  round(cash_value, 2),
@@ -569,7 +615,11 @@ def main():
     parser.add_argument("--top", type=int, default=15, help="Max rows for INITIATE table")
     parser.add_argument("--category", choices=["exit", "trim", "accumulate", "initiate", "conflicts", "stale", "all"],
                         default="all")
-    parser.add_argument("--portfolio", default=str(PORTFOLIO_PATH))
+    parser.add_argument(
+        "--portfolio", default=None,
+        help="Legacy portfolio.json path, kept for CLI back-compat; no longer "
+             "read. Holdings now come from --db (domain_model.sqlite).",
+    )
     parser.add_argument(
         "--thesis", default=str(THESIS_PATH),
         help="Legacy target-portfolio.json path, kept for CLI back-compat; "
@@ -578,7 +628,7 @@ def main():
     parser.add_argument("--db", default=str(DB_PATH), help="Path to domain_model.sqlite")
     args = parser.parse_args()
 
-    portfolio = load_portfolio(Path(args.portfolio))
+    portfolio = load_portfolio(Path(args.db))
     thesis    = load_thesis(Path(args.db))
     meta      = portfolio.pop("_meta", {})
 

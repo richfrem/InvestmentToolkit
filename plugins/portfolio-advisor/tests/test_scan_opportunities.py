@@ -15,8 +15,48 @@ from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.investment_repository import resolve_investment, update_investment_fields  # noqa: E402
 from domain_model.pillar_repository import resolve_pillar  # noqa: E402
 from domain_model.projection_repository import save_projection_version  # noqa: E402
+from domain_model.account_repository import upsert_account  # noqa: E402
+from domain_model.investment_price_repository import upsert_investment_price  # noqa: E402
+from domain_model.account_investment_repository import upsert_account_investment  # noqa: E402
 
 import scan_opportunities  # noqa: E402
+
+
+class TestLoadPortfolioReadsSqlite:
+    """Wave 3 Task 6: load_portfolio() must read domain_model.sqlite, never
+    portfolio.json."""
+
+    def test_computes_shares_price_value_and_book_pl(self, tmp_path):
+        db_path = tmp_path / "test.sqlite"
+        conn = initialize_db(str(db_path))
+        upsert_account(conn, "TFSA", "TFSA", "TFSA")
+        aapl_id = resolve_investment(conn, "AAPL", asset_class="EQUITY", currency="USD")
+        cash_id = resolve_investment(conn, "USD_CASH", asset_class="CASH", currency="USD")
+        upsert_investment_price(conn, aapl_id, price=110.0, currency="USD", fetched_at="2026-07-20T00:00:00Z")
+        upsert_investment_price(conn, cash_id, price=1.0, currency="USD", fetched_at="2026-07-20T00:00:00Z")
+        upsert_account_investment(
+            conn, "TFSA", aapl_id, quantity=10, average_cost=100.0,
+            book_value=1000.0, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
+        )
+        upsert_account_investment(
+            conn, "TFSA", cash_id, quantity=200.0, average_cost=1.0,
+            book_value=200.0, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
+        )
+        conn.close()
+
+        result = scan_opportunities.load_portfolio(db_path)
+
+        assert "USD_CASH" not in result  # cash excluded from per-ticker rows
+        assert result["AAPL"]["shares"] == 10
+        assert result["AAPL"]["price"] == 110.0
+        assert result["AAPL"]["value"] == 1100.0
+        assert result["AAPL"]["bookPL"] == 10.0  # (1100-1000)/1000 * 100
+        assert result["AAPL"]["currency"] == "USD"
+        assert result["_meta"]["totalValue"] == 1300.0
+        assert result["_meta"]["cashValue"] == 200.0
+
+    def test_missing_db_returns_empty(self, tmp_path):
+        assert scan_opportunities.load_portfolio(tmp_path / "missing.sqlite") == {}
 
 
 def test_load_thesis_reads_from_sqlite_not_json(tmp_path):
