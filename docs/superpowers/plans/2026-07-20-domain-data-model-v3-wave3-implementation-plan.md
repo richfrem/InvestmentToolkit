@@ -1204,15 +1204,45 @@ column/table is required — do not duplicate schema that already exists), verif
 
 ## Task 6: Rewire remaining direct-read consumers not covered by the `portfolio_io.py` cutover
 
+**Added after Task 5's review: `routes/portfolio.ts`'s own remaining read endpoints are now this
+task's highest-priority item, not an afterthought.** Task 5 (producer rewire) found that 4 of 5
+producers had to become dual-writers (JSON write kept, SQLite write added) rather than full
+replacements, specifically because `routes/portfolio.ts`'s `/summary`, `/weights`,
+`/strategy-allocation`, `/position/:ticker`, and `/holdings/:ticker` endpoints still read
+`portfolio.json` directly (`totals`, per-account `tvSnapshot.positions[]`) and were never part of
+`portfolio_io.py`'s Task 4 cutover. **This is the specific, named removal trigger for those 4
+producers' dual-writes** (per this plan's Global Constraints: "No permanent hybrid... a producer
+writing both JSON and SQLite forever, with no removal trigger, is a failed wave") — once these
+endpoints are rewired here, Task 8 can safely stop treating `portfolio.json` as load-bearing and the
+dual-writes from Task 5 can be reduced to SQLite-only in the same pass (or a fast, explicit follow-up
+inside this task — do not leave the dual-write in place past this task's completion).
+
+**For `/summary`'s `totals` specifically**: per ADR-030, this is NOT a new-schema question — the
+portfolio-wide total is computed live via `portfolio_repository.get_portfolio_total_value()`
+(Python) / the TS equivalent on `PortfolioRepository.ts`, never read from a stored `totals` JSON
+block or a new table. Wire `/summary` to call that function, matching CLAUDE.md rule 27's formula
+exactly (the same computation `portfolio_io.py` already delegates to since Task 4) — this closes the
+"totals has no SQLite equivalent" gap Task 5's report flagged, without any schema change.
+
 **Files:** (each read individually before editing, per this plan's established discipline — do not
 batch-edit without reading first)
-`helpers.ts`, `docs.ts`, `stock.ts`, `screener.ts`, `theses.ts`, `compute_conviction_scores.py`,
+`routes/portfolio.ts` (`/summary`, `/weights`, `/strategy-allocation`, `/position/:ticker`,
+`/holdings/:ticker` — the 4 dual-write producers' removal trigger, see above), `helpers.ts`,
+`docs.ts`, `stock.ts`, `screener.ts`, `theses.ts`, `compute_conviction_scores.py`,
 `overnight_gaps.py`, `earnings_calendar.py`, `earnings_expectations.py`, `verify_portfolio_total.py`,
 `verify_thesis_sync.py`, `portfolio_performance.py`, `harvest_predictions.py`, `Sidebar.tsx`,
 `PortfolioModal.tsx`, `Settings.tsx`, `PortfolioTable.tsx`, `tv_create_alerts.py`,
 `generate_reports.py`, `watchlist_manager.py`, `generate_review.py`, `scan_opportunities.py`,
 `weekly_review.py`, `verify_refresh.py`, `ThesisService.ts`, and whichever of the two
-`generate_portfolio_blueprint.py` files Task 0 determined does NOT go through `portfolio_io.py`.
+`generate_portfolio_blueprint.py` files Task 0 determined does NOT go through `portfolio_io.py`
+(Task 0 corrected this: it's one real file reachable via a symlink, not two implementations —
+`portfolio_io.py`'s Task 4 cutover already covers its one real read path, so no separate action is
+needed here beyond confirming that).
+
+**`POST /` on `routes/portfolio.ts`** (the flat manual-edit path, `items` array with no per-account
+attribution) is confirmed out of scope for SQLite dual-write per Task 5's own finding — writing a
+fabricated single-account split for a flat aggregate would corrupt real `account_investment` data.
+Leave it JSON-only with the inline comment Task 5 already added; do not force a rewire here.
 
 **Process for each file (same as Wave 2's Task 10/11 pattern):**
 1. Read the file's real current portfolio.json read logic in full.
