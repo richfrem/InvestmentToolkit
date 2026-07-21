@@ -23,7 +23,6 @@ from pathlib import Path
 # ── Paths (relative to repo root) ──────────────────────────────────────────────
 REPO_ROOT = Path(__file__).resolve().parents[3]  # plugins/portfolio-advisor/scripts/ → repo root
 TEMPLATE_PATH = REPO_ROOT / "plugins/portfolio-advisor/assets/templates/PortfolioAnalysisRecommendations.md"
-PORTFOLIO_PATH = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 THESIS_PATH    = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 DB_PATH        = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 OUTPUT_DIR     = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
@@ -31,6 +30,29 @@ OUTPUT_DIR     = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.investment_repository import list_investments  # noqa: E402
+from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
+
+
+def load_portfolio_holdings_from_db(db_path: Path = DB_PATH) -> list:
+    """Load holdings-shaped rows ([{"symbol", "shares", "price"}, ...]) from
+    domain_model.sqlite (Wave 3 Task 6 cutover — previously portfolio.json).
+
+    Sourced from ``load_portfolio_state_from_db()`` so per-symbol shares/prices
+    stay identical to every other consumer of that function.
+    """
+    if not db_path.exists():
+        return []
+    conn = initialize_db(str(db_path))
+    try:
+        state = load_portfolio_state_from_db(conn)
+    finally:
+        conn.close()
+    shares = state["shares"]
+    prices = state["prices"]
+    return [
+        {"symbol": sym, "shares": shares[sym], "price": prices.get(sym, 0.0)}
+        for sym in shares
+    ]
 # Note (Wave 1 Task 7B): PROJECTIONS_DIR was declared here but never read by this
 # file — DCF/projection data reaches this script only indirectly, via
 # scan_opportunities.py's subprocess call in get_action_subsections(), which is
@@ -44,7 +66,8 @@ def load_json(path: Path) -> dict | list:
 
 
 def compute_portfolio_summary(portfolio: list) -> dict:
-    """Derive key metrics from portfolio.json for header population."""
+    """Derive key metrics from domain_model.sqlite holdings (Wave 3 Task 6
+    cutover — previously portfolio.json) for header population."""
     holdings = [h for h in portfolio if h.get("symbol") != "USD_CASH"]
     cash = next((h for h in portfolio if h.get("symbol") == "USD_CASH"), None)
 
@@ -196,13 +219,12 @@ def main():
     if not TEMPLATE_PATH.exists():
         print(f"❌ Template not found: {TEMPLATE_PATH}", file=sys.stderr)
         sys.exit(1)
-    if not PORTFOLIO_PATH.exists():
-        print(f"❌ portfolio.json not found: {PORTFOLIO_PATH}", file=sys.stderr)
+    if not DB_PATH.exists():
+        print(f"❌ domain_model.sqlite not found: {DB_PATH}", file=sys.stderr)
         sys.exit(1)
 
     template = TEMPLATE_PATH.read_text()
-    portfolio_data = load_json(PORTFOLIO_PATH)
-    portfolio = portfolio_data.get("holdings", []) if isinstance(portfolio_data, dict) else portfolio_data
+    portfolio = load_portfolio_holdings_from_db()
     thesis = load_json(THESIS_PATH) if THESIS_PATH.exists() else {}
 
     portfolio_summary = compute_portfolio_summary(portfolio)
