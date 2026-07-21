@@ -22,6 +22,7 @@ from rebalancer import compute_capital_gains_estimate  # noqa: E402
 from rebalancer import compute_risk_budget_check  # noqa: E402
 from rebalancer import compute_breaker_warnings  # noqa: E402
 from rebalancer import compute_rebalance_plan  # noqa: E402
+import portfolio_io  # noqa: E402
 
 
 def test_compute_bands_in_band_when_drift_within_band():
@@ -59,6 +60,35 @@ def test_compute_bands_ticker_missing_from_one_side_defaults_to_zero():
 def _domain_db(tmp_path) -> Path:
     """Path to this tmp_path's (not-yet-created) domain_model.sqlite fixture DB."""
     return tmp_path / "domain_model.sqlite"
+
+
+def _seed_positions(db_path: Path, rows: list[tuple[str, str, float, float]]) -> None:
+    """Seed SQLite-backed portfolio positions (account, symbol, qty, price) into
+    domain_model.sqlite -- the real source load_portfolio_state() now reads
+    post-Wave-3 (see test_portfolio_io.py's _build_test_db for the same
+    pattern). Replaces the old portfolio.json "holdings"/"totals" fixture for
+    the purposes of computing CURRENT weights (load_account_positions() still
+    reads portfolio.json's tvSnapshot for account routing, unaffected).
+    """
+    from domain_model.db_client import initialize_db  # noqa: PLC0415
+    from domain_model.account_repository import upsert_account  # noqa: PLC0415
+    from domain_model.investment_repository import resolve_investment  # noqa: PLC0415
+    from domain_model.investment_price_repository import upsert_investment_price  # noqa: PLC0415
+    from domain_model.account_investment_repository import upsert_account_investment  # noqa: PLC0415
+
+    conn = initialize_db(str(db_path))
+    seen_accounts: set[str] = set()
+    for account_id, symbol, qty, price in rows:
+        if account_id not in seen_accounts:
+            upsert_account(conn, account_id, account_id, account_id)
+            seen_accounts.add(account_id)
+        inv_id = resolve_investment(conn, symbol, asset_class="EQUITY", currency="USD")
+        upsert_investment_price(conn, inv_id, price=price, currency="USD", fetched_at="2026-07-20T00:00:00Z")
+        upsert_account_investment(
+            conn, account_id, inv_id, quantity=qty, average_cost=price,
+            book_value=qty * price, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
+        )
+    conn.close()
 
 
 def _write_projection(tmp_path: Path, ticker: str, action: str) -> Path:
@@ -505,11 +535,23 @@ def _write_full_fixture(tmp_path):
     _write_projection(tmp_path, "CRWD", "MAINTAIN")
     _write_projection(tmp_path, "NBIS", "ACCUMULATE")
     db_path = _write_projection(tmp_path, "PSU-U.TO", "MAINTAIN")
+
+    # CURRENT weights (post-Wave-3) come from domain_model.sqlite via
+    # portfolio_io.load_portfolio_state(), not portfolio.json's "holdings"/
+    # "totals" -- seed the same db_path with matching positions so bands/
+    # orders compute the same actual weights the old JSON fixture encoded
+    # (CRWD 14.3%, NBIS 0.19%, PSU-U.TO ~85.6% of a ~$10520 rollup total).
+    _seed_positions(db_path, [
+        ("TFSA", "CRWD", 15.0, 100.0),
+        ("TFSA", "NBIS", 1.0, 20.0),
+        ("TFSA", "PSU-U.TO", 90.0, 100.0),
+    ])
     return target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path
 
 
-def test_compute_rebalance_plan_full_shape(tmp_path):
+def test_compute_rebalance_plan_full_shape(tmp_path, monkeypatch):
     target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
+    monkeypatch.setattr(portfolio_io, "_DB_PATH", str(db_path))
     plan = compute_rebalance_plan(
         target_portfolio_path=target_path, portfolio_path=portfolio_path,
         risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
@@ -562,8 +604,9 @@ def test_compute_rebalance_plan_degrades_when_risk_snapshot_missing(tmp_path):
     assert any("risk_snapshot" in w for w in plan["warnings"])
 
 
-def test_compute_rebalance_plan_order_carries_risk_and_breaker_warnings(tmp_path):
+def test_compute_rebalance_plan_order_carries_risk_and_breaker_warnings(tmp_path, monkeypatch):
     target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
+    monkeypatch.setattr(portfolio_io, "_DB_PATH", str(db_path))
     risk_path.write_text(json.dumps({
         "marginalRiskContribution": {"NBIS": 0.20},
         "clusterExposure": [{"pillarId": "ai_infra", "weight": 0.3, "varianceContributionPct": 30.0}],

@@ -349,6 +349,7 @@ from domain_model.investment_repository import (  # noqa: E402
     update_investment_fields,
 )
 from domain_model.pillar_repository import resolve_pillar  # noqa: E402
+import portfolio_io  # noqa: E402
 
 
 def _seed_pillar_map(db_path: Path, holdings: list[dict]) -> None:
@@ -371,6 +372,32 @@ def _write_portfolio(path: Path, shares: dict, prices: dict, total_usd: float) -
     path.write_text(json.dumps(payload))
 
 
+def _seed_positions(db_path: Path, shares: dict, prices: dict) -> None:
+    """Seed SQLite-backed portfolio positions matching a shares/prices map into
+    domain_model.sqlite -- the real source load_portfolio_state() reads
+    post-Wave-3 (see test_portfolio_io.py's _build_test_db for the same
+    pattern). Replaces the old portfolio.json "holdings"/"totals" fixture for
+    computing actual weights; _write_portfolio()'s JSON file is now unused by
+    compute_risk_snapshot() but kept as the portfolio_path argument for call-
+    site compatibility.
+    """
+    from domain_model.account_repository import upsert_account
+    from domain_model.investment_price_repository import upsert_investment_price
+    from domain_model.account_investment_repository import upsert_account_investment
+
+    conn = initialize_db(str(db_path))
+    upsert_account(conn, "TFSA", "TFSA", "TFSA")
+    for ticker, qty in shares.items():
+        price = prices[ticker]
+        inv_id = resolve_investment(conn, ticker, asset_class="EQUITY", currency="USD")
+        upsert_investment_price(conn, inv_id, price=price, currency="USD", fetched_at="2026-07-20T00:00:00Z")
+        upsert_account_investment(
+            conn, "TFSA", inv_id, quantity=qty, average_cost=price,
+            book_value=qty * price, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
+        )
+    conn.close()
+
+
 def _bdate_rows(n: int, start_price: float, drift: float) -> list[dict]:
     dates = pd.bdate_range("2024-01-01", periods=n)
     return [
@@ -381,7 +408,7 @@ def _bdate_rows(n: int, start_price: float, drift: float) -> list[dict]:
     ]
 
 
-def test_compute_risk_snapshot_full_shape(tmp_path):
+def test_compute_risk_snapshot_full_shape(tmp_path, monkeypatch):
     db_path = tmp_path / "test.sqlite"
     portfolio_path = tmp_path / "portfolio.json"
     _seed_pillar_map(db_path, [
@@ -394,6 +421,8 @@ def test_compute_risk_snapshot_full_shape(tmp_path):
         prices={"NVDA": 100.0, "PANW": 50.0},
         total_usd=2000.0,
     )
+    _seed_positions(db_path, shares={"NVDA": 10.0, "PANW": 20.0}, prices={"NVDA": 100.0, "PANW": 50.0})
+    monkeypatch.setattr(portfolio_io, "_DB_PATH", str(db_path))
 
     nvda_rows = _bdate_rows(120, 100.0, 0.1)
     panw_rows = _bdate_rows(120, 50.0, 0.05)
@@ -424,7 +453,7 @@ def test_compute_risk_snapshot_full_shape(tmp_path):
     assert snapshot["warnings"] == []
 
 
-def test_compute_risk_snapshot_excludes_short_history_ticker_with_warning(tmp_path):
+def test_compute_risk_snapshot_excludes_short_history_ticker_with_warning(tmp_path, monkeypatch):
     db_path = tmp_path / "test.sqlite"
     portfolio_path = tmp_path / "portfolio.json"
     _seed_pillar_map(db_path, [
@@ -437,6 +466,8 @@ def test_compute_risk_snapshot_excludes_short_history_ticker_with_warning(tmp_pa
         prices={"NVDA": 100.0, "CBRS": 200.0},
         total_usd=1600.0,
     )
+    _seed_positions(db_path, shares={"NVDA": 10.0, "CBRS": 3.0}, prices={"NVDA": 100.0, "CBRS": 200.0})
+    monkeypatch.setattr(portfolio_io, "_DB_PATH", str(db_path))
 
     nvda_rows = _bdate_rows(120, 100.0, 0.1)
     cbrs_rows = _bdate_rows(10, 200.0, 0.0)  # too short — below MIN_HISTORY_DAYS
