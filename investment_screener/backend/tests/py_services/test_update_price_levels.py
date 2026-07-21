@@ -428,11 +428,29 @@ class TestDeriveAndWrite:
         assert stored["target_entry"]["price"] == 250.0
 
     def test_write_snapshot_to_portfolio_json(self, tmp_path):
+        """Wave 3 Task 5.8 rewire: the old code read
+        `portfolio_data['accounts'][...]['holdings'][...]`, a shape real
+        portfolio.json never actually has (confirmed against
+        portfolio.json.example: real shape is `{holdings, totals,
+        tvSnapshot}`) -- so `snapshot_written` was always False and
+        portfolio.json was never actually written by this step in production.
+        The priceLevelSnapshot is now computed straight from already-migrated
+        SQLite tables (price_level_tier + investment_price) and returned in
+        the result dict instead of a JSON write that could never fire; this
+        also requires a real current price to exist (via investment_price),
+        which the old dead code never actually validated either."""
+        from domain_model.investment_price_repository import upsert_investment_price
+
         db_path = _make_db(tmp_path)
         target_path = _make_target_json(tmp_path)
         portfolio_path = _make_portfolio_json(tmp_path)
 
-        derive_and_write(
+        conn = initialize_db(str(db_path))
+        investment_id = resolve_investment(conn, "GOOG")
+        upsert_investment_price(conn, investment_id, price=383.22, currency="USD", fetched_at="2026-06-21T00:00:00Z")
+        conn.close()
+
+        result = derive_and_write(
             "GOOG",
             source="dcf",
             dry_run=False,
@@ -441,19 +459,12 @@ class TestDeriveAndWrite:
             db_path=db_path,
         )
 
-        written = json.loads(portfolio_path.read_text())
-        # Find GOOG holding (may be in accounts[].holdings)
-        all_holdings = []
-        if "accounts" in written:
-            for acct in written["accounts"]:
-                all_holdings.extend(acct.get("holdings", []))
-        elif "holdings" in written:
-            all_holdings = written["holdings"]
+        # portfolio.json itself is untouched -- no working write path existed here.
+        assert json.loads(portfolio_path.read_text()) == SAMPLE_PORTFOLIO
 
-        goog = next((h for h in all_holdings if h.get("symbol") == "GOOG"), None)
-        assert goog is not None
-        assert "priceLevelSnapshot" in goog
-        snap = goog["priceLevelSnapshot"]
+        assert result["snapshot_written"] is True
+        snap = result["price_level_snapshot"]
+        assert snap is not None
         assert "nextBuyTier" in snap
         assert "nextSellTier" in snap
         assert "proximityFlags" in snap

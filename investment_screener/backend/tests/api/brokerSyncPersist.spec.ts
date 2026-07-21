@@ -1,0 +1,99 @@
+/**
+ * brokerSyncPersist.spec.ts
+ *
+ * Purpose: proves BrokerSyncService.persistSnapshotToDb (Wave 3 Task 5.4) writes
+ * real account_investment/investment rows for a TV snapshot's positions and cash
+ * balances, using a tmp-scoped SQLite file — never the real domain_model.sqlite.
+ */
+import { expect } from 'chai';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import { persistSnapshotToDb, TVSnapshot } from '../../src/services/BrokerSyncService';
+import { PortfolioRepository } from '../../src/services/PortfolioRepository';
+import { InvestmentRepository } from '../../src/services/InvestmentRepository';
+
+function snapshotWith(snapshots: any[]): TVSnapshot {
+    return {
+        dataSource: 'tradingview-cdp',
+        timestamp: new Date().toISOString(),
+        accounts: [],
+        snapshots,
+        positions: snapshots.flatMap((s) => s.positions ?? []),
+    };
+}
+
+describe('BrokerSyncService.persistSnapshotToDb', () => {
+    let dbPath: string;
+
+    beforeEach(() => {
+        dbPath = path.join(os.tmpdir(), `broker-sync-persist-test-${Date.now()}-${Math.random()}.sqlite`);
+    });
+
+    afterEach(() => {
+        for (const suffix of ['', '-wal', '-shm']) {
+            const p = dbPath + suffix;
+            if (fs.existsSync(p)) fs.unlinkSync(p);
+        }
+    });
+
+    it('writes real account_investment rows for positions and a CASH_USD row for balances', () => {
+        const snapshot = snapshotWith([
+            {
+                accountType: 'TFSA',
+                balances: { cashUSD: 250.5 },
+                positions: [
+                    { symbol: 'NVDA', quantity: 3, avgFillPrice: 800, accountType: 'TFSA', accountId: '1' },
+                ],
+            },
+        ]);
+
+        persistSnapshotToDb(snapshot, dbPath);
+
+        const portfolioRepo = new PortfolioRepository(dbPath);
+        const investmentRepo = new InvestmentRepository(dbPath);
+        try {
+            const rows = portfolioRepo.listAccountInvestments('TFSA');
+            const nvdaRow = rows.find((r) => r.investment_id === 'NVDA');
+            expect(nvdaRow, 'expected an NVDA account_investment row').to.not.be.undefined;
+            expect(nvdaRow!.quantity).to.equal(3);
+            expect(nvdaRow!.average_cost).to.equal(800);
+
+            const cashInvestment = investmentRepo.getInvestment('CASH_USD');
+            expect(cashInvestment, 'expected CASH_USD to be a real investment row').to.not.be.null;
+            expect(cashInvestment!.asset_class).to.equal('CASH');
+
+            const cashRow = rows.find((r) => r.investment_id === cashInvestment!.investment_id);
+            expect(cashRow, 'expected a CASH_USD account_investment row (cash as a real investment row)').to.not.be.undefined;
+            expect(cashRow!.quantity).to.equal(250.5);
+        } finally {
+            portfolioRepo.close();
+            investmentRepo.close();
+        }
+    });
+
+    it('skips unrecognized non-real accounts and zero/negative-quantity positions', () => {
+        const snapshot = snapshotWith([
+            {
+                accountType: 'MARGIN', // not TFSA/RRSP/CASH
+                balances: { cashUSD: 100 },
+                positions: [{ symbol: 'AAPL', quantity: 5, avgFillPrice: 150, accountType: 'MARGIN', accountId: '9' }],
+            },
+            {
+                accountType: 'RRSP',
+                balances: {},
+                positions: [{ symbol: 'CLOSED', quantity: 0, avgFillPrice: 10, accountType: 'RRSP', accountId: '2' }],
+            },
+        ]);
+
+        persistSnapshotToDb(snapshot, dbPath);
+
+        const portfolioRepo = new PortfolioRepository(dbPath);
+        try {
+            expect(portfolioRepo.listAccountInvestments('MARGIN')).to.have.length(0);
+            expect(portfolioRepo.listAccountInvestments('RRSP')).to.have.length(0);
+        } finally {
+            portfolioRepo.close();
+        }
+    });
+});

@@ -37,7 +37,10 @@
  *   - investment_screener/backend/data/theses/ (stores theses JSON)
  *   - ./ProjectionService (reads AI projections from data/domain_model.sqlite, ADR-029 —
  *     migrated off data/projections/*.json in Task 7C; see getLatestAIProjection)
- *   - investment_screener/backend/data/portfolio.json (reads portfolio holdings)
+ *   - ./PortfolioRepository (reads portfolio holdings from data/domain_model.sqlite's
+ *     account_investment/investment_price tables, Wave 3 Task 6 — see getPortfolioItems.
+ *     Falls back to investment_screener/backend/data/portfolio.json only when SQLite
+ *     has no priced position data yet.)
  *   - investment_screener/backend/data/account_policy.json (reads drift config)
  *
  * Key Output Dependencies:
@@ -77,6 +80,8 @@ import {
 } from '../utils/zod-schemas';
 import { geminiService } from './GeminiService';
 import { projectionService, ProjectionService } from './ProjectionService';
+import { PortfolioRepository } from './PortfolioRepository';
+import { DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 
 const THESES_DIR = path.resolve(__dirname, '../../data/theses');
 const PORTFOLIO_FILE = path.resolve(__dirname, '../../data/portfolio.json');
@@ -91,8 +96,15 @@ export class ThesisService {
 
     /** Defaults to the shared `projectionService` singleton (SQLite-backed, ADR-029).
      * Constructor-injectable so tests can pass a fake/temp-db-backed instance without
-     * ThesisService opening its own database connection or reading the filesystem. */
-    constructor(private projections: Pick<ProjectionService, 'getProjections'> = projectionService) {}
+     * ThesisService opening its own database connection or reading the filesystem.
+     * `dbPath` (Wave 3 Task 6) is separately injectable so tests can point
+     * getPortfolioItems() at a tmp-scoped SQLite file instead of the real
+     * domain_model.sqlite, matching InvestmentRepository/PortfolioRepository's own
+     * constructor-injection pattern rather than a module-level singleton. */
+    constructor(
+        private projections: Pick<ProjectionService, 'getProjections'> = projectionService,
+        private dbPath: string = DOMAIN_MODEL_DB_FILE
+    ) {}
 
     private getFilePath(id: string): string {
         // Sanitize ID to prevent path traversal (UUIDs should be safe, but good practice)
@@ -127,7 +139,31 @@ export class ThesisService {
         }
     }
 
+    /** Wave 3 Task 6: sourced from domain_model.sqlite (account_investment JOIN
+     * investment_price, aggregated per-symbol via PortfolioRepository.listPositionsBySymbol())
+     * rather than portfolio.json's `holdings` array. Falls back to the JSON file when
+     * SQLite has no priced position data yet (e.g. before the first migration run),
+     * matching routes/portfolio.ts's established fallback pattern for this same table. */
     async getPortfolioItems(): Promise<any[]> {
+        try {
+            const repo = new PortfolioRepository(this.dbPath);
+            let positions: ReturnType<PortfolioRepository['listPositionsBySymbol']>;
+            try {
+                positions = repo.listPositionsBySymbol();
+            } finally {
+                repo.close();
+            }
+            if (positions.length > 0) {
+                return positions.map(p => ({
+                    symbol: p.symbol,
+                    quantity: p.quantity,
+                    price: p.price ?? p.averageCost ?? 0,
+                }));
+            }
+        } catch (e) {
+            console.error(`[ThesisService] Error reading portfolio positions from SQLite:`, e);
+        }
+
         if (!fs.existsSync(PORTFOLIO_FILE)) return [];
         try {
             const raw = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));

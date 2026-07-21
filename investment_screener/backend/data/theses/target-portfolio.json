@@ -4,7 +4,7 @@
   "schemaVersion": "1.0",
   "version": 10.8,
   "createdAt": "2026-02-14T12:00:00Z",
-  "updatedAt": "2026-07-17T16:56:17.371Z",
+  "updatedAt": "2026-06-21T18:30:00Z",
   "description": "Investment thesis focused on the dual infrastructure buildout for ASI Compute (Primary) and Sovereign Finance (Secondary).",
   "pillars": [
     {
@@ -83,7 +83,7 @@
       "name": "Purpose US Cash Fund",
       "pillarId": "cash",
       "targetWeight": 17.798,
-      "role": "accumulate",
+      "role": "initiate",
       "subStrategyId": "cash",
       "thesisForInclusion": "USD cash reserve (Purpose US Cash Fund) — holds short-term USD treasuries on TSX. Primary purpose: USD currency exposure + interest income while awaiting deployment into thesis positions. Monthly dividend ~$0.31-0.33/share (~$3.68-3.90 USD annualized). ENTRY RULE: always buy 1-2 days AFTER the ex-dividend date (typically last Tuesday of month) to get the cycle-low reset price and capture the full next month of accrual. Buying mid-cycle or just before ex-date overpays for already-accrued dividend. Ex-dates: ~Jan 28, Feb 25, Mar 31, Apr 28, May 28, Jun 30 pattern. Next planned entry: May 29, 2026 (post May 28 ex-date).",
       "agentRationale": "MAINTAIN. 56 shares held (PSU.U.TO in broker = same fund, hyphen/dot notation only). Purpose US Cash Fund — USD HISA equivalent, monthly dividend ~$0.31-0.33/share. Core cash reserve position. Entry rule: buy 1-2 days after ex-dividend date (last Tuesday of month). Updated 2026-07-05: absorbed 4.5% back from LLY/CRSP (13.925%→18.425%) — user decided not to initiate either name right now, holding both as watchlist while the metabolic-rewriting sub-strategy evaluates entry over time. biohealth pillar target stays registered at 4.5% for future deployment.",

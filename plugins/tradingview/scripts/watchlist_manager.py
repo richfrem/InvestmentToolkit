@@ -11,9 +11,9 @@ Layer:
     Plugins / TradingView
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Reads holdings)
-    - investment_screener/backend/data/watchlist.json (Reads watched tickers list)
-    - investment_screener/backend/data/domain_model.sqlite (Reads target projections, ADR-029)
+    - investment_screener/backend/data/domain_model.sqlite (Reads holdings and
+      target projections; Wave 3 Task 6 cutover for holdings — previously
+      portfolio.json — plus ADR-029 for watchlist/projections)
 
 Usage:
     python3 plugins/tradingview/scripts/watchlist_manager.py
@@ -27,7 +27,6 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PORTFOLIO_PATH = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 TARGET_WATCHLIST_PATH = REPO_ROOT / "investment_screener/backend/data/watchlist.json"
 DB_PATH = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
@@ -42,6 +41,22 @@ sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.projection_repository import list_symbols_with_projections  # noqa: E402
 from domain_model.investment_repository import list_investments  # noqa: E402
+from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
+
+
+def _load_holdings_symbols(db_path: Path | None = None) -> List[str]:
+    """Return upper-cased held-position symbols from domain_model.sqlite
+    (Wave 3 Task 6 cutover — previously portfolio.json).
+    """
+    resolved = db_path or DB_PATH
+    if not resolved.exists():
+        return []
+    conn = initialize_db(str(resolved))
+    try:
+        shares = load_portfolio_state_from_db(conn)["shares"]
+    finally:
+        conn.close()
+    return [sym.upper() for sym in shares if sym and sym != "USD_CASH"]
 
 
 def _load_watchlisted_symbols(db_path: Path | None = None) -> List[str]:
@@ -115,16 +130,13 @@ def load_boats_watchlist(db_path: Path | None = None) -> List[str]:
     seen: set[str] = set()
     tickers: List[str] = []
 
-    if PORTFOLIO_PATH.exists():
-        try:
-            with open(PORTFOLIO_PATH) as f:
-                for h in json.load(f).get("holdings", []):
-                    sym = h.get("symbol", "").upper()
-                    if sym and _is_boats_eligible(sym) and sym not in seen:
-                        seen.add(sym)
-                        tickers.append(f"BOATS:{sym}")
-        except Exception:
-            pass
+    try:
+        for sym in _load_holdings_symbols(db_path):
+            if sym and _is_boats_eligible(sym) and sym not in seen:
+                seen.add(sym)
+                tickers.append(f"BOATS:{sym}")
+    except Exception:
+        pass
 
     try:
         for sym in _load_watchlisted_symbols(db_path):
@@ -138,17 +150,13 @@ def load_boats_watchlist(db_path: Path | None = None) -> List[str]:
 
 
 # External comment: Retrieve active portfolio symbols
-def load_holdings_watchlist() -> List[str]:
-    """Retrieve symbols representing active portfolio holdings."""
-    if PORTFOLIO_PATH.exists():
-        try:
-            with open(PORTFOLIO_PATH) as f:
-                data = json.load(f)
-                holdings = data.get("holdings", [])
-                return [h["symbol"].upper() for h in holdings if h.get("symbol") and h["symbol"] != "USD_CASH"]
-        except Exception:
-            pass
-    return []
+def load_holdings_watchlist(db_path: Path | None = None) -> List[str]:
+    """Retrieve symbols representing active portfolio holdings from
+    domain_model.sqlite (Wave 3 Task 6 cutover — previously portfolio.json)."""
+    try:
+        return _load_holdings_symbols(db_path)
+    except Exception:
+        return []
 
 
 # External comment: Detect tv_call()'s Task 5A-8 never-raise error contract

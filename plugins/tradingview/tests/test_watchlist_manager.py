@@ -119,14 +119,59 @@ class TestLoadWatchlistedSymbols(unittest.TestCase):
             finally:
                 conn.close()
 
-            original_portfolio_path = watchlist_manager.PORTFOLIO_PATH
-            watchlist_manager.PORTFOLIO_PATH = Path(tmp) / "does_not_exist.json"
-            try:
-                tickers = watchlist_manager.load_boats_watchlist(db_path=db_path)
-            finally:
-                watchlist_manager.PORTFOLIO_PATH = original_portfolio_path
-
+            tickers = watchlist_manager.load_boats_watchlist(db_path=db_path)
             self.assertEqual(tickers, ["BOATS:MSFT"])
+
+
+class TestLoadHoldingsFromSqlite(unittest.TestCase):
+    """Wave 3 Task 6 — held positions come from account_investment in
+    domain_model.sqlite, not portfolio.json."""
+
+    def _seed_holding(self, conn, ticker):
+        from domain_model.account_repository import upsert_account
+        from domain_model.investment_price_repository import upsert_investment_price
+        from domain_model.account_investment_repository import upsert_account_investment
+
+        upsert_account(conn, "TFSA", "TFSA", "TFSA")
+        investment_id = resolve_investment(conn, ticker, asset_class="EQUITY", currency="USD")
+        upsert_investment_price(conn, investment_id, price=100.0, currency="USD", fetched_at="2026-07-20T00:00:00Z")
+        upsert_account_investment(
+            conn, "TFSA", investment_id, quantity=1, average_cost=100.0,
+            book_value=100.0, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
+        )
+
+    def test_load_holdings_watchlist_reads_sqlite(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "test.sqlite"
+            conn = initialize_db(str(db_path))
+            try:
+                self._seed_holding(conn, "AAPL")
+            finally:
+                conn.close()
+
+            tickers = watchlist_manager.load_holdings_watchlist(db_path=db_path)
+            self.assertEqual(tickers, ["AAPL"])
+
+    def test_boats_watchlist_includes_held_us_equities(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "test.sqlite"
+            conn = initialize_db(str(db_path))
+            try:
+                self._seed_holding(conn, "NVDA")
+            finally:
+                conn.close()
+
+            tickers = watchlist_manager.load_boats_watchlist(db_path=db_path)
+            self.assertEqual(tickers, ["BOATS:NVDA"])
+
+    def test_missing_db_returns_empty(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            missing_db = Path(tmp) / "missing.sqlite"
+            tickers = watchlist_manager.load_holdings_watchlist(db_path=missing_db)
+            self.assertEqual(tickers, [])
 
 
 if __name__ == "__main__":

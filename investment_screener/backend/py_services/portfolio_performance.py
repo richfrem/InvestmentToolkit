@@ -21,7 +21,8 @@ Key Functions (Index):
     - main()
 
 Key Input Dependencies:
-    None
+    - investment_screener/backend/data/domain_model.sqlite (Wave 3 Task 6
+      cutover — previously portfolio.json)
 
 Key Output Dependencies:
     None
@@ -30,10 +31,19 @@ import json
 import sys
 import math
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 import pandas as pd
 import yfinance as yf
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
+from ticker_aliases import is_cash  # noqa: E402
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+DB_PATH = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
 
 # External comment: Safely cast value to float handling NaN and None cases
@@ -50,29 +60,40 @@ def safe_float(val: Any) -> float:
         return 0.0
 
 
-# External comment: Load portfolio JSON data and extract equity positions and cash values
-def load_portfolio_data(portfolio_path: str) -> Tuple[float, List[str], Dict[str, float]]:
+# External comment: Load portfolio data from domain_model.sqlite and extract equity positions and cash values
+def load_portfolio_data(
+    portfolio_path: str,
+    db_path: Path = DB_PATH,
+) -> Tuple[float, List[str], Dict[str, float]]:
     """
-    Reads holdings, calculates total cash, and returns (cash_value, tickers, shares_map).
+    Reads holdings from domain_model.sqlite (Wave 3 Task 6 cutover — previously
+    portfolio.json), calculates total cash, and returns (cash_value, tickers,
+    shares_map).
+
+    Args:
+        portfolio_path: Retained for CLI/call-site signature compatibility
+            (main() historically passed the portfolio.json path); no longer read.
+        db_path: domain_model.sqlite path, overridable for tests.
     """
-    with open(portfolio_path) as f:
-        raw = json.load(f)
-    portfolio = raw if isinstance(raw, list) else raw.get("holdings", [])
+    if not db_path.exists():
+        return 0.0, [], {}
 
-    equity_positions = [
-        p for p in portfolio
-        if p.get("sector") != "CASH" and p.get("symbol") != "USD_CASH"
-    ]
-    cash_value = sum(
-        p.get("shares", 0) * p.get("price", 1.0)
-        for p in portfolio
-        if p.get("sector") == "CASH" or p.get("symbol") == "USD_CASH"
-    )
+    conn = initialize_db(str(db_path))
+    try:
+        state = load_portfolio_state_from_db(conn)
+    finally:
+        conn.close()
 
-    tickers = [p["symbol"] for p in equity_positions]
-    shares_map = {p["symbol"]: p["shares"] for p in equity_positions}
+    shares = state["shares"]
+    prices = state["prices"]
 
-    return cash_value, tickers, shares_map
+    cash_symbols  = [sym for sym in shares if is_cash(sym)]
+    equity_symbols = [sym for sym in shares if not is_cash(sym)]
+
+    cash_value = sum(shares[sym] * prices.get(sym, 1.0) for sym in cash_symbols)
+    shares_map = {sym: shares[sym] for sym in equity_symbols}
+
+    return cash_value, equity_symbols, shares_map
 
 
 # External comment: Fetches and normalizes yfinance historical pricing dataframe

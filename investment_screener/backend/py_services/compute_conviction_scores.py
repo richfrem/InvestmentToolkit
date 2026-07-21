@@ -67,16 +67,17 @@ from typing import Any
 REPO_ROOT        = Path(__file__).resolve().parents[3]
 TA_SWEEP_PATH    = REPO_ROOT / "investment_screener/backend/data/ta-sweep-results.json"
 DB_PATH          = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
-PORTFOLIO_PATH   = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 SKIP_TICKERS     = frozenset({"PSU-U.TO", "PSU.U.TO", "USD_CASH", "USD_CASH_TFSA"})
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.investment_repository import list_investments  # noqa: E402
+from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
 from domain_model.projection_repository import (  # noqa: E402
     get_latest_projection,
     get_latest_projection_by_source,
 )
+from portfolio_io import compute_weights  # noqa: E402
 
 
 @dataclass
@@ -396,28 +397,25 @@ def _load_dcf(ticker: str, db_path: Path | None = None) -> dict[str, Any]:
         conn.close()
 
 
-def _load_actual_weights() -> dict[str, float]:
-    """Load actual portfolio weight per ticker from portfolio.json.
+def _load_actual_weights(db_path: Path = DB_PATH) -> dict[str, float]:
+    """Load actual portfolio weight per ticker from domain_model.sqlite
+    (Wave 3 Task 6 cutover — previously portfolio.json).
+
+    Reuses ``portfolio_io.compute_weights`` so the weight-% formula stays
+    identical to every other consumer of ``load_portfolio_state()``/
+    ``load_portfolio_state_from_db()`` — never a bespoke recomputation here.
 
     Returns:
         Dict of ticker → weight percentage.
     """
-    if not PORTFOLIO_PATH.exists():
+    if not db_path.exists():
         return {}
-    with open(PORTFOLIO_PATH) as f:
-        data = json.load(f)
-    holdings = data.get("holdings", data) if isinstance(data, dict) else data
-    # Support both currentValue and market_value field names
-    def val(h: dict[str, Any]) -> float:
-        return h.get("currentValue") or h.get("market_value") or 0.0
-    total = sum(val(h) for h in holdings)
-    if not total:
-        return {}
-    return {
-        h["symbol"]: round(val(h) / total * 100, 2)
-        for h in holdings
-        if h.get("symbol")
-    }
+    conn = initialize_db(str(db_path))
+    try:
+        state = load_portfolio_state_from_db(conn)
+    finally:
+        conn.close()
+    return compute_weights(state["shares"], state["prices"], state["total_usd"])
 
 
 def _load_target_weights(db_path: str | None = None) -> dict[str, float]:

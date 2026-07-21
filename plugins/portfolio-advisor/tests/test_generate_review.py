@@ -20,8 +20,34 @@ from domain_model.investment_repository import (  # noqa: E402
     resolve_investment,
     update_investment_fields,
 )
+from domain_model.account_repository import upsert_account  # noqa: E402
+from domain_model.investment_price_repository import upsert_investment_price  # noqa: E402
+from domain_model.account_investment_repository import upsert_account_investment  # noqa: E402
 
 import generate_review as gr  # noqa: E402
+
+
+class TestLoadPortfolioHoldingsFromDb:
+    """Wave 3 Task 6: portfolio holdings for header population now come from
+    domain_model.sqlite, not portfolio.json."""
+
+    def test_returns_symbol_shares_price_rows(self, tmp_path):
+        db_path = tmp_path / "test.sqlite"
+        conn = initialize_db(str(db_path))
+        upsert_account(conn, "TFSA", "TFSA", "TFSA")
+        aapl_id = resolve_investment(conn, "AAPL", asset_class="EQUITY", currency="USD")
+        upsert_investment_price(conn, aapl_id, price=200.0, currency="USD", fetched_at="2026-07-20T00:00:00Z")
+        upsert_account_investment(
+            conn, "TFSA", aapl_id, quantity=5, average_cost=180.0,
+            book_value=900.0, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
+        )
+        conn.close()
+
+        holdings = gr.load_portfolio_holdings_from_db(db_path)
+        assert holdings == [{"symbol": "AAPL", "shares": 5, "price": 200.0}]
+
+    def test_missing_db_returns_empty_list(self, tmp_path):
+        assert gr.load_portfolio_holdings_from_db(tmp_path / "missing.sqlite") == []
 
 
 def _make_db(tmp_path):
