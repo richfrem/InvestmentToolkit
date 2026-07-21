@@ -8,6 +8,11 @@
  * Key Input Dependencies:
  *   - ./paths (for portfolio JSON paths references)
  *   - ../services/bridge (for spawning Python analytical scripts)
+ *   - investment_screener/backend/data/portfolio.json (getLiveUsdCadRate reads
+ *     tvSnapshot broker balance totals for FX inference — Wave 3 Task 6
+ *     investigation found no SQLite equivalent table exists yet for
+ *     per-currency broker balances; NOT rewired, documented stop, see the
+ *     comment inside getLiveUsdCadRate)
  * 
  * Key Output Dependencies:
  *   None
@@ -46,6 +51,18 @@ export async function getLiveUsdCadRate(fallback: number): Promise<number> {
     /**
      * Attempts to infer the live exchange rate directly from the TV snapshot in portfolio.json first.
      * Otherwise, falls back to the EXCHANGE_RATE_API_KEY pair endpoint or a static fallback rate.
+     *
+     * Wave 3 Task 6 investigation (NOT rewired — documented stop, not an oversight):
+     * this reads `tvSnapshot.snapshots[].balances.totalEquityCADCombined/USDCombined`
+     * from portfolio.json. No table in domain_model.sqlite stores per-currency broker
+     * account balance totals (only per-position quantity/price via account_investment/
+     * investment_price) — this is the exact same documented gap as
+     * py_services/domain_model/portfolio_repository.py::load_portfolio_state_from_db's
+     * `exchange_rate` field (see that function's comment). Inventing a new table for
+     * this single call site is out of scope (no schema changes permitted this wave);
+     * routes/stock.ts and routes/portfolio.ts both still call this function unchanged
+     * for exchangeRate even after their own totalUSD/totalCAD reads were rewired onto
+     * SQLite in this same task.
      */
     try {
         const fs = require('fs');
