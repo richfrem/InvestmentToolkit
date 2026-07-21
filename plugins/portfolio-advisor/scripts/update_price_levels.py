@@ -47,6 +47,7 @@ from domain_model.db_client import initialize_db
 from domain_model.projection_repository import get_latest_projection_by_source, get_projection_scenarios
 from domain_model.investment_repository import resolve_investment
 from domain_model.price_level_repository import replace_price_levels, get_price_levels
+from domain_model.investment_price_repository import get_investment_price
 
 def derive_tiers_from_dcf(bear_fv: float, base_fv: float, bull_fv: float, source_date: str, note: str = '') -> dict:
     """Returns complete priceLevels dict derived from bear, base, and bull scenario prices."""
@@ -202,6 +203,59 @@ def load_latest_projection(ticker: str, db_path: Path | None = None) -> dict | N
     finally:
         conn.close()
 
+def _tier_row_to_dict(row: dict) -> dict:
+    """Maps a `price_level_tier` SQL row (snake_case columns) back to the
+    JSON tier shape `compute_proximity_flags`/callers expect (camelCase,
+    `tier` instead of `tier_number`)."""
+    return {
+        'tier': row.get('tier_number'),
+        'price': row.get('price'),
+        'action': row.get('action'),
+        'trimPct': row.get('trim_pct'),
+        'orderType': row.get('order_type'),
+        'basis': row.get('basis'),
+        'source': row.get('source'),
+        'sourceDate': row.get('source_date'),
+        'condition': row.get('condition'),
+        'status': row.get('status'),
+    }
+
+
+def compute_price_level_snapshot_from_db(conn, investment_id: str) -> dict | None:
+    """Computes the `priceLevelSnapshot` shape (nextBuyTier/nextSellTier/
+    stopLoss/proximityFlags) entirely from already-migrated tables --
+    `price_level_tier` (Wave 2 Task 9) for the tiers, `investment_price`
+    (Wave 3 Task 1) for the current price. No new schema is needed: this
+    denormalized cache was always fully derivable at read time from data
+    this migration had already cut over, matching ADR-030's read-time-only
+    principle for other derived views (e.g. portfolio totals). Returns None
+    if there is no price_level_set or no current price for this investment.
+    """
+    levels = get_price_levels(conn, investment_id)
+    if not levels:
+        return None
+    price_row = get_investment_price(conn, investment_id)
+    if not price_row:
+        return None
+    current_price = price_row['price']
+
+    buy_tiers = [_tier_row_to_dict(t) for t in levels['buy_tiers']]
+    sell_tiers = [_tier_row_to_dict(t) for t in levels['sell_tiers']]
+    stop_loss = _tier_row_to_dict(levels['stop_loss']) if levels['stop_loss'] else None
+    price_levels = {'buyTiers': buy_tiers, 'sellTiers': sell_tiers, 'stopLoss': stop_loss}
+
+    next_buy = next((t for t in buy_tiers if t.get('status') == 'active'), None)
+    next_sell = next((t for t in sell_tiers if t.get('status') == 'active'), None)
+    flags = compute_proximity_flags(current_price, price_levels)
+
+    return {
+        'nextBuyTier': next_buy,
+        'nextSellTier': next_sell,
+        'stopLoss': stop_loss,
+        'proximityFlags': flags,
+    }
+
+
 def derive_and_write(
     ticker: str,
     source: str = 'dcf',
@@ -281,39 +335,39 @@ def derive_and_write(
     else:
         print(f"Warning: Holding {ticker} not found in target portfolio holdings.")
 
-    # 2. Update portfolio.json snapshot
-    portfolio_data = {}
-    current_price = 0.0
-    snapshot_written = False
-    if ppath.exists():
-        with open(ppath) as f:
-            portfolio_data = json.load(f)
-            
-        for acct in portfolio_data.get('accounts', []):
-            for holding in acct.get('holdings', []):
-                if holding.get('symbol', '').upper() == ticker.upper():
-                    current_price = holding.get('price', 0.0)
-                    
-                    next_buy = next((t for t in price_levels['buyTiers'] if t.get('status') == 'active'), None)
-                    next_sell = next((t for t in price_levels['sellTiers'] if t.get('status') == 'active'), None)
-                    flags = compute_proximity_flags(current_price, price_levels)
-                    
-                    holding['priceLevelSnapshot'] = {
-                        'nextBuyTier': next_buy,
-                        'nextSellTier': next_sell,
-                        'stopLoss': price_levels.get('stopLoss'),
-                        'proximityFlags': flags
-                    }
-                    snapshot_written = True
-                    
-        if snapshot_written and not dry_run:
-            locked_write_json(ppath, portfolio_data)
-            
+    # 2. Compute the priceLevelSnapshot (Wave 3 Task 5.8 rewire).
+    #
+    # The prior code here iterated `portfolio_data.get('accounts', [])` looking
+    # for `holdings[]` per account -- but real portfolio.json has no top-level
+    # `accounts` key at all (its real shape is `{holdings, totals, tvSnapshot}`,
+    # confirmed against portfolio.json.example and the real migrated file).
+    # `portfolio_data.get('accounts', [])` therefore always returned `[]` in
+    # production: `snapshot_written` was always False and this write path was
+    # dead code, never actually persisting a priceLevelSnapshot anywhere. Since
+    # this snapshot is fully derivable at read time from tables this wave has
+    # already migrated (price_level_tier: Wave 2 Task 9; investment_price:
+    # Wave 3 Task 1) -- see compute_price_level_snapshot_from_db's docstring --
+    # there is no working portfolio.json write to "rewire": the equivalent data
+    # already lives in SQLite via step 1's replace_price_levels() call above,
+    # and this function now returns the same computed shape a caller reading
+    # `res['price_level_snapshot']` would have gotten from the dead JSON path,
+    # sourced correctly instead of from code that could never fire.
+    price_level_snapshot = None
+    if holding_found and not dry_run:
+        dbp = db_path or DB_PATH
+        conn = initialize_db(str(dbp))
+        try:
+            investment_id = resolve_investment(conn, ticker)
+            price_level_snapshot = compute_price_level_snapshot_from_db(conn, investment_id)
+        finally:
+            conn.close()
+
     return {
         'ticker': ticker,
         'dry_run': dry_run,
         'price_levels': price_levels,
-        'snapshot_written': snapshot_written and not dry_run
+        'price_level_snapshot': price_level_snapshot,
+        'snapshot_written': price_level_snapshot is not None,
     }
 
 def derive_and_write_all(source: str = 'dcf', dry_run: bool = False) -> list[dict]:
