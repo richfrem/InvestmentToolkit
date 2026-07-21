@@ -52,6 +52,56 @@ def get_portfolio_total_value(conn: sqlite3.Connection) -> float:
     return sum(get_account_market_values(conn).values())
 
 
+def get_account_cash_usd(conn: sqlite3.Connection) -> dict[str, float]:
+    """USD cash per real account: SUM(quantity) of the CASH_USD investment,
+    grouped by account_id.
+
+    Cash is a real ``account_investment`` row for the ``CASH_USD`` investment
+    (Wave 0 resolved decision 5), whose ``quantity`` IS the USD dollar amount
+    held in that account (its ``investment_price`` is 1.0). Aggregation is
+    pushed into SQL and account boundaries are preserved (GROUP BY before any
+    rollup), matching this module's established pattern in
+    get_account_market_values().
+    """
+    cursor = conn.execute(
+        """
+        SELECT account_id, SUM(quantity) AS cash_usd
+        FROM account_investment
+        WHERE investment_id = 'CASH_USD'
+        GROUP BY account_id;
+        """
+    )
+    return {row[0]: row[1] for row in cursor.fetchall()}
+
+
+def get_total_cash_usd(conn: sqlite3.Connection) -> float | None:
+    """Portfolio-wide USD cash: the sum of get_account_cash_usd()'s per-account
+    results, or None if no CASH_USD rows exist at all.
+
+    Returns None (not 0.0) on a total absence of cash rows so callers can
+    preserve the JSON-era ``get_available_cash()`` "degrade to None when the
+    value is unavailable" contract.
+    """
+    per_account = get_account_cash_usd(conn)
+    if not per_account:
+        return None
+    return sum(per_account.values())
+
+
+def get_last_synced_at(conn: sqlite3.Connection) -> str | None:
+    """Most recent ``last_synced_at`` across all account_investment rows (ISO
+    string), or None if the table is empty.
+
+    Re-expresses the JSON-era ``portfolio.json`` ``totals.timestamp`` freshness
+    signal against the relational model, so staleness checks read the same
+    source of truth as every other portfolio number.
+    """
+    row = conn.execute(
+        "SELECT MAX(last_synced_at) FROM account_investment;"
+    ).fetchone()
+    return row[0] if row and row[0] else None
+
+
 def load_portfolio_state_from_db(conn: sqlite3.Connection) -> dict:
     """portfolio_io.py::load_portfolio_state()-compatible shape.
 
