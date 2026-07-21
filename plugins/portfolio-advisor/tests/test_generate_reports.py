@@ -7,12 +7,39 @@ import json
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "plugins/portfolio-advisor/scripts"))
 
-from generate_reports import generate_report, load_target_holdings_from_db  # noqa: E402
+from generate_reports import generate_report, load_target_holdings_from_db, load_portfolio_from_db  # noqa: E402
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.account_repository import upsert_account  # noqa: E402
 from domain_model.investment_repository import resolve_investment, update_investment_fields  # noqa: E402
+from domain_model.investment_price_repository import upsert_investment_price  # noqa: E402
+from domain_model.account_investment_repository import upsert_account_investment  # noqa: E402
 from domain_model.pillar_repository import resolve_pillar, resolve_sub_strategy  # noqa: E402
+
+
+def test_load_portfolio_from_db(tmp_path):
+    """Wave 3 Task 6: load_portfolio_from_db() must read domain_model.sqlite,
+    never portfolio.json."""
+    db_path = tmp_path / "domain_model.sqlite"
+    conn = initialize_db(str(db_path))
+    upsert_account(conn, "TFSA", "TFSA", "TFSA")
+    goog_id = resolve_investment(conn, "GOOG", asset_class="EQUITY", currency="USD")
+    upsert_investment_price(conn, goog_id, price=345.75, currency="USD", fetched_at="2026-07-20T00:00:00Z")
+    upsert_account_investment(
+        conn, "TFSA", goog_id, quantity=4, average_cost=300.0,
+        book_value=1200.0, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
+    )
+    conn.close()
+
+    result = load_portfolio_from_db(str(db_path))
+    assert result["totals"]["totalUSD"] == 1383.0
+    assert result["holdings"] == [{"symbol": "GOOG", "market_value": 1383.0}]
+
+
+def test_load_portfolio_from_db_missing_file_returns_empty(tmp_path):
+    result = load_portfolio_from_db(str(tmp_path / "does_not_exist.sqlite"))
+    assert result == {}
 
 
 def test_load_target_holdings_from_db(tmp_path):
