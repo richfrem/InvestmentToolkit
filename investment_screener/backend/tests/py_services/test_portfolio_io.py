@@ -1,13 +1,17 @@
 """
 Tests for portfolio_io.py — shared safe I/O layer for all portfolio scripts.
 
-Key invariant under test:
-  load_portfolio_state() MUST use totals.totalUSD as the denominator for weights.
-  It must NEVER compute total from shares×price (produces different result when
-  cash/USD positions are held outside individual holdings, or when broker total
-  differs from sum-of-parts).
+Key invariant under test (Wave 3+):
+  load_portfolio_state() delegates entirely to
+  domain_model.portfolio_repository.load_portfolio_state_from_db(). The
+  authoritative total is computed exactly once, in portfolio_repository.py's
+  get_portfolio_total_value() (an account-level rollup) -- never recomputed
+  ad hoc in this module, and never read from portfolio.json (that JSON-era
+  contract, including the PORTFOLIO_WITH_TOTALS/PORTFOLIO_FLAT fixtures below,
+  was retired by the Wave 3 cutover; see
+  test_load_portfolio_state_reads_from_sqlite_not_json).
 
-Test tier: Category A (pure) + Category B (subprocess / file I/O).
+Test tier: Category A (pure) + Category B (subprocess / file I/O) + Category C (sqlite).
 """
 
 import json
@@ -43,74 +47,146 @@ def test_portfolio_io_is_importable():
     assert hasattr(mod, "replace_block"),        "Missing replace_block"
 
 
-# ── load_portfolio_state: broker total as denominator ────────────────────────
+# ── load_portfolio_state: SQLite-backed (Wave 3+) ────────────────────────────
+#
+# The four tests below replace the pre-Wave-3 JSON-fixture tests
+# (test_load_portfolio_state_returns_broker_total,
+# test_load_portfolio_state_broker_total_differs_from_computed,
+# test_load_portfolio_state_shares_map, test_load_portfolio_state_flat_list_fallback).
+# Those tested a portfolio.json-specific contract (totals.totalUSD,
+# flat-list fallback) that no longer exists once load_portfolio_state()
+# delegates to SQLite — see docstring above. PORTFOLIO_WITH_TOTALS and
+# PORTFOLIO_FLAT fixtures are kept on disk only for historical reference; they
+# are intentionally unused now.
 
-def test_load_portfolio_state_returns_broker_total():
-    """total_usd must come from totals.totalUSD, NOT from summing shares×price."""
-    from portfolio_io import load_portfolio_state
-    state = load_portfolio_state(PORTFOLIO_WITH_TOTALS)
+def _build_test_db(tmp_path, rows):
+    """Build a throwaway domain_model.sqlite with the given (account, symbol,
+    qty, price) rows and return its path. Shared helper for the SQLite-backed
+    load_portfolio_state tests below.
+    """
+    from domain_model.db_client import initialize_db
+    from domain_model.account_repository import upsert_account
+    from domain_model.investment_repository import resolve_investment
+    from domain_model.investment_price_repository import upsert_investment_price
+    from domain_model.account_investment_repository import upsert_account_investment
 
-    # totals.totalUSD = 4500 in fixture; shares×price sum = 10×150 + 5×400 + 100×10 = 4500
-    # NOTE: fixture was crafted so sums match — the KEY test is the SOURCE, not the value.
-    # We verify by checking the test fixture JSON directly.
-    raw = json.loads(PORTFOLIO_WITH_TOTALS.read_text())
-    expected_total = raw["totals"]["totalUSD"]
-
-    assert state["total_usd"] == expected_total, (
-        f"total_usd={state['total_usd']} but broker total is {expected_total}. "
-        "load_portfolio_state must read totals.totalUSD, not compute from shares×price."
-    )
-
-
-def test_load_portfolio_state_broker_total_differs_from_computed():
-    """When broker total ≠ shares×price sum, load_portfolio_state uses broker total."""
-    import tempfile, json
-    from portfolio_io import load_portfolio_state
-
-    # Craft portfolio where broker total (4999) != shares×price (3500)
-    data = {
-        "holdings": [
-            {"symbol": "AAPL", "shares": 10, "price": 150.0},
-            {"symbol": "MSFT", "shares": 5,  "price": 400.0},
-        ],
-        "totals": {"totalUSD": 4999.0, "holdingsUSD": 3500.0}
-    }
-    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
-        json.dump(data, f)
-        p = Path(f.name)
-
-    try:
-        state = load_portfolio_state(p)
-        assert state["total_usd"] == 4999.0, (
-            f"Expected broker total 4999.0, got {state['total_usd']}. "
-            "Shares×price sum would be 3500.0 — wrong denominator."
+    db_path = str(tmp_path / "test.sqlite")
+    conn = initialize_db(db_path)
+    seen_accounts: set[str] = set()
+    for account_id, symbol, qty, price in rows:
+        if account_id not in seen_accounts:
+            upsert_account(conn, account_id, account_id, account_id)
+            seen_accounts.add(account_id)
+        inv_id = resolve_investment(conn, symbol, asset_class="EQUITY", currency="USD")
+        upsert_investment_price(conn, inv_id, price=price, currency="USD", fetched_at="2026-07-20T00:00:00Z")
+        upsert_account_investment(
+            conn, account_id, inv_id, quantity=qty, average_cost=price,
+            book_value=qty * price, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
         )
+    conn.close()
+    return db_path
+
+
+def test_load_portfolio_state_total_is_account_rollup_not_ad_hoc(tmp_path, monkeypatch):
+    """total_usd must equal the SUM of per-account market values (the single,
+    authoritative computation in portfolio_repository.get_portfolio_total_value),
+    never a separately re-derived shares×price sum computed inside portfolio_io.
+    """
+    sys.path.insert(0, str(PY_SERVICES))
+    import portfolio_io
+    from domain_model.db_client import initialize_db
+    from domain_model.portfolio_repository import get_portfolio_total_value
+
+    db_path = _build_test_db(tmp_path, [("TFSA", "AAPL", 10, 150.0), ("RRSP", "MSFT", 5, 400.0)])
+    monkeypatch.setattr(portfolio_io, "_DB_PATH", db_path)
+
+    state = portfolio_io.load_portfolio_state(Path("unused.json"))
+
+    conn = initialize_db(db_path)
+    try:
+        expected_total = get_portfolio_total_value(conn)
     finally:
-        p.unlink()
+        conn.close()
+
+    assert state["total_usd"] == expected_total
+    assert state["total_usd"] == 10 * 150.0 + 5 * 400.0
 
 
-def test_load_portfolio_state_shares_map():
-    """shares map must include all holdings, with PSU.U.TO normalized to PSU-U.TO."""
-    from portfolio_io import load_portfolio_state
-    state = load_portfolio_state(PORTFOLIO_WITH_TOTALS)
+def test_load_portfolio_state_total_reflects_multi_account_positions(tmp_path, monkeypatch):
+    """Positions in different accounts for different symbols must all roll up
+    into a single portfolio-wide total_usd — not just the first account seen.
+    """
+    sys.path.insert(0, str(PY_SERVICES))
+    import portfolio_io
 
-    assert "AAPL" in state["shares"]
-    assert "MSFT" in state["shares"]
-    assert "PSU-U.TO" in state["shares"], "PSU.U.TO must be normalized to PSU-U.TO"
-    assert "PSU.U.TO" not in state["shares"], "PSU.U.TO alias must be removed after normalization"
+    db_path = _build_test_db(tmp_path, [("TFSA", "AAPL", 10, 150.0), ("RRSP", "AAPL", 5, 150.0)])
+    monkeypatch.setattr(portfolio_io, "_DB_PATH", db_path)
+
+    state = portfolio_io.load_portfolio_state(Path("unused.json"))
+    assert state["total_usd"] == 15 * 150.0
+
+
+def test_load_portfolio_state_shares_map(tmp_path, monkeypatch):
+    """shares map must include all holdings, aggregated by symbol across accounts."""
+    sys.path.insert(0, str(PY_SERVICES))
+    import portfolio_io
+
+    db_path = _build_test_db(tmp_path, [("TFSA", "AAPL", 10, 150.0), ("RRSP", "MSFT", 5, 400.0)])
+    monkeypatch.setattr(portfolio_io, "_DB_PATH", db_path)
+
+    state = portfolio_io.load_portfolio_state(Path("unused.json"))
     assert state["shares"]["AAPL"] == 10.0
     assert state["shares"]["MSFT"] == 5.0
 
 
-def test_load_portfolio_state_flat_list_fallback():
-    """Flat list format (no totals key) must still work — total computed from shares×price."""
-    from portfolio_io import load_portfolio_state
-    state = load_portfolio_state(PORTFOLIO_FLAT)
+def test_load_portfolio_state_empty_db_returns_empty_not_crash(tmp_path, monkeypatch):
+    """An empty (freshly initialized) domain_model.sqlite must return empty
+    shares/prices and a zero total, not raise.
+    """
+    sys.path.insert(0, str(PY_SERVICES))
+    import portfolio_io
 
-    # Flat list: [{"symbol": "AAPL", "shares": 10, "price": 150}, {"symbol": "MSFT", ...}]
-    # No totals.totalUSD — must fall back to computed total
-    assert state["total_usd"] > 0, "Flat list fallback must produce non-zero total"
-    assert "AAPL" in state["shares"]
+    db_path = _build_test_db(tmp_path, [])
+    monkeypatch.setattr(portfolio_io, "_DB_PATH", db_path)
+
+    state = portfolio_io.load_portfolio_state(Path("unused.json"))
+    assert state["shares"] == {}
+    assert state["prices"] == {}
+    assert state["total_usd"] == 0
+
+
+def test_load_portfolio_state_reads_from_sqlite_not_json(tmp_path, monkeypatch):
+    """After Wave 3's cutover, load_portfolio_state() must read domain_model.sqlite,
+    not portfolio.json -- even if a stale portfolio.json still exists on disk.
+    """
+    sys.path.insert(0, str(PY_SERVICES))
+    from domain_model.db_client import initialize_db
+    from domain_model.account_repository import upsert_account
+    from domain_model.investment_repository import resolve_investment
+    from domain_model.investment_price_repository import upsert_investment_price
+    from domain_model.account_investment_repository import upsert_account_investment
+
+    db_path = str(tmp_path / "test.sqlite")
+    conn = initialize_db(db_path)
+    upsert_account(conn, "TFSA", "TFSA", "TFSA")
+    aapl_id = resolve_investment(conn, "AAPL", asset_class="EQUITY", currency="USD")
+    upsert_investment_price(conn, aapl_id, price=200.0, currency="USD", fetched_at="2026-07-20T00:00:00Z")
+    upsert_account_investment(
+        conn, "TFSA", aapl_id, quantity=5, average_cost=180.0,
+        book_value=900.0, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
+    )
+    conn.close()
+
+    import portfolio_io
+    monkeypatch.setattr(portfolio_io, "_DB_PATH", db_path)
+
+    # A stale portfolio.json exists but must NOT be read.
+    stale_json = tmp_path / "portfolio.json"
+    stale_json.write_text('{"holdings": [{"symbol": "MSFT", "shares": 999, "price": 1.0}]}')
+
+    state = portfolio_io.load_portfolio_state(stale_json)
+    assert state["shares"] == {"AAPL": 5}
+    assert "MSFT" not in state["shares"]
 
 
 # ── compute_weights ────────────────────────────────────────────────────────────
