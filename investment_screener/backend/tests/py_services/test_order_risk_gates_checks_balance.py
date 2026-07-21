@@ -104,31 +104,51 @@ def test_check_available_balance_fetches_cash_when_not_supplied(monkeypatch):
     assert result["cash_available"] == 5000.0
 
 
-# --- get_available_cash() ------------------------------------------------
+# --- get_available_cash() (Wave 3: reads domain_model.sqlite CASH_USD rows) ---
+#
+# The five tests below replace the pre-Wave-3 portfolio.json-fixture tests.
+# Cash is a real CASH_USD account_investment row (Wave 0 decision 5), so both
+# the portfolio-wide total and per-account cash are derived from SQLite via
+# portfolio_repository.get_total_cash_usd/get_account_cash_usd — never from
+# portfolio.json's totals.cashUSD / tvSnapshot balances.
+
+
+def _seed_cash_db(tmp_path, cash_rows):
+    """Build a throwaway domain_model.sqlite seeding CASH_USD quantity per
+    account (quantity IS the USD dollar amount). Returns the db path."""
+    sys.path.insert(0, str(SCRIPT_DIR))
+    from domain_model.db_client import initialize_db  # noqa: PLC0415
+    from domain_model.account_repository import upsert_account  # noqa: PLC0415
+    from domain_model.investment_repository import resolve_investment  # noqa: PLC0415
+    from domain_model.investment_price_repository import upsert_investment_price  # noqa: PLC0415
+    from domain_model.account_investment_repository import upsert_account_investment  # noqa: PLC0415
+
+    db_path = str(tmp_path / "domain_model.sqlite")
+    conn = initialize_db(db_path)
+    cash_id = resolve_investment(conn, "CASH_USD", asset_class="CASH", currency="USD")
+    upsert_investment_price(conn, cash_id, price=1.0, currency="USD", fetched_at="2026-07-20T00:00:00Z")
+    for account_id, amount in cash_rows:
+        upsert_account(conn, account_id, account_id, account_id)
+        upsert_account_investment(
+            conn, account_id, cash_id, quantity=amount, average_cost=1.0,
+            book_value=amount, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
+        )
+    conn.close()
+    return db_path
 
 
 def test_get_available_cash_reads_portfolio_wide_total(tmp_path, monkeypatch):
-    """A real (temp file) portfolio.json fixture with totals.cashUSD; account=None -> correct value."""
-    portfolio_file = tmp_path / "portfolio.json"
-    portfolio_file.write_text(json.dumps({"totals": {"cashUSD": 1234.56}}))
-    monkeypatch.setattr(order_risk_gates, "PORTFOLIO_PATH", portfolio_file)
+    """account=None -> SUM of all accounts' CASH_USD quantity."""
+    db_path = _seed_cash_db(tmp_path, [("TFSA", 1000.0), ("RRSP", 234.56)])
+    monkeypatch.setattr(order_risk_gates, "DB_PATH", db_path)
 
     assert get_available_cash() == 1234.56
 
 
 def test_get_available_cash_reads_specific_account_balance(tmp_path, monkeypatch):
-    """Multiple tvSnapshot.snapshots[] entries; account='TFSA' -> that account's cashUSD, not the total."""
-    portfolio_file = tmp_path / "portfolio.json"
-    portfolio_file.write_text(json.dumps({
-        "totals": {"cashUSD": 9999.0},
-        "tvSnapshot": {
-            "snapshots": [
-                {"accountType": "TFSA", "balances": {"cashUSD": 1000.0}},
-                {"accountType": "RRSP", "balances": {"cashUSD": 333.0}},
-            ]
-        },
-    }))
-    monkeypatch.setattr(order_risk_gates, "PORTFOLIO_PATH", portfolio_file)
+    """account='TFSA' -> that account's CASH_USD quantity, not the portfolio total."""
+    db_path = _seed_cash_db(tmp_path, [("TFSA", 1000.0), ("RRSP", 333.0)])
+    monkeypatch.setattr(order_risk_gates, "DB_PATH", db_path)
 
     assert get_available_cash(account="TFSA") == 1000.0
     assert get_available_cash(account="RRSP") == 333.0
@@ -136,26 +156,22 @@ def test_get_available_cash_reads_specific_account_balance(tmp_path, monkeypatch
 
 def test_get_available_cash_returns_none_for_unknown_account(tmp_path, monkeypatch):
     """account='NONEXISTENT' -> None, no exception."""
-    portfolio_file = tmp_path / "portfolio.json"
-    portfolio_file.write_text(json.dumps({
-        "tvSnapshot": {"snapshots": [{"accountType": "TFSA", "balances": {"cashUSD": 1000.0}}]},
-    }))
-    monkeypatch.setattr(order_risk_gates, "PORTFOLIO_PATH", portfolio_file)
+    db_path = _seed_cash_db(tmp_path, [("TFSA", 1000.0)])
+    monkeypatch.setattr(order_risk_gates, "DB_PATH", db_path)
 
     assert get_available_cash(account="NONEXISTENT") is None
 
 
-def test_get_available_cash_returns_none_when_file_missing(tmp_path, monkeypatch):
-    """PORTFOLIO_PATH points at a nonexistent file -> None, no exception."""
-    monkeypatch.setattr(order_risk_gates, "PORTFOLIO_PATH", tmp_path / "does_not_exist.json")
+def test_get_available_cash_returns_none_when_no_cash_rows(tmp_path, monkeypatch):
+    """An empty DB (no CASH_USD rows) -> None, no exception."""
+    db_path = _seed_cash_db(tmp_path, [])
+    monkeypatch.setattr(order_risk_gates, "DB_PATH", db_path)
 
     assert get_available_cash() is None
 
 
-def test_get_available_cash_returns_none_on_malformed_json(tmp_path, monkeypatch):
-    """The temp file contains invalid JSON -> None, no exception."""
-    portfolio_file = tmp_path / "portfolio.json"
-    portfolio_file.write_text("{not valid json")
-    monkeypatch.setattr(order_risk_gates, "PORTFOLIO_PATH", portfolio_file)
+def test_get_available_cash_never_raises_on_bad_db_path(tmp_path, monkeypatch):
+    """A nonexistent/invalid DB path degrades to None (or an empty total), never raises."""
+    monkeypatch.setattr(order_risk_gates, "DB_PATH", str(tmp_path / "does_not_exist.sqlite"))
 
     assert get_available_cash() is None
