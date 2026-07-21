@@ -23,6 +23,53 @@ tests), TypeScript/Express (`better-sqlite3`-equivalent already used by `Investm
 `WatchlistService.ts` from Wave 2 — mirror that pattern for TS-side account/account_investment
 reads).
 
+## SQLite-First Design Principles (binding on every remaining task, added after Task 2's review)
+
+Task 2's first draft looped over rows fetched one at a time via repository helper calls, reconstructing
+the old JSON-tree shape in Python rather than expressing the calculation against the relational schema.
+Task 0 separately found the root cause of the RRSP/TFSA bug was the same failure mode one level up:
+reasoning about "a portfolio's flat list of holdings" instead of "accounts, each with their own
+holdings." Both are instances of one mistake — carrying JSON-shaped thinking into SQLite-shaped code.
+Every remaining task in this plan (Tasks 3 onward) must follow these principles, not just Task 2:
+
+1. **The database is the source of truth for the business model.** Do not mentally start from
+   `portfolio → accounts → holdings`. Start from `account` / `account_investment` / `investment` /
+   `investment_price` — the schema already defines the entities and relationships; don't re-derive a
+   document shape on top of it.
+2. **Think in entities and relationships, not loops over a document.** `account` 1→many
+   `account_investment`; `investment` 1→many `account_investment`; `investment` 1→many
+   `investment_price`. A calculation is a query over these relationships, not a `for account in
+   portfolio: for holding in account["holdings"]:` walk.
+3. **Push set operations into SQL** (`JOIN`, `GROUP BY`, `SUM`, `COUNT`, `AVG`) — let SQLite do
+   relational work. A Python loop calling a repository getter once per row, one row at a time, to
+   assemble a total is the anti-pattern this principle exists to catch (this is exactly what Task 2's
+   first draft did).
+4. **Store facts, calculate aggregates.** Store shares, price, cash, account metadata. Calculate
+   market value, account value, portfolio value, allocations — never store a calculated aggregate in
+   its own column or table (ADR-030's rule, restated here as the general principle behind it).
+5. **Calculate upward from the lowest grain.** `account_investment` is the lowest-grain financial fact
+   in this schema. A portfolio total is derived from `account_investment` rows directly (via
+   per-account rollups), never from "portfolio total ← account total ← holding total" chains that
+   could each drift independently.
+6. **Preserve account boundaries structurally, not just correctly-in-this-instance.** The direct fix
+   for the RRSP/TFSA bug: `GROUP BY account_id` is a first-class step in any aggregation, and a
+   portfolio-level total must always be expressible as `SUM(account-level totals)`, never a query that
+   flattens across accounts before an account-level number was ever computed (Task 2's
+   `get_portfolio_total_value() = sum(get_account_market_values().values())` is the reference
+   implementation of this principle — later tasks introducing new aggregations should follow the same
+   shape).
+7. **Repositories expose business queries, not just row accessors.** Prefer `get_account_market_value()`
+   / `get_portfolio_total_value()` / (a future) `get_account_allocations()` over forcing every caller to
+   assemble the world from `get_account()`/`get_holding()`/`get_price()` primitives one at a time. SQL
+   does the heavy lifting inside the repository function; callers get an answer, not assembly parts.
+8. **Stop preserving JSON thinking — this is the root-cause principle behind the other seven.** The
+   failure mode to actively watch for in every remaining task: *take the JSON structure → recreate it
+   in memory → calculate exactly as the old JSON-based code did → store the result in SQLite.* That is
+   not a migration, it's a translation that keeps the old bugs' shape. Instead: start from the business
+   question, ask which tables and relationships answer it, express that as SQL, return the result. The
+   SQLite schema should drive the implementation of every remaining task, not the retired JSON model
+   `portfolio_io.py` or the flat `holdings[]` array used to represent.
+
 ## Global Constraints
 
 (Copied verbatim from the spec and CLAUDE.md — every task below implicitly includes these.)
