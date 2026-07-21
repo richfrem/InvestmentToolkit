@@ -3,27 +3,68 @@
 apply_portfolio_updates.py - Python utility script.
 
 Purpose:
-    TBD
+    One-off manual patch tool: hardcoded per-ticker share/avgFillPrice corrections
+    for SNDK/PSU.U.TO/BE/IREN across TFSA and RRSP, then re-aggregates the flat
+    holdings[] array from the patched per-account positions.
 
 Layer:
     Backend / Python Services
 
 Usage Examples:
-    TBD
+    python3 apply_portfolio_updates.py
 
 Key Functions (Index):
     - main()
 
 Key Input Dependencies:
-    None
+    investment_screener/backend/data/portfolio.json
 
 Key Output Dependencies:
-    None
+    investment_screener/backend/data/portfolio.json
+    investment_screener/backend/data/domain_model.sqlite (Wave 3 Task 5.6:
+    patched TFSA/RRSP positions are also upserted as account_investment rows)
 """
 import json
+import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 PORTFOLIO_PATH = Path("investment_screener/backend/data/portfolio.json")
+DB_PATH = Path("investment_screener/backend/data/domain_model.sqlite")
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+
+def _persist_account_positions_to_db(db_path: str, account_id: str, positions: list[dict]) -> int:
+    """Upsert every real position in one account's patched position list as an
+    account_investment row. Mirrors migrate_portfolio_to_sqlite.py's per-holding
+    write shape -- one upsert_account_investment call per real position, using
+    account_investment_repository directly (no full portfolio_repository.py
+    abstraction needed for this single-holding CLI tool, per this task's brief).
+    """
+    from domain_model.db_client import initialize_db
+    from domain_model.account_repository import upsert_account
+    from domain_model.account_investment_repository import upsert_account_investment
+    from domain_model.investment_repository import resolve_investment
+
+    conn = initialize_db(db_path)
+    upsert_account(conn, account_id, account_id, account_id)
+    now = datetime.now(timezone.utc).isoformat()
+    written = 0
+    for pos in positions:
+        quantity = float(pos.get("quantity") or 0)
+        if quantity <= 0:
+            continue  # closed/flattened position -- no noise row
+        symbol = pos["symbol"]
+        investment_id = resolve_investment(conn, symbol, asset_class="EQUITY", currency="USD")
+        upsert_account_investment(
+            conn, account_id, investment_id, quantity=quantity,
+            average_cost=pos.get("avgFillPrice"), book_value=None,
+            currency="USD", last_synced_at=now,
+        )
+        written += 1
+    return written
+
 
 def main():
     print("Loading portfolio database...")
@@ -134,6 +175,12 @@ def main():
     with open(PORTFOLIO_PATH, "w") as f:
         json.dump(data, f, indent=2)
     print("Successfully saved updated portfolio database.")
+
+    # Wave 3 Task 5.6: also persist the patched real per-account positions to
+    # domain_model.sqlite (additive -- portfolio.json write above is unchanged).
+    tfsa_written = _persist_account_positions_to_db(str(DB_PATH), "TFSA", tfsa_positions)
+    rrsp_written = _persist_account_positions_to_db(str(DB_PATH), "RRSP", rrsp_positions)
+    print(f"Persisted {tfsa_written} TFSA + {rrsp_written} RRSP position(s) to domain_model.sqlite.")
 
 if __name__ == "__main__":
     main()
