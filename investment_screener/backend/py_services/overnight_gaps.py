@@ -15,7 +15,8 @@ Usage:
     python3 overnight_gaps.py --threshold 3.0  # custom threshold (default: 2.0%)
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Measures pre-market gaps)
+    - investment_screener/backend/data/domain_model.sqlite (Measures pre-market gaps;
+      Wave 3 Task 6 cutover — previously portfolio.json)
 
 Layer:
     Backend / Python Services
@@ -51,9 +52,9 @@ import yfinance as yf
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.investment_repository import list_investments  # noqa: E402
+from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
 
 REPO_ROOT      = Path(__file__).resolve().parents[3]
-PORTFOLIO_PATH = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 DB_PATH        = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
 SKIP_SUFFIXES = (".TO", ".V")          # Canadian markets — no extended-hours data via yfinance
@@ -80,13 +81,14 @@ def _is_scannable(ticker: str) -> bool:
 
 # Load active tickers from portfolio and watchlist configs
 def _load_tickers(db_path: Path = DB_PATH) -> list[str]:
-    """Load scannable tickers from portfolio.json union the watchlisted investments.
+    """Load scannable tickers from held positions union the watchlisted investments.
 
     Mirrors the user's curated TradingView BOATS-mylist: active holdings
     plus researched watchlist names, minus Canadian and futures symbols.
 
-    Watchlist membership is read from ``investment.is_watchlisted`` in
-    domain_model.sqlite (Wave 2 Task 10 cutover) instead of watchlist.json.
+    Both holdings (``account_investment``) and watchlist membership
+    (``investment.is_watchlisted``) are read from domain_model.sqlite (Wave 3
+    Task 6 cutover — previously portfolio.json for holdings).
 
     Returns:
         Deduplicated list of US equity ticker symbols, order: holdings first.
@@ -94,17 +96,15 @@ def _load_tickers(db_path: Path = DB_PATH) -> list[str]:
     seen: set[str] = set()
     tickers: list[str] = []
 
-    if PORTFOLIO_PATH.exists():
-        with open(PORTFOLIO_PATH) as f:
-            for h in json.load(f).get("holdings", []):
-                sym = h.get("symbol", "")
+    if db_path.exists():
+        conn = initialize_db(str(db_path))
+        try:
+            state = load_portfolio_state_from_db(conn)
+            for sym in state["shares"]:
                 if sym and _is_scannable(sym) and sym not in seen:
                     seen.add(sym)
                     tickers.append(sym)
 
-    if db_path.exists():
-        conn = initialize_db(str(db_path))
-        try:
             for inv in list_investments(conn, is_watchlisted=True):
                 sym = inv.get("symbol", "")
                 if sym and _is_scannable(sym) and sym not in seen:
@@ -160,7 +160,7 @@ def get_overnight_gaps(
     """Return portfolio holdings with extended-hours moves >= threshold_pct.
 
     Args:
-        tickers: Explicit ticker list. If None, loads from portfolio.json + watchlist.json.
+        tickers: Explicit ticker list. If None, loads from held positions + watchlist (domain_model.sqlite).
         threshold_pct: Minimum absolute % move to include in results.
 
     Returns:

@@ -5,7 +5,6 @@ Run:
 """
 from __future__ import annotations
 
-import json
 import sys
 from pathlib import Path
 
@@ -15,13 +14,38 @@ sys.path.insert(0, str(PY_SERVICES))
 
 import overnight_gaps  # noqa: E402
 from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.account_repository import upsert_account  # noqa: E402
 from domain_model.investment_repository import resolve_investment, update_investment_fields  # noqa: E402
+from domain_model.investment_price_repository import upsert_investment_price  # noqa: E402
+from domain_model.account_investment_repository import upsert_account_investment  # noqa: E402
 
 
 def _make_db_with_watchlisted(tmp_path, tickers):
     db_path = tmp_path / "domain_model.sqlite"
     conn = initialize_db(str(db_path))
     for t in tickers:
+        investment_id = resolve_investment(conn, t)
+        update_investment_fields(conn, investment_id, is_watchlisted=True)
+    conn.close()
+    return db_path
+
+
+def _make_db_with_holdings(tmp_path, tickers, watchlisted=None):
+    """Seed domain_model.sqlite with held positions (account_investment rows)
+    plus optional watchlisted-only investments — Wave 3 Task 6 cutover of
+    _load_tickers() off portfolio.json onto SQLite.
+    """
+    db_path = tmp_path / "domain_model.sqlite"
+    conn = initialize_db(str(db_path))
+    upsert_account(conn, "TFSA", "TFSA", "TFSA")
+    for t in tickers:
+        investment_id = resolve_investment(conn, t, asset_class="EQUITY", currency="USD")
+        upsert_investment_price(conn, investment_id, price=100.0, currency="USD", fetched_at="2026-07-20T00:00:00Z")
+        upsert_account_investment(
+            conn, "TFSA", investment_id, quantity=1, average_cost=100.0,
+            book_value=100.0, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
+        )
+    for t in watchlisted or []:
         investment_id = resolve_investment(conn, t)
         update_investment_fields(conn, investment_id, is_watchlisted=True)
     conn.close()
@@ -51,38 +75,28 @@ class TestIsScannable:
 
 
 class TestLoadTickers:
-    def test_loads_from_portfolio_and_watchlist(self, tmp_path, monkeypatch):
-        portfolio = tmp_path / "portfolio.json"
-        portfolio.write_text(json.dumps({"holdings": [
-            {"symbol": "NVDA"}, {"symbol": "AAPL"}
-        ]}))
-        db_path = _make_db_with_watchlisted(tmp_path, ["MSFT", "TSLA"])
-        monkeypatch.setattr(overnight_gaps, "PORTFOLIO_PATH", portfolio)
+    def test_loads_from_holdings_and_watchlist_sqlite(self, tmp_path):
+        """Wave 3 Task 6: holdings now come from account_investment in
+        domain_model.sqlite, not portfolio.json."""
+        db_path = _make_db_with_holdings(tmp_path, ["NVDA", "AAPL"], watchlisted=["MSFT", "TSLA"])
         result = overnight_gaps._load_tickers(db_path)
-        assert result == ["NVDA", "AAPL", "MSFT", "TSLA"]
+        assert set(result) == {"NVDA", "AAPL", "MSFT", "TSLA"}
 
-    def test_deduplicates_across_sources(self, tmp_path, monkeypatch):
-        portfolio = tmp_path / "portfolio.json"
-        portfolio.write_text(json.dumps({"holdings": [{"symbol": "NVDA"}]}))
-        db_path = _make_db_with_watchlisted(tmp_path, ["NVDA", "AAPL"])
-        monkeypatch.setattr(overnight_gaps, "PORTFOLIO_PATH", portfolio)
+    def test_deduplicates_across_sources(self, tmp_path):
+        db_path = _make_db_with_holdings(tmp_path, ["NVDA"], watchlisted=["NVDA", "AAPL"])
         result = overnight_gaps._load_tickers(db_path)
-        assert result == ["NVDA", "AAPL"]
+        assert result.count("NVDA") == 1
+        assert set(result) == {"NVDA", "AAPL"}
 
-    def test_missing_portfolio_returns_watchlist_only(self, tmp_path, monkeypatch):
-        missing = tmp_path / "missing.json"
+    def test_missing_holdings_returns_watchlist_only(self, tmp_path):
         db_path = _make_db_with_watchlisted(tmp_path, ["MSFT"])
-        monkeypatch.setattr(overnight_gaps, "PORTFOLIO_PATH", missing)
         result = overnight_gaps._load_tickers(db_path)
         assert result == ["MSFT"]
 
-    def test_missing_watchlist_returns_portfolio_only(self, tmp_path, monkeypatch):
-        portfolio = tmp_path / "portfolio.json"
-        portfolio.write_text(json.dumps({"holdings": [{"symbol": "NVDA"}]}))
+    def test_missing_db_returns_empty(self, tmp_path):
         missing_db = tmp_path / "missing.sqlite"
-        monkeypatch.setattr(overnight_gaps, "PORTFOLIO_PATH", portfolio)
         result = overnight_gaps._load_tickers(missing_db)
-        assert result == ["NVDA"]
+        assert result == []
 
 
 class TestGetOvernightGaps:
@@ -148,8 +162,7 @@ class TestGetOvernightGaps:
         assert result == []
 
     def test_explicit_tickers_override_load(self, monkeypatch, tmp_path):
-        # Patch PORTFOLIO_PATH to a missing file so _load_tickers would return []
-        monkeypatch.setattr(overnight_gaps, "PORTFOLIO_PATH", tmp_path / "missing.json")
+        # Patch DB_PATH to a missing file so _load_tickers would return []
         monkeypatch.setattr(overnight_gaps, "DB_PATH", tmp_path / "missing.sqlite")
         monkeypatch.setattr(overnight_gaps, "_fetch_gap",
                             lambda t: self._make_gap(t, 3.0))
