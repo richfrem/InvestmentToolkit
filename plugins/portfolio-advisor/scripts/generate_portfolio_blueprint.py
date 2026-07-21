@@ -5,8 +5,13 @@ generate_portfolio_blueprint.py (Python Service)
 
 Purpose:
     Generates the "Portfolio Blueprint" section (Section IV) for the investment thesis document.
-    Synthesizes target-portfolio.json (thesis targets) with portfolio.json (live holdings) to 
-    produce an enriched, data-driven Markdown table grouped by sub-strategy.
+    Synthesizes thesis targets (domain_model.sqlite ``investment`` rows) with live holdings
+    (domain_model.sqlite, via portfolio_io.load_portfolio_state()) to produce an enriched,
+    data-driven Markdown table grouped by sub-strategy.
+
+    Wave 3 full cutover: ALL portfolio data — per-position shares/price AND the
+    authoritative total — is sourced from domain_model.sqlite. No portfolio.json
+    read remains anywhere in this file.
 
 Layer: Backend / Python Services / Report Generation
 
@@ -26,7 +31,7 @@ Key Functions:
     - build_actual_map() / build_thesis_map() - Normalize disparate data sources into unified maps for aggregation
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
+    - investment_screener/backend/data/domain_model.sqlite (Wave 3+; portfolio.json is no longer read)
 """
 
 import argparse
@@ -45,7 +50,27 @@ DOMAIN_DB     = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlit
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from ticker_aliases import is_cash  # noqa: E402
-from portfolio_io import load_portfolio_state, replace_block  # noqa: E402
+from portfolio_io import load_portfolio_state, compute_weights, replace_block  # noqa: E402
+
+
+def _compute_current_weights(db_path: Path | None = None) -> dict:
+    """Wave 3 replacement for validate_weights.compute_current(PORTFOLIO_JSON).
+
+    Sources shares/prices/total exclusively from
+    portfolio_io.load_portfolio_state() (SQLite-backed) and derives per-ticker
+    weight % via portfolio_io.compute_weights() — the same total_usd
+    denominator used everywhere else in this file, so this can never drift
+    from build_actual_map()'s totals. Returns the same shape the retired
+    validate_weights.compute_current() returned: {"total", "holdings",
+    "total_value"}.
+    """
+    state = load_portfolio_state(db_path or DOMAIN_DB)
+    holdings = compute_weights(state["shares"], state["prices"], state["total_usd"])
+    return {
+        "total": round(sum(holdings.values()), 4),
+        "holdings": holdings,
+        "total_value": state["total_usd"],
+    }
 
 SUB_STRATEGY_NAMES = {
     "sa-asi-race":         "Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)",
@@ -128,45 +153,35 @@ def _get_latest_ai_agent_projection(ticker: str, db_path: Path | None = None) ->
         return None
 
 
-def build_actual_map(portfolio: dict | list) -> tuple[dict, float]:
-    """Build actual-position map from portfolio.json.
+def build_actual_map(db_path: Path | None = None) -> tuple[dict, float]:
+    """Build actual-position map entirely from domain_model.sqlite.
 
-    Uses load_portfolio_state() so the total comes from totals.totalUSD
-    (broker authoritative), never computed from shares×price.
+    Wave 3 full cutover: shares, prices, and the authoritative total all come
+    from portfolio_io.load_portfolio_state() (which delegates to
+    domain_model.portfolio_repository.load_portfolio_state_from_db()). No
+    portfolio.json read remains here — the ``db_path`` argument is passed
+    through for signature compatibility/testability only; load_portfolio_state()
+    itself always reads the module-level ``portfolio_io._DB_PATH``.
     """
-    import tempfile
-    # Accept both list and dict; write to tmp for load_portfolio_state
-    if isinstance(portfolio, list):
-        data = portfolio
-        total_ref: dict = {}
-    else:
-        data = portfolio.get("holdings", [])
-        total_ref = portfolio.get("totals") or {}
+    state = load_portfolio_state(db_path or DOMAIN_DB)
 
-    # Use portfolio_io for safe total resolution
-    tmp = Path(tempfile.mktemp(suffix=".json"))
-    tmp.write_text(json.dumps({"holdings": data, "totals": total_ref}))
-    try:
-        state = load_portfolio_state(tmp)
-    finally:
-        tmp.unlink(missing_ok=True)
-
+    shares_map = state["shares"]
+    prices_map = state["prices"]
     total = state["total_usd"]
+
     actual: dict = {}
-    for h in data:
-        sym = h.get("symbol") or h.get("ticker", "")
+    for sym, shares in shares_map.items():
         if not sym:
             continue
-        shares = float(h.get("shares") or 0)
-        price  = float(h.get("price") or h.get("book_price") or 0)
-        val    = shares * price
+        price = float(prices_map.get(sym) or 0)
+        val   = float(shares) * price
         actual[sym] = {
-            "shares":    shares,
+            "shares":    float(shares),
             "price":     price,
-            "book":      float(h.get("book_price") or 0),
+            "book":      0.0,  # not exposed by load_portfolio_state(); unused downstream
             "value":     round(val, 2),
             "actualPct": round(val / total * 100, 2) if total else 0,
-            "name":      h.get("name", sym),
+            "name":      sym,
         }
     return actual, total
 
@@ -230,11 +245,9 @@ def assign_action(ticker: str, actual_pct: float, target_pct: float, existing_ac
 def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> str:
     today = date.today().isoformat()
 
-    # ── Current % still from portfolio.json (broker holdings, not migrated);
-    #    target % now sourced from investment.target_weight (Wave 2 rewire).
-    sys.path.insert(0, str(Path(__file__).parent))
-    from validate_weights import compute_current
-    current_data = compute_current(PORTFOLIO_JSON)
+    # ── Current % and target % both sourced from domain_model.sqlite
+    #    (Wave 3 full cutover — no portfolio.json read remains).
+    current_data = _compute_current_weights(DOMAIN_DB)
     target_data  = {"holdings": _load_target_weights(DOMAIN_DB)}
 
     # Group by sub-strategy
@@ -251,7 +264,7 @@ def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> 
     lines = []
     # Note: the "## IV. Portfolio Blueprint" header lives OUTSIDE the AUTO_UPDATE block.
     # generate_section() outputs only the block BODY so replace_block() can insert it cleanly.
-    lines.append(f"*Generated {today} · Source: `validate_weights.py` × `target-portfolio.json` × `portfolio.json` (Questrade live)*")
+    lines.append(f"*Generated {today} · Source: `domain_model.sqlite` (investment + account_investment, Questrade-synced live holdings)*")
     lines.append(f"*Portfolio value: ${total_value:,.0f}. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*")
     lines.append("")
 
@@ -458,19 +471,20 @@ def main():
     parser.add_argument("--db", default=str(DOMAIN_DB), help="Path to domain_model.sqlite")
     args = parser.parse_args()
 
-    portfolio = load_json(Path(args.portfolio))
-
-    actual_map, total_value = build_actual_map(portfolio)
+    # Wave 3 full cutover: portfolio data (per-position shares/price AND the
+    # total) is sourced entirely from domain_model.sqlite via
+    # portfolio_io.load_portfolio_state(). --portfolio is retained only for
+    # CLI/back-compat and passthrough to generate_sub_strategy_blocks.run()
+    # below; it is no longer read for shares/price/total here.
+    actual_map, total_value = build_actual_map(Path(args.db))
     thesis_map = build_thesis_map(Path(args.db))
 
     section = generate_section(thesis_map, actual_map, total_value)
 
     if args.write:
         md_path = Path(args.thesis_md)
-        # 1. Load weights: current % from portfolio.json, target % from sqlite
-        sys.path.insert(0, str(Path(__file__).parent))
-        from validate_weights import compute_current
-        current_data = compute_current(PORTFOLIO_JSON)
+        # 1. Load weights: current % and target % both from sqlite
+        current_data = _compute_current_weights(Path(args.db))
         target_data  = {"holdings": _load_target_weights(Path(args.db))}
 
         # 2. Update Section IV (blueprint)
