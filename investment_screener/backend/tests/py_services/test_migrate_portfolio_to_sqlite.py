@@ -9,6 +9,7 @@ sys.path.insert(0, str(SCRIPT_DIR))
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.account_repository import list_accounts  # noqa: E402
 from domain_model.account_investment_repository import list_account_investments  # noqa: E402
+from domain_model.investment_price_repository import get_investment_price  # noqa: E402
 from domain_model.migrate_portfolio_to_sqlite import (  # noqa: E402
     run_dry_run_migration,
     run_real_migration,
@@ -160,3 +161,43 @@ def test_real_migration_includes_cash_account():
         assert cash_rows["AAPL"]["average_cost"] == 145.0
         assert "CASH_USD" in cash_rows  # CASH account's own $500 cash balance migrated too
         assert cash_rows["CASH_USD"]["quantity"] == 500.0
+
+
+def test_real_migration_writes_price_row_for_cash(tmp_path):
+    """Bug 1: a CASH_USD account_investment row is written for each account's cash
+    balance, but no investment_price row was ever written for CASH_USD -- so
+    portfolio_repository.py's SUM(quantity * price) silently counts cash as worth
+    $0. A cash dollar is always worth exactly $1.00; this must be persisted."""
+    portfolio_path = tmp_path / "portfolio.json"
+    portfolio_path.write_text(json.dumps(FIXTURE_PORTFOLIO))
+    db_path = str(tmp_path / "test.sqlite")
+    run_real_migration(str(portfolio_path), db_path)
+
+    conn = initialize_db(db_path)
+    price_row = get_investment_price(conn, "CASH_USD")
+    assert price_row is not None, "CASH_USD must have an investment_price row"
+    assert price_row["price"] == 1.0
+
+
+def test_real_migration_resolves_psu_ticker_alias(tmp_path):
+    """Bug 2: real portfolio.json's flat holdings[] array uses the canonical
+    ticker PSU-U.TO (hyphen), but tvSnapshot.snapshots[].positions[] uses the
+    broker's raw format PSU.U.TO (period) for the same real position.
+    _load_prices_by_symbol() keys its dict off holdings[]'s canonical symbol,
+    but the main loop looked up prices_by_symbol.get(pos["symbol"]) using the
+    tvSnapshot's raw, un-normalized symbol -- a guaranteed miss that left the
+    real 23-share PSU position priced at 0."""
+    fixture = json.loads(json.dumps(FIXTURE_PORTFOLIO))
+    fixture["holdings"].append({"symbol": "PSU-U.TO", "shares": 23, "price": 100.0})
+    fixture["tvSnapshot"]["snapshots"][0]["positions"].append(
+        {"symbol": "PSU.U.TO", "direction": "Long", "quantity": 23, "avgFillPrice": 95.0, "positionId": "p5"}
+    )
+    portfolio_path = tmp_path / "portfolio.json"
+    portfolio_path.write_text(json.dumps(fixture))
+    db_path = str(tmp_path / "test.sqlite")
+    run_real_migration(str(portfolio_path), db_path)
+
+    conn = initialize_db(db_path)
+    price_row = get_investment_price(conn, "PSU-U.TO")
+    assert price_row is not None, "PSU-U.TO must have a resolved investment_price row"
+    assert price_row["price"] == 100.0
