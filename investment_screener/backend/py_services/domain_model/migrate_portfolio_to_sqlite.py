@@ -23,6 +23,7 @@ from domain_model.investment_price_repository import upsert_investment_price
 from domain_model.investment_repository import resolve_investment
 from domain_model.db_client import initialize_db
 from domain_model.seed_real_accounts import seed_real_accounts
+from ticker_aliases import normalize_ticker
 
 
 def _load_portfolio_json(portfolio_path: str) -> dict:
@@ -40,7 +41,7 @@ def _load_prices_by_symbol(data: dict) -> dict[str, float]:
         symbol = h.get("symbol") or h.get("ticker")
         price = float(h.get("price") or h.get("book_price") or 0)
         if symbol and price > 0:
-            prices[symbol] = price
+            prices[normalize_ticker(symbol)] = price
     return prices
 
 
@@ -74,6 +75,7 @@ def run_real_migration(portfolio_path: str, db_path: str) -> dict:
         cash_usd = float(snap.get("balances", {}).get("cashUSD") or 0)
         if cash_usd > 0:
             cash_id = resolve_investment(conn, "CASH_USD", asset_class="CASH", currency="USD")
+            upsert_investment_price(conn, cash_id, price=1.0, currency="USD", fetched_at=now)
             upsert_account_investment(
                 conn, account_id, cash_id, quantity=cash_usd, average_cost=1.0,
                 book_value=cash_usd, currency="USD", last_synced_at=now,
@@ -83,7 +85,7 @@ def run_real_migration(portfolio_path: str, db_path: str) -> dict:
             quantity = float(pos.get("quantity") or 0)
             if quantity <= 0:
                 continue  # closed/flattened position in a stale snapshot -- no noise row
-            symbol = pos["symbol"]
+            symbol = normalize_ticker(pos["symbol"])
             investment_id = resolve_investment(conn, symbol, asset_class="EQUITY", currency="USD")
             price = prices_by_symbol.get(symbol, 0)
             if price > 0:
