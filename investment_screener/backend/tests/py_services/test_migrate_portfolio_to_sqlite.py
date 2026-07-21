@@ -10,6 +10,7 @@ from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.account_repository import list_accounts  # noqa: E402
 from domain_model.account_investment_repository import list_account_investments  # noqa: E402
 from domain_model.investment_price_repository import get_investment_price  # noqa: E402
+from domain_model.investment_repository import list_investments  # noqa: E402
 from domain_model.migrate_portfolio_to_sqlite import (  # noqa: E402
     run_dry_run_migration,
     run_real_migration,
@@ -201,3 +202,48 @@ def test_real_migration_resolves_psu_ticker_alias(tmp_path):
     price_row = get_investment_price(conn, "PSU-U.TO")
     assert price_row is not None, "PSU-U.TO must have a resolved investment_price row"
     assert price_row["price"] == 100.0
+
+
+def test_real_migration_merges_broker_raw_symbol_into_single_investment_identity(tmp_path):
+    """Regression for the duplicate-identity variant of Bug 2: if the main
+    migration loop's resolve_investment() call is ever fed the raw, un-normalized
+    tvSnapshot symbol (PSU.U.TO) while _load_prices_by_symbol()'s dict key is
+    normalized (PSU-U.TO), the SAME real position held in TWO accounts (TFSA and
+    RRSP) creates TWO separate `investment` rows for one real holding -- a
+    duplicate-identity data integrity bug, not just a missed price. There must be
+    exactly ONE investment row for this position, with the correct aggregated
+    per-account quantities and a real non-zero price."""
+    fixture = json.loads(json.dumps(FIXTURE_PORTFOLIO))
+    # Flat holdings[] carries the canonical, hyphenated symbol with a real price.
+    fixture["holdings"].append({"symbol": "PSU-U.TO", "shares": 23, "price": 100.0223})
+    # tvSnapshot positions carry the broker-raw, period-delimited symbol, in TWO
+    # different real accounts (TFSA and RRSP) for the same real holding.
+    fixture["tvSnapshot"]["snapshots"][0]["positions"].append(
+        {"symbol": "PSU.U.TO", "direction": "Long", "quantity": 20, "avgFillPrice": 95.0, "positionId": "p6"}
+    )
+    fixture["tvSnapshot"]["snapshots"][1]["positions"].append(
+        {"symbol": "PSU.U.TO", "direction": "Long", "quantity": 3, "avgFillPrice": 95.0, "positionId": "p7"}
+    )
+    portfolio_path = tmp_path / "portfolio.json"
+    portfolio_path.write_text(json.dumps(fixture))
+    db_path = str(tmp_path / "test.sqlite")
+    run_real_migration(str(portfolio_path), db_path)
+
+    conn = initialize_db(db_path)
+    psu_investments = [
+        i for i in list_investments(conn)
+        if i["investment_id"] in ("PSU-U.TO", "PSU.U.TO")
+    ]
+    assert len(psu_investments) == 1, (
+        f"Expected exactly one merged investment identity for PSU-U.TO, got {psu_investments}"
+    )
+    assert psu_investments[0]["investment_id"] == "PSU-U.TO"
+
+    tfsa_rows = {r["investment_id"]: r for r in list_account_investments(conn, account_id="TFSA")}
+    rrsp_rows = {r["investment_id"]: r for r in list_account_investments(conn, account_id="RRSP")}
+    assert "PSU.U.TO" not in tfsa_rows and "PSU.U.TO" not in rrsp_rows
+    assert tfsa_rows["PSU-U.TO"]["quantity"] == 20
+    assert rrsp_rows["PSU-U.TO"]["quantity"] == 3
+
+    price_row = get_investment_price(conn, "PSU-U.TO")
+    assert price_row is not None and price_row["price"] == 100.0223
