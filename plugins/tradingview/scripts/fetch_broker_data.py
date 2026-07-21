@@ -75,8 +75,15 @@ from tv_client import run_node_module
 REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", ".."))
 BACKEND_SRC = os.path.abspath(os.path.join(REPO_ROOT, "investment_screener", "backend", "src"))
 DATA_DIR = os.path.abspath(os.path.join(REPO_ROOT, "investment_screener", "backend", "data"))
+DOMAIN_MODEL_PY_SERVICES_DIR = os.path.abspath(
+    os.path.join(REPO_ROOT, "investment_screener", "backend", "py_services")
+)
+DOMAIN_MODEL_DB_PATH = os.path.join(DATA_DIR, "domain_model.sqlite")
 
 sys.path.insert(0, BACKEND_SRC)
+sys.path.insert(0, DOMAIN_MODEL_PY_SERVICES_DIR)  # so `domain_model.*` resolves regardless of cwd
+
+REAL_ACCOUNTS = {"TFSA", "RRSP", "CASH"}
 
 
 # ── Node.js runner ────────────────────────────────────────────────────────────
@@ -325,6 +332,54 @@ def build_totals_from_balances(balances: dict, stored_exchange_rate: float) -> d
     }
 
 
+def _persist_snapshot_to_db(snapshot: dict, db_path: str = DOMAIN_MODEL_DB_PATH) -> int:
+    """Persist a raw TV snapshot's real per-account positions/cash into
+    account_investment rows -- mirrors migrate_portfolio_to_sqlite.py's
+    per-holding write shape. Only the three real, seeded broker sub-accounts
+    (TFSA/RRSP/CASH) are in scope; cash is written as a CASH_USD investment row
+    via the same upsert_account_investment path as any equity position (Wave 0
+    resolved decision 5), not a special-cased column. Additive: the
+    portfolio.json write in write_snapshot() is unchanged.
+    """
+    from domain_model.db_client import initialize_db
+    from domain_model.account_repository import upsert_account
+    from domain_model.account_investment_repository import upsert_account_investment
+    from domain_model.investment_repository import resolve_investment
+
+    conn = initialize_db(db_path)
+    now = datetime.now(timezone.utc).isoformat()
+    written = 0
+    for snap in snapshot.get("snapshots", []):
+        account_id = snap.get("accountType")
+        if account_id not in REAL_ACCOUNTS:
+            continue
+        upsert_account(conn, account_id, account_id, account_id)
+
+        cash_usd = float((snap.get("balances") or {}).get("cashUSD") or 0)
+        if cash_usd > 0:
+            cash_investment_id = resolve_investment(conn, "CASH_USD", asset_class="CASH", currency="USD")
+            upsert_account_investment(
+                conn, account_id, cash_investment_id, quantity=cash_usd,
+                average_cost=1.0, book_value=cash_usd, currency="USD", last_synced_at=now,
+            )
+
+        for pos in snap.get("positions", []):
+            quantity = float(pos.get("quantity") or 0)
+            if quantity <= 0:
+                continue  # closed/flattened position -- no noise row
+            symbol = pos.get("symbol")
+            if not symbol:
+                continue
+            investment_id = resolve_investment(conn, symbol, asset_class="EQUITY", currency="USD")
+            upsert_account_investment(
+                conn, account_id, investment_id, quantity=quantity,
+                average_cost=pos.get("avgFillPrice"), book_value=None,
+                currency="USD", last_synced_at=now,
+            )
+            written += 1
+    return written
+
+
 def write_snapshot(snapshot: dict, promote: bool = False, balances: Optional[dict] = None) -> str:
     """Write snapshot to portfolio.json — merges RRSP+TFSA positions and updates totals from live balances."""
     path = os.path.join(DATA_DIR, "portfolio.json")
@@ -415,6 +470,16 @@ def write_snapshot(snapshot: dict, promote: bool = False, balances: Optional[dic
 
     with open(path, "w") as f:
         json.dump(data, f, indent=2)
+
+    # Wave 3 Task 5.7: also persist the real per-account positions/cash from this
+    # snapshot into domain_model.sqlite (additive -- portfolio.json write above is
+    # unchanged). Best-effort: a DB write failure must not block the real
+    # portfolio.json sync this function exists to perform.
+    try:
+        written = _persist_snapshot_to_db(snapshot, db_path=DOMAIN_MODEL_DB_PATH)
+        print(f"✓ Persisted {written} position(s) to domain_model.sqlite.")
+    except Exception as exc:  # noqa: BLE001
+        print(f"⚠  Failed to persist snapshot to domain_model.sqlite: {exc}", file=sys.stderr)
 
     # Refresh all thesis pages and role fields after every portfolio.json write.
     _run_portfolio_refresh()
