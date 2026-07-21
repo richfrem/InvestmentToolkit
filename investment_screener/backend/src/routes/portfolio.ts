@@ -47,7 +47,7 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { spawnPythonScript } from '../services/bridge';
-import { brokerSyncService, mergeIntoPortfolio } from '../services/BrokerSyncService';
+import { brokerSyncService, mergeIntoPortfolio, persistSnapshotToDb } from '../services/BrokerSyncService';
 import { getLiveUsdCadRate, isTradingViewConnected } from '../utils/helpers';
 import { PORTFOLIO_FILE, PORTFOLIO_CONFIG_FILE, THESIS_FILE } from '../utils/paths';
 import { buildPortfolioSnapshot, preserveAuthoritativeTotal, computeWeightsMap, PortfolioTotals } from '../utils/portfolioSnapshot';
@@ -261,6 +261,24 @@ async function persistPortfolioWithSnapshot(items: any[], tvSnapshot?: any): Pro
 
     fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify({ holdings: enriched, totals, tvSnapshot: tvSnap }, null, 2));
     console.log(`[Portfolio] Wrote portfolio.json — totalUSD=$${totals.totalUSD.toFixed(2)} totalCAD=$${totals.totalCAD.toFixed(2)}`);
+
+    // Wave 3 Task 5.5: additionally persist tvSnap's real per-account positions/cash
+    // into account_investment via BrokerSyncService.persistSnapshotToDb (same helper
+    // used by BrokerSyncService.ts's own sync write, per this task's DRY constraint —
+    // one upsert-per-holding path, not duplicated here). `totals` (computed USD/CAD
+    // aggregates, exchange rates, reconciliation) has no SQLite equivalent per
+    // portfolio_repository.py's ADR-030 design (read-time-only, never stored) and is
+    // NOT migrated by this call -- only real per-position/cash facts are. This is
+    // additive, not a replacement of the JSON write: /summary, /weights,
+    // /strategy-allocation, and the totals fields above all still read from
+    // portfolio.json and were not part of this wave's read-side cutover.
+    if (tvSnap?.snapshots?.length) {
+        try {
+            persistSnapshotToDb(tvSnap);
+        } catch (dbErr: any) {
+            console.warn(`[Portfolio] Failed to persist tvSnapshot to domain_model.sqlite:`, dbErr.message);
+        }
+    }
 }
 
 
@@ -285,6 +303,15 @@ router.post('/', async (req, res) => {
         backupPortfolio();
         const { totals, tvSnapshot } = readPortfolio();
         fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify({ holdings: items, totals, tvSnapshot }, null, 2));
+        // Wave 3 Task 5.5 gap (documented, not silently dropped): this route accepts
+        // `items`, a flat cross-account-aggregated array (a manual/UI-triggered edit
+        // path) with no per-account attribution -- unlike persistPortfolioWithSnapshot
+        // above, there is no real tvSnapshot.snapshots[].positions[] data for THIS
+        // specific edit to attribute to TFSA vs RRSP vs CASH. Writing a fabricated
+        // single-account split would corrupt real account_investment data, which is
+        // worse than not writing here. The cached tvSnapshot (unchanged by this route)
+        // still reflects the last real broker sync and is what
+        // persistSnapshotToDb/persistPortfolioWithSnapshot's own call sites persist.
         syncThesisShares(items);
         res.json({ success: true, count: items.length });
     } catch (error) {
