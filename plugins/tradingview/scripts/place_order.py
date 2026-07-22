@@ -358,7 +358,7 @@ def sync_portfolio() -> bool:
             capture_output=True, text=True, timeout=90,
         )
         if result.returncode == 0:
-            print("✓ Sync complete: portfolio.json updated via direct CDP snapshot (cash + holdings refreshed).")
+            print("✓ Sync complete: domain_model.sqlite updated via direct CDP snapshot (cash + holdings refreshed).")
             return True
         print(f"⚠️  Direct CDP snapshot failed ({result.stderr.strip()[:120]}).")
 
