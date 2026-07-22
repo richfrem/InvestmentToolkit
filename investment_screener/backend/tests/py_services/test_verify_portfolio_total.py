@@ -25,6 +25,42 @@ from domain_model.investment_repository import resolve_investment  # noqa: E402
 from domain_model.investment_price_repository import upsert_investment_price  # noqa: E402
 from domain_model.account_investment_repository import upsert_account_investment  # noqa: E402
 from domain_model.portfolio_repository import get_portfolio_total_value  # noqa: E402
+from domain_model.broker_reported_total_repository import upsert_broker_reported_total  # noqa: E402
+
+
+class TestGetTvTotalsCachedReadsSqlite:
+    def test_returns_error_when_never_synced(self, tmp_path):
+        result = vpt.get_tv_totals_cached(db_path=tmp_path / "missing.sqlite")
+        assert "error" in result
+
+    def test_reads_broker_reported_total_from_db(self, tmp_path):
+        db_path = tmp_path / "domain_model.sqlite"
+        conn = initialize_db(str(db_path))
+        upsert_broker_reported_total(conn, 30373.98, 41900.0, "2026-07-20T00:00:00Z", "tv_authoritative")
+        conn.close()
+        result = vpt.get_tv_totals_cached(db_path=db_path)
+        assert result["grandTotalUSD"] == 30373.98
+        assert result["source"] == "tv_authoritative"
+
+    def test_large_variance_fires_fail_path(self, tmp_path):
+        """Computed (1950) vs broker-reported (5000) => $3050 gap must classify FAIL."""
+        db_path, computed_total = _seed(tmp_path)
+        conn = initialize_db(str(db_path))
+        upsert_broker_reported_total(conn, 5000.0, None, "2026-07-20T00:00:00Z", "tv_authoritative")
+        conn.close()
+        tv = vpt.get_tv_totals_cached(db_path=db_path)
+        our_total, _ = vpt.compute_our_total(use_live_prices=False, db_path=db_path)
+        diff = our_total - tv["grandTotalUSD"]
+        assert vpt.classify_reconciliation(diff) == "FAIL"
+
+    def test_small_variance_passes(self, tmp_path):
+        db_path, computed_total = _seed(tmp_path)  # 1950
+        conn = initialize_db(str(db_path))
+        upsert_broker_reported_total(conn, 1955.0, None, "2026-07-20T00:00:00Z", "tv_authoritative")
+        conn.close()
+        tv = vpt.get_tv_totals_cached(db_path=db_path)
+        our_total, _ = vpt.compute_our_total(use_live_prices=False, db_path=db_path)
+        assert vpt.classify_reconciliation(our_total - tv["grandTotalUSD"]) == "PASS"
 
 
 def _seed(tmp_path):

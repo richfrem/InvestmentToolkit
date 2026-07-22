@@ -124,7 +124,44 @@ export class PortfolioRepository {
                 usd_to_cad_rate REAL NOT NULL,
                 synced_at       TEXT NOT NULL
             );
+
+            CREATE TABLE IF NOT EXISTS broker_reported_total (
+                id              INTEGER PRIMARY KEY CHECK (id = 1),
+                total_usd       REAL NOT NULL,
+                total_cad       REAL,
+                synced_at       TEXT NOT NULL,
+                source          TEXT
+            );
         `);
+    }
+
+    /** Mirrors `broker_reported_total_repository.py::upsert_broker_reported_total`
+     * — idempotently store the broker's OWN last-reported portfolio total
+     * (singleton row id=1, overwritten each sync). Per ADR-030's Wave 3 addendum
+     * pattern this is the audited-against comparison source for
+     * verify_portfolio_total.py's reconciliation, never a substitute for the
+     * computed getPortfolioTotalValue(). */
+    upsertBrokerReportedTotal(totalUsd: number, totalCad: number | null, syncedAt: string, source: string | null = null): void {
+        this.db
+            .prepare(
+                `INSERT INTO broker_reported_total (id, total_usd, total_cad, synced_at, source)
+                 VALUES (1, ?, ?, ?, ?)
+                 ON CONFLICT(id) DO UPDATE SET
+                 total_usd = excluded.total_usd,
+                 total_cad = excluded.total_cad,
+                 synced_at = excluded.synced_at,
+                 source = excluded.source`
+            )
+            .run(totalUsd, totalCad, syncedAt, source);
+    }
+
+    /** Mirrors `broker_reported_total_repository.py::get_broker_reported_total` —
+     * the stored broker-reported total row, or null if never synced. */
+    getBrokerReportedTotal(): { total_usd: number; total_cad: number | null; synced_at: string; source: string | null } | null {
+        const row = this.db
+            .prepare('SELECT total_usd, total_cad, synced_at, source FROM broker_reported_total WHERE id = 1')
+            .get() as { total_usd: number; total_cad: number | null; synced_at: string; source: string | null } | undefined;
+        return row ?? null;
     }
 
     /** Mirrors `exchange_rate_repository.py::upsert_exchange_rate` — idempotently

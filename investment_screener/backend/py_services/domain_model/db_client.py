@@ -110,6 +110,20 @@
 #     scalar with a static fallback for a fresh/never-synced DB, closing the
 #     retained-JSON gap documented in
 #     docs/superpowers/status/wave3-cad-exchange-rate-retained-json.md.
+#   - broker_reported_total: not present in either named source design document.
+#     Added post-hoc (Wave 3 Task 8, tvSnapshot closure) per an explicit user
+#     design decision recorded in ADR-030's "Wave 3 addendum" pattern. This is the
+#     broker's OWN last-reported portfolio total (totalUSD, and totalCAD if present)
+#     — a broker-reported FACT the schema cannot recompute (same reasoning as
+#     broker_exchange_rate above), captured for exactly one consumer:
+#     verify_portfolio_total.py's reconciliation/audit check, which compares the
+#     broker's reported total against get_portfolio_total_value()'s computed total.
+#     This does NOT reverse ADR-030: get_portfolio_total_value() remains the
+#     authoritative computed total for everything else; this scalar is stored only
+#     as the reconciliation comparison SOURCE (the audited-against figure), not as
+#     "the" total. Singleton (CHECK(id = 1), one row ever, overwritten each sync),
+#     mirroring broker_exchange_rate's "store this one broker fact" shape. `source`
+#     holds the portfolio.json totals.totalSource value (e.g. "tv_authoritative").
 #   - (no other deviations found as of this transcription)
 import sqlite3
 
@@ -424,6 +438,16 @@ def initialize_db(db_path: str) -> sqlite3.Connection:
         id              INTEGER PRIMARY KEY CHECK (id = 1),
         usd_to_cad_rate REAL NOT NULL,
         synced_at       TEXT NOT NULL
+    );
+    """)
+
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS broker_reported_total (
+        id              INTEGER PRIMARY KEY CHECK (id = 1),
+        total_usd       REAL NOT NULL,
+        total_cad       REAL,
+        synced_at       TEXT NOT NULL,
+        source          TEXT
     );
     """)
 
