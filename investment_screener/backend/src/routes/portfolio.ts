@@ -14,8 +14,9 @@
  *   - readPortfolio() - Parses portfolio JSON structure resolving array/object schemas
  *   - syncThesisShares(positions) - Keep thesis holdings[].shares in sync with actual portfolio positions
  *   - verifyPortfolioTotals(holdings, tvSnapshot) - Reconciliation gate comparing computed vs broker total
- *   - persistPortfolioWithSnapshot(items, tvSnapshot) - Writes to portfolio.json with totals and snaps
- * 
+ *   - getHoldingsForDisplayFromDb() - SQLite-sourced enriched holdings for GET /
+ *   - persistRefreshedPricesToDb(items) - Persist fresh prices + sector/industry into SQLite
+ *
  * Routes Index:
  *   - GET / - Reads and returns aggregate portfolio holdings and active sync source
  *   - POST / - Core saving/restructuring of the user portfolio
@@ -50,7 +51,7 @@ import { spawnPythonScript } from '../services/bridge';
 import { brokerSyncService, mergeIntoPortfolio, persistSnapshotToDb } from '../services/BrokerSyncService';
 import { getLiveUsdCadRate, isTradingViewConnected } from '../utils/helpers';
 import { PORTFOLIO_FILE, PORTFOLIO_CONFIG_FILE, THESIS_FILE, DOMAIN_MODEL_DB_FILE } from '../utils/paths';
-import { buildPortfolioSnapshot, preserveAuthoritativeTotal, computeWeightsMap, PortfolioTotals } from '../utils/portfolioSnapshot';
+import { computeWeightsMap, PortfolioTotals } from '../utils/portfolioSnapshot';
 import { computeStrategyAllocation } from '../utils/strategyAllocation';
 import { PortfolioRepository } from '../services/PortfolioRepository';
 import { InvestmentRepository } from '../services/InvestmentRepository';
@@ -197,6 +198,45 @@ export function getAccountPositionsFromDb(
     }
 }
 
+/** Wave 3 (completion): the enriched holdings array GET /api/portfolio serves,
+ * sourced from SQLite instead of portfolio.json's flat `holdings`. Per held
+ * symbol: shares (quantity summed across accounts), price, book_price
+ * (average_cost) from account_investment/investment_price, plus
+ * name/sector/industry/pillar_id from the `investment` row. sector/industry fall
+ * back to "Unknown" (matching fetch_portfolio_heatmap.py) when not yet resolved —
+ * e.g. right after a fresh TV sync, before the first /refresh-prices run.
+ * Returns null when there are no priced/held positions in SQLite yet, so GET /
+ * falls back to the existing portfolio.json read. */
+export function getHoldingsForDisplayFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE): any[] | null {
+    // InvestmentRepository first: it owns and fully creates the `investment` table
+    // (all columns + indexes). Opening PortfolioRepository first on a brand-new
+    // file would create a narrower `investment` table, making InvestmentRepository's
+    // later index-on-lifecycle_status/pillar_id creation fail.
+    const investmentRepo = new InvestmentRepository(dbPath);
+    const portfolioRepo = new PortfolioRepository(dbPath);
+    try {
+        const positions = portfolioRepo.listPositionsBySymbol();
+        if (positions.length === 0) return null;
+        return positions.map(p => {
+            const displaySymbol = p.symbol === 'CASH_USD' ? 'USD_CASH' : p.symbol;
+            const inv = investmentRepo.getInvestment(p.symbol);
+            return {
+                symbol: displaySymbol,
+                shares: p.quantity,
+                price: p.price ?? undefined,
+                book_price: p.averageCost ?? undefined,
+                name: inv?.name ?? displaySymbol,
+                sector: displaySymbol === 'USD_CASH' ? 'CASH' : (inv?.sector ?? 'Unknown'),
+                industry: displaySymbol === 'USD_CASH' ? 'CASH' : (inv?.industry ?? 'Unknown'),
+                pillarId: inv?.pillar_id ?? null,
+            };
+        });
+    } finally {
+        investmentRepo.close();
+        portfolioRepo.close();
+    }
+}
+
 /**
  * Wave 3 (completion): persist freshly-refreshed live prices into
  * `investment_price`, closing the gap that previously left SQLite prices
@@ -211,6 +251,13 @@ export function getAccountPositionsFromDb(
  * normalized through the same broker alias map persistSnapshotToDb uses so the
  * `investment_id` resolved here matches the account_investment rows those prices
  * are joined against.
+ *
+ * Also persists the sector/industry each `item` carries (resolved by
+ * fetch_portfolio_heatmap.py's yfinance/SECTOR_OVERRIDES lookup — the SAME real
+ * code path, no duplicated logic) into investment.sector/investment.industry via
+ * InvestmentRepository.updateSectorIndustry, so GET /api/portfolio can serve
+ * enriched holding metadata from SQLite. A "Unknown"/absent sector is written
+ * through as-is (never fabricated); readers fall back to "Unknown".
  *
  * Returns the number of prices written. Exported for tmp_path-scoped tests.
  */
@@ -228,6 +275,15 @@ export function persistRefreshedPricesToDb(items: any[], dbPath: string = DOMAIN
             const symbol = normalizeTicker(rawSymbol);
             const investmentId = investmentRepo.resolveInvestmentId(symbol, 'EQUITY', 'USD');
             portfolioRepo.upsertInvestmentPrice(investmentId, price, 'USD', now);
+            // Persist sector/industry when the heatmap payload resolved them
+            // (present on every fetch_portfolio_heatmap.py stock row). Skip only
+            // when neither field is present at all, so a plain price-only item
+            // (e.g. a test) never blanks an already-resolved sector.
+            const sector = item?.sector;
+            const industry = item?.industry;
+            if (sector != null || industry != null) {
+                investmentRepo.updateSectorIndustry(symbol, sector ?? null, industry ?? null);
+            }
             count++;
         }
         return count;
@@ -327,101 +383,18 @@ function verifyPortfolioTotals(holdings: any[], tvSnapshot: any): {
     return { holdingsTotal, totalCash, computedTotal, brokerTotal, diff, pct, isValid };
 }
 
-/**
- * Single write path — everything goes to portfolio.json as { holdings, totals }.
- * No other file is written. All routes read from this one file.
- */
-async function persistPortfolioWithSnapshot(items: any[], tvSnapshot?: any): Promise<void> {
-    const tvSnap = tvSnapshot ?? (() => {
-        if (fs.existsSync(PORTFOLIO_FILE)) {
-            try {
-                const raw = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
-                if (raw && !Array.isArray(raw) && raw.tvSnapshot) {
-                    return raw.tvSnapshot;
-                }
-            } catch (err: any) {
-                console.warn(`[Portfolio] Failed to load cached tvSnapshot:`, err.message);
-            }
-        }
-        return { snapshots: [] };
-    })();
-    const exchangeRate = await getLiveUsdCadRate(JAN1_USD_CAD_RATE);
-
-    // Sum holdings USD value: sum(shares * price)
-    const holdingsUSD = items
-        .filter(h => (h.symbol || h.ticker) !== 'USD_CASH')
-        .reduce((sum, h) => sum + (h.shares ?? 0) * (h.price ?? h.book_price ?? 0), 0);
-
-    // Sum cash USD value across accounts
-    const cashUSD = (tvSnap?.snapshots ?? []).reduce(
-        (sum: number, snap: any) => sum + (snap?.balances?.cashUSD ?? 0),
-        0
-    );
-
-    // Sum cash CAD value across accounts
-    const cashCAD = (tvSnap?.snapshots ?? []).reduce(
-        (sum: number, snap: any) => sum + (snap?.balances?.cashCAD ?? 0),
-        0
-    );
-
-    // Calculate total USD from calculated values
-    const calculatedTotalUSD = holdingsUSD + cashUSD;
-
-    // Calculate total CAD using calculated USD value converted by TV inferred exchange rate
-    // TV inferred exchange rate = totalCAD / totalUSD from snapshot balances
-    let inferredRate = exchangeRate;
-    let tvTotalUSD = 0;
-    let tvTotalCAD = 0;
-    for (const snap of (tvSnap?.snapshots ?? [])) {
-        const b = snap?.balances;
-        if (b) {
-            tvTotalUSD += b.totalEquityUSDCombined ?? b.totalEquityUSD ?? 0;
-            tvTotalCAD += b.totalEquityCADCombined ?? b.totalEquityCAD ?? 0;
-        }
-    }
-    if (tvTotalUSD > 0 && tvTotalCAD > 0) {
-        inferredRate = tvTotalCAD / tvTotalUSD;
-    }
-
-    const calculatedTotalCAD = (holdingsUSD * inferredRate) + cashCAD;
-
-    const { holdings: enriched, totals } = buildPortfolioSnapshot(
-        items, tvSnap, inferredRate, calculatedTotalUSD
-    );
-
-    totals.totalCAD = calculatedTotalCAD;
-    totals.totalSource = 'tv_authoritative'; // Derived directly from live TV holdings + cash
-
-    fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify({ holdings: enriched, totals, tvSnapshot: tvSnap }, null, 2));
-    console.log(`[Portfolio] Wrote portfolio.json — totalUSD=$${totals.totalUSD.toFixed(2)} totalCAD=$${totals.totalCAD.toFixed(2)}`);
-
-    // Wave 3 Task 5.5: additionally persist tvSnap's real per-account positions/cash
-    // into account_investment via BrokerSyncService.persistSnapshotToDb (same helper
-    // used by BrokerSyncService.ts's own sync write, per this task's DRY constraint —
-    // one upsert-per-holding path, not duplicated here). `totals` (computed USD/CAD
-    // aggregates, exchange rates, reconciliation) has no SQLite equivalent per
-    // portfolio_repository.py's ADR-030 design (read-time-only, never stored) and is
-    // NOT migrated by this call -- only real per-position/cash facts are. This is
-    // additive, not a replacement of the JSON write: /summary, /weights,
-    // /strategy-allocation, and the totals fields above all still read from
-    // portfolio.json and were not part of this wave's read-side cutover.
-    if (tvSnap?.snapshots?.length) {
-        try {
-            persistSnapshotToDb(tvSnap);
-        } catch (dbErr: any) {
-            console.warn(`[Portfolio] Failed to persist tvSnapshot to domain_model.sqlite:`, dbErr.message);
-        }
-    }
-}
-
-
 // ── Portfolio CRUD ────────────────────────────────────────────────────────────
 
 router.get('/', async (_req, res) => {
     try {
+        // Wave 3 (completion): prefer SQLite-sourced enriched holdings
+        // (account_investment/investment_price + investment.name/sector/industry/
+        // pillar_id). Falls back to portfolio.json when SQLite has no held
+        // positions yet (e.g. before the first sync/migration).
+        const dbHoldings = getHoldingsForDisplayFromDb();
         const { holdings, tvSnapshot } = readPortfolio();
-        const dataSource = tvSnapshot?.dataSource ?? 'cache';
-        res.json({ items: holdings, dataSource });
+        const dataSource = dbHoldings != null ? 'domain_model_sqlite' : (tvSnapshot?.dataSource ?? 'cache');
+        res.json({ items: dbHoldings ?? holdings, dataSource });
     } catch (error) {
         console.error(`[API] Error reading portfolio: `, error);
         res.status(500).json({ error: 'Failed to read portfolio' });
@@ -436,15 +409,16 @@ router.post('/', async (req, res) => {
         backupPortfolio();
         const { totals, tvSnapshot } = readPortfolio();
         fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify({ holdings: items, totals, tvSnapshot }, null, 2));
-        // Wave 3 Task 5.5 gap (documented, not silently dropped): this route accepts
-        // `items`, a flat cross-account-aggregated array (a manual/UI-triggered edit
-        // path) with no per-account attribution -- unlike persistPortfolioWithSnapshot
-        // above, there is no real tvSnapshot.snapshots[].positions[] data for THIS
-        // specific edit to attribute to TFSA vs RRSP vs CASH. Writing a fabricated
+        // Wave 3 gap (documented, not silently dropped): this route is the
+        // manual/UI-triggered position editor (PortfolioModal). It accepts `items`,
+        // a flat cross-account-aggregated array with no per-account attribution, so
+        // there is no real tvSnapshot.snapshots[].positions[] data for THIS specific
+        // edit to attribute to TFSA vs RRSP vs CASH. Writing a fabricated
         // single-account split would corrupt real account_investment data, which is
-        // worse than not writing here. The cached tvSnapshot (unchanged by this route)
-        // still reflects the last real broker sync and is what
-        // persistSnapshotToDb/persistPortfolioWithSnapshot's own call sites persist.
+        // worse than not writing to SQLite here. This portfolio.json write is
+        // therefore intentionally retained for the manual-edit path ONLY — it is NOT
+        // a sync/promote/apply write (those are now SQLite-only). GET / still prefers
+        // SQLite and only falls back to this file when SQLite has no positions.
         syncThesisShares(items);
         res.json({ success: true, count: items.length });
     } catch (error) {
@@ -701,7 +675,12 @@ router.post('/refresh-prices', async (_req, res) => {
         if (data.error) { res.status(400).json({ error: data.error }); return; }
         const updatedItems = portfolioData.map((item: any) => {
             const stockData = data.stocks.find((s: any) => s.symbol === item.symbol);
-            return stockData ? { ...item, price: stockData.price, last_updated: new Date().toISOString() } : item;
+            // Carry the heatmap-resolved sector/industry through so
+            // persistRefreshedPricesToDb can persist them into investment.* (the
+            // enriched metadata GET /api/portfolio now serves from SQLite).
+            return stockData
+                ? { ...item, price: stockData.price, sector: stockData.sector, industry: stockData.industry, last_updated: new Date().toISOString() }
+                : item;
         });
         // Wave 3 (completion): SQLite-only persistence — this path no longer writes
         // portfolio.json. The freshly-fetched live prices are persisted into
@@ -743,16 +722,28 @@ router.post('/sync-tv', async (_req, res) => {
 });
 
 router.post('/sync-tv/promote', async (req, res) => {
-    const { merged } = req.body;
+    const { merged, snapshot } = req.body;
     if (!Array.isArray(merged) || merged.length === 0) {
         res.status(400).json({ error: 'merged array is required in request body. Call /api/portfolio/sync-tv first.' });
         return;
     }
-    backupPortfolio();
-    await persistPortfolioWithSnapshot(merged);
+    // Wave 3 (completion): SQLite-only — no portfolio.json write. When the caller
+    // passes back the raw `snapshot` from the preceding /sync-tv response, its real
+    // per-account positions/cash + FX rate are persisted to domain_model.sqlite via
+    // persistSnapshotToDb (the single shared writer, no duplicated logic). Without a
+    // snapshot there is no per-account attribution to write (the flat `merged` array
+    // lacks it), so account_investment is left to the /sync-tv/apply or /sync path;
+    // thesis shares are still synced from `merged`.
+    if (snapshot?.snapshots?.length) {
+        try {
+            persistSnapshotToDb(snapshot);
+        } catch (dbErr: any) {
+            console.warn(`[API] promote: failed to persist snapshot to domain_model.sqlite:`, dbErr.message);
+        }
+    }
     syncThesisShares(merged);
-    console.log(`[API] portfolio.json promoted from TV snapshot (${merged.length} positions).`);
-    res.json({ success: true, positionCount: merged.length, message: 'portfolio.json updated from TradingView data.' });
+    console.log(`[API] TV snapshot promoted to domain_model.sqlite (${merged.length} positions).`);
+    res.json({ success: true, positionCount: merged.length, message: 'Portfolio updated from TradingView data (SQLite).' });
 });
 
 // One-shot: fetch TV snapshot → merge → write portfolio.json immediately (no HITL gate)
@@ -768,8 +759,16 @@ router.post('/sync-tv/apply', async (_req, res) => {
         }
         const { holdings: existing } = readPortfolio();
         const { merged, added, removed, changed } = mergeIntoPortfolio(snapshot, existing);
-        backupPortfolio();
-        await persistPortfolioWithSnapshot(merged, snapshot);
+        // Wave 3 (completion): SQLite-only — no portfolio.json write. The fresh
+        // snapshot's real per-account positions/cash + FX rate + broker-reported
+        // total are persisted to domain_model.sqlite via persistSnapshotToDb (the
+        // single shared writer). /summary, /weights, /strategy-allocation, GET /,
+        // /position, /holdings all now read from there.
+        try {
+            persistSnapshotToDb(snapshot);
+        } catch (dbErr: any) {
+            console.warn(`[API] apply: failed to persist snapshot to domain_model.sqlite:`, dbErr.message);
+        }
         syncThesisShares(merged);
 
         // Reconciliation gate — compare stored prices vs TV broker total
