@@ -111,6 +111,21 @@ def test_load_portfolio_state_exchange_rate_returns_stored_rate(tmp_path):
     assert state["exchange_rate"] == 1.4012
 
 
+def test_load_portfolio_state_exchange_rate_respects_stored_zero(tmp_path):
+    """A hypothetical future writer that persists a literal 0.0 rate must be
+    respected exactly (matching TS `??` / Python `is not None` semantics), not
+    silently replaced by the 1.38 fallback the way a falsy-`or` check would do.
+    Currently unreachable in production (the writer never persists a
+    non-positive rate) but guards the fallback's correctness if that changes.
+    """
+    from domain_model.exchange_rate_repository import upsert_exchange_rate
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    _seed_two_accounts(conn)
+    upsert_exchange_rate(conn, 0.0, "2026-07-20T00:00:00Z")
+    state = load_portfolio_state_from_db(conn)
+    assert state["exchange_rate"] == 0.0
+
+
 def test_position_with_no_price_row_contributes_zero_but_still_appears_in_shares(tmp_path):
     """Finding 1 regression guard: a newly synced position (account_investment row
     exists) with no investment_price row yet (price not fetched) must NOT
