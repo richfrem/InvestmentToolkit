@@ -45,9 +45,39 @@ function isTVReachable(port = 9222): Promise<boolean> {
     });
 }
 
-function spawnFetchBroker(args: string[], timeoutMs = 120_000): Promise<any> {
+/**
+ * Parse the snapshot JSON out of fetch_broker_data.py --snapshot's stdout.
+ *
+ * Wave 3 completion: the Python script now emits the snapshot as a single-line
+ * JSON blob on stdout (all progress on stderr — see emit_snapshot_json). This
+ * replaced the former IPC channel where BrokerSyncService re-read
+ * portfolio.json.tvSnapshot off disk after the subprocess exited. We parse the
+ * LAST non-empty line as JSON so any stray earlier stdout output (e.g. a child
+ * process that leaked to stdout) cannot corrupt the parse — the emitted JSON is
+ * always the final line.
+ */
+export function parseSnapshotStdout(stdout: string): any {
+    const lines = stdout.split('\n').map((l) => l.trim()).filter((l) => l.length > 0);
+    if (lines.length === 0) {
+        throw new Error('fetch_broker_data.py produced no stdout — expected a JSON snapshot line');
+    }
+    const lastLine = lines[lines.length - 1];
+    try {
+        return JSON.parse(lastLine);
+    } catch {
+        throw new Error(`fetch_broker_data.py stdout did not end with parseable JSON: ${lastLine.slice(0, 200)}`);
+    }
+}
+
+export function spawnFetchBroker(
+    args: string[],
+    timeoutMs = 120_000,
+    opts: { command?: string; scriptPath?: string } = {},
+): Promise<any> {
+    const command = opts.command ?? 'python3';
+    const scriptPath = opts.scriptPath ?? FETCH_BROKER_PY;
     return new Promise((resolve, reject) => {
-        const proc = spawn('python3', [FETCH_BROKER_PY, ...args]);
+        const proc = spawn(command, [scriptPath, ...args]);
         let stdout = '';
         let stderr = '';
         let killed = false;
@@ -68,16 +98,12 @@ function spawnFetchBroker(args: string[], timeoutMs = 120_000): Promise<any> {
                 reject(new Error(`fetch_broker_data.py failed (exit ${code}): ${stderr.trim().slice(0, 400)}`));
                 return;
             }
-            // The script writes to portfolio.json's tvSnapshot key — read from there
+            // stdout IPC channel: parse the snapshot straight from stdout — no
+            // portfolio.json re-read. Works even when portfolio.json is absent.
             try {
-                const data = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
-                if (data && data.tvSnapshot) {
-                    resolve(data.tvSnapshot);
-                } else {
-                    reject(new Error(`fetch_broker_data.py ran but tvSnapshot is missing in portfolio.json`));
-                }
-            } catch {
-                reject(new Error(`fetch_broker_data.py ran but portfolio.json is missing or invalid`));
+                resolve(parseSnapshotStdout(stdout));
+            } catch (err: any) {
+                reject(err);
             }
         });
 
@@ -238,9 +264,12 @@ export function mergeIntoPortfolio(tvSnapshot: TVSnapshot, existing: any[]): {
  * `syncAuto()` below — the former `portfolio.json` `tvSnapshot` cache write there
  * was removed. It was safe to drop because `routes/portfolio.ts`'s
  * `/position/:ticker` and `/holdings/:ticker` routes were migrated to read
- * per-account quantities from SQLite (`account_investment`) in Task 6, and the
- * raw tvSnapshot cache is still written by `fetch_broker_data.py` during
- * `syncFromTV`, so no consumer regressed.
+ * per-account quantities from SQLite (`account_investment`) in Task 6.
+ *
+ * Wave 3 completion: `fetch_broker_data.py` no longer writes `portfolio.json` at
+ * all either — its `--snapshot` mode is now SQLite-only and returns the raw
+ * snapshot to us over stdout (parsed by `spawnFetchBroker` via
+ * `parseSnapshotStdout`), so the entire live TV sync pipeline is JSON-write-free.
  */
 /**
  * Infer the live USD->CAD rate from TV's own native equity totals — replicates

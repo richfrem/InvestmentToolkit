@@ -9,9 +9,12 @@ Purpose:
     Questrade REST API as a secondary source for cross-validation.
 
     Note: The portfolio transition period is complete. TradingView CDP is now the
-    canonical runtime source of truth. All positions are consolidated across accounts
-    and written to the single portfolio database, portfolio.json. The raw account-specific
-    broker telemetry is stored inside the tvSnapshot root key of portfolio.json.
+    canonical runtime source of truth. In --snapshot mode the consolidated per-account
+    positions/cash are persisted to the domain model (domain_model.sqlite) ONLY — the
+    former portfolio.json write (tvSnapshot/holdings/totals) was removed in the Wave 3
+    Domain Data Model v3.2 completion cutover. The raw snapshot is returned to the Node
+    caller (BrokerSyncService.spawnFetchBroker) over stdout as a single JSON line
+    (emit_snapshot_json); all progress output goes to stderr so stdout stays clean.
 
 Layer: Backend / py_services / Broker
 
@@ -38,7 +41,8 @@ Key Functions:
     - fetch_tv()        - Reads all data from TradingView broker panel via CDP
     - fetch_questrade() - Reads from Questrade REST API (requires .questrade_cache)
     - compare()         - Diffs TV vs Questrade positions and balances
-    - write_snapshot()  - Writes tvSnapshot inside portfolio.json (or promotes positions with --promote)
+    - write_snapshot()  - Persists the snapshot to domain_model.sqlite (SQLite-only; no portfolio.json)
+    - emit_snapshot_json() - Emits the snapshot as one JSON line on stdout (Node IPC return channel)
 
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Internal state database)
@@ -424,10 +428,11 @@ def _persist_snapshot_to_db(
     per-holding write shape. Only the three real, seeded broker sub-accounts
     (TFSA/RRSP/CASH) are in scope; cash is written as a CASH_USD investment row
     via the same upsert_account_investment path as any equity position (Wave 0
-    resolved decision 5), not a special-cased column. Additive: the
-    portfolio.json write in write_snapshot() is unchanged.
+    resolved decision 5), not a special-cased column. This is now the SOLE
+    persistence path in write_snapshot() (the former portfolio.json write was
+    removed in the Wave 3 completion cutover).
 
-    ``totals`` (the portfolio.json ``totals`` block built by build_totals_from_balances)
+    ``totals`` (the broker-authoritative ``totals`` block built by build_totals_from_balances)
     is optional. When present with a positive ``totalUSD``, the broker's own
     last-reported total (totalUSD/totalCAD/totalSource) is captured in
     broker_reported_total (Wave 3 Task 8, tvSnapshot closure) -- the single fact
@@ -499,121 +504,88 @@ def _persist_snapshot_to_db(
     return written
 
 
-def write_snapshot(snapshot: dict, promote: bool = False, balances: Optional[dict] = None) -> str:
-    """Write snapshot to portfolio.json — merges RRSP+TFSA positions and updates totals from live balances."""
-    path = os.path.join(DATA_DIR, "portfolio.json")
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+def write_snapshot(snapshot: dict, promote: bool = False, balances: Optional[dict] = None) -> dict:
+    """Persist a TV snapshot to the domain model (SQLite) — SQLite-only, no JSON.
 
-    data: dict = {}
-    if os.path.exists(path):
-        try:
-            with open(path) as f:
-                data = json.load(f)
-        except Exception:
-            pass
+    Wave 3 Domain Data Model v3.2 completion (final producer cutover): this
+    function used to be a dual-writer that ALSO wrote portfolio.json's
+    ``tvSnapshot``/``holdings``/``totals`` keys. That JSON write was the last
+    remaining portfolio.json producer in the live TradingView sync pipeline and,
+    critically, doubled as the IPC return channel BrokerSyncService.ts read back
+    off disk. Both roles are now retired:
 
-    if not isinstance(data, dict):
-        data = {"holdings": data}
+      * IPC return channel -> the snapshot is emitted to stdout as a single JSON
+        line by ``emit_snapshot_json`` (see ``main``); the Node caller parses
+        that, never re-reading portfolio.json.
+      * holdings/totals cache -> the read routes were migrated to
+        domain_model.sqlite (account_investment / broker_reported_total) in
+        Wave 3 Task 6, and the HITL promote/apply routes still write
+        portfolio.json themselves via routes/portfolio.ts.
 
-    data["tvSnapshot"] = snapshot
-
-    # Smart-merge TV positions into holdings: aggregate RRSP + TFSA by symbol using
-    # weighted-avg fill price, preserving all existing metadata (thesis, pillar, sector, etc.)
+    So this persists per-account positions/cash (and the broker-reported total
+    inferred from ``balances``) into SQLite only, then runs the thesis refresh.
+    Returns the ``totals`` block built from live balances (or ``{}``), for callers
+    that want the broker-reported totals without a portfolio.json round-trip.
+    """
     tv_pos = snapshot.get("positions", [])
     if not tv_pos:
-        # getPortfolio() returned no positions — likely getAccounts() failed (MutationObserver miss).
-        # Abort the holdings merge entirely rather than silently preserving stale data.
+        # getPortfolio() returned no positions — likely getAccounts() failed
+        # (MutationObserver miss). Nothing safe to persist; surface loudly on
+        # stderr and skip the DB write rather than writing empty/misleading rows.
         print("⚠  TV returned 0 positions — accounts dropdown may not have opened.", file=sys.stderr)
         print("   Holdings NOT updated. Re-run /tv-portfolio-sync or check TradingView broker panel.", file=sys.stderr)
-        # Still write the tvSnapshot and updated totals, but skip holdings merge.
-        with open(path, "w") as f:
-            json.dump(data, f, indent=2)
-        return path
-    if tv_pos:
-        # Hardcoded alias map — broker returns PSU.U.TO, canonical thesis uses PSU-U.TO.
-        # Same fund (Purpose US Cash Fund), different display conventions.
-        _ALIASES: dict = {"PSU.U.TO": "PSU-U.TO", "PSU.U": "PSU-U.TO"}
-        _normalize = lambda x: _ALIASES.get(x, x)  # noqa: E731
+        return {}
 
-        agg: dict = {}
-        for p in tv_pos:
-            sym = p.get("symbol")
-            if not sym:
-                continue
-            sym = _normalize(sym)  # resolve broker alias (e.g. PSU.U.TO → PSU-U.TO)
-            qty = p.get("quantity") or 0
-            price = p.get("avgFillPrice") or 0
-            if sym not in agg:
-                agg[sym] = {"quantity": qty, "total_cost": qty * price}
-            else:
-                agg[sym]["quantity"] += qty
-                agg[sym]["total_cost"] += qty * price
-
-        tv_map = {
-            sym: {"shares": v["quantity"], "book_price": round(v["total_cost"] / v["quantity"], 4) if v["quantity"] > 0 else 0}
-            for sym, v in agg.items()
-        }
-
-        existing_holdings = data.get("holdings", [])
-        existing_map = {h.get("symbol") or h.get("ticker", ""): h for h in existing_holdings}
-        usd_cash = existing_map.pop("USD_CASH", None)
-
-        merged = []
-        for sym, tv in tv_map.items():
-            if sym in existing_map:
-                item = dict(existing_map[sym])
-                item["shares"] = tv["shares"]
-                item["book_price"] = tv["book_price"]
-            else:
-                item = {"symbol": sym, "shares": tv["shares"], "book_price": tv["book_price"]}
-            merged.append(item)
-
-        # Preserve USD_CASH, updating its value from live balances when available
-        if usd_cash:
-            cash_item = dict(usd_cash)
-            if balances and not balances.get("error"):
-                val = balances.get("cashUSDCombined") or balances.get("cashUSD") or usd_cash.get("shares", 0)
-                cash_item["shares"] = val
-                cash_item["market_value"] = val
-            merged.append(cash_item)
-
-        data["holdings"] = merged
-        print(f"✓ Holdings merged: {len(merged)} symbols (RRSP + TFSA combined).")
-
-    # Update totals from live balances — standalone getBalances() is reliable;
-    # the embedded call inside getPortfolio() fails due to tab-switching state conflicts.
+    # Build the broker-authoritative totals from live balances (used for the
+    # broker_reported_total row and returned to callers). Progress → stderr so it
+    # never contaminates the stdout JSON IPC channel.
+    totals: dict = {}
     if balances and not balances.get("error"):
-        stored_fx = (data.get("totals") or {}).get("exchangeRate") or 1.3795
-        data["totals"] = build_totals_from_balances(balances, stored_fx)
-        print(f"✓ Totals updated: totalUSD=${data['totals']['totalUSD']:,.2f}  cashUSD=${data['totals']['cashUSD']:,.2f}")
+        totals = build_totals_from_balances(balances, 1.3795)
+        print(
+            f"✓ Totals computed: totalUSD=${totals['totalUSD']:,.2f}  cashUSD=${totals['cashUSD']:,.2f}",
+            file=sys.stderr,
+        )
 
-    with open(path, "w") as f:
-        json.dump(data, f, indent=2)
-
-    # Wave 3 Task 5.7: also persist the real per-account positions/cash from this
-    # snapshot into domain_model.sqlite (additive -- portfolio.json write above is
-    # unchanged). Best-effort: a DB write failure must not block the real
-    # portfolio.json sync this function exists to perform.
+    # Persist the real per-account positions/cash + broker-reported total to
+    # domain_model.sqlite. Best-effort: a DB write failure must not crash the
+    # sync — the stdout IPC emission still happens in main().
     try:
         written = _persist_snapshot_to_db(
-            snapshot, db_path=DOMAIN_MODEL_DB_PATH, totals=data.get("totals")
+            snapshot, db_path=DOMAIN_MODEL_DB_PATH, totals=totals or None
         )
-        print(f"✓ Persisted {written} position(s) to domain_model.sqlite.")
+        print(f"✓ Persisted {written} position(s) to domain_model.sqlite.", file=sys.stderr)
     except Exception as exc:  # noqa: BLE001
         print(f"⚠  Failed to persist snapshot to domain_model.sqlite: {exc}", file=sys.stderr)
 
-    # Refresh all thesis pages and role fields after every portfolio.json write.
+    # Refresh all thesis pages and role fields after every sync.
     _run_portfolio_refresh()
 
-    return path
+    return totals
+
+
+def emit_snapshot_json(snapshot: dict) -> None:
+    """Emit the snapshot as a single compact JSON line on stdout — the stdout IPC
+    return channel that replaced the former portfolio.json ``tvSnapshot`` readback.
+
+    ALL human/progress output in the --snapshot path goes to stderr, so stdout
+    carries only this one line; the Node caller (BrokerSyncService.spawnFetchBroker)
+    parses the last non-empty stdout line as JSON. Compact (no indent) keeps it a
+    single line, robust against any stray earlier stdout output.
+    """
+    sys.stdout.write(json.dumps(snapshot) + "\n")
+    sys.stdout.flush()
 
 
 def _run_portfolio_refresh() -> None:
-    """Run refresh_all.py after any portfolio.json write to keep thesis pages current."""
+    """Run refresh_all.py after any broker sync to keep thesis pages current."""
     _repo_root = Path(SCRIPT_DIR).parents[2]
     refresh_script = _repo_root / "plugins/portfolio-advisor/scripts/refresh_all.py"
     if refresh_script.exists():
-        subprocess.run([sys.executable, str(refresh_script)], check=False)
+        # Redirect the child's stdout to OUR stderr so refresh_all.py's progress
+        # output can never contaminate the stdout JSON IPC channel emitted by
+        # emit_snapshot_json (which runs after this).
+        subprocess.run([sys.executable, str(refresh_script)], check=False, stdout=sys.stderr)
     else:
         print(f"⚠ refresh_all.py not found at {refresh_script}", file=sys.stderr)
 
@@ -627,7 +599,7 @@ def main():
     parser.add_argument("--balances",  action="store_true")
     parser.add_argument("--positions", action="store_true")
     parser.add_argument("--orders",    action="store_true")
-    parser.add_argument("--snapshot",  action="store_true", help="Full snapshot → portfolio.json tvSnapshot")
+    parser.add_argument("--snapshot",  action="store_true", help="Full snapshot → domain_model.sqlite + JSON on stdout")
     parser.add_argument("--compare",   action="store_true", help="Diff TV vs Questrade positions")
     parser.add_argument("--inspect",   action="store_true", help="Dump broker panel DOM for debugging")
     parser.add_argument("--promote",   action="store_true", help="Promote TV positions to portfolio.json holdings list")
@@ -718,29 +690,35 @@ def main():
     # ── snapshot ─────────────────────────────────────────────────────────────
     if args.snapshot or not any([args.accounts, args.balances, args.positions, args.orders, args.compare, args.inspect, args.refresh_exchange_rate]):
         # Fetch balances first — getBalances() is unreliable after account-switching in getPortfolio()
-        print("Fetching live balances from TradingView Account Summary...")
+        # NOTE: every human/progress line in this branch goes to stderr. stdout is
+        # reserved exclusively for the final single-line JSON snapshot emitted by
+        # emit_snapshot_json — it is the IPC return channel BrokerSyncService.ts
+        # parses (replacing the former portfolio.json tvSnapshot readback). Any
+        # stray stdout print here would corrupt the caller's JSON.parse.
+        print("Fetching live balances from TradingView Account Summary...", file=sys.stderr)
         balances: Optional[dict] = fetch_tv_balances()
         if balances.get("error"):
             print(f"⚠  Balance fetch failed: {balances['error']} — totals will not be updated.", file=sys.stderr)
             balances = None
 
-        print("Fetching full portfolio snapshot from TradingView...")
+        print("Fetching full portfolio snapshot from TradingView...", file=sys.stderr)
         snapshot = fetch_tv_snapshot()
         if "error" in snapshot:
             print(f"❌ {snapshot['error']}", file=sys.stderr)
             print("   Is TradingView Desktop running with a broker connected?", file=sys.stderr)
             sys.exit(1)
 
-        path = write_snapshot(snapshot, promote=args.promote, balances=balances)
+        write_snapshot(snapshot, promote=args.promote, balances=balances)
         accts = snapshot.get("accounts", [])
         snaps = snapshot.get("snapshots", [])
         for s in snaps:
             n = len(s.get("positions", []))
-            print(f"   {s.get('accountType','?')} ({s.get('accountId','?')}): {n} positions")
-        print(f"✓ {len(snapshot.get('positions', []))} total positions across {len(accts)} accounts")
-        print(f"✓ Written to {path}")
-        print()
-        print(json.dumps(snapshot, indent=indent))
+            print(f"   {s.get('accountType','?')} ({s.get('accountId','?')}): {n} positions", file=sys.stderr)
+        print(f"✓ {len(snapshot.get('positions', []))} total positions across {len(accts)} accounts", file=sys.stderr)
+        print("✓ Persisted to domain_model.sqlite (SQLite-only; portfolio.json no longer written)", file=sys.stderr)
+
+        # stdout IPC channel: the ONLY thing on stdout is this single JSON line.
+        emit_snapshot_json(snapshot)
 
 
 if __name__ == "__main__":
