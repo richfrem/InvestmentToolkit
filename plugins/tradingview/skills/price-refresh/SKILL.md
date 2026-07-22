@@ -109,3 +109,24 @@ Highlight large moves (>5% either direction) with a marker.
 1. **Never fail entirely** if TradingView is down — yfinance fallback must always work
 2. **Always show the source** for each price so the user knows what's real-time vs. delayed
 3. **Never modify** any portfolio files — this is a read-only operation
+
+---
+
+## Related: Backend `/refresh-prices` Endpoint (routes/portfolio.ts)
+
+The Express `POST /refresh-prices` endpoint (separate code path from this skill's CLI
+tools) calls `py_services/fetch_portfolio_heatmap.py`, not `tv_batch_quotes.py`. Two rules
+apply there — do not regress either when touching that endpoint or its Python script:
+
+1. **Always use the most current available price, regular or extended/overnight session.**
+   `fetch_portfolio_heatmap.py` already implements this: TradingView watchlist-first via CDP
+   (including the `BOATS:TICKER` overnight/extended-hours feed, 8PM–4AM ET), falling back to
+   yfinance `fast_info.last_price` only when TV is unreachable. Never swap this for a plain
+   `regularMarketPrice`/last-close lookup — that would silently drop extended-hours coverage.
+2. **A price refresh must also refresh the stored USD/CAD exchange rate at the same time.**
+   Wave 3 Task 8: `POST /refresh-prices` now calls
+   `fetch_broker_data.py --refresh-exchange-rate` (a lightweight balances-only CDP fetch via
+   `refresh_exchange_rate_only()`) in the same `Promise.all` as the price fetch, so the stored
+   rate in `broker_exchange_rate` never goes stale relative to freshly-refreshed USD prices.
+   This is separate from a full `--snapshot` broker sync — do not remove it under the
+   assumption that only a full sync should touch the exchange rate.

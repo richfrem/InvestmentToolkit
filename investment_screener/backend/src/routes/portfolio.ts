@@ -642,9 +642,19 @@ router.post('/refresh-prices', async (_req, res) => {
         const { holdings: portfolioData } = readPortfolio();
         // Strip stored price so fetch_portfolio_heatmap.py uses live yfinance prices
         const itemsForFetch = portfolioData.map((item: any) => { const { price, ...rest } = item; return rest; });
+        // Wave 3 Task 8: a price-only refresh never triggers a full broker sync, so the
+        // stored USD->CAD rate could go stale relative to freshly-refreshed USD prices.
+        // fetch_broker_data.py --refresh-exchange-rate does a lightweight balances-only
+        // CDP fetch (no full position sync) and persists the rate directly, run here in
+        // parallel with the price fetch so the two numbers never drift apart. Best-effort:
+        // its failure must not block the price refresh this endpoint exists to perform.
         const [data, exchangeRate] = await Promise.all([
             spawnPythonScript('fetch_portfolio_heatmap.py', [JSON.stringify(itemsForFetch), '--bust-cache']),
             getLiveUsdCadRate(JAN1_USD_CAD_RATE),
+            spawnPythonScript('fetch_broker_data.py', ['--refresh-exchange-rate']).catch((err: Error) => {
+                console.warn(`[API] Exchange rate refresh during price refresh failed: `, err.message);
+                return null;
+            }),
         ]);
         if (data.error) { res.status(400).json({ error: data.error }); return; }
         const updatedItems = portfolioData.map((item: any) => {
