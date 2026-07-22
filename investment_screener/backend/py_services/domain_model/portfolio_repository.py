@@ -13,6 +13,8 @@ found (RRSP holdings silently collapsing into TFSA).
 
 import sqlite3
 
+from domain_model.exchange_rate_repository import get_exchange_rate
+
 
 def get_account_market_values(conn: sqlite3.Connection) -> dict[str, float]:
     """Market value per real account: SUM(quantity * price), grouped by account_id.
@@ -131,15 +133,13 @@ def load_portfolio_state_from_db(conn: sqlite3.Connection) -> dict:
         "shares": shares,
         "prices": prices,
         "total_usd": get_portfolio_total_value(conn),
-        # PLACEHOLDER, not sourced FX data: portfolio_io.py's load_portfolio_state()
-        # (the JSON-backed function this module replaces per Task 4's plan) reads
-        # totals.exchangeRate from portfolio.json and only falls back to this same
-        # 1.38 literal when that key is absent -- this module has no equivalent
-        # totals/exchangeRate column to read from yet, so it always uses the
-        # fallback. Real FX-rate sourcing is out of this task's scope: per
-        # CLAUDE.md pitfall #27, it must be inferred from TradingView's own native
-        # values (e.g. totalEquityCADCombined / totalEquityUSDCombined), never an
-        # external FX API call. Wiring that in is a known gap for a later task.
-        "exchange_rate": 1.38,
+        # The single broker-reported FX fact, read from broker_exchange_rate
+        # (Wave 3 Task 8, ADR-030 addendum) -- inferred at sync time from
+        # TradingView's own native totalEquityCADCombined/USDCombined ratio per
+        # CLAUDE.md pitfall #27, never an external FX API. Falls back to the same
+        # 1.38 literal portfolio_io.py's `totals.get("exchangeRate") or 1.38` uses
+        # for a fresh/never-synced DB. This closes the CAD-exchange-rate gap
+        # formerly documented as a retained-JSON exception (its Python face).
+        "exchange_rate": get_exchange_rate(conn) or 1.38,
         "_totals_from_broker": False,  # per ADR-030: always computed, never stored/read from a broker column
     }

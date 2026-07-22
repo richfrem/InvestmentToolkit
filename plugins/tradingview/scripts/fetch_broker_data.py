@@ -332,6 +332,29 @@ def build_totals_from_balances(balances: dict, stored_exchange_rate: float) -> d
     }
 
 
+def _compute_exchange_rate_from_snapshot(snapshot: dict) -> Optional[float]:
+    """Infer the live USD->CAD rate from TV's own native equity totals.
+
+    Replicates investment_screener/backend/src/utils/helpers.ts::getLiveUsdCadRate()'s
+    exact math: sum totalEquityCADCombined (falling back to totalEquityCAD) and
+    totalEquityUSDCombined (falling back to totalEquityUSD) across every snapshot,
+    then rate = totalCAD / totalUSD. Returns None when either sum is non-positive
+    (no bogus rate written). Per CLAUDE.md pitfall #27 the rate is ALWAYS inferred
+    from these native broker values, never an external FX API.
+    """
+    total_cad = 0.0
+    total_usd = 0.0
+    for snap in snapshot.get("snapshots", []):
+        balances = snap.get("balances") or {}
+        cad = balances.get("totalEquityCADCombined") or balances.get("totalEquityCAD") or 0
+        usd = balances.get("totalEquityUSDCombined") or balances.get("totalEquityUSD") or 0
+        total_cad += float(cad)
+        total_usd += float(usd)
+    if total_usd > 0 and total_cad > 0:
+        return total_cad / total_usd
+    return None
+
+
 def _persist_snapshot_to_db(snapshot: dict, db_path: str = DOMAIN_MODEL_DB_PATH) -> int:
     """Persist a raw TV snapshot's real per-account positions/cash into
     account_investment rows -- mirrors migrate_portfolio_to_sqlite.py's
@@ -345,6 +368,7 @@ def _persist_snapshot_to_db(snapshot: dict, db_path: str = DOMAIN_MODEL_DB_PATH)
     from domain_model.account_repository import upsert_account
     from domain_model.account_investment_repository import upsert_account_investment
     from domain_model.investment_repository import resolve_investment
+    from domain_model.exchange_rate_repository import upsert_exchange_rate
 
     conn = initialize_db(db_path)
     now = datetime.now(timezone.utc).isoformat()
@@ -377,6 +401,14 @@ def _persist_snapshot_to_db(snapshot: dict, db_path: str = DOMAIN_MODEL_DB_PATH)
                 currency="USD", last_synced_at=now,
             )
             written += 1
+
+    # Wave 3 Task 8: store the single broker-reported FX fact (USD->CAD),
+    # inferred from the SAME native TV totals helpers.ts::getLiveUsdCadRate() uses.
+    # Only the scalar rate is stored (ADR-030 addendum) -- never a CAD total.
+    rate = _compute_exchange_rate_from_snapshot(snapshot)
+    if rate is not None:
+        upsert_exchange_rate(conn, rate, now)
+
     return written
 
 

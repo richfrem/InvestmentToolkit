@@ -43,6 +43,9 @@
  *     latest average_cost, price) for weights/strategy-allocation call sites
  *   - getPerAccountPositions(symbol) - per-account quantity/average_cost for one
  *     symbol, used by /position/:ticker and /holdings/:ticker
+ *   - upsertExchangeRate(rate, syncedAt?) / getExchangeRate() - the single
+ *     broker-reported USD->CAD FX fact (broker_exchange_rate singleton), mirrors
+ *     exchange_rate_repository.py (Wave 3 Task 8, ADR-030 addendum)
  */
 import Database from 'better-sqlite3';
 
@@ -115,7 +118,38 @@ export class PortfolioRepository {
 
             CREATE INDEX IF NOT EXISTS idx_account_investment_account ON account_investment(account_id);
             CREATE INDEX IF NOT EXISTS idx_account_investment_investment ON account_investment(investment_id);
+
+            CREATE TABLE IF NOT EXISTS broker_exchange_rate (
+                id              INTEGER PRIMARY KEY CHECK (id = 1),
+                usd_to_cad_rate REAL NOT NULL,
+                synced_at       TEXT NOT NULL
+            );
         `);
+    }
+
+    /** Mirrors `exchange_rate_repository.py::upsert_exchange_rate` — idempotently
+     * store the single broker-reported USD->CAD FX fact (singleton row id=1,
+     * overwritten each sync). Per ADR-030's Wave 3 addendum only this scalar is
+     * stored; CAD totals are computed as usd*rate at read time, never persisted. */
+    upsertExchangeRate(usdToCadRate: number, syncedAt: string = new Date().toISOString()): void {
+        this.db
+            .prepare(
+                `INSERT INTO broker_exchange_rate (id, usd_to_cad_rate, synced_at)
+                 VALUES (1, ?, ?)
+                 ON CONFLICT(id) DO UPDATE SET
+                 usd_to_cad_rate = excluded.usd_to_cad_rate,
+                 synced_at = excluded.synced_at`
+            )
+            .run(usdToCadRate, syncedAt);
+    }
+
+    /** Mirrors `exchange_rate_repository.py::get_exchange_rate` — the stored
+     * USD->CAD rate, or null if never synced (caller falls back to a static rate). */
+    getExchangeRate(): number | null {
+        const row = this.db
+            .prepare('SELECT usd_to_cad_rate FROM broker_exchange_rate WHERE id = 1')
+            .get() as { usd_to_cad_rate: number } | undefined;
+        return row ? row.usd_to_cad_rate : null;
     }
 
     /** Mirrors `account_repository.py::upsert_account` — idempotent
