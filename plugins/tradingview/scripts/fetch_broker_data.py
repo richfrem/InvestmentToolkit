@@ -9,9 +9,12 @@ Purpose:
     Questrade REST API as a secondary source for cross-validation.
 
     Note: The portfolio transition period is complete. TradingView CDP is now the
-    canonical runtime source of truth. All positions are consolidated across accounts
-    and written to the single portfolio database, portfolio.json. The raw account-specific
-    broker telemetry is stored inside the tvSnapshot root key of portfolio.json.
+    canonical runtime source of truth. In --snapshot mode the consolidated per-account
+    positions/cash are persisted to the domain model (domain_model.sqlite) ONLY — the
+    former portfolio.json write (tvSnapshot/holdings/totals) was removed in the Wave 3
+    Domain Data Model v3.2 completion cutover. The raw snapshot is returned to the Node
+    caller (BrokerSyncService.spawnFetchBroker) over stdout as a single JSON line
+    (emit_snapshot_json); all progress output goes to stderr so stdout stays clean.
 
 Layer: Backend / py_services / Broker
 
@@ -38,7 +41,8 @@ Key Functions:
     - fetch_tv()        - Reads all data from TradingView broker panel via CDP
     - fetch_questrade() - Reads from Questrade REST API (requires .questrade_cache)
     - compare()         - Diffs TV vs Questrade positions and balances
-    - write_snapshot()  - Writes tvSnapshot inside portfolio.json (or promotes positions with --promote)
+    - write_snapshot()  - Persists the snapshot to domain_model.sqlite (SQLite-only; no portfolio.json)
+    - emit_snapshot_json() - Emits the snapshot as one JSON line on stdout (Node IPC return channel)
 
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Internal state database)
@@ -424,10 +428,11 @@ def _persist_snapshot_to_db(
     per-holding write shape. Only the three real, seeded broker sub-accounts
     (TFSA/RRSP/CASH) are in scope; cash is written as a CASH_USD investment row
     via the same upsert_account_investment path as any equity position (Wave 0
-    resolved decision 5), not a special-cased column. Additive: the
-    portfolio.json write in write_snapshot() is unchanged.
+    resolved decision 5), not a special-cased column. This is now the SOLE
+    persistence path in write_snapshot() (the former portfolio.json write was
+    removed in the Wave 3 completion cutover).
 
-    ``totals`` (the portfolio.json ``totals`` block built by build_totals_from_balances)
+    ``totals`` (the broker-authoritative ``totals`` block built by build_totals_from_balances)
     is optional. When present with a positive ``totalUSD``, the broker's own
     last-reported total (totalUSD/totalCAD/totalSource) is captured in
     broker_reported_total (Wave 3 Task 8, tvSnapshot closure) -- the single fact
@@ -573,7 +578,7 @@ def emit_snapshot_json(snapshot: dict) -> None:
 
 
 def _run_portfolio_refresh() -> None:
-    """Run refresh_all.py after any portfolio.json write to keep thesis pages current."""
+    """Run refresh_all.py after any broker sync to keep thesis pages current."""
     _repo_root = Path(SCRIPT_DIR).parents[2]
     refresh_script = _repo_root / "plugins/portfolio-advisor/scripts/refresh_all.py"
     if refresh_script.exists():
@@ -594,7 +599,7 @@ def main():
     parser.add_argument("--balances",  action="store_true")
     parser.add_argument("--positions", action="store_true")
     parser.add_argument("--orders",    action="store_true")
-    parser.add_argument("--snapshot",  action="store_true", help="Full snapshot → portfolio.json tvSnapshot")
+    parser.add_argument("--snapshot",  action="store_true", help="Full snapshot → domain_model.sqlite + JSON on stdout")
     parser.add_argument("--compare",   action="store_true", help="Diff TV vs Questrade positions")
     parser.add_argument("--inspect",   action="store_true", help="Dump broker panel DOM for debugging")
     parser.add_argument("--promote",   action="store_true", help="Promote TV positions to portfolio.json holdings list")
