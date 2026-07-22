@@ -34,8 +34,27 @@ from typing import Any, Dict, List, Tuple
 
 # Resolve project paths
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PORTFOLIO_PATH = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
+PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"
 CASH_FLOWS_PATH = REPO_ROOT / "investment_screener/backend/data/cash_flows.json"
+
+
+def load_current_balance_cad() -> float:
+    """Return the current portfolio total in CAD, derived from domain_model.sqlite.
+
+    Wave 3 cutover (ADR-030): ``total_cad = total_usd * exchange_rate``, where
+    both come from ``portfolio_io.load_portfolio_state()`` — ``total_usd`` is the
+    single computed authoritative total (``portfolio_repository.get_portfolio_total_value``)
+    and ``exchange_rate`` is the broker-reported USD→CAD scalar
+    (``exchange_rate_repository.get_exchange_rate``, default 1.38). This replaces
+    the old read of ``portfolio.json``'s stored ``totals.totalCAD``.
+    """
+    sys.path.insert(0, str(PY_SERVICES))
+    from portfolio_io import load_portfolio_state
+
+    state = load_portfolio_state(None)  # path arg retained for compat, unused
+    total_usd = float(state.get("total_usd", 0.0) or 0.0)
+    exchange_rate = float(state.get("exchange_rate", 1.38) or 1.38)
+    return total_usd * exchange_rate
 
 
 # External comment: Reads file contents as JSON
@@ -167,7 +186,6 @@ def calculate_twr() -> None:
     """
     is_json_mode = "--json" in sys.argv
     flows_data = load_json(CASH_FLOWS_PATH)
-    portfolio_data = load_json(PORTFOLIO_PATH)
 
     if not flows_data:
         if is_json_mode:
@@ -177,7 +195,7 @@ def calculate_twr() -> None:
         sys.exit(1)
 
     starting_balance = flows_data.get("starting_balance_cad", 0.0)
-    current_balance = (portfolio_data.get("totals") or {}).get("totalCAD", 0.0)
+    current_balance = load_current_balance_cad()
     flows = flows_data.get("cash_flows", [])
 
     if starting_balance <= 0:
