@@ -346,8 +346,12 @@ def _compute_exchange_rate_from_snapshot(snapshot: dict) -> Optional[float]:
     total_usd = 0.0
     for snap in snapshot.get("snapshots", []):
         balances = snap.get("balances") or {}
-        cad = balances.get("totalEquityCADCombined") or balances.get("totalEquityCAD") or 0
-        usd = balances.get("totalEquityUSDCombined") or balances.get("totalEquityUSD") or 0
+        cad_combined = balances.get("totalEquityCADCombined")
+        cad_fallback = balances.get("totalEquityCAD")
+        cad = cad_combined if cad_combined is not None else (cad_fallback if cad_fallback is not None else 0)
+        usd_combined = balances.get("totalEquityUSDCombined")
+        usd_fallback = balances.get("totalEquityUSD")
+        usd = usd_combined if usd_combined is not None else (usd_fallback if usd_fallback is not None else 0)
         total_cad += float(cad)
         total_usd += float(usd)
     if total_usd > 0 and total_cad > 0:
