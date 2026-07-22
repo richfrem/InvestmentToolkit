@@ -234,13 +234,13 @@ export function mergeIntoPortfolio(tvSnapshot: TVSnapshot, existing: any[]): {
  * anything else is unrecognized and intentionally skipped, matching the
  * migration script's own account allowlist.
  *
- * This does NOT replace the existing `portfolio.json` `tvSnapshot` cache write
- * in `syncAuto()` below — that JSON write is left intact because
- * `routes/portfolio.ts`'s `/position/:ticker` and `/holdings/:ticker` routes
- * still read per-account quantities directly off `tvSnapshot.positions` and
- * were not part of this wave's read-side cutover. This function makes the
- * write ALSO land in SQLite going forward, additive rather than a replacement,
- * so a future read-side migration for those two routes has real data waiting.
+ * Wave 3 Task 8 (final dual-write reduction): this is now the SOLE write in
+ * `syncAuto()` below — the former `portfolio.json` `tvSnapshot` cache write there
+ * was removed. It was safe to drop because `routes/portfolio.ts`'s
+ * `/position/:ticker` and `/holdings/:ticker` routes were migrated to read
+ * per-account quantities from SQLite (`account_investment`) in Task 6, and the
+ * raw tvSnapshot cache is still written by `fetch_broker_data.py` during
+ * `syncFromTV`, so no consumer regressed.
  */
 /**
  * Infer the live USD->CAD rate from TV's own native equity totals — replicates
@@ -344,24 +344,23 @@ export async function syncAuto(): Promise<SyncResult> {
             const snapshot = await syncFromTV();
             const posCount = snapshot.positions?.length ?? 0;
             if (posCount > 0) {
-                // Write tvSnapshot inside portfolio.json
-                fs.mkdirSync(path.dirname(PORTFOLIO_FILE), { recursive: true });
-                const existing = fs.existsSync(PORTFOLIO_FILE)
-                    ? JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'))
-                    : {};
-                const data = Array.isArray(existing) ? { holdings: existing } : existing;
-                data.tvSnapshot = snapshot;
-                fs.writeFileSync(PORTFOLIO_FILE, JSON.stringify(data, null, 2));
+                // Wave 3 Task 8 (final dual-write reduction): the raw tvSnapshot is
+                // persisted to the domain model (SQLite) via persistSnapshotToDb —
+                // reading the same in-memory `snapshot` object, no portfolio.json
+                // read/merge/write. The former portfolio.json tvSnapshot cache write
+                // here was redundant (fetch_broker_data.py already wrote it during
+                // syncFromTV) and its read-side consumers (/position, /holdings) were
+                // migrated to SQLite in Task 6, so this JSON write was removed.
                 try {
                     persistSnapshotToDb(snapshot);
                 } catch (dbErr: any) {
                     console.warn(`[BrokerSync] Failed to persist snapshot to domain_model.sqlite:`, dbErr.message);
                 }
-                console.log(`[BrokerSync] TV sync complete: ${posCount} positions → portfolio.json (tvSnapshot key) + domain_model.sqlite`);
+                console.log(`[BrokerSync] TV sync complete: ${posCount} positions → domain_model.sqlite (domain model)`);
                 return {
                     dataSource:    'tradingview-cdp',
                     positionCount: posCount,
-                    message:       `Synced ${posCount} positions from TradingView CDP. Written to portfolio.json under tvSnapshot. Use /tv-portfolio-sync to review and promote.`,
+                    message:       `Synced ${posCount} positions from TradingView CDP. Persisted to the domain model (SQLite). Use /tv-portfolio-sync to review and promote.`,
                     tvSnapshot:    snapshot,
                 };
             }

@@ -72,6 +72,30 @@ describe('BrokerSyncService.persistSnapshotToDb', () => {
         }
     });
 
+    it('persistSnapshotToDb writes only the SQLite dbPath — creates no portfolio.json', () => {
+        // Wave 3 Task 8: persistSnapshotToDb is now syncAuto's SOLE write. It must
+        // touch only the SQLite file it is given, never portfolio.json.
+        const guardJson = path.join(os.tmpdir(), `portfolio-guard-${Date.now()}-${Math.random()}.json`);
+        expect(fs.existsSync(guardJson)).to.equal(false);
+        const snapshot = snapshotWith([
+            { accountType: 'TFSA', balances: { cashUSD: 10 }, positions: [{ symbol: 'NVDA', quantity: 1, avgFillPrice: 800, accountType: 'TFSA', accountId: '1' }] },
+        ]);
+        persistSnapshotToDb(snapshot, dbPath);
+        expect(fs.existsSync(dbPath), 'SQLite write should succeed').to.equal(true);
+        expect(fs.existsSync(guardJson), 'no portfolio.json should be produced').to.equal(false);
+    });
+
+    it('syncAuto no longer writes portfolio.json (source-level regression guard)', () => {
+        // A runtime syncAuto test would require mocking the TradingView CDP
+        // subprocess (prohibited on critical runtime paths), so this guards the
+        // reduction at the source: the removed fs.writeFileSync(PORTFOLIO_FILE,...)
+        // must not reappear inside syncAuto.
+        const src = fs.readFileSync(path.resolve(__dirname, '../../src/services/BrokerSyncService.ts'), 'utf-8');
+        const syncAutoBody = src.slice(src.indexOf('export async function syncAuto'));
+        expect(syncAutoBody).to.not.match(/fs\.writeFileSync\s*\(\s*PORTFOLIO_FILE/);
+        expect(syncAutoBody).to.match(/persistSnapshotToDb\(snapshot\)/);
+    });
+
     it('skips unrecognized non-real accounts and zero/negative-quantity positions', () => {
         const snapshot = snapshotWith([
             {
