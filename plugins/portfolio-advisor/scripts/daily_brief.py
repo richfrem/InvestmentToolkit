@@ -41,6 +41,25 @@ DAILY_BRIEFS_DIR = REPO_ROOT / "investment_screener/backend/data/daily-briefs"
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
+def _load_total_equity() -> float:
+    """Return the authoritative portfolio total (USD) from domain_model.sqlite.
+
+    Wave 3 cutover (ADR-030): sources ``total_usd`` from
+    ``portfolio_io.load_portfolio_state()`` — the same computed authoritative
+    value that ``portfolio.json``'s ``totals.totalUSD`` carried, now computed
+    exactly once in ``portfolio_repository.get_portfolio_total_value()``. Never
+    re-computes shares×price here. Degrades to 0.0 if the DB is unavailable.
+    """
+    sys.path.insert(0, str(PY_SERVICES))
+    try:
+        from portfolio_io import load_portfolio_state
+        # portfolio_path arg is retained for signature compatibility but unused.
+        return float(load_portfolio_state(None).get("total_usd", 0.0) or 0.0)
+    except Exception as exc:  # pragma: no cover - defensive
+        print(f"  Portfolio total unavailable: {exc}", file=sys.stderr)
+        return 0.0
+
+
 def _ta_age_hours(db_path: str | None = None) -> float | None:
     """Return hours since last TA sweep from SQLite database, falling back to legacy JSON."""
     import os
@@ -534,12 +553,9 @@ def run(
 
     # ── 6b. Actionable recommendations (standing-decision aware) ─────────────
     print("▶ Recommendations...", file=sys.stderr)
-    portfolio_path = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
-    total_equity = 0.0
-    if portfolio_path.exists():
-        with open(portfolio_path) as f:
-            # Live broker total — never computed from shares × price
-            total_equity = json.load(f).get("totals", {}).get("totalUSD", 0.0)
+    # Live broker total — sourced from domain_model.sqlite (Wave 3 cutover,
+    # ADR-030). Never computed from shares × price here.
+    total_equity = _load_total_equity()
     recommendations = build_recommendations(
         scores=scores_raw,
         standing=load_standing_decisions(),
