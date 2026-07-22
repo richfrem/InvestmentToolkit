@@ -242,6 +242,28 @@ export function mergeIntoPortfolio(tvSnapshot: TVSnapshot, existing: any[]): {
  * write ALSO land in SQLite going forward, additive rather than a replacement,
  * so a future read-side migration for those two routes has real data waiting.
  */
+/**
+ * Infer the live USD->CAD rate from TV's own native equity totals — replicates
+ * helpers.ts::getLiveUsdCadRate()'s exact math: sum totalEquityCADCombined
+ * (fallback totalEquityCAD) and totalEquityUSDCombined (fallback totalEquityUSD)
+ * across every snapshot, then rate = totalCAD / totalUSD. Returns null when
+ * either sum is non-positive. Per CLAUDE.md pitfall #27 the rate is always
+ * inferred from these native broker values, never an external FX API.
+ */
+export function computeExchangeRateFromSnapshot(snapshot: TVSnapshot): number | null {
+    let totalCAD = 0;
+    let totalUSD = 0;
+    for (const snap of (snapshot as any).snapshots ?? []) {
+        const b = snap?.balances;
+        if (b) {
+            totalCAD += Number(b.totalEquityCADCombined ?? b.totalEquityCAD ?? 0);
+            totalUSD += Number(b.totalEquityUSDCombined ?? b.totalEquityUSD ?? 0);
+        }
+    }
+    if (totalUSD > 0 && totalCAD > 0) return totalCAD / totalUSD;
+    return null;
+}
+
 export function persistSnapshotToDb(snapshot: TVSnapshot, dbPath: string = DOMAIN_MODEL_DB_FILE): void {
     const investmentRepo = new InvestmentRepository(dbPath);
     const portfolioRepo = new PortfolioRepository(dbPath);
@@ -268,6 +290,12 @@ export function persistSnapshotToDb(snapshot: TVSnapshot, dbPath: string = DOMAI
                 );
             }
         }
+
+        // Wave 3 Task 8: store the single broker-reported FX fact (USD->CAD),
+        // inferred from the SAME native TV totals helpers.ts::getLiveUsdCadRate()
+        // uses. Only the scalar rate is stored (ADR-030 addendum), never a CAD total.
+        const rate = computeExchangeRateFromSnapshot(snapshot);
+        if (rate !== null) portfolioRepo.upsertExchangeRate(rate, now);
     } finally {
         investmentRepo.close();
         portfolioRepo.close();
@@ -325,4 +353,4 @@ export async function syncAuto(): Promise<SyncResult> {
     };
 }
 
-export const brokerSyncService = { syncFromTV, syncAuto, mergeIntoPortfolio, persistSnapshotToDb };
+export const brokerSyncService = { syncFromTV, syncAuto, mergeIntoPortfolio, persistSnapshotToDb, computeExchangeRateFromSnapshot };

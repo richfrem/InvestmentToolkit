@@ -8,11 +8,11 @@
  * Key Input Dependencies:
  *   - ./paths (for portfolio JSON paths references)
  *   - ../services/bridge (for spawning Python analytical scripts)
- *   - investment_screener/backend/data/portfolio.json (getLiveUsdCadRate reads
- *     tvSnapshot broker balance totals for FX inference — Wave 3 Task 6
- *     investigation found no SQLite equivalent table exists yet for
- *     per-currency broker balances; NOT rewired, documented stop, see the
- *     comment inside getLiveUsdCadRate)
+ *   - data/domain_model.sqlite via PortfolioRepository.getExchangeRate()
+ *     (getLiveUsdCadRate reads the single broker_exchange_rate scalar — Wave 3
+ *     Task 8 closed the former portfolio.json dependency; the rate is inferred at
+ *     sync time from TV's native CAD/USD totals and stored once, per ADR-030's
+ *     Wave 3 addendum and CLAUDE.md pitfall #27)
  * 
  * Key Output Dependencies:
  *   None
@@ -25,8 +25,9 @@
  */
 
 import net from 'net';
-import { PORTFOLIO_FILE, TARGET_PORTFOLIO_FILE } from './paths';
+import { PORTFOLIO_FILE, TARGET_PORTFOLIO_FILE, DOMAIN_MODEL_DB_FILE } from './paths';
 import { spawnPythonScript } from '../services/bridge';
+import { PortfolioRepository } from '../services/PortfolioRepository';
 
 /**
  * Validate that a ticker symbol conforms to standard alphanumeric structure.
@@ -47,47 +48,34 @@ export const isValidTicker = (ticker: string): boolean => {
  * @param {number} fallback - Default rate level to use on fetch failures
  * @returns {Promise<number>} Current conversion rate multiplier
  */
-export async function getLiveUsdCadRate(fallback: number): Promise<number> {
+export async function getLiveUsdCadRate(fallback: number, dbPath: string = DOMAIN_MODEL_DB_FILE): Promise<number> {
     /**
-     * Attempts to infer the live exchange rate directly from the TV snapshot in portfolio.json first.
-     * Otherwise, falls back to the EXCHANGE_RATE_API_KEY pair endpoint or a static fallback rate.
+     * Reads the single broker-reported USD->CAD rate from the broker_exchange_rate
+     * table (via PortfolioRepository.getExchangeRate()). That scalar was inferred at
+     * sync time from TradingView's own native totalEquityCADCombined/USDCombined
+     * ratio (CLAUDE.md pitfall #27, never an external FX API) by the sync writer
+     * (BrokerSyncService.persistSnapshotToDb / fetch_broker_data._persist_snapshot_to_db).
      *
-     * Wave 3 Task 6 investigation (NOT rewired — documented stop, not an oversight):
-     * this reads `tvSnapshot.snapshots[].balances.totalEquityCADCombined/USDCombined`
-     * from portfolio.json. No table in domain_model.sqlite stores per-currency broker
-     * account balance totals (only per-position quantity/price via account_investment/
-     * investment_price) — this is the exact same documented gap as
-     * py_services/domain_model/portfolio_repository.py::load_portfolio_state_from_db's
-     * `exchange_rate` field (see that function's comment). Inventing a new table for
-     * this single call site is out of scope (no schema changes permitted this wave);
-     * routes/stock.ts and routes/portfolio.ts both still call this function unchanged
-     * for exchangeRate even after their own totalUSD/totalCAD reads were rewired onto
-     * SQLite in this same task.
+     * Wave 3 Task 8 closed the former portfolio.json dependency here (the CAD gap's
+     * TS face; its Python twin is portfolio_repository.py::load_portfolio_state_from_db).
+     * Per ADR-030's Wave 3 addendum only the FX rate (a genuine broker fact) is
+     * stored; CAD totals are computed as usd*rate at read time. Falls back to the
+     * static `fallback` for a fresh/never-synced DB, matching every other reader's
+     * fallback convention.
      */
+    let repo: PortfolioRepository | null = null;
     try {
-        const fs = require('fs');
-        if (fs.existsSync(PORTFOLIO_FILE)) {
-            const data = JSON.parse(fs.readFileSync(PORTFOLIO_FILE, 'utf-8'));
-            const snapshots = data?.tvSnapshot?.snapshots || [];
-            let totalCAD = 0;
-            let totalUSD = 0;
-            for (const snap of snapshots) {
-                const b = snap?.balances;
-                if (b) {
-                    const cad = b.totalEquityCADCombined ?? b.totalEquityCAD ?? 0;
-                    const usd = b.totalEquityUSDCombined ?? b.totalEquityUSD ?? 0;
-                    totalCAD += cad;
-                    totalUSD += usd;
-                }
-            }
-            if (totalUSD > 0 && totalCAD > 0) {
-                const inferredRate = totalCAD / totalUSD;
-                console.log(`[ExchangeRate] Inferred live rate from TV balances: ${inferredRate.toFixed(4)}`);
-                return inferredRate;
-            }
+        repo = new PortfolioRepository(dbPath);
+        const rate = repo.getExchangeRate();
+        if (rate !== null && rate > 0) {
+            return rate;
         }
     } catch (e: any) {
-        console.warn(`[ExchangeRate] Failed to infer rate from TV snapshot:`, e.message);
+        console.warn(`[ExchangeRate] Failed to read rate from domain_model.sqlite:`, e.message);
+    } finally {
+        if (repo) {
+            try { repo.close(); } catch { /* already closed */ }
+        }
     }
 
     return fallback;

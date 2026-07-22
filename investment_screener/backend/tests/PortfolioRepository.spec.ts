@@ -58,4 +58,20 @@ describe('PortfolioRepository', () => {
             expect(rows[0].last_synced_at).to.equal('2026-07-21T00:00:00.000Z');
         });
     });
+
+    describe('exchange rate (broker_exchange_rate singleton)', () => {
+        it('returns null when never synced', () => {
+            expect(repo.getExchangeRate()).to.equal(null);
+        });
+
+        it('round-trips a rate and overwrites the single row idempotently', () => {
+            repo.upsertExchangeRate(1.3795, '2026-07-20T00:00:00.000Z');
+            expect(repo.getExchangeRate()).to.equal(1.3795);
+            repo.upsertExchangeRate(1.4012, '2026-07-21T00:00:00.000Z');
+            expect(repo.getExchangeRate()).to.equal(1.4012);
+            const db = (repo as any).db;
+            const count = db.prepare('SELECT COUNT(*) AS c FROM broker_exchange_rate').get().c;
+            expect(count).to.equal(1);
+        });
+    });
 });
