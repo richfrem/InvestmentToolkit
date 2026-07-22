@@ -1,8 +1,13 @@
-# ADR: Valuation Committee (Phase 2a)
+# ADR-032: Valuation Committee (Phase 2a)
 
 **Status:** Accepted
 **Date:** 2026-07-04
 **Context:** Fable5 Elevation Guide Phase 2a — see `docs/superpowers/specs/2026-07-04-valuation-committee-design.md`
+
+**Renumbered 2026-07-22** from `docs/architecture/ADR-valuation-committee.md` into the canonical
+`ADRs/` sequence (was previously outside the numbered ADR history). No content change beyond this
+header — this ADR's subject (projection validation gates) is unrelated to the Domain Data Model
+migration and needs no superseded-schema note.
 
 ## Decision
 

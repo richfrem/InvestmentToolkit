@@ -4,6 +4,15 @@ The **InvestmentToolkit** operates a circular, multi-state portfolio synchroniza
 
 This document describes the dual-state model, the five core operational synchronization loops, and how the toolkit ensures zero drift between strategic intent and active trading accounts.
 
+> **Wave 3 update (2026-07-22):** the "Actual Broker State" is now `domain_model.sqlite`
+> (`account`/`account_investment`/`investment_price`/`broker_exchange_rate`/`broker_reported_total`
+> tables), not `portfolio.json`. `portfolio.json` (gitignored) is no longer the write target for the
+> real sync path — see "Loop 1" below for the current, verified data flow. It remains readable as a
+> legacy/fallback artifact for a small number of not-yet-migrated read paths (see
+> `docs/superpowers/status/wave3-*-report.md` for the exact list); it is not archived yet pending
+> those final reads. Do not assume this document's pre-Wave-3 description of `portfolio.json` as
+> the live write target still holds — it does not, as of this wave's completion.
+
 ---
 
 ## The Dual-State Architecture
@@ -13,7 +22,10 @@ To maintain rigorous trade discipline, the system separates the portfolio into t
 ```
                   ┌─────────────────────────────────────┐
                   │          LIVE BROKER STATE          │
-                  │           (portfolio.json)          │
+                  │   domain_model.sqlite (account,     │
+                  │   account_investment, investment_    │
+                  │   price, broker_exchange_rate,       │
+                  │   broker_reported_total)             │
                   │   Actual shares owned & cash values │
                   └──────────────────┬──────────────────┘
                                      │
@@ -26,15 +38,31 @@ To maintain rigorous trade discipline, the system separates the portfolio into t
                   └─────────────────────────────────────┘
 ```
 
-1. **The Actual Broker State (`portfolio.json`)**
+1. **The Actual Broker State (`domain_model.sqlite`)**
    - **Purpose**: Represents the objective reality of the investor's brokerage accounts (TFSA, RRSP, and Cash).
-   - **Attributes**: Updated via TradingView CDP scrape commands. Tracks actual share counts, book costs, and current market values. It is completely independent of conviction targets.
-   - **Git Status**: Gitignored (user private data).
+   - **Attributes**: Updated via TradingView CDP scrape commands
+     (`fetch_broker_data.py --snapshot` / `BrokerSyncService.ts::syncAuto()`), which persist directly
+     into `account_investment` (quantity, average cost, per real account), `investment_price`
+     (current market price per symbol, refreshed by `/refresh-prices`), `broker_exchange_rate` (a
+     single live USD→CAD scalar, inferred from TradingView's own native CAD/USD totals — never an
+     external FX API, per pitfall #27), and `broker_reported_total` (the broker's own last-reported
+     grand total, captured verbatim for `verify_portfolio_total.py`'s reconciliation audit — see
+     ADR-030 for why this one figure is stored rather than only computed). Portfolio/account totals
+     for everything else are always computed live (`SUM(quantity × price)`, GROUP BY account before
+     rolling up to a portfolio total — never a flat cross-account query), never stored as their own
+     aggregate. It is completely independent of conviction targets.
+   - **Git Status**: `domain_model.sqlite` is gitignored (user private data), same privacy
+     classification `portfolio.json` had before this wave.
 
 2. **The Conviction Target State (`target-portfolio.json`)**
    - **Purpose**: Represents the quantitative blueprint of the qualitative investment thesis.
    - **Attributes**: Tracks target weight allocations (which must sum to exactly `100.00%`), strategy pillars, stock categorization roles, and `agentRationale` auditing.
-   - **Git Status**: Tracked in repository (enforces thesis version history).
+   - **Git Status**: Tracked in repository (enforces thesis version history). Most narrow read paths
+     (pillars, holdings summary, watchlist flag, `standingDecision` scalars) are SQLite-sourced since
+     Wave 2 — this file remains authoritative only for `ThesisService.ts`'s full-document CRUD
+     (`globalSettings`, `changeLog`, `bandConfig`, `shares`, full `thesisBreakers`/`standingDecision`
+     sub-objects — no SQLite column exists for these), a documented, user-approved Retained-JSON
+     exception (see Wave 2's exit report).
 
 ---
 
@@ -53,7 +81,7 @@ graph TD
     %% Nodes Definitions
     TV[TradingView Desktop / Broker Panel]:::state
     CDP[TradingView CDP Browser Engine]:::process
-    ActualFile[(portfolio.json)]:::storage
+    DomainDB[(domain_model.sqlite: account_investment, investment_price, broker_exchange_rate, broker_reported_total)]:::storage
     TargetFile[(target-portfolio.json)]:::storage
     ThesisMD[(investment_thesis.md)]:::storage
     ProjFolder[(projections/*.json)]:::storage
@@ -70,8 +98,8 @@ graph TD
     %% Subgraphs for visual organization
     subgraph ScrapeLoop ["1. Actual State Scrape Loop"]
         TV -->|1.1 Live Screen Scraping| CDP
-        CDP -->|1.2 Aggregated Positions| Fetch
-        Fetch -->|1.3 Persist & Update| ActualFile
+        CDP -->|1.2 Aggregated Positions, stdout JSON IPC| Fetch
+        Fetch -->|1.3 Persist account_investment/investment_price/broker_exchange_rate/broker_reported_total| DomainDB
     end
 
     subgraph AnalysisLoop ["2. Analysis & Valuation Loop"]
@@ -93,7 +121,7 @@ graph TD
     end
 
     subgraph ExecutionLoop ["5. CDP Broker Execution Loop"]
-        ActualFile -->|5.1 Read Current Positions| Rebalance
+        DomainDB -->|5.1 Read Current Positions| Rebalance
         TargetFile -->|5.2 Read Conviction Targets| Rebalance
         ProjFolder -->|5.3 Read DCF Signals & Gates| Rebalance
         Rebalance -->|5.4 Post suggested trades| OrderExec
@@ -107,13 +135,24 @@ graph TD
 ---
 
 ### Loop 1: The Scrape Loop (Actual State Sync)
-- **Path**: `TradingView Desktop` → `TradingView CDP Engine` → `fetch_broker_data.py --snapshot` → `portfolio.json`.
+- **Path**: `TradingView Desktop` → `TradingView CDP Engine` → `fetch_broker_data.py --snapshot` → `domain_model.sqlite`.
 - **Flow**:
-  1. The user launches `tv-portfolio-sync`.
+  1. The user launches `tv-portfolio-sync` (or `BrokerSyncService.ts::syncAuto()` runs on its own schedule).
   2. The Node.js CDP client hooks into the active Chrome debugging port of TradingView Desktop.
   3. The CDP agent traverses the React fiber tree of the broker panel to parse account numbers and positions.
-  4. Aggregated share counts and book values are piped to `portfolio.json`.
-- **Integrity Checks**: Does not touch qualitative values. Cash positions are filtered separately to keep active cash segregated from strategic allocations.
+  4. `fetch_broker_data.py --snapshot` persists the real per-account holdings/cash directly into
+     `account_investment` (one row per `(account, investment)`, `TFSA`/`RRSP`/`CASH` only), computes
+     the live USD→CAD rate from TradingView's own native CAD/USD combined totals and persists it as
+     the single `broker_exchange_rate` scalar, and captures the broker's own last-reported grand
+     total into `broker_reported_total` for reconciliation. It returns its result to the Node.js
+     caller as a single JSON line on stdout (not by writing a file the caller reads back) — the
+     Python subprocess's other output (progress, warnings, child-process output) is routed to stderr
+     so it never corrupts this stdout-JSON contract.
+  5. `/refresh-prices` (a separate, more frequent call than a full broker sync) keeps
+     `investment_price` current between full syncs, fetching live prices (TradingView-first,
+     yfinance fallback — including the BOATS extended-hours/overnight feed, never only regular
+     session hours) for every held symbol.
+- **Integrity Checks**: Does not touch qualitative values. Cash positions are filtered separately to keep active cash segregated from strategic allocations. Portfolio/account totals are always computed live from these tables (never a stored aggregate) — see ADR-030.
 
 ### Loop 2: The Analysis Loop (Model & Valuation)
 - **Path**: `evaluate-stock {TICKER}` → `yfinance / fetch_financials.py` → `dcf_scenarios.py` → `projections/{TICKER}.json` & `research/{TICKER}.md`.
@@ -145,13 +184,13 @@ graph TD
 ### Loop 5: The Execution Loop (Broker Execution)
 - **Path**: `rebalance_portfolio` → `/place-order` → `TradingView CDP Automation` → `TradingView Desktop`.
 - **Flow**:
-  1. The Portfolio Advisor evaluates actual weight (`portfolio.json`) vs. conviction targets (`target-portfolio.json`) to isolate drift.
+  1. The Portfolio Advisor evaluates actual weight (`domain_model.sqlite`'s `account_investment`/`investment_price`, computed live) vs. conviction targets (`target-portfolio.json`) to isolate drift.
   2. It processes the list through the **Valuation Gate Constraint** (never buying SELL-rated holdings).
   3. Confirmed orders are posted to the dashboard Trade Log (`suggested` tab).
   4. Executing an order invokes the TradingView CDP place-order skill.
   5. The Node.js CDP automation script simulates human DOM interactions (typing shares, pricing limit/market, clicking buy/sell buttons, accepting confirmation dialogs) inside TradingView Desktop.
   6. The broker fills the order, modifying active positions on the exchange.
-  7. **Loop closure**: The scrape loop runs automatically post-fill, updating `portfolio.json` and resetting the cycle.
+  7. **Loop closure**: The scrape loop runs automatically post-fill, updating `domain_model.sqlite` and resetting the cycle.
 
 ---
 
@@ -166,9 +205,40 @@ python3 investment_screener/backend/py_services/verify_thesis_sync.py
 # 2. Add or update a holding's target weight and regenerate the thesis blueprint
 python3 plugins/portfolio-advisor/scripts/update_targets.py --set TICKER=5.50 --write --blueprint
 
-# 3. Synchronize actual live broker holdings from TradingView Desktop
+# 3. Synchronize actual live broker holdings from TradingView Desktop into domain_model.sqlite
 # (Node.js engine must be initialized in tradingview-cdp/)
-python3 investment_screener/backend/py_services/fetch_broker_data.py --snapshot
+python3 plugins/tradingview/scripts/fetch_broker_data.py --snapshot
+
+# 4. Reconcile the computed portfolio total against the broker's own last-reported total
+# (uses domain_model.sqlite's broker_reported_total scalar, per ADR-030)
+python3 investment_screener/backend/py_services/verify_portfolio_total.py
 ```
 
 These loops work in perfect unison, ensuring the InvestmentToolkit remains a safe, highly objective, and completely aligned workstation for retail portfolio management.
+
+---
+
+## Wave 3 Migration Note (Domain Data Model v3.2)
+
+This document was updated 2026-07-22 to reflect Wave 3 of the ongoing JSON→SQLite domain-model
+migration (`docs/superpowers/plans/2026-07-20-domain-data-model-v3-wave3-implementation-plan.md`).
+Real, verified state as of this wave's completion:
+
+- **Fully migrated to `domain_model.sqlite`**: holdings/positions per real account (`account_investment`),
+  current market prices (`investment_price`), the live USD→CAD exchange rate (`broker_exchange_rate`,
+  a single scalar, never a stored CAD total — see ADR-030), and the broker's own last-reported total
+  for reconciliation (`broker_reported_total`).
+- **Real bugs found and fixed during this wave's own real-data validation** (not merely fixture
+  tests): a missing `CASH_USD` price row, a `PSU.U.TO`/`PSU-U.TO` ticker-alias mismatch causing a
+  duplicate investment identity, and Python/TypeScript exchange-rate coalescing logic that diverged
+  on a legitimate zero value (`or` vs. `??` semantics).
+- **`portfolio.json` is no longer the live write target** for the main sync path
+  (`BrokerSyncService.ts::syncAuto()`, `fetch_broker_data.py --snapshot`, `/refresh-prices`) — see
+  ADR-030 and the Wave 3 exit report for the full producer/consumer cutover table.
+- **Prior waves** (0-2) migrated projections (`projections/*.json` → `projection_version`/
+  `projection_scenario`) and most of `target-portfolio.json`/`watchlist.json`/
+  `tradingview_alerts_actual.json`/`thesis_breaker_state.json` — see
+  `docs/superpowers/status/wave1-*`/`wave2-*` reports for those domains' own cutover details.
+- **Remaining waves** (4, 5A-5E) cover trade log/order executions/cash flows, and generated research
+  views/TA sweep/daily briefs/predictions/account policy respectively — not yet started as of this
+  note.

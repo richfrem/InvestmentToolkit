@@ -1,14 +1,30 @@
-# ADR — Tiered Price Level Schema Extension
+# ADR-031: Tiered Price Level Schema Extension
 
-**Status**: ACCEPTED  
-**Date**: 2026-06-21  
-**Author**: Antigravity (Gemini 2.5 Pro)  
-**Implements**: Phase 1–5 of the Price Levels Plan  
+**Status**: ACCEPTED
+**Date**: 2026-06-21
+**Author**: Antigravity (Gemini 2.5 Pro)
+**Implements**: Phase 1–5 of the Price Levels Plan
 **Related files**:
 - `plugins/portfolio-advisor/scripts/update_price_levels.py` (new)
 - `investment_screener/backend/src/utils/zod-schemas.ts` (modified)
 - `investment_screener/backend/data/theses/target-portfolio.json` (extended)
 - `investment_screener/backend/data/portfolio.json` (extended)
+
+**Renumbered 2026-07-22** from `docs/architecture/ADR-price-levels-schema.md` into the canonical
+`ADRs/` sequence (was previously outside the numbered ADR history). No content change beyond this
+header and the superseded-schema note directly below.
+
+**Superseded schema note (Domain Data Model v3.2 migration):** the `target-portfolio.json`
+`priceLevels` block this ADR describes was migrated into SQLite's `price_level_set`/
+`price_level_tier` tables in Wave 2 (see `docs/superpowers/status/wave2-target-portfolio-report.md`).
+The `portfolio.json` `priceLevelSnapshot` block this ADR describes was found in Wave 3 to be **dead
+code in production** — the pre-migration read path checked a JSON shape (`accounts[]`) that real
+`portfolio.json` never had, so `snapshot_written` was always `False` and nothing was ever actually
+written there. Wave 3 replaced it with `compute_price_level_snapshot_from_db()`, deriving the same
+`{nextBuyTier, nextSellTier, stopLoss, proximityFlags}` shape live from `price_level_tier` +
+`investment_price` — no JSON snapshot is written or read for this purpose anymore. The formulas,
+source hierarchy, and skill-integration table below remain accurate as the *business logic* this
+ADR established; only the storage location changed.
 
 ---
 

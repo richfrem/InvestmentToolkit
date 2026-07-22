@@ -1,3 +1,15 @@
+**SUPERSEDED 2026-07-22.** This was the pre-implementation design pass — table names below
+(`holdings`, `instrument`, `target_portfolio_entry`) and all "NOT STARTED" consumer statuses
+predate real implementation. Waves 0-3 built and shipped the actual schema (`account`,
+`investment`, `account_investment`, `investment_price`, `price_level_set`/`price_level_tier`,
+`projection_version`, `broker_exchange_rate`, `broker_reported_total`, etc.) — see
+`docs/architecture/domain-data-model.md` for the current schema and `docs/superpowers/status/`
+for real per-wave producer/consumer cutover results. Kept for historical record of the original
+reasoning (complexity-reduction math, the `research_report_pointer` fix, archive-criteria
+discipline) — do not treat any inventory count or cutover status below as current.
+
+---
+
 # Big-Domain Migration Design: holdings, target_portfolio_entry, projection_version
 
 Full column-level design for the three domains identified as carrying the actual architectural
