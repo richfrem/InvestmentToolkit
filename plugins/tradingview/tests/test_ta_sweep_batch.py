@@ -405,6 +405,52 @@ def test_load_dcf_returns_none_for_unknown_ticker(tmp_path):
     assert load_dcf("ZZZZ", db_path=db_path) is None
 
 
+# ── load_portfolio — Wave 3 rewire onto domain_model.sqlite (SQLite holdings) ──
+
+
+def _seed_portfolio_db(tmp_path, rows):
+    """Build a throwaway domain_model.sqlite with (account, symbol, qty, price)
+    rows and return its path. Mirrors test_portfolio_io.py::_build_test_db."""
+    sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+    from domain_model.db_client import initialize_db  # noqa: PLC0415
+    from domain_model.account_repository import upsert_account  # noqa: PLC0415
+    from domain_model.investment_repository import resolve_investment  # noqa: PLC0415
+    from domain_model.investment_price_repository import upsert_investment_price  # noqa: PLC0415
+    from domain_model.account_investment_repository import upsert_account_investment  # noqa: PLC0415
+
+    db_path = str(tmp_path / "portfolio.sqlite")
+    conn = initialize_db(db_path)
+    seen: set[str] = set()
+    for account_id, symbol, qty, price in rows:
+        if account_id not in seen:
+            upsert_account(conn, account_id, account_id, account_id)
+            seen.add(account_id)
+        inv_id = resolve_investment(conn, symbol, asset_class="EQUITY", currency="USD")
+        upsert_investment_price(conn, inv_id, price=price, currency="USD", fetched_at="2026-07-20T00:00:00Z")
+        upsert_account_investment(
+            conn, account_id, inv_id, quantity=qty, average_cost=price,
+            book_value=qty * price, currency="USD", last_synced_at="2026-07-20T00:00:00Z",
+        )
+    conn.close()
+    return db_path
+
+
+def test_load_portfolio_reads_symbols_from_sqlite_not_json(tmp_path, monkeypatch):
+    """load_portfolio() must return the holdings' symbols from domain_model.sqlite,
+    not portfolio.json — even if a stale portfolio.json exists on disk."""
+    sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+    import portfolio_io  # noqa: PLC0415
+
+    db_path = _seed_portfolio_db(tmp_path, [("TFSA", "NVDA", 10, 150.0), ("RRSP", "AAPL", 5, 200.0)])
+    monkeypatch.setattr(portfolio_io, "_DB_PATH", db_path)
+
+    # A stale portfolio.json exists but must NOT be read.
+    from ta_sweep_batch import load_portfolio  # noqa: PLC0415
+    holdings = load_portfolio()
+    symbols = {h["symbol"] for h in holdings}
+    assert symbols == {"NVDA", "AAPL"}
+
+
 def test_load_dcf_uses_highest_version_regardless_of_source(tmp_path):
     """Original code took raw[-1] (last array element = highest version) with no
     source filter — this must not prefer AI_AGENT over a newer non-AI_AGENT row."""

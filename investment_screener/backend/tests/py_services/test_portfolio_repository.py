@@ -91,6 +91,41 @@ def test_load_portfolio_state_from_db_returns_shares_prices_and_total(tmp_path):
     assert state["_totals_from_broker"] is False  # per ADR-030: always computed, never a stored broker column
 
 
+def test_load_portfolio_state_exchange_rate_falls_back_when_never_synced(tmp_path):
+    """Fresh DB with no broker_exchange_rate row -> the static 1.38 fallback,
+    matching portfolio_io.py's `totals.get("exchangeRate") or 1.38` convention."""
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    _seed_two_accounts(conn)
+    state = load_portfolio_state_from_db(conn)
+    assert state["exchange_rate"] == 1.38
+
+
+def test_load_portfolio_state_exchange_rate_returns_stored_rate(tmp_path):
+    """A synced broker_exchange_rate row is returned exactly (ADR-030 Wave 3
+    addendum: the FX rate is the one broker fact we store)."""
+    from domain_model.exchange_rate_repository import upsert_exchange_rate
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    _seed_two_accounts(conn)
+    upsert_exchange_rate(conn, 1.4012, "2026-07-20T00:00:00Z")
+    state = load_portfolio_state_from_db(conn)
+    assert state["exchange_rate"] == 1.4012
+
+
+def test_load_portfolio_state_exchange_rate_respects_stored_zero(tmp_path):
+    """A hypothetical future writer that persists a literal 0.0 rate must be
+    respected exactly (matching TS `??` / Python `is not None` semantics), not
+    silently replaced by the 1.38 fallback the way a falsy-`or` check would do.
+    Currently unreachable in production (the writer never persists a
+    non-positive rate) but guards the fallback's correctness if that changes.
+    """
+    from domain_model.exchange_rate_repository import upsert_exchange_rate
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    _seed_two_accounts(conn)
+    upsert_exchange_rate(conn, 0.0, "2026-07-20T00:00:00Z")
+    state = load_portfolio_state_from_db(conn)
+    assert state["exchange_rate"] == 0.0
+
+
 def test_position_with_no_price_row_contributes_zero_but_still_appears_in_shares(tmp_path):
     """Finding 1 regression guard: a newly synced position (account_investment row
     exists) with no investment_price row yet (price not fetched) must NOT

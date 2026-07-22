@@ -35,8 +35,24 @@ PORTFOLIO   = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 REVIEWS_DIR = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
 
 sys.path.insert(0, str(Path(__file__).parent))
-from validate_weights import compute_current, compute_target
+sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+from validate_weights import compute_target
 from portfolio_action import derive_action
+from portfolio_io import load_portfolio_state, compute_weights  # noqa: E402
+
+
+def _compute_current_from_db() -> dict:
+    """Wave 3 replacement for validate_weights.compute_current(PORTFOLIO).
+
+    Sources shares/prices/total from portfolio_io.load_portfolio_state()
+    (domain_model.sqlite, ADR-030) and derives per-ticker weight % via
+    portfolio_io.compute_weights(). Returns the same {"holdings": {...}} shape
+    the old compute_current() returned so downstream code is unchanged.
+    """
+    state = load_portfolio_state(None)
+    holdings = compute_weights(state["shares"], state["prices"], state["total_usd"])
+    return {"total": round(sum(holdings.values()), 4), "holdings": holdings,
+            "total_value": state["total_usd"]}
 
 
 def _urgency(action: str, delta_abs: float) -> str:
@@ -49,7 +65,7 @@ def _urgency(action: str, delta_abs: float) -> str:
 
 def generate(date_str: str) -> dict:
     thesis        = json.loads(THESIS_JSON.read_text())
-    current_data  = compute_current(PORTFOLIO)
+    current_data  = _compute_current_from_db()
     target_data   = compute_target(THESIS_JSON)
 
     holdings_map = {h["ticker"]: h for h in thesis.get("holdings", [])}

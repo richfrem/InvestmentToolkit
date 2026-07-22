@@ -58,4 +58,39 @@ describe('PortfolioRepository', () => {
             expect(rows[0].last_synced_at).to.equal('2026-07-21T00:00:00.000Z');
         });
     });
+
+    describe('broker reported total (broker_reported_total singleton)', () => {
+        it('returns null when never synced', () => {
+            expect(repo.getBrokerReportedTotal()).to.equal(null);
+        });
+
+        it('round-trips a total and overwrites the single row idempotently', () => {
+            repo.upsertBrokerReportedTotal(30373.98, 41900, '2026-07-20T00:00:00.000Z', 'tv_authoritative');
+            expect(repo.getBrokerReportedTotal()).to.deep.equal({
+                total_usd: 30373.98, total_cad: 41900,
+                synced_at: '2026-07-20T00:00:00.000Z', source: 'tv_authoritative',
+            });
+            repo.upsertBrokerReportedTotal(31000, null, '2026-07-21T00:00:00.000Z', 'tv_authoritative');
+            expect(repo.getBrokerReportedTotal()!.total_usd).to.equal(31000);
+            const db = (repo as any).db;
+            const count = db.prepare('SELECT COUNT(*) AS c FROM broker_reported_total').get().c;
+            expect(count).to.equal(1);
+        });
+    });
+
+    describe('exchange rate (broker_exchange_rate singleton)', () => {
+        it('returns null when never synced', () => {
+            expect(repo.getExchangeRate()).to.equal(null);
+        });
+
+        it('round-trips a rate and overwrites the single row idempotently', () => {
+            repo.upsertExchangeRate(1.3795, '2026-07-20T00:00:00.000Z');
+            expect(repo.getExchangeRate()).to.equal(1.3795);
+            repo.upsertExchangeRate(1.4012, '2026-07-21T00:00:00.000Z');
+            expect(repo.getExchangeRate()).to.equal(1.4012);
+            const db = (repo as any).db;
+            const count = db.prepare('SELECT COUNT(*) AS c FROM broker_exchange_rate').get().c;
+            expect(count).to.equal(1);
+        });
+    });
 });

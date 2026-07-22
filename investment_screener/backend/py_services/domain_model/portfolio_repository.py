@@ -13,6 +13,8 @@ found (RRSP holdings silently collapsing into TFSA).
 
 import sqlite3
 
+from domain_model.exchange_rate_repository import get_exchange_rate
+
 
 def get_account_market_values(conn: sqlite3.Connection) -> dict[str, float]:
     """Market value per real account: SUM(quantity * price), grouped by account_id.
@@ -52,6 +54,56 @@ def get_portfolio_total_value(conn: sqlite3.Connection) -> float:
     return sum(get_account_market_values(conn).values())
 
 
+def get_account_cash_usd(conn: sqlite3.Connection) -> dict[str, float]:
+    """USD cash per real account: SUM(quantity) of the CASH_USD investment,
+    grouped by account_id.
+
+    Cash is a real ``account_investment`` row for the ``CASH_USD`` investment
+    (Wave 0 resolved decision 5), whose ``quantity`` IS the USD dollar amount
+    held in that account (its ``investment_price`` is 1.0). Aggregation is
+    pushed into SQL and account boundaries are preserved (GROUP BY before any
+    rollup), matching this module's established pattern in
+    get_account_market_values().
+    """
+    cursor = conn.execute(
+        """
+        SELECT account_id, SUM(quantity) AS cash_usd
+        FROM account_investment
+        WHERE investment_id = 'CASH_USD'
+        GROUP BY account_id;
+        """
+    )
+    return {row[0]: row[1] for row in cursor.fetchall()}
+
+
+def get_total_cash_usd(conn: sqlite3.Connection) -> float | None:
+    """Portfolio-wide USD cash: the sum of get_account_cash_usd()'s per-account
+    results, or None if no CASH_USD rows exist at all.
+
+    Returns None (not 0.0) on a total absence of cash rows so callers can
+    preserve the JSON-era ``get_available_cash()`` "degrade to None when the
+    value is unavailable" contract.
+    """
+    per_account = get_account_cash_usd(conn)
+    if not per_account:
+        return None
+    return sum(per_account.values())
+
+
+def get_last_synced_at(conn: sqlite3.Connection) -> str | None:
+    """Most recent ``last_synced_at`` across all account_investment rows (ISO
+    string), or None if the table is empty.
+
+    Re-expresses the JSON-era ``portfolio.json`` ``totals.timestamp`` freshness
+    signal against the relational model, so staleness checks read the same
+    source of truth as every other portfolio number.
+    """
+    row = conn.execute(
+        "SELECT MAX(last_synced_at) FROM account_investment;"
+    ).fetchone()
+    return row[0] if row and row[0] else None
+
+
 def load_portfolio_state_from_db(conn: sqlite3.Connection) -> dict:
     """portfolio_io.py::load_portfolio_state()-compatible shape.
 
@@ -77,19 +129,24 @@ def load_portfolio_state_from_db(conn: sqlite3.Connection) -> dict:
         if price and price > 0:
             prices[symbol] = price
 
+    db_exchange_rate = get_exchange_rate(conn)
+
     return {
         "shares": shares,
         "prices": prices,
         "total_usd": get_portfolio_total_value(conn),
-        # PLACEHOLDER, not sourced FX data: portfolio_io.py's load_portfolio_state()
-        # (the JSON-backed function this module replaces per Task 4's plan) reads
-        # totals.exchangeRate from portfolio.json and only falls back to this same
-        # 1.38 literal when that key is absent -- this module has no equivalent
-        # totals/exchangeRate column to read from yet, so it always uses the
-        # fallback. Real FX-rate sourcing is out of this task's scope: per
-        # CLAUDE.md pitfall #27, it must be inferred from TradingView's own native
-        # values (e.g. totalEquityCADCombined / totalEquityUSDCombined), never an
-        # external FX API call. Wiring that in is a known gap for a later task.
-        "exchange_rate": 1.38,
+        # The single broker-reported FX fact, read from broker_exchange_rate
+        # (Wave 3 Task 8, ADR-030 addendum) -- inferred at sync time from
+        # TradingView's own native totalEquityCADCombined/USDCombined ratio per
+        # CLAUDE.md pitfall #27, never an external FX API. Falls back to the same
+        # 1.38 literal portfolio_io.py's `totals.get("exchangeRate") or 1.38` uses
+        # for a fresh/never-synced DB. This closes the CAD-exchange-rate gap
+        # formerly documented as a retained-JSON exception (its Python face).
+        # Uses "is not None" (not "or") so a hypothetical future writer change
+        # that persists a literal 0.0 doesn't get silently discarded in favor
+        # of the 1.38 default -- currently unreachable since the writer never
+        # persists a non-positive rate, but kept consistent with the nullish
+        # coalescing semantics used everywhere else in this fallback chain.
+        "exchange_rate": db_exchange_rate if db_exchange_rate is not None else 1.38,
         "_totals_from_broker": False,  # per ADR-030: always computed, never stored/read from a broker column
     }
