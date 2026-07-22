@@ -4,7 +4,7 @@
   "schemaVersion": "1.0",
   "version": 10.8,
   "createdAt": "2026-02-14T12:00:00Z",
-  "updatedAt": "2026-06-21T18:30:00Z",
+  "updatedAt": "2026-07-21T01:08:49.012Z",
   "description": "Investment thesis focused on the dual infrastructure buildout for ASI Compute (Primary) and Sovereign Finance (Secondary).",
   "pillars": [
     {
@@ -374,7 +374,7 @@
       "role": "accumulate",
       "thesisForInclusion": "Bloom Energy fuel cells.",
       "agentRationale": "2026-05-19: Forward-Looking Valuation Challenge & Math Validation applied. Accounted for the Oracle 2.8GW, Brookfield, and AEP deals ($20B backlog) and clean energy/AI P/E re-rating. Standardized on outstanding share count. Intrinsic fair value: $158.55 vs $258.71 price (SELL, -38.7% upside). 2026-06-03: $2.6B fuel cell deal with NBIS validates solid oxide tech for AI power demand. 2026-06-08: Record Q1 revenue +130% YoY; raised FY guidance; Oracle partnership expansion. Operational beats conflict with DCF SELL. HOLD; do not add; monitor for valuation re-rate. 2026-06-29: Target weight reduced to 2.26% (match actual). Role changed from accumulate to hold. Standing decision maintained: ALLOWLISTED_CONFLICT — SA LP #1 long ($878M), no exit without user direction. DCF refresh queued (model predates Q1 +130% beat and $2.6B NBIS deal).",
-      "shares": 5,
+      "shares": 6,
       "pillarId": "power"
     },
     {
