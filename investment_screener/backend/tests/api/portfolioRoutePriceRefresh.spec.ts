@@ -69,6 +69,28 @@ describe('routes/portfolio.ts /refresh-prices -> SQLite-only price persistence',
         expect(getPortfolioTotalUsdFromDb(dbPath)).to.equal(3800);
     });
 
+    it('the /refresh-prices handler is SQLite-only: no portfolio.json write remains', () => {
+        // Static guard: proves the JSON write was genuinely removed from this path
+        // (the full route can't be exercised here — it spawns live python/yfinance,
+        // forbidden in this worktree). The handler must persist via
+        // persistRefreshedPricesToDb and must NOT call persistPortfolioWithSnapshot
+        // (the JSON writer) or write PORTFOLIO_FILE.
+        const routeSrc = fs.readFileSync(
+            path.resolve(__dirname, '../../src/routes/portfolio.ts'),
+            'utf-8'
+        );
+        const marker = "router.post('/refresh-prices'";
+        const start = routeSrc.indexOf(marker);
+        expect(start).to.be.greaterThan(-1);
+        // Handler body runs until the next route registration.
+        const rest = routeSrc.slice(start + marker.length);
+        const end = rest.indexOf('router.post(');
+        const handler = end === -1 ? rest : rest.slice(0, end);
+        expect(handler).to.contain('persistRefreshedPricesToDb');
+        expect(handler).to.not.contain('persistPortfolioWithSnapshot');
+        expect(handler).to.not.contain('writeFileSync');
+    });
+
     it('skips USD_CASH and non-numeric/non-positive prices without throwing', () => {
         seedStale();
         const count = persistRefreshedPricesToDb(
