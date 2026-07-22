@@ -11,21 +11,21 @@ then computes what our single portfolio database says, and shows the diff.
 Per ADR-030 (Wave 3 Task 6 cutover), "our computed total" is
 domain_model.sqlite's ``get_portfolio_total_value()`` — a live, read-time-only
 rollup of account_investment x investment_price, never a stored total and
-never independently re-summed here. The cached TV-side comparison total
-(``get_tv_totals_cached()``) still reads portfolio.json's ``tvSnapshot`` root
-key, since that raw broker-sync cache has no domain_model.sqlite equivalent
-yet (out of this task's scope — it is the broker's own reported figure being
-audited against, not the consumer side of this migration).
+never independently re-summed here. The cached broker-side comparison total
+(``get_tv_totals_cached()``) now reads domain_model.sqlite's
+``broker_reported_total`` singleton (Wave 3 Task 8, tvSnapshot closure) — the
+broker's own reported ``totals.totalUSD`` captured at sync time, no longer
+portfolio.json's ``tvSnapshot`` cache. It remains the broker's own reported
+figure being audited against, not a substitute for the computed total.
 
 Usage:
     python3 verify_portfolio_total.py            # live TV + stored prices
     python3 verify_portfolio_total.py --live     # live TV + live yfinance prices
 
 Key Input Dependencies:
-    - investment_screener/backend/data/domain_model.sqlite (Audits equity sum
-      verification; Wave 3 Task 6 cutover — previously portfolio.json)
-    - investment_screener/backend/data/portfolio.json (tvSnapshot cache only —
-      the broker-reported comparison side, not migrated)
+    - investment_screener/backend/data/domain_model.sqlite (both the computed
+      equity sum AND the broker_reported_total comparison side; Wave 3 Tasks 6+8
+      cutover — previously portfolio.json)
 
 Layer:
     Backend / Python Services
@@ -62,9 +62,9 @@ from tv_client import run_node_module
 sys.path.insert(0, str(SCRIPT_DIR))
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
+from domain_model.broker_reported_total_repository import get_broker_reported_total  # noqa: E402
 
 DATA_DIR      = SCRIPT_DIR.parent / "data"
-PORTFOLIO_FILE = DATA_DIR / "portfolio.json"
 DB_PATH        = DATA_DIR / "domain_model.sqlite"
 
 
@@ -85,33 +85,49 @@ try {
     return run_node_module(js, timeout=90)
 
 
-def get_tv_totals_cached() -> dict:
-    """Read totals from last TV sync raw cache inside portfolio.json."""
-    if not PORTFOLIO_FILE.exists():
-        return {"error": "Portfolio database (portfolio.json) not found — run a TV sync first."}
-    with open(PORTFOLIO_FILE) as f:
-        data = json.load(f)
-    if not isinstance(data, dict) or "tvSnapshot" not in data:
-        return {"error": "Raw TradingView sync cache (tvSnapshot) not found inside portfolio.json — run a TV sync first."}
-    
-    tv = data["tvSnapshot"]
-    accounts = []
-    grand_total = grand_mkt = grand_cash = 0
-    for snap in tv.get("snapshots", []):
-        bal = snap.get("balances") or {}
-        equity = bal.get("totalEquityUSD") or 0
-        mkt    = bal.get("marketValueUSD") or 0
-        cash   = bal.get("cashUSD") or 0
-        if equity == 0 and mkt == 0 and cash == 0:
-            continue  # skip accounts with no data (e.g. empty Cash account)
-        accounts.append({"accountType": snap.get("accountType"), "accountId": snap.get("accountId"),
-                         "totalEquityUSD": equity, "marketValueUSD": mkt, "cashUSD": cash})
-        grand_total += equity
-        grand_mkt   += mkt
-        grand_cash  += cash
-    return {"accounts": accounts, "grandTotalUSD": grand_total,
-            "grandMarketValueUSD": grand_mkt, "grandCashUSD": grand_cash,
-            "timestamp": tv.get("timestamp", "unknown"), "source": "cached"}
+def get_tv_totals_cached(db_path: Path = DB_PATH) -> dict:
+    """Read the broker's own last-reported total from domain_model.sqlite's
+    ``broker_reported_total`` singleton (Wave 3 Task 8 — tvSnapshot closure).
+
+    This is the audited-against comparison figure for the reconciliation check:
+    the broker's own reported ``totals.totalUSD`` (formerly read from
+    portfolio.json's ``tvSnapshot`` cache, now captured at sync time into SQLite
+    by ``_persist_snapshot_to_db``/``persistSnapshotToDb``). Only the scalar total
+    is stored (ADR-030 addendum), so the per-account TV breakdown is no longer
+    reconstructed here — the reconciliation itself only ever used ``grandTotalUSD``.
+    """
+    if not db_path.exists():
+        return {"error": "domain_model.sqlite not found — run a TV sync first."}
+    conn = initialize_db(str(db_path))
+    try:
+        row = get_broker_reported_total(conn)
+    finally:
+        conn.close()
+    if row is None:
+        return {"error": "No broker-reported total in domain_model.sqlite — run a TV sync first."}
+    return {
+        "accounts": [],  # per-account breakdown not stored (scalar total only)
+        "grandTotalUSD": row["total_usd"] or 0,
+        "grandMarketValueUSD": 0,
+        "grandCashUSD": 0,
+        "grandTotalCAD": row["total_cad"],
+        "timestamp": row["synced_at"] or "unknown",
+        "source": row["source"] or "cached-db",
+    }
+
+
+def classify_reconciliation(diff: float) -> str:
+    """Classify the ours-minus-broker variance into the PASS/WARN/FAIL bands.
+
+    Extracted from main() so the reconciliation thresholds are unit-testable and
+    the data source (broker_reported_total) can be exercised end-to-end. Bands are
+    unchanged from the original inline logic: <$25 PASS, <$200 WARN, else FAIL.
+    """
+    if abs(diff) < 25:
+        return "PASS"
+    if abs(diff) < 200:
+        return "WARN"
+    return "FAIL"
 
 
 # ── our computed total ────────────────────────────────────────────────────────
@@ -196,7 +212,7 @@ def main():
         print("Fetching LIVE account totals from TradingView via CDP…")
         tv = get_tv_totals_live()
     else:
-        print("Reading cached TV totals from last sync (portfolio.json tvSnapshot)…")
+        print("Reading cached broker-reported total from last sync (domain_model.sqlite)…")
         tv = get_tv_totals_cached()
 
     if "error" in tv:
@@ -230,9 +246,10 @@ def main():
     print(f"{'Difference (ours − TV):':<30} ${diff:>+10,.2f} USD  ({diff_pct:+.2f}%)")
     print()
 
-    if abs(diff) < 25:
+    verdict = classify_reconciliation(diff)
+    if verdict == "PASS":
         print("✅  PASS — within $25 tolerance")
-    elif abs(diff) < 200:
+    elif verdict == "WARN":
         print(f"⚠   WARN — ${abs(diff):,.2f} gap (likely stale prices; run Refresh)")
     else:
         print(f"❌  FAIL — ${abs(diff):,.2f} gap")

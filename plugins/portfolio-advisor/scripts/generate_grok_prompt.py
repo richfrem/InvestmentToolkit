@@ -35,12 +35,26 @@ DB_PATH     = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 ETF_ANALYSIS_DIR = REPO_ROOT / "investment_screener/backend/data/etf_analysis"
 
 sys.path.insert(0, str(Path(__file__).parent))
-from validate_weights import compute_current, compute_target
+from validate_weights import compute_target
 from portfolio_action import derive_action
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.projection_repository import get_latest_projection_by_source  # noqa: E402
+from portfolio_io import load_portfolio_state, compute_weights  # noqa: E402
+
+
+def _compute_current_from_db() -> dict:
+    """Wave 3 replacement for validate_weights.compute_current(PORTFOLIO).
+
+    Sources actual holdings from domain_model.sqlite via
+    portfolio_io.load_portfolio_state() + compute_weights() (ADR-030), returning
+    the same {"holdings": {ticker: pct}} shape the old compute_current() did.
+    """
+    state = load_portfolio_state(None)
+    holdings = compute_weights(state["shares"], state["prices"], state["total_usd"])
+    return {"total": round(sum(holdings.values()), 4), "holdings": holdings,
+            "total_value": state["total_usd"]}
 
 
 def get_dynamic_exclusions():
@@ -110,7 +124,7 @@ def _action_emoji(action: str) -> str:
 
 def build_prompt(date_str: str) -> str:
     thesis       = json.loads(THESIS_JSON.read_text())
-    current_data = compute_current(PORTFOLIO)
+    current_data = _compute_current_from_db()
     target_data  = compute_target(THESIS_JSON)
 
     holdings_map = {h["ticker"]: h for h in thesis.get("holdings", [])}

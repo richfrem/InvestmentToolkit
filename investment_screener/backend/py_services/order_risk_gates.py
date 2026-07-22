@@ -640,37 +640,42 @@ def check_order_size(
 
 def get_available_cash(account: Optional[str] = None) -> Optional[float]:
     """
-    Fetch available USD cash from the real, synced portfolio.json
-    snapshot (this project's existing, established multi-fallback
-    broker sync — not a live Questrade API call implemented from
-    scratch here).
+    Fetch available USD cash from domain_model.sqlite (Wave 3 cutover).
+
+    Cash is a real ``CASH_USD`` ``account_investment`` row (Wave 0 resolved
+    decision 5) whose ``quantity`` IS the USD dollar amount, so both the
+    portfolio-wide total and per-account cash are derived from SQLite via
+    ``portfolio_repository.get_total_cash_usd``/``get_account_cash_usd`` —
+    never from portfolio.json's ``totals.cashUSD`` / ``tvSnapshot`` balances.
+    The account id in SQLite (e.g. "TFSA"/"RRSP") is the same value the JSON
+    ``accountType`` carried, so the ``account`` argument maps through unchanged.
 
     Args:
-        account: Specific account type (e.g. "TFSA", "RRSP") to read
-            that account's own cashUSD from tvSnapshot.snapshots[]
-            (matched by accountType), or None for the portfolio-wide
-            totals.cashUSD.
+        account: Specific account (e.g. "TFSA", "RRSP") for that account's own
+            cash, or None for the portfolio-wide total.
 
-    Never raises: missing file, malformed JSON, or no matching account
-    all degrade to None.
+    Never raises: a missing/invalid DB, or no matching account, all degrade to
+    None.
 
     Returns:
         Available USD cash, or None if unavailable.
     """
     try:
-        if not PORTFOLIO_PATH.exists():
-            return None
-        data = json.loads(PORTFOLIO_PATH.read_text())
-    except (OSError, json.JSONDecodeError):
+        conn = initialize_db(str(DB_PATH))
+    except Exception:
         return None
-
-    if account is None:
-        return data.get("totals", {}).get("cashUSD")
-
-    for snapshot in data.get("tvSnapshot", {}).get("snapshots", []):
-        if snapshot.get("accountType") == account:
-            return snapshot.get("balances", {}).get("cashUSD")
-    return None
+    try:
+        from domain_model.portfolio_repository import (
+            get_account_cash_usd,
+            get_total_cash_usd,
+        )
+        if account is None:
+            return get_total_cash_usd(conn)
+        return get_account_cash_usd(conn).get(account)
+    except Exception:
+        return None
+    finally:
+        conn.close()
 
 
 def check_available_balance(

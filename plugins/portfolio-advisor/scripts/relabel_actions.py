@@ -26,8 +26,25 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"
 DEFAULT_PORTFOLIO = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 MAINTAIN_THRESHOLD = 0.5  # pp — within this band = MAINTAIN
+
+
+def build_actual_pct_map() -> dict[str, float]:
+    """Return {ticker: actual weight %} sourced from domain_model.sqlite.
+
+    Wave 3 cutover (ADR-030): shares/prices/total_usd come from
+    ``portfolio_io.load_portfolio_state()`` (already aggregated per-symbol across
+    accounts) and the weight-% formula is delegated to
+    ``portfolio_io.compute_weights()`` — no shares×price re-computation from a
+    JSON file here, and no second denominator computation.
+    """
+    sys.path.insert(0, str(PY_SERVICES))
+    from portfolio_io import load_portfolio_state, compute_weights
+
+    state = load_portfolio_state(None)  # path arg retained for compat, unused
+    return compute_weights(state["shares"], state["prices"], state["total_usd"])
 
 
 def assign_action(
@@ -64,34 +81,25 @@ def assign_action(
 def main():
     parser = argparse.ArgumentParser(description="Re-label recommendation actions based on actual holdings")
     parser.add_argument("--recs", required=True, help="Path to recommendations JSON file")
-    parser.add_argument("--portfolio", default=str(DEFAULT_PORTFOLIO), help="Path to portfolio.json")
+    parser.add_argument("--portfolio", default=str(DEFAULT_PORTFOLIO),
+                        help="Legacy portfolio.json path; kept for CLI back-compat. "
+                             "Actual holdings now come from domain_model.sqlite.")
     parser.add_argument("--threshold", type=float, default=MAINTAIN_THRESHOLD,
                         help=f"pp band within which position is MAINTAIN (default {MAINTAIN_THRESHOLD})")
     parser.add_argument("--dry-run", action="store_true", help="Print changes without writing")
     args = parser.parse_args()
 
     recs_path = Path(args.recs)
-    port_path = Path(args.portfolio)
 
     if not recs_path.exists():
         print(f"❌ Recommendations file not found: {recs_path}", file=sys.stderr)
         sys.exit(1)
-    if not port_path.exists():
-        print(f"❌ Portfolio file not found: {port_path}", file=sys.stderr)
-        sys.exit(1)
 
     with open(recs_path) as f:
         recs = json.load(f)
-    with open(port_path) as f:
-        _raw_port = json.load(f)
-    raw_port = _raw_port if isinstance(_raw_port, list) else _raw_port.get("holdings", [])
 
-    # Build actual pct map
-    total_value = sum(h["shares"] * h["price"] for h in raw_port)
-    actual_pct_map: dict[str, float] = {}
-    for h in raw_port:
-        val = h["shares"] * h["price"]
-        actual_pct_map[h["symbol"]] = round(val / total_value * 100, 4)
+    # Build actual pct map from domain_model.sqlite (Wave 3 cutover, ADR-030)
+    actual_pct_map = build_actual_pct_map()
 
     print(f"\n{'TICKER':<8} {'ACTUAL%':>8} {'REC_TGT%':>9} {'DELTA':>7}  {'OLD':<14} {'NEW':<14} NOTE")
     print("─" * 90)
