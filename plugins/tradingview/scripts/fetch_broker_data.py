@@ -359,6 +359,61 @@ def _compute_exchange_rate_from_snapshot(snapshot: dict) -> Optional[float]:
     return None
 
 
+def _compute_exchange_rate_from_balances(balances: dict) -> Optional[float]:
+    """Infer the live USD->CAD rate from the LIGHTWEIGHT --balances payload's
+    already-summed top-level totals (no per-account loop needed -- unlike
+    _compute_exchange_rate_from_snapshot, this payload's totalEquityCADCombined/
+    totalEquityUSDCombined are already summed across every real account by
+    fetch_tv_balances()). Falls back to the non-Combined fields when absent.
+    Returns None when either total is non-positive (no bogus rate written).
+    """
+    cad_combined = balances.get("totalEquityCADCombined")
+    cad_fallback = balances.get("totalEquityCAD")
+    cad = cad_combined if cad_combined is not None else cad_fallback
+    usd_combined = balances.get("totalEquityUSDCombined")
+    usd_fallback = balances.get("totalEquityUSD")
+    usd = usd_combined if usd_combined is not None else usd_fallback
+    if cad is None or usd is None:
+        return None
+    cad = float(cad)
+    usd = float(usd)
+    if usd > 0 and cad > 0:
+        return cad / usd
+    return None
+
+
+def refresh_exchange_rate_only(db_path: str = DOMAIN_MODEL_DB_PATH) -> Optional[float]:
+    """Wave 3 Task 8 (price-refresh/exchange-rate sync gap): refresh JUST the
+    stored USD->CAD rate, without a full broker sync.
+
+    Calls fetch_tv_balances() (--balances -- a lightweight balance-only CDP
+    fetch, far cheaper than --snapshot's full position sync), computes the
+    rate from its already-summed top-level totals, and persists it via
+    upsert_exchange_rate(). Callable as a CLI flag (--refresh-exchange-rate)
+    and importable so routes/portfolio.ts's POST /refresh-prices can spawn it
+    IN PARALLEL with the price fetch -- keeping the rate fresh on every price
+    refresh, not just during a full --snapshot broker sync.
+
+    Returns the computed rate, or None if the balance fetch failed or the
+    totals were non-positive (no bogus rate written either way).
+    """
+    from domain_model.db_client import initialize_db
+    from domain_model.exchange_rate_repository import upsert_exchange_rate
+
+    balances = fetch_tv_balances()
+    if not balances or balances.get("error"):
+        return None
+
+    rate = _compute_exchange_rate_from_balances(balances)
+    if rate is None:
+        return None
+
+    conn = initialize_db(db_path)
+    now = datetime.now(timezone.utc).isoformat()
+    upsert_exchange_rate(conn, rate, now)
+    return rate
+
+
 def _persist_snapshot_to_db(
     snapshot: dict,
     db_path: str = DOMAIN_MODEL_DB_PATH,
@@ -576,6 +631,8 @@ def main():
     parser.add_argument("--compare",   action="store_true", help="Diff TV vs Questrade positions")
     parser.add_argument("--inspect",   action="store_true", help="Dump broker panel DOM for debugging")
     parser.add_argument("--promote",   action="store_true", help="Promote TV positions to portfolio.json holdings list")
+    parser.add_argument("--refresh-exchange-rate", action="store_true",
+                         help="Lightweight balances-only USD->CAD rate refresh (no full snapshot sync)")
     parser.add_argument("--pretty",    action="store_true", default=True)
     args = parser.parse_args()
 
@@ -626,6 +683,17 @@ def main():
         print(json.dumps(report, indent=indent))
         return
 
+    # ── balances-only exchange-rate refresh ───────────────────────────────────
+    if args.refresh_exchange_rate:
+        rate = refresh_exchange_rate_only()
+        if rate is None:
+            print("⚠  Could not refresh exchange rate (balance fetch failed or totals were non-positive).", file=sys.stderr)
+            print(json.dumps({"error": "exchange_rate_refresh_failed"}, indent=indent))
+            sys.exit(1)
+        print(f"✓ Exchange rate refreshed: {rate}")
+        print(json.dumps({"usd_to_cad_rate": rate}, indent=indent))
+        return
+
     # ── individual data types ─────────────────────────────────────────────────
     if args.accounts:
         result = fetch_tv_accounts()
@@ -648,7 +716,7 @@ def main():
         return
 
     # ── snapshot ─────────────────────────────────────────────────────────────
-    if args.snapshot or not any([args.accounts, args.balances, args.positions, args.orders, args.compare, args.inspect]):
+    if args.snapshot or not any([args.accounts, args.balances, args.positions, args.orders, args.compare, args.inspect, args.refresh_exchange_rate]):
         # Fetch balances first — getBalances() is unreliable after account-switching in getPortfolio()
         print("Fetching live balances from TradingView Account Summary...")
         balances: Optional[dict] = fetch_tv_balances()
