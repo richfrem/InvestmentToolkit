@@ -133,16 +133,45 @@ def test_persist_snapshot_to_db_skips_non_real_accounts_and_zero_qty(tmp_path):
     assert list_account_investments(conn, account_id="RRSP") == []
 
 
-def test_write_snapshot_also_persists_to_domain_model_sqlite(tmp_path, monkeypatch):
+def test_write_snapshot_persists_to_sqlite_only(tmp_path, monkeypatch):
+    """Wave 3 completion: write_snapshot is now SQLite-only. It persists the real
+    per-account positions/cash to domain_model.sqlite and does NOT write
+    portfolio.json anymore (the former IPC/holdings/totals JSON write is gone)."""
     monkeypatch.setattr(fetch_broker_data, "DATA_DIR", str(tmp_path))
     db_path = str(tmp_path / "domain_model.sqlite")
     monkeypatch.setattr(fetch_broker_data, "DOMAIN_MODEL_DB_PATH", db_path)
     monkeypatch.setattr(fetch_broker_data, "_run_portfolio_refresh", lambda: None)
 
-    path = fetch_broker_data.write_snapshot(SNAPSHOT, balances=None)
-    written_json = json.loads(Path(path).read_text())
-    assert written_json["tvSnapshot"] == SNAPSHOT  # existing JSON write untouched
+    fetch_broker_data.write_snapshot(SNAPSHOT, balances=None)
+
+    # portfolio.json must NOT be written anymore.
+    assert not (tmp_path / "portfolio.json").exists()
 
     conn = initialize_db(db_path)
     rows = {r["investment_id"]: r for r in list_account_investments(conn, account_id="TFSA")}
     assert rows["MSFT"]["quantity"] == 4
+
+
+def test_write_snapshot_never_touches_portfolio_json_even_with_balances(tmp_path, monkeypatch):
+    """Even with a live balances payload (which formerly drove the totals/holdings
+    JSON write), no portfolio.json is produced."""
+    monkeypatch.setattr(fetch_broker_data, "DATA_DIR", str(tmp_path))
+    db_path = str(tmp_path / "domain_model.sqlite")
+    monkeypatch.setattr(fetch_broker_data, "DOMAIN_MODEL_DB_PATH", db_path)
+    monkeypatch.setattr(fetch_broker_data, "_run_portfolio_refresh", lambda: None)
+
+    balances = {"totalEquityUSDCombined": 30373.98, "marketValueUSDCombined": 29000.0,
+                "cashUSDCombined": 1373.98}
+    fetch_broker_data.write_snapshot(SNAPSHOT, balances=balances)
+    assert not (tmp_path / "portfolio.json").exists()
+
+
+def test_emit_snapshot_json_prints_single_json_line_to_stdout(capsys):
+    """The stdout IPC channel: emit_snapshot_json prints the snapshot as one
+    machine-parseable JSON line on stdout (and nothing else on stdout), so the
+    Node caller can JSON.parse the last non-empty stdout line."""
+    fetch_broker_data.emit_snapshot_json(SNAPSHOT)
+    captured = capsys.readouterr()
+    stdout_lines = [ln for ln in captured.out.splitlines() if ln.strip()]
+    assert len(stdout_lines) == 1
+    assert json.loads(stdout_lines[0]) == SNAPSHOT
