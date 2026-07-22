@@ -703,8 +703,16 @@ router.post('/refresh-prices', async (_req, res) => {
             const stockData = data.stocks.find((s: any) => s.symbol === item.symbol);
             return stockData ? { ...item, price: stockData.price, last_updated: new Date().toISOString() } : item;
         });
-        backupPortfolio();
-        await persistPortfolioWithSnapshot(updatedItems);
+        // Wave 3 (completion): SQLite-only persistence — this path no longer writes
+        // portfolio.json. The freshly-fetched live prices are persisted into
+        // `investment_price` (the gap that previously left SQLite prices permanently
+        // stale after the one-time migration), which is what /summary, /weights, and
+        // /strategy-allocation now read their market values from (Task 6). The flat
+        // `updatedItems` array carries no per-account attribution, so account_investment
+        // quantities are intentionally left untouched (owned by the sync-tv path). The
+        // fresh heatmap prices are still returned inline in this response for the caller.
+        const pricesWritten = persistRefreshedPricesToDb(updatedItems);
+        console.log(`[Portfolio] refresh-prices: wrote ${pricesWritten} fresh prices to investment_price (SQLite-only, no portfolio.json write).`);
         res.json({ success: true, updated: updatedItems.length, heatmap: { ...data, exchange_rate: exchangeRate } });
     } catch (error) {
         console.error(`[API] Error refreshing prices: `, error);
