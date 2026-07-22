@@ -124,6 +124,19 @@
 #     "the" total. Singleton (CHECK(id = 1), one row ever, overwritten each sync),
 #     mirroring broker_exchange_rate's "store this one broker fact" shape. `source`
 #     holds the portfolio.json totals.totalSource value (e.g. "tv_authoritative").
+#   - investment.sector / investment.industry: not present in either named source
+#     design document. Added post-hoc (Wave 3 completion, last-portfolio.json-write
+#     closure) per an explicit user design decision. sector/industry are the only
+#     enriched holding-display facts GET /api/portfolio needed from portfolio.json
+#     that the schema did not already carry (name and pillar_id were added in
+#     Wave 0/2). They are resolved by the SAME real code path that resolves them
+#     today — fetch_portfolio_heatmap.py's yfinance info.get("sector")/("industry")
+#     lookup (with SECTOR_OVERRIDES) during a /refresh-prices call — and persisted
+#     alongside the fresh price into investment via update_investment_sector(). Both
+#     are nullable TEXT (a freshly TV-synced-but-not-yet-price-refreshed investment
+#     has no resolved sector yet; readers fall back to "Unknown", matching
+#     fetch_portfolio_heatmap.py's own fallback). Registered in SCHEMA_EVOLUTIONS so
+#     the real, already-existing domain_model.sqlite self-heals these two columns.
 #   - (no other deviations found as of this transcription)
 import sqlite3
 
@@ -147,6 +160,10 @@ SCHEMA_EVOLUTIONS: dict[str, list[tuple[str, str]]] = {
         ("source", "TEXT"),
         ("last_grok_sweep", "TEXT"),
         ("catalyst_updates_json", "TEXT"),
+    ],
+    "investment": [
+        ("sector", "TEXT"),
+        ("industry", "TEXT"),
     ],
 }
 
@@ -211,6 +228,8 @@ def initialize_db(db_path: str) -> sqlite3.Connection:
         investment_id              TEXT PRIMARY KEY,
         symbol                      TEXT NOT NULL,
         name                        TEXT,
+        sector                      TEXT,
+        industry                    TEXT,
         asset_class                 TEXT NOT NULL,
         currency                    TEXT NOT NULL DEFAULT 'USD',
         lifecycle_status            TEXT,
