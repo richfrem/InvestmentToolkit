@@ -129,6 +129,8 @@ def load_portfolio_state_from_db(conn: sqlite3.Connection) -> dict:
         if price and price > 0:
             prices[symbol] = price
 
+    db_exchange_rate = get_exchange_rate(conn)
+
     return {
         "shares": shares,
         "prices": prices,
@@ -140,6 +142,11 @@ def load_portfolio_state_from_db(conn: sqlite3.Connection) -> dict:
         # 1.38 literal portfolio_io.py's `totals.get("exchangeRate") or 1.38` uses
         # for a fresh/never-synced DB. This closes the CAD-exchange-rate gap
         # formerly documented as a retained-JSON exception (its Python face).
-        "exchange_rate": get_exchange_rate(conn) or 1.38,
+        # Uses "is not None" (not "or") so a hypothetical future writer change
+        # that persists a literal 0.0 doesn't get silently discarded in favor
+        # of the 1.38 default -- currently unreachable since the writer never
+        # persists a non-positive rate, but kept consistent with the nullish
+        # coalescing semantics used everywhere else in this fallback chain.
+        "exchange_rate": db_exchange_rate if db_exchange_rate is not None else 1.38,
         "_totals_from_broker": False,  # per ADR-030: always computed, never stored/read from a broker column
     }
