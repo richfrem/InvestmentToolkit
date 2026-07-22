@@ -53,6 +53,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from portfolio_io import load_portfolio_state, compute_weights  # noqa: E402
 from ticker_aliases import normalize_ticker  # noqa: E402
 from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.account_repository import list_accounts  # noqa: E402
+from domain_model.account_investment_repository import list_account_investments  # noqa: E402
+from domain_model.investment_repository import get_investment  # noqa: E402
+from domain_model.portfolio_repository import get_last_synced_at  # noqa: E402
 from domain_model.projection_repository import (  # noqa: E402
     get_latest_projection,
     get_latest_projection_by_source,
@@ -250,17 +254,21 @@ def compute_candidate_orders(
 
 
 def load_account_positions(
-    portfolio_path: Path = PORTFOLIO_PATH,
+    db_path: Path = DB_PATH,
 ) -> tuple[dict[str, dict[str, dict[str, float | None]]], dict[str, float], dict[str, str]]:
-    """Per-account share/cost-basis positions, preferring real tvSnapshot data.
+    """Per-account share/cost-basis positions from domain_model.sqlite.
 
-    Reads portfolio.json's tvSnapshot.snapshots[].positions for real
-    per-account splits (with avgFillPrice as cost basis) when present. Falls
-    back to mirroring TFSA at ~1/3 share count for RRSP (this repo's
-    documented account structure) for any account tvSnapshot doesn't cover.
+    Wave 3 cutover: per-account splits are read from ``account_investment``
+    (joined to ``investment`` for the symbol) via
+    ``account_investment_repository.list_account_investments`` — the exact shape
+    the old portfolio.json ``tvSnapshot.snapshots[].positions`` block carried
+    (quantity → shares, average_cost → costBasis). Cash is the ``CASH_USD``
+    row's quantity (Wave 0 decision 5), kept as a separate per-account dict.
+    Falls back to mirroring TFSA at ~1/3 share count for RRSP (this repo's
+    documented account structure) only when RRSP has no rows of its own.
 
     Args:
-        portfolio_path: Path to portfolio.json.
+        db_path: Path to domain_model.sqlite.
 
     Returns:
         (account_positions, account_cash_usd, account_source) —
@@ -268,34 +276,44 @@ def load_account_positions(
         account_cash_usd[account] is that account's USD cash balance (a
         separate dict, not folded into account_positions — see this
         function's Interfaces note on why); account_source[account] is
-        "tvSnapshot" or "heuristic_1_3_mirror".
+        "sqlite" or "heuristic_1_3_mirror".
     """
-    raw = json.loads(Path(portfolio_path).read_text())
-    snapshots = (raw.get("tvSnapshot") or {}).get("snapshots", [])
+    conn = initialize_db(str(db_path))
+    try:
+        accounts = list_accounts(conn)
 
-    positions: dict[str, dict[str, dict[str, float | None]]] = {}
-    cash_usd: dict[str, float] = {}
-    source: dict[str, str] = {}
-    synced_accounts: set[str] = set()
+        positions: dict[str, dict[str, dict[str, float | None]]] = {}
+        cash_usd: dict[str, float] = {}
+        source: dict[str, str] = {}
+        synced_accounts: set[str] = set()
 
-    for snap in snapshots:
-        acct = snap.get("accountType")
-        if not acct:
-            continue
-        synced_accounts.add(acct)
-        acct_positions: dict[str, dict[str, float | None]] = {}
-        for p in snap.get("positions", []):
-            sym = normalize_ticker(p.get("symbol", ""))
-            if not sym:
-                continue
-            acct_positions[sym] = {
-                "shares": float(p.get("quantity") or 0),
-                "costBasis": float(p["avgFillPrice"]) if p.get("avgFillPrice") else None,
-            }
-        balances = snap.get("balances", {})
-        cash_usd[acct] = float(balances.get("cashUSDCombined") or balances.get("cashUSD") or 0)
-        positions[acct] = acct_positions
-        source[acct] = "tvSnapshot"
+        for account_row in accounts:
+            acct = account_row["account_id"]
+            ai_rows = list_account_investments(conn, account_id=acct)
+            if not ai_rows:
+                continue  # an account with no holdings is treated as un-synced
+            acct_positions: dict[str, dict[str, float | None]] = {}
+            acct_cash = 0.0
+            for row in ai_rows:
+                investment = get_investment(conn, row["investment_id"])
+                raw_symbol = investment["symbol"] if investment else row["investment_id"]
+                if raw_symbol == "CASH_USD":
+                    acct_cash = float(row["quantity"] or 0)
+                    continue
+                sym = normalize_ticker(raw_symbol)
+                if not sym:
+                    continue
+                avg_cost = row["average_cost"]
+                acct_positions[sym] = {
+                    "shares": float(row["quantity"] or 0),
+                    "costBasis": float(avg_cost) if avg_cost is not None else None,
+                }
+            synced_accounts.add(acct)
+            positions[acct] = acct_positions
+            cash_usd[acct] = acct_cash
+            source[acct] = "sqlite"
+    finally:
+        conn.close()
 
     if synced_accounts and "RRSP" not in synced_accounts and "TFSA" in positions:
         rrsp_positions: dict[str, dict[str, float | None]] = {}
@@ -588,25 +606,31 @@ def _check_no_trade_conditions(
 ) -> str | None:
     """Returns a blockedReason string, or None if clear to trade.
 
-    Checks (in order): portfolio.json staleness (>60min), target weights not
+    Checks (in order): portfolio-data staleness (>60min), target weights not
     summing to 100%±0.5%, >30% of thesis holdings missing a DCF projection.
 
     Args:
         target_data: Parsed target-portfolio.json.
-        portfolio_path: Path to portfolio.json.
+        portfolio_path: Retained for signature compatibility; no longer read
+            (Wave 3 cutover — staleness now derives from SQLite).
         db_path: Path to domain_model.sqlite.
 
     Returns:
         A human-readable blockedReason, or None.
     """
-    raw = json.loads(Path(portfolio_path).read_text())
-    ts = raw.get("totals", {}).get("timestamp")
+    # Wave 3 cutover: freshness is the most-recent account_investment sync time
+    # (MAX(last_synced_at)), not portfolio.json's totals.timestamp.
+    conn = initialize_db(str(db_path))
+    try:
+        ts = get_last_synced_at(conn)
+    finally:
+        conn.close()
     if ts:
         age_minutes = (
             datetime.now(timezone.utc) - datetime.fromisoformat(ts.replace("Z", "+00:00"))
         ).total_seconds() / 60
         if age_minutes > 60:
-            return f"DATA_STALE — portfolio.json is {age_minutes:.0f} min old (run /tv-portfolio-sync first)"
+            return f"DATA_STALE — portfolio data is {age_minutes:.0f} min old (run /tv-portfolio-sync first)"
 
     holdings = target_data.get("holdings", [])
     weight_sum = sum(h.get("targetWeight", 0.0) for h in holdings)
@@ -729,7 +753,7 @@ def compute_rebalance_plan(
         bands, target_data, state["prices"], state["total_usd"], Path(db_path)
     )
 
-    account_positions, account_cash_usd, account_source = load_account_positions(Path(portfolio_path))
+    account_positions, account_cash_usd, account_source = load_account_positions(Path(db_path))
     routed = compute_account_routing(
         candidates, account_positions, account_cash_usd, account_policy, target_data, state["prices"]
     )

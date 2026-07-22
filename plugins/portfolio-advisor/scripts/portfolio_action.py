@@ -142,7 +142,11 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--all", action="store_true", required=True)
-    parser.add_argument("--portfolio", required=True)
+    parser.add_argument(
+        "--portfolio", required=True,
+        help="Legacy portfolio.json path, kept for CLI back-compat; no longer "
+             "read directly. Actual holdings now come from domain_model.sqlite.",
+    )
     parser.add_argument(
         "--target",
         required=True,
@@ -158,9 +162,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from validate_weights import compute_current
+    sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "investment_screener/backend/py_services"))
+    from portfolio_io import load_portfolio_state, compute_weights
 
-    ch = compute_current(args.portfolio)["holdings"]
+    # Wave 3 cutover (ADR-030): actual holdings from domain_model.sqlite via
+    # portfolio_io, not validate_weights.compute_current(portfolio.json).
+    _state = load_portfolio_state(None)
+    ch = compute_weights(_state["shares"], _state["prices"], _state["total_usd"])
     th = _load_target_weights(args.db)
     all_tickers = set(list(ch.keys()) + list(th.keys()))
 

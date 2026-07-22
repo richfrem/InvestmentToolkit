@@ -93,3 +93,42 @@ Specifically:
   exists only to correct a specific misapplication of it that arose mid-Wave-3, and to make the
   corrected reasoning discoverable for future sessions without needing to re-read this
   conversation's history.
+
+## Wave 3 Addendum — The USD→CAD Exchange Rate IS Stored (as a single scalar fact)
+
+Added Wave 3 Task 8, per an explicit user design decision, to close the last CAD-related schema
+gap (documented in `docs/superpowers/status/wave3-cad-exchange-rate-retained-json.md`). This is a
+**narrow extension of the same "store facts, not derived aggregates" principle above, not a
+contradiction of it.**
+
+**The distinction that decides it:** the live USD→CAD exchange rate is a genuine broker-reported
+*fact* — it cannot be derived from anything else the schema stores (holdings are USD-only quantities
+and prices; nothing relational yields the spot FX rate). A CAD *total*, by contrast, is a derived
+*aggregate*: `usd_value × rate`. The rule "store facts, compute aggregates" therefore says to store
+the rate and compute the CAD totals — exactly what this addendum does.
+
+Concretely:
+
+1. **One scalar, stored:** a new singleton table `broker_exchange_rate` (`id` fixed at 1,
+   `usd_to_cad_rate`, `synced_at`) holds exactly one row, overwritten each sync. This mirrors
+   `investment_price`'s "store this one broker fact, don't invent history we don't need" shape —
+   deliberately **not** a per-account or historical table.
+2. **No CAD totals stored, ever:** per-currency broker equity totals
+   (`totalEquityCADCombined`/`totalEquityUSDCombined`) are **not** persisted. They are consumed only
+   transiently at sync time to *infer* the rate (`sum(CAD) / sum(USD)` across accounts), per
+   CLAUDE.md pitfall #27's mandate that the rate come from TradingView's own native values, never an
+   external FX API. Any CAD figure the app displays is computed as `usd_value × rate` at read time.
+3. **Written once at sync time** by the same broker-sync path that already writes holdings/cash:
+   `fetch_broker_data.py::_persist_snapshot_to_db()` (Python) and
+   `BrokerSyncService.ts::persistSnapshotToDb()` (TS), each computing the rate with identical math
+   and calling `upsert_exchange_rate()` / `PortfolioRepository.upsertExchangeRate()`.
+4. **Read with a static fallback** by both former JSON readers, now SQLite-sourced:
+   `portfolio_repository.py::load_portfolio_state_from_db()` (`get_exchange_rate(conn) or 1.38`) and
+   `helpers.ts::getLiveUsdCadRate()` (via `PortfolioRepository.getExchangeRate()`), each degrading to
+   its existing static fallback for a fresh/never-synced database.
+
+This resolves both faces of the gap (TS `getLiveUsdCadRate` and Python `load_portfolio_state_from_db`
+`exchange_rate`) together, and eliminates the retained-`portfolio.json` exception that would
+otherwise have been carried into the Wave 3 exit report. The reconciliation discipline of the main
+decision above is unaffected: totals are still computed, still reconciled against the broker's
+reported total; only the FX rate — the one thing that is a fact and not an aggregate — is stored.
