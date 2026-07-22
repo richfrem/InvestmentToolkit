@@ -48,7 +48,7 @@ _UPDATABLE_FIELDS = {
     "standing_decision_source", "standing_decision_review",
     "pillar_id", "sub_strategy_id", "thesis_for_inclusion",
     "agent_rationale", "is_watchlisted", "watchlist_added_at",
-    "thesis_breaker_status",
+    "thesis_breaker_status", "sector", "industry",
 }
 
 
@@ -71,6 +71,25 @@ def update_investment_fields(conn: sqlite3.Connection, investment_id: str, **fie
         f"UPDATE investment SET {set_clause} WHERE investment_id = ?;", params,
     )
     conn.commit()
+
+
+def update_investment_sector(
+    conn: sqlite3.Connection,
+    investment_id: str,
+    sector: str | None,
+    industry: str | None,
+) -> None:
+    """Persist the yfinance/SECTOR_OVERRIDES-resolved sector/industry for an
+    investment (Wave 3 completion). Convenience wrapper over
+    ``update_investment_fields`` so the /refresh-prices price-refresh path — the
+    real code that already resolves sector/industry via fetch_portfolio_heatmap.py
+    — has a single named write for these two enriched-display columns.
+
+    A ``None``/``"Unknown"`` value is written through as-is (the reader falls back
+    to "Unknown"), never silently dropped, so a genuine "sector could not be
+    resolved" fact is distinguishable from "never refreshed".
+    """
+    update_investment_fields(conn, investment_id, sector=sector, industry=industry)
 
 
 def list_investments(
