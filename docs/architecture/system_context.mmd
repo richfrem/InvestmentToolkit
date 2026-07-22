@@ -21,8 +21,8 @@ graph TD
 
     %% State & Data
     subgraph "Local Persistence"
-        PortfolioDB[(portfolio.json)]
-        TargetDB[(target-portfolio.json)]
+        DomainDB[(domain_model.sqlite\naccounts, holdings, prices,\ntargets, price levels)]
+        IntelligenceDB[(intelligence.sqlite)]
         ProjectionsDB[(projections/)]
     end
 
@@ -38,13 +38,13 @@ graph TD
     PyLayer -->|Fetch fundamentals/delayed| YF
 
     %% Local DB access
-    Backend <-->|Read/Write| PortfolioDB
-    Backend <-->|Read/Write| TargetDB
+    Backend <-->|Read/Write| DomainDB
+    Backend <-->|Read/Write| IntelligenceDB
     Backend <-->|Read/Write| ProjectionsDB
 
     %% Agent Interactions
     AIAgent <-->|Triggers Scripts/Bridge| Backend
-    AIAgent <-->|Analyzes| TargetDB
+    AIAgent <-->|Analyzes| DomainDB
     AIAgent <-->|Generates| ProjectionsDB
 
     classDef core fill:#1e293b,stroke:#eab308,stroke-width:2px,color:#fff;
@@ -55,4 +55,4 @@ graph TD
     class UI,Backend,PyLayer core;
     class AIAgent agent;
     class TV,YF external;
-    class PortfolioDB,TargetDB,ProjectionsDB db;
+    class DomainDB,IntelligenceDB,ProjectionsDB db;

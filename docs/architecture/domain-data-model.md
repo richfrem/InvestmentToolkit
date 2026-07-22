@@ -1,8 +1,10 @@
 # Corrected Persistence Domain Data Model
 
-**Version:** 3.2
-**Status:** design correction pass only. No tables, code, repositories, or archival changed as a
-result of this document. Implementation begins only after this model is explicitly approved.
+**Version:** 3.2 (schema below extended by Wave 3, see Revision History)
+**Status:** implemented. Waves 0-3 built and shipped this schema against real data — see
+`docs/superpowers/status/wave1-projections-report.md`, `wave2-target-portfolio-report.md`, and
+Wave 3's exit report/handoff for per-wave producer/consumer cutover evidence. This document is
+the current schema reference, not a pending proposal.
 
 ## Revision History
 
@@ -40,6 +42,11 @@ not as parallel `-v2`/`-v3`-suffixed documents.
   as a literal chronological log), a real un-queryable-history problem the table fixes. Did NOT
   promote scoring fields (moat/management/conviction) to real columns — checked the frontend
   directly, found zero sort/filter usage on them today.
+- **Wave 3 additions** (2026-07-22, no version bump — additive, not a schema redesign): migrated
+  `portfolio.json` (account holdings) into `account`/`investment`/`account_investment`/
+  `investment_price`, and added `broker_exchange_rate`/`broker_reported_total` as the one
+  broker-reported fact this domain can't recompute (see ADR-030). Per-account and portfolio
+  totals are always computed live from `account_investment`/`investment_price`, never stored.
 
 ---
 
@@ -369,6 +376,27 @@ CREATE TABLE account_investment (
     last_synced_at                      TEXT NOT NULL,
     UNIQUE(account_id, investment_id)
 );
+
+CREATE TABLE broker_exchange_rate (
+    id               INTEGER PRIMARY KEY CHECK (id = 1),  -- singleton row
+    usd_to_cad_rate    REAL NOT NULL,
+    synced_at            TEXT NOT NULL
+);
+
+CREATE TABLE broker_reported_total (
+    id           INTEGER PRIMARY KEY CHECK (id = 1),  -- singleton row
+    total_usd      REAL,
+    total_cad        REAL,
+    synced_at          TEXT NOT NULL,
+    source               TEXT NOT NULL   -- e.g. 'tv_broker_panel'
+);
+
+-- Wave 3 (2026-07-22): both singletons store a broker-reported FACT that cannot be
+-- recomputed from account_investment/investment_price — the exchange rate itself, and
+-- the broker's own last-reported combined total. Per-account and portfolio totals are
+-- never stored as columns; they are always computed live (SUM(quantity * price) per
+-- account, then summed across accounts) per ADR-030. See
+-- ADRs/030_portfolio_totals_computed_not_stored.md.
 
 CREATE TABLE price_level_set (
     price_level_set_id  TEXT PRIMARY KEY,

@@ -8,7 +8,7 @@ Purpose:
     curated peer set and applies the peer-median multiple to the target
     ticker's own revenue to derive an implied price range. EV/EBITDA comps
     is deliberately out of scope for this pass — no EBITDA source exists
-    anywhere in the current data layer (see docs/architecture/ADR-valuation-committee.md).
+    anywhere in the current data layer (see ADRs/032_valuation_committee.md).
 
 Layer: Backend / Python Services / Valuation Math
 

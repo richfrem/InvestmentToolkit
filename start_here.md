@@ -241,7 +241,7 @@ TDD-gated tasks via `superpowers:subagent-driven-development`. Merged via PR #59
 ### ✅ Phase 2a (Valuation Committee) — COMPLETE, on `origin/main`
 Four new independent valuation lenses replacing the single flat-10%-discount-rate DCF, plus
 a gate requiring 2-of-3 agreement before `ACCUMULATE`. Spec: `docs/superpowers/specs/2026-07-04-valuation-committee-design.md`.
-Plan: `docs/superpowers/plans/2026-07-04-valuation-committee.md`. ADR: `docs/architecture/ADR-valuation-committee.md`.
+Plan: `docs/superpowers/plans/2026-07-04-valuation-committee.md`. ADR: `ADRs/032_valuation_committee.md`.
 
 - **`wacc.py`** — per-company discount rate (risk-free rate + local-OLS beta vs SPY + ERP +
   after-tax cost of debt, capped/floored [7%, 14%]), replacing the flat 10% default.
