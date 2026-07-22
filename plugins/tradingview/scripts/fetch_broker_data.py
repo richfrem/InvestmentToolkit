@@ -359,7 +359,11 @@ def _compute_exchange_rate_from_snapshot(snapshot: dict) -> Optional[float]:
     return None
 
 
-def _persist_snapshot_to_db(snapshot: dict, db_path: str = DOMAIN_MODEL_DB_PATH) -> int:
+def _persist_snapshot_to_db(
+    snapshot: dict,
+    db_path: str = DOMAIN_MODEL_DB_PATH,
+    totals: Optional[dict] = None,
+) -> int:
     """Persist a raw TV snapshot's real per-account positions/cash into
     account_investment rows -- mirrors migrate_portfolio_to_sqlite.py's
     per-holding write shape. Only the three real, seeded broker sub-accounts
@@ -367,12 +371,21 @@ def _persist_snapshot_to_db(snapshot: dict, db_path: str = DOMAIN_MODEL_DB_PATH)
     via the same upsert_account_investment path as any equity position (Wave 0
     resolved decision 5), not a special-cased column. Additive: the
     portfolio.json write in write_snapshot() is unchanged.
+
+    ``totals`` (the portfolio.json ``totals`` block built by build_totals_from_balances)
+    is optional. When present with a positive ``totalUSD``, the broker's own
+    last-reported total (totalUSD/totalCAD/totalSource) is captured in
+    broker_reported_total (Wave 3 Task 8, tvSnapshot closure) -- the single fact
+    verify_portfolio_total.py's reconciliation audit compares against the computed
+    total. Never a substitute for get_portfolio_total_value(); only the audited-
+    against comparison source.
     """
     from domain_model.db_client import initialize_db
     from domain_model.account_repository import upsert_account
     from domain_model.account_investment_repository import upsert_account_investment
     from domain_model.investment_repository import resolve_investment
     from domain_model.exchange_rate_repository import upsert_exchange_rate
+    from domain_model.broker_reported_total_repository import upsert_broker_reported_total
 
     conn = initialize_db(db_path)
     now = datetime.now(timezone.utc).isoformat()
@@ -412,6 +425,21 @@ def _persist_snapshot_to_db(snapshot: dict, db_path: str = DOMAIN_MODEL_DB_PATH)
     rate = _compute_exchange_rate_from_snapshot(snapshot)
     if rate is not None:
         upsert_exchange_rate(conn, rate, now)
+
+    # Wave 3 Task 8 (tvSnapshot closure): store the broker's own last-reported
+    # total (totals.totalUSD/totalCAD/totalSource) for verify_portfolio_total.py's
+    # reconciliation audit. Only the audited-against comparison source is stored,
+    # never a substitute for the computed get_portfolio_total_value().
+    if totals:
+        total_usd = totals.get("totalUSD")
+        if total_usd is not None and total_usd > 0:
+            upsert_broker_reported_total(
+                conn,
+                float(total_usd),
+                totals.get("totalCAD"),
+                now,
+                totals.get("totalSource"),
+            )
 
     return written
 
@@ -512,7 +540,9 @@ def write_snapshot(snapshot: dict, promote: bool = False, balances: Optional[dic
     # unchanged). Best-effort: a DB write failure must not block the real
     # portfolio.json sync this function exists to perform.
     try:
-        written = _persist_snapshot_to_db(snapshot, db_path=DOMAIN_MODEL_DB_PATH)
+        written = _persist_snapshot_to_db(
+            snapshot, db_path=DOMAIN_MODEL_DB_PATH, totals=data.get("totals")
+        )
         print(f"✓ Persisted {written} position(s) to domain_model.sqlite.")
     except Exception as exc:  # noqa: BLE001
         print(f"⚠  Failed to persist snapshot to domain_model.sqlite: {exc}", file=sys.stderr)

@@ -264,6 +264,28 @@ export function computeExchangeRateFromSnapshot(snapshot: TVSnapshot): number | 
     return null;
 }
 
+/**
+ * Sum the broker's OWN reported equity totals across snapshots —
+ * totalEquityUSDCombined (fallback totalEquityUSD) and totalEquityCADCombined
+ * (fallback totalEquityCAD). Returns the broker's last-reported portfolio total
+ * ({totalUsd, totalCad}), the figure verify_portfolio_total.py reconciles the
+ * computed total against, or null when no USD equity total is present. Mirrors
+ * routes/portfolio.ts::persistPortfolioWithSnapshot's tvTotalUSD/tvTotalCAD sum.
+ */
+export function computeBrokerReportedTotalFromSnapshot(snapshot: TVSnapshot): { totalUsd: number; totalCad: number } | null {
+    let totalUsd = 0;
+    let totalCad = 0;
+    for (const snap of (snapshot as any).snapshots ?? []) {
+        const b = snap?.balances;
+        if (b) {
+            totalUsd += Number(b.totalEquityUSDCombined ?? b.totalEquityUSD ?? 0);
+            totalCad += Number(b.totalEquityCADCombined ?? b.totalEquityCAD ?? 0);
+        }
+    }
+    if (totalUsd > 0) return { totalUsd, totalCad };
+    return null;
+}
+
 export function persistSnapshotToDb(snapshot: TVSnapshot, dbPath: string = DOMAIN_MODEL_DB_FILE): void {
     const investmentRepo = new InvestmentRepository(dbPath);
     const portfolioRepo = new PortfolioRepository(dbPath);
@@ -296,6 +318,14 @@ export function persistSnapshotToDb(snapshot: TVSnapshot, dbPath: string = DOMAI
         // uses. Only the scalar rate is stored (ADR-030 addendum), never a CAD total.
         const rate = computeExchangeRateFromSnapshot(snapshot);
         if (rate !== null) portfolioRepo.upsertExchangeRate(rate, now);
+
+        // Wave 3 Task 8 (tvSnapshot closure): store the broker's own last-reported
+        // portfolio total for verify_portfolio_total.py's reconciliation audit.
+        // 'tv_authoritative' matches the totalSource fetch_broker_data.py stamps.
+        const brokerTotal = computeBrokerReportedTotalFromSnapshot(snapshot);
+        if (brokerTotal !== null) {
+            portfolioRepo.upsertBrokerReportedTotal(brokerTotal.totalUsd, brokerTotal.totalCad, now, 'tv_authoritative');
+        }
     } finally {
         investmentRepo.close();
         portfolioRepo.close();
@@ -353,4 +383,4 @@ export async function syncAuto(): Promise<SyncResult> {
     };
 }
 
-export const brokerSyncService = { syncFromTV, syncAuto, mergeIntoPortfolio, persistSnapshotToDb, computeExchangeRateFromSnapshot };
+export const brokerSyncService = { syncFromTV, syncAuto, mergeIntoPortfolio, persistSnapshotToDb, computeExchangeRateFromSnapshot, computeBrokerReportedTotalFromSnapshot };
