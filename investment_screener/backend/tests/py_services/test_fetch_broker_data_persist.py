@@ -22,6 +22,7 @@ sys.path.insert(0, str(DOMAIN_MODEL_PY_SERVICES_DIR))
 import fetch_broker_data  # noqa: E402
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.account_investment_repository import list_account_investments  # noqa: E402
+from domain_model.exchange_rate_repository import get_exchange_rate  # noqa: E402
 
 SNAPSHOT = {
     "accounts": [{"accountType": "TFSA", "accountId": "1"}],
@@ -46,6 +47,35 @@ def test_persist_snapshot_to_db_writes_real_positions_and_cash(tmp_path):
     assert rows["MSFT"]["quantity"] == 4
     assert rows["MSFT"]["average_cost"] == 410.0
     assert rows["CASH_USD"]["quantity"] == 300.0
+
+
+def test_persist_snapshot_to_db_computes_and_stores_exchange_rate(tmp_path):
+    """A snapshot carrying TV's native CAD/USD equity totals must produce the
+    inferred rate (sum CAD / sum USD across snapshots, exactly mirroring
+    helpers.ts::getLiveUsdCadRate) in broker_exchange_rate."""
+    db_path = str(tmp_path / "test.sqlite")
+    snapshot = {
+        "snapshots": [
+            {"accountType": "TFSA",
+             "balances": {"cashUSD": 100.0, "totalEquityCADCombined": 6900.0, "totalEquityUSDCombined": 5000.0},
+             "positions": [{"symbol": "MSFT", "quantity": 1, "avgFillPrice": 400.0}]},
+            {"accountType": "RRSP",
+             "balances": {"totalEquityCADCombined": 1380.0, "totalEquityUSDCombined": 1000.0},
+             "positions": []},
+        ]
+    }
+    fetch_broker_data._persist_snapshot_to_db(snapshot, db_path=db_path)
+    conn = initialize_db(db_path)
+    # (6900 + 1380) / (5000 + 1000) = 8280 / 6000 = 1.38
+    assert get_exchange_rate(conn) == 1.38
+
+
+def test_persist_snapshot_to_db_no_totals_leaves_rate_unset(tmp_path):
+    """A snapshot with no CAD/USD equity totals must NOT write a bogus rate row."""
+    db_path = str(tmp_path / "test.sqlite")
+    fetch_broker_data._persist_snapshot_to_db(SNAPSHOT, db_path=db_path)
+    conn = initialize_db(db_path)
+    assert get_exchange_rate(conn) is None
 
 
 def test_persist_snapshot_to_db_skips_non_real_accounts_and_zero_qty(tmp_path):
