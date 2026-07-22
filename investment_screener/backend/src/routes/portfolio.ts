@@ -53,6 +53,8 @@ import { PORTFOLIO_FILE, PORTFOLIO_CONFIG_FILE, THESIS_FILE, DOMAIN_MODEL_DB_FIL
 import { buildPortfolioSnapshot, preserveAuthoritativeTotal, computeWeightsMap, PortfolioTotals } from '../utils/portfolioSnapshot';
 import { computeStrategyAllocation } from '../utils/strategyAllocation';
 import { PortfolioRepository } from '../services/PortfolioRepository';
+import { InvestmentRepository } from '../services/InvestmentRepository';
+import { normalizeTicker } from '../utils/tickerAliases';
 
 const router = express.Router();
 
@@ -192,6 +194,46 @@ export function getAccountPositionsFromDb(
         return repo.getPerAccountPositions(ticker);
     } finally {
         repo.close();
+    }
+}
+
+/**
+ * Wave 3 (completion): persist freshly-refreshed live prices into
+ * `investment_price`, closing the gap that previously left SQLite prices
+ * permanently stale after the one-time migrate_portfolio_to_sqlite.py run.
+ *
+ * `/refresh-prices` builds a FLAT, cross-account-aggregated `items` array (fresh
+ * yfinance/TV price per symbol, no per-account attribution). `investment_price`
+ * is keyed per-investment (not per-account), so it is the one table this flat
+ * shape can safely write — `account_investment` quantities are deliberately NOT
+ * touched here (they carry per-account attribution this array lacks and are
+ * maintained only by the sync-tv → persistSnapshotToDb path). Symbols are
+ * normalized through the same broker alias map persistSnapshotToDb uses so the
+ * `investment_id` resolved here matches the account_investment rows those prices
+ * are joined against.
+ *
+ * Returns the number of prices written. Exported for tmp_path-scoped tests.
+ */
+export function persistRefreshedPricesToDb(items: any[], dbPath: string = DOMAIN_MODEL_DB_FILE): number {
+    const investmentRepo = new InvestmentRepository(dbPath);
+    const portfolioRepo = new PortfolioRepository(dbPath);
+    try {
+        const now = new Date().toISOString();
+        let count = 0;
+        for (const item of items) {
+            const rawSymbol: string = item?.symbol ?? item?.ticker;
+            if (!rawSymbol || rawSymbol === 'USD_CASH') continue;
+            const price = item?.price;
+            if (typeof price !== 'number' || !Number.isFinite(price) || price <= 0) continue;
+            const symbol = normalizeTicker(rawSymbol);
+            const investmentId = investmentRepo.resolveInvestmentId(symbol, 'EQUITY', 'USD');
+            portfolioRepo.upsertInvestmentPrice(investmentId, price, 'USD', now);
+            count++;
+        }
+        return count;
+    } finally {
+        investmentRepo.close();
+        portfolioRepo.close();
     }
 }
 
