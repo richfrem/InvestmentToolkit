@@ -1287,6 +1287,38 @@ fallback remains indefinitely
   columns, per spec §2.14 — the JSON columns are the approved exception, already justified, not a
   new decision needed at implementation time).
 
+### Wave 6 — Program Closure & Architecture Reconciliation
+
+- **Scope:** runs only after every functional wave (0 through 5E) is complete and merged — this is
+  not a code-migration wave, it is the program's closing audit and documentation/agent-ecosystem
+  reconciliation pass. Added as a terminal phase during Wave 3 kickoff planning (2026-07-20) so it
+  is not forgotten once the functional waves stop generating their own forcing function.
+- **1. Architecture documentation reconciliation:** export the complete final SQLite DDL, refresh
+  the Mermaid ERD, regenerate physical schema docs and data dictionary, and verify all of it
+  matches the actual shipped schema (not the original spec's pre-migration draft).
+- **2. Agent & onboarding reconciliation:** review and update `toolkit-onboarding-guide`; validate
+  startup/bootstrap instructions, coordinator-agent routing logic, and the TradingView onboarding
+  path; update agent-ecosystem docs for the SQLite-first architecture; remove references to
+  retired JSON/JSONL stores anywhere they still linger in skills/agents/plugins.
+- **3. Retained-JSON reassessment:** revisit every exemption approved along the way (at minimum
+  `target-portfolio.json` and `thesis_breaker_state.json` from Wave 2, plus any later-approved
+  exceptions) and for each: confirm the exemption is still justified, evaluate whether a schema
+  change would now eliminate it, and decide migrate / redesign / formally retain with documented
+  rationale.
+- **4. Final migration audit:** JSON/JSONL file counts before vs. after across the whole program;
+  remaining runtime JSON producers/consumers (should be zero outside approved exceptions); full
+  SQLite table/repository/service inventory; a program-level Wave KPI rollup.
+- **5. Architecture simplification review:** remove temporary compatibility layers, migration-only
+  code, dead adapters, now-unused helper functions, and duplicate access paths left behind by
+  incremental wave-by-wave cutover; confirm the final architecture actually matches the SQLite-
+  pivot objective stated at the top of this plan, not a permanent hybrid.
+- **Also binding on Wave 3 and later wave exits (per Wave 2's own lesson, restated here so it
+  isn't lost before Wave 6):** a wave is not finished at "PR created." The full protocol is
+  post-merge local `main` sync to `origin/main`, worktree removal, local **and remote** feature
+  branch deletion, and verification (`git worktree list` / `git branch --list` clean) — before the
+  next wave starts. This is CLAUDE.md's worktree-lifecycle rule; it is repeated here because Wave 6
+  is exactly the kind of terminal phase this discipline is meant to protect.
+
 ---
 
 ## Self-Review
