@@ -71,6 +71,8 @@ export interface InvestmentRow {
     investment_id: string;
     symbol: string;
     name: string | null;
+    sector: string | null;
+    industry: string | null;
     asset_class: string;
     currency: string;
     lifecycle_status: string | null;
@@ -129,6 +131,8 @@ export class InvestmentRepository {
                 investment_id              TEXT PRIMARY KEY,
                 symbol                      TEXT NOT NULL,
                 name                        TEXT,
+                sector                      TEXT,
+                industry                    TEXT,
                 asset_class                 TEXT NOT NULL,
                 currency                    TEXT NOT NULL DEFAULT 'USD',
                 lifecycle_status            TEXT,
@@ -154,6 +158,37 @@ export class InvestmentRepository {
             CREATE INDEX IF NOT EXISTS idx_investment_pillar ON investment(pillar_id);
             CREATE INDEX IF NOT EXISTS idx_investment_lifecycle ON investment(lifecycle_status);
         `);
+        // Deliberately NO ALTER TABLE here — merely opening this repository against
+        // the real, pre-completion domain_model.sqlite must never mutate its
+        // schema (respecting this class's "never ALTER the real file on open"
+        // rule and CLAUDE.md's don't-mutate-gitignored-data rule). Fresh test DBs
+        // get sector/industry from the CREATE TABLE above; the real file's two new
+        // columns are added by db_client.py::_evolve_schema (Python, on any
+        // initialize_db call) OR, failing that, lazily at first write by
+        // updateSectorIndustry() below — never on a read-only open.
+    }
+
+    /** Mirrors `investment_repository.py::update_investment_sector` — persist the
+     * yfinance/SECTOR_OVERRIDES-resolved sector/industry for a symbol (Wave 3
+     * completion). Resolves (creating if new) the investment row first, so a
+     * symbol seen only via a price refresh still gets its metadata. This is the
+     * only TS write path for these two columns, per the "one writer per table"
+     * rule. Lazily self-heals the two columns on the real file at first write
+     * (a genuine write path, never a read-only open) so a pre-completion file
+     * that Python's _evolve_schema hasn't reached yet still accepts the write. */
+    updateSectorIndustry(symbol: string, sector: string | null, industry: string | null): void {
+        const cols = new Set(
+            (this.db.prepare('PRAGMA table_info(investment)').all() as Array<{ name: string }>).map(c => c.name)
+        );
+        if (!cols.has('sector')) this.db.exec('ALTER TABLE investment ADD COLUMN sector TEXT');
+        if (!cols.has('industry')) this.db.exec('ALTER TABLE investment ADD COLUMN industry TEXT');
+        const investmentId = this.resolveInvestmentId(symbol);
+        const now = new Date().toISOString();
+        this.db
+            .prepare(
+                `UPDATE investment SET sector = ?, industry = ?, updated_at = ? WHERE investment_id = ?`
+            )
+            .run(sector, industry, now, investmentId);
     }
 
     /** Mirrors `investment_repository.py::resolve_investment` — idempotent
