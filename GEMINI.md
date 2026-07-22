@@ -44,6 +44,7 @@ InvestmentToolkit/
 12. **Refine templates on Grok ingest**: After each Grok response, improve prompt templates to guard against observed gaps (grouped tickers, lazy placeholders, TA errors).
 13. **Initialize missing private data**: If any local gitignored data files (e.g., `portfolio.json`, `cash_flows.json`) are missing from `investment_screener/backend/data/`, initialize them by copying their corresponding `.example` files.
 14. **Worktree-first is mandatory, not a judgment call**: Before any code/script/multi-file change, create a git worktree first — never decide unilaterally that a task is "small enough" to skip it and work directly on the main checkout. Only a single trivial doc-typo fix is exempt. See `.agent/rules/git-operations.md` and `.agent/rules/worktree-subagent-isolation.md` (Failure Mode 2) — an entire phase of work was done directly on `main` in violation of this before the rule existed in writing.
+15. **Worktree lifecycle does not end at "PR created"**: full routine is (1) create worktree/feature branch → (2) implement, commit, push → (3) open PR, **do not merge it yourself unless explicitly told to** → (4) user reviews and merges the PR on GitHub → (5) **you then close the loop**: `git fetch origin`; sync local `main` to `origin/main` (merge or fast-forward — check for other in-progress work first, never force); verify the merged commit is actually an ancestor of `main` (`git merge-base --is-ancestor <branch-tip> main`); once confirmed, remove the now-merged worktree (`ExitWorktree action: "remove"`); delete the local **and remote** feature branch; confirm a clean `git worktree list`/`git branch --list`. **A user telling you "I merged the PR" is the trigger for step 5, not the end of the task** — treat post-merge repository hygiene as a mandatory completion step, not optional cleanup, and do not start next-phase work until it's done.
 
 ## Canonical Scripts
 | Script | Purpose |
@@ -121,7 +122,6 @@ All cash is in **PSU-U.TO** (~$100 USD/share, TSX). To fund any buy: sell PSU-U.
 **26. Custom Pine library**: `plugins/tradingview/assets/pinescript-indicators/ai-ta-levels.pine` (Multi-EMA 21/50/200 + volume bias, saved in TV as "AI TA Levels"). Lint before inject: `python3 .../pine_linter.py <file.pine>`.
 
 **27. Portfolio total validation & Exchange Rates**: Compute totals using the formula: `cash value all accounts + sum(portfolio holding price * shares)`. Never convert USD to CAD via external API calls; always infer the exchange rate directly from TradingView's native values (e.g. `totalEquityCADCombined / totalEquityUSDCombined`).
-
 **28. Worktree/subagent isolation**: Full rule + mandatory post-task check → `.agent/rules/worktree-subagent-isolation.md`.
 
 ## Key Files
