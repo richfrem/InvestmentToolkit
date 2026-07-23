@@ -175,6 +175,9 @@ if sys_path_entry not in sys.path:
     sys.path.insert(0, sys_path_entry)
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.investment_repository import list_investments  # noqa: E402
+from domain_model.trade_log_entry_repository import list_trade_log_entries  # noqa: E402
+from domain_model.investment_repository import resolve_investment  # noqa: E402
+from domain_model.order_execution_repository import insert_order_execution  # noqa: E402
 
 RISK_SNAPSHOT_PATH = Path(__file__).resolve().parents[1] / "data" / "risk_snapshot.json"
 ACCOUNT_POLICY_PATH = Path(__file__).resolve().parents[1] / "data" / "account_policy.json"
@@ -998,28 +1001,55 @@ def check_risk_gates(
 _NON_EXECUTED_STATUSES = {"suggested", "cancelled", "inactive", "submitted"}
 
 
-def get_trade_log_entries(trade_log_path: Optional[Path] = None) -> List[Dict[str, Any]]:
-    """Read all entries from the real trade log (investment_screener/
-    backend/data/trade-log.json — this project's existing manual/CDP-synced
-    trade log, not a new store).
+def get_trade_log_entries(db_path: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Read all entries from the real trade log — Wave 4 cutover: this now
+    reads the ``trade_log_entry`` SQLite table (via
+    ``trade_log_entry_repository.list_trade_log_entries``) instead of
+    trade-log.json (retired/archived).
 
-    Never raises: missing file or malformed JSON degrades to [].
+    Rows are translated back to the original JSON field-name shape
+    ({"id", "ticker", "action", "shares", "price", "totalCost", "account",
+    "orderType", "limitPrice", "date", "notes", "status", "source",
+    "priority", "loggedAt"}) so downstream consumers
+    (find_matching_trade_log_entry, validate_trade_execution) are
+    unchanged. ``investment_id`` is used directly as ``ticker`` --
+    investment_repository.resolve_investment() sets investment_id =
+    symbol.upper(), so no join is needed.
+
+    Never raises: any DB error degrades to [].
 
     Args:
-        trade_log_path: Override path (tests pass a tmp_path fixture);
-            None reads the real TRADE_LOG_PATH.
+        db_path: Override path (tests pass a tmp_path fixture);
+            None reads the real DB_PATH.
 
     Returns:
         List of trade log entry dicts, or [] if unavailable.
     """
-    path = trade_log_path or TRADE_LOG_PATH
     try:
-        if not path.exists():
-            return []
-        data = json.loads(path.read_text())
-    except (OSError, json.JSONDecodeError):
+        conn = initialize_db(str(db_path or DB_PATH))
+        rows = list_trade_log_entries(conn)
+    except Exception:
         return []
-    return data if isinstance(data, list) else []
+    return [
+        {
+            "id": row.get("entry_id"),
+            "ticker": row.get("investment_id"),
+            "action": row.get("action"),
+            "shares": row.get("shares"),
+            "price": row.get("price"),
+            "totalCost": row.get("total_cost"),
+            "account": row.get("account_id"),
+            "orderType": row.get("order_type"),
+            "limitPrice": row.get("limit_price"),
+            "date": row.get("trade_date"),
+            "notes": row.get("notes"),
+            "status": row.get("status"),
+            "source": row.get("source"),
+            "priority": row.get("priority"),
+            "loggedAt": row.get("logged_at"),
+        }
+        for row in rows
+    ]
 
 
 def find_matching_trade_log_entry(
@@ -1085,7 +1115,7 @@ def wait_for_trade_log_entry(
     after_timestamp: Optional[str] = None,
     timeout: float = 60.0,
     poll_interval: float = 2.0,
-    trade_log_path: Optional[Path] = None,
+    db_path: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     """Poll the real trade log until a matching entry appears or timeout
     elapses — an order placed via CDP is logged asynchronously (this
@@ -1102,14 +1132,14 @@ def wait_for_trade_log_entry(
         after_timestamp: Forwarded to find_matching_trade_log_entry().
         timeout: Max seconds to poll (default 60, per the plan's literal value).
         poll_interval: Seconds between polls (default 2).
-        trade_log_path: Forwarded to get_trade_log_entries() (tests override).
+        db_path: Forwarded to get_trade_log_entries() (tests override).
 
     Returns:
         The matching entry, or None if not found within timeout.
     """
     deadline = time.monotonic() + timeout
     while True:
-        entries = get_trade_log_entries(trade_log_path)
+        entries = get_trade_log_entries(db_path)
         match = find_matching_trade_log_entry(order, entries, account=account, after_timestamp=after_timestamp)
         if match is not None:
             return match
@@ -1211,17 +1241,27 @@ def log_order_execution(
     gate_result: Dict[str, Any],
     decision: str,
     trade_execution_result: Optional[Dict[str, Any]] = None,
-    orders_executed_path: Optional[Path] = None,
+    db_path: Optional[str] = None,
 ) -> bool:
     """
-    Append one audit-trail record for an order attempt to
-    data/orders_executed.jsonl.
+    Wave 4 cutover: append one audit-trail record for an order attempt to
+    the ``order_execution`` SQLite table (via
+    ``order_execution_repository.insert_order_execution``), instead of
+    data/orders_executed.jsonl (retired/archived).
+
+    Both ``gate_result`` and ``trade_execution_result`` are packed into
+    the single ``gate_result_json`` column as
+    ``{"gate_result": ..., "trade_execution_result": ...}`` — the
+    ``order_execution`` DDL has no separate column for
+    trade_execution_result (the historical JSONL data never had a
+    non-null value for it), so this preserves it losslessly for future
+    calls without a schema change.
 
     Append-only, NON-BLOCKING: unlike Task 5C-4's save_alert_metadata()
     (which deliberately raises on write failure for a tracked
     deliverable), this function NEVER raises — a logging failure must
     never abort or interfere with a live order already in flight. Any
-    OSError (disk full, permissions, missing parent) is swallowed and
+    exception (disk full, permissions, missing DB dir) is swallowed and
     reported via the return value only.
 
     Write-only by design, matching Task 5A-5's TV CDP error-logging
@@ -1243,24 +1283,31 @@ def log_order_execution(
             reconciliation has already completed by the time this is
             logged. None if not yet available (e.g. logged at
             order-placement time, before the fill is confirmed).
-        orders_executed_path: Override path (tests use tmp_path).
+        db_path: Override path (tests use tmp_path).
 
     Returns:
         True if the record was written, False if the write failed
         (never raises).
     """
-    path = orders_executed_path or ORDERS_EXECUTED_PATH
-    record = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "order": order,
-        "decision": decision,
-        "gate_result": gate_result,
-        "trade_execution_result": trade_execution_result,
-    }
+    timestamp = datetime.now(timezone.utc).isoformat()
     try:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "a") as f:
-            f.write(json.dumps(record) + "\n")
+        conn = initialize_db(str(db_path or DB_PATH))
+        ticker = order.get("ticker")
+        investment_id = resolve_investment(conn, ticker) if ticker else None
+        execution_id = f"{investment_id or 'UNKNOWN'}-{timestamp}"
+        insert_order_execution(conn, {
+            "execution_id": execution_id,
+            "executed_at": timestamp,
+            "investment_id": investment_id,
+            "side": order.get("side"),
+            "shares": order.get("shares"),
+            "price": order.get("price"),
+            "decision": decision,
+            "gate_result_json": json.dumps({
+                "gate_result": gate_result,
+                "trade_execution_result": trade_execution_result,
+            }),
+        })
         return True
-    except OSError:
+    except Exception:
         return False
