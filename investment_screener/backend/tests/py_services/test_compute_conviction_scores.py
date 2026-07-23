@@ -176,6 +176,23 @@ class TestScoreLoadTaLedger:
         assert ta_map["MSFT"]["rsi"] == 55.0
         assert ta_map["MSFT"]["flags"] == ["ACCUM_SIGNAL"]
 
+    def test_load_ta_has_no_json_fallback_signature(self):
+        """_load_ta must not accept a ta_json_path parameter — Wave 5B removed the fallback."""
+        import inspect
+        from compute_conviction_scores import _load_ta  # noqa: PLC0415
+        sig = inspect.signature(_load_ta)
+        assert "ta_json_path" not in sig.parameters
+
+    def test_load_ta_returns_empty_on_missing_db_no_json_read(self, tmp_path, monkeypatch):
+        """With no DB and no fallback, a missing db_path must return ({}, None) — never attempt
+        to read any JSON file (Wave 5B: no fallback exists to attempt).
+        """
+        from compute_conviction_scores import _load_ta  # noqa: PLC0415
+        missing_db = tmp_path / "does-not-exist.sqlite"
+        ta_map, stale = _load_ta(db_path=str(missing_db))
+        assert ta_map == {}
+        assert stale is None
+
 
 class TestLoadDcf:
     """_load_dcf must read from the domain_model SQLite `projection_version` table

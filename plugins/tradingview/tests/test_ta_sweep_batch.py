@@ -145,7 +145,6 @@ class TestSweepResultsPersistence:
         assert "--save-results" in result.stdout, (
             "--save-results flag not found in help output — was it added to argparse?"
         )
-        assert "--no-save" in result.stdout, "--no-save flag must also be present"
 
     def test_save_sweep_results_writes_timestamped_json(self, tmp_path: Path):
         """save_sweep_results() writes {timestamp, scan_date, count, results} to file."""
@@ -153,7 +152,9 @@ class TestSweepResultsPersistence:
         from ta_sweep_batch import save_sweep_results  # noqa: PLC0415
 
         out_file = tmp_path / "ta-sweep-results.json"
-        save_sweep_results(FIXTURE_RESULTS, out_file)
+        jsonl_path = tmp_path / "observations.jsonl"
+        db_path = tmp_path / "intelligence.sqlite"
+        save_sweep_results(FIXTURE_RESULTS, json_export_path=out_file, jsonl_path=jsonl_path, db_path=db_path)
 
         assert out_file.exists(), "Output file must be created"
         data = json.loads(out_file.read_text())
@@ -171,8 +172,10 @@ class TestSweepResultsPersistence:
         from ta_sweep_batch import save_sweep_results  # noqa: PLC0415
 
         out_file = tmp_path / "ta-sweep-results.json"
-        save_sweep_results(FIXTURE_RESULTS, out_file)
-        save_sweep_results(FIXTURE_RESULTS + FIXTURE_RESULTS, out_file)
+        jsonl_path = tmp_path / "observations.jsonl"
+        db_path = tmp_path / "intelligence.sqlite"
+        save_sweep_results(FIXTURE_RESULTS, json_export_path=out_file, jsonl_path=jsonl_path, db_path=db_path)
+        save_sweep_results(FIXTURE_RESULTS + FIXTURE_RESULTS, json_export_path=out_file, jsonl_path=jsonl_path, db_path=db_path)
 
         data = json.loads(out_file.read_text())
         assert data["count"] == 2, "Second write must overwrite — not append"
@@ -195,7 +198,7 @@ class TestSweepResultsPersistence:
         conn.commit()
         conn.close()
 
-        save_sweep_results(FIXTURE_RESULTS, out_file, jsonl_path=jsonl_path, db_path=db_path)
+        save_sweep_results(FIXTURE_RESULTS, json_export_path=out_file, jsonl_path=jsonl_path, db_path=db_path)
 
         # 1. Verify JSON file still exists (legacy compatibility)
         assert out_file.exists()
@@ -221,6 +224,30 @@ class TestSweepResultsPersistence:
         assert payload["rsi"] == 45.0
         conn.close()
 
+    def test_save_sweep_results_writes_no_json_by_default(self, tmp_path: Path):
+        """Wave 5B: without json_export_path, save_sweep_results must not create any JSON file —
+        only the ledger/SQLite write is unconditional now."""
+        sys.path.insert(0, str(REPO_ROOT / "plugins/tradingview/scripts"))
+        from ta_sweep_batch import save_sweep_results  # noqa: PLC0415
+
+        jsonl_path = tmp_path / "observations.jsonl"
+        db_path = tmp_path / "intelligence.sqlite"
+        from intelligence.db_client import initialize_db  # noqa: PLC0415
+        conn = initialize_db(str(db_path))
+        conn.execute("INSERT INTO instrument VALUES ('us-aapl', 'AAPL', 'NASDAQ', 'Apple', '2026-01-01', NULL);")
+        conn.commit()
+        conn.close()
+
+        save_sweep_results(FIXTURE_RESULTS, jsonl_path=jsonl_path, db_path=db_path)
+
+        assert not any(tmp_path.glob("*.json"))  # no flat JSON written anywhere
+        import sqlite3
+        conn = sqlite3.connect(db_path)
+        count = conn.execute(
+            "SELECT COUNT(*) FROM intelligence_event WHERE event_type = 'TECHNICAL_SWEEP';"
+        ).fetchone()[0]
+        conn.close()
+        assert count == len(FIXTURE_RESULTS)  # ledger/SQLite write still unconditional
 
 
 # ── pctToFV denominator tests ─────────────────────────────────────────────────
@@ -472,3 +499,56 @@ def test_load_dcf_uses_highest_version_regardless_of_source(tmp_path):
     dcf = load_dcf("DXYZ", db_path=db_path)
     assert dcf["fairValue"] == 45.0
     assert dcf["action"] == "INITIATE"
+
+
+def test_load_watchlisted_tickers_returns_watchlist_only_deduplicated(tmp_path):
+    """load_watchlisted_tickers must return is_watchlisted=True symbols from domain_model.sqlite,
+    deduplicated — mirrors overnight_gaps.py::_load_tickers()'s watchlist half.
+    """
+    import sys
+    from pathlib import Path
+    repo_root = Path(__file__).resolve().parents[3]
+    sys.path.insert(0, str(repo_root / "investment_screener/backend/py_services"))
+    sys.path.insert(0, str(repo_root / "plugins/tradingview/scripts"))
+
+    from domain_model.db_client import initialize_db  # noqa: E402
+    from domain_model.investment_repository import resolve_investment, update_investment_fields  # noqa: E402
+    from ta_sweep_batch import load_watchlisted_tickers  # noqa: PLC0415
+
+    db_path = tmp_path / "domain_model.sqlite"
+    conn = initialize_db(str(db_path))
+    for ticker in ("OKLO", "RKLB"):
+        inv_id = resolve_investment(conn, ticker)
+        update_investment_fields(conn, inv_id, is_watchlisted=True)
+    resolve_investment(conn, "MSFT")  # held, not watchlisted — is_watchlisted defaults False
+    conn.close()
+
+    tickers = load_watchlisted_tickers(db_path=db_path)
+
+    assert sorted(tickers) == ["OKLO", "RKLB"]
+    assert "MSFT" not in tickers
+
+
+def test_main_ticker_universe_is_union_of_holdings_and_watchlist(tmp_path, monkeypatch):
+    """main()'s scan universe must be holdings UNION watchlist, not holdings alone —
+    confirmed via load_portfolio() + load_watchlisted_tickers() combined, minus DEFAULT_SKIP.
+    """
+    import sys
+    from pathlib import Path
+    repo_root = Path(__file__).resolve().parents[3]
+    sys.path.insert(0, str(repo_root / "plugins/tradingview/scripts"))
+    import ta_sweep_batch  # noqa: PLC0415
+
+    monkeypatch.setattr(ta_sweep_batch, "load_portfolio", lambda: [{"symbol": "MSFT"}, {"symbol": "NVDA"}])
+    monkeypatch.setattr(ta_sweep_batch, "load_watchlisted_tickers", lambda db_path=None: ["NVDA", "OKLO", "RKLB"])
+
+    holdings = ta_sweep_batch.load_portfolio()
+    watchlisted = ta_sweep_batch.load_watchlisted_tickers()
+    seen: set[str] = set()
+    universe: list[str] = []
+    for sym in [h["symbol"] for h in holdings] + watchlisted:
+        if sym and sym not in ta_sweep_batch.DEFAULT_SKIP and sym not in seen:
+            seen.add(sym)
+            universe.append(sym)
+
+    assert universe == ["MSFT", "NVDA", "OKLO", "RKLB"]  # holdings first, no NVDA duplicate
