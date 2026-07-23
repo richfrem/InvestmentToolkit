@@ -13,10 +13,10 @@
  *   - patchSession(id, updates) - Modifies an existing TradeSession's status
  *   - runPy(args, timeoutMs) - Spawns place_order.py and handles runtime timeouts
  *   - extractJson(stdout) - Resolves and extracts clean JSON block from process stdout
- *   - readLog() - Reads entries from trade_log.json
- *   - writeLog(entries) - Writes updated entries to trade_log.json
+ *   - readLog() - Reads entries from the trade_log_entry SQLite table (Wave 4 cutover)
+ *   - writeLog(entries) - Upserts entries into the trade_log_entry SQLite table (Wave 4 cutover)
  *   - makeLogEntry(fields) - Scaffolds a standardized manual/automatic trade log record
- * 
+ *
  * Routes Index:
  *   - POST /preflight - Executes preflight checks (size caps, stale data flags) for a trade
  *   - POST /execute - Form-fills order details in TradingView's panel via CDP
@@ -31,13 +31,14 @@
  *   - POST /log/sync-from-tv - Synchronizes trade logs with working TV orders
  *   - GET /audit/today - Reads daily TV order action event streams
  *   - GET /tv-quote - Fetches quote from TradingView chart
- * 
+ *
  * Key Input Dependencies:
- *   - investment_screener/backend/data/trade_log.json (Reads/writes execution logs)
+ *   - investment_screener/backend/data/domain_model.sqlite's trade_log_entry table
+ *     (Wave 4 cutover; formerly trade-log.json, now archived)
  *   - plugins/tradingview/audit/ (reads logs)
- * 
+ *
  * Key Output Dependencies:
- *   - investment_screener/backend/data/trade_log.json
+ *   - investment_screener/backend/data/domain_model.sqlite's trade_log_entry table
  */
 
 import express from 'express';
@@ -45,7 +46,10 @@ import { spawn } from 'child_process';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
-import { TRADE_LOG_FILE } from '../utils/paths';
+import { DOMAIN_MODEL_DB_FILE } from '../utils/paths';
+import { TradeLogRepository, TradeLogEntryRow } from '../services/TradeLogRepository';
+import { InvestmentRepository } from '../services/InvestmentRepository';
+import { PortfolioRepository } from '../services/PortfolioRepository';
 
 const router = express.Router();
 
@@ -255,16 +259,105 @@ router.get('/session/:id', (req, res) => {
 
 // ── GET /api/trading/audit/today ─────────────────────────────────────────────
 
-// ── Manual Trade Log ─────────────────────────────────────────────────────────
+// ── Manual Trade Log (Wave 4 cutover: trade_log_entry SQLite table) ─────────
+//
+// readLog()/writeLog() keep the exact same external shape every route handler
+// already relies on (a plain array of {id, ticker, action, shares, price,
+// totalCost, account, orderType, limitPrice, date, notes, status, source,
+// priority, loggedAt, tvOrderId} objects) — only the storage underneath moved
+// from trade-log.json (retired/archived) to the trade_log_entry table via
+// TradeLogRepository. No route handler below needed to change its own logic.
 
-function readLog(): any[] {
-  try {
-    return fs.existsSync(TRADE_LOG_FILE) ? JSON.parse(fs.readFileSync(TRADE_LOG_FILE, 'utf-8')) : [];
-  } catch { return []; }
+/** DB row -> the original JSON entry shape every route handler expects. */
+function rowToEntry(row: TradeLogEntryRow): Record<string, any> {
+  return {
+    id: row.entry_id,
+    ticker: row.investment_id,
+    action: row.action,
+    shares: row.shares,
+    price: row.price,
+    totalCost: row.total_cost,
+    account: row.account_id,
+    orderType: row.order_type,
+    limitPrice: row.limit_price,
+    date: row.trade_date,
+    notes: row.notes,
+    status: row.status,
+    source: row.source,
+    priority: row.priority,
+    tvOrderId: row.tv_order_id,
+    loggedAt: row.logged_at,
+  };
 }
 
-function writeLog(entries: any[]): void {
-  fs.writeFileSync(TRADE_LOG_FILE, JSON.stringify(entries, null, 2));
+export function readLog(dbPath: string = DOMAIN_MODEL_DB_FILE): any[] {
+  const repo = new TradeLogRepository(dbPath);
+  try {
+    const rows = repo.listTradeLogEntries();
+    // writeLog() historically unshift()ed new entries to the front (newest
+    // first) and every consumer (GET /log -> TradeLog.tsx etc.) relies on
+    // that ordering — listTradeLogEntries() orders by entry_id, so re-sort
+    // by loggedAt descending here to preserve the original external order.
+    return rows
+      .map(rowToEntry)
+      .sort((a, b) => String(b.loggedAt ?? '').localeCompare(String(a.loggedAt ?? '')));
+  } catch {
+    return [];
+  } finally {
+    repo.close();
+  }
+}
+
+/** Upserts every entry in `entries` into trade_log_entry, resolving each
+ * entry's ticker -> investment_id and ensuring its account row exists first
+ * (mirrors migrate_wave4_to_sqlite.py's real-producer pattern). Every real
+ * caller passes the full current in-memory array after a local mutation
+ * (unshift a new entry, or patch one entry's fields) — no caller ever removes
+ * an entry from the array (cancellation is a status flip, not a delete), so
+ * upserting the whole array is equivalent to the old full-file overwrite. */
+export function writeLog(entries: any[], dbPath: string = DOMAIN_MODEL_DB_FILE): void {
+  // InvestmentRepository must open FIRST: its `investment` table DDL has many
+  // more columns than TradeLogRepository's/PortfolioRepository's own minimal
+  // `CREATE TABLE IF NOT EXISTS investment` (needed only for their FK). Since
+  // that's a no-op against an existing table and only sector/industry are in
+  // db_client.py's SCHEMA_EVOLUTIONS self-heal list, opening a narrower
+  // repository first on a fresh DB would permanently lock in a schema missing
+  // lifecycle_status etc. (a real bug caught by this task's own tests).
+  const investmentRepo = new InvestmentRepository(dbPath);
+  const portfolioRepo = new PortfolioRepository(dbPath);
+  const tradeLogRepo = new TradeLogRepository(dbPath);
+  try {
+    for (const entry of entries) {
+      if (!entry?.ticker) continue;
+      const investmentId = investmentRepo.resolveInvestmentId(String(entry.ticker));
+      const accountId = entry.account != null ? String(entry.account) : null;
+      if (accountId) {
+        portfolioRepo.upsertAccount(accountId, accountId, accountId);
+      }
+      tradeLogRepo.upsertTradeLogEntry({
+        entry_id: String(entry.id),
+        investment_id: investmentId,
+        account_id: accountId,
+        action: entry.action ?? null,
+        shares: entry.shares ?? null,
+        price: entry.price ?? null,
+        total_cost: entry.totalCost ?? null,
+        order_type: entry.orderType ?? null,
+        limit_price: entry.limitPrice ?? null,
+        trade_date: entry.date ?? null,
+        notes: entry.notes ?? null,
+        status: entry.status ?? null,
+        source: entry.source ?? null,
+        priority: entry.priority ?? null,
+        logged_at: entry.loggedAt ?? null,
+        tv_order_id: entry.tvOrderId ?? null,
+      });
+    }
+  } finally {
+    tradeLogRepo.close();
+    investmentRepo.close();
+    portfolioRepo.close();
+  }
 }
 
 function makeLogEntry(fields: Record<string, any>): Record<string, any> {

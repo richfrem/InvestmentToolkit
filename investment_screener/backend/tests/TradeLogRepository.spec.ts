@@ -48,6 +48,7 @@ describe('TradeLogRepository', () => {
         source: 'manual',
         priority: 'HIGH',
         logged_at: '2026-07-20T00:00:00.000Z',
+        tv_order_id: null,
         ...overrides,
     });
 
@@ -56,6 +57,12 @@ describe('TradeLogRepository', () => {
             repo.upsertTradeLogEntry(fixture());
             const row = repo.getTradeLogEntry('entry-1');
             expect(row).to.deep.equal(fixture());
+        });
+
+        it('persists tv_order_id (Task 11 addition — needed by /modify, /cancel, /log/sync-from-tv)', () => {
+            repo.upsertTradeLogEntry(fixture({ tv_order_id: 'tv-order-123' }));
+            const row = repo.getTradeLogEntry('entry-1');
+            expect(row?.tv_order_id).to.equal('tv-order-123');
         });
 
         it('is idempotent — a second call for the same entry_id updates in place, no duplicate row', () => {
