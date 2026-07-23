@@ -1047,6 +1047,7 @@ def get_trade_log_entries(db_path: Optional[str] = None) -> List[Dict[str, Any]]
             "source": row.get("source"),
             "priority": row.get("priority"),
             "loggedAt": row.get("logged_at"),
+            "tvOrderId": row.get("tv_order_id"),
         }
         for row in rows
     ]

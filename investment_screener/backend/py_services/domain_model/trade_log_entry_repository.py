@@ -8,9 +8,15 @@ the DDL's own column names and does not translate JSON source keys
 (e.g. ``ticker`` -> ``investment_id``, ``totalCost`` -> ``total_cost``); that
 translation is the migration script's job.
 
-Note: the JSON source (``data/trade-log.json``) also carries ``extendedHours``
-and ``tvOrderId`` fields that have no corresponding column in the
-``trade_log_entry`` DDL. They are intentionally not persisted here.
+Note: the JSON source (``data/trade-log.json``) also carries an
+``extendedHours`` field that has no corresponding column in the
+``trade_log_entry`` DDL and is intentionally not persisted here.
+
+``tv_order_id`` (Wave 4 Task 11 addition, via ``db_client.py``'s
+``SCHEMA_EVOLUTIONS``) DOES have a column -- trading.ts's /modify,
+/cancel, and /log/sync-from-tv routes match live TradingView orders
+against a logged entry's tvOrderId, so dropping it would silently break
+that reconciliation for every entry logged after cutover.
 """
 
 import sqlite3
@@ -18,7 +24,7 @@ import sqlite3
 _COLUMNS = (
     "entry_id", "investment_id", "account_id", "action", "shares", "price",
     "total_cost", "order_type", "limit_price", "trade_date", "notes",
-    "status", "source", "priority", "logged_at",
+    "status", "source", "priority", "logged_at", "tv_order_id",
 )
 
 

@@ -8,9 +8,11 @@ user (tied to a real data-loss incident from before this corrective effort began
 Real confirmed shapes:
 - trade-log.json: JSON list of {id, ticker, action, shares, price, totalCost,
   account, orderType, limitPrice, date, notes, status, source, priority,
-  loggedAt, extendedHours, tvOrderId}. extendedHours/tvOrderId have no
-  corresponding trade_log_entry DDL column and are intentionally dropped
-  (documented in trade_log_entry_repository.py's own module docstring).
+  loggedAt, extendedHours, tvOrderId}. extendedHours has no corresponding
+  trade_log_entry DDL column and is intentionally dropped. tvOrderId DOES
+  have a column (tv_order_id, added Task 11 -- needed by trading.ts's
+  /modify, /cancel, /log/sync-from-tv routes; documented in
+  trade_log_entry_repository.py's own module docstring).
 - orders_executed.jsonl: JSONL, one record per line:
   {timestamp, order: {ticker, side, shares, price}, decision, gate_result,
   trade_execution_result}. No stable id -- execution_id is derived
@@ -162,6 +164,7 @@ def execute_migration(
             "source": entry.get("source"),
             "priority": entry.get("priority"),
             "logged_at": entry.get("loggedAt"),
+            "tv_order_id": entry.get("tvOrderId"),
         })
         trade_log_entries_inserted += 1
 
