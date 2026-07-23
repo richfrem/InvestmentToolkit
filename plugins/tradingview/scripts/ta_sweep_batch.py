@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ta_sweep_batch.py — Daily TA sweep across all active portfolio holdings.
+ta_sweep_batch.py — Daily TA sweep across the combined portfolio-holdings + watchlist ticker universe (Wave 5B).
 =========================================================================
 
 Purpose:
@@ -15,6 +15,7 @@ Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Reads holdings)
     - investment_screener/backend/data/theses/target-portfolio.json (Reads target weights)
     - investment_screener/backend/data/domain_model.sqlite (Reads DCF valuations, ADR-029)
+    - investment_screener/backend/data/domain_model.sqlite (Reads watchlist membership via is_watchlisted)
 
 Usage:
     python3 plugins/tradingview/scripts/ta_sweep_batch.py [--skip TICKERS]
@@ -71,6 +72,26 @@ def load_portfolio() -> list[dict[str, Any]]:
     """
     state = load_portfolio_state(PORTFOLIO_PATH)
     return [{"symbol": symbol} for symbol in state["shares"]]
+
+
+def load_watchlisted_tickers(db_path: Path = DB_PATH) -> list[str]:
+    """Return watchlisted (not-yet-held) ticker symbols from domain_model.sqlite.
+
+    Mirrors overnight_gaps.py::_load_tickers()'s watchlist half — same
+    domain_model.investment_repository.list_investments(is_watchlisted=True) query,
+    kept as a separate loader (not merged with load_portfolio()) so callers can
+    still distinguish held-vs-watchlisted tickers if needed later.
+    """
+    from domain_model.investment_repository import list_investments
+
+    conn = initialize_db(str(db_path))
+    try:
+        return [
+            inv["symbol"] for inv in list_investments(conn, is_watchlisted=True)
+            if inv.get("symbol")
+        ]
+    finally:
+        conn.close()
 
 
 def load_target_portfolio() -> dict[str, dict[str, Any]]:
@@ -409,7 +430,13 @@ def main() -> None:
     skip = DEFAULT_SKIP | extra_skip
 
     holdings = load_portfolio()
-    tickers  = [h["symbol"] for h in holdings if h.get("symbol") and h["symbol"] not in skip]
+    watchlisted = load_watchlisted_tickers()
+    seen: set[str] = set()
+    tickers: list[str] = []
+    for sym in [h["symbol"] for h in holdings] + watchlisted:
+        if sym and sym not in skip and sym not in seen:
+            seen.add(sym)
+            tickers.append(sym)
     delay_ms = int(args.delay)
 
     print(f"Scanning {len(tickers)} holdings...", file=sys.stderr)
