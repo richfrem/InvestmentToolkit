@@ -13,6 +13,7 @@ from intelligence.event_repository import (  # noqa: E402
     get_latest_event_by_type,
     get_latest_event_by_type_and_ticker,
     list_tickers_with_active_event_type,
+    list_active_events_by_type,
 )
 
 
@@ -178,6 +179,34 @@ def test_get_latest_event_by_type_and_ticker(tmp_path):
     result = get_latest_event_by_type_and_ticker(conn, "TECHNICAL_SWEEP", "PLTR")
     assert result is not None
     assert result["event_id"] == "evt_pltr_new"
+
+
+def test_list_active_events_by_type_returns_all_matching_ordered_desc(tmp_path):
+    conn = initialize_db(str(tmp_path / "test.sqlite"))
+    insert_event(conn, {
+        "event_id": "evt_1", "event_sequence": 1, "instrument_id": None,
+        "event_type": "REVIEW_DAILY", "effective_at": "2026-07-17",
+        "observed_at": None, "ingested_at": "2026-07-17T10:00:00Z",
+        "source_id": "daily_brief", "confidence_score": None, "status": "ACTIVE",
+        "title": "Daily Brief for 2026-07-17", "body_markdown": "x",
+        "payload_json": '{"date": "2026-07-17"}', "supersedes_event_id": None,
+        "idempotency_key": "daily-brief-2026-07-17", "content_hash": "h1",
+    })
+    insert_event(conn, {
+        "event_id": "evt_2", "event_sequence": 2, "instrument_id": None,
+        "event_type": "REVIEW_DAILY", "effective_at": "2026-07-18",
+        "observed_at": None, "ingested_at": "2026-07-18T10:00:00Z",
+        "source_id": "daily_brief", "confidence_score": None, "status": "ACTIVE",
+        "title": "Daily Brief for 2026-07-18", "body_markdown": "x",
+        "payload_json": '{"date": "2026-07-18"}', "supersedes_event_id": None,
+        "idempotency_key": "daily-brief-2026-07-18", "content_hash": "h2",
+    })
+
+    results = list_active_events_by_type(conn, "REVIEW_DAILY")
+
+    assert len(results) == 2
+    assert results[0]["event_id"] == "evt_2"  # newest first
+    assert results[1]["event_id"] == "evt_1"
 
 
 def test_list_tickers_with_active_event_type_returns_distinct_sorted_tickers(tmp_path):
