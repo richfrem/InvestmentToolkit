@@ -37,7 +37,9 @@ TARGET_PATH     = REPO_ROOT / "investment_screener/backend/data/theses/target-po
 DB_PATH         = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 TV_CLI          = REPO_ROOT / "tradingview-cdp/cli.js"
 
-# Default output path — served by backend as /api/ta-sweep/results
+# Conventional default path for the optional --save-results flat-file export (opt-in only,
+# Wave 5B) — used when --save-results is passed with no explicit value. Not auto-written and
+# not served by any backend route.
 TA_SWEEP_RESULTS_PATH = REPO_ROOT / "investment_screener/backend/data/ta-sweep-results.json"
 
 # Always skip — cash / non-equity entries. "CASH_USD" is the domain_model.sqlite
@@ -331,39 +333,42 @@ def enrich_results(
 
 def save_sweep_results(
     results: list[dict[str, Any]],
-    output_path: Path,
     jsonl_path: Path | None = None,
     db_path: Path | None = None,
+    json_export_path: Path | None = None,
 ) -> None:
-    """Persist sweep results to a timestamped JSON file for backend/frontend consumption
-    AND write TECHNICAL_SWEEP events to the ledger and SQLite read-model (dual-write).
+    """Write TECHNICAL_SWEEP events to the ledger and SQLite read-model (always) and,
+    only if json_export_path is given, an ad-hoc flat-JSON export snapshot.
 
-    Writes {timestamp, scan_date, count, results} — overwrites any prior file.
-    Consumed by the backend /api/ta-sweep/results endpoint and the TA Summary panel.
+    Wave 5B (ADR-029): the ledger/SQLite write is the source of truth and always runs.
+    The flat-file JSON export is now opt-in only — for manual debugging/export, never a
+    dependency any real consumer relies on (ta-sweep-results.json itself was archived
+    to ARCHIVE/ this wave; see Task 5).
 
     Args:
-        results:     Enriched per-ticker sweep results from main sweep loop.
-        output_path: Destination file path (default: ta-sweep-results.json in backend/data/).
-        jsonl_path:  Optional path to observations.jsonl ledger.
-        db_path:     Optional path to intelligence.sqlite database.
+        results: Enriched per-ticker sweep results from main sweep loop.
+        jsonl_path: Optional path to observations.jsonl ledger (defaults to the standard path).
+        db_path: Optional path to intelligence.sqlite database (defaults to the standard path).
+        json_export_path: If given, also write a flat {timestamp, scan_date, count, results}
+            JSON snapshot to this path — opt-in only, not written by default.
     """
     now = datetime.now(timezone.utc)
     scan_date = now.strftime("%Y-%m-%d")
-    payload: dict[str, Any] = {
-        "timestamp": now.isoformat(),
-        "scan_date": scan_date,
-        "count":     len(results),
-        "results":   results,
-    }
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(output_path, "w") as f:
-        json.dump(payload, f, indent=2)
 
-    # 2. Append TECHNICAL_SWEEP events to observations.jsonl ledger
+    if json_export_path is not None:
+        payload: dict[str, Any] = {
+            "timestamp": now.isoformat(),
+            "scan_date": scan_date,
+            "count": len(results),
+            "results": results,
+        }
+        json_export_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(json_export_path, "w") as f:
+            json.dump(payload, f, indent=2)
+
     from intelligence.event_store import append_event, _default_jsonl_path
     from intelligence.replay_ledger import replay_events_to_db
     from intelligence.db_client import initialize_db
-    import sqlite3
     import sys
 
     # Testing guardrail: bypass writing to real ledger during generic tests that do not configure mock paths
@@ -372,7 +377,6 @@ def save_sweep_results(
 
     resolved_jsonl_path = jsonl_path or _default_jsonl_path()
     resolved_db_path = db_path or (REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite")
-
 
     for res in results:
         ticker = res["ticker"]
@@ -412,12 +416,10 @@ def main() -> None:
         nargs="?",
         const=str(TA_SWEEP_RESULTS_PATH),
         metavar="PATH",
-        help="Save results to ta-sweep-results.json (default path) or a custom PATH",
-    )
-    parser.add_argument(
-        "--no-save",
-        action="store_true",
-        help="Suppress auto-save (overrides default auto-save behaviour)",
+        help=(
+            "Also export a flat-file JSON snapshot to PATH (default default: no export — "
+            "ledger/SQLite write is always the source of truth)"
+        ),
     )
     parser.add_argument(
         "--validate",
@@ -450,11 +452,12 @@ def main() -> None:
 
     print(json.dumps(scan_results, indent=2))
 
-    # Auto-save to backend/data/ unless suppressed — enables /api/ta-sweep/results endpoint
-    if not args.no_save:
-        save_path = Path(args.save_results) if args.save_results else TA_SWEEP_RESULTS_PATH
-        save_sweep_results(scan_results, save_path)
-        print(f"Results saved → {save_path}", file=sys.stderr)
+    # SQLite/ledger write is always the source of truth (Wave 5B) — the --save-results
+    # flag now controls an OPTIONAL flat-JSON export only, off by default.
+    export_path = Path(args.save_results) if args.save_results else None
+    save_sweep_results(scan_results, json_export_path=export_path)
+    if export_path:
+        print(f"Results also exported → {export_path}", file=sys.stderr)
 
 
 if __name__ == "__main__":
