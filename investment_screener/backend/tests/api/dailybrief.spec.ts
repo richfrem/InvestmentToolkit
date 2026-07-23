@@ -135,3 +135,22 @@ describe('dailybrief.ts route helpers integration tests', () => {
         expect(result![1].band).to.equal('ACCUMULATE');
     });
 });
+
+describe('dailybrief.ts route handlers — no JSON fallback after Wave 5C cutover', () => {
+    it('module no longer exports latestBriefPath or references BRIEFS_DIR fallback', () => {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const mod = require('../../src/routes/dailybrief');
+        expect(mod.latestBriefPath).to.be.undefined;
+        expect(mod.BRIEFS_DIR).to.be.undefined;
+    });
+
+    it('module source no longer contains legacy filesystem fallback code', () => {
+        const src = fs.readFileSync(
+            path.resolve(__dirname, '../../src/routes/dailybrief.ts'),
+            'utf-8'
+        );
+        expect(src).to.not.include('Fallback to legacy filesystem');
+        expect(src).to.not.include('BRIEFS_DIR');
+        expect(src).to.not.include('latestBriefPath');
+    });
+});
