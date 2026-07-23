@@ -94,6 +94,31 @@ def _ta_age_hours(db_path: str | None = None) -> float | None:
     return (datetime.now(timezone.utc) - scanned).total_seconds() / 3600
 
 
+def _load_latest_ta_sweep_count(db_path: str | None = None) -> int | None:
+    """Return the number of ACTIVE TECHNICAL_SWEEP rows for the most recent effective_at date,
+    or None if no sweep events exist yet. SQLite-only (Wave 5B) — no JSON fallback, matching
+    the ta-sweep-results.json domain's ADR-029 migration.
+    """
+    import sqlite3
+
+    resolved_db_path = db_path or str(REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite")
+    conn = sqlite3.connect(resolved_db_path)
+    try:
+        latest = conn.execute("""
+            SELECT MAX(effective_at) FROM intelligence_event
+            WHERE event_type = 'TECHNICAL_SWEEP' AND status = 'ACTIVE';
+        """).fetchone()[0]
+        if not latest:
+            return None
+        count = conn.execute("""
+            SELECT COUNT(*) FROM intelligence_event
+            WHERE event_type = 'TECHNICAL_SWEEP' AND status = 'ACTIVE' AND effective_at = ?;
+        """, (latest,)).fetchone()[0]
+        return count
+    finally:
+        conn.close()
+
+
 def _tv_running() -> bool:
     """Return True if TradingView CDP is accessible on port 9222."""
     try:
@@ -446,17 +471,15 @@ def run(
                 capture_output=True, text=True,
             )
             if result.returncode == 0:
-                try:
-                    # ta_sweep_batch.py auto-saves to TA_SWEEP_PATH itself via
-                    # save_sweep_results() — read it back rather than re-deriving the
-                    # payload from stdout, to avoid two code paths writing the same file.
-                    resolved_json_path = ta_json_path or TA_SWEEP_PATH
-                    with open(resolved_json_path) as f:
-                        scan = json.loads(f.read())["results"]
+                # save_sweep_results() already replayed this run's events to SQLite
+                # synchronously before the subprocess exited (Wave 5B) — read the count
+                # back from there instead of re-opening the file it also used to write.
+                scan_count = _load_latest_ta_sweep_count(db_path=db_path)
+                if scan_count is not None:
                     ran_ta = True
-                    print(f"  Scanned {len(scan)} holdings.", file=sys.stderr)
-                except (json.JSONDecodeError, FileNotFoundError, KeyError):
-                    ta_skip_reason = "TA sweep output could not be parsed"
+                    print(f"  Scanned {scan_count} holdings.", file=sys.stderr)
+                else:
+                    ta_skip_reason = "TA sweep produced no events"
             else:
                 ta_skip_reason = "TA sweep exited with error"
         else:
