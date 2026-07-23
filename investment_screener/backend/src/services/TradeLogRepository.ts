@@ -47,12 +47,13 @@ export interface TradeLogEntryRow {
     source: string | null;
     priority: string | null;
     logged_at: string | null;
+    tv_order_id: string | null;
 }
 
 const COLUMNS: Array<keyof TradeLogEntryRow> = [
     'entry_id', 'investment_id', 'account_id', 'action', 'shares', 'price',
     'total_cost', 'order_type', 'limit_price', 'trade_date', 'notes',
-    'status', 'source', 'priority', 'logged_at',
+    'status', 'source', 'priority', 'logged_at', 'tv_order_id',
 ];
 
 export class TradeLogRepository {
@@ -112,9 +113,18 @@ export class TradeLogRepository {
                 status          TEXT,
                 source          TEXT,
                 priority        TEXT,
-                logged_at       TEXT
+                logged_at       TEXT,
+                tv_order_id     TEXT
             );
         `);
+        // Self-heal an existing test/real file created before tv_order_id existed
+        // (mirrors db_client.py's SCHEMA_EVOLUTIONS pattern) -- additive only.
+        const cols = new Set(
+            (this.db.prepare('PRAGMA table_info(trade_log_entry)').all() as Array<{ name: string }>).map(c => c.name)
+        );
+        if (!cols.has('tv_order_id')) {
+            this.db.exec('ALTER TABLE trade_log_entry ADD COLUMN tv_order_id TEXT');
+        }
     }
 
     /** Mirrors `trade_log_entry_repository.py::upsert_trade_log_entry` — insert-
