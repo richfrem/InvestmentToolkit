@@ -36,6 +36,7 @@ PY_SERVICES      = REPO_ROOT / "investment_screener/backend/py_services"
 TA_SWEEP_SCRIPT  = REPO_ROOT / "plugins/tradingview/scripts/ta_sweep_batch.py"
 TARGET_PATH      = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 DAILY_BRIEFS_DIR = REPO_ROOT / "investment_screener/backend/data/daily-briefs"
+INTELLIGENCE_DB_PATH = REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite"
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
@@ -126,13 +127,31 @@ def _tv_running() -> bool:
 
 
 def _load_yesterday() -> dict[str, Any] | None:
-    """Load the most recent prior daily brief snapshot."""
-    DAILY_BRIEFS_DIR.mkdir(parents=True, exist_ok=True)
+    """Load the most recent prior daily brief snapshot from the Intelligence Ledger.
+
+    Wave 5C cutover — replaces the data/daily-briefs/*.json glob+sort read with
+    ORDER BY effective_at DESC LIMIT 2 (today's own event, if already written this
+    run, plus the true prior day), per spec §2.13.
+    """
+    import os as _os
+
+    if not _os.path.exists(INTELLIGENCE_DB_PATH):
+        return None
+
+    from intelligence.db_client import initialize_db
+    from intelligence.event_repository import list_active_events_by_type
+
     today_str = date.today().isoformat()
-    for snap in sorted(DAILY_BRIEFS_DIR.glob("*.json"), reverse=True):
-        if snap.stem != today_str:
-            with open(snap) as f:
-                return json.load(f)
+    conn = initialize_db(str(INTELLIGENCE_DB_PATH))
+    try:
+        events = list_active_events_by_type(conn, "REVIEW_DAILY")
+    finally:
+        conn.close()
+
+    for event in events:
+        if event["effective_at"] != today_str:
+            payload_json = event.get("payload_json")
+            return json.loads(payload_json) if payload_json else None
     return None
 
 

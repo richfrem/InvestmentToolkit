@@ -116,6 +116,30 @@ def get_latest_event_by_type(conn, event_type: str) -> dict | None:
     return dict(zip(columns, row)) if row else None
 
 
+def list_active_events_by_type(conn, event_type: str) -> list[dict]:
+    """Return every ACTIVE event of the given type, newest first.
+
+    Args:
+        conn: Open sqlite3 connection with the read-model schema applied.
+        event_type: Event type to filter on (e.g. ``REVIEW_DAILY``).
+
+    Returns:
+        List of event dicts ordered by effective_at DESC, ingested_at DESC.
+    """
+    cursor = conn.execute("""
+        SELECT ie.event_id, ie.event_sequence, ie.instrument_id, ie.event_type,
+               ie.effective_at, ie.observed_at, ie.ingested_at, ie.source_id,
+               ie.confidence_score, ie.status, ie.title, ie.body_markdown,
+               ie.payload_json, ie.supersedes_event_id, ie.idempotency_key,
+               ie.content_hash
+        FROM intelligence_event ie
+        WHERE ie.event_type = ? AND ie.status = 'ACTIVE'
+        ORDER BY ie.effective_at DESC, ie.ingested_at DESC;
+    """, (event_type,))
+    columns = [d[0] for d in cursor.description]
+    return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+
 def list_tickers_with_active_event_type(conn, event_type: str) -> list[str]:
     """Return distinct tickers holding at least one ACTIVE event of the given type.
 
