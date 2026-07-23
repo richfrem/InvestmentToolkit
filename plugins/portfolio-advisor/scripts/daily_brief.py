@@ -89,24 +89,30 @@ def _load_latest_ta_sweep_count(db_path: str | None = None) -> int | None:
     or None if no sweep events exist yet. SQLite-only (Wave 5B) — no JSON fallback, matching
     the ta-sweep-results.json domain's ADR-029 migration.
     """
+    import os
     import sqlite3
 
     resolved_db_path = db_path or str(REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite")
-    conn = sqlite3.connect(resolved_db_path)
+    if not os.path.exists(resolved_db_path):
+        return None
     try:
+        conn = sqlite3.connect(resolved_db_path)
         latest = conn.execute("""
             SELECT MAX(effective_at) FROM intelligence_event
             WHERE event_type = 'TECHNICAL_SWEEP' AND status = 'ACTIVE';
         """).fetchone()[0]
         if not latest:
+            conn.close()
             return None
         count = conn.execute("""
             SELECT COUNT(*) FROM intelligence_event
             WHERE event_type = 'TECHNICAL_SWEEP' AND status = 'ACTIVE' AND effective_at = ?;
         """, (latest,)).fetchone()[0]
-        return count
-    finally:
         conn.close()
+        return count
+    except Exception:
+        pass
+    return None
 
 
 def _tv_running() -> bool:
