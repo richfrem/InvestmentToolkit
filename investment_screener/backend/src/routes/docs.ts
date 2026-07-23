@@ -9,7 +9,9 @@
  *   Backend / Routes / Docs
  * 
  * Routes Index:
- *   - GET /research/:filename - Fetches a specific research report
+ *   - GET /research/:filename - Fetches a specific research report (dated filenames:
+ *     intelligence_event only, no fs fallback; canonical .summary/.timeline filenames:
+ *     generated view files on disk)
  *   - GET /research - Lists all available research files
  *   - GET /docs/investment-thesis - Reads the main markdown thesis documentation
  *   - GET /docs/latest-review - Loads the latest markdown portfolio review
@@ -54,34 +56,57 @@ export function parseResearchFilename(filename: string): { ticker: string; date:
     return { ticker: filename, date: null };
 }
 
+export type ResearchReportResult =
+    | { kind: 'invalid' }
+    | { kind: 'not_found' }
+    | { kind: 'found'; filename: string; content: string; ticker: string; date: string | null };
+
+export async function getResearchReport(
+    filename: string,
+    dbPath?: string,
+    researchDir: string = RESEARCH_DIR
+): Promise<ResearchReportResult> {
+    const isDated = DATED_FILENAME_RE.test(filename);
+    const isCanonical = CANONICAL_FILENAME_RE.test(filename);
+    if (!isDated && !isCanonical) {
+        return { kind: 'invalid' };
+    }
+
+    if (isDated) {
+        // Dated research reports live exclusively in intelligence_event (ADR-029 Wave 5A) —
+        // no fs fallback. The legacy TICKER_YYYY-MM-DD.md files this used to fall back to no
+        // longer exist on disk (confirmed 2026-07-22, 0 remaining).
+        const report = await queryLatestResearchFromLedger(filename, dbPath);
+        return report ? { kind: 'found', ...report } : { kind: 'not_found' };
+    }
+
+    // Canonical (.summary.md / .timeline.md) files are GENERATED_FROM_SQLITE render-to-disk
+    // views (py_services/intelligence/view_generator.py), not stored in intelligence_event —
+    // reading them from disk is the correct, current architecture, unchanged by this wave.
+    const filepath = path.join(researchDir, filename);
+    try {
+        const content = await fs.promises.readFile(filepath, 'utf-8');
+        const { ticker, date } = parseResearchFilename(filename);
+        return { kind: 'found', filename, content, ticker, date };
+    } catch (err: any) {
+        if (err.code === 'ENOENT') return { kind: 'not_found' };
+        throw err;
+    }
+}
+
 router.get('/research/:filename', async (req, res) => {
     try {
-        const { filename } = req.params;
-        if (!DATED_FILENAME_RE.test(filename) && !CANONICAL_FILENAME_RE.test(filename)) {
+        const result = await getResearchReport(req.params.filename);
+        if (result.kind === 'invalid') {
             res.status(400).json({ error: 'Invalid filename format. Expected: TICKER_YYYY-MM-DD.md' });
             return;
         }
-
-        // Try ledger database query first if it is a dated file
-        if (DATED_FILENAME_RE.test(filename)) {
-            const report = await queryLatestResearchFromLedger(filename);
-            if (report) {
-                res.json(report);
-                return;
-            }
-        }
-
-        // Fallback to legacy filesystem read
-        const filepath = path.join(RESEARCH_DIR, filename);
-        if (!path.resolve(filepath).startsWith(path.resolve(RESEARCH_DIR))) {
-            res.status(403).json({ error: 'Access denied' });
+        if (result.kind === 'not_found') {
+            res.status(404).json({ error: 'Research report not found' });
             return;
         }
-        const content = await fs.promises.readFile(filepath, 'utf-8');
-        const { ticker, date } = parseResearchFilename(filename);
-        res.json({ filename, content, ticker, date });
+        res.json({ filename: result.filename, content: result.content, ticker: result.ticker, date: result.date });
     } catch (err: any) {
-        if (err.code === 'ENOENT') { res.status(404).json({ error: 'Research report not found' }); return; }
         console.error(`[API] Error reading research report:`, err);
         res.status(500).json({ error: 'Failed to read research report' });
     }
@@ -172,7 +197,7 @@ export async function queryLatestResearchFromLedger(filename: string, dbPath?: s
         const data = await spawnPythonScript('query_ledger_research.py', args);
         return data || null;
     } catch (e) {
-        console.warn('Ledger query latest research failed, falling back:', e);
+        console.warn('Ledger query latest research failed:', e);
         return null;
     }
 }
