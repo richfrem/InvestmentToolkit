@@ -472,3 +472,56 @@ def test_load_dcf_uses_highest_version_regardless_of_source(tmp_path):
     dcf = load_dcf("DXYZ", db_path=db_path)
     assert dcf["fairValue"] == 45.0
     assert dcf["action"] == "INITIATE"
+
+
+def test_load_watchlisted_tickers_returns_watchlist_only_deduplicated(tmp_path):
+    """load_watchlisted_tickers must return is_watchlisted=True symbols from domain_model.sqlite,
+    deduplicated — mirrors overnight_gaps.py::_load_tickers()'s watchlist half.
+    """
+    import sys
+    from pathlib import Path
+    repo_root = Path(__file__).resolve().parents[3]
+    sys.path.insert(0, str(repo_root / "investment_screener/backend/py_services"))
+    sys.path.insert(0, str(repo_root / "plugins/tradingview/scripts"))
+
+    from domain_model.db_client import initialize_db  # noqa: E402
+    from domain_model.investment_repository import resolve_investment, update_investment_fields  # noqa: E402
+    from ta_sweep_batch import load_watchlisted_tickers  # noqa: PLC0415
+
+    db_path = tmp_path / "domain_model.sqlite"
+    conn = initialize_db(str(db_path))
+    for ticker in ("OKLO", "RKLB"):
+        inv_id = resolve_investment(conn, ticker)
+        update_investment_fields(conn, inv_id, is_watchlisted=True)
+    resolve_investment(conn, "MSFT")  # held, not watchlisted — is_watchlisted defaults False
+    conn.close()
+
+    tickers = load_watchlisted_tickers(db_path=db_path)
+
+    assert sorted(tickers) == ["OKLO", "RKLB"]
+    assert "MSFT" not in tickers
+
+
+def test_main_ticker_universe_is_union_of_holdings_and_watchlist(tmp_path, monkeypatch):
+    """main()'s scan universe must be holdings UNION watchlist, not holdings alone —
+    confirmed via load_portfolio() + load_watchlisted_tickers() combined, minus DEFAULT_SKIP.
+    """
+    import sys
+    from pathlib import Path
+    repo_root = Path(__file__).resolve().parents[3]
+    sys.path.insert(0, str(repo_root / "plugins/tradingview/scripts"))
+    import ta_sweep_batch  # noqa: PLC0415
+
+    monkeypatch.setattr(ta_sweep_batch, "load_portfolio", lambda: [{"symbol": "MSFT"}, {"symbol": "NVDA"}])
+    monkeypatch.setattr(ta_sweep_batch, "load_watchlisted_tickers", lambda db_path=None: ["NVDA", "OKLO", "RKLB"])
+
+    holdings = ta_sweep_batch.load_portfolio()
+    watchlisted = ta_sweep_batch.load_watchlisted_tickers()
+    seen: set[str] = set()
+    universe: list[str] = []
+    for sym in [h["symbol"] for h in holdings] + watchlisted:
+        if sym and sym not in ta_sweep_batch.DEFAULT_SKIP and sym not in seen:
+            seen.add(sym)
+            universe.append(sym)
+
+    assert universe == ["MSFT", "NVDA", "OKLO", "RKLB"]  # holdings first, no NVDA duplicate
