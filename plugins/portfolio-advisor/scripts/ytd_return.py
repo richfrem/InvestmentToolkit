@@ -21,7 +21,9 @@ Key Functions (Index):
 
 Key Input Dependencies:
     - investment_screener/backend/data/portfolio.json (Live portfolio balances)
-    - investment_screener/backend/data/cash_flows.json (Deposit & withdrawal history)
+    - investment_screener/backend/data/domain_model.sqlite's cash_flow /
+      cash_flow_baseline tables (Wave 4 cutover; formerly cash_flows.json,
+      now archived)
 
 Key Output Dependencies:
     - investment_screener/backend/data/ytd_performance_report.json (TWR performance metrics)
@@ -35,7 +37,7 @@ from typing import Any, Dict, List, Tuple
 # Resolve project paths
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"
-CASH_FLOWS_PATH = REPO_ROOT / "investment_screener/backend/data/cash_flows.json"
+DB_PATH = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
 
 def load_current_balance_cad() -> float:
@@ -65,6 +67,56 @@ def load_json(path: Path) -> Dict[str, Any]:
         return {}
     with open(path) as f:
         return json.load(f)
+
+
+def load_cash_flows(db_path: str | Path = DB_PATH) -> Dict[str, Any]:
+    """Wave 4 cutover: load cash-flow data from the ``cash_flow`` /
+    ``cash_flow_baseline`` SQLite tables (via cash_flow_repository), not
+    cash_flows.json (retired/archived).
+
+    Returns the original JSON document shape
+    ({"starting_balance_cad": float, "cash_flows": [{"date", "type",
+    "amount_cad", "portfolio_value_before_flow_cad", "account"}, ...]})
+    so calculate_simple_metrics()/calculate_twr_return() are unchanged.
+
+    The baseline is stored under the sentinel account "ALL" (see
+    cash_flow_repository's module docstring) -- if no baseline row exists
+    yet (fresh DB), this degrades to {} exactly like load_json() did for
+    a missing/empty cash_flows.json.
+
+    Never raises: any DB error degrades to {}.
+    """
+    sys.path.insert(0, str(PY_SERVICES))
+    from domain_model.db_client import initialize_db
+    from domain_model.cash_flow_repository import (
+        list_cash_flows,
+        get_cash_flow_baseline,
+        CASH_FLOW_BASELINE_SENTINEL_ACCOUNT,
+    )
+
+    try:
+        conn = initialize_db(str(db_path))
+        baseline = get_cash_flow_baseline(conn, CASH_FLOW_BASELINE_SENTINEL_ACCOUNT)
+        if baseline is None:
+            return {}
+        rows = list_cash_flows(conn)
+    except Exception:
+        return {}
+
+    return {
+        "starting_balance_cad": baseline.get("starting_balance_cad", 0.0),
+        "starting_date": baseline.get("starting_date"),
+        "cash_flows": [
+            {
+                "date": row.get("flow_date"),
+                "type": row.get("flow_type"),
+                "amount_cad": row.get("amount_cad"),
+                "portfolio_value_before_flow_cad": row.get("portfolio_value_before_flow_cad"),
+                "account": row.get("account"),
+            }
+            for row in rows
+        ],
+    }
 
 
 # External comment: Computes simple return metrics based on starting and ending balances
@@ -185,13 +237,13 @@ def calculate_twr() -> None:
     Main execution pipeline for loading, evaluating, and saving YTD statistics.
     """
     is_json_mode = "--json" in sys.argv
-    flows_data = load_json(CASH_FLOWS_PATH)
+    flows_data = load_cash_flows()
 
     if not flows_data:
         if is_json_mode:
-            print(json.dumps({"error": "cash_flows.json data is required."}))
+            print(json.dumps({"error": "cash_flow data is required (none found in domain_model.sqlite)."}))
         else:
-            print("Error: cash_flows.json data is required.")
+            print("Error: cash_flow data is required (none found in domain_model.sqlite).")
         sys.exit(1)
 
     starting_balance = flows_data.get("starting_balance_cad", 0.0)
