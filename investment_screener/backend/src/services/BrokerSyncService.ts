@@ -329,6 +329,10 @@ export function persistSnapshotToDb(snapshot: TVSnapshot, dbPath: string = DOMAI
             if (cashUsd > 0) {
                 const cashInvestmentId = investmentRepo.resolveInvestmentId('CASH_USD', 'CASH', 'USD');
                 portfolioRepo.upsertAccountInvestment(accountId, cashInvestmentId, cashUsd, 1.0, cashUsd, 'USD', now);
+                // getAccountMarketValues() INNER JOINs against investment_price -- without
+                // this, a CASH_USD account_investment row with no matching price row
+                // silently contributes $0 to the computed portfolio total (2026-07-23 bug).
+                portfolioRepo.upsertInvestmentPrice(cashInvestmentId, 1.0, 'USD', now);
             }
 
             for (const pos of snap.positions ?? []) {
