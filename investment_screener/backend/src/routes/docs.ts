@@ -197,7 +197,7 @@ export async function queryLatestResearchFromLedger(filename: string, dbPath?: s
         const data = await spawnPythonScript('query_ledger_research.py', args);
         return data || null;
     } catch (e) {
-        console.warn('Ledger query latest research failed, falling back:', e);
+        console.warn('Ledger query latest research failed:', e);
         return null;
     }
 }
