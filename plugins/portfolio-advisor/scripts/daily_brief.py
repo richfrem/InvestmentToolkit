@@ -34,7 +34,6 @@ from typing import Any
 REPO_ROOT        = Path(__file__).resolve().parents[3]
 PY_SERVICES      = REPO_ROOT / "investment_screener/backend/py_services"
 TA_SWEEP_SCRIPT  = REPO_ROOT / "plugins/tradingview/scripts/ta_sweep_batch.py"
-TA_SWEEP_PATH    = REPO_ROOT / "investment_screener/backend/data/ta-sweep-results.json"
 TARGET_PATH      = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 DAILY_BRIEFS_DIR = REPO_ROOT / "investment_screener/backend/data/daily-briefs"
 
@@ -61,37 +60,28 @@ def _load_total_equity() -> float:
 
 
 def _ta_age_hours(db_path: str | None = None) -> float | None:
-    """Return hours since last TA sweep from SQLite database, falling back to legacy JSON."""
+    """Return hours since last TA sweep from the SQLite ledger. No JSON fallback (Wave 5B)."""
     import os
     import sqlite3
 
     resolved_db_path = db_path or str(REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite")
-    if os.path.exists(resolved_db_path):
-        try:
-            conn = sqlite3.connect(resolved_db_path)
-            cursor = conn.execute("""
-                SELECT MAX(ingested_at) FROM intelligence_event
-                WHERE event_type = 'TECHNICAL_SWEEP' AND status = 'ACTIVE';
-            """)
-            row = cursor.fetchone()
-            conn.close()
-            if row and row[0]:
-                ts_str = row[0].replace("Z", "+00:00")
-                scanned = datetime.fromisoformat(ts_str)
-                return (datetime.now(timezone.utc) - scanned).total_seconds() / 3600
-        except Exception:
-            pass
-
-    # Fallback to legacy JSON
-    if not TA_SWEEP_PATH.exists():
+    if not os.path.exists(resolved_db_path):
         return None
-    with open(TA_SWEEP_PATH) as f:
-        data = json.load(f)
-    ts = data.get("timestamp")
-    if not ts:
-        return None
-    scanned = datetime.fromisoformat(ts)
-    return (datetime.now(timezone.utc) - scanned).total_seconds() / 3600
+    try:
+        conn = sqlite3.connect(resolved_db_path)
+        cursor = conn.execute("""
+            SELECT MAX(ingested_at) FROM intelligence_event
+            WHERE event_type = 'TECHNICAL_SWEEP' AND status = 'ACTIVE';
+        """)
+        row = cursor.fetchone()
+        conn.close()
+        if row and row[0]:
+            ts_str = row[0].replace("Z", "+00:00")
+            scanned = datetime.fromisoformat(ts_str)
+            return (datetime.now(timezone.utc) - scanned).total_seconds() / 3600
+    except Exception:
+        pass
+    return None
 
 
 def _load_latest_ta_sweep_count(db_path: str | None = None) -> int | None:
@@ -398,14 +388,12 @@ def _harvest_predictions_step() -> int | None:
 def run(
     skip_ta: bool = False,
     db_path: str | None = None,
-    ta_json_path: Path | None = None,
 ) -> dict[str, Any]:
     """Execute the full daily brief pipeline.
 
     Args:
         skip_ta: Skip TA sweep refresh even when stale.
         db_path: Optional override for SQLite read-model database.
-        ta_json_path: Optional override for legacy TA JSON file.
 
     Returns:
         Full brief dict ready for JSON serialisation and terminal rendering.
@@ -493,7 +481,7 @@ def run(
 
     # ── 3. Conviction scores ──────────────────────────────────────────────────
     print("▶ Conviction scores...", file=sys.stderr)
-    scores = compute_all(db_path=db_path, ta_json_path=ta_json_path)
+    scores = compute_all(db_path=db_path)
 
     scores_raw = [asdict(s) for s in scores]
 
