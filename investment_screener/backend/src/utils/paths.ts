@@ -24,8 +24,10 @@ export const PORTFOLIO_REVIEWS_DIR = path.resolve(__dirname, '../../../../Portfo
 export const THESIS_DOC_PATH       = path.resolve(__dirname, '../../data/theses/investment_thesis.md');
 export const AGENT_GUIDE_PATH      = path.resolve(__dirname, '../../../../plugins/toolkit-manager/references/agent-quick-reference.md');
 export const PORTFOLIO_CONFIG_FILE = path.join(__dirname, '../../data/portfolio-config.json');
-export const TRADE_LOG_FILE        = path.join(__dirname, '../../data/trade-log.json');
 export const DOMAIN_MODEL_DB_FILE  = path.resolve(__dirname, '../../data/domain_model.sqlite');
+// TRADE_LOG_FILE (data/trade-log.json) removed Wave 4 Task 12: last consumer,
+// routes/trading.ts's readLog()/writeLog(), was cut over to TradeLogRepository
+// (trade_log_entry SQLite table) in Task 11. File archived to ARCHIVE/.
 // WATCHLIST_FILE (data/watchlist.json) removed 2026-07-19: last read-side consumer,
 // WatchlistService.getWatchlist(), was rewired onto domain_model.sqlite via
 // InvestmentRepository.listWatchlisted() in Wave 2 Task 10/11. Confirmed via
