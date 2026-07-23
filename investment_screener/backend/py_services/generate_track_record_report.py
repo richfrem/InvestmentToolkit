@@ -13,7 +13,9 @@ Usage:
     python3 generate_track_record_report.py [--json]
 
 Key Input Dependencies:
-    - investment_screener/backend/data/trade-log.json (Computes realized gains)
+    - (stale reference removed, Wave 4 Task 12: build_report(predictions_path,
+      graded_path) never actually reads or references trade-log.json anywhere
+      in this file's body — confirmed dead docstring text during Wave 4 Task 0)
 
 Layer:
     Backend / Python Services

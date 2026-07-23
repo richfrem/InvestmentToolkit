@@ -1,4 +1,9 @@
-"""Tests for execution_quality_scorecard.py — Phase 6 execution-quality groundwork."""
+"""Tests for execution_quality_scorecard.py — Phase 6 execution-quality groundwork.
+
+Wave 4 cutover: load_orders_executed()/build_report() now read the
+``order_execution`` SQLite table via order_execution_repository, not
+orders_executed.jsonl (retired/archived).
+"""
 import json
 import sys
 from pathlib import Path
@@ -14,9 +19,37 @@ from execution_quality_scorecard import (  # noqa: E402
     compute_overridden_registry,
     load_orders_executed,
 )
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import resolve_investment  # noqa: E402
+from domain_model.order_execution_repository import insert_order_execution  # noqa: E402
+
+
+def _seed(db_path, decision, gates, ticker="AAPL", side="BUY", execution_id=None,
+          timestamp="2026-07-15T15:32:35.094016+00:00"):
+    conn = initialize_db(str(db_path))
+    investment_id = resolve_investment(conn, ticker)
+    gate_result = {
+        "passed": all(g["passed"] for g in gates),
+        "gates": gates,
+        "reasons": [g["reason"] for g in gates if not g["passed"]],
+    }
+    insert_order_execution(conn, {
+        "execution_id": execution_id or f"{ticker}-{timestamp}",
+        "executed_at": timestamp,
+        "investment_id": investment_id,
+        "side": side,
+        "shares": 1.0,
+        "price": 150.0,
+        "decision": decision,
+        "gate_result_json": json.dumps({
+            "gate_result": gate_result,
+            "trade_execution_result": None,
+        }),
+    })
 
 
 def _order(decision, gates, ticker="AAPL", side="BUY"):
+    """In-memory dict shape matching load_orders_executed()'s output."""
     return {
         "timestamp": "2026-07-15T15:32:35.094016+00:00",
         "order": {"ticker": ticker, "side": side, "shares": 1.0, "price": 150.0},
@@ -31,16 +64,17 @@ def _order(decision, gates, ticker="AAPL", side="BUY"):
 
 
 class TestLoadOrdersExecuted:
-    def test_missing_file_returns_empty_list(self, tmp_path):
-        assert load_orders_executed(tmp_path / "nonexistent.jsonl") == []
+    def test_missing_db_returns_empty_list(self, tmp_path):
+        assert load_orders_executed(tmp_path / "nonexistent.sqlite") == []
 
-    def test_loads_real_jsonl_records(self, tmp_path):
-        path = tmp_path / "orders_executed.jsonl"
-        rec = _order("BLOCKED", [{"name": "balance", "passed": False, "reason": "Insufficient cash"}])
-        path.write_text(json.dumps(rec) + "\n")
-        loaded = load_orders_executed(path)
+    def test_loads_real_records_from_sqlite(self, tmp_path):
+        db_path = tmp_path / "test.sqlite"
+        _seed(db_path, "BLOCKED", [{"name": "balance", "passed": False, "reason": "Insufficient cash"}])
+        loaded = load_orders_executed(db_path)
         assert len(loaded) == 1
         assert loaded[0]["decision"] == "BLOCKED"
+        assert loaded[0]["order"]["ticker"] == "AAPL"
+        assert loaded[0]["gate_result"]["gates"][0]["name"] == "balance"
 
 
 class TestComputeDecisionBreakdown:
@@ -106,18 +140,17 @@ class TestComputeOverriddenRegistry:
 
 class TestBuildReport:
     def test_report_has_expected_shape(self, tmp_path):
-        path = tmp_path / "orders_executed.jsonl"
-        rec = _order("BLOCKED", [{"name": "balance", "passed": False, "reason": "no cash"}])
-        path.write_text(json.dumps(rec) + "\n")
+        db_path = tmp_path / "test.sqlite"
+        _seed(db_path, "BLOCKED", [{"name": "balance", "passed": False, "reason": "no cash"}])
 
-        report = build_report(path)
+        report = build_report(db_path)
         assert report["totalOrdersLogged"] == 1
         assert report["decisionBreakdown"]["BLOCKED"] == 1
         assert "balance" in report["gateFailRates"]
         assert report["overriddenRegistry"] == []
 
-    def test_report_on_missing_file_degrades_gracefully(self, tmp_path):
-        report = build_report(tmp_path / "no_such_file.jsonl")
+    def test_report_on_missing_db_degrades_gracefully(self, tmp_path):
+        report = build_report(tmp_path / "no_such_file.sqlite")
         assert report["totalOrdersLogged"] == 0
         assert report["decisionBreakdown"] == {"EXECUTED": 0, "BLOCKED": 0, "OVERRIDDEN": 0}
         assert report["gateFailRates"] == {}
