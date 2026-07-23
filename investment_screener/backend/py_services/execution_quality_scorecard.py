@@ -25,7 +25,8 @@ Key Functions (Index):
     - main()
 
 Key Input Dependencies:
-    - investment_screener/backend/data/orders_executed.jsonl (gitignored, may not exist yet)
+    - investment_screener/backend/data/domain_model.sqlite's order_execution table
+      (Wave 4 cutover; formerly orders_executed.jsonl, now archived)
 
 Key Output Dependencies:
     None
@@ -34,25 +35,53 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
-ORDERS_EXECUTED_PATH = DATA_DIR / "orders_executed.jsonl"
+DB_PATH = DATA_DIR / "domain_model.sqlite"
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.order_execution_repository import list_order_executions  # noqa: E402
 
 _DECISIONS = ("EXECUTED", "BLOCKED", "OVERRIDDEN")
 
 
-def load_orders_executed(path: Path = ORDERS_EXECUTED_PATH) -> list[dict[str, Any]]:
-    """Load orders_executed.jsonl. Missing file degrades to an empty list, never raises."""
-    if not path.exists():
+def load_orders_executed(db_path: Path = DB_PATH) -> list[dict[str, Any]]:
+    """Wave 4 cutover: load order executions from the ``order_execution``
+    SQLite table (via order_execution_repository.list_order_executions()),
+    not orders_executed.jsonl (retired/archived).
+
+    Rows are translated back to the original JSONL record shape
+    ({"timestamp", "order": {"ticker", "side", "shares", "price"},
+    "decision", "gate_result", "trade_execution_result"}) so
+    compute_decision_breakdown/compute_gate_fail_rates/
+    compute_overridden_registry are unchanged.
+
+    Missing/unreachable DB degrades to an empty list, never raises.
+    """
+    try:
+        conn = initialize_db(str(db_path))
+        rows = list_order_executions(conn)
+    except Exception:
         return []
     records = []
-    with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                records.append(json.loads(line))
+    for row in rows:
+        parsed = json.loads(row["gate_result_json"]) if row.get("gate_result_json") else {}
+        records.append({
+            "timestamp": row.get("executed_at"),
+            "order": {
+                "ticker": row.get("investment_id"),
+                "side": row.get("side"),
+                "shares": row.get("shares"),
+                "price": row.get("price"),
+            },
+            "decision": row.get("decision"),
+            "gate_result": parsed.get("gate_result", {}),
+            "trade_execution_result": parsed.get("trade_execution_result"),
+        })
     return records
 
 
@@ -108,9 +137,9 @@ def compute_overridden_registry(orders: list[dict[str, Any]]) -> list[dict[str, 
     return registry
 
 
-def build_report(orders_path: Path = ORDERS_EXECUTED_PATH) -> dict[str, Any]:
+def build_report(db_path: Path = DB_PATH) -> dict[str, Any]:
     """Build the full execution-quality scorecard dict."""
-    orders = load_orders_executed(orders_path)
+    orders = load_orders_executed(db_path)
     return {
         "totalOrdersLogged": len(orders),
         "decisionBreakdown": compute_decision_breakdown(orders),
