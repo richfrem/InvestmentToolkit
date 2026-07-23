@@ -264,6 +264,14 @@ export class PortfolioRepository {
             .run(investmentId, price, currency, fetchedAt);
     }
 
+    /** Read the single `investment_price` row for `investmentId`, or `null` if none exists. */
+    getInvestmentPrice(investmentId: string): { price: number; currency: string; fetched_at: string } | null {
+        const row = this.db
+            .prepare('SELECT price, currency, fetched_at FROM investment_price WHERE investment_id = ?')
+            .get(investmentId) as { price: number; currency: string; fetched_at: string } | undefined;
+        return row ?? null;
+    }
+
     /** Mirrors `portfolio_repository.py::get_account_market_values` — SUM(quantity*price)
      * GROUP BY account_id via an INNER JOIN against investment_price (a position with no
      * price row yet contributes zero rather than a fabricated value, matching the Python

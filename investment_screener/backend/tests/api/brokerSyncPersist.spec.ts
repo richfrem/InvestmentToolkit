@@ -72,6 +72,38 @@ describe('BrokerSyncService.persistSnapshotToDb', () => {
         }
     });
 
+    it('writes an investment_price row of $1.00 for CASH_USD, not just an account_investment row', () => {
+        // Regression guard (2026-07-23): getAccountMarketValues() INNER JOINs
+        // account_investment against investment_price -- a CASH_USD row with no
+        // matching investment_price row silently contributes $0 to the computed
+        // portfolio total. persistSnapshotToDb wrote the account_investment row but
+        // never the price row, so cash always dropped out of getPortfolioTotalValue().
+        const snapshot = snapshotWith([
+            {
+                accountType: 'TFSA',
+                balances: { cashUSD: 250.5 },
+                positions: [],
+            },
+        ]);
+
+        persistSnapshotToDb(snapshot, dbPath);
+
+        const portfolioRepo = new PortfolioRepository(dbPath);
+        const investmentRepo = new InvestmentRepository(dbPath);
+        try {
+            const cashInvestment = investmentRepo.getInvestment('CASH_USD');
+            const cashPrice = portfolioRepo.getInvestmentPrice(cashInvestment!.investment_id);
+            expect(cashPrice, 'expected an investment_price row for CASH_USD').to.not.be.null;
+            expect(cashPrice!.price).to.equal(1.0);
+
+            const total = portfolioRepo.getPortfolioTotalValue();
+            expect(total, 'cash must count toward the computed portfolio total').to.equal(250.5);
+        } finally {
+            portfolioRepo.close();
+            investmentRepo.close();
+        }
+    });
+
     it('persistSnapshotToDb writes only the SQLite dbPath — creates no portfolio.json', () => {
         // Wave 3 Task 8: persistSnapshotToDb is now syncAuto's SOLE write. It must
         // touch only the SQLite file it is given, never portfolio.json.
