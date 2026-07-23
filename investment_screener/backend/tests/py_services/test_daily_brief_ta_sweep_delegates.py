@@ -137,3 +137,17 @@ def test_load_latest_ta_sweep_count_returns_none_when_no_events(tmp_path):
     initialize_db(str(db_path)).close()
 
     assert _load_latest_ta_sweep_count(db_path=str(db_path)) is None
+
+
+def test_ta_age_hours_returns_none_on_missing_db_no_json_fallback(tmp_path):
+    """With no DB and no fallback, a missing db_path must return None — Wave 5B removed the
+    JSON-fallback branch entirely.
+    """
+    import sys
+    from pathlib import Path
+    repo_root = Path(__file__).resolve().parents[4]
+    sys.path.insert(0, str(repo_root / "plugins/portfolio-advisor/scripts"))
+    from daily_brief import _ta_age_hours  # noqa: PLC0415
+
+    missing_db = tmp_path / "does-not-exist.sqlite"
+    assert _ta_age_hours(db_path=str(missing_db)) is None
