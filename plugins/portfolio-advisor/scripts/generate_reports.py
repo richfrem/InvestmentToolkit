@@ -8,13 +8,12 @@ Organizes holdings and watchlist tickers by sub-strategy, combines fundamentals,
 import os
 import sys
 import json
-import glob
 from datetime import datetime
 
 # Paths relative to project root
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 DOMAIN_DB_PATH = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/domain_model.sqlite")
-DAILY_BRIEFS_DIR = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/daily-briefs")
+INTELLIGENCE_DB_PATH = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/intelligence.sqlite")
 DAILY_REVIEWS_DIR = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/history/reviews/daily")
 WEEKLY_REVIEWS_DIR = os.path.join(PROJECT_ROOT, "investment_screener/backend/data/history/reviews/weekly")
 
@@ -95,13 +94,28 @@ def load_portfolio_from_db(db_path=DOMAIN_DB_PATH):
 
 
 def load_latest_brief():
-    """Finds and loads the latest daily brief JSON file."""
-    files = glob.glob(os.path.join(DAILY_BRIEFS_DIR, "*.json"))
-    if not files:
+    """Loads the latest REVIEW_DAILY event payload from the Intelligence Ledger.
+
+    Wave 5C cutover — replaces the direct data/daily-briefs/*.json glob read.
+    """
+    db_path = INTELLIGENCE_DB_PATH
+    sys.path.insert(0, os.path.join(PROJECT_ROOT, "investment_screener/backend/py_services"))
+    from intelligence.db_client import initialize_db
+    from intelligence.event_repository import list_active_events_by_type
+
+    if not os.path.exists(db_path):
         return {}
-    latest_file = max(files, key=os.path.getmtime)
-    with open(latest_file) as f:
-        return json.load(f)
+
+    conn = initialize_db(str(db_path))
+    try:
+        events = list_active_events_by_type(conn, "REVIEW_DAILY")
+    finally:
+        conn.close()
+
+    if not events:
+        return {}
+    payload_json = events[0].get("payload_json")  # already ordered newest-first
+    return json.loads(payload_json) if payload_json else {}
 
 
 def load_json(path):
