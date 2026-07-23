@@ -35,7 +35,8 @@
  * 
  * Key Input Dependencies:
  *   - investment_screener/backend/data/portfolio.json (Live portfolio state)
- *   - investment_screener/backend/data/cash_flows.json (Deposit & withdrawal logs)
+ *   - investment_screener/backend/data/domain_model.sqlite's cash_flow / cash_flow_baseline
+ *     tables (Wave 4 cutover; formerly cash_flows.json, now archived)
  *   - investment_screener/backend/data/portfolio-config.json (YTD starting configuration overrides)
  *   - investment_screener/backend/data/ytd_performance_report.json (Output TWR data)
  * 
@@ -79,16 +80,17 @@ function backupPortfolio(): void {
  */
 async function loadYtdPerformanceReport(): Promise<any> {
     /*
-      Checks if cash_flows.json is present, executes ytd_return.py via the Python bridge,
-      and loads ytd_performance_report.json. Returns null on failure or if missing.
+      Wave 4 cutover: cash-flow data now lives in domain_model.sqlite's cash_flow /
+      cash_flow_baseline tables, not cash_flows.json (retired/archived) — there is no
+      cheap file-existence check left to gate on. ytd_return.py itself now performs
+      this gate: load_cash_flows() returns {} when the DB has no baseline row yet
+      (fresh install / no cash flows recorded), calculate_twr() detects that and exits
+      non-zero with a JSON {"error": ...} on stdout, which spawnPythonScript's
+      _spawnRaw() turns into a rejected promise on any non-zero exit code — caught
+      below and returned as null, same external behavior as the old existsSync() gate.
      */
-    const cashFlowsFile = path.join(path.dirname(PORTFOLIO_FILE), 'cash_flows.json');
     const reportFile = path.join(path.dirname(PORTFOLIO_FILE), 'ytd_performance_report.json');
-    
-    if (!fs.existsSync(cashFlowsFile)) {
-        return null;
-    }
-    
+
     try {
         await spawnPythonScript('ytd_return.py', ['--json']);
         if (fs.existsSync(reportFile)) {
