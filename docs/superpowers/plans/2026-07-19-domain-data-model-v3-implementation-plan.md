@@ -51,6 +51,20 @@ package as the established pattern to mirror.
   any task that performs the real `--write` step, and any verification of its row counts, must
   explicitly target the main checkout's file paths (not rely on a worktree-relative default), and
   the wave's exit report must state which `domain_model.sqlite` (main vs. worktree) was verified.
+- **When a real migration script takes multiple path arguments (source file, target DB, AND a
+  ledger/JSONL path), override every one of them explicitly to main-checkout absolute paths — not
+  just the ones that "obviously" hold real data.** Added 2026-07-22 after Wave 5B's real `--write`
+  correctly targeted main's `intelligence.sqlite` via an explicit `--db-path`, but omitted
+  `--jsonl-path`, which silently defaulted to the worktree's own `observations.jsonl`. Result:
+  main's real SQLite table got the correct 26 rows (caught nothing wrong there), but main's real,
+  git-tracked append-only ledger file — the source-of-truth audit trail SQLite is replayed from —
+  had zero of those events. Only surfaced because `git worktree remove` refused to delete a
+  worktree with an uncommitted local diff on that ledger file, forcing a second look. **Fix:**
+  before running any real `--write` step, enumerate every path parameter the script accepts (grep
+  its `argparse` definitions, don't assume from memory) and pass explicit main-checkout absolute
+  values for all of them — a script "writing to two stores" (event ledger + read-model DB, or
+  similar dual-write shapes used throughout this migration) has two chances to silently default
+  to the wrong location, not one.
 
 ---
 
