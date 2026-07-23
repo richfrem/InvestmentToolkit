@@ -117,3 +117,56 @@ Do not delete resolved items; set `Status: RESOLVED` to maintain history.
 - Repeat: YES — will recur on any future commit touching `investment_thesis.md`/sub-strategy files
   until the user writes the missing watchlist entries.
 - Status: OPEN
+
+---
+
+### Entry: Wave 4 real migration write ran against the worktree's DB, not main's live DB
+
+- Logged: 2026-07-22
+- Cycle/Session: Domain Data Model v3.2 Wave 4 (portfolio operations) — post-merge worktree cleanup
+- Artifact affected: `docs/superpowers/plans/2026-07-22-domain-data-model-v3-wave4-implementation-plan.md`
+  Task 7 (real migration write), and the wave's controller process generally (this session, and the
+  background subagent it dispatched).
+- Friction observed: the background subagent controlling Wave 4's Task 7 ran
+  `migrate_wave4_to_sqlite.py --write` inside the wave's git worktree
+  (`.claude/worktrees/wave4-portfolio-ops`), against that worktree's own copy of
+  `investment_screener/backend/data/domain_model.sqlite`. It then verified row counts with a direct
+  SQL query and reported success — correctly, for that file. But `domain_model.sqlite` (like
+  `portfolio.json`, `cash_flows.json`, and the other JSON sources) is gitignored, so it is **not**
+  shared between a worktree and the main checkout — each has its own separate copy on disk that git
+  never syncs. After PR #91 merged the code cutover (trading.ts/order_risk_gates.py/
+  execution_quality_scorecard.py/ytd_return.py now read exclusively from SQLite) to `main`, the
+  session controller (me) did not independently re-check that `main`'s own live
+  `domain_model.sqlite` actually contained the migrated rows before treating the wave as complete —
+  the gap was caught only because the user asked to clean up the merged worktree, not by any step in
+  the wave's own verification or exit-report process. Root cause: I applied the
+  gitignored-private-data-doesn't-sync rule correctly for the *archive* step (local-only `mv` for
+  `cash_flows.json`) but failed to apply the same reasoning to the *migration write* step for
+  `domain_model.sqlite`, and neither the plan nor the dispatched subagent's brief explicitly named
+  which checkout the real write and its verification needed to target.
+- Why it was not deferred: small, safe, inside allowed edit boundaries (data write only, no schema
+  change, fully idempotent via the migration script's content-hash IDs) — fixed immediately per
+  policy rule 7 (fix forward, don't defer for later).
+- Fix applied: re-ran `migrate_wave4_to_sqlite.py --write` directly against the main checkout's real
+  `investment_screener/backend/data/{trade-log.json,orders_executed.jsonl,cash_flows.json}` and real
+  `investment_screener/backend/data/domain_model.sqlite`, using explicit `--trade-log`/
+  `--orders-executed`/`--cash-flows`/`--db-path` flags (the script's relative-path defaults assume
+  being run from `py_services/` against a sibling `../data/`, which does not disambiguate worktree
+  vs. main on its own). Verified independently via direct `sqlite3` queries against the main
+  checkout's file post-write. Also updated
+  `docs/superpowers/plans/2026-07-19-domain-data-model-v3-implementation-plan.md`'s Global
+  Constraints (binding on every wave) to require the real write and its verification explicitly
+  target the main checkout, so Waves 5A–5E don't repeat this.
+- Evidence: before fix — `sqlite3 investment_screener/backend/data/domain_model.sqlite "SELECT
+  COUNT(*) FROM trade_log_entry;"` on `main` → `0`, despite PR #91 (Wave 4) already merged and its
+  own report claiming the real write was verified. After fix — same query → `52`; `order_execution`
+  → `8`; `cash_flow` → `3`; `cash_flow_baseline` → `ALL|37426.0|2026-01-01`. Dry-run counts against
+  `main`'s real source files matched the worktree's original dry-run report exactly (52/8/3, zero
+  warnings) before the write ran, confirming no data drift between the two copies' *source* JSON
+  (only the derived SQLite state had diverged).
+- Severity: L (real data loss risk was low — original JSON source files were never touched or
+  deleted, so nothing was unrecoverable — but the live app would have silently shown empty
+  Trade Log / YTD Return data on next backend restart had this gone unnoticed)
+- Repeat: YES until the Global Constraints fix above is followed by every future wave's real-write
+  task — flagged there specifically so it's read before each wave's Task 7-equivalent runs.
+- Status: RESOLVED

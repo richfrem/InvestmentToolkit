@@ -38,6 +38,19 @@ package as the established pattern to mirror.
   price levels + notes + alerts + thesis breaker state) → 3 (account holdings) → 4 (trade
   log/orders/cash flows) → 5A–5E (generated research views → TA sweep → daily briefs → predictions
   → account policy).
+- **A "real data migration write" must run against the main checkout's actual gitignored data
+  files and actual `domain_model.sqlite`, never a worktree's copy.** Added 2026-07-22 after Wave
+  4's real `--write` migration ran successfully inside the wave worktree, was independently
+  verified there, and the wave was reported/merged as complete — but the worktree has its own
+  separate, gitignored `domain_model.sqlite` and source JSON files that git never syncs back to
+  the main checkout (the same gitignored-private-data distinction this plan already applies to
+  `portfolio.json`/`cash_flows.json` archiving, just not carried through to where the migration
+  *write* itself runs). Post-merge, `main`'s own live database still had zero rows in the new
+  tables while the newly-cut-over code was already reading exclusively from SQLite — caught only
+  because the user asked for worktree cleanup, not by the wave's own verification steps. **Fix:**
+  any task that performs the real `--write` step, and any verification of its row counts, must
+  explicitly target the main checkout's file paths (not rely on a worktree-relative default), and
+  the wave's exit report must state which `domain_model.sqlite` (main vs. worktree) was verified.
 
 ---
 
