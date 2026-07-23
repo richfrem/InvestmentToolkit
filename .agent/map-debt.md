@@ -170,3 +170,46 @@ Do not delete resolved items; set `Status: RESOLVED` to maintain history.
 - Repeat: YES until the Global Constraints fix above is followed by every future wave's real-write
   task — flagged there specifically so it's read before each wave's Task 7-equivalent runs.
 - Status: RESOLVED
+
+### Entry: Wave 5B — plan omitted the spec's real Validation Strategy and Definition of Done, self-invented a narrower bar
+
+- Logged: 2026-07-22
+- Cycle/Session: Wave 5B (TA Sweep Results) post-merge closeout — discovered when the user asked
+  "shouldn't observations.jsonl be events in the SQLite model" then explicitly said "you are
+  missing the whole point of these waves. review the main plan again."
+- Artifact affected: `docs/superpowers/plans/2026-07-22-wave5b-ta-sweep-results.md` (the wave-level
+  plan document), and by extension every task/final-branch code review dispatched against it,
+  since none were ever asked to check for the missing items — they correctly reviewed against the
+  narrower bar the plan gave them.
+- Friction observed: the overall migration plan (`docs/superpowers/plans/2026-07-19-...md`)
+  requires every wave plan to include five specific sections (Hybrid Exit Criteria, Wave KPI
+  table, **Context Bundle Completion Bar**, Producer/Consumer cutover table, Archive/retention
+  decision) plus satisfy the design spec's §5 Validation Strategy (schema/migration/repository/
+  consumer/**parity-over-a-real-live-cycle**/live-path/grep-scan/archive/**physically-exercised
+  rollback**/context-bundle tests) and its 9-item Definition of Done (item 8: "tests prove live
+  path behavior against real data, not only fixture behavior"). Wave 5B's plan invented its own
+  5-item "Definition of Done" instead of copying these verbatim, silently dropping: the
+  parity-over-a-real-cycle diff, the physically-exercised rollback, the real-data (non-fixture)
+  test, the Context Bundle Completion Bar measurement, and the Hybrid Exit Criteria section. All
+  6 task-level reviews and the final whole-branch review came back clean because they were scoped
+  to code-diff quality against the plan as written, not against the spec's actual required bar —
+  the gap was in what the plan asked reviewers to check, not in how carefully they checked it.
+- Why it was not fixed before merge: not caught — the plan's self-review step (writing-plans
+  skill's "Spec coverage" self-check) was run against the plan's own text, not cross-checked
+  against the design spec's §5/Definition-of-Done sections as an independent source of truth.
+- Recommended fix (applied same session): added a new Global Constraint to the overall plan
+  requiring every wave plan to paste the spec's full §5 checklist and 9-item Definition of Done
+  verbatim (not a self-invented subset), and hardened the reusable kickoff-prompt "Way of Working"
+  template (`docs/superpowers/status/wave5b-kickoff-prompt.md`, copied forward to each new wave's
+  kickoff prompt) to name this explicitly in its "Plan the wave" step.
+- Evidence: `grep -n "Validation Strategy\|Definition of Done" docs/superpowers/plans/2026-07-22-wave5b-ta-sweep-results.md`
+  → zero hits for the spec's actual section names; the plan's own "Definition of Done for This
+  Wave" section had 5 items, none matching the spec's 9.
+- Severity: M — no data was lost or corrupted (the real migration write itself was independently
+  verified correct), but the wave was declared complete and merged without the validation gates
+  the spec exists specifically to enforce, on a domain whose own history (ADR-029) is literally
+  about a wave being falsely certified complete this same way.
+- Repeat: YES until the Global Constraints fix above is followed by every future wave's plan —
+  flagged there specifically so it's read before each wave's `superpowers:writing-plans` pass.
+- Status: OPEN (remediation for Wave 5B itself — real-cycle parity test, rollback exercise,
+  real-data test, Context Bundle number — in progress this same session)
