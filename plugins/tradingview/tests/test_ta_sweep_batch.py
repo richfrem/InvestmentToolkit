@@ -145,7 +145,6 @@ class TestSweepResultsPersistence:
         assert "--save-results" in result.stdout, (
             "--save-results flag not found in help output — was it added to argparse?"
         )
-        assert "--no-save" in result.stdout, "--no-save flag must also be present"
 
     def test_save_sweep_results_writes_timestamped_json(self, tmp_path: Path):
         """save_sweep_results() writes {timestamp, scan_date, count, results} to file."""
@@ -153,7 +152,9 @@ class TestSweepResultsPersistence:
         from ta_sweep_batch import save_sweep_results  # noqa: PLC0415
 
         out_file = tmp_path / "ta-sweep-results.json"
-        save_sweep_results(FIXTURE_RESULTS, out_file)
+        jsonl_path = tmp_path / "observations.jsonl"
+        db_path = tmp_path / "intelligence.sqlite"
+        save_sweep_results(FIXTURE_RESULTS, json_export_path=out_file, jsonl_path=jsonl_path, db_path=db_path)
 
         assert out_file.exists(), "Output file must be created"
         data = json.loads(out_file.read_text())
@@ -171,8 +172,10 @@ class TestSweepResultsPersistence:
         from ta_sweep_batch import save_sweep_results  # noqa: PLC0415
 
         out_file = tmp_path / "ta-sweep-results.json"
-        save_sweep_results(FIXTURE_RESULTS, out_file)
-        save_sweep_results(FIXTURE_RESULTS + FIXTURE_RESULTS, out_file)
+        jsonl_path = tmp_path / "observations.jsonl"
+        db_path = tmp_path / "intelligence.sqlite"
+        save_sweep_results(FIXTURE_RESULTS, json_export_path=out_file, jsonl_path=jsonl_path, db_path=db_path)
+        save_sweep_results(FIXTURE_RESULTS + FIXTURE_RESULTS, json_export_path=out_file, jsonl_path=jsonl_path, db_path=db_path)
 
         data = json.loads(out_file.read_text())
         assert data["count"] == 2, "Second write must overwrite — not append"
@@ -195,7 +198,7 @@ class TestSweepResultsPersistence:
         conn.commit()
         conn.close()
 
-        save_sweep_results(FIXTURE_RESULTS, out_file, jsonl_path=jsonl_path, db_path=db_path)
+        save_sweep_results(FIXTURE_RESULTS, json_export_path=out_file, jsonl_path=jsonl_path, db_path=db_path)
 
         # 1. Verify JSON file still exists (legacy compatibility)
         assert out_file.exists()
@@ -221,6 +224,30 @@ class TestSweepResultsPersistence:
         assert payload["rsi"] == 45.0
         conn.close()
 
+    def test_save_sweep_results_writes_no_json_by_default(self, tmp_path: Path):
+        """Wave 5B: without json_export_path, save_sweep_results must not create any JSON file —
+        only the ledger/SQLite write is unconditional now."""
+        sys.path.insert(0, str(REPO_ROOT / "plugins/tradingview/scripts"))
+        from ta_sweep_batch import save_sweep_results  # noqa: PLC0415
+
+        jsonl_path = tmp_path / "observations.jsonl"
+        db_path = tmp_path / "intelligence.sqlite"
+        from intelligence.db_client import initialize_db  # noqa: PLC0415
+        conn = initialize_db(str(db_path))
+        conn.execute("INSERT INTO instrument VALUES ('us-aapl', 'AAPL', 'NASDAQ', 'Apple', '2026-01-01', NULL);")
+        conn.commit()
+        conn.close()
+
+        save_sweep_results(FIXTURE_RESULTS, jsonl_path=jsonl_path, db_path=db_path)
+
+        assert not any(tmp_path.glob("*.json"))  # no flat JSON written anywhere
+        import sqlite3
+        conn = sqlite3.connect(db_path)
+        count = conn.execute(
+            "SELECT COUNT(*) FROM intelligence_event WHERE event_type = 'TECHNICAL_SWEEP';"
+        ).fetchone()[0]
+        conn.close()
+        assert count == len(FIXTURE_RESULTS)  # ledger/SQLite write still unconditional
 
 
 # ── pctToFV denominator tests ─────────────────────────────────────────────────

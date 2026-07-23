@@ -73,9 +73,9 @@ python3 plugins/tradingview/skills/author-pine-script/scripts/pine_source_reader
 ```bash
 python3 plugins/tradingview/scripts/ta_sweep_batch.py              # scan all holdings
 python3 plugins/tradingview/scripts/ta_sweep_batch.py --skip HUMN  # skip specific tickers
-python3 plugins/tradingview/scripts/ta_sweep_batch.py --no-save    # skip file persistence
+python3 plugins/tradingview/scripts/ta_sweep_batch.py --save-results PATH  # optional flat-file export
 ```
-Results auto-saved to `investment_screener/backend/data/ta-sweep-results.json`.
+Results written to the Intelligence Ledger (`TECHNICAL_SWEEP` events); pass `--save-results` for an optional flat-file export.
 Use `/ta-daily-sweep` for the full batch sweep with ranked report and action items.
 
 ### AI TA Levels Indicator
