@@ -82,9 +82,10 @@ gitignored, sacred user data per this project's own CLAUDE.md rule.
 
 get_trade_log_entries() / find_matching_trade_log_entry() /
 wait_for_trade_log_entry() / validate_trade_execution() (Task 5E-7)
-reconcile a placed order against the real trade log (investment_screener/
-backend/data/trade-log.json — this project's existing manual/CDP-synced
-trade log, written by trading.ts's makeLogEntry(), NOT a new store).
+reconcile a placed order against the real trade log — Wave 4 cutover: the
+trade_log_entry SQLite table (formerly trade-log.json, now archived),
+written by trading.ts's TradeLogRepository-backed writeLog(), NOT a new
+store.
 get_trade_log_entries() reads it; find_matching_trade_log_entry() finds
 the newest entry matching an order's ticker/side/(account) that is in a
 real executed state — entries with status in {"suggested", "cancelled",
@@ -147,10 +148,10 @@ Key Input Dependencies:
       same directory — a LIVE TradingView CDP Data Window read, lazily
       imported inside check_data_readiness_gate() to avoid triggering it
       at module-import time)
-    - investment_screener/backend/data/trade-log.json (gitignored, the
-      real manual/CDP-synced trade log, written by trading.ts's
-      makeLogEntry() — "TRADE_LOG_FILE" in paths.ts — never written to
-      by this module, only read)
+    - investment_screener/backend/data/domain_model.sqlite's trade_log_entry
+      table (Wave 4 cutover; formerly trade-log.json, now archived), written
+      by trading.ts's TradeLogRepository-backed writeLog() — never written to
+      by this module, only read
 """
 from __future__ import annotations
 
@@ -185,8 +186,9 @@ THESIS_BREAKER_STATE_PATH = Path(__file__).resolve().parents[1] / "data" / "thes
 TARGET_PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "theses" / "target-portfolio.json"
 DB_PATH = Path(__file__).resolve().parents[1] / "data" / "domain_model.sqlite"
 PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "portfolio.json"
-TRADE_LOG_PATH = Path(__file__).resolve().parents[1] / "data" / "trade-log.json"
-ORDERS_EXECUTED_PATH = Path(__file__).resolve().parents[1] / "data" / "orders_executed.jsonl"
+# TRADE_LOG_PATH / ORDERS_EXECUTED_PATH removed Wave 4 Task 12: get_trade_log_entries()
+# and log_order_execution() were cut over to DB_PATH (trade_log_entry / order_execution
+# SQLite tables) in Task 8. trade-log.json / orders_executed.jsonl archived to ARCHIVE/.
 
 
 def _load_risk_snapshot() -> Dict[str, Any]:
