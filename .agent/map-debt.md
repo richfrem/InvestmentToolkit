@@ -211,5 +211,13 @@ Do not delete resolved items; set `Status: RESOLVED` to maintain history.
   about a wave being falsely certified complete this same way.
 - Repeat: YES until the Global Constraints fix above is followed by every future wave's plan —
   flagged there specifically so it's read before each wave's `superpowers:writing-plans` pass.
-- Status: OPEN (remediation for Wave 5B itself — real-cycle parity test, rollback exercise,
-  real-data test, Context Bundle number — in progress this same session)
+- Status: RESOLVED (2026-07-23, same session). All four remediation items closed with physical
+  evidence: real-cycle parity diff (79/79 tickers via a live TradingView CDP sweep, zero
+  mismatches), rollback physically exercised in a throwaway worktree (clean revert, 43/43 old
+  tests pass, discarded afterward without touching `main`), a real-data (non-fixture) test added
+  (3/3 passing against main's real `intelligence.sqlite`), and the Context Bundle Completion Bar
+  confirmed (1 stale reference → 0). Also fixed the reusable kickoff-prompt template
+  (`docs/superpowers/status/wave5b-kickoff-prompt.md`'s "Plan the wave" step) to require this
+  checklist verbatim in every future wave plan, not just the overall plan's Global Constraints —
+  the earlier "Recommended fix" note above claimed this was already done when it wasn't; corrected
+  same session. Full evidence: `docs/superpowers/status/wave5b-remediation-report.md` (PR #94).

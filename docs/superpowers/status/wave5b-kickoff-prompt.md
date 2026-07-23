@@ -82,6 +82,22 @@ sections need updating per wave.
   SQLite file directly — not the worktree's copy, even if the write itself was executed from
   within the worktree's Python environment for convenience. State this distinction explicitly
   in the task, don't assume the implementer will infer it.
+- **Mandatory, added after Wave 5B's own plan skipped this (Map Debt entry, 2026-07-22):** the
+  wave plan document must include the design spec's actual required content **verbatim**, not a
+  self-invented subset. Specifically, paste into the plan: (1) the design spec's "Hybrid Exit
+  Criteria" section applied to this wave's domain, (2) the design spec's full §5 Validation
+  Strategy checklist as literal checkboxes — including "run both paths in parallel for at least
+  one full real-world cycle... and diff row-for-row" and "physically exercise rollback at least
+  once per domain before declaring the wave done" (an executed exercise with evidence, not a
+  prose description of what rollback *would* involve), (3) the design spec's 9-item Definition of
+  Done verbatim (`docs/superpowers/plans/2026-07-19-domain-data-model-v3-implementation-plan.md`'s
+  "Definition of Done (applies to every wave...)" section) — do not write a shorter wave-specific
+  version, (4) a computed **Context Bundle Completion Bar** number (grep the domain's plugin/skill
+  reference table from spec §4, confirm zero stale filename references remain post-wave, report
+  the count). Wave 5B's task-level and final whole-branch reviews all came back clean because they
+  correctly checked the diff against the plan as written — the plan itself had silently narrowed
+  the bar. The `writing-plans` skill's "Spec coverage" self-review must diff the plan's section
+  list against this checklist, not just re-read the plan's own text for internal consistency.
 - Present the plan for user review before executing. Apply any requested revisions.
 
 ### 3. Execute the wave — wave-level autonomy (current standing instruction)
