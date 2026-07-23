@@ -65,6 +65,28 @@ package as the established pattern to mirror.
   values for all of them — a script "writing to two stores" (event ledger + read-model DB, or
   similar dual-write shapes used throughout this migration) has two chances to silently default
   to the wrong location, not one.
+- **A wave's plan document must include the design spec's actual required content verbatim, not a
+  self-invented subset.** Added 2026-07-22 after Wave 5B's plan wrote its own 5-item "Definition
+  of Done" instead of copying the design spec's real 9-item one (§ "Definition of Done (applies to
+  every wave...)"), and never included a **Hybrid Exit Criteria** section or a **Context Bundle
+  Completion Bar** section at all — both explicitly listed as mandatory under "Every wave plan,
+  when written, must include" just above that Definition of Done in this document. It also never
+  copied the design spec's §5 Validation Strategy checklist, silently dropping two of its
+  items: "run both paths in parallel for at least one full real-world cycle... and diff
+  row-for-row" (parity test) and "physically exercise rollback at least once per domain before
+  declaring the wave done" (not just write rollback instructions — execute them). Every task-level
+  and final whole-branch code review that followed was correctly scoped to the plan as written, so
+  none of them caught the gap — the miss was upstream, in what the plan asked reviewers to check.
+  **Fix:** before finalizing any wave plan, paste these four items into it verbatim, don't
+  summarize or narrow them: (1) the spec's "Hybrid Exit Criteria" section content applied to this
+  wave's specific domain, (2) the spec's full §5 Validation Strategy checklist as literal
+  checkboxes — including the real-cycle parity diff and the physically-executed rollback exercise,
+  neither satisfied by "wrote a report section describing it," (3) the spec's 9-item Definition of
+  Done verbatim (not a wave-specific rewrite), (4) a computed, not estimated, Context Bundle
+  Completion Bar number (grep the plugin/skill reference table for this domain, confirm zero
+  stale filename references remain post-wave, report the byte/file-count delta). The `writing-
+  plans` skill's own "Spec coverage" self-review step must explicitly diff the plan's section list
+  against this checklist, not just re-read the plan's own text for internal consistency.
 
 ---
 
