@@ -49,56 +49,43 @@ def main():
                 print(event["payload_json"])
 
         elif args.history:
-            # Query all REVIEW_DAILY events
-            cursor = conn.execute("""
-                SELECT payload_json, effective_at, ingested_at
-                FROM intelligence_event
-                WHERE event_type = 'REVIEW_DAILY' AND status = 'ACTIVE'
-                ORDER BY effective_at DESC, ingested_at DESC;
-            """)
-            rows = cursor.fetchall()
+            from intelligence.event_repository import list_active_events_by_type
+            events = list_active_events_by_type(conn, "REVIEW_DAILY")
             history = []
-            for payload_json, effective_at, ingested_at in rows:
-                if payload_json:
-                    try:
-                        d = json.loads(payload_json)
-                        # Build history entry mapping the legacy fields
-                        history.append({
-                            "date": d.get("date"),
-                            "regime": d.get("macro_regime", {}).get("regime"),
-                            "reduce_count": len([s for s in d.get("conviction_scores", []) if s.get("band") in ("REDUCE", "EXIT")]),
-                            "accum_count": len([s for s in d.get("conviction_scores", []) if s.get("band") == "ACCUMULATE"]),
-                            "ta_refreshed": d.get("ta_refreshed"),
-                        })
-                    except Exception:
-                        pass
+            for event in events:
+                payload_json = event.get("payload_json")
+                if not payload_json:
+                    continue
+                try:
+                    d = json.loads(payload_json)
+                    history.append({
+                        "date": d.get("date"),
+                        "regime": d.get("macro_regime", {}).get("regime"),
+                        "reduce_count": len([s for s in d.get("conviction_scores", []) if s.get("band") in ("REDUCE", "EXIT")]),
+                        "accum_count": len([s for s in d.get("conviction_scores", []) if s.get("band") == "ACCUMULATE"]),
+                        "ta_refreshed": d.get("ta_refreshed"),
+                    })
+                except Exception:
+                    pass
             print(json.dumps(history))
 
         elif args.conviction:
+            from intelligence.event_repository import list_active_events_by_type
             ticker = args.conviction.upper()
-            cursor = conn.execute("""
-                SELECT payload_json
-                FROM intelligence_event
-                WHERE event_type = 'REVIEW_DAILY' AND status = 'ACTIVE'
-                ORDER BY effective_at ASC, ingested_at ASC;
-            """)
-            rows = cursor.fetchall()
-            history = []
-            for (payload_json,) in rows:
-                if payload_json:
-                    try:
-                        d = json.loads(payload_json)
-                        scores = d.get("conviction_scores", [])
-                        score = next((s for s in scores if s.get("ticker") == ticker), None)
-                        if score:
-                            # Prepend/include date
-                            history.append({
-                                "date": d.get("date"),
-                                **score
-                            })
-                    except Exception:
-                        pass
-            print(json.dumps(history))
+            events = list_active_events_by_type(conn, "REVIEW_DAILY")
+            conviction_history = []
+            for event in reversed(events):  # ascending by date for this endpoint
+                payload_json = event.get("payload_json")
+                if not payload_json:
+                    continue
+                try:
+                    d = json.loads(payload_json)
+                except Exception:
+                    continue
+                score = next((s for s in d.get("conviction_scores", []) if s.get("ticker") == ticker), None)
+                if score:
+                    conviction_history.append({"date": d.get("date"), **score})
+            print(json.dumps(conviction_history))
 
     finally:
         conn.close()

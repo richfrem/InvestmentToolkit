@@ -131,10 +131,10 @@ Once the brief is presented, ask the user which signals they want to act on:
 
 ## Continuous Improvement Loop
 
-The brief saves a daily snapshot to:
-```
-investment_screener/backend/data/daily-briefs/YYYY-MM-DD.json
-```
+The brief writes its daily snapshot to the Intelligence Ledger (`intelligence_event`,
+`event_type='REVIEW_DAILY'`); a same-shape JSON snapshot is also still written to
+`investment_screener/backend/data/daily-briefs/YYYY-MM-DD.json` as a legacy export, not read by
+any consumer.
 
 **What compounds over time:**
 - **Score deltas**: Each brief shows conviction changes vs. yesterday — catches deteriorating
