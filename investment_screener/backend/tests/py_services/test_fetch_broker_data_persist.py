@@ -166,6 +166,35 @@ def test_write_snapshot_never_touches_portfolio_json_even_with_balances(tmp_path
     assert not (tmp_path / "portfolio.json").exists()
 
 
+def test_persist_snapshot_to_db_normalizes_broker_ticker_alias(tmp_path):
+    """PSU.U.TO is Questrade's broker-format symbol for the same real fund
+    fetch_portfolio_heatmap.py/target-portfolio.json track as PSU-U.TO. If this
+    isn't normalized before resolve_investment(), a real sync creates a second,
+    duplicate `investment` row/position for the identical real holding (see
+    CLAUDE.md pitfall #18 and the one-time fix_psu_alias_and_cash_price.py
+    correction script — this test guards against that bug recurring)."""
+    db_path = str(tmp_path / "test.sqlite")
+    snapshot = {
+        "snapshots": [
+            {
+                "accountType": "TFSA",
+                "balances": {},
+                "positions": [{"symbol": "PSU.U.TO", "quantity": 23, "avgFillPrice": 100.02}],
+            },
+        ]
+    }
+    written = fetch_broker_data._persist_snapshot_to_db(snapshot, db_path=db_path)
+    assert written == 1
+
+    conn = initialize_db(db_path)
+    rows = list_account_investments(conn, account_id="TFSA")
+    investment_ids = {r["investment_id"] for r in rows}
+    assert investment_ids == {"PSU-U.TO"}, (
+        f"expected the broker-format symbol to resolve to the canonical "
+        f"PSU-U.TO investment_id, got {investment_ids}"
+    )
+
+
 def test_emit_snapshot_json_prints_single_json_line_to_stdout(capsys):
     """The stdout IPC channel: emit_snapshot_json prints the snapshot as one
     machine-parseable JSON line on stdout (and nothing else on stdout), so the
