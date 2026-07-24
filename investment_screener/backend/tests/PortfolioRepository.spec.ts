@@ -78,6 +78,27 @@ describe('PortfolioRepository', () => {
         });
     });
 
+    describe('getLastSyncedAt', () => {
+        it('returns null when no account_investment rows exist yet', () => {
+            expect(repo.getLastSyncedAt()).to.equal(null);
+        });
+
+        it('returns the most recent last_synced_at across all account_investment rows', () => {
+            repo.upsertAccount('TFSA', 'TFSA', 'TFSA');
+            repo.upsertAccount('RRSP', 'RRSP', 'RRSP');
+            repo.upsertAccountInvestment('TFSA', 'AAPL', 10, 150, 1500, 'USD', '2026-07-20T08:00:00.000Z');
+            repo.upsertAccountInvestment('RRSP', 'AAPL', 3, 150, 450, 'USD', '2026-07-21T09:15:00.000Z');
+            expect(repo.getLastSyncedAt()).to.equal('2026-07-21T09:15:00.000Z');
+        });
+
+        it('reflects a fresh sync overwriting an older last_synced_at (idempotent upsert)', () => {
+            repo.upsertAccount('TFSA', 'TFSA', 'TFSA');
+            repo.upsertAccountInvestment('TFSA', 'AAPL', 10, 150, 1500, 'USD', '2026-07-20T08:00:00.000Z');
+            repo.upsertAccountInvestment('TFSA', 'AAPL', 10, 150, 1500, 'USD', '2026-07-22T11:30:00.000Z');
+            expect(repo.getLastSyncedAt()).to.equal('2026-07-22T11:30:00.000Z');
+        });
+    });
+
     describe('exchange rate (broker_exchange_rate singleton)', () => {
         it('returns null when never synced', () => {
             expect(repo.getExchangeRate()).to.equal(null);
