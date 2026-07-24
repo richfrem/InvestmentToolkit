@@ -42,7 +42,11 @@ def test_harvest_writes_to_overridden_path_not_the_real_ledger(tmp_path):
         mock_ticker_inst.info = {"currentPrice": 210.0}
         mock_ticker.return_value = mock_ticker_inst
 
-        result = harvest_earnings_expectations(["AAPL"], predictions_path=fake_path)
+        result = harvest_earnings_expectations(
+            ["AAPL"], predictions_path=fake_path,
+            intel_db_path=tmp_path / "intelligence.sqlite",
+            jsonl_path=tmp_path / "observations.jsonl",
+        )
 
     assert len(result) == 1
     assert fake_path.exists(), "expected the override path to receive the write"
