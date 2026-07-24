@@ -44,6 +44,14 @@ from domain_model.investment_repository import list_investments  # noqa: E402
 from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
 
 
+# The real cash symbol stored by domain_model.sqlite (investment.asset_class='CASH')
+# is CASH_USD, not USD_CASH. Cash has no TradingView symbol and must never be
+# pushed into a TV watchlist sync — this exclusion is TV-sync-specific; cash
+# remains a real, correctly-included row everywhere else (portfolio totals,
+# weightings) per ADR-030.
+_CASH_SYMBOL = "CASH_USD"
+
+
 def _load_holdings_symbols(db_path: Path | None = None) -> List[str]:
     """Return upper-cased held-position symbols from domain_model.sqlite
     (Wave 3 Task 6 cutover — previously portfolio.json).
@@ -56,7 +64,7 @@ def _load_holdings_symbols(db_path: Path | None = None) -> List[str]:
         shares = load_portfolio_state_from_db(conn)["shares"]
     finally:
         conn.close()
-    return [sym.upper() for sym in shares if sym and sym != "USD_CASH"]
+    return [sym.upper() for sym in shares if sym and sym != _CASH_SYMBOL]
 
 
 def _load_watchlisted_symbols(db_path: Path | None = None) -> List[str]:
@@ -71,9 +79,9 @@ def _load_watchlisted_symbols(db_path: Path | None = None) -> List[str]:
         rows = list_investments(conn, is_watchlisted=True)
     finally:
         conn.close()
-    return [row["symbol"].upper() for row in rows if row.get("symbol") and row["symbol"] != "USD_CASH"]
+    return [row["symbol"].upper() for row in rows if row.get("symbol") and row["symbol"] != _CASH_SYMBOL]
 
-_BOATS_EXCLUDE = {"USD_CASH"}
+_BOATS_EXCLUDE = {_CASH_SYMBOL}
 
 
 # External comment: Normalizes Purpose HISA convention
