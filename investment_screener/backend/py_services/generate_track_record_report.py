@@ -52,7 +52,15 @@ from intelligence.db_client import initialize_db
 from intelligence.event_repository import list_active_events_by_type
 
 REPO_ROOT = _PY_SERVICES_DIR.resolve().parents[2]
-DEFAULT_INTEL_DB_PATH = str(REPO_ROOT / "data/intelligence.sqlite")
+# _PY_SERVICES_DIR is investment_screener/backend/py_services, so its real
+# data/ sibling is one level up (investment_screener/backend/data/), not two
+# (REPO_ROOT/data/) -- confirmed against backtest_harness.py's equivalent
+# DATA_DIR constant. The prior parents[2]-based path silently pointed at a
+# nonexistent investment_screener/data/ directory; every existing test
+# passes an explicit db_path override so this only ever affected the
+# never-exercised default (found during Wave 5D Task 6's real-cycle check,
+# fixed here while cutting alert_manager.py over as Task 8's missed consumer).
+DEFAULT_INTEL_DB_PATH = str(_PY_SERVICES_DIR.resolve().parents[1] / "data/intelligence.sqlite")
 
 _VERDICTS = ("correct", "incorrect", "inconclusive")
 
