@@ -446,6 +446,7 @@ def _persist_snapshot_to_db(
     from domain_model.investment_repository import resolve_investment
     from domain_model.exchange_rate_repository import upsert_exchange_rate
     from domain_model.broker_reported_total_repository import upsert_broker_reported_total
+    from ticker_aliases import normalize_ticker
 
     conn = initialize_db(db_path)
     now = datetime.now(timezone.utc).isoformat()
@@ -471,6 +472,7 @@ def _persist_snapshot_to_db(
             symbol = pos.get("symbol")
             if not symbol:
                 continue
+            symbol = normalize_ticker(symbol)
             investment_id = resolve_investment(conn, symbol, asset_class="EQUITY", currency="USD")
             upsert_account_investment(
                 conn, account_id, investment_id, quantity=quantity,
