@@ -62,6 +62,18 @@ merged, and the post-merge closeout playbook has run.
   `claimDate`→`date` fix was resolved manually, removing the dual-write pathway entirely). Full
   pre-wave test suite: **43/43 passing** against JSONL-only code. Throwaway worktree cleaned up,
   verified via `git worktree list`, `main` untouched.
+- **The final whole-branch review found a real Critical gap, closed before this report was
+  finalized**: `append_prediction()`/`append_grade()` still defaulted their `path` parameter to
+  `predictions.jsonl`'s original (now-archived) location, and `harvest_predictions.py`'s real
+  `/daily` code path called `append_prediction()` with that default. The very next scheduled
+  prediction-harvest cycle would have silently recreated `predictions.jsonl` at exactly the
+  location Task 8 just archived it from — a genuine Hard-Stop Condition 11 violation ("the wave
+  would end in a permanent hybrid state"), requiring no further code change to trigger. Fixed:
+  `append_prediction()`/`append_grade()` now write ONLY to the intelligence ledger; the JSONL
+  write is fully retired, not merely dead code, closing the gap the archive-prerequisite grep
+  (which checked reads, not writes) missed. Verified directly: calling `append_prediction()` with
+  its real default path no longer creates the file. Full suite re-run after this fix: 1420
+  passing, 44 failing (down from 45 — no regression from this fix; all still pre-existing).
 
 ## JSON Reduction
 
@@ -77,7 +89,7 @@ daily-briefs domain Wave 5C closed), 0 active. `predictions_graded.jsonl` never 
 
 | Component | Type | Before | After | Cutover status |
 |---|---|---|---|---|
-| `prediction_ledger.py` (`append_prediction`/`append_grade`) | Producer | JSONL-only | Dual-write (JSONL + ledger, 87 real `PREDICTION_CLAIM` rows) | **DONE** |
+| `prediction_ledger.py` (`append_prediction`/`append_grade`) | Producer | JSONL-only | Ledger-only (dual-write retired after final review found the JSONL write would have un-archived `predictions.jsonl`; 87 real `PREDICTION_CLAIM` rows) | **DONE** |
 | `harvest_predictions.py` | Producer + Consumer | `load_predictions()` (JSONL) for dedup | `_load_predictions_from_ledger(intel_db_path)` | **DONE** |
 | `grade_predictions.py` | Consumer | `load_predictions()`/`load_graded()` (JSONL) | `_load_predictions_from_ledger(db_path)` | **DONE** |
 | `earnings_expectations.py` | Consumer | `_load_predictions`/`_load_graded` bound to JSONL readers | Bound to `_load_predictions_from_ledger`/`_load_graded_from_ledger`; `None`-fallback contract preserved | **DONE** |
@@ -102,6 +114,16 @@ daily-briefs domain Wave 5C closed), 0 active. `predictions_graded.jsonl` never 
    `correlate_with_prediction_ledger()` with the function's old JSONL-path signature; two of its
    four tests silently defaulted to the real, tracked `intelligence.sqlite`. Rewritten with real,
    tmp_path-scoped SQLite seeding and strengthened assertions.
+5. **Dual-write never retired, would have silently un-archived `predictions.jsonl`** — found by the
+   final whole-branch review (not any earlier task-scoped review): `append_prediction()`/
+   `append_grade()`'s JSONL write, introduced as a Task 2 migration aid, was still live after Task
+   8 archived the file. `harvest_predictions.py`'s real `/daily` code path calls
+   `append_prediction()` with its default `path` parameter, which still pointed at the archived
+   file's original location — the next real harvest cycle would have recreated it with zero code
+   changes required. Fixed by fully retiring the JSONL write in both functions (see Accomplishments);
+   the `_append_jsonl`/`load_predictions`/`load_graded` primitives are kept only for
+   `prediction_ledger.py`'s own `--validate` CLI utility, which can still schema-validate the
+   archived file on demand.
 
 ## Validation Results
 
@@ -222,7 +244,7 @@ not a skipped section.
 | Active JSON/JSONL files after | 0 |
 | Files archived | 1 (`predictions.jsonl` → `ARCHIVE/investment_screener/backend/data/predictions.jsonl`, real `git mv`) |
 | JSON reads removed | 7 real call sites across 7 files (`harvest_predictions.py`, `grade_predictions.py`, `earnings_expectations.py` x2, `generate_track_record_report.py` x2, `backtest_harness.py`, `alert_manager.py`) |
-| JSON writes removed | 0 at this wave's close — `prediction_ledger.py`'s JSONL write is retained as a dual-write during the migration window (Task 2); the archive step (Task 8) is what fully retires the *file*, not the write call itself (the write call becomes dead code once the file is archived, since `_append_jsonl` writing to a now-`ARCHIVE/`-only path is a no-op for any live reader) |
+| JSON writes removed | 2 (`append_prediction()`, `append_grade()`) — the dual-write introduced in Task 2 as a migration aid was fully retired once all 7 consumers were confirmed cut over; this was corrected during the final whole-branch review, which found the write call still defaulted to `predictions.jsonl`'s original path and would have silently recreated the archived file on the next real harvest cycle (see Accomplishments) |
 | Producers migrated (n / total) | 1 / 1 (`prediction_ledger.py`; `harvest_predictions.py`/`grade_predictions.py` call into it, not separate write paths) |
 | Consumers migrated (n / total) | 7 / 7 (spec's stated 6, plus `alert_manager.py` — found via Task 8's archive-prerequisite grep, not in the original inventory) |
 | Plugin/skill/agent references updated | 0 / 0 (none existed, confirmed) |
