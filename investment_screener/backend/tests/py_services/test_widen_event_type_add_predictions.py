@@ -98,14 +98,9 @@ def test_widen_preserves_fts_and_triggers(tmp_path):
     )
     conn.commit()
     widen_event_type_constraint(conn)
-    cursor = conn.execute(
-        "SELECT rowid FROM intelligence_event_fts WHERE intelligence_event_fts MATCH 'Test';"
-    )
     # FTS shadow table content must survive the rebuild -- either the trigger reindexed it
     # during copy, or the rebuild step explicitly repopulates FTS. Either is acceptable;
     # the row must be findable afterward.
-    rows = cursor.fetchall()
-    assert len(rows) >= 0  # placeholder assertion replaced below
     cursor2 = conn.execute(
         "SELECT ie.event_id FROM intelligence_event_fts fts "
         "JOIN intelligence_event ie ON ie.rowid = fts.rowid "
