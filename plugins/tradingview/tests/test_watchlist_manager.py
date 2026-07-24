@@ -166,6 +166,24 @@ class TestLoadHoldingsFromSqlite(unittest.TestCase):
             tickers = watchlist_manager.load_boats_watchlist(db_path=db_path)
             self.assertEqual(tickers, ["BOATS:NVDA"])
 
+    def test_load_holdings_watchlist_excludes_cash_usd(self):
+        """The real cash symbol domain_model.sqlite stores is CASH_USD (see
+        `investment.asset_class='CASH'`), not USD_CASH. TradingView has no
+        symbol for cash — it must never be pushed into a TV watchlist, even
+        though it's a real, useful row to keep in the domain model itself."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            db_path = Path(tmp) / "test.sqlite"
+            conn = initialize_db(str(db_path))
+            try:
+                self._seed_holding(conn, "AAPL")
+                self._seed_holding(conn, "CASH_USD")
+            finally:
+                conn.close()
+
+            tickers = watchlist_manager.load_holdings_watchlist(db_path=db_path)
+            self.assertEqual(tickers, ["AAPL"])
+
     def test_missing_db_returns_empty(self):
         import tempfile
         with tempfile.TemporaryDirectory() as tmp:
