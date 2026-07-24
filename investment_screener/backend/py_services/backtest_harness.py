@@ -592,10 +592,15 @@ def correlate_with_prediction_ledger(
         # Find tickers in rebalance
         rebal_tickers = {o["ticker"] for o in rebalance.get("orders", [])}
 
-        # Find predictions on this date
+        # Find predictions on this date. Real prediction records key the
+        # claim date as "date", never "claimDate" (schemas/prediction.schema.json)
+        # -- same root-cause bug fixed in prediction_ledger.py/
+        # migrate_predictions_to_ledger.py during Wave 5D Task 6's real-cycle
+        # parity check; this call site had it too and would otherwise never
+        # match any real prediction to a rebalance date.
         matching_predictions = [
             p for p in predictions
-            if p.get("claimDate") == rebal_date and p.get("ticker") in rebal_tickers
+            if p.get("date") == rebal_date and p.get("ticker") in rebal_tickers
         ]
 
         if matching_predictions:

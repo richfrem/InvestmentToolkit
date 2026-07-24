@@ -108,7 +108,13 @@ def _append_prediction_event(record: dict[str, Any], jsonl_path) -> None:
     resolved_path = str(jsonl_path) if jsonl_path else str(_default_jsonl_path())
     ticker = record.get("ticker")
     claim_type = record.get("type")
-    claim_date = record.get("claimDate")
+    # Real prediction records key the claim date as "date" (per
+    # schemas/prediction.schema.json), never "claimDate" -- confirmed by
+    # sampling the real predictions.jsonl. Using the wrong key here silently
+    # produced empty effective_at/"(None)" titles for every real backfilled
+    # PREDICTION_CLAIM event (caught during Wave 5D Task 6's real-cycle
+    # parity check).
+    claim_date = record.get("date")
     _append_event(
         resolved_path,
         event_type="PREDICTION_CLAIM",
