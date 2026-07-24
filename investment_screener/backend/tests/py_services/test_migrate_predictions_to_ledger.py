@@ -7,9 +7,6 @@ SCRIPT_DIR = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from intelligence.db_client import initialize_db  # noqa: E402
-from intelligence.migrations.widen_event_type_add_predictions import (  # noqa: E402
-    widen_event_type_constraint,
-)
 from intelligence.event_repository import list_active_events_by_type  # noqa: E402
 from migrate_predictions_to_ledger import migrate  # noqa: E402
 
