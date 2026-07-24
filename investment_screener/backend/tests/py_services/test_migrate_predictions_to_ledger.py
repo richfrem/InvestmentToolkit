@@ -14,9 +14,9 @@ from migrate_predictions_to_ledger import migrate  # noqa: E402
 def _write_fixture_predictions(path):
     records = [
         {"id": "AAPL:action_rating:2026-01-01", "ticker": "AAPL", "type": "action_rating",
-         "claimDate": "2026-01-01", "direction": "bullish", "horizonDays": 90},
+         "date": "2026-01-01", "direction": "bullish", "horizonDays": 90},
         {"id": "MSFT:dcf_fair_value:2026-01-02", "ticker": "MSFT", "type": "dcf_fair_value",
-         "claimDate": "2026-01-02", "direction": "bearish", "horizonDays": 180},
+         "date": "2026-01-02", "direction": "bearish", "horizonDays": 180},
     ]
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w") as f:

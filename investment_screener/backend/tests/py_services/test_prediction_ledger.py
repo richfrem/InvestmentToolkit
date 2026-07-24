@@ -108,7 +108,7 @@ def test_append_prediction_dual_writes_to_intelligence_ledger(tmp_path, monkeypa
         "id": "AAPL:action_rating:2026-07-23",
         "ticker": "AAPL",
         "type": "action_rating",
-        "claimDate": "2026-07-23",
+        "date": "2026-07-23",
         "direction": "bullish",
         "horizonDays": 90,
     }
