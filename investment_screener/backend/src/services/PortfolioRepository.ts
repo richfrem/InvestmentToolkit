@@ -299,6 +299,20 @@ export class PortfolioRepository {
         return Object.values(this.getAccountMarketValues()).reduce((a, b) => a + b, 0);
     }
 
+    /** The most recent `account_investment.last_synced_at` across every row — the
+     * real, per-sync "when was this data last refreshed" timestamp. Unlike
+     * `portfolio.json`'s `totals.timestamp`/`positions[].last_updated` (which Wave 3
+     * stopped writing entirely once sync cut over to SQLite-only writes), this
+     * value updates on every real sync because `upsertAccountInvestment` always
+     * writes a fresh `last_synced_at`. Returns null when there are no rows yet
+     * (matches `getPortfolioTotalUsdFromDb`'s null-not-zero convention). */
+    getLastSyncedAt(): string | null {
+        const row = this.db
+            .prepare('SELECT MAX(last_synced_at) AS latest FROM account_investment')
+            .get() as { latest: string | null } | undefined;
+        return row?.latest ?? null;
+    }
+
     /** Per-symbol aggregate across all accounts: summed quantity, a representative
      * average_cost, and the latest price (LEFT JOIN — a symbol with no price row
      * yet still appears, with price = null), for /weights and /strategy-allocation

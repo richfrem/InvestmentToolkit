@@ -133,6 +133,20 @@ export function getPortfolioTotalUsdFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE
     }
 }
 
+/** The real, current "last synced" timestamp — `MAX(account_investment.last_synced_at)`,
+ * which updates on every real sync. Replaces `/summary`'s prior reliance on
+ * portfolio.json's `totals.timestamp`/`positions[].last_updated`, which Wave 3
+ * stopped writing entirely once sync cut over to SQLite-only writes (so that
+ * field was permanently frozen at whatever it held before the cutover). */
+export function getLastSyncedAtFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE): string | null {
+    const repo = new PortfolioRepository(dbPath);
+    try {
+        return repo.getLastSyncedAt();
+    } finally {
+        repo.close();
+    }
+}
+
 /** Builds the {holdings, totals}-shaped input `computeWeightsMap` expects,
  * sourced from account_investment/investment_price instead of portfolio.json's
  * `holdings`/`totals`. Returns null when there's no priced position data. */
@@ -450,7 +464,13 @@ router.get('/summary', async (_req, res) => {
 
         const dbTotalUSD = getPortfolioTotalUsdFromDb();
         if (dbTotalUSD != null) {
-            liveUsdCadRate = totals?.exchangeRate ?? await getLiveUsdCadRate(JAN1_USD_CAD_RATE);
+            // Always the live, SQLite-sourced broker_exchange_rate (never the stale
+            // portfolio.json totals.exchangeRate — that field is frozen since Wave 3
+            // stopped writing portfolio.json; using it here caused Portfolio Summary
+            // and Portfolio Table to show two different CAD totals for the same
+            // portfolio at the same instant, since stock.ts already always uses
+            // getLiveUsdCadRate() unconditionally).
+            liveUsdCadRate = await getLiveUsdCadRate(JAN1_USD_CAD_RATE);
             totalMarketValueUSD = dbTotalUSD;
             totalMarketValueCAD = dbTotalUSD * liveUsdCadRate;
             priceSource = 'domain_model_sqlite';
@@ -478,13 +498,19 @@ router.get('/summary', async (_req, res) => {
         }
         const totalBookValueCAD = totalBookValueUSD * liveUsdCadRate;
 
-        // Derive the actual server-side sync timestamp matching `/status` logic
+        // Derive the actual "last synced" timestamp. Prefer the real, current
+        // SQLite value (MAX(account_investment.last_synced_at), updated on every
+        // real sync) over portfolio.json's totals.timestamp/positions[].last_updated
+        // — those fields are frozen since Wave 3 stopped writing portfolio.json on
+        // every sync path, which is why the UI's "SQLite · <time>" badge never
+        // advanced on refresh even though the totals above were already live.
+        const dbLastSyncedAt = getLastSyncedAtFromDb();
         const fromTotals = totals?.timestamp ?? null;
         const fromHoldings = positions.reduce((latest: string, item: any) => {
             if (!item.last_updated) return latest;
             return !latest || new Date(item.last_updated) > new Date(latest) ? item.last_updated : latest;
         }, '');
-        const lastUpdated = fromTotals ?? fromHoldings ?? new Date().toISOString();
+        const lastUpdated = dbLastSyncedAt ?? fromTotals ?? fromHoldings ?? new Date().toISOString();
 
         // Fetch time-weighted performance metrics from report
         const twrReport = await loadYtdPerformanceReport();
