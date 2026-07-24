@@ -19,6 +19,7 @@ import {
     getWeightsFromDb,
     getStrategyAllocationInputFromDb,
     getAccountPositionsFromDb,
+    getLastSyncedAtFromDb,
 } from '../../src/routes/portfolio';
 import { PortfolioRepository } from '../../src/services/PortfolioRepository';
 import { InvestmentRepository } from '../../src/services/InvestmentRepository';
@@ -97,5 +98,29 @@ describe('routes/portfolio.ts SQLite-backed read helpers (Wave 3 Task 6)', () =>
     it('getAccountPositionsFromDb returns [] for a symbol with no rows', () => {
         seed();
         expect(getAccountPositionsFromDb('MSFT', dbPath)).to.deep.equal([]);
+    });
+
+    it('getLastSyncedAtFromDb returns null on an empty db', () => {
+        const repo = new PortfolioRepository(dbPath);
+        repo.close();
+        expect(getLastSyncedAtFromDb(dbPath)).to.equal(null);
+    });
+
+    it('getLastSyncedAtFromDb returns the real, current sync timestamp (not frozen)', () => {
+        seed();
+        const before = getLastSyncedAtFromDb(dbPath);
+        expect(before).to.not.equal(null);
+
+        // Simulate a later refresh: a fresh sync writes a new last_synced_at.
+        const investmentRepo = new InvestmentRepository(dbPath);
+        const portfolioRepo = new PortfolioRepository(dbPath);
+        const nvdaId = investmentRepo.resolveInvestmentId('NVDA', 'EQUITY', 'USD');
+        const later = new Date(Date.now() + 60_000).toISOString();
+        portfolioRepo.upsertAccountInvestment('TFSA', nvdaId, 3, 800, 2400, 'USD', later);
+        investmentRepo.close();
+        portfolioRepo.close();
+
+        expect(getLastSyncedAtFromDb(dbPath)).to.equal(later);
+        expect(getLastSyncedAtFromDb(dbPath)).to.not.equal(before);
     });
 });
