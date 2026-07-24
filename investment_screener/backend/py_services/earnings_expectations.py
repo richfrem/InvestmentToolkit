@@ -691,8 +691,7 @@ def get_earnings_context(ticker: str, days_ahead: int = 7) -> dict | None:
 
         # Calculate prior beat rate from graded predictions
         try:
-            from generate_track_record_report import _load_graded_from_ledger
-            graded = _load_graded_from_ledger(DEFAULT_INTEL_DB_PATH)
+            graded = _load_graded(DEFAULT_INTEL_DB_PATH) if _load_graded else []
             # Filter for this ticker's earnings grades
             ticker_grades = [g for g in graded if ticker in g.get("predictionId", "")]
             if ticker_grades:
