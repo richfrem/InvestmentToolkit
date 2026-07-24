@@ -128,7 +128,7 @@ class TestAppendIfNew:
     @patch("harvest_predictions._fetch_base_prices", return_value=(5.32, 612.40))
     def test_appends_new_claim(self, _mock_prices, tmp_path):
         path = tmp_path / "predictions.jsonl"
-        result = _append_if_new(self._claim(), [], path)
+        result = _append_if_new(self._claim(), [], path, tmp_path / "observations.jsonl")
         assert len(result) == 1
         assert result[0]["basePrice"] == 5.32
         assert result[0]["baseSpyPrice"] == 612.40
@@ -137,23 +137,25 @@ class TestAppendIfNew:
     @patch("harvest_predictions._fetch_base_prices", return_value=(5.32, 612.40))
     def test_skips_unchanged_claim(self, _mock_prices, tmp_path):
         path = tmp_path / "predictions.jsonl"
-        existing = _append_if_new(self._claim(), [], path)
-        result = _append_if_new(self._claim(date="2026-06-01"), existing, path)
+        jsonl_path = tmp_path / "observations.jsonl"
+        existing = _append_if_new(self._claim(), [], path, jsonl_path)
+        result = _append_if_new(self._claim(date="2026-06-01"), existing, path, jsonl_path)
         assert result == []
 
     @patch("harvest_predictions._fetch_base_prices", return_value=(5.32, 612.40))
     def test_logs_new_claim_when_value_changed(self, _mock_prices, tmp_path):
         path = tmp_path / "predictions.jsonl"
-        existing = _append_if_new(self._claim(), [], path)
+        jsonl_path = tmp_path / "observations.jsonl"
+        existing = _append_if_new(self._claim(), [], path, jsonl_path)
         changed = {**self._claim(date="2026-06-01"), "claim": {"action": "TRIM"}, "direction": "bearish"}
-        result = _append_if_new(changed, existing, path)
+        result = _append_if_new(changed, existing, path, jsonl_path)
         assert len(result) == 1
         assert result[0]["claim"] == {"action": "TRIM"}
 
     @patch("harvest_predictions._fetch_base_prices", return_value=None)
     def test_skips_when_price_unavailable(self, _mock_prices, tmp_path):
         path = tmp_path / "predictions.jsonl"
-        result = _append_if_new(self._claim(), [], path)
+        result = _append_if_new(self._claim(), [], path, tmp_path / "observations.jsonl")
         assert result == []
 
 
@@ -171,15 +173,71 @@ class TestHarvestActionAndDcfClaims:
             analytics_log_json=json.dumps({"dcf": None}),
         )
         predictions_path = tmp_path / "predictions.jsonl"
-        result = harvest_action_and_dcf_claims(db_path, predictions_path)
+        result = harvest_action_and_dcf_claims(
+            db_path, predictions_path,
+            intel_db_path=tmp_path / "intelligence.sqlite",
+            jsonl_path=tmp_path / "observations.jsonl",
+        )
         types = {r["type"] for r in result}
         assert types == {"action_rating", "dcf_fair_value"}
 
     def test_handles_no_investments_with_projections(self, tmp_path):
         db_path = tmp_path / "test.sqlite"
         initialize_db(str(db_path))
-        result = harvest_action_and_dcf_claims(db_path, tmp_path / "predictions.jsonl")
+        result = harvest_action_and_dcf_claims(
+            db_path, tmp_path / "predictions.jsonl",
+            intel_db_path=tmp_path / "intelligence.sqlite",
+            jsonl_path=tmp_path / "observations.jsonl",
+        )
         assert result == []
+
+    @patch("harvest_predictions._fetch_base_prices", return_value=(5.32, 612.40))
+    def test_reads_existing_predictions_from_intelligence_ledger_for_dedup(self, _mock_prices, tmp_path):
+        """Wave 5D Task 3: harvest_action_and_dcf_claims() must read existing
+        prediction claims from intelligence.sqlite (for dedup), not
+        predictions.jsonl."""
+        from intelligence.db_client import initialize_db as intel_init
+        from intelligence.event_store import append_event
+        from intelligence.replay_ledger import replay_events_to_db
+
+        db_path = tmp_path / "test.sqlite"
+        conn = initialize_db(str(db_path))
+        investment_id = resolve_investment(conn, "CORZ", asset_class="EQUITY", currency="USD")
+        save_projection_version(
+            conn, investment_id, version=1, saved_at="2026-05-02T15:35:09Z",
+            analyzed_at="2026-05-02T15:35:09Z", action="TRIM", fair_value=10.64,
+            source="AI_AGENT",
+            snapshot_json=json.dumps({"price": 15.0}),
+            analytics_log_json=json.dumps({"dcf": None}),
+        )
+
+        # Seed the intelligence ledger with an existing, unchanged action_rating
+        # claim for CORZ — dedup should skip re-appending it, proving the read
+        # came from the ledger (not an empty predictions.jsonl).
+        intel_db_path = tmp_path / "intelligence.sqlite"
+        intel_ledger_path = tmp_path / "observations.jsonl"
+        intel_conn = intel_init(str(intel_db_path))
+        append_event(
+            str(intel_ledger_path), event_type="PREDICTION_CLAIM", effective_at="2026-05-02",
+            status="ACTIVE", title="Prediction claim: CORZ action_rating (2026-05-02)",
+            body_markdown="Direction: bearish, horizon: 90 days.", ticker="CORZ",
+            payload={
+                "ticker": "CORZ", "type": "action_rating", "date": "2026-05-02",
+                "claim": {"action": "TRIM"}, "direction": "bearish",
+                "id": "CORZ:action_rating:2026-05-02",
+            },
+            idempotency_key="prediction-claim-CORZ:action_rating:2026-05-02",
+        )
+        replay_events_to_db(str(intel_ledger_path), intel_conn)
+
+        result = harvest_action_and_dcf_claims(
+            db_path, tmp_path / "predictions.jsonl",
+            intel_db_path=intel_db_path, jsonl_path=tmp_path / "new_observations.jsonl",
+        )
+        types = {r["type"] for r in result}
+        # action_rating is deduped (unchanged claim already on ledger); only
+        # dcf_fair_value should be newly harvested.
+        assert types == {"dcf_fair_value"}
 
 
 class TestBuildRebalanceOrderClaims:
@@ -239,6 +297,8 @@ class TestHarvestRebalanceAndBreakerClaims:
             thesis_breaker_state_path=tmp_path / "no_such_state.json",
             target_portfolio_path=tmp_path / "no_such_target.json",
             predictions_path=tmp_path / "predictions.jsonl",
+            intel_db_path=tmp_path / "intelligence.sqlite",
+            jsonl_path=tmp_path / "observations.jsonl",
         )
         assert result == []
 
@@ -263,6 +323,8 @@ class TestHarvestRebalanceAndBreakerClaims:
             thesis_breaker_state_path=state_path,
             target_portfolio_path=target_path,
             predictions_path=tmp_path / "predictions.jsonl",
+            intel_db_path=tmp_path / "intelligence.sqlite",
+            jsonl_path=tmp_path / "observations.jsonl",
         )
         types = {r["type"] for r in result}
         assert types == {"rebalance_order", "breaker_forecast"}
