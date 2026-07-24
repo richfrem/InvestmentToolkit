@@ -57,6 +57,14 @@ PREDICTIONS_PATH = DATA_DIR / "predictions.jsonl"
 GRADED_PATH = DATA_DIR / "predictions_graded.jsonl"
 SCHEMA_PATH = REPO_ROOT / "schemas/prediction.schema.json"
 
+import sys as _sys
+
+_INTEL_DIR = REPO_ROOT / "investment_screener/backend/py_services"
+if str(_INTEL_DIR) not in _sys.path:
+    _sys.path.insert(0, str(_INTEL_DIR))
+
+from intelligence.event_store import append_event as _append_event  # noqa: E402
+
 HORIZON_DAYS: dict[str, int] = {
     "action_rating": 90,
     "dcf_fair_value": 180,
@@ -88,14 +96,85 @@ def _load_jsonl(path: Path) -> list[dict[str, Any]]:
         return [json.loads(line) for line in f if line.strip()]
 
 
-def append_prediction(record: dict[str, Any], path: Path = PREDICTIONS_PATH) -> None:
-    """Append one prediction record to predictions.jsonl."""
-    _append_jsonl(record, path)
+def _append_prediction_event(record: dict[str, Any], jsonl_path) -> None:
+    """Write one PREDICTION_CLAIM event to the intelligence ledger.
+
+    Isolated into its own function (rather than inlined in append_prediction) so a ledger
+    outage can be simulated/monkeypatched in tests without touching the JSONL append path --
+    JSONL remains authoritative during the dual-write window (Hybrid Exit Criteria).
+    """
+    from intelligence.event_store import _default_jsonl_path
+
+    resolved_path = str(jsonl_path) if jsonl_path else str(_default_jsonl_path())
+    ticker = record.get("ticker")
+    claim_type = record.get("type")
+    claim_date = record.get("claimDate")
+    _append_event(
+        resolved_path,
+        event_type="PREDICTION_CLAIM",
+        effective_at=claim_date or "",
+        status="ACTIVE",
+        title=f"Prediction claim: {ticker} {claim_type} ({claim_date})",
+        body_markdown=f"Direction: {record.get('direction')}, horizon: "
+                       f"{record.get('horizonDays')} days.",
+        ticker=ticker,
+        source_id="prediction_ledger",
+        payload=record,
+        idempotency_key=f"prediction-claim-{record.get('id')}",
+    )
 
 
-def append_grade(record: dict[str, Any], path: Path = GRADED_PATH) -> None:
-    """Append one grade record to predictions_graded.jsonl."""
+def _append_grade_event(record: dict[str, Any], jsonl_path) -> None:
+    """Write one PREDICTION_GRADED event to the intelligence ledger."""
+    from intelligence.event_store import _default_jsonl_path
+
+    resolved_path = str(jsonl_path) if jsonl_path else str(_default_jsonl_path())
+    ticker = record.get("ticker")
+    prediction_id = record.get("predictionId")
+    outcome = record.get("outcome")
+    _append_event(
+        resolved_path,
+        event_type="PREDICTION_GRADED",
+        effective_at=record.get("gradedAt") or "",
+        status="ACTIVE",
+        title=f"Prediction grade: {ticker} "
+              f"{prediction_id.split(':')[1] if prediction_id and ':' in prediction_id else ''} "
+              f"({outcome})".replace("  ", " ").strip(),
+        body_markdown=f"Outcome: {outcome}, relative return: "
+                       f"{record.get('relativeReturn')}.",
+        ticker=ticker,
+        source_id="prediction_ledger",
+        payload=record,
+        supersedes_event_id=None,
+        idempotency_key=f"prediction-grade-{prediction_id}",
+    )
+
+
+def append_prediction(
+    record: dict[str, Any], path: Path = PREDICTIONS_PATH, jsonl_path=None
+) -> None:
+    """Append one prediction record to predictions.jsonl AND the intelligence ledger.
+
+    JSONL remains the authoritative read path for every existing consumer until Task 3 of
+    Wave 5D cuts each one over individually -- this function's JSONL write must never be
+    skipped or made conditional on the ledger write succeeding.
+    """
     _append_jsonl(record, path)
+    try:
+        _append_prediction_event(record, jsonl_path)
+    except Exception as exc:  # noqa: BLE001 - ledger write must never block JSONL append
+        print(f"WARNING: intelligence ledger dual-write failed for prediction: {exc}")
+
+
+def append_grade(
+    record: dict[str, Any], path: Path = GRADED_PATH, jsonl_path=None
+) -> None:
+    """Append one grade record to predictions_graded.jsonl AND the intelligence ledger."""
+    _append_jsonl(record, path)
+    try:
+        _append_grade_event(record, jsonl_path)
+    except Exception as exc:  # noqa: BLE001 - ledger write must never block JSONL append
+        print(f"WARNING: intelligence ledger dual-write failed for grade: {exc}")
 
 
 def load_predictions(path: Path = PREDICTIONS_PATH) -> list[dict[str, Any]]:
