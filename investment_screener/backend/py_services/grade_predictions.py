@@ -46,11 +46,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from prediction_ledger import (  # noqa: E402
     GRADED_PATH,
-    PREDICTIONS_PATH,
     append_grade,
     grade_claim,
-    load_graded,
-    load_predictions,
+)
+from generate_track_record_report import (  # noqa: E402
+    DEFAULT_INTEL_DB_PATH,
+    _load_graded_from_ledger,
+    _load_predictions_from_ledger,
 )
 
 
@@ -130,22 +132,31 @@ def _fetch_current_prices(ticker: str) -> tuple[float, float] | None:
 
 
 def run_grading(
-    predictions_path: Path = PREDICTIONS_PATH, graded_path: Path = GRADED_PATH
+    db_path: str = DEFAULT_INTEL_DB_PATH, graded_path: Path = GRADED_PATH, jsonl_path=None
 ) -> list[dict[str, Any]]:
     """Find matured, ungraded predictions and append a grade record for each.
 
     Args:
-        predictions_path: Ledger path to read prediction records from.
-        graded_path: Ledger path to read existing grades from and append
-            new grade records to.
+        db_path: intelligence.sqlite path to read PREDICTION_CLAIM/
+            PREDICTION_GRADED events from (Wave 5D Task 3 consumer cutover --
+            replaces the former predictions.jsonl/predictions_graded.jsonl
+            JSONL reads). Tests should override this with a tmp_path-scoped
+            sqlite file so they never read the real, tracked intelligence.sqlite.
+        graded_path: Ledger path new grade records are appended to (JSONL
+            remains the write path's target during the Hybrid dual-write
+            window; unaffected by this read-path cutover).
+        jsonl_path: Passed through to append_grade()'s intelligence-ledger
+            dual-write (observations.jsonl by default). Tests must override
+            this with a tmp_path-scoped file so they never write to the real
+            observations.jsonl.
 
     Returns:
         Every newly appended grade record this run. Predictions whose
         current price lookup fails are skipped (not graded) and left for
         a future run to retry.
     """
-    predictions = load_predictions(predictions_path)
-    graded_ids = {g["predictionId"] for g in load_graded(graded_path)}
+    predictions = _load_predictions_from_ledger(db_path)
+    graded_ids = {g["predictionId"] for g in _load_graded_from_ledger(db_path)}
     today = date.today()
 
     new_grades: list[dict[str, Any]] = []
@@ -156,7 +167,7 @@ def run_grading(
             continue
         ticker_price_now, spy_price_now = prices
         grade = grade_prediction(prediction, ticker_price_now, spy_price_now, today.isoformat())
-        append_grade(grade, graded_path)
+        append_grade(grade, graded_path, jsonl_path=jsonl_path)
         new_grades.append(grade)
     return new_grades
 
@@ -173,8 +184,8 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.dry_run:
-        predictions = load_predictions(PREDICTIONS_PATH)
-        graded_ids = {g["predictionId"] for g in load_graded(GRADED_PATH)}
+        predictions = _load_predictions_from_ledger(DEFAULT_INTEL_DB_PATH)
+        graded_ids = {g["predictionId"] for g in _load_graded_from_ledger(DEFAULT_INTEL_DB_PATH)}
         matured = find_maturable_predictions(predictions, graded_ids, date.today())
         print(f"{len(matured)} prediction(s) ready to grade. Dry-run: no writes performed.")
         return
