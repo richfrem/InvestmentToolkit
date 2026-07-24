@@ -30,7 +30,7 @@ interface ScreenerRow {
     symbol: string;
     name: string;
     model: string;
-    action: string;
+    action: string | null;
     portfolioRationale: string | null;
     currentPct: number | null;
     recommendedPct: number | null;
@@ -361,8 +361,10 @@ export default function ScreenerTable() {
             const health = portfolioWeights[p.ticker];
             const currentPct = allPortfolioWeights[p.ticker] ?? health?.actualPct ?? rev?.actualPct ?? null;
             const recommendedPct = health?.targetPct ?? null;
-            // Action from backend Python — single source of truth
-            const action = allHoldingsMap[p.ticker]?.action ?? 'WATCHLIST';
+            // Action from backend Python — single source of truth. Do not default
+            // an unset action to 'WATCHLIST': that mislabeled tickers that were
+            // never (or no longer) actually on the watchlist.
+            const action = allHoldingsMap[p.ticker]?.action ?? null;
 
             return {
                 symbol: p.ticker,
@@ -708,16 +710,19 @@ export default function ScreenerTable() {
                                             </div>
                                         );
                                     } else if (col.id === 'action') {
-                                        const cls = getActionBadgeClass(String(val));
                                         const tip = row.portfolioRationale;
                                         cellContent = (
                                             <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
-                                                <span
-                                                    className={`inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-black uppercase tracking-wider cursor-default ${cls}`}
-                                                    title={tip ?? undefined}
-                                                >
-                                                    {val}
-                                                </span>
+                                                {val ? (
+                                                    <span
+                                                        className={`inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-black uppercase tracking-wider cursor-default ${getActionBadgeClass(String(val))}`}
+                                                        title={tip ?? undefined}
+                                                    >
+                                                        {val}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-slate-600 text-[10px]">—</span>
+                                                )}
                                                 <TradeButtons ticker={row.symbol} size="sm" />
                                             </div>
                                         );
