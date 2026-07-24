@@ -395,7 +395,7 @@ def classify_file(path: str, references: list) -> str:
     if "/evals/" in p or "/references/examples/" in p:
         return "ALLOWED_TEST_FIXTURE_JSON"
 
-    if p.endswith("predictions.jsonl") or p.endswith("evolution_events.jsonl") or p.endswith("context/events.jsonl"):
+    if p.endswith("evolution_events.jsonl") or p.endswith("context/events.jsonl"):
         return "ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL"
 
     if "/data/projections/" in p:
