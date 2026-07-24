@@ -42,9 +42,39 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from prediction_ledger import GRADED_PATH, PREDICTIONS_PATH, load_graded, load_predictions
+import sys as _sys
+
+_PY_SERVICES_DIR = Path(__file__).resolve().parent
+if str(_PY_SERVICES_DIR) not in _sys.path:
+    _sys.path.insert(0, str(_PY_SERVICES_DIR))
+
+from intelligence.db_client import initialize_db
+from intelligence.event_repository import list_active_events_by_type
+
+REPO_ROOT = _PY_SERVICES_DIR.resolve().parents[2]
+DEFAULT_INTEL_DB_PATH = str(REPO_ROOT / "data/intelligence.sqlite")
 
 _VERDICTS = ("correct", "incorrect", "inconclusive")
+
+
+def _load_predictions_from_ledger(db_path: str) -> list[dict[str, Any]]:
+    """Load every PREDICTION_CLAIM event's payload from intelligence.sqlite.
+
+    Replaces prediction_ledger.load_predictions()'s JSONL read (Wave 5D Task 3
+    consumer cutover) -- Task 2's dual-write already mirrors every JSONL
+    append into ``intelligence_event`` as a PREDICTION_CLAIM row, so this
+    reads the same logical records from the SQLite read model instead.
+    """
+    conn = initialize_db(db_path)
+    events = list_active_events_by_type(conn, "PREDICTION_CLAIM")
+    return [json.loads(e["payload_json"]) for e in events if e["payload_json"]]
+
+
+def _load_graded_from_ledger(db_path: str) -> list[dict[str, Any]]:
+    """Load every PREDICTION_GRADED event's payload from intelligence.sqlite."""
+    conn = initialize_db(db_path)
+    events = list_active_events_by_type(conn, "PREDICTION_GRADED")
+    return [json.loads(e["payload_json"]) for e in events if e["payload_json"]]
 
 
 def compute_hit_rates(predictions: list[dict[str, Any]], graded: list[dict[str, Any]]) -> dict[str, Any]:
@@ -74,12 +104,17 @@ def compute_hit_rates(predictions: list[dict[str, Any]], graded: list[dict[str, 
     return report
 
 
-def build_report(
-    predictions_path: Path = PREDICTIONS_PATH, graded_path: Path = GRADED_PATH
-) -> dict[str, Any]:
-    """Build the full track-record report dict."""
-    predictions = load_predictions(predictions_path)
-    graded = load_graded(graded_path)
+def build_report(db_path: str = DEFAULT_INTEL_DB_PATH) -> dict[str, Any]:
+    """Build the full track-record report dict.
+
+    Args:
+        db_path: Path to intelligence.sqlite to read PREDICTION_CLAIM/
+            PREDICTION_GRADED events from. Tests should override this with
+            a tmp_path-scoped sqlite file so they never read/write the real,
+            tracked intelligence.sqlite.
+    """
+    predictions = _load_predictions_from_ledger(db_path)
+    graded = _load_graded_from_ledger(db_path)
     return {
         "generatedAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "totalPredictions": len(predictions),
