@@ -40,7 +40,7 @@ class TestCorrelateWithPredictionLedger:
             str(ledger_path), event_type="PREDICTION_CLAIM", effective_at=claim_date,
             status="ACTIVE", title=f"Prediction claim: {ticker} action_rating ({claim_date})",
             body_markdown="Direction: bullish, horizon: 90 days.", ticker=ticker,
-            payload={"ticker": ticker, "type": "action_rating", "claimDate": claim_date,
+            payload={"ticker": ticker, "type": "action_rating", "date": claim_date,
                      "id": f"{ticker}:action_rating:{claim_date}"},
             idempotency_key=f"prediction-claim-{ticker}:action_rating:{claim_date}",
         )

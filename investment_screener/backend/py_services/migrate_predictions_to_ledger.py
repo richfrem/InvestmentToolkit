@@ -78,9 +78,14 @@ def migrate(predictions_path: Path, jsonl_path: Path, db_path: Path, dry_run: bo
         append_event(
             str(jsonl_path),
             event_type="PREDICTION_CLAIM",
-            effective_at=r.get("claimDate") or "",
+            # Real prediction records key the claim date as "date", never
+            # "claimDate" (schemas/prediction.schema.json) -- confirmed by
+            # sampling real predictions.jsonl. See prediction_ledger.py's
+            # matching fix for the same bug, caught by Task 6's real-cycle
+            # parity check.
+            effective_at=r.get("date") or "",
             status="ACTIVE",
-            title=f"Prediction claim: {r['ticker']} {r.get('type')} ({r.get('claimDate')})",
+            title=f"Prediction claim: {r['ticker']} {r.get('type')} ({r.get('date')})",
             body_markdown=f"Direction: {r.get('direction')}, horizon: "
                            f"{r.get('horizonDays')} days.",
             ticker=r["ticker"],
