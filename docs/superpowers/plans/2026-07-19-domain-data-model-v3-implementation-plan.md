@@ -1354,6 +1354,42 @@ fallback remains indefinitely
   exceptions) and for each: confirm the exemption is still justified, evaluate whether a schema
   change would now eliminate it, and decide migrate / redesign / formally retain with documented
   rationale.
+  - **`target-portfolio.json` / `ThesisService.ts` — pre-analyzed 2026-07-24, field-by-field
+    (not just re-read Wave 2's docstring claim as-is; each field checked against real, current
+    data before writing this note):**
+    - `globalSettings` (`rebalanceFrequency`, `portfolioValueUSD`) — trivial, 2 scalar columns.
+      Not a real blocker.
+    - `schemaVersion`/`version` — trivial scalars (constant / version counter).
+    - `bandConfig` — **not actually a field of `ThesisSchema` at all.** Confirmed via
+      `zod-schemas.ts`: it belongs to `AccountPolicySchema` (`account_policy.json`), a different
+      file already scoped for its own migration in **Wave 5E** (`account_policy.json` →
+      `portfolio_policy`). Wave 2's original docstring conflated the two files — correct this
+      when Wave 6 revisits the note.
+    - `standingDecision` — **already fully solved, just not wired into this read path.**
+      Verified on real data: `VST`'s JSON `standingDecision` object (`type`/`reason`/`source`/
+      `review`) is byte-for-byte identical to the existing `investment.standing_decision_*`
+      columns already in `domain_model.sqlite`. Zero new schema needed — `ThesisService.ts`'s
+      `getThesis()`/`saveThesis()`/etc. simply don't read/write it via SQLite for their
+      full-document CRUD path today.
+    - `thesisBreakers` (up to 5 short strings, per pillar and per holding) — a genuine
+      variable-shape list; real but small. Needs either a JSON column (same pattern already
+      approved for `account_policy.json`'s own rule blobs) or a small
+      `thesis_breaker_definition` child table.
+    - `changeLog` — a real, growing version-history array (`{version, date, note}` per entry; 3
+      real entries as of 2026-07-24). Maps cleanly onto a small child table, same shape as the
+      `investment_note` table Wave 2 already built for `agentRationale`.
+    - `shares` (per-holding, unvalidated `.passthrough()` field on `ThesisHoldingSchema`) —
+      **looks like a live data-quality bug, not a migration target.** Sampled real data: sparse
+      (most holdings have no value), and where present, **stale** — `PSU-U.TO` shows `20` here
+      vs. the real, correct `23` in `account_investment`. Recommend deleting this field from the
+      document rather than adding schema for it (it duplicates data that already lives correctly
+      elsewhere and has drifted out of sync).
+    - **Net effect of this analysis: only `thesisBreakers` and `changeLog` genuinely require new
+      schema** — both small, well-understood additions. Wave 2's original framing ("cannot be
+      cut over without new schema... out of scope") significantly overstated the real barrier.
+      Retiring `target-portfolio.json` as `ThesisService.ts`'s active store is a smaller lift than
+      previously assumed and a good candidate for either its own dedicated wave after 5E, or as
+      part of Wave 6 itself if scope allows.
 - **4. Final migration audit:** JSON/JSONL file counts before vs. after across the whole program;
   remaining runtime JSON producers/consumers (should be zero outside approved exceptions); full
   SQLite table/repository/service inventory; a program-level Wave KPI rollup.
