@@ -360,7 +360,10 @@ export default function PortfolioTable() {
                     ...s,
                     currentPct,
                     subStrategyId: strategyMap[s.symbol] ?? null,
-                    action: actionsMap[s.symbol] ?? 'WATCHLIST',
+                    // Do not default an unset action to 'WATCHLIST' — same fix as
+                    // ScreenerTable.tsx/screener.ts: that mislabeled any held
+                    // position with no computed Python action as watchlist-only.
+                    action: actionsMap[s.symbol] ?? null,
                     recommendedPct: rev?.recommendedTarget ?? null,
                     rationale: rev?.rationale ?? null,
                     fairValue: fairValue,

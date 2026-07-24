@@ -41,6 +41,22 @@ import { PortfolioRepository } from '../services/PortfolioRepository';
 
 const router = express.Router();
 
+/** Resolves a ticker's display action when the Python-computed action is
+ * absent. Must never default an unwatched ticker to 'WATCHLIST' — that
+ * previously mislabeled any researched-but-untracked ticker, and kept
+ * showing 'WATCHLIST' even after a ticker was explicitly removed from the
+ * watchlist. Returns null (not a placeholder string) when no real action
+ * category applies. */
+export function resolveFallbackAction(
+    isWatched: boolean,
+    hasLiveHolding: boolean,
+    hasThesis: boolean
+): 'WATCHLIST' | 'EXIT' | null {
+    if (isWatched) return 'WATCHLIST';
+    if (hasLiveHolding && !hasThesis) return 'EXIT';
+    return null;
+}
+
 /** Wave 3 Task 6: per-symbol {symbol, shares, price} aggregated across accounts
  * from account_investment/investment_price, replacing GET /all-holdings' direct
  * portfolio.json `holdings`/flat-array read. Mirrors routes/portfolio.ts's
@@ -183,15 +199,9 @@ router.get('/all-holdings', async (_req, res) => {
             const isWatched = watchedTickers.has(ticker);
 
             // Compute default/fallback actions
-            let action = actionsMap[ticker];
+            let action: string | null = actionsMap[ticker];
             if (!action) {
-                if (isWatched) {
-                    action = 'WATCHLIST';
-                } else if (live && !h) {
-                    action = 'EXIT';
-                } else {
-                    action = 'WATCHLIST';
-                }
+                action = resolveFallbackAction(isWatched, Boolean(live), Boolean(h));
             }
 
             return {
