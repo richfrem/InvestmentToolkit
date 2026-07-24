@@ -35,7 +35,7 @@ def initialize_db(db_path):
         event_sequence INTEGER NOT NULL UNIQUE,
         instrument_id TEXT,
         event_type TEXT NOT NULL CHECK (
-            event_type IN ('RESEARCH_IMPORT', 'NEWS_SWEEP', 'EARNINGS', 'VALUATION_UPDATE', 'TECHNICAL_SWEEP', 'PORTFOLIO_DECISION', 'THESIS_UPDATE', 'MACRO_EVENT', 'REVIEW_DAILY', 'REVIEW_WEEKLY')
+            event_type IN ('RESEARCH_IMPORT', 'NEWS_SWEEP', 'EARNINGS', 'VALUATION_UPDATE', 'TECHNICAL_SWEEP', 'PORTFOLIO_DECISION', 'THESIS_UPDATE', 'MACRO_EVENT', 'REVIEW_DAILY', 'REVIEW_WEEKLY', 'PREDICTION_CLAIM', 'PREDICTION_GRADED')
         ),
         effective_at TEXT NOT NULL,
         observed_at TEXT,

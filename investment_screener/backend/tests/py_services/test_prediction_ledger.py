@@ -27,14 +27,15 @@ class TestAppendAndLoadPredictions:
     def test_roundtrip(self, tmp_path):
         path = tmp_path / "predictions.jsonl"
         record = {"id": "AAPL:action_rating:2026-01-01", "ticker": "AAPL"}
-        append_prediction(record, path)
+        append_prediction(record, path, jsonl_path=tmp_path / "observations.jsonl")
         loaded = load_predictions(path)
         assert loaded == [record]
 
     def test_appends_without_truncating(self, tmp_path):
         path = tmp_path / "predictions.jsonl"
-        append_prediction({"id": "A"}, path)
-        append_prediction({"id": "B"}, path)
+        ledger_path = tmp_path / "observations.jsonl"
+        append_prediction({"id": "A"}, path, jsonl_path=ledger_path)
+        append_prediction({"id": "B"}, path, jsonl_path=ledger_path)
         loaded = load_predictions(path)
         assert [r["id"] for r in loaded] == ["A", "B"]
 
@@ -46,7 +47,7 @@ class TestAppendAndLoadGraded:
     def test_roundtrip(self, tmp_path):
         path = tmp_path / "graded.jsonl"
         record = {"predictionId": "AAPL:action_rating:2026-01-01", "verdict": "correct"}
-        append_grade(record, path)
+        append_grade(record, path, jsonl_path=tmp_path / "observations.jsonl")
         assert load_graded(path) == [record]
 
     def test_load_missing_file_returns_empty_list(self, tmp_path):
@@ -89,3 +90,88 @@ class TestGradeClaim:
     def test_boundary_exactly_at_band_is_inconclusive(self):
         assert grade_claim("bullish", 0.02) == "inconclusive"
         assert grade_claim("bearish", -0.02) == "inconclusive"
+
+
+def test_append_prediction_dual_writes_to_intelligence_ledger(tmp_path, monkeypatch):
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "investment_screener/backend/py_services"))
+    from intelligence.db_client import initialize_db
+    from intelligence.replay_ledger import replay_events_to_db
+    from intelligence.event_repository import get_latest_event_by_type
+    from prediction_ledger import append_prediction
+
+    jsonl_path = tmp_path / "predictions.jsonl"
+    ledger_path = tmp_path / "observations.jsonl"
+    db_path = tmp_path / "intelligence.sqlite"
+
+    record = {
+        "id": "AAPL:action_rating:2026-07-23",
+        "ticker": "AAPL",
+        "type": "action_rating",
+        "claimDate": "2026-07-23",
+        "direction": "bullish",
+        "horizonDays": 90,
+    }
+    append_prediction(record, path=jsonl_path, jsonl_path=ledger_path)
+
+    assert jsonl_path.exists()
+    with open(jsonl_path) as f:
+        assert len(f.readlines()) == 1
+
+    assert ledger_path.exists()
+    conn = initialize_db(str(db_path))
+    replay_events_to_db(str(ledger_path), conn)
+    event = get_latest_event_by_type(conn, "PREDICTION_CLAIM")
+    assert event is not None
+    assert event["title"] == "Prediction claim: AAPL action_rating (2026-07-23)"
+
+
+def test_append_grade_dual_writes_to_intelligence_ledger(tmp_path):
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "investment_screener/backend/py_services"))
+    from intelligence.db_client import initialize_db
+    from intelligence.replay_ledger import replay_events_to_db
+    from intelligence.event_repository import get_latest_event_by_type
+    from prediction_ledger import append_grade
+
+    graded_jsonl_path = tmp_path / "predictions_graded.jsonl"
+    ledger_path = tmp_path / "observations.jsonl"
+    db_path = tmp_path / "intelligence.sqlite"
+
+    grade_record = {
+        "predictionId": "AAPL:action_rating:2026-07-23",
+        "ticker": "AAPL",
+        "gradedAt": "2026-10-23",
+        "outcome": "correct",
+        "relativeReturn": 0.08,
+    }
+    append_grade(grade_record, path=graded_jsonl_path, jsonl_path=ledger_path)
+
+    assert graded_jsonl_path.exists()
+    conn = initialize_db(str(db_path))
+    replay_events_to_db(str(ledger_path), conn)
+    event = get_latest_event_by_type(conn, "PREDICTION_GRADED")
+    assert event is not None
+    assert event["title"] == "Prediction grade: AAPL action_rating (correct)"
+
+
+def test_append_prediction_still_writes_jsonl_when_ledger_write_fails(tmp_path, monkeypatch):
+    """JSONL remains the authoritative source during the dual-write window (Hybrid Exit
+    Criteria below) -- a ledger-side failure must not silently lose the JSONL append, since
+    JSONL is still what every consumer reads until Task 3 cuts them over."""
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "investment_screener/backend/py_services"))
+    import prediction_ledger
+
+    def _boom(*args, **kwargs):
+        raise RuntimeError("simulated ledger outage")
+
+    monkeypatch.setattr(prediction_ledger, "_append_prediction_event", _boom)
+
+    jsonl_path = tmp_path / "predictions.jsonl"
+    record = {"id": "X:action_rating:2026-07-23", "ticker": "X", "type": "action_rating"}
+    prediction_ledger.append_prediction(record, path=jsonl_path)
+
+    assert jsonl_path.exists()
+    with open(jsonl_path) as f:
+        assert len(f.readlines()) == 1
