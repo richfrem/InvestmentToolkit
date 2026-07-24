@@ -95,17 +95,17 @@ VST position is above target — monitor for trim opportunity on continued stren
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-22 12:09 by TV sync · Portfolio total: $27,375 USD*
+*Auto-updated 2026-07-23 08:01 by TV sync · Portfolio total: $30,702 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **BE** | 6 | 5.3% | 2.1% | +3.3pp ⚠ | 🟡 TRIM | — |
-| **CEG** | 3.3 | 3.1% | 2.5% | +0.6pp | 🟡 TRIM | — |
-| **VST** | 4 | 2.3% | 1.9% | +0.4pp | 🟡 TRIM | — |
-| **OKLO** | 13 | 2.2% | 1.5% | +0.7pp | 🟡 TRIM | — |
-| **PSIX** | 14 | 1.7% | 2.0% | -0.3pp | 🔵 ACCUMULATE | — |
+| **BE** | 6 | 4.8% | 2.1% | +2.7pp ⚠ | 🟡 TRIM | — |
+| **CEG** | 3.3 | 2.8% | 2.5% | +0.3pp | ⚪ MAINTAIN | — |
+| **PSIX** | 20 | 2.1% | 2.0% | +0.1pp | ⚪ MAINTAIN | — |
+| **VST** | 4 | 2.1% | 1.9% | +0.2pp | ⚪ MAINTAIN | — |
+| **OKLO** | 13 | 2.0% | 1.5% | +0.5pp | 🟡 TRIM | — |
 
-**Pillar total — Actual: 14.6% · Target: 9.9% · Gap: +4.7pp**
+**Pillar total — Actual: 13.7% · Target: 9.9% · Gap: +3.8pp**
 <!-- AUTO_UPDATE_END: current_positions -->
