@@ -72,6 +72,48 @@ class TestHarvestTickerLoad:
         assert result == []
 
 
+class TestReadsFromIntelligenceLedger:
+    """Wave 5D Task 3: harvest_earnings_expectations()'s dedup read must come
+    from intelligence.sqlite's PREDICTION_CLAIM events, not predictions.jsonl."""
+
+    def test_dedup_read_uses_intel_db_path(self, tmp_path, monkeypatch):
+        from intelligence.db_client import initialize_db as intel_init
+        from intelligence.event_store import append_event
+        from intelligence.replay_ledger import replay_events_to_db
+
+        db_path = _make_db(tmp_path, [("AAPL", 5.0, "ACTIVE")])
+        monkeypatch.setattr(earnings_expectations, "_DB_PATH", db_path)
+
+        intel_db_path = tmp_path / "intelligence.sqlite"
+        intel_ledger_path = tmp_path / "observations.jsonl"
+        intel_conn = intel_init(str(intel_db_path))
+        append_event(
+            str(intel_ledger_path), event_type="PREDICTION_CLAIM", effective_at="2026-07-01",
+            status="ACTIVE", title="Prediction claim: AAPL earnings_expectation (2026-07-01)",
+            body_markdown="Direction: bullish, horizon: 90 days.", ticker="AAPL",
+            payload={
+                "id": "AAPL:earnings_expectation:2026-07-01", "ticker": "AAPL",
+                "type": "earnings_expectation", "date": "2026-07-01",
+                "claim": {"consensus_eps": 1.05, "consensus_revenue": 3.8e11, "earnings_date": "2026-07-25"},
+                "direction": "bullish",
+            },
+            idempotency_key="prediction-claim-AAPL:earnings_expectation:2026-07-01",
+        )
+        replay_events_to_db(str(intel_ledger_path), intel_conn)
+
+        unchanged_consensus = {
+            "consensus_eps": 1.05, "consensus_revenue": 3.8e11, "earnings_date": "2026-07-25",
+        }
+        with patch.object(earnings_expectations, "_fetch_consensus_for_ticker", return_value=unchanged_consensus):
+            result = earnings_expectations.harvest_earnings_expectations(
+                tickers=["AAPL"], predictions_path=tmp_path / "predictions.jsonl",
+                intel_db_path=intel_db_path, jsonl_path=tmp_path / "new_observations.jsonl",
+            )
+
+        # Consensus is unchanged vs. the ledger-seeded prior record -> deduped, no append.
+        assert result == []
+
+
 class TestGetEarningsContextHoldingLookup:
     def test_reads_target_weight_and_lifecycle_status_from_sqlite(self, tmp_path, monkeypatch):
         db_path = _make_db(tmp_path, [("NVDA", 8.5, "ACCUMULATE")])
