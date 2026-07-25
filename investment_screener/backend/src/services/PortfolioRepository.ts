@@ -264,6 +264,21 @@ export class PortfolioRepository {
         return accountInvestmentId;
     }
 
+    /**
+     * Delete every `account_investment` row for one account.
+     *
+     * A fresh TV snapshot for an account is the complete, authoritative current
+     * state — not a partial diff. Without this, a position fully closed/sold in
+     * that account (no longer present in the snapshot) would never be removed by
+     * `upsertAccountInvestment` alone (insert-or-update never deletes), leaving a
+     * stale nonzero-quantity row that silently inflates every future computed
+     * portfolio total. Call this immediately before re-upserting an account's
+     * fresh positions/cash for the same sync.
+     */
+    clearAccountInvestments(accountId: string): void {
+        this.db.prepare('DELETE FROM account_investment WHERE account_id = ?').run(accountId);
+    }
+
     /** Read helper: all `account_investment` rows, optionally filtered by account. */
     listAccountInvestments(accountId?: string): AccountInvestmentRow[] {
         if (accountId) {
