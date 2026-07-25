@@ -31,5 +31,6 @@ export const DOMAIN_MODEL_DB_FILE  = path.resolve(__dirname, '../../data/domain_
 // WatchlistService.getWatchlist(), was rewired onto domain_model.sqlite via
 // InvestmentRepository.listWatchlisted() in Wave 2 Task 10/11. Confirmed via
 // `grep -rn "WATCHLIST_FILE" src/ tests/` returning zero hits before removal.
-// data/watchlist.json itself is untouched on disk (not deleted, per migration rules).
+// data/watchlist.json itself was archived to ARCHIVE/ once fully confirmed
+// unread (2026-07-25, Wave 8 cleanup).
 
