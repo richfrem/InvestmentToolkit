@@ -5,13 +5,22 @@ prediction_ledger.py - Python utility script.
 Purpose:
     Prediction ledger — E3 append-only claim/grade store and grading primitive.
 
-Two append-only JSONL files, never rewritten in place:
-  - data/predictions.jsonl        one record per harvested claim
-  - data/predictions_graded.jsonl one record per graded outcome, referencing
-                                   a prediction's id
+The durable store is the Intelligence Ledger (`intelligence_event`, event types
+`PREDICTION_CLAIM`/`PREDICTION_GRADED`), since Wave 5D of the Domain Data Model v3.2
+migration. `append_prediction()`/`append_grade()` write there exclusively.
+
+Historical note: this module originally wrote two append-only JSONL files directly
+(`data/predictions.jsonl`, `data/predictions_graded.jsonl`). Wave 5D cut over all 7 real
+consumers to `intelligence_event` and archived `predictions.jsonl` via `git mv` (it's now
+at `ARCHIVE/investment_screener/backend/data/predictions.jsonl`);
+`predictions_graded.jsonl` never existed on disk. `_append_jsonl()`/`load_predictions()`/
+`load_graded()` are kept as JSONL primitives only for `_validate_all()` (the `--validate`
+CLI below), which can still schema-validate the archived file on demand.
 
 See docs/superpowers/specs/2026-07-10-phase4-e3-prediction-ledger-design.md
-for the full schema and grading rationale.
+for the full schema and grading rationale (pre-Wave-5D storage design; superseded by the
+intelligence_event target described in
+docs/architecture/supplementary-domain-schemas.md).
 
 Usage:
     python3 prediction_ledger.py --validate
@@ -57,6 +66,14 @@ PREDICTIONS_PATH = DATA_DIR / "predictions.jsonl"
 GRADED_PATH = DATA_DIR / "predictions_graded.jsonl"
 SCHEMA_PATH = REPO_ROOT / "schemas/prediction.schema.json"
 
+import sys as _sys
+
+_INTEL_DIR = REPO_ROOT / "investment_screener/backend/py_services"
+if str(_INTEL_DIR) not in _sys.path:
+    _sys.path.insert(0, str(_INTEL_DIR))
+
+from intelligence.event_store import append_event as _append_event  # noqa: E402
+
 HORIZON_DAYS: dict[str, int] = {
     "action_rating": 90,
     "dcf_fair_value": 180,
@@ -88,14 +105,98 @@ def _load_jsonl(path: Path) -> list[dict[str, Any]]:
         return [json.loads(line) for line in f if line.strip()]
 
 
-def append_prediction(record: dict[str, Any], path: Path = PREDICTIONS_PATH) -> None:
-    """Append one prediction record to predictions.jsonl."""
-    _append_jsonl(record, path)
+def _append_prediction_event(record: dict[str, Any], jsonl_path) -> None:
+    """Write one PREDICTION_CLAIM event to the intelligence ledger.
+
+    Isolated into its own function (rather than inlined in append_prediction) so a ledger
+    outage can be simulated/monkeypatched in tests without touching the JSONL append path --
+    JSONL remains authoritative during the dual-write window (Hybrid Exit Criteria).
+    """
+    from intelligence.event_store import _default_jsonl_path
+
+    resolved_path = str(jsonl_path) if jsonl_path else str(_default_jsonl_path())
+    ticker = record.get("ticker")
+    claim_type = record.get("type")
+    # Real prediction records key the claim date as "date" (per
+    # schemas/prediction.schema.json), never "claimDate" -- confirmed by
+    # sampling the real predictions.jsonl. Using the wrong key here silently
+    # produced empty effective_at/"(None)" titles for every real backfilled
+    # PREDICTION_CLAIM event (caught during Wave 5D Task 6's real-cycle
+    # parity check).
+    claim_date = record.get("date")
+    _append_event(
+        resolved_path,
+        event_type="PREDICTION_CLAIM",
+        effective_at=claim_date or "",
+        status="ACTIVE",
+        title=f"Prediction claim: {ticker} {claim_type} ({claim_date})",
+        body_markdown=f"Direction: {record.get('direction')}, horizon: "
+                       f"{record.get('horizonDays')} days.",
+        ticker=ticker,
+        source_id="prediction_ledger",
+        payload=record,
+        idempotency_key=f"prediction-claim-{record.get('id')}",
+    )
 
 
-def append_grade(record: dict[str, Any], path: Path = GRADED_PATH) -> None:
-    """Append one grade record to predictions_graded.jsonl."""
-    _append_jsonl(record, path)
+def _append_grade_event(record: dict[str, Any], jsonl_path) -> None:
+    """Write one PREDICTION_GRADED event to the intelligence ledger."""
+    from intelligence.event_store import _default_jsonl_path
+
+    resolved_path = str(jsonl_path) if jsonl_path else str(_default_jsonl_path())
+    ticker = record.get("ticker")
+    prediction_id = record.get("predictionId")
+    outcome = record.get("outcome")
+    _append_event(
+        resolved_path,
+        event_type="PREDICTION_GRADED",
+        effective_at=record.get("gradedAt") or "",
+        status="ACTIVE",
+        title=f"Prediction grade: {ticker} "
+              f"{prediction_id.split(':')[1] if prediction_id and ':' in prediction_id else ''} "
+              f"({outcome})".replace("  ", " ").strip(),
+        body_markdown=f"Outcome: {outcome}, relative return: "
+                       f"{record.get('relativeReturn')}.",
+        ticker=ticker,
+        source_id="prediction_ledger",
+        payload=record,
+        supersedes_event_id=None,
+        idempotency_key=f"prediction-grade-{prediction_id}",
+    )
+
+
+def append_prediction(
+    record: dict[str, Any], path: Path = PREDICTIONS_PATH, jsonl_path=None
+) -> None:
+    """Append one PREDICTION_CLAIM event to the intelligence ledger.
+
+    predictions.jsonl is no longer written here. Wave 5D's dual-write (this function,
+    Task 2) was a temporary migration aid -- once all 7 real consumers were cut over to
+    read intelligence_event (Task 3 + Task 8's alert_manager.py discovery) and the file
+    was archived via `git mv` (Task 8), continuing to write predictions.jsonl here would
+    silently un-archive it on the very next real prediction-harvest cycle (the exact
+    "permanent hybrid state" this migration's Hybrid Exit Criteria forbids). The `path`
+    parameter is kept, unused, only so every already-migrated call site
+    (harvest_predictions.py, grade_predictions.py, etc.) keeps working without another
+    signature change.
+
+    The ledger write is now the sole write and is no longer wrapped in try/except --
+    there is no JSONL fallback left to protect, so a real write failure must propagate
+    rather than being silently logged and swallowed.
+    """
+    _append_prediction_event(record, jsonl_path)
+
+
+def append_grade(
+    record: dict[str, Any], path: Path = GRADED_PATH, jsonl_path=None
+) -> None:
+    """Append one PREDICTION_GRADED event to the intelligence ledger.
+
+    predictions_graded.jsonl is no longer written -- same reasoning as append_prediction()
+    above. It never existed on disk in this project's real data to begin with (confirmed
+    at Wave 5D Task 0 and again at wave-exit).
+    """
+    _append_grade_event(record, jsonl_path)
 
 
 def load_predictions(path: Path = PREDICTIONS_PATH) -> list[dict[str, Any]]:

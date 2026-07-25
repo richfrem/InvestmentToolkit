@@ -90,7 +90,7 @@ class TestEvolutionIntegrationRoundTrip:
             "ticker": "AAPL",
             "type": "action_rating",
         }
-        append_prediction(pred, predictions_path)
+        append_prediction(pred, predictions_path, jsonl_path=tmp_path / "observations.jsonl")
 
         # Both systems should have their own files
         events = load_events(events_path)

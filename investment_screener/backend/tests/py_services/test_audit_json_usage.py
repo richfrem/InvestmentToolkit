@@ -110,7 +110,11 @@ def test_classify_file_recognizes_model_artifact_projections():
 
 
 def test_classify_file_recognizes_separate_domain_ledger():
-    result = classify_file("investment_screener/backend/data/predictions.jsonl", references=[])
+    # predictions.jsonl was archived under ARCHIVE/ in Wave 5D Task 8 (migrated to
+    # intelligence_event); evolution_events.jsonl remains a live separate-domain ledger.
+    result = classify_file(
+        "investment_screener/backend/data/evolution_events.jsonl", references=[]
+    )
     assert result == "ALLOWED_SEPARATE_DOMAIN_LEDGER_JSONL"
 
 
