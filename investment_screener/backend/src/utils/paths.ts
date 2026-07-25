@@ -15,7 +15,6 @@
 import path from 'path';
 
 export const PORTFOLIO_FILE        = path.join(__dirname, '../../data/portfolio.json');
-export const PORTFOLIO_EXAMPLE     = PORTFOLIO_FILE + '.example';
 export const ETF_ANALYSIS_DIR      = path.join(__dirname, '../../data/etf_analysis');
 export const THESIS_FILE           = path.join(__dirname, '../../data/theses/target-portfolio.json');
 export const TARGET_PORTFOLIO_FILE = path.resolve(__dirname, '../../data/theses/target-portfolio.json');
