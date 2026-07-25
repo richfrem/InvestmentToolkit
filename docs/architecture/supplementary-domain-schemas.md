@@ -63,15 +63,24 @@ original `PREDICTION_CLAIM` row.
 
 ### `trade_log_entry` (from `trade-log.json`, 52 rows today)
 
+**Wave 6 correction:** the columns below were updated to match the real, shipped
+`domain_model/db_client.py` DDL rather than this document's original pre-implementation sketch.
+Two real changes since this table was first drafted: (1) the FK column is named `investment_id`
+and points at `investment(investment_id)`, not `instrument_id`/`instrument` — this table now
+lives in the `domain_model.sqlite` file alongside `investment`, per `domain-data-model.md`'s v3
+model, not the separate `instrument` table originally sketched in this document; (2) a
+`tv_order_id` column was added post-hoc (Wave 4 Task 11) so `trading.ts`'s `/modify`, `/cancel`,
+and `/log/sync-from-tv` routes can reconcile a logged entry against its live TradingView order.
+
 | Column | Type | Notes |
 |---|---|---|
 | `entry_id` | TEXT PK | from source `id` field |
-| `instrument_id` | TEXT FK → `instrument` | resolved from `ticker` |
+| `investment_id` | TEXT FK → `investment(investment_id)` | resolved from `ticker`; renamed from `instrument_id`/`instrument` per Wave 0's `investment` consolidation |
+| `account_id` | TEXT FK → `account(account_id)` | **OPEN DESIGN QUESTION, not resolved here:** the real DDL types this as a proper FK (matching `domain-data-model.md`'s v3 Mermaid ERD, `ACCOUNT ||--o{ TRADE_LOG_ENTRY`), but this table's own `cash_flow` sibling below keeps the equivalent field as a plain `account TEXT` with no FK for the same "which account" concept. Flagged for a follow-up decision, not picked here — see `db_client.py`'s top-of-file comment for the full trail. |
 | `action` | TEXT | BUY/SELL/etc. |
 | `shares` | REAL | |
 | `price` | REAL | |
 | `total_cost` | REAL | |
-| `account` | TEXT | e.g. TFSA, RRSP |
 | `order_type` | TEXT | |
 | `limit_price` | REAL NULL | |
 | `trade_date` | TEXT | source `date` |
@@ -80,17 +89,22 @@ original `PREDICTION_CLAIM` row.
 | `source` | TEXT | |
 | `priority` | TEXT NULL | |
 | `logged_at` | TEXT | source `loggedAt` |
+| `tv_order_id` | TEXT NULL | post-hoc, Wave 4 Task 11 — matches a logged entry against its live TradingView order id; added via `SCHEMA_EVOLUTIONS` self-heal rather than the original `CREATE TABLE`, so pre-existing real rows self-heal to have this column on next `initialize_db()` |
 
 Immutable once written (a trade, once logged, is a historical fact) — insert-only table, no
 update path needed.
 
 ### `order_execution` (from `orders_executed.jsonl`)
 
+**Wave 6 correction:** FK column renamed `investment_id` → `investment(investment_id)`, same
+reasoning as `trade_log_entry` above — not present in this table's original pre-implementation
+sketch, which predates the v3 `investment` consolidation.
+
 | Column | Type | Notes |
 |---|---|---|
 | `execution_id` | TEXT PK | generated: hash of `timestamp` + ticker + side |
 | `executed_at` | TEXT | source `timestamp` |
-| `instrument_id` | TEXT FK → `instrument` | resolved from `order.ticker` |
+| `investment_id` | TEXT FK → `investment(investment_id)` | resolved from `order.ticker`; renamed from `instrument_id`/`instrument` |
 | `side` | TEXT | BUY/SELL |
 | `shares` | REAL | |
 | `price` | REAL NULL | market orders may have no price |
@@ -125,11 +139,26 @@ tiny table rather than crammed into `cash_flow` as a fake "flow":
 
 ## Entity-Relationship Diagram
 
+**Wave 6 correction:** this diagram originally showed a standalone `INSTRUMENT` entity as the FK
+anchor for `TRADE_LOG_ENTRY`/`ORDER_EXECUTION`. That was this document's pre-implementation
+sketch; the real, shipped schema (`domain_model/db_client.py`) instead points both tables at
+`INVESTMENT` (`domain-data-model.md`'s v3 model absorbed `INSTRUMENT` into `INVESTMENT` — see
+that document's "The Core Question, Answered Honestly"). `INTELLIGENCE_EVENT` genuinely does
+still reference its own `instrument(instrument_id)` table — that table lives in a *different*
+SQLite file (`intelligence.sqlite`) than `investment` (`domain_model.sqlite`), is real, current,
+and un-migrated; it is NOT the same table `TRADE_LOG_ENTRY`/`ORDER_EXECUTION` now point at. Also
+added below (Wave 6): the real `ledger_checkpoint` table, the full `intelligence_event` column
+list (including `observed_at`/`ingested_at`/`source_id`/`confidence_score`/`content_hash`, absent
+from the original abbreviated entity block), and the `intelligence_event_fts` FTS5 virtual table
++ its 3 sync triggers — all four exist in `intelligence/db_client.py` today but were previously
+undocumented in either architecture file.
+
 ```mermaid
 erDiagram
     INSTRUMENT ||--o{ INTELLIGENCE_EVENT : "has events about"
-    INSTRUMENT ||--o{ TRADE_LOG_ENTRY : "has trades of"
-    INSTRUMENT ||--o{ ORDER_EXECUTION : "has orders for"
+    INTELLIGENCE_EVENT ||--o{ INTELLIGENCE_EVENT_FTS : "indexed by (via rowid triggers)"
+    INVESTMENT ||--o{ TRADE_LOG_ENTRY : "has trades of"
+    INVESTMENT ||--o{ ORDER_EXECUTION : "has orders for"
 
     INSTRUMENT {
         TEXT instrument_id PK
@@ -140,39 +169,59 @@ erDiagram
         TEXT active_to
     }
 
+    LEDGER_CHECKPOINT {
+        TEXT checkpoint_id PK
+        INTEGER last_event_sequence
+        TEXT last_event_id
+        INTEGER schema_version
+        TEXT processed_at
+        TEXT ledger_file_hash
+    }
+
     INTELLIGENCE_EVENT {
         TEXT event_id PK
-        INTEGER event_sequence
+        INTEGER event_sequence "UNIQUE"
         TEXT instrument_id FK
-        TEXT event_type "existing types + new PREDICTION_CLAIM/PREDICTION_GRADED"
+        TEXT event_type "RESEARCH_IMPORT|NEWS_SWEEP|EARNINGS|VALUATION_UPDATE|TECHNICAL_SWEEP|PORTFOLIO_DECISION|THESIS_UPDATE|MACRO_EVENT|REVIEW_DAILY|REVIEW_WEEKLY|PREDICTION_CLAIM|PREDICTION_GRADED"
         TEXT effective_at
-        TEXT status
+        TEXT observed_at
+        TEXT ingested_at
+        TEXT source_id
+        REAL confidence_score "CHECK 0.0-1.0"
+        TEXT status "ACTIVE|SUPERSEDED|RETRACTED|INVALIDATED|DRAFT"
         TEXT title
         TEXT body_markdown
         TEXT payload_json
         TEXT supersedes_event_id FK
-        TEXT idempotency_key
+        TEXT idempotency_key "UNIQUE"
+        TEXT content_hash
+    }
+
+    INTELLIGENCE_EVENT_FTS {
+        TEXT title "fts5, content=intelligence_event, content_rowid=rowid"
+        TEXT body_markdown
     }
 
     TRADE_LOG_ENTRY {
         TEXT entry_id PK
-        TEXT instrument_id FK
+        TEXT investment_id FK
+        TEXT account_id FK "OPEN QUESTION — see column table above"
         TEXT action
         REAL shares
         REAL price
         REAL total_cost
-        TEXT account
         TEXT order_type
         REAL limit_price
         TEXT trade_date
         TEXT status
         TEXT logged_at
+        TEXT tv_order_id "post-hoc, Wave 4 Task 11"
     }
 
     ORDER_EXECUTION {
         TEXT execution_id PK
         TEXT executed_at
-        TEXT instrument_id FK
+        TEXT investment_id FK
         TEXT side
         REAL shares
         REAL price
@@ -197,7 +246,30 @@ erDiagram
 ```
 
 `CASH_FLOW` and `CASH_FLOW_BASELINE` are account-scoped, not ticker-scoped, so they don't have a
-foreign key into `INSTRUMENT` — shown without a relationship line for that reason.
+foreign key into `INSTRUMENT`/`INVESTMENT` — shown without a relationship line for that reason.
+`LEDGER_CHECKPOINT` has no FK to any other table (it tracks replay progress against the event
+ledger as a whole, one row per checkpoint run) — also shown without a relationship line.
+`INTELLIGENCE_EVENT_FTS` is a virtual table populated only via the 3 triggers documented below,
+never written to directly — its relationship line reflects that trigger-driven sync, not a real
+FK.
+
+**`intelligence_event_fts` (FTS5 virtual table) + sync triggers** — real schema in
+`intelligence/db_client.py`, previously undocumented in either architecture file:
+
+```sql
+CREATE VIRTUAL TABLE intelligence_event_fts USING fts5(
+    title,
+    body_markdown,
+    content='intelligence_event',
+    content_rowid='rowid'
+);
+
+-- 3 triggers keep the FTS index in sync with intelligence_event, standard FTS5 external-content
+-- pattern (INSERT mirrors in; DELETE issues an FTS 'delete' command; UPDATE does both):
+--   trg_intelligence_event_ai  AFTER INSERT ON intelligence_event
+--   trg_intelligence_event_ad  AFTER DELETE ON intelligence_event
+--   trg_intelligence_event_au  AFTER UPDATE ON intelligence_event
+```
 
 ---
 

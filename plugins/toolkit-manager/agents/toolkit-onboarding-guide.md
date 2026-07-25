@@ -55,15 +55,20 @@ Once dependencies are confirmed, have them check if the private JSON data files 
 - `cash_flows.json` ← `cash_flows.json.example`
 - `portfolio-config.json` ← `portfolio-config.json.example`
 
-**Data architecture note:** portfolio/target-portfolio/watchlist data is currently JSON-file
-based (the files above). A SQLite-backed data model (`account`/`investment`/
-`account_investment`, replacing the current `portfolio.json`/`target-portfolio.json`/
-`watchlist.json` split) is in active design, not yet implemented — see
-`../references/data-architecture/domain-data-model.md` and the DDL in
-`../references/data-architecture/sql/` for the current design. Do not tell users tables get
-created automatically as part of this onboarding flow; that isn't built yet. If a future
-version of this guide needs to run schema initialization for a clean install, it goes here in
-Phase 2, once the model above is implemented — not before.
+**Data architecture note:** InvestmentToolkit is SQLite-first. Most domains (predictions,
+technical sweeps, daily briefs, account/risk policy, and more) are already migrated into two
+SQLite databases — `domain_model.sqlite` and `intelligence.sqlite` — created and read via
+`investment_screener/backend/py_services/domain_model/db_client.py` and
+`investment_screener/backend/py_services/intelligence/db_client.py`. Those databases are
+gitignored, private data files; if missing, they are created automatically the first time a
+script that calls `initialize_db()` runs (no manual schema step needed here in onboarding).
+A small number of JSON files remain as deliberate, still-current exceptions — not something to
+migrate away — and are the ones this guide initializes above: `portfolio.json`,
+`cash_flows.json`, `portfolio-config.json`, plus `target-portfolio.json` (targets/theses) and
+per-ticker files under `investment_screener/backend/data/projections/`. See
+`../references/data-architecture/domain-data-model.md` and
+`../references/data-architecture/supplementary-domain-schemas.md` for the full schema and the
+rationale for each retained JSON file; DDL lives under `../references/data-architecture/sql/`.
 
 Once the files are present, ask if they've run the startup script yet:
 ```bash
