@@ -4,7 +4,7 @@
   "schemaVersion": "1.0",
   "version": 10.8,
   "createdAt": "2026-02-14T12:00:00Z",
-  "updatedAt": "2026-07-24T14:30:33.297Z",
+  "updatedAt": "2026-07-25T02:52:08.904Z",
   "description": "Investment thesis focused on the dual infrastructure buildout for ASI Compute (Primary) and Sovereign Finance (Secondary).",
   "pillars": [
     {
@@ -138,7 +138,7 @@
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "Hyperscaler with vertically integrated AI stack.",
       "agentRationale": "DCF: ACCUMULATE | FV $518 vs $383 price | +35.2% upside.",
-      "shares": 4
+      "shares": 5
     },
     {
       "ticker": "META",
@@ -381,7 +381,7 @@
       "subStrategyId": "sa-asi-race",
       "thesisForInclusion": "European AI infrastructure.",
       "agentRationale": "2026-05-13 Grok sweep: MSFT/NVIDIA deals intact; strong AI cloud momentum; DCF BUY +185.6%. Target bumped 2.55% → 2.85% (post-normalize). High conviction AI-native cloud infrastructure. 2026-06-03: SA LP 5.6% passive stake + explosive Q1 growth validates AI cloud capacity thesis. 2026-06-05: SA LP new 5.6% stake established May 2026; Q1 hyper-growth continuation; power deals (Bloom Energy). 2026-06-08: UK infrastructure expansion underway; AI cloud momentum continues. ACCUMULATE thesis confirmed.",
-      "shares": 13
+      "shares": 15
     },
     {
       "ticker": "CRM",
@@ -421,7 +421,7 @@
       "role": "accumulate",
       "thesisForInclusion": "AI GPU cloud pivot — 800MW Australia campus + Blackwell GPU deployment. Increased target weight to 3.638% (31 shares) to accumulate on dilution dip in RRSP (+3) and TFSA (+6) as execution play.",
       "agentRationale": "2026-05-13 Grok sweep: exit flag reversed 2026-05-07; $3.4B 5yr AI cloud contract + NVIDIA partnership + 480MW Sweetwater expansion on track. SA LP aligned. 2026-06-03: 800MW Australia campus + $3.65B GPU financing confirms global AI pivot execution. 2026-06-08: Awaken acquisition closed; $4.4B ARR target set with Blackwell GPU deployment. 2026-06-21: Standing decision updated to HOLD/REDUCE — prior 'EXIT: Liquidation finalized' note was stale and contradicted actual position. Position at target 2.4%.",
-      "shares": 38,
+      "shares": 42,
       "pillarId": "compute",
       "standingDecision": {
         "type": "HOLD_AT_TARGET",
@@ -597,7 +597,7 @@
       "pillarId": "datainfra",
       "thesisForInclusion": "NAND storage infrastructure play.",
       "agentRationale": "2026-05-19: Agentic Swarm Memory Thesis applied. Spawning parallel sub-agents multiplies active KV context caching & state log persistence requirements. De-risked Bear to 15% & raised Bull to 35%. Reconciled intrinsic value: $1,982.18 vs $1,333.01 price (BUY, +48.7% upside). 2026-06-08: Multiple analyst PT raises; design awards confirm AI memory demand cycle. GTC limit $1,350 — only accumulate at or below entry price.",
-      "shares": 1.2,
+      "shares": 1.5,
       "targetEntryPrice": 1350,
       "priceLevels": {
         "schemaVersion": "1.0",
@@ -871,7 +871,7 @@
       "role": "accumulate",
       "thesisForInclusion": "Situational Awareness LP core holding. AI data center infrastructure play aligned with SA fund thesis on ASI race build-out.",
       "agentRationale": "MAINTAIN. Core SA LP holding at 2% target. DCF BUY +49%. Position auto-flagged EXIT in error on 2026-05-18 — corrected 2026-06-03. Do not exit without explicit user instruction. 2026-06-08: $550M revolving credit facility secured; >1GW contracted capacity milestone with major hyperscaler; cloud business separation complete. Thesis strongly confirmed — light ACCUMULATE on dips.",
-      "shares": 22,
+      "shares": 32,
       "subStrategyId": "sa-asi-race",
       "priceLevels": {
         "schemaVersion": "1.0",
@@ -1622,7 +1622,7 @@
       "subStrategyId": "sa-asi-race",
       "pillarId": "compute",
       "thesisForInclusion": "Nasdaq listing. Key HBM supplier.",
-      "shares": 7.5
+      "shares": 9
     },
     {
       "ticker": "SHAZ",
