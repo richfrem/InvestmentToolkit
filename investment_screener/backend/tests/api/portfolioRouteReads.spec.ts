@@ -20,6 +20,8 @@ import {
     getStrategyAllocationInputFromDb,
     getAccountPositionsFromDb,
     getLastSyncedAtFromDb,
+    getBookValueAndCountFromDb,
+    getPositionPriceFromDb,
 } from '../../src/routes/portfolio';
 import { PortfolioRepository } from '../../src/services/PortfolioRepository';
 import { InvestmentRepository } from '../../src/services/InvestmentRepository';
@@ -122,5 +124,38 @@ describe('routes/portfolio.ts SQLite-backed read helpers (Wave 3 Task 6)', () =>
 
         expect(getLastSyncedAtFromDb(dbPath)).to.equal(later);
         expect(getLastSyncedAtFromDb(dbPath)).to.not.equal(before);
+    });
+
+    it('getBookValueAndCountFromDb returns null on an empty db', () => {
+        const repo = new PortfolioRepository(dbPath);
+        repo.close();
+        expect(getBookValueAndCountFromDb(dbPath)).to.equal(null);
+    });
+
+    it('getBookValueAndCountFromDb sums quantity*average_cost and counts positions (Wave 7)', () => {
+        // Real bug this replaces: /summary read book value/position count from
+        // portfolio.json (frozen since Wave 3), even though totalMarketValueUSD
+        // already read SQLite live.
+        seed();
+        // NVDA: (3*800) + (1*800) = 3200; AMD: 10*120 = 1200; total = 4400
+        const result = getBookValueAndCountFromDb(dbPath)!;
+        expect(result.totalBookValueUSD).to.equal(4400);
+        expect(result.positionCount).to.equal(2);
+    });
+
+    it('getPositionPriceFromDb returns null for a ticker with no investment_price row', () => {
+        seed();
+        expect(getPositionPriceFromDb('MSFT', dbPath)).to.equal(null);
+    });
+
+    it('getPositionPriceFromDb returns live price and weighted-average book_price (Wave 7)', () => {
+        // Real bug this replaces: /position/:ticker read price/book_price from
+        // portfolio.json, even though only per-account share counts had been
+        // cut over to SQLite in Wave 3.
+        seed();
+        const result = getPositionPriceFromDb('NVDA', dbPath)!;
+        expect(result.price).to.equal(900);
+        // Weighted average cost across TFSA (3@800) + RRSP (1@800) = 800
+        expect(result.book_price).to.equal(800);
     });
 });
