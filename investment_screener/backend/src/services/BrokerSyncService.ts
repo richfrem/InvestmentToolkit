@@ -325,6 +325,13 @@ export function persistSnapshotToDb(snapshot: TVSnapshot, dbPath: string = DOMAI
             if (!REAL_ACCOUNTS.has(accountId)) continue;
             portfolioRepo.upsertAccount(accountId, accountId, accountId);
 
+            // A fresh TV snapshot for this account is the complete, authoritative
+            // current state, not a partial diff — clear all of this account's
+            // existing rows first so a position fully closed/sold since the last
+            // sync (and therefore absent from this snapshot) doesn't linger as a
+            // stale nonzero-quantity row inflating future computed totals.
+            portfolioRepo.clearAccountInvestments(accountId);
+
             const cashUsd = Number(snap.balances?.cashUSD ?? 0);
             if (cashUsd > 0) {
                 const cashInvestmentId = investmentRepo.resolveInvestmentId('CASH_USD', 'CASH', 'USD');
