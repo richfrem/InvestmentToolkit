@@ -51,21 +51,28 @@ If either is missing, direct them to install before continuing:
 - Python: https://www.python.org/downloads/
 
 Once dependencies are confirmed, have them check if the private JSON data files are initialized. If they are missing from `investment_screener/backend/data/`, copy them from their `.example` counterparts:
-- `portfolio.json` ← `portfolio.json.example`
 - `cash_flows.json` ← `cash_flows.json.example`
 - `portfolio-config.json` ← `portfolio-config.json.example`
 
-**Data architecture note:** InvestmentToolkit is SQLite-first. Most domains (predictions,
-technical sweeps, daily briefs, account/risk policy, and more) are already migrated into two
-SQLite databases — `domain_model.sqlite` and `intelligence.sqlite` — created and read via
+**Data architecture note:** InvestmentToolkit is SQLite-first. **`domain_model.sqlite` is the
+sole source of truth for portfolio holdings, thesis targets, pillars, price levels, and standing
+decisions** — this user is a full TradingView Desktop user with their broker integrated directly
+into TradingView, so live holdings arrive via TradingView CDP sync (`/tv-portfolio-sync`), never
+by hand-editing a JSON file. `portfolio.json` and `theses/target-portfolio.json` were both retired
+(Waves 7/8) and are archived under `ARCHIVE/investment_screener/backend/data/` — do not recreate
+or re-initialize either during onboarding.
+
+Most other domains (predictions, technical sweeps, daily briefs, account/risk policy, and more)
+are also already migrated into two SQLite databases — `domain_model.sqlite` and
+`intelligence.sqlite` — created and read via
 `investment_screener/backend/py_services/domain_model/db_client.py` and
 `investment_screener/backend/py_services/intelligence/db_client.py`. Those databases are
 gitignored, private data files; if missing, they are created automatically the first time a
 script that calls `initialize_db()` runs (no manual schema step needed here in onboarding).
 A small number of JSON files remain as deliberate, still-current exceptions — not something to
-migrate away — and are the ones this guide initializes above: `portfolio.json`,
-`cash_flows.json`, `portfolio-config.json`, plus `target-portfolio.json` (targets/theses) and
-per-ticker files under `investment_screener/backend/data/projections/`. See
+migrate away — and are the ones this guide initializes above: `cash_flows.json`,
+`portfolio-config.json`, plus per-ticker files under
+`investment_screener/backend/data/projections/`. See
 `../references/data-architecture/domain-data-model.md` and
 `../references/data-architecture/supplementary-domain-schemas.md` for the full schema and the
 rationale for each retained JSON file; DDL lives under `../references/data-architecture/sql/`.
