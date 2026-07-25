@@ -61,16 +61,11 @@ kittyclaude/
 kittycopilot/
 kittygemini/
 archive/
+ARCHIVE/
 # Exception: the research corpus migration's archive dir (ADRs/026-028) holds the
 # only copy of the original dated research files moved (not deleted) by the
 # migration — must be tracked, not caught by the generic archive/ rule above.
 !investment_screener/backend/data/research/archive/
-# Exception: repo-root retirement archive (formerly "kept locally, never
-# tracked" — reversed so retired content has git-history durability instead
-# of existing only on local disk, same rationale as the exception above).
-# Case-insensitive filesystems (default macOS) match this against the
-# bare "archive/" rule too, so it needs its own explicit negation.
-!ARCHIVE/
 InvestmentStrategy/
 .claude/
 .agents/
@@ -124,20 +119,6 @@ investment_screener/backend/data/daily-briefs/
 # TradingView order audit logs (runtime output, rotated daily)
 plugins/tradingview/audit/
 
-# Re-ignore ARCHIVE/ mirrors of the private/gitignored domains above -- the
-# blanket `!ARCHIVE/` negation earlier in this file otherwise un-ignores
-# everything under ARCHIVE/, including archived copies of data that must
-# stay local-only per each migration wave's Private/Gitignored File Archive
-# Rule (spec §2.19: archived via local `mv`, never `git add`ed, privacy
-# boundary preserved). Found 2026-07-25 after 11 real daily-briefs JSON
-# files were accidentally committed and pushed via `git add .` -- they were
-# untracked-but-visible because nothing re-excluded this specific subpath.
-ARCHIVE/investment_screener/backend/data/daily-briefs/
-ARCHIVE/investment_screener/backend/data/portfolio.json
-ARCHIVE/investment_screener/backend/data/cash_flows.json
-ARCHIVE/investment_screener/backend/data/orders_executed.jsonl
-ARCHIVE/investment_screener/backend/data/trade-log.json
-
 .pytest_cache/
 **/.pytest_cache/
 
@@ -152,3 +133,6 @@ plugins/portfolio-advisor/references/triage-history.json
 
 # superpowers subagent-driven-development scratch state (progress ledger)
 .superpowers/
+
+# Wave/session planning docs, kickoff prompts, status reports (not for version control)
+docs/superpowers/
