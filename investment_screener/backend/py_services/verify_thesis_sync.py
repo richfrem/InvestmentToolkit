@@ -69,6 +69,17 @@ def _load_holdings_from_db(db_path: Path) -> list[dict]:
     Field mapping mirrors migrate_target_portfolio_to_sqlite.py's own mapping:
     "role" -> lifecycle_status, "targetWeight" -> target_weight,
     "subStrategyId" -> sub_strategy_id.
+
+    Excludes pure watchlist entries (is_watchlisted=1 with no real
+    target_weight and no lifecycle_status/role) -- a ticker that's only on
+    the watchlist was never a target/current holding and must not be
+    required to have thesis documentation. Real-data bug found 2026-07-25:
+    the unfiltered version of this function flagged 19 real watchlist
+    tickers (AAPL, ALAB, AMZN, etc.) as "missing thesis documentation"
+    purely because list_investments() returns every investment row with no
+    filter. A ticker with a real target_weight/role is still included even
+    if it also happens to be watchlisted (that combination is legitimate --
+    see CLAUDE.md's role/action/is_watchlisted overlap note).
     """
     conn = initialize_db(str(db_path))
     try:
@@ -84,6 +95,7 @@ def _load_holdings_from_db(db_path: Path) -> list[dict]:
         }
         for inv in investments
         if inv.get("symbol")
+        and ((inv.get("target_weight") or 0) > 0 or inv.get("lifecycle_status"))
     ]
 
 
