@@ -20,7 +20,8 @@ Key Functions:
     - main() - CLI wrapper for persistence and interactive overwrite protection
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
+    - investment_screener/backend/data/domain_model.sqlite (investment,
+      strategy_pillar tables -- sole source of truth)
 """
 
 import json
@@ -30,15 +31,13 @@ import datetime
 from pathlib import Path
 
 REPO_ROOT   = Path(__file__).resolve().parents[3]
-THESIS_JSON = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
-PORTFOLIO   = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
+DB_PATH     = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 REVIEWS_DIR = REPO_ROOT / "PortfolioAnalysis/strategic-reviews"
 
 sys.path.insert(0, str(Path(__file__).parent))
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
-from validate_weights import compute_target
 from portfolio_action import derive_action
-from portfolio_io import load_portfolio_state, compute_weights  # noqa: E402
+from portfolio_io import load_portfolio_state, compute_weights, load_target_weights  # noqa: E402
 
 
 def _compute_current_from_db() -> dict:
@@ -63,19 +62,44 @@ def _urgency(action: str, delta_abs: float) -> str:
     return "LOW"
 
 
-def generate(date_str: str) -> dict:
-    thesis        = json.loads(THESIS_JSON.read_text())
-    current_data  = _compute_current_from_db()
-    target_data   = compute_target(THESIS_JSON)
+def _load_investments_from_db(db_path: Path) -> dict:
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import list_investments
 
-    holdings_map = {h["ticker"]: h for h in thesis.get("holdings", [])}
+    conn = initialize_db(str(db_path))
+    try:
+        rows = list_investments(conn)
+    finally:
+        conn.close()
+    return {row["symbol"]: row for row in rows}
+
+
+def _load_pillars_from_db(db_path: Path) -> list[dict]:
+    from domain_model.db_client import initialize_db
+    from domain_model.pillar_repository import list_pillars
+
+    conn = initialize_db(str(db_path))
+    try:
+        rows = list_pillars(conn)
+    finally:
+        conn.close()
+    return rows
+
+
+def generate(date_str: str, db_path: Path = DB_PATH) -> dict:
+    # _compute_current_from_db() always reads the real domain_model.sqlite --
+    # portfolio_io.load_portfolio_state()'s own path parameter is documented
+    # as unused (established contract shared by its 7+ existing callers).
+    current_data  = _compute_current_from_db()
+    target_data   = load_target_weights(str(db_path))
+    holdings_map  = _load_investments_from_db(db_path)
 
     active   = []
     maintain = []
 
     for ticker, h in holdings_map.items():
         actual  = current_data["holdings"].get(ticker, 0)
-        target  = target_data["holdings"].get(ticker, 0)
+        target  = target_data.get(ticker, 0)
         action  = derive_action(ticker, actual, target)
         delta   = round(target - actual, 4)
 
@@ -89,15 +113,15 @@ def generate(date_str: str) -> dict:
 
         entry = {
             "ticker":            ticker,
-            "pillarId":          h.get("pillarId", "unknown"),
-            "role":              h.get("role", "core"),
+            "pillarId":          h.get("pillar_id") or "unknown",
+            "role":              h.get("lifecycle_status") or "core",
             "currentTarget":     round(target, 4),
             "recommendedTarget": round(target, 4),
             "delta":             delta,
             "action":            action,
             "actualPct":         round(actual, 4),
             "actualDelta":       delta,
-            "rationale":         h.get("agentRationale", ""),
+            "rationale":         h.get("agent_rationale") or "",
             "urgency":           _urgency(action, abs(delta)),
         }
 
@@ -117,14 +141,14 @@ def generate(date_str: str) -> dict:
 
     pillar_list = [
         {
-            "id":                p["id"],
+            "id":                p["pillar_id"],
             "name":              p["name"],
-            "currentTarget":     round(p.get("targetWeight") or 0, 2),
-            "recommendedTarget": round(p.get("targetWeight") or 0, 2),
+            "currentTarget":     round(p.get("target_weight") or 0, 2),
+            "recommendedTarget": round(p.get("target_weight") or 0, 2),
             "delta":             0.0,
-            "note":              f"Current target from {thesis.get('name')}",
+            "note":              "Current target from investment.target_weight (domain_model.sqlite)",
         }
-        for p in thesis.get("pillars", [])
+        for p in _load_pillars_from_db(db_path)
     ]
 
     ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.") + \
@@ -134,9 +158,12 @@ def generate(date_str: str) -> dict:
         "reviewDate":             date_str,
         "reviewId":               f"{date_str}-PortfolioAnalysisRecommendations",
         "reviewFile":             f"PortfolioAnalysis/strategic-reviews/{date_str}-PortfolioAnalysisRecommendations.md",
-        "thesisName":             thesis.get("name"),
-        "targetPortfolioVersion": thesis.get("version", 1),
-        "targetPortfolioFile":    "investment_screener/backend/data/theses/target-portfolio.json",
+        # thesisName/targetPortfolioVersion are document-level display
+        # metadata only (no per-ticker business data) -- fixed descriptive
+        # values, not read anywhere downstream but display.
+        "thesisName":             "Investment Thesis",
+        "targetPortfolioVersion": 1,
+        "targetPortfolioFile":    "investment_screener/backend/data/domain_model.sqlite",
         "status":                 "PROPOSED",
         "approvedAt":             None,
         "appliedAt":              None,

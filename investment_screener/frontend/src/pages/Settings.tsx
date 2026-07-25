@@ -91,7 +91,7 @@ export default function Settings() {
                     <div className="flex items-start gap-2.5 bg-amber-500/5 border border-amber-500/15 rounded-lg p-3">
                         <AlertTriangle size={14} className="text-amber-500/70 mt-0.5 shrink-0" />
                         <p className="text-amber-300/70 text-xs leading-relaxed">
-                            Manual portfolio editing bypasses TradingView sync and may cause <code className="text-amber-200/80">portfolio.json</code> to drift from live positions.
+                            Manual portfolio editing bypasses TradingView sync and writes to a fallback <code className="text-amber-200/80">portfolio.json</code> file, which may drift from the live <code className="text-amber-200/80">domain_model.sqlite</code> source of truth.
                             Prefer <strong className="text-amber-200/80">/tv-portfolio-sync</strong> for routine updates.
                         </p>
                     </div>

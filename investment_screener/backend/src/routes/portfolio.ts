@@ -12,7 +12,6 @@
  *   - backupPortfolio() - Creates a backup copy of portfolio.json
  *   - loadYtdPerformanceReport() - Executes time-weighted returns script and reads generated report
  *   - readPortfolio() - Parses portfolio JSON structure resolving array/object schemas
- *   - syncThesisShares(positions) - Keep thesis holdings[].shares in sync with actual portfolio positions
  *   - verifyPortfolioTotals(holdings, tvSnapshot) - Reconciliation gate comparing computed vs broker total
  *   - getHoldingsForDisplayFromDb() - SQLite-sourced enriched holdings for GET /
  *   - persistRefreshedPricesToDb(items) - Persist fresh prices + sector/industry into SQLite
@@ -51,7 +50,7 @@ import path from 'path';
 import { spawnPythonScript } from '../services/bridge';
 import { brokerSyncService, mergeIntoPortfolio, persistSnapshotToDb } from '../services/BrokerSyncService';
 import { getLiveUsdCadRate, isTradingViewConnected } from '../utils/helpers';
-import { PORTFOLIO_FILE, PORTFOLIO_CONFIG_FILE, THESIS_FILE, DOMAIN_MODEL_DB_FILE } from '../utils/paths';
+import { PORTFOLIO_FILE, PORTFOLIO_CONFIG_FILE, DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 import { computeWeightsMap, PortfolioTotals } from '../utils/portfolioSnapshot';
 import { computeStrategyAllocation } from '../utils/strategyAllocation';
 import { PortfolioRepository } from '../services/PortfolioRepository';
@@ -352,70 +351,6 @@ export function persistRefreshedPricesToDb(items: any[], dbPath: string = DOMAIN
 }
 
 /**
- * Keep thesis holdings[].shares in sync with actual portfolio positions.
- * Called after any write to portfolio.json that may change share quantities.
- * - Updates shares on existing thesis holdings.
- * - Removes the shares field when a position is closed.
- * - Adds a stub holding for new tickers not yet in the thesis.
- */
-function syncThesisShares(positions: any[]): void {
-    if (!fs.existsSync(THESIS_FILE)) return;
-    try {
-        const thesis = JSON.parse(fs.readFileSync(THESIS_FILE, 'utf-8'));
-        const holdings: any[] = thesis.holdings ?? [];
-
-        // ticker → total shares from portfolio.json (skip virtual cash)
-        const portfolioMap = new Map<string, number>();
-        for (const pos of positions) {
-            const sym: string = pos.symbol || pos.ticker;
-            if (sym && sym !== 'USD_CASH') portfolioMap.set(sym, pos.shares ?? 0);
-        }
-
-        let dirty = false;
-
-        for (const h of holdings) {
-            const ticker: string = h.ticker;
-            if (!ticker || ticker === 'USD_CASH') continue;
-
-            if (portfolioMap.has(ticker)) {
-                const newShares = portfolioMap.get(ticker)!;
-                if (h.shares !== newShares) { h.shares = newShares; dirty = true; }
-                portfolioMap.delete(ticker);
-            } else if (h.shares !== undefined) {
-                // Position closed — drop the field so the holding stays as a thesis target
-                delete h.shares;
-                dirty = true;
-            }
-        }
-
-        // New tickers not yet tracked in thesis — add minimal stub
-        for (const [ticker, shares] of portfolioMap) {
-            holdings.push({
-                ticker,
-                name: ticker,
-                pillarId: 'other',
-                targetWeight: 0,
-                role: 'watchlist',
-                thesisForInclusion: '',
-                agentRationale: `Added automatically on ${new Date().toISOString().slice(0, 10)}.`,
-                shares,
-            });
-            dirty = true;
-            console.log(`[Thesis] New position ${ticker} (${shares} shares) — added stub holding.`);
-        }
-
-        if (dirty) {
-            thesis.holdings = holdings;
-            thesis.updatedAt = new Date().toISOString();
-            fs.writeFileSync(THESIS_FILE, JSON.stringify(thesis, null, 2));
-            console.log(`[Thesis] Synced shares across ${holdings.length} holdings.`);
-        }
-    } catch (err: any) {
-        console.error('[Thesis] Failed to sync shares:', err.message);
-    }
-}
-
-/**
  * Reconciliation gate: compare our computed portfolio value vs TV broker total.
  * holdings = portfolio.json positions (with stored prices)
  * tvSnapshot = raw TV snapshot object (has snapshots[].balances)
@@ -477,7 +412,6 @@ router.post('/', async (req, res) => {
         // therefore intentionally retained for the manual-edit path ONLY — it is NOT
         // a sync/promote/apply write (those are now SQLite-only). GET / still prefers
         // SQLite and only falls back to this file when SQLite has no positions.
-        syncThesisShares(items);
         res.json({ success: true, count: items.length });
     } catch (error) {
         console.error(`[API] Error saving portfolio: `, error);
@@ -834,7 +768,6 @@ router.post('/sync-tv/promote', async (req, res) => {
             console.warn(`[API] promote: failed to persist snapshot to domain_model.sqlite:`, dbErr.message);
         }
     }
-    syncThesisShares(merged);
     console.log(`[API] TV snapshot promoted to domain_model.sqlite (${merged.length} positions).`);
     res.json({ success: true, positionCount: merged.length, message: 'Portfolio updated from TradingView data (SQLite).' });
 });
@@ -866,7 +799,6 @@ router.post('/sync-tv/apply', async (_req, res) => {
         } catch (dbErr: any) {
             console.warn(`[API] apply: failed to persist snapshot to domain_model.sqlite:`, dbErr.message);
         }
-        syncThesisShares(merged);
 
         // Reconciliation gate — compare stored prices vs TV broker total
         const recon = verifyPortfolioTotals(merged, snapshot);
@@ -900,14 +832,24 @@ router.post('/sync', async (_req, res) => {
 router.get('/strategy-allocation', async (_req, res) => {
     console.log(`[API] Computing strategy allocation...`);
     try {
-        if (!fs.existsSync(PORTFOLIO_FILE)) { res.status(404).json({ error: 'No portfolio data found' }); return; }
-        let thesis: any = null;
-        if (fs.existsSync(THESIS_FILE)) {
-            thesis = JSON.parse(fs.readFileSync(THESIS_FILE, 'utf-8'));
+        // Wave 8: pillar/sub-strategy mapping sourced live from
+        // strategy_pillar/investment (InvestmentRepository.listPillars()/
+        // listThesisHoldings()), replacing the prior unconditional read of
+        // target-portfolio.json for this mapping.
+        const investmentRepo = new InvestmentRepository(DOMAIN_MODEL_DB_FILE);
+        let thesis: any;
+        try {
+            const pillars = investmentRepo.listPillars().map(p => ({ id: p.id, name: p.name }));
+            const holdings = investmentRepo.listThesisHoldings().map(h => ({
+                ticker: h.ticker, pillarId: h.pillarId, subStrategyId: h.subStrategyId,
+            }));
+            thesis = { pillars, holdings };
+        } finally {
+            investmentRepo.close();
         }
+
         // Wave 3 Task 6: prefer domain_model.sqlite for positions/totals; fall back
-        // to portfolio.json when SQLite has no priced position data yet. `thesis`
-        // (pillar/sub-strategy mapping) stays JSON-sourced — out of this task's scope.
+        // to portfolio.json when SQLite has no priced position data yet.
         const dbInput = getStrategyAllocationInputFromDb();
         if (dbInput != null) {
             res.json(computeStrategyAllocation(dbInput.positions, dbInput.totals, thesis));

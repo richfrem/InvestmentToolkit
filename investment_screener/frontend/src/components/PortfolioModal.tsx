@@ -61,7 +61,8 @@ export const PortfolioModal: React.FC<PortfolioModalProps> = ({ isOpen, onClose 
             // Save to localStorage for frontend state
             localStorage.setItem('portfolio_items', JSON.stringify(updatedItems));
 
-            // Persist to backend (writes portfolio.json)
+            // Persist to backend — manual-edit fallback path only (writes portfolio.json,
+            // not domain_model.sqlite; see routes/portfolio.ts POST / for why)
             const response = await fetch('/api/portfolio', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

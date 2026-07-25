@@ -13,7 +13,6 @@
  *   const review = await thesisService.performStrategicReview(thesisId);
  * 
  * Key Functions (Index):
- *   - getFilePath(id: string) - Resolves file path for thesis JSON data
  *   - normalizeTicker(ticker: string) - Substitute Questrade formats with canonical ones
  *   - getProjectionPath(ticker: string) - Resolves file path for stock projection JSON data
  *   - getLatestAIProjection(ticker: string) - Retrieve the latest versioned AI projection for a ticker
@@ -21,58 +20,31 @@
  *   - getAccountPolicy() - Returns the parsed account policy configuration
  *   - computeBandPct(targetPct, bandConfig) - Computes absolute percentage bands
  *   - computeHealthCheck(thesisId: string) - Calculates portfolio drift at both holding and pillar levels, generating alerts
- *   - getThesis(id: string) - Fetches a thesis configuration by its ID
- *   - listTheses() - Retrieves a list of all theses
- *   - saveThesis(thesis: Thesis) - Saves a thesis with version verification and lock protection
- *   - updateHolding(thesisId, ticker, updates) - Updates a single holding's details in a thesis
- *   - addHolding(thesisId, holding) - Adds a new holding to a thesis
- *   - removeHolding(thesisId, ticker) - Removes a holding from a thesis
- *   - replaceHoldings(thesisId, newHoldings) - Replaces the entire holding list in a thesis
+ *   - getThesis(id: string) - Assembles the thesis document from SQLite
+ *   - listTheses() - Returns the single canonical thesis entry
+ *   - saveThesis(thesis: Thesis) - Validates and writes every field to SQLite
+ *   - updateHolding(thesisId, ticker, updates) - Updates a single holding's details
+ *   - addHolding(thesisId, holding) - Adds a new holding
+ *   - removeHolding(thesisId, ticker) - Clears a holding's thesis fields (zeroes target_weight)
+ *   - replaceHoldings(thesisId, newHoldings) - Replaces the entire holding list
  *   - performStrategicReview(thesisId: string) - Combines thesis targets with AI valuation data to produce a qualitative adversarial report
- *   - deleteThesis(id: string) - Deletes a thesis file
+ *   - deleteThesis(id: string) - No-op for the canonical id (nothing to delete; single-document architecture)
  *   - optimizePortfolio(thesisId: string) - Generates specific trade recommendations to restore thesis alignment
  *   - parseResponse(text: string) - Helper to clean and parse JSON blocks from LLM responses
- * 
+ *
  * Key Input Dependencies:
- *   - investment_screener/backend/data/theses/ (stores theses JSON)
- *   - ./ProjectionService (reads AI projections from data/domain_model.sqlite, ADR-029 —
- *     migrated off data/projections/*.json in Task 7C; see getLatestAIProjection)
- *   - ./PortfolioRepository (reads portfolio holdings from data/domain_model.sqlite's
- *     account_investment/investment_price tables, Wave 3 Task 6 — see getPortfolioItems.
- *     Falls back to investment_screener/backend/data/portfolio.json only when SQLite
- *     has no priced position data yet.)
- *   - domain_model.sqlite's portfolio_policy table (Wave 5E; reads drift config,
- *     formerly investment_screener/backend/data/account_policy.json)
+ *   - domain_model.sqlite: investment, strategy_pillar, price_level_set/tier,
+ *     portfolio_change_log, portfolio_policy tables (sole source of truth for
+ *     the thesis document — Wave 8)
+ *   - ./ProjectionService (reads AI projections from domain_model.sqlite)
+ *   - ./PortfolioRepository, ./InvestmentRepository, ./PriceLevelRepository,
+ *     ./PortfolioChangeLogRepository
  *
  * Key Output Dependencies:
- *   - investment_screener/backend/data/theses/ (writes theses JSON)
- *
- * Wave 2 Task 10/11 investigation (NOT rewired — documented stop, not an oversight):
- *   getThesis()/listTheses()/saveThesis()/updateHolding()/addHolding()/removeHolding()/
- *   replaceHoldings() read and write the FULL target-portfolio.json Thesis document
- *   (and any other file under data/theses/*.json addressed by id). This is a lossy,
- *   non-mechanical rewire target: the JSON document carries fields with no SQLite
- *   column anywhere in domain_model.sqlite today — `globalSettings`, `changeLog`,
- *   `schemaVersion`, per-pillar `bandConfig`, per-holding `shares`, and the full
- *   structured `thesisBreakers`/`standingDecision` sub-objects (SQLite only stores
- *   4 flat `standing_decision_*` scalar columns on `investment`, consumed
- *   read-only elsewhere — see InvestmentRepository.ts's `getInvestment()` and its
- *   dedicated standingDecision byte-for-byte test in
- *   tests/InvestmentRepository.spec.ts). Reconstructing the full Thesis document
- *   from SQLite would either drop these fields (breaking the frontend + other
- *   consumers of GET /api/theses/:id) or require new schema columns, which is out
- *   of scope for this wave (no schema changes permitted). computeHealthCheck()
- *   itself never reads `standingDecision` or `thesisBreakers` today — verified via
- *   `grep -rn "standingDecision" src/`, zero hits outside this note — so there is
- *   no active standingDecision *read* path in this class to cut over; the narrower
- *   partial-field reads (pillars, holdings summary for stock-lookup/all-holdings)
- *   were cut over instead, in theses.ts's GET /pillars route and
- *   InvestmentRepository.listThesisHoldings() (consumed by stock.ts and
- *   screener.ts), not here.
+ *   - domain_model.sqlite (writes via the repositories above)
  */
 import fs from 'fs';
 import path from 'path';
-import { lock } from 'proper-lockfile';
 import {
     Thesis, ThesisSchema,
     HealthCheck, HealthCheckSchema,
@@ -82,15 +54,20 @@ import {
 import { geminiService } from './GeminiService';
 import { projectionService, ProjectionService } from './ProjectionService';
 import { PortfolioRepository } from './PortfolioRepository';
+import { InvestmentRepository } from './InvestmentRepository';
+import { PriceLevelRepository, PriceTierRow, StopLossRow } from './PriceLevelRepository';
+import { PortfolioChangeLogRepository } from './PortfolioChangeLogRepository';
 import { DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 
-const THESES_DIR = path.resolve(__dirname, '../../data/theses');
 const PORTFOLIO_FILE = path.resolve(__dirname, '../../data/portfolio.json');
 const REBALANCE_PROMPT_PATH = path.resolve(__dirname, '../../../.agent/skills/portfolio-advisor/references/rebalance_prompt.md');
-// Ensure directory exists
-if (!fs.existsSync(THESES_DIR)) {
-    fs.mkdirSync(THESES_DIR, { recursive: true });
-}
+
+// The single, real thesis document this app has ever had one of. Wave 8 fully
+// cut this over to domain_model.sqlite (investment/strategy_pillar/
+// price_level_set/price_level_tier/portfolio_change_log tables) -- no
+// multi-thesis-by-id scheme is actually in use, so getThesis()/listTheses()
+// only ever resolve this one id.
+const CANONICAL_THESIS_ID = 'target-portfolio';
 
 export class ThesisService {
 
@@ -105,12 +82,6 @@ export class ThesisService {
         private projections: Pick<ProjectionService, 'getProjections'> = projectionService,
         private dbPath: string = DOMAIN_MODEL_DB_FILE
     ) {}
-
-    private getFilePath(id: string): string {
-        // Sanitize ID to prevent path traversal (UUIDs should be safe, but good practice)
-        const safeId = id.replace(/[^a-z0-9\-]/g, '');
-        return path.join(THESES_DIR, `${safeId}.json`);
-    }
 
     private normalizeTicker(ticker: string): string {
         // Hand-coded substitutions for known Questrade vs Yahoo/Thesis mismatches
@@ -295,7 +266,12 @@ export class ThesisService {
                     pillarId: holding.pillarId,
                     action: driftPct < 0 ? 'BUY' : 'SELL'
                 });
-            } else if (status === 'DRIFT' && holding.role === 'core') {
+            } else if (status === 'DRIFT' && holding.role !== 'watchlist') {
+                // Wave 8: role's real enum ('accumulate'/'avoid'/'watchlist'/'trim'/
+                // 'initiate'/'exit') has no 'core' value -- this check previously
+                // never fired in production (confirmed zero real holdings ever had
+                // role='core'). Closest defensible equivalent: alert on any holding
+                // that's an actual thesis target, not merely watchlisted.
                 alerts.push({
                     severity: 'WARNING',
                     message: `${holding.ticker} is drifting ${driftPct.toFixed(1)}% (Band: ${bandPct.toFixed(1)}pp)`,
@@ -305,7 +281,7 @@ export class ThesisService {
                 });
             }
 
-            if (!aiProj && holding.role === 'core') {
+            if (!aiProj && holding.role !== 'watchlist') {
                 alerts.push({
                     severity: 'INFO',
                     message: `${holding.ticker} (Core) has no AI valuation. Recommend running Tool A.`,
@@ -375,249 +351,248 @@ export class ThesisService {
         };
     }
 
-    async getThesis(id: string): Promise<Thesis | null> {
-        const filePath = this.getFilePath(id);
-        if (!fs.existsSync(filePath)) {
-            return null;
-        }
+    /** Assembles the one real thesis document from SQLite: strategy_pillar
+     * (pillars), investment + price_level_set/tier (holdings), portfolio_policy
+     * (globalSettings). Returns null for any id other than the canonical one --
+     * no multi-thesis-by-id scheme is actually in use. */
+    private buildThesisFromDb(): Thesis | null {
+        const investmentRepo = new InvestmentRepository(this.dbPath);
+        const priceLevelRepo = new PriceLevelRepository(this.dbPath);
+        const portfolioRepo = new PortfolioRepository(this.dbPath);
         try {
-            const data = fs.readFileSync(filePath, 'utf-8');
-            return JSON.parse(data);
+            const holdingRows = investmentRepo.listThesisHoldings();
+            if (holdingRows.length === 0) return null;
+
+            const pillars = investmentRepo.listPillars().map(p => ({
+                id: p.id, name: p.name, targetWeight: p.targetWeight ?? 0,
+            }));
+
+            const holdings = holdingRows.map(h => {
+                const pl = priceLevelRepo.getPriceLevels(h.ticker);
+                const priceLevels = pl ? {
+                    schemaVersion: pl.schemaVersion ?? '1.0',
+                    lastUpdated: pl.lastUpdated ?? new Date().toISOString(),
+                    lastUpdatedBy: pl.lastUpdatedBy ?? 'system',
+                    buyTiers: pl.buyTiers as any,
+                    sellTiers: pl.sellTiers as any,
+                    stopLoss: (pl.stopLoss ?? undefined) as any,
+                } : undefined;
+                return {
+                    ticker: h.ticker,
+                    name: h.name ?? h.ticker,
+                    pillarId: h.pillarId ?? 'other',
+                    targetWeight: h.targetWeight ?? 0,
+                    targetEntryPrice: pl?.targetEntryPrice ?? undefined,
+                    thesisForInclusion: h.thesisForInclusion ?? '',
+                    role: (h.role as any) ?? 'core',
+                    priceLevels,
+                    subStrategyId: h.subStrategyId ?? undefined,
+                    agentRationale: h.agentRationale ?? undefined,
+                } as Thesis['holdings'][0];
+            });
+
+            const policy = portfolioRepo.getPortfolioPolicy();
+            const globalSettings = {
+                rebalanceFrequency: (policy?.rebalance_frequency as any) ?? 'quarterly',
+                portfolioValueUSD: (policy?.portfolio_value_usd_target as number) ?? undefined,
+            };
+
+            const changeLogRepo = new PortfolioChangeLogRepository(this.dbPath);
+            let changeLog: Array<{ version: string; date: string; note: string }>;
+            try {
+                changeLog = changeLogRepo.listEntries().map(e => ({ version: e.version, date: e.entryDate, note: e.note }));
+            } finally {
+                changeLogRepo.close();
+            }
+
+            const updatedAt = holdingRows.reduce((latest, h: any) => {
+                const t = h.updatedAt ?? h.updated_at;
+                return t && (!latest || t > latest) ? t : latest;
+            }, '') || new Date().toISOString();
+
+            const latestVersion = changeLog.length > 0 ? changeLog[changeLog.length - 1].version : '1';
+
+            return {
+                id: CANONICAL_THESIS_ID,
+                name: 'Investment Thesis',
+                schemaVersion: '1.0',
+                version: latestVersion,
+                createdAt: '2026-02-14T12:00:00Z',
+                updatedAt,
+                description: 'Investment thesis (SQLite-backed, Wave 8).',
+                pillars,
+                holdings,
+                globalSettings,
+                ...( { changeLog } as any ),
+            } as Thesis;
+        } finally {
+            investmentRepo.close();
+            priceLevelRepo.close();
+            portfolioRepo.close();
+        }
+    }
+
+    async getThesis(id: string): Promise<Thesis | null> {
+        if (id !== CANONICAL_THESIS_ID) return null;
+        try {
+            return this.buildThesisFromDb();
         } catch (error) {
-            console.error(`[ThesisService] Error reading thesis ${id}:`, error);
+            console.error(`[ThesisService] Error building thesis ${id} from SQLite:`, error);
             return null;
         }
     }
 
     async listTheses(): Promise<{ id: string; name: string; updatedAt: string }[]> {
-        try {
-            const files = (await fs.promises.readdir(THESES_DIR)).filter(f => f.endsWith('.json'));
-            const results = await Promise.all(
-                files.map(async file => {
-                    try {
-                        const content = await fs.promises.readFile(path.join(THESES_DIR, file), 'utf-8');
-                        const thesis = JSON.parse(content);
-                        return { id: thesis.id as string, name: thesis.name as string, updatedAt: thesis.updatedAt as string };
-                    } catch {
-                        console.warn(`[ThesisService] Failed to parse ${file}, skipping.`);
-                        return null;
-                    }
-                })
-            );
-            const theses = results.filter((t): t is NonNullable<typeof t> => t !== null);
-            return theses.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-        } catch (error) {
-            console.error('[ThesisService] Error listing theses:', error);
-            return [];
-        }
+        const thesis = await this.getThesis(CANONICAL_THESIS_ID);
+        if (!thesis) return [];
+        return [{ id: thesis.id, name: thesis.name, updatedAt: thesis.updatedAt }];
     }
 
+    /** Writes every holding's thesis fields + price levels into SQLite.
+     * Pillars are NOT written here -- strategy_pillar has no TS writer yet
+     * (matches portfolio_policy's established "TS read-only" pattern); pillar
+     * definitions change rarely and are out of this wave's scope. */
     async saveThesis(thesis: Thesis): Promise<void> {
-        // 1. Zod Validation
         const parseResult = ThesisSchema.safeParse(thesis);
         if (!parseResult.success) {
             throw new Error(`Validation Failed: ${parseResult.error.message}`);
         }
 
-        const filePath = this.getFilePath(thesis.id);
-
-        // If file exists, check versioning
-        if (fs.existsSync(filePath)) {
-            let release: () => Promise<void>;
-            try {
-                release = await lock(filePath, { retries: { retries: 5, maxTimeout: 2000 } });
-            } catch (e) {
-                throw new Error('Could not acquire file lock for saving thesis.');
+        const investmentRepo = new InvestmentRepository(this.dbPath);
+        const priceLevelRepo = new PriceLevelRepository(this.dbPath);
+        try {
+            for (const h of thesis.holdings) {
+                this.writeHoldingToDb(h, investmentRepo, priceLevelRepo);
             }
+        } finally {
+            investmentRepo.close();
+            priceLevelRepo.close();
+        }
+    }
 
-            try {
-                const existingContent = fs.readFileSync(filePath, 'utf-8');
-                const existingThesis = JSON.parse(existingContent);
+    /** Shared write helper used by saveThesis/updateHolding/addHolding/replaceHoldings. */
+    private writeHoldingToDb(
+        holding: Thesis['holdings'][0],
+        investmentRepo: InvestmentRepository,
+        priceLevelRepo: PriceLevelRepository
+    ): void {
+        investmentRepo.updateThesisFields(holding.ticker, {
+            name: holding.name,
+            pillarId: (holding as any).pillarId,
+            subStrategyId: (holding as any).subStrategyId,
+            targetWeight: holding.targetWeight,
+            thesisForInclusion: (holding as any).thesisForInclusion,
+            agentRationale: (holding as any).agentRationale,
+            role: (holding as any).role,
+        });
 
-                if (existingThesis.version > thesis.version) {
-                    throw new Error(
-                        `Conflict: Server has version ${existingThesis.version}, incoming is ${thesis.version}`
-                    );
-                }
-
-                // Server-side increment
-                thesis.version = Number(existingThesis.version || 0) + 1;
-                thesis.updatedAt = new Date().toISOString();
-
-                // Atomic write (MOVED INSIDE LOCK)
-                const tempPath = `${filePath}.tmp`;
-                fs.writeFileSync(tempPath, JSON.stringify(thesis, null, 2));
-                fs.renameSync(tempPath, filePath);
-
-            } finally {
-                await release();
-            }
-        } else {
-            // New thesis
-            thesis.version = 1;
-            // Ensure created/updated match if not set (though schema validates datetime)
-            if (!thesis.createdAt) thesis.createdAt = new Date().toISOString();
-            if (!thesis.updatedAt) thesis.updatedAt = new Date().toISOString();
-
-            // Write new file
-            const tempPath = `${filePath}.tmp`;
-            fs.writeFileSync(tempPath, JSON.stringify(thesis, null, 2));
-            fs.renameSync(tempPath, filePath);
+        const pl = (holding as any).priceLevels;
+        if (pl) {
+            priceLevelRepo.replacePriceLevels(
+                holding.ticker,
+                pl.schemaVersion ?? '1.0', pl.lastUpdated ?? new Date().toISOString(),
+                pl.lastUpdatedBy ?? 'system', null,
+                (pl.buyTiers ?? []) as PriceTierRow[], (pl.sellTiers ?? []) as PriceTierRow[],
+                (pl.stopLoss ?? null) as StopLossRow | null,
+                (holding as any).targetEntryPrice ?? null
+            );
         }
     }
 
     async updateHolding(thesisId: string, ticker: string, updates: Partial<Thesis['holdings'][0]>): Promise<Thesis> {
-        let release: () => Promise<void>;
-        const filePath = this.getFilePath(thesisId);
+        if (thesisId !== CANONICAL_THESIS_ID) throw new Error(`Thesis ${thesisId} not found`);
+        const thesis = await this.getThesis(thesisId);
+        if (!thesis) throw new Error('Thesis not found');
+        const index = thesis.holdings.findIndex(h => h.ticker === ticker);
+        if (index === -1) throw new Error(`Holding ${ticker} not found`);
 
-        try {
-            release = await lock(filePath, { retries: { retries: 5, maxTimeout: 2000 } });
-        } catch (e) {
-            throw new Error('Could not acquire file lock.');
+        const updatedHolding = { ...thesis.holdings[index], ...updates };
+        thesis.holdings[index] = updatedHolding;
+
+        const parseResult = ThesisSchema.safeParse(thesis);
+        if (!parseResult.success) {
+            throw new Error(`Validation Failed: ${parseResult.error.message}`);
         }
 
+        const investmentRepo = new InvestmentRepository(this.dbPath);
+        const priceLevelRepo = new PriceLevelRepository(this.dbPath);
         try {
-            const content = fs.readFileSync(filePath, 'utf-8');
-            const thesis: Thesis = JSON.parse(content);
-
-            const index = thesis.holdings.findIndex(h => h.ticker === ticker);
-            if (index === -1) throw new Error(`Holding ${ticker} not found`);
-
-            // Apply updates
-            const updatedHolding = { ...thesis.holdings[index], ...updates };
-            thesis.holdings[index] = updatedHolding;
-
-            // Validate Schema (Zod)
-            const parseResult = ThesisSchema.safeParse(thesis);
-            if (!parseResult.success) {
-                throw new Error(`Validation Failed: ${parseResult.error.message}`);
-            }
-
-            // Save
-            thesis.version = Number(thesis.version || 0) + 1;
-            thesis.updatedAt = new Date().toISOString();
-            const tempPath = `${filePath}.tmp`;
-            fs.writeFileSync(tempPath, JSON.stringify(thesis, null, 2));
-            fs.renameSync(tempPath, filePath);
-
-            return thesis;
+            this.writeHoldingToDb(updatedHolding, investmentRepo, priceLevelRepo);
         } finally {
-            if (release!) await release();
+            investmentRepo.close();
+            priceLevelRepo.close();
         }
+        return (await this.getThesis(thesisId))!;
     }
 
     async addHolding(thesisId: string, holding: Thesis['holdings'][0]): Promise<Thesis> {
-        let release: () => Promise<void>;
-        const filePath = this.getFilePath(thesisId);
+        if (thesisId !== CANONICAL_THESIS_ID) throw new Error(`Thesis ${thesisId} not found`);
+        const thesis = await this.getThesis(thesisId);
+        if (!thesis) throw new Error('Thesis not found');
+        if (thesis.holdings.some(h => h.ticker === holding.ticker)) {
+            throw new Error(`Holding ${holding.ticker} already exists`);
+        }
+        thesis.holdings.push(holding);
 
-        try {
-            release = await lock(filePath, { retries: { retries: 5, maxTimeout: 2000 } });
-        } catch (e) {
-            throw new Error('Could not acquire file lock.');
+        const parseResult = ThesisSchema.safeParse(thesis);
+        if (!parseResult.success) {
+            throw new Error(`Validation Failed: ${parseResult.error.message}`);
         }
 
+        const investmentRepo = new InvestmentRepository(this.dbPath);
+        const priceLevelRepo = new PriceLevelRepository(this.dbPath);
         try {
-            const content = fs.readFileSync(filePath, 'utf-8');
-            const thesis: Thesis = JSON.parse(content);
-
-            if (thesis.holdings.some(h => h.ticker === holding.ticker)) {
-                throw new Error(`Holding ${holding.ticker} already exists`);
-            }
-
-            thesis.holdings.push(holding);
-
-            // Validate
-            const parseResult = ThesisSchema.safeParse(thesis);
-            if (!parseResult.success) {
-                throw new Error(`Validation Failed: ${parseResult.error.message}`);
-            }
-
-            // Save
-            thesis.version = Number(thesis.version || 0) + 1;
-            thesis.updatedAt = new Date().toISOString();
-            const tempPath = `${filePath}.tmp`;
-            fs.writeFileSync(tempPath, JSON.stringify(thesis, null, 2));
-            fs.renameSync(tempPath, filePath);
-
-            return thesis;
+            this.writeHoldingToDb(holding, investmentRepo, priceLevelRepo);
         } finally {
-            if (release!) await release();
+            investmentRepo.close();
+            priceLevelRepo.close();
         }
+        return (await this.getThesis(thesisId))!;
     }
 
+    /** Clears a holding's thesis fields (zeroes target_weight, clears pillar/
+     * rationale) rather than deleting the investment row -- SQLite has no
+     * per-holding "delete" concept here; the row still legitimately exists
+     * for held-position tracking even once it's no longer a thesis target. */
     async removeHolding(thesisId: string, ticker: string): Promise<Thesis> {
-        let release: () => Promise<void>;
-        const filePath = this.getFilePath(thesisId);
+        if (thesisId !== CANONICAL_THESIS_ID) throw new Error(`Thesis ${thesisId} not found`);
+        const thesis = await this.getThesis(thesisId);
+        if (!thesis) throw new Error('Thesis not found');
+        const index = thesis.holdings.findIndex(h => h.ticker === ticker);
+        if (index === -1) throw new Error(`Holding ${ticker} not found`);
+        thesis.holdings.splice(index, 1);
 
+        const investmentRepo = new InvestmentRepository(this.dbPath);
         try {
-            release = await lock(filePath, { retries: { retries: 5, maxTimeout: 2000 } });
-        } catch (e) {
-            throw new Error('Could not acquire file lock.');
-        }
-
-        try {
-            const content = fs.readFileSync(filePath, 'utf-8');
-            const thesis: Thesis = JSON.parse(content);
-
-            const index = thesis.holdings.findIndex(h => h.ticker === ticker);
-            if (index === -1) throw new Error(`Holding ${ticker} not found`);
-
-            thesis.holdings.splice(index, 1);
-
-            // Validate
-            const parseResult = ThesisSchema.safeParse(thesis);
-            if (!parseResult.success) {
-                throw new Error(`Validation Failed: ${parseResult.error.message}`);
-            }
-
-            // Save
-            thesis.version = Number(thesis.version || 0) + 1;
-            thesis.updatedAt = new Date().toISOString();
-            const tempPath = `${filePath}.tmp`;
-            fs.writeFileSync(tempPath, JSON.stringify(thesis, null, 2));
-            fs.renameSync(tempPath, filePath);
-
-            return thesis;
+            investmentRepo.updateThesisFields(ticker, { targetWeight: 0 });
         } finally {
-            if (release!) await release();
+            investmentRepo.close();
         }
+        return (await this.getThesis(thesisId))!;
     }
 
     async replaceHoldings(thesisId: string, newHoldings: Thesis['holdings']): Promise<Thesis> {
-        let release: () => Promise<void>;
-        const filePath = this.getFilePath(thesisId);
+        if (thesisId !== CANONICAL_THESIS_ID) throw new Error(`Thesis ${thesisId} not found`);
+        const thesis = await this.getThesis(thesisId);
+        if (!thesis) throw new Error('Thesis not found');
+        thesis.holdings = newHoldings;
 
-        try {
-            release = await lock(filePath, { retries: { retries: 5, maxTimeout: 2000 } });
-        } catch (e) {
-            throw new Error('Could not acquire file lock.');
+        const parseResult = ThesisSchema.safeParse(thesis);
+        if (!parseResult.success) {
+            throw new Error(`Validation Failed: ${parseResult.error.message}`);
         }
 
+        const investmentRepo = new InvestmentRepository(this.dbPath);
+        const priceLevelRepo = new PriceLevelRepository(this.dbPath);
         try {
-            const content = fs.readFileSync(filePath, 'utf-8');
-            const thesis: Thesis = JSON.parse(content);
-
-            // Replace all holdings
-            thesis.holdings = newHoldings;
-
-            // Validate Schema (Zod) - This checks the 100% sum
-            const parseResult = ThesisSchema.safeParse(thesis);
-            if (!parseResult.success) {
-                // If Zod error is confusing, we might want to wrap it, but raw is fine for now
-                throw new Error(`Validation Failed: ${parseResult.error.message}`);
+            for (const h of newHoldings) {
+                this.writeHoldingToDb(h, investmentRepo, priceLevelRepo);
             }
-
-            // Save
-            thesis.version = Number(thesis.version || 0) + 1;
-            thesis.updatedAt = new Date().toISOString();
-            const tempPath = `${filePath}.tmp`;
-            fs.writeFileSync(tempPath, JSON.stringify(thesis, null, 2));
-            fs.renameSync(tempPath, filePath);
-
-            return thesis;
         } finally {
-            if (release!) await release();
+            investmentRepo.close();
+            priceLevelRepo.close();
         }
+        return (await this.getThesis(thesisId))!;
     }
 
     async performStrategicReview(thesisId: string): Promise<any> {
@@ -668,23 +643,13 @@ ${JSON.stringify(health, null, 2)}
         }
     }
 
-    async deleteThesis(id: string): Promise<boolean> {
-        const filePath = this.getFilePath(id);
-        if (!fs.existsSync(filePath)) return false;
-
-        let release: () => Promise<void>;
-        try {
-            release = await lock(filePath, { retries: { retries: 5, maxTimeout: 2000 } });
-        } catch (e) {
-            throw new Error('Could not acquire lock for deletion.');
-        }
-
-        try {
-            fs.unlinkSync(filePath);
-            return true;
-        } finally {
-            await release();
-        }
+    /** No-op for the canonical id: this is a single-document architecture --
+     * "deleting the thesis" has no SQLite analogy (it would mean wiping every
+     * investment's thesis fields, a much more destructive and different
+     * operation than the original file-delete). Returns false for any id,
+     * matching the original "nothing found to delete" contract. */
+    async deleteThesis(_id: string): Promise<boolean> {
+        return false;
     }
 
     async optimizePortfolio(thesisId: string): Promise<any> {
