@@ -47,6 +47,36 @@ not as parallel `-v2`/`-v3`-suffixed documents.
   `investment_price`, and added `broker_exchange_rate`/`broker_reported_total` as the one
   broker-reported fact this domain can't recompute (see ADR-030). Per-account and portfolio
   totals are always computed live from `account_investment`/`investment_price`, never stored.
+- **Wave 3 completion** (post-hoc, `investment.sector`/`investment.industry`): added to carry
+  the two enriched holding-display facts `GET /api/portfolio` needs from `portfolio.json` that
+  the schema didn't already carry (resolved by `fetch_portfolio_heatmap.py`'s yfinance lookup).
+  Nullable TEXT, self-healed into any pre-existing real file via `SCHEMA_EVOLUTIONS` in
+  `db_client.py` (`CREATE TABLE IF NOT EXISTS` is a no-op against a table that already exists).
+- **Wave 4 addition** (`trade_log_entry.tv_order_id`): added so `trading.ts`'s `/modify`,
+  `/cancel`, and `/log/sync-from-tv` routes can match a logged entry against its live TradingView
+  order id. Also added via `SCHEMA_EVOLUTIONS` self-heal, not the original `CREATE TABLE`.
+- **Wave 1 Task 5/6 post-hoc additions** (`projection_version.raw_json`/`legacy_id`/`source`/
+  `last_grok_sweep`/`catalyst_updates_json`): not present in this document's original v3 design —
+  added directly in `db_client.py` (some via `SCHEMA_EVOLUTIONS` self-heal) to close real gaps
+  found after implementation: `raw_json` (full validated `Projection` object, round-trip fidelity
+  for `.passthrough()` fields) and `legacy_id` (original Zod `Projection.id` UUID) so this file
+  stays the single source of truth instead of `ProjectionRepository.ts` issuing its own runtime
+  `ALTER TABLE`; `source`/`last_grok_sweep`/`catalyst_updates_json` so `apply_catalyst.py` has a
+  SQL-queryable equivalent of the JSON model's `entry.source`/`entry.lastGrokSweep`/
+  `entry.catalystUpdates` fields (`source` in particular is required for
+  `_find_latest_ai_agent`'s source-filtered lookup — `MAX(version)` alone silently picks a
+  non-`AI_AGENT` or non-chronological row for several real tickers). See
+  `db_client.py`'s top-of-file comment for full detail and real-data evidence.
+- **Wave 5E addition** (`portfolio_policy`): singleton portfolio-level config table (rebalance
+  frequency, portfolio value target, risk-budget caps, rebalance bands, account-preference and
+  PSU-funding rule JSON blobs) — see "Missing top-level `PORTFOLIO`/config entity" section below
+  for full column rationale. Present in `db_client.py`'s `CREATE TABLE IF NOT EXISTS` block but
+  had not yet been added to the ERD in this section; fixed in this pass (Wave 6).
+- **Wave 6 documentation pass** (this revision, no schema change): reconciled this document and
+  `supplementary-domain-schemas.md` against the real, current `db_client.py` files in both
+  `domain_model/` and `intelligence/` — added the post-hoc columns/tables listed above to the
+  Mermaid ERD and column-level SQL below, which had drifted out of sync with the schema actually
+  shipped in Waves 1, 3, 4, and 5E.
 
 ---
 
@@ -131,6 +161,34 @@ erDiagram
     INVESTMENT ||--o{ ORDER_EXECUTION : "ordered as"
     ACCOUNT ||--o{ CASH_FLOW : "moves cash in/out of"
 
+    PORTFOLIO_POLICY {
+        TEXT policy_id PK "singleton row, e.g. 'default'"
+        TEXT rebalance_frequency
+        REAL portfolio_value_usd_target
+        REAL max_marginal_risk_contribution_pct
+        REAL max_cluster_variance_contribution_pct
+        REAL rebalance_band_relative_pct
+        REAL rebalance_band_absolute_pct
+        REAL rebalance_band_critical_multiplier
+        TEXT account_preference_rules_json
+        TEXT psu_funding_rule_json
+        TEXT updated_at
+    }
+
+    BROKER_EXCHANGE_RATE {
+        INTEGER id PK "singleton, CHECK(id=1)"
+        REAL usd_to_cad_rate
+        TEXT synced_at
+    }
+
+    BROKER_REPORTED_TOTAL {
+        INTEGER id PK "singleton, CHECK(id=1)"
+        REAL total_usd
+        REAL total_cad
+        TEXT synced_at
+        TEXT source
+    }
+
     ACCOUNT {
         TEXT account_id PK
         TEXT account_name
@@ -142,6 +200,8 @@ erDiagram
         TEXT investment_id PK
         TEXT symbol
         TEXT name
+        TEXT sector "post-hoc, Wave 3 completion, nullable"
+        TEXT industry "post-hoc, Wave 3 completion, nullable"
         TEXT asset_class
         TEXT currency
         TEXT lifecycle_status "INITIATE|ACCUMULATE|MAINTAIN|TRIM|EXIT|WATCHLIST|AVOID|RESEARCH_ONLY"
@@ -247,6 +307,11 @@ erDiagram
         TEXT research_event_id FK
         TEXT snapshot_json
         TEXT analytics_log_json
+        TEXT raw_json "post-hoc, Wave 1 Task 5"
+        TEXT legacy_id "post-hoc, Wave 1 Task 5"
+        TEXT source "post-hoc, Wave 1 Task 6"
+        TEXT last_grok_sweep "post-hoc, Wave 1 Task 6"
+        TEXT catalyst_updates_json "post-hoc, Wave 1 Task 6"
     }
 
     PROJECTION_SCENARIO {
@@ -279,10 +344,11 @@ erDiagram
     TRADE_LOG_ENTRY {
         TEXT entry_id PK
         TEXT investment_id FK
-        TEXT account_id FK
+        TEXT account_id FK "OPEN QUESTION: see note below diagram"
         TEXT action
         REAL shares
         REAL price
+        TEXT tv_order_id "post-hoc, Wave 4 Task 11"
     }
 
     ORDER_EXECUTION {
@@ -304,6 +370,17 @@ erDiagram
 
 No `POSITION` or `INSTRUMENT` root entities — the comparison above is the justification for
 their absence, not an unexamined default.
+
+**OPEN DESIGN QUESTION, not resolved by this Wave 6 documentation pass:**
+`trade_log_entry.account_id` is shown above as a typed FK to `account(account_id)`, matching
+this document's own ERD relationship (`ACCOUNT ||--o{ TRADE_LOG_ENTRY : "logged against"`) and
+`db_client.py`'s real DDL. `cash_flow`, however, keeps a plain `account TEXT` column with no FK
+— see `supplementary-domain-schemas.md`'s `cash_flow` table — even though this same diagram's
+Wave 3-era reasoning would suggest the same `account_id FK` treatment. The two tables answer
+"does `account` get promoted to a real FK" inconsistently, and this pass intentionally left that
+inconsistency in place rather than picking a side (Task 1 here is schema transcription, not
+redesign). Flagged for a follow-up decision before any repository work assumes one behavior or
+the other. See `db_client.py`'s top-of-file comment for the full evidence trail.
 
 ---
 
@@ -333,6 +410,8 @@ CREATE TABLE investment (
     investment_id              TEXT PRIMARY KEY,          -- generated: ticker, or CASH_USD / CASH_CAD for cash concepts
     symbol                      TEXT NOT NULL,
     name                         TEXT,
+    sector                        TEXT,                   -- post-hoc (Wave 3 completion): nullable, resolved via fetch_portfolio_heatmap.py's yfinance lookup, self-healed via SCHEMA_EVOLUTIONS
+    industry                       TEXT,                  -- post-hoc (Wave 3 completion): nullable, same source/self-heal as sector
     asset_class                   TEXT NOT NULL,           -- EQUITY, ETF, CASH, etc.
     currency                       TEXT NOT NULL DEFAULT 'USD',
     lifecycle_status                 TEXT,                  -- INITIATE|ACCUMULATE|MAINTAIN|TRIM|EXIT|WATCHLIST|AVOID|RESEARCH_ONLY
@@ -471,6 +550,11 @@ CREATE TABLE projection_version (
     research_event_id                  TEXT REFERENCES intelligence_event(event_id),
     snapshot_json                       TEXT,
     analytics_log_json                    TEXT,
+    raw_json                               TEXT,  -- post-hoc (Wave 1 Task 5): full validated Projection object, round-trip fidelity for .passthrough() fields
+    legacy_id                                TEXT,  -- post-hoc (Wave 1 Task 5): original Zod Projection.id UUID, groups version rows by projection identity
+    source                                     TEXT,  -- post-hoc (Wave 1 Task 6): AI_AGENT|USER|SYSTEM|ETF_ANALYSIS, required by apply_catalyst.py's source-filtered latest lookup
+    last_grok_sweep                              TEXT,  -- post-hoc (Wave 1 Task 6): entry.lastGrokSweep equivalent
+    catalyst_updates_json                          TEXT,  -- post-hoc (Wave 1 Task 6): entry.catalystUpdates equivalent, appended by apply_catalyst.py
     UNIQUE(investment_id, version)
 );
 
@@ -504,7 +588,25 @@ CREATE INDEX idx_projection_scenario_projection ON projection_scenario(projectio
 
 -- Unchanged from v2/prior design: trade_log_entry, order_execution, cash_flow,
 -- cash_flow_baseline — their instrument_id columns now reference investment(investment_id)
--- instead of the old instrument(instrument_id).
+-- instead of the old instrument(instrument_id). Full column-by-column DDL for these four
+-- tables lives in supplementary-domain-schemas.md (Domain 2, 3, 4 section), not duplicated
+-- here. trade_log_entry additionally carries a post-hoc tv_order_id TEXT column (Wave 4
+-- Task 11, self-healed via SCHEMA_EVOLUTIONS) not present in this document's original design —
+-- see supplementary-domain-schemas.md for the updated column table.
+
+-- portfolio_policy: full DDL + design rationale under "Missing top-level PORTFOLIO/config
+-- entity" further below in this document (Wave 5E addition) — now also reflected in the
+-- Mermaid ERD above (Wave 6). Note: this task's brief cites this table's DDL source as
+-- "domain-data-model.md § Missing top-level PORTFOLIO/config entity" — that exact
+-- section-heading text does not exist in this file (checked); the columns are
+-- schema-consistent with every real design document that discusses portfolio_policy, so this
+-- is a citation-accuracy gap, not a schema-content one. Not resolved here — flagged per
+-- db_client.py's own top-of-file comment, left for a reviewer to confirm rather than silently
+-- picking a side.
+--
+-- broker_exchange_rate / broker_reported_total: full DDL given earlier in this document (the
+-- CREATE TABLE statements immediately after account_investment, Wave 3 additions) — now also
+-- reflected in the Mermaid ERD above (Wave 6).
 ```
 
 ---
