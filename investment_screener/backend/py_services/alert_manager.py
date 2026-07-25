@@ -46,11 +46,17 @@ if _TV_SCRIPTS_DIR not in sys.path:
 
 from tv_client import tv_call  # noqa: E402
 
-# Same-directory import (Task 5C-5) — prediction_ledger.py lives in this
-# same py_services/ directory, so a plain top-level import works with no
-# sys.path manipulation (unlike tv_client.py's genuinely cross-directory
+# Same-directory import (Task 5C-5, cut over to intelligence_event reads
+# in Wave 5D Task 8 -- this consumer was missed by Task 3's original
+# cutover, found via Task 8's archive-prerequisite grep against the now-
+# archived predictions.jsonl). generate_track_record_report.py lives in
+# this same py_services/ directory, so a plain top-level import works with
+# no sys.path manipulation (unlike tv_client.py's genuinely cross-directory
 # import above).
-from prediction_ledger import load_predictions  # noqa: E402
+from generate_track_record_report import (  # noqa: E402
+    DEFAULT_INTEL_DB_PATH,
+    _load_predictions_from_ledger,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -520,15 +526,17 @@ def _latest_alert_metadata(alert_id: str) -> Optional[AlertMetadata]:
     return matches[-1] if matches else None
 
 
-def link_alert_to_claim(alert_id: str, claim_id_from_e3: str) -> bool:
+def link_alert_to_claim(
+    alert_id: str, claim_id_from_e3: str, db_path: str = DEFAULT_INTEL_DB_PATH
+) -> bool:
     """
     Link an existing alert's metadata to an E3 prediction-ledger claim,
     for audit ("was this alert based on this claim?").
 
     Verifies BOTH the alert (via _latest_alert_metadata) and the claim
-    (via prediction_ledger.load_predictions(), matching on the claim's
-    real `id` field) exist before linking — a link to a nonexistent
-    alert or claim is a no-op, not a partial/dangling link.
+    (via a PREDICTION_CLAIM read from intelligence_event, matching on the
+    claim's real `id` field) exist before linking — a link to a
+    nonexistent alert or claim is a no-op, not a partial/dangling link.
 
     Appends a NEW AlertMetadata snapshot (5C-4's append-only design):
     a copy of the alert's latest record with `linked_claim_id` set to
@@ -561,7 +569,7 @@ def link_alert_to_claim(alert_id: str, claim_id_from_e3: str) -> bool:
         logger.warning("link_alert_to_claim: no existing alert metadata for '%s'", alert_id)
         return False
 
-    claims = load_predictions()
+    claims = _load_predictions_from_ledger(db_path)
     if not any(c.get("id") == claim_id_from_e3 for c in claims):
         logger.warning("link_alert_to_claim: claim '%s' not found in predictions ledger",
                         claim_id_from_e3)

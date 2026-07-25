@@ -290,13 +290,20 @@ def _fetch_consensus_for_ticker(ticker: str) -> dict | None:
 
 # Import at module level for easier testing
 try:
-    from prediction_ledger import load_predictions as _load_predictions
     from prediction_ledger import make_prediction_id as _make_prediction_id
     from prediction_ledger import append_prediction as _append_prediction
-    from prediction_ledger import load_graded as _load_graded
     from prediction_ledger import append_grade as _append_grade
     from prediction_ledger import grade_claim as _grade_claim
     from prediction_ledger import PREDICTIONS_PATH
+    # Wave 5D Task 3 consumer cutover: reads now come from intelligence.sqlite's
+    # PREDICTION_CLAIM/PREDICTION_GRADED events instead of predictions.jsonl/
+    # predictions_graded.jsonl -- bound to the same _load_predictions/_load_graded
+    # names so every existing call site and test's monkeypatch target is unchanged.
+    from generate_track_record_report import (
+        DEFAULT_INTEL_DB_PATH,
+        _load_graded_from_ledger as _load_graded,
+        _load_predictions_from_ledger as _load_predictions,
+    )
 except ImportError:
     _load_predictions = None
     _make_prediction_id = None
@@ -305,24 +312,38 @@ except ImportError:
     _append_grade = None
     _grade_claim = None
     PREDICTIONS_PATH = None
+    DEFAULT_INTEL_DB_PATH = None
 
 
 def harvest_earnings_expectations(
     tickers: list[str] | None = None,
     predictions_path: Path = PREDICTIONS_PATH,
+    intel_db_path=DEFAULT_INTEL_DB_PATH,
+    jsonl_path=None,
 ) -> list[dict]:
     """Harvest earnings expectations for given tickers, deduping on unchanged consensus.
 
     Main function for B4 Task 3-4. Compares current consensus to last-logged value
-    (read from tail of predictions.jsonl). Appends new claim only if consensus changed
-    or no prior record exists.
+    (read from intelligence.sqlite's PREDICTION_CLAIM events, Wave 5D Task 3
+    consumer cutover). Appends new claim only if consensus changed or no prior
+    record exists.
 
     Args:
         tickers: List of ticker symbols to harvest. If None, uses all holdings
             from target-portfolio.json.
-        predictions_path: Path to the prediction ledger file. Defaults to the
-            real, tracked predictions.jsonl; tests should override this with a
-            tmp_path fixture so they never write to the real ledger.
+        predictions_path: Path new prediction records are appended to (JSONL
+            remains the write path's target during the Hybrid dual-write
+            window; unaffected by this read-path cutover). Defaults to the
+            real, tracked predictions.jsonl; tests should override this with
+            a tmp_path fixture so they never write to the real ledger.
+        intel_db_path: intelligence.sqlite path to read existing prediction
+            claims from for dedup. Tests should override this with a
+            tmp_path-scoped sqlite file so they never read the real, tracked
+            intelligence.sqlite.
+        jsonl_path: Passed through to append_prediction()'s intelligence-ledger
+            dual-write (observations.jsonl by default). Tests must override
+            this with a tmp_path-scoped file so they never write to the real
+            observations.jsonl.
 
     Returns:
         List of newly appended prediction dicts (empty if all were unchanged).
@@ -335,7 +356,7 @@ def harvest_earnings_expectations(
 
     # Load existing predictions (limit to last 1000 for efficiency)
     try:
-        all_preds = _load_predictions(predictions_path)
+        all_preds = _load_predictions(intel_db_path)
         # Tail: keep only the last 1000
         recent_preds = all_preds[-1000:] if len(all_preds) > 1000 else all_preds
     except Exception:
@@ -444,7 +465,7 @@ def harvest_earnings_expectations(
                 harvestedAt=datetime.now(timezone.utc).isoformat(),
             )
 
-            _append_prediction(prediction.model_dump(), predictions_path)
+            _append_prediction(prediction.model_dump(), predictions_path, jsonl_path=jsonl_path)
             newly_appended.append(prediction.model_dump())
 
         except Exception:
@@ -456,13 +477,27 @@ def harvest_earnings_expectations(
 
 # ── Grade core logic (Tasks 6-7) ────────────────────────────────────────────
 
-def grade_earnings_expectations() -> list[dict]:
+def grade_earnings_expectations(
+    intel_db_path=DEFAULT_INTEL_DB_PATH, jsonl_path=None
+) -> list[dict]:
     """Grade earnings expectations by comparing actual results to consensus.
 
     Main function for B4 Task 6-7. Fetches actual EPS/revenue post-earnings,
-    classifies as BEAT/MEET/MISS, and appends to predictions_graded.jsonl.
+    classifies as BEAT/MEET/MISS, and appends to predictions_graded.jsonl
+    (and, per Wave 5D's Hybrid dual-write, the intelligence ledger).
     Only grades predictions with earnings_date <= today (past-date-only).
     Idempotent: grading same prediction twice produces identical output.
+
+    Args:
+        intel_db_path: intelligence.sqlite path to read PREDICTION_CLAIM/
+            PREDICTION_GRADED events from (Wave 5D Task 3 consumer cutover --
+            replaces the former predictions.jsonl/predictions_graded.jsonl
+            reads). Tests should override this with a tmp_path-scoped sqlite
+            file so they never read the real, tracked intelligence.sqlite.
+        jsonl_path: Passed through to append_grade()'s intelligence-ledger
+            dual-write (observations.jsonl by default). Tests must override
+            this with a tmp_path-scoped file so they never write to the real
+            observations.jsonl.
 
     Returns:
         List of newly appended grade dicts (empty if no predictions to grade).
@@ -475,12 +510,12 @@ def grade_earnings_expectations() -> list[dict]:
 
     # Load predictions and already-graded records
     try:
-        predictions = _load_predictions()
+        predictions = _load_predictions(intel_db_path)
     except Exception:
         predictions = []
 
     try:
-        graded_records = _load_graded()
+        graded_records = _load_graded(intel_db_path)
         graded_pred_ids = {g.get("predictionId") for g in graded_records}
     except Exception:
         graded_records = []
@@ -585,7 +620,7 @@ def grade_earnings_expectations() -> list[dict]:
                 verdict=verdict,
             )
 
-            _append_grade(grade_rec.model_dump())
+            _append_grade(grade_rec.model_dump(), jsonl_path=jsonl_path)
             newly_graded.append(grade_rec.model_dump())
 
         except Exception:
@@ -656,8 +691,7 @@ def get_earnings_context(ticker: str, days_ahead: int = 7) -> dict | None:
 
         # Calculate prior beat rate from graded predictions
         try:
-            from prediction_ledger import load_graded
-            graded = load_graded()
+            graded = _load_graded(DEFAULT_INTEL_DB_PATH) if _load_graded else []
             # Filter for this ticker's earnings grades
             ticker_grades = [g for g in graded if ticker in g.get("predictionId", "")]
             if ticker_grades:

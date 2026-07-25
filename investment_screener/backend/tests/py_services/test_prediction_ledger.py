@@ -7,6 +7,7 @@ PY_SERVICES = REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(PY_SERVICES))
 
 from prediction_ledger import (  # noqa: E402
+    _append_jsonl,
     append_grade,
     append_prediction,
     grade_claim,
@@ -23,33 +24,33 @@ class TestMakePredictionId:
             "CORZ:action_rating:2026-05-02"
 
 
-class TestAppendAndLoadPredictions:
+class TestLoadJsonlPrimitives:
+    """load_predictions()/load_graded() and the underlying _append_jsonl() helper are
+    kept as JSONL primitives -- append_prediction()/append_grade() no longer call them
+    (see test_append_prediction_writes_only_to_intelligence_ledger below), but
+    prediction_ledger.py's own `--validate` CLI utility (_validate_all()) still uses
+    load_predictions()/load_graded() directly against an explicit path, e.g. to
+    schema-validate the archived predictions.jsonl on demand. These tests exercise
+    that primitive directly, not through the (now ledger-only) public append functions.
+    """
     def test_roundtrip(self, tmp_path):
         path = tmp_path / "predictions.jsonl"
         record = {"id": "AAPL:action_rating:2026-01-01", "ticker": "AAPL"}
-        append_prediction(record, path)
+        _append_jsonl(record, path)
         loaded = load_predictions(path)
         assert loaded == [record]
 
     def test_appends_without_truncating(self, tmp_path):
         path = tmp_path / "predictions.jsonl"
-        append_prediction({"id": "A"}, path)
-        append_prediction({"id": "B"}, path)
+        _append_jsonl({"id": "A"}, path)
+        _append_jsonl({"id": "B"}, path)
         loaded = load_predictions(path)
         assert [r["id"] for r in loaded] == ["A", "B"]
 
-    def test_load_missing_file_returns_empty_list(self, tmp_path):
+    def test_load_predictions_missing_file_returns_empty_list(self, tmp_path):
         assert load_predictions(tmp_path / "does_not_exist.jsonl") == []
 
-
-class TestAppendAndLoadGraded:
-    def test_roundtrip(self, tmp_path):
-        path = tmp_path / "graded.jsonl"
-        record = {"predictionId": "AAPL:action_rating:2026-01-01", "verdict": "correct"}
-        append_grade(record, path)
-        assert load_graded(path) == [record]
-
-    def test_load_missing_file_returns_empty_list(self, tmp_path):
+    def test_load_graded_missing_file_returns_empty_list(self, tmp_path):
         assert load_graded(tmp_path / "does_not_exist.jsonl") == []
 
 
@@ -89,3 +90,97 @@ class TestGradeClaim:
     def test_boundary_exactly_at_band_is_inconclusive(self):
         assert grade_claim("bullish", 0.02) == "inconclusive"
         assert grade_claim("bearish", -0.02) == "inconclusive"
+
+
+def test_append_prediction_writes_only_to_intelligence_ledger(tmp_path):
+    """All 7 real consumers were cut over to intelligence_event during Wave 5D and
+    predictions.jsonl was archived (git mv). append_prediction() must no longer write
+    predictions.jsonl at all -- a lingering JSONL write here would silently un-archive
+    the file on the very next real harvest cycle (the exact Hard-Stop Condition 11
+    "permanent hybrid state" this migration exists to prevent), even though the `path`
+    parameter is kept (unused) for call-site signature compatibility with every
+    already-cut-over caller (harvest_predictions.py, grade_predictions.py, etc.)."""
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "investment_screener/backend/py_services"))
+    from intelligence.db_client import initialize_db
+    from intelligence.replay_ledger import replay_events_to_db
+    from intelligence.event_repository import get_latest_event_by_type
+    from prediction_ledger import append_prediction
+
+    jsonl_path = tmp_path / "predictions.jsonl"
+    ledger_path = tmp_path / "observations.jsonl"
+    db_path = tmp_path / "intelligence.sqlite"
+
+    record = {
+        "id": "AAPL:action_rating:2026-07-23",
+        "ticker": "AAPL",
+        "type": "action_rating",
+        "date": "2026-07-23",
+        "direction": "bullish",
+        "horizonDays": 90,
+    }
+    append_prediction(record, path=jsonl_path, jsonl_path=ledger_path)
+
+    assert not jsonl_path.exists(), (
+        "append_prediction() must not write predictions.jsonl -- it was archived in "
+        "Wave 5D Task 8 and every real consumer now reads intelligence_event instead."
+    )
+
+    assert ledger_path.exists()
+    conn = initialize_db(str(db_path))
+    replay_events_to_db(str(ledger_path), conn)
+    event = get_latest_event_by_type(conn, "PREDICTION_CLAIM")
+    assert event is not None
+    assert event["title"] == "Prediction claim: AAPL action_rating (2026-07-23)"
+
+
+def test_append_grade_writes_only_to_intelligence_ledger(tmp_path):
+    """predictions_graded.jsonl never existed on disk (confirmed at Wave 5D Task 0 and
+    again at wave-exit) -- append_grade() must not create it either, for the same
+    permanent-hybrid-state reason as append_prediction() above."""
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "investment_screener/backend/py_services"))
+    from intelligence.db_client import initialize_db
+    from intelligence.replay_ledger import replay_events_to_db
+    from intelligence.event_repository import get_latest_event_by_type
+    from prediction_ledger import append_grade
+
+    graded_jsonl_path = tmp_path / "predictions_graded.jsonl"
+    ledger_path = tmp_path / "observations.jsonl"
+    db_path = tmp_path / "intelligence.sqlite"
+
+    grade_record = {
+        "predictionId": "AAPL:action_rating:2026-07-23",
+        "ticker": "AAPL",
+        "gradedAt": "2026-10-23",
+        "outcome": "correct",
+        "relativeReturn": 0.08,
+    }
+    append_grade(grade_record, path=graded_jsonl_path, jsonl_path=ledger_path)
+
+    assert not graded_jsonl_path.exists()
+
+    conn = initialize_db(str(db_path))
+    replay_events_to_db(str(ledger_path), conn)
+    event = get_latest_event_by_type(conn, "PREDICTION_GRADED")
+    assert event is not None
+    assert event["title"] == "Prediction grade: AAPL action_rating (correct)"
+
+
+def test_append_prediction_raises_when_ledger_write_fails(tmp_path, monkeypatch):
+    """The intelligence ledger is now the SOLE write target (JSONL retired above) -- a
+    ledger write failure must propagate, not be silently swallowed, since there is no
+    longer a JSONL fallback copy to fall back on."""
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "investment_screener/backend/py_services"))
+    import prediction_ledger
+    import pytest
+
+    def _boom(*args, **kwargs):
+        raise RuntimeError("simulated ledger outage")
+
+    monkeypatch.setattr(prediction_ledger, "_append_prediction_event", _boom)
+
+    record = {"id": "X:action_rating:2026-07-23", "ticker": "X", "type": "action_rating"}
+    with pytest.raises(RuntimeError, match="simulated ledger outage"):
+        prediction_ledger.append_prediction(record)

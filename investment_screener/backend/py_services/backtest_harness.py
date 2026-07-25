@@ -73,6 +73,15 @@ BACKTEST_REPORT_PATH = DATA_DIR / "backtest_report.json"
 PREDICTIONS_PATH = DATA_DIR / "predictions.jsonl"
 PRICE_CACHE_DIR = REPO_ROOT / "temp" / "backtest_price_cache"
 
+_PY_SERVICES_DIR = Path(__file__).resolve().parent
+if str(_PY_SERVICES_DIR) not in sys.path:
+    sys.path.insert(0, str(_PY_SERVICES_DIR))
+
+from intelligence.db_client import initialize_db  # noqa: E402
+from intelligence.event_repository import list_active_events_by_type  # noqa: E402
+
+DEFAULT_INTEL_DB_PATH = str(DATA_DIR / "intelligence.sqlite")
+
 
 @dataclass
 class Order:
@@ -539,7 +548,7 @@ def generate_backtest_report(
 
 def correlate_with_prediction_ledger(
     backtest_report: dict[str, Any],
-    predictions_path: Path = PREDICTIONS_PATH,
+    db_path: str = DEFAULT_INTEL_DB_PATH,
 ) -> dict[str, Any]:
     """Correlate backtest rebalances with E3 prediction ledger.
 
@@ -549,7 +558,11 @@ def correlate_with_prediction_ledger(
 
     Args:
         backtest_report: Output from generate_backtest_report().
-        predictions_path: Path to predictions.jsonl.
+        db_path: intelligence.sqlite path to read PREDICTION_CLAIM events from
+            (Wave 5D Task 3 consumer cutover -- replaces the former
+            predictions.jsonl direct-read). Tests should override this with
+            a tmp_path-scoped sqlite file so they never read the real,
+            tracked intelligence.sqlite.
 
     Returns:
         Correlation report with keys:
@@ -563,16 +576,11 @@ def correlate_with_prediction_ledger(
         "signal_quality": 0.0,
     }
 
-    if not predictions_path.exists():
-        return report
-
     try:
-        predictions = []
-        with open(predictions_path) as f:
-            for line in f:
-                if line.strip():
-                    predictions.append(json.loads(line))
-    except (json.JSONDecodeError, IOError):
+        conn = initialize_db(db_path)
+        events = list_active_events_by_type(conn, "PREDICTION_CLAIM")
+        predictions = [json.loads(e["payload_json"]) for e in events if e["payload_json"]]
+    except Exception:
         return report
 
     # For each rebalance, find predictions on the same date
@@ -584,10 +592,15 @@ def correlate_with_prediction_ledger(
         # Find tickers in rebalance
         rebal_tickers = {o["ticker"] for o in rebalance.get("orders", [])}
 
-        # Find predictions on this date
+        # Find predictions on this date. Real prediction records key the
+        # claim date as "date", never "claimDate" (schemas/prediction.schema.json)
+        # -- same root-cause bug fixed in prediction_ledger.py/
+        # migrate_predictions_to_ledger.py during Wave 5D Task 6's real-cycle
+        # parity check; this call site had it too and would otherwise never
+        # match any real prediction to a rebalance date.
         matching_predictions = [
             p for p in predictions
-            if p.get("claimDate") == rebal_date and p.get("ticker") in rebal_tickers
+            if p.get("date") == rebal_date and p.get("ticker") in rebal_tickers
         ]
 
         if matching_predictions:
