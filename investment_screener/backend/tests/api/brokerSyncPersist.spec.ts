@@ -152,4 +152,67 @@ describe('BrokerSyncService.persistSnapshotToDb', () => {
             portfolioRepo.close();
         }
     });
+
+    it('removes a fully closed position from account_investment on the next sync', () => {
+        // Real bug: persistSnapshotToDb only upserted positions present in the
+        // fresh snapshot -- a position sold/exited in an account (no longer in
+        // the snapshot) was never deleted, leaving a stale nonzero-quantity row
+        // that silently inflated every future computed portfolio total.
+        const firstSync = snapshotWith([
+            {
+                accountType: 'TFSA',
+                balances: { cashUSD: 100 },
+                positions: [
+                    { symbol: 'NVDA', quantity: 3, avgFillPrice: 800, accountType: 'TFSA', accountId: '1' },
+                    { symbol: 'AMD', quantity: 10, avgFillPrice: 150, accountType: 'TFSA', accountId: '1' },
+                ],
+            },
+        ]);
+        persistSnapshotToDb(firstSync, dbPath);
+
+        // AMD fully sold/exited -- the next real TV snapshot for this account no
+        // longer includes it at all.
+        const secondSync = snapshotWith([
+            {
+                accountType: 'TFSA',
+                balances: { cashUSD: 8500 },
+                positions: [
+                    { symbol: 'NVDA', quantity: 3, avgFillPrice: 800, accountType: 'TFSA', accountId: '1' },
+                ],
+            },
+        ]);
+        persistSnapshotToDb(secondSync, dbPath);
+
+        const portfolioRepo = new PortfolioRepository(dbPath);
+        try {
+            const rows = portfolioRepo.listAccountInvestments('TFSA');
+            const symbols = rows.map((r) => r.investment_id);
+            expect(symbols, 'AMD must be gone after being dropped from the fresh snapshot').to.not.include('AMD');
+            expect(symbols).to.include('NVDA');
+        } finally {
+            portfolioRepo.close();
+        }
+    });
+
+    it('leaves an untouched account\'s rows alone when only other accounts are synced', () => {
+        // clearAccountInvestments must be scoped per-account -- syncing TFSA must
+        // never wipe RRSP's rows just because RRSP wasn't part of this snapshot.
+        const seedRrsp = snapshotWith([
+            { accountType: 'RRSP', balances: { cashUSD: 50 }, positions: [{ symbol: 'MSFT', quantity: 2, avgFillPrice: 300, accountType: 'RRSP', accountId: '2' }] },
+        ]);
+        persistSnapshotToDb(seedRrsp, dbPath);
+
+        const tfsaOnly = snapshotWith([
+            { accountType: 'TFSA', balances: { cashUSD: 10 }, positions: [{ symbol: 'NVDA', quantity: 1, avgFillPrice: 800, accountType: 'TFSA', accountId: '1' }] },
+        ]);
+        persistSnapshotToDb(tfsaOnly, dbPath);
+
+        const portfolioRepo = new PortfolioRepository(dbPath);
+        try {
+            const rrspSymbols = portfolioRepo.listAccountInvestments('RRSP').map((r) => r.investment_id);
+            expect(rrspSymbols, 'RRSP must be untouched by a TFSA-only sync').to.include('MSFT');
+        } finally {
+            portfolioRepo.close();
+        }
+    });
 });
