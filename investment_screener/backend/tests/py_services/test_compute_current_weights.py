@@ -115,3 +115,54 @@ def test_parity_with_typescript_compute_weights_map(tmp_path):
         assert abs(py_result[ticker] - ts_result[ticker]) < 0.01, (
             f"{ticker}: python={py_result[ticker]} ts={ts_result[ticker]}"
         )
+
+
+def test_compute_current_from_db_reads_domain_model_sqlite_not_portfolio_json(tmp_path):
+    """Wave 7: main()'s --mode current/both without an explicit --portfolio
+    override must compute weights from domain_model.sqlite, not the real,
+    frozen portfolio.json (Wave 3 stopped writing that file entirely)."""
+    sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import resolve_investment
+    from domain_model.account_repository import upsert_account
+    from domain_model.account_investment_repository import upsert_account_investment
+    from domain_model.investment_price_repository import upsert_investment_price
+    import validate_weights
+
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    now = "2026-07-25T00:00:00Z"
+    upsert_account(conn, "TFSA", "TFSA", "TFSA")
+    aapl_id = resolve_investment(conn, "AAPL", asset_class="EQUITY", currency="USD")
+    msft_id = resolve_investment(conn, "MSFT", asset_class="EQUITY", currency="USD")
+    upsert_account_investment(conn, "TFSA", aapl_id, quantity=10, average_cost=150, book_value=1500, currency="USD", last_synced_at=now)
+    upsert_account_investment(conn, "TFSA", msft_id, quantity=5, average_cost=200, book_value=1000, currency="USD", last_synced_at=now)
+    upsert_investment_price(conn, aapl_id, price=150, currency="USD", fetched_at=now)
+    upsert_investment_price(conn, msft_id, price=200, currency="USD", fetched_at=now)
+    conn.close()
+
+    result = validate_weights.compute_current_from_db(db_path)
+
+    assert abs(result["holdings"]["AAPL"] - (1500 / 2500 * 100)) < 0.0001
+    assert abs(result["holdings"]["MSFT"] - (1000 / 2500 * 100)) < 0.0001
+    assert result["total_value"] == 2500
+
+
+def test_main_current_mode_without_portfolio_override_uses_db_not_real_file(tmp_path):
+    """Regression guard: running `--mode current` with no --portfolio flag must
+    not touch the real portfolio.json — it must read --db instead."""
+    sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+    from domain_model.db_client import initialize_db
+
+    db_path = tmp_path / "empty.sqlite"
+    initialize_db(str(db_path)).close()
+
+    proc = subprocess.run(
+        ["python3", str(SCRIPT_PATH), "--mode", "current", "--db", str(db_path)],
+        capture_output=True, text=True, cwd=str(REPO_ROOT),
+    )
+    assert proc.returncode == 0, proc.stderr
+    result = json.loads(proc.stdout)["current"]
+    # Empty db -> zero holdings, proving this did NOT fall back to reading a
+    # real, populated portfolio.json off disk.
+    assert result == {"total": 0.0, "holdings": {}, "total_value": 0.0}

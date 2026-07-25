@@ -27,7 +27,6 @@ import sys
 from pathlib import Path
 
 REPO_ROOT     = Path(__file__).resolve().parents[3]
-PORTFOLIO_JSON   = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 TARGET_JSON      = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 DB_PATH          = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
@@ -68,6 +67,47 @@ def compute_current(portfolio_path: Path) -> dict:
         if not sym:
             continue
         result[sym] = round(market_value(h) / total_value * 100, 4)
+
+    total = round(sum(result.values()), 4)
+    return {"total": total, "holdings": result, "total_value": round(total_value, 2)}
+
+
+# ---------------------------------------------------------------------------
+# Current holdings — computed live from domain_model.sqlite (Wave 7)
+#
+# Real bug this replaces: main()'s --portfolio arg defaulted to the real
+# investment_screener/backend/data/portfolio.json, which Wave 3 stopped
+# writing entirely once sync cut over to SQLite-only writes — every run of
+# `validate_weights.py` (--mode current/both, the default) without an
+# explicit --portfolio override silently computed weights against a frozen,
+# increasingly stale snapshot. compute_current() itself is unchanged (still
+# used by its own isolated fixture-based test suite via explicit --portfolio
+# overrides) — only main()'s no-override default now calls this instead.
+# ---------------------------------------------------------------------------
+def compute_current_from_db(db_path: Path) -> dict:
+    # portfolio_io.load_portfolio_state()'s own path param is documented as
+    # unused (always reads its own hardcoded default DB file) -- call the
+    # lower-level, real-path-respecting function directly instead so this
+    # honors the --db argument rather than silently reading the real,
+    # production domain_model.sqlite regardless of what path was requested.
+    from domain_model.db_client import initialize_db
+    from domain_model.portfolio_repository import load_portfolio_state_from_db
+
+    conn = initialize_db(str(db_path))
+    try:
+        state = load_portfolio_state_from_db(conn)
+    finally:
+        conn.close()
+    shares = state["shares"]
+    prices = state["prices"]
+    total_value = state["total_usd"]
+    if total_value == 0:
+        return {"total": 0.0, "holdings": {}, "total_value": 0.0}
+
+    result: dict[str, float] = {}
+    for sym, qty in shares.items():
+        px = prices.get(sym, 0)
+        result[sym] = round(qty * px / total_value * 100, 4)
 
     total = round(sum(result.values()), 4)
     return {"total": total, "holdings": result, "total_value": round(total_value, 2)}
@@ -140,7 +180,12 @@ def main():
     parser.add_argument("--mode",      choices=["current", "target", "both"], default="both")
     parser.add_argument("--normalize", action="store_true", help="Rescale targetWeights to sum to 100%")
     parser.add_argument("--write",     action="store_true", help="Write normalised weights back to target-portfolio.json")
-    parser.add_argument("--portfolio", default=str(PORTFOLIO_JSON))
+    parser.add_argument(
+        "--portfolio", default=None,
+        help="Optional: compute current-holdings weights from this portfolio.json "
+             "fixture instead of live domain_model.sqlite (tests only — production "
+             "runs should omit this and let --mode current/both read SQLite).",
+    )
     parser.add_argument("--target",    default=str(TARGET_JSON))
     parser.add_argument("--db",        default=str(DB_PATH), help="Path to domain_model.sqlite")
     args = parser.parse_args()
@@ -160,7 +205,10 @@ def main():
         output["target"] = compute_target(Path(args.target))
     else:
         if args.mode in ("current", "both"):
-            output["current"] = compute_current(Path(args.portfolio))
+            output["current"] = (
+                compute_current(Path(args.portfolio)) if args.portfolio
+                else compute_current_from_db(Path(args.db))
+            )
         if args.mode in ("target", "both"):
             output["target"] = compute_target(Path(args.target))
 
