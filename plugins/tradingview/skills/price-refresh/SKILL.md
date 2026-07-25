@@ -17,16 +17,16 @@ allowed-tools: Bash, Read
 | **1 (primary)** | TradingView watchlist via CDP | TradingView running (port 9222) |
 | **2 (fallback)** | yfinance `fast_info.last_price` | TV unreachable, or ticker not in watchlist |
 
-**BOATS session auto-detection**: during 8:00 PM – 4:00 AM ET (Sun–Thu), `tv_batch_quotes.py`
-opens `TA-BOATS-Watchlist` (BOATS:TICKER symbols) to serve overnight BOATS prices.
-All other hours it reads `TA-Full Watchlist` (NYSE/NASDAQ + extended hours).
+`tv_batch_quotes.py` reads the live `TV-Full Watchlist` (NYSE/NASDAQ + extended hours) via CDP.
+TradingView charts now natively support 24h quoting, so there is no separate overnight/BOATS
+watchlist or session-detection branch — one watchlist, all hours.
 yfinance is **only** used when TradingView is not running.
 
 ## What This Skill Does
 
 1. **Checks** TradingView Desktop status (non-blocking — uses fallback if unavailable)
 2. **Loads** all tickers from `portfolio.json` and `target-portfolio.json`
-3. **Fetches** live quotes — TV watchlist first (BOATS or Full), yfinance only for misses
+3. **Fetches** live quotes — TV watchlist (`TV-Full Watchlist`) first, yfinance only for misses
 4. **Prints** a price table with live data, 1d change%, and source indicator
 5. **Summarises** how many quotes came from TradingView vs. yfinance fallback
 
@@ -118,11 +118,12 @@ The Express `POST /refresh-prices` endpoint (separate code path from this skill'
 tools) calls `py_services/fetch_portfolio_heatmap.py`, not `tv_batch_quotes.py`. Two rules
 apply there — do not regress either when touching that endpoint or its Python script:
 
-1. **Always use the most current available price, regular or extended/overnight session.**
+1. **Always use the most current available price, regular or extended hours.**
    `fetch_portfolio_heatmap.py` already implements this: TradingView watchlist-first via CDP
-   (including the `BOATS:TICKER` overnight/extended-hours feed, 8PM–4AM ET), falling back to
-   yfinance `fast_info.last_price` only when TV is unreachable. Never swap this for a plain
-   `regularMarketPrice`/last-close lookup — that would silently drop extended-hours coverage.
+   (`TV-Full Watchlist`, natively 24h-quoting — no separate overnight/BOATS feed needed),
+   falling back to yfinance `fast_info.last_price` only when TV is unreachable. Never swap this
+   for a plain `regularMarketPrice`/last-close lookup — that would silently drop extended-hours
+   coverage.
 2. **A price refresh must also refresh the stored USD/CAD exchange rate at the same time.**
    Wave 3 Task 8: `POST /refresh-prices` now calls
    `fetch_broker_data.py --refresh-exchange-rate` (a lightweight balances-only CDP fetch via

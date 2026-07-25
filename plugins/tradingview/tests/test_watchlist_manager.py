@@ -41,6 +41,9 @@ class TestWatchlistManager(unittest.TestCase):
         data = json.loads(r.stdout.strip())
         self.assertIn("success", data)
         self.assertIn("actions", data)
+        # BOATS session removed (TradingView charts now natively support 24h
+        # quoting) — only the two real, renamed TradingView lists remain.
+        self.assertEqual(set(data["actions"].keys()), {"TV-Full Watchlist", "TV-Portfolio"})
 
 class TestLoadResearchedWatchlistDbFallback(unittest.TestCase):
     """Wave 1 Task 7B — fallback (no watchlist.json) enumerates tickers with a
@@ -107,21 +110,6 @@ class TestLoadWatchlistedSymbols(unittest.TestCase):
             tickers = watchlist_manager.load_researched_watchlist(db_path=db_path)
             self.assertEqual(tickers, ["MSFT", "TSLA"])
 
-    def test_boats_watchlist_includes_watchlisted_us_equities(self):
-        import tempfile
-        with tempfile.TemporaryDirectory() as tmp:
-            db_path = Path(tmp) / "test.sqlite"
-            conn = initialize_db(str(db_path))
-            try:
-                for ticker in ("MSFT", "SHOP.TO"):
-                    investment_id = resolve_investment(conn, ticker, asset_class="EQUITY")
-                    update_investment_fields(conn, investment_id, is_watchlisted=True)
-            finally:
-                conn.close()
-
-            tickers = watchlist_manager.load_boats_watchlist(db_path=db_path)
-            self.assertEqual(tickers, ["BOATS:MSFT"])
-
 
 class TestLoadHoldingsFromSqlite(unittest.TestCase):
     """Wave 3 Task 6 — held positions come from account_investment in
@@ -152,19 +140,6 @@ class TestLoadHoldingsFromSqlite(unittest.TestCase):
 
             tickers = watchlist_manager.load_holdings_watchlist(db_path=db_path)
             self.assertEqual(tickers, ["AAPL"])
-
-    def test_boats_watchlist_includes_held_us_equities(self):
-        import tempfile
-        with tempfile.TemporaryDirectory() as tmp:
-            db_path = Path(tmp) / "test.sqlite"
-            conn = initialize_db(str(db_path))
-            try:
-                self._seed_holding(conn, "NVDA")
-            finally:
-                conn.close()
-
-            tickers = watchlist_manager.load_boats_watchlist(db_path=db_path)
-            self.assertEqual(tickers, ["BOATS:NVDA"])
 
     def test_load_holdings_watchlist_excludes_cash_usd(self):
         """The real cash symbol domain_model.sqlite stores is CASH_USD (see
