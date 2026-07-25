@@ -123,13 +123,16 @@ All cash is in **PSU-U.TO** (~$100 USD/share, TSX). To fund any buy: sell PSU-U.
 
 **27. Portfolio total validation & Exchange Rates**: Compute totals using the formula: `cash value all accounts + sum(portfolio holding price * shares)`. Never convert USD to CAD via external API calls; always infer the exchange rate directly from TradingView's native values (e.g. `totalEquityCADCombined / totalEquityUSDCombined`).
 **28. Worktree/subagent isolation**: Full rule + mandatory post-task check → `.agent/rules/worktree-subagent-isolation.md`.
+**29. Gitignored data files never sync via worktree**: `domain_model.sqlite`, `portfolio.json`, `cash_flows.json`, `trade-log.json`, etc. are gitignored — each worktree has its own separate on-disk copy that git never syncs back to the main checkout. Any "real data migration write" (or its row-count verification) run inside a worktree only touches that worktree's copy. Before treating a migration wave as complete, independently re-verify the real write landed in the **main checkout's** actual files/DB — do not trust a worktree-side verification alone.
 
 ## Key Files
 | File | Purpose |
 |------|---------|
 | `architecture.md` | Full system architecture, data flows, ADRs, glossary |
 | `run_investment_toolkit.py` | Unified startup |
-| `investment_screener/backend/data/target-portfolio.json` | Targets + standing decisions |
-| `investment_screener/backend/data/ta-sweep-results.json` | Latest TA sweep output |
+| `investment_screener/backend/data/theses/target-portfolio.json` | Targets + standing decisions (retained JSON, not yet fully migrated — see Wave 6 report) |
+| `investment_screener/backend/data/domain_model.sqlite` | Investment/pillar/price-level/projection/trade/portfolio-policy tables (gitignored, self-creating) |
+| `investment_screener/backend/data/intelligence.sqlite` | Research/TA-sweep/prediction event ledger, incl. former `ta-sweep-results.json` data (gitignored, self-creating) |
 | `plugins/tradingview/scripts/ta_sweep_batch.py` | TA sweep orchestrator |
 | `.agents/` | All skills/agents (Claude, Gemini, Copilot) |
+| `docs/superpowers/status/wave6-program-closure-report.md` | Domain Data Model v3.2 migration program closure report (final state, KPI rollup, retained-JSON rationale) |
