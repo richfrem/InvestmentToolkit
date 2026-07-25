@@ -53,7 +53,7 @@ from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.investment_repository import list_investments  # noqa: E402
 from domain_model.projection_repository import get_latest_projection  # noqa: E402
 
-ACTIVE_ROLES = {"core", "hedge", "speculative", "reserve"}
+ACTIVE_ROLES = {"accumulate", "trim", "exit", "initiate"}
 
 
 def _load_holdings_from_db(db_path: Path) -> list[dict]:

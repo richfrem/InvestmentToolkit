@@ -178,7 +178,7 @@ export const ThesisHoldingSchema = z.object({
     targetEntryPrice: z.number().positive().nullable().optional(),
     thesisForInclusion: z.string().max(2000).optional(),
     thesisBreakers: z.array(z.string().max(500)).max(5).optional(),
-    role: z.enum(['core', 'hedge', 'speculative', 'reserve', 'watchlist', 'untracked', 'satellite', 'monitor']).default('core'),
+    role: z.enum(['accumulate', 'avoid', 'watchlist', 'trim', 'initiate', 'exit']).default('watchlist'),
     // Structured tiered price levels — written by update_price_levels.py
     priceLevels: PriceLevelsSchema,
 }).passthrough(); // allow agentRationale, shares, subStrategyId and other free fields
@@ -276,7 +276,7 @@ export const HoldingHealthSchema = DriftEntrySchema.extend({
     pillarId: z.string(),
     currentPrice: z.number().optional(),
     marketValue: z.number().optional(),
-    role: z.enum(['core', 'hedge', 'speculative', 'reserve', 'watchlist', 'untracked', 'satellite', 'monitor']),
+    role: z.enum(['accumulate', 'avoid', 'watchlist', 'trim', 'initiate', 'exit']),
     hasValuation: z.boolean(),
     latestAction: z.enum(['BUY', 'HOLD', 'SELL', 'INITIATE', 'ACCUMULATE', 'MAINTAIN', 'TRIM', 'EXIT', 'WATCHLIST']).optional(),
     latestFairValue: z.number().optional(),

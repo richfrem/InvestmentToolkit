@@ -589,12 +589,29 @@ def _write_full_fixture(tmp_path):
         ("TFSA", "PSU-U.TO", 90.0, 100.0),
     ])
 
+    # Wave 8 cutover: compute_rebalance_plan() now reads thesis holdings
+    # (target_weight/pillar_id) from domain_model.sqlite's investment table via
+    # portfolio_io.load_thesis_holdings(), not target-portfolio.json -- seed the
+    # same db_path with matching target weights/pillars so bands/orders compute
+    # against the same targets the old JSON fixture (target_path, still written
+    # above for tests exercising the raw file directly) encoded.
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import update_investment_fields, resolve_investment
+    from domain_model.pillar_repository import resolve_pillar
+    conn = initialize_db(str(db_path))
+    resolve_pillar(conn, "cyber", "Cybersecurity")
+    resolve_pillar(conn, "ai_infra", "AI Infrastructure")
+    resolve_pillar(conn, "cash", "Cash")
+    update_investment_fields(conn, resolve_investment(conn, "CRWD"), target_weight=4.0, pillar_id="cyber")
+    update_investment_fields(conn, resolve_investment(conn, "NBIS"), target_weight=5.5, pillar_id="ai_infra")
+    update_investment_fields(conn, resolve_investment(conn, "PSU-U.TO"), target_weight=90.5, pillar_id="cash")
+    conn.close()
+
     # Wave 5E cutover: compute_rebalance_plan() now reads the account policy
     # from portfolio_policy (SQLite), not account_policy.json -- seed the same
     # db_path so this fixture's account_policy.json write above (still needed
     # by other tests exercising the pre-cutover fallback / the raw JSON file
     # directly) has a matching SQLite counterpart.
-    from domain_model.db_client import initialize_db
     from domain_model.portfolio_policy_repository import upsert_portfolio_policy
     import json as _json
     conn = initialize_db(str(db_path))
@@ -655,6 +672,15 @@ def test_compute_rebalance_plan_uses_sqlite_policy_not_json_file(tmp_path, monke
 def test_compute_rebalance_plan_blocked_when_targets_dont_sum_to_100(tmp_path):
     target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
     target_path.write_text(json.dumps({"holdings": [{"ticker": "CRWD", "targetWeight": 4.0, "pillarId": "cyber"}]}))
+    # Wave 8: targets now come from domain_model.sqlite -- zero out the other
+    # two thesis holdings' target_weight there too so the sum-to-100 check
+    # actually sees an invalid total (matches the truncated target_path above).
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import update_investment_fields, resolve_investment
+    conn = initialize_db(str(db_path))
+    update_investment_fields(conn, resolve_investment(conn, "NBIS"), target_weight=0.0)
+    update_investment_fields(conn, resolve_investment(conn, "PSU-U.TO"), target_weight=0.0)
+    conn.close()
     plan = compute_rebalance_plan(
         target_portfolio_path=target_path, portfolio_path=portfolio_path,
         risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
