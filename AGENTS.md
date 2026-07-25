@@ -37,9 +37,9 @@ InvestmentToolkit/
 5. **Plugin Architecture**: Symlinks ONLY via `symlink_manager.py`. Never raw `ln -s`. No cross-plugin script execution.
 6. **Self-Evolution & Map Debt**: Classify failures/friction (Tiers 0/1/2/3), max 3 attempts. Active map debt audit must pass in `run_tests.py`. Always execute the `PRE-COMPLETION GATE` check block and log map debt before ending the session. Deletions are strictly forbidden.
 7. **Self-Healing**: Fix broken Bash/python3 snippets inline, re-run silently. Never advance with broken output visible.
-8. **Standing Decision is anchor**: Read `standingDecision` in `target-portfolio.json` before any recommendation. DCF never silently overrides — only material delta (>15% FV change) or new information justifies revisiting. Never flip BUY→SELL on <15% variance.
-9. **Post-trade update mandatory**: After ANY trade: sells → `role: "exited"`, `targetWeight: 0`; buys → update `shares` + `agentRationale`. Dashboard reads this file — stale entries = data integrity failure.
-10. **`ticker` key, not `symbol`**: All `target-portfolio.json` lookups use `h.get('ticker')`, not `h.get('symbol')`.
+8. **Standing Decision is anchor**: Read `investment.standing_decision_type`/`standing_decision_reason` (domain_model.sqlite) before any recommendation. DCF never silently overrides — only material delta (>15% FV change) or new information justifies revisiting. Never flip BUY→SELL on <15% variance.
+9. **Post-trade update mandatory**: After ANY trade: sells → `lifecycle_status: "exit"`, `target_weight: 0`; buys → update `agent_rationale` (shares come from the broker sync into `account_investment`, never set manually). Dashboard reads `domain_model.sqlite` — stale entries = data integrity failure.
+10. **`ticker` key, not `symbol`**: All investment lookups use the `symbol` column (Python/SQL) or `ticker` key (API JSON responses) — never conflate the two across the Python/TS boundary.
 11. **Sync sweep templates**: When target weights/pillars/sub-strategies change, update "Core Portfolio Thesis Background" in both `daily_sweep.md.template` and `weekly_sweep.md.template`.
 12. **Refine templates on Grok ingest**: After each Grok response, improve prompt templates to guard against observed gaps (grouped tickers, lazy placeholders, TA errors).
 13. **Initialize missing private data**: If any local gitignored data files (e.g., `portfolio.json`, `cash_flows.json`) are missing from `investment_screener/backend/data/`, initialize them by copying their corresponding `.example` files.
@@ -105,7 +105,7 @@ All cash is in **PSU-U.TO** (~$100 USD/share, TSX). To fund any buy: sell PSU-U.
 
 **18. PSU alias**: `PSU.U.TO` (broker format) = `PSU-U.TO` (canonical, hardcoded in `fetch_broker_data.py`). Never create two thesis entries.
 
-**19. `targetEntryPrice`**: Optional float in `target-portfolio.json`. Set via `update_targets.py --set-entry TICKER=PRICE --write`. Never buy above this price.
+**19. `targetEntryPrice`**: Optional float, stored as a `TARGET_ENTRY`-kind row in `domain_model.sqlite`'s `price_level_tier` table. Set via `update_targets.py --set-entry TICKER=PRICE --write`. Never buy above this price.
 
 **20. Portfolio sync fallback**: (1) Express API POST sync-tv/apply → (2) `fetch_broker_data.py --snapshot` (CDP, works without backend). Run `--snapshot` directly when backend is down.
 
@@ -125,13 +125,14 @@ All cash is in **PSU-U.TO** (~$100 USD/share, TSX). To fund any buy: sell PSU-U.
 **28. Worktree/subagent isolation**: Full rule + mandatory post-task check → `.agent/rules/worktree-subagent-isolation.md`.
 **29. Gitignored data files never sync via worktree**: `domain_model.sqlite`, `portfolio.json`, `cash_flows.json`, `trade-log.json`, etc. are gitignored — each worktree has its own separate on-disk copy that git never syncs back to the main checkout. Any "real data migration write" (or its row-count verification) run inside a worktree only touches that worktree's copy. Before treating a migration wave as complete, independently re-verify the real write landed in the **main checkout's** actual files/DB — do not trust a worktree-side verification alone.
 
+**30. `target-portfolio.json` and `portfolio.json` are both retired (Wave 7/8)**: `domain_model.sqlite` is the sole source of truth for portfolio holdings, thesis targets, pillars, price levels, and standing decisions. Both files are archived under `ARCHIVE/investment_screener/backend/data/` (and `ARCHIVE/.../theses/`). Never reintroduce a direct read/write of either — use `portfolio_io.load_portfolio_state()`/`load_thesis_holdings()`/`load_target_weights()` (Python) or `InvestmentRepository`/`ThesisService`/`PriceLevelRepository` (TS).
+
 ## Key Files
 | File | Purpose |
 |------|---------|
 | `architecture.md` | Full system architecture, data flows, ADRs, glossary |
 | `run_investment_toolkit.py` | Unified startup |
-| `investment_screener/backend/data/theses/target-portfolio.json` | Targets + standing decisions (retained JSON, not yet fully migrated — see Wave 6 report) |
-| `investment_screener/backend/data/domain_model.sqlite` | Investment/pillar/price-level/projection/trade/portfolio-policy tables (gitignored, self-creating) |
+| `investment_screener/backend/data/domain_model.sqlite` | Investment/pillar/price-level/projection/trade/portfolio-policy tables — sole source of truth for portfolio + thesis data (gitignored, self-creating) |
 | `investment_screener/backend/data/intelligence.sqlite` | Research/TA-sweep/prediction event ledger, incl. former `ta-sweep-results.json` data (gitignored, self-creating) |
 | `plugins/tradingview/scripts/ta_sweep_batch.py` | TA sweep orchestrator |
 | `.agents/` | All skills/agents (Claude, Gemini, Copilot) |

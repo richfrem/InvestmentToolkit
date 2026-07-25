@@ -181,13 +181,16 @@ sqlite3 investment_screener/backend/data/intelligence.sqlite ".tables"
 
 ```
 
-A small set of JSON files remain intentionally retained, each with a documented Retained-JSON
-Rationale Bar (not "out of scope" hand-waving): `portfolio.json`, `theses/target-portfolio.json`
-(full-document CRUD; only `changeLog`/`thesisBreakers` still need new schema before full
-retirement), `thesis_breaker_state.json` (per-breaker evaluation detail), `projections/*.json`,
-`trade-log.json`, `cash_flows.json`. See `docs/superpowers/status/wave6-program-closure-report.md`
-for the final program-wide state, and each wave's own exit report under `docs/superpowers/status/`
-for what was cut over vs. retained, with rationale.
+`portfolio.json` and `theses/target-portfolio.json` (Waves 7/8) are fully retired — archived under
+`ARCHIVE/investment_screener/backend/data/`, with `domain_model.sqlite` as the sole source of truth
+for portfolio holdings, thesis targets, pillars, price levels, and standing decisions.
+
+A small set of other JSON files remain intentionally retained, each with a documented Retained-JSON
+Rationale Bar (not "out of scope" hand-waving): `thesis_breaker_state.json` (per-breaker evaluation
+detail — `thesisBreakers` still has no SQLite schema), `projections/*.json`, `trade-log.json`,
+`cash_flows.json`. See `docs/superpowers/status/wave6-program-closure-report.md` for the final
+program-wide state, and each wave's own exit report under `docs/superpowers/status/` for what was
+cut over vs. retained, with rationale.
 
 ---
 
