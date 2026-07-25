@@ -23,8 +23,7 @@ The scripts in this directory are organized into logical modules:
 - `lock_and_normalize_targets.py` — Validates and locks conviction target weight arrays.
 - `verify_portfolio_total.py` — Reconciles calculated portfolio assets against broker reports.
 - `verify_thesis_sync.py` — Validates that active target weights and real weights are aligned.
-- `apply_portfolio_updates.py` — Writes rebalance order updates back to data files.
-- `portfolio_io.py` — Utility library for read/write file operations.
+- `portfolio_io.py` — Utility library for reading portfolio state (SQLite-backed, Wave 3 cutover).
 
 ### 3. Daily Loop & Triage Briefing
 - `daily_brief.py` — Generates morning brief documents containing macro data and market trends.
