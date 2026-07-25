@@ -138,16 +138,15 @@ The `investment_screener/` app is the web-based financial analysis dashboard.
 
 ### Querying the SQLite Databases
 
-The backend uses **two separate SQLite files** under `investment_screener/backend/data/`:
+The backend is **SQLite-first** as of the Domain Data Model v3.2 migration program (Waves 0-5E,
+closed by Wave 6, 2026-07-25 — see `docs/superpowers/status/wave6-program-closure-report.md` for
+the full closure report, KPI rollup, and retained-JSON rationale). Two gitignored, self-creating
+SQLite files under `investment_screener/backend/data/`:
 
 | File | Domain | Key tables |
 | --- | --- | --- |
-| `domain_model.sqlite` | Investment/target/watchlist/pillars/price-levels/notes/alerts/projections (Waves 0-2)
-
- | `investment`, `strategy_pillar`, `sub_strategy`, `price_level_set`, `price_level_tier`, `investment_note`, `alert`, `projection_version`, `projection_scenario`<br> |
-| `intelligence.sqlite` | Research/TA-sweep/event ledger (prior effort, pre-dates this migration)
-
- | event/observation tables, queried via `py_services/intelligence/`<br> |
+| `domain_model.sqlite` | Investment/target/watchlist/pillars/price-levels/notes/alerts/projections/trade-log/orders/cash-flow/portfolio-policy (Waves 0-5E) | `account`, `strategy_pillar`, `sub_strategy`, `investment`, `investment_price`, `account_investment`, `price_level_set`, `price_level_tier`, `alert`, `investment_note`, `projection_version`, `projection_scenario`, `trade_log_entry`, `order_execution`, `cash_flow`, `cash_flow_baseline`, `portfolio_policy`, `broker_exchange_rate`, `broker_reported_total` (20 tables total) |
+| `intelligence.sqlite` | Research/TA-sweep/prediction event ledger | `instrument`, `ledger_checkpoint`, `intelligence_event` (+ FTS5 virtual table), queried via `py_services/intelligence/` |
 
 Both are **gitignored** — a fresh checkout won't have them. Rebuild `domain_model.sqlite` via:
 
@@ -182,7 +181,13 @@ sqlite3 investment_screener/backend/data/intelligence.sqlite ".tables"
 
 ```
 
-Not every JSON file has been migrated yet — some remain intentionally authoritative (e.g. `target-portfolio.json`'s full-document CRUD, `thesis_breaker_state.json`'s per-breaker detail). See each wave's exit report under `docs/superpowers/status/` for exactly what's cut over vs. retained, with rationale.
+A small set of JSON files remain intentionally retained, each with a documented Retained-JSON
+Rationale Bar (not "out of scope" hand-waving): `portfolio.json`, `theses/target-portfolio.json`
+(full-document CRUD; only `changeLog`/`thesisBreakers` still need new schema before full
+retirement), `thesis_breaker_state.json` (per-breaker evaluation detail), `projections/*.json`,
+`trade-log.json`, `cash_flows.json`. See `docs/superpowers/status/wave6-program-closure-report.md`
+for the final program-wide state, and each wave's own exit report under `docs/superpowers/status/`
+for what was cut over vs. retained, with rationale.
 
 ---
 

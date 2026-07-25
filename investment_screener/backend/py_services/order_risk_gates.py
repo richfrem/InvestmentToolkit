@@ -181,7 +181,6 @@ from domain_model.investment_repository import resolve_investment  # noqa: E402
 from domain_model.order_execution_repository import insert_order_execution  # noqa: E402
 
 RISK_SNAPSHOT_PATH = Path(__file__).resolve().parents[1] / "data" / "risk_snapshot.json"
-ACCOUNT_POLICY_PATH = Path(__file__).resolve().parents[1] / "data" / "account_policy.json"
 THESIS_BREAKER_STATE_PATH = Path(__file__).resolve().parents[1] / "data" / "thesis_breaker_state.json"
 TARGET_PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "theses" / "target-portfolio.json"
 DB_PATH = Path(__file__).resolve().parents[1] / "data" / "domain_model.sqlite"
