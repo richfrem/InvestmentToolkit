@@ -8,7 +8,7 @@ Usage: python3 fetch_quotes.py INTC,AMD,NVDA
 Output: JSON dict keyed by ticker
 
 Price source priority:
-  1. TradingView watchlist via CDP (live, includes BOATS extended-hours feed)
+  1. TradingView watchlist via CDP (live, "TV-Full Watchlist" — natively 24h quoting)
   2. yfinance fast_info.last_price (extended-hours aware)
   3. yfinance 1-min history bar
   4. yfinance previous_close
@@ -115,7 +115,7 @@ def fetch_one(ticker: str) -> dict[str, Any]:
             price = getattr(fi, 'previous_close', None)
 
         prev_close = getattr(fi, 'previous_close', None)
-        # Use TV change% when available (accurate for BOATS session)
+        # Use TV change% when available (accurate live TradingView session data)
         if tv_q and tv_q.get("changePercent") is not None:
             day_change_pct = round(tv_q["changePercent"], 2)
         elif price and prev_close and prev_close > 0:

@@ -149,9 +149,9 @@ graph TD
      Python subprocess's other output (progress, warnings, child-process output) is routed to stderr
      so it never corrupts this stdout-JSON contract.
   5. `/refresh-prices` (a separate, more frequent call than a full broker sync) keeps
-     `investment_price` current between full syncs, fetching live prices (TradingView-first,
-     yfinance fallback — including the BOATS extended-hours/overnight feed, never only regular
-     session hours) for every held symbol.
+     `investment_price` current between full syncs, fetching live prices (TradingView-first via
+     the `TV-Full Watchlist` watchlist, natively 24h-quoting, yfinance fallback otherwise) for
+     every held symbol.
 - **Integrity Checks**: Does not touch qualitative values. Cash positions are filtered separately to keep active cash segregated from strategic allocations. Portfolio/account totals are always computed live from these tables (never a stored aggregate) — see ADR-030.
 
 ### Loop 2: The Analysis Loop (Model & Valuation)
