@@ -50,7 +50,7 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from portfolio_io import load_portfolio_state, compute_weights  # noqa: E402
+from portfolio_io import load_portfolio_state, compute_weights, load_thesis_holdings  # noqa: E402
 from ticker_aliases import normalize_ticker  # noqa: E402
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.account_repository import list_accounts  # noqa: E402
@@ -759,7 +759,11 @@ def compute_rebalance_plan(
     any fire, returns early with blockedReason set and orders: [].
 
     Args:
-        target_portfolio_path: Path to target-portfolio.json.
+        target_portfolio_path: DEPRECATED, unused since Wave 8's cutover to
+            load_thesis_holdings(db_path) below -- target-portfolio.json is
+            archived. Kept only so every already-migrated call site (tests,
+            CLI) keeps working without another signature change; do not rely
+            on this parameter having any effect.
         portfolio_path: Path to portfolio.json.
         risk_snapshot_path: Path to risk_snapshot.json (E1 output).
         thesis_breaker_state_path: Path to thesis_breaker_state.json (B5 output).
@@ -775,7 +779,7 @@ def compute_rebalance_plan(
         The full rebalance plan dict — see docs/superpowers/specs/
         2026-07-09-rebalancer-v2-design.md §3.3 for the field-by-field shape.
     """
-    target_data = json.loads(Path(target_portfolio_path).read_text())
+    target_data = {"holdings": load_thesis_holdings(str(db_path))}
     account_policy = _load_account_policy_from_db(db_path)
 
     blocked = _check_no_trade_conditions(target_data, Path(portfolio_path), Path(db_path))

@@ -269,3 +269,78 @@ def test_replace_block_is_idempotent():
     first  = replace_block(SAMPLE_MD, "portfolio_blueprint", "STABLE CONTENT")
     second = replace_block(first, "portfolio_blueprint", "STABLE CONTENT")
     assert first == second, "replace_block must be idempotent"
+
+
+# ── target weight loading (Wave 8) ──────────────────────────────────────────
+
+def test_load_target_weights_reads_investment_target_weight(tmp_path):
+    """load_target_weights() must read investment.target_weight from SQLite,
+    replacing the several duplicate direct reads of target-portfolio.json's
+    targetWeight field (generate_review_json.py, validate_weights.py, etc.)."""
+    sys.path.insert(0, str(PY_SERVICES))
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import resolve_investment, update_investment_fields
+    from portfolio_io import load_target_weights
+
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    nvda_id = resolve_investment(conn, "NVDA", asset_class="EQUITY")
+    update_investment_fields(conn, nvda_id, target_weight=5.5)
+    msft_id = resolve_investment(conn, "MSFT", asset_class="EQUITY")
+    update_investment_fields(conn, msft_id, target_weight=0)
+    conn.close()
+
+    weights = load_target_weights(str(db_path))
+    assert weights == {"NVDA": 5.5}
+
+
+def test_load_target_weights_returns_empty_for_no_targets(tmp_path):
+    sys.path.insert(0, str(PY_SERVICES))
+    from domain_model.db_client import initialize_db
+    from portfolio_io import load_target_weights
+
+    db_path = tmp_path / "empty.sqlite"
+    initialize_db(str(db_path)).close()
+    assert load_target_weights(str(db_path)) == {}
+
+
+def test_load_thesis_holdings_reads_investment_columns(tmp_path):
+    """Wave 8: load_thesis_holdings() replaces per-script direct reads of
+    target-portfolio.json's `holdings` array."""
+    sys.path.insert(0, str(PY_SERVICES))
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import resolve_investment, update_investment_fields
+    from domain_model.pillar_repository import resolve_pillar
+    from portfolio_io import load_thesis_holdings
+
+    db_path = tmp_path / "test.sqlite"
+    conn = initialize_db(str(db_path))
+    resolve_pillar(conn, "compute", "Compute", target_weight=40.0)
+    nvda_id = resolve_investment(conn, "NVDA", asset_class="EQUITY")
+    update_investment_fields(
+        conn, nvda_id, target_weight=10.0, pillar_id="compute",
+        lifecycle_status="accumulate", thesis_for_inclusion="AI leader.",
+        agent_rationale="DCF BUY.",
+    )
+    # Not a thesis holding -- no target_weight set.
+    resolve_investment(conn, "MSFT", asset_class="EQUITY")
+    conn.close()
+
+    holdings = load_thesis_holdings(str(db_path))
+    assert len(holdings) == 1
+    nvda = holdings[0]
+    assert nvda["ticker"] == "NVDA"
+    assert nvda["targetWeight"] == 10.0
+    assert nvda["pillarId"] == "compute"
+    assert nvda["role"] == "accumulate"
+    assert nvda["thesisForInclusion"] == "AI leader."
+
+
+def test_load_thesis_holdings_returns_empty_for_no_holdings(tmp_path):
+    sys.path.insert(0, str(PY_SERVICES))
+    from domain_model.db_client import initialize_db
+    from portfolio_io import load_thesis_holdings
+
+    db_path = tmp_path / "empty.sqlite"
+    initialize_db(str(db_path)).close()
+    assert load_thesis_holdings(str(db_path)) == []

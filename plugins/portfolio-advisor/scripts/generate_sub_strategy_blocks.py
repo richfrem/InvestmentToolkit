@@ -20,12 +20,11 @@ from pathlib import Path
 
 REPO_ROOT   = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
-from portfolio_io import load_portfolio_state, compute_weights, replace_block, ROLE_LABEL  # noqa: E402
+from portfolio_io import load_portfolio_state, load_thesis_holdings, compute_weights, replace_block, ROLE_LABEL  # noqa: E402
 from portfolio_action import derive_action, ACTION_EMOJI  # noqa: E402
 
-TARGET_JSON = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
-PORTFOLIO   = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
-SUB_DIR     = REPO_ROOT / "investment_screener/backend/data/theses/sub_strategies"
+DB_PATH = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
+SUB_DIR = REPO_ROOT / "investment_screener/backend/data/theses/sub_strategies"
 
 # sub-strategy filename stem → pillar IDs it covers
 PILLAR_MAP: dict[str, list[str]] = {
@@ -148,20 +147,18 @@ def build_current_positions_block(
     return "\n".join(lines)
 
 
-def run(portfolio_path: Path = PORTFOLIO, target_path: Path = TARGET_JSON) -> None:
-    import json
-
-    state = load_portfolio_state(portfolio_path)
+def run(db_path: Path = DB_PATH) -> None:
+    state = load_portfolio_state(db_path)
     shares    = state["shares"]
     prices    = state["prices"]
     total_usd = state["total_usd"]
     weights   = compute_weights(shares, prices, total_usd)
 
-    tp = json.loads(target_path.read_text())
+    holdings_list = load_thesis_holdings(str(db_path))
 
     # Group holdings by pillarId
     by_pillar: dict[str, list[dict]] = {}
-    for h in tp.get("holdings", []):
+    for h in holdings_list:
         pid = h.get("pillarId", "")
         by_pillar.setdefault(pid, []).append(h)
 

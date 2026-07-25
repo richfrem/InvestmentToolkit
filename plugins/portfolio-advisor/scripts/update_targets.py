@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-update_targets.py — Precision target-weight editor for target-portfolio.json.
+update_targets.py — Precision target-weight editor for domain_model.sqlite.
 
 This is the canonical script for updating thesis target weights during conversation.
 After any update it auto-normalizes to 100% and prints a clear diff.
@@ -29,27 +29,107 @@ Usage:
 """
 
 import argparse
-import json
 import subprocess
 import sys
 from pathlib import Path
 
 REPO_ROOT     = Path(__file__).resolve().parents[3]
-TARGET_JSON   = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
+DB_PATH       = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 VALIDATE_PY   = Path(__file__).parent / "validate_weights.py"
 BLUEPRINT_PY  = Path(__file__).parent / "generate_portfolio_blueprint.py"
 REFRESH_ALL   = Path(__file__).parent / "refresh_all.py"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
-from file_lock import locked_write_json  # noqa: E402
+from portfolio_io import load_thesis_holdings  # noqa: E402
 
 
 def load() -> dict:
-    return json.loads(TARGET_JSON.read_text())
+    return {"holdings": load_thesis_holdings(str(DB_PATH))}
 
 
 def save(data: dict) -> None:
-    locked_write_json(TARGET_JSON, data)
+    """Writes every holding's thesis fields into investment.* (Wave 8),
+    writing directly to the domain model. Pillars are resolved
+    (auto-created if missing) since investment.pillar_id is a real FK against
+    strategy_pillar."""
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import resolve_investment, update_investment_fields
+    from domain_model.pillar_repository import resolve_pillar, resolve_sub_strategy
+
+    conn = initialize_db(str(DB_PATH))
+    try:
+        for h in data["holdings"]:
+            pillar_id = h.get("pillarId")
+            if pillar_id:
+                # Idempotent: preserves existing name/target_weight if the
+                # pillar already exists (resolve_pillar only updates fields
+                # actually passed).
+                existing = conn.execute(
+                    "SELECT name FROM strategy_pillar WHERE pillar_id = ?;", (pillar_id,)
+                ).fetchone()
+                if not existing:
+                    resolve_pillar(conn, pillar_id, pillar_id.replace("_", " ").title())
+
+            sub_strategy_id = h.get("subStrategyId")
+            if sub_strategy_id:
+                # sub_strategy.pillar_id is itself a real FK -- auto-create
+                # against this holding's pillar (or "other" if unset) the same
+                # way pillars are auto-created above.
+                existing_sub = conn.execute(
+                    "SELECT sub_strategy_id FROM sub_strategy WHERE sub_strategy_id = ?;", (sub_strategy_id,)
+                ).fetchone()
+                if not existing_sub:
+                    fallback_pillar = pillar_id or "other"
+                    if not conn.execute(
+                        "SELECT pillar_id FROM strategy_pillar WHERE pillar_id = ?;", (fallback_pillar,)
+                    ).fetchone():
+                        resolve_pillar(conn, fallback_pillar, fallback_pillar.replace("_", " ").title())
+                    resolve_sub_strategy(conn, sub_strategy_id, fallback_pillar, sub_strategy_id.replace("-", " ").title())
+            # name only takes effect for a brand-new investment row --
+            # update_investment_fields() has no `name` column (not in
+            # _UPDATABLE_FIELDS); renaming an existing investment is out of
+            # this script's scope.
+            investment_id = resolve_investment(conn, h["ticker"], asset_class="EQUITY", currency="USD", name=h.get("name"))
+            update_investment_fields(
+                conn, investment_id,
+                pillar_id=pillar_id,
+                sub_strategy_id=h.get("subStrategyId"), target_weight=h.get("targetWeight"),
+                thesis_for_inclusion=h.get("thesisForInclusion"),
+                agent_rationale=h.get("agentRationale"), lifecycle_status=h.get("role"),
+            )
+    finally:
+        conn.close()
+
+    # KNOWN LIMITATION: --set-entry TICKER=null (clear) pops the key from the
+    # in-memory dict, which is indistinguishable here from "never had one" --
+    # this only propagates newly-SET entry prices to SQLite, not explicit
+    # clears. Acceptable for this wave (clearing an entry price is rare;
+    # flagged rather than silently wrong).
+    if any(h.get("targetEntryPrice") is not None for h in data["holdings"]):
+        _save_entry_prices(data["holdings"])
+
+
+def _save_entry_prices(holdings: list[dict]) -> None:
+    from domain_model.db_client import initialize_db
+    from domain_model.price_level_repository import replace_price_levels, get_price_levels
+
+    conn = initialize_db(str(DB_PATH))
+    try:
+        for h in holdings:
+            if h.get("targetEntryPrice") is None:
+                continue
+            existing = get_price_levels(conn, h["ticker"]) or {}
+            replace_price_levels(
+                conn, h["ticker"],
+                (existing.get("price_level_set") or {}).get("schema_version"),
+                (existing.get("price_level_set") or {}).get("last_updated"),
+                (existing.get("price_level_set") or {}).get("last_updated_by"),
+                (existing.get("price_level_set") or {}).get("note"),
+                existing.get("buy_tiers") or [], existing.get("sell_tiers") or [],
+                existing.get("stop_loss"), h["targetEntryPrice"],
+            )
+    finally:
+        conn.close()
 
 
 def normalize(data: dict) -> dict:
@@ -230,7 +310,7 @@ def apply_entry_prices(data: dict, pairs: list[str], dry_run: bool) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Precision target-weight editor for target-portfolio.json"
+        description="Precision target-weight editor for domain_model.sqlite"
     )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--set",    nargs="+", metavar="TICKER=WEIGHT",
@@ -255,7 +335,7 @@ def main():
 
     # Output control
     parser.add_argument("--write",     action="store_true",
-                        help="Write changes to target-portfolio.json (auto-normalizes)")
+                        help="Write changes to domain_model.sqlite (auto-normalizes)")
     parser.add_argument("--blueprint", action="store_true",
                         help="After writing, regenerate investment_thesis.md blueprint")
     parser.add_argument("--dry-run",   action="store_true",
@@ -292,7 +372,7 @@ def main():
         data = normalize(data)
         save(data)
         total = current_total(data)
-        print(f"\n✅ Wrote target-portfolio.json  (sum={total:.4f}%)")
+        print(f"\n✅ Wrote domain_model.sqlite  (sum={total:.4f}%)")
         show_weights(data, "Updated targets")
 
         if args.blueprint:
