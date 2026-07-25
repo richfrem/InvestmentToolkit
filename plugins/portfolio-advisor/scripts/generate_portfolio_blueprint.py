@@ -22,8 +22,8 @@ Usage Examples:
     # Update investment_thesis.md in-place
     python3 generate_portfolio_blueprint.py --write
 
-    # Specify a custom thesis JSON file
-    python3 generate_portfolio_blueprint.py --write --thesis-json data/theses/target-portfolio.json
+    # Specify a custom domain_model.sqlite path
+    python3 generate_portfolio_blueprint.py --write --db data/domain_model.sqlite
 
 Key Functions:
     - generate_section() - Constructs the primary Section IV Markdown content with live performance metrics
@@ -35,7 +35,6 @@ Key Input Dependencies:
 """
 
 import argparse
-import json
 import re
 import sys
 from datetime import date
@@ -43,7 +42,6 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
-THESIS_JSON   = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 PORTFOLIO_JSON = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 THESIS_MD     = REPO_ROOT / "investment_screener/backend/data/theses/investment_thesis.md"
 DOMAIN_DB     = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
@@ -84,11 +82,6 @@ SUB_STRATEGY_NAMES = {
 }
 
 from portfolio_action import derive_action, ACTION_EMOJI, _load_target_weights
-
-
-def load_json(path: Path) -> dict | list:
-    with open(path) as f:
-        return json.load(f)
 
 
 def _resolve_investment_id(conn, ticker: str) -> str | None:
@@ -466,7 +459,6 @@ def main():
     parser = argparse.ArgumentParser(description="Generate Portfolio Blueprint section for investment_thesis.md")
     parser.add_argument("--write", action="store_true", help="Write updated section into investment_thesis.md")
     parser.add_argument("--portfolio", default=str(PORTFOLIO_JSON))
-    parser.add_argument("--thesis-json", default=str(THESIS_JSON))
     parser.add_argument("--thesis-md", default=str(THESIS_MD))
     parser.add_argument("--db", default=str(DOMAIN_DB), help="Path to domain_model.sqlite")
     args = parser.parse_args()
@@ -494,10 +486,9 @@ def main():
         content = md_path.read_text()
         updated = update_section_tables(content, current_data, target_data)
 
-        # 4. Sync header metadata from target-portfolio.json
+        # 4. Sync header metadata
         import datetime
-        thesis_meta = load_json(THESIS_JSON)
-        thesis_version = thesis_meta.get("name", "Investment Thesis")
+        thesis_version = "Investment Thesis"
         today = datetime.date.today().isoformat()
 
         # Find latest review file
@@ -528,7 +519,7 @@ def main():
         print("\n── Updating sub-strategy current_positions blocks ──")
         sys.path.insert(0, str(Path(__file__).parent))
         from generate_sub_strategy_blocks import run as run_sub_blocks
-        run_sub_blocks(Path(args.portfolio), Path(args.thesis_json))
+        run_sub_blocks(Path(args.db))
     else:
         print(section)
 

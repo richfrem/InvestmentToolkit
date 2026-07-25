@@ -97,6 +97,90 @@ def load_portfolio_state(portfolio_path: Path) -> dict[str, Any]:
         conn.close()
 
 
+# ── target weight loading ────────────────────────────────────────────────────
+
+def load_target_weights(db_path: str | None = None) -> dict[str, float]:
+    """Read per-symbol target weights from ``investment.target_weight``.
+
+    Wave 8: single canonical target-weight reader, replacing the several
+    independent direct reads of target-portfolio.json's per-holding
+    ``targetWeight`` field (generate_review_json.py's compute_target(),
+    validate_weights.py's compute_target()/normalize_target(), etc.) that
+    drifted out of sync with each other and with this same domain's already-
+    migrated ``investment.target_weight`` column (mirrors
+    portfolio_action.py's own ``_load_target_weights()``, promoted here so
+    every consumer shares one implementation instead of each script keeping
+    its own copy).
+
+    Args:
+        db_path: Optional override; defaults to the real domain_model.sqlite.
+
+    Returns:
+        {symbol: target_weight_pct} — only for symbols with a nonzero target.
+    """
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import list_investments
+
+    conn = initialize_db(db_path or _DB_PATH)
+    try:
+        rows = list_investments(conn)
+    finally:
+        conn.close()
+
+    result: dict[str, float] = {}
+    for row in rows:
+        weight = row.get("target_weight") or 0
+        if weight and weight > 0:
+            result[row["symbol"]] = round(weight, 4)
+    return result
+
+
+def load_thesis_holdings(db_path: str | None = None) -> list[dict]:
+    """Read the thesis holdings array from investment.* columns.
+
+    Wave 8: single canonical thesis-holdings reader, replacing per-script
+    direct reads of target-portfolio.json's `holdings` array (JSON shape:
+    ticker/name/pillarId/subStrategyId/targetWeight/thesisForInclusion/role/
+    agentRationale). Mirrors InvestmentRepository.ts's listThesisHoldings() --
+    only rows with a non-null target_weight are thesis holdings.
+
+    Args:
+        db_path: Optional override; defaults to the real domain_model.sqlite.
+
+    Returns:
+        List of dicts with keys: ticker, name, pillarId, subStrategyId,
+        targetWeight, thesisForInclusion, role, agentRationale.
+    """
+    from domain_model.db_client import initialize_db
+    from domain_model.investment_repository import list_investments
+    from domain_model.price_level_repository import get_price_levels
+
+    resolved_db_path = db_path or _DB_PATH
+    conn = initialize_db(resolved_db_path)
+    try:
+        rows = list_investments(conn)
+        result = []
+        for row in rows:
+            if row.get("target_weight") is None:
+                continue
+            pl = get_price_levels(conn, row["symbol"])
+            target_entry = pl["target_entry"]["price"] if pl and pl.get("target_entry") else None
+            result.append({
+                "ticker": row["symbol"],
+                "name": row.get("name") or row["symbol"],
+                "pillarId": row.get("pillar_id") or "other",
+                "subStrategyId": row.get("sub_strategy_id"),
+                "targetWeight": row.get("target_weight") or 0,
+                "thesisForInclusion": row.get("thesis_for_inclusion") or "",
+                "role": row.get("lifecycle_status") or "watchlist",
+                "agentRationale": row.get("agent_rationale") or "",
+                "targetEntryPrice": target_entry,
+            })
+        return result
+    finally:
+        conn.close()
+
+
 # ── weight computation ───────────────────────────────────────────────────────
 
 def compute_weights(
