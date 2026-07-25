@@ -14,8 +14,7 @@
  * 
  * Key Input Dependencies:
  *   - ../../../.env
- *   - ./utils/paths (PORTFOLIO_FILE, PORTFOLIO_EXAMPLE)
- * 
+ *
  * Key Output Dependencies:
  *   None (starts API server listening on localhost port 3001)
  * 
@@ -36,13 +35,11 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
-import fs from 'fs';
 
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 import cors from 'cors';
 import { valuationService } from './services/ValuationService';
-import { PORTFOLIO_FILE, PORTFOLIO_EXAMPLE } from './utils/paths';
 import { isTradingViewConnected } from './utils/helpers';
 import { localAuthMiddleware, LOCAL_API_TOKEN } from './middleware/localAuth';
 
@@ -67,12 +64,6 @@ app.use(cors());
 app.use(express.json({ limit: '1mb' }));
 app.use(localAuthMiddleware);
 console.log(`[Auth] Local API token active — read from .runtime/api-token or env LOCAL_API_TOKEN`);
-
-// On startup, seed portfolio.json from .example if it doesn't exist (clean clone)
-if (!fs.existsSync(PORTFOLIO_FILE) && fs.existsSync(PORTFOLIO_EXAMPLE)) {
-    fs.copyFileSync(PORTFOLIO_EXAMPLE, PORTFOLIO_FILE);
-    console.log('[Init] Created portfolio.json from .example');
-}
 
 // ── Utility routes ─────────────────────────────────────────────────────────────
 
