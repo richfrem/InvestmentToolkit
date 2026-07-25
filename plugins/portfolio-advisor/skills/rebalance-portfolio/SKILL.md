@@ -67,8 +67,10 @@ If the audit endpoint is unreachable, proceed but prepend a warning:
 ## 🇨🇦 Account Selection
 
 Account routing (TFSA/RRSP/Cash preference rules, PSU-U.TO same-account funding rule) is now
-computed by `rebalancer.py` from `investment_screener/backend/data/account_policy.json` — each
-order in the plan already carries its `"account"` field. Edit `account_policy.json` directly
+computed by `rebalancer.py` from the `portfolio_policy` table in `domain_model.sqlite` (Wave 5E —
+formerly `investment_screener/backend/data/account_policy.json`, now archived) — each
+order in the plan already carries its `"account"` field. Use
+`python3 investment_screener/backend/py_services/update_portfolio_policy.py --set FIELD=VALUE --write`
 if the routing rules need to change; no skill-side heuristic table to keep in sync anymore.
 
 ---
@@ -235,7 +237,8 @@ conviction; the engine has no such field to sort by.
 **SELLS**: Check `portfolio.json` — if the ticker is held in multiple accounts (e.g., ZS in both TFSA and RRSP), create a separate entry for each account using that account's actual share count.
 
 **BUYS**: `rebalancer.py` already resolves each buy to exactly ONE account (via
-`account_policy.json`'s `accountPreferenceRules`) and puts that single account directly on the
+`portfolio_policy.account_preference_rules_json`, Wave 5E — formerly `account_policy.json`'s
+`accountPreferenceRules`) and puts that single account directly on the
 order. Post exactly one trade-log entry per buy order, using that order's own `account` field —
 never fabricate a second mirrored entry in another account.
 

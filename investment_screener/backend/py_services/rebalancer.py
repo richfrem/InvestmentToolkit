@@ -57,6 +57,7 @@ from domain_model.account_repository import list_accounts  # noqa: E402
 from domain_model.account_investment_repository import list_account_investments  # noqa: E402
 from domain_model.investment_repository import get_investment  # noqa: E402
 from domain_model.portfolio_repository import get_last_synced_at  # noqa: E402
+from domain_model.portfolio_policy_repository import get_portfolio_policy  # noqa: E402
 from domain_model.projection_repository import (  # noqa: E402
     get_latest_projection,
     get_latest_projection_by_source,
@@ -68,6 +69,10 @@ TARGET_PATH = DATA_DIR / "theses/target-portfolio.json"
 PORTFOLIO_PATH = DATA_DIR / "portfolio.json"
 RISK_SNAPSHOT_PATH = DATA_DIR / "risk_snapshot.json"
 THESIS_BREAKER_STATE_PATH = DATA_DIR / "thesis_breaker_state.json"
+# DEPRECATED, unused: account_policy.json was archived (git mv) in Wave 5E. This
+# default now points at a file that no longer exists -- kept only for
+# compute_rebalance_plan()'s account_policy_path parameter's signature
+# compatibility (see that function's docstring). Do not read this path.
 ACCOUNT_POLICY_PATH = DATA_DIR / "account_policy.json"
 DB_PATH = DATA_DIR / "domain_model.sqlite"
 REBALANCE_PLAN_PATH = DATA_DIR / "rebalance_plan.json"
@@ -706,6 +711,39 @@ def _build_order_entries(
     return orders
 
 
+def _load_account_policy_from_db(db_path: Path) -> dict[str, Any]:
+    """Read the account/portfolio policy from portfolio_policy (Wave 5E cutover),
+    reshaped into the same dict shape account_policy.json used to provide
+    (accountPreferenceRules/psuFundingRule/riskBudgetCaps/bandConfig) -- so every
+    downstream function in this file (compute_account_routing,
+    compute_risk_budget_check, etc.) needs no changes.
+
+    Returns an empty-shaped dict (each key present, values empty/defaulted) if
+    portfolio_policy has never been written, matching the graceful-degradation
+    behavior callers already rely on via account_policy.get(key, {}).
+    """
+    conn = initialize_db(str(db_path))
+    try:
+        row = get_portfolio_policy(conn)
+    finally:
+        conn.close()
+    if row is None:
+        return {}
+    return {
+        "accountPreferenceRules": json.loads(row["account_preference_rules_json"] or "[]"),
+        "psuFundingRule": json.loads(row["psu_funding_rule_json"] or "{}"),
+        "riskBudgetCaps": {
+            "maxMarginalRiskContributionPct": row["max_marginal_risk_contribution_pct"],
+            "maxClusterVarianceContributionPct": row["max_cluster_variance_contribution_pct"],
+        },
+        "bandConfig": {
+            "relativePct": row["rebalance_band_relative_pct"],
+            "absolutePct": row["rebalance_band_absolute_pct"],
+            "criticalMultiplier": row["rebalance_band_critical_multiplier"],
+        },
+    }
+
+
 def compute_rebalance_plan(
     target_portfolio_path: Path = TARGET_PATH,
     portfolio_path: Path = PORTFOLIO_PATH,
@@ -725,7 +763,12 @@ def compute_rebalance_plan(
         portfolio_path: Path to portfolio.json.
         risk_snapshot_path: Path to risk_snapshot.json (E1 output).
         thesis_breaker_state_path: Path to thesis_breaker_state.json (B5 output).
-        account_policy_path: Path to account_policy.json.
+        account_policy_path: DEPRECATED, unused since Wave 5E's cutover to
+            _load_account_policy_from_db(db_path) below -- account_policy.json is
+            archived (git mv) and this default now points at a file that no longer
+            exists. Kept only so every already-migrated call site (tests, CLI)
+            keeps working without another signature change; do not rely on this
+            parameter having any effect.
         db_path: Path to domain_model.sqlite.
 
     Returns:
@@ -733,7 +776,7 @@ def compute_rebalance_plan(
         2026-07-09-rebalancer-v2-design.md §3.3 for the field-by-field shape.
     """
     target_data = json.loads(Path(target_portfolio_path).read_text())
-    account_policy = json.loads(Path(account_policy_path).read_text())
+    account_policy = _load_account_policy_from_db(db_path)
 
     blocked = _check_no_trade_conditions(target_data, Path(portfolio_path), Path(db_path))
     if blocked:
