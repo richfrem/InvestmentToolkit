@@ -135,6 +135,20 @@ export class PortfolioRepository {
                 synced_at       TEXT NOT NULL,
                 source          TEXT
             );
+
+            CREATE TABLE IF NOT EXISTS portfolio_policy (
+                policy_id                                TEXT PRIMARY KEY,
+                rebalance_frequency                      TEXT,
+                portfolio_value_usd_target               REAL,
+                max_marginal_risk_contribution_pct        REAL,
+                max_cluster_variance_contribution_pct      REAL,
+                rebalance_band_relative_pct                REAL,
+                rebalance_band_absolute_pct                REAL,
+                rebalance_band_critical_multiplier          REAL,
+                account_preference_rules_json                TEXT,
+                psu_funding_rule_json                          TEXT,
+                updated_at                                      TEXT NOT NULL
+            );
         `);
     }
 
@@ -190,6 +204,17 @@ export class PortfolioRepository {
             .prepare('SELECT usd_to_cad_rate FROM broker_exchange_rate WHERE id = 1')
             .get() as { usd_to_cad_rate: number } | undefined;
         return row ? row.usd_to_cad_rate : null;
+    }
+
+    /** Mirrors `portfolio_policy_repository.py::get_portfolio_policy` — the single
+     * account/portfolio policy row (Wave 5E), or null if never written. TS is
+     * read-only for this table: only Python's update_portfolio_policy.py CLI
+     * writes it (matches this migration's manually-maintained-domain pattern). */
+    getPortfolioPolicy(): Record<string, unknown> | null {
+        const row = this.db
+            .prepare(`SELECT * FROM portfolio_policy WHERE policy_id = 'default'`)
+            .get() as Record<string, unknown> | undefined;
+        return row ?? null;
     }
 
     /** Mirrors `account_repository.py::upsert_account` — idempotent

@@ -588,6 +588,30 @@ def _write_full_fixture(tmp_path):
         ("TFSA", "NBIS", 1.0, 20.0),
         ("TFSA", "PSU-U.TO", 90.0, 100.0),
     ])
+
+    # Wave 5E cutover: compute_rebalance_plan() now reads the account policy
+    # from portfolio_policy (SQLite), not account_policy.json -- seed the same
+    # db_path so this fixture's account_policy.json write above (still needed
+    # by other tests exercising the pre-cutover fallback / the raw JSON file
+    # directly) has a matching SQLite counterpart.
+    from domain_model.db_client import initialize_db
+    from domain_model.portfolio_policy_repository import upsert_portfolio_policy
+    import json as _json
+    conn = initialize_db(str(db_path))
+    upsert_portfolio_policy(
+        conn,
+        max_marginal_risk_contribution_pct=25,
+        max_cluster_variance_contribution_pct=60,
+        rebalance_band_relative_pct=20.0,
+        rebalance_band_absolute_pct=1.5,
+        rebalance_band_critical_multiplier=2.0,
+        account_preference_rules_json=_json.dumps([{"match": "default", "prefer": "TFSA"}]),
+        psu_funding_rule_json=_json.dumps(
+            {"ticker": "PSU-U.TO", "sameAccountOnly": True, "sharesFormula": "ceil(N * price / 100)"}
+        ),
+    )
+    conn.close()
+
     return target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path
 
 
@@ -606,6 +630,26 @@ def test_compute_rebalance_plan_full_shape(tmp_path, monkeypatch):
     assert "CRWD" in tickers_in_orders  # overweight (14.3% actual vs 4.0% target) -> sell
     assert "NBIS" in tickers_in_orders  # underweight (0.19% actual vs 5.5% target) -> buy
     assert plan["accountDataSource"] == {"TFSA": "sqlite", "RRSP": "heuristic_1_3_mirror"}
+
+
+def test_compute_rebalance_plan_uses_sqlite_policy_not_json_file(tmp_path, monkeypatch):
+    """Wave 5E cutover: compute_rebalance_plan() must read the account policy's
+    bandConfig from portfolio_policy (SQLite), not account_policy.json -- prove
+    it by pointing account_policy_path at a nonexistent file and confirming the
+    plan still computes correctly using only the SQLite-seeded policy."""
+    target_path, portfolio_path, risk_path, breaker_path, policy_path, db_path = _write_full_fixture(tmp_path)
+    monkeypatch.setattr(portfolio_io, "_DB_PATH", str(db_path))
+
+    missing_policy_path = tmp_path / "does-not-exist-account_policy.json"
+    plan = compute_rebalance_plan(
+        target_portfolio_path=target_path, portfolio_path=portfolio_path,
+        risk_snapshot_path=risk_path, thesis_breaker_state_path=breaker_path,
+        account_policy_path=missing_policy_path, db_path=db_path,
+    )
+    assert plan["blockedReason"] is None
+    tickers_in_orders = {o["ticker"] for o in plan["orders"]}
+    assert "CRWD" in tickers_in_orders
+    assert "NBIS" in tickers_in_orders
 
 
 def test_compute_rebalance_plan_blocked_when_targets_dont_sum_to_100(tmp_path):

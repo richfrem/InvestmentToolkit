@@ -114,4 +114,32 @@ describe('PortfolioRepository', () => {
             expect(count).to.equal(1);
         });
     });
+
+    describe('portfolio policy (portfolio_policy singleton, Wave 5E)', () => {
+        it('returns null when never written', () => {
+            expect(repo.getPortfolioPolicy()).to.equal(null);
+        });
+
+        it('reads back a row seeded via the Python-owned schema/columns', () => {
+            const db = (repo as any).db;
+            db.prepare(
+                `INSERT INTO portfolio_policy
+                 (policy_id, rebalance_frequency, portfolio_value_usd_target,
+                  max_marginal_risk_contribution_pct, max_cluster_variance_contribution_pct,
+                  rebalance_band_relative_pct, rebalance_band_absolute_pct,
+                  rebalance_band_critical_multiplier, account_preference_rules_json,
+                  psu_funding_rule_json, updated_at)
+                 VALUES ('default', 'quarterly', 30797, 25, 60, 20, 1.5, 2.0,
+                         '[{"match":"default","prefer":"TFSA"}]', '{"ticker":"PSU-U.TO"}',
+                         '2026-07-25T00:00:00.000Z')`
+            ).run();
+
+            const policy = repo.getPortfolioPolicy();
+            expect(policy).to.not.equal(null);
+            expect(policy!.rebalance_frequency).to.equal('quarterly');
+            expect(policy!.portfolio_value_usd_target).to.equal(30797);
+            expect(policy!.rebalance_band_critical_multiplier).to.equal(2.0);
+            expect(policy!.account_preference_rules_json).to.equal('[{"match":"default","prefer":"TFSA"}]');
+        });
+    });
 });
