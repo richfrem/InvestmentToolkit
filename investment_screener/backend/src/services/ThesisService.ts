@@ -41,7 +41,8 @@
  *     account_investment/investment_price tables, Wave 3 Task 6 — see getPortfolioItems.
  *     Falls back to investment_screener/backend/data/portfolio.json only when SQLite
  *     has no priced position data yet.)
- *   - investment_screener/backend/data/account_policy.json (reads drift config)
+ *   - domain_model.sqlite's portfolio_policy table (Wave 5E; reads drift config,
+ *     formerly investment_screener/backend/data/account_policy.json)
  *
  * Key Output Dependencies:
  *   - investment_screener/backend/data/theses/ (writes theses JSON)
@@ -85,7 +86,6 @@ import { DOMAIN_MODEL_DB_FILE } from '../utils/paths';
 
 const THESES_DIR = path.resolve(__dirname, '../../data/theses');
 const PORTFOLIO_FILE = path.resolve(__dirname, '../../data/portfolio.json');
-const ACCOUNT_POLICY_FILE = path.resolve(__dirname, '../../data/account_policy.json');
 const REBALANCE_PROMPT_PATH = path.resolve(__dirname, '../../../.agent/skills/portfolio-advisor/references/rebalance_prompt.md');
 // Ensure directory exists
 if (!fs.existsSync(THESES_DIR)) {
@@ -174,13 +174,36 @@ export class ThesisService {
         }
     }
 
+    /** Wave 5E cutover: sourced from domain_model.sqlite's portfolio_policy singleton
+     * row (via PortfolioRepository.getPortfolioPolicy()) rather than account_policy.json.
+     * Reshapes the flat SQLite row back into AccountPolicySchema's nested shape so
+     * every caller (computeBandPct, computeHealthCheck) needs no changes. */
     private getAccountPolicy(): AccountPolicy | null {
-        if (!fs.existsSync(ACCOUNT_POLICY_FILE)) return null;
         try {
-            const data = JSON.parse(fs.readFileSync(ACCOUNT_POLICY_FILE, 'utf-8'));
+            const repo = new PortfolioRepository(this.dbPath);
+            let row: Record<string, unknown> | null;
+            try {
+                row = repo.getPortfolioPolicy();
+            } finally {
+                repo.close();
+            }
+            if (!row) return null;
+            const data = {
+                accountPreferenceRules: JSON.parse((row.account_preference_rules_json as string) ?? '[]'),
+                psuFundingRule: JSON.parse((row.psu_funding_rule_json as string) ?? '{}'),
+                riskBudgetCaps: {
+                    maxMarginalRiskContributionPct: row.max_marginal_risk_contribution_pct,
+                    maxClusterVarianceContributionPct: row.max_cluster_variance_contribution_pct,
+                },
+                bandConfig: {
+                    relativePct: row.rebalance_band_relative_pct,
+                    absolutePct: row.rebalance_band_absolute_pct,
+                    criticalMultiplier: row.rebalance_band_critical_multiplier,
+                },
+            };
             return AccountPolicySchema.parse(data);
         } catch (e) {
-            console.error('[ThesisService] Error reading account_policy.json:', e);
+            console.error('[ThesisService] Error reading portfolio_policy from SQLite:', e);
             return null;
         }
     }

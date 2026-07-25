@@ -163,3 +163,56 @@ describe('ThesisService.getPortfolioItems (Wave 3 Task 6)', () => {
         expect(items[0].price).to.equal(900);
     });
 });
+
+describe('ThesisService.getAccountPolicy (Wave 5E cutover)', () => {
+    let dbPath: string;
+    let thesisService: ThesisService;
+
+    beforeEach(() => {
+        dbPath = path.join(os.tmpdir(), `thesis-service-policy-test-${Date.now()}-${Math.random()}.sqlite`);
+        thesisService = new ThesisService(undefined, dbPath);
+    });
+
+    afterEach(() => {
+        for (const suffix of ['', '-wal', '-shm']) {
+            const p = dbPath + suffix;
+            if (fs.existsSync(p)) fs.unlinkSync(p);
+        }
+    });
+
+    it('returns null when portfolio_policy has never been written (no account_policy.json fallback)', () => {
+        const repo = new PortfolioRepository(dbPath);
+        repo.close();
+        const policy = (thesisService as any).getAccountPolicy();
+        expect(policy).to.equal(null);
+    });
+
+    it('reads the account policy from portfolio_policy (SQLite), not account_policy.json', () => {
+        const repo = new PortfolioRepository(dbPath);
+        const db = (repo as any).db;
+        db.prepare(
+            `INSERT INTO portfolio_policy
+             (policy_id, rebalance_frequency, portfolio_value_usd_target,
+              max_marginal_risk_contribution_pct, max_cluster_variance_contribution_pct,
+              rebalance_band_relative_pct, rebalance_band_absolute_pct,
+              rebalance_band_critical_multiplier, account_preference_rules_json,
+              psu_funding_rule_json, updated_at)
+             VALUES ('default', 'quarterly', 30797, 25, 60, 20, 1.5, 2.0,
+                     '[{"match":"default","prefer":"TFSA"}]',
+                     '{"ticker":"PSU-U.TO","sameAccountOnly":true,"sharesFormula":"ceil(N * price / 100)"}',
+                     '2026-07-25T00:00:00.000Z')`
+        ).run();
+        repo.close();
+
+        // dbPath is a fresh tmp file -- there is deliberately no sibling account_policy.json,
+        // so a correct result here proves the SQLite path is used, not a JSON fallback.
+        const policy = (thesisService as any).getAccountPolicy();
+        expect(policy).to.not.equal(null);
+        expect(policy.bandConfig).to.deep.equal({ relativePct: 20, absolutePct: 1.5, criticalMultiplier: 2.0 });
+        expect(policy.riskBudgetCaps).to.deep.equal({
+            maxMarginalRiskContributionPct: 25, maxClusterVarianceContributionPct: 60,
+        });
+        expect(policy.accountPreferenceRules).to.deep.equal([{ match: 'default', prefer: 'TFSA' }]);
+        expect(policy.psuFundingRule.ticker).to.equal('PSU-U.TO');
+    });
+});
