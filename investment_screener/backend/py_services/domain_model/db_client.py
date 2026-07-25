@@ -465,6 +465,16 @@ def initialize_db(db_path: str) -> sqlite3.Connection:
     """)
 
     conn.execute("""
+    CREATE TABLE IF NOT EXISTS portfolio_change_log (
+        entry_id        TEXT PRIMARY KEY,
+        version         TEXT NOT NULL,
+        entry_date      TEXT NOT NULL,
+        note            TEXT NOT NULL,
+        created_at      TEXT NOT NULL
+    );
+    """)
+
+    conn.execute("""
     CREATE TABLE IF NOT EXISTS broker_exchange_rate (
         id              INTEGER PRIMARY KEY CHECK (id = 1),
         usd_to_cad_rate REAL NOT NULL,

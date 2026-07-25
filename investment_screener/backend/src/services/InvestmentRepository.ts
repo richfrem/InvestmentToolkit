@@ -238,6 +238,40 @@ export class InvestmentRepository {
             .run(isWatchlisted ? 1 : 0, watchlistAddedAt, now, investmentId);
     }
 
+    /** Wave 8: writes the thesis-editable fields on one investment row --
+     * TS-side counterpart to investment_repository.py::update_investment_fields,
+     * used by ThesisService.ts's saveThesis()/updateHolding()/addHolding()/
+     * removeHolding()/replaceHoldings() to persist per-holding thesis edits
+     * directly into SQLite instead of the retired target-portfolio.json. */
+    updateThesisFields(symbol: string, fields: {
+        name?: string | null;
+        pillarId?: string | null;
+        subStrategyId?: string | null;
+        targetWeight?: number | null;
+        thesisForInclusion?: string | null;
+        agentRationale?: string | null;
+        role?: string | null;
+    }): void {
+        const investmentId = this.resolveInvestmentId(symbol);
+        const now = new Date().toISOString();
+        const columnMap: Record<string, string> = {
+            name: 'name', pillarId: 'pillar_id', subStrategyId: 'sub_strategy_id',
+            targetWeight: 'target_weight', thesisForInclusion: 'thesis_for_inclusion',
+            agentRationale: 'agent_rationale', role: 'lifecycle_status',
+        };
+        const setClauses: string[] = [];
+        const params: unknown[] = [];
+        for (const [key, value] of Object.entries(fields)) {
+            if (value === undefined) continue;
+            setClauses.push(`${columnMap[key]} = ?`);
+            params.push(value);
+        }
+        if (setClauses.length === 0) return;
+        setClauses.push('updated_at = ?');
+        params.push(now, investmentId);
+        this.db.prepare(`UPDATE investment SET ${setClauses.join(', ')} WHERE investment_id = ?`).run(...params);
+    }
+
     /** Mirrors the `holdings` array shape of `data/theses/target-portfolio.json`
      * (read side, Wave 2 Task 10/11). Only rows with a non-null `target_weight`
      * are thesis holdings — verified 1:1 against the 75 holdings in the JSON

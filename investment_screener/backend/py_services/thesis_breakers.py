@@ -52,9 +52,12 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DATA_DIR = REPO_ROOT / "investment_screener/backend/data"
-TARGET_PATH = DATA_DIR / "theses/target-portfolio.json"
 STATE_PATH = DATA_DIR / "thesis_breaker_state.json"
 OVERRIDES_PATH = DATA_DIR / "theses/breaker-overrides.jsonl"
+DB_PATH = DATA_DIR / "domain_model.sqlite"
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from portfolio_io import load_thesis_holdings  # noqa: E402
 
 AUTO_METRICS = frozenset({
     "rsi", "dcfFairValueGapPct", "trendState", "momentumPercentile", "pillarAvgScore",
@@ -298,21 +301,27 @@ def compute_breaker_state(
     conviction_scores: list[dict[str, Any]],
     market_regime: dict[str, Any] | None,
     pillar_health: list[dict[str, Any]],
-    target_portfolio_path: Path = TARGET_PATH,
+    target_portfolio_path: Path | None = None,
     state_path: Path = STATE_PATH,
+    db_path: Path = DB_PATH,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Load, evaluate, and persist thesis breaker state for this run.
 
     I/O wrapper around the pure evaluate_breakers(). Never mutates
-    target_portfolio_path — only reads it. Owns state_path exclusively.
+    domain_model.sqlite — only reads it. Owns state_path exclusively.
 
     Args:
         conviction_scores: This run's conviction score rows — pass the same
             list daily_brief.py already computed, never recompute here.
         market_regime: This run's market_regime output, or None.
         pillar_health: This run's pillar health list.
-        target_portfolio_path: Path to target-portfolio.json.
+        target_portfolio_path: DEPRECATED, unused since Wave 8's cutover to
+            load_thesis_holdings(db_path) below -- target-portfolio.json is
+            archived. Kept only so every already-migrated call site (tests,
+            CLI) keeps working without another signature change; do not rely
+            on this parameter having any effect.
         state_path: Path to thesis_breaker_state.json.
+        db_path: Path to domain_model.sqlite.
 
     Returns:
         (full_state_dict, triggered_list) — full_state_dict is the exact
@@ -321,8 +330,7 @@ def compute_breaker_state(
         (metric/operator/threshold/horizon/note/type) with its evaluated
         state and the holding's targetWeight (for triage sort order).
     """
-    with open(target_portfolio_path) as f:
-        target_data = json.load(f)
+    target_data = {"holdings": load_thesis_holdings(str(db_path))}
 
     prev_state: dict[str, Any] = {}
     if state_path.exists():
@@ -418,9 +426,10 @@ def _cli_log_override(
     breaker_id: str,
     rationale: str,
     overridden_by: str = "user",
-    target_portfolio_path: Path = TARGET_PATH,
+    target_portfolio_path: Path | None = None,
     state_path: Path = STATE_PATH,
     overrides_path: Path = OVERRIDES_PATH,
+    db_path: Path = DB_PATH,
 ) -> None:
     """Resolve a breaker's definition + current state, then log an override.
 
@@ -430,22 +439,26 @@ def _cli_log_override(
 
     Args:
         ticker: Holding ticker.
-        breaker_id: The breaker's id, as defined in target-portfolio.json.
+        breaker_id: The breaker's id, as defined in domain_model.sqlite.
         rationale: The user's stated reason for holding through.
         overridden_by: Who made the call — defaults to "user".
-        target_portfolio_path: Path to target-portfolio.json.
+        target_portfolio_path: DEPRECATED, unused since Wave 8's cutover to
+            load_thesis_holdings(db_path) below -- target-portfolio.json is
+            archived. Kept only so every already-migrated call site (tests,
+            CLI) keeps working without another signature change; do not rely
+            on this parameter having any effect.
         state_path: Path to thesis_breaker_state.json (missing file is fine —
             streak/currentValue are logged as None if state hasn't run yet).
         overrides_path: Target JSONL file.
+        db_path: Path to domain_model.sqlite.
 
     Raises:
         ValueError: If the ticker or breaker id isn't found.
     """
-    with open(target_portfolio_path) as f:
-        target_data = json.load(f)
-    holding = next((h for h in target_data["holdings"] if h["ticker"] == ticker), None)
+    holdings = load_thesis_holdings(str(db_path))
+    holding = next((h for h in holdings if h["ticker"] == ticker), None)
     if holding is None:
-        raise ValueError(f"ticker '{ticker}' not found in target-portfolio.json")
+        raise ValueError(f"ticker '{ticker}' not found in domain_model.sqlite")
     definition = next((b for b in holding.get("thesisBreakers", []) if b["id"] == breaker_id), None)
     if definition is None:
         raise ValueError(f"breaker id '{breaker_id}' not found on {ticker}")
@@ -498,9 +511,8 @@ def main() -> None:
         print(f"market_regime unavailable: {exc}", file=sys.stderr)
         market_regime = None
 
-    with open(TARGET_PATH) as f:
-        target_data = json.load(f)
-    ticker_pillar = {h["ticker"]: h.get("subStrategyId", "unknown") for h in target_data["holdings"]}
+    holdings = load_thesis_holdings(str(DB_PATH))
+    ticker_pillar = {h["ticker"]: h.get("subStrategyId") or "unknown" for h in holdings}
     pillars: dict[str, list[int]] = {}
     for s in scores_raw:
         p = ticker_pillar.get(s["ticker"], "unknown")
