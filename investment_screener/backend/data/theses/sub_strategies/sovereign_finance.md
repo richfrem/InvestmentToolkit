@@ -60,14 +60,14 @@ Red team review in early May 2026 triggered exits on speculative crypto (CRCL/ET
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-23 08:01 by TV sync · Portfolio total: $30,702 USD*
+*Auto-updated 2026-07-24 07:30 by TV sync · Portfolio total: $35,745 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **COIN** | 6.5 | 3.4% | 3.0% | +0.5pp | 🟡 TRIM | — |
-| **CRCL** | 13 | 2.7% | 2.7% | -0.0pp | ⚪ MAINTAIN | — |
+| **COIN** | 0 | 2.9% | 3.0% | -0.0pp | ⚪ MAINTAIN | — |
+| **CRCL** | 0 | 2.3% | 2.7% | -0.4pp | 🔵 ACCUMULATE | — |
 
-**Pillar total — Actual: 6.1% · Target: 5.7% · Gap: +0.4pp**
+**Pillar total — Actual: 5.2% · Target: 5.7% · Gap: -0.4pp**
 <!-- AUTO_UPDATE_END: current_positions -->
