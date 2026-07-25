@@ -163,7 +163,7 @@ def test_verify_thesis_sync_spot_and_cash_exemption(tmp_path):
 
 def _make_db(tmp_path: Path, holdings: list[dict]) -> Path:
     """holdings: list of {ticker, target_weight, lifecycle_status, sub_strategy_id,
-    has_projection}."""
+    has_projection, is_watchlisted}."""
     db_path = tmp_path / "domain_model.sqlite"
     conn = initialize_db(str(db_path))
     for h in holdings:
@@ -172,6 +172,7 @@ def _make_db(tmp_path: Path, holdings: list[dict]) -> Path:
             conn, investment_id,
             target_weight=h.get("target_weight", 0),
             lifecycle_status=h.get("lifecycle_status", ""),
+            is_watchlisted=int(h.get("is_watchlisted", False)),
         )
         if h.get("has_projection"):
             save_projection_version(
@@ -230,3 +231,33 @@ def test_verify_thesis_sync_sqlite_default_flags_missing_projection(tmp_path):
     assert r.returncode == 1
     assert "are missing DCF projections" in r.stdout
     assert "['MSFT']" in r.stdout
+
+
+def test_verify_thesis_sync_excludes_watchlist_only_tickers(tmp_path):
+    """A ticker that is only on the watchlist (is_watchlisted=1, no real
+    target_weight/role) must NOT be required to have thesis documentation --
+    it was never a target/current holding. Confirmed real-data bug: 19 real
+    watchlist tickers (AAPL, ALAB, AMZN, etc.) were being flagged as missing
+    thesis docs purely because _load_holdings_from_db() returned every row
+    in the investment table with no is_watchlisted filter.
+    """
+    db_path = _make_db(tmp_path, [
+        {"ticker": "AAPL", "target_weight": 40.0, "lifecycle_status": "core", "has_projection": True},
+        {"ticker": "MSFT", "target_weight": 60.0, "lifecycle_status": "core", "has_projection": True},
+        {"ticker": "NVDA", "target_weight": 0, "lifecycle_status": "", "has_projection": False, "is_watchlisted": True},
+    ])
+
+    thesis_md = tmp_path / "investment_thesis.md"
+    thesis_md.write_text("Conviction Pillars:\n- AAPL is leading mobile ecosystem.\n- MSFT dominates cloud software.")
+
+    r = subprocess.run(
+        [
+            "python3", str(SCRIPT_PATH),
+            "--db", str(db_path),
+            "--thesis-md", str(thesis_md),
+        ],
+        capture_output=True, text=True, cwd=str(REPO_ROOT),
+    )
+    assert r.returncode == 0, f"Sync check failed but expected to pass (NVDA is watchlist-only): {r.stdout}\n{r.stderr}"
+    assert "NVDA" not in r.stdout or "missing" not in r.stdout.lower()
+    assert "Found 2 holdings in target portfolio." in r.stdout
