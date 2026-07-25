@@ -30,10 +30,6 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 TARGET_WATCHLIST_PATH = REPO_ROOT / "investment_screener/backend/data/watchlist.json"
 DB_PATH = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
-# BOATS ATS eligibility — US equities only (no Canadian, no futures)
-_BOATS_SKIP_SUFFIXES = (".TO", ".V")
-_BOATS_SKIP_PATTERNS = ("!",)
-
 sys.path.insert(0, str(REPO_ROOT / "plugins/tradingview/scripts"))
 from tv_client import tv_call, is_tv_running
 
@@ -81,26 +77,11 @@ def _load_watchlisted_symbols(db_path: Path | None = None) -> List[str]:
         conn.close()
     return [row["symbol"].upper() for row in rows if row.get("symbol") and row["symbol"] != _CASH_SYMBOL]
 
-_BOATS_EXCLUDE = {_CASH_SYMBOL}
-
 
 # External comment: Normalizes Purpose HISA convention
 def normalize_symbol(s: str) -> str:
     """Standardizes mutual fund aliases for consistency."""
     return "PSU-U" if s in ("PSU-U.TO", "PSU.U.TO") else s
-
-
-# External comment: Check if a ticker is eligible for BOATS ATS
-def _is_boats_eligible(ticker: str) -> bool:
-    """Return True if ticker is a US equity eligible for BOATS ATS trading."""
-    upper = ticker.upper()
-    if upper in _BOATS_EXCLUDE:
-        return False
-    if any(upper.endswith(s) for s in _BOATS_SKIP_SUFFIXES):
-        return False
-    if any(p in upper for p in _BOATS_SKIP_PATTERNS):
-        return False
-    return True
 
 
 # External comment: Retrieve researched symbols from file or projections directory
@@ -125,36 +106,6 @@ def load_researched_watchlist(db_path: Path | None = None) -> List[str]:
     finally:
         conn.close()
     return sorted(s.upper() for s in symbols)
-
-
-# External comment: Load US equities for BOATS ATS watchlists
-def load_boats_watchlist(db_path: Path | None = None) -> List[str]:
-    """US equities from portfolio + watchlist eligible for BOATS ATS after-hours trading.
-
-    Storage backend (Wave 2 Task 10 rewire): the watchlist half reads
-    ``investment.is_watchlisted`` via ``_load_watchlisted_symbols`` instead
-    of watchlist.json (ADR-029).
-    """
-    seen: set[str] = set()
-    tickers: List[str] = []
-
-    try:
-        for sym in _load_holdings_symbols(db_path):
-            if sym and _is_boats_eligible(sym) and sym not in seen:
-                seen.add(sym)
-                tickers.append(f"BOATS:{sym}")
-    except Exception:
-        pass
-
-    try:
-        for sym in _load_watchlisted_symbols(db_path):
-            if sym and _is_boats_eligible(sym) and sym not in seen:
-                seen.add(sym)
-                tickers.append(f"BOATS:{sym}")
-    except Exception:
-        pass
-
-    return sorted(tickers)
 
 
 # External comment: Retrieve active portfolio symbols
@@ -211,20 +162,15 @@ def run_sync(dry_run: bool = False) -> Dict[str, Any]:
 
     researched_list = sorted(list(set(normalize_symbol(s) for s in researched_list)))
     holdings_list = sorted(list(set(normalize_symbol(s) for s in holdings_list)))
-    boats_list = load_boats_watchlist()
 
     actions = {
-        "TA-Full Watchlist": {
+        "TV-Full Watchlist": {
             "target_count": len(researched_list),
             "tickers": researched_list
         },
-        "TA-Current Holdings": {
+        "TV-Portfolio": {
             "target_count": len(holdings_list),
             "tickers": holdings_list
-        },
-        "TA-BOATS-Watchlist": {
-            "target_count": len(boats_list),
-            "tickers": boats_list
         },
     }
 

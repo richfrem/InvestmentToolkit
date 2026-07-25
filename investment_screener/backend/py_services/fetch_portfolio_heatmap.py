@@ -199,8 +199,9 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
     info_map = prefetch_info(to_fetch, bust_cache=bust_cache) if to_fetch else {}
 
     # --- TradingView price overlay (primary source) ---
-    # Reads live prices from TradingView watchlist via CDP — includes BOATS extended-hours
-    # feed during the 8PM–4AM ET overnight session. Overrides yfinance price in info_map.
+    # Reads live prices from the "TV-Full Watchlist" TradingView watchlist via CDP
+    # (TradingView charts now natively support 24h quoting — no separate overnight
+    # watchlist needed). Overrides yfinance price in info_map.
     try:
         import sys as _sys
         _tv_scripts = str(Path(__file__).resolve().parents[3] / "plugins/tradingview/scripts")
@@ -256,7 +257,7 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
                     sector = yahoo_sector
                     industry = yahoo_industry
 
-                # Price priority: TradingView live (incl. BOATS) → yfinance fast_info → regularMarket
+                # Price priority: TradingView live → yfinance fast_info → regularMarket
                 yf_price = (info.get("_fastLastPrice")
                             or info.get("currentPrice")
                             or info.get("regularMarketPrice", 0))
@@ -265,7 +266,7 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
                 # stored_price may equal book_price (avg fill cost seeded at TV sync) and must
                 # NOT be used as current market price — that would give wildly wrong 1D%.
                 current_price = yf_price if yf_price and yf_price > 0 else (stored_price or 0)
-                # Use TV-provided change% when available (reflects BOATS session accurately)
+                # Use TV-provided change% when available (reflects live TradingView session)
                 tv_change_pct = info.get("_fastChangePct")
                 change_pct = tv_change_pct if tv_change_pct is not None else (
                     ((current_price - prev_close) / prev_close * 100) if prev_close else 0
