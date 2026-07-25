@@ -12,13 +12,17 @@ Open **Claude Code** or **GitHub Copilot CLI** in the project terminal and type 
 
 ## Data Architecture
 
-Commands below currently read/write JSON files (`portfolio.json`, `target-portfolio.json`,
-`watchlist.json`, `projections/*.json`, etc.) directly. A SQLite-backed domain data model —
-`account` / `investment` / `account_investment`, replacing that JSON split with a queryable
-schema — is in active design, not yet implemented. See
-`data-architecture/domain-data-model.md` for the current model (entities, ERD, rationale) and
-`data-architecture/sql/` for the DDL. Nothing below has been rewired to it yet; commands still
-behave exactly as documented.
+`domain_model.sqlite` (`account` / `investment` / `account_investment` / `price_level_set` /
+`price_level_tier` / `portfolio_policy` tables, among others) is the sole source of truth for
+portfolio holdings, thesis targets, pillars, price levels, and standing decisions. `portfolio.json`
+and `theses/target-portfolio.json` were both retired (Waves 7/8) and are archived under
+`ARCHIVE/investment_screener/backend/data/` — commands below now read/write SQLite via
+`investment_screener/backend/py_services/portfolio_io.py`'s `load_portfolio_state()`/
+`load_thesis_holdings()`/`load_target_weights()` (Python) or `InvestmentRepository`/
+`ThesisService`/`PriceLevelRepository` (TypeScript backend). A small number of other JSON files
+remain as deliberate, still-current exceptions (`cash_flows.json`, `trade-log.json`,
+`thesis_breaker_state.json`, `projections/*.json`) — see `data-architecture/domain-data-model.md`
+for the current schema (entities, ERD, rationale) and `data-architecture/sql/` for the DDL.
 
 ---
 
@@ -57,7 +61,7 @@ Outputs:
 ---
 
 ### `/13f-analyze`
-**Surgical 13F analysis.** Cross-references an institution's 13F holdings against your thesis targets. Outputs gated INITIATE / ACCUMULATE / TRIM / EXIT recommendations and applies approved changes to `target-portfolio.json`.
+**Surgical 13F analysis.** Cross-references an institution's 13F holdings against your thesis targets. Outputs gated INITIATE / ACCUMULATE / TRIM / EXIT recommendations and applies approved changes to `domain_model.sqlite` (via `update_targets.py`).
 
 ---
 
@@ -194,7 +198,7 @@ python3 plugins/tradingview/scripts/tv_launch.py
 
 | File | Purpose |
 |---|---|
-| `investment_screener/backend/data/theses/target-portfolio.json` | Live thesis — pillar targets and holding weights |
+| `investment_screener/backend/data/domain_model.sqlite` | Live thesis — pillar targets and holding weights (sole source of truth, Wave 8) |
 | `investment_screener/backend/data/theses/investment_thesis.md` | Thesis narrative — strategy, pillars, conviction logic |
 | `PortfolioAnalysis/strategic-reviews/` | Historical reviews (MD + JSON + patch) |
 | `investment_screener/backend/data/projections/` | AI DCF valuations per stock |
