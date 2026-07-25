@@ -83,8 +83,8 @@ def _is_scannable(ticker: str) -> bool:
 def _load_tickers(db_path: Path = DB_PATH) -> list[str]:
     """Load scannable tickers from held positions union the watchlisted investments.
 
-    Mirrors the user's curated TradingView BOATS-mylist: active holdings
-    plus researched watchlist names, minus Canadian and futures symbols.
+    US-equity-only overnight gap scan universe: active holdings plus researched
+    watchlist names, minus Canadian and futures symbols.
 
     Both holdings (``account_investment``) and watchlist membership
     (``investment.is_watchlisted``) are read from domain_model.sqlite (Wave 3

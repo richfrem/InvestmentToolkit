@@ -3,9 +3,9 @@
 tv_batch_quotes.py — Batch price resolver: TradingView first, yfinance fallback.
 
 Price source priority (in order):
-  1. TradingView watchlist DOM via CDP — live prices including BOATS extended-hours feed.
-     During BOATS session (8PM–4AM ET, Sun–Thu): reads TA-BOATS-Watchlist (BOATS:TICKER).
-     All other hours: reads TA-Full Watchlist (NYSE/NASDAQ/extended).
+  1. TradingView watchlist DOM via CDP — reads the live "TV-Full Watchlist"
+     (real, current TradingView watchlist name; TradingView charts now natively
+     support 24h quoting, so there is no separate overnight/BOATS watchlist).
   2. yfinance fast_info.last_price — reflects extended-hours prices when market is closed.
      Used when TradingView is not running (port 9222 unreachable) or ticker not in watchlist.
 
@@ -23,8 +23,7 @@ Output (JSON):
         "total": 3,
         "tradingview": 2,
         "fallback": 1,
-        "errors": 0,
-        "boats_session": false
+        "errors": 0
       }
     }
 """
@@ -33,13 +32,10 @@ from __future__ import annotations
 import json
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime
 from pathlib import Path
 from typing import Optional
-try:
-    from zoneinfo import ZoneInfo
-except ImportError:
-    from backports.zoneinfo import ZoneInfo  # type: ignore[no-redef]
+
+TV_WATCHLIST_NAME = "TV-Full Watchlist"
 
 
 def _find_scripts_dir() -> Path:
@@ -52,33 +48,12 @@ def _find_scripts_dir() -> Path:
     raise ImportError("tv_client.py not found — check plugin installation or set TV_CDP_DIR.")
 
 
-def is_boats_active() -> bool:
-    """Return True when Blue Ocean ATS (BOATS) session is live.
-
-    BOATS hours: 8:00 PM – 4:00 AM ET, Sunday through Thursday only.
-    Friday and Saturday nights have no BOATS session.
-    """
-    et = ZoneInfo("America/New_York")
-    now = datetime.now(et)
-    hour = now.hour
-    weekday = now.weekday()  # Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5, Sun=6
-
-    if hour >= 20:
-        # Evening leg (8PM–midnight): valid Sun(6)–Thu(3)
-        return weekday in (0, 1, 2, 3, 6)
-    elif hour < 4:
-        # Overnight leg (midnight–4AM): valid Mon(0)–Fri(4) early morning
-        # (the previous night's session rolling over)
-        return weekday in (0, 1, 2, 3, 4)
-    return False
-
-
 def _tv_watchlist_prices() -> dict[str, dict]:
     """Read live prices from the active TradingView watchlist via CDP.
 
-    Opens TA-BOATS-Watchlist during BOATS hours, TA-Full Watchlist otherwise.
-    Strips exchange prefixes (BOATS:, NASDAQ:) when building the lookup dict
-    so callers can match against plain ticker symbols.
+    Opens TV_WATCHLIST_NAME ("TV-Full Watchlist") — the single real, current
+    TradingView watchlist used for all-hours pricing (no BOATS/overnight split;
+    TradingView charts now natively support 24h quoting).
 
     Returns:
         Dict mapping plain ticker → {price, changePercent}.
@@ -90,15 +65,10 @@ def _tv_watchlist_prices() -> dict[str, dict]:
     if not is_tv_running():
         return {}
 
-    boats = is_boats_active()
-    watchlist_name = "TA-BOATS-Watchlist" if boats else "TA-Full Watchlist"
-
     try:
-        open_res = tv_call("watchlist", "open", watchlist_name)
+        open_res = tv_call("watchlist", "open", TV_WATCHLIST_NAME)
         if not open_res.get("success"):
-            # Fallback: try the other watchlist
-            alt = "TA-Full Watchlist" if boats else "TA-BOATS-Watchlist"
-            tv_call("watchlist", "open", alt)
+            return {}
 
         get_res = tv_call("watchlist", "get")
         if not get_res.get("success"):
@@ -107,7 +77,7 @@ def _tv_watchlist_prices() -> dict[str, dict]:
         prices: dict[str, dict] = {}
         for item in get_res.get("items", []):
             raw_sym = item.get("symbol", "")
-            # Strip exchange prefix: "BOATS:NVDA" → "NVDA", "NASDAQ:AAPL" → "AAPL"
+            # Strip exchange prefix if present: "NASDAQ:AAPL" → "AAPL"
             sym = raw_sym.split(":")[-1].upper() if ":" in raw_sym else raw_sym.upper()
             price = item.get("price", 0.0)
             change_pct = item.get("changePercent", 0.0)
@@ -154,7 +124,6 @@ def batch_quotes(tickers: list[str]) -> dict:
     Returns:
         Dict with 'quotes', 'errors', and 'summary' keys.
     """
-    boats = is_boats_active()
     tv_prices = _tv_watchlist_prices()
 
     quotes: dict[str, dict] = {}
@@ -192,7 +161,6 @@ def batch_quotes(tickers: list[str]) -> dict:
             "tradingview": tv_count,
             "fallback": len(quotes) - tv_count,
             "errors": len(errors),
-            "boats_session": boats,
         },
     }
 
