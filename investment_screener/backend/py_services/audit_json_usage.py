@@ -416,8 +416,7 @@ def classify_file(path: str, references: list) -> str:
     portfolio_domain_names = {
         "portfolio.json", "watchlist.json", "watchlists.json",
         "target-portfolio.json", "trade-log.json", "cash_flows.json",
-        "account_policy.json", "thesis_breaker_state.json",
-        "tradingview_alerts_actual.json",
+        "thesis_breaker_state.json", "tradingview_alerts_actual.json",
     }
     if name in portfolio_domain_names:
         return "ALLOWED_AUTHORITATIVE_JSON"
