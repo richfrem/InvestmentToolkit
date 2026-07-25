@@ -7,7 +7,7 @@ integration) + real place_order.py wiring (5E-fix)
 
 build_portfolio_state_for_order() constructs the real portfolio_state dict
 check_mrc_limit()/check_cluster_variance() require, from the REAL
-target-portfolio.json + portfolio.json data files — reusing risk_engine.py's
+domain_model.sqlite + portfolio.json data sources — reusing risk_engine.py's
 compute_risk_snapshot() pillar_map pattern and portfolio_io.py's
 load_portfolio_state()/compute_weights() unchanged. This is the real
 integration point place_order.py (the CLI's actual order-placement
@@ -38,7 +38,7 @@ never a simulated post-trade increase.
 check_breaker_veto() (5E-3) checks whether a single, ad-hoc BUY order's
 ticker has a TRIGGERED thesis breaker (Phase 3 B5) and vetoes if so. It
 reads the REAL data/thesis_breaker_state.json (machine-owned by
-thesis_breakers.py) — NEVER target-portfolio.json, which only stores
+thesis_breakers.py) — NEVER the domain_model.sqlite investment table, which only stores
 human-authored breaker DEFINITIONS, never live triggered/OK status.
 Unlike rebalancer.py's compute_breaker_warnings() (Phase 3 E2, warn-only,
 never vetoes, batch-shaped), this function returns a REAL veto for a
@@ -132,10 +132,10 @@ Key Input Dependencies:
       mrc_cap_pct's / cluster_cap_pct's own defaults)
     - investment_screener/backend/data/thesis_breaker_state.json (Phase 3
       B5's real live triggered/OK breaker status, machine-owned by
-      thesis_breakers.py — never target-portfolio.json)
-    - investment_screener/backend/data/target-portfolio.json (pillarId per
-      ticker, used by build_portfolio_state_for_order() — same file
-      risk_engine.py's compute_risk_snapshot() reads for its own pillar_map)
+      thesis_breakers.py — never domain_model.sqlite)
+    - investment_screener/backend/data/domain_model.sqlite's investment table
+      (pillarId per ticker, used by build_portfolio_state_for_order() — same
+      table risk_engine.py's compute_risk_snapshot() reads for its own pillar_map)
     - market_data.py's get_prices() (Phase 1's real, cached yfinance OHLCV
       data layer, same directory — reused by get_average_daily_volume(),
       never re-fetched via yfinance directly)
@@ -182,7 +182,6 @@ from domain_model.order_execution_repository import insert_order_execution  # no
 
 RISK_SNAPSHOT_PATH = Path(__file__).resolve().parents[1] / "data" / "risk_snapshot.json"
 THESIS_BREAKER_STATE_PATH = Path(__file__).resolve().parents[1] / "data" / "thesis_breaker_state.json"
-TARGET_PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "theses" / "target-portfolio.json"
 DB_PATH = Path(__file__).resolve().parents[1] / "data" / "domain_model.sqlite"
 PORTFOLIO_PATH = Path(__file__).resolve().parents[1] / "data" / "portfolio.json"
 # TRADE_LOG_PATH / ORDERS_EXECUTED_PATH removed Wave 4 Task 12: get_trade_log_entries()
@@ -243,7 +242,7 @@ def build_portfolio_state_for_order(
 
     Reads the ticker -> pillar_id map from domain_model.sqlite's
     `investment` table (Wave 2 consumer cutover — previously read
-    target-portfolio.json's "pillarId" field directly, mirroring
+    previously reading the retired thesis JSON file's "pillarId" field directly, mirroring
     risk_engine.py's compute_risk_snapshot() pattern; now reads the same
     data via investment_repository.list_investments()). Loads portfolio.json
     via portfolio_io's load_portfolio_state()/compute_weights() for actual
@@ -432,8 +431,8 @@ def check_cluster_variance(
             snake_case "pillar_id" here (matching this module's own
             portfolio_state dict convention, e.g. 5E-1's "weight_pct"),
             distinct from the real underlying source file's camelCase
-            "pillarId" (target-portfolio.json) — this is an ad-hoc
-            caller-constructed dict, not raw target-portfolio.json.
+            "pillarId" (domain_model.sqlite's investment table) — this is an
+            ad-hoc caller-constructed dict, not a raw DB row.
         risk_snapshot: Parsed risk_snapshot.json. If None, loaded via
             the same _load_risk_snapshot() helper Task 5E-1 already
             defined (reused, not duplicated).
@@ -499,7 +498,7 @@ def check_breaker_veto(
     (Phase 3 B5) and veto if so.
 
     Reads the real data/thesis_breaker_state.json (machine-owned by
-    thesis_breakers.py, B5) — NOT target-portfolio.json, which only
+    thesis_breakers.py, B5) — NOT domain_model.sqlite's investment table, which only
     stores breaker DEFINITIONS, never live triggered/OK status. A
     breaker is TRIGGERED iff its "status" field is the literal string
     "TRIGGERED", matching rebalancer.py's real

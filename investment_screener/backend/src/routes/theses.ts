@@ -29,12 +29,12 @@
  * 
  * Key Input Dependencies:
  *   - investment_screener/backend/data/theses/sub_strategies/ (location of markdown files)
- *   - ../services/ThesisService (thesisService operations)
- *   - investment_screener/backend/data/theses/target-portfolio.json (primary thesis file,
- *     still the source for all routes except GET /pillars — see ThesisService.ts's
- *     module docstring for why the full-document read isn't SQLite-backed)
- *   - investment_screener/backend/data/domain_model.sqlite (GET /pillars, via
- *     InvestmentRepository.listPillars() — rewired in Wave 2 Task 10/11)
+ *   - ../services/ThesisService (thesisService operations — Wave 8 cutover: all
+ *     thesis CRUD is now SQLite-backed via domain_model.sqlite's investment/
+ *     strategy_pillar/price_level/portfolio_change_log tables, not
+ *     target-portfolio.json — see ThesisService.ts's module docstring)
+ *   - investment_screener/backend/data/domain_model.sqlite (all routes, via
+ *     InvestmentRepository/ThesisService)
  * 
  * Key Output Dependencies:
  *   - investment_screener/backend/data/theses/

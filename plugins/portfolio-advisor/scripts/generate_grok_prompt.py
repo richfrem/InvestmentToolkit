@@ -19,7 +19,8 @@ Key Functions:
     - _action_emoji() - Utility for visual status indicators in the generated prompt table
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Internal state database)
+    - investment_screener/backend/data/domain_model.sqlite (portfolio + thesis
+      source of truth)
 """
 
 import json
@@ -29,19 +30,16 @@ import datetime
 from pathlib import Path
 
 REPO_ROOT   = Path(__file__).resolve().parents[3]
-THESIS_JSON = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
-PORTFOLIO   = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
 DB_PATH     = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 ETF_ANALYSIS_DIR = REPO_ROOT / "investment_screener/backend/data/etf_analysis"
 
 sys.path.insert(0, str(Path(__file__).parent))
-from validate_weights import compute_target
 from portfolio_action import derive_action
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.projection_repository import get_latest_projection_by_source  # noqa: E402
-from portfolio_io import load_portfolio_state, compute_weights  # noqa: E402
+from portfolio_io import load_portfolio_state, compute_weights, load_thesis_holdings  # noqa: E402
 
 
 def _compute_current_from_db() -> dict:
@@ -123,11 +121,11 @@ def _action_emoji(action: str) -> str:
 
 
 def build_prompt(date_str: str) -> str:
-    thesis       = json.loads(THESIS_JSON.read_text())
-    current_data = _compute_current_from_db()
-    target_data  = compute_target(THESIS_JSON)
+    holdings_list = load_thesis_holdings(str(DB_PATH))
+    current_data  = _compute_current_from_db()
 
-    holdings_map = {h["ticker"]: h for h in thesis.get("holdings", [])}
+    holdings_map = {h["ticker"]: h for h in holdings_list}
+    target_data = {"holdings": {h["ticker"]: h["targetWeight"] for h in holdings_list}}
     exclusions = get_dynamic_exclusions()
 
     # Classify holdings into groups
@@ -143,13 +141,10 @@ def build_prompt(date_str: str) -> str:
         target  = target_data["holdings"].get(ticker, 0)
         action  = derive_action(ticker, actual, target)
         dcf     = load_dcf(ticker)
-        role    = h.get("role", "core")
+        role    = h.get("role", "watchlist")
         pillar  = h.get("pillarId", "")
 
-        breakers = h.get("thesisBreakers", [])
-        if breakers:
-            watch = breakers[0][:60]
-        elif "DCF CONFLICT" in h.get("agentRationale", "") or "SA/DCF" in h.get("agentRationale", ""):
+        if "DCF CONFLICT" in h.get("agentRationale", "") or "SA/DCF" in h.get("agentRationale", ""):
             watch = "SA/DCF conflict — monitor for resolution"
         else:
             watch = "Execution + earnings"
@@ -180,8 +175,8 @@ def build_prompt(date_str: str) -> str:
     initiate_list.sort(key=lambda x: -x["target"])
     exit_list.sort(key=lambda x: -x["actual"])
 
-    thesis_name    = thesis.get("name", "Investment Thesis")
-    portfolio_val  = thesis.get("globalSettings", {}).get("portfolioValueUSD", 0)
+    thesis_name    = "Investment Thesis"
+    portfolio_val  = current_data["total_value"]
 
     template_path = REPO_ROOT / "plugins/portfolio-advisor/assets/templates/daily_sweep.md.template"
     template = template_path.read_text()

@@ -1,4 +1,5 @@
-"""Sync role field in target-portfolio.json from actual portfolio.json positions.
+"""Sync lifecycle_status (role) in domain_model.sqlite's investment table from
+actual portfolio.json positions.
 
 Rule:
   shares == 0  → role must be: watchlist | monitor | initiate | avoid
@@ -7,17 +8,18 @@ Rule:
 Run after every TV sync or manually to keep roles consistent.
 """
 
-import json
 import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PORTFOLIO_JSON = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
-TARGET_JSON = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
+DB_PATH = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from portfolio_io import load_portfolio_state  # noqa: E402
 from ticker_aliases import normalize_ticker    # noqa: E402
+from domain_model.db_client import initialize_db  # noqa: E402
+from domain_model.investment_repository import list_investments, update_investment_fields  # noqa: E402
 
 VALID_NOT_HELD = {"watchlist", "monitor", "initiate", "avoid"}
 VALID_HELD = {"trim", "accumulate", "exit"}
@@ -37,11 +39,15 @@ def _first_action_word(text: str) -> str:
 
 
 def determine_role(holding: dict, actual_shares: float) -> str:
-    """Determine the correct action-role for a holding."""
-    target_weight = float(holding.get("targetWeight") or 0)
-    thesis = (holding.get("thesisForInclusion") or "").upper()
-    agent = (holding.get("agentRationale") or "").upper()
-    standing_type = (holding.get("standingDecision") or {}).get("type", "").upper()
+    """Determine the correct action-role for a holding.
+
+    ``holding`` is a raw ``investment`` table row (dict) as returned by
+    ``list_investments()``.
+    """
+    target_weight = float(holding.get("target_weight") or 0)
+    thesis = (holding.get("thesis_for_inclusion") or "").upper()
+    agent = (holding.get("agent_rationale") or "").upper()
+    standing_type = (holding.get("standing_decision_type") or "").upper()
 
     if actual_shares == 0:
         # Not held
@@ -79,38 +85,41 @@ def determine_role(holding: dict, actual_shares: float) -> str:
     return "accumulate"
 
 
-def sync_roles(dry_run: bool = False) -> None:
+def sync_roles(dry_run: bool = False, db_path: Path = DB_PATH) -> None:
     actual = load_actual_shares(PORTFOLIO_JSON)
-    tp = json.loads(TARGET_JSON.read_text())
 
-    # Remove PSU.U.TO ghost alias — broker dot-notation duplicate of PSU-U.TO
-    before = len(tp.get("holdings", []))
-    tp["holdings"] = [h for h in tp.get("holdings", []) if h.get("ticker") != "PSU.U.TO"]
-    removed = before - len(tp["holdings"])
-    if removed:
-        print(f"  Removed {removed} ghost alias entry (PSU.U.TO → PSU-U.TO canonical).")
+    conn = initialize_db(str(db_path))
+    try:
+        investments = list_investments(conn)
+        # Only tickers with a real (possibly zeroed) target_weight were ever
+        # thesis holdings — matches load_thesis_holdings()'s own filter.
+        # Excludes rows like CASH_USD that exist in `investment` purely for
+        # portfolio-total accounting and were never in the JSON holdings
+        # array this script originally synced.
+        thesis_holdings = [inv for inv in investments if inv.get("target_weight") is not None]
 
-    changed = 0
-    violations: list[str] = []
+        changed = 0
+        violations: list[str] = []
 
-    for h in tp.get("holdings", []):
-        ticker = h.get("ticker", "")
-        ticker_canonical = normalize_ticker(ticker)
-        actual_shares = actual.get(ticker_canonical, actual.get(ticker, 0))
-        old_role = h.get("role", "")
-        new_role = determine_role(h, actual_shares)
+        for inv in thesis_holdings:
+            ticker = inv.get("symbol", "")
+            ticker_canonical = normalize_ticker(ticker)
+            actual_shares = actual.get(ticker_canonical, actual.get(ticker, 0))
+            old_role = inv.get("lifecycle_status") or ""
+            new_role = determine_role(inv, actual_shares)
 
-        # Only update if the current role is in the wrong bucket
-        if actual_shares == 0 and old_role not in VALID_NOT_HELD:
-            violations.append(f"  {ticker:<10} shares=0  role={old_role!r:15} → {new_role!r}")
-            if not dry_run:
-                h["role"] = new_role
-            changed += 1
-        elif actual_shares > 0 and old_role not in VALID_HELD:
-            violations.append(f"  {ticker:<10} shares={actual_shares:<6.1f} role={old_role!r:15} → {new_role!r}")
-            if not dry_run:
-                h["role"] = new_role
-            changed += 1
+            if actual_shares == 0 and old_role not in VALID_NOT_HELD:
+                violations.append(f"  {ticker:<10} shares=0  role={old_role!r:15} → {new_role!r}")
+                if not dry_run:
+                    update_investment_fields(conn, inv["investment_id"], lifecycle_status=new_role)
+                changed += 1
+            elif actual_shares > 0 and old_role not in VALID_HELD:
+                violations.append(f"  {ticker:<10} shares={actual_shares:<6.1f} role={old_role!r:15} → {new_role!r}")
+                if not dry_run:
+                    update_investment_fields(conn, inv["investment_id"], lifecycle_status=new_role)
+                changed += 1
+    finally:
+        conn.close()
 
     if violations:
         print(f"{'DRY RUN — ' if dry_run else ''}Role violations fixed ({changed}):")
@@ -120,9 +129,7 @@ def sync_roles(dry_run: bool = False) -> None:
         print("✓ All roles are consistent with actual positions.")
 
     if not dry_run and changed:
-        tp["updatedAt"] = "2026-06-21T18:30:00Z"
-        TARGET_JSON.write_text(json.dumps(tp, indent=2, ensure_ascii=False))
-        print(f"\n✓ target-portfolio.json updated ({changed} roles fixed).")
+        print(f"\n✓ domain_model.sqlite updated ({changed} roles fixed).")
 
 
 if __name__ == "__main__":
