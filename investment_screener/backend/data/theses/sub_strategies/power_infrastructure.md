@@ -95,7 +95,7 @@ VST position is above target — monitor for trim opportunity on continued stren
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-24 07:30 by TV sync · Portfolio total: $35,745 USD*
+*Auto-updated 2026-07-24 19:52 by TV sync · Portfolio total: $35,725 USD*
 
 **Active Positions**
 
