@@ -862,3 +862,77 @@ thing you'd want to query/validate against) while the two rule structures
 rule" reasoning applied everywhere else in this document, not a special case. This is a singleton
 table (one row), not per-investment or per-account — a genuine top-level config object, exactly
 what was missing.
+
+---
+
+## Previously undocumented tables (added 2026-07-27)
+
+A live-schema audit (`sqlite_master` vs. this document) found 5 tables that exist in
+`domain_model.sqlite` today but were never added here — not proposals, already-implemented and
+in active use. The ERD above already referenced `TRADE_LOG_ENTRY`, `ORDER_EXECUTION`, and
+`CASH_FLOW` relationships, but their `CREATE TABLE` definitions were missing; `cash_flow_baseline`
+and `portfolio_change_log` weren't referenced anywhere. Exact `CREATE TABLE` SQL pulled directly
+from the live database via `sqlite_master`:
+
+```sql
+CREATE TABLE cash_flow (
+    flow_id                             TEXT PRIMARY KEY,
+    flow_date                           TEXT,
+    flow_type                           TEXT,
+    amount_cad                          REAL,
+    portfolio_value_before_flow_cad      REAL,
+    account                              TEXT
+);
+
+CREATE TABLE cash_flow_baseline (
+    account                TEXT PRIMARY KEY,   -- singleton-per-account starting point for YTD/TWR math
+    starting_balance_cad   REAL,
+    starting_date          TEXT
+);
+
+CREATE TABLE order_execution (
+    execution_id      TEXT PRIMARY KEY,
+    executed_at       TEXT NOT NULL,
+    investment_id     TEXT NOT NULL REFERENCES investment(investment_id),
+    side              TEXT,
+    shares            REAL,
+    price             REAL,
+    decision          TEXT,             -- risk-officer/gate decision at execution time
+    gate_result_json  TEXT              -- variable-shape risk gate output, kept as JSON
+);
+
+CREATE TABLE portfolio_change_log (
+    entry_id        TEXT PRIMARY KEY,
+    version         TEXT NOT NULL,        -- e.g. domain model / thesis version tag
+    entry_date      TEXT NOT NULL,
+    note            TEXT NOT NULL,
+    created_at      TEXT NOT NULL
+);
+
+CREATE TABLE trade_log_entry (
+    entry_id        TEXT PRIMARY KEY,
+    investment_id   TEXT NOT NULL REFERENCES investment(investment_id),
+    account_id      TEXT REFERENCES account(account_id),
+    action          TEXT,
+    shares          REAL,
+    price           REAL,
+    total_cost      REAL,
+    order_type      TEXT,
+    limit_price     REAL,
+    trade_date      TEXT,
+    notes           TEXT,
+    status          TEXT,
+    source          TEXT,
+    priority        TEXT,
+    logged_at       TEXT,
+    tv_order_id     TEXT     -- added post-hoc via SCHEMA_EVOLUTIONS self-heal, not the original CREATE TABLE
+);
+```
+
+`cash_flow`/`cash_flow_baseline` back the YTD/TWR return calculations (`ytd_return.py`) —
+deposits/withdrawals and each account's starting balance/date, so simple-return math isn't
+polluted by capital flows. `order_execution` is the risk-gate audit trail for automated order
+placement (`risk_officer.py`), distinct from `trade_log_entry` (the full manual + automated trade
+log surfaced on the Trade Log page, `tv_order_id` linking back to a live TradingView order for
+sync/cancel/modify). `portfolio_change_log` is a free-text changelog (version + note), unrelated
+to the SQL-schema evolution log inside `db_client.py`'s own `SCHEMA_EVOLUTIONS` list.
