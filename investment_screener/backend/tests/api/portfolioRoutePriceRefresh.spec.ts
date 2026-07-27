@@ -20,7 +20,12 @@ import { expect } from 'chai';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { persistRefreshedPricesToDb, getPortfolioTotalUsdFromDb } from '../../src/routes/portfolio';
+import {
+    persistRefreshedPricesToDb,
+    getPortfolioTotalUsdFromDb,
+    getWatchlistTickersForRefresh,
+    clearPricesBeforeRefresh,
+} from '../../src/routes/portfolio';
 import { PortfolioRepository } from '../../src/services/PortfolioRepository';
 import { InvestmentRepository } from '../../src/services/InvestmentRepository';
 
@@ -103,5 +108,62 @@ describe('routes/portfolio.ts /refresh-prices -> SQLite-only price persistence',
             dbPath
         );
         expect(count).to.equal(1); // only NVDA had a usable fresh price
+    });
+
+    // Regression coverage for the 2026-07-27 bug: /refresh-prices only ever
+    // refreshed held positions, so watchlist-only tickers (is_watchlisted=1,
+    // no shares) went stale indefinitely. getWatchlistTickersForRefresh()
+    // must surface them, shaped so fetch_portfolio_heatmap.py and
+    // persistRefreshedPricesToDb can process them like any other item.
+    describe('getWatchlistTickersForRefresh', () => {
+        it('returns watchlist-only tickers as shares:0 refresh items', () => {
+            const investmentRepo = new InvestmentRepository(dbPath);
+            investmentRepo.setWatchlisted('OKLO', true, new Date().toISOString());
+            investmentRepo.setWatchlisted('CEG', true, new Date().toISOString());
+            investmentRepo.close();
+
+            const items = getWatchlistTickersForRefresh(dbPath);
+            const symbols = items.map((i) => i.symbol).sort();
+            expect(symbols).to.deep.equal(['CEG', 'OKLO']);
+            expect(items.every((i) => i.shares === 0)).to.equal(true);
+        });
+
+        it('returns an empty array when nothing is watchlisted', () => {
+            // Touch the DB so the investment table exists, then assert empty.
+            const investmentRepo = new InvestmentRepository(dbPath);
+            investmentRepo.close();
+            expect(getWatchlistTickersForRefresh(dbPath)).to.deep.equal([]);
+        });
+    });
+
+    // Regression coverage: a symbol whose refresh fetch fails/is skipped must
+    // read as missing afterward, not silently keep serving yesterday's price.
+    describe('clearPricesBeforeRefresh', () => {
+        it('deletes investment_price rows for the given symbols before a refresh fetch', () => {
+            seedStale(); // NVDA priced @ 800
+            const investmentRepo = new InvestmentRepository(dbPath);
+            const portfolioRepo = new PortfolioRepository(dbPath);
+            const nvdaId = investmentRepo.resolveInvestmentId('NVDA', 'EQUITY', 'USD');
+            expect(portfolioRepo.getInvestmentPrice(nvdaId)).to.not.equal(null);
+
+            clearPricesBeforeRefresh(['NVDA'], dbPath);
+
+            expect(portfolioRepo.getInvestmentPrice(nvdaId)).to.equal(null);
+            investmentRepo.close();
+            portfolioRepo.close();
+        });
+
+        it('leaves prices for symbols NOT in the refresh set untouched', () => {
+            seedStale();
+            const investmentRepo = new InvestmentRepository(dbPath);
+            const portfolioRepo = new PortfolioRepository(dbPath);
+            const nvdaId = investmentRepo.resolveInvestmentId('NVDA', 'EQUITY', 'USD');
+
+            clearPricesBeforeRefresh(['AAPL'], dbPath); // unrelated symbol
+
+            expect(portfolioRepo.getInvestmentPrice(nvdaId)).to.not.equal(null);
+            investmentRepo.close();
+            portfolioRepo.close();
+        });
     });
 });
