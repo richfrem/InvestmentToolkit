@@ -295,6 +295,47 @@ export function getPositionPriceFromDb(ticker: string, dbPath: string = DOMAIN_M
 }
 
 /**
+ * Watchlist-only tickers (`investment.is_watchlisted = 1`, no shares in
+ * `account_investment`) as shares:0 refresh items — shaped so they slot into
+ * the same `itemsForFetch`/`persistRefreshedPricesToDb` pipeline as held
+ * positions. Closes a 2026-07-27 gap: `/refresh-prices` sourced its ticker
+ * list from held positions only, so watchlist tickers (fed to the watchlist
+ * heatmap, thesis review, etc.) never got refreshed and went stale
+ * indefinitely with no visible signal.
+ */
+export function getWatchlistTickersForRefresh(dbPath: string = DOMAIN_MODEL_DB_FILE): Array<{ symbol: string; shares: number }> {
+    const investmentRepo = new InvestmentRepository(dbPath);
+    try {
+        return investmentRepo.listWatchlisted().map(w => ({ symbol: w.ticker, shares: 0 }));
+    } finally {
+        investmentRepo.close();
+    }
+}
+
+/**
+ * Delete each symbol's `investment_price` row before a refresh fetch runs, so
+ * a symbol whose fetch fails or is skipped reads as missing (0/unknown)
+ * afterward instead of silently continuing to serve a stale price. Found
+ * 2026-07-27: several held/watchlisted symbols sat a full day stale, frozen
+ * at the exact regular-session price with no signal anything was wrong.
+ */
+export function clearPricesBeforeRefresh(symbols: string[], dbPath: string = DOMAIN_MODEL_DB_FILE): void {
+    const investmentRepo = new InvestmentRepository(dbPath);
+    const portfolioRepo = new PortfolioRepository(dbPath);
+    try {
+        for (const rawSymbol of symbols) {
+            if (!rawSymbol || rawSymbol === 'USD_CASH') continue;
+            const symbol = normalizeTicker(rawSymbol);
+            const investmentId = investmentRepo.resolveInvestmentId(symbol, 'EQUITY', 'USD');
+            portfolioRepo.clearInvestmentPrice(investmentId);
+        }
+    } finally {
+        investmentRepo.close();
+        portfolioRepo.close();
+    }
+}
+
+/**
  * Wave 3 (completion): persist freshly-refreshed live prices into
  * `investment_price`, closing the gap that previously left SQLite prices
  * permanently stale after the one-time migrate_portfolio_to_sqlite.py run.
@@ -679,8 +720,22 @@ router.post('/refresh-prices', async (_req, res) => {
         // needlessly. Falls back to portfolio.json only when SQLite has no
         // held positions yet.
         const portfolioData = getHoldingsForDisplayFromDb() ?? readPortfolio().holdings;
+        // Refresh scope = held positions PLUS watchlist-only tickers (is_watchlisted=1,
+        // no shares). Previously this only covered held positions, so watchlist tickers
+        // (fed to the watchlist heatmap, thesis review, etc.) went stale indefinitely —
+        // found via a direct investment_price.fetched_at audit on 2026-07-27. Watchlist
+        // items carry shares:0 so fetch_portfolio_heatmap.py's math (position_value =
+        // shares*price) is a harmless 0, and persistRefreshedPricesToDb still writes
+        // their price (it doesn't gate on shares).
+        const watchlistData = getWatchlistTickersForRefresh();
+        const portfolioDataForRefresh = [...portfolioData, ...watchlistData];
         // Strip stored price so fetch_portfolio_heatmap.py uses live yfinance prices
-        const itemsForFetch = portfolioData.map((item: any) => { const { price, ...rest } = item; return rest; });
+        const itemsForFetch = portfolioDataForRefresh.map((item: any) => { const { price, ...rest } = item; return rest; });
+        // Clear each symbol's stored price BEFORE fetching fresh ones, so a symbol whose
+        // fetch fails/times out reads as missing (0/unknown) afterward instead of quietly
+        // continuing to serve a stale price forever — the exact failure mode found
+        // 2026-07-27 (prices frozen a full day stale with no visible signal).
+        clearPricesBeforeRefresh(itemsForFetch.map((item: any) => item.symbol));
         // Wave 3 Task 8: a price-only refresh never triggers a full broker sync, so the
         // stored USD->CAD rate could go stale relative to freshly-refreshed USD prices.
         // fetch_broker_data.py --refresh-exchange-rate does a lightweight balances-only
@@ -696,7 +751,7 @@ router.post('/refresh-prices', async (_req, res) => {
             }),
         ]);
         if (data.error) { res.status(400).json({ error: data.error }); return; }
-        const updatedItems = portfolioData.map((item: any) => {
+        const updatedItems = portfolioDataForRefresh.map((item: any) => {
             const stockData = data.stocks.find((s: any) => s.symbol === item.symbol);
             // Carry the heatmap-resolved sector/industry through so
             // persistRefreshedPricesToDb can persist them into investment.* (the
