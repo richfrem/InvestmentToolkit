@@ -135,29 +135,42 @@ export async function getWatchlist(client) {
           rows = Array.from(document.querySelectorAll('[data-symbol-short]'));
         }
 
+        function parsePercentText(text) {
+          var cText = text.trim().replace(/[%\\u2212\\s]/g, function(m) {
+            return m === '\\u2212' ? '-' : '';
+          });
+          var v = parseFloat(cText);
+          return isNaN(v) ? null : v;
+        }
+
         var items = rows.map(function(el) {
           var symText = el.querySelector('[class*="symbolNameText-"]');
           var priceEl = el.querySelector('[class*="cell-"][class*="last-"]') || el.querySelector('[class*="last-"]');
           var chgEl = el.querySelector('[class*="changeInPercents-"]');
-          
+          // Extended/overnight session cell — rendered whenever the symbol is
+          // outside regular trading hours (class name kept by TradingView even
+          // when it *does* carry a value, e.g. "prePostMarketNoPrice-...").
+          var extEl = el.querySelector('[class*="prePostMarket"]');
+          // TradingView's own session classifier badge, e.g. "Overnight via BOATS",
+          // "Pre-market", "Post-market". Absent during regular trading hours.
+          var sessionEl = el.querySelector('[class*="tv-market-status__label"]');
+
           var priceVal = 0.0;
           if (priceEl) {
             var pText = priceEl.textContent.trim().replace(/[$,\\s]/g, '');
             priceVal = parseFloat(pText) || 0.0;
           }
 
-          var chgVal = 0.0;
-          if (chgEl) {
-            var cText = chgEl.textContent.trim().replace(/[%\\u2212\\s]/g, function(m) {
-              return m === '\\u2212' ? '-' : '';
-            });
-            chgVal = parseFloat(cText) || 0.0;
-          }
+          var chgVal = chgEl ? (parsePercentText(chgEl.textContent) || 0.0) : 0.0;
+          var extChgVal = extEl ? parsePercentText(extEl.textContent) : null;
+          var sessionLabel = sessionEl ? sessionEl.textContent.trim() : null;
 
           return {
             symbol: symText ? symText.textContent.trim() : el.getAttribute('data-symbol-short') || '',
             price: priceVal,
-            changePercent: chgVal
+            changePercent: chgVal,
+            extendedChangePercent: extChgVal,
+            sessionLabel: sessionLabel
           };
         }).filter(function(item) { return item.symbol !== ''; });
 
