@@ -104,6 +104,40 @@ describe('BrokerSyncService.persistSnapshotToDb', () => {
         }
     });
 
+    it('converts a CAD-only cash balance (cashUSD=0) to its USD equivalent, not silently $0', () => {
+        // Real bug found 2026-07-27: a sub-account ("CASH", the Questrade cash-only
+        // account) can hold pure CAD cash with cashUSD=0. persistSnapshotToDb only
+        // ever checked balances.cashUSD before writing a cash row, so this account's
+        // entire balance silently never entered account_investment at all — the
+        // exact ~$150 CAD gap between the computed total and TV's broker-reported
+        // total the user reported. A second account with real USD equity supplies
+        // the FX rate computeExchangeRateFromSnapshot infers it from.
+        const snapshot = snapshotWith([
+            {
+                accountType: 'TFSA',
+                balances: { cashUSD: 0, totalEquityUSDCombined: 1000, totalEquityCADCombined: 1400 },
+                positions: [],
+            },
+            {
+                accountType: 'CASH',
+                balances: { cashUSD: 0, cashCAD: 140 }, // pure CAD cash, no USD cash at all
+                positions: [],
+            },
+        ]);
+
+        persistSnapshotToDb(snapshot, dbPath);
+
+        const portfolioRepo = new PortfolioRepository(dbPath);
+        try {
+            const cashRows = portfolioRepo.listAccountInvestments('CASH');
+            expect(cashRows, 'CAD-only cash must still produce a CASH_USD row').to.have.length.greaterThan(0);
+            // 140 CAD / 1.4 (inferred rate) = 100 USD-equivalent
+            expect(cashRows[0].quantity).to.be.closeTo(100, 0.01);
+        } finally {
+            portfolioRepo.close();
+        }
+    });
+
     it('persistSnapshotToDb writes only the SQLite dbPath — creates no portfolio.json', () => {
         // Wave 3 Task 8: persistSnapshotToDb is now syncAuto's SOLE write. It must
         // touch only the SQLite file it is given, never portfolio.json.
