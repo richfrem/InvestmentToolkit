@@ -38,6 +38,7 @@ import { PORTFOLIO_FILE, PORTFOLIO_REVIEWS_DIR, DOMAIN_MODEL_DB_FILE } from '../
 import { watchlistService } from '../services/WatchlistService';
 import { InvestmentRepository } from '../services/InvestmentRepository';
 import { PortfolioRepository } from '../services/PortfolioRepository';
+import { getWeightsFromDb } from './portfolio';
 
 const router = express.Router();
 
@@ -121,6 +122,40 @@ router.post('/watchlist/remove', async (req, res) => {
     }
 });
 
+/**
+ * Builds the `{ ticker: { pct, price } }` map `/all-holdings` exposes as
+ * `actualPct`/`currentPrice`. Prefers `dbWeights` (getWeightsFromDb() —
+ * routes/portfolio.ts's canonical weight computation, the same one
+ * `/api/portfolio/weights` serves) for `pct` whenever a ticker is present
+ * there, falling back to an independent shares*price/totalValue computation
+ * only for tickers `dbWeights` doesn't cover (e.g. no priced positions yet).
+ *
+ * Before this fix, `/all-holdings` always reimplemented its own pct math
+ * from `positions` directly, completely independent of `getWeightsFromDb()`.
+ * Both were individually self-consistent (each summed to 100% in isolation),
+ * but the frontend's per-row fallback chains (ScreenerTable.tsx) could pick
+ * up either source depending on row type, and any symbol-normalization
+ * difference between the two (e.g. CASH_USD vs USD_CASH) meant the two
+ * sources didn't always agree ticker-for-ticker — surfacing as the
+ * portfolio-wide current-weight total not summing to 100% in the UI even
+ * though each backend endpoint's own total did. Exported for testing.
+ */
+export function buildActualPctMap(
+    positions: Array<{ symbol?: string; ticker?: string; shares?: number; price?: number }>,
+    dbWeights: Record<string, number> | null
+): Record<string, { pct: number; price: number }> {
+    const totalValue = positions.reduce((s, p) => s + (p.shares || 0) * (p.price || 0), 0);
+    const actualMap: Record<string, { pct: number; price: number }> = {};
+    for (const p of positions) {
+        const ticker = (p.symbol ?? p.ticker) as string;
+        if (!ticker) continue;
+        const fallbackPct = totalValue > 0 ? ((p.shares || 0) * (p.price || 0) / totalValue) * 100 : 0;
+        const pct = dbWeights?.[ticker] ?? fallbackPct;
+        actualMap[ticker] = { pct, price: p.price || 0 };
+    }
+    return actualMap;
+}
+
 // GET /api/screener/all-holdings
 router.get('/all-holdings', async (_req, res) => {
     try {
@@ -149,13 +184,8 @@ router.get('/all-holdings', async (_req, res) => {
             })()
             : []);
 
-        const totalValue = positions.reduce((s, p) => s + (p.shares || 0) * (p.price || 0), 0);
-        const actualMap: Record<string, { pct: number; price: number }> = {};
-        for (const p of positions) {
-            const ticker = (p.symbol ?? p.ticker) as string;
-            if (ticker && totalValue > 0)
-                actualMap[ticker] = { pct: ((p.shares || 0) * (p.price || 0) / totalValue) * 100, price: p.price || 0 };
-        }
+        const dbWeights = getWeightsFromDb();
+        const actualMap = buildActualPctMap(positions, dbWeights);
 
         const actionsMap = await getPythonActions();
 
