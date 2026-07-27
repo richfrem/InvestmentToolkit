@@ -17,9 +17,12 @@ allowed-tools: Bash, Read
 | **1 (primary)** | TradingView watchlist via CDP | TradingView running (port 9222) |
 | **2 (fallback)** | yfinance `fast_info.last_price` | TV unreachable, or ticker not in watchlist |
 
-`tv_batch_quotes.py` reads the live `TV-Full Watchlist` (NYSE/NASDAQ + extended hours) via CDP.
-TradingView charts now natively support 24h quoting, so there is no separate overnight/BOATS
-watchlist or session-detection branch — one watchlist, all hours.
+`tv_batch_quotes.py` reads the live `TV-Full Watchlist` via CDP — a single watchlist for all hours,
+but each row is session-aware: outside regular hours, TradingView freezes its regular "last" price
+and surfaces the extended/overnight move in a separate cell (labeled "Pre-market", "Post-market", or
+"Overnight via BOATS"). `_select_effective_price()` picks the current tradable price per a 3-tier
+priority — regular hours -> extended hours -> overnight/BOATS — rather than reporting the frozen
+regular-session price after close.
 yfinance is **only** used when TradingView is not running.
 
 ## What This Skill Does
@@ -120,10 +123,10 @@ apply there — do not regress either when touching that endpoint or its Python 
 
 1. **Always use the most current available price, regular or extended hours.**
    `fetch_portfolio_heatmap.py` already implements this: TradingView watchlist-first via CDP
-   (`TV-Full Watchlist`, natively 24h-quoting — no separate overnight/BOATS feed needed),
-   falling back to yfinance `fast_info.last_price` only when TV is unreachable. Never swap this
-   for a plain `regularMarketPrice`/last-close lookup — that would silently drop extended-hours
-   coverage.
+   (`TV-Full Watchlist`, session-aware via `tv_batch_quotes._select_effective_price()` —
+   regular hours -> extended hours -> overnight/BOATS), falling back to yfinance
+   `fast_info.last_price` only when TV is unreachable. Never swap this for a plain
+   `regularMarketPrice`/last-close lookup — that would silently drop extended-hours coverage.
 2. **A price refresh must also refresh the stored USD/CAD exchange rate at the same time.**
    Wave 3 Task 8: `POST /refresh-prices` now calls
    `fetch_broker_data.py --refresh-exchange-rate` (a lightweight balances-only CDP fetch via

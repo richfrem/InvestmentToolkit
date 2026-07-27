@@ -199,9 +199,11 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
     info_map = prefetch_info(to_fetch, bust_cache=bust_cache) if to_fetch else {}
 
     # --- TradingView price overlay (primary source) ---
-    # Reads live prices from the "TV-Full Watchlist" TradingView watchlist via CDP
-    # (TradingView charts now natively support 24h quoting — no separate overnight
-    # watchlist needed). Overrides yfinance price in info_map.
+    # Reads live prices from the "TV-Full Watchlist" TradingView watchlist via CDP.
+    # tv_batch_quotes.batch_quotes() already applies session-aware price selection
+    # (regular -> extended hours -> overnight/BOATS), so q["price"] here is always
+    # the current tradable price, not a frozen post-close regular price.
+    # Overrides yfinance price in info_map.
     try:
         import sys as _sys
         _tv_scripts = str(Path(__file__).resolve().parents[3] / "plugins/tradingview/scripts")
