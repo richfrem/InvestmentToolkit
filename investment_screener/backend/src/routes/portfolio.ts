@@ -795,7 +795,7 @@ router.post('/sync-tv', async (_req, res) => {
         res.json({
             success: true, dataSource: 'tradingview-cdp', positionCount: posCount,
             diff: { added, removed, changed }, snapshot, merged,
-            message: `TV sync: ${posCount} positions. ${added.length} added, ${removed.length} removed, ${changed.length} changed. Call POST /api/portfolio/sync-tv/promote to write to portfolio.json.`,
+            message: `TV sync: ${posCount} positions. ${added.length} added, ${removed.length} removed, ${changed.length} changed. Call POST /api/portfolio/sync-tv/promote to persist to domain_model.sqlite.`,
         });
     } catch (error: any) {
         console.error('[API] TV Sync Error:', error);
@@ -829,7 +829,7 @@ router.post('/sync-tv/promote', async (req, res) => {
 
 // One-shot: fetch TV snapshot → merge → write portfolio.json immediately (no HITL gate)
 router.post('/sync-tv/apply', async (_req, res) => {
-    console.log('[API] TV sync + auto-apply to portfolio.json...');
+    console.log('[API] TV sync + auto-apply to domain_model.sqlite...');
     try {
         const snapshot = await brokerSyncService.syncFromTV();
         const posCount = snapshot.positions?.length ?? 0;
@@ -863,7 +863,7 @@ router.post('/sync-tv/apply', async (_req, res) => {
             console.error(`[Recon] ❌ MISMATCH  computed=$${recon.computedTotal.toFixed(2)} broker=$${recon.brokerTotal.toFixed(2)} diff=$${recon.diff.toFixed(2)} (${recon.pct.toFixed(2)}%)  — run ↻ Refresh to update stored prices`);
         }
 
-        console.log(`[API] portfolio.json auto-applied from TV (${merged.length} positions).`);
+        console.log(`[API] domain_model.sqlite auto-applied from TV (${merged.length} positions).`);
         res.json({ success: true, positionCount: merged.length, tvAvailable: true, diff: { added, removed, changed }, reconciliation: recon });
     } catch (error: any) {
         console.error('[API] TV sync/apply error:', error);
