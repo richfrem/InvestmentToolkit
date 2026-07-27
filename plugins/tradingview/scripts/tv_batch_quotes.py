@@ -3,9 +3,12 @@
 tv_batch_quotes.py — Batch price resolver: TradingView first, yfinance fallback.
 
 Price source priority (in order):
-  1. TradingView watchlist DOM via CDP — reads the live "TV-Full Watchlist"
-     (real, current TradingView watchlist name; TradingView charts now natively
-     support 24h quoting, so there is no separate overnight/BOATS watchlist).
+  1. TradingView watchlist DOM via CDP — reads the live "TV-Full Watchlist".
+     Each row carries a regular last price/change plus, outside regular hours,
+     a separate extended-hours change% and a session label (e.g. "Pre-market",
+     "Overnight via BOATS"). _select_effective_price() picks which price is
+     "current" per a 3-tier priority: regular hours -> extended hours ->
+     overnight/BOATS -> regular last as the safe default.
   2. yfinance fast_info.last_price — reflects extended-hours prices when market is closed.
      Used when TradingView is not running (port 9222 unreachable) or ticker not in watchlist.
 
@@ -48,15 +51,51 @@ def _find_scripts_dir() -> Path:
     raise ImportError("tv_client.py not found — check plugin installation or set TV_CDP_DIR.")
 
 
+def _select_effective_price(
+    regular_price: float,
+    regular_change_pct: float,
+    extended_change_pct: Optional[float],
+    session_label: Optional[str],
+) -> dict:
+    """Pick the current tradable price per the 3-tier session priority.
+
+    TradingView's watchlist row freezes its regular "last" price outside
+    regular trading hours and instead surfaces the extended move (pre/post
+    market or overnight-via-BOATS) as a separate change% cell alongside a
+    session label. The effective price is derived the same way TradingView's
+    own stacked quote does: regular_price * (1 + extended_change_pct / 100).
+
+    Args:
+        regular_price: Regular-session last price.
+        regular_change_pct: Regular-session daily change percent.
+        extended_change_pct: Change percent from the extended/overnight cell,
+            or None if that cell is absent (i.e. currently regular hours).
+        session_label: TradingView's session status text (e.g. "Pre-market",
+            "Post-market", "Overnight via BOATS"), or None if absent.
+
+    Returns:
+        Dict with price, changePercent, and session ("regular", "extended_hours",
+        or "overnight_boats").
+    """
+    if extended_change_pct is None or not session_label:
+        return {"price": regular_price, "changePercent": regular_change_pct, "session": "regular"}
+
+    session = "overnight_boats" if "boats" in session_label.lower() or "overnight" in session_label.lower() \
+        else "extended_hours"
+    effective_price = regular_price * (1 + extended_change_pct / 100)
+    return {"price": effective_price, "changePercent": extended_change_pct, "session": session}
+
+
 def _tv_watchlist_prices() -> dict[str, dict]:
     """Read live prices from the active TradingView watchlist via CDP.
 
-    Opens TV_WATCHLIST_NAME ("TV-Full Watchlist") — the single real, current
-    TradingView watchlist used for all-hours pricing (no BOATS/overnight split;
-    TradingView charts now natively support 24h quoting).
+    Opens TV_WATCHLIST_NAME ("TV-Full Watchlist") and applies session-aware
+    price selection per item via _select_effective_price() — regular hours
+    use the regular last price; outside regular hours, the extended/BOATS
+    price is used instead so stale post-close prices aren't reported as current.
 
     Returns:
-        Dict mapping plain ticker → {price, changePercent}.
+        Dict mapping plain ticker → {price, changePercent, session}.
         Empty dict if TradingView is unreachable or watchlist read fails.
     """
     sys.path.insert(0, str(_find_scripts_dir()))
@@ -82,7 +121,12 @@ def _tv_watchlist_prices() -> dict[str, dict]:
             price = item.get("price", 0.0)
             change_pct = item.get("changePercent", 0.0)
             if sym and price:
-                prices[sym] = {"price": price, "changePercent": change_pct}
+                prices[sym] = _select_effective_price(
+                    regular_price=price,
+                    regular_change_pct=change_pct,
+                    extended_change_pct=item.get("extendedChangePercent"),
+                    session_label=item.get("sessionLabel"),
+                )
         return prices
 
     except Exception:
