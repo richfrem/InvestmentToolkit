@@ -320,6 +320,10 @@ export function persistSnapshotToDb(snapshot: TVSnapshot, dbPath: string = DOMAI
     const portfolioRepo = new PortfolioRepository(dbPath);
     try {
         const now = new Date().toISOString();
+        // Inferred once up front (not per-account) so every account's CAD cash
+        // converts through the SAME broker-native rate — computed from the full
+        // snapshot's totals per CLAUDE.md pitfall #27, never an external FX API.
+        const rate = computeExchangeRateFromSnapshot(snapshot);
         for (const snap of (snapshot as any).snapshots ?? []) {
             const accountId: string = snap.accountType;
             if (!REAL_ACCOUNTS.has(accountId)) continue;
@@ -332,10 +336,20 @@ export function persistSnapshotToDb(snapshot: TVSnapshot, dbPath: string = DOMAI
             // stale nonzero-quantity row inflating future computed totals.
             portfolioRepo.clearAccountInvestments(accountId);
 
+            // Real bug found 2026-07-27: a cash-only sub-account can hold pure CAD
+            // cash (cashUSD=0, cashCAD>0) — a Questrade "CASH" account is exactly
+            // this shape. Checking only cashUSD silently dropped that account's
+            // entire balance from every computed total (~$150 CAD gap vs TV's own
+            // broker-reported total). Every account's cash, in whichever currency
+            // it's actually held, must convert to the same USD-equivalent total —
+            // one common cash-handling path for every account, not a USD-only branch.
             const cashUsd = Number(snap.balances?.cashUSD ?? 0);
-            if (cashUsd > 0) {
+            const cashCad = Number(snap.balances?.cashCAD ?? 0);
+            const cashCadInUsd = (cashCad > 0 && rate !== null && rate > 0) ? cashCad / rate : 0;
+            const totalCashUsd = cashUsd + cashCadInUsd;
+            if (totalCashUsd > 0) {
                 const cashInvestmentId = investmentRepo.resolveInvestmentId('CASH_USD', 'CASH', 'USD');
-                portfolioRepo.upsertAccountInvestment(accountId, cashInvestmentId, cashUsd, 1.0, cashUsd, 'USD', now);
+                portfolioRepo.upsertAccountInvestment(accountId, cashInvestmentId, totalCashUsd, 1.0, totalCashUsd, 'USD', now);
                 // getAccountMarketValues() INNER JOINs against investment_price -- without
                 // this, a CASH_USD account_investment row with no matching price row
                 // silently contributes $0 to the computed portfolio total (2026-07-23 bug).
@@ -355,8 +369,9 @@ export function persistSnapshotToDb(snapshot: TVSnapshot, dbPath: string = DOMAI
 
         // Wave 3 Task 8: store the single broker-reported FX fact (USD->CAD),
         // inferred from the SAME native TV totals helpers.ts::getLiveUsdCadRate()
-        // uses. Only the scalar rate is stored (ADR-030 addendum), never a CAD total.
-        const rate = computeExchangeRateFromSnapshot(snapshot);
+        // uses (the same `rate` already computed above for CAD cash conversion —
+        // one shared computation, not a second independent call). Only the scalar
+        // rate is stored (ADR-030 addendum), never a CAD total.
         if (rate !== null) portfolioRepo.upsertExchangeRate(rate, now);
 
         // Wave 3 Task 8 (tvSnapshot closure): store the broker's own last-reported
