@@ -240,31 +240,49 @@ export const refreshPrices = async (): Promise<{ success: boolean; updated: numb
     return data;
 };
 
+/**
+ * Every "Refresh" button in the app (Portfolio Summary, Portfolio Table,
+ * Portfolio Heatmap) calls this one function — but until 2026-07-27 it only
+ * ran the price-refreshing `refreshPrices()` call as an exception fallback:
+ * `syncPortfolio()` (position/share/cash sync via `/sync-tv/apply`) does NOT
+ * write current prices at all (`BrokerSyncService.ts` explicitly persists
+ * `price: null` for stock positions — TV's broker panel doesn't surface a
+ * per-share current price the same way its watchlist does), so on the normal
+ * success path `refreshPrices()` was never called and displayed prices sat
+ * stale indefinitely no matter how many times "Refresh" was clicked.
+ *
+ * Fix: always run BOTH — position sync AND the one canonical price-refresh
+ * call — regardless of either's outcome, so there is exactly one method
+ * ("refreshPrices()" → `/api/portfolio/refresh-prices` → the same
+ * `_select_effective_price()`-backed pipeline every page relies on) that
+ * actually updates prices, called unconditionally by every refresh path.
+ */
 export const syncAndRefreshPortfolio = async (): Promise<{ success: boolean; dataSource: string; message: string }> => {
-    // TradingView is the primary source. Only fall back to yfinance if TV sync fails.
+    let syncOk = false;
+    let syncMessage = 'TV position sync failed';
     try {
         const syncResult = await syncPortfolio();
-        return {
-            success: syncResult.success,
-            dataSource: syncResult.dataSource ?? 'tradingview-cdp',
-            message: `TV sync completed: ${syncResult.positionCount ?? ''} positions`,
-        };
+        syncOk = syncResult.success;
+        syncMessage = `TV sync: ${syncResult.positionCount ?? ''} positions`;
     } catch (e) {
-        console.warn('TradingView CDP sync failed, falling back to yfinance price refresh', e);
+        console.warn('TradingView CDP position sync failed', e);
     }
 
+    let refreshOk = false;
+    let refreshMessage = 'price refresh failed';
     try {
         const refreshResult = await refreshPrices();
-        return {
-            success: refreshResult.success,
-            dataSource: 'yfinance',
-            message: `Price refresh completed (yfinance fallback): ${refreshResult.updated} updated`,
-        };
+        refreshOk = refreshResult.success;
+        refreshMessage = `prices: ${refreshResult.updated} updated`;
     } catch (e) {
-        console.warn('yfinance fallback also failed', e);
+        console.warn('Price refresh failed', e);
     }
 
-    return { success: false, dataSource: 'none', message: 'Sync failed — TradingView unavailable and yfinance fallback failed' };
+    return {
+        success: syncOk || refreshOk,
+        dataSource: syncOk ? 'tradingview-cdp' : (refreshOk ? 'yfinance' : 'none'),
+        message: `${syncMessage} · ${refreshMessage}`,
+    };
 };
 
 export interface ValuationResult {
