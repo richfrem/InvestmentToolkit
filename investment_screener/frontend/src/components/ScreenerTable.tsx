@@ -409,7 +409,12 @@ export default function ScreenerTable() {
         const holdingRows: ScreenerRow[] = allHoldings
             .filter(h => !projectionTickers.has(h.ticker))
             .map(h => {
-                const hPct = h.actualPct ?? allPortfolioWeights[h.ticker] ?? null;
+                // allPortfolioWeights (/api/portfolio/weights, the canonical
+                // computeWeightsMap() source that always sums to 100%) must win over
+                // h.actualPct (/api/screener/all-holdings' own value) whenever present —
+                // reversed priority here vs. the projectionRows case below caused the
+                // portfolio-wide current-weight total to under/over-count in the UI.
+                const hPct = allPortfolioWeights[h.ticker] ?? h.actualPct ?? null;
                 return {
                     symbol: h.ticker,
                     name: h.name,
