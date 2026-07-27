@@ -304,6 +304,13 @@ export class PortfolioRepository {
             .run(investmentId, price, currency, fetchedAt);
     }
 
+    /** Delete the `investment_price` row for `investmentId`, if any. Called before a
+     * refresh fetch so a symbol whose fetch fails/is skipped reads as missing (0/unknown)
+     * afterward rather than silently continuing to serve yesterday's stale price forever. */
+    clearInvestmentPrice(investmentId: string): void {
+        this.db.prepare('DELETE FROM investment_price WHERE investment_id = ?').run(investmentId);
+    }
+
     /** Read the single `investment_price` row for `investmentId`, or `null` if none exists. */
     getInvestmentPrice(investmentId: string): { price: number; currency: string; fetched_at: string } | null {
         const row = this.db
