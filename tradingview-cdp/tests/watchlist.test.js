@@ -47,8 +47,8 @@ describe('Watchlist Automation Core (CDP)', () => {
               success: true,
               watchlist: 'IT_Holdings',
               items: [
-                { symbol: 'BE', price: 261.18, changePercent: 4.94 },
-                { symbol: 'BTCUSD', price: 63086, changePercent: -0.74 }
+                { symbol: 'BE', price: 261.18, changePercent: 4.94, extendedChangePercent: null, sessionLabel: null },
+                { symbol: 'BTCUSD', price: 63086, changePercent: -0.74, extendedChangePercent: null, sessionLabel: null }
               ]
             }) }
           })
@@ -58,6 +58,25 @@ describe('Watchlist Automation Core (CDP)', () => {
       expect(result.success).toBe(true);
       expect(result.items).toHaveLength(2);
       expect(result.items[0].symbol).toBe('BE');
+    });
+
+    it('should surface extendedChangePercent and sessionLabel when the row is outside regular hours', async () => {
+      const mockClient = {
+        Runtime: {
+          evaluate: jest.fn().mockResolvedValue({
+            result: { value: JSON.stringify({
+              success: true,
+              watchlist: 'TV-Full Watchlist',
+              items: [
+                { symbol: 'NBIS', price: 187.77, changePercent: -15.02, extendedChangePercent: 4.08, sessionLabel: 'Overnight via BOATS' }
+              ]
+            }) }
+          })
+        }
+      };
+      const result = await getWatchlist(mockClient);
+      expect(result.items[0].extendedChangePercent).toBe(4.08);
+      expect(result.items[0].sessionLabel).toBe('Overnight via BOATS');
     });
   });
 
