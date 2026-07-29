@@ -67,39 +67,32 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-25 12:29 by TV sync · Portfolio total: $33,216 USD*
+*Auto-updated 2026-07-27 07:08 by TV sync · Portfolio total: $28,004 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **NBIS** | 15 | 8.5% | 3.0% | +5.5pp ⚠ | 🟡 TRIM | — |
-| **SNDK** | 1.5 | 6.5% | 3.3% | +3.2pp ⚠ | 🟡 TRIM | ≤$1,350 |
-| **CRWV** | 27 | 5.8% | 3.7% | +2.1pp ⚠ | 🟡 TRIM | — |
-| **GOOG** | 5 | 4.8% | 4.0% | +0.8pp | 🟡 TRIM | — |
-| **IREN** | 42 | 4.7% | 3.6% | +1.1pp | 🟡 TRIM | — |
-| **SKHY** | 9 | 4.2% | 3.1% | +1.1pp | 🟡 TRIM | — |
-| **CORZ** | 46 | 3.2% | 3.7% | -0.6pp | ⚪ MAINTAIN | — |
-| **CBRS** | 4.5 | 2.7% | 2.5% | +0.2pp | ⚪ MAINTAIN | — |
-| **APLD** | 32 | 2.6% | 2.5% | +0.1pp | ⚪ MAINTAIN | — |
-| **MU** | 0.8999999999999999 | 2.5% | 2.6% | -0.1pp | ⚪ MAINTAIN | — |
-| **MSFT** | 0 | 2.3% | 2.2% | +0.1pp | ⚪ MAINTAIN | — |
-| **SHAZ** | 9 | 1.8% | 0.0% | +1.8pp | 🔴 EXIT | — |
-| **BTDR** | 45 | 1.6% | 1.9% | -0.3pp | 🔵 ACCUMULATE | — |
+| **NBIS** | 0 | 10.1% | 10.0% | +0.2pp | ⚪ MAINTAIN | — |
+| **SNDK** | 0 | 8.0% | 7.6% | +0.4pp | ⚪ MAINTAIN | ≤$1,350 |
+| **CRWV** | 0 | 6.9% | 6.9% | +0.1pp | ⚪ MAINTAIN | — |
+| **GOOG** | 0 | 5.9% | 5.7% | +0.2pp | ⚪ MAINTAIN | — |
+| **IREN** | 0 | 5.5% | 5.5% | -0.0pp | ⚪ MAINTAIN | — |
+| **SKHY** | 0 | 4.8% | 4.9% | -0.2pp | ⚪ MAINTAIN | — |
+| **CORZ** | 0 | 3.6% | 3.7% | -0.1pp | ⚪ MAINTAIN | — |
+| **APLD** | 0 | 3.1% | 3.1% | +0.0pp | ⚪ MAINTAIN | — |
+| **CBRS** | 0 | 3.1% | 3.2% | -0.1pp | ⚪ MAINTAIN | — |
+| **MU** | 0 | 2.9% | 2.9% | -0.1pp | ⚪ MAINTAIN | — |
+| **SHAZ** | 0 | 2.0% | 2.1% | -0.1pp | ⚪ MAINTAIN | — |
+| **BTDR** | 0 | 1.8% | 1.8% | -0.1pp | ⚪ MAINTAIN | — |
 
 **Pending Initiation**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **CLSK** | — | — | 2.0% | — | 🟢 INITIATE | — |
 | **DRAM** | — | — | 0.0% | — | 🟢 INITIATE | — |
+| **CLSK** | — | — | 0.0% | — | 🟢 INITIATE | — |
 | **VRT** | — | — | 0.0% | — | 🟢 INITIATE | — |
 
-**Watchlist** *(target set, entry not yet triggered)*
-
-| Ticker | Target% | Action | Entry Price | Note |
-|--------|---------|--------|-------------|------|
-| META | 1.9% | WATCHLIST | — | Social monopoly + AI ad flywheel. |
-
-**Pillar total — Actual: 51.1% · Target: 39.9% · Gap: +11.2pp**
+**Pillar total — Actual: 57.5% · Target: 57.4% · Gap: +0.1pp**
 <!-- AUTO_UPDATE_END: current_positions -->

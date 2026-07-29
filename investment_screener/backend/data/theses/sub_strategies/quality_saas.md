@@ -84,15 +84,15 @@ Quality SaaS thesis now formally separated from the former "Applied AI / Frontie
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-25 12:29 by TV sync · Portfolio total: $33,216 USD*
+*Auto-updated 2026-07-27 07:08 by TV sync · Portfolio total: $28,004 USD*
 
 **Pending Initiation**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **CRM** | — | — | 1.9% | — | 🟢 INITIATE | — |
-| **NOW** | — | — | 1.9% | — | 🟢 INITIATE | — |
-| **TEAM** | — | — | 1.9% | — | 🟢 INITIATE | — |
+| **CRM** | — | — | 0.0% | — | 🟢 INITIATE | — |
+| **NOW** | — | — | 0.0% | — | 🟢 INITIATE | — |
+| **TEAM** | — | — | 0.0% | — | 🟢 INITIATE | — |
 
-**Pillar total — Actual: 0.0% · Target: 5.6% · Gap: -5.6pp**
+**Pillar total — Actual: 0.0% · Target: 0.0% · Gap: +0.0pp**
 <!-- AUTO_UPDATE_END: current_positions -->
