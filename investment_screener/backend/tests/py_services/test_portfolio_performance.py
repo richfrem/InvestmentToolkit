@@ -117,3 +117,40 @@ def test_current_value_uses_the_latest_row_even_with_a_prior_gap():
 
     expected_current = 10 * 204.0 + 80 * 100.09
     assert abs(result["1d"]["currentValue"] - expected_current) < 0.01
+
+
+class TestCurrentTotalOverride:
+    """Hybrid data-source design: yfinance daily closes lag intraday, so a
+    yfinance-only 'current' value can equal yesterday's close, producing a
+    false 0% 1-day change. TradingView's broker_reported_total is refreshed
+    live on every sync — use it for 'currentValue' when available, while
+    still reconstructing the PAST total from yfinance history (TradingView
+    has no historical equity API)."""
+
+    def test_current_total_override_replaces_the_yfinance_reconstructed_current_value(self):
+        close = _build_close_df()
+        shares_map = {"AAPL": 10, "PSU-U.TO": 80}
+        tickers = ["AAPL", "PSU-U.TO"]
+        now = datetime(2026, 7, 2, 12, 0, 0)
+
+        result = compute_performance(
+            close, shares_map, cash_value=0.0, tickers=tickers, now=now,
+            current_total_override=99999.0,
+        )
+
+        assert result["1d"]["currentValue"] == 99999.0
+        expected_past_total = 10 * 202.0 + 80 * 100.05
+        assert abs(result["1d"]["change"] - (99999.0 - expected_past_total)) < 0.01
+        expected_pct = (99999.0 - expected_past_total) / expected_past_total * 100
+        assert abs(result["1d"]["changePct"] - expected_pct) < 0.01
+
+    def test_no_override_preserves_existing_yfinance_reconstruction_behavior(self):
+        close = _build_close_df()
+        shares_map = {"AAPL": 10, "PSU-U.TO": 80}
+        tickers = ["AAPL", "PSU-U.TO"]
+        now = datetime(2026, 7, 2, 12, 0, 0)
+
+        result = compute_performance(close, shares_map, cash_value=0.0, tickers=tickers, now=now)
+
+        expected_current = 10 * 204.0 + 80 * 100.09
+        assert abs(result["1d"]["currentValue"] - expected_current) < 0.01

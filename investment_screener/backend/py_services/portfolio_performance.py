@@ -40,6 +40,7 @@ import yfinance as yf
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from domain_model.db_client import initialize_db  # noqa: E402
 from domain_model.portfolio_repository import load_portfolio_state_from_db  # noqa: E402
+from domain_model.broker_reported_total_repository import get_broker_reported_total  # noqa: E402
 from ticker_aliases import is_cash  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -129,18 +130,29 @@ def compute_performance(
     cash_value: float,
     tickers: List[str],
     now: datetime,
+    current_total_override: float | None = None,
 ) -> Dict[str, Any]:
     """
     Pure computation over an already-fetched close-price DataFrame with forward-fill.
+
+    current_total_override: when provided (TradingView's live broker_reported_total),
+    used as "currentValue" instead of reconstructing it from yfinance's last close.
+    yfinance daily closes lag intraday, so a yfinance-only current value can equal
+    yesterday's close and produce a false 0% 1-day change; TradingView has no
+    historical equity API, so PAST totals are still reconstructed from yfinance
+    history regardless of this override.
     """
     close = close.ffill()
 
     current_row = close.iloc[-1]
-    current_equity = sum(
-        shares_map[t] * safe_float(current_row.get(t) if hasattr(current_row, "get") else current_row[t])
-        for t in tickers
-    )
-    current_total = current_equity + cash_value
+    if current_total_override is not None:
+        current_total = current_total_override
+    else:
+        current_equity = sum(
+            shares_map[t] * safe_float(current_row.get(t) if hasattr(current_row, "get") else current_row[t])
+            for t in tickers
+        )
+        current_total = current_equity + cash_value
 
     periods = {
         "1d": now - timedelta(days=1),
@@ -200,7 +212,20 @@ def main() -> None:
         print(json.dumps({"error": "no price data returned from yfinance"}))
         return
 
-    result = compute_performance(close, shares_map, cash_value, tickers, datetime.now())
+    current_total_override = None
+    if DB_PATH.exists():
+        conn = initialize_db(str(DB_PATH))
+        try:
+            broker_total = get_broker_reported_total(conn)
+        finally:
+            conn.close()
+        if broker_total is not None:
+            current_total_override = broker_total["total_usd"]
+
+    result = compute_performance(
+        close, shares_map, cash_value, tickers, datetime.now(),
+        current_total_override=current_total_override,
+    )
     print(json.dumps(result))
 
 
