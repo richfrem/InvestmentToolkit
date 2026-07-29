@@ -137,13 +137,13 @@ WQTM-only strategy confirmed. Multi-model adversarial review flagged single-name
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-25 12:29 by TV sync · Portfolio total: $33,216 USD*
+*Auto-updated 2026-07-27 07:08 by TV sync · Portfolio total: $28,004 USD*
 
 **Pending Initiation**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **WQTM** | — | — | 1.5% | — | 🟢 INITIATE | — |
+| **WQTM** | — | — | 0.0% | — | 🟢 INITIATE | — |
 
-**Pillar total — Actual: 0.0% · Target: 1.5% · Gap: -1.5pp**
+**Pillar total — Actual: 0.0% · Target: 0.0% · Gap: +0.0pp**
 <!-- AUTO_UPDATE_END: current_positions -->

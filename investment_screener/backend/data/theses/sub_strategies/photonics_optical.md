@@ -135,13 +135,13 @@ OR upon thesis confirmation events:
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-25 12:29 by TV sync · Portfolio total: $33,216 USD*
+*Auto-updated 2026-07-27 07:08 by TV sync · Portfolio total: $28,004 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **FOTO** | 28 | 1.6% | 2.0% | -0.4pp | 🔵 ACCUMULATE | — |
+| **FOTO** | 0 | 1.9% | 1.9% | -0.0pp | ⚪ MAINTAIN | — |
 
-**Pillar total — Actual: 1.6% · Target: 2.0% · Gap: -0.4pp**
+**Pillar total — Actual: 1.9% · Target: 1.9% · Gap: -0.0pp**
 <!-- AUTO_UPDATE_END: current_positions -->
