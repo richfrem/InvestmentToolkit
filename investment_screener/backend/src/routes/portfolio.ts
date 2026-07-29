@@ -583,7 +583,7 @@ router.get('/summary', async (_req, res) => {
 router.get('/performance', async (_req, res) => {
     console.log(`[API] Computing portfolio period performance...`);
     try {
-        if (!fs.existsSync(PORTFOLIO_FILE)) { res.status(404).json({ error: 'No portfolio data found' }); return; }
+        if (!fs.existsSync(DOMAIN_MODEL_DB_FILE)) { res.status(404).json({ error: 'No portfolio data found' }); return; }
         const data = await spawnPythonScript('portfolio_performance.py', [PORTFOLIO_FILE]);
         res.json(data);
     } catch (error) {
