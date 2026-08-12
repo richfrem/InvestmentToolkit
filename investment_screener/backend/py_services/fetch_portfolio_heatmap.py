@@ -259,8 +259,10 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
                     sector = yahoo_sector
                     industry = yahoo_industry
 
-                # Price priority: TradingView live → yfinance fast_info → regularMarket
+                # Price priority: TradingView live → yfinance fast_info → post/pre-market → current/regular
                 yf_price = (info.get("_fastLastPrice")
+                            or info.get("postMarketPrice")
+                            or info.get("preMarketPrice")
                             or info.get("currentPrice")
                             or info.get("regularMarketPrice", 0))
                 prev_close = info.get("_fastPrevClose") or info.get("regularMarketPreviousClose", 0)
