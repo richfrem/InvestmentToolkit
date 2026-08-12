@@ -67,24 +67,24 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-27 07:08 by TV sync · Portfolio total: $28,004 USD*
+*Auto-updated 2026-08-11 21:25 by TV sync · Portfolio total: $30,978 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **NBIS** | 0 | 10.1% | 10.0% | +0.2pp | ⚪ MAINTAIN | — |
-| **SNDK** | 0 | 8.0% | 7.6% | +0.4pp | ⚪ MAINTAIN | ≤$1,350 |
-| **CRWV** | 0 | 6.9% | 6.9% | +0.1pp | ⚪ MAINTAIN | — |
-| **GOOG** | 0 | 5.9% | 5.7% | +0.2pp | ⚪ MAINTAIN | — |
-| **IREN** | 0 | 5.5% | 5.5% | -0.0pp | ⚪ MAINTAIN | — |
-| **SKHY** | 0 | 4.8% | 4.9% | -0.2pp | ⚪ MAINTAIN | — |
-| **CORZ** | 0 | 3.6% | 3.7% | -0.1pp | ⚪ MAINTAIN | — |
-| **APLD** | 0 | 3.1% | 3.1% | +0.0pp | ⚪ MAINTAIN | — |
-| **CBRS** | 0 | 3.1% | 3.2% | -0.1pp | ⚪ MAINTAIN | — |
-| **MU** | 0 | 2.9% | 2.9% | -0.1pp | ⚪ MAINTAIN | — |
-| **SHAZ** | 0 | 2.0% | 2.1% | -0.1pp | ⚪ MAINTAIN | — |
-| **BTDR** | 0 | 1.8% | 1.8% | -0.1pp | ⚪ MAINTAIN | — |
+| **NBIS** | 0 | 12.2% | 10.0% | +2.2pp ⚠ | 🟡 TRIM | — |
+| **CRWV** | 0 | 9.6% | 6.9% | +2.7pp ⚠ | 🟡 TRIM | — |
+| **SNDK** | 0 | 8.4% | 7.6% | +0.8pp | ⚪ MAINTAIN | ≤$1,350 |
+| **IREN** | 0 | 6.2% | 5.5% | +0.6pp | ⚪ MAINTAIN | — |
+| **GOOG** | 0 | 5.5% | 5.7% | -0.1pp | ⚪ MAINTAIN | — |
+| **SKHY** | 0 | 5.3% | 4.9% | +0.3pp | ⚪ MAINTAIN | — |
+| **CBRS** | 0 | 3.4% | 3.2% | +0.2pp | ⚪ MAINTAIN | — |
+| **MU** | 0 | 3.1% | 2.9% | +0.1pp | ⚪ MAINTAIN | — |
+| **APLD** | 0 | 3.1% | 3.1% | -0.0pp | ⚪ MAINTAIN | — |
+| **CORZ** | 0 | 2.9% | 3.7% | -0.8pp | 🔵 ACCUMULATE | — |
+| **SHAZ** | 0 | 2.2% | 2.1% | +0.1pp | ⚪ MAINTAIN | — |
+| **BTDR** | 0 | 1.5% | 1.8% | -0.4pp | 🔵 ACCUMULATE | — |
 
 **Pending Initiation**
 
@@ -94,5 +94,5 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 | **CLSK** | — | — | 0.0% | — | 🟢 INITIATE | — |
 | **VRT** | — | — | 0.0% | — | 🟢 INITIATE | — |
 
-**Pillar total — Actual: 57.5% · Target: 57.4% · Gap: +0.1pp**
+**Pillar total — Actual: 63.3% · Target: 57.4% · Gap: +5.9pp**
 <!-- AUTO_UPDATE_END: current_positions -->

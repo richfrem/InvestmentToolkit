@@ -95,14 +95,14 @@ VST position is above target — monitor for trim opportunity on continued stren
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-07-27 07:08 by TV sync · Portfolio total: $28,004 USD*
+*Auto-updated 2026-08-11 21:25 by TV sync · Portfolio total: $30,978 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **BE** | 0 | 3.9% | 3.9% | +0.0pp | ⚪ MAINTAIN | — |
-| **PSIX** | 0 | 2.2% | 2.1% | +0.1pp | ⚪ MAINTAIN | — |
+| **BE** | 0 | 5.1% | 3.9% | +1.2pp | 🟡 TRIM | — |
+| **PSIX** | 0 | 2.7% | 2.1% | +0.6pp | 🟡 TRIM | — |
 
-**Pillar total — Actual: 6.1% · Target: 6.1% · Gap: +0.1pp**
+**Pillar total — Actual: 7.8% · Target: 6.1% · Gap: +1.8pp**
 <!-- AUTO_UPDATE_END: current_positions -->
