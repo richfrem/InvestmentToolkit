@@ -478,6 +478,32 @@ def test_load_portfolio_reads_symbols_from_sqlite_not_json(tmp_path, monkeypatch
     assert symbols == {"NVDA", "AAPL"}
 
 
+def test_load_target_portfolio_reads_thesis_holdings_from_sqlite_not_json(tmp_path, monkeypatch):
+    """load_target_portfolio() must read investment.target_weight/sub_strategy_id
+    from domain_model.sqlite via portfolio_io.load_thesis_holdings() — not the
+    archived target-portfolio.json (regression: this raised FileNotFoundError
+    in production on 2026-08-13 since that file no longer exists on disk)."""
+    sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+    import portfolio_io  # noqa: PLC0415
+    from domain_model.db_client import initialize_db  # noqa: PLC0415
+    from domain_model.investment_repository import resolve_investment, update_investment_fields  # noqa: PLC0415
+    from domain_model.pillar_repository import resolve_pillar, resolve_sub_strategy  # noqa: PLC0415
+
+    db_path = str(tmp_path / "portfolio.sqlite")
+    conn = initialize_db(db_path)
+    resolve_pillar(conn, "asi-race", "ASI Race")
+    resolve_sub_strategy(conn, "sa-asi-race", "asi-race", "SA ASI Race")
+    inv_id = resolve_investment(conn, "NVDA", asset_class="EQUITY", currency="USD")
+    update_investment_fields(conn, inv_id, target_weight=5.0, sub_strategy_id="sa-asi-race")
+    conn.close()
+    monkeypatch.setattr(portfolio_io, "_DB_PATH", db_path)
+
+    from ta_sweep_batch import load_target_portfolio  # noqa: PLC0415
+    target_map = load_target_portfolio()
+    assert target_map["NVDA"]["targetWeight"] == 5.0
+    assert target_map["NVDA"]["subStrategyId"] == "sa-asi-race"
+
+
 def test_load_dcf_uses_highest_version_regardless_of_source(tmp_path):
     """Original code took raw[-1] (last array element = highest version) with no
     source filter — this must not prefer AI_AGENT over a newer non-AI_AGENT row."""

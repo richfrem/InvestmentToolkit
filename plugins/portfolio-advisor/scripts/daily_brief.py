@@ -34,7 +34,6 @@ from typing import Any
 REPO_ROOT        = Path(__file__).resolve().parents[3]
 PY_SERVICES      = REPO_ROOT / "investment_screener/backend/py_services"
 TA_SWEEP_SCRIPT  = REPO_ROOT / "plugins/tradingview/scripts/ta_sweep_batch.py"
-TARGET_PATH      = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 DAILY_BRIEFS_DIR = REPO_ROOT / "investment_screener/backend/data/daily-briefs"
 INTELLIGENCE_DB_PATH = REPO_ROOT / "investment_screener/backend/data/intelligence.sqlite"
 
@@ -180,20 +179,21 @@ def _score_deltas(
 
 def _pillar_summary(
     scores: list[dict[str, Any]],
-    target_data: dict[str, Any],
+    thesis_holdings: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     """Aggregate conviction scores by sub-strategy pillar.
 
     Args:
         scores: Conviction score dicts.
-        target_data: Parsed target-portfolio.json.
+        thesis_holdings: Rows from portfolio_io.load_thesis_holdings()
+            (domain_model.sqlite investment.* columns).
 
     Returns:
         Pillar summary list sorted by avg_score descending.
     """
     ticker_pillar = {
-        h["ticker"]: h.get("subStrategyId", "unknown")
-        for h in target_data.get("holdings", [])
+        h["ticker"]: h.get("subStrategyId") or "unknown"
+        for h in thesis_holdings
     }
     pillars: dict[str, list[int]] = {}
     for s in scores:
@@ -541,9 +541,9 @@ def run(
                 pass  # Non-blocking
 
     # ── 5. Pillar health ──────────────────────────────────────────────────────
-    with open(TARGET_PATH) as f:
-        target_data = json.load(f)
-    pillars = _pillar_summary(scores_raw, target_data)
+    sys.path.insert(0, str(PY_SERVICES))
+    from portfolio_io import load_thesis_holdings
+    pillars = _pillar_summary(scores_raw, load_thesis_holdings())
 
     # ── 5b. Thesis breaker evaluation (B5 — additive, top-of-triage) ──────────
     print("▶ Thesis breakers...", file=sys.stderr)

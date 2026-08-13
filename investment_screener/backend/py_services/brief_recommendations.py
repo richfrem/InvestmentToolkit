@@ -213,7 +213,9 @@ def build_recommendations(
             continue
 
         gap = s.get("weight_gap") or 0.0
-        value = round(max(gap, 0.0) / 100 * total_equity, 2)
+        if gap <= 0:
+            continue   # no target weight to close (watchlist / already at target)
+        value = round(gap / 100 * total_equity, 2)
         base["recommendation"] = "BUY"
         base["actionable"] = True
         base["proposedTrade"] = {

@@ -12,10 +12,9 @@ Layer:
     Plugins / TradingView
 
 Key Input Dependencies:
-    - investment_screener/backend/data/portfolio.json (Reads holdings)
-    - investment_screener/backend/data/theses/target-portfolio.json (Reads target weights)
-    - investment_screener/backend/data/domain_model.sqlite (Reads DCF valuations, ADR-029)
-    - investment_screener/backend/data/domain_model.sqlite (Reads watchlist membership via is_watchlisted)
+    - investment_screener/backend/data/domain_model.sqlite (Reads holdings, target
+      weights via portfolio_io.load_thesis_holdings(), DCF valuations (ADR-029),
+      and watchlist membership via is_watchlisted)
 
 Usage:
     python3 plugins/tradingview/scripts/ta_sweep_batch.py [--skip TICKERS]
@@ -33,7 +32,6 @@ from typing import Any
 # ── Paths ──────────────────────────────────────────────────────────────────────
 REPO_ROOT       = Path(__file__).resolve().parents[3]
 PORTFOLIO_PATH  = REPO_ROOT / "investment_screener/backend/data/portfolio.json"
-TARGET_PATH     = REPO_ROOT / "investment_screener/backend/data/theses/target-portfolio.json"
 DB_PATH         = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
 TV_CLI          = REPO_ROOT / "tradingview-cdp/cli.js"
 
@@ -97,10 +95,10 @@ def load_watchlisted_tickers(db_path: Path = DB_PATH) -> list[str]:
 
 
 def load_target_portfolio() -> dict[str, dict[str, Any]]:
-    """Return target-portfolio holdings keyed by ticker."""
-    with open(TARGET_PATH) as f:
-        data = json.load(f)
-    return {h["ticker"]: h for h in data.get("holdings", [])}
+    """Return thesis holdings (domain_model.sqlite investment.* columns) keyed by ticker."""
+    sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
+    from portfolio_io import load_thesis_holdings
+    return {h["ticker"]: h for h in load_thesis_holdings()}
 
 
 def load_dcf(ticker: str, db_path: Path | None = None) -> dict[str, Any] | None:

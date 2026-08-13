@@ -30,7 +30,7 @@ class PineLinter:
     def lint(self) -> bool:
         """Run all checks; return True if no errors (warnings are OK)."""
         if not os.path.exists(self.filepath):
-            print(f"❌ Error: File '{self.filepath}' not found.")
+            print(f"❌ Error: File '{self.filepath}' not found.", file=sys.stderr)
             return False
 
         with open(self.filepath, "r", encoding="utf-8") as f:
@@ -116,23 +116,23 @@ class PineLinter:
         return self._report()
 
     def _report(self) -> bool:
-        print(f"\n--- Linting Report: {self.filepath} ---")
+        print(f"\n--- Linting Report: {self.filepath} ---", file=sys.stderr)
 
         for w in self.warnings:
-            print(f"⚠️  {w}")
+            print(f"⚠️  {w}", file=sys.stderr)
 
         for e in self.errors:
-            print(f"❌ {e}")
+            print(f"❌ {e}", file=sys.stderr)
 
         if self.errors:
-            print(f"\n🚨 Failed: {len(self.errors)} error(s), {len(self.warnings)} warning(s)\n")
+            print(f"\n🚨 Failed: {len(self.errors)} error(s), {len(self.warnings)} warning(s)\n", file=sys.stderr)
             return False
 
         if self.warnings:
-            print(f"\n✅ Passed (with {len(self.warnings)} warning(s))\n")
+            print(f"\n✅ Passed (with {len(self.warnings)} warning(s))\n", file=sys.stderr)
             return True
 
-        print("\n✅ Passed: Perfect Script!\n")
+        print("\n✅ Passed: Perfect Script!\n", file=sys.stderr)
         return True
 
 
