@@ -15,7 +15,13 @@ LINTER_PATH = os.path.join(
 
 
 def run_linter(script_content: str):
-    """Write content to a temp .pine file, run the linter, return (exit_code, stdout)."""
+    """Write content to a temp .pine file, run the linter, return (exit_code, stderr).
+
+    The linter's report goes to stderr (not stdout) so that callers importing
+    PineLinter as a library (e.g. daily_brief.py's --json pipeline) get a clean
+    stdout — a bare `print()` here previously corrupted JSON output piped
+    downstream (regression: fixed 2026-08-13).
+    """
     with tempfile.NamedTemporaryFile(mode="w", suffix=".pine", delete=False) as tmp:
         tmp.write(script_content)
         tmp_path = tmp.name
@@ -25,7 +31,25 @@ def run_linter(script_content: str):
             capture_output=True,
             text=True,
         )
-        return result.returncode, result.stdout
+        return result.returncode, result.stderr
+    finally:
+        os.remove(tmp_path)
+
+
+def test_report_output_never_written_to_stdout():
+    """The linter must never print its report to stdout — only stderr — so
+    library callers piping JSON on stdout are never corrupted."""
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".pine", delete=False) as tmp:
+        tmp.write("""//@version=6
+indicator("Perfect Script", overlay=true)
+var float my_ma = ta.sma(close, 14)
+""")
+        tmp_path = tmp.name
+    try:
+        result = subprocess.run(
+            ["python3", LINTER_PATH, tmp_path], capture_output=True, text=True,
+        )
+        assert result.stdout == ""
     finally:
         os.remove(tmp_path)
 

@@ -139,6 +139,33 @@ def test_load_latest_ta_sweep_count_returns_none_when_no_events(tmp_path):
     assert _load_latest_ta_sweep_count(db_path=str(db_path)) is None
 
 
+def test_pillar_summary_reads_sub_strategy_from_thesis_holdings_not_json(tmp_path):
+    """_pillar_summary() must take thesis_holdings rows (from
+    portfolio_io.load_thesis_holdings()) — not a parsed target-portfolio.json
+    dict — as its second argument (regression: this raised FileNotFoundError
+    in production on 2026-08-13 since that file no longer exists on disk)."""
+    import sys
+    from pathlib import Path
+    repo_root = Path(__file__).resolve().parents[4]
+    sys.path.insert(0, str(repo_root / "plugins/portfolio-advisor/scripts"))
+    from daily_brief import _pillar_summary  # noqa: PLC0415
+
+    scores = [
+        {"ticker": "NVDA", "total": 3},
+        {"ticker": "AMD", "total": 1},
+        {"ticker": "WATCHLISTONLY", "total": 5},
+    ]
+    thesis_holdings = [
+        {"ticker": "NVDA", "subStrategyId": "sa-asi-race", "targetWeight": 5.0},
+        {"ticker": "AMD", "subStrategyId": "sa-asi-race", "targetWeight": 2.0},
+    ]
+    pillars = _pillar_summary(scores, thesis_holdings)
+    assert len(pillars) == 1
+    assert pillars[0]["pillar"] == "sa-asi-race"
+    assert pillars[0]["avg_score"] == 2.0
+    assert pillars[0]["count"] == 2   # WATCHLISTONLY excluded (unknown pillar)
+
+
 def test_ta_age_hours_returns_none_on_missing_db_no_json_fallback(tmp_path):
     """With no DB and no fallback, a missing db_path must return None — Wave 5B removed the
     JSON-fallback branch entirely.

@@ -136,6 +136,17 @@ class TestMacroGate:
         assert r["actionable"] is False
         assert "risk-off" in r["rationale"].lower()
 
+    def test_accumulate_band_with_zero_target_weight_is_excluded(self):
+        """Watchlist tickers with no target weight (e.g. VST) score ACCUMULATE
+        on TA/DCF alone but have no real weight gap to close — must not
+        produce a misleading 'BUY ~$0' card (regression, 2026-08-13)."""
+        recs = build_recommendations(
+            scores=[_score("VST", 3, "ACCUMULATE", dcf_action="BUY",
+                           actual_weight=None, target_weight=0.0, weight_gap=None)],
+            standing={}, earnings=[], macro=RISK_ON, total_equity=32000.0,
+        )
+        assert recs == []
+
     def test_neutral_macro_requires_score_four(self):
         recs = build_recommendations(
             scores=[
