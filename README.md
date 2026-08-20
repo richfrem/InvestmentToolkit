@@ -313,4 +313,20 @@ The TradingView CDP automation layer was informed by studying the following open
 
 ---
 
-*Personal use only. Data from TradingView is subject to their Terms of Use: [https://www.tradingview.com/policies/*](https://www.tradingview.com/policies/)
+## ⚖️ Legal & Financial Disclaimer
+
+> **IMPORTANT DISCLAIMER:**
+> **InvestmentToolkit is strictly an analytical and educational suite.** It does **not** provide financial, investment, tax, or legal advice. 
+> - All valuation models (DCF scenarios), technical indicators, and AI agent outputs are **informational and advisory only**.
+> - Past performance and quantitative projections do not guarantee future returns.
+> - The software is provided "as is", without warranty of any kind. You are solely responsible for your own investment decisions and any broker order executions.
+
+---
+
+## 📄 License
+
+Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more information.
+
+---
+
+*Data and desktop integration from TradingView are subject to their Terms of Use: [https://www.tradingview.com/policies/](https://www.tradingview.com/policies/)*
