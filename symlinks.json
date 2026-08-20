@@ -828,6 +828,12 @@
       "dst": "investment_screener/backend/py_services/manage_watchlist.py",
       "strategy": "symlink",
       "description": "Canonical watchlist management script"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/manage_watchlist.py",
+      "dst": "plugins/portfolio-advisor/skills/stock-intake/scripts/manage_watchlist.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
     }
   ]
 }
