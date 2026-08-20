@@ -1,25 +1,31 @@
 # TradingView Terms of Use & Trade Execution Policy
 
 ## 1. Context & Background
-TradingView’s Terms of Use strictly prohibit **non-display usage** of its platform data, charts, webhooks, and third-party tools. Automated order generation, third-party API trade execution, and headless algorithmic trading without direct, interactive human display interaction are expressly prohibited.
+TradingView’s Terms of Use explicitly prohibit **non-display usage** of its platform data, charts, webhooks, and third-party tools. This specifically restricts headless, unattended algorithmic bots and unmonitored automated trade execution without direct, human display interaction.
 
 ---
 
-## 2. Mandatory Rules for All AI Agents
+## 2. Permitted vs. Prohibited Usage Matrix
 
-1. **NO AUTONOMOUS TRADE EXECUTION**:
-   - AI agents must **never** execute, place, modify, or cancel live orders directly through headless scripts, broker APIs, or automated CDP execution tools (`place_order.py`, `modify_order.py`, `cancel_order.py`).
-   - Any automated script execution that bypasses human-in-the-loop manual confirmation is strictly forbidden.
+| Operation Category | Permitted / Prohibited | Compliance Architecture in InvestmentToolkit |
+| :--- | :--- | :--- |
+| **Headless / Unattended Auto-Trading** | ❌ **STRICTLY PROHIBITED** | Background scripts and AI agents must **never** execute trades autonomously without an active human operator reviewing the order on screen. |
+| **Interactive Human-in-the-Loop (HITL) Staging** | ✅ **PERMITTED** | User views the live chart/screener on screen, opens `TradePrepModal`, reviews the staged calculation (shares, limit price, sizing), and **explicitly confirms the action**. |
+| **Display-Driven CDP Desktop Automation** | ✅ **PERMITTED** | Automation assists the active user's local TradingView Desktop GUI display (reading indicators, synchronizing account positions for personal tracking, framing order dialogues under direct human supervision). |
+| **Advisory & Analytical Recommendations** | ✅ **PERMITTED** | AI agents formulate investment theses, DCF models, and triage cards (e.g. `/daily`, `/rebalance`), providing decision support that the user evaluates. |
 
-2. **HUMAN-IN-THE-LOOP (HITL) ONLY**:
-   - All trade suggestions from AI agents (e.g. from `/daily`, `/rebalance`, or the Screener table) are strictly **informational and educational recommendations**.
-   - The human user must review the proposed order parameters (ticker, side, quantity, limit price) and **manually execute the order directly inside their authorized broker terminal or official TradingView Desktop application**.
+---
 
-3. **READ-ONLY / DISPLAY COMPLIANCE**:
-   - CDP and Python automation are restricted to:
-     - Reading technical indicators and Data Window values for display analysis.
-     - Synchronizing portfolio balances and share counts for personal portfolio tracking (`/tv-portfolio-sync`).
-     - Real-time quote polling for personal dashboard display (`/tv-price-refresh`).
+## 3. Mandatory Rules for All AI Agents
 
-4. **ORDER PREPARATION STAGING**:
-   - Tools like `TradePrepModal` or staging scripts may format and calculate suggested share sizes or limit order prices for the user's convenience, but must terminate with a clear instruction for the user to execute manually.
+1. **NO UNATTENDED AUTONOMOUS EXECUTION**:
+   - AI agents are strictly forbidden from placing, modifying, or cancelling live broker orders autonomously in the background.
+   - All trade execution is strictly **Human-in-the-Loop (HITL)**.
+
+2. **HUMAN SUPERVISION & CONFIRMATION**:
+   - All agent recommendations are advisory. 
+   - Trade staging tools (such as `TradePrepModal` or staging scripts) format and calculate parameters on screen for the human operator to inspect, adjust, and approve.
+   - The human user retains 100% final authorization and control over every order submitted to the broker.
+
+3. **DISPLAY INTEGRITY**:
+   - Local CDP automation operates in conjunction with an active, visible TradingView Desktop application session on the user's licensed workstation.
