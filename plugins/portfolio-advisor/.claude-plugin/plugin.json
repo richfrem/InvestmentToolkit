@@ -1,19 +1,159 @@
 {
     "name": "portfolio-advisor",
     "version": "2.2.0",
-    "description": "Investment portfolio advisor suite. /daily — one interactive daily command: portfolio sync, morning brief (macro+TA+DCF+earnings), triage cards, trade execution, self-evolution log. Plus: /stock-intake (automated discovery & onboarding), /adversarial-review, /bundle-thesis-review, /norberts-gambit (CAD/USD conversion guide), drift monitoring, valuation-gated rebalancing, 13F tracking, target calibration, and /set-thesis-breakers (interactive HITL thesis-breaker authoring).",
-    "author": {
-        "name": "richfrem",
-        "email": "connect.richfrem@gmail.com"
-    },
-    "keywords": [
+    "description": "Investment portfolio advisor suite. /daily — one interactive daily command: sync check, morning brief (macro + TA + DCF + earnings), ranked triage cards, trade execution, self-evolution log. Additional skills: /review-portfolio, /strategic-review, /rebalance, /calibrate-targets, /update-portfolio-targets, /x-news-sweep, /bundle-thesis-review, /13f-tracker, /13f-analyze, /norberts-gambit (CAD/USD conversion guide), /run-advisor (post-catalyst orchestrator), /set-thesis-breakers (interactive HITL thesis-breaker authoring).",
+    "author": "InvestmentToolkit",
+    "maturity": "L5",
+    "architecture": "supercharged",
+    "skills": [
+        {
+            "name": "portfolio_health",
+            "path": "skills/portfolio-health/SKILL.md",
+            "trigger": "/review-portfolio"
+        },
+        {
+            "name": "strategic_review",
+            "path": "skills/strategic-review/SKILL.md",
+            "trigger": "/strategic-review"
+        },
+        {
+            "name": "rebalance_portfolio",
+            "path": "skills/rebalance-portfolio/SKILL.md",
+            "trigger": "/rebalance"
+        },
+        {
+            "name": "update_portfolio_targets",
+            "path": "skills/update-portfolio-targets/SKILL.md",
+            "trigger": "/update-portfolio-targets"
+        },
+        {
+            "name": "calibrate_targets",
+            "path": "skills/calibrate-targets/SKILL.md",
+            "trigger": "/calibrate-targets"
+        },
+        {
+            "name": "norberts_gambit",
+            "path": "skills/norberts-gambit/SKILL.md",
+            "trigger": "/norberts-gambit"
+        },
+        {
+            "name": "set_thesis_breakers",
+            "path": "skills/set-thesis-breakers/SKILL.md",
+            "trigger": "/set-thesis-breakers"
+        },
+        {
+            "name": "x_news_sweep",
+            "path": "skills/x-news-sweep/SKILL.md",
+            "trigger": "/x-news-sweep"
+        },
+        {
+            "name": "thesis_challenge_bundler",
+            "path": "skills/thesis-challenge-bundler/SKILL.md",
+            "trigger": "/bundle-thesis-review"
+        },
+        {
+            "name": "adversarial_review",
+            "path": "skills/adversarial-review/SKILL.md",
+            "trigger": "/adversarial-review"
+        },
+        {
+            "name": "13f_tracker",
+            "path": "skills/13f-tracker/SKILL.md",
+            "trigger": "/13f-tracker"
+        },
+        {
+            "name": "13f_analyze",
+            "path": "skills/13f-analyze/SKILL.md",
+            "trigger": "/13f-analyze"
+        },
+        {
+            "name": "daily_brief",
+            "path": "skills/daily-brief/SKILL.md",
+            "trigger": "/daily-brief"
+        },
+        {
+            "name": "daily_loop",
+            "path": "skills/daily-loop/SKILL.md",
+            "trigger": "/daily"
+        },
+        {
+            "name": "ytd_return",
+            "path": "skills/ytd-return/SKILL.md",
+            "trigger": "/ytd-return"
+        },
+        {
+            "name": "stock_intake",
+            "path": "skills/stock-intake/SKILL.md",
+            "trigger": "/stock-intake"
+        },
+        {
+            "name": "portfolio_coverage_audit",
+            "path": "skills/portfolio-coverage-audit/SKILL.md",
+            "trigger": "/portfolio-coverage-audit"
+        },
+        {
+            "name": "weekly_review",
+            "path": "skills/weekly-review/SKILL.md",
+            "trigger": "/weekly-review"
+        },
+        {
+            "name": "data_quality_audit",
+            "path": "skills/data-quality-audit/SKILL.md",
+            "trigger": "/data-quality-audit"
+        }
+    ],
+    "agents": [
+        {
+            "name": "daily_loop_agent",
+            "path": "agents/daily-loop-agent.md",
+            "trigger": "/daily"
+        },
+        {
+            "name": "portfolio_advisor_orchestrator",
+            "path": "agents/portfolio-advisor-orchestrator.md",
+            "trigger": "/run-advisor"
+        },
+        {
+            "name": "thesis_review_agent",
+            "path": "agents/thesis-review-agent.md",
+            "trigger": "thesis-review"
+        },
+        {
+            "name": "risk_officer_agent",
+            "path": "agents/risk-officer-agent.md",
+            "trigger": "/rebalance"
+        },
+        {
+            "name": "red_team_agent",
+            "path": "agents/red-team-agent.md",
+            "trigger": "red-team"
+        }
+    ],
+    "connectors": "CONNECTORS.md",
+    "evals": "skills/portfolio-health/evals/evals.json",
+    "acceptance_criteria": "skills/portfolio-health/references/acceptance-criteria.md",
+    "external_dependencies": [
+        {
+            "name": "theses-api",
+            "canonical_path": "http://localhost:3001/api/theses",
+            "owned_by": "investment-screener-app",
+            "purpose": "Lists all available investment theses"
+        },
+        {
+            "name": "health-api",
+            "canonical_path": "http://localhost:3001/api/theses/:id/health",
+            "owned_by": "investment-screener-app",
+            "purpose": "Returns per-holding drift scores, alerts, and overall portfolio health status"
+        }
+    ],
+    "related_plugins": [
+        "stock-valuation"
+    ],
+    "tags": [
         "finance",
         "portfolio",
         "portfolio-advisor",
-        "daily-loop",
-        "conviction-scores",
-        "macro-regime",
-        "thesis",
+        "thesis-management",
         "rebalancing",
         "drift-detection",
         "currency-conversion"

@@ -1,10 +1,26 @@
 {
     "name": "toolkit-manager",
     "version": "2.0.0",
-    "description": "Orchestrator for the Investment Screener suite. Handles server startup and general user onboarding, routing to the tradingview plugin for TradingView-specific setup.",
-    "author": {
-        "name": "richfrem",
-        "email": "connect.richfrem@gmail.com"
-    },
-    "keywords": ["finance", "infrastructure", "startup"]
+    "description": "Orchestrator plugin for managing the Investment Screener suite. Handles server startup.",
+    "author": "InvestmentToolkit",
+    "maturity": "L5",
+    "architecture": "supercharged",
+    "skills": [
+        {
+            "name": "run_screener",
+            "path": "skills/run-screener/SKILL.md",
+            "trigger": "/start-screener"
+        },
+        {
+            "name": "toolkit_onboarding",
+            "path": "skills/toolkit-onboarding/SKILL.md",
+            "trigger": "/toolkit-onboarding"
+        }
+    ],
+    "agents": [],
+    "tags": [
+        "finance",
+        "infrastructure",
+        "startup"
+    ]
 }
