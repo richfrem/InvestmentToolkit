@@ -1,0 +1,86 @@
+{
+  "ticker": "MP",
+  "name": "MP Materials Corp.",
+  "schemaVersion": "1.2",
+  "snapshot": {
+    "price": 54.11,
+    "market_cap_b": 9.64,
+    "revenue_ttm_b": 0.224,
+    "pe_ratio": 0.0,
+    "forward_pe": 62.34,
+    "sector": "Basic Materials",
+    "industry": "Other Industrial Metals & Mining",
+    "last_actual_ps": 42.94
+  },
+  "aiThesis": {
+    "model": "DCF 5Y Terminal Multiple",
+    "fairValue": 44.64,
+    "action": "HOLD",
+    "analyzedAt": "2026-08-20T06:45:00Z",
+    "targetWeight": 0.0,
+    "rationale": "Strategic Western Hemisphere NdPr rare earth and permanent magnet supplier. High growth inflection as Stage 2 refining and Stage 3 Texas magnet manufacturing scale. Near-term fair value of $44.64 vs $54.11 current price warrants disciplined watchlist accumulation on pullbacks below $50."
+  },
+  "scenarios": {
+    "bear": {
+      "weight": 0.25,
+      "growthRate": 25.0,
+      "netMargin": 15.0,
+      "exitPE": 20.0,
+      "qualityMultiplier": 0.95,
+      "shareChange": 5.0,
+      "year5Revenue": 684.9,
+      "year5NetIncome": 102.7,
+      "year5EPS": 0.45,
+      "year5PriceUndiscounted": 8.59,
+      "scenarioPrice": 5.33,
+      "presentValue": 5.33,
+      "moatScore": 6,
+      "managementScore": 7,
+      "rationale": "Subdued NdPr commodity pricing and slower magnetics adoption."
+    },
+    "base": {
+      "weight": 0.50,
+      "growthRate": 45.0,
+      "netMargin": 24.0,
+      "exitPE": 28.0,
+      "qualityMultiplier": 1.05,
+      "shareChange": 3.0,
+      "year5Revenue": 1438.6,
+      "year5NetIncome": 345.3,
+      "year5EPS": 1.67,
+      "year5PriceUndiscounted": 49.16,
+      "scenarioPrice": 30.53,
+      "presentValue": 30.53,
+      "moatScore": 8,
+      "managementScore": 8,
+      "rationale": "Mountain Pass NdPr refining scaling with Fort Worth magnet facility commercialization."
+    },
+    "bull": {
+      "weight": 0.25,
+      "growthRate": 65.0,
+      "netMargin": 32.0,
+      "exitPE": 35.0,
+      "qualityMultiplier": 1.10,
+      "shareChange": 1.0,
+      "year5Revenue": 2744.9,
+      "year5NetIncome": 878.4,
+      "year5EPS": 4.69,
+      "year5PriceUndiscounted": 180.66,
+      "scenarioPrice": 112.17,
+      "presentValue": 112.17,
+      "moatScore": 9,
+      "managementScore": 9,
+      "rationale": "Geopolitical rare earth export restrictions accelerate premium pricing and US DoD/commercial contracts."
+    }
+  },
+  "analyticsLog": {
+    "reverseDcf": {
+      "impliedGrowth": 59.4,
+      "impliedGrowthVsBaseCase": 14.4,
+      "verdict": "BETWEEN_BASE_AND_BULL"
+    },
+    "dataQualityFlags": [
+      "No anomalies detected; yfinance and SEC baseline synced."
+    ]
+  }
+}

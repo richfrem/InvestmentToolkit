@@ -67,24 +67,27 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-08-11 21:25 by TV sync · Portfolio total: $30,978 USD*
+*Auto-updated 2026-08-19 08:03 by TV sync · Portfolio total: $32,831 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **NBIS** | 0 | 12.2% | 10.0% | +2.2pp ⚠ | 🟡 TRIM | — |
-| **CRWV** | 0 | 9.6% | 6.9% | +2.7pp ⚠ | 🟡 TRIM | — |
-| **SNDK** | 0 | 8.4% | 7.6% | +0.8pp | ⚪ MAINTAIN | ≤$1,350 |
-| **IREN** | 0 | 6.2% | 5.5% | +0.6pp | ⚪ MAINTAIN | — |
-| **GOOG** | 0 | 5.5% | 5.7% | -0.1pp | ⚪ MAINTAIN | — |
-| **SKHY** | 0 | 5.3% | 4.9% | +0.3pp | ⚪ MAINTAIN | — |
-| **CBRS** | 0 | 3.4% | 3.2% | +0.2pp | ⚪ MAINTAIN | — |
-| **MU** | 0 | 3.1% | 2.9% | +0.1pp | ⚪ MAINTAIN | — |
-| **APLD** | 0 | 3.1% | 3.1% | -0.0pp | ⚪ MAINTAIN | — |
-| **CORZ** | 0 | 2.9% | 3.7% | -0.8pp | 🔵 ACCUMULATE | — |
-| **SHAZ** | 0 | 2.2% | 2.1% | +0.1pp | ⚪ MAINTAIN | — |
-| **BTDR** | 0 | 1.5% | 1.8% | -0.4pp | 🔵 ACCUMULATE | — |
+| **SNDK** | 0 | 7.0% | 7.6% | -0.7pp | ⚪ MAINTAIN | ≤$1,350 |
+| **NBIS** | 0 | 6.1% | 10.0% | -3.8pp ⚠ | 🔵 ACCUMULATE | — |
+| **GOOG** | 0 | 5.2% | 5.7% | -0.4pp | ⚪ MAINTAIN | — |
+| **CRWV** | 0 | 4.2% | 6.9% | -2.7pp ⚠ | 🔵 ACCUMULATE | — |
+| **SKHY** | 0 | 3.9% | 4.9% | -1.0pp | 🔵 ACCUMULATE | — |
+| **CORZ** | 0 | 3.9% | 3.7% | +0.2pp | ⚪ MAINTAIN | — |
+| **TSM** | 0 | 3.8% | 0.0% | +3.8pp ⚠ | 🔴 EXIT | — |
+| **MU** | 0 | 3.4% | 2.9% | +0.5pp | 🟡 TRIM | — |
+| **CBRS** | 0 | 2.9% | 3.2% | -0.3pp | ⚪ MAINTAIN | — |
+| **APLD** | 0 | 2.7% | 3.1% | -0.4pp | ⚪ MAINTAIN | — |
+| **IREN** | 0 | 2.6% | 5.5% | -2.9pp ⚠ | 🔵 ACCUMULATE | — |
+| **AMAT** | 0 | 2.3% | 2.0% | +0.3pp | ⚪ MAINTAIN | — |
+| **RIOT** | 0 | 2.1% | 2.0% | +0.1pp | ⚪ MAINTAIN | — |
+| **SHAZ** | 0 | 1.9% | 2.1% | -0.2pp | ⚪ MAINTAIN | — |
+| **BTDR** | 0 | 1.7% | 1.8% | -0.1pp | ⚪ MAINTAIN | — |
 
 **Pending Initiation**
 
@@ -94,5 +97,5 @@ Maintained as the Primary engine of the The Compute Sovereign edition portfolio.
 | **CLSK** | — | — | 0.0% | — | 🟢 INITIATE | — |
 | **VRT** | — | — | 0.0% | — | 🟢 INITIATE | — |
 
-**Pillar total — Actual: 63.3% · Target: 57.4% · Gap: +5.9pp**
+**Pillar total — Actual: 53.7% · Target: 61.4% · Gap: -7.7pp**
 <!-- AUTO_UPDATE_END: current_positions -->

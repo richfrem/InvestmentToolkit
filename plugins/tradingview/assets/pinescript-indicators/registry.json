@@ -4,7 +4,7 @@
       "path": "ai-ta-levels.pine",
       "version": "2.0.0",
       "description": "Multi-EMA (21/50/200) + SuperTrend + ADX + Squeeze + Volume Bias",
-      "last_injected": null,
+      "last_injected": "2026-08-13T16:40:36.438072+00:00",
       "hash": "d4591acc9bfb",
       "category": "level"
     }
