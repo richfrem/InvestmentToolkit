@@ -1,5 +1,5 @@
 ---
-name: tv_price_refresh
+name: tv-price-refresh
 plugin: tradingview
 description: >
   Pulls real-time prices for all portfolio positions. Uses TradingView Desktop
