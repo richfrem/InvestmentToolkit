@@ -362,10 +362,11 @@ export default function ScreenerTable() {
             const health = portfolioWeights[p.ticker];
             const currentPct = allPortfolioWeights[p.ticker] ?? health?.actualPct ?? rev?.actualPct ?? null;
             const recommendedPct = health?.targetPct ?? null;
-            // Action from backend Python — single source of truth. Do not default
-            // an unset action to 'WATCHLIST': that mislabeled tickers that were
-            // never (or no longer) actually on the watchlist.
-            const action = allHoldingsMap[p.ticker]?.action ?? null;
+            const backendAction = allHoldingsMap[p.ticker]?.action ?? null;
+            // If backend action is generic 'WATCHLIST' or null, but we have a direct AI thesis action (e.g. HOLD, BUY, INITIATE, ACCUMULATE, TRIM, EXIT), use the AI thesis action.
+            const action = (backendAction && backendAction !== 'WATCHLIST') 
+                ? backendAction 
+                : (thesis?.action ?? backendAction ?? null);
 
             return {
                 symbol: p.ticker,
@@ -765,11 +766,17 @@ export default function ScreenerTable() {
                                         );
                                     } else if (col.id === 'action') {
                                         const tip = row.portfolioRationale;
+                                        const isGap = row.rowKind === 'holding' || row.currentPrice === 0 || row.fairValue == null;
+                                        const rating = ['INITIATE', 'ACCUMULATE', 'BUY'].includes(String(val).toUpperCase())
+                                            ? 'BUY'
+                                            : ['TRIM', 'EXIT', 'SELL'].includes(String(val).toUpperCase())
+                                                ? 'SELL'
+                                                : 'HOLD';
                                         cellContent = (
-                                            <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                                            <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                                                 {val ? (
                                                     <span
-                                                        className={`inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-black uppercase tracking-wider cursor-default ${getActionBadgeClass(String(val))}`}
+                                                        className={`inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-black uppercase tracking-wider cursor-default shadow-sm ${getActionBadgeClass(String(val))}`}
                                                         title={tip ?? undefined}
                                                     >
                                                         {val}
@@ -777,7 +784,21 @@ export default function ScreenerTable() {
                                                 ) : (
                                                     <span className="text-slate-600 text-[10px]">—</span>
                                                 )}
-                                                <TradeButtons ticker={row.symbol} size="sm" />
+                                                {!isGap && (
+                                                    <TradeButtons ticker={row.symbol} size="sm" rating={rating} />
+                                                )}
+                                                {isGap && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            navigate(`/analysis?ticker=${row.symbol}`);
+                                                        }}
+                                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 text-[10px] font-bold transition-all"
+                                                        title="Launch deep-dive stock intake & valuation"
+                                                    >
+                                                        ⚡ Intake
+                                                    </button>
+                                                )}
                                             </div>
                                         );
                                     } else if (col.id === 'currentPct' || col.id === 'recommendedPct') {
