@@ -39,7 +39,7 @@
       "rationale": "Subdued NdPr commodity pricing and slower magnetics adoption."
     },
     "base": {
-      "weight": 0.50,
+      "weight": 0.5,
       "growthRate": 45.0,
       "netMargin": 24.0,
       "exitPE": 28.0,
@@ -60,7 +60,7 @@
       "growthRate": 65.0,
       "netMargin": 32.0,
       "exitPE": 35.0,
-      "qualityMultiplier": 1.10,
+      "qualityMultiplier": 1.1,
       "shareChange": 1.0,
       "year5Revenue": 2744.9,
       "year5NetIncome": 878.4,
@@ -82,5 +82,9 @@
     "dataQualityFlags": [
       "No anomalies detected; yfinance and SEC baseline synced."
     ]
-  }
+  },
+  "source": "AI_AGENT",
+  "id": "MP-PROJ-20260820",
+  "savedAt": "2026-08-20T06:45:00Z",
+  "version": 1
 }
