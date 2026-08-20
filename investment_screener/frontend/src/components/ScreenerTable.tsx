@@ -458,6 +458,24 @@ export default function ScreenerTable() {
         return [...projectionRows, ...holdingRows];
     }, [projections, portfolioWeights, allPortfolioWeights, reviewRecommendations, allHoldings, allHoldingsMap, heatmapMap]);
 
+    // Dynamic counts per category
+    const counts = useMemo(() => {
+        let actionable = 0;
+        let holdings = 0;
+        let watchlist = 0;
+        let gaps = 0;
+
+        for (const row of rows) {
+            const act = (row.action ?? '').toUpperCase();
+            if (['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT'].includes(act)) actionable++;
+            if ((row.currentPct ?? 0) > 0 || (row.recommendedPct ?? 0) > 0) holdings++;
+            if (row.isWatched) watchlist++;
+            if (row.rowKind === 'holding' || row.currentPrice === 0 || row.fairValue == null) gaps++;
+        }
+
+        return { all: rows.length, actionable, holdings, watchlist, gaps };
+    }, [rows]);
+
     const filteredRows = rows.filter(row => {
         // Status bar grouping filter
         if (statusFilter === 'actionable') {
@@ -523,40 +541,47 @@ export default function ScreenerTable() {
                     </div>
                     <div>
                         <span className="text-white font-bold text-sm block">Intelligence Feed</span>
-                        <span className="text-slate-500 text-[10px] uppercase font-black tracking-widest">{sortedRows.length} of {rows.length} Tickers</span>
+                        <span className="text-slate-400 text-[11px] font-mono font-bold tracking-tight">
+                            Showing <span className="text-white font-black">{sortedRows.length}</span> of {rows.length} Tickers
+                        </span>
                     </div>
 
                     {/* Status Grouping Filter Tabs */}
-                    <div className="flex items-center bg-slate-950/60 p-1 rounded-lg border border-slate-800 text-xs ml-2">
+                    <div className="flex items-center bg-slate-950/70 p-1 rounded-lg border border-slate-800 text-xs ml-2 gap-1">
                         <button
                             onClick={() => setStatusFilter('all')}
-                            className={`px-2.5 py-1 rounded-md font-bold transition-all ${statusFilter === 'all' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                            className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-bold transition-all ${statusFilter === 'all' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
                         >
-                            All ({rows.length})
+                            <span>All</span>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${statusFilter === 'all' ? 'bg-indigo-800/80 text-white' : 'bg-slate-800 text-slate-400'}`}>{counts.all}</span>
                         </button>
                         <button
                             onClick={() => setStatusFilter('actionable')}
-                            className={`px-2.5 py-1 rounded-md font-bold transition-all ${statusFilter === 'actionable' ? 'bg-cyan-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                            className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-bold transition-all ${statusFilter === 'actionable' ? 'bg-cyan-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
                         >
-                            ⚡ Actionable
+                            <span>⚡ Actionable</span>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${statusFilter === 'actionable' ? 'bg-cyan-800/80 text-white' : 'bg-slate-800 text-cyan-400'}`}>{counts.actionable}</span>
                         </button>
                         <button
                             onClick={() => setStatusFilter('holdings')}
-                            className={`px-2.5 py-1 rounded-md font-bold transition-all ${statusFilter === 'holdings' ? 'bg-emerald-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                            className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-bold transition-all ${statusFilter === 'holdings' ? 'bg-emerald-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
                         >
-                            💼 Core Holdings
+                            <span>💼 Core Holdings</span>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${statusFilter === 'holdings' ? 'bg-emerald-800/80 text-white' : 'bg-slate-800 text-emerald-400'}`}>{counts.holdings}</span>
                         </button>
                         <button
                             onClick={() => setStatusFilter('watchlist')}
-                            className={`px-2.5 py-1 rounded-md font-bold transition-all ${statusFilter === 'watchlist' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                            className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-bold transition-all ${statusFilter === 'watchlist' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
                         >
-                            ⭐ Watchlist
+                            <span>⭐ Watchlist</span>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${statusFilter === 'watchlist' ? 'bg-purple-800/80 text-white' : 'bg-slate-800 text-purple-400'}`}>{counts.watchlist}</span>
                         </button>
                         <button
                             onClick={() => setStatusFilter('gaps')}
-                            className={`px-2.5 py-1 rounded-md font-bold transition-all ${statusFilter === 'gaps' ? 'bg-amber-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                            className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-bold transition-all ${statusFilter === 'gaps' ? 'bg-amber-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
                         >
-                            🚨 Needs Analysis
+                            <span>🚨 Needs Analysis</span>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${statusFilter === 'gaps' ? 'bg-amber-800/80 text-white' : 'bg-slate-800 text-amber-400'}`}>{counts.gaps}</span>
                         </button>
                     </div>
                 </div>
