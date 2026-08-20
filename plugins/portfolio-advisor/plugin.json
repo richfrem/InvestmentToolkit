@@ -80,6 +80,11 @@
             "name": "ytd_return",
             "path": "skills/ytd-return/SKILL.md",
             "trigger": "/ytd-return"
+        },
+        {
+            "name": "stock_intake",
+            "path": "skills/stock-intake/SKILL.md",
+            "trigger": "/stock-intake"
         }
     ],
     "agents": [
