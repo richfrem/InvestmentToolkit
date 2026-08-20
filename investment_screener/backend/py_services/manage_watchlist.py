@@ -1,0 +1,1 @@
+../../../plugins/portfolio-advisor/scripts/manage_watchlist.py
