@@ -1,9 +1,37 @@
+#!/usr/bin/env python3
+"""
+test_manage_watchlist.py - Test suite for manage_watchlist.py utility.
+======================================================================
+
+Purpose:
+    Validates unit contracts and SQLite persistence behaviors for manage_watchlist.py,
+    including adding, updating, removing, and querying watchlisted equities.
+
+Layer:
+    Backend / Tests / py_services
+
+Usage Examples:
+    pytest investment_screener/backend/tests/py_services/test_manage_watchlist.py
+
+Key Functions (Index):
+    - test_db(tmp_path) -> str
+    - test_add_and_list_watchlist(test_db) -> None
+    - test_remove_from_watchlist(test_db) -> None
+
+Key Input Dependencies:
+    - Temporary SQLite schema mirror of domain_model.sqlite
+
+Key Output Dependencies:
+    - None (ephemeral pytest tmp_path fixtures)
+"""
+
 import sqlite3
 import sys
 from pathlib import Path
+from typing import Generator
 import pytest
 
-_PY_SERVICES = Path(__file__).resolve().parents[2] / "py_services"
+_PY_SERVICES: Path = Path(__file__).resolve().parents[2] / "py_services"
 sys.path.insert(0, str(_PY_SERVICES))
 
 from manage_watchlist import (
@@ -13,9 +41,17 @@ from manage_watchlist import (
 )
 
 
+# Dual-layer docs: test_db fixture
 @pytest.fixture
-def test_db(tmp_path):
-    """Creates a mock domain_model.sqlite for testing."""
+def test_db(tmp_path: Path) -> str:
+    """Create a temporary mock domain_model.sqlite schema for test isolation.
+
+    Args:
+        tmp_path: Pytest temporary directory fixture.
+
+    Returns:
+        str: Absolute path string to the ephemeral SQLite database.
+    """
     db_file = tmp_path / "test_domain_model.sqlite"
     conn = sqlite3.connect(str(db_file))
     conn.execute("""
@@ -73,7 +109,13 @@ def test_db(tmp_path):
     return str(db_file)
 
 
-def test_add_and_list_watchlist(test_db):
+# Dual-layer docs: test_add_and_list_watchlist test case
+def test_add_and_list_watchlist(test_db: str) -> None:
+    """Verify that adding an item properly updates the database and appears in get_watchlist_items.
+
+    Args:
+        test_db: Path to the mock database.
+    """
     res = add_to_watchlist(
         ticker="XYZ",
         db_path=test_db,
@@ -94,7 +136,13 @@ def test_add_and_list_watchlist(test_db):
     assert items[0]["price"] == 123.45
 
 
-def test_remove_from_watchlist(test_db):
+# Dual-layer docs: test_remove_from_watchlist test case
+def test_remove_from_watchlist(test_db: str) -> None:
+    """Verify that removing an item sets is_watchlisted to 0 and clears it from active list.
+
+    Args:
+        test_db: Path to the mock database.
+    """
     add_to_watchlist(ticker="ABC", db_path=test_db, price=50.0)
     assert len(get_watchlist_items(db_path=test_db)) == 1
 
