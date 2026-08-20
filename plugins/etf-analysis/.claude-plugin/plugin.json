@@ -1,0 +1,41 @@
+{
+    "name": "etf-analysis",
+    "version": "1.0.0",
+    "description": "AI-driven ETF and fund analysis engine. Handles three fund types: CLOSED_END (NAV premium, private holdings), THEMATIC_ETF (holdings alignment, expense drag, overlap), and CASH_FUND (yield, dividend timing). Saves structured JSON to data/etf_analysis/ and updates agentRationale in target-portfolio.json.",
+    "author": "InvestmentToolkit",
+    "maturity": "L4",
+    "architecture": "supercharged",
+    "skills": [
+        {
+            "name": "etf_analysis",
+            "path": "skills/etf_analysis/SKILL.md",
+            "trigger": "/analyze-etf"
+        }
+    ],
+    "external_dependencies": [
+        {
+            "name": "fetch_fund_data.py",
+            "canonical_path": "plugins/etf-analysis/skills/etf_analysis/scripts/fetch_fund_data.py",
+            "owned_by": "etf-analysis",
+            "purpose": "Fetches fund metadata, NAV, and holdings from yfinance"
+        },
+        {
+            "name": "persist_etf_analysis.py",
+            "canonical_path": "plugins/etf-analysis/skills/etf_analysis/scripts/persist_etf_analysis.py",
+            "owned_by": "etf-analysis",
+            "purpose": "Saves ETF analysis JSON to data/etf_analysis/ with versioning"
+        }
+    ],
+    "data_output": "investment_screener/backend/data/etf_analysis/",
+    "related_plugins": [
+        "stock-valuation",
+        "portfolio-advisor"
+    ],
+    "tags": [
+        "finance",
+        "etf-analysis",
+        "fund-analysis",
+        "nav-premium",
+        "closed-end-fund"
+    ]
+}
