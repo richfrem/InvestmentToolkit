@@ -43,7 +43,9 @@ from typing import Any
 
 # Default path to the SQLite single source of truth
 _HERE: Path = Path(__file__).resolve().parent
-_DEFAULT_DB: Path = _HERE.parents[1] / "investment_screener" / "backend" / "data" / "domain_model.sqlite"
+_DEFAULT_DB: Path = _HERE.parents[2] / "investment_screener" / "backend" / "data" / "domain_model.sqlite"
+if not _DEFAULT_DB.exists():
+    _DEFAULT_DB = _HERE.parents[1] / "investment_screener" / "backend" / "data" / "domain_model.sqlite"
 if not _DEFAULT_DB.exists():
     _DEFAULT_DB = _HERE / ".." / "data" / "domain_model.sqlite"
 
