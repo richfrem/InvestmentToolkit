@@ -90,6 +90,16 @@
             "name": "portfolio_coverage_audit",
             "path": "skills/portfolio-coverage-audit/SKILL.md",
             "trigger": "/portfolio-coverage-audit"
+        },
+        {
+            "name": "weekly_review",
+            "path": "skills/weekly-review/SKILL.md",
+            "trigger": "/weekly-review"
+        },
+        {
+            "name": "data_quality_audit",
+            "path": "skills/data-quality-audit/SKILL.md",
+            "trigger": "/data-quality-audit"
         }
     ],
     "agents": [
@@ -109,16 +119,6 @@
             "trigger": "thesis-review"
         },
         {
-            "name": "single_stock_advisor",
-            "path": "agents/single-stock-advisor.md",
-            "trigger": "/single-stock-advisor"
-        },
-        {
-            "name": "weekly_review_agent",
-            "path": "agents/weekly-review-agent.md",
-            "trigger": "/weekly-review"
-        },
-        {
             "name": "risk_officer_agent",
             "path": "agents/risk-officer-agent.md",
             "trigger": "/rebalance"
@@ -127,11 +127,6 @@
             "name": "red_team_agent",
             "path": "agents/red-team-agent.md",
             "trigger": "red-team"
-        },
-        {
-            "name": "data_quality_agent",
-            "path": "agents/data-quality-agent.md",
-            "trigger": "data-quality"
         }
     ],
     "connectors": "CONNECTORS.md",

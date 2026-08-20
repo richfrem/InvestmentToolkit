@@ -10,16 +10,14 @@
             "name": "run_screener",
             "path": "skills/run-screener/SKILL.md",
             "trigger": "/start-screener"
-        }
-    ],
-    "commands": [],
-    "agents": [
+        },
         {
-            "name": "toolkit-onboarding-guide",
-            "path": "agents/toolkit-onboarding-guide.md",
-            "trigger": "Help me set up the toolkit"
+            "name": "toolkit_onboarding",
+            "path": "skills/toolkit-onboarding/SKILL.md",
+            "trigger": "/toolkit-onboarding"
         }
     ],
+    "agents": [],
     "tags": [
         "finance",
         "infrastructure",
