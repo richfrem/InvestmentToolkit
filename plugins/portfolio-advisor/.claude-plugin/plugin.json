@@ -1,7 +1,7 @@
 {
     "name": "portfolio-advisor",
     "version": "2.2.0",
-    "description": "Investment portfolio advisor suite. /daily — one interactive daily command: portfolio sync, morning brief (macro+TA+DCF+earnings), triage cards, trade execution, self-evolution log. Plus: /adversarial-review, /bundle-thesis-review, /norberts-gambit (CAD/USD conversion guide), drift monitoring, valuation-gated rebalancing, 13F tracking, target calibration, and /set-thesis-breakers (interactive HITL thesis-breaker authoring).",
+    "description": "Investment portfolio advisor suite. /daily — one interactive daily command: portfolio sync, morning brief (macro+TA+DCF+earnings), triage cards, trade execution, self-evolution log. Plus: /stock-intake (automated discovery & onboarding), /adversarial-review, /bundle-thesis-review, /norberts-gambit (CAD/USD conversion guide), drift monitoring, valuation-gated rebalancing, 13F tracking, target calibration, and /set-thesis-breakers (interactive HITL thesis-breaker authoring).",
     "author": {
         "name": "richfrem",
         "email": "connect.richfrem@gmail.com"
