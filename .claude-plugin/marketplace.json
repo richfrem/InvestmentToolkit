@@ -14,7 +14,7 @@
         },
         {
             "name": "portfolio-advisor",
-            "description": "Investment portfolio advisor suite. /daily — one interactive daily command: portfolio sync check, morning brief (macro regime + TA sweep + conviction scores + earnings calendar), ranked triage cards (one per holding, urgency-ordered), trade execution, self-evolution log. Plus: /review-portfolio, /strategic-review, /rebalance, /calibrate-targets, /update-portfolio-targets, /x-news-sweep, /adversarial-review, /bundle-thesis-review, /13f-tracker, /13f-analyze, /norberts-gambit (CAD/USD conversion guide), /run-advisor (post-catalyst orchestrator), /set-thesis-breakers (interactive HITL thesis-breaker authoring), /ytd-return (Time-Weighted YTD return calculator). Evolution log: plugins/portfolio-advisor/references/evolution-log.md.",
+            "description": "Investment portfolio advisor suite. /daily — one interactive daily command: portfolio sync check, morning brief (macro regime + TA sweep + conviction scores + earnings calendar), ranked triage cards (one per holding, urgency-ordered), trade execution, self-evolution log. Plus: /stock-intake (automated 5-in-1 discovery & onboarding), /review-portfolio, /strategic-review, /rebalance, /calibrate-targets, /update-portfolio-targets, /x-news-sweep, /adversarial-review, /bundle-thesis-review, /13f-tracker, /13f-analyze, /norberts-gambit (CAD/USD conversion guide), /run-advisor (post-catalyst orchestrator), /set-thesis-breakers (interactive HITL thesis-breaker authoring), /ytd-return (Time-Weighted YTD return calculator). Evolution log: plugins/portfolio-advisor/references/evolution-log.md.",
             "source": "./plugins/portfolio-advisor",
             "strict": true
         },
