@@ -66,9 +66,9 @@ PYTHONPATH=investment_screener/backend/py_services python3 -m intelligence.view_
 ```
 
 ### Step 5: Dual Persistence to SQLite & JSON
-1. Use the canonical `manage_watchlist.py` script to register the stock in `domain_model.sqlite`:
+1. Use the skill's canonical `scripts/manage_watchlist.py` script to register the stock in `domain_model.sqlite`:
 ```bash
-python3 investment_screener/backend/py_services/manage_watchlist.py \
+python3 scripts/manage_watchlist.py \
   --add {TICKER} \
   --name "{COMPANY_NAME}" \
   --pillar {PILLAR_ID} \
