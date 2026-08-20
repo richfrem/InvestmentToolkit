@@ -4,36 +4,34 @@ The **InvestmentToolkit** operates a circular, multi-state portfolio synchroniza
 
 This document describes the dual-state model, the five core operational synchronization loops, and how the toolkit ensures zero drift between strategic intent and active trading accounts.
 
-> **Wave 3 update (2026-07-22):** the "Actual Broker State" is now `domain_model.sqlite`
-> (`account`/`account_investment`/`investment_price`/`broker_exchange_rate`/`broker_reported_total`
-> tables), not `portfolio.json`. `portfolio.json` (gitignored) is no longer the write target for the
-> real sync path — see "Loop 1" below for the current, verified data flow. It remains readable as a
-> legacy/fallback artifact for a small number of not-yet-migrated read paths (see
-> `docs/superpowers/status/wave3-*-report.md` for the exact list); it is not archived yet pending
-> those final reads. Do not assume this document's pre-Wave-3 description of `portfolio.json` as
-> the live write target still holds — it does not, as of this wave's completion.
+> **Wave 7/8 update (2026-08):** `domain_model.sqlite` is now the **sole source of truth** for both
+> the Live Broker State (`account_investment`, `investment_price`, `broker_exchange_rate`, `broker_reported_total`)
+> AND the Conviction Target State (`investment`, `pillar`, `price_level_tier`, `standing_decision`).
+> Both `target-portfolio.json` and `portfolio.json` have been fully retired (ADR-030 / Pitfall #30)
+> and are archived. All Python tools read/write via `portfolio_io.py`, and TypeScript routes use
+> `InvestmentRepository` / `ThesisService` / `PriceLevelRepository`.
 
 ---
 
 ## The Dual-State Architecture
 
-To maintain rigorous trade discipline, the system separates the portfolio into two distinct state singletons:
+To maintain rigorous trade discipline, the system separates the portfolio into two logical views inside `domain_model.sqlite`:
 
 ```
                   ┌─────────────────────────────────────┐
                   │          LIVE BROKER STATE          │
-                  │   domain_model.sqlite (account,     │
-                  │   account_investment, investment_    │
-                  │   price, broker_exchange_rate,       │
-                  │   broker_reported_total)             │
+                  │   domain_model.sqlite               │
+                  │   (account_investment, price,       │
+                  │    broker_exchange_rate, total)     │
                   │   Actual shares owned & cash values │
                   └──────────────────┬──────────────────┘
                                      │
                      drift detection │ valuation-gated trades
                                      ▼
                   ┌─────────────────────────────────────┐
-                  │          CONVICTION TARGET STATE    │
-                  │        (target-portfolio.json)      │
+                  │       CONVICTION TARGET STATE       │
+                  │   domain_model.sqlite (investment,  │
+                  │   pillar, price_level_tier)         │
                   │ Conviction weights (sums to 100.0%) │
                   └─────────────────────────────────────┘
 ```
@@ -45,24 +43,14 @@ To maintain rigorous trade discipline, the system separates the portfolio into t
      into `account_investment` (quantity, average cost, per real account), `investment_price`
      (current market price per symbol, refreshed by `/refresh-prices`), `broker_exchange_rate` (a
      single live USD→CAD scalar, inferred from TradingView's own native CAD/USD totals — never an
-     external FX API, per pitfall #27), and `broker_reported_total` (the broker's own last-reported
-     grand total, captured verbatim for `verify_portfolio_total.py`'s reconciliation audit — see
-     ADR-030 for why this one figure is stored rather than only computed). Portfolio/account totals
-     for everything else are always computed live (`SUM(quantity × price)`, GROUP BY account before
-     rolling up to a portfolio total — never a flat cross-account query), never stored as their own
-     aggregate. It is completely independent of conviction targets.
-   - **Git Status**: `domain_model.sqlite` is gitignored (user private data), same privacy
-     classification `portfolio.json` had before this wave.
+     external FX API, per Rule 27), and `broker_reported_total` (the broker's own last-reported
+     grand total, captured verbatim for `verify_portfolio_total.py`'s reconciliation audit).
+   - **Git Status**: `domain_model.sqlite` is gitignored (user private data).
 
-2. **The Conviction Target State (`target-portfolio.json`)**
+2. **The Conviction Target State (`domain_model.sqlite`)**
    - **Purpose**: Represents the quantitative blueprint of the qualitative investment thesis.
-   - **Attributes**: Tracks target weight allocations (which must sum to exactly `100.00%`), strategy pillars, stock categorization roles, and `agentRationale` auditing.
-   - **Git Status**: Tracked in repository (enforces thesis version history). Most narrow read paths
-     (pillars, holdings summary, watchlist flag, `standingDecision` scalars) are SQLite-sourced since
-     Wave 2 — this file remains authoritative only for `ThesisService.ts`'s full-document CRUD
-     (`globalSettings`, `changeLog`, `bandConfig`, `shares`, full `thesisBreakers`/`standingDecision`
-     sub-objects — no SQLite column exists for these), a documented, user-approved Retained-JSON
-     exception (see Wave 2's exit report).
+   - **Attributes**: Tracks target weight allocations (`investment.target_weight`, which must sum to exactly `100.00%`), strategy pillars, stock categorization roles, and `agent_rationale` auditing.
+   - **Git Status**: Thesis blueprints and sub-strategies are tracked in `investment_screener/backend/data/theses/*.md` for version history.
 
 ---
 
