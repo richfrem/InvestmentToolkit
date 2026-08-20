@@ -450,7 +450,7 @@ export default function PortfolioTable() {
 
     if (!data) return null;
 
-    const { isPrivacyMode, formatPrivateMoney } = usePrivacy();
+    const { isPrivacyMode } = usePrivacy();
 
     // ─── Filter & Sort ────────────────────────────────────────────────────────
 
@@ -466,10 +466,10 @@ export default function PortfolioTable() {
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="flex items-baseline gap-2 mr-1">
-                        <span className="text-white text-sm font-bold">${Math.round(data.total_value_usd ?? data.total_value).toLocaleString()}</span>
+                        <span className="text-white text-sm font-bold">{isPrivacyMode ? '$••••••' : `$${Math.round(data.total_value_usd ?? data.total_value).toLocaleString()}`}</span>
                         <span className="text-zinc-500 text-xs font-medium">USD</span>
                         <span className="text-zinc-600 text-xs">/</span>
-                        <span className="text-zinc-400 text-sm font-semibold">${(data.total_value_cad ?? Math.round((data.total_value_usd ?? data.total_value) * exchangeRate)).toLocaleString()}</span>
+                        <span className="text-zinc-400 text-sm font-semibold">{isPrivacyMode ? '$••••••' : `$${(data.total_value_cad ?? Math.round((data.total_value_usd ?? data.total_value) * exchangeRate)).toLocaleString()}`}</span>
                         <span className="text-zinc-500 text-xs font-medium">CAD</span>
                     </div>
 

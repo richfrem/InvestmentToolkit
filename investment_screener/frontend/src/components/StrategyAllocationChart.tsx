@@ -24,6 +24,7 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import * as d3 from 'd3';
 import type { StrategyAllocationItem, StrategyHolding } from '../services/api';
 import { PILLAR_COLORS, SECTOR_COLORS, SUB_STRATEGY_COLORS } from '../utils/themeColors';
+import { usePrivacy } from '../context/PrivacyContext';
 
 const FALLBACK = '#6b7280';
 
@@ -153,9 +154,14 @@ interface Props {
 // GroupBy is declared above alongside the helpers
 
 export default function StrategyAllocationChart({ data, totalCAD, usdCadRate }: Props) {
+    const { isPrivacyMode } = usePrivacy();
     const [groupBy, setGroupBy] = useState<GroupBy>('pillar');
     const [selectedId, setSelectedId] = useState<string | null>(null);
 
+    function fmtCAD(val: number): string {
+        if (isPrivacyMode) return 'CA$••••••';
+        return `CA$${Math.round(val).toLocaleString()}`;
+    }
     const donutWrapRef    = useRef<HTMLDivElement>(null);
     const holdingsWrapRef = useRef<HTMLDivElement>(null);
     const donutSvgRef     = useRef<SVGSVGElement>(null);

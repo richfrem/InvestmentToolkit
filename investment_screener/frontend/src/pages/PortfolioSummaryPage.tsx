@@ -29,6 +29,7 @@ import PortfolioSummaryCards from '../components/PortfolioSummaryCards';
 import PortfolioBreakdown from '../components/PortfolioBreakdown';
 import StrategyAllocationChart from '../components/StrategyAllocationChart';
 import { PriceSourceBadge } from '../components/PriceSourceBadge';
+import { usePrivacy } from '../context/PrivacyContext';
 
 function PeriodCard({
     label,
@@ -39,12 +40,14 @@ function PeriodCard({
     perf: { change: number; changePct: number } | null | undefined;
     loading: boolean;
 }) {
+    const { isPrivacyMode } = usePrivacy();
     const isPos = (perf?.change ?? 0) >= 0;
     const sign = isPos ? '+' : '';
     const color = (perf?.change ?? 0) > 0 ? 'text-emerald-400' : (perf?.change ?? 0) < 0 ? 'text-red-400' : 'text-slate-400';
     const glow = (perf?.change ?? 0) > 0 ? 'shadow-emerald-500/10' : (perf?.change ?? 0) < 0 ? 'shadow-red-500/10' : '';
 
     function fmt(v: number) {
+        if (isPrivacyMode) return '$••••';
         const abs = Math.abs(v);
         if (abs >= 1000) return `$${Math.abs(v).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
         return `$${Math.abs(v).toFixed(2)}`;

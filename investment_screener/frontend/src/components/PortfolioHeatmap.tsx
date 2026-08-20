@@ -26,6 +26,7 @@ import * as d3 from 'd3';
 import { PriceSourceBadge } from './PriceSourceBadge';
 import { PILLAR_COLORS, SECTOR_COLORS, SUB_STRATEGY_COLORS } from '../utils/themeColors';
 import { syncAndRefreshPortfolio } from '../services/api';
+import { usePrivacy } from '../context/PrivacyContext';
 
 interface StockHeatmapData {
     symbol: string;
@@ -65,6 +66,7 @@ interface TreemapNode {
 }
 
 export default function PortfolioHeatmap() {
+    const { isPrivacyMode } = usePrivacy();
     const navigate = useNavigate();
     const [data, setData] = useState<HeatmapResponse | null>(null);
     const [loading, setLoading] = useState(true);
@@ -214,6 +216,7 @@ export default function PortfolioHeatmap() {
     };
 
     const formatValue = (value: number): string => {
+        if (isPrivacyMode) return '$••••';
         if (value >= 1000000) return `$${(value / 1000000).toFixed(2)}M`;
         if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`;
         return `$${value.toFixed(0)}`;
