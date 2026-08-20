@@ -34,8 +34,15 @@ Run the following checks from the repository root:
    python .agents/skills/symlink-manager/scripts/symlink_manager.py diagnose
    ```
 
+5. **Portfolio Cash & Valuation Invariant Check**:
+   Verify that portfolio total calculations always include uninvested cash (`CASH_USD` / `PSU-U.TO`) alongside equities:
+   ```bash
+   python3 investment_screener/backend/py_services/verify_portfolio_total.py
+   ```
+
 ## Resolution Action
 
 If any errors, missing references, or duplicate files are reported:
 - Resolve them immediately before proposing a commit or push.
 - Move duplicates to the plugin root `references/` folder and symlink them back to the individual skills using `symlink_manager.py`.
+- If portfolio totals show a discrepancy vs. broker totals, verify that cash balances across all accounts (TFSA, RRSP, CASH) are included in the total equity rollup.

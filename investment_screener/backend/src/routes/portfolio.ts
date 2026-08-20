@@ -264,7 +264,8 @@ export function getBookValueAndCountFromDb(dbPath: string = DOMAIN_MODEL_DB_FILE
         const positions = portfolioRepo.listPositionsBySymbol();
         if (positions.length === 0) return null;
         const totalBookValueUSD = positions.reduce((sum, p) => sum + p.quantity * (p.averageCost ?? 0), 0);
-        return { totalBookValueUSD, positionCount: positions.length };
+        const equityPositions = positions.filter(p => p.symbol !== 'CASH_USD' && p.symbol !== 'USD_CASH');
+        return { totalBookValueUSD, positionCount: equityPositions.length };
     } finally {
         portfolioRepo.close();
     }
