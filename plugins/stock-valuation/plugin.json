@@ -27,18 +27,6 @@
             "trigger": "/valuation-math-validation"
         }
     ],
-    "commands": [
-        {
-            "name": "evaluate-stock",
-            "path": "commands/evaluate-stock.md",
-            "trigger": "/evaluate-stock"
-        },
-        {
-            "name": "research-stock",
-            "path": "commands/research-stock.md",
-            "trigger": "/research-stock"
-        }
-    ],
     "connectors": "CONNECTORS.md",
     "evals": "skills/stock_valuation/evals/evals.json",
     "acceptance_criteria": "skills/stock_valuation/references/acceptance-criteria.md",

@@ -12,13 +12,6 @@
             "trigger": "/analyze-etf"
         }
     ],
-    "commands": [
-        {
-            "name": "analyze-etf",
-            "path": "commands/analyze-etf.md",
-            "trigger": "/analyze-etf"
-        }
-    ],
     "external_dependencies": [
         {
             "name": "fetch_fund_data.py",

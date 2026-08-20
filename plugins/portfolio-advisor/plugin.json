@@ -134,53 +134,6 @@
             "trigger": "data-quality"
         }
     ],
-    "commands": [
-        {
-            "name": "review-portfolio",
-            "path": "commands/review-portfolio.md",
-            "trigger": "/review-portfolio"
-        },
-        {
-            "name": "strategic-review",
-            "path": "commands/strategic-review.md",
-            "trigger": "/strategic-review"
-        },
-        {
-            "name": "rebalance",
-            "path": "commands/rebalance.md",
-            "trigger": "/rebalance"
-        },
-        {
-            "name": "x-news-sweep",
-            "path": "commands/x-news-sweep.md",
-            "trigger": "/x-news-sweep"
-        },
-        {
-            "name": "bundle-thesis-review",
-            "path": "commands/bundle-thesis-review.md",
-            "trigger": "/bundle-thesis-review"
-        },
-        {
-            "name": "adversarial-review",
-            "path": "commands/adversarial-review.md",
-            "trigger": "/adversarial-review"
-        },
-        {
-            "name": "13f-tracker",
-            "path": "commands/13f-tracker.md",
-            "trigger": "/13f-tracker"
-        },
-        {
-            "name": "13f-analyze",
-            "path": "commands/13f-analyze.md",
-            "trigger": "/13f-analyze"
-        },
-        {
-            "name": "weekly-review",
-            "path": "commands/weekly-review.md",
-            "trigger": "/weekly-review"
-        }
-    ],
     "connectors": "CONNECTORS.md",
     "evals": "skills/portfolio-health/evals/evals.json",
     "acceptance_criteria": "skills/portfolio-health/references/acceptance-criteria.md",

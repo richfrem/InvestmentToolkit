@@ -76,21 +76,6 @@
     { "name": "tv_alert_list", "path": "skills/alert-list/SKILL.md", "trigger": "/tv-alert-list" },
     { "name": "tv_setup", "path": "skills/tv-setup/SKILL.md", "trigger": "/setup-tradingview" }
   ],
-  "commands": [
-    { "name": "tv-alert-sync", "path": "commands/tv-alert-sync.md", "trigger": "/tv-alert-sync" },
-    { "name": "tv-price-refresh", "path": "commands/tv-price-refresh.md", "trigger": "/tv-price-refresh" },
-    { "name": "tv-snapshot", "path": "commands/tv-snapshot.md", "trigger": "/tv-snapshot" },
-    { "name": "tv-ta", "path": "commands/tv-ta.md", "trigger": "/tv-ta" },
-    { "name": "tv-portfolio-sync", "path": "commands/tv-portfolio-sync.md", "trigger": "/tv-portfolio-sync" },
-    { "name": "place-order", "path": "commands/place-order.md", "trigger": "/place-order" },
-    { "name": "modify-order", "path": "commands/modify-order.md", "trigger": "/modify-order" },
-    { "name": "cancel-order", "path": "commands/cancel-order.md", "trigger": "/cancel-order" },
-    { "name": "get-orders", "path": "commands/get-orders.md", "trigger": "/get-orders" },
-    { "name": "ta-daily-sweep", "path": "commands/ta-daily-sweep.md", "trigger": "/ta-daily-sweep" },
-    { "name": "tv-watchlist-sync", "path": "commands/tv-watchlist-sync.md", "trigger": "/tv-watchlist-sync" },
-    { "name": "tv-alert-list", "path": "commands/tv-alert-list.md", "trigger": "/tv-alert-list" },
-    { "name": "setup-tradingview", "path": "commands/setup-tradingview.md", "trigger": "/setup-tradingview" }
-  ],
   "external_dependencies": [
     {
       "name": "portfolio-json",
