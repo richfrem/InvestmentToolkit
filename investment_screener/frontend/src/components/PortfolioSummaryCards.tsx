@@ -19,6 +19,7 @@
 import type { PortfolioSummary } from '../services/api';
 import { TrendingUp, TrendingDown, DollarSign, BarChart3, ArrowUpDown } from 'lucide-react';
 import { fmtPct, deltaColor } from '../utils/formatters';
+import { usePrivacy } from '../context/PrivacyContext';
 
 interface Props {
     data: PortfolioSummary;
@@ -38,6 +39,8 @@ function changeBgGlow(value: number): string {
 }
 
 export default function PortfolioSummaryCards({ data }: Props) {
+    const { formatPrivateMoney } = usePrivacy();
+
     const cards = [
         {
             title: 'YTD Performance',
@@ -46,17 +49,17 @@ export default function PortfolioSummaryCards({ data }: Props) {
             primaryColor: deltaColor(data.ytdSimpleReturnPctCAD),
             rows: [
                 { label: 'TWR', value: `${fmtPct(data.ytdChangePctCAD)}`, color: deltaColor(data.ytdChangePctCAD) },
-                { label: 'CAD Gain', value: `${data.ytdChangeCAD >= 0 ? '+' : ''}${formatCurrency(data.ytdChangeCAD)}`, color: deltaColor(data.ytdChangeCAD) },
+                { label: 'CAD Gain', value: `${data.ytdChangeCAD >= 0 ? '+' : ''}${formatPrivateMoney(data.ytdChangeCAD, formatCurrency)}`, color: deltaColor(data.ytdChangeCAD) },
             ],
             glow: changeBgGlow(data.ytdSimpleReturnPctCAD),
         },
         {
             title: 'Total Market Value',
             icon: DollarSign,
-            primary: formatCurrency(data.totalMarketValueCAD),
+            primary: formatPrivateMoney(data.totalMarketValueCAD, formatCurrency),
             primaryColor: 'text-white',
             rows: [
-                { label: 'USD', value: formatCurrency(data.totalMarketValueUSD), color: 'text-slate-300' },
+                { label: 'USD', value: formatPrivateMoney(data.totalMarketValueUSD, formatCurrency), color: 'text-slate-300' },
                 { label: 'Positions', value: `${data.positionCount}`, color: 'text-slate-400' },
             ],
             glow: '',
@@ -67,8 +70,8 @@ export default function PortfolioSummaryCards({ data }: Props) {
             primary: fmtPct(data.unrealizedGainPctUSD),
             primaryColor: deltaColor(data.unrealizedGainPctUSD),
             rows: [
-                { label: 'USD', value: `${data.unrealizedGainUSD >= 0 ? '+' : ''}${formatCurrency(data.unrealizedGainUSD)}`, color: deltaColor(data.unrealizedGainUSD) },
-                { label: 'CAD', value: `${data.unrealizedGainCAD >= 0 ? '+' : ''}${formatCurrency(data.unrealizedGainCAD)}`, color: deltaColor(data.unrealizedGainCAD) },
+                { label: 'USD', value: `${data.unrealizedGainUSD >= 0 ? '+' : ''}${formatPrivateMoney(data.unrealizedGainUSD, formatCurrency)}`, color: deltaColor(data.unrealizedGainUSD) },
+                { label: 'CAD', value: `${data.unrealizedGainCAD >= 0 ? '+' : ''}${formatPrivateMoney(data.unrealizedGainCAD, formatCurrency)}`, color: deltaColor(data.unrealizedGainCAD) },
             ],
             glow: changeBgGlow(data.unrealizedGainPctUSD),
         },
