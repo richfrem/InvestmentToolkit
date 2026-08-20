@@ -834,6 +834,12 @@
       "dst": "plugins/portfolio-advisor/skills/stock-intake/scripts/manage_watchlist.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/audit_coverage.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-coverage-audit/scripts/audit_coverage.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
     }
   ]
 }

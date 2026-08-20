@@ -162,6 +162,7 @@ export default function ScreenerTable() {
     const [filters, setFilters] = useState<Record<string, string>>({});
     const [sortCol, setSortCol] = useState<keyof ScreenerRow>('upside');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'actionable' | 'holdings' | 'watchlist' | 'gaps'>('all');
 
     const dragRef = useRef<{ colId: string; startX: number; startWidth: number } | null>(null);
 
@@ -456,13 +457,27 @@ export default function ScreenerTable() {
         return [...projectionRows, ...holdingRows];
     }, [projections, portfolioWeights, allPortfolioWeights, reviewRecommendations, allHoldings, allHoldingsMap, heatmapMap]);
 
-    const filteredRows = rows.filter(row =>
-        Object.entries(filters).every(([colId, filterVal]) => {
+    const filteredRows = rows.filter(row => {
+        // Status bar grouping filter
+        if (statusFilter === 'actionable') {
+            const act = (row.action ?? '').toUpperCase();
+            if (!['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT'].includes(act)) return false;
+        } else if (statusFilter === 'holdings') {
+            const hasWeight = (row.currentPct ?? 0) > 0 || (row.recommendedPct ?? 0) > 0;
+            if (!hasWeight) return false;
+        } else if (statusFilter === 'watchlist') {
+            if (!row.isWatched) return false;
+        } else if (statusFilter === 'gaps') {
+            const isGap = row.rowKind === 'holding' || row.currentPrice === 0 || row.fairValue == null;
+            if (!isGap) return false;
+        }
+
+        return Object.entries(filters).every(([colId, filterVal]) => {
             if (!filterVal) return true;
             const val = row[colId as keyof ScreenerRow];
             return val != null && String(val).toLowerCase().includes(filterVal.toLowerCase());
-        })
-    );
+        });
+    });
 
     const sortedRows = sortRows(filteredRows, sortCol, sortDir);
 
@@ -500,14 +515,48 @@ export default function ScreenerTable() {
         <>
         <div className="flex flex-col bg-slate-900/40 rounded-xl border border-slate-800 backdrop-blur-md h-full">
             {/* Header bar */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800 bg-slate-900/60">
+            <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-slate-800 bg-slate-900/60">
                 <div className="flex items-center gap-4">
                     <div className="p-2 bg-indigo-500/10 rounded-lg text-indigo-400">
                         <Activity size={18} />
                     </div>
                     <div>
                         <span className="text-white font-bold text-sm block">Intelligence Feed</span>
-                        <span className="text-slate-500 text-[10px] uppercase font-black tracking-widest">{sortedRows.length} Deep Dives</span>
+                        <span className="text-slate-500 text-[10px] uppercase font-black tracking-widest">{sortedRows.length} of {rows.length} Tickers</span>
+                    </div>
+
+                    {/* Status Grouping Filter Tabs */}
+                    <div className="flex items-center bg-slate-950/60 p-1 rounded-lg border border-slate-800 text-xs ml-2">
+                        <button
+                            onClick={() => setStatusFilter('all')}
+                            className={`px-2.5 py-1 rounded-md font-bold transition-all ${statusFilter === 'all' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                        >
+                            All ({rows.length})
+                        </button>
+                        <button
+                            onClick={() => setStatusFilter('actionable')}
+                            className={`px-2.5 py-1 rounded-md font-bold transition-all ${statusFilter === 'actionable' ? 'bg-cyan-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                        >
+                            ⚡ Actionable
+                        </button>
+                        <button
+                            onClick={() => setStatusFilter('holdings')}
+                            className={`px-2.5 py-1 rounded-md font-bold transition-all ${statusFilter === 'holdings' ? 'bg-emerald-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                        >
+                            💼 Core Holdings
+                        </button>
+                        <button
+                            onClick={() => setStatusFilter('watchlist')}
+                            className={`px-2.5 py-1 rounded-md font-bold transition-all ${statusFilter === 'watchlist' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                        >
+                            ⭐ Watchlist
+                        </button>
+                        <button
+                            onClick={() => setStatusFilter('gaps')}
+                            className={`px-2.5 py-1 rounded-md font-bold transition-all ${statusFilter === 'gaps' ? 'bg-amber-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                        >
+                            🚨 Needs Analysis
+                        </button>
                     </div>
                 </div>
                 

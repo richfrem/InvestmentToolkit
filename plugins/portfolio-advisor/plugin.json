@@ -85,6 +85,11 @@
             "name": "stock_intake",
             "path": "skills/stock-intake/SKILL.md",
             "trigger": "/stock-intake"
+        },
+        {
+            "name": "portfolio_coverage_audit",
+            "path": "skills/portfolio-coverage-audit/SKILL.md",
+            "trigger": "/portfolio-coverage-audit"
         }
     ],
     "agents": [
