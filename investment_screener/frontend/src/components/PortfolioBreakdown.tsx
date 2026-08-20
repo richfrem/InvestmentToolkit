@@ -15,16 +15,20 @@
  *     - PortfolioBreakdown() - Functional component that maps summary metrics into a structured comparison table
  */
 import type { PortfolioSummary } from '../services/api';
+import { usePrivacy } from '../context/PrivacyContext';
 
 interface Props {
     data: PortfolioSummary;
 }
 
-function formatCurrency(value: number): string {
-    return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
 export default function PortfolioBreakdown({ data }: Props) {
+    const { isPrivacyMode, formatPrivateMoney } = usePrivacy();
+
+    function formatCurrency(value: number): string {
+        if (isPrivacyMode) return '$••••••';
+        return `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
     const rows = [
         {
             label: 'Total Market Value',
@@ -38,8 +42,8 @@ export default function PortfolioBreakdown({ data }: Props) {
         },
         {
             label: 'Unrealized Gain/Loss',
-            usd: `${data.unrealizedGainUSD >= 0 ? '+' : ''}${formatCurrency(data.unrealizedGainUSD)}`,
-            cad: `${data.unrealizedGainCAD >= 0 ? '+' : ''}${formatCurrency(data.unrealizedGainCAD)}`,
+            usd: isPrivacyMode ? '$••••••' : `${data.unrealizedGainUSD >= 0 ? '+' : ''}${formatCurrency(data.unrealizedGainUSD)}`,
+            cad: isPrivacyMode ? '$••••••' : `${data.unrealizedGainCAD >= 0 ? '+' : ''}${formatCurrency(data.unrealizedGainCAD)}`,
             color: data.unrealizedGainUSD >= 0 ? 'text-emerald-400' : 'text-red-400',
         },
         {
@@ -49,8 +53,8 @@ export default function PortfolioBreakdown({ data }: Props) {
         },
         {
             label: 'YTD Change',
-            usd: `${data.ytdChangeUSD >= 0 ? '+' : ''}${formatCurrency(data.ytdChangeUSD)}`,
-            cad: `${data.ytdChangeCAD >= 0 ? '+' : ''}${formatCurrency(data.ytdChangeCAD)}`,
+            usd: isPrivacyMode ? '$••••••' : `${data.ytdChangeUSD >= 0 ? '+' : ''}${formatCurrency(data.ytdChangeUSD)}`,
+            cad: isPrivacyMode ? '$••••••' : `${data.ytdChangeCAD >= 0 ? '+' : ''}${formatCurrency(data.ytdChangeCAD)}`,
             color: data.ytdChangeCAD >= 0 ? 'text-emerald-400' : 'text-red-400',
         },
     ];
