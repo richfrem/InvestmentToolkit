@@ -468,7 +468,8 @@ export default function ScreenerTable() {
         for (const row of rows) {
             const act = (row.action ?? '').toUpperCase();
             if (['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT'].includes(act)) actionable++;
-            if ((row.currentPct ?? 0) > 0 || (row.recommendedPct ?? 0) > 0) holdings++;
+            // Core holdings are strictly stocks currently held in accounts (currentPct > 0)
+            if ((row.currentPct ?? 0) > 0) holdings++;
             if (row.isWatched) watchlist++;
             if (row.rowKind === 'holding' || row.currentPrice === 0 || row.fairValue == null) gaps++;
         }
@@ -482,8 +483,8 @@ export default function ScreenerTable() {
             const act = (row.action ?? '').toUpperCase();
             if (!['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT'].includes(act)) return false;
         } else if (statusFilter === 'holdings') {
-            const hasWeight = (row.currentPct ?? 0) > 0 || (row.recommendedPct ?? 0) > 0;
-            if (!hasWeight) return false;
+            // Core holdings strictly require an active funded position (currentPct > 0)
+            if ((row.currentPct ?? 0) <= 0) return false;
         } else if (statusFilter === 'watchlist') {
             if (!row.isWatched) return false;
         } else if (statusFilter === 'gaps') {
@@ -791,7 +792,8 @@ export default function ScreenerTable() {
                                         );
                                     } else if (col.id === 'action') {
                                         const tip = row.portfolioRationale;
-                                        const isGap = row.rowKind === 'holding' || row.currentPrice === 0 || row.fairValue == null;
+                                        const isFunded = (row.currentPct ?? 0) > 0;
+                                        const isGap = !isFunded && (row.currentPrice === 0 || row.fairValue == null);
                                         const rating = ['INITIATE', 'ACCUMULATE', 'BUY'].includes(String(val).toUpperCase())
                                             ? 'BUY'
                                             : ['TRIM', 'EXIT', 'SELL'].includes(String(val).toUpperCase())
@@ -809,7 +811,10 @@ export default function ScreenerTable() {
                                                 ) : (
                                                     <span className="text-slate-600 text-[10px]">—</span>
                                                 )}
-                                                {!isGap && (
+                                                {isFunded && (
+                                                    <TradeButtons ticker={row.symbol} size="sm" rating={rating} />
+                                                )}
+                                                {!isFunded && !isGap && (
                                                     <TradeButtons ticker={row.symbol} size="sm" rating={rating} />
                                                 )}
                                                 {isGap && (
