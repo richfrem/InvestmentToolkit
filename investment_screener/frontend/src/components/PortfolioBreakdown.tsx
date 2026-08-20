@@ -22,7 +22,7 @@ interface Props {
 }
 
 export default function PortfolioBreakdown({ data }: Props) {
-    const { isPrivacyMode, formatPrivateMoney } = usePrivacy();
+    const { isPrivacyMode } = usePrivacy();
 
     function formatCurrency(value: number): string {
         if (isPrivacyMode) return '$••••••';
