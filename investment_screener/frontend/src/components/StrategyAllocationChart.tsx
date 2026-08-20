@@ -81,7 +81,8 @@ function color(id: string, mode: GroupBy): string {
 
 // ── formatting ────────────────────────────────────────────────────────────────
 
-function fmtCAD(v: number, compact = false): string {
+function fmtCAD(v: number, compact = false, isPrivacy = false): string {
+    if (isPrivacy) return 'CA$••••';
     if (compact && Math.abs(v) >= 1_000) return `CA$${Math.round(v / 1_000)}k`;
     if (Math.abs(v) >= 1_000) return `CA$${Math.round(v).toLocaleString()}`;
     return `CA$${v.toFixed(0)}`;
@@ -158,10 +159,6 @@ export default function StrategyAllocationChart({ data, totalCAD, usdCadRate }: 
     const [groupBy, setGroupBy] = useState<GroupBy>('pillar');
     const [selectedId, setSelectedId] = useState<string | null>(null);
 
-    function fmtCAD(val: number): string {
-        if (isPrivacyMode) return 'CA$••••••';
-        return `CA$${Math.round(val).toLocaleString()}`;
-    }
     const donutWrapRef    = useRef<HTMLDivElement>(null);
     const holdingsWrapRef = useRef<HTMLDivElement>(null);
     const donutSvgRef     = useRef<SVGSVGElement>(null);
@@ -234,7 +231,7 @@ export default function StrategyAllocationChart({ data, totalCAD, usdCadRate }: 
 
         const cValue = g.append('text').attr('text-anchor', 'middle').attr('y', 4)
             .attr('fill', '#f1f5f9').attr('font-size', '18px').attr('font-weight', '700')
-            .text(selD ? fmtCAD(selD.valueUSD * usdCadRate) : fmtCAD(totalCAD));
+            .text(selD ? fmtCAD(selD.valueUSD * usdCadRate, false, isPrivacyMode) : fmtCAD(totalCAD, false, isPrivacyMode));
 
         const cPct = g.append('text').attr('text-anchor', 'middle').attr('y', 21)
             .attr('fill', '#64748b').attr('font-size', '11px')
@@ -250,7 +247,7 @@ export default function StrategyAllocationChart({ data, totalCAD, usdCadRate }: 
                 if (d.data.id !== selectedId)
                     d3.select(this).raise().transition().duration(90).attr('d', arcActive(d) ?? '');
                 cTitle.text(shortLabel(d.data.id, d.data.name, groupBy).toUpperCase());
-                cValue.text(fmtCAD(d.data.valueUSD * usdCadRate));
+                cValue.text(fmtCAD(d.data.valueUSD * usdCadRate, false, isPrivacyMode));
                 cPct.text(`${d.data.pct.toFixed(1)}%`);
             })
             .on('mouseleave', function(_ev, d) {
@@ -258,7 +255,7 @@ export default function StrategyAllocationChart({ data, totalCAD, usdCadRate }: 
                     d3.select(this).transition().duration(90).attr('d', arc(d) ?? '');
                 const s = selectedId ? chartData.find(x => x.id === selectedId) : null;
                 cTitle.text(s ? shortLabel(s.id, s.name, groupBy).toUpperCase() : 'PORTFOLIO');
-                cValue.text(s ? fmtCAD(s.valueUSD * usdCadRate) : fmtCAD(totalCAD));
+                cValue.text(s ? fmtCAD(s.valueUSD * usdCadRate, false, isPrivacyMode) : fmtCAD(totalCAD, false, isPrivacyMode));
                 cPct.text(s ? `${s.pct.toFixed(1)}%` : '');
             })
             .on('click', (_ev, d) => setSelectedId(p => p === d.data.id ? null : d.data.id));
@@ -396,7 +393,7 @@ export default function StrategyAllocationChart({ data, totalCAD, usdCadRate }: 
         rows.append('text')
             .attr('x', LABEL_W + BAR_AREA + 8).attr('y', ROW_H / 2 + 4)
             .attr('fill', '#94a3b8').attr('font-size', '10.5px')
-            .text(d => fmtCAD(d.valueUSD * usdCadRate, true));
+            .text(d => fmtCAD(d.valueUSD * usdCadRate, true, isPrivacyMode));
 
         rows.append('text')
             .attr('x', W - 6).attr('y', ROW_H / 2 + 4)
