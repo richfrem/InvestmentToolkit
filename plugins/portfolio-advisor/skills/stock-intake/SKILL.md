@@ -66,8 +66,19 @@ PYTHONPATH=investment_screener/backend/py_services python3 -m intelligence.view_
 ```
 
 ### Step 5: Dual Persistence to SQLite & JSON
-1. Insert into `domain_model.sqlite` (`investment`, `investment_price`, `projection_version`, `projection_scenario`).
-2. Write `investment_screener/backend/data/projections/{TICKER}.json`.
+1. Use the canonical `manage_watchlist.py` script to register the stock in `domain_model.sqlite`:
+```bash
+python3 investment_screener/backend/py_services/manage_watchlist.py \
+  --add {TICKER} \
+  --name "{COMPANY_NAME}" \
+  --pillar {PILLAR_ID} \
+  --sub-strategy {SUB_STRATEGY_ID} \
+  --price {PRICE} \
+  --sector "{SECTOR}" \
+  --industry "{INDUSTRY}" \
+  --projection-id "{PROJECTION_ID}"
+```
+2. Write `investment_screener/backend/data/projections/{TICKER}.json` with `source: "AI_AGENT"`.
 
 ---
 

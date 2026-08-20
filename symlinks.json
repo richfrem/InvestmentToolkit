@@ -822,6 +822,12 @@
       "dst": "plugins/toolkit-manager/references/data-architecture/supplementary-domain-schemas.md",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/manage_watchlist.py",
+      "dst": "investment_screener/backend/py_services/manage_watchlist.py",
+      "strategy": "symlink",
+      "description": "Canonical watchlist management script"
     }
   ]
 }
