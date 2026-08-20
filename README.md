@@ -2,14 +2,16 @@
 
 An institutional-grade portfolio management and automated research suite built natively around the TradingView Desktop application. Designed for advanced power users, this toolkit combines **TradingView CDP visual/chart automation** with an **Agentic AI operating system**—enabling autonomous research, multi-scenario DCF valuation, adversarial portfolio audits, and human-supervised portfolio synchronization.
 
-> [!NOTE]
-> ### 🛡️ TradingView Terms of Use & Human-in-the-Loop (HITL) Compliance
-> Under **TradingView's Terms of Use (Section on Prohibited Non-Display Usage)**, market data, charts, and third-party tools are licensed for personal or internal display purposes, and unattended "black-box" headless algorithmic trading is strictly prohibited.
->
-> **How InvestmentToolkit Aligns with TradingView ToS:**
-> 1. **100% Human-in-the-Loop (HITL):** InvestmentToolkit is **not** an unattended bot. AI agents generate advisory research and order staging calculations; every order is reviewed and confirmed interactively by the human user on screen (via `TradePrepModal` or the active TradingView Desktop GUI).
-> 2. **Personal Display & Local Workstation:** All CDP automation runs locally on the user's licensed workstation in direct coordination with the visible TradingView Desktop application for personal display and portfolio tracking.
-> 3. **No Autonomous Headless Execution:** AI agents are strictly forbidden from placing live broker orders autonomously in the background. See [`.agent/rules/trade-execution-policy.md`](file:///.agent/rules/trade-execution-policy.md).
+> [!TIP]
+> ### ✅ 100% Fully Compliant: Human-in-the-Loop (HITL) Architecture
+> **InvestmentToolkit is strictly an interactive decision-support system, NOT an unattended bot.**
+> * **Active Human Review & Approval:** Every trade calculation (shares, limit price, sizing) is staged interactively on your screen (via `TradePrepModal` or the active TradingView Desktop GUI). **No order is ever placed without the human user reviewing, accepting, and confirming it.**
+> * **Personal Display & Local Workstation:** All CDP automation runs on your local licensed workstation directly alongside your active TradingView Desktop display for personal portfolio tracking and visual analysis.
+> * **No Unattended Auto-Trading:** Background AI agents and scripts are strictly forbidden from placing live orders autonomously while unattended. See [`.agent/rules/trade-execution-policy.md`](file:///.agent/rules/trade-execution-policy.md).
+
+> [!WARNING]
+> ### ⚠️ Notice Regarding TradingView Terms of Use (Prohibited Non-Display Usage)
+> TradingView’s Terms of Use strictly prohibit **headless, unattended "black-box" algorithmic trading and third-party automated execution APIs** operating without direct human display interaction. InvestmentToolkit's architecture explicitly adheres to these terms by enforcing a 100% human-supervised workflow.
 
 ---
 
