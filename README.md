@@ -19,22 +19,22 @@ An institutional-grade portfolio management and automated research suite built n
 
 | **Live Stock Heatmap** | **Portfolio Summary & Allocation** |
 | :---: | :---: |
-| ![Live Stock Heatmap](screenshots/2026-08-20-01-stock-heatmap.png) | ![Portfolio Summary](screenshots/2026-08-20-02-portfolio-summary.png) |
+| ![Live Stock Heatmap](screenshots/stock-heatmap.png) | ![Portfolio Summary](screenshots/portfolio-summary.png) |
 | *Real-time performance treemap across technology, power, compute, and sovereign finance sectors.* | *Strategy allocation donut, time-weighted returns, and cross-account KPI rollups.* |
 
 | **Portfolio Advisor & Intelligence Feed** | **Full 24-Position Portfolio Table** |
 | :---: | :---: |
-| ![Portfolio Advisor](screenshots/2026-08-20-04-screener-advisor.png) | ![Portfolio Table](screenshots/2026-08-20-03-portfolio-table.png) |
+| ![Portfolio Advisor](screenshots/screener-advisor.png) | ![Portfolio Table](screenshots/portfolio-table.png) |
 | *Dynamic status filter tabs (All 101, Actionable 15, Core Holdings 24, Watchlist 70, Needs Analysis 100) & intake.* | *Per-holding target vs actual weights, gain/loss metrics, and single-click staging.* |
 
 | **Stock Analysis & Thesis Tiers (SNDK)** | **Interactive 5-Year DCF Modeler** |
 | :---: | :---: |
-| ![Stock Analysis](screenshots/2026-08-20-05-sndk-stock-analysis.png) | ![DCF Modeler](screenshots/2026-08-20-07-sndk-valuation-modeler.png) |
+| ![Stock Analysis](screenshots/stock-analysis-overview.png) | ![DCF Modeler](screenshots/dcf-valuation-modeler.png) |
 | *AI Thesis Buy/Accumulate tiers, Trim targets, stop loss triggers, and financial scorecard.* | *Multi-scenario (Bear/Base/Bull) DCF projection modeler with real-time sensitivity matrix.* |
 
 | **Daily Portfolio Brief & Morning Triage** | **Institutional 13F Filing Diff (SA LP)** |
 | :---: | :---: |
-| ![Daily Brief](screenshots/2026-08-20-08-daily-brief.png) | ![13F Filing Diff](screenshots/2026-08-20-12-13f-filing-view.png) |
+| ![Daily Brief](screenshots/daily-portfolio-brief.png) | ![13F Filing Diff](screenshots/13f-institutional-filings.png) |
 | *Morning macro regime check, binary earnings events, and ranked urgency triage cards.* | *Institutional quarter-over-quarter 13F diff tracker (Q2 2026 Long/Put barbell analysis).* |
 
 ---
