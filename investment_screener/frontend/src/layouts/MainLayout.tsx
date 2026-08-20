@@ -15,10 +15,13 @@
  */
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import { usePrivacy } from '../context/PrivacyContext';
 
 export default function MainLayout() {
+    const { isPrivacyMode } = usePrivacy();
+
     return (
-        <div className="min-h-screen bg-background text-text flex">
+        <div className={`min-h-screen bg-background text-text flex ${isPrivacyMode ? 'privacy-mode' : ''}`}>
             {/* Sidebar */}
             <Sidebar />
 

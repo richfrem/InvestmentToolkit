@@ -9,10 +9,11 @@
  * Layer: Frontend / UI / Layout
  */
 import { useState, useEffect } from 'react';
-import { Settings, History, Grid3X3, BarChart3, Search, RefreshCcw, TableProperties, PieChart, ScrollText, FileText, BookOpen, Zap } from 'lucide-react';
+import { Settings, History, Grid3X3, BarChart3, Search, RefreshCcw, TableProperties, PieChart, ScrollText, FileText, BookOpen, Zap, Eye, EyeOff } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useRecentTickers } from '../hooks/useRecentTickers';
 import { syncAndRefreshPortfolio, fetchSyncStatus } from '../services/api';
+import { usePrivacy } from '../context/PrivacyContext';
 
 const NAV_ITEMS = [
     { name: 'Heatmap',          icon: Grid3X3,        path: '/' },
@@ -29,6 +30,7 @@ const NAV_ITEMS = [
 export default function Sidebar() {
     const { recentTickers } = useRecentTickers();
     const navigate = useNavigate();
+    const { isPrivacyMode, togglePrivacyMode } = usePrivacy();
     const [isSyncing, setIsSyncing] = useState(false);
     const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
     const [lastSync, setLastSync] = useState<string | null>(null);
@@ -159,8 +161,19 @@ export default function Sidebar() {
                 </div>
             )}
 
-            {/* Settings — bottom */}
-            <div className="px-3 pb-3 border-t border-slate-800 pt-2">
+            {/* Settings & Privacy Toggle — bottom */}
+            <div className="px-3 pb-3 border-t border-slate-800 pt-2 space-y-1">
+                <button
+                    onClick={togglePrivacyMode}
+                    className={`flex items-center gap-3 px-4 py-2 rounded-lg w-full transition-colors text-sm font-medium ${
+                        isPrivacyMode ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                    }`}
+                    title={isPrivacyMode ? 'Disable Privacy / Demo Mode' : 'Enable Privacy / Demo Mode (Mask Balances)'}
+                >
+                    {isPrivacyMode ? <EyeOff size={17} className="text-amber-400" /> : <Eye size={17} />}
+                    <span className="text-xs">{isPrivacyMode ? 'Demo Mode (Active)' : 'Privacy / Demo'}</span>
+                </button>
+
                 <NavLink to="/settings" className={navCls}>
                     <Settings size={18} />
                     <span>Settings</span>

@@ -23,6 +23,7 @@ import { PriceSourceBadge } from './PriceSourceBadge';
 import { TradeButtons } from './TradeButtons';
 import { TradeLogModal } from './TradeLogModal';
 import { safeNum, fmtPct, fmtDollar, fmtPrice, changeBgDaily, sortByColumn } from '../utils/formatters';
+import { usePrivacy } from '../context/PrivacyContext';
 
 function computeSuggestedShares(currentPct: number | null, targetPct: number | null, price: number | null, totalValue: number): number {
     if (!currentPct || !targetPct || !price || totalValue <= 0) return 1;
@@ -449,7 +450,9 @@ export default function PortfolioTable() {
 
     if (!data) return null;
 
-    // ── Render ───────────────────────────────────────────────────────────────
+    const { isPrivacyMode, formatPrivateMoney } = usePrivacy();
+
+    // ─── Filter & Sort ────────────────────────────────────────────────────────
 
     return (
         <>
@@ -625,9 +628,15 @@ export default function PortfolioTable() {
                                                 ) : col.id === 'name' ? (
                                                     <span className="text-zinc-300 text-xs">{val}</span>
                                                 ) : col.isChange ? (
-                                                    <span className="font-semibold text-xs text-white">{col.format(val)}</span>
+                                                    <span className="font-semibold text-xs text-white">
+                                                        {col.id === 'gainLoss' && isPrivacyMode ? '$••••' : col.format(val)}
+                                                    </span>
                                                 ) : (
-                                                    <span className="text-zinc-300">{col.format(val)}</span>
+                                                    <span className="text-zinc-300">
+                                                        {(col.id === 'total_market' || col.id === 'total_book' || col.id === 'fairValue' || col.id === 'bear' || col.id === 'base' || col.id === 'bull') && isPrivacyMode
+                                                            ? '$••••'
+                                                            : col.format(val)}
+                                                    </span>
                                                 )}
                                             </td>
                                         );
@@ -662,10 +671,10 @@ export default function PortfolioTable() {
                             {visibleCols.map((col, i) => {
                                 let content = '';
                                 if (col.id === 'symbol') content = 'TOTAL';
-                                else if (col.id === 'total_market') content = fmtDollar(data.total_value);
+                                else if (col.id === 'total_market') content = isPrivacyMode ? '$••••••' : fmtDollar(data.total_value);
                                 else if (col.id === 'total_book') {
                                     const tb = rows.reduce((s, r) => r.total_book != null ? s + r.total_book : s, 0);
-                                    content = tb > 0 ? fmtDollar(tb) : '—';
+                                    content = tb > 0 ? (isPrivacyMode ? '$••••••' : fmtDollar(tb)) : '—';
                                 } else if (col.id === 'currentPct') {
                                     const tot = rows.reduce((s, r) => r.currentPct != null ? s + r.currentPct : s, 0);
                                     content = tot > 0 ? `${tot.toFixed(2)}%` : '—';

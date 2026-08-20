@@ -22,6 +22,7 @@ import PortfolioTablePage from './pages/PortfolioTablePage';
 import PortfolioSummaryPage from './pages/PortfolioSummaryPage';
 
 import { HelpModalProvider } from './components/HelpModal';
+import { PrivacyProvider } from './context/PrivacyContext';
 
 import ScreenerPage from './pages/ScreenerPage';
 import TradeLog from './pages/TradeLog';
@@ -31,24 +32,26 @@ import DailyBriefPage from './pages/DailyBriefPage';
 
 function App() {
   return (
-    <HelpModalProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<MainLayout />}>
-            <Route index element={<Heatmap />} />
-            <Route path="portfolio-summary" element={<PortfolioSummaryPage />} />
-            <Route path="portfolio-table" element={<PortfolioTablePage />} />
-            <Route path="screener" element={<ScreenerPage />} />
-            <Route path="analysis" element={<Dashboard />} />
-            <Route path="trade-log" element={<TradeLog />} />
-            <Route path="theses" element={<ThesesPage />} />
-            <Route path="13f" element={<ThirteenFPage />} />
-            <Route path="daily-brief" element={<DailyBriefPage />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </HelpModalProvider>
+    <PrivacyProvider>
+      <HelpModalProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<MainLayout />}>
+              <Route index element={<Heatmap />} />
+              <Route path="portfolio-summary" element={<PortfolioSummaryPage />} />
+              <Route path="portfolio-table" element={<PortfolioTablePage />} />
+              <Route path="screener" element={<ScreenerPage />} />
+              <Route path="analysis" element={<Dashboard />} />
+              <Route path="trade-log" element={<TradeLog />} />
+              <Route path="theses" element={<ThesesPage />} />
+              <Route path="13f" element={<ThirteenFPage />} />
+              <Route path="daily-brief" element={<DailyBriefPage />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </HelpModalProvider>
+    </PrivacyProvider>
   );
 }
 
