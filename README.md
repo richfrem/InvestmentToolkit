@@ -1,6 +1,15 @@
 # InvestmentToolkit
 
-An institutional-grade portfolio management and automated execution suite built natively around the TradingView Desktop application. Designed for advanced power users, this toolkit bridges the gap between charting and execution by combining **direct TradingView CDP/JavaScript automation** with an **Agentic AI operating system**—enabling autonomous research, multi-scenario DCF valuation, adversarial portfolio audits, and live broker execution without legacy terminal subscriptions.
+An institutional-grade portfolio management and automated research suite built natively around the TradingView Desktop application. Designed for advanced power users, this toolkit combines **TradingView CDP visual/chart automation** with an **Agentic AI operating system**—enabling autonomous research, multi-scenario DCF valuation, adversarial portfolio audits, and human-supervised portfolio synchronization.
+
+> [!WARNING]
+> ### ⚠️ TradingView Terms of Service & Automated Trading Disclaimer
+> Under **TradingView's Terms of Use (Section on Prohibited Non-Display Usage)**, market data, charts, webhooks, and third-party tools are licensed strictly for personal or internal display purposes. **Automated order generation, third-party API trade execution, and headless algorithmic trading without direct human display interaction are strictly prohibited by TradingView.**
+>
+> In compliance with TradingView's policies:
+> 1. **No Autonomous AI Execution:** AI agents are strictly prohibited from submitting, modifying, or executing live broker orders autonomously.
+> 2. **Human-in-the-Loop (HITL) Only:** Order preparation tools (such as `TradePrepModal` or staging scripts) only generate human-readable order summaries. All final order placement, confirmation, and broker execution **must be performed manually by the human user directly inside the official broker interface or authorized TradingView Desktop application.**
+> 3. **Read-Only / Display Compliance:** CDP automation is restricted to display monitoring, chart visual inspection, technical indicator reads, and portfolio balance synchronization for the user's personal display.
 
 ---
 
