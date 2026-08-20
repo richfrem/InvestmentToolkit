@@ -67,17 +67,20 @@ InvestmentToolkit/                         ← repo root
 │   │   └── skills/stock_valuation/scripts/
 │   │       └── validate_projection.py
 │   ├── portfolio-advisor/                ← drift monitor, triage, rebalance, Grok sweeps
-│   │   ├── agents/                       ← daily-loop-agent.md, weekly-review-agent.md
-│   │   ├── scripts/                      ← daily_brief.py, update_targets.py, portfolio_action.py
+│   │   ├── agents/                       ← daily-loop-agent.md, portfolio-advisor-orchestrator.md
+│   │   ├── skills/                       ← stock-intake, portfolio-coverage-audit, weekly-review, etc.
+│   │   ├── scripts/                      ← audit_coverage.py, manage_watchlist.py, daily_brief.py
 │   │   └── assets/templates/            ← daily_sweep.md.template, weekly_sweep.md.template
 │   ├── tradingview/                      ← CDP automation skills
-│   │   ├── scripts/                      ← tv_client.py (CDP bridge), tv_launch.py,
-│   │   │                                    ta_sweep_batch.py, fetch_broker_data.py, place_order.py
+│   │   ├── agents/                       ← ta-guide.md
+│   │   ├── skills/                       ← tv-onboarding, tv-price-refresh, tv-portfolio-sync, etc.
+│   │   ├── scripts/                      ← tv_client.py, ta_sweep_batch.py, fetch_broker_data.py
 │   │   ├── assets/pinescript-indicators/ ← ai-ta-levels.pine, community-reference/
 │   │   └── tests/                        ← test_pine_advisor_skill.py, tv_test_harness.py
 │   ├── toolkit-manager/                  ← onboarding, startup orchestration
-│   ├── etf-analysis/                     ← ETF holdings alignment + dual-write
-│   └── stock-valuation/
+│   │   └── skills/                       ← toolkit-onboarding, run-screener
+│   └── etf-analysis/                     ← ETF holdings alignment + dual-write
+│       └── skills/                       ← etf_analysis
 │
 ├── .agents/                               ← multi-tool skill/agent store (Claude, Gemini, Copilot)
 │   ├── skills/                           ← project-local skills

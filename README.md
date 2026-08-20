@@ -10,94 +10,70 @@ The true power of this repository is not just the frontend UI—it is the **Agen
 
 ### 1. Master Setup (New Users — Start Here)
 
-> **"Help me set up the toolkit"**
-> 
+> **`/toolkit-onboarding`** or **"Help me set up the toolkit"**
 
-Runs the **`toolkit-onboarding-guide`** agent. This master coordinator checks your dependencies, runs the startup script, and routes you directly to the TradingView setup agent.
+Runs the **`toolkit-onboarding`** skill. This coordinator checks your dependencies, initializes private data templates, and guides you into the application.
 
 ### 2. TradingView Setup (Primary Data + Execution Layer)
 
-> **"Set up TradingView for me"**
-> 
+> **`/tv-onboarding`** or **"Set up TradingView for me"**
 
-Runs the **`tradingview-onboarding`** agent. This deep-dive guide covers:
+Runs the **`tv-onboarding`** skill. This deep-dive guide covers:
 
 1. TradingView Desktop install check
-
-
 2. Subscription tier verification (Premium recommended for real-time data)
-
-
 3. Broker panel connection inside TradingView (no separate API credentials needed)
-
-
-4. CDP health check and broker data verification
-
-
+4. CDP health check and remote debugging port 9222 verification
 5. First `/tv-portfolio-sync` — pulls live positions from all accounts (TFSA + RRSP + Cash)
-
-
 
 ### 3. Returning Users Quick Start
 
 ```bash
 python3 run_investment_toolkit.py
-
 ```
 
 This automatically starts the backend, frontend, and TradingView Desktop with CDP debugging enabled.
 
-Then, ask your agent to run: `/tv-portfolio-sync`
+Then, ask your agent to run: `/tv-portfolio-sync` or `/daily`
 
 ---
 
 ## 🧩 AI Agent Plugins & Skills
 
-All agent tooling is organized as portable plugins inside the `plugins/` directory and loaded as skills within `.agents/`. You must have a **Pro-tier AI subscription** to utilize the full autonomous research and execution loops.
+All agent tooling is organized as portable plugins inside the `plugins/` directory and loaded natively as on-demand skills in `.agents/skills/`.
 
 ### 1. Portfolio Advisor (`plugins/portfolio-advisor`)
 
 An adversarial suite that acts as a hedge fund auditor. It challenges your bull cases, flags failing investment pillars, and proposes weight changes based on real-time drift.
 
-* **Daily command**: `/daily` — one interactive loop: portfolio sync → morning brief (macro + TA + DCF + earnings) → ranked triage cards → trade execution → self-evolution log. Replaces the 10-step manual checklist.
-
-
-* **Other skills**: `/review-portfolio`, `/strategic-review`, `/rebalance`, `/calibrate-targets`, `/update-portfolio-targets`, `/x-news-sweep`, `/bundle-thesis-review`, `/13f-tracker`, `/13f-analyze`, `/run-advisor` (post-catalyst orchestrator)
-
-
+* **Daily command**: `/daily` — one interactive loop: portfolio sync → morning brief (macro + TA + DCF + earnings) → ranked triage cards → trade execution → self-evolution log.
+* **Intake & Audit**: `/stock-intake` (automated 5-in-1 discovery & intake), `/portfolio-coverage-audit` (audit analysis gaps across watchlist), `/data-quality-audit` (database integrity checks).
+* **Research & Rebalancing**: `/review-portfolio`, `/strategic-review`, `/rebalance`, `/calibrate-targets`, `/update-portfolio-targets`, `/x-news-sweep`, `/weekly-review`, `/bundle-thesis-review`, `/13f-tracker`, `/13f-analyze`, `/norberts-gambit`, `/ytd-return`, `/run-advisor` (post-catalyst orchestrator).
 
 ### 2. Stock Valuation Analyst (`plugins/stock-valuation`)
 
-An autonomous buy-side analyst. Fetches real-time financial data, builds Bear/Base/Bull DCF scenarios, and generates fair value recommendations (BUY/HOLD/SELL).
+An autonomous buy-side analyst. Fetches real-time financial data, builds Bear/Base/Bull DCF scenarios, and generates fair value recommendations.
 
-* **Commands/Skills**: `/evaluate-stock`, `/research-stock`, `/forward-valuation-challenge`, `/valuation-math-validation`
-
+* **Skills**: `/evaluate-stock`, `/research-stock`, `/forward-valuation-challenge`, `/valuation-math-validation`
 
 ### 3. ETF Analysis (`plugins/etf-analysis`)
 
 Purpose-built for thematic, closed-end, and cash fund ETFs.
 
-* **Commands/Skills**: `/analyze-etf`
-
+* **Skills**: `/analyze-etf`
 
 ### 4. TradingView Integration (`plugins/tradingview` + `tradingview-cdp/`)
 
-TradingView Desktop is the primary layer for live prices, portfolio sync, order execution, Pine Script authoring, and deep technical analysis via CDP (Chrome DevTools Protocol) automation. The Node.js CDP engine lives at `tradingview-cdp/` (repo root) as a shared runtime installed once via `cd tradingview-cdp && npm ci`.
+TradingView Desktop is the primary layer for live prices, portfolio sync, order execution, Pine Script authoring, and deep technical analysis via CDP (Chrome DevTools Protocol) automation.
 
-* **Commands/Skills**: `/setup-tradingview`, `/tv-portfolio-sync`, `/tv-watchlist-sync`, `/place-order`, `/modify-order`, `/cancel-order`, `/get-orders`, `/tv-alert-sync`, `/tv-price-refresh`, `/tv-snapshot`, `/pine-inject`, `/author-pine-script`, `/tv-ta-deep`
-
-* **Agents**: `ta-guide` — interactive TA tutor and Pine Script architect; walks users through live chart analysis step-by-step, builds the required indicator view, authors custom Pine Script v6 indicators, and submits recommendations through adversarial red-team review
-
-
-* **Pine Script tools**: `pine_linter.py` (static v6 linter — version, declaration, lookahead, drawing-var checks), `pine_source_reader.py` (fetch any community indicator's source directly from TV's Indicators dialog)
-
-
+* **Skills**: `/setup-tradingview`, `/tv-onboarding`, `/tv-portfolio-sync`, `/tv-watchlist-sync`, `/place-order`, `/modify-order`, `/cancel-order`, `/get-orders`, `/tv-alert-sync`, `/tv-price-refresh`, `/tv-snapshot`, `/pine-inject`, `/author-pine`, `/tv-ta-deep`, `/ta-daily-sweep`
+* **Agents**: `ta-guide` — interactive TA tutor and Pine Script architect; walks users through live chart analysis step-by-step and builds custom indicator views.
 
 ### 5. Toolkit Manager (`plugins/toolkit-manager`)
 
-Orchestrator for managing server startup.
+Orchestrator for managing server startup and onboarding.
 
-* **Commands/Skills**: `/start-screener`
+* **Skills**: `/start-screener`, `/toolkit-onboarding`
 
 
 ---
