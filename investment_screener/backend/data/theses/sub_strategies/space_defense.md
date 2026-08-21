@@ -94,13 +94,13 @@ OR upon a thesis confirmation event: Neutron orbital success (RKLB), ASTS commer
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-08-20 07:58 by TV sync · Portfolio total: $32,685 USD*
+*Auto-updated 2026-08-21 08:03 by TV sync · Portfolio total: $32,723 USD*
 
 **Active Positions**
 
 | Ticker | Shares | Actual% | Target% | Gap | Action | Entry Price |
 |--------|--------|---------|---------|-----|--------|-------------|
-| **SPCX** | 0 | 4.1% | 2.9% | +1.2pp | 🟡 TRIM | — |
+| **SPCX** | 0 | 4.1% | 4.1% | +0.0pp | ⚪ MAINTAIN | — |
 
 **Pending Initiation**
 
@@ -108,5 +108,5 @@ OR upon a thesis confirmation event: Neutron orbital success (RKLB), ASTS commer
 |--------|--------|---------|---------|-----|--------|-------------|
 | **CACI** | — | — | 0.0% | — | 🟢 INITIATE | — |
 
-**Pillar total — Actual: 4.1% · Target: 2.9% · Gap: +1.2pp**
+**Pillar total — Actual: 4.1% · Target: 4.1% · Gap: +0.0pp**
 <!-- AUTO_UPDATE_END: current_positions -->
