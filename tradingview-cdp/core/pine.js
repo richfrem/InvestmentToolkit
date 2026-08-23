@@ -223,21 +223,41 @@ export async function injectPineScript(client, scriptContent) {
     await new Promise(r => setTimeout(r, 1200));
 
     // 6. Close Pine Editor panel after adding to chart (clean workspace view)
-    await client.Runtime.evaluate({
+    const closeCoords = await client.Runtime.evaluate({
       expression: `(function() {
         var ed = document.querySelector('.pine-editor-monaco');
-        var btn = document.querySelector('[data-name="pine-dialog-button"]') ||
-                  [...document.querySelectorAll('button')].find(function(b) {
-                    return b.offsetParent && (b.textContent.trim() === 'Pine Editor' || b.getAttribute('aria-label') === 'Pine Editor');
-                  });
-        // If Pine Editor is still visible/expanded, click button to collapse it
-        if (ed && ed.offsetParent && btn) {
-          btn.click();
+        if (!ed || !ed.offsetParent) return null;
+
+        // Try 1: Panel close button (top-right of pane or dialog)
+        var closeBtn = document.querySelector('button[aria-label="Close"]') ||
+                       document.querySelector('button[title="Close"]') ||
+                       document.querySelector('button[data-name="close"]');
+        if (closeBtn && closeBtn.offsetParent) {
+          var r = closeBtn.getBoundingClientRect();
+          return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
         }
+
+        // Try 2: Bottom bar toggle button
+        var bottomBtn = document.querySelector('[data-name="pine-dialog-button"]') ||
+                        [...document.querySelectorAll('button')].find(function(b) {
+                          return b.offsetParent && (b.textContent.trim() === 'Pine Editor' || b.getAttribute('aria-label') === 'Pine Editor');
+                        });
+        if (bottomBtn && bottomBtn.offsetParent) {
+          var r2 = bottomBtn.getBoundingClientRect();
+          return { x: r2.x + r2.width / 2, y: r2.y + r2.height / 2 };
+        }
+
+        return null;
       })()`,
       returnByValue: true,
       awaitPromise: false,
     });
+
+    if (closeCoords.result.value) {
+      const { x, y } = closeCoords.result.value;
+      await client.Input.dispatchMouseEvent({ type: 'mousePressed', x, y, button: 'left', clickCount: 1 });
+      await client.Input.dispatchMouseEvent({ type: 'mouseReleased', x, y, button: 'left', clickCount: 1 });
+    }
     await new Promise(r => setTimeout(r, 500));
 
     return { success: true };
