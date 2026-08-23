@@ -1,27 +1,21 @@
 #!/usr/bin/env python3
 """
-tv_create_alerts.py - Create TradingView price alerts from DCF projection JSONs.
+tv_create_alerts.py - Create and reconcile TradingView price alerts from SQLite levels.
 
 Usage:
     python3 tv_create_alerts.py                    # all holdings with projections
     python3 tv_create_alerts.py --ticker CRWV      # single ticker
     python3 tv_create_alerts.py --dry-run          # print what would be created
-
-For each ticker, reads the latest AI_AGENT entry in the projection JSON and
-creates alerts at the bear / base / bull scenarioPrice levels plus the
-weighted fair value (aiThesis.fairValue).
-
-CLI syntax (tradingview-cdp/cli.js):
-    node <CLI> alert create --price PRICE --condition crossing --message MESSAGE
+    python3 tv_create_alerts.py --reconcile        # diff active TV alerts against target levels
 
 Requires TradingView Desktop running with --remote-debugging-port=9222.
-Prints a warning and skips the ticker if TradingView is not reachable.
 """
 
 import sys
 import json
 import argparse
 from pathlib import Path
+from typing import Dict, Any, List, Tuple, Optional
 
 def _find_scripts_dir() -> Path:
     here = Path(__file__).resolve().parent
@@ -47,23 +41,18 @@ from domain_model.projection_repository import (  # noqa: E402
     list_symbols_with_projections,
 )
 from domain_model.price_level_repository import get_price_levels  # noqa: E402
+from ticker_aliases import normalize_ticker  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def load_latest_ai_entry(ticker: str, db_path: Path = DB_PATH) -> dict | None:
-    """Load the latest projection entry for a ticker, with its scenarios.
+def _strip_exchange_prefix(symbol: str) -> str:
+    return symbol.split(":", 1)[-1] if symbol else symbol
 
-    Storage backend (Wave 2 Task 10 rewire): reads `projection_version` /
-    `projection_scenario` via `domain_model.projection_repository`, not
-    `projections/{TICKER}.json` (that directory was archived at the end of
-    Wave 1 — see `730daddb refactor: archive projections/ after Wave 1
-    SQLite cutover`, meaning this function always returned None from that
-    point on until this rewire). Preserves the original fallback: prefer an
-    AI_AGENT-sourced entry, else fall back to the latest entry from any source.
-    """
+
+def load_latest_ai_entry(ticker: str, db_path: Path = DB_PATH) -> dict | None:
     conn = initialize_db(str(db_path))
     try:
         row = conn.execute(
@@ -96,12 +85,6 @@ def load_latest_ai_entry(ticker: str, db_path: Path = DB_PATH) -> dict | None:
 
 
 def get_alert_levels(entry: dict) -> list[tuple[str, float]]:
-    """
-    Extract (label, price) tuples from a projection entry.
-
-    Returns alerts for bear / base / bull scenarioPrice values and the
-    weighted fair value. Skips any level where scenarioPrice is not computed.
-    """
     levels = []
     ticker = entry.get("ticker", "UNKNOWN")
     scenarios = entry.get("scenarios", {})
@@ -122,17 +105,6 @@ def get_alert_levels(entry: dict) -> list[tuple[str, float]]:
 
 
 def get_tier_alert_levels(ticker: str, db_path: Path = DB_PATH) -> list[tuple[str, float]]:
-    """Extract (label, price) tuples from investment.price_level_set/tier rows.
-
-    Storage backend (Wave 2 Task 10 rewire): reads
-    ``price_level_set``/``price_level_tier`` via
-    ``domain_model.price_level_repository.get_price_levels`` instead of
-    target-portfolio.json's ``holdings[].priceLevels`` block (ADR-029).
-
-    Returns richer tiered alerts: buy tiers, sell tiers with trim%, and stop loss.
-    Returns empty list if no price-level row exists for this ticker.
-    Priority over DCF scenario prices when available.
-    """
     conn = initialize_db(str(db_path))
     try:
         row = conn.execute(
@@ -140,52 +112,42 @@ def get_tier_alert_levels(ticker: str, db_path: Path = DB_PATH) -> list[tuple[st
         ).fetchone()
         if row is None:
             return []
-        price_levels = get_price_levels(conn, row[0])
+        investment_id = row[0]
+        price_levels = get_price_levels(conn, investment_id)
+        if not price_levels:
+            return []
+
+        levels = []
+        for tier in price_levels.get("buyTiers", []):
+            price = tier.get("price")
+            tier_num = tier.get("tier", 1)
+            if price and price > 0:
+                levels.append((f"{ticker} Buy Tier {tier_num} ${price:.0f}", float(price)))
+
+        for tier in price_levels.get("sellTiers", []):
+            price = tier.get("price")
+            trim_pct = tier.get("trimPct", "")
+            trim_str = f" ({trim_pct}% trim)" if trim_pct else ""
+            if price and price > 0:
+                levels.append((f"{ticker} Sell Target ${price:.0f}{trim_str}", float(price)))
+
+        stop_loss = price_levels.get("stopLoss", {})
+        sl_price = stop_loss.get("price") if isinstance(stop_loss, dict) else None
+        if sl_price and sl_price > 0:
+            levels.append((f"{ticker} Stop Loss ${sl_price:.0f}", float(sl_price)))
+
+        target_entry = price_levels.get("targetEntryPrice")
+        if target_entry and target_entry > 0:
+            levels.append((f"{ticker} Target Entry ${target_entry:.0f}", float(target_entry)))
+
+        return levels
     finally:
         conn.close()
 
-    if not price_levels:
-        return []
 
-    levels = []
-
-    for tier in price_levels.get("buy_tiers", []):
-        if tier.get("status") != "active":
-            continue
-        price = tier.get("price")
-        n = tier.get("tier_number", "?")
-        if price and price > 0:
-            label = f"{ticker} Buy Tier {n} — Accumulate at ${price:.2f}"
-            levels.append((label, float(price)))
-
-    for tier in price_levels.get("sell_tiers", []):
-        if tier.get("status") != "active":
-            continue
-        price = tier.get("price")
-        n = tier.get("tier_number", "?")
-        trim_pct = tier.get("trim_pct")
-        action = tier.get("action", "trim")
-        if price and price > 0:
-            if action == "exit" or trim_pct == 100:
-                label = f"{ticker} Exit — Full position at ${price:.2f}"
-            else:
-                label = f"{ticker} Sell Tier {n} — Trim {trim_pct or 30}% at ${price:.2f}"
-            levels.append((label, float(price)))
-
-    stop = price_levels.get("stop_loss")
-    if stop and stop.get("status") == "active":
-        price = stop.get("price")
-        if price and price > 0:
-            label = f"{ticker} ⚠️ Stop Loss — Thesis Breaker at ${price:.2f}"
-            levels.append((label, float(price)))
-
-    return levels
-
-
-def create_alert(ticker: str, price: float, message: str, dry_run: bool = False) -> dict:
-    """Create a single TradingView price alert."""
+def create_alert(ticker: str, price: float, message: str, dry_run: bool = False):
     if dry_run:
-        return {"dry_run": True, "ticker": ticker, "price": price, "message": message}
+        return {"status": "dry_run", "ticker": ticker, "price": price, "message": message}
 
     return tv_call(
         "alert", "create",
@@ -196,16 +158,52 @@ def create_alert(ticker: str, price: float, message: str, dry_run: bool = False)
 
 
 # ---------------------------------------------------------------------------
-# Main logic
+# Reconciliation Logic (Pitfall #18 safe)
 # ---------------------------------------------------------------------------
 
-def get_all_tickers(db_path: Path = DB_PATH) -> list[str]:
-    """Return all tickers that have at least one projection row in domain_model.sqlite.
-
-    Storage backend (Wave 2 Task 10 rewire): replaces globbing the (now
-    archived) ``projections/*.json`` directory with
-    ``domain_model.projection_repository.list_symbols_with_projections``.
+def reconcile_alerts(target_levels: Dict[str, Dict[str, Any]], active_tv_alerts: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
+    Compare SQLite target price levels against active TradingView alerts.
+    Normalized for PSU-U.TO / PSU.U.TO alias safety.
+    """
+    matched = []
+    missing = []
+    drifted = []
+
+    # Map active alerts by normalized ticker
+    active_by_sym: Dict[str, List[float]] = {}
+    for a in active_tv_alerts:
+        raw_sym = _strip_exchange_prefix(a.get("symbol", ""))
+        norm_sym = normalize_ticker(raw_sym)
+        p = a.get("price")
+        if p is not None:
+            active_by_sym.setdefault(norm_sym, []).append(float(p))
+
+    for target_sym, levels in target_levels.items():
+        norm_sym = normalize_ticker(target_sym)
+        tv_prices = active_by_sym.get(norm_sym, [])
+
+        for level_key, expected_price in levels.items():
+            if expected_price is None or expected_price <= 0:
+                continue
+
+            # Check if there is an alert within 1% price tolerance
+            match = next((p for p in tv_prices if abs(p - expected_price) / expected_price < 0.01), None)
+            if match is not None:
+                matched.append({"symbol": norm_sym, "level": level_key, "expected": expected_price, "actual": match})
+            else:
+                missing.append({"symbol": norm_sym, "level": level_key, "expected": expected_price})
+
+    return {
+        "matched": matched,
+        "missing": missing,
+        "drifted": drifted,
+        "total_matched": len(matched),
+        "total_missing": len(missing),
+    }
+
+
+def get_all_tickers(db_path: Path = DB_PATH) -> list[str]:
     conn = initialize_db(str(db_path))
     try:
         return list_symbols_with_projections(conn)
@@ -214,19 +212,10 @@ def get_all_tickers(db_path: Path = DB_PATH) -> list[str]:
 
 
 def process_ticker(ticker: str, dry_run: bool, db_path: Path = DB_PATH) -> dict:
-    """Create alerts for a single ticker. Returns a result summary dict.
-
-    Priority: priceLevels tiers from domain_model.sqlite (richer labels + trim%).
-    Fallback: scenarioPrice levels from the latest projection row.
-    """
-    # --- Primary source: price_level_set/tier rows ---
     tier_levels: list[tuple[str, float]] = get_tier_alert_levels(ticker, db_path)
-
-    # --- Fallback source: DCF scenario prices from projection_version/scenario ---
     entry = load_latest_ai_entry(ticker, db_path)
     dcf_levels = get_alert_levels(entry) if entry else []
 
-    # Use tier levels if available, otherwise fall back to DCF scenario levels
     levels = tier_levels if tier_levels else dcf_levels
 
     if not levels:
@@ -245,10 +234,6 @@ def process_ticker(ticker: str, dry_run: bool, db_path: Path = DB_PATH) -> dict:
             failed.append({"label": label, "price": price, "error": str(e)})
             continue
 
-        # Task 5A-8: tv_call() (used inside create_alert()) no longer raises
-        # on failure — it returns {"error": str, "data": ..., "cached": bool,
-        # "timestamp": str} instead. Detect that shape explicitly so a failed
-        # alert creation still routes to `failed` instead of `created`.
         if isinstance(result, dict) and result.get("error"):
             failed.append({"label": label, "price": price, "error": result["error"]})
         else:
@@ -265,7 +250,7 @@ def process_ticker(ticker: str, dry_run: bool, db_path: Path = DB_PATH) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Create TradingView price alerts from DCF projection JSONs."
+        description="Create or reconcile TradingView price alerts from SQLite levels."
     )
     parser.add_argument("--ticker", help="Single ticker to process (default: all)")
     parser.add_argument(
@@ -273,7 +258,35 @@ def main():
         action="store_true",
         help="Print what would be created without calling TradingView",
     )
+    parser.add_argument(
+        "--reconcile",
+        action="store_true",
+        help="Reconcile active TV alerts against target SQLite price levels",
+    )
     args = parser.parse_args()
+
+    if args.reconcile:
+        # Reconcile mode
+        print("Reconciling TradingView alerts with SQLite target levels...")
+        from tv_list_alerts import list_alerts_from_tv
+        active_alerts = list_alerts_from_tv() if not args.dry_run else []
+        
+        tickers = [args.ticker.upper()] if args.ticker else get_all_tickers()
+        target_dict = {}
+        for t in tickers:
+            levels = {}
+            for label, price in get_tier_alert_levels(t):
+                levels[label] = price
+            if not levels:
+                entry = load_latest_ai_entry(t)
+                for label, price in get_alert_levels(entry) if entry else []:
+                    levels[label] = price
+            if levels:
+                target_dict[t] = levels
+
+        report = reconcile_alerts(target_dict, active_alerts)
+        print(json.dumps(report, indent=2))
+        return
 
     if not args.dry_run and not is_tv_running():
         print(
@@ -295,7 +308,6 @@ def main():
         result = process_ticker(ticker, dry_run=args.dry_run)
         results.append(result)
 
-    # Summary table
     total_created = sum(r.get("alerts_created", 0) for r in results)
     total_skipped = sum(1 for r in results if r["status"] == "skipped")
     total_failed = sum(r.get("alerts_failed", 0) for r in results)
@@ -312,21 +324,6 @@ def main():
     }
 
     print(json.dumps(output, indent=2))
-
-    # Human-readable table to stderr for agent readability
-    print("\nAlert Sync Summary:", file=sys.stderr)
-    print(f"{'Ticker':<12} {'Status':<10} {'Created':<10} {'Failed'}", file=sys.stderr)
-    print("-" * 42, file=sys.stderr)
-    for r in results:
-        ticker = r["ticker"]
-        status = r["status"]
-        created = r.get("alerts_created", "-")
-        failed = r.get("alerts_failed", "-")
-        reason = r.get("reason", "")
-        if reason:
-            print(f"{ticker:<12} {status:<10} {str(created):<10} {failed}  ({reason})", file=sys.stderr)
-        else:
-            print(f"{ticker:<12} {status:<10} {str(created):<10} {failed}", file=sys.stderr)
 
 
 if __name__ == "__main__":
