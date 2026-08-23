@@ -1,5 +1,5 @@
 ---
-name: cancel-order
+name: tv-cancel-order
 plugin: tradingview
 description: >
   Cancel a Working or Inactive order in TradingView via CDP (clicks the × button

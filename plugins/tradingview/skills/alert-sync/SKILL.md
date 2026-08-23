@@ -1,5 +1,5 @@
 ---
-name: tv_alert_sync
+name: tv-alert-sync
 plugin: tradingview
 description: >
   Creates TradingView price alerts at DCF bear/base/bull scenarioPrice targets

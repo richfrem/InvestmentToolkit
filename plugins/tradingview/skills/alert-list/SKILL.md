@@ -1,5 +1,5 @@
 ---
-name: tv_alert_list
+name: tv-alert-list
 plugin: tradingview
 description: >
   Fetches, analyzes, and lists active TradingView price alerts, saving the snapshot

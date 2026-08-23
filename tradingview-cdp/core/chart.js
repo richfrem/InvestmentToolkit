@@ -601,13 +601,44 @@ export async function addIndicator(client, name) {
   try {
     const safeName = JSON.stringify(name);
 
-    // 1. Get the Indicators button bounding rect for a reliable mouse-event click.
-    //    JavaScript .click() doesn't always fire TradingView's React handler for this button;
-    //    Input.dispatchMouseEvent at the computed center coordinates is the reliable path.
+    // 0. Duplicate Guard: Check if indicator is already active on the chart legend
+    const checkResult = await client.Runtime.evaluate({
+      expression: `(function() {
+        var searchTerm = ${safeName}.toLowerCase();
+        var titleNodes = [...document.querySelectorAll('[class*="titleWrapper-"], [data-name="legend-series-item"], [class*="legend-"]')];
+        var found = titleNodes.some(function(el) {
+          return el.offsetParent && el.textContent.trim().toLowerCase().includes(searchTerm);
+        });
+        return JSON.stringify({ alreadyExists: found });
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    const checkData = JSON.parse(checkResult.result.value);
+    if (checkData.alreadyExists) {
+      return { success: true, alreadyExists: true, message: `Indicator "${name}" is already active on chart.` };
+    }
+
+    // 1. Close Pine Editor dialog if it is open (Pitfall #23: overlays screen and blocks Indicators dialog)
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        var ed = document.querySelector('.pine-editor-monaco') || document.querySelector('[class*="editorBaseLayoutContainer-dialog"]');
+        var btn = document.querySelector('[data-name="pine-dialog-button"]') ||
+                  [...document.querySelectorAll('button')].find(function(b) {
+                    return b.offsetParent && (b.textContent.trim() === 'Pine Editor' || b.getAttribute('aria-label') === 'Pine Editor');
+                  });
+        if (ed && ed.offsetParent && btn) btn.click();
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 400));
+
+    // 2. Get the Indicators button bounding rect for a reliable mouse-event click.
     const btnRect = await client.Runtime.evaluate({
       expression: `JSON.stringify((function() {
-        var btn = [...document.querySelectorAll('button[data-name="open-indicators-dialog"]')]
-          .find(function(b) { return b.offsetParent && b.textContent.trim() === 'Indicators'; });
+        var btn = document.querySelector('button[data-name="open-indicators-dialog"]') ||
+                  [...document.querySelectorAll('button')].find(function(b) {
+                    return b.offsetParent && (b.textContent.trim() === 'Indicators' || (b.getAttribute('aria-label') || '').includes('Indicators'));
+                  });
         if (!btn) return null;
         var r = btn.getBoundingClientRect();
         return { cx: Math.round(r.x + r.width / 2), cy: Math.round(r.y + r.height / 2) };
@@ -617,17 +648,22 @@ export async function addIndicator(client, name) {
     const btnPos = JSON.parse(btnRect.result.value);
     if (!btnPos) return { success: false, error: 'Indicators button not found in toolbar' };
 
-    // 2. Open Indicators dialog via mouse event (reliable; .click() is flaky on this button)
+    // 3. Open Indicators dialog via mouse event
     await client.Input.dispatchMouseEvent({ type: 'mousePressed', x: btnPos.cx, y: btnPos.cy, button: 'left', clickCount: 1 });
     await client.Input.dispatchMouseEvent({ type: 'mouseReleased', x: btnPos.cx, y: btnPos.cy, button: 'left', clickCount: 1 });
-    await new Promise(r => setTimeout(r, 1500));
-
-    // 3. Type search term
+    await new Promise(r => setTimeout(r, 1200));
+    // 3. Type search term into dialog search input
     const typeResult = await client.Runtime.evaluate({
       expression: `(function() {
-        var input = [...document.querySelectorAll('input')].find(function(i) {
-          return i.offsetParent && (i.placeholder === 'Search' || i.placeholder === 'Find indicator...');
-        });
+        var input = document.querySelector('[data-dialog-name="Indicators, metrics, and strategies"] input') ||
+                    document.querySelector('[data-name="indicators-dialog"] input') ||
+                    [...document.querySelectorAll('input')].find(function(i) {
+                      return i.offsetParent && (
+                        i.placeholder === 'Search' || 
+                        i.placeholder.toLowerCase().includes('search') ||
+                        i.placeholder.toLowerCase().includes('indicator')
+                      );
+                    });
         if (!input) return 'no-input';
         input.focus();
         var setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
@@ -702,50 +738,36 @@ export async function removeIndicator(client, name) {
   try {
     const safeName = JSON.stringify(name.toLowerCase());
 
-    // 1. Find the legend title element matching the indicator name
-    const findResult = await client.Runtime.evaluate({
+    // 1. Find matching legend item and trigger remove sequence
+    const removeResult = await client.Runtime.evaluate({
       expression: `(function() {
-        var target = [...document.querySelectorAll('[class*="titleWrapper-l31H9iuA"]')]
-          .find(function(el) {
-            return el.offsetParent && el.textContent.trim().toLowerCase().includes(${safeName});
-          });
-        if (!target) return JSON.stringify({ found: false });
-        var r = target.getBoundingClientRect();
-        return JSON.stringify({ found: true, x: r.x, y: r.y, cx: r.x + r.width / 2, cy: r.y + r.height / 2, text: target.textContent.trim() });
+        var searchTerm = ${safeName};
+        var items = [...document.querySelectorAll('[data-name="legend-series-item"], [class*="item-"]')];
+        var match = items.find(function(item) {
+          if (!item.offsetParent) return false;
+          var title = item.querySelector('[class*="titleWrapper-"]') || item.querySelector('[class*="title-"]');
+          var text = (title ? title.textContent : item.textContent).trim().toLowerCase();
+          return text.startsWith(searchTerm) || text.includes(searchTerm);
+        });
+        if (!match) return JSON.stringify({ success: false, error: 'Indicator not found in chart legend' });
+
+        var text = match.textContent.trim().substring(0, 40);
+        var btn = match.querySelector('button[aria-label="Remove"]');
+        if (!btn) return JSON.stringify({ success: false, error: 'Remove button not found inside indicator row' });
+
+        btn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+        btn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+        btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+
+        return JSON.stringify({ success: true, removed: text });
       })()`,
-      returnByValue: true, awaitPromise: false,
+      returnByValue: true,
+      awaitPromise: false,
     });
-    const pos = JSON.parse(findResult.result.value);
-    if (!pos.found) return { success: false, error: `Indicator "${name}" not found in chart legend` };
+    const resultData = JSON.parse(removeResult.result.value);
+    if (!resultData.success) return { success: false, error: resultData.error || `Failed to remove "${name}"` };
 
-    // 2. Physical mousemove to legend row — programmatic mouseover doesn't trigger TV's React hover
-    await client.Input.dispatchMouseEvent({ type: 'mouseMoved', x: pos.cx, y: pos.cy });
-    await new Promise(r => setTimeout(r, 600));
-
-    // 3. Find Remove button in same vertical band — use Input.dispatchMouseEvent (TV ignores .click())
-    const cy = pos.cy;
-    const removeBtnPos = await client.Runtime.evaluate({
-      expression: `(function() {
-        var band = 25; // px tolerance above/below
-        var btn = [...document.querySelectorAll('button[aria-label="Remove"]')]
-          .find(function(el) {
-            if (!el.offsetParent) return false;
-            var r = el.getBoundingClientRect();
-            return Math.abs((r.y + r.height / 2) - ${cy}) < band;
-          });
-        if (!btn) return JSON.stringify({ found: false });
-        var r = btn.getBoundingClientRect();
-        return JSON.stringify({ found: true, cx: Math.round(r.x + r.width / 2), cy: Math.round(r.y + r.height / 2) });
-      })()`,
-      returnByValue: true, awaitPromise: false,
-    });
-    const removeBtn = JSON.parse(removeBtnPos.result.value);
-    if (!removeBtn.found) return { success: false, error: `Remove button not found for "${name}" — try hovering the chart legend manually` };
-    await client.Input.dispatchMouseEvent({ type: 'mousePressed', x: removeBtn.cx, y: removeBtn.cy, button: 'left', clickCount: 1 });
-    await client.Input.dispatchMouseEvent({ type: 'mouseReleased', x: removeBtn.cx, y: removeBtn.cy, button: 'left', clickCount: 1 });
-    const removeData = { clicked: true };
-
-    return { success: true, removed: pos.text };
+    return { success: true, removed: resultData.removed };
   } catch (e) {
     return { success: false, error: e.message };
   }
@@ -776,21 +798,18 @@ export async function listIndicators(client) {
           });
           return JSON.stringify({ success: true, indicators: [...new Set(keys)], source: 'data-window' });
         }
-        // Data Window not open — read from chart legend aria-labels
-        var hideBtn = [...document.querySelectorAll('button[aria-label="Hide indicator legend"]')]
-          .filter(b => b.offsetParent);
-        var count = hideBtn.length;
-        // Walk each hide-btn's parent to find the indicator name span
+        // Data Window not open — read from chart legend title elements
+        var titleNodes = [...document.querySelectorAll('[class*="titleWrapper-"], [data-name="legend-series-item"]')];
         var names = [];
-        hideBtn.forEach(function(btn) {
-          var row = btn.parentElement;
-          if (!row) return;
-          var spans = [...row.querySelectorAll('span, div')].filter(function(el) {
-            return el.childElementCount === 0 && el.textContent.trim().length > 1;
-          });
-          if (spans.length > 0) names.push(spans[0].textContent.trim());
+        titleNodes.forEach(function(el) {
+          if (!el.offsetParent) return;
+          var t = el.textContent.trim();
+          if (t && t.length > 1 && isNaN(Number(t))) {
+            names.push(t);
+          }
         });
-        return JSON.stringify({ success: true, indicators: [...new Set(names)], count, source: 'legend', hint: 'Open Data Window for richer names' });
+        var unique = [...new Set(names)];
+        return JSON.stringify({ success: true, indicators: unique, count: unique.length, source: 'legend' });
       })()`,
       returnByValue: true, awaitPromise: false,
     });

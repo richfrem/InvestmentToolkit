@@ -1,5 +1,5 @@
 ---
-name: pine_inject
+name: tv-pine-inject
 plugin: tradingview
 description: >
   Generates custom Pine Script v6 indicators or strategies and injects them directly

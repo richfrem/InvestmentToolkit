@@ -32,7 +32,7 @@
         },
         {
             "name": "tradingview",
-            "description": "TradingView Desktop integration via CDP. Skills: /tv-portfolio-sync, /place-order, /modify-order, /cancel-order, /get-orders, /tv-price-refresh, /tv-alert-sync, /tv-snapshot, /pine-inject, /author-pine, /tv-ta-deep, /ta-daily-sweep, /tv-onboarding. Agents: ta-guide. Requires TV Desktop with --remote-debugging-port=9222.",
+            "description": "TradingView Desktop integration via CDP. Skills: /tv-portfolio-sync, /tv-indicators, /tv-thesis-overlay, /tv-alert-reconcile, /tv-ta, /tv-ta-deep, /tv-ta-daily-sweep, /tv-snapshot, /tv-price-refresh, /tv-alert-sync, /tv-pine-inject, /tv-author-pine, /tv-chart-setup, /tv-change-symbol, /tv-change-type, /tv-manage-watchlists, /tv-place-order, /tv-modify-order, /tv-cancel-order, /tv-get-orders, /tv-setup, /tv-onboarding. Agents: ta-guide. Requires TV Desktop with --remote-debugging-port=9222.",
             "source": "./plugins/tradingview",
             "strict": true
         }

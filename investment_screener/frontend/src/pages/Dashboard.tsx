@@ -23,11 +23,12 @@ import MetricsGrid from '../components/MetricsGrid';
 import FinancialChart from '../components/analysis/FinancialChart';
 import AnalysisChartToggle, { type ChartMode } from '../components/analysis/AnalysisChartToggle';
 import ValuationModeler from '../components/ValuationModeler';
-import { LayoutDashboard, BarChart3, Calculator } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Calculator, Code } from 'lucide-react';
 import PerformanceMetrics from '../components/PerformanceMetrics';
 import { AIThesisSummary } from '../components/AIThesisSummary';
 import { TargetThesisDetails } from '../components/TargetThesisDetails';
 import { AIAnalysisModal } from '../components/AIAnalysisModal';
+import { PineScriptViewerModal } from '../components/PineScriptViewerModal';
 import { TradeButtons } from '../components/TradeButtons';
 import { storage } from '../services/storage';
 
@@ -46,6 +47,7 @@ export default function Dashboard() {
     const [aiResult, setAiResult] = useState<ValuationResult | null>(null);
     const [viewingProjection, setViewingProjection] = useState<Projection | null>(null);
     const [showAIModal, setShowAIModal] = useState(false);
+    const [showPineModal, setShowPineModal] = useState(false);
 
     const loadTargetHolding = useCallback(async (ticker: string) => {
         try {
@@ -216,6 +218,14 @@ export default function Dashboard() {
 
                         {/* Trade buttons + Navigation Tabs */}
                         <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setShowPineModal(true)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition shadow-sm"
+                            title="View / Copy TradingView Pine Script Overlay for this stock"
+                        >
+                            <Code size={14} />
+                            <span>TV Overlay</span>
+                        </button>
                         <TradeButtons ticker={stockData.symbol} size="md" rating={aiResult?.action as any} />
                         <div className="h-6 w-px bg-slate-800" />
                         <div className="flex bg-slate-900/50 p-1 rounded-lg border border-slate-800">
@@ -324,6 +334,20 @@ export default function Dashboard() {
                     onClose={() => setShowAIModal(false)}
                     symbol={stockData.symbol}
                     initialProjection={viewingProjection || undefined}
+                />
+            )}
+
+            {/* Pine Script Viewer Modal */}
+            {stockData && (
+                <PineScriptViewerModal
+                    isOpen={showPineModal}
+                    onClose={() => setShowPineModal(false)}
+                    symbol={stockData.symbol}
+                    fairValue={aiResult?.fair_value || viewingProjection?.aiThesis?.fairValue}
+                    targetEntry={targetHolding?.targetEntryPrice}
+                    stopLoss={targetHolding?.stopLossPrice}
+                    action={aiResult?.action || targetHolding?.action}
+                    breakerStatus={targetHolding?.breakerStatus}
                 />
             )}
         </div>

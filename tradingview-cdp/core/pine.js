@@ -128,18 +128,20 @@ export async function injectPineScript(client, scriptContent) {
     const injectResult = await client.Runtime.evaluate({
       expression: `(function() {
         var script = ${safeContent};
-        var edEl = document.querySelector('.pine-editor-monaco');
-        if (!edEl) return JSON.stringify({ success: false, error: 'pine-editor-monaco not found' });
+        var edEl = document.querySelector('textarea.inputarea') ||
+                   document.querySelector('[class*="editorWrapper-"]') ||
+                   document.querySelector('.pine-editor-monaco');
+        if (!edEl) return JSON.stringify({ success: false, error: 'Monaco input element not found' });
 
         var el = edEl;
         var fk = null;
-        for (var depth = 0; depth < 5; depth++) {
-          el = el.parentElement;
+        for (var depth = 0; depth < 15; depth++) {
           if (!el) break;
           fk = Object.keys(el).find(function(k) { return k.startsWith('__reactFiber'); });
           if (fk) break;
+          el = el.parentElement;
         }
-        if (!fk) return JSON.stringify({ success: false, error: 'React fiber not found within 5 ancestors' });
+        if (!fk) return JSON.stringify({ success: false, error: 'React fiber not found within 15 ancestors' });
 
         try {
           var fiber = el[fk].return;
@@ -218,7 +220,25 @@ export async function injectPineScript(client, scriptContent) {
     });
 
     // 5. Wait for indicator to load onto chart
-    await new Promise(r => setTimeout(r, 1500));
+    await new Promise(r => setTimeout(r, 1200));
+
+    // 6. Close Pine Editor panel after adding to chart (clean workspace view)
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        var ed = document.querySelector('.pine-editor-monaco');
+        var btn = document.querySelector('[data-name="pine-dialog-button"]') ||
+                  [...document.querySelectorAll('button')].find(function(b) {
+                    return b.offsetParent && (b.textContent.trim() === 'Pine Editor' || b.getAttribute('aria-label') === 'Pine Editor');
+                  });
+        // If Pine Editor is still visible/expanded, click button to collapse it
+        if (ed && ed.offsetParent && btn) {
+          btn.click();
+        }
+      })()`,
+      returnByValue: true,
+      awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 500));
 
     return { success: true };
   } catch (e) {

@@ -1,5 +1,5 @@
 ---
-name: tv_save_indicator
+name: tv-save-indicator
 plugin: tradingview
 description: >
   Save the current Pine Script in the editor to TradingView's personal library.

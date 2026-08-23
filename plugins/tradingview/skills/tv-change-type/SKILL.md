@@ -1,5 +1,5 @@
 ---
-name: tv_change_type
+name: tv-change-type
 plugin: tradingview
 description: >
   Change the active TradingView chart type (candle style). Supports candlestick,

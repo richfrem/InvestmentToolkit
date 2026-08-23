@@ -1,5 +1,5 @@
 ---
-name: technical_analysis_expert
+name: tv-ta-deep
 plugin: tradingview
 description: >
   Acts as a seasoned Technical Analyst and Pine Script expert. Navigates
@@ -267,7 +267,7 @@ Replace every `{{placeholder}}` with real values. Set **Review Status** to `[DRA
 
 Dispatch the `ta-red-team` skill to challenge the draft:
 
-> "Please act as the `ta_red_team` skill and review `temp/ta_thesis_draft.md`."
+> "Please act as the `tv-ta-red-team` skill and review `temp/ta_thesis_draft.md`."
 
 The red team will respond with `[APPROVED]` or `[REJECTED]` plus specific feedback.
 

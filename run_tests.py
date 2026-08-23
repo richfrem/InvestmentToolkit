@@ -248,6 +248,7 @@ def t1_unit_tests() -> bool:
         "plugins/tradingview/tests/test_tv_alert_reconcile.py",
         "plugins/tradingview/tests/test_tv_create_alerts.py",
         "plugins/tradingview/tests/test_ta_sweep_batch.py",
+        "plugins/tradingview/tests/test_tv_manage_indicators.py",
         "-q",
     ]
     return run(cmd, label="TradingView Plugin Unit Tests")

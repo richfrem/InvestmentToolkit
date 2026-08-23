@@ -1,5 +1,5 @@
 ---
-name: tv_change_symbol
+name: tv-change-symbol
 plugin: tradingview
 description: >
   Change the active TradingView chart symbol. Clicks the symbol button in the

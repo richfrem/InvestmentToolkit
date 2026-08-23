@@ -1,5 +1,5 @@
 ---
-name: tv_manage_watchlists
+name: tv-manage-watchlists
 plugin: tradingview
 description: >
   Synchronizes portfolio holdings and researched tickers from projections / watchlist.json

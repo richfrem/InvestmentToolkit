@@ -1,5 +1,5 @@
 ---
-name: place_order
+name: tv-place-order
 plugin: tradingview
 description: >
   Place a buy or sell order via TradingView's built-in connected broker
