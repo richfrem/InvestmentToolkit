@@ -17,7 +17,7 @@ data_window_validator module's own reference (same pattern already
 established in test_data_window_integration_with_order_gates.py), never via
 unittest.mock. All other cases pass a real, constructed data_readiness dict
 directly (dependency injection), matching this module's existing convention
-for daily_volume=/questrade_cash=.
+for daily_volume=/available_cash_override=.
 """
 import sys
 from pathlib import Path

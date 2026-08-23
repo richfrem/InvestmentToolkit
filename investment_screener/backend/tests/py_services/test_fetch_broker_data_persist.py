@@ -167,7 +167,7 @@ def test_write_snapshot_never_touches_portfolio_json_even_with_balances(tmp_path
 
 
 def test_persist_snapshot_to_db_normalizes_broker_ticker_alias(tmp_path):
-    """PSU.U.TO is Questrade's broker-format symbol for the same real fund
+    """PSU.U.TO is Broker's broker-format symbol for the same real fund
     fetch_portfolio_heatmap.py/target-portfolio.json track as PSU-U.TO. If this
     isn't normalized before resolve_investment(), a real sync creates a second,
     duplicate `investment` row/position for the identical real holding (see

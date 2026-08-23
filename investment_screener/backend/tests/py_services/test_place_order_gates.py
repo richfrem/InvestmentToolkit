@@ -209,7 +209,7 @@ def test_tradingview_connection_and_broker_login(tmp_path):
     combined = r.stdout + r.stderr
     assert "No broker connected" not in combined, (
         "Broker panel not connected! Please open TradingView, connect your broker panel "
-        "(e.g., Questrade), and log in first before running live integration tests."
+        "(e.g., Broker), and log in first before running live integration tests."
     )
 
 

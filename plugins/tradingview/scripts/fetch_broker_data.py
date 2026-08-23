@@ -6,7 +6,7 @@ fetch_broker_data.py (Python Utility)
 Purpose:
     Broker-agnostic portfolio data fetcher. Reads accounts, positions, balances,
     and orders from TradingView's broker panel via CDP DOM (primary), with optional
-    Questrade REST API as a secondary source for cross-validation.
+    broker snapshot for cross-validation.
 
     Note: The portfolio transition period is complete. TradingView CDP is now the
     canonical runtime source of truth. In --snapshot mode the consolidated per-account
@@ -31,7 +31,7 @@ Usage Examples:
     # Consolidated snapshot written to portfolio.json tvSnapshot key:
     python3 investment_screener/backend/py_services/fetch_broker_data.py --snapshot
 
-    # Cross-validate TV vs Questrade (diff side-by-side):
+    # Cross-validate TV vs Broker (diff side-by-side):
     python3 investment_screener/backend/py_services/fetch_broker_data.py --compare
 
     # Once validated, promote consolidated TV snapshot directly into portfolio.json holdings:
@@ -39,8 +39,8 @@ Usage Examples:
 
 Key Functions:
     - fetch_tv()        - Reads all data from TradingView broker panel via CDP
-    - fetch_questrade() - Reads from Questrade REST API (requires .questrade_cache)
-    - compare()         - Diffs TV vs Questrade positions and balances
+    - fetch_broker() - Reads from broker API (requires .broker_cache)
+    - compare()         - Diffs TV vs broker positions and balances
     - write_snapshot()  - Persists the snapshot to domain_model.sqlite (SQLite-only; no portfolio.json)
     - emit_snapshot_json() - Emits the snapshot as one JSON line on stdout (Node IPC return channel)
 
@@ -197,10 +197,10 @@ try {
     return run_node_module(js, timeout=15)
 
 
-# ── Questrade source ──────────────────────────────────────────────────────────
+# ── Broker source ──────────────────────────────────────────────────────────
 
-def fetch_questrade_snapshot() -> Optional[dict]:
-    """Read current portfolio.json as Questrade baseline."""
+def fetch_broker_snapshot() -> Optional[dict]:
+    """Read current portfolio.json as broker baseline."""
     portfolio_path = os.path.join(DATA_DIR, "portfolio.json")
     if not os.path.exists(portfolio_path):
         return None
@@ -212,7 +212,7 @@ def fetch_questrade_snapshot() -> Optional[dict]:
 
 def compare_snapshots(tv: dict, qt: dict) -> dict:
     """
-    Diff TV positions vs Questrade positions field-by-field.
+    Diff TV positions vs broker positions field-by-field.
     Returns a report with: matched, qty_mismatch, tv_only, qt_only rows.
     """
     tv_pos = {p["symbol"]: p for p in tv.get("positions", [])}
@@ -278,14 +278,14 @@ def print_compare_report(report: dict):
     s = report["summary"]
     print()
     print("╔══════════════════════════════════════════════════════╗")
-    print("║         TV vs Questrade — Position Diff              ║")
+    print("║         TV vs Broker — Position Diff              ║")
     print("╠══════════════════════════════════════════════════════╣")
     print(f"║  TV positions:       {s['total_tv']:<33}║")
-    print(f"║  Questrade positions:{s['total_qt']:<33}║")
+    print(f"║  broker positions:{s['total_qt']:<33}║")
     print(f"║  ✓ Matched:          {s['matched']:<33}║")
     print(f"║  ⚠ Qty mismatch:     {s['mismatched']:<33}║")
     print(f"║  TV only:            {s['tv_only']:<33}║")
-    print(f"║  Questrade only:     {s['qt_only']:<33}║")
+    print(f"║  Broker only:     {s['qt_only']:<33}║")
     print("╚══════════════════════════════════════════════════════╝")
 
     if report["qty_mismatch"]:
@@ -294,12 +294,12 @@ def print_compare_report(report: dict):
             print(f"   {row['symbol']:<8}  TV={row['tv_qty']}  QT={row['qt_qty']}")
 
     if report["tv_only"]:
-        print("\n📺  TV ONLY (not in Questrade portfolio.json):")
+        print("\n📺  TV ONLY (not in baseline portfolio.json):")
         for row in report["tv_only"]:
             print(f"   {row['symbol']:<8}  qty={row['qty']}")
 
     if report["qt_only"]:
-        print("\n🏦  QUESTRADE ONLY (not found in TV):")
+        print("\n🏦  Broker only (not found in TV):")
         for row in report["qt_only"]:
             print(f"   {row['symbol']:<8}  qty={row['qty']}")
 
@@ -595,14 +595,14 @@ def _run_portfolio_refresh() -> None:
 # ── CLI ───────────────────────────────────────────────────────────────────────
 
 def main():
-    parser = argparse.ArgumentParser(description="Fetch broker data from TradingView CDP or Questrade")
-    parser.add_argument("--source", choices=["tv", "questrade", "auto", "compare"], default="tv")
+    parser = argparse.ArgumentParser(description="Fetch broker data from TradingView CDP or Broker")
+    parser.add_argument("--source", choices=["tv", "broker", "auto", "compare"], default="tv")
     parser.add_argument("--accounts",  action="store_true")
     parser.add_argument("--balances",  action="store_true")
     parser.add_argument("--positions", action="store_true")
     parser.add_argument("--orders",    action="store_true")
     parser.add_argument("--snapshot",  action="store_true", help="Full snapshot → domain_model.sqlite + JSON on stdout")
-    parser.add_argument("--compare",   action="store_true", help="Diff TV vs Questrade positions")
+    parser.add_argument("--compare",   action="store_true", help="Diff TV vs broker positions")
     parser.add_argument("--inspect",   action="store_true", help="Dump broker panel DOM for debugging")
     parser.add_argument("--promote",   action="store_true", help="Promote TV positions to portfolio.json holdings list")
     parser.add_argument("--refresh-exchange-rate", action="store_true",
@@ -645,10 +645,10 @@ def main():
             acct_counts[at] = acct_counts.get(at, 0) + 1
         print(f"   TV: {len(tv['positions'])} unique symbols across {len(snapshot.get('accounts', []))} accounts {acct_counts}")
 
-        print("Reading Questrade portfolio.json...")
-        qt = fetch_questrade_snapshot()
+        print("Reading baseline portfolio.json...")
+        qt = fetch_broker_snapshot()
         if qt is None:
-            print("❌ portfolio.json not found — run Questrade sync first.", file=sys.stderr)
+            print("❌ portfolio.json not found — run broker sync first.", file=sys.stderr)
             sys.exit(1)
 
         report = compare_snapshots(tv, qt)

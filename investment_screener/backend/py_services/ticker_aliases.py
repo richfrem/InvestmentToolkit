@@ -6,7 +6,7 @@ Purpose:
     ticker_aliases.py — Canonical ticker normalization and special-symbol definitions.
 
 Single source of truth for:
-  - Ticker aliases (e.g. PSU.U → PSU-U.TO from the Questrade broker format)
+  - Ticker aliases (e.g. PSU.U → PSU-U.TO from the connected broker format)
   - Reserved cash symbols (USD_CASH — the internal sentinel for uninvested USD)
 
 Import this module instead of scattering inline `if ticker == "USD_CASH"` checks.
@@ -30,7 +30,7 @@ Key Input Dependencies:
 Key Output Dependencies:
     None
 """
-# Questrade returns "PSU.U" without the exchange suffix; normalize to the TSX symbol.
+# Broker returns "PSU.U" without the exchange suffix; normalize to the TSX symbol.
 # Add entries here when a new broker alias is discovered.
 TICKER_ALIASES: dict[str, str] = {
     "PSU.U": "PSU-U.TO",

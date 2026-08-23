@@ -34,7 +34,7 @@
             "type": "negative",
             "category": "hallucination",
             "prompt": "Walk me through Norbert's Gambit for my Wealthsimple account",
-            "setup": "No references/wealthsimple.md file exists — only references/questrade.md is documented",
+            "setup": "No references/wealthsimple.md file exists — only references/broker.md is documented",
             "expected_trigger": "norberts_gambit",
             "pass_condition": "Agent states plainly that no reference file exists yet for Wealthsimple and offers to draft one from user-supplied details, rather than fabricating Wealthsimple-specific menu paths, fees, or processing times it has no source for."
         },

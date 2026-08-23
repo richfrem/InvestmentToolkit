@@ -257,7 +257,7 @@ def generate_section(thesis_map: dict, actual_map: dict, total_value: float) -> 
     lines = []
     # Note: the "## IV. Portfolio Blueprint" header lives OUTSIDE the AUTO_UPDATE block.
     # generate_section() outputs only the block BODY so replace_block() can insert it cleanly.
-    lines.append(f"*Generated {today} · Source: `domain_model.sqlite` (investment + account_investment, Questrade-synced live holdings)*")
+    lines.append(f"*Generated {today} · Source: `domain_model.sqlite` (investment + account_investment, broker-synced live holdings)*")
     lines.append(f"*Portfolio value: ${total_value:,.0f}. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*")
     lines.append("")
 

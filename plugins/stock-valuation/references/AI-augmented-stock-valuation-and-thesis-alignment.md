@@ -2,7 +2,7 @@
 
 **Status:** Draft / Planning
 **Date:** 2026-02-13
-**Objective:** Leverage the "Investment Logic" (Thesis + Framework) + "Hard Data" (Questrade/YFinance) to create an autonomous Portfolio Analyst.
+**Objective:** Leverage the "Investment Logic" (Thesis + Framework) + "Hard Data" (Broker/YFinance) to create an autonomous Portfolio Analyst.
 
 ---
 
@@ -14,7 +14,7 @@ The system will not just "chat"; it will perform **Retrieval Augmented Generatio
     *   *Thesis:* Investment Thesis (`investment_screener/backend/data/theses/investment_thesis.md`)
     *   *Framework:* "Professional Investment Framework v3.1" (`docs/InvestmentFramework/...`)
 *   **The Facts (Data):**
-    *   *Portfolio:* Real-time holdings via Questrade Sync.
+    *   *Portfolio:* Real-time holdings via broker sync.
     *   *Market:* Live financials via `yfinance` (PE, Growth, Margins).
 *   **The Output:**
     *   Institutional-grade analysis that rigidly adheres to the *Framework's* scoring and the *Thesis's* pillars.
@@ -31,7 +31,7 @@ We need a robust middleware that prepares the "prompt context" so the LLM doesn'
     *   *Targets* (e.g., "Intel = Sovereign Foundry")
     *   *Risks* (e.g., "18A Node Execution")
 2.  **Portfolio Aggregator**:
-    *   Flattens holdings from Questrade.
+    *   Flattens holdings from Broker.
     *   Tags each holding with its "Pillar" (requires a mapping file or LLM classification).
 3.  **Financial Enricher**:
     *   Fetches the "Framework Metrics" for each holding:

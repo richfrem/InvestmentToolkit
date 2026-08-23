@@ -2,7 +2,7 @@
 name: place_order
 plugin: tradingview
 description: >
-  Place a buy or sell order via TradingView's built-in Questrade broker
+  Place a buy or sell order via TradingView's built-in connected broker
   integration using CDP DOM automation. Checks broker login, buying power,
   and account before showing a confirmation card. Fills the TradingView order
   dialog, screenshots the filled form for HITL review, then submits on explicit
@@ -45,7 +45,7 @@ Before any trade execution:
 - **NEVER execute if `_freshnessWarning` is set** without user acknowledgement — stale prices = wrong trade sizing
 - **NEVER place multiple orders in one confirmation cycle**
 - **NEVER slide from analysis phase into order phase without an explicit user request to trade**
-- **If broker not connected**: instruct user to log in via TradingView → Questrade icon
+- **If broker not connected**: instruct user to log in via TradingView → Broker icon
 
 ---
 
@@ -78,7 +78,7 @@ Before running `--preflight`, verify all 10 conditions are met. Block if any fai
 | 6 | Order size cap | Cost estimate > $5,000 → block without `--allow-large` |
 | 7 | Single order per cycle | Another order in this session not yet settled → block |
 | 8 | Account type mismatch | TFSA cap, RRSP contribution room — surface concern if switching |
-| 9 | Broker connected | Questrade panel visible in TradingView → block if not |
+| 9 | Broker connected | broker panel visible in TradingView → block if not |
 | 10 | No-trade conditions | Any no-trade condition below applies → block |
 
 ---
@@ -149,9 +149,9 @@ If the data source is `cache` (no recent sync), add:
 
 ## Prerequisites — Broker Login Check
 
-Before any order, verify TradingView has Questrade connected. The preflight will fail with a clear error if not. If broker is not connected, tell the user:
+Before any order, verify TradingView has Broker connected. The preflight will fail with a clear error if not. If broker is not connected, tell the user:
 
-> "TradingView isn't showing an active Questrade connection. Open TradingView Desktop, click the broker icon (bottom-left area), and log in with your Questrade credentials. Once the account panel shows your positions, run the command again."
+> "TradingView isn't showing an active Broker connection. Open TradingView Desktop, click the broker icon (bottom-left area), and log in with your broker credentials. Once the account panel shows your positions, run the command again."
 
 ---
 
@@ -184,7 +184,7 @@ python3 investment_screener/backend/py_services/place_order.py \
 ```
 
 Output: ASCII confirmation card + JSON. Check:
-- `connected: true` — Questrade is active in TradingView
+- `connected: true` — Broker is active in TradingView
 - `_warning: null` — buying power is sufficient
 - Correct `accountType` and `accountId`
 
@@ -271,8 +271,8 @@ User: sell 10 WYFI market from TFSA
 
 | Error | Action |
 |-------|--------|
-| `No broker connected` | User must log in via TradingView → Questrade icon |
-| `Order dialog did not open` | Tell user to ensure the chart is on the right ticker and the Questrade panel is visible in TradingView |
+| `No broker connected` | User must log in via TradingView → Broker icon |
+| `Order dialog did not open` | Tell user to ensure the chart is on the right ticker and the broker panel is visible in TradingView |
 | `Shares input not found` | Dialog may have closed — re-run `--execute` |
 | `Tab not found: Limit` | Order type not available for this symbol — try Market |
 | `Account switch failing` | Account switching dropdown options are clean `span` tags with empty className matching `s.className === ''` and text starting with target. The standard `.click()` method fails on these elements; you MUST dispatch a sequence of `mousedown`, `mouseup`, and `click` MouseEvents to both the option span and its `parentElement` to trigger the change. |

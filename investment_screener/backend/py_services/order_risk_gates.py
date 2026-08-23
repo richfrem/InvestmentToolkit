@@ -71,9 +71,9 @@ of calling yfinance directly a second time.
 check_available_balance() (Task 5E-5) checks whether enough cash is
 available to cover a single, ad-hoc BUY order's cost. Reuses the real,
 already-synced data/portfolio.json broker snapshot (this project's
-existing, established multi-fallback TradingView/Questrade sync
+existing, established multi-fallback TradingView/broker sync
 pipeline, CLAUDE.md pitfall #20) via get_available_cash() instead of
-implementing a new live Questrade API integration from scratch — the
+implementing a new live Broker API integration from scratch — the
 plan's own checklist explicitly allows "(or cached snapshot)" as an
 alternative. Reads either the portfolio-wide totals.cashUSD or a
 specific account's tvSnapshot.snapshots[].balances.cashUSD (matched by
@@ -112,7 +112,7 @@ Usage:
     result = check_cluster_variance(order, portfolio_state, risk_snapshot=snapshot)
     result = check_breaker_veto(order, thesis_breaker_state=state)
     result = check_order_size(order, daily_volume=avg_volume)
-    result = check_available_balance(order, questrade_cash=cash)
+    result = check_available_balance(order, available_cash_override=cash)
     result = check_data_readiness_gate(order, data_readiness=readiness)
 
     from order_risk_gates import build_portfolio_state_for_order, check_risk_gates
@@ -683,13 +683,13 @@ def get_available_cash(account: Optional[str] = None) -> Optional[float]:
 
 def check_available_balance(
     order: Dict[str, Any],
-    questrade_cash: Optional[float] = None,
+    available_cash_override: Optional[float] = None,
     account: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Check whether enough cash is available to cover a BUY order's cost.
 
-    If questrade_cash isn't supplied, fetches it via
+    If available_cash_override isn't supplied, fetches it via
     get_available_cash(account) — pass it explicitly in tests to avoid
     real file I/O.
 
@@ -712,35 +712,35 @@ def check_available_balance(
     Args:
         order: {"ticker": str, "side": "BUY"|"SELL", "shares": float,
             "price": float}.
-        questrade_cash: Available cash, or None to fetch via
+        available_cash_override: Available cash, or None to fetch via
             get_available_cash().
         account: Passed through to get_available_cash() if
-            questrade_cash isn't supplied — which account's cash to
+            available_cash_override isn't supplied — which account's cash to
             check (None = portfolio-wide total).
 
     Returns:
         {"passed": bool, "cash_required": float, "cash_available": float | None, "reason": str}
     """
     if order.get("side") != "BUY":
-        return {"passed": True, "cash_required": 0.0, "cash_available": questrade_cash, "reason": "Not a buy order — balance gate only applies to buys"}
+        return {"passed": True, "cash_required": 0.0, "cash_available": available_cash_override, "reason": "Not a buy order — balance gate only applies to buys"}
 
-    if questrade_cash is None:
-        questrade_cash = get_available_cash(account)
+    if available_cash_override is None:
+        available_cash_override = get_available_cash(account)
 
     cash_required = order.get("shares", 0.0) * order.get("price", 0.0)
 
-    if questrade_cash is None:
+    if available_cash_override is None:
         return {"passed": True, "cash_required": cash_required, "cash_available": None, "reason": "Available cash unknown — order not blocked"}
 
-    if questrade_cash < cash_required:
+    if available_cash_override < cash_required:
         return {
             "passed": False,
             "cash_required": cash_required,
-            "cash_available": questrade_cash,
-            "reason": f"Insufficient cash: ${questrade_cash:,.2f} available, ${cash_required:,.2f} required",
+            "cash_available": available_cash_override,
+            "reason": f"Insufficient cash: ${available_cash_override:,.2f} available, ${cash_required:,.2f} required",
         }
 
-    return {"passed": True, "cash_required": cash_required, "cash_available": questrade_cash, "reason": "Sufficient cash"}
+    return {"passed": True, "cash_required": cash_required, "cash_available": available_cash_override, "reason": "Sufficient cash"}
 
 
 # --- Task 5E-fix: Data Readiness Gate (closes the 5D-8 -> 5E integration) ---
@@ -875,7 +875,7 @@ def check_risk_gates(
     risk_snapshot: Optional[Dict[str, Any]] = None,
     thesis_breaker_state: Optional[Dict[str, Any]] = None,
     daily_volume: Optional[float] = None,
-    questrade_cash: Optional[float] = None,
+    available_cash_override: Optional[float] = None,
     data_readiness: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
@@ -893,7 +893,7 @@ def check_risk_gates(
     here (if not supplied) and shared across the gates that use them
     (MRC + cluster variance both need risk_snapshot) — avoids each gate
     independently re-reading the same real file twice per
-    check_risk_gates() call. daily_volume and questrade_cash are each
+    check_risk_gates() call. daily_volume and available_cash_override are each
     only used by one gate (size, balance respectively), so no sharing
     concern applies to them.
 
@@ -907,7 +907,7 @@ def check_risk_gates(
     trip used by exactly one gate, so eager-loading it here would waste
     a live CDP call on every check_risk_gates() invocation that doesn't
     even care about data readiness (e.g. tests that supply
-    daily_volume=/questrade_cash= explicitly but not data_readiness=).
+    daily_volume=/available_cash_override= explicitly but not data_readiness=).
 
     IMPORTANT — unlike the other 5 gates (pure local file reads/
     computation), this 6th gate can make a LIVE TradingView CDP call
@@ -943,7 +943,7 @@ def check_risk_gates(
             _load_thesis_breaker_state() (5E-3).
         daily_volume: See Task 5E-4. If None, check_order_size() fetches
             it internally via get_average_daily_volume().
-        questrade_cash: See Task 5E-5. If None, check_available_balance()
+        available_cash_override: See Task 5E-5. If None, check_available_balance()
             fetches it internally via get_available_cash().
         data_readiness: See check_data_readiness_gate() above. If None,
             that gate fetches it internally via a LIVE TV CDP call — pass
@@ -970,7 +970,7 @@ def check_risk_gates(
     cluster_result = check_cluster_variance(order, portfolio_state, risk_snapshot=risk_snapshot)
     breaker_result = check_breaker_veto(order, thesis_breaker_state=thesis_breaker_state)
     size_result = check_order_size(order, daily_volume=daily_volume)
-    balance_result = check_available_balance(order, questrade_cash=questrade_cash)
+    balance_result = check_available_balance(order, available_cash_override=available_cash_override)
     data_readiness_result = check_data_readiness_gate(order, data_readiness=data_readiness)
 
     gates = [

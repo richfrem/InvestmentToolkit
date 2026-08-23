@@ -14,12 +14,12 @@
       "known_consumers": [],
       "doc_references": [
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 117,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 247,
           "confidence": "mention_only"
         },
@@ -39,7 +39,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 107,
           "confidence": "mention_only"
         }
@@ -703,12 +703,12 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 116,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 244,
           "confidence": "mention_only"
         },
@@ -728,7 +728,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 105,
           "confidence": "mention_only"
         }
@@ -11355,22 +11355,22 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 121,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 122,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 262,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 293,
           "confidence": "mention_only"
         },
@@ -11510,12 +11510,12 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 45,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 112,
           "confidence": "mention_only"
         },
@@ -11742,22 +11742,22 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 121,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 122,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 262,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 293,
           "confidence": "mention_only"
         },
@@ -11897,12 +11897,12 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 45,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 112,
           "confidence": "mention_only"
         },
@@ -12129,22 +12129,22 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 121,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 122,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 262,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 293,
           "confidence": "mention_only"
         },
@@ -12284,12 +12284,12 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 45,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 112,
           "confidence": "mention_only"
         },
@@ -12516,22 +12516,22 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 121,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 122,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 262,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 293,
           "confidence": "mention_only"
         },
@@ -12671,12 +12671,12 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 45,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 112,
           "confidence": "mention_only"
         },
@@ -12903,22 +12903,22 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 121,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 122,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 262,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 293,
           "confidence": "mention_only"
         },
@@ -13058,12 +13058,12 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 45,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 112,
           "confidence": "mention_only"
         },
@@ -13322,22 +13322,22 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 121,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 122,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 262,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 293,
           "confidence": "mention_only"
         },
@@ -13477,12 +13477,12 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 45,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 112,
           "confidence": "mention_only"
         },
@@ -14133,7 +14133,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -15235,7 +15235,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -16404,7 +16404,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -17552,7 +17552,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -18654,7 +18654,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -19756,7 +19756,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -20858,7 +20858,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -21960,7 +21960,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -23062,7 +23062,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -24164,7 +24164,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -25266,7 +25266,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -26368,7 +26368,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -27470,7 +27470,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -28572,7 +28572,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -29741,7 +29741,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -30894,7 +30894,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -31999,22 +31999,22 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 121,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 122,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 262,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 293,
           "confidence": "mention_only"
         },
@@ -32154,12 +32154,12 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 45,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 112,
           "confidence": "mention_only"
         },
@@ -32702,7 +32702,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -33804,7 +33804,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -35122,7 +35122,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -36224,7 +36224,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -37112,22 +37112,22 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 121,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 122,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 262,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 293,
           "confidence": "mention_only"
         },
@@ -37267,12 +37267,12 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 45,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 112,
           "confidence": "mention_only"
         },
@@ -37759,7 +37759,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -38647,22 +38647,22 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 121,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 122,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 262,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 293,
           "confidence": "mention_only"
         },
@@ -38802,12 +38802,12 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 45,
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+          "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
           "line": 112,
           "confidence": "mention_only"
         },
@@ -39522,7 +39522,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -40624,7 +40624,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -41726,7 +41726,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -42828,7 +42828,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -43930,7 +43930,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -45032,7 +45032,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -46134,7 +46134,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -47236,7 +47236,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -48338,7 +48338,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -49440,7 +49440,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -50542,7 +50542,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -51644,7 +51644,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -52746,7 +52746,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -53848,7 +53848,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -54950,7 +54950,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -56052,7 +56052,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -57154,7 +57154,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -58256,7 +58256,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -59358,7 +59358,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -60460,7 +60460,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -61562,7 +61562,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -62664,7 +62664,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -63910,7 +63910,7 @@
           "confidence": "mention_only"
         },
         {
-          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+          "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
           "line": 48,
           "confidence": "mention_only"
         },
@@ -64907,7 +64907,7 @@
       "line": 192,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "\"\"\"Read current portfolio.json as Questrade baseline.\"\"\""
+      "line_text": "\"\"\"Read current portfolio.json as Broker baseline.\"\"\""
     },
     {
       "referencing_file": "investment_screener/backend/py_services/fetch_broker_data.py",
@@ -64942,7 +64942,7 @@
       "line": 286,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "print(\"\\n\ud83d\udcfa  TV ONLY (not in Questrade portfolio.json):\")"
+      "line_text": "print(\"\\n\ud83d\udcfa  TV ONLY (not in Broker portfolio.json):\")"
     },
     {
       "referencing_file": "investment_screener/backend/py_services/fetch_broker_data.py",
@@ -65047,14 +65047,14 @@
       "line": 486,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "print(\"Reading Questrade portfolio.json...\")"
+      "line_text": "print(\"Reading Broker portfolio.json...\")"
     },
     {
       "referencing_file": "investment_screener/backend/py_services/fetch_broker_data.py",
       "line": 489,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "print(\"\u274c portfolio.json not found \u2014 run Questrade sync first.\", file=sys.stderr)"
+      "line_text": "print(\"\u274c portfolio.json not found \u2014 run broker sync first.\", file=sys.stderr)"
     },
     {
       "referencing_file": "investment_screener/backend/py_services/fetch_broker_data.py",
@@ -68239,7 +68239,7 @@
       "line": 160,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "lines.append(f\"*Generated {today} \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Questrade live)*\")"
+      "line_text": "lines.append(f\"*Generated {today} \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Broker live)*\")"
     },
     {
       "referencing_file": "investment_screener/backend/py_services/generate_portfolio_blueprint.py",
@@ -76044,7 +76044,7 @@
       "line": 160,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "lines.append(f\"*Generated {today} \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Questrade live)*\")"
+      "line_text": "lines.append(f\"*Generated {today} \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Broker live)*\")"
     },
     {
       "referencing_file": "plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py",
@@ -76618,7 +76618,7 @@
       "line": 160,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "lines.append(f\"*Generated {today} \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Questrade live)*\")"
+      "line_text": "lines.append(f\"*Generated {today} \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Broker live)*\")"
     },
     {
       "referencing_file": "plugins/portfolio-advisor/skills/thesis-review/scripts/generate_portfolio_blueprint.py",
@@ -77248,7 +77248,7 @@
       "line": 160,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "lines.append(f\"*Generated {today} \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Questrade live)*\")"
+      "line_text": "lines.append(f\"*Generated {today} \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Broker live)*\")"
     },
     {
       "referencing_file": "plugins/portfolio-advisor/skills/strategic-review/scripts/generate_portfolio_blueprint.py",
@@ -77899,7 +77899,7 @@
       "line": 160,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "lines.append(f\"*Generated {today} \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Questrade live)*\")"
+      "line_text": "lines.append(f\"*Generated {today} \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Broker live)*\")"
     },
     {
       "referencing_file": "plugins/portfolio-advisor/skills/portfolio-health/scripts/generate_portfolio_blueprint.py",
@@ -79453,7 +79453,7 @@
       "line": 160,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "lines.append(f\"*Generated {today} \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Questrade live)*\")"
+      "line_text": "lines.append(f\"*Generated {today} \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Broker live)*\")"
     },
     {
       "referencing_file": "plugins/portfolio-advisor/skills/x-news-sweep/scripts/generate_portfolio_blueprint.py",
@@ -81581,7 +81581,7 @@
       "line": 192,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "\"\"\"Read current portfolio.json as Questrade baseline.\"\"\""
+      "line_text": "\"\"\"Read current portfolio.json as Broker baseline.\"\"\""
     },
     {
       "referencing_file": "plugins/tradingview/scripts/fetch_broker_data.py",
@@ -81616,7 +81616,7 @@
       "line": 286,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "print(\"\\n\ud83d\udcfa  TV ONLY (not in Questrade portfolio.json):\")"
+      "line_text": "print(\"\\n\ud83d\udcfa  TV ONLY (not in Broker portfolio.json):\")"
     },
     {
       "referencing_file": "plugins/tradingview/scripts/fetch_broker_data.py",
@@ -81721,14 +81721,14 @@
       "line": 486,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "print(\"Reading Questrade portfolio.json...\")"
+      "line_text": "print(\"Reading Broker portfolio.json...\")"
     },
     {
       "referencing_file": "plugins/tradingview/scripts/fetch_broker_data.py",
       "line": 489,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "print(\"\u274c portfolio.json not found \u2014 run Questrade sync first.\", file=sys.stderr)"
+      "line_text": "print(\"\u274c portfolio.json not found \u2014 run broker sync first.\", file=sys.stderr)"
     },
     {
       "referencing_file": "plugins/tradingview/scripts/fetch_broker_data.py",
@@ -84213,7 +84213,7 @@
       "line": 192,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "\"\"\"Read current portfolio.json as Questrade baseline.\"\"\""
+      "line_text": "\"\"\"Read current portfolio.json as Broker baseline.\"\"\""
     },
     {
       "referencing_file": "plugins/tradingview/skills/tv-portfolio-sync/scripts/fetch_broker_data.py",
@@ -84248,7 +84248,7 @@
       "line": 286,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "print(\"\\n\ud83d\udcfa  TV ONLY (not in Questrade portfolio.json):\")"
+      "line_text": "print(\"\\n\ud83d\udcfa  TV ONLY (not in Broker portfolio.json):\")"
     },
     {
       "referencing_file": "plugins/tradingview/skills/tv-portfolio-sync/scripts/fetch_broker_data.py",
@@ -84353,14 +84353,14 @@
       "line": 486,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "print(\"Reading Questrade portfolio.json...\")"
+      "line_text": "print(\"Reading Broker portfolio.json...\")"
     },
     {
       "referencing_file": "plugins/tradingview/skills/tv-portfolio-sync/scripts/fetch_broker_data.py",
       "line": 489,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "print(\"\u274c portfolio.json not found \u2014 run Questrade sync first.\", file=sys.stderr)"
+      "line_text": "print(\"\u274c portfolio.json not found \u2014 run broker sync first.\", file=sys.stderr)"
     },
     {
       "referencing_file": "plugins/tradingview/skills/tv-portfolio-sync/scripts/fetch_broker_data.py",
@@ -85683,7 +85683,7 @@
       "line": 273,
       "matched_text": "JSON.stringify(",
       "operation": "write",
-      "line_text": "return JSON.stringify({ error: 'Could not find Buy/Sell overlay button. Ensure TradingView chart is open with Questrade broker connected.' });"
+      "line_text": "return JSON.stringify({ error: 'Could not find Buy/Sell overlay button. Ensure TradingView chart is open with connected broker connected.' });"
     },
     {
       "referencing_file": "tradingview-cdp/core/trading.js",
@@ -91983,7 +91983,7 @@
       "line": 80,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "*Generated 2026-07-17 \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Questrade live)*"
+      "line_text": "*Generated 2026-07-17 \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Broker live)*"
     },
     {
       "referencing_file": "investment_screener/backend/data/theses/sub_strategies/metabolic_rewriting.md",
@@ -96725,98 +96725,98 @@
       "line_text": "tracked predictions.jsonl instead of a fixture\" entry as `Status: RESOLVED`."
     },
     {
-      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
       "line": 48,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "`evals/evals.json`, `references/acceptance-criteria.md`)"
     },
     {
-      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
       "line": 116,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "- `.claude-plugin/marketplace.json`"
     },
     {
-      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
       "line": 117,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "- `skills-lock.json`"
     },
     {
-      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
       "line": 121,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "- `plugins/toolkit-manager/plugin.json`"
     },
     {
-      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
       "line": 122,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "- `plugins/toolkit-manager/.claude-plugin/plugin.json`"
     },
     {
-      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
       "line": 171,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "portfolio_path = os.path.abspath(os.path.join(SCRIPT_DIR, \"..\", \"data\", \"portfolio.json\"))"
     },
     {
-      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
       "line": 178,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "print(\"\u2713 Sync complete: portfolio.json updated via Questrade REST API.\")"
+      "line_text": "print(\"\u2713 Sync complete: portfolio.json updated via broker REST API.\")"
     },
     {
-      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
       "line": 197,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "- Line with `**Post-execution**: Auto-syncs portfolio.json via live TradingView CDP sync (or"
     },
     {
-      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
       "line": 199,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "portfolio.json via live TradingView CDP sync.`"
     },
     {
-      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
       "line": 244,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "`.claude-plugin/marketplace.json` \u2014 remove \"and Questrade API token seeding (`/setup-questrade`)\""
+      "line_text": "`.claude-plugin/marketplace.json` \u2014 remove \"and Broker API token seeding (`/setup-broker`)\""
     },
     {
-      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
       "line": 247,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "`skills-lock.json` \u2014 remove the `\"questrade-token-setup\": { ... }` entry."
+      "line_text": "`skills-lock.json` \u2014 remove the `\"broker-token-setup\": { ... }` entry."
     },
     {
-      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
       "line": 262,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "`plugins/toolkit-manager/plugin.json` and `plugins/toolkit-manager/.claude-plugin/plugin.json` \u2014"
     },
     {
-      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
       "line": 285,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "grep -rli \"questrade\" --include=\"*.md\" --include=\"*.json\" --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.py\" . 2>/dev/null | grep -v \"^\\./\\.git/\\|node_modules\\|ARCHIVE/\\|/done/\\|^ADRs/\\|investment_screener/backend/data/\""
+      "line_text": "grep -rli \"broker\" --include=\"*.md\" --include=\"*.json\" --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.py\" . 2>/dev/null | grep -v \"^\\./\\.git/\\|node_modules\\|ARCHIVE/\\|/done/\\|^ADRs/\\|investment_screener/backend/data/\""
     },
     {
-      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-questrade-archive.md",
+      "referencing_file": "docs/superpowers/plans/2026-07-16-phase6-broker-archive.md",
       "line": 293,
       "matched_text": ".json",
       "operation": "mention",
@@ -102122,28 +102122,28 @@
       "line_text": "manual tweaks are tracked in evolution_events.jsonl if logged."
     },
     {
-      "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+      "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
       "line": 45,
       "matched_text": ".json",
       "operation": "mention",
       "line_text": "- They drop out of git tracking and out of the active plugin/routing surface (no `plugin.json`"
     },
     {
-      "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+      "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
       "line": 105,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "- `.claude-plugin/marketplace.json` \u2014 remove Questrade mention from the toolkit-manager plugin"
+      "line_text": "- `.claude-plugin/marketplace.json` \u2014 remove Broker mention from the toolkit-manager plugin"
     },
     {
-      "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+      "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
       "line": 107,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "- `ecosystem_yaml_summary.md`, `skills-lock.json` \u2014 remove the `questrade-token-setup` entries"
+      "line_text": "- `ecosystem_yaml_summary.md`, `skills-lock.json` \u2014 remove the `broker-token-setup` entries"
     },
     {
-      "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-questrade-archive-design.md",
+      "referencing_file": "docs/superpowers/specs/2026-07-16-phase6-broker-archive-design.md",
       "line": 112,
       "matched_text": ".json",
       "operation": "mention",
@@ -103638,7 +103638,7 @@
       "line": 80,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "| **Portfolio Sync** | **`/tv-portfolio-sync`** | **Sync portfolio.json from live TV broker panel (TFSA + RRSP + Cash). Shows diff before writing. No Questrade API needed.** |"
+      "line_text": "| **Portfolio Sync** | **`/tv-portfolio-sync`** | **Sync portfolio.json from live TV broker panel (TFSA + RRSP + Cash). Shows diff before writing. No Broker API needed.** |"
     },
     {
       "referencing_file": "plugins/tradingview/README.md",
@@ -104737,7 +104737,7 @@
       "line": 312,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "The actual holdings are in `investment_screener/backend/data/portfolio.json` \u2014 the canonical source, dynamically populated by the Questrade broker sync."
+      "line_text": "The actual holdings are in `investment_screener/backend/data/portfolio.json` \u2014 the canonical source, dynamically populated by the connected broker sync."
     },
     {
       "referencing_file": "plugins/portfolio-advisor/skills/strategic-review/SKILL.md",
@@ -104842,7 +104842,7 @@
       "line": 724,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "- Reads `investment_screener/backend/data/portfolio.json` (live Questrade holdings)"
+      "line_text": "- Reads `investment_screener/backend/data/portfolio.json` (live broker holdings)"
     },
     {
       "referencing_file": "plugins/portfolio-advisor/skills/strategic-review/SKILL.md",
@@ -104996,7 +104996,7 @@
       "line": 80,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "*Generated 2026-07-17 \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Questrade live)*"
+      "line_text": "*Generated 2026-07-17 \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Broker live)*"
     },
     {
       "referencing_file": "plugins/portfolio-advisor/skills/strategic-review/references/investment_thesis.md",
@@ -105024,7 +105024,7 @@
       "line": 80,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "*Generated 2026-07-17 \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Questrade live)*"
+      "line_text": "*Generated 2026-07-17 \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Broker live)*"
     },
     {
       "referencing_file": "plugins/portfolio-advisor/skills/strategic-review/assets/templates/PortfolioAnalysisRecommendations.md",
@@ -105066,7 +105066,7 @@
       "line": 80,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "*Generated 2026-07-17 \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Questrade live)*"
+      "line_text": "*Generated 2026-07-17 \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Broker live)*"
     },
     {
       "referencing_file": "plugins/portfolio-advisor/skills/portfolio-health/assets/templates/PortfolioAnalysisRecommendations.md",
@@ -105136,7 +105136,7 @@
       "line": 80,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "*Generated 2026-07-17 \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Questrade live)*"
+      "line_text": "*Generated 2026-07-17 \u00b7 Source: `validate_weights.py` \u00d7 `target-portfolio.json` \u00d7 `portfolio.json` (Broker live)*"
     },
     {
       "referencing_file": "plugins/portfolio-advisor/skills/update-portfolio-targets/assets/templates/PortfolioAnalysisRecommendations.md",
@@ -105612,7 +105612,7 @@
       "line": 53,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "**Live order execution via TradingView.** Places buy or sell orders through TradingView's built-in Questrade broker integration using CDP automation. Three-step HITL flow: preflight card (broker check + buying power) \u2192 CONFIRM \u2192 form filled + submitted \u2192 portfolio.json synced."
+      "line_text": "**Live order execution via TradingView.** Places buy or sell orders through TradingView's built-in TradingView connected broker integration using CDP automation. Three-step HITL flow: preflight card (broker check + buying power) \u2192 CONFIRM \u2192 form filled + submitted \u2192 portfolio.json synced."
     },
     {
       "referencing_file": "plugins/toolkit-manager/references/agent-quick-reference.md",
