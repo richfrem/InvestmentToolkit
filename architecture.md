@@ -153,7 +153,8 @@ InvestmentToolkit/                         ← repo root
 │  plugins/tradingview/scripts/tv_client.py                    │
 │  (Python bridge — locates CLI via TV_CDP_DIR or walk-up)    │
 │  Used by: ta_sweep_batch.py, place_order.py, fetch_broker_  │
-│           data.py, tv_pine_inject.py, tv_pine_manager.py    │
+│           data.py, tv_pine_inject.py, tv_pine_manager.py,   │
+│           tv_thesis_overlay.py, tv_create_alerts.py         │
 └──────────────────────────────────────────────────────────────┘
 ```
 
