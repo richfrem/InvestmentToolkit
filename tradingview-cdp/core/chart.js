@@ -776,21 +776,18 @@ export async function listIndicators(client) {
           });
           return JSON.stringify({ success: true, indicators: [...new Set(keys)], source: 'data-window' });
         }
-        // Data Window not open — read from chart legend aria-labels
-        var hideBtn = [...document.querySelectorAll('button[aria-label="Hide indicator legend"]')]
-          .filter(b => b.offsetParent);
-        var count = hideBtn.length;
-        // Walk each hide-btn's parent to find the indicator name span
+        // Data Window not open — read from chart legend title elements
+        var titleNodes = [...document.querySelectorAll('[class*="titleWrapper-"], [data-name="legend-series-item"]')];
         var names = [];
-        hideBtn.forEach(function(btn) {
-          var row = btn.parentElement;
-          if (!row) return;
-          var spans = [...row.querySelectorAll('span, div')].filter(function(el) {
-            return el.childElementCount === 0 && el.textContent.trim().length > 1;
-          });
-          if (spans.length > 0) names.push(spans[0].textContent.trim());
+        titleNodes.forEach(function(el) {
+          if (!el.offsetParent) return;
+          var t = el.textContent.trim();
+          if (t && t.length > 1 && isNaN(Number(t))) {
+            names.push(t);
+          }
         });
-        return JSON.stringify({ success: true, indicators: [...new Set(names)], count, source: 'legend', hint: 'Open Data Window for richer names' });
+        var unique = [...new Set(names)];
+        return JSON.stringify({ success: true, indicators: unique, count: unique.length, source: 'legend' });
       })()`,
       returnByValue: true, awaitPromise: false,
     });
