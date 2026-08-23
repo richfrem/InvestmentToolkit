@@ -5,6 +5,37 @@ globs: ["**/*"]
 
 # Git Operations Policy
 
+## 5-Step Standard Feature Branch & Post-Merge Protocol (No Guessing, No Resetting)
+
+Always follow this exact 5-step cycle for every code change:
+
+```bash
+# 1. Implement, commit, and push directly to origin feature branch:
+git checkout -b chore/feature-name
+# (make edits)
+git add <files>
+git commit -m "feat: description"
+git push -u origin chore/feature-name
+
+# 2. User opens PR and merges it into main on GitHub.
+
+# 3. User says "I merged the PR". You checkout main:
+git checkout main
+
+# 4. Pull origin/main cleanly (enforced fast-forward only):
+git pull origin main
+
+# 5. Delete merged feature branch locally and remotely:
+git branch -d chore/feature-name
+git push origin --delete chore/feature-name
+```
+
+### Git Defaults Enforced:
+- Repository MUST have `git config pull.ff only` configured.
+- NEVER run `git reset --hard`, `git push --force`, or unprompted merge aborts. If `git pull origin main` fails fast-forward, stop and report the exact state to the user.
+
+---
+
 ## Hard Rules (never violate)
 
 ### Worktree creation is mandatory, not a judgment call
