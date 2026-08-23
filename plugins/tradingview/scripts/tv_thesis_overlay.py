@@ -238,10 +238,11 @@ def apply_overlay(symbol: str, dry_run: bool = False) -> Dict[str, Any]:
     if not switch_chart_symbol(levels["symbol"]):
         return {"success": False, "error": f"Could not switch active chart to {levels['symbol']}"}
 
-    # Step 2: Inject Pine Script via Node CLI
-    inject_res = tv_call("pine", "inject", "--file", temp_pine)
+    # Step 2: Inject Pine Script via Node CLI (Pitfall #12 — pass content, not file path)
+    inject_res = tv_call("pine", "inject", "--content", pine_code)
+    is_ok = isinstance(inject_res, dict) and (inject_res.get("success") is True or "error" not in inject_res)
     return {
-        "success": True,
+        "success": is_ok,
         "symbol": levels["symbol"],
         "levels": levels,
         "inject_result": inject_res,
