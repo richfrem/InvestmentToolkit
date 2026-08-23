@@ -220,7 +220,25 @@ export async function injectPineScript(client, scriptContent) {
     });
 
     // 5. Wait for indicator to load onto chart
-    await new Promise(r => setTimeout(r, 1500));
+    await new Promise(r => setTimeout(r, 1200));
+
+    // 6. Close Pine Editor panel after adding to chart (clean workspace view)
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        var ed = document.querySelector('.pine-editor-monaco');
+        var btn = document.querySelector('[data-name="pine-dialog-button"]') ||
+                  [...document.querySelectorAll('button')].find(function(b) {
+                    return b.offsetParent && (b.textContent.trim() === 'Pine Editor' || b.getAttribute('aria-label') === 'Pine Editor');
+                  });
+        // If Pine Editor is still visible/expanded, click button to collapse it
+        if (ed && ed.offsetParent && btn) {
+          btn.click();
+        }
+      })()`,
+      returnByValue: true,
+      awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 500));
 
     return { success: true };
   } catch (e) {

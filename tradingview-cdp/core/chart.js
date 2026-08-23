@@ -601,6 +601,23 @@ export async function addIndicator(client, name) {
   try {
     const safeName = JSON.stringify(name);
 
+    // 0. Duplicate Guard: Check if indicator is already active on the chart legend
+    const checkResult = await client.Runtime.evaluate({
+      expression: `(function() {
+        var searchTerm = ${safeName}.toLowerCase();
+        var titleNodes = [...document.querySelectorAll('[class*="titleWrapper-"], [data-name="legend-series-item"], [class*="legend-"]')];
+        var found = titleNodes.some(function(el) {
+          return el.offsetParent && el.textContent.trim().toLowerCase().includes(searchTerm);
+        });
+        return JSON.stringify({ alreadyExists: found });
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    const checkData = JSON.parse(checkResult.result.value);
+    if (checkData.alreadyExists) {
+      return { success: true, alreadyExists: true, message: `Indicator "${name}" is already active on chart.` };
+    }
+
     // 1. Get the Indicators button bounding rect for a reliable mouse-event click.
     //    JavaScript .click() doesn't always fire TradingView's React handler for this button;
     //    Input.dispatchMouseEvent at the computed center coordinates is the reliable path.
@@ -705,13 +722,14 @@ export async function removeIndicator(client, name) {
     // 1. Find the legend title element matching the indicator name
     const findResult = await client.Runtime.evaluate({
       expression: `(function() {
-        var target = [...document.querySelectorAll('[class*="titleWrapper-l31H9iuA"]')]
+        var searchTerm = ${safeName};
+        var target = [...document.querySelectorAll('[class*="titleWrapper-"], [data-name="legend-series-item"], [class*="legend-"]')]
           .find(function(el) {
-            return el.offsetParent && el.textContent.trim().toLowerCase().includes(${safeName});
+            return el.offsetParent && el.textContent.trim().toLowerCase().includes(searchTerm);
           });
         if (!target) return JSON.stringify({ found: false });
         var r = target.getBoundingClientRect();
-        return JSON.stringify({ found: true, x: r.x, y: r.y, cx: r.x + r.width / 2, cy: r.y + r.height / 2, text: target.textContent.trim() });
+        return JSON.stringify({ found: true, x: r.x, y: r.y, cx: Math.round(r.x + r.width / 2), cy: Math.round(r.y + r.height / 2), text: target.textContent.trim() });
       })()`,
       returnByValue: true, awaitPromise: false,
     });
