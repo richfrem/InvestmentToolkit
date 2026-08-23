@@ -105,7 +105,7 @@ describe('BrokerSyncService.persistSnapshotToDb', () => {
     });
 
     it('converts a CAD-only cash balance (cashUSD=0) to its USD equivalent, not silently $0', () => {
-        // Real bug found 2026-07-27: a sub-account ("CASH", the Questrade cash-only
+        // Real bug found 2026-07-27: a sub-account ("CASH", the Broker cash-only
         // account) can hold pure CAD cash with cashUSD=0. persistSnapshotToDb only
         // ever checked balances.cashUSD before writing a cash row, so this account's
         // entire balance silently never entered account_investment at all — the

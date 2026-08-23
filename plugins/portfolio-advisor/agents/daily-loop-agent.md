@@ -96,7 +96,7 @@ except:
   > Propose and launch `python3 run_investment_toolkit.py` as a background task. Wait 5 seconds for it to initialize.
 
 **⚠ HARD GATE — Broker Login & Share Count Integrity:**
-- Always remind the user to log in to their broker inside TradingView Desktop (e.g., Questrade panel) so the CDP can read the actual positions and synchronize correctly.
+- Always remind the user to log in to their broker inside TradingView Desktop (e.g., broker panel) so the CDP can read the actual positions and synchronize correctly.
 - If `tv_snapshot_positions == 0` or portfolio is stale (> 8h old) AND TradingView is connected:
   > "Portfolio data is [X]h old or unverified. Syncing from TradingView now..."
   > Trigger a `/tv-portfolio-sync` command immediately.

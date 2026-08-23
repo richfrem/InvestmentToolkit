@@ -1,6 +1,6 @@
 # TradingView CDP Automation Engine
 
-This directory contains the standalone Node.js automation engine that controls the **TradingView Desktop** Chromium instance using the **Chrome DevTools Protocol (CDP)**. It serves as the bridge between the Python/TypeScript analytical backend and TradingView's visual chart layout, Pine Editor, and Questrade broker panel.
+This directory contains the standalone Node.js automation engine that controls the **TradingView Desktop** Chromium instance using the **Chrome DevTools Protocol (CDP)**. It serves as the bridge between the Python/TypeScript analytical backend and TradingView's visual chart layout, Pine Editor, and connected broker panel.
 
 ---
 

@@ -5,7 +5,7 @@ place_order.py (Python Utility)
 
 Purpose:
     Preflight-check and execute buy/sell orders via TradingView's built-in
-    Questrade broker integration (automated via CDP DOM). Pre-flight checks
+    TradingView connected broker integration (automated via CDP DOM). Pre-flight checks
     broker connection, buying power, and account before showing a confirmation
     card. On --execute, drives the TradingView order dialog end-to-end,
     screenshots the filled form, and submits after HITL approval. Triggers
@@ -384,7 +384,7 @@ def _format_card(card: dict) -> str:
             combined += f"  {flag}"
         return f"║  {combined:<{w}}║"
 
-    lines.append(row("Via:", "TradingView (Questrade)"))
+    lines.append(row("Via:", "TradingView (Broker)"))
     lines.append(row("Ticker:", card.get("ticker", "?")))
     lines.append(row("Action:", card.get("action", "?").upper()))
     lines.append(row("Shares:", str(card.get("shares", "?"))))

@@ -66,9 +66,9 @@ Outputs:
 ---
 
 ### `/place-order {ACTION} {N} {TICKER} in {ACCOUNT}`
-**Live order execution via TradingView.** Places buy or sell orders through TradingView's built-in Questrade broker integration using CDP automation. Three-step HITL flow: preflight card (broker check + buying power) → CONFIRM → form filled + submitted → portfolio.json synced.
+**Live order execution via TradingView.** Places buy or sell orders through TradingView's built-in TradingView connected broker integration using CDP automation. Three-step HITL flow: preflight card (broker check + buying power) → CONFIRM → form filled + submitted → portfolio.json synced.
 
-Requires: TradingView Desktop running with Questrade broker connected (the Questrade panel visible at the bottom of TradingView).
+Requires: TradingView Desktop running with connected broker connected (the broker panel visible at the bottom of TradingView).
 
 ```
 /place-order buy 1 WYFI in TFSA
@@ -77,7 +77,7 @@ Requires: TradingView Desktop running with Questrade broker connected (the Quest
 ```
 
 Pre-flight checks every time:
-- Questrade broker connected in TradingView
+- connected broker connected in TradingView
 - Correct account (TFSA / RRSP / Margin)
 - Sufficient buying power (USD or CAD matched to ticker exchange)
 

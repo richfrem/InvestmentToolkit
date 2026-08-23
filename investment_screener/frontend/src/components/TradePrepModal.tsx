@@ -299,7 +299,7 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                                             <ProvenanceRow icon={<Wifi size={11} />} label="Price source"
                                                 value={provenance.priceSource === 'tradingview' ? 'TradingView Live' : 'yfinance'} />
                                             <ProvenanceRow icon={<ShieldCheck size={11} />} label="Broker"
-                                                value={provenance.tvConnected ? 'Connected (Questrade via TV)' : 'Not connected'}
+                                                value={provenance.tvConnected ? 'Connected (Broker via TV)' : 'Not connected'}
                                                 warn={!provenance.tvConnected} />
                                             {provenance.dcfAction && (
                                                 <ProvenanceRow icon={<TrendingUp size={11} />} label="DCF signal"
@@ -352,7 +352,7 @@ export function TradePrepModal({ ticker, initialAction, initialShares = 1, onClo
                             {!isBrokerReady && (
                                 <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
                                     <AlertTriangle size={13} className="text-amber-400 mt-0.5 shrink-0" />
-                                    <p className="text-amber-300 text-xs">TradingView not connected — open TV Desktop with <code className="bg-slate-800 px-1 rounded">--remote-debugging-port=9222</code> and ensure Questrade is connected.</p>
+                                    <p className="text-amber-300 text-xs">TradingView not connected — open TV Desktop with <code className="bg-slate-800 px-1 rounded">--remote-debugging-port=9222</code> and ensure Broker is connected.</p>
                                 </div>
                             )}
                             {isDataStale && (

@@ -4,7 +4,7 @@
  * Purpose:
  *   Broker-agnostic abstraction layer that reads accounts, positions, balances,
  *   and orders from TradingView's built-in broker panel DOM via CDP.
- *   Works with any broker connected to TradingView (Questrade, IBKR, etc.)
+ *   Works with any broker connected to TradingView (Broker, IBKR, etc.)
  * 
  * DOM structure confirmed via live inspection (TradingView Desktop, 2026-05-15):
  *   Tabs:       [class*="underline-tab"][class*="size-xsmall"] — compound to avoid container match

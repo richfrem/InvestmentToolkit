@@ -77,7 +77,7 @@ All cash is in **PSU-U.TO** (~$100 USD/share, TSX). To fund any buy: sell PSU-U.
 
 **3. Backend restart required**: Production runs `node dist/index.js`. Changes → `npm run build -w backend` → restart. Frontend hot-reloads; backend does not.
 
-**4. (Retired)**: The Questrade seed endpoint this pitfall described was removed when the standalone Questrade REST integration was archived (2026-07-16). Number kept unused, not reassigned — other docs reference pitfalls by number (e.g. #7, #27).
+**4. (Retired)**: The legacy broker seed endpoint this pitfall described was removed when the standalone legacy broker REST integration was archived (2026-07-16). Number kept unused, not reassigned — other docs reference pitfalls by number (e.g. #7, #27).
 
 **5. `lastActualPS` nullable**: In `zod-schemas.ts` use `.nullable().transform(v => v ?? 0)`. Strict `z.number()` causes 400s for pre-revenue/mining stocks.
 

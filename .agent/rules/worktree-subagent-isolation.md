@@ -98,7 +98,7 @@ just work directly in the shared main checkout — then commits and pushes strai
 
 **Occurrence 1 — Phase 6, entire phase (2026-07-16 to 2026-07-17).** Four sub-projects (an
 `AGENTS.md` audit, an eval-coverage backfill across 53 files via `subagent-driven-development`, a
-Questrade REST integration removal across ~51 files including live-order fallback code and a
+legacy broker REST integration removal across ~51 files including live-order fallback code and a
 frontend modal deletion, an agent relocation between plugins, and a new Python script + test
 suite) were each individually judged low-risk enough to skip worktree creation, and were committed
 directly onto the shared main checkout and pushed straight to `origin/main`, every time. Notably,
@@ -110,7 +110,7 @@ requirement was skipped too, not just the general policy.
 - There is no reviewable feature branch for any of it — the user cannot review a diff and merge it
   themselves; it is simply already in `main`'s history by the time they see it.
 - A change later described as "small" (the `AGENTS.md` audit) can grow substantially mid-task (the
-  Questrade removal ballooned from an assumed docs-labeling pass into a ~51-file full-stack code
+  Broker removal ballooned from an assumed docs-labeling pass into a ~51-file full-stack code
   removal once real scope surfaced) — by which point work is already committed directly to `main`,
   with no isolation boundary to fall back to.
 - Reconciling local `main` against `origin/main` after the fact (e.g. when a separately-created
@@ -133,7 +133,7 @@ requirement was skipped too, not just the general policy.
 
 1. **Before starting any qualifying task, create the worktree first.** Use
    `superpowers:using-git-worktrees`, or `git worktree add <path> -b <branch>` directly. Do this
-   even if the task looks like "just a docs edit" or "just one script" — the Questrade incident
+   even if the task looks like "just a docs edit" or "just one script" — the Broker incident
    above is the concrete proof that scope assessments made before starting are unreliable.
 2. **If `subagent-driven-development` or `executing-plans` is invoked, follow its own listed
    required workflow dependencies without skipping any of them** — in particular

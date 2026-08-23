@@ -6,7 +6,7 @@ description: >
   RRSP, Cash) via CDP. Scrapes positions and balances, shows a diff vs the
   current portfolio.json (new positions, closed positions, qty/price changes),
   and waits for explicit CONFIRM before writing. Works with any TradingView-
-  connected broker — no Questrade API credentials required.
+  connected broker — no Broker API credentials required.
 allowed-tools: Bash, Read, Write
 ---
 
@@ -53,7 +53,7 @@ Check the output:
 - If `positions` is empty → tell user TradingView is not connected with a broker
 
 If TradingView is not connected, tell the user:
-> "TradingView isn't showing any broker positions. Make sure TradingView Desktop is running and you're logged into your broker account in the Questrade panel. Then try again."
+> "TradingView isn't showing any broker positions. Make sure TradingView Desktop is running and you're logged into your broker account in the broker panel. Then try again."
 
 ---
 
