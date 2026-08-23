@@ -1,5 +1,5 @@
 ---
-name: tv_ta_snapshot
+name: tv-ta-snapshot
 plugin: tradingview
 description: >
   Captures a TradingView chart screenshot and performs visual technical analysis.
