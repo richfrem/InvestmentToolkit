@@ -17,7 +17,14 @@ Key Input Dependencies:
     - requirements.txt (Python packages pins)
 
 Usage Examples:
+    # Full standard launch:
     python3 run_investment_toolkit.py
+
+    # Fast launch (skips dependency install and build if already updated):
+    python3 run_investment_toolkit.py --skip-deps --skip-build
+
+    # Launch servers without launching TradingView Desktop:
+    python3 run_investment_toolkit.py --no-tv
 """
 
 import os
@@ -281,6 +288,13 @@ def main() -> None:
     """
     Main execution loop for launching the toolkit.
     """
+    import argparse
+    parser = argparse.ArgumentParser(description="Unified startup launcher for Investment Toolkit suite.")
+    parser.add_argument("--skip-deps", action="store_true", help="Skip npm install and python module re-verification")
+    parser.add_argument("--no-tv", action="store_true", help="Skip launching TradingView Desktop")
+    parser.add_argument("--skip-build", action="store_true", help="Skip building backend (if already built)")
+    args = parser.parse_args()
+
     Colors.print("🚀 Launching Investment Screener...", Colors.GREEN)
 
     process_env = os.environ.copy()
@@ -294,15 +308,24 @@ def main() -> None:
     setup_virtual_env(os.path.join(ROOT_DIR, "venv"), process_env)
 
     # 3. Dependencies check
-    install_and_verify_dependencies(process_env)
+    if not args.skip_deps:
+        install_and_verify_dependencies(process_env)
+    else:
+        Colors.print("⚡ Skipping dependency check (--skip-deps active)", Colors.CYAN)
 
     # 4. Launch TradingView Desktop
-    Colors.print("Launching TradingView Desktop...", Colors.GREEN)
-    _launch_tradingview()
+    if not args.no_tv:
+        Colors.print("Launching TradingView Desktop...", Colors.GREEN)
+        _launch_tradingview()
+    else:
+        Colors.print("⚡ Skipping TradingView launch (--no-tv active)", Colors.CYAN)
 
     # 5. Build Backend
-    Colors.print("Building Backend...", Colors.GREEN)
-    run_command(["npm", "run", "build", "-w", "backend"], env=process_env)
+    if not args.skip_build:
+        Colors.print("Building Backend...", Colors.GREEN)
+        run_command(["npm", "run", "build", "-w", "backend"], env=process_env)
+    else:
+        Colors.print("⚡ Skipping Backend build (--skip-build active)", Colors.CYAN)
 
     # 6. Start active servers
     start_services_loop(process_env)
