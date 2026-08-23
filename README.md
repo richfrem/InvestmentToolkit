@@ -101,7 +101,7 @@ Purpose-built for thematic, closed-end, and cash fund ETFs.
 
 TradingView Desktop is the primary layer for live prices, portfolio sync, order execution, Pine Script authoring, and deep technical analysis via CDP (Chrome DevTools Protocol) automation.
 
-* **Skills**: `/setup-tradingview`, `/tv-onboarding`, `/tv-portfolio-sync`, `/tv-watchlist-sync`, `/place-order`, `/modify-order`, `/cancel-order`, `/get-orders`, `/tv-alert-sync`, `/tv-alert-reconcile`, `/tv-price-refresh`, `/tv-snapshot`, `/tv-thesis-overlay`, `/pine-inject`, `/author-pine`, `/tv-ta-deep`, `/ta-daily-sweep`
+* **Skills**: `/tv-setup`, `/tv-onboarding`, `/tv-portfolio-sync`, `/tv-indicators`, `/tv-thesis-overlay`, `/tv-alert-reconcile`, `/tv-ta`, `/tv-ta-deep`, `/tv-ta-daily-sweep`, `/tv-snapshot`, `/tv-price-refresh`, `/tv-alert-sync`, `/tv-alert-list`, `/tv-pine-inject`, `/tv-author-pine`, `/tv-chart-setup`, `/tv-change-symbol`, `/tv-change-type`, `/tv-place-order`, `/tv-modify-order`, `/tv-cancel-order`, `/tv-get-orders`, `/tv-watchlist-sync`
 * **Agents**: `ta-guide` — interactive TA tutor and Pine Script architect; walks users through live chart analysis step-by-step and builds custom indicator views.
 
 ### 5. Toolkit Manager (`plugins/toolkit-manager`)
