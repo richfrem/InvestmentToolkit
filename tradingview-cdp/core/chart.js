@@ -618,13 +618,27 @@ export async function addIndicator(client, name) {
       return { success: true, alreadyExists: true, message: `Indicator "${name}" is already active on chart.` };
     }
 
-    // 1. Get the Indicators button bounding rect for a reliable mouse-event click.
-    //    JavaScript .click() doesn't always fire TradingView's React handler for this button;
-    //    Input.dispatchMouseEvent at the computed center coordinates is the reliable path.
+    // 1. Close Pine Editor dialog if it is open (Pitfall #23: overlays screen and blocks Indicators dialog)
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        var ed = document.querySelector('.pine-editor-monaco') || document.querySelector('[class*="editorBaseLayoutContainer-dialog"]');
+        var btn = document.querySelector('[data-name="pine-dialog-button"]') ||
+                  [...document.querySelectorAll('button')].find(function(b) {
+                    return b.offsetParent && (b.textContent.trim() === 'Pine Editor' || b.getAttribute('aria-label') === 'Pine Editor');
+                  });
+        if (ed && ed.offsetParent && btn) btn.click();
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 400));
+
+    // 2. Get the Indicators button bounding rect for a reliable mouse-event click.
     const btnRect = await client.Runtime.evaluate({
       expression: `JSON.stringify((function() {
-        var btn = [...document.querySelectorAll('button[data-name="open-indicators-dialog"]')]
-          .find(function(b) { return b.offsetParent && b.textContent.trim() === 'Indicators'; });
+        var btn = document.querySelector('button[data-name="open-indicators-dialog"]') ||
+                  [...document.querySelectorAll('button')].find(function(b) {
+                    return b.offsetParent && (b.textContent.trim() === 'Indicators' || (b.getAttribute('aria-label') || '').includes('Indicators'));
+                  });
         if (!btn) return null;
         var r = btn.getBoundingClientRect();
         return { cx: Math.round(r.x + r.width / 2), cy: Math.round(r.y + r.height / 2) };
@@ -634,17 +648,22 @@ export async function addIndicator(client, name) {
     const btnPos = JSON.parse(btnRect.result.value);
     if (!btnPos) return { success: false, error: 'Indicators button not found in toolbar' };
 
-    // 2. Open Indicators dialog via mouse event (reliable; .click() is flaky on this button)
+    // 3. Open Indicators dialog via mouse event
     await client.Input.dispatchMouseEvent({ type: 'mousePressed', x: btnPos.cx, y: btnPos.cy, button: 'left', clickCount: 1 });
     await client.Input.dispatchMouseEvent({ type: 'mouseReleased', x: btnPos.cx, y: btnPos.cy, button: 'left', clickCount: 1 });
-    await new Promise(r => setTimeout(r, 1500));
-
-    // 3. Type search term
+    await new Promise(r => setTimeout(r, 1200));
+    // 3. Type search term into dialog search input
     const typeResult = await client.Runtime.evaluate({
       expression: `(function() {
-        var input = [...document.querySelectorAll('input')].find(function(i) {
-          return i.offsetParent && (i.placeholder === 'Search' || i.placeholder === 'Find indicator...');
-        });
+        var input = document.querySelector('[data-dialog-name="Indicators, metrics, and strategies"] input') ||
+                    document.querySelector('[data-name="indicators-dialog"] input') ||
+                    [...document.querySelectorAll('input')].find(function(i) {
+                      return i.offsetParent && (
+                        i.placeholder === 'Search' || 
+                        i.placeholder.toLowerCase().includes('search') ||
+                        i.placeholder.toLowerCase().includes('indicator')
+                      );
+                    });
         if (!input) return 'no-input';
         input.focus();
         var setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
