@@ -719,8 +719,8 @@ export async function removeIndicator(client, name) {
   try {
     const safeName = JSON.stringify(name.toLowerCase());
 
-    // 1. Find all matching legend items
-    const findResult = await client.Runtime.evaluate({
+    // 1. Find matching legend item and trigger remove sequence
+    const removeResult = await client.Runtime.evaluate({
       expression: `(function() {
         var searchTerm = ${safeName};
         var items = [...document.querySelectorAll('[data-name="legend-series-item"], [class*="item-"]')];
@@ -730,49 +730,25 @@ export async function removeIndicator(client, name) {
           var text = (title ? title.textContent : item.textContent).trim().toLowerCase();
           return text.startsWith(searchTerm) || text.includes(searchTerm);
         });
-        if (!match) return JSON.stringify({ found: false });
-        var r = match.getBoundingClientRect();
-        return JSON.stringify({
-          found: true,
-          cx: Math.round(r.x + r.width / 2),
-          cy: Math.round(r.y + r.height / 2),
-          text: match.textContent.trim().substring(0, 40)
-        });
+        if (!match) return JSON.stringify({ success: false, error: 'Indicator not found in chart legend' });
+
+        var text = match.textContent.trim().substring(0, 40);
+        var btn = match.querySelector('button[aria-label="Remove"]');
+        if (!btn) return JSON.stringify({ success: false, error: 'Remove button not found inside indicator row' });
+
+        btn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+        btn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+        btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+
+        return JSON.stringify({ success: true, removed: text });
       })()`,
-      returnByValue: true, awaitPromise: false,
+      returnByValue: true,
+      awaitPromise: false,
     });
-    const pos = JSON.parse(findResult.result.value);
-    if (!pos.found) return { success: false, error: `Indicator "${name}" not found in chart legend` };
+    const resultData = JSON.parse(removeResult.result.value);
+    if (!resultData.success) return { success: false, error: resultData.error || `Failed to remove "${name}"` };
 
-    // 2. Physical mousemove to legend row to expose hover buttons
-    await client.Input.dispatchMouseEvent({ type: 'mouseMoved', x: pos.cx, y: pos.cy });
-    await new Promise(r => setTimeout(r, 600));
-
-    // 3. Find and click the Remove button specifically inside that legend row
-    const removeBtnPos = await client.Runtime.evaluate({
-      expression: `(function() {
-        var cy = ${pos.cy};
-        var btns = [...document.querySelectorAll('button[aria-label="Remove"]')];
-        var btn = btns.find(function(b) {
-          if (!b.offsetParent) return false;
-          var r = b.getBoundingClientRect();
-          return Math.abs((r.y + r.height / 2) - cy) < 20;
-        });
-        if (!btn && btns.length > 0) btn = btns[0];
-        if (!btn) return JSON.stringify({ found: false });
-        var r = btn.getBoundingClientRect();
-        return JSON.stringify({ found: true, cx: Math.round(r.x + r.width / 2), cy: Math.round(r.y + r.height / 2) });
-      })()`,
-      returnByValue: true, awaitPromise: false,
-    });
-    const removeBtn = JSON.parse(removeBtnPos.result.value);
-    if (!removeBtn.found) return { success: false, error: `Remove button not found for "${name}"` };
-
-    await client.Input.dispatchMouseEvent({ type: 'mousePressed', x: removeBtn.cx, y: removeBtn.cy, button: 'left', clickCount: 1 });
-    await client.Input.dispatchMouseEvent({ type: 'mouseReleased', x: removeBtn.cx, y: removeBtn.cy, button: 'left', clickCount: 1 });
-    await new Promise(r => setTimeout(r, 500));
-
-    return { success: true, removed: pos.text };
+    return { success: true, removed: resultData.removed };
   } catch (e) {
     return { success: false, error: e.message };
   }
