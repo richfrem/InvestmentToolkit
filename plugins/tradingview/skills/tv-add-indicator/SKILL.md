@@ -1,5 +1,5 @@
 ---
-name: tv_add_indicator
+name: tv-add-indicator
 plugin: tradingview
 description: >
   Add a built-in TradingView indicator or personal Pine Script to the active

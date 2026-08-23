@@ -1,5 +1,5 @@
 ---
-name: get-orders
+name: tv-get-orders
 plugin: tradingview
 description: >
   Read Working and Inactive orders from TradingView's broker panel via CDP.

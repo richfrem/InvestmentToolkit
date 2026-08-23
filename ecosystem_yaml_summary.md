@@ -12,18 +12,18 @@
 - **13f-tracker**: 13f_tracker | >
 - **adr-management**: adr-management | >
 - **agent-swarm**: agent-swarm | "(Industry standard: Parallel Agent) Primary Use Case: Work that can be partitioned into independent sub-tasks running concurrently across multiple ag...
-- **alert-sync**: tv_alert_sync | >
+- **alert-sync**: tv-alert-sync | >
 - **analyze-plugin**: analyze-plugin | >
 - **antigravity-project-setup**: antigravity-project-setup | >-
 - **audit-plugin-l5**: audit-plugin-l5 | Triggers the L5 Red Team Sub-Agent to rigorously audit a plugin against the 39-point L4 pattern matrix.
 - **audit-plugin**: audit-plugin | >
-- **author-pine-script**: author_pine_script | >
+- **author-pine-script**: tv-author-pine | >
 - **brainstorming**: brainstorming | "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user inten...
 - **business-requirements-capture**: business-requirements-capture | >
 - **business-workflow-doc**: business-workflow-doc | >
 - **calibrate-targets**: calibrate_targets | >
 - **cancel-order**: cancel-order | >
-- **chart-snapshot**: tv_chart_snapshot | >
+- **chart-snapshot**: tv-chart-snapshot | >
 - **claude-cli-agent**: claude-cli-agent | >
 - **claude-project-setup**: claude-project-setup | >-
 - **coding-conventions-agent**: coding-conventions-agent | >
@@ -87,7 +87,7 @@
 - **os-init**: os-init | >
 - **os-memory-manager**: os-memory-manager | >
 - **path-reference-auditor**: path-reference-auditor | >
-- **pine-inject**: pine_inject | >
+- **pine-inject**: tv-pine-inject | >
 - **place-order**: place_order | >
 - **plugin-installer**: plugin-installer | >-
 - **plugin-remover**: plugin-remover | Interactively select and uninstall agent plugins and skills from the local .agents/ environment.
@@ -111,20 +111,20 @@
 - **symlink-manager**: symlink-manager | >
 - **synthesize-learnings**: synthesize-learnings | >
 - **systematic-debugging**: systematic-debugging | Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
-- **ta-red-team**: ta_red_team | >
-- **ta-snapshot**: tv_ta_snapshot | >
+- **ta-red-team**: tv-ta-red-team | >
+- **ta-snapshot**: tv-ta-snapshot | >
 - **task-agent**: task-agent | >
-- **technical-analysis-expert**: technical_analysis_expert | >
+- **technical-analysis-expert**: tv-ta-deep | >
 - **test-driven-development**: test-driven-development | Use when implementing any feature or bugfix, before writing implementation code
 - **thesis-challenge-bundler**: thesis_challenge_bundler | >
 - **todo-check**: todo-check | >
 - **triple-loop-learning**: triple-loop-learning | "(Industry standard: Meta-Learning System / Automated Autoresearch) Primary Use Case: Continuous, self-improving orchestration of an agentic system ov...
-- **tv-add-indicator**: tv_add_indicator | >
-- **tv-change-symbol**: tv_change_symbol | >
-- **tv-change-type**: tv_change_type | >
-- **tv-chart-setup**: tv_chart_setup | >
-- **tv-portfolio-sync**: tv_portfolio_sync | >
-- **tv-save-indicator**: tv_save_indicator | >
+- **tv-add-indicator**: tv-add-indicator | >
+- **tv-change-symbol**: tv-change-symbol | >
+- **tv-change-type**: tv-change-type | >
+- **tv-chart-setup**: tv-chart-setup | >
+- **tv-portfolio-sync**: tv-portfolio-sync | >
+- **tv-save-indicator**: tv-save-indicator | >
 - **tv_pine_advisor**: tv_pine_advisor | Generate, inject, and read a custom Pine Script v5 indicator on the active TradingView chart to produce a technical analysis advisory for a given tick...
 - **update-ecosystem-index**: update-ecosystem-index | Automatically updates the plugin/skill/agent counts in README.md based on the current plugins/ directory.
 - **update-portfolio-targets**: update-portfolio-targets | >

@@ -1,5 +1,5 @@
 ---
-name: tv_chart_setup
+name: tv-chart-setup
 plugin: tradingview
 description: >
   Complete agent workspace setup: switch to agent-layout, change symbol, and

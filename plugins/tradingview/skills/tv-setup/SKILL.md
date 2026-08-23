@@ -1,5 +1,5 @@
 ---
-name: tv_setup
+name: tv-setup
 plugin: tradingview
 description: Diagnoses and guides setup of the TradingView CDP dependency and debugging port.
 allowed-tools: Bash, Read

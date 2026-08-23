@@ -1,5 +1,5 @@
 ---
-name: ta_red_team
+name: tv-ta-red-team
 plugin: tradingview
 description: >
   Adversarial red-team reviewer for Technical Analysis theses. Acts as a Senior

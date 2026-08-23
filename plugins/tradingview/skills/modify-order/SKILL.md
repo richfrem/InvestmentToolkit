@@ -1,5 +1,5 @@
 ---
-name: modify-order
+name: tv-modify-order
 plugin: tradingview
 description: >
   Modify the limit price (and optionally quantity) of a Working or Inactive order

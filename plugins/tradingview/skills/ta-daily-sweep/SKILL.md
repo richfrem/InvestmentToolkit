@@ -1,3 +1,11 @@
+---
+name: tv-ta-daily-sweep
+plugin: tradingview
+description: >
+  Batch daily Technical Analysis sweep across all holdings.
+allowed-tools: Bash, Read
+---
+
 # Daily Portfolio TA Sweep Skill
 
 ## Trigger

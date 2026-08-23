@@ -1,5 +1,5 @@
 ---
-name: tv_chart_snapshot
+name: tv-chart-snapshot
 plugin: tradingview
 description: >
   Captures a chart screenshot for a ticker in TradingView Desktop. Switches
