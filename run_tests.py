@@ -20,6 +20,7 @@ Key Input Dependencies:
 
 Usage:
     python3 run_tests.py           # run T0 + T0.5
+    python3 run_tests.py --unit    # run T0 + T0.5 + T1 unit tests (pytest)
     python3 run_tests.py --t0-only # run T0 only
 """
 
@@ -237,13 +238,29 @@ def t0_5_bridge_smoke() -> bool:
     return True
 
 
+# External comment: Optional T1 Python unit test runner
+def t1_unit_tests() -> bool:
+    """Runs pytest across plugin and backend unit test suites."""
+    print(f"\n{HEADER}T1 — Python Unit Tests (pytest){RESET}")
+    cmd = [
+        "python3", "-m", "pytest",
+        "plugins/tradingview/tests/test_tv_thesis_overlay.py",
+        "plugins/tradingview/tests/test_tv_alert_reconcile.py",
+        "plugins/tradingview/tests/test_tv_create_alerts.py",
+        "plugins/tradingview/tests/test_ta_sweep_batch.py",
+        "-q",
+    ]
+    return run(cmd, label="TradingView Plugin Unit Tests")
+
+
 # External comment: Main entry point orchestrator for execution
 def main() -> None:
     """
     Orchestration gate runner that runs T0 and T0.5 verification routines.
     """
-    parser = argparse.ArgumentParser(description="T0 + T0.5 test gates")
-    parser.add_argument("--t0-only", action="store_true", help="Skip T0.5")
+    parser = argparse.ArgumentParser(description="T0 + T0.5 + T1 test gates")
+    parser.add_argument("--t0-only", action="store_true", help="Skip T0.5 and T1")
+    parser.add_argument("--unit", "-u", action="store_true", help="Run T1 Python unit tests (pytest)")
     args = parser.parse_args()
 
     print(f"\n{HEADER}=== InvestmentToolkit Test Runner ==={RESET}")
@@ -263,6 +280,11 @@ def main() -> None:
     if not args.t0_only:
         if not t0_5_bridge_smoke():
             print(f"\n{CRITICAL} T0.5 FAILED — aborting remaining tiers.")
+            sys.exit(1)
+
+    if args.unit:
+        if not t1_unit_tests():
+            print(f"\n{CRITICAL} T1 Unit Tests FAILED.")
             sys.exit(1)
 
     print(f"\n{OK} All gates passed.")
