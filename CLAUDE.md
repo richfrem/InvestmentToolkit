@@ -1,5 +1,4 @@
-# copilot-instructions.md — InvestmentToolkit
-
+# CLAUDE.md — InvestmentToolkit
 
 
 ## Overview
