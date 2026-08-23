@@ -14,12 +14,6 @@
       "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
     },
     {
-      "src": "investment_screener/backend/data/portfolio.json",
-      "dst": "plugins/portfolio-advisor/references/portfolio.json",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
       "src": "plugins/portfolio-advisor/scripts/relabel_actions.py",
       "dst": "investment_screener/backend/py_services/relabel_actions.py",
       "strategy": "symlink",
@@ -158,20 +152,8 @@
       "description": "ADR-003: skill scripts/ symlink \u2192 plugin root scripts/"
     },
     {
-      "src": "plugins/portfolio-advisor/references/portfolio.json",
-      "dst": "plugins/portfolio-advisor/skills/strategic-review/references/portfolio.json",
-      "strategy": "symlink",
-      "description": "ADR-003: relative symlink to plugin root references/ \u2014 NOT pointing outside plugin tree"
-    },
-    {
       "src": "investment_screener/backend/data/theses/investment_thesis.md",
       "dst": "plugins/portfolio-advisor/skills/strategic-review/references/investment_thesis.md",
-      "strategy": "symlink",
-      "description": "ADR-003: relative symlink to plugin root references/"
-    },
-    {
-      "src": "plugins/portfolio-advisor/references/portfolio.json",
-      "dst": "plugins/portfolio-advisor/skills/portfolio-health/references/portfolio.json",
       "strategy": "symlink",
       "description": "ADR-003: relative symlink to plugin root references/"
     },
@@ -348,18 +330,6 @@
       "dst": "plugins/portfolio-advisor/skills/thesis-challenge-bundler/assets/templates/thesis-challenge-prompt.md",
       "strategy": "symlink",
       "description": "ADR-003: adversarial prompt template canonical in plugin assets; skill symlink"
-    },
-    {
-      "src": ".agents/skills/red-team-bundler/scripts/bundle.py",
-      "dst": "plugins/portfolio-advisor/scripts/bundle.py",
-      "strategy": "symlink",
-      "description": ""
-    },
-    {
-      "src": "plugins/portfolio-advisor/scripts/bundle.py",
-      "dst": "plugins/portfolio-advisor/skills/thesis-challenge-bundler/scripts/bundle.py",
-      "strategy": "symlink",
-      "description": ""
     },
     {
       "src": "plugins/portfolio-advisor/scripts/grok_sweep.py",
