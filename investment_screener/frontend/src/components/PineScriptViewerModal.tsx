@@ -52,16 +52,44 @@ export const PineScriptViewerModal: React.FC<PineScriptViewerModalProps> = ({
     breakerStatus = 'OK',
 }) => {
     const [copied, setCopied] = useState(false);
+    const [mode, setMode] = useState<'universal' | 'preset'>('universal');
 
     if (!isOpen) return null;
 
     const fvVal = fairValue && fairValue > 0 ? fairValue.toFixed(2) : '0.0';
     const entryVal = targetEntry && targetEntry > 0 ? targetEntry.toFixed(2) : '0.0';
     const stopVal = stopLoss && stopLoss > 0 ? stopLoss.toFixed(2) : '0.0';
-    const actStr = action || 'MONITOR';
+    const actStr = action || 'INITIATE';
     const brkStr = breakerStatus || 'OK';
 
-    const pineCode = `//@version=6
+    const universalPineCode = `//@version=6
+// AI Thesis & Valuation Overlay — Universal Multi-Ticker
+indicator("AI Thesis & Valuation Overlay", shorttitle="AI Thesis", overlay=true)
+
+// === Universal Inputs ===
+fairValue   = input.float(${fvVal}, title="Fair Value (DCF Target)", inline="fv")
+targetEntry = input.float(${entryVal}, title="Target Entry Limit", inline="entry")
+stopLoss    = input.float(${stopVal}, title="Stop Loss / Breaker", inline="stop")
+actionText  = input.string("${actStr}", title="Thesis Action", options=["INITIATE", "ACCUMULATE", "MAINTAIN", "TRIM", "EXIT", "MONITOR"])
+breakerText = input.string("${brkStr}", title="Breaker Status", options=["OK", "WARNING", "TRIGGERED"])
+
+// === Plot Valuation Lines ===
+plot(fairValue > 0 ? fairValue : na, title="Fair Value", color=color.new(color.green, 20), style=plot.style_linebr, linewidth=2)
+plot(targetEntry > 0 ? targetEntry : na, title="Target Entry", color=color.new(color.blue, 20), style=plot.style_linebr, linewidth=2)
+plot(stopLoss > 0 ? stopLoss : na, title="Stop Loss", color=color.new(color.red, 20), style=plot.style_linebr, linewidth=2)
+
+// === On-Chart HUD Badge ===
+var table hud = table.new(position.top_right, 2, 4, bgcolor=color.new(color.black, 40), border_color=color.gray, border_width=1)
+if barstate.islast
+    table.cell(hud, 0, 0, "Ticker", text_color=color.white, text_size=size.small)
+    table.cell(hud, 1, 0, syminfo.ticker, text_color=color.yellow, text_size=size.small)
+    table.cell(hud, 0, 1, "Action", text_color=color.white, text_size=size.small)
+    table.cell(hud, 1, 1, actionText, text_color=color.green, text_size=size.small)
+    table.cell(hud, 0, 2, "Breaker", text_color=color.white, text_size=size.small)
+    table.cell(hud, 1, 2, breakerText, text_color=color.aqua, text_size=size.small)
+`;
+
+    const presetPineCode = `//@version=6
 indicator("AI Thesis Overlay - ${symbol}", overlay=true)
 
 // === Valuation Level Inputs ===
@@ -85,8 +113,10 @@ if barstate.islast
     table.cell(infoTable, 1, 2, '${brkStr}', text_color=color.aqua, text_size=size.small)
 `;
 
+    const activePineCode = mode === 'universal' ? universalPineCode : presetPineCode;
+
     const handleCopy = () => {
-        navigator.clipboard.writeText(pineCode);
+        navigator.clipboard.writeText(activePineCode);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
@@ -115,21 +145,49 @@ if barstate.islast
 
                 {/* Body */}
                 <div className="p-6 space-y-4 overflow-y-auto">
+                    {/* Mode Toggle */}
+                    <div className="flex items-center justify-between p-1 bg-slate-950 border border-slate-800 rounded-xl">
+                        <button
+                            onClick={() => setMode('universal')}
+                            className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-medium transition-all ${
+                                mode === 'universal'
+                                    ? 'bg-primary/20 text-primary border border-primary/30 shadow-sm font-semibold'
+                                    : 'text-slate-400 hover:text-slate-200'
+                            }`}
+                        >
+                            🌐 Universal (All Tickers)
+                        </button>
+                        <button
+                            onClick={() => setMode('preset')}
+                            className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-medium transition-all ${
+                                mode === 'preset'
+                                    ? 'bg-primary/20 text-primary border border-primary/30 shadow-sm font-semibold'
+                                    : 'text-slate-400 hover:text-slate-200'
+                            }`}
+                        >
+                            🎯 {symbol} Specific Preset
+                        </button>
+                    </div>
+
                     {/* Instructions banner */}
                     <div className="p-3.5 bg-sky-950/40 border border-sky-800/60 rounded-xl text-xs text-sky-200 flex items-start gap-2.5">
                         <ExternalLink className="w-4 h-4 shrink-0 text-sky-400 mt-0.5" />
                         <div>
-                            <span className="font-semibold text-white block mb-0.5">How to render in TradingView Desktop:</span>
-                            1. Click <strong className="text-white">Copy Code</strong> below.<br />
-                            2. In TradingView Desktop, click the <strong className="text-white">Pine Editor</strong> tab at the bottom.<br />
-                            3. Paste and click <strong className="text-white">Add to chart</strong>.
+                            <span className="font-semibold text-white block mb-0.5">
+                                {mode === 'universal'
+                                    ? 'Save once in TradingView — works dynamically for ANY stock symbol on your chart!'
+                                    : `Hardcodes ${symbol} DCF Fair Value and Target Entry directly into the script.`}
+                            </span>
+                            1. Click <strong className="text-white">Copy Code</strong>.<br />
+                            2. In TradingView Desktop, open <strong className="text-white">Pine Editor</strong> at the bottom.<br />
+                            3. Paste and click <strong className="text-white">Add to chart</strong> (or Save to library).
                         </div>
                     </div>
 
                     {/* Code block */}
                     <div className="relative">
-                        <pre className="p-4 bg-slate-950 border border-slate-800 rounded-xl font-mono text-xs text-emerald-400 overflow-x-auto leading-relaxed">
-                            {pineCode}
+                        <pre className="p-4 bg-slate-950 border border-slate-800 rounded-xl font-mono text-xs text-emerald-400 overflow-x-auto leading-relaxed max-h-[300px]">
+                            {activePineCode}
                         </pre>
                         <button
                             onClick={handleCopy}
