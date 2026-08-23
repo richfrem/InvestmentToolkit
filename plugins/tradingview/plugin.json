@@ -74,6 +74,9 @@
     { "name": "ta_daily_sweep", "path": "skills/ta-daily-sweep/SKILL.md", "trigger": "/ta-daily-sweep" },
     { "name": "tv_manage_watchlists", "path": "skills/tv-manage-watchlists/SKILL.md", "trigger": "/tv-watchlist-sync" },
     { "name": "tv_alert_list", "path": "skills/alert-list/SKILL.md", "trigger": "/tv-alert-list" },
+    { "name": "tv_manage_indicators", "path": "skills/tv-manage-indicators/SKILL.md", "trigger": "/tv-indicators" },
+    { "name": "tv_thesis_overlay", "path": "skills/tv-thesis-overlay/SKILL.md", "trigger": "/tv-thesis-overlay" },
+    { "name": "tv_alert_reconcile", "path": "skills/tv-alert-reconcile/SKILL.md", "trigger": "/tv-alert-reconcile" },
     { "name": "tv_setup", "path": "skills/tv-setup/SKILL.md", "trigger": "/setup-tradingview" },
     { "name": "tv_onboarding", "path": "skills/tv-onboarding/SKILL.md", "trigger": "/tv-onboarding" }
   ],

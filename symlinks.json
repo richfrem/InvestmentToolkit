@@ -840,6 +840,12 @@
       "dst": "plugins/portfolio-advisor/skills/portfolio-coverage-audit/scripts/audit_coverage.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/tradingview/scripts/tv_manage_indicators.py",
+      "dst": "plugins/tradingview/skills/tv-manage-indicators/scripts/tv_manage_indicators.py",
+      "strategy": "symlink",
+      "description": "tv_manage_indicators.py in plugin/scripts; skill symlink"
     }
   ]
 }
