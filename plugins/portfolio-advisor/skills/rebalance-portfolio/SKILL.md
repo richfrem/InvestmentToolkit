@@ -222,7 +222,7 @@ If you see an order whose cost looks larger than the account's available cash ev
 PSU-U.TO funding sell in the plan, flag it to the user rather than silently dropping or
 re-sequencing it yourself.
 
-**Settlement note**: Canadian equities on Questrade settle T+1. If you're selling today to fund a buy today, confirm the account has sufficient *settled* buying power before submitting the buy. If in doubt, submit the sell first and wait for settlement confirmation before submitting buys.
+**Settlement note**: Canadian equities on Broker settle T+1. If you're selling today to fund a buy today, confirm the account has sufficient *settled* buying power before submitting the buy. If in doubt, submit the sell first and wait for settlement confirmation before submitting buys.
 
 **Array ordering rule**: `suggestions` array must be ordered:
 1. All SELL entries first

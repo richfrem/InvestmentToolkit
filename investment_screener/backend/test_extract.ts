@@ -14,7 +14,7 @@ const stdout = `
 ╔══════════════════════════════════════════════════════╗
 ║           ORDER CONFIRMATION REQUIRED                ║
 ╠══════════════════════════════════════════════════════╣
-║  Via:              TradingView (Questrade)             ║
+║  Via:              TradingView (Broker)             ║
 ║  Ticker:           NBIS                                ║
 ║  Action:           BUY                                 ║
 ║  Shares:           1                                   ║
@@ -42,7 +42,7 @@ const stdout = `
     "sufficient": true,
     "warning": null
   },
-  "broker": "Questrade",
+  "broker": "Broker",
   "_warning": null,
   "stale": false
 }

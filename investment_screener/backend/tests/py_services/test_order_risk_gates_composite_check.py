@@ -146,7 +146,7 @@ def test_check_risk_gates_does_not_load_when_explicitly_supplied(monkeypatch):
 
 def test_check_risk_gates_calls_each_gate_with_correct_args(monkeypatch):
     """Confirms no argument-shape mixup across the five different gate signatures:
-    size gets daily_volume, balance gets questrade_cash, mrc/cluster share the
+    size gets daily_volume, balance gets available_cash_override, mrc/cluster share the
     SAME risk_snapshot object, breaker_veto gets thesis_breaker_state."""
     received = {}
     sentinel_snapshot = {"sentinel": "snapshot"}
@@ -168,8 +168,8 @@ def test_check_risk_gates_calls_each_gate_with_correct_args(monkeypatch):
         received["size_daily_volume"] = daily_volume
         return {"passed": True, "reason": "OK"}
 
-    def fake_balance(order, questrade_cash=None, **kwargs):
-        received["balance_questrade_cash"] = questrade_cash
+    def fake_balance(order, available_cash_override=None, **kwargs):
+        received["balance_available_cash_override"] = available_cash_override
         return {"passed": True, "reason": "OK"}
 
     def fake_data_readiness(order, data_readiness=None, **kwargs):
@@ -195,7 +195,7 @@ def test_check_risk_gates_calls_each_gate_with_correct_args(monkeypatch):
         risk_snapshot=sentinel_snapshot,
         thesis_breaker_state=sentinel_breaker_state,
         daily_volume=12345.0,
-        questrade_cash=6789.0,
+        available_cash_override=6789.0,
         data_readiness=sentinel_data_readiness,
     )
 
@@ -203,7 +203,7 @@ def test_check_risk_gates_calls_each_gate_with_correct_args(monkeypatch):
     assert received["cluster_risk_snapshot"] is sentinel_snapshot
     assert received["breaker_thesis_breaker_state"] is sentinel_breaker_state
     assert received["size_daily_volume"] == 12345.0
-    assert received["balance_questrade_cash"] == 6789.0
+    assert received["balance_available_cash_override"] == 6789.0
     assert received["data_readiness_value"] is sentinel_data_readiness
 
 

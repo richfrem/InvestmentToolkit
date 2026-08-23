@@ -244,7 +244,7 @@ CEG, OKLO — both underwater, standing SELL_ONLY_WHEN_GREEN
 ### Root Cause
 `portfolio.json` file mtime was 0.1h old (looked fresh) because yfinance refreshes prices
 continuously. However `tvSnapshot.positions` was empty (0) — the TV broker sync had silently
-failed because TradingView's Questrade panel was showing a reconnect dialog, not live positions.
+failed because TradingView's broker panel was showing a reconnect dialog, not live positions.
 `write_snapshot()` did not abort on 0 positions; it silently preserved stale share counts.
 The daily-loop Step 0 only checked file age, not tvSnapshot integrity. Triage ran with wrong
 share counts → wrong weights → user over-sold DRAM and SNDK.
@@ -270,7 +270,7 @@ share counts → wrong weights → user over-sold DRAM and SNDK.
 CORZ, OKLO, PANW — all have standing decisions, no action required
 
 ### Notes
-- TV Questrade session can drop silently; broker panel shows reconnect dialog without any CDP-visible error
+- TV Broker session can drop silently; broker panel shows reconnect dialog without any CDP-visible error
 - File mtime is NOT a reliable proxy for share count freshness — only tvSnapshot.positions > 0 confirms shares are current
 - User manually confirmed correct cash balance from TV screenshots: TFSA $3,461.76 + RRSP $1,715.19 = $5,176.95 USD
 - VRT removed from portfolio (position closed, stale entry persisted from earlier sync)

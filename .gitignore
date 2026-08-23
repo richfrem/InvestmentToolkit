@@ -52,8 +52,8 @@ plugins/portfolio-advisor/references/portfolio.json
 
 # Personal workspace — generated outputs, order screenshots, review artifacts
 PortfolioAnalysis/
-.questrade_cache
-**/.questrade_cache
+.broker_cache
+**/.broker_cache
 
 # folders to ignore
 kittywindsurf/

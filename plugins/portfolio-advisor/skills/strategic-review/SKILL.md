@@ -309,7 +309,7 @@ These rules are **non-negotiable**. Apply them to every holding before writing a
 > ❌ NEVER assign `ACCUMULATE` to a ticker the user doesn't hold — that's `INITIATE`.
 > ❌ NEVER assign `MAINTAIN` when `actualPct` differs from `targetPct` by more than 0.5pp.
 
-The actual holdings are in `investment_screener/backend/data/portfolio.json` — the canonical source, dynamically populated by the Questrade broker sync.
+The actual holdings are in `investment_screener/backend/data/portfolio.json` — the canonical source, dynamically populated by the connected broker sync.
 
 ---
 
@@ -721,7 +721,7 @@ python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --writ
 ```
 
 This script:
-- Reads `investment_screener/backend/data/portfolio.json` (live Questrade holdings)
+- Reads `investment_screener/backend/data/portfolio.json` (live broker holdings)
 - Reads `investment_screener/backend/data/theses/target-portfolio.json` (thesis targets + subStrategyId)
 - Groups holdings by sub-strategy
 - Assigns INITIATE / ACCUMULATE / MAINTAIN / TRIM / EXIT per holding

@@ -13,7 +13,7 @@
  *   const review = await thesisService.performStrategicReview(thesisId);
  * 
  * Key Functions (Index):
- *   - normalizeTicker(ticker: string) - Substitute Questrade formats with canonical ones
+ *   - normalizeTicker(ticker: string) - Substitute broker formats with canonical ones
  *   - getProjectionPath(ticker: string) - Resolves file path for stock projection JSON data
  *   - getLatestAIProjection(ticker: string) - Retrieve the latest versioned AI projection for a ticker
  *   - getPortfolioItems() - Retrieves all items in the portfolio
@@ -84,7 +84,7 @@ export class ThesisService {
     ) {}
 
     private normalizeTicker(ticker: string): string {
-        // Hand-coded substitutions for known Questrade vs Yahoo/Thesis mismatches
+        // Hand-coded substitutions for known Broker vs Yahoo/Thesis mismatches
         const mapping: Record<string, string> = {
             'PSU.U': 'PSU-U.TO',
             'ETH.U': 'ETH-U.TO',

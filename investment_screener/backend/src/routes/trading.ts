@@ -181,7 +181,7 @@ router.post('/preflight', async (req, res) => {
     return;
   }
   if (exitCode !== 0) {
-    const errMsg = card?.error ?? 'Preflight failed — is TradingView open with Questrade connected?';
+    const errMsg = card?.error ?? 'Preflight failed — is TradingView open with Broker connected?';
     patchSession(session.id, { state: 'PREFLIGHT_BLOCKED', error: errMsg });
     res.status(422).json({ sessionId: session.id, state: 'PREFLIGHT_BLOCKED', error: errMsg });
     return;

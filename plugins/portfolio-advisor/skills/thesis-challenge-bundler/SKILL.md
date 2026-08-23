@@ -191,7 +191,7 @@ the 8 hard gates before applying anything.
 
 1. **Prompt always first** in the manifest — the receiving LLM must read instructions before data
 2. **Never include** `portfolio.json` (contains broker account details — use thesis JSON instead)
-3. **Never include** `.questrade_cache`, `.env`, or any credential files
+3. **Never include** `.broker_cache`, `.env`, or any credential files
 4. **Always confirm** the manifest plan with the user before running bundle.py
 5. **Re-run generate_grok_prompt.py** is NOT needed here — this skill bundles the full raw data,
    not a curated Grok prompt

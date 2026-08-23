@@ -77,7 +77,7 @@ TradingView adds a real-time price layer **only for current price and 1d change%
 | Alert Sync (single) | `/tv-alert-sync CRWV` | Alert sync for one ticker |
 | Chart Snapshot | `/tv-snapshot CRWV` | Capture chart screenshot → `PortfolioAnalysis/screenshots/` |
 | TA Snapshot | `/tv-ta CRWV` | Screenshot + visual technical analysis — trend, S/R levels, indicator readings, buy/sell zones |
-| **Portfolio Sync** | **`/tv-portfolio-sync`** | **Sync portfolio.json from live TV broker panel (TFSA + RRSP + Cash). Shows diff before writing. No Questrade API needed.** |
+| **Portfolio Sync** | **`/tv-portfolio-sync`** | **Sync portfolio.json from live TV broker panel (TFSA + RRSP + Cash). Shows diff before writing. No Broker API needed.** |
 | **Place Order** | **`/place-order buy\|sell N TICKER in ACCOUNT`** | **Live order execution via TradingView CDP automation. 3-step HITL: preflight → fill dialog + screenshot → CONFIRM. Records `tvOrderId` on trade log entry.** |
 | **Cancel Order** | **`/cancel-order {tvOrderId}`** | **Cancel a Working/Inactive order by UUID — clicks × in TV broker panel, handles secondary confirmation dialog, marks trade log cancelled.** |
 | **Modify Order** | **`/modify-order {tvOrderId} {newPrice}`** | **Modify limit price on a Working/Inactive order — clicks ✏, fills price via CDP keyboard events (React-safe), clicks Confirm/Send Order.** |

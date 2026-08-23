@@ -3,7 +3,7 @@
  * 
  * Purpose:
  *   Automates order placement, cancellation, modification, and list actions through
- *   TradingView's native connected brokerage panel (Questrade connected via TV panel) via CDP.
+ *   TradingView's native connected brokerage panel (Broker connected via TV panel) via CDP.
  * 
  * Key Input Dependencies:
  *   None (reads live state from TradingView Desktop on port 9222 via CDP)
@@ -119,15 +119,15 @@ const REACT_INPUT_SETTER = `Object.getOwnPropertyDescriptor(HTMLInputElement.pro
  */
 export async function getBrokerStatus() {
   /**
-   * Evaluates browser DOM to locate Questrade SVG indicators, parse Cash/TFSA account dropdowns,
+   * Evaluates browser DOM to locate Broker SVG indicators, parse Cash/TFSA account dropdowns,
    * and read raw text nodes to match CAD/USD buying power levels.
    */
   return evaluate(`(function() {
-    var questradeSvg = [...document.querySelectorAll('img')].find(function(i) {
-      return /questrade/i.test(i.src);
+    var brokerSvg = [...document.querySelectorAll('img')].find(function(i) {
+      return /broker/i.test(i.src);
     });
     var brokerBlock = document.querySelector('[class*="brokerBlock"]');
-    var connected = !!(questradeSvg && brokerBlock);
+    var connected = !!(brokerSvg && brokerBlock);
 
     // Buying power: title labels and values are on separate lines in innerText
     var bodyText = document.body.innerText || document.body.textContent || '';
@@ -147,7 +147,7 @@ export async function getBrokerStatus() {
 
     return JSON.stringify({
       connected: connected,
-      broker: connected ? 'Questrade' : null,
+      broker: connected ? 'Broker' : null,
       accountType: accountType,
       accountId: accountId,
       buyingPowerCAD: cadBP,
@@ -270,7 +270,7 @@ export async function openOrderDialog(action) {
       return JSON.stringify({ method: 'class-text-match', clicked: el.textContent.trim() });
     }
 
-    return JSON.stringify({ error: 'Could not find Buy/Sell overlay button. Ensure TradingView chart is open with Questrade broker connected.' });
+    return JSON.stringify({ error: 'Could not find Buy/Sell overlay button. Ensure TradingView chart is open with connected broker connected.' });
   })()`).then(JSON.parse);
 
   if (result.error) throw new Error(result.error);
@@ -718,7 +718,7 @@ export async function preflight({ ticker, action, shares, orderType, limitPrice,
 
   if (!status.connected) {
     appendAuditEvent('ORDER_ABORTED', { reason: 'No broker connected', ticker, action, shares });
-    throw new Error('No broker connected to TradingView. Log in via the Questrade integration in TradingView first.');
+    throw new Error('No broker connected to TradingView. Log in via the Broker integration in TradingView first.');
   }
 
   // Currency heuristic: .TO suffix = CAD, otherwise USD
@@ -863,7 +863,7 @@ export async function executeOrder({ ticker, action, shares, orderType, limitPri
 }
 
 /**
- * Audit Questrade Orders tab to verify order submission registered.
+ * Audit Broker Orders tab to verify order submission registered.
  * 
  * @param {object} params Verification parameters
  * @param {string} params.ticker Target symbol name

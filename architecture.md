@@ -272,7 +272,7 @@ Rationale Bar, not a generic "out of scope"):
 | Service | Purpose | Method |
 |---------|---------|--------|
 | **yfinance** (Python) | Market data: OHLCV, financials, balance sheet, income statement | Python library — `fetch_financials.py` |
-| **TradingView Desktop** | Live chart prices, order execution, broker panel sync (broker: Questrade) | Chrome DevTools Protocol (WebSocket port 9222) |
+| **TradingView Desktop** | Live chart prices, order execution, broker panel sync (broker: Broker) | Chrome DevTools Protocol (WebSocket port 9222) |
 | **X.com / Grok** | News sweep and portfolio analysis | Manual paste workflow — agent generates prompt, user pastes to grok.com |
 | **SEC EDGAR** | 13F institutional filing downloads | REST (`/13f-tracker` skill) |
 

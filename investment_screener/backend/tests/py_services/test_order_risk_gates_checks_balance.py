@@ -4,13 +4,13 @@ check_available_balance() (Task 5E-5).
 check_available_balance() is a BUY-only balance gate: it checks whether
 enough cash is available to cover a BUY order's cost, reusing the real,
 already-synced portfolio.json broker snapshot (this project's existing
-multi-fallback TradingView/Questrade sync pipeline) rather than a new
-live Questrade API integration.
+multi-fallback TradingView/broker sync pipeline) rather than a new
+live Broker API integration.
 
 get_available_cash() reads that real (but here, always a tmp_path
 fixture) portfolio.json — no test in this file ever touches the real,
 gitignored portfolio.json. check_available_balance() tests pass
-questrade_cash explicitly wherever possible to isolate them from
+available_cash_override explicitly wherever possible to isolate them from
 get_available_cash()'s own file-reading tests.
 """
 import json
@@ -33,10 +33,10 @@ def _order(side="BUY", ticker="CORZ", shares=10.0, price=100.0):
 
 
 def test_check_available_balance_passes_with_sufficient_cash():
-    """shares=10, price=100 -> $1000 cost; questrade_cash=5000 -> passes."""
+    """shares=10, price=100 -> $1000 cost; available_cash_override=5000 -> passes."""
     order = _order(shares=10.0, price=100.0)
 
-    result = check_available_balance(order, questrade_cash=5000.0)
+    result = check_available_balance(order, available_cash_override=5000.0)
 
     assert result["passed"] is True
     assert result["cash_required"] == 1000.0
@@ -44,10 +44,10 @@ def test_check_available_balance_passes_with_sufficient_cash():
 
 
 def test_check_available_balance_fails_with_insufficient_cash():
-    """questrade_cash=500 for a $1000 order -> fails."""
+    """available_cash_override=500 for a $1000 order -> fails."""
     order = _order(shares=10.0, price=100.0)
 
-    result = check_available_balance(order, questrade_cash=500.0)
+    result = check_available_balance(order, available_cash_override=500.0)
 
     assert result["passed"] is False
     assert result["cash_required"] == 1000.0
@@ -55,10 +55,10 @@ def test_check_available_balance_fails_with_insufficient_cash():
 
 
 def test_check_available_balance_boundary_exact_cash_passes():
-    """questrade_cash exactly equal to cash_required -> passes (< not <=)."""
+    """available_cash_override exactly equal to cash_required -> passes (< not <=)."""
     order = _order(shares=10.0, price=100.0)
 
-    result = check_available_balance(order, questrade_cash=1000.0)
+    result = check_available_balance(order, available_cash_override=1000.0)
 
     assert result["passed"] is True
     assert result["cash_required"] == 1000.0
@@ -69,25 +69,25 @@ def test_check_available_balance_sell_orders_never_evaluated():
     """A SELL order is never evaluated -> passed=True, cash_required=0.0."""
     order = _order(side="SELL", shares=10.0, price=100.0)
 
-    result = check_available_balance(order, questrade_cash=0.0)
+    result = check_available_balance(order, available_cash_override=0.0)
 
     assert result["passed"] is True
     assert result["cash_required"] == 0.0
 
 
 def test_check_available_balance_handles_missing_cash_data(monkeypatch):
-    """questrade_cash=None and get_available_cash() (mocked) returns None -> passes, no exception."""
+    """available_cash_override=None and get_available_cash() (mocked) returns None -> passes, no exception."""
     monkeypatch.setattr(order_risk_gates, "get_available_cash", lambda account=None: None)
     order = _order(shares=10.0, price=100.0)
 
-    result = check_available_balance(order, questrade_cash=None)
+    result = check_available_balance(order, available_cash_override=None)
 
     assert result["passed"] is True
     assert result["cash_available"] is None
 
 
 def test_check_available_balance_fetches_cash_when_not_supplied(monkeypatch):
-    """questrade_cash=None -> get_available_cash() called with account forwarded, result used."""
+    """available_cash_override=None -> get_available_cash() called with account forwarded, result used."""
     calls = []
 
     def fake_get_available_cash(account=None):
@@ -97,7 +97,7 @@ def test_check_available_balance_fetches_cash_when_not_supplied(monkeypatch):
     monkeypatch.setattr(order_risk_gates, "get_available_cash", fake_get_available_cash)
     order = _order(shares=10.0, price=100.0)
 
-    result = check_available_balance(order, questrade_cash=None, account="TFSA")
+    result = check_available_balance(order, available_cash_override=None, account="TFSA")
 
     assert calls == ["TFSA"]
     assert result["passed"] is True

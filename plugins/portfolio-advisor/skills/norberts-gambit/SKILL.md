@@ -6,7 +6,7 @@ description: >
   cash between CAD and USD inside a brokerage account using the DLR.TO/DLR.U ETF
   pair, avoiding a bank or broker's FX spread. Explains the direction to trade,
   the generic buy → journal → withdraw mechanics, and links to broker-specific
-  submission steps (Questrade today; other brokers added as references/ grows).
+  submission steps (Broker today; other brokers added as references/ grows).
   Trigger: "norbert's gambit", "convert CAD to USD", "convert USD to CAD",
   "move money between accounts in a different currency", "/norberts-gambit".
 allowed-tools: Read
@@ -73,7 +73,7 @@ even get to buy DLR.U/DLR.TO. Each broker's reference file below has the exact s
 Pick your broker's reference file for the exact journal-request steps, processing time,
 fees, and settings:
 
-- **Questrade** → [`references/questrade.md`](references/questrade.md)
+- **Broker** → [`references/broker.md`](references/broker.md)
 - *(Other brokers not yet documented — if you use TD, Interactive Brokers, Wealthsimple,
   etc., ask to have a reference file added; the broker-agnostic sections above don't
   change, only the "how to submit the request" appendix does.)*

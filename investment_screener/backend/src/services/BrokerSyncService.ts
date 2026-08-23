@@ -337,7 +337,7 @@ export function persistSnapshotToDb(snapshot: TVSnapshot, dbPath: string = DOMAI
             portfolioRepo.clearAccountInvestments(accountId);
 
             // Real bug found 2026-07-27: a cash-only sub-account can hold pure CAD
-            // cash (cashUSD=0, cashCAD>0) — a Questrade "CASH" account is exactly
+            // cash (cashUSD=0, cashCAD>0) — a Broker "CASH" account is exactly
             // this shape. Checking only cashUSD silently dropped that account's
             // entire balance from every computed total (~$150 CAD gap vs TV's own
             // broker-reported total). Every account's cash, in whichever currency

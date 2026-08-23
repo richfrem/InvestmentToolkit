@@ -8,7 +8,7 @@
 | **Last Updated** | 2026-08-21 |
 | **Thesis Last Analyzed** | 2026-05-22 (Full strategic review post-13F chip exits) |
 | **13F Last Refactored** | 2026-05-22 (Refactored SA LP Q1 2026 13F filed 2026-05-18 into target-portfolio.json) |
-| **Portfolio Data** | Live — synced from Questrade via app or `python3 investment_screener/backend/src/QuestradeDataEngine.py` |
+| **Portfolio Data** | Live — synced from Broker via app or `python3 investment_screener/backend/src/BrokerDataEngine.py` |
 | **Latest Review** | SA LP Q1 2026 13F filed 2026-05-18 — **BARBELL STRATEGY**: ~62% semiconductor puts (SHORT chip sector) + ~25% AI infrastructure equity longs (BE, CRWV, IREN, CORZ, APLD). Portfolio nearly tripled $5.5B→$13.7B. Full filing: `investment_screener/backend/data/13f/000204572426000008.json` |
 
 > **Living document.** The framework and sub-strategies persist across versions. Holdings, weights, and conviction details evolve. Only update this doc when conviction, structure, or macro narrative materially shifts.
@@ -30,7 +30,7 @@
 | 9.0 | 2026-05-05 | The Sovereign Manufacturer | Major restructure after 4-model adversarial red team review: exited all Sovereign Finance crypto (COIN/CRCL/ETHA/IBIT); exited POET/CRWD/SOLZ/EQT/TEM; reduced INTC (~11%→9%), CRWV; 39% cash freed for redeployment into DCF BUY names |
 | 8.5 | 2026-05-04 | The Sovereign Manufacturer | Healthcare AI / Life Science pillar added; TEM promoted from EXIT to speculative MAINTAIN (Pelosi conviction, AI-healthcare thesis) |
 | 8.4 | 2026-05-04 | The Sovereign Manufacturer | Quantum Computing pillar added; IONQ initiated (trapped-ion moat, ACCUMULATE→MAINTAIN at actual weight); RGTI exited; COIN regulatory catalyst (SEC case dismissed, FV $124→$162); apply_catalyst.py tooling added |
-| 8.3 | 2026-05-03 | The Sovereign Manufacturer | Third Grok sweep: CRWV→6%, CORZ→4.9%, BE→4%; NVDA/META/PSIX/WYFI/BTDR buys synced; Questrade float(None) crash fixed |
+| 8.3 | 2026-05-03 | The Sovereign Manufacturer | Third Grok sweep: CRWV→6%, CORZ→4.9%, BE→4%; NVDA/META/PSIX/WYFI/BTDR buys synced; Broker float(None) crash fixed |
 
 ---
 
@@ -77,7 +77,7 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 ## IV. Portfolio Blueprint
 
 <!-- AUTO_UPDATE_START: portfolio_blueprint -->
-*Generated 2026-08-21 · Source: `domain_model.sqlite` (investment + account_investment, Questrade-synced live holdings)*
+*Generated 2026-08-21 · Source: `domain_model.sqlite` (investment + account_investment, broker-synced live holdings)*
 *Portfolio value: $32,723. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
 
 ### Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)

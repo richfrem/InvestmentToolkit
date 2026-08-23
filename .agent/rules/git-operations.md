@@ -16,7 +16,7 @@ genuinely unsure whether a worktree is warranted for a given task, ask the user 
 silently and proceed.
 
 **Reason:** 2026-07-17 — an entire multi-sub-project phase of work (Phase 6: an `AGENTS.md` audit,
-an eval-coverage backfill touching 53 files, a Questrade REST integration removal touching ~51
+an eval-coverage backfill touching 53 files, a legacy broker REST integration removal touching ~51
 files including live-order fallback code, an agent relocation between plugins, and a new Python
 script + test suite) was done directly on the shared main checkout and pushed straight to
 `origin/main` every time, with zero worktree ever created — because each individual task was

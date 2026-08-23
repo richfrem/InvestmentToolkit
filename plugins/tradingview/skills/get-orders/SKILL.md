@@ -17,7 +17,7 @@ panel, or to find an order UUID for use with cancel-order or modify-order.
 ## Prerequisites
 
 - TradingView Desktop running with `--remote-debugging-port=9222`
-- Broker panel visible (Questrade connected)
+- Broker panel visible (Broker connected)
 
 ## Usage
 

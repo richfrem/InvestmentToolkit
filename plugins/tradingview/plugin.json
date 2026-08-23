@@ -85,7 +85,7 @@
       "name": "portfolio-json",
       "canonical_path": "investment_screener/backend/data/portfolio.json",
       "owned_by": "investment-screener-app",
-      "purpose": "Current portfolio holdings (synced from Questrade)"
+      "purpose": "Current portfolio holdings (synced from Broker)"
     },
     {
       "name": "target-portfolio-json",
