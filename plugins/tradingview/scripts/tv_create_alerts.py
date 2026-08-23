@@ -1,14 +1,37 @@
 #!/usr/bin/env python3
 """
-tv_create_alerts.py - Create and reconcile TradingView price alerts from SQLite levels.
+tv_create_alerts.py (Python Utility)
+=====================================
 
-Usage:
-    python3 tv_create_alerts.py                    # all holdings with projections
-    python3 tv_create_alerts.py --ticker CRWV      # single ticker
-    python3 tv_create_alerts.py --dry-run          # print what would be created
-    python3 tv_create_alerts.py --reconcile        # diff active TV alerts against target levels
+Purpose:
+    Create and reconcile TradingView price alerts from SQLite target price levels.
+    Reads fundamental price tiers (Target Entry, Buy Tiers, Sell Targets, Stop Loss,
+    Fair Value) from domain_model.sqlite and compares them against live TradingView alerts
+    retrieved via Chrome DevTools Protocol (CDP) on port 9222.
+    Detects missing or drifted alerts and supports automated creation.
 
-Requires TradingView Desktop running with --remote-debugging-port=9222.
+Layer: Plugins / TradingView / Scripts
+
+Usage Examples:
+    # Reconcile all tickers against live TradingView alerts:
+    python3 plugins/tradingview/scripts/tv_create_alerts.py --reconcile
+
+    # Create alerts for a specific ticker:
+    python3 plugins/tradingview/scripts/tv_create_alerts.py --ticker NVDA
+
+    # Dry run creation:
+    python3 plugins/tradingview/scripts/tv_create_alerts.py --ticker NVDA --dry-run
+
+Key Functions:
+    - reconcile_alerts()      — Diffs target SQLite levels against active TV alerts with alias safety
+    - get_tier_alert_levels() — Reads price_level_set / price_level_tier rows from SQLite
+    - get_alert_levels()      — Extracts bear/base/bull and fair value prices from projection tables
+    - create_alert()          — Submits an alert creation command to TradingView Desktop via CDP
+    - process_ticker()        — Main per-ticker alert synchronization pipeline
+
+Key Input Dependencies:
+    - investment_screener/backend/data/domain_model.sqlite (Price Levels & Projections)
+    - tradingview-cdp/ (Node.js CDP Engine)
 """
 
 import sys
@@ -49,10 +72,12 @@ from ticker_aliases import normalize_ticker  # noqa: E402
 # ---------------------------------------------------------------------------
 
 def _strip_exchange_prefix(symbol: str) -> str:
+    """Strip exchange prefix (e.g. 'NASDAQ:NVDA' -> 'NVDA')."""
     return symbol.split(":", 1)[-1] if symbol else symbol
 
 
 def load_latest_ai_entry(ticker: str, db_path: Path = DB_PATH) -> dict | None:
+    """Load latest projection entry and scenarios for ticker from SQLite."""
     conn = initialize_db(str(db_path))
     try:
         row = conn.execute(
@@ -85,6 +110,7 @@ def load_latest_ai_entry(ticker: str, db_path: Path = DB_PATH) -> dict | None:
 
 
 def get_alert_levels(entry: dict) -> list[tuple[str, float]]:
+    """Extract (label, price) tuples from a projection entry."""
     levels = []
     ticker = entry.get("ticker", "UNKNOWN")
     scenarios = entry.get("scenarios", {})
@@ -105,6 +131,7 @@ def get_alert_levels(entry: dict) -> list[tuple[str, float]]:
 
 
 def get_tier_alert_levels(ticker: str, db_path: Path = DB_PATH) -> list[tuple[str, float]]:
+    """Extract (label, price) tuples from price_level_set / price_level_tier tables."""
     conn = initialize_db(str(db_path))
     try:
         row = conn.execute(
@@ -118,27 +145,28 @@ def get_tier_alert_levels(ticker: str, db_path: Path = DB_PATH) -> list[tuple[st
             return []
 
         levels = []
-        for tier in price_levels.get("buyTiers", []):
+        for tier in price_levels.get("buy_tiers", []):
             price = tier.get("price")
-            tier_num = tier.get("tier", 1)
+            tier_num = tier.get("tier_number", 1)
             if price and price > 0:
                 levels.append((f"{ticker} Buy Tier {tier_num} ${price:.0f}", float(price)))
 
-        for tier in price_levels.get("sellTiers", []):
+        for tier in price_levels.get("sell_tiers", []):
             price = tier.get("price")
-            trim_pct = tier.get("trimPct", "")
+            trim_pct = tier.get("trim_pct", "")
             trim_str = f" ({trim_pct}% trim)" if trim_pct else ""
             if price and price > 0:
                 levels.append((f"{ticker} Sell Target ${price:.0f}{trim_str}", float(price)))
 
-        stop_loss = price_levels.get("stopLoss", {})
+        stop_loss = price_levels.get("stop_loss")
         sl_price = stop_loss.get("price") if isinstance(stop_loss, dict) else None
         if sl_price and sl_price > 0:
             levels.append((f"{ticker} Stop Loss ${sl_price:.0f}", float(sl_price)))
 
-        target_entry = price_levels.get("targetEntryPrice")
-        if target_entry and target_entry > 0:
-            levels.append((f"{ticker} Target Entry ${target_entry:.0f}", float(target_entry)))
+        target_entry = price_levels.get("target_entry")
+        te_price = target_entry.get("price") if isinstance(target_entry, dict) else None
+        if te_price and te_price > 0:
+            levels.append((f"{ticker} Target Entry ${te_price:.0f}", float(te_price)))
 
         return levels
     finally:
@@ -146,6 +174,7 @@ def get_tier_alert_levels(ticker: str, db_path: Path = DB_PATH) -> list[tuple[st
 
 
 def create_alert(ticker: str, price: float, message: str, dry_run: bool = False):
+    """Dispatch CDP alert creation call to TradingView."""
     if dry_run:
         return {"status": "dry_run", "ticker": ticker, "price": price, "message": message}
 
@@ -165,6 +194,13 @@ def reconcile_alerts(target_levels: Dict[str, Dict[str, Any]], active_tv_alerts:
     """
     Compare SQLite target price levels against active TradingView alerts.
     Normalized for PSU-U.TO / PSU.U.TO alias safety.
+
+    Args:
+        target_levels: Dict mapping ticker to dict of level names and target prices.
+        active_tv_alerts: List of active alert dicts returned from TradingView.
+
+    Returns:
+        Summary dict of matched, missing, and drifted alert records.
     """
     matched = []
     missing = []
@@ -204,6 +240,7 @@ def reconcile_alerts(target_levels: Dict[str, Dict[str, Any]], active_tv_alerts:
 
 
 def get_all_tickers(db_path: Path = DB_PATH) -> list[str]:
+    """Return all tickers that have projections in SQLite."""
     conn = initialize_db(str(db_path))
     try:
         return list_symbols_with_projections(conn)
@@ -212,6 +249,7 @@ def get_all_tickers(db_path: Path = DB_PATH) -> list[str]:
 
 
 def process_ticker(ticker: str, dry_run: bool, db_path: Path = DB_PATH) -> dict:
+    """Create alerts for a single ticker. Returns summary dictionary."""
     tier_levels: list[tuple[str, float]] = get_tier_alert_levels(ticker, db_path)
     entry = load_latest_ai_entry(ticker, db_path)
     dcf_levels = get_alert_levels(entry) if entry else []
@@ -266,7 +304,6 @@ def main():
     args = parser.parse_args()
 
     if args.reconcile:
-        # Reconcile mode
         print("Reconciling TradingView alerts with SQLite target levels...")
         from tv_list_alerts import list_alerts_from_tv
         active_alerts = list_alerts_from_tv() if not args.dry_run else []

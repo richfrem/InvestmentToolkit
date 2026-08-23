@@ -1,15 +1,34 @@
 #!/usr/bin/env python3
 """
-tv_thesis_overlay.py — Generate and inject Pine Script Thesis Overlay into TradingView.
+tv_thesis_overlay.py (Python Utility)
+=====================================
 
-Reads fundamental valuation price levels (Fair Value from projection table,
-Target Entry from price_level_tier, Thesis Breaker status from investment table)
-from domain_model.sqlite, switches the active TradingView chart to TICKER,
-validates the active chart symbol (Pitfall #7), lints the generated Pine Script (Pitfall #26),
-and injects it via CDP.
+Purpose:
+    Generate and inject Pine Script Thesis Overlays directly into TradingView Desktop.
+    Reads fundamental valuation price levels (Fair Value from projection table,
+    Target Entry and Stop Loss from price_level_tier, Thesis Breaker status from investment table)
+    from domain_model.sqlite, switches the active TradingView chart to the target ticker,
+    validates the active chart symbol (Pitfall #7), lints the generated Pine Script v6 (Pitfall #26),
+    and injects the indicator via Chrome DevTools Protocol (CDP).
 
-Usage:
-    python3 plugins/tradingview/scripts/tv_thesis_overlay.py --ticker NVDA [--dry-run]
+Layer: Plugins / TradingView / Scripts
+
+Usage Examples:
+    # Dry run — generate, lint, and view levels without modifying chart:
+    python3 plugins/tradingview/scripts/tv_thesis_overlay.py --ticker NVDA --dry-run
+
+    # Live inject onto active TradingView Desktop chart:
+    python3 plugins/tradingview/scripts/tv_thesis_overlay.py --ticker NVDA
+
+Key Functions:
+    - resolve_ticker_levels()      — Joins investment, projection, and price_level_tier rows
+    - generate_pine_script_content() — Compiles valid Pine Script v6 overlay code with badges
+    - switch_chart_symbol()        — Ensures active TradingView chart symbol matches target
+    - apply_overlay()              — Main execution pipeline (Resolve -> Lint -> Switch -> Inject)
+
+Key Input Dependencies:
+    - investment_screener/backend/data/domain_model.sqlite (Valuation & Price Levels)
+    - tradingview-cdp/ (Node.js CDP Engine)
 """
 
 import os
@@ -39,6 +58,13 @@ DEFAULT_DB_PATH = os.path.join(
 def resolve_ticker_levels(symbol: str, db_path: str = DEFAULT_DB_PATH) -> Dict[str, Any]:
     """
     Resolve valuation levels across investment, projection, and price_level_tier tables.
+
+    Args:
+        symbol: Ticker symbol (e.g. "NVDA", "PSU-U.TO").
+        db_path: Path to domain_model.sqlite database.
+
+    Returns:
+        Dict with keys: symbol, name, fair_value, target_entry, stop_loss, breaker_status, action.
     """
     norm_symbol = normalize_ticker(symbol)
     result = {
@@ -105,6 +131,12 @@ def resolve_ticker_levels(symbol: str, db_path: str = DEFAULT_DB_PATH) -> Dict[s
 def generate_pine_script_content(levels: Dict[str, Any]) -> str:
     """
     Generate clean Pine Script v6 code with horizontal plot lines and table overlay.
+
+    Args:
+        levels: Dictionary of valuation levels produced by resolve_ticker_levels.
+
+    Returns:
+        String containing complete Pine Script v6 code.
     """
     symbol = levels["symbol"]
     fv = levels.get("fair_value")
@@ -144,6 +176,12 @@ def generate_pine_script_content(levels: Dict[str, Any]) -> str:
 def switch_chart_symbol(symbol: str) -> bool:
     """
     Ensure the active chart matches the requested symbol per Pitfall #7.
+
+    Args:
+        symbol: Target ticker symbol.
+
+    Returns:
+        True if symbol change succeeded, False otherwise.
     """
     norm_symbol = normalize_ticker(symbol)
     res = tv_call("chart", "symbol", norm_symbol)
@@ -156,6 +194,13 @@ def switch_chart_symbol(symbol: str) -> bool:
 def apply_overlay(symbol: str, dry_run: bool = False) -> Dict[str, Any]:
     """
     Main orchestration flow for injecting thesis levels.
+
+    Args:
+        symbol: Target stock ticker symbol.
+        dry_run: If True, resolves and lints code without invoking CDP chart injection.
+
+    Returns:
+        Dictionary with execution status and level payload.
     """
     levels = resolve_ticker_levels(symbol)
     pine_code = generate_pine_script_content(levels)

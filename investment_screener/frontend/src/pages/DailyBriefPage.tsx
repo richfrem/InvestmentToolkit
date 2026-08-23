@@ -13,6 +13,7 @@
 import { useState, useEffect } from 'react';
 import { AlertTriangle, TrendingUp, TrendingDown, Minus, Calendar, Shield, Activity, RefreshCw, Target, Lock } from 'lucide-react';
 import { TradeButtons } from '../components/TradeButtons';
+import { TABriefCard } from '../components/TABriefCard';
 import { tradeIntent, REC_CHIP_STYLES } from '../utils/recommendationPresentation';
 
 interface MacroRegime {
@@ -268,6 +269,31 @@ export default function DailyBriefPage() {
                     )}
                 </div>
             </div>
+
+            {/* Technical Analysis Pulse — TradingView indicators */}
+            {scores.length > 0 && (
+                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                        <Activity size={16} className="text-zinc-400" />
+                        <h2 className="text-sm font-semibold text-zinc-300 uppercase tracking-wide">
+                            Technical Momentum Cards
+                        </h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        {scores.slice(0, 8).map(s => (
+                            <TABriefCard
+                                key={s.ticker}
+                                ticker={s.ticker}
+                                rsi={s.rsi}
+                                adx={s.adx}
+                                volBias={s.vol_bias}
+                                emaAlignment={s.ta_pts >= 2 ? 'BULLISH' : s.ta_pts <= -2 ? 'BEARISH' : 'MIXED'}
+                                stalenessDays={s.ta_staleness_days}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Recommendations — summarized actions with rationales */}
             {(brief.recommendations ?? []).length > 0 && (

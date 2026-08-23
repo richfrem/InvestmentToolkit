@@ -1,22 +1,36 @@
 #!/usr/bin/env python3
 """
-tv_health_check.py - Verify TradingView Desktop is reachable and the CLI is set up.
+tv_health_check.py (Python Utility)
+====================================
 
-Usage:
-    python3 tv_health_check.py          # human-readable table
-    python3 tv_health_check.py --json   # machine-readable JSON
+Purpose:
+    Comprehensive diagnostic health check for TradingView Desktop and the CDP automation engine.
+    Verifies port 9222 connectivity, Node.js CLI responsiveness, npm dependencies,
+    default Pine Script indicator library presence, and domain model SQLite readiness.
 
-Checks:
-    1. Is port 9222 reachable? (socket test)
-    2. Does `node ... status` return success?
-    3. Is npm cied in tradingview-cdp/ (node_modules exists)?
+Layer: Plugins / TradingView / Scripts
 
-Exit code 0 if all checks pass, 1 otherwise.
+Usage Examples:
+    # Human-readable diagnostic output table:
+    python3 plugins/tradingview/scripts/tv_health_check.py
+
+    # Machine-readable JSON output:
+    python3 plugins/tradingview/scripts/tv_health_check.py --json
+
+Key Functions:
+    - run_checks() — Executes all diagnostic checks and aggregates readiness status
+    - main()       — CLI entry point with colored table / JSON output formatters
+
+Key Input Dependencies:
+    - tradingview-cdp/ (Node.js CDP Engine & node_modules)
+    - plugins/tradingview/assets/pinescript-indicators/ (Pine library)
+    - investment_screener/backend/data/domain_model.sqlite (Domain Database)
 """
 
 import sys
 import json
 import argparse
+import os
 from pathlib import Path
 
 def _find_scripts_dir() -> Path:
@@ -31,9 +45,18 @@ def _find_scripts_dir() -> Path:
 sys.path.insert(0, str(_find_scripts_dir()))
 from tv_client import TV_CLI, TV_NODE_MODULES, TV_PORT, TV_NODE_DIR, is_tv_running, tv_call, validate_cdp_installation
 
+REPO_ROOT = TV_NODE_DIR.parent
+PINE_DIR = REPO_ROOT / "plugins" / "tradingview" / "assets" / "pinescript-indicators"
+DB_FILE = REPO_ROOT / "investment_screener" / "backend" / "data" / "domain_model.sqlite"
+
 
 def run_checks() -> dict:
-    """Run all health checks and return a results dict."""
+    """
+    Run all health checks and return a results dict.
+
+    Returns:
+        Dict with keys: status, port, cli, npm, pine, db, message, details.
+    """
     # Check 1 — CDP port reachable
     port_ok = is_tv_running()
 
@@ -59,27 +82,39 @@ def run_checks() -> dict:
         else "; ".join(cdp_status["issues"])
     )
 
-    all_ok = port_ok and cli_ok and npm_ok
+    # Check 4 — Pine library presence
+    default_pine = PINE_DIR / "ai-ta-levels.pine"
+    pine_ok = default_pine.exists()
+    pine_message = "ai-ta-levels.pine found" if pine_ok else "missing default indicator library"
+
+    # Check 5 — Database ready
+    db_ok = DB_FILE.exists()
+    db_message = "domain_model.sqlite ready" if db_ok else "database file missing"
+
+    all_ok = port_ok and cli_ok and npm_ok and pine_ok and db_ok
 
     return {
         "status": "ok" if all_ok else "error",
         "port": port_ok,
         "cli": cli_ok,
         "npm": npm_ok,
+        "pine": pine_ok,
+        "db": db_ok,
         "message": (
-            "All checks passed — TradingView is connected and CLI is ready."
+            "All checks passed — TradingView Desktop is connected and workspace is fully configured."
             if all_ok
             else (
-                "TradingView Desktop not detected. "
-                "Launch with: python3 plugins/tradingview/scripts/tv_launch.py"
+                "TradingView Desktop not detected on port 9222."
                 if not port_ok
-                else f"CLI check failed: {cli_message}"
+                else f"Readiness issue: {cli_message if not cli_ok else (npm_message if not npm_ok else (pine_message if not pine_ok else db_message))}"
             )
         ),
         "details": {
             "port_9222": "reachable" if port_ok else "not reachable",
             "cli_status": cli_message if cli_message else ("ok" if cli_ok else "no response"),
             "npm_modules": npm_message,
+            "pine_library": pine_message,
+            "domain_db": db_message,
             "cli_path": str(TV_CLI),
         },
     }
@@ -102,7 +137,6 @@ def main():
     if args.json_out:
         print(json.dumps(checks, indent=2))
     else:
-        # Human-readable output
         status_icon = "OK" if checks["status"] == "ok" else "ERROR"
         print(f"\nTradingView Health Check [{status_icon}]")
         print("=" * 45)
@@ -113,6 +147,8 @@ def main():
         print(f"  {icon(checks['port'])}  Port {TV_PORT} reachable   — {checks['details']['port_9222']}")
         print(f"  {icon(checks['cli'])}  CLI status command  — {checks['details']['cli_status']}")
         print(f"  {icon(checks['npm'])}  npm node_modules    — {checks['details']['npm_modules']}")
+        print(f"  {icon(checks['pine'])}  Pine indicator suite— {checks['details']['pine_library']}")
+        print(f"  {icon(checks['db'])}  Domain DB readiness — {checks['details']['domain_db']}")
         print()
         print(f"  {checks['message']}")
         print()
@@ -123,7 +159,7 @@ def main():
             )
         if not checks["port"]:
             print(
-                "  Launch TradingView:\n"
+                "  Launch TradingView Desktop with debugging enabled:\n"
                 "    python3 plugins/tradingview/scripts/tv_launch.py\n"
                 "  Or manually:\n"
                 "    open -a TradingView --args --remote-debugging-port=9222\n"
