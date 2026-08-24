@@ -146,14 +146,16 @@ async function execute(handler, values, positionals) {
             if (closeBtn) closeBtn.click();
           }
 
-          // 2. Close Pine Editor if open
-          var pineEd = document.querySelector('.pine-editor-monaco') || document.querySelector('[class*="editorBaseLayoutContainer-"]');
-          if (pineEd && pineEd.offsetParent) {
-            var pineClose = pineEd.querySelector('button[aria-label="Close"]') ||
-                            pineEd.querySelector('button[data-name="close"]') ||
-                            document.querySelector('button[data-name="pine-dialog-button"]') ||
-                            document.querySelector('[data-name="pine-dialog-button"]');
-            if (pineClose) pineClose.click();
+          // 2. Close Pine Editor if open (target visible top-right close button)
+          var btns = Array.from(document.querySelectorAll('button[title="Close"], button[aria-label="Close"], button[data-name="close"]'));
+          var visibleClose = btns.find(function(b) {
+            var r = b.getBoundingClientRect();
+            return r.width > 0 && r.height > 0 && r.y < 150 && r.x > 500;
+          });
+          if (visibleClose) {
+            visibleClose.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+            visibleClose.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+            visibleClose.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
           }
         })()`,
         returnByValue: true,
