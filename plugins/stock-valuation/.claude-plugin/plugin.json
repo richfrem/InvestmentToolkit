@@ -3,54 +3,11 @@
     "version": "2.0.0",
     "description": "AI-driven autonomous stock valuation engine. Produces Bear/Base/Bull scenario projections, persists structured JSON output, and generates deep-dive research reports with interactive Q&A.",
     "author": {
-        "name": "richfrem",
-        "email": "connect.richfrem@gmail.com"
+        "name": "Richard Fremmerlid"
     },
-    "maturity": "L5",
-    "architecture": "supercharged",
-    "skills": [
-        {
-            "name": "stock_valuation",
-            "path": "skills/stock_valuation/SKILL.md",
-            "trigger": "/perform-stock-valuation"
-        },
-        {
-            "name": "stock_research",
-            "path": "skills/stock-research/SKILL.md",
-            "trigger": "/research-stock"
-        },
-        {
-            "name": "forward_valuation_challenge",
-            "path": "skills/forward-valuation-challenge/SKILL.md",
-            "trigger": "/forward-valuation-challenge"
-        },
-        {
-            "name": "valuation_math_validation",
-            "path": "skills/valuation-math-validation/SKILL.md",
-            "trigger": "/valuation-math-validation"
-        }
-    ],
-    "connectors": "CONNECTORS.md",
-    "evals": "skills/stock_valuation/evals/evals.json",
-    "acceptance_criteria": "skills/stock_valuation/references/acceptance-criteria.md",
-    "external_dependencies": [
-        {
-            "name": "fetch_financials.py",
-            "canonical_path": "investment_screener/backend/py_services/fetch_financials.py",
-            "owned_by": "investment-screener-app",
-            "purpose": "Fetches raw financial data from yfinance"
-        },
-        {
-            "name": "persist_projection.py",
-            "canonical_path": "investment_screener/backend/py_services/persist_projection.py",
-            "owned_by": "investment-screener-app",
-            "purpose": "Saves projection JSON to the data directory"
-        }
-    ],
-    "related_plugins": [
-        "portfolio-advisor"
-    ],
-    "tags": [
+    "repository": "https://github.com/richfrem/InvestmentToolkit",
+    "license": "MIT",
+    "keywords": [
         "finance",
         "stock-analysis",
         "valuation",
