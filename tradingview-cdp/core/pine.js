@@ -30,6 +30,39 @@ export async function injectPineScript(client, scriptContent) {
   try {
     const safeContent = JSON.stringify(scriptContent);
 
+    // 0. Extract title/shorttitle from script and clear old instances from chart legend
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        var raw = ${safeContent};
+        var titleMatch = raw.match(/indicator\\s*\\(\\s*["']([^"']+)["']/i);
+        var shortMatch = raw.match(/shorttitle\\s*=\\s*["']([^"']+)["']/i);
+        var targetNames = [];
+        if (titleMatch && titleMatch[1]) targetNames.push(titleMatch[1].trim().toLowerCase());
+        if (shortMatch && shortMatch[1]) targetNames.push(shortMatch[1].trim().toLowerCase());
+        if (targetNames.length === 0) targetNames.push('ai-ta', 'ai thesis');
+
+        var items = [...document.querySelectorAll('[data-name="legend-series-item"], [class*="item-"]')];
+        items.forEach(function(item) {
+          if (!item.offsetParent) return;
+          var titleEl = item.querySelector('[class*="titleWrapper-"]') || item.querySelector('[class*="title-"]');
+          var text = (titleEl ? titleEl.textContent : item.textContent).trim().toLowerCase();
+          var isMatch = targetNames.some(function(n) { return text.includes(n); });
+          if (isMatch) {
+            item.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+            var btn = item.querySelector('button[aria-label="Remove"]') || item.querySelector('[data-name="remove"]');
+            if (btn) {
+              btn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+              btn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+              btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+            }
+          }
+        });
+      })()`,
+      returnByValue: true,
+      awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 400));
+
     // 1. Open Pine Editor if not already visible
     const openResult = await client.Runtime.evaluate({
       expression: `(function() {
@@ -53,10 +86,29 @@ export async function injectPineScript(client, scriptContent) {
     //    "+" stays in panel-open state; More→"New tab" toggles panel closed.
     const tabResult = await client.Runtime.evaluate({
       expression: `(function() {
-        // Check for read-only banner
+        // Check for read-only banner OR historical version banner
         var readOnly = [...document.querySelectorAll('*')].some(function(el) {
-          return el.offsetParent && el.textContent.includes('This script is read-only');
+          return el.offsetParent && (
+            el.textContent.includes('This script is read-only') ||
+            el.textContent.includes('This is a historical version of the script')
+          );
         });
+
+        // If historical version, click 'restore this version' if visible
+        var allEls = [...document.querySelectorAll('button, a, span, div')];
+        var restoreBtn = allEls.find(function(el) {
+          return el.offsetParent && el.children.length === 0 && el.textContent.trim().toLowerCase() === 'restore this version';
+        }) || allEls.find(function(el) {
+          return el.offsetParent && el.textContent.trim().toLowerCase().includes('restore this version') && el.textContent.length < 50;
+        });
+
+        if (restoreBtn) {
+          restoreBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+          restoreBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+          restoreBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+          return JSON.stringify({ needsNewTab: false, restored: true });
+        }
+
         if (!readOnly) return JSON.stringify({ needsNewTab: false });
 
         // Find the "+" button in the Pine Editor tab bar.
@@ -223,42 +275,23 @@ export async function injectPineScript(client, scriptContent) {
     await new Promise(r => setTimeout(r, 1200));
 
     // 6. Close Pine Editor panel after adding to chart (clean workspace view)
-    const closeCoords = await client.Runtime.evaluate({
+    await client.Runtime.evaluate({
       expression: `(function() {
-        var ed = document.querySelector('.pine-editor-monaco');
-        if (!ed || !ed.offsetParent) return null;
-
-        // Try 1: Panel close button (top-right of pane or dialog)
-        var closeBtn = document.querySelector('button[aria-label="Close"]') ||
-                       document.querySelector('button[title="Close"]') ||
-                       document.querySelector('button[data-name="close"]');
-        if (closeBtn && closeBtn.offsetParent) {
-          var r = closeBtn.getBoundingClientRect();
-          return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
-        }
-
-        // Try 2: Bottom bar toggle button
-        var bottomBtn = document.querySelector('[data-name="pine-dialog-button"]') ||
-                        [...document.querySelectorAll('button')].find(function(b) {
-                          return b.offsetParent && (b.textContent.trim() === 'Pine Editor' || b.getAttribute('aria-label') === 'Pine Editor');
-                        });
-        if (bottomBtn && bottomBtn.offsetParent) {
-          var r2 = bottomBtn.getBoundingClientRect();
-          return { x: r2.x + r2.width / 2, y: r2.y + r2.height / 2 };
-        }
-
-        return null;
+        var closeButtons = [...document.querySelectorAll('button[title="Close"], button[aria-label="Close"], button[data-name="close"]')];
+        closeButtons.forEach(function(btn) {
+          if (!btn.offsetParent) return;
+          btn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+          btn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+          btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+        });
+        // Bottom toggle fallback
+        var bottomBtn = document.querySelector('[data-name="pine-dialog-button"]');
+        if (bottomBtn) bottomBtn.click();
       })()`,
       returnByValue: true,
       awaitPromise: false,
     });
-
-    if (closeCoords.result.value) {
-      const { x, y } = closeCoords.result.value;
-      await client.Input.dispatchMouseEvent({ type: 'mousePressed', x, y, button: 'left', clickCount: 1 });
-      await client.Input.dispatchMouseEvent({ type: 'mouseReleased', x, y, button: 'left', clickCount: 1 });
-    }
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 600));
 
     return { success: true };
   } catch (e) {

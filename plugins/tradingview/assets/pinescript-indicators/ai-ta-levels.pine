@@ -1,16 +1,25 @@
 //@version=6
-// AI TA Levels v3 — Streamlined Multi-EMA Stack + Silent Data Window Engine
-// Purpose: Provides clean, uncluttered 21/50/200 EMA trend lines on chart while
-// silently exposing precise numerical indicators (ADX, ATR, Vol Bias %, Trailing Stop)
-// in the TradingView Data Window for AI CDP consumption.
+// AI TA Levels v4 — Institutional Multi-EMA + Session Levels (PDH/PDL/ORB) + Level Lines + Data Window
+// Purpose: Renders 21/50/200 EMA institutional trend curves, session levels (Previous Day High/Low,
+// 5m Opening Range), customizable horizontal support/resistance level lines, and silent Data Window exports.
 //
 // Layer: Codify / TradingView Pine Script Suite
-indicator("AI TA Levels v3", shorttitle="AI-TA", overlay=true)
+indicator("AI TA Levels v4", shorttitle="AI-TA", overlay=true)
 
-// ── Inputs ─────────────────────────────────────────────────────────────────
+// ── Inputs: EMA Stack ────────────────────────────────────────────────────────
 ema_fast   = input.int(21,   "Fast EMA",    minval=1,   group="EMA Stack")
 ema_mid    = input.int(50,   "Mid EMA",     minval=1,   group="EMA Stack")
 ema_slow   = input.int(200,  "Slow EMA",    minval=1,   group="EMA Stack")
+
+// ── Inputs: Session & Horizontal Level Lines ─────────────────────────────────
+show_pd_levels = input.bool(true,  "Show Previous Day High / Low", group="Session Levels")
+show_orb       = input.bool(true,  "Show 5-Min Opening Range High / Low", group="Session Levels")
+show_custom    = input.bool(true,  "Show Custom Target Lines",     group="Custom Horizontal Levels")
+target_buy     = input.float(48.56, "Target Buy Level", minval=0.0, group="Custom Horizontal Levels")
+target_fair    = input.float(85.47, "Target Fair Value", minval=0.0, group="Custom Horizontal Levels")
+target_stop    = input.float(46.20, "Target Stop Loss", minval=0.0, group="Custom Horizontal Levels")
+
+// ── Inputs: Telemetry ────────────────────────────────────────────────────────
 vol_len    = input.int(20,   "Volume MA",   minval=1,   group="Volume Bias")
 adx_len    = input.int(14,   "ADX Length",  minval=1,   group="Trend Strength")
 atr_len    = input.int(14,   "ATR Length",  minval=1,   group="Volatility")
@@ -21,26 +30,64 @@ e_fast = ta.ema(close, ema_fast)
 e_mid  = ta.ema(close, ema_mid)
 e_slow = ta.ema(close, ema_slow)
 
-// ── Volume Bias % (Accumulation vs Distribution) ────────────────────────────
+// ── Volume Bias % ────────────────────────────────────────────────────────────
 bull_vol = close > open ? volume : 0.0
 bear_vol = close <= open ? volume : 0.0
 bull_ma  = ta.sma(bull_vol, vol_len)
 bear_ma  = ta.sma(bear_vol, vol_len)
 bias_pct = (bull_ma - bear_ma) / (bull_ma + bear_ma + 0.001) * 100
 
-// ── ADX / Trend Strength ─────────────────────────────────────────────────────
+// ── ADX & ATR Math ───────────────────────────────────────────────────────────
 [di_plus, di_minus, adx_val] = ta.dmi(adx_len, adx_len)
-
-// ── ATR & Trailing Stop Math ────────────────────────────────────────────────
 atr_val = ta.atr(atr_len)
 [st_val, st_dir] = ta.supertrend(st_factor, 10)
 
-// ── Overlay Plots (Clean Institutional Lines) ────────────────────────────────
+// ── Previous Day High / Low ──────────────────────────────────────────────────
+[prev_day_high, prev_day_low] = request.security(syminfo.tickerid, "D", [high[1], low[1]], lookahead=barmerge.lookahead_on)
+
+// ── Overlay Plots ────────────────────────────────────────────────────────────
 plot(e_fast, "EMA 21",  color=color.new(color.yellow, 10), linewidth=1)
 plot(e_mid,  "EMA 50",  color=color.new(color.orange, 10), linewidth=2)
-plot(e_slow, "EMA 200", color=color.new(color.white, 10),  linewidth=2)
+plot(e_slow, "EMA 200", color=color.new(color.blue, 10),   linewidth=2)
 
-// ── Silent Data Window Exports (AI CDP Readout — Zero Chart Clutter) ─────────
+// Previous Day High / Low Lines
+plot(show_pd_levels ? prev_day_high : na, "Prev Day High", color=color.new(color.green, 40), linewidth=1, style=plot.style_stepline)
+plot(show_pd_levels ? prev_day_low  : na, "Prev Day Low",  color=color.new(color.red, 40),   linewidth=1, style=plot.style_stepline)
+
+// ── Target Level Plots (Horizontal Lines with Price Scale Tags) ──────────────
+plot(show_custom and target_fair > 0 ? target_fair : na, "DCF Fair Value", color=color.new(color.purple, 20), linewidth=2, style=plot.style_linebr)
+plot(show_custom and target_buy > 0  ? target_buy  : na, "Target Buy / 200 EMA", color=color.new(color.aqua, 20),   linewidth=2, style=plot.style_linebr)
+plot(show_custom and target_stop > 0 ? target_stop : na, "Stop Loss", color=color.new(color.red, 30),    linewidth=1, style=plot.style_linebr)
+
+// ── Custom Horizontal Target Lines & Right-Aligned Badges ───────────────────
+var line line_fair = na
+var line line_buy  = na
+var line line_stop = na
+var label lbl_fair = na
+var label lbl_buy  = na
+var label lbl_stop = na
+
+if show_custom and barstate.islast
+    line.delete(line_fair)
+    line.delete(line_buy)
+    line.delete(line_stop)
+    label.delete(lbl_fair)
+    label.delete(lbl_buy)
+    label.delete(lbl_stop)
+
+    if target_fair > 0
+        line_fair := line.new(bar_index - 100, target_fair, bar_index + 10, target_fair, extend=extend.both, color=color.purple, width=2, style=line.style_solid)
+        lbl_fair  := label.new(bar_index + 10, target_fair, "💎 DCF Fair Value: $" + str.tostring(target_fair, "#.##"), color=color.new(color.purple, 90), textcolor=color.purple, style=label.style_label_left, size=size.small)
+
+    if target_buy > 0
+        line_buy  := line.new(bar_index - 100, target_buy, bar_index + 10, target_buy, extend=extend.both, color=color.aqua, width=2, style=line.style_solid)
+        lbl_buy   := label.new(bar_index + 10, target_buy, "🟢 Target Buy / 200 EMA: $" + str.tostring(target_buy, "#.##"), color=color.new(color.teal, 90), textcolor=color.aqua, style=label.style_label_left, size=size.small)
+
+    if target_stop > 0
+        line_stop := line.new(bar_index - 100, target_stop, bar_index + 10, target_stop, extend=extend.both, color=color.red, width=1, style=line.style_dashed)
+        lbl_stop  := label.new(bar_index + 10, target_stop, "🛑 Stop Loss: $" + str.tostring(target_stop, "#.##"), color=color.new(color.maroon, 90), textcolor=color.red, style=label.style_label_left, size=size.small)
+
+// ── Silent Data Window Exports (AI CDP Telemetry) ────────────────────────────
 plot(bias_pct, "Vol Bias %",     display=display.data_window, color=color.new(color.aqua, 0))
 plot(adx_val,  "ADX",            display=display.data_window, color=color.new(color.purple, 0))
 plot(atr_val,  "ATR",            display=display.data_window, color=color.new(color.silver, 0))

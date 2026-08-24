@@ -244,6 +244,12 @@ export interface TechnicalAnalysisData {
         actualWeight: number | null;
         role: string | null;
     };
+    revisionHistory?: Array<{
+        date: string;
+        fairValue: number;
+        action: string;
+        model: string;
+    }>;
 }
 
 export const fetchTechnicalAnalysis = async (ticker: string): Promise<TechnicalAnalysisData | null> => {

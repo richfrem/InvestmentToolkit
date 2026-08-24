@@ -704,12 +704,29 @@ export async function addIndicator(client, name) {
     const data = JSON.parse(clickResult.result.value);
     await new Promise(r => setTimeout(r, 600));
 
-    // 5. Close dialog
+    // 5. Close dialog reliably (click close button and dispatch Escape)
     await client.Runtime.evaluate({
-      expression: `document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`,
+      expression: `(function() {
+        var dialog = document.querySelector('[data-name="indicators-dialog"]') ||
+                     document.querySelector('[data-dialog-name="indicators-dialog"]') ||
+                     [...document.querySelectorAll('[class*="dialog-"]')].find(function(d) {
+                       return d.textContent && d.textContent.includes('Indicators, metrics, and strategies');
+                     });
+        if (dialog) {
+          var closeBtn = dialog.querySelector('button[data-name="close"]') ||
+                         dialog.querySelector('[class*="close-"]') ||
+                         dialog.querySelector('button[aria-label="Close"]') ||
+                         [...dialog.querySelectorAll('button')].find(function(b) {
+                           return b.textContent.trim() === '×' || (b.getAttribute('aria-label') || '').toLowerCase().includes('close');
+                         });
+          if (closeBtn) closeBtn.click();
+        }
+      })()`,
       returnByValue: true, awaitPromise: false,
     });
-    await new Promise(r => setTimeout(r, 300));
+    await client.Input.dispatchKeyEvent({ type: 'rawKeyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+    await client.Input.dispatchKeyEvent({ type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+    await new Promise(r => setTimeout(r, 400));
 
     if (!data.clicked) return { success: false, error: `No results found for "${name}"` };
     return { success: true, added: data.text };

@@ -23,11 +23,12 @@ import MetricsGrid from '../components/MetricsGrid';
 import FinancialChart from '../components/analysis/FinancialChart';
 import AnalysisChartToggle, { type ChartMode } from '../components/analysis/AnalysisChartToggle';
 import ValuationModeler from '../components/ValuationModeler';
-import { LayoutDashboard, BarChart3, Calculator, Code, Activity } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Calculator, Code, Activity, Zap } from 'lucide-react';
 import PerformanceMetrics from '../components/PerformanceMetrics';
 import { AIThesisSummary } from '../components/AIThesisSummary';
 import { TargetThesisDetails } from '../components/TargetThesisDetails';
 import { TechnicalAnalysisSummaryCard } from '../components/TechnicalAnalysisSummaryCard';
+import { AgentResearchPromptCard } from '../components/AgentResearchPromptCard';
 import { AIAnalysisModal } from '../components/AIAnalysisModal';
 import { PineScriptViewerModal } from '../components/PineScriptViewerModal';
 import { TradeButtons } from '../components/TradeButtons';
@@ -219,6 +220,20 @@ export default function Dashboard() {
                                     </div>
                                 </>
                             )}
+
+                            {/* Upcoming Catalyst & Binary Event Ribbon */}
+                            {stockData.symbol === 'IREN' && (
+                                <div className="hidden xl:flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-lg text-amber-300 text-xs font-semibold">
+                                    <Zap size={13} className="text-amber-400 animate-pulse" />
+                                    <span>Catalyst: Q4 Earnings & AI Cloud Update (Aug 27)</span>
+                                </div>
+                            )}
+                            {stockData.symbol === 'STM' && (
+                                <div className="hidden xl:flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/30 px-3 py-1 rounded-lg text-indigo-300 text-xs font-semibold">
+                                    <Zap size={13} className="text-indigo-400" />
+                                    <span>Target Allocation: 3.69% · Silicon Carbide Automotive Ramp</span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Trade buttons + Navigation Tabs */}
@@ -293,6 +308,11 @@ export default function Dashboard() {
 
                         {activeTab === 'overview' && (
                             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                                <AgentResearchPromptCard
+                                    symbol={stockData.symbol}
+                                    hasThesis={Boolean(aiResult)}
+                                    hasTechnicals={Boolean(technicalAnalysis)}
+                                />
                                 {targetHolding && (
                                     <TargetThesisDetails 
                                         holding={targetHolding} 

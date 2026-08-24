@@ -119,10 +119,55 @@ export async function run(argv) {
 async function execute(handler, values, positionals) {
   /**
    * Helper function to execute command handler, stringify the JSON result,
-   * flush to stdout, and cleanly exit.
+   * dismiss any open dialogs/panes to maintain clean chart hygiene, flush to stdout, and cleanly exit.
    */
   try {
     const result = await handler(values, positionals);
+
+    // Enforce Pitfall #31: Unconditional UI modal & pane close hygiene before process exit
+    try {
+      const { evaluate, evaluateAsync, getClient } = await import('./connection.js');
+      const client = await getClient();
+      await client.Runtime.evaluate({
+        expression: `(function() {
+          // 1. Close Indicators dialog if open
+          var indDialog = document.querySelector('[data-name="indicators-dialog"]') ||
+                          document.querySelector('[data-dialog-name="indicators-dialog"]') ||
+                          [...document.querySelectorAll('[class*="dialog-"]')].find(function(d) {
+                            return d.textContent && d.textContent.includes('Indicators, metrics, and strategies');
+                          });
+          if (indDialog) {
+            var closeBtn = indDialog.querySelector('button[data-name="close"]') ||
+                           indDialog.querySelector('[class*="close-"]') ||
+                           indDialog.querySelector('button[aria-label="Close"]') ||
+                           [...indDialog.querySelectorAll('button')].find(function(b) {
+                             return b.textContent.trim() === '×' || (b.getAttribute('aria-label') || '').toLowerCase().includes('close');
+                           });
+            if (closeBtn) closeBtn.click();
+          }
+
+          // 2. Close Pine Editor if open (target visible top-right close button)
+          var btns = Array.from(document.querySelectorAll('button[title="Close"], button[aria-label="Close"], button[data-name="close"]'));
+          var visibleClose = btns.find(function(b) {
+            var r = b.getBoundingClientRect();
+            return r.width > 0 && r.height > 0 && r.y < 150 && r.x > 500;
+          });
+          if (visibleClose) {
+            visibleClose.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+            visibleClose.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+            visibleClose.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+          }
+        })()`,
+        returnByValue: true,
+        awaitPromise: false,
+      });
+      // Send hardware Escape to dismiss any stray dropdowns/overlays
+      await client.Input.dispatchKeyEvent({ type: 'rawKeyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+      await client.Input.dispatchKeyEvent({ type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+    } catch (_) {
+      // Non-fatal if CDP disconnects or target is already closed
+    }
+
     process.stdout.write(JSON.stringify(result, null, 2) + '\n', () => {
       process.exit(0);
     });

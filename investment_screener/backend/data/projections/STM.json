@@ -1,0 +1,95 @@
+{
+  "ticker": "STM",
+  "id": "stm-val-2026-08-24",
+  "source": "AI_AGENT",
+  "schemaVersion": "1.2",
+  "version": 1,
+  "savedAt": "2026-08-24T03:00:00.000Z",
+  "updatedAt": "2026-08-24T03:00:00.000Z",
+  "name": "AI Guided Valuation — STM — 2026-08-24",
+  "rationale": "High-conviction physical AI power generation & 800V DC rack power distribution play. NVIDIA AI Factory MGX 12kW GaN LLC board production testing, Catania 200mm SiC campus (€2.0B EU Chips Act subsidies), and cyclical automotive/industrial channel inventory clearing create a multi-year gross margin expansion path from 33.9% trough to 42%+ with >$2.0B data center revenue by 2027.",
+  "snapshot": {
+    "price": 50.56,
+    "currency": "USD",
+    "exchange": "NYSE",
+    "market_cap_b": 45.12,
+    "revenue_ttm_b": 11.8,
+    "pe_ratio": 266.1,
+    "forward_pe": 19.9,
+    "sector": "Technology",
+    "industry": "Semiconductors",
+    "last_actual_ps": 3.82
+  },
+  "dataPreferences": {
+    "growthBasis": "next",
+    "marginBasis": "ttm"
+  },
+  "scenarios": {
+    "bear": {
+      "weight": 0.20,
+      "growthRate": 8.0,
+      "netMargin": 12.0,
+      "exitPE": 15.0,
+      "qualityMultiplier": 1.0,
+      "shareChange": 0.0,
+      "year5Revenue": 17338.1,
+      "year5NetIncome": 2080.6,
+      "year5EPS": 2.33,
+      "year5PriceUndiscounted": 34.97,
+      "scenarioPrice": 21.71,
+      "presentValue": 21.71,
+      "rationale": "Slower European EV recovery and commoditized SiC price pressure from Asian entrants."
+    },
+    "base": {
+      "weight": 0.50,
+      "growthRate": 16.5,
+      "netMargin": 19.5,
+      "exitPE": 21.0,
+      "qualityMultiplier": 1.0,
+      "shareChange": 0.0,
+      "year5Revenue": 25322.8,
+      "year5NetIncome": 4937.9,
+      "year5EPS": 5.53,
+      "year5PriceUndiscounted": 116.19,
+      "scenarioPrice": 72.15,
+      "presentValue": 72.15,
+      "rationale": "AI data center power infrastructure reaches >$2.0B in 2027 with NVIDIA MGX 800V rack adoption and Catania 200mm scaling."
+    },
+    "bull": {
+      "weight": 0.30,
+      "growthRate": 24.0,
+      "netMargin": 24.0,
+      "exitPE": 26.0,
+      "qualityMultiplier": 1.0,
+      "shareChange": 0.0,
+      "year5Revenue": 34593.2,
+      "year5NetIncome": 8302.4,
+      "year5EPS": 9.3,
+      "year5PriceUndiscounted": 241.87,
+      "scenarioPrice": 150.18,
+      "presentValue": 150.18,
+      "rationale": "Global hyperscaler 800V DC power standard supercycle drives 50%+ gross margin mix and dominant Western SiC market share."
+    }
+  },
+  "analyticsLog": {
+    "shareCountMethod": "shares_diluted (892.5M)",
+    "marginAnchor": "TTM (33.9% gross margin, 2.7% operating margin)",
+    "growthDerivation": "Consensus rebound: +22.2% FY26 / +17.9% FY27 / +16.5% 5Y DCF CAGR",
+    "sectorBenchmarkRow": "Semiconductors / Power & Analog Infrastructure",
+    "reverseDcf": {
+      "impliedGrowth": 12.8,
+      "impliedGrowthVsBaseCase": -3.7,
+      "verdict": "ATTRACTIVE_UNDERVALUED"
+    },
+    "valuationAction": "BUY",
+    "portfolioUrgency": "ACCUMULATE_DIP"
+  },
+  "aiThesis": {
+    "model": "Antigravity AI Guided Valuation Co-Pilot",
+    "fairValue": 85.47,
+    "action": "ACCUMULATE",
+    "targetWeight": 0.0,
+    "reviewedAt": "2026-08-24T03:00:00Z",
+    "rationale": "High-conviction physical AI power generation & 800V DC rack power distribution play. NVIDIA AI Factory MGX 12kW GaN LLC board production testing, Catania 200mm SiC campus (€2.0B EU Chips Act subsidies), and cyclical automotive/industrial channel inventory clearing create a multi-year gross margin expansion path from 33.9% trough to 42%+ with >$2.0B data center revenue by 2027."
+  }
+}

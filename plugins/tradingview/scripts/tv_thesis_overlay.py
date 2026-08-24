@@ -150,17 +150,47 @@ def generate_pine_script_content(levels: Dict[str, Any]) -> str:
         f'indicator("AI Thesis Overlay - {symbol}", overlay=true)',
         "",
         "// === Valuation Level Inputs ===",
-        f"fairValue = input.float({fv if fv is not None else 0.0}, title='Fair Value', inline='fv')",
-        f"targetEntry = input.float({entry if entry is not None else 0.0}, title='Target Entry', inline='entry')",
-        f"stopLoss = input.float({stop if stop is not None else 0.0}, title='Stop Loss / Breaker', inline='stop')",
+        f"var float fairValue = input.float({fv if fv is not None else 0.0}, title='Fair Value', inline='fv')",
+        f"var float targetEntry = input.float({entry if entry is not None else 0.0}, title='Target Entry (Buy Zone)', inline='entry')",
+        f"var float stopLoss = input.float({stop if stop is not None else 0.0}, title='Stop Loss / Breaker', inline='stop')",
         "",
-        "// === Plot Lines ===",
-        "plot(fairValue > 0 ? fairValue : na, title='Fair Value', color=color.new(color.green, 20), style=plot.style_linebr, linewidth=2)",
-        "plot(targetEntry > 0 ? targetEntry : na, title='Target Entry', color=color.new(color.blue, 20), style=plot.style_linebr, linewidth=2)",
-        "plot(stopLoss > 0 ? stopLoss : na, title='Stop Loss', color=color.new(color.red, 20), style=plot.style_linebr, linewidth=2)",
+        "// === Persistent Labeled Lines & Annotations ===",
+        "var line fvLine = na",
+        "var label fvLabel = na",
+        "var line entryLine = na",
+        "var label entryLabel = na",
+        "var line stopLine = na",
+        "var label stopLabel = na",
+        "",
+        "if barstate.islast",
+        "    if not na(fvLine)",
+        "        line.delete(fvLine)",
+        "        label.delete(fvLabel)",
+        "    if fairValue > 0",
+        "        fvLine := line.new(bar_index - 50, fairValue, bar_index + 10, fairValue, color=color.rgb(156, 39, 176), width=2, style=line.style_solid, extend=extend.right)",
+        "        fvLabel := label.new(bar_index + 10, fairValue, '💎 DCF Fair Value: $' + str.tostring(fairValue, '#.##'), color=color.rgb(156, 39, 176), textcolor=color.white, style=label.style_label_left, size=size.small)",
+        "",
+        "    if not na(entryLine)",
+        "        line.delete(entryLine)",
+        "        label.delete(entryLabel)",
+        "    if targetEntry > 0",
+        "        entryLine := line.new(bar_index - 50, targetEntry, bar_index + 10, targetEntry, color=color.rgb(38, 166, 154), width=2, style=line.style_solid, extend=extend.right)",
+        "        entryLabel := label.new(bar_index + 10, targetEntry, '🟢 Buy Pocket: $' + str.tostring(targetEntry, '#.##'), color=color.rgb(38, 166, 154), textcolor=color.white, style=label.style_label_left, size=size.small)",
+        "",
+        "    if not na(stopLine)",
+        "        line.delete(stopLine)",
+        "        label.delete(stopLabel)",
+        "    if stopLoss > 0",
+        "        stopLine := line.new(bar_index - 50, stopLoss, bar_index + 10, stopLoss, color=color.rgb(239, 83, 80), width=2, style=line.style_dashed, extend=extend.right)",
+        "        stopLabel := label.new(bar_index + 10, stopLoss, '🛑 Stop / Breaker: $' + str.tostring(stopLoss, '#.##'), color=color.rgb(239, 83, 80), textcolor=color.white, style=label.style_label_left, size=size.small)",
+        "",
+        "// === Alert Conditions ===",
+        "alertcondition(ta.crossover(close, targetEntry), title='Alert: Crossed into Buy Zone', message='STM has entered the target Buy Pocket at $' + str.tostring(close, '#.##'))",
+        "alertcondition(ta.crossover(close, fairValue), title='Alert: Reached DCF Fair Value', message='STM has reached probability-weighted DCF Fair Value at $' + str.tostring(close, '#.##'))",
+        "alertcondition(ta.crossunder(close, stopLoss), title='Alert: Breached Stop Loss', message='⚠️ STM has breached Stop Loss / Breaker level at $' + str.tostring(close, '#.##'))",
         "",
         "// === Dashboard Status Badge ===",
-        "var table infoTable = table.new(position.top_right, 2, 4, bgcolor=color.new(color.black, 40), border_color=color.gray, border_width=1)",
+        "var table infoTable = table.new(position.top_right, 2, 4, bgcolor=color.new(color.black, 30), border_color=color.gray, border_width=1)",
         "if barstate.islast",
         f"    table.cell(infoTable, 0, 0, 'Ticker', text_color=color.white, text_size=size.small)",
         f"    table.cell(infoTable, 1, 0, '{symbol}', text_color=color.yellow, text_size=size.small)",
@@ -238,7 +268,10 @@ def apply_overlay(symbol: str, dry_run: bool = False) -> Dict[str, Any]:
     if not switch_chart_symbol(levels["symbol"]):
         return {"success": False, "error": f"Could not switch active chart to {levels['symbol']}"}
 
-    # Step 2: Inject Pine Script via Node CLI (Pitfall #12 — pass content, not file path)
+    # Step 2: Remove existing duplicate overlay if present
+    tv_call("chart", "removeIndicator", "AI Thesis")
+
+    # Step 3: Inject Pine Script via Node CLI (Pitfall #12 — pass content, not file path)
     inject_res = tv_call("pine", "inject", "--content", pine_code)
     is_ok = isinstance(inject_res, dict) and (inject_res.get("success") is True or "error" not in inject_res)
     return {

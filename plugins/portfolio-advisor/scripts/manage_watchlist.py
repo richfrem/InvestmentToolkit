@@ -139,11 +139,11 @@ def add_to_watchlist(
         if price is not None:
             conn.execute(
                 """
-                INSERT INTO investment_price (investment_id, price, currency, as_of)
+                INSERT INTO investment_price (investment_id, price, currency, fetched_at)
                 VALUES (?, ?, 'USD', ?)
                 ON CONFLICT(investment_id) DO UPDATE SET
                     price = excluded.price,
-                    as_of = excluded.as_of
+                    fetched_at = excluded.fetched_at
                 """,
                 (inv_id, float(price), now),
             )
