@@ -203,6 +203,51 @@ export const fetchStrategyAllocation = async (): Promise<StrategyAllocation> => 
     return await response.json();
 };
 
+export interface TechnicalAnalysisData {
+    ticker: string;
+    price: number;
+    technicalAction: 'ACCUMULATE' | 'MAINTAIN' | 'TRIM' | 'EXIT' | 'INITIATE' | 'WATCHLIST' | 'AVOID';
+    regime: 'BULLISH_TREND' | 'BULLISH_CONSOLIDATION' | 'BEARISH_TREND' | 'DISTRIBUTION' | 'COMPRESSION';
+    rationale: string;
+    effectiveAt: string;
+    keyLevels: {
+        support1: number;
+        support2: number;
+        macroFloor: number;
+        resistance1: number;
+        resistance2: number;
+        stopLoss: number;
+        atrExpectedSwing: number;
+    };
+    metrics: {
+        ema21: number;
+        ema50: number;
+        ema200: number;
+        adx: number;
+        volBias: number;
+        atr: number;
+        rsi: number;
+        isSqueeze: boolean;
+    };
+    holdingStatus: {
+        isHolding: boolean;
+        targetWeight: number | null;
+        actualWeight: number | null;
+        role: string | null;
+    };
+}
+
+export const fetchTechnicalAnalysis = async (ticker: string): Promise<TechnicalAnalysisData | null> => {
+    try {
+        const response = await fetch(`/api/stock/${ticker}/technical-analysis`);
+        if (!response.ok) return null;
+        return await response.json();
+    } catch (e) {
+        console.warn('Failed to fetch technical analysis:', e);
+        return null;
+    }
+};
+
 export const fetchStockData = async (ticker: string): Promise<StockData> => {
     try {
         const response = await fetch(`/api/stock/${ticker}`);

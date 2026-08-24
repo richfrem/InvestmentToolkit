@@ -17,7 +17,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { fetchStockData, fetchTargetPortfolio, type StockData, type ValuationResult, type Projection } from '../services/api';
+import { fetchStockData, fetchTargetPortfolio, fetchTechnicalAnalysis, type StockData, type ValuationResult, type Projection, type TechnicalAnalysisData } from '../services/api';
 import { useRecentTickers } from '../hooks/useRecentTickers';
 import MetricsGrid from '../components/MetricsGrid';
 import FinancialChart from '../components/analysis/FinancialChart';
@@ -27,6 +27,7 @@ import { LayoutDashboard, BarChart3, Calculator, Code } from 'lucide-react';
 import PerformanceMetrics from '../components/PerformanceMetrics';
 import { AIThesisSummary } from '../components/AIThesisSummary';
 import { TargetThesisDetails } from '../components/TargetThesisDetails';
+import { TechnicalAnalysisSummaryCard } from '../components/TechnicalAnalysisSummaryCard';
 import { AIAnalysisModal } from '../components/AIAnalysisModal';
 import { PineScriptViewerModal } from '../components/PineScriptViewerModal';
 import { TradeButtons } from '../components/TradeButtons';
@@ -39,6 +40,7 @@ export default function Dashboard() {
     const [activeTab, setActiveTab] = useState<Tab>('overview');
     const [chartMode, setChartMode] = useState<ChartMode>('revenue');
     const [stockData, setStockData] = useState<StockData | null>(null);
+    const [technicalAnalysis, setTechnicalAnalysis] = useState<TechnicalAnalysisData | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { addTicker } = useRecentTickers();
@@ -97,6 +99,7 @@ export default function Dashboard() {
         setLoading(true);
         setError(null);
         setStockData(null);
+        setTechnicalAnalysis(null);
         setAiResult(null);
         setTargetHolding(null);
 
@@ -106,6 +109,8 @@ export default function Dashboard() {
             addTicker(ticker);
             loadAIThesis(ticker);
             await loadTargetHolding(ticker);
+            const taData = await fetchTechnicalAnalysis(ticker);
+            setTechnicalAnalysis(taData);
         } catch (err: any) {
             console.error("Search failed:", err);
             setError(err.message || "Failed to fetch stock data");
@@ -285,6 +290,12 @@ export default function Dashboard() {
                                     <TargetThesisDetails 
                                         holding={targetHolding} 
                                         currentPrice={stockData?.price} 
+                                    />
+                                )}
+                                {technicalAnalysis && (
+                                    <TechnicalAnalysisSummaryCard
+                                        data={technicalAnalysis}
+                                        currentPrice={stockData?.price}
                                     />
                                 )}
                                 {aiResult && (
