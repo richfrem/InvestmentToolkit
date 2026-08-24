@@ -567,4 +567,89 @@ Companies with wide moats can:
         example: "NVDA's moat: CUDA software ecosystem (switching costs) + manufacturing scale (TSMC partnership) + brand/talent (intangible assets)",
         learnMoreUrl: "https://www.investopedia.com/terms/e/economicmoat.asp"
     },
+    // Technical Analysis Expert topics
+    emaAlignment: {
+        title: "Multi-EMA Stack (21 / 50 / 200 EMA)",
+        summary: "Trend momentum and dynamic support/resistance using Exponential Moving Averages.",
+        explanation: `Exponential Moving Averages give more weight to recent price data, making them more responsive to current trend changes than Simple Moving Averages.
+
+**The Three Core Moving Averages:**
+- 🟢 **21 EMA (Fast / Momentum Pivot):** Short-term institutional trailing trend. In a strong bull market, pullbacks to the 21 EMA represent high-probability "dip buying" zones.
+- 🟡 **50 EMA (Mid / Structural Trend):** Medium-term trend floor. Bull markets defend the 50 EMA on macro pullbacks.
+- 🔴 **200 EMA (Slow / Macro Baseline):** The line in the sand between long-term bull and bear regimes.
+
+**Alignment Regimes:**
+- **Bullish Stack (21 > 50 > 200):** Clear upward momentum; pullbacks are buying opportunities.
+- **Bearish Stack (21 < 50 < 200):** Downward trend; rallies into the 21 or 50 EMA should be used to trim/exit.
+- **Mixed / Tangled:** Consolidation or choppy range-bound trading.
+
+**✅ Quick Tip:** Never short a stock trading above an ascending 21 EMA. Wait for pullbacks near the 21/50 EMA shelf before adding size.`,
+        formula: "EMA_today = (Price_today × k) + (EMA_yesterday × (1 - k)), where k = 2 / (N + 1)",
+        example: "NVDA trading at $214 above 21 EMA ($215) and 50 EMA ($210) confirms solid bullish structural support.",
+        learnMoreUrl: "https://www.investopedia.com/terms/e/ema.asp"
+    },
+    adx: {
+        title: "ADX (Average Directional Index)",
+        summary: "Measures the strength and velocity of a price trend, regardless of direction.",
+        explanation: `Developed by J. Welles Wilder, the ADX quantifies trend strength on a scale from 0 to 100. It does NOT tell you whether the trend is up or down—only how powerful the directional momentum is.
+
+**Key Thresholds:**
+- **ADX < 20 (Weak / Choppy):** No discernible trend. The market is consolidating or ranging. Breakout trades often fail.
+- **ADX 20–25 (Emerging Trend):** Directional trend is beginning to form.
+- **ADX 25–40 (Strong Trend):** Healthy, high-conviction trend. Ideal conditions for trend-following and momentum strategies.
+- **ADX > 40 (Very Strong / Extended):** Trend is powerful but approaching exhaustion / blow-off risk.
+
+**Directional Indicators (DI+ / DI-):**
+- **DI+ > DI-:** Buyers are in control (Bullish).
+- **DI- > DI+:** Sellers are in control (Bearish).
+
+**✅ Quick Tip:** Combine ADX with DCF Fair Value: if DCF says BUY and ADX > 25 with DI+ > DI-, you have both fundamental and technical confluence!`,
+        formula: "ADX = 14-period smoothed average of Directional Movement Index (DX)",
+        example: "PLTR with ADX = 34.5 and DI+ > DI- indicates high momentum trend continuation.",
+        learnMoreUrl: "https://www.investopedia.com/terms/a/adx.asp"
+    },
+    volBias: {
+        title: "Volume Bias % (Accumulation vs Distribution)",
+        summary: "Measures institutional buying pressure vs selling pressure relative to average volume.",
+        explanation: `Volume precedes price. Large institutions (pension funds, sovereign wealth, hedge funds) cannot enter or exit positions quietly—their activity shows up in volume spikes on green vs red candles.
+
+**Understanding Volume Bias %:**
+- 🟢 **Positive (+10% to +80%):** Institutional Accumulation. Trading volume is heavily concentrated on upward (green) days.
+- 🔴 **Negative (-10% to -80%):** Institutional Distribution. Volume is concentrated on downward (red) selling days.
+- ⚪ **Neutral (-10% to +10%):** Balanced liquidity with no clear institutional accumulation or distribution.
+
+**✅ Quick Tip:** A stock consolidating sideways with a strongly positive Volume Bias (+30%+) is a textbook "silent accumulation" setup before a major breakout.`,
+        formula: "Vol Bias % = ((Bullish Volume - Bearish Volume) / Total Volume) × 100",
+        example: "TEM at +56% Volume Bias with a 2.3x volume ratio signals aggressive institutional buying.",
+        learnMoreUrl: "https://www.investopedia.com/terms/a/accumulationdistribution.asp"
+    },
+    atr: {
+        title: "ATR (Average True Range)",
+        summary: "Measures market volatility and average price swing per bar.",
+        explanation: `Average True Range calculates the absolute price movement over a 14-day rolling window. It reflects the normal expected daily volatility of a stock in dollar terms.
+
+**How to Use ATR for Risk & Sizing:**
+- **Stop Loss Placement:** Place stop-loss orders at 1.5× to 2× ATR below your entry price to prevent getting "shaken out" by normal daily noise.
+- **Profit Targets:** Expect typical multi-day swings to span 2× to 4× ATR.
+- **Position Sizing:** Higher ATR stocks (e.g. $10+ daily swings) require smaller position sizes to keep total portfolio risk balanced.
+
+**✅ Quick Tip:** Never set a static $1.00 stop loss on a stock with an ATR of $6.00—you will get stopped out by routine noise!`,
+        formula: "True Range = Max(High - Low, |High - PrevClose|, |Low - PrevClose|); ATR = 14-period SMA(TR)",
+        example: "NVDA ATR = $6.26 means an expected daily move of ±$6.26 is normal statistical variance.",
+        learnMoreUrl: "https://www.investopedia.com/terms/a/atr.asp"
+    },
+    ttmSqueeze: {
+        title: "TTM Squeeze (Volatility Compression)",
+        summary: "Detects periods when volatility compresses inside Bollinger Bands before an explosive breakout.",
+        explanation: `Markets alternate between periods of low volatility (compression/consolidation) and high volatility (expansion/breakouts).
+
+**The Squeeze Mechanism:**
+- **Squeeze ON (Red Dots):** Bollinger Bands compress completely inside the Keltner Channels. Energy is building up like a coiled spring.
+- **Squeeze Fired (Green Dots):** Bollinger Bands expand back outside the Keltner Channels. The coiled spring releases, sparking a sustained multi-week directional move.
+
+**✅ Quick Tip:** When a Squeeze is ON, look at the Volume Bias and 21 EMA direction to predict which way the breakout will fire.`,
+        formula: "Squeeze = Bollinger Bands (20, 2.0) are inside Keltner Channels (20, 1.5 ATR)",
+        example: "CORZ in Squeeze with positive Volume Bias (+12%) indicates impending upside volatility expansion.",
+        learnMoreUrl: "https://www.investopedia.com/terms/b/bollingerbands.asp"
+    }
 };

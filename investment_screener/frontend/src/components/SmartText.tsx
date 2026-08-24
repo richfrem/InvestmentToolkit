@@ -37,7 +37,17 @@ const SMART_LINKS: { [key: string]: string } = {
     "Moat": "moatAnalysis",
     "Operating Leverage": "operatingLeverage",
     "Share Buybacks": "shareChange",
-    "Dilution": "shareChange"
+    "Dilution": "shareChange",
+    "21 EMA": "emaAlignment",
+    "50 EMA": "emaAlignment",
+    "200 EMA": "emaAlignment",
+    "EMA Stack": "emaAlignment",
+    "Multi-EMA": "emaAlignment",
+    "ADX": "adx",
+    "Volume Bias": "volBias",
+    "ATR": "atr",
+    "Squeeze": "ttmSqueeze",
+    "TTM Squeeze": "ttmSqueeze"
 };
 
 interface SmartTextProps {
