@@ -19,7 +19,16 @@ allowed-tools: Bash, Read, Write
 
 ---
 
-## What This Skill Does (The 5-in-1 Pipeline)
+## Interactive UX Protocol (One Question at a Time)
+
+To ensure a seamless and clear user experience:
+1. **One Question at a Time**: Never overwhelm the user with multiple simultaneous choices or long checklists. Ask a single, clear question at each calibration checkpoint.
+2. **Explain the "Why" Transparently**: Whenever presenting valuation ranges, multiple choices, or technical levels, explain unclear design concepts (e.g. why 18x exit P/E is chosen for base case, or what the 200 EMA bounce signifies) in plain English before asking.
+3. **Provide High-Conviction Defaults**: Always offer a recommended option first, clearly labeled, so the user can confirm with a single click or word.
+
+---
+
+## What This Skill Does (The 6-in-1 Pipeline)
 
 When given ANY ticker (even one not currently in your database or watchlist), this skill executes an automated 5-step intake:
 
