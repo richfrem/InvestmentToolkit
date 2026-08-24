@@ -139,9 +139,22 @@ Scenarios:
 ✅ Stored in domain_model.sqlite and data/projections/{TICKER}.json
 ✅ Active on your Web App Watchlist & Screener
 
+## Step 6: Ingest Thesis Intelligence Event (Canonical Ledger Tool)
+
+Record the calibrated valuation thesis, Rule of 40 score, and strategic catalysts into `intelligence.sqlite` using the canonical service tool:
+
+```bash
+python3 investment_screener/backend/py_services/record_intelligence_event.py \
+  --ticker {TICKER} \
+  --type THESIS_UPDATE \
+  --title "{TICKER} Initiated into {PILLAR_TITLE} Strategy Pillar (${FAIR_VALUE} DCF FV)" \
+  --summary "{ONE_SENTENCE_THESIS_SUMMARY}" \
+  --payload '{"pillar": "{PILLAR_ID}", "fair_value": {FAIR_VALUE}, "target_entry": {TARGET_ENTRY}, "rule_of_40": {RULE_40_SCORE}}'
+```
+
 ---
 
-## Step 6: Grok News & Catalyst Sweep Prompt Generation (Copy-Paste Ready)
+## Step 7: Grok News & Catalyst Sweep Prompt Generation (Copy-Paste Ready)
 
 Always generate a customized, high-precision Grok prompt targeting current catalysts, customer wins, and hyperscaler power contracts:
 
