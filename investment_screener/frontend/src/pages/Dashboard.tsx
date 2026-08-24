@@ -28,6 +28,7 @@ import PerformanceMetrics from '../components/PerformanceMetrics';
 import { AIThesisSummary } from '../components/AIThesisSummary';
 import { TargetThesisDetails } from '../components/TargetThesisDetails';
 import { TechnicalAnalysisSummaryCard } from '../components/TechnicalAnalysisSummaryCard';
+import { AgentResearchPromptCard } from '../components/AgentResearchPromptCard';
 import { AIAnalysisModal } from '../components/AIAnalysisModal';
 import { PineScriptViewerModal } from '../components/PineScriptViewerModal';
 import { TradeButtons } from '../components/TradeButtons';
@@ -299,6 +300,11 @@ export default function Dashboard() {
 
                         {activeTab === 'overview' && (
                             <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+                                <AgentResearchPromptCard
+                                    symbol={stockData.symbol}
+                                    hasThesis={Boolean(aiResult)}
+                                    hasTechnicals={Boolean(technicalAnalysis)}
+                                />
                                 {targetHolding && (
                                     <TargetThesisDetails 
                                         holding={targetHolding} 
