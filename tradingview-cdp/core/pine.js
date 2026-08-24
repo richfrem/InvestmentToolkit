@@ -30,6 +30,39 @@ export async function injectPineScript(client, scriptContent) {
   try {
     const safeContent = JSON.stringify(scriptContent);
 
+    // 0. Extract title/shorttitle from script and clear old instances from chart legend
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        var raw = ${safeContent};
+        var titleMatch = raw.match(/indicator\\s*\\(\\s*["']([^"']+)["']/i);
+        var shortMatch = raw.match(/shorttitle\\s*=\\s*["']([^"']+)["']/i);
+        var targetNames = [];
+        if (titleMatch && titleMatch[1]) targetNames.push(titleMatch[1].trim().toLowerCase());
+        if (shortMatch && shortMatch[1]) targetNames.push(shortMatch[1].trim().toLowerCase());
+        if (targetNames.length === 0) targetNames.push('ai-ta', 'ai thesis');
+
+        var items = [...document.querySelectorAll('[data-name="legend-series-item"], [class*="item-"]')];
+        items.forEach(function(item) {
+          if (!item.offsetParent) return;
+          var titleEl = item.querySelector('[class*="titleWrapper-"]') || item.querySelector('[class*="title-"]');
+          var text = (titleEl ? titleEl.textContent : item.textContent).trim().toLowerCase();
+          var isMatch = targetNames.some(function(n) { return text.includes(n); });
+          if (isMatch) {
+            item.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+            var btn = item.querySelector('button[aria-label="Remove"]') || item.querySelector('[data-name="remove"]');
+            if (btn) {
+              btn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+              btn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+              btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+            }
+          }
+        });
+      })()`,
+      returnByValue: true,
+      awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 400));
+
     // 1. Open Pine Editor if not already visible
     const openResult = await client.Runtime.evaluate({
       expression: `(function() {
