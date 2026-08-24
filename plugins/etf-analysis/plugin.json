@@ -2,7 +2,10 @@
     "name": "etf-analysis",
     "version": "1.0.0",
     "description": "AI-driven ETF and fund analysis engine. Handles three fund types: CLOSED_END (NAV premium, private holdings), THEMATIC_ETF (holdings alignment, expense drag, overlap), and CASH_FUND (yield, dividend timing). Saves structured JSON to data/etf_analysis/ and updates agentRationale in target-portfolio.json.",
-    "author": "InvestmentToolkit",
+    "author": {
+        "name": "richfrem",
+        "email": "connect.richfrem@gmail.com"
+    },
     "maturity": "L4",
     "architecture": "supercharged",
     "skills": [
