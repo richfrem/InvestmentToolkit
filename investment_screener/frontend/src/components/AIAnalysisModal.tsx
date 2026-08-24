@@ -15,7 +15,7 @@
  *     - handlePresetChange() - Manages switching between different valuation scenarios
  */
 import React, { useEffect, useState } from 'react';
-import { X, BrainCircuit, TrendingUp, TrendingDown, AlertTriangle, BookOpen } from 'lucide-react';
+import { X, BrainCircuit, TrendingUp, TrendingDown, AlertTriangle, BookOpen, Sparkles, Clock } from 'lucide-react';
 import { type Projection, fetchProjections } from '../services/api';
 import { SmartText } from './SmartText';
 import { HelpTrigger } from './HelpModal';
@@ -94,17 +94,30 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({ symbol, onClos
                                     {symbol}
                                 </span>
                             </h2>
-                            <p className="text-xs text-indigo-300 font-medium">
-                                Autonomous Analyst Report • {projection ? new Date(projection.savedAt).toLocaleDateString() : 'Loading...'}
+                            <p className="text-xs text-indigo-300 font-medium flex items-center gap-2 mt-0.5">
+                                <Clock size={12} className="text-slate-400" /> Last Reviewed: {projection ? new Date(projection.savedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Loading...'}
                             </p>
                         </div>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors"
-                    >
-                        <X size={20} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {symbol && (
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(`/guide-valuation ${symbol}`);
+                                }}
+                                title={`Copy: /guide-valuation ${symbol}`}
+                                className="text-xs font-bold text-indigo-300 bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-500/40 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all shadow-sm"
+                            >
+                                <Sparkles size={13} className="text-indigo-400" /> New Review via /guide-valuation
+                            </button>
+                        )}
+                        <button
+                            onClick={onClose}
+                            className="p-2 hover:bg-slate-800 rounded-full text-slate-400 hover:text-white transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Content */}
