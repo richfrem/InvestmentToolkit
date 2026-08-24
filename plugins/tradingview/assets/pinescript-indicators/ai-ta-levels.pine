@@ -69,8 +69,8 @@ atr_val = ta.atr(atr_len)
 
 // ── Overlay Plots ────────────────────────────────────────────────────────────
 plot(e_fast, "EMA 21",  color=color.new(color.yellow, 10), linewidth=1)
-plot(e_mid,  "EMA 50",  color=color.new(color.orange, 10), linewidth=2)
-plot(e_slow, "EMA 200", color=color.new(color.blue, 10),   linewidth=2)
+plot(e_mid,  "EMA 50",  color=color.new(color.blue, 10),   linewidth=2)
+plot(e_slow, "EMA 200", color=color.new(color.white, 10),  linewidth=2)
 
 // Previous Day High / Low Lines
 plot(show_pd_levels ? prev_day_high : na, "Prev Day High", color=color.new(color.green, 50), linewidth=1, style=plot.style_stepline)
