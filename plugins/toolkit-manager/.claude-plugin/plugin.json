@@ -3,25 +3,11 @@
     "version": "2.0.0",
     "description": "Orchestrator plugin for managing the Investment Screener suite. Handles server startup.",
     "author": {
-        "name": "richfrem",
-        "email": "connect.richfrem@gmail.com"
+        "name": "Richard Fremmerlid"
     },
-    "maturity": "L5",
-    "architecture": "supercharged",
-    "skills": [
-        {
-            "name": "run_screener",
-            "path": "skills/run-screener/SKILL.md",
-            "trigger": "/start-screener"
-        },
-        {
-            "name": "toolkit_onboarding",
-            "path": "skills/toolkit-onboarding/SKILL.md",
-            "trigger": "/toolkit-onboarding"
-        }
-    ],
-    "agents": [],
-    "tags": [
+    "repository": "https://github.com/richfrem/InvestmentToolkit",
+    "license": "MIT",
+    "keywords": [
         "finance",
         "infrastructure",
         "startup"
