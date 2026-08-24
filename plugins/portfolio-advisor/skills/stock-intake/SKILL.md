@@ -15,140 +15,101 @@ allowed-tools: Bash, Read, Write
 # Stock Intake & Automated Onboarding Skill
 
 **Trigger:** `/stock-intake {TICKER}` or `/onboard-stock {TICKER}`  
-**Example:** `/stock-intake MP` | `/stock-intake LITE` | `/stock-intake ASTS`
+**Example:** `/stock-intake MP` | `/stock-intake LITE` | `/stock-intake ASTS` | `/stock-intake STM`
 
 ---
 
-## Interactive UX Protocol (One Question at a Time)
+## 🧭 Non-Expert Interactive UX Protocol (One Checkpoint at a Time)
 
-To ensure a seamless and clear user experience:
-1. **Foundation First (Strategic Alignment)**: Before jumping into valuation math, always ask **Question 1: Why are we considering this stock and which Portfolio Strategy Pillar does it serve?** Present all existing strategy pillars with target weights and recommend the closest match.
-2. **One Question at a Time**: Never overwhelm the user with multiple simultaneous choices or long checklists. Ask a single, clear question at each calibration checkpoint.
-3. **Explain the "Why" Transparently**: Whenever presenting valuation ranges, multiple choices, or technical levels, explain unclear design concepts (e.g. why 18x exit P/E is chosen for base case, or what the 200 EMA bounce signifies) in plain English before asking.
-4. **Step 3 Narrative Walkthrough & Peer Benchmarking Protocol**:
-   - **Part 1 — Revenue Lifecycle & Transcript Root Cause**: Do not just display raw figures. Synthesize the operational narrative from recent quarterly calls: diagnose *why* historical revenue reached peaks or troughs (e.g. customer inventory cycles, market pull-forwards, or macroeconomic headwinds vs secular decline) and *when* management guides forward growth inflections.
-   - **Part 2 — Margins, Operating Leverage & Strategic Pivot**: Detail historical gross and operating margin trends, fixed-cost operating leverage dynamics (e.g. plant utilization, scale efficiencies, COGS optimization), and the strategic product/service pivot driving margin expansion back toward target profitability.
-   - **Part 3 — Institutional Health Scores & Peer Comparison**: Present Rule of 40, Piotroski F-Score (with score thresholds: 0–3 Weak/Distressed, 4–6 Solid/Stable, 7–9 Elite Quality), and balance sheet health *side-by-side with 2–3 key sector/industry peers* so the user has relative valuation and performance context.
-   - **Part 4 — Forward Consensus & DCF Horizon Alignment**: Connect Wall Street 1Y/2Y consensus revenue and EPS targets to the company's multi-year commercial backlog and management guidance, setting the foundation for DCF scenario bounds.
-   *Ask the user if they have any questions or observations at each part before advancing.*
-5. **Standard Transition Phrasing**: When the financial analysis walkthrough is complete, prompt: *"Are you ready for us to move to Step 4 (Live TradingView Technical Telemetry)?"*
-6. **Provide High-Conviction Defaults**: Always offer a recommended option first, clearly labeled, so the user can confirm with a single click or word.
+To ensure a comfortable, institutional-grade experience for non-expert investors:
 
----
-
-## What This Skill Does (The 6-in-1 Pipeline)
-
-When given ANY ticker (even one not currently in your database or watchlist), this skill executes an automated pipeline:
-
-1. **Step 1 — Foundation: Strategy Pillar & Thesis Alignment**: Confirms user's investment intent and assigns the stock to an official strategy pillar (`power`, `compute`, `datainfra`, `robotics`, etc.).
-2. **Step 2 — Agent Pre-Flight & Grok News Sweep Review**: Agent synthesizes initial thesis brief, generates targeted Grok prompt, digests user's Grok output into dense structural takeaways, and pauses to confirm alignment before advancing.
-3. **Step 3 — Live Technical Telemetry, Plain-English Education & Action Tiers (TradingView CDP)**:
-   - **Plain-English Indicator Translations**: Never leave jargon unexplained. Assume the user is non-technical:
-     - *200 EMA*: The long-term institutional floor — big funds buy when price touches this line.
-     - *ADX*: The trend engine — tells us if a real breakout is building (>25) or if price is just drifting sideways (<20).
-     - *ATR*: The normal daily swing size — helps set a smart stop-loss that won't get triggered by normal market noise.
-     - *RSI*: The gas tank — 50 means neutral with plenty of room to run before getting exhausted/overbought (>70).
-     - *Volume Bias*: Buying vs selling pressure — negative/drying volume at support means sellers are out of ammo.
-   - **Action Tier Levels (Initiate / Add / Trim / Exit)**: Explicitly classify technical price zones into execution tiers:
-     - **🟢 INITIATE Zone ($Buy Pocket 1)**: Initial entry tranche right at key support.
-     - **💎 ACCUMULATE / ADD Zone ($Buy Pocket 2)**: Secondary dip-buying tranche if price tests lower boundary.
-     - **✂️ TRIM 1 / TRIM 2 Targets**: Logical resistance levels to take initial 1/3 or 1/2 profits.
-     - **🛑 HARD EXIT / STOP-LOSS**: Invalidation level where the technical thesis fails.
-   - **TradingView Interactive Sync Offer**: Always ask the user if they want to:
-     1. Sync these exact price alerts into TradingView via `/tv-alert-sync` so their phone/desktop pings when hit.
-     2. Inject dynamic horizontal support/resistance lines directly onto their live TradingView chart via `/tv-thesis-overlay`.
-4. **Step 4 — Financials & Baseline Ingest**: Calls `fetch_financials.py {TICKER}` and executes the 4-part narrative walkthrough (Revenue Lifecycle, Margins/Pivots, Peer Scorecards, Forward Consensus) with full live price and market cap awareness.
-5. **Step 5 — DCF Valuation & Target Delta Matrix**: Runs `dcf_scenarios.py` with user-calibrated growth/margin trajectory to establish Bear, Base, and Bull present values and compares live price against technical/DCF levels.
-6. **Step 6 — Research Ledger Ingestion**: Writes a structured research event body and commits it to `intelligence.sqlite` via `intelligence.event_store`, then updates the canonical view.
-7. **Step 7 — Dual-Layer Persistence & Watchlist Registration**:
-   - **SQLite (`domain_model.sqlite`)**: Inserts/updates `investment` with `is_watchlisted = 1`, `lifecycle_status = 'watchlist'`, assigned `pillar_id`, `sub_strategy_id`, and `investment_price`. Inserts `projection_version` and `projection_scenario` rows.
-   - **Filesystem JSON (`backend/data/projections/{TICKER}.json`)**: Writes the official Schema v1.2 projection object for instant dashboard rendering.
+1. **Strategic Foundation First**: Before discussing price or complex formulas, establish *why* the stock is being considered and match it to a clear, high-level **Portfolio Strategy Pillar** (e.g. `Power / Energy`, `Compute / Hardware`, `Data Infra`).
+2. **Strictly One Question at a Time**: Never ask multiple questions or provide dense checklists in a single turn. Guide the user step-by-step through clear conversational checkpoints.
+3. **Always Explain the "Why" in Plain English**:
+   - Translate technical indicators into real-world analogies (*"200 EMA = the institutional floor where large funds buy"*).
+   - Explain financial ratios simply (*"Rule of 40 = Growth + Margin balance; scores over 40% represent elite compounders"*).
+4. **4-Part Educational Financial Walkthrough**:
+   - **Part 1 — Revenue Lifecycle & Root Cause**: Why did revenue peak or drop in past years, and what triggers the rebound?
+   - **Part 2 — Margins, Fixed-Cost Operating Leverage & Strategic Pivot**: How do factories/operating leverage expand profits as sales recover?
+   - **Part 3 — Institutional Health Scores & Peer Scorecard**: Compare Rule of 40, Piotroski score, and gross margins directly against 2–3 sector peers.
+   - **Part 4 — Forward Consensus & DCF Calibration**: Ground valuation targets in Wall Street estimates and management guidance.
+5. **Provide High-Conviction Recommended Defaults**: Always offer the recommended path first (marked with `(Recommended)`) so the user can proceed with a single click or word.
 
 ---
 
-## Execution Instructions
+## 🛠️ The Canonical 6-Step Intake Pipeline
 
-### Step 1: Fetch Financials
-```bash
-python3 investment_screener/backend/py_services/fetch_financials.py {TICKER} > temp/evaluations/{TICKER}_raw.json
+```
+[1. Strategy Pillar] ➔ [2. Grok News Sweep] ➔ [3. Technicals & TV Sync] ➔ [4. Financial Narrative] ➔ [5. DCF Calibration] ➔ [6. Dual Persistence]
 ```
 
-### Step 2: Live TradingView Chart Read (CDP)
-```bash
-node tradingview-cdp/cli.js chart symbol {TICKER}
-node tradingview-cdp/cli.js chart openDataWindow
-node tradingview-cdp/cli.js chart read
-```
+### 1. Step 1 — Foundation: Strategy Pillar & Intent Alignment
+- Confirm investment thesis and assign the stock to an active portfolio strategy pillar (`power`, `compute`, `datainfra`, `robotics`, etc.) using `plugins/portfolio-advisor/skills/stock-intake/scripts/list_strategy_pillars.py`.
 
-### Step 3: DCF Scenario Engine & Valuation
-Write calibrated Bear/Base/Bull assumptions to `temp/evaluations/{TICKER}_scenarios.json`:
-```bash
-python3 investment_screener/backend/py_services/dcf_scenarios.py \
-  --raw temp/evaluations/{TICKER}_raw.json \
-  --scenarios temp/evaluations/{TICKER}_scenarios.json \
-  --pretty
-```
+### 2. Step 2 — Real-Time News & Catalyst Ingestion (Grok Front-Door)
+- Synthesize an initial thesis brief.
+- Provide the user with a customized, copy-paste ready Grok news sweep prompt.
+- Ingest the user's Grok output into core structural takeaways (customer wins, supply chain inflection points, 13F smart money accumulation).
 
-### Step 4: Record Research in Intelligence Ledger
-```bash
-PYTHONPATH=investment_screener/backend/py_services python3 -m intelligence.event_store \
-  --event-type RESEARCH_IMPORT --ticker {TICKER} --effective-at "$(date +%F)" \
-  --status ACTIVE --title "{TICKER} Onboarding & Fundamental Research Profile" --body-file temp/research_body.md
+### 3. Step 3 — Live Technical Telemetry & TradingView Visual Sync
+- Query live technical indicators via TradingView CDP: 21/50/200 EMAs, ADX (trend strength), ATR (daily swing size), RSI, and Volume Bias.
+- Translate levels into clear **Execution Action Tiers**:
+  - 🟢 **Buy Pocket 1 / Initiate** (Current support zone)
+  - 💎 **Primary Buy / Accumulate** (Institutional 200 EMA floor)
+  - 🟡 **Trim Target 1** / 🟠 **Trim Target 2** (Resistance profit-taking levels)
+  - 🛑 **Stop Loss / Breaker** (Thesis invalidation shelf)
+- Automatically sync horizontal levels to the live TradingView chart using `AI TA Levels v6` and close the Pine Editor panel.
 
-PYTHONPATH=investment_screener/backend/py_services python3 -m intelligence.view_generator {TICKER}
-```
+### 4. Step 4 — Financials, Quality Health & Peer Benchmarking
+- Pull live financials via `investment_screener/backend/py_services/fetch_financials.py {TICKER}`.
+- Conduct the 4-part narrative walkthrough (Revenue lifecycle, Gross/Operating margin leverage, Peer comparison scorecard, Forward consensus).
 
-### Step 5: Dual Persistence to SQLite & JSON
-1. Use the skill's canonical `scripts/manage_watchlist.py` script to register the stock in `domain_model.sqlite`:
-```bash
-python3 scripts/manage_watchlist.py \
-  --add {TICKER} \
-  --name "{COMPANY_NAME}" \
-  --pillar {PILLAR_ID} \
-  --sub-strategy {SUB_STRATEGY_ID} \
-  --price {PRICE} \
-  --sector "{SECTOR}" \
-  --industry "{INDUSTRY}" \
-  --projection-id "{PROJECTION_ID}"
-```
-2. Write `investment_screener/backend/data/projections/{TICKER}.json` with `source: "AI_AGENT"`.
+### 5. Step 5 — 5-Year Scenario DCF Valuation Matrix
+- Calibrate Bear (20%), Base (50%), and Bull (30%) growth and margin trajectories with `investment_screener/backend/py_services/dcf_scenarios.py`.
+- Calculate the probability-weighted Present Value (Fair Value) and determine the margin of safety vs current market price.
+
+### 6. Step 6 — Dual Persistence & Intelligence Event Logging
+1. **Record Research Event**: Ingest the complete thesis and Rule of 40 metrics into `intelligence.sqlite` using the canonical script:
+   ```bash
+   python3 investment_screener/backend/py_services/record_intelligence_event.py \
+     --ticker {TICKER} \
+     --type THESIS_UPDATE \
+     --title "{TICKER} Initiated into {PILLAR_TITLE} Strategy Pillar (${FAIR_VALUE} DCF FV)" \
+     --summary "{ONE_SENTENCE_THESIS_SUMMARY}" \
+     --payload '{"pillar": "{PILLAR_ID}", "fair_value": {FAIR_VALUE}, "target_entry": {TARGET_ENTRY}, "rule_of_40": {RULE_40_SCORE}}'
+   ```
+2. **Persist Domain Model**: Insert/update `investment`, `investment_price`, `projection_version`, and `price_level_tier` rows in `domain_model.sqlite`.
+3. **Emit Projection JSON**: Write `investment_screener/backend/data/projections/{TICKER}.json` (Schema v1.2) for instant React dashboard display.
 
 ---
 
-## Final Output Presentation
+## 🎯 Concluding Summary Card Format
 
-Always conclude with a concise, actionable summary card:
+Always finish with a clean, executive summary:
+
 ```
 🎯 [TICKER] Onboarding & Intake Complete
 
-Pillar:          [Pillar Name] ([sub_strategy_id])
-Role:            WATCHLIST (is_watchlisted = 1)
-Market Price:    $[Price]
-DCF Fair Value:  $[FairValue] ([Action] — [+/-X]% upside)
+Pillar:          [Pillar Name] ([pillar_id])
+Role:            WATCHLIST (is_watchlisted = 1, target_weight = 0.0%)
+Market Price:    $[Price] USD
+DCF Fair Value:  $[FairValue] ([+/-X]% upside — [Action])
+Rule of 40:      [Score]% ([Pass/Watch])
+Piotroski Score: [Score] / 9 ([Quality Tier])
 
-Technical Structure (1D / 1W):
-- Overhead Resistance:  $[200 EMA or Supply Zone]
-- Confluence Buy Zone:  $[21/50 EMA dynamic support]
-- Invalidation / Stop:  $[SuperTrend Floor]
+Technical Execution Tiers:
+- Overhead Resistance:  $[Trim 2] (50 EMA) / $[Trim 1] (21 EMA)
+- Confluence Buy Floor: $[Primary Buy] (200 EMA institutional support)
+- Invalidation / Stop:  $[Stop Loss] (Structural breaker)
 
-Scenarios:
-🐻 Bear (25%): $[PV] — [One sentence]
-⚖️ Base (50%): $[PV] — [One sentence]
-🐂 Bull (25%): $[PV] — [One sentence]
+DCF Scenarios:
+🐻 Bear (20%): $[PV] — [One sentence scenario]
+⚖️ Base (50%): $[PV] — [One sentence scenario]
+🐂 Bull (30%): $[PV] — [One sentence scenario]
 
-✅ Stored in domain_model.sqlite and data/projections/{TICKER}.json
-✅ Active on your Web App Watchlist & Screener
-
-## Step 6: Ingest Thesis Intelligence Event (Canonical Ledger Tool)
-
-Record the calibrated valuation thesis, Rule of 40 score, and strategic catalysts into `intelligence.sqlite` using the canonical service tool:
-
-```bash
-python3 investment_screener/backend/py_services/record_intelligence_event.py \
-  --ticker {TICKER} \
-  --type THESIS_UPDATE \
-  --title "{TICKER} Initiated into {PILLAR_TITLE} Strategy Pillar (${FAIR_VALUE} DCF FV)" \
-  --summary "{ONE_SENTENCE_THESIS_SUMMARY}" \
-  --payload '{"pillar": "{PILLAR_ID}", "fair_value": {FAIR_VALUE}, "target_entry": {TARGET_ENTRY}, "rule_of_40": {RULE_40_SCORE}}'
+✅ Stored in domain_model.sqlite & data/projections/{TICKER}.json
+✅ Ingested in intelligence.sqlite
+✅ Rendered live on TradingView Desktop with AI TA Levels v6
 ```
+
 
