@@ -80,11 +80,29 @@ Guide the user through their core wealth architecture:
 >   - 💵 **Defensive Cash / Sourcing** (`cash`): `10.0%` (via `PSU-U.TO` / `BIL`)  
 > - **Option B (Custom Allocation)**: Provide your custom pillars and percentages.
 
-*Seed into `domain_model.sqlite` (`account`, `strategy_pillar`, `sub_strategy`).*
+**Idempotency & Execution**:
+Check if accounts/pillars are already seeded (`SELECT COUNT(*) FROM strategy_pillar`). If unseeded, execute the canonical seeding script:
+```bash
+python3 -c "
+import sys, sqlite3
+sys.path.insert(0, 'investment_screener/backend/py_services')
+from domain_model.db_client import initialize_db
+from domain_model.seed_real_accounts import seed_real_accounts
+conn = initialize_db('investment_screener/backend/data/domain_model.sqlite')
+seed_real_accounts(conn)
+conn.close()
+print('Accounts seeded successfully.')
+"
+```
 
 ---
 
 ## 🔄 Step 3 — Portfolio Ingestion & Cash Reconciliation
+
+> ⚠️ **CDP Pre-flight**: Before importing live broker data, verify TradingView Desktop CDP connectivity by delegating to `/tv-setup` or running:
+> ```bash
+> python3 plugins/tradingview/scripts/tv_health_check.py
+> ```
 
 > **Wizard Question 3**:  
 > *"How would you like to import your active holdings and cash?"*  
@@ -94,7 +112,9 @@ Guide the user through their core wealth architecture:
 
 ---
 
-## 📊 Step 4 — Automated DCF Baseline & Quality Sweep
+## 📊 Step 4 — Automated Baseline DCF & Quality Sweep (Silent Batch Mode)
+
+> 💡 *Note: For onboarded holdings, Step 4 runs in **Silent Batch Mode** (non-interactive) to compute baseline DCF valuations and scores across all tickers without triggering multi-step conversational questionnaires per holding.*
 
 Iterate across all imported tickers in a background sweep:
 1. Fetch 5-year financials and transcript data via `fetch_financials.py {TICKER}`.

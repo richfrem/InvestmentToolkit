@@ -23,7 +23,7 @@ InvestmentToolkit/
 
 ## Day-1 Agent Bootstrap Protocol (Fresh Clone Quickstart)
 When dropping into a fresh repository clone, execute this sequence to reach 100% operational parity:
-1. **Initialize Data Files**: Copy missing private templates (`portfolio.json.example` → `portfolio.json`, `cash_flows.json.example` → `cash_flows.json`).
+1. **Initialize Data Files**: Copy missing private templates (`cash_flows.json.example` → `cash_flows.json`, `portfolio-config.json.example` → `portfolio-config.json`).
 2. **Compile Deps & Deploy Plugins**: Run `python3 .agents/skills/plugin-syncer/scripts/sync_with_inventory.py` to symlink all 20 plugins into `.agents/`.
 3. **Execute Master Coordinator**: Trigger `/toolkit-onboarding` to configure accounts, seed strategy pillars, ingest broker holdings via TV CDP, and build DCF baselines.
 4. **Launch Suite**: Run `python3 run_investment_toolkit.py` (React :5173, Express :3001, TV CDP :9222).
