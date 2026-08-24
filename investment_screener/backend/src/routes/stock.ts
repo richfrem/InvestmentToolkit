@@ -272,18 +272,19 @@ router.get('/stock/:ticker/technical-analysis', async (req, res) => {
 router.get('/stock/:ticker', async (req, res) => {
     const { ticker } = req.params;
     if (!isValidTicker(ticker)) { res.status(400).json({ error: 'Invalid ticker symbol' }); return; }
+    const cleanSym = ticker.toUpperCase();
 
     // ETF fast-path
-    const etfFile = path.join(ETF_ANALYSIS_DIR, `${ticker}.json`);
+    const etfFile = path.join(ETF_ANALYSIS_DIR, `${cleanSym}.json`);
     if (fs.existsSync(etfFile)) {
-        console.log(`[API] ETF analysis found for ${ticker} — returning ETF profile`);
+        console.log(`[API] ETF analysis found for ${cleanSym} — returning ETF profile`);
         try {
             const parsed = JSON.parse(fs.readFileSync(etfFile, 'utf-8'));
             const etf = Array.isArray(parsed) ? parsed[parsed.length - 1] : parsed;
             const snap = etf.snapshot ?? {};
             const holdings = etf.holdingsAnalysis?.topHoldings ?? [];
             res.json({
-                symbol: ticker, price: snap.price ?? 0, currency: snap.currency ?? 'USD',
+                symbol: cleanSym, price: snap.price ?? 0, currency: snap.currency ?? 'USD',
                 profile: {
                     type: 'ETF', assetType: 'ETF', sector: 'ETF', industry: etf.fundType ?? 'THEMATIC_ETF',
                     description: etf.rationale ?? '', longName: etf.name ?? ticker, fundFamily: '',
@@ -310,13 +311,13 @@ router.get('/stock/:ticker', async (req, res) => {
     }
 
     const fresh = req.query.fresh === 'true';
-    console.log(`[API] Fetching data for ${ticker}${fresh ? ' (fresh)' : ''}...`);
+    console.log(`[API] Fetching data for ${cleanSym}${fresh ? ' (fresh)' : ''}...`);
     try {
-        const data = await spawnPythonScript('fetch_financials.py', fresh ? [ticker, '--no-cache'] : [ticker]);
+        const data = await spawnPythonScript('fetch_financials.py', fresh ? [cleanSym, '--no-cache'] : [cleanSym]);
         if (data.error) { res.status(400).json({ error: data.error }); return; }
         res.json(data);
     } catch (error) {
-        console.error(`[API] Error fetching ${ticker}: `, error);
+        console.error(`[API] Error fetching ${cleanSym}: `, error);
         res.status(500).json({ error: 'Failed to fetch financial data' });
     }
 });

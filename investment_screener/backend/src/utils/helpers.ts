@@ -37,9 +37,9 @@ import { PortfolioRepository } from '../services/PortfolioRepository';
  */
 export const isValidTicker = (ticker: string): boolean => {
     /**
-     * Matches string characters against a strict 1-10 length uppercase and punctuation regular expression.
+     * Matches string characters against a 1-10 length alphanumeric and punctuation regular expression (case-insensitive).
      */
-    return /^[A-Z0-9.\-_]{1,10}$/.test(ticker);
+    return /^[A-Za-z0-9.\-_]{1,10}$/.test(ticker);
 };
 
 /**
