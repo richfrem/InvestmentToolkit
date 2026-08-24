@@ -1,11 +1,11 @@
 //@version=6
-// AI TA Levels v5 — Institutional Multi-EMA + All Action Tiers + Session Levels + Data Window
+// AI TA Levels v6 — Institutional Multi-EMA + All Action Tiers + Session Levels + Data Window
 // Purpose: Renders 21/50/200 EMA institutional trend curves, session levels (PDH/PDL),
 // full action execution tiers (DCF Fair Value, Trim 2, Trim 1, Buy Tier 1, Target Buy / 200 EMA, Stop Loss),
 // and silent Data Window exports for AI CDP consumption.
 //
 // Layer: Codify / TradingView Pine Script Suite
-indicator("AI TA Levels v5", shorttitle="AI-TA", overlay=true)
+indicator("AI TA Levels v6", shorttitle="AI-TA", overlay=true)
 
 // ── Inputs: EMA Stack ────────────────────────────────────────────────────────
 ema_fast   = input.int(21,   "Fast EMA",    minval=1,   group="EMA Stack")
@@ -35,22 +35,23 @@ e_fast = ta.ema(close, ema_fast)
 e_mid  = ta.ema(close, ema_mid)
 e_slow = ta.ema(close, ema_slow)
 
-// ── Dynamic Level Sanity Guards ──────────────────────────────────────────────
+// ── Dynamic Level Sanity Guards & Auto-Derivation ───────────────────────────
 // Guard against cross-ticker level contamination (e.g. plotting $85 levels on a $35 stock).
 // A level is valid only if it is within a plausible range (0.2x to 5.0x of active price).
 is_plausible(lvl) => lvl > 0 and lvl >= (close * 0.2) and lvl <= (close * 5.0)
 
-// If explicit target_buy is above current market price or not plausible, fallback to 200 EMA
-valid_fair = is_plausible(target_fair) ? target_fair : na
-has_fair   = not na(valid_fair)
-fair_above = has_fair and valid_fair > close
-fair_below = has_fair and valid_fair < close
+// Dynamic baseline: Use explicit Fair Value if set, otherwise auto-anchor to current price & ATR
+valid_fair  = is_plausible(target_fair) ? target_fair : na
+base_anchor = not na(valid_fair) ? valid_fair : close
 
-valid_trim2 = is_plausible(target_trim2) ? target_trim2 : (fair_above ? valid_fair * 1.30 : na)
-valid_trim1 = is_plausible(target_trim1) ? target_trim1 : (fair_above ? valid_fair * 1.15 : na)
-valid_buy1  = is_plausible(target_buy1) and target_buy1 < close ? target_buy1 : (fair_below ? valid_fair * 0.90 : na)
-valid_buy   = is_plausible(target_buy) and target_buy < close ? target_buy : (e_slow < close ? e_slow : na)
-valid_stop  = is_plausible(target_stop) and target_stop < close ? target_stop : (not na(valid_buy) ? valid_buy * 0.92 : na)
+// Trim targets: If explicit inputs are 0.0, dynamically render +15% and +30% profit-taking targets
+valid_trim2 = is_plausible(target_trim2) ? target_trim2 : (base_anchor * 1.30)
+valid_trim1 = is_plausible(target_trim1) ? target_trim1 : (base_anchor * 1.15)
+
+// Buy targets: If explicit inputs are 0.0, dynamically render Buy Tier 1 (-10%), Primary Buy (200 EMA or -15%), and Stop Loss (-20% or 3x ATR)
+valid_buy1  = is_plausible(target_buy1) and target_buy1 < close ? target_buy1 : (close * 0.90)
+valid_buy   = is_plausible(target_buy) and target_buy < close ? target_buy : (e_slow < close ? e_slow : close * 0.85)
+valid_stop  = is_plausible(target_stop) and target_stop < close ? target_stop : (valid_buy * 0.92)
 
 // ── Volume Bias % ────────────────────────────────────────────────────────────
 bull_vol = close > open ? volume : 0.0

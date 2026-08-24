@@ -185,19 +185,22 @@ Here's what I'm seeing today, ranked by urgency:
 1. [THESIS BREAKER] TICKER — {metric} {operator} {threshold} TRIGGERED ({streak}/{horizon} runs)
    "{note}" — this is a pre-declared condition for selling. Hold anyway, or act on it?
 
-2. [IMMINENT EVENT] TICKER — earns in N days, currently [REDUCE/EXIT], pre-event size check needed
+2. [CHART LEVEL HIT — HITL ACTION REQUIRED] TICKER — reached [TRIM LINE / TARGET BUY / STOP LOSS] at $[PRICE]
+   Level: $[LEVEL_PRICE] · Signal: [e.g. "Hit Trim Target 1 ($54.60) — Manual Trim recommended in broker" or "Entered Buy Pocket ($48.56) — Manual Add recommended"]
+
+3. [IMMINENT EVENT] TICKER — earns in N days, currently [REDUCE/EXIT], pre-event size check needed
    P&L: [+/-X%] · Score: [X] · Reason: [1-line why this needs attention before earnings]
 
-3. [EXIT] TICKER — score [X], [Nth] consecutive day at EXIT
+4. [EXIT] TICKER — score [X], [Nth] consecutive day at EXIT
    P&L: [+/-X%] · Reason: [DCF action + TA signal, e.g. "DCF SELL, RSI 78 cooling, thesis broken"]
 
-4. [EXIT] TICKER — score [X], new signal
+5. [EXIT] TICKER — score [X], new signal
    P&L: [+/-X%] · Reason: [what flipped today]
 
-5. [REDUCE] TICKER — score [X], overweight [+X.X%]
+6. [REDUCE] TICKER — score [X], overweight [+X.X%]
    P&L: [+/-X%] · Reason: [why reduce, e.g. "RSI OB, at resistance, +18% above book"]
 
-6. [ACCUMULATE] TICKER — score [+X], [X]% to fair value, [X.X]% underweight
+7. [ACCUMULATE] TICKER — score [+X], [X]% to fair value, [X.X]% underweight
    P&L: [+/-X%] · Reason: [why now, e.g. "DCF BUY, RSI oversold, at support"]
 
 Start with item 1, or jump to a specific one?
@@ -207,7 +210,9 @@ Start with item 1, or jump to a specific one?
 0. TRIGGERED thesis breakers — always first, above imminent earnings. A breaker only
    exists because the user or agent pre-declared it as a reason to sell; surfacing it late
    defeats the point.
-1. IMMINENT earnings on any REDUCE/EXIT position (size before event)
+1. STOP LOSS / BREAKER breaches — immediate capital protection alert for manual broker action.
+2. CHART LEVEL HITS (Trim targets reached, Target Buy zones entered) — Remind user to manually execute in broker.
+3. IMMINENT earnings on any REDUCE/EXIT position (size before event)
 2. EXIT signals that have been EXIT for 2+ consecutive sessions
 3. EXIT signals (new)
 4. REDUCE signals that are > 2% overweight their target
