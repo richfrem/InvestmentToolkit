@@ -21,9 +21,10 @@ InvestmentToolkit/
 **npm commands** — always run from `investment_screener/` (workspace root). Never use `--prefix investment_screener` from within `investment_screener/` — doubles the path and fails.
 `npm run dev -w backend | frontend`, `npm run build -w backend | frontend`, `npm run lint -w frontend`.
 
-## Daily Commands
+## Core Agent Commands
 | Command | Purpose |
 |---------|---------|
+| `/toolkit-onboarding` | Master Portfolio Bootstrap Wizard: pre-flight check → plugin install → account/pillar setup → broker sync → DCF baseline |
 | `/daily` | Full daily loop: sync → brief → triage → execute → log |
 | `/weekly-review` | Weekend drift + Grok sweep |
 | `/run-advisor` | Post-catalyst: review → calibrate → rebalance |

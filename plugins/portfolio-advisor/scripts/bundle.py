@@ -1,1 +1,0 @@
-../../../.agents/skills/red-team-bundler/scripts/bundle.py
