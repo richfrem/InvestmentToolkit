@@ -1,0 +1,106 @@
+{
+  "ticker": "IREN",
+  "id": "iren-val-2026-08-23",
+  "source": "AI_AGENT",
+  "schemaVersion": "1.2",
+  "version": 2,
+  "savedAt": "2026-08-23T19:15:00.000Z",
+  "updatedAt": "2026-08-23T19:15:00.000Z",
+  "name": "AI Guided Valuation — IREN — 2026-08-23",
+  "rationale": "IREN is transitioning from Bitcoin mining infrastructure into high-density enterprise AI Cloud hosting. With 5GW+ of secured grid interconnects in Texas/British Columbia and executive leadership from Oracle Cloud Infrastructure and Google Cloud, IREN is well positioned to capture enterprise AI clusters. Balanced 5-year DCF incorporates 50% Bull, 30% Base, and 20% Bear weights ahead of August 27 earnings.",
+  "snapshot": {
+    "price": 41.88,
+    "currency": "USD",
+    "exchange": "NASDAQ"
+  },
+  "dataPreferences": {
+    "growthBasis": "next",
+    "marginBasis": "ttm"
+  },
+  "scenarios": {
+    "bear": {
+      "weight": 0.20,
+      "growthRate": 15.0,
+      "netMargin": 5.0,
+      "exitPE": 10.0,
+      "qualityMultiplier": 1.0,
+      "shareChange": 5.0,
+      "scenarioPrice": 1.25
+    },
+    "base": {
+      "weight": 0.30,
+      "growthRate": 48.0,
+      "netMargin": 20.0,
+      "exitPE": 22.0,
+      "qualityMultiplier": 1.0,
+      "shareChange": 2.0,
+      "scenarioPrice": 36.80
+    },
+    "bull": {
+      "weight": 0.50,
+      "growthRate": 72.0,
+      "netMargin": 28.0,
+      "exitPE": 28.0,
+      "qualityMultiplier": 1.05,
+      "shareChange": 0.0,
+      "scenarioPrice": 119.50
+    }
+  },
+  "analyticsLog": {
+    "shareCountMethod": "shares_diluted (258.2M)",
+    "marginAnchor": "TTM (20.9% GAAP profit margin)",
+    "growthDerivation": "Blended consensus: +167% TTM / +140% FY26 / +48% 5-year normalized CAGR",
+    "sectorBenchmarkRow": "AI Infrastructure / High-Density Data Center Compute",
+    "dataQualityFlags": [
+      "Binary earnings report in 4 days (Aug 27, 2026)",
+      "High beta (4.3) with aggressive CapEx growth pipeline"
+    ],
+    "analystInputs": {
+      "y1RevEstimate": 722896290,
+      "y2RevEstimate": 2976592710,
+      "y1GrowthPct": 44.3,
+      "y2GrowthPct": 311.7,
+      "blendedConsensusPct": 178.0,
+      "analystTargetMean": 80.19,
+      "analystCount": 16
+    },
+    "historicalRevenue": [
+      59037000,
+      75509000,
+      187192000,
+      501023000
+    ],
+    "historicalNetMargins": [
+      -711.0,
+      -227.6,
+      -15.4,
+      17.4
+    ],
+    "historicalEPS": [
+      -10.25,
+      -3.14,
+      -0.29,
+      0.34
+    ],
+    "priorAnalysisReview": {
+      "priorModel": "Antigravity Gemini 3.5",
+      "priorDate": "2026-08-16",
+      "priorPrice": "38.27",
+      "priorFairValue": "32.19",
+      "priorAction": "HOLD",
+      "priceDelta": "+9.4%",
+      "assumptionAudit": "Re-calibrated with live $501M TTM baseline and balanced 50% AI Cloud bull scenario",
+      "modelQualityFlag": "Validated",
+      "thesisOutcome": "Confirmed Accumulate on Pullbacks",
+      "fundamentalChanges": "5GW grid capacity expansion and enterprise AI Cloud customer acquisition"
+    },
+    "confidenceBreakdown": "0.85/1.0 — High revenue growth (+167%) offset by 4-day binary earnings risk."
+  },
+  "aiThesis": {
+    "model": "Antigravity AI Guided Valuation Co-Pilot",
+    "rationale": "IREN is executing a disciplined capital expansion into next-generation AI Cloud computing. Trading at $41.88, the stock offers compelling upside to its probability-weighted fair value of $71.04 (+69.6% upside). Key support at $36.80 (Base case) provides an attractive margin of safety.",
+    "fairValue": 71.04,
+    "action": "ACCUMULATE",
+    "reviewedAt": "2026-08-23T19:15:00Z"
+  }
+}
