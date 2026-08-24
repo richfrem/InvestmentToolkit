@@ -816,6 +816,12 @@
       "dst": "plugins/tradingview/skills/tv-manage-indicators/scripts/tv_manage_indicators.py",
       "strategy": "symlink",
       "description": "tv_manage_indicators.py in plugin/scripts; skill symlink"
+    },
+    {
+      "src": "plugins/tradingview/scripts/ta_sweep_single.py",
+      "dst": "plugins/tradingview/skills/tv-ta-snapshot/scripts/ta_sweep_single.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
