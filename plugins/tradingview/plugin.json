@@ -1,241 +1,239 @@
 {
-  "name": "tradingview",
-  "version": "1.2.0",
-  "description": "TradingView Desktop integration via CDP \u2014 real-time prices, DCF alerts, chart snapshots, portfolio sync, live order execution, chart control (add/remove indicators, timeframe, symbol, Data Window read), Pine Script v6 authoring (lint, inject, save), deep TA, and daily batch TA sweep (/ta-daily-sweep) across all portfolio holdings. Results auto-saved to ta-sweep-results.json.",
-  "author": "InvestmentToolkit",
-  "maturity": "L3",
-  "architecture": "standard",
-  "runtime_dependencies": [
-    {
-      "name": "tradingview-cdp",
-      "description": "Node.js CDP engine for browser automation of TradingView Desktop",
-      "type": "node-package",
-      "expected_path": "tradingview-cdp/",
-      "relative_to": "project_root",
-      "marker_file": "cli.js",
-      "setup_command": "cd tradingview-cdp && npm ci",
-      "env_override": "TV_CDP_DIR",
-      "health_check": "node tradingview-cdp/cli.js health",
-      "required": true,
-      "required_by_skills": [
-        "price-refresh",
-        "cancel-order",
-        "place-order",
-        "modify-order",
-        "get-orders",
-        "chart-snapshot",
-        "pine-inject",
-        "alert-sync",
-        "ta-snapshot",
-        "ta-red-team",
-        "technical-analysis-expert",
-        "tv-portfolio-sync",
-        "ta-daily-sweep",
-        "tv-manage-watchlists"
-      ],
-      "notes": [
-        "TradingView Desktop must be running with --remote-debugging-port=9222",
-        "Node.js 18+ required",
-        "See plugins/tradingview/README.md for full setup instructions"
-      ]
-    }
-  ],
-  "system_dependencies": [
-    {
-      "name": "node",
-      "minimum_version": "18.0.0",
-      "check_command": "node --version"
+    "name": "tradingview",
+    "version": "1.2.0",
+    "description": "TradingView Desktop integration via CDP \u2014 real-time prices, DCF alerts, chart snapshots, portfolio sync, live order execution, chart control (add/remove indicators, timeframe, symbol, Data Window read), Pine Script v6 authoring (lint, inject, save), deep TA, and daily batch TA sweep (/ta-daily-sweep) across all portfolio holdings. Results auto-saved to ta-sweep-results.json.",
+    "author": {
+        "name": "richfrem",
+        "email": "connect.richfrem@gmail.com"
     },
-    {
-      "name": "TradingView Desktop",
-      "launch_flag": "--remote-debugging-port=9222",
-      "default_port": 9222
-    }
-  ],
-  "skills": [
-    {
-      "name": "tv-draw",
-      "path": "skills/tv-draw/SKILL.md",
-      "trigger": "/tv-draw"
-    },
-    {
-      "name": "tv-chart-setup",
-      "path": "skills/tv-chart-setup/SKILL.md",
-      "trigger": "/tv-chart-setup"
-    },
-    {
-      "name": "tv-change-symbol",
-      "path": "skills/tv-change-symbol/SKILL.md",
-      "trigger": "/tv-change-symbol"
-    },
-    {
-      "name": "tv-change-type",
-      "path": "skills/tv-change-type/SKILL.md",
-      "trigger": "/tv-change-type"
-    },
-    {
-      "name": "tv-add-indicator",
-      "path": "skills/tv-add-indicator/SKILL.md",
-      "trigger": "/tv-add-indicator"
-    },
-    {
-      "name": "tv-save-indicator",
-      "path": "skills/tv-save-indicator/SKILL.md",
-      "trigger": "/tv-save-indicator"
-    },
-    {
-      "name": "tv-author-pine",
-      "path": "skills/tv-author-pine/SKILL.md",
-      "trigger": "/tv-author-pine"
-    },
-    {
-      "name": "tv-pine-inject",
-      "path": "skills/tv-pine-inject/SKILL.md",
-      "trigger": "/tv-pine-inject"
-    },
-    {
-      "name": "tv-portfolio-sync",
-      "path": "skills/tv-portfolio-sync/SKILL.md",
-      "trigger": "/tv-portfolio-sync"
-    },
-    {
-      "name": "tv-alert-sync",
-      "path": "skills/tv-alert-sync/SKILL.md",
-      "trigger": "/tv-alert-sync"
-    },
-    {
-      "name": "tv-price-refresh",
-      "path": "skills/tv-price-refresh/SKILL.md",
-      "trigger": "/tv-price-refresh"
-    },
-    {
-      "name": "tv-chart-snapshot",
-      "path": "skills/tv-chart-snapshot/SKILL.md",
-      "trigger": "/tv-snapshot"
-    },
-    {
-      "name": "tv-ta-snapshot",
-      "path": "skills/tv-ta-snapshot/SKILL.md",
-      "trigger": "/tv-ta"
-    },
-    {
-      "name": "tv-ta-deep",
-      "path": "skills/tv-ta-deep/SKILL.md",
-      "trigger": "/tv-ta-deep"
-    },
-    {
-      "name": "tv-ta-red-team",
-      "path": "skills/tv-ta-red-team/SKILL.md",
-      "trigger": null
-    },
-    {
-      "name": "tv-place-order",
-      "path": "skills/tv-place-order/SKILL.md",
-      "trigger": "/tv-place-order"
-    },
-    {
-      "name": "tv-modify-order",
-      "path": "skills/tv-modify-order/SKILL.md",
-      "trigger": "/tv-modify-order"
-    },
-    {
-      "name": "tv-cancel-order",
-      "path": "skills/tv-cancel-order/SKILL.md",
-      "trigger": "/tv-cancel-order"
-    },
-    {
-      "name": "tv-get-orders",
-      "path": "skills/tv-get-orders/SKILL.md",
-      "trigger": "/tv-get-orders"
-    },
-    {
-      "name": "tv-ta-daily-sweep",
-      "path": "skills/tv-ta-daily-sweep/SKILL.md",
-      "trigger": "/tv-ta-daily-sweep"
-    },
-    {
-      "name": "tv-manage-watchlists",
-      "path": "skills/tv-manage-watchlists/SKILL.md",
-      "trigger": "/tv-watchlist-sync"
-    },
-    {
-      "name": "tv-alert-list",
-      "path": "skills/tv-alert-list/SKILL.md",
-      "trigger": "/tv-alert-list"
-    },
-    {
-      "name": "tv-manage-indicators",
-      "path": "skills/tv-manage-indicators/SKILL.md",
-      "trigger": "/tv-indicators"
-    },
-    {
-      "name": "tv-thesis-overlay",
-      "path": "skills/tv-thesis-overlay/SKILL.md",
-      "trigger": "/tv-thesis-overlay"
-    },
-    {
-      "name": "tv-alert-reconcile",
-      "path": "skills/tv-alert-reconcile/SKILL.md",
-      "trigger": "/tv-alert-reconcile"
-    },
-    {
-      "name": "tv-setup",
-      "path": "skills/tv-setup/SKILL.md",
-      "trigger": "/tv-setup"
-    },
-    {
-      "name": "tv-onboarding",
-      "path": "skills/tv-onboarding/SKILL.md",
-      "trigger": "/tv-onboarding"
-    }
-  ],
-  "agents": [
-    {
-      "name": "ta-guide",
-      "path": "agents/ta-guide.md",
-      "trigger": "Guide me through a technical analysis"
-    },
-    {
-      "name": "tradingview-onboarding",
-      "path": "agents/tradingview-onboarding.md",
-      "trigger": "Set up TradingView for me"
-    }
-  ],
-  "external_dependencies": [
-    {
-      "name": "portfolio-json",
-      "canonical_path": "investment_screener/backend/data/portfolio.json",
-      "owned_by": "investment-screener-app",
-      "purpose": "Current portfolio holdings (synced from Broker)"
-    },
-    {
-      "name": "target-portfolio-json",
-      "canonical_path": "investment_screener/backend/data/theses/target-portfolio.json",
-      "owned_by": "portfolio-advisor",
-      "purpose": "Target weights and thesis for all holdings"
-    },
-    {
-      "name": "projections-dir",
-      "canonical_path": "investment_screener/backend/data/projections/",
-      "owned_by": "stock-valuation",
-      "purpose": "DCF projection JSONs \u2014 source of bear/base/bull alert prices"
-    },
-    {
-      "name": "ta-sweep-results-json",
-      "canonical_path": "investment_screener/backend/data/ta-sweep-results.json",
-      "owned_by": "tradingview",
-      "purpose": "Latest batch TA sweep output \u2014 served by backend /api/ta-sweep/results, consumed by TA Summary panel"
-    }
-  ],
-  "related_plugins": [
-    "portfolio-advisor",
-    "stock-valuation"
-  ],
-  "tags": [
-    "finance",
-    "tradingview",
-    "real-time",
-    "alerts",
-    "prices"
-  ]
+    "maturity": "L3",
+    "architecture": "standard",
+    "runtime_dependencies": [
+        {
+            "name": "tradingview-cdp",
+            "description": "Node.js CDP engine for browser automation of TradingView Desktop",
+            "type": "node-package",
+            "expected_path": "tradingview-cdp/",
+            "relative_to": "project_root",
+            "marker_file": "cli.js",
+            "setup_command": "cd tradingview-cdp && npm ci",
+            "env_override": "TV_CDP_DIR",
+            "health_check": "node tradingview-cdp/cli.js health",
+            "required": true,
+            "required_by_skills": [
+                "price-refresh",
+                "cancel-order",
+                "place-order",
+                "modify-order",
+                "get-orders",
+                "chart-snapshot",
+                "pine-inject",
+                "alert-sync",
+                "ta-snapshot",
+                "ta-red-team",
+                "technical-analysis-expert",
+                "tv-portfolio-sync",
+                "ta-daily-sweep",
+                "tv-manage-watchlists"
+            ],
+            "notes": [
+                "TradingView Desktop must be running with --remote-debugging-port=9222",
+                "Node.js 18+ required",
+                "See plugins/tradingview/README.md for full setup instructions"
+            ]
+        }
+    ],
+    "system_dependencies": [
+        {
+            "name": "node",
+            "minimum_version": "18.0.0",
+            "check_command": "node --version"
+        },
+        {
+            "name": "TradingView Desktop",
+            "launch_flag": "--remote-debugging-port=9222",
+            "default_port": 9222
+        }
+    ],
+    "skills": [
+        {
+            "name": "tv-draw",
+            "path": "skills/tv-draw/SKILL.md",
+            "trigger": "/tv-draw"
+        },
+        {
+            "name": "tv-chart-setup",
+            "path": "skills/tv-chart-setup/SKILL.md",
+            "trigger": "/tv-chart-setup"
+        },
+        {
+            "name": "tv-change-symbol",
+            "path": "skills/tv-change-symbol/SKILL.md",
+            "trigger": "/tv-change-symbol"
+        },
+        {
+            "name": "tv-change-type",
+            "path": "skills/tv-change-type/SKILL.md",
+            "trigger": "/tv-change-type"
+        },
+        {
+            "name": "tv-add-indicator",
+            "path": "skills/tv-add-indicator/SKILL.md",
+            "trigger": "/tv-add-indicator"
+        },
+        {
+            "name": "tv-save-indicator",
+            "path": "skills/tv-save-indicator/SKILL.md",
+            "trigger": "/tv-save-indicator"
+        },
+        {
+            "name": "tv-author-pine",
+            "path": "skills/tv-author-pine/SKILL.md",
+            "trigger": "/tv-author-pine"
+        },
+        {
+            "name": "tv-pine-inject",
+            "path": "skills/tv-pine-inject/SKILL.md",
+            "trigger": "/tv-pine-inject"
+        },
+        {
+            "name": "tv-portfolio-sync",
+            "path": "skills/tv-portfolio-sync/SKILL.md",
+            "trigger": "/tv-portfolio-sync"
+        },
+        {
+            "name": "tv-alert-sync",
+            "path": "skills/tv-alert-sync/SKILL.md",
+            "trigger": "/tv-alert-sync"
+        },
+        {
+            "name": "tv-price-refresh",
+            "path": "skills/tv-price-refresh/SKILL.md",
+            "trigger": "/tv-price-refresh"
+        },
+        {
+            "name": "tv-chart-snapshot",
+            "path": "skills/tv-chart-snapshot/SKILL.md",
+            "trigger": "/tv-snapshot"
+        },
+        {
+            "name": "tv-ta-snapshot",
+            "path": "skills/tv-ta-snapshot/SKILL.md",
+            "trigger": "/tv-ta"
+        },
+        {
+            "name": "tv-ta-deep",
+            "path": "skills/tv-ta-deep/SKILL.md",
+            "trigger": "/tv-ta-deep"
+        },
+        {
+            "name": "tv-ta-red-team",
+            "path": "skills/tv-ta-red-team/SKILL.md",
+            "trigger": null
+        },
+        {
+            "name": "tv-place-order",
+            "path": "skills/tv-place-order/SKILL.md",
+            "trigger": "/tv-place-order"
+        },
+        {
+            "name": "tv-modify-order",
+            "path": "skills/tv-modify-order/SKILL.md",
+            "trigger": "/tv-modify-order"
+        },
+        {
+            "name": "tv-cancel-order",
+            "path": "skills/tv-cancel-order/SKILL.md",
+            "trigger": "/tv-cancel-order"
+        },
+        {
+            "name": "tv-get-orders",
+            "path": "skills/tv-get-orders/SKILL.md",
+            "trigger": "/tv-get-orders"
+        },
+        {
+            "name": "tv-ta-daily-sweep",
+            "path": "skills/tv-ta-daily-sweep/SKILL.md",
+            "trigger": "/tv-ta-daily-sweep"
+        },
+        {
+            "name": "tv-manage-watchlists",
+            "path": "skills/tv-manage-watchlists/SKILL.md",
+            "trigger": "/tv-watchlist-sync"
+        },
+        {
+            "name": "tv-alert-list",
+            "path": "skills/tv-alert-list/SKILL.md",
+            "trigger": "/tv-alert-list"
+        },
+        {
+            "name": "tv-manage-indicators",
+            "path": "skills/tv-manage-indicators/SKILL.md",
+            "trigger": "/tv-indicators"
+        },
+        {
+            "name": "tv-thesis-overlay",
+            "path": "skills/tv-thesis-overlay/SKILL.md",
+            "trigger": "/tv-thesis-overlay"
+        },
+        {
+            "name": "tv-alert-reconcile",
+            "path": "skills/tv-alert-reconcile/SKILL.md",
+            "trigger": "/tv-alert-reconcile"
+        },
+        {
+            "name": "tv-setup",
+            "path": "skills/tv-setup/SKILL.md",
+            "trigger": "/tv-setup"
+        },
+        {
+            "name": "tv-onboarding",
+            "path": "skills/tv-onboarding/SKILL.md",
+            "trigger": "/tv-onboarding"
+        }
+    ],
+    "agents": [
+        {
+            "name": "ta_guide",
+            "path": "agents/ta-guide.md",
+            "trigger": "/ta-guide"
+        }
+    ],
+    "external_dependencies": [
+        {
+            "name": "portfolio-json",
+            "canonical_path": "investment_screener/backend/data/portfolio.json",
+            "owned_by": "investment-screener-app",
+            "purpose": "Current portfolio holdings (synced from Broker)"
+        },
+        {
+            "name": "target-portfolio-json",
+            "canonical_path": "investment_screener/backend/data/theses/target-portfolio.json",
+            "owned_by": "portfolio-advisor",
+            "purpose": "Target weights and thesis for all holdings"
+        },
+        {
+            "name": "projections-dir",
+            "canonical_path": "investment_screener/backend/data/projections/",
+            "owned_by": "stock-valuation",
+            "purpose": "DCF projection JSONs \u2014 source of bear/base/bull alert prices"
+        },
+        {
+            "name": "ta-sweep-results-json",
+            "canonical_path": "investment_screener/backend/data/ta-sweep-results.json",
+            "owned_by": "tradingview",
+            "purpose": "Latest batch TA sweep output \u2014 served by backend /api/ta-sweep/results, consumed by TA Summary panel"
+        }
+    ],
+    "related_plugins": [
+        "portfolio-advisor",
+        "stock-valuation"
+    ],
+    "tags": [
+        "finance",
+        "tradingview",
+        "real-time",
+        "alerts",
+        "prices"
+    ]
 }

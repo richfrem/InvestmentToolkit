@@ -2,7 +2,10 @@
     "name": "toolkit-manager",
     "version": "2.0.0",
     "description": "Orchestrator plugin for managing the Investment Screener suite. Handles server startup.",
-    "author": "InvestmentToolkit",
+    "author": {
+        "name": "richfrem",
+        "email": "connect.richfrem@gmail.com"
+    },
     "maturity": "L5",
     "architecture": "supercharged",
     "skills": [
