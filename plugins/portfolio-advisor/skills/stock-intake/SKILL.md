@@ -42,7 +42,21 @@ When given ANY ticker (even one not currently in your database or watchlist), th
 
 1. **Step 1 — Foundation: Strategy Pillar & Thesis Alignment**: Confirms user's investment intent and assigns the stock to an official strategy pillar (`power`, `compute`, `datainfra`, `robotics`, etc.).
 2. **Step 2 — Agent Pre-Flight & Grok News Sweep Review**: Agent synthesizes initial thesis brief, generates targeted Grok prompt, digests user's Grok output into dense structural takeaways, and pauses to confirm alignment before advancing.
-3. **Step 3 — Live Technical Telemetry & Price Context (TradingView CDP)**: Sets chart symbol to `{TICKER}`, reads live price, 52-week high/low range, and 1D/1W Data Window (21/50/200 EMAs, RSI, Squeeze, ADX, SuperTrend, Volume Bias) to establish price action context *before* diving into fundamental metrics.
+3. **Step 3 — Live Technical Telemetry, Plain-English Education & Action Tiers (TradingView CDP)**:
+   - **Plain-English Indicator Translations**: Never leave jargon unexplained. Assume the user is non-technical:
+     - *200 EMA*: The long-term institutional floor — big funds buy when price touches this line.
+     - *ADX*: The trend engine — tells us if a real breakout is building (>25) or if price is just drifting sideways (<20).
+     - *ATR*: The normal daily swing size — helps set a smart stop-loss that won't get triggered by normal market noise.
+     - *RSI*: The gas tank — 50 means neutral with plenty of room to run before getting exhausted/overbought (>70).
+     - *Volume Bias*: Buying vs selling pressure — negative/drying volume at support means sellers are out of ammo.
+   - **Action Tier Levels (Initiate / Add / Trim / Exit)**: Explicitly classify technical price zones into execution tiers:
+     - **🟢 INITIATE Zone ($Buy Pocket 1)**: Initial entry tranche right at key support.
+     - **💎 ACCUMULATE / ADD Zone ($Buy Pocket 2)**: Secondary dip-buying tranche if price tests lower boundary.
+     - **✂️ TRIM 1 / TRIM 2 Targets**: Logical resistance levels to take initial 1/3 or 1/2 profits.
+     - **🛑 HARD EXIT / STOP-LOSS**: Invalidation level where the technical thesis fails.
+   - **TradingView Interactive Sync Offer**: Always ask the user if they want to:
+     1. Sync these exact price alerts into TradingView via `/tv-alert-sync` so their phone/desktop pings when hit.
+     2. Inject dynamic horizontal support/resistance lines directly onto their live TradingView chart via `/tv-thesis-overlay`.
 4. **Step 4 — Financials & Baseline Ingest**: Calls `fetch_financials.py {TICKER}` and executes the 4-part narrative walkthrough (Revenue Lifecycle, Margins/Pivots, Peer Scorecards, Forward Consensus) with full live price and market cap awareness.
 5. **Step 5 — DCF Valuation & Target Delta Matrix**: Runs `dcf_scenarios.py` with user-calibrated growth/margin trajectory to establish Bear, Base, and Bull present values and compares live price against technical/DCF levels.
 6. **Step 6 — Research Ledger Ingestion**: Writes a structured research event body and commits it to `intelligence.sqlite` via `intelligence.event_store`, then updates the canonical view.
