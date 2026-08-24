@@ -822,6 +822,12 @@
       "dst": "plugins/tradingview/skills/tv-ta-snapshot/scripts/ta_sweep_single.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "plugins/portfolio-advisor/scripts/list_strategy_pillars.py",
+      "dst": "plugins/portfolio-advisor/skills/stock-intake/scripts/list_strategy_pillars.py",
+      "strategy": "symlink",
+      "description": ""
     }
   ]
 }
