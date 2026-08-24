@@ -25,14 +25,14 @@ To ensure a seamless and clear user experience:
 1. **Foundation First (Strategic Alignment)**: Before jumping into valuation math, always ask **Question 1: Why are we considering this stock and which Portfolio Strategy Pillar does it serve?** Present all existing strategy pillars with target weights and recommend the closest match.
 2. **One Question at a Time**: Never overwhelm the user with multiple simultaneous choices or long checklists. Ask a single, clear question at each calibration checkpoint.
 3. **Explain the "Why" Transparently**: Whenever presenting valuation ranges, multiple choices, or technical levels, explain unclear design concepts (e.g. why 18x exit P/E is chosen for base case, or what the 200 EMA bounce signifies) in plain English before asking.
-4. **Step 3 Chunked Walkthrough & Educational Q&A**: Never dump all financial data at once. Break Step 3 into 3 distinct, digestible chunks:
-   - **Chunk 3A: Revenue Scale, Margins & Dilution**: Current TTM run-rate, margin trough vs historical peak, and share count changes.
-   - **Chunk 3B: Quality & Balance Sheet Health**: Piotroski F-Score and Rule of 40 with plain-English definitions and component breakdowns.
-   - **Chunk 3C: Wall Street Consensus & Catalyst Horizon**: Forward 1Y/2Y analyst expectations, price target ranges, and earnings dates.
-   *Ask the user if they have any questions or observations on each chunk before moving to the next.*
-5. **Earnings Call Transcript Diagnosis & Strategic Pivots**: In Step 3, proactively diagnose any historical anomalies (e.g. why revenue dropped from peak, whether it represents a cyclical inventory trough vs secular decline, and management commentary from the last 4 earnings calls on strategic pivots toward AI/data center power).
-6. **Standard Transition Phrasing**: When all 3 chunks are complete, prompt: *"Are you ready for us to move to Step 4 (Live TradingView Technical Telemetry)?"*
-7. **Provide High-Conviction Defaults**: Always offer a recommended option first, clearly labeled, so the user can confirm with a single click or word.
+4. **Step 3 Narrative Walkthrough & Peer Benchmarking Protocol**:
+   - **Part 1 — Revenue Lifecycle & Transcript Root Cause**: Do not just show numbers. Synthesize the story from recent quarterly calls: explain *why* revenue spiked to peak, *why* it dropped to trough (inventory hoarding/bullwhip vs secular), and *when* the forward inflection begins.
+   - **Part 2 — Margins, Operating Leverage & Strategic Pivot**: Detail gross/operating margin compression due to unused fab capacity charges, the transition to 200mm SiC/GaN, and the path back to target profitability.
+   - **Part 3 — Institutional Health Scores & Peer Comparison**: Present Rule of 40, Piotroski F-Score, and balance sheet metrics *side-by-side with semiconductor power peers* (e.g. ON Semiconductor, Infineon, Texas Instruments) so the user has relative context.
+   - **Part 4 — Forward Consensus & DCF Horizon Alignment**: Connect analyst forecasts to the company's multi-year AI power and data center backlog targets.
+   *Ask the user if they have any questions or observations at each part before advancing.*
+5. **Standard Transition Phrasing**: When the financial analysis walkthrough is complete, prompt: *"Are you ready for us to move to Step 4 (Live TradingView Technical Telemetry)?"*
+6. **Provide High-Conviction Defaults**: Always offer a recommended option first, clearly labeled, so the user can confirm with a single click or word.
 
 ---
 
