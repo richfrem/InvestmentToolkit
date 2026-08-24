@@ -1,1 +1,1 @@
-../../../../investment_screener/backend/py_services/record_intelligence_event.py
+../../../../../investment_screener/backend/py_services/record_intelligence_event.py
