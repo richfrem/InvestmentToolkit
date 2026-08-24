@@ -53,10 +53,23 @@ export async function injectPineScript(client, scriptContent) {
     //    "+" stays in panel-open state; More→"New tab" toggles panel closed.
     const tabResult = await client.Runtime.evaluate({
       expression: `(function() {
-        // Check for read-only banner
+        // Check for read-only banner OR historical version banner
         var readOnly = [...document.querySelectorAll('*')].some(function(el) {
-          return el.offsetParent && el.textContent.includes('This script is read-only');
+          return el.offsetParent && (
+            el.textContent.includes('This script is read-only') ||
+            el.textContent.includes('This is a historical version of the script')
+          );
         });
+
+        // If historical version, click 'restore this version' if visible
+        var restoreBtn = [...document.querySelectorAll('button, a, span')].find(function(el) {
+          return el.offsetParent && el.textContent.trim().toLowerCase().includes('restore this version');
+        });
+        if (restoreBtn) {
+          restoreBtn.click();
+          return JSON.stringify({ needsNewTab: false, restored: true });
+        }
+
         if (!readOnly) return JSON.stringify({ needsNewTab: false });
 
         // Find the "+" button in the Pine Editor tab bar.
