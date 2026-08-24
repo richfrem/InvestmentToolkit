@@ -17,7 +17,7 @@
  */
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Save, RotateCcw, Info, X, AlertTriangle, Table2, SlidersHorizontal, ChevronUp, ChevronDown } from 'lucide-react';
+import { Save, RotateCcw, Info, X, AlertTriangle, Table2, SlidersHorizontal, ChevronUp, ChevronDown, Clock } from 'lucide-react';
 import { type StockData, type Scenario, type Projection, type ValuationResult } from '../services/api';
 import { ProjectionsPanel } from './ProjectionsPanel';
 import { storage } from '../services/storage';
@@ -594,10 +594,26 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                             </span>
                                         )}
                                     </h3>
-                                    <p className="text-[10px] text-indigo-300 font-medium tracking-wide uppercase">{aiResult?.model_name || 'AI ANALYST'} ANALYSIS</p>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <p className="text-[10px] text-indigo-300 font-medium tracking-wide uppercase">{aiResult?.model_name || 'AI ANALYST'} ANALYSIS</p>
+                                        {(aiResult?.reviewedAt || aiResult?.analyzedAt) && (
+                                            <span className="text-[10px] text-slate-400 flex items-center gap-1 border-l border-slate-700 pl-2">
+                                                <Clock size={10} className="text-slate-400" /> Reviewed: <strong className="text-slate-300">{new Date((aiResult.reviewedAt || aiResult.analyzedAt) as string).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</strong>
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(`/guide-valuation ${stockData.symbol}`);
+                                    }}
+                                    title={`Copy: /guide-valuation ${stockData.symbol}`}
+                                    className="text-[10px] font-semibold text-indigo-300 bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-500/40 px-2 py-0.5 rounded flex items-center gap-1 transition-all"
+                                >
+                                    <Sparkles size={11} className="text-indigo-400" /> Update via /guide-valuation
+                                </button>
                                 <button
                                     onClick={() => { setAiResult(null); setAiError(null); setActiveCoachMetric(null); }}
                                     className="text-slate-500 hover:text-white transition-colors"

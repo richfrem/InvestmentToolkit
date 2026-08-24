@@ -349,6 +349,8 @@ export interface ValuationResult {
     suggested_margin?: number;
     exit_pe?: number;
     quality_multiplier?: number;
+    reviewedAt?: string;
+    analyzedAt?: string;
 }
 
 export const runAIAnalysis = async (ticker: string, userMessage?: string): Promise<ValuationResult> => {

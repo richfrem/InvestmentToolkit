@@ -17,20 +17,34 @@
  * Key Functions:
  *     - AIThesisSummary() - Functional component managing loading, error, and rendering of the AI rationale markdown
  */
+import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { BrainCircuit, FolderOpen, X, AlertTriangle, Loader2 } from 'lucide-react';
+import { BrainCircuit, FolderOpen, X, AlertTriangle, Loader2, Sparkles, Check, Clock } from 'lucide-react';
 import { getActionBadgeClass } from '../utils/actionColors';
 
 interface AIThesisSummaryProps {
     aiResult: any;
     isAnalyzing?: boolean;
     aiError?: string | null;
+    symbol?: string;
     onViewFullReport: () => void;
     onClose?: () => void;
 }
 
-export function AIThesisSummary({ aiResult, isAnalyzing, aiError, onViewFullReport, onClose }: AIThesisSummaryProps) {
+export function AIThesisSummary({ aiResult, isAnalyzing, aiError, symbol, onViewFullReport, onClose }: AIThesisSummaryProps) {
+    const [copied, setCopied] = useState(false);
     if (!aiResult && !isAnalyzing && !aiError) return null;
+
+    const ticker = symbol || aiResult?.ticker || '';
+    const reviewedAt = aiResult?.reviewedAt || aiResult?.analyzedAt;
+    const formattedDate = reviewedAt ? new Date(reviewedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
+
+    const handleCopySkill = () => {
+        if (!ticker) return;
+        navigator.clipboard.writeText(`/guide-valuation ${ticker}`);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     return (
         <div className="mb-4 animate-in fade-in slide-in-from-top-4 duration-500">
@@ -52,17 +66,36 @@ export function AIThesisSummary({ aiResult, isAnalyzing, aiError, onViewFullRepo
                                     </span>
                                 )}
                             </div>
-                            <p className="text-[10px] text-indigo-300 font-bold tracking-widest uppercase mt-0.5">{aiResult?.model_name || 'AI ANALYST'} ANALYSIS</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                                <p className="text-[10px] text-indigo-300 font-bold tracking-widest uppercase">{aiResult?.model_name || 'AI ANALYST'} ANALYSIS</p>
+                                {formattedDate && (
+                                    <span className="text-[10px] text-slate-400 flex items-center gap-1 border-l border-slate-700 pl-2">
+                                        <Clock size={11} className="text-slate-400" /> Reviewed: <strong className="text-slate-300">{formattedDate}</strong>
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
-                    {onClose && (
-                        <button
-                            onClick={onClose}
-                            className="text-slate-500 hover:text-white transition-colors"
-                        >
-                            <X size={18} />
-                        </button>
-                    )}
+                    <div className="flex items-center gap-2">
+                        {ticker && (
+                            <button
+                                onClick={handleCopySkill}
+                                title={`Copy command: /guide-valuation ${ticker}`}
+                                className="text-[11px] font-semibold text-indigo-300 bg-indigo-950/60 hover:bg-indigo-900/80 border border-indigo-500/40 px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition-all shadow-sm"
+                            >
+                                {copied ? <Check size={13} className="text-emerald-400" /> : <Sparkles size={13} className="text-indigo-400" />}
+                                {copied ? 'Copied /guide-valuation!' : 'Update via /guide-valuation'}
+                            </button>
+                        )}
+                        {onClose && (
+                            <button
+                                onClick={onClose}
+                                className="text-slate-500 hover:text-white transition-colors"
+                            >
+                                <X size={18} />
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {isAnalyzing ? (
