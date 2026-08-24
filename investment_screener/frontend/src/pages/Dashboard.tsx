@@ -222,10 +222,18 @@ export default function Dashboard() {
                             )}
 
                             {/* Upcoming Catalyst & Binary Event Ribbon */}
-                            <div className="hidden xl:flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-lg text-amber-300 text-xs font-semibold">
-                                <Zap size={13} className="text-amber-400 animate-pulse" />
-                                <span>Catalyst: Q4 Earnings & AI Cloud Update (Aug 27)</span>
-                            </div>
+                            {stockData.symbol === 'IREN' && (
+                                <div className="hidden xl:flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-lg text-amber-300 text-xs font-semibold">
+                                    <Zap size={13} className="text-amber-400 animate-pulse" />
+                                    <span>Catalyst: Q4 Earnings & AI Cloud Update (Aug 27)</span>
+                                </div>
+                            )}
+                            {stockData.symbol === 'STM' && (
+                                <div className="hidden xl:flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/30 px-3 py-1 rounded-lg text-indigo-300 text-xs font-semibold">
+                                    <Zap size={13} className="text-indigo-400" />
+                                    <span>Target Allocation: 3.69% · Silicon Carbide Automotive Ramp</span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Trade buttons + Navigation Tabs */}
