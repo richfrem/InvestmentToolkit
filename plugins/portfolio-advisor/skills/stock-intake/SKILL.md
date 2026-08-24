@@ -34,14 +34,14 @@ To ensure a seamless and clear user experience:
 When given ANY ticker (even one not currently in your database or watchlist), this skill executes an automated pipeline:
 
 1. **Step 1 — Foundation: Strategy Pillar & Thesis Alignment**: Confirms user's investment intent and assigns the stock to an official strategy pillar (`power`, `compute`, `datainfra`, `robotics`, etc.).
-2. **Step 2 — Financials & Baseline Ingest**: Calls `fetch_financials.py {TICKER}` to extract revenue, shares, margins, sector, industry, and analyst growth consensus.
-3. **Step 3 — Live Technical Telemetry (TradingView CDP)**: Sets chart symbol to `{TICKER}`, reads the 1D & 1W Data Window (21/50/200 EMAs, RSI, Squeeze, ADX, SuperTrend, Volume Bias), and defines the dynamic entry pocket ($Buy Zone, Stop Loss, Take Profit 1 & 2).
-4. **Step 4 — DCF Valuation & Reverse DCF Modeling**: Runs `dcf_scenarios.py` to establish Bear, Base, and Bull present values and weighted fair value, then computes implied 5Y CAGR with `reverse_dcf.py`.
-5. **Step 5 — Research Ledger Ingestion**: Writes a structured research event body and commits it to `intelligence.sqlite` via `intelligence.event_store`, then updates the canonical view.
-6. **Step 6 — Dual-Layer Persistence & Watchlist Registration**:
+2. **Step 2 — Grok Catalyst & News Sweep Prompt Generation**: Provides copy-paste ready prompt for real-time catalysts, customer wins, and order backlog sweeps *before* locking in valuation numbers.
+3. **Step 3 — Financials & Baseline Ingest**: Calls `fetch_financials.py {TICKER}` to extract revenue, shares, margins, sector, industry, and analyst growth consensus.
+4. **Step 4 — Live Technical Telemetry (TradingView CDP)**: Sets chart symbol to `{TICKER}`, reads the 1D & 1W Data Window (21/50/200 EMAs, RSI, Squeeze, ADX, SuperTrend, Volume Bias), and defines the dynamic entry pocket ($Buy Zone, Stop Loss, Take Profit 1 & 2).
+5. **Step 5 — DCF Valuation & Reverse DCF Modeling**: Runs `dcf_scenarios.py` with user-selected growth/margin trajectory to establish Bear, Base, and Bull present values.
+6. **Step 6 — Research Ledger Ingestion**: Writes a structured research event body and commits it to `intelligence.sqlite` via `intelligence.event_store`, then updates the canonical view.
+7. **Step 7 — Dual-Layer Persistence & Watchlist Registration**:
    - **SQLite (`domain_model.sqlite`)**: Inserts/updates `investment` with `is_watchlisted = 1`, `lifecycle_status = 'watchlist'`, assigned `pillar_id`, `sub_strategy_id`, and `investment_price`. Inserts `projection_version` and `projection_scenario` rows.
    - **Filesystem JSON (`backend/data/projections/{TICKER}.json`)**: Writes the official Schema v1.2 projection object for instant dashboard rendering.
-7. **Step 7 — Grok News Sweep Prompt Generation**: Provides copy-paste ready prompt for real-time catalysts and order backlog sweeps.
 
 ---
 
