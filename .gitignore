@@ -123,12 +123,14 @@ investment_screener/backend/data/portfolio.json
 investment_screener/backend/data/cash_flows.json
 investment_screener/backend/data/orders_executed.jsonl
 investment_screener/backend/data/observations.jsonl
+investment_screener/backend/data/thesis_breaker_state.json
 
 # Daily brief snapshots (personal — generated daily, not for version control)
 investment_screener/backend/data/daily-briefs/
 
-# TradingView order audit logs (runtime output, rotated daily)
+# TradingView order audit logs & runtime registries (runtime output)
 plugins/tradingview/audit/
+plugins/tradingview/assets/pinescript-indicators/registry.json
 
 .pytest_cache/
 **/.pytest_cache/
