@@ -5,16 +5,13 @@
  * Purpose:
  *     Prominent, institutional call-to-action card shown on stock analysis screens
  *     when a stock lacks active fundamental research or Technical Analysis sweep data.
- *     Provides 1-click clipboard triggers for agent commands:
- *     - `/guide-valuation {TICKER}` — interactive DCF calibration & scenario alignment
- *     - `/tv-ta-sweep {TICKER}` — TradingView Multi-EMA, Volume Bias & Squeeze sweep
- *     - `/stock-research {TICKER}` — Deep fundamental research & catalyst audit
+ *     Features a single 1-shot master command `/evaluate-stock {TICKER}`.
  *
  * Layer: Frontend / Components / Education
  */
 
 import React, { useState } from 'react';
-import { Sparkles, Check, BrainCircuit, Activity, BookOpen, Copy } from 'lucide-react';
+import { Sparkles, Check } from 'lucide-react';
 
 interface AgentResearchPromptCardProps {
     symbol: string;
@@ -45,78 +42,41 @@ export const AgentResearchPromptCard: React.FC<AgentResearchPromptCardProps> = (
                 <div className="absolute -right-16 -top-16 w-48 h-48 bg-indigo-500/10 blur-3xl rounded-full"></div>
 
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                         <div className="flex items-center gap-2">
-                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center gap-1">
-                                <Sparkles size={11} className="text-indigo-400" /> AI Agent Research Suite
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                                <Sparkles size={11} className="text-emerald-400" /> One-Click Complete Analysis
                             </span>
-                            <span className="text-xs text-slate-400 font-medium">No fresh analysis recorded for <strong className="text-white">{symbol}</strong></span>
+                            <span className="text-xs text-slate-400 font-medium">No saved model yet for <strong className="text-white">{symbol}</strong></span>
                         </div>
                         <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">
-                            Run Autonomous AI Research & Valuation for {symbol}
+                            Run All-in-One Valuation & Technicals for {symbol}
                         </h2>
                         <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
-                            To calibrate DCF target prices, calculate Multi-EMA support levels, and synchronize SQLite & JSON data stores, copy and run any of these commands in your agent chat:
+                            Run a single master command in your agent chat to perform fundamentals research, extract TradingView technical levels, and calibrate DCF target prices in one shot:
                         </p>
                     </div>
 
-                    {/* Command Triggers */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 shrink-0">
-                        {/* 1. /guide-valuation */}
+                    {/* Master 1-Shot Command Trigger */}
+                    <div className="flex flex-col sm:flex-row items-stretch gap-3 shrink-0">
                         <button
-                            onClick={() => handleCopy(`/guide-valuation ${symbol}`)}
-                            className="bg-slate-900/80 hover:bg-slate-800/90 border border-indigo-500/40 hover:border-indigo-400 p-3.5 rounded-xl text-left transition-all group shadow-md"
+                            onClick={() => handleCopy(`/evaluate-stock ${symbol}`)}
+                            className="bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-white font-bold p-4 rounded-xl text-left transition-all shadow-xl hover:shadow-emerald-500/20 border border-emerald-400/40 flex items-center gap-4 group cursor-pointer"
                         >
-                            <div className="flex items-center justify-between mb-1.5">
-                                <BrainCircuit size={16} className="text-indigo-400" />
-                                {copiedCmd === `/guide-valuation ${symbol}` ? (
-                                    <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
-                                        <Check size={12} /> Copied!
-                                    </span>
-                                ) : (
-                                    <Copy size={12} className="text-slate-500 group-hover:text-slate-300" />
-                                )}
+                            <div className="p-2.5 bg-black/30 rounded-lg">
+                                <Sparkles size={22} className="text-emerald-300 group-hover:scale-110 transition-transform" />
                             </div>
-                            <div className="font-mono text-xs font-bold text-indigo-300">/guide-valuation</div>
-                            <p className="text-[10px] text-slate-400 mt-1">Calibrate DCF sliders & target ranges interactively</p>
-                        </button>
-
-                        {/* 2. /tv-ta-sweep */}
-                        <button
-                            onClick={() => handleCopy(`/tv-ta-sweep ${symbol}`)}
-                            className="bg-slate-900/80 hover:bg-slate-800/90 border border-teal-500/40 hover:border-teal-400 p-3.5 rounded-xl text-left transition-all group shadow-md"
-                        >
-                            <div className="flex items-center justify-between mb-1.5">
-                                <Activity size={16} className="text-teal-400" />
-                                {copiedCmd === `/tv-ta-sweep ${symbol}` ? (
-                                    <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
-                                        <Check size={12} /> Copied!
-                                    </span>
-                                ) : (
-                                    <Copy size={12} className="text-slate-500 group-hover:text-slate-300" />
-                                )}
+                            <div>
+                                <div className="text-[10px] uppercase font-black text-emerald-200 tracking-wider flex items-center gap-1">
+                                    {copiedCmd === `/evaluate-stock ${symbol}` ? (
+                                        <span className="text-white flex items-center gap-1"><Check size={12} /> Copied to Clipboard!</span>
+                                    ) : (
+                                        <span>Master 1-Shot Command (Click to Copy)</span>
+                                    )}
+                                </div>
+                                <div className="font-mono text-base font-black text-white mt-0.5">/evaluate-stock {symbol}</div>
+                                <p className="text-[11px] text-emerald-100/80 mt-0.5">Valuation + Technicals + Deep Dive in 1 shot</p>
                             </div>
-                            <div className="font-mono text-xs font-bold text-teal-300">/tv-ta-sweep</div>
-                            <p className="text-[10px] text-slate-400 mt-1">Extract 21/50/200 EMAs, ADX & Volume Bias</p>
-                        </button>
-
-                        {/* 3. /stock-research */}
-                        <button
-                            onClick={() => handleCopy(`/stock-research ${symbol}`)}
-                            className="bg-slate-900/80 hover:bg-slate-800/90 border border-purple-500/40 hover:border-purple-400 p-3.5 rounded-xl text-left transition-all group shadow-md"
-                        >
-                            <div className="flex items-center justify-between mb-1.5">
-                                <BookOpen size={16} className="text-purple-400" />
-                                {copiedCmd === `/stock-research ${symbol}` ? (
-                                    <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-1">
-                                        <Check size={12} /> Copied!
-                                    </span>
-                                ) : (
-                                    <Copy size={12} className="text-slate-500 group-hover:text-slate-300" />
-                                )}
-                            </div>
-                            <div className="font-mono text-xs font-bold text-purple-300">/stock-research</div>
-                            <p className="text-[10px] text-slate-400 mt-1">Deep fundamental thesis & catalyst report</p>
                         </button>
                     </div>
                 </div>
