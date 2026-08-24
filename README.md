@@ -41,7 +41,13 @@ An institutional-grade portfolio management and automated research suite built n
 
 ## 🚀 First Things First: Getting Started with Agents
 
-The true power of this repository is not just the frontend UI—it is the **Agentic Operating System** behind it. Launch your CLI agent (Claude Code, Gemini CLI, or Copilot CLI) and use one of these triggers:
+The true power of this repository is not just the frontend UI—it is the **Agentic Operating System** behind it. 
+
+### 💬 Just Cloned the Repo? Paste This Prompt to Your AI Agent:
+
+> **"Please run `/toolkit-onboarding` to bootstrap my investment environment from scratch, initialize my accounts, and guide me through connecting TradingView and setting up my portfolio."**
+
+---
 
 ### 1. Master Setup & Portfolio Bootstrap (New Users — Start Here)
 
