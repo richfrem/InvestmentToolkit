@@ -28,7 +28,7 @@ To ensure a seamless and clear user experience:
 4. **Step 3 Narrative Walkthrough & Peer Benchmarking Protocol**:
    - **Part 1 — Revenue Lifecycle & Transcript Root Cause**: Do not just show numbers. Synthesize the story from recent quarterly calls: explain *why* revenue spiked to peak, *why* it dropped to trough (inventory hoarding/bullwhip vs secular), and *when* the forward inflection begins.
    - **Part 2 — Margins, Operating Leverage & Strategic Pivot**: Detail gross/operating margin compression due to unused fab capacity charges, the transition to 200mm SiC/GaN, and the path back to target profitability.
-   - **Part 3 — Institutional Health Scores & Peer Comparison**: Present Rule of 40, Piotroski F-Score, and balance sheet metrics *side-by-side with semiconductor power peers* (e.g. ON Semiconductor, Infineon, Texas Instruments) so the user has relative context.
+   - **Part 3 — Institutional Health Scores & Peer Comparison**: Present Rule of 40, Piotroski F-Score, and balance sheet metrics *side-by-side with semiconductor power peers* (e.g. ON Semiconductor, Infineon, Texas Instruments) so the user has relative context. Explain the Piotroski score thresholds (0–3: Distressed/Weak, 4–6: Solid/Stable, 7–9: Elite Quality) and what components drove the score.
    - **Part 4 — Forward Consensus & DCF Horizon Alignment**: Connect analyst forecasts to the company's multi-year AI power and data center backlog targets.
    *Ask the user if they have any questions or observations at each part before advancing.*
 5. **Standard Transition Phrasing**: When the financial analysis walkthrough is complete, prompt: *"Are you ready for us to move to Step 4 (Live TradingView Technical Telemetry)?"*
