@@ -87,7 +87,7 @@ plot(show_custom and not na(valid_stop)  ? valid_stop  : na, "Stop Loss",       
 // ── Custom Horizontal Target Lines & Right-Aligned Badges ───────────────────
 var line line_fair = na
 var line line_trim2 = na
-var line_trim1 = na
+var line line_trim1 = na
 var line line_buy1  = na
 var line line_buy   = na
 var line line_stop  = na
