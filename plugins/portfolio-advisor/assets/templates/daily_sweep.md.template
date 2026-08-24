@@ -67,9 +67,11 @@ Include current valuation context (price vs. analyst PT range) where available.
 
 Answer these for the portfolio as a whole:
 1. **Biggest risk right now** — what single development could most damage this portfolio?
-2. **Most mispriced position** — which holding looks most over- or under-valued vs. current thesis?
-3. **Top trim / add priorities this month** — 2–3 highest-conviction actions.
-4. **Macro & Sector Regime** — Is the market in a risk-on or risk-off stance? Cite VIX, yields, and overall AI capex sentiment.
+2. **Customer Concentration Risk** — for our top AI infrastructure / compute / power names, what % of revenue relies on the top 1-2 hyperscalers or customers, and are there contract renegotiation risks?
+3. **Supply Chain & Single-Source Dependencies** — are there sole-source component bottlenecks (e.g. CoWoS packaging, specialized high-voltage transformers, SiC substrate wafer supplies) creating delivery risks?
+4. **Most mispriced position** — which holding looks most over- or under-valued vs. current thesis?
+5. **Top trim / add priorities this month** — 2–3 highest-conviction actions.
+6. **Macro & Sector Regime** — Is the market in a risk-on or risk-off stance? Cite VIX, yields, and overall AI capex sentiment.
 
 ---
 

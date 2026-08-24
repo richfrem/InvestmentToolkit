@@ -840,6 +840,18 @@
       "dst": "plugins/portfolio-advisor/skills/stock-intake/scripts/list_strategy_pillars.py",
       "strategy": "symlink",
       "description": ""
+    },
+    {
+      "src": "investment_screener/backend/py_services/verify_portfolio_invariants.py",
+      "dst": "plugins/portfolio-advisor/skills/portfolio-health/scripts/verify_portfolio_invariants.py",
+      "strategy": "symlink",
+      "description": "Portfolio invariants sentinel tool for portfolio-health"
+    },
+    {
+      "src": "investment_screener/backend/py_services/verify_portfolio_invariants.py",
+      "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/verify_portfolio_invariants.py",
+      "strategy": "symlink",
+      "description": "Portfolio invariants sentinel tool for daily-loop"
     }
   ]
 }
