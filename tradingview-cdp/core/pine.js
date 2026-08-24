@@ -277,20 +277,16 @@ export async function injectPineScript(client, scriptContent) {
     // 6. Close Pine Editor panel after adding to chart (clean workspace view)
     await client.Runtime.evaluate({
       expression: `(function() {
-        var ed = document.querySelector('.pine-editor-monaco') || document.querySelector('[class*="editorBaseLayoutContainer-"]');
-        if (!ed || !ed.offsetParent) return;
-
-        // Try 1: Panel close button inside editor header
-        var closeBtn = ed.querySelector('button[aria-label="Close"]') ||
-                       ed.querySelector('button[title="Close"]') ||
-                       ed.querySelector('button[data-name="close"]') ||
-                       document.querySelector('button[data-name="pine-dialog-button"]') ||
-                       document.querySelector('[data-name="pine-dialog-button"]');
-        if (closeBtn) {
-          closeBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
-          closeBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
-          closeBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
-        }
+        var closeButtons = [...document.querySelectorAll('button[title="Close"], button[aria-label="Close"], button[data-name="close"]')];
+        closeButtons.forEach(function(btn) {
+          if (!btn.offsetParent) return;
+          btn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+          btn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+          btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+        });
+        // Bottom toggle fallback
+        var bottomBtn = document.querySelector('[data-name="pine-dialog-button"]');
+        if (bottomBtn) bottomBtn.click();
       })()`,
       returnByValue: true,
       awaitPromise: false,
