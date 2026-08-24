@@ -95,11 +95,17 @@ export async function injectPineScript(client, scriptContent) {
         });
 
         // If historical version, click 'restore this version' if visible
-        var restoreBtn = [...document.querySelectorAll('button, a, span')].find(function(el) {
-          return el.offsetParent && el.textContent.trim().toLowerCase().includes('restore this version');
+        var allEls = [...document.querySelectorAll('button, a, span, div')];
+        var restoreBtn = allEls.find(function(el) {
+          return el.offsetParent && el.children.length === 0 && el.textContent.trim().toLowerCase() === 'restore this version';
+        }) || allEls.find(function(el) {
+          return el.offsetParent && el.textContent.trim().toLowerCase().includes('restore this version') && el.textContent.length < 50;
         });
+
         if (restoreBtn) {
-          restoreBtn.click();
+          restoreBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+          restoreBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+          restoreBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
           return JSON.stringify({ needsNewTab: false, restored: true });
         }
 
