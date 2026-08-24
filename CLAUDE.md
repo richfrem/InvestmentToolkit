@@ -25,8 +25,9 @@ InvestmentToolkit/
 When dropping into a fresh repository clone, execute this sequence to reach 100% operational parity:
 1. **Initialize Data Files**: Copy missing private templates (`cash_flows.json.example` → `cash_flows.json`, `portfolio-config.json.example` → `portfolio-config.json`).
 2. **Compile Deps & Deploy Plugins**: Run `python3 .agents/skills/plugin-syncer/scripts/sync_with_inventory.py` to symlink all 20 plugins into `.agents/`.
-3. **Execute Master Coordinator**: Trigger `/toolkit-onboarding` to configure accounts, seed strategy pillars, ingest broker holdings via TV CDP, and build DCF baselines.
-4. **Launch Suite**: Run `python3 run_investment_toolkit.py` (React :5173, Express :3001, TV CDP :9222).
+3. **If using Claude Code**: Also run `/plugin marketplace add richfrem/InvestmentToolkit`, then `/plugin install <name>@investment-toolkit-plugins` for each of `tradingview`, `portfolio-advisor`, `stock-valuation`, `toolkit-manager`, `etf-analysis` — this is required for `/tv-*` and other plugin skills to appear; Step 2 alone does not register them with Claude Code.
+4. **Execute Master Coordinator**: Trigger `/toolkit-onboarding` to configure accounts, seed strategy pillars, ingest broker holdings via TV CDP, and build DCF baselines.
+5. **Launch Suite**: Run `python3 run_investment_toolkit.py` (React :5173, Express :3001, TV CDP :9222).
 
 ## Core Agent Commands
 | Command | Purpose |
