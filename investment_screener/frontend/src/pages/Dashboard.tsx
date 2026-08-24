@@ -23,7 +23,7 @@ import MetricsGrid from '../components/MetricsGrid';
 import FinancialChart from '../components/analysis/FinancialChart';
 import AnalysisChartToggle, { type ChartMode } from '../components/analysis/AnalysisChartToggle';
 import ValuationModeler from '../components/ValuationModeler';
-import { LayoutDashboard, BarChart3, Calculator, Code } from 'lucide-react';
+import { LayoutDashboard, BarChart3, Calculator, Code, Activity } from 'lucide-react';
 import PerformanceMetrics from '../components/PerformanceMetrics';
 import { AIThesisSummary } from '../components/AIThesisSummary';
 import { TargetThesisDetails } from '../components/TargetThesisDetails';
@@ -33,7 +33,7 @@ import { PineScriptViewerModal } from '../components/PineScriptViewerModal';
 import { TradeButtons } from '../components/TradeButtons';
 import { storage } from '../services/storage';
 
-type Tab = 'overview' | 'analysis' | 'valuation';
+type Tab = 'overview' | 'technicals' | 'analysis' | 'valuation';
 
 export default function Dashboard() {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -242,6 +242,13 @@ export default function Dashboard() {
                                 Overview
                             </button>
                             <button
+                                onClick={() => setActiveTab('technicals')}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'technicals' ? 'bg-primary/10 text-primary shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
+                            >
+                                <Activity size={16} />
+                                Technicals
+                            </button>
+                            <button
                                 onClick={() => setActiveTab('analysis')}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'analysis' ? 'bg-primary/10 text-primary shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
                             >
@@ -292,12 +299,6 @@ export default function Dashboard() {
                                         currentPrice={stockData?.price} 
                                     />
                                 )}
-                                {technicalAnalysis && (
-                                    <TechnicalAnalysisSummaryCard
-                                        data={technicalAnalysis}
-                                        currentPrice={stockData?.price}
-                                    />
-                                )}
                                 {aiResult && (
                                     <AIThesisSummary 
                                         aiResult={aiResult} 
@@ -305,6 +306,23 @@ export default function Dashboard() {
                                     />
                                 )}
                                 <MetricsGrid stockData={stockData} />
+                            </div>
+                        )}
+
+                        {activeTab === 'technicals' && (
+                            <div className="animate-in fade-in slide-in-from-bottom-4 duration-300 space-y-6">
+                                {technicalAnalysis ? (
+                                    <TechnicalAnalysisSummaryCard
+                                        data={technicalAnalysis}
+                                        currentPrice={stockData?.price}
+                                    />
+                                ) : (
+                                    <div className="bg-slate-900/40 border border-slate-800 rounded-xl p-8 text-center text-slate-400">
+                                        <Activity size={32} className="mx-auto mb-3 text-slate-600 animate-pulse" />
+                                        <h3 className="text-base font-bold text-white mb-1">Technical Analysis Data Loading...</h3>
+                                        <p className="text-xs text-slate-500">Retrieving Multi-EMA alignment and momentum flow.</p>
+                                    </div>
+                                )}
                             </div>
                         )}
 
