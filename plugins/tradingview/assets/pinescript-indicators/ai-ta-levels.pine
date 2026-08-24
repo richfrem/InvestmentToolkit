@@ -54,7 +54,12 @@ plot(e_slow, "EMA 200", color=color.new(color.blue, 10),   linewidth=2)
 plot(show_pd_levels ? prev_day_high : na, "Prev Day High", color=color.new(color.green, 40), linewidth=1, style=plot.style_stepline)
 plot(show_pd_levels ? prev_day_low  : na, "Prev Day Low",  color=color.new(color.red, 40),   linewidth=1, style=plot.style_stepline)
 
-// ── Custom Horizontal Target Lines (Drawn directly in indicator) ────────────
+// ── Target Level Plots (Horizontal Lines with Price Scale Tags) ──────────────
+plot(show_custom and target_fair > 0 ? target_fair : na, "DCF Fair Value", color=color.new(color.purple, 20), linewidth=2, style=plot.style_linebr)
+plot(show_custom and target_buy > 0  ? target_buy  : na, "Target Buy / 200 EMA", color=color.new(color.aqua, 20),   linewidth=2, style=plot.style_linebr)
+plot(show_custom and target_stop > 0 ? target_stop : na, "Stop Loss", color=color.new(color.red, 30),    linewidth=1, style=plot.style_linebr)
+
+// ── Custom Horizontal Target Lines & Right-Aligned Badges ───────────────────
 var line line_fair = na
 var line line_buy  = na
 var line line_stop = na
@@ -71,15 +76,15 @@ if show_custom and barstate.islast
     label.delete(lbl_stop)
 
     if target_fair > 0
-        line_fair := line.new(bar_index - 30, target_fair, bar_index + 10, target_fair, extend=extend.right, color=color.purple, width=2, style=line.style_solid)
+        line_fair := line.new(bar_index - 100, target_fair, bar_index + 10, target_fair, extend=extend.both, color=color.purple, width=2, style=line.style_solid)
         lbl_fair  := label.new(bar_index + 10, target_fair, "💎 DCF Fair Value: $" + str.tostring(target_fair, "#.##"), color=color.new(color.purple, 90), textcolor=color.purple, style=label.style_label_left, size=size.small)
 
     if target_buy > 0
-        line_buy  := line.new(bar_index - 30, target_buy, bar_index + 10, target_buy, extend=extend.right, color=color.aqua, width=2, style=line.style_solid)
+        line_buy  := line.new(bar_index - 100, target_buy, bar_index + 10, target_buy, extend=extend.both, color=color.aqua, width=2, style=line.style_solid)
         lbl_buy   := label.new(bar_index + 10, target_buy, "🟢 Target Buy / 200 EMA: $" + str.tostring(target_buy, "#.##"), color=color.new(color.teal, 90), textcolor=color.aqua, style=label.style_label_left, size=size.small)
 
     if target_stop > 0
-        line_stop := line.new(bar_index - 30, target_stop, bar_index + 10, target_stop, extend=extend.right, color=color.red, width=1, style=line.style_dashed)
+        line_stop := line.new(bar_index - 100, target_stop, bar_index + 10, target_stop, extend=extend.both, color=color.red, width=1, style=line.style_dashed)
         lbl_stop  := label.new(bar_index + 10, target_stop, "🛑 Stop Loss: $" + str.tostring(target_stop, "#.##"), color=color.new(color.maroon, 90), textcolor=color.red, style=label.style_label_left, size=size.small)
 
 // ── Silent Data Window Exports (AI CDP Telemetry) ────────────────────────────
