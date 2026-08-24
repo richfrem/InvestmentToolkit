@@ -152,19 +152,3 @@ python3 investment_screener/backend/py_services/record_intelligence_event.py \
   --payload '{"pillar": "{PILLAR_ID}", "fair_value": {FAIR_VALUE}, "target_entry": {TARGET_ENTRY}, "rule_of_40": {RULE_40_SCORE}}'
 ```
 
----
-
-## Step 7: Grok News & Catalyst Sweep Prompt Generation (Copy-Paste Ready)
-
-Always generate a customized, high-precision Grok prompt targeting current catalysts, customer wins, and hyperscaler power contracts:
-
-```text
-Targeted Grok Sweep Prompt for {TICKER}:
-"Provide a comprehensive, real-time news, catalyst, and supply-chain analysis for {COMPANY_NAME} ({TICKER}) over the past 90 days. Focus on:
-1. Hyperscaler AI data center power management and grid infrastructure adoption.
-2. Silicon Carbide (SiC) / Gallium Nitride (GaN) power discrete design wins and order backlog.
-3. Automotive & Industrial recovery inflection points vs consumer electronics cycle.
-4. Recent earnings guidance surprises, margin expansion timelines, and CAPEX updates.
-5. Technical catalyst calendar (upcoming investor conferences, product launches, earnings dates).
-Format as concise, high-conviction bullet points with direct impact on 5-year revenue and margin expansion."
-```
