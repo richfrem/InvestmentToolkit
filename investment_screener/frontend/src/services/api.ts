@@ -215,9 +215,18 @@ export interface TechnicalAnalysisData {
         support2: number;
         macroFloor: number;
         resistance1: number;
+        baseTarget?: number;
         resistance2: number;
         stopLoss: number;
         atrExpectedSwing: number;
+        profitTiers?: Array<{
+            tier: number;
+            label: string;
+            price: number;
+            trimPct: number;
+            gainPct: number;
+            basis: string;
+        }>;
     };
     metrics: {
         ema21: number;

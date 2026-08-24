@@ -201,8 +201,37 @@ router.get('/stock/:ticker/technical-analysis', async (req, res) => {
         const support2 = ema50 > 0 ? Number(ema50.toFixed(2)) : Number((price * 0.95).toFixed(2));
         const macroFloor = ema200 > 0 ? Number(ema200.toFixed(2)) : Number((price * 0.88).toFixed(2));
         const resistance1 = price > 0 ? Number((price * 1.06).toFixed(2)) : 0;
-        const resistance2 = dcfFV ? Number(dcfFV.toFixed(2)) : Number((price * 1.15).toFixed(2));
+        const baseTarget = sweepData?.dcf?.base ? Number(sweepData.dcf.base.toFixed(2)) : Number((price * 1.20).toFixed(2));
+        const resistance2 = dcfFV ? Number(dcfFV.toFixed(2)) : Number((price * 1.35).toFixed(2));
         const stopLoss = support2 > 0 ? Number((support2 - atr * 1.5).toFixed(2)) : Number((price * 0.90).toFixed(2));
+
+        // Staged Profit Taking Tiers
+        const profitTiers = [
+            {
+                tier: 1,
+                label: 'Tier 1 (Tactical Trim)',
+                price: resistance1,
+                trimPct: 20,
+                gainPct: price > 0 ? Number((((resistance1 - price) / price) * 100).toFixed(1)) : 0,
+                basis: 'Resistance / 1.5× ATR Target',
+            },
+            {
+                tier: 2,
+                label: 'Tier 2 (Base Case Trim)',
+                price: baseTarget,
+                trimPct: 30,
+                gainPct: price > 0 ? Number((((baseTarget - price) / price) * 100).toFixed(1)) : 0,
+                basis: 'DCF Base Target Model',
+            },
+            {
+                tier: 3,
+                label: 'Tier 3 (Fair Value / Bull)',
+                price: resistance2,
+                trimPct: 50,
+                gainPct: price > 0 ? Number((((resistance2 - price) / price) * 100).toFixed(1)) : 0,
+                basis: 'DCF Fair Value / Expansion Target',
+            }
+        ];
 
         res.json({
             ticker: cleanSym,
@@ -216,9 +245,11 @@ router.get('/stock/:ticker/technical-analysis', async (req, res) => {
                 support2,
                 macroFloor,
                 resistance1,
+                baseTarget,
                 resistance2,
                 stopLoss,
                 atrExpectedSwing: Number(atr.toFixed(2)),
+                profitTiers,
             },
             metrics: {
                 ema21: Number(ema21.toFixed(2)),

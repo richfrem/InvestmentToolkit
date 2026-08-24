@@ -171,27 +171,47 @@ export const TechnicalAnalysisSummaryCard: React.FC<TechnicalAnalysisSummaryCard
                     <div>
                         <div className="flex items-center justify-between mb-2">
                             <span className="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
-                                <TrendingUp className="w-3.5 h-3.5" /> Resistance & Profit Tiers
+                                <TrendingUp className="w-3.5 h-3.5" /> Staged Take-Profit Tiers
                             </span>
-                            <span className="text-[10px] text-slate-500 uppercase">Trim Zones</span>
+                            <span className="text-[10px] text-slate-500 uppercase">Trim Targets</span>
                         </div>
                         <div className="space-y-2 mt-2">
-                            <div className="flex justify-between items-center bg-slate-900/50 px-2.5 py-1.5 rounded border border-slate-800/50">
-                                <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" /> Overhead Target 1
-                                </span>
-                                <span className="text-xs font-bold text-indigo-300">${keyLevels.resistance1.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between items-center bg-slate-900/50 px-2.5 py-1.5 rounded border border-slate-800/50">
-                                <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-purple-400" /> DCF Fair Value Anchor
-                                </span>
-                                <span className="text-xs font-bold text-purple-300">${keyLevels.resistance2.toFixed(2)}</span>
-                            </div>
+                            {keyLevels.profitTiers && keyLevels.profitTiers.length > 0 ? (
+                                keyLevels.profitTiers.map((tier) => (
+                                    <div key={tier.tier} className="flex justify-between items-center bg-slate-900/50 px-2.5 py-1.5 rounded border border-slate-800/50">
+                                        <div className="flex flex-col">
+                                            <span className="text-[11px] text-slate-300 font-semibold flex items-center gap-1">
+                                                <span className={`w-1.5 h-1.5 rounded-full ${tier.tier === 1 ? 'bg-indigo-400' : tier.tier === 2 ? 'bg-purple-400' : 'bg-pink-400'}`} />
+                                                Tier {tier.tier} Trim (-{tier.trimPct}%)
+                                            </span>
+                                            <span className="text-[9px] text-slate-500">{tier.basis}</span>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="text-xs font-bold text-indigo-300">${tier.price.toFixed(2)}</span>
+                                            <span className="text-[10px] text-emerald-400 block font-medium">+{tier.gainPct}%</span>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <>
+                                    <div className="flex justify-between items-center bg-slate-900/50 px-2.5 py-1.5 rounded border border-slate-800/50">
+                                        <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" /> Tier 1 Tactical Trim (-20%)
+                                        </span>
+                                        <span className="text-xs font-bold text-indigo-300">${keyLevels.resistance1.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center bg-slate-900/50 px-2.5 py-1.5 rounded border border-slate-800/50">
+                                        <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-purple-400" /> Tier 2 Base Trim (-30%)
+                                        </span>
+                                        <span className="text-xs font-bold text-purple-300">${(keyLevels.baseTarget || keyLevels.resistance2).toFixed(2)}</span>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                     <p className="text-[10px] text-slate-500 mt-2.5 pt-2 border-t border-slate-800/40">
-                        Upside to Target 1: <strong className="text-emerald-400">+{(((keyLevels.resistance1 - livePrice) / livePrice) * 100).toFixed(1)}%</strong>
+                        Immediate Target 1 Upside: <strong className="text-emerald-400">+{(((keyLevels.resistance1 - livePrice) / livePrice) * 100).toFixed(1)}%</strong>
                     </p>
                 </div>
 
