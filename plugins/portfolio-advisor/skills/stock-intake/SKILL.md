@@ -43,7 +43,10 @@ When given ANY ticker (even one not currently in your database or watchlist), th
 1. **Step 1 — Foundation: Strategy Pillar & Thesis Alignment**: Confirms user's investment intent and assigns the stock to an official strategy pillar (`power`, `compute`, `datainfra`, `robotics`, etc.).
 2. **Step 2 — Agent Pre-Flight & Grok News Sweep Review**: Agent synthesizes initial thesis brief, generates targeted Grok prompt, digests user's Grok output into dense structural takeaways, and pauses to confirm alignment before advancing.
 3. **Step 3 — Financials & Baseline Ingest**: Calls `fetch_financials.py {TICKER}` to extract revenue, shares, margins, sector, industry, and analyst growth consensus.
-4. **Step 4 — Live Technical Telemetry (TradingView CDP)**: Sets chart symbol to `{TICKER}`, reads the 1D & 1W Data Window (21/50/200 EMAs, RSI, Squeeze, ADX, SuperTrend, Volume Bias), and defines the dynamic entry pocket ($Buy Zone, Stop Loss, Take Profit 1 & 2).
+4. **Step 4 — Live Technical Telemetry (TradingView CDP) & Target Delta Analysis**:
+   - Sets chart symbol to `{TICKER}`, reads the 1D & 1W Data Window (21/50/200 EMAs, RSI, Squeeze, ADX, SuperTrend, Volume Bias).
+   - **Relative Price vs Targets Matrix**: Always display the **Current Live Share Price** side-by-side with key technical levels and forward targets (200 EMA support, dynamic buy pocket, stop-loss, Base DCF fair value, and Year 5 target) with explicit **+/- % deltas** so the user has immediate relative clarity.
+   - Defines the dynamic entry pocket ($Buy Zone, Stop Loss, Take Profit 1 & 2).
 5. **Step 5 — DCF Valuation & Reverse DCF Modeling**: Runs `dcf_scenarios.py` with user-selected growth/margin trajectory to establish Bear, Base, and Bull present values.
 6. **Step 6 — Research Ledger Ingestion**: Writes a structured research event body and commits it to `intelligence.sqlite` via `intelligence.event_store`, then updates the canonical view.
 7. **Step 7 — Dual-Layer Persistence & Watchlist Registration**:
