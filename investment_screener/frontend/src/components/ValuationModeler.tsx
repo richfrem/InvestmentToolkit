@@ -17,7 +17,7 @@
  */
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Save, RotateCcw, Info, X, AlertTriangle, Table2, SlidersHorizontal, ChevronUp, ChevronDown } from 'lucide-react';
+import { Save, RotateCcw, Info, X, AlertTriangle, Table2, SlidersHorizontal, ChevronUp, ChevronDown, Clock } from 'lucide-react';
 import { type StockData, type Scenario, type Projection, type ValuationResult } from '../services/api';
 import { ProjectionsPanel } from './ProjectionsPanel';
 import { storage } from '../services/storage';
@@ -76,6 +76,7 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
     const [aiResult, setAiResult] = useState<ValuationResult | null>(null);
     const [aiError, setAiError] = useState<string | null>(null);
     const [activeCoachMetric, setActiveCoachMetric] = useState<string | null>(null);
+    const [isThesisExpanded, setIsThesisExpanded] = useState(false);
 
     // Save Modal State
     const [showSaveModal, setShowSaveModal] = useState(false);
@@ -594,10 +595,26 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                             </span>
                                         )}
                                     </h3>
-                                    <p className="text-[10px] text-indigo-300 font-medium tracking-wide uppercase">{aiResult?.model_name || 'AI ANALYST'} ANALYSIS</p>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <p className="text-[10px] text-indigo-300 font-medium tracking-wide uppercase">{aiResult?.model_name || 'AI ANALYST'} ANALYSIS</p>
+                                        {(aiResult?.reviewedAt || aiResult?.analyzedAt) && (
+                                            <span className="text-[10px] text-slate-400 flex items-center gap-1 border-l border-slate-700 pl-2">
+                                                <Clock size={10} className="text-slate-400" /> Reviewed: <strong className="text-slate-300">{new Date((aiResult.reviewedAt || aiResult.analyzedAt) as string).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</strong>
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(`/guide-valuation ${stockData.symbol}`);
+                                    }}
+                                    title={`Copy: /guide-valuation ${stockData.symbol}`}
+                                    className="text-[10px] font-semibold text-indigo-300 bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-500/40 px-2 py-0.5 rounded flex items-center gap-1 transition-all"
+                                >
+                                    <Sparkles size={11} className="text-indigo-400" /> Update via /guide-valuation
+                                </button>
                                 <button
                                     onClick={() => { setAiResult(null); setAiError(null); setActiveCoachMetric(null); }}
                                     className="text-slate-500 hover:text-white transition-colors"
@@ -625,25 +642,44 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                         ) : aiResult ? (
                             <div className="z-10 transition-all duration-300 ease-in-out">
                                 <div className="relative">
-                                    <div className={`text-xs text-slate-300 leading-relaxed font-medium pr-2 custom-scrollbar max-h-[44px] overflow-hidden`}>
+                                    <div
+                                        className={`text-xs text-slate-300 leading-relaxed font-medium pr-2 custom-scrollbar overflow-y-auto ${isThesisExpanded ? 'max-h-[220px]' : 'max-h-[50px]'} resize-y min-h-[40px] max-h-[300px] border border-slate-800/40 rounded p-1.5 bg-slate-950/40`}
+                                        style={{ resize: 'vertical' }}
+                                    >
                                         <ReactMarkdown components={{
                                             strong: ({ node, ...props }: any) => <span className="font-bold text-indigo-200" {...props} />,
-                                            h1: ({ node, ...props }: any) => <span className="block font-bold mt-2 mb-1" {...props} />,
-                                            h2: ({ node, ...props }: any) => <span className="block font-bold mt-2 mb-1" {...props} />,
-                                            h3: ({ node, ...props }: any) => <span className="block font-bold mt-1 mb-0.5" {...props} />,
-                                            p: ({ node, ...props }: any) => <p className="mb-1 last:mb-0 inline" {...props} />
+                                            h1: ({ node, ...props }: any) => <span className="block font-bold mt-2 mb-1 text-white" {...props} />,
+                                            h2: ({ node, ...props }: any) => <span className="block font-bold mt-2 mb-1 text-indigo-300" {...props} />,
+                                            h3: ({ node, ...props }: any) => <span className="block font-bold mt-1 mb-0.5 text-slate-200" {...props} />,
+                                            p: ({ node, ...props }: any) => <p className="mb-1.5 last:mb-0" {...props} />
                                         }}>
                                             {aiResult.rationale}
                                         </ReactMarkdown>
                                     </div>
-                                    <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-slate-900 to-transparent pointer-events-none"></div>
                                 </div>
-                                <button
-                                    onClick={handleViewFullReport}
-                                    className="mt-1 text-[10px] uppercase font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 bg-slate-800/50 px-2 py-0.5 rounded transition-colors group-hover:bg-slate-800"
-                                >
-                                    View Full Report <FolderOpen size={10} />
-                                </button>
+                                <div className="flex items-center justify-between mt-1.5">
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={handleViewFullReport}
+                                            className="text-[10px] uppercase font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 bg-slate-800/60 px-2 py-0.5 rounded transition-colors hover:bg-slate-800"
+                                        >
+                                            View Full Report <FolderOpen size={10} />
+                                        </button>
+                                        <button
+                                            onClick={() => setIsThesisExpanded(!isThesisExpanded)}
+                                            className="text-[10px] font-semibold text-slate-400 hover:text-slate-200 flex items-center gap-0.5 transition-colors"
+                                        >
+                                            {isThesisExpanded ? (
+                                                <>Collapse <ChevronUp size={11} /></>
+                                            ) : (
+                                                <>Expand Full <ChevronDown size={11} /></>
+                                            )}
+                                        </button>
+                                    </div>
+                                    <span className="text-[9px] text-slate-500 italic flex items-center gap-1">
+                                        ↕ Drag bottom-right corner to resize
+                                    </span>
+                                </div>
                             </div>
                         ) : null}
                     </div>
