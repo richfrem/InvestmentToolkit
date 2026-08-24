@@ -2,105 +2,144 @@
 name: stock_intake
 plugin: portfolio-advisor
 description: >
-  Autonomous end-to-end stock intake & onboarding engine. Takes any stock ticker
-  (held, watchlisted, or completely new), pulls live financials, queries TradingView
-  CDP Data Window for technical levels (1D/1W), runs a 5-year scenario DCF model,
-  generates a deep-dive research event in intelligence.sqlite, writes the v1.2
-  projection JSON, and inserts/updates the ticker into domain_model.sqlite
-  as an active watchlisted holding under its designated strategy pillar.
+  Autonomous end-to-end stock intake & onboarding wizard designed for non-expert investors.
+  Pulls live financials, conducts plain-English educational walkthroughs, queries TradingView
+  CDP Data Window for technical levels (1D/1W), injects visual action tier lines on the chart,
+  runs a 5-year scenario DCF model, logs research in intelligence.sqlite, and registers the stock
+  into domain_model.sqlite under its designated strategy pillar.
   Trigger with /stock-intake {TICKER} or "onboard {TICKER}".
 allowed-tools: Bash, Read, Write
 ---
 
-# Stock Intake & Automated Onboarding Skill
+# Stock Intake & Automated Onboarding Wizard
 
 **Trigger:** `/stock-intake {TICKER}` or `/onboard-stock {TICKER}`  
-**Example:** `/stock-intake MP` | `/stock-intake LITE` | `/stock-intake ASTS` | `/stock-intake STM`
+**Examples:** `/stock-intake STM` | `/stock-intake MP` | `/stock-intake LITE` | `/stock-intake ASTS`
 
 ---
 
-## 🧭 Non-Expert Interactive UX Protocol (One Checkpoint at a Time)
+## 🧭 The Non-Expert "Smooth Wizard" UX Principles
 
-To ensure a comfortable, institutional-grade experience for non-expert investors:
-
-1. **Strategic Foundation First**: Before discussing price or complex formulas, establish *why* the stock is being considered and match it to a clear, high-level **Portfolio Strategy Pillar** (e.g. `Power / Energy`, `Compute / Hardware`, `Data Infra`).
-2. **Strictly One Question at a Time**: Never ask multiple questions or provide dense checklists in a single turn. Guide the user step-by-step through clear conversational checkpoints.
-3. **Always Explain the "Why" in Plain English**:
-   - Translate technical indicators into real-world analogies (*"200 EMA = the institutional floor where large funds buy"*).
-   - Explain financial ratios simply (*"Rule of 40 = Growth + Margin balance; scores over 40% represent elite compounders"*).
-4. **4-Part Educational Financial Walkthrough**:
-   - **Part 1 — Revenue Lifecycle & Root Cause**: Why did revenue peak or drop in past years, and what triggers the rebound?
-   - **Part 2 — Margins, Fixed-Cost Operating Leverage & Strategic Pivot**: How do factories/operating leverage expand profits as sales recover?
-   - **Part 3 — Institutional Health Scores & Peer Scorecard**: Compare Rule of 40, Piotroski score, and gross margins directly against 2–3 sector peers.
-   - **Part 4 — Forward Consensus & DCF Calibration**: Ground valuation targets in Wall Street estimates and management guidance.
-5. **Provide High-Conviction Recommended Defaults**: Always offer the recommended path first (marked with `(Recommended)`) so the user can proceed with a single click or word.
+1. **One Guided Decision at a Time**: Never overwhelm the user with multiple simultaneous choices, dense checklists, or raw SQL. Ask exactly one simple, conversational question at each stage.
+2. **Translate All Jargon into Real-World Analogies**:
+   - *200 EMA* ➔ *"The institutional floor where large funds buy."*
+   - *ADX* ➔ *"The trend engine (tells us if momentum is real or drifting sideways)."*
+   - *Rule of 40* ➔ *"Growth + Margin balance (scores over 40% represent elite compounders)."*
+   - *Gross Margin* ➔ *"Profit after factory costs (how much money is left to fund growth)."*
+3. **High-Conviction `(Recommended)` Defaults**: Always present the most logical option first with a `(Recommended)` tag so non-experts can confirm with a single click or word.
+4. **Concrete Dollar & Share Math**: Never ask users to calculate percentages or tranche sizes. Always convert percentages into exact dollar amounts and share counts based on live account equity.
 
 ---
 
-## 🛠️ The Canonical 6-Step Intake Pipeline
+## 🧙 The 6-Step Conversational Onboarding Pipeline
 
 ```
-[1. Strategy Pillar] ➔ [2. Grok News Sweep] ➔ [3. Technicals & TV Sync] ➔ [4. Financial Narrative] ➔ [5. DCF Calibration] ➔ [6. Dual Persistence]
+[1. Intent & Pillar] ➔ [2. Real-Time Grok Sweep] ➔ [3. Technical Action Tiers] ➔ [4. Financial Story & Peers] ➔ [5. DCF Valuation & Sizing] ➔ [6. Visual TV Sync & Save]
 ```
-
-### 1. Step 1 — Foundation: Strategy Pillar & Intent Alignment
-- Confirm investment thesis and assign the stock to an active portfolio strategy pillar (`power`, `compute`, `datainfra`, `robotics`, etc.) using `plugins/portfolio-advisor/skills/stock-intake/scripts/list_strategy_pillars.py`.
-
-### 2. Step 2 — Real-Time News & Catalyst Ingestion (Grok Front-Door)
-- Synthesize an initial thesis brief.
-- Provide the user with a customized, copy-paste ready Grok news sweep prompt.
-- Ingest the user's Grok output into core structural takeaways (customer wins, supply chain inflection points, 13F smart money accumulation).
-
-### 3. Step 3 — Live Technical Telemetry & TradingView Visual Sync
-- Query live technical indicators via TradingView CDP: 21/50/200 EMAs, ADX (trend strength), ATR (daily swing size), RSI, and Volume Bias.
-- Translate levels into clear **Execution Action Tiers**:
-  - 🟢 **Buy Pocket 1 / Initiate** (Current support zone)
-  - 💎 **Primary Buy / Accumulate** (Institutional 200 EMA floor)
-  - 🟡 **Trim Target 1** / 🟠 **Trim Target 2** (Resistance profit-taking levels)
-  - 🛑 **Stop Loss / Breaker** (Thesis invalidation shelf)
-- Automatically sync horizontal levels to the live TradingView chart using `AI TA Levels v6` and close the Pine Editor panel.
-
-### 4. Step 4 — Financials, Quality Health & Peer Benchmarking
-- Pull live financials via `investment_screener/backend/py_services/fetch_financials.py {TICKER}`.
-- Conduct the 4-part narrative walkthrough (Revenue lifecycle, Gross/Operating margin leverage, Peer comparison scorecard, Forward consensus).
-
-### 5. Step 5 — 5-Year Scenario DCF Valuation Matrix
-- Calibrate Bear (20%), Base (50%), and Bull (30%) growth and margin trajectories with `investment_screener/backend/py_services/dcf_scenarios.py`.
-- Calculate the probability-weighted Present Value (Fair Value) and determine the margin of safety vs current market price.
-
-### 6. Step 6 — Dual Persistence & Intelligence Event Logging
-1. **Record Research Event**: Ingest the complete thesis and Rule of 40 metrics into `intelligence.sqlite` using the canonical script:
-   ```bash
-   python3 investment_screener/backend/py_services/record_intelligence_event.py \
-     --ticker {TICKER} \
-     --type THESIS_UPDATE \
-     --title "{TICKER} Initiated into {PILLAR_TITLE} Strategy Pillar (${FAIR_VALUE} DCF FV)" \
-     --summary "{ONE_SENTENCE_THESIS_SUMMARY}" \
-     --payload '{"pillar": "{PILLAR_ID}", "fair_value": {FAIR_VALUE}, "target_entry": {TARGET_ENTRY}, "rule_of_40": {RULE_40_SCORE}}'
-   ```
-2. **Persist Domain Model**: Insert/update `investment`, `investment_price`, `projection_version`, and `price_level_tier` rows in `domain_model.sqlite`.
-3. **Emit Projection JSON**: Write `investment_screener/backend/data/projections/{TICKER}.json` (Schema v1.2) for instant React dashboard display.
 
 ---
 
-## 🎯 Concluding Summary Card Format
+### 🏛️ Step 1 — Intent & Strategy Pillar Alignment (Wizard Checkpoint A)
 
-Always finish with a clean, executive summary:
+Start with a warm, conversational goal alignment:
+
+> **Wizard Question 1**:  
+> *"What is your main investment goal for looking at **{TICKER}** today?"*  
+> - **Option A (Recommended — Secular Growth)**: I believe in the long-term megatrend (e.g. AI power grids, datacenter infrastructure) and want to hold for 3–5 years under the **{PILLAR_NAME}** pillar.  
+> - **Option B (Cyclical Turnaround)**: It was beaten down unfairly, and I expect an operational recovery over the next 12–18 months.  
+> - **Option C (Watchlist & Wait for Dip)**: I want to track it on my dashboard and wait for a deeper pullback before putting money to work.
+
+*Execute `scripts/list_strategy_pillars.py` to auto-assign the pillar ID.*
+
+---
+
+### 🌐 Step 2 — Real-Time Grok News & Catalyst Ingestion
+
+Synthesize an initial 3-bullet briefing and provide the user with a copy-paste ready Grok prompt:
+
+```text
+Targeted Grok Sweep Prompt for {TICKER}:
+"Provide a comprehensive, real-time news, catalyst, and supply-chain analysis for {COMPANY_NAME} ({TICKER}) over the past 90 days. Focus on:
+1. Hyperscaler AI data center power/infrastructure adoption and tier-1 customer contracts.
+2. Production capacity expansion, factory utilization, and technology yield improvements.
+3. Industry inventory recovery inflection points vs macroeconomic headwinds.
+4. Recent earnings guidance surprises, margin expansion timelines, and CAPEX updates.
+Format as concise, high-conviction bullet points with direct impact on 5-year revenue and margin expansion."
+```
+
+*Digest the user's Grok output into structural catalysts (e.g. 13F institutional accumulation, factory yield unlocks).*
+
+---
+
+### 📈 Step 3 — Live Technical Levels & Tranche Plan (Wizard Checkpoint B)
+
+Query live TradingView CDP technical data (21/50/200 EMAs, ADX, ATR, RSI) and explain the levels in plain English:
+
+- 🟢 **Buy Pocket 1 ($Price)**: Current initial entry level.
+- 💎 **Primary Buy Floor ($Price)**: The 200-day EMA institutional support zone.
+- 🟡 **Trim Target 1 ($Price)** / 🟠 **Trim Target 2 ($Price)**: Natural profit-taking resistance shelves.
+- 🛑 **Stop Loss / Breaker ($Price)**: Safety net level where the thesis fails.
+
+> **Wizard Question 2**:  
+> *"How would you like to handle buying if the price fluctuates?"*  
+> - **Option A (Recommended — Staged Dip-Buying)**: Start with a 50% starter position now, and add the remaining 50% if price dips to our green institutional support line (${PRIMARY_BUY}).  
+> - **Option B (Safety Net Alert)**: Buy our position now, but set a high-priority alert if price falls below our red line (${STOP_LOSS}) to protect capital.  
+> - **Option C (Watchlist Only)**: Do not place orders yet; just monitor the levels on our chart.
+
+---
+
+### 📊 Step 4 — 4-Part Educational Financial Walkthrough
+
+Pull live metrics via `investment_screener/backend/py_services/fetch_financials.py {TICKER}` and conduct a narrative story:
+1. **Part 1 — Revenue Lifecycle**: Plain-English diagnosis of why sales dipped in prior years and what drives the forward rebound.
+2. **Part 2 — Factory & Operating Leverage**: How expanding gross margins generate outsized bottom-line profit surges.
+3. **Part 3 — Institutional Quality Scorecard**: Compare Rule of 40 and Piotroski F-Score *side-by-side with 2–3 key sector peers*.
+4. **Part 4 — Forward Consensus**: Wall Street 1Y/2Y consensus targets aligned with multi-year company guidance.
+
+---
+
+### 💰 Step 5 — DCF Valuation & Position Sizing (Wizard Checkpoint C)
+
+Run `investment_screener/backend/py_services/dcf_scenarios.py` to establish Bear (20%), Base (50%), and Bull (30%) present values and calculate probability-weighted Fair Value.
+
+> **Wizard Question 3**:  
+> *"What size role should **{TICKER}** play in your portfolio?"*  
+> - **Option A (Recommended — Starter / Pilot)**: **2.0% allocation** (~${DOLLAR_AMOUNT} / ~{SHARE_COUNT} shares) — Low risk test position while monitoring next earnings.  
+> - **Option B (Full Core Holding)**: **4.0% allocation** (~${DOLLAR_AMOUNT} / ~{SHARE_COUNT} shares) — High conviction holding alongside top portfolio winners.  
+> - **Option C (Watchlist Badge Only)**: **0.0% allocation** — Track on screener and live chart without deploying capital.
+
+---
+
+### 💾 Step 6 — Visual Chart Sync & Dual Persistence
+
+1. **Inject Visual Action Tiers on TradingView**:
+   - Update `plugins/tradingview/assets/pinescript-indicators/ai-ta-levels.pine` (Pine Script v6) with the stock's custom levels.
+   - Inject onto active TradingView chart via `plugins/tradingview/scripts/tv_pine_inject.py`.
+   - Automatically close the Pine Editor panel to leave a clean, full-screen chart.
+2. **Record in Intelligence Ledger**:
+   - Call canonical tool `investment_screener/backend/py_services/record_intelligence_event.py`.
+3. **Persist Domain Model & JSON Projections**:
+   - Save to `domain_model.sqlite` (`investment`, `investment_price`, `projection_version`, `price_level_tier`).
+   - Write `investment_screener/backend/data/projections/{TICKER}.json` for instant dashboard loading.
+
+---
+
+## 🎯 Executive Intake Summary Card
 
 ```
 🎯 [TICKER] Onboarding & Intake Complete
 
 Pillar:          [Pillar Name] ([pillar_id])
-Role:            WATCHLIST (is_watchlisted = 1, target_weight = 0.0%)
+Role:            [WATCHLIST / CORE HOLDING] (Target Weight: [X.X]%)
 Market Price:    $[Price] USD
 DCF Fair Value:  $[FairValue] ([+/-X]% upside — [Action])
 Rule of 40:      [Score]% ([Pass/Watch])
 Piotroski Score: [Score] / 9 ([Quality Tier])
 
-Technical Execution Tiers:
-- Overhead Resistance:  $[Trim 2] (50 EMA) / $[Trim 1] (21 EMA)
-- Confluence Buy Floor: $[Primary Buy] (200 EMA institutional support)
-- Invalidation / Stop:  $[Stop Loss] (Structural breaker)
+Technical Execution Plan:
+- 🟡 Trim 1 / 🟠 Trim 2:  $[Trim 1] / $[Trim 2] (Profit-taking targets)
+- 🟢 Entry / 💎 Add Zone: $[Entry 1] / $[Primary Buy] (200 EMA floor)
+- 🛑 Safety Stop Breaker: $[Stop Loss] (Structural invalidation)
 
 DCF Scenarios:
 🐻 Bear (20%): $[PV] — [One sentence scenario]
@@ -111,5 +150,3 @@ DCF Scenarios:
 ✅ Ingested in intelligence.sqlite
 ✅ Rendered live on TradingView Desktop with AI TA Levels v6
 ```
-
-
