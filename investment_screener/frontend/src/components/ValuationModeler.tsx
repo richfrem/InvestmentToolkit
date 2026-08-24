@@ -885,6 +885,33 @@ export default function ValuationModeler({ stockData }: ValuationModelerProps) {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Baseline Anchor & Peer Benchmark Card */}
+                        <div className="bg-slate-900/60 border border-slate-800/80 rounded-xl p-3 backdrop-blur-sm mt-2">
+                            <div className="flex justify-between items-center mb-1.5">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                    Sector & Consensus Sanity Anchors
+                                </span>
+                            </div>
+                            <div className="space-y-1 text-xs">
+                                <div className="flex justify-between text-slate-400">
+                                    <span>Sector Median Exit P/E:</span>
+                                    <strong className="text-indigo-300 font-mono">22.0x – 26.0x</strong>
+                                </div>
+                                <div className="flex justify-between text-slate-400">
+                                    <span>Wall Street Consensus Mean:</span>
+                                    <strong className="text-emerald-400 font-mono">${stockData.analyst_estimates?.target_mean_price ? stockData.analyst_estimates.target_mean_price.toFixed(2) : '—'}</strong>
+                                </div>
+                                <div className="flex justify-between text-slate-400">
+                                    <span>Starting TTM Revenue:</span>
+                                    <span className="text-slate-200 font-mono">${(baseRevenue / 1e9).toFixed(2)}B</span>
+                                </div>
+                                <div className="flex justify-between text-slate-400">
+                                    <span>Diluted Share Count:</span>
+                                    <span className="text-slate-200 font-mono">{(baseShares / 1e6).toFixed(1)}M</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Sensitivity Matrix - Narrow Version */}

@@ -114,16 +114,20 @@ router.get('/stock/:ticker/technical-analysis', async (req, res) => {
             }
         }
 
-        // 2. Query holding info from domain_model.sqlite
+        // 2. Query holding info and projection revisions from domain_model.sqlite
         let holdingInfo: { isHolding: boolean; targetWeight: number | null; actualWeight: number | null; role: string | null } = {
             isHolding: false,
             targetWeight: null,
             actualWeight: null,
             role: null,
         };
+        let dcfFV: number | null = sweepData?.dcf?.fairValue ?? null;
+        let dcfBaseTarget: number | null = sweepData?.dcf?.base ?? null;
+        let revisionHistory: Array<{ date: string; fairValue: number; action: string; model: string }> = [];
 
         if (fs.existsSync(DOMAIN_MODEL_DB_FILE)) {
             const repo = new InvestmentRepository(DOMAIN_MODEL_DB_FILE);
+            const projRepo = new (await import('../services/ProjectionRepository')).ProjectionRepository(DOMAIN_MODEL_DB_FILE);
             try {
                 const inv = repo.getInvestment(cleanSym);
                 if (inv) {
@@ -132,10 +136,31 @@ router.get('/stock/:ticker/technical-analysis', async (req, res) => {
                     holdingInfo.actualWeight = null;
                     holdingInfo.role = inv.lifecycle_status ?? null;
                 }
+                const savedProjections = projRepo.findByTicker(cleanSym);
+                if (savedProjections.length > 0) {
+                    const latest = savedProjections.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
+                    if (latest.aiThesis?.fairValue) {
+                        dcfFV = latest.aiThesis.fairValue;
+                    }
+                    if (latest.scenarios?.base?.scenarioPrice) {
+                        dcfBaseTarget = latest.scenarios.base.scenarioPrice;
+                    }
+                    revisionHistory = savedProjections
+                        .filter(p => p.aiThesis?.fairValue)
+                        .map(p => ({
+                            date: p.savedAt?.split('T')[0] || p.updatedAt?.split('T')[0],
+                            fairValue: p.aiThesis!.fairValue,
+                            action: p.aiThesis?.action || 'HOLD',
+                            model: p.aiThesis?.model || 'AI Model',
+                        }))
+                        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                        .slice(0, 4);
+                }
             } catch (tErr) {
-                console.warn(`[API] Error reading thesis for ${cleanSym}:`, tErr);
+                console.warn(`[API] Error reading thesis/projections for ${cleanSym}:`, tErr);
             } finally {
                 repo.close();
+                projRepo.close();
             }
         }
 
@@ -149,7 +174,6 @@ router.get('/stock/:ticker/technical-analysis', async (req, res) => {
         const atr = sweepData?.atr ?? (price > 0 ? price * 0.03 : 0);
         const rsi = sweepData?.rsi ?? 50.0;
         const isSqueeze = Boolean(sweepData?.squeezeOn);
-        const dcfFV = sweepData?.dcf?.fairValue ?? null;
 
         // Derive technical regime
         let regime: 'BULLISH_TREND' | 'BULLISH_CONSOLIDATION' | 'BEARISH_TREND' | 'DISTRIBUTION' | 'COMPRESSION' = 'BULLISH_CONSOLIDATION';
@@ -201,7 +225,7 @@ router.get('/stock/:ticker/technical-analysis', async (req, res) => {
         const support2 = ema50 > 0 ? Number(ema50.toFixed(2)) : Number((price * 0.95).toFixed(2));
         const macroFloor = ema200 > 0 ? Number(ema200.toFixed(2)) : Number((price * 0.88).toFixed(2));
         const resistance1 = price > 0 ? Number((price * 1.06).toFixed(2)) : 0;
-        const baseTarget = sweepData?.dcf?.base ? Number(sweepData.dcf.base.toFixed(2)) : Number((price * 1.20).toFixed(2));
+        const baseTarget = dcfBaseTarget ? Number(dcfBaseTarget.toFixed(2)) : (sweepData?.dcf?.base ? Number(sweepData.dcf.base.toFixed(2)) : Number((price * 1.20).toFixed(2)));
         const resistance2 = dcfFV ? Number(dcfFV.toFixed(2)) : Number((price * 1.35).toFixed(2));
         const stopLoss = support2 > 0 ? Number((support2 - atr * 1.5).toFixed(2)) : Number((price * 0.90).toFixed(2));
 
@@ -262,6 +286,7 @@ router.get('/stock/:ticker/technical-analysis', async (req, res) => {
                 isSqueeze,
             },
             holdingStatus: holdingInfo,
+            revisionHistory,
         });
     } catch (err: any) {
         console.error(`[API] Error generating TA summary for ${cleanSym}:`, err);

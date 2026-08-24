@@ -12,7 +12,7 @@
  */
 
 import React from 'react';
-import { Activity, ShieldAlert, TrendingUp, TrendingDown, Layers, Zap, Compass, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Activity, ShieldAlert, TrendingUp, TrendingDown, Layers, Zap, Compass, CheckCircle2, AlertCircle, History } from 'lucide-react';
 import type { TechnicalAnalysisData } from '../services/api';
 import { SmartText } from './SmartText';
 
@@ -284,6 +284,26 @@ export const TechnicalAnalysisSummaryCard: React.FC<TechnicalAnalysisSummaryCard
                     </div>
                 </div>
             </div>
+
+            {/* Historical Thesis Revision Timeline */}
+            {data.revisionHistory && data.revisionHistory.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-slate-800/60 bg-slate-950/40 rounded-lg p-3 border border-slate-800/40">
+                    <div className="text-xs font-bold text-slate-400 mb-2 flex items-center gap-1.5">
+                        <History className="w-3.5 h-3.5 text-indigo-400" /> Thesis & Fair Value Evolution History
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
+                        {data.revisionHistory.map((rev, idx) => (
+                            <div key={idx} className="bg-slate-900/60 border border-slate-800/80 rounded-md p-2 flex flex-col justify-between">
+                                <div className="flex justify-between items-center text-[10px] text-slate-400 mb-1">
+                                    <span>{rev.date}</span>
+                                    <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${rev.action === 'ACCUMULATE' || rev.action === 'BUY' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-300'}`}>{rev.action}</span>
+                                </div>
+                                <div className="text-xs font-black text-white">${rev.fairValue.toFixed(2)} <span className="text-[9px] font-normal text-slate-500">FV</span></div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
