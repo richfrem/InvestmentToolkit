@@ -60,7 +60,7 @@ export const AgentResearchPromptCard: React.FC<AgentResearchPromptCardProps> = (
                     {/* Master 1-Shot Command Trigger */}
                     <div className="flex flex-col sm:flex-row items-stretch gap-3 shrink-0">
                         <button
-                            onClick={() => handleCopy(`/evaluate-stock ${symbol}`)}
+                            onClick={() => handleCopy(`/stock-intake ${symbol}`)}
                             className="bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-white font-bold p-4 rounded-xl text-left transition-all shadow-xl hover:shadow-emerald-500/20 border border-emerald-400/40 flex items-center gap-4 group cursor-pointer"
                         >
                             <div className="p-2.5 bg-black/30 rounded-lg">
@@ -68,14 +68,14 @@ export const AgentResearchPromptCard: React.FC<AgentResearchPromptCardProps> = (
                             </div>
                             <div>
                                 <div className="text-[10px] uppercase font-black text-emerald-200 tracking-wider flex items-center gap-1">
-                                    {copiedCmd === `/evaluate-stock ${symbol}` ? (
+                                    {copiedCmd === `/stock-intake ${symbol}` ? (
                                         <span className="text-white flex items-center gap-1"><Check size={12} /> Copied to Clipboard!</span>
                                     ) : (
-                                        <span>Master 1-Shot Command (Click to Copy)</span>
+                                        <span>Master 5-in-1 Pipeline (Click to Copy)</span>
                                     )}
                                 </div>
-                                <div className="font-mono text-base font-black text-white mt-0.5">/evaluate-stock {symbol}</div>
-                                <p className="text-[11px] text-emerald-100/80 mt-0.5">Valuation + Technicals + Deep Dive in 1 shot</p>
+                                <div className="font-mono text-base font-black text-white mt-0.5">/stock-intake {symbol}</div>
+                                <p className="text-[11px] text-emerald-100/80 mt-0.5">Financials + TradingView TA + DCF Scenarios + Intelligence DB in 1 shot</p>
                             </div>
                         </button>
                     </div>
