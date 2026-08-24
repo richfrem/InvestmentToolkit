@@ -2,6 +2,12 @@
   "version": 1,
   "links": [
     {
+      "src": "investment_screener/backend/py_services/record_intelligence_event.py",
+      "dst": "plugins/portfolio-advisor/skills/stock-intake/scripts/record_intelligence_event.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> py_services/ tool"
+    },
+    {
       "src": "plugins/tradingview/scripts/tv_draw.py",
       "dst": "plugins/tradingview/skills/tv-draw/scripts/tv_draw.py",
       "strategy": "symlink",
