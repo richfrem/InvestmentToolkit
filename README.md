@@ -43,11 +43,17 @@ An institutional-grade portfolio management and automated research suite built n
 
 The true power of this repository is not just the frontend UI—it is the **Agentic Operating System** behind it. Launch your CLI agent (Claude Code, Gemini CLI, or Copilot CLI) and use one of these triggers:
 
-### 1. Master Setup (New Users — Start Here)
+### 1. Master Setup & Portfolio Bootstrap (New Users — Start Here)
 
-> **`/toolkit-onboarding`** or **"Help me set up the toolkit"**
+> **`/toolkit-onboarding`** or **`/portfolio-bootstrap`** or **"Help me set up the toolkit"**
 
-Runs the **`toolkit-onboarding`** skill. This coordinator checks your dependencies, initializes private data templates, and guides you into the application.
+Runs the **`toolkit-onboarding`** master wizard. This coordinator guides you end-to-end through:
+
+1. **Pre-Flight Engine & Plugin Install**: Compiles Python venv, installs npm deps, redeploys all 20 plugins via `plugin-syncer`, and initializes private data templates.
+2. **Account & Strategy Pillar Setup**: Configures your account structure (e.g. TFSA primary + RRSP mirror) and seeds target strategy pillars (`Power`, `Compute`, `Data Infra`, `Cash`).
+3. **Portfolio Ingestion**: Scrapes active holdings, shares, and USD cash from TradingView Desktop via `/tv-portfolio-sync` (or manual intake via `/stock-intake`).
+4. **Automated DCF & Quality Baseline**: Computes Rule of 40 scores, Piotroski metrics, and Bear/Base/Bull 5-year DCF models across all holdings.
+5. **TradingView Visual Sync & Dashboard Launch**: Injects `AI TA Levels v6` (21/50/200 EMAs + DCF Fair Value + action tiers) onto your live chart and starts the full suite on ports 5173/3001/9222!
 
 ### 2. TradingView Setup (Primary Data + Execution Layer)
 

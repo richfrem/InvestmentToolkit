@@ -29,6 +29,7 @@ InvestmentToolkit/                         ← repo root
 │       │   ├── portfolio_action.py       ← drift + DCF → BUY/HOLD/SELL actions
 │       │   ├── fetch_financials.py       ← yfinance raw data fetch
 │       │   ├── dcf_scenarios.py          ← DCF math (bear/base/bull)
+│       │   ├── record_intelligence_event.py ← canonical event ledger tool
 │       │   └── extract_portfolio_symbols.py
 │       ├── data/
 │       │   ├── domain_model.sqlite       ← investment/pillar/price-level/projection/trade/
