@@ -223,42 +223,27 @@ export async function injectPineScript(client, scriptContent) {
     await new Promise(r => setTimeout(r, 1200));
 
     // 6. Close Pine Editor panel after adding to chart (clean workspace view)
-    const closeCoords = await client.Runtime.evaluate({
+    await client.Runtime.evaluate({
       expression: `(function() {
-        var ed = document.querySelector('.pine-editor-monaco');
-        if (!ed || !ed.offsetParent) return null;
+        var ed = document.querySelector('.pine-editor-monaco') || document.querySelector('[class*="editorBaseLayoutContainer-"]');
+        if (!ed || !ed.offsetParent) return;
 
-        // Try 1: Panel close button (top-right of pane or dialog)
-        var closeBtn = document.querySelector('button[aria-label="Close"]') ||
-                       document.querySelector('button[title="Close"]') ||
-                       document.querySelector('button[data-name="close"]');
-        if (closeBtn && closeBtn.offsetParent) {
-          var r = closeBtn.getBoundingClientRect();
-          return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+        // Try 1: Panel close button inside editor header
+        var closeBtn = ed.querySelector('button[aria-label="Close"]') ||
+                       ed.querySelector('button[title="Close"]') ||
+                       ed.querySelector('button[data-name="close"]') ||
+                       document.querySelector('button[data-name="pine-dialog-button"]') ||
+                       document.querySelector('[data-name="pine-dialog-button"]');
+        if (closeBtn) {
+          closeBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+          closeBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+          closeBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
         }
-
-        // Try 2: Bottom bar toggle button
-        var bottomBtn = document.querySelector('[data-name="pine-dialog-button"]') ||
-                        [...document.querySelectorAll('button')].find(function(b) {
-                          return b.offsetParent && (b.textContent.trim() === 'Pine Editor' || b.getAttribute('aria-label') === 'Pine Editor');
-                        });
-        if (bottomBtn && bottomBtn.offsetParent) {
-          var r2 = bottomBtn.getBoundingClientRect();
-          return { x: r2.x + r2.width / 2, y: r2.y + r2.height / 2 };
-        }
-
-        return null;
       })()`,
       returnByValue: true,
       awaitPromise: false,
     });
-
-    if (closeCoords.result.value) {
-      const { x, y } = closeCoords.result.value;
-      await client.Input.dispatchMouseEvent({ type: 'mousePressed', x, y, button: 'left', clickCount: 1 });
-      await client.Input.dispatchMouseEvent({ type: 'mouseReleased', x, y, button: 'left', clickCount: 1 });
-    }
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 600));
 
     return { success: true };
   } catch (e) {
