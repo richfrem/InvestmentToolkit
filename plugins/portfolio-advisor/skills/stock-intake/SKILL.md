@@ -34,7 +34,7 @@ To ensure a seamless and clear user experience:
 When given ANY ticker (even one not currently in your database or watchlist), this skill executes an automated pipeline:
 
 1. **Step 1 — Foundation: Strategy Pillar & Thesis Alignment**: Confirms user's investment intent and assigns the stock to an official strategy pillar (`power`, `compute`, `datainfra`, `robotics`, etc.).
-2. **Step 2 — Grok Catalyst & News Sweep Prompt Generation**: Provides copy-paste ready prompt for real-time catalysts, customer wins, and order backlog sweeps *before* locking in valuation numbers.
+2. **Step 2 — Agent Pre-Flight Analysis & Targeted Grok Prompt**: Agent synthesizes an initial thesis brief (key supply chain vectors, margin inflections, macro tailwinds) and uses it to generate a laser-focused Grok prompt for real-time catalyst and order backlog validation.
 3. **Step 3 — Financials & Baseline Ingest**: Calls `fetch_financials.py {TICKER}` to extract revenue, shares, margins, sector, industry, and analyst growth consensus.
 4. **Step 4 — Live Technical Telemetry (TradingView CDP)**: Sets chart symbol to `{TICKER}`, reads the 1D & 1W Data Window (21/50/200 EMAs, RSI, Squeeze, ADX, SuperTrend, Volume Bias), and defines the dynamic entry pocket ($Buy Zone, Stop Loss, Take Profit 1 & 2).
 5. **Step 5 — DCF Valuation & Reverse DCF Modeling**: Runs `dcf_scenarios.py` with user-selected growth/margin trajectory to establish Bear, Base, and Bull present values.
