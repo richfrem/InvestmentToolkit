@@ -2,6 +2,12 @@
   "version": 1,
   "links": [
     {
+      "src": "plugins/tradingview/scripts/tv_draw.py",
+      "dst": "plugins/tradingview/skills/tv-draw/scripts/tv_draw.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
       "src": "plugins/portfolio-advisor/scripts/update_thesis.py",
       "dst": "investment_screener/backend/py_services/update_thesis.py",
       "strategy": "symlink",

@@ -54,6 +54,11 @@
   ],
   "skills": [
     {
+      "name": "tv-draw",
+      "path": "skills/tv-draw/SKILL.md",
+      "trigger": "/tv-draw"
+    },
+    {
       "name": "tv-chart-setup",
       "path": "skills/tv-chart-setup/SKILL.md",
       "trigger": "/tv-chart-setup"
