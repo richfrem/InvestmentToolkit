@@ -66,6 +66,8 @@ interface StockRow {
     bull: number | null;
     qualityMultiplier: number | null;
     lastAnalyzed: string | null;
+    earnings_date?: string | null;
+    days_to_earnings?: number | null;
 }
 
 interface HeatmapResponse {
@@ -87,7 +89,7 @@ interface ColDef {
     isChange?: boolean;
     defaultOn?: boolean;
     align?: 'left' | 'right';
-    format: (v: number | string | null) => string;
+    format: (v: number | string | null | undefined, row?: StockRow) => string;
 }
 
 const COLUMNS: ColDef[] = [
@@ -96,6 +98,18 @@ const COLUMNS: ColDef[] = [
     { id: 'action',         label: 'Action',     defaultOn: true,  align: 'left',  format: v => String(v ?? '—') },
     { id: 'currentPct',     label: 'Current %',  defaultOn: true,  align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)!.toFixed(2)}%` : '—' },
     { id: 'recommendedPct', label: 'Target %',   defaultOn: true,  align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)!.toFixed(2)}%` : '—' },
+    { id: 'earnings_date',  label: 'Earnings',   defaultOn: true,  align: 'right', format: (v, r) => {
+        if (!v) return '—';
+        const days = r?.days_to_earnings;
+        const dStr = String(v);
+        if (days != null) {
+            if (days === 0) return `${dStr} (Today!)`;
+            if (days > 0 && days <= 7) return `${dStr} (${days}d)`;
+            if (days > 0) return `${dStr} (${days}d)`;
+            return `${dStr} (${Math.abs(days)}d ago)`;
+        }
+        return dStr;
+    }},
     { id: 'rationale',      label: 'Rationale',  defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
     { id: 'fairValue',      label: 'Fair Value', defaultOn: true,  align: 'right', format: fmtDollar },
     { id: 'currentPrice',   label: 'Price',      defaultOn: true,  align: 'right', format: fmtPrice },
@@ -124,13 +138,13 @@ const COLUMNS: ColDef[] = [
 ];
 
 const DEFAULT_WIDTHS: Record<string, number> = {
-    symbol: 70, name: 170, currentPct: 90, subStrategyId: 130, sector: 115, shares: 60, currentPrice: 72,
+    symbol: 70, name: 170, currentPct: 90, recommendedPct: 85, earnings_date: 110, subStrategyId: 130, sector: 115, shares: 60, currentPrice: 72,
     book_price: 72, change_1d: 65, change_1w: 65, change_1m: 65,
     change_ytd: 65, change_1y: 65, change_overall: 80,
     total_book: 80, total_market: 80,
     action: 115, fairValue: 95, gainLoss: 85, upside: 85, ruleOf40: 70, growth: 80,
     model: 130, base: 80, bear: 80, bull: 80, qualityMultiplier: 80, lastAnalyzed: 90,
-    recommendedPct: 85, rationale: 260,
+    rationale: 260,
 };
 
 // ─── Persistence ──────────────────────────────────────────────────────────────
@@ -627,15 +641,29 @@ export default function PortfolioTable() {
                                                      </div>
                                                 ) : col.id === 'name' ? (
                                                     <span className="text-zinc-300 text-xs">{val}</span>
+                                                ) : col.id === 'earnings_date' ? (
+                                                    val ? (
+                                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-mono font-medium ${
+                                                            row.days_to_earnings != null && row.days_to_earnings >= 0 && row.days_to_earnings <= 7
+                                                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse'
+                                                                : row.days_to_earnings != null && row.days_to_earnings > 7 && row.days_to_earnings <= 21
+                                                                ? 'bg-yellow-500/10 text-yellow-300 border border-yellow-500/30'
+                                                                : 'text-zinc-400'
+                                                        }`}>
+                                                            {col.format(val, row)}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-zinc-600">—</span>
+                                                    )
                                                 ) : col.isChange ? (
                                                     <span className="font-semibold text-xs text-white">
-                                                        {col.id === 'gainLoss' && isPrivacyMode ? '$••••' : col.format(val)}
+                                                        {col.id === 'gainLoss' && isPrivacyMode ? '$••••' : col.format(val, row)}
                                                     </span>
                                                 ) : (
                                                     <span className="text-zinc-300">
                                                         {(col.id === 'total_market' || col.id === 'total_book' || col.id === 'fairValue' || col.id === 'bear' || col.id === 'base' || col.id === 'bull') && isPrivacyMode
                                                             ? '$••••'
-                                                            : col.format(val)}
+                                                            : col.format(val, row)}
                                                     </span>
                                                 )}
                                             </td>
