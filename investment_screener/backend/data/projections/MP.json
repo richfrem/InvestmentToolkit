@@ -1,90 +1,109 @@
-{
-  "ticker": "MP",
-  "name": "MP Materials Corp.",
-  "schemaVersion": "1.2",
-  "snapshot": {
-    "price": 54.11,
-    "market_cap_b": 9.64,
-    "revenue_ttm_b": 0.224,
-    "pe_ratio": 0.0,
-    "forward_pe": 62.34,
-    "sector": "Basic Materials",
-    "industry": "Other Industrial Metals & Mining",
-    "last_actual_ps": 42.94
-  },
-  "aiThesis": {
-    "model": "DCF 5Y Terminal Multiple",
-    "fairValue": 44.64,
-    "action": "WATCHLIST",
-    "analyzedAt": "2026-08-20T06:45:00Z",
-    "targetWeight": 0.0,
-    "rationale": "Strategic Western Hemisphere NdPr rare earth and permanent magnet supplier. High growth inflection as Stage 2 refining and Stage 3 Texas magnet manufacturing scale. Near-term fair value of $44.64 vs $54.11 current price warrants disciplined watchlist accumulation on pullbacks below $50."
-  },
-  "scenarios": {
-    "bear": {
-      "weight": 0.25,
-      "growthRate": 25.0,
-      "netMargin": 15.0,
-      "exitPE": 20.0,
-      "qualityMultiplier": 0.95,
-      "shareChange": 5.0,
-      "year5Revenue": 684.9,
-      "year5NetIncome": 102.7,
-      "year5EPS": 0.45,
-      "year5PriceUndiscounted": 8.59,
-      "scenarioPrice": 5.33,
-      "presentValue": 5.33,
-      "moatScore": 6,
-      "managementScore": 7,
-      "rationale": "Subdued NdPr commodity pricing and slower magnetics adoption."
+[
+  {
+    "ticker": "MP",
+    "id": "e8412903-8521-420a-b611-928410298a00",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-08-25T14:41:00Z",
+    "updatedAt": "2026-08-25T14:41:00Z",
+    "name": "AI Deep Dive \u2014 MP Materials \u2014 2026-08-25",
+    "rationale": "Mountain Pass refining Stage 2 throughput reached 840 MT in Q2 2026 heading to 6,000 MT/yr run-rate. DoD $110/kg PPA floor de-risks cash flows ($17.6M Q2 income). Fort Worth magnet facility delivering to GM with Q4 commercial start. 10X Northlake facility secured with 10-year 100% DoD offtake ($140M/yr EBITDA floor).",
+    "snapshot": {
+      "price": 57.34,
+      "currency": "USD",
+      "exchange": "NYSE",
+      "shares": 178101588,
+      "revenue": 224441000.0,
+      "lastActualPS": 45.56
     },
-    "base": {
-      "weight": 0.5,
-      "growthRate": 45.0,
-      "netMargin": 24.0,
-      "exitPE": 28.0,
-      "qualityMultiplier": 1.05,
-      "shareChange": 3.0,
-      "year5Revenue": 1438.6,
-      "year5NetIncome": 345.3,
-      "year5EPS": 1.67,
-      "year5PriceUndiscounted": 49.16,
-      "scenarioPrice": 30.53,
-      "presentValue": 30.53,
-      "moatScore": 8,
-      "managementScore": 8,
-      "rationale": "Mountain Pass NdPr refining scaling with Fort Worth magnet facility commercialization."
+    "dataPreferences": {
+      "growthBasis": "next",
+      "marginBasis": "ttm"
     },
-    "bull": {
-      "weight": 0.25,
-      "growthRate": 65.0,
-      "netMargin": 32.0,
-      "exitPE": 35.0,
-      "qualityMultiplier": 1.1,
-      "shareChange": 1.0,
-      "year5Revenue": 2744.9,
-      "year5NetIncome": 878.4,
-      "year5EPS": 4.69,
-      "year5PriceUndiscounted": 180.66,
-      "scenarioPrice": 112.17,
-      "presentValue": 112.17,
-      "moatScore": 9,
-      "managementScore": 9,
-      "rationale": "Geopolitical rare earth export restrictions accelerate premium pricing and US DoD/commercial contracts."
+    "scenarios": {
+      "bear": {
+        "weight": 0.2,
+        "growthRate": 22.0,
+        "netMargin": 15.0,
+        "exitPE": 20.0,
+        "qualityMultiplier": 0.95,
+        "shareChange": 0.0,
+        "scenarioPrice": 6.03
+      },
+      "base": {
+        "weight": 0.5,
+        "growthRate": 38.0,
+        "netMargin": 24.0,
+        "exitPE": 28.0,
+        "qualityMultiplier": 1.1,
+        "shareChange": 0.0,
+        "scenarioPrice": 28.95
+      },
+      "bull": {
+        "weight": 0.3,
+        "growthRate": 52.0,
+        "netMargin": 30.0,
+        "exitPE": 35.0,
+        "qualityMultiplier": 1.25,
+        "shareChange": 0.0,
+        "scenarioPrice": 83.33
+      }
+    },
+    "analyticsLog": {
+      "valuationAction": "INITIATE",
+      "portfolioUrgency": "NORMAL",
+      "portfolioRationale": "Strategic Western critical mineral monopoly with multi-layered DoD support ($400M preferred equity, $110/kg price floor, $140M EBITDA 10X offtake).",
+      "shareCountMethod": "shares_diluted = 178,101,588",
+      "marginAnchor": "Q2 2026 Adjusted EBITDA $28.5M (positive inflection) and PPA support",
+      "growthDerivation": "Consensus 2026 $450M (+100%) and 2027 $806M (+79%) driven by NdPr refining volume and Fort Worth downstream magnet delivery",
+      "sectorBenchmarkRow": "Basic Materials \u2014 Critical Minerals & Strategic Defense Magnets",
+      "dataQualityFlags": [
+        "Separated NdPr Q2 production 840 MT (+41% YoY) targeting 6,000 MT/yr run-rate",
+        "DoD $110/kg Price Protection Agreement delivered $17.6M Q2 income",
+        "Fort Worth commercial GM deliveries begin Q4 2026",
+        "10X Northlake facility 100% contracted with DoD with $140M annual EBITDA floor"
+      ],
+      "analystInputs": {
+        "y1RevEstimate": 450034050,
+        "y2RevEstimate": 806639280,
+        "y1GrowthPct": 100.5,
+        "y2GrowthPct": 79.2,
+        "blendedConsensusPct": 89.85,
+        "analystTargetMean": 75.38,
+        "analystCount": 16
+      },
+      "historicalRevenue": [
+        527510000,
+        253445000,
+        203855000,
+        224441000
+      ],
+      "historicalNetMargins": [
+        54.79,
+        9.59,
+        -32.09,
+        -38.26
+      ],
+      "historicalEPS": [
+        1.64,
+        0.14,
+        -0.39,
+        -0.5
+      ],
+      "confidenceBreakdown": "0.86/1.0 \u2014 High sovereign backing with de-risked floor pricing offset by capex intensity before 2028."
+    },
+    "aiThesis": {
+      "model": "Antigravity Reasoning Agent",
+      "rationale": "### MP Materials Corp. (MP) \u2014 Comprehensive Sovereign Rare Earth Valuation\n\n**1. Upstream & Midstream Refining Scale (Stage 2)**:\n- Separated NdPr production reached 840 MT in Q2 2026 (+41% YoY), progressing toward ~6,000 MT/yr annualized run-rate (~500 MT/mo) by year-end.\n- DoD Price Protection Agreement establishes a solid $110/kg floor (generating $17.6M in Q2), lifting effective realized economics above commodity spot prices.\n\n**2. Downstream Magnetics Inflection (Stage 3)**:\n- **Independence (Fort Worth)**: Magnets delivered to General Motors for qualification; commercial EV shipments commence in Q4 2026. Fully contracted between GM and Apple.\n- **10X Facility (Northlake)**: 7,000 MT magnet capacity under construction for 2028 commissioning with a 10-year 100% DoD offtake agreement guaranteeing a minimum $140M/year EBITDA floor.\n\n**3. Sovereign Moat & Chinese Restrictions**:\n- China's MOFCOM export restrictions reinforce Western supply-chain urgency and premium pricing power for MP as the sole scaled Western producer.\n\n**4. Valuation & Position Guidance**:\n- **5-Year Valuation Target**: **$65.51 USD** (Base Target $46.62 / Bull Target $134.20).\n- **Action**: **INITIATE** on 200 EMA support at $55.38 (Starter Allocation: 2.00%).",
+      "fairValue": 65.51,
+      "action": "INITIATE",
+      "analyzedAt": "2026-08-25T14:41:00Z",
+      "researchReport": "MP_2026-08-25.md"
+    },
+    "globalSettings": {
+      "discountRate": 10.0,
+      "timeHorizon": 5
     }
-  },
-  "analyticsLog": {
-    "reverseDcf": {
-      "impliedGrowth": 59.4,
-      "impliedGrowthVsBaseCase": 14.4,
-      "verdict": "BETWEEN_BASE_AND_BULL"
-    },
-    "dataQualityFlags": [
-      "No anomalies detected; yfinance and SEC baseline synced."
-    ]
-  },
-  "source": "AI_AGENT",
-  "id": "MP-PROJ-20260820",
-  "savedAt": "2026-08-20T06:45:00Z",
-  "version": 1
-}
+  }
+]

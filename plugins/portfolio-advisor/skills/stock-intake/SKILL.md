@@ -66,9 +66,9 @@ allowed-tools: Bash, Read, Write
 
 ---
 
-### 🌐 Step 2 — Real-Time Grok News & Catalyst Ingestion (With Skip Fallback)
+### 🌐 Step 2 — Real-Time Grok News & Catalyst Ingestion (Proactive Prompt Output)
 
-Synthesize an initial 3-bullet briefing and provide a customized Grok prompt:
+Immediately generate and display a customized, ticker-specific Grok prompt in Step 1/Step 2 so the user can copy-paste it directly without having to ask for it:
 
 ```text
 Targeted Grok Sweep Prompt for {TICKER}:
@@ -130,12 +130,12 @@ Pull live metrics via `investment_screener/backend/py_services/fetch_financials.
 
 ---
 
-### 🛑 Step 6 — Pre-Persistence Confirmation Gate & Final Execution (Wizard Checkpoint D)
+### 🛑 Step 6 — Pre-Persistence Confirmation Gate & Comprehensive UI Surface Refresh
 
 Present the completed Executive Summary Card:
 
 ```
-🎯 [TICKER] Onboarding Plan Summary
+🎯 [TICKER] Onboarding / Refresh Plan Summary
 
 Pillar:          [Pillar Name] ([pillar_id])
 Role:            [WATCHLIST / CORE HOLDING] (Target Weight: [X.X]%)
@@ -161,15 +161,16 @@ DCF Scenarios:
 
 > **Final Confirmation Gate**:  
 > *"Does this plan look good to save to your dashboard and render on your TradingView chart?"*  
-> ➔ **Upon User "Yes" / "Confirm"**:
-> 1. **Record in Intelligence Ledger**:
+> ➔ **Upon User "Yes" / "Confirm" (Comprehensive Full-Surface Atomic Sync)**:
+> 1. **Update Valuation Modeler & DCF Projections**: Post updated full projection object with fresh `aiThesis`, `scenarios` (Bear/Base/Bull), `analyticsLog`, and current model author to `/api/projections` and `domain_model.sqlite` (`projection_version`).
+> 2. **Update Thesis & Target Weights**: Call `stock_intake_persist.py` to persist `target_weight`, `lifecycle_status`, `standing_decision_*`, `agent_rationale`, and `price_level_tier` records.
+> 3. **Record in Intelligence Event Ledger**:
 >    ```bash
 >    python3 plugins/portfolio-advisor/skills/stock-intake/scripts/record_intelligence_event.py \
 >      --ticker {TICKER} \
 >      --type THESIS_UPDATE \
->      --title "{TICKER} Initiated into {PILLAR_TITLE} Strategy Pillar (${FAIR_VALUE} DCF FV)" \
+>      --title "{TICKER} Intake/Refresh into {PILLAR_TITLE} Pillar (${FAIR_VALUE} DCF FV)" \
 >      --summary "{ONE_SENTENCE_THESIS_SUMMARY}" \
 >      --payload '{"pillar": "{PILLAR_ID}", "fair_value": {FAIR_VALUE}, "target_entry": {TARGET_ENTRY}, "rule_of_40": {RULE_40_SCORE}}'
 >    ```
-> 2. **Persist Domain Model & JSON Projections**: Save to `domain_model.sqlite` (`investment`, `investment_price`, `projection_version`, `price_level_tier`) and write `backend/data/projections/{TICKER}.json`.
-> 3. **Delegate TradingView Visual Sync**: Delegate chart level injection to the `/tv-pine-inject` / `/tv-thesis-overlay` skill.
+> 4. **Delegate TradingView Visual Sync**: Trigger `/tv-thesis-overlay` or `/tv-pine-inject` to update live price rays on TradingView Desktop.

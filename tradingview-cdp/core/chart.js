@@ -456,47 +456,103 @@ const CHART_TYPE_LABELS = {
  */
 export async function changeChartType(client, type) {
   /**
-   * Translates the chart type name into TV aria-label representation, clicks the layout
-   * button with matching label, or clicks Undo if candle style has no button.
+   * Robustly changes chart type by finding the direct toolbar button
+   * or opening the chart style dropdown.
    */
   try {
-    const key = String(type).trim().toLowerCase().replace(/\s+/g, '-');
-    const label = CHART_TYPE_LABELS[key] || String(type).trim();
-    const safeLabel = JSON.stringify(label);
+    const rawType = String(type).trim().toLowerCase();
+    let targetLabel = 'Candles';
+    if (rawType.includes('hollow')) targetLabel = 'Hollow candles';
+    else if (rawType.includes('vol')) targetLabel = 'Volume candles';
+    else if (rawType.includes('heikin') || rawType === 'ha') targetLabel = 'Heikin Ashi';
+    else if (rawType.includes('bar')) targetLabel = 'Bars';
+    else if (rawType.includes('line with') || rawType.includes('marker')) targetLabel = 'Line with markers';
+    else if (rawType.includes('step')) targetLabel = 'Step line';
+    else if (rawType.includes('line')) targetLabel = 'Line';
+    else if (rawType.includes('area')) targetLabel = 'Area';
+    else if (rawType.includes('hlc')) targetLabel = 'HLC area';
+    else if (rawType.includes('baseline')) targetLabel = 'Baseline';
+    else if (rawType.includes('column')) targetLabel = 'Columns';
+    else if (rawType.includes('high-low')) targetLabel = 'High-low';
+    else if (rawType.includes('footprint')) targetLabel = 'Volume footprint';
+    else if (rawType.includes('tpo') || rawType.includes('time price')) targetLabel = 'Time price opportunity';
+    else if (rawType.includes('svp') || rawType.includes('session volume')) targetLabel = 'Session volume profile';
+    else if (rawType.includes('renko')) targetLabel = 'Renko';
+    else if (rawType.includes('break')) targetLabel = 'Line break';
+    else if (rawType.includes('kagi')) targetLabel = 'Kagi';
+    else if (rawType.includes('point') || rawType.includes('pnf')) targetLabel = 'Point & figure';
+    else if (rawType.includes('range')) targetLabel = 'Range';
+    else if (rawType.includes('candle')) targetLabel = 'Candles';
 
-    // 'candle'/'candlestick': TV has no explicit button — revert via Undo
-    if (label === '__undo__') {
-      await client.Runtime.evaluate({
-        expression: `(function() {
-          var btn = document.querySelector('button[aria-label="Undo change series style"]') ||
-            [...document.querySelectorAll('button')].find(function(b) {
-              return b.offsetParent && (b.getAttribute('aria-label') || '').includes('Undo change series');
-            });
-          if (btn) btn.click();
-        })()`,
-        returnByValue: true, awaitPromise: false,
-      });
+    const safeTarget = JSON.stringify(targetLabel.toLowerCase());
+
+    // 1. Check if a toolbar button exists directly in the header (e.g. "Hollow candles", "Bars", "Renko", "Candles")
+    const directClick = await client.Runtime.evaluate({
+      expression: `(function() {
+        var target = ${safeTarget};
+        var buttons = [...document.querySelectorAll('button')].filter(b => b.offsetParent);
+        var match = buttons.find(function(b) {
+          var label = (b.getAttribute('aria-label') || '').toLowerCase();
+          var title = (b.title || '').toLowerCase();
+          return label === target || title === target || (target === 'candles' && (label === 'candles' || label === 'candlestick'));
+        });
+        if (match) {
+          match.click();
+          return JSON.stringify({ success: true, clicked: match.getAttribute('aria-label') || target });
+        }
+        return JSON.stringify({ success: false });
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    const directResult = JSON.parse(directClick.result.value);
+    if (directResult.success) {
       await new Promise(r => setTimeout(r, 500));
-      return { success: true, type: 'Candlestick (reverted)' };
+      return { success: true, type: targetLabel };
     }
 
-    const result = await client.Runtime.evaluate({
+    // 2. If not directly in toolbar or if switching to default Candles from non-standard style:
+    // Click the active series button in the toolbar (button with aria-label matching any chart type)
+    await client.Runtime.evaluate({
       expression: `(function() {
-        var label = ${safeLabel};
-        var btn = document.querySelector('button[aria-label="' + label + '"]') ||
-          [...document.querySelectorAll('button')].find(function(b) {
-            return b.offsetParent && (b.getAttribute('aria-label') || '').toLowerCase() === label.toLowerCase();
-          });
-        if (!btn) return JSON.stringify({ success: false, error: 'Chart type button not found: ' + label });
-        btn.click();
-        return JSON.stringify({ success: true, type: label });
+        var buttons = [...document.querySelectorAll('button')].filter(b => b.offsetParent);
+        var styleBtn = buttons.find(function(b) {
+          var label = (b.getAttribute('aria-label') || '').toLowerCase();
+          return label.includes('candles') || label.includes('bars') || label.includes('renko') || label.includes('heikin') || label.includes('line') || label.includes('area');
+        });
+        if (styleBtn) styleBtn.click();
+      })()`,
+      returnByValue: true, awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 500));
+
+    // 3. Find and click the target menu item
+    const menuClick = await client.Runtime.evaluate({
+      expression: `(function() {
+        var target = ${safeTarget};
+        var items = [...document.querySelectorAll('[role="menuitem"], [class*="item-"]')].filter(el => el.offsetParent);
+        var match = items.find(function(el) {
+          var text = el.textContent.trim().toLowerCase();
+          var label = (el.getAttribute('aria-label') || '').toLowerCase();
+          return text === target || label === target || (target === 'candles' && (text === 'candles' || label === 'candles'));
+        });
+        if (match) {
+          match.click();
+          return JSON.stringify({ success: true, text: match.textContent.trim() });
+        }
+        return JSON.stringify({ success: false });
       })()`,
       returnByValue: true, awaitPromise: false,
     });
 
-    const data = JSON.parse(result.result.value);
-    if (data.success) await new Promise(r => setTimeout(r, 500));
-    return data;
+    const data = JSON.parse(menuClick.result.value);
+    if (!data.success) {
+      await client.Input.dispatchKeyEvent({ type: 'rawKeyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+      await client.Input.dispatchKeyEvent({ type: 'keyUp', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 });
+      return { success: false, error: 'Could not find chart style option: ' + targetLabel };
+    }
+
+    await new Promise(r => setTimeout(r, 500));
+    return { success: true, type: targetLabel };
   } catch (e) {
     return { success: false, error: e.message };
   }

@@ -217,78 +217,89 @@ export async function injectPineScript(client, scriptContent) {
       awaitPromise: false,
     });
 
-    const injectData = JSON.parse(injectResult.result.value);
-    if (!injectData.success) throw new Error(injectData.error || 'Monaco injection failed');
-
-    // 4. Wait for TV to recompile, then click "Add to chart" OR "Update on chart".
-    //    New/blank tabs show "Add to chart"; user-owned tabs that had a prior script
-    //    show "Update on chart". Both mean "put this script on the chart now".
-    await new Promise(r => setTimeout(r, 1200));
-    const clickResult = await client.Runtime.evaluate({
+    // 4. Click Save in toolbar (ensures script is compiled and saved in user library)
+    await client.Runtime.evaluate({
       expression: `(function() {
-        var btn = [...document.querySelectorAll('button')].find(function(b) {
+        var btns = [...document.querySelectorAll('button')];
+        var saveBtn = btns.find(function(b) {
+          return b.offsetParent && (b.textContent.trim().toLowerCase().startsWith('save') || (b.title && b.title.toLowerCase().includes('save')));
+        });
+        if (saveBtn) {
+          saveBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+          saveBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+          saveBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+        }
+      })()`,
+      returnByValue: true,
+      awaitPromise: false,
+    });
+    await new Promise(r => setTimeout(r, 1200));
+
+    // 5. Click "Add to chart" / "Update on chart"
+    await client.Runtime.evaluate({
+      expression: `(function() {
+        var btns = [...document.querySelectorAll('button')];
+        var addBtn = btns.find(function(b) {
           return b.offsetParent && /(?:add|update).*(?:to|on).*chart/i.test(b.textContent + b.title);
         });
-        if (btn) { btn.click(); return JSON.stringify({ clicked: true, text: btn.textContent.trim() }); }
-        return JSON.stringify({ clicked: false });
+        if (addBtn) {
+          addBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+          addBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+          addBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+        }
       })()`,
       returnByValue: true,
       awaitPromise: false,
     });
-    const clickData = JSON.parse(clickResult.result.value);
-    if (!clickData.clicked) {
-      // Fallback: try title-based match
-      await client.Runtime.evaluate({
-        expression: `(function() {
-          var btn = document.querySelector('[title="Update on chart"], [title="Add to chart"]');
-          if (btn && btn.offsetParent) btn.click();
-        })()`,
-        returnByValue: true,
-        awaitPromise: false,
-      });
-    }
+    await new Promise(r => setTimeout(r, 1000));
 
-    // 4.5. Handle "Cannot add a script with unsaved changes to chart" save modal.
-    //      Appears when a user-owned tab already has prior unsaved content.
-    //      Click "Save and add to chart" to save the new script and add it.
-    await new Promise(r => setTimeout(r, 700));
+    // 5.1 If a "Save this script before adding?" confirmation modal popped up, confirm it
     await client.Runtime.evaluate({
       expression: `(function() {
-        // Primary: "Save and add to chart" button
-        var confirmBtn = [...document.querySelectorAll('button')].find(function(b) {
-          return b.offsetParent && /save.*and.*add|save.*chart/i.test(b.textContent);
-        });
-        if (confirmBtn) { confirmBtn.click(); return; }
-        // Fallback: any visible dialog with a Save/OK button
         var modal = [...document.querySelectorAll('[class*="dialog"], [role="dialog"]')]
           .find(function(m) { return m.offsetParent; });
-        if (!modal) return;
-        var saveBtn = [...modal.querySelectorAll('button')].find(function(b) {
-          var t = b.textContent.trim().toLowerCase();
-          return t.includes('save') || t === 'ok';
-        });
-        if (saveBtn) saveBtn.click();
+        if (modal) {
+          var saveBtn = [...modal.querySelectorAll('button')].find(function(b) {
+            var t = b.textContent.trim().toLowerCase();
+            return b.offsetParent && (t === 'save' || t.includes('save and add') || t === 'ok');
+          });
+          if (saveBtn) {
+            saveBtn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+            saveBtn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+            saveBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+          }
+        }
       })()`,
       returnByValue: true,
       awaitPromise: false,
     });
 
-    // 5. Wait for indicator to load onto chart
-    await new Promise(r => setTimeout(r, 1200));
+    // 6. Wait for compilation & chart rendering
+    await new Promise(r => setTimeout(r, 2000));
 
-    // 6. Close Pine Editor panel after adding to chart (clean workspace view)
+    // 7. Strict Cleanup & Dismissal: Close Pine Editor panel and dismiss any open modals/dialogs
     await client.Runtime.evaluate({
       expression: `(function() {
-        var closeButtons = [...document.querySelectorAll('button[title="Close"], button[aria-label="Close"], button[data-name="close"]')];
-        closeButtons.forEach(function(btn) {
-          if (!btn.offsetParent) return;
-          btn.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
-          btn.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
-          btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+        // Close Pine Editor top right close button
+        var pineClose = [...document.querySelectorAll('button[title="Close"], button[aria-label="Close"], button[data-name="close"]')]
+          .find(function(b) { return b.offsetParent && b.closest('[class*="pine"], [class*="dialog-"], [class*="editorBaseLayout"]'); });
+        if (pineClose) {
+          pineClose.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+          pineClose.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+          pineClose.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+        } else {
+          var bottomPine = document.querySelector('[data-name="pine-dialog-button"]');
+          if (bottomPine && bottomPine.getAttribute('aria-pressed') === 'true') bottomPine.click();
+        }
+
+        // Close any lingering dialogs (Indicators search modal, alerts, etc.)
+        var dialogClose = [...document.querySelectorAll('[data-name="indicators-dialog"] button[data-name="close"], [data-name="close"]')];
+        dialogClose.forEach(function(b) {
+          if (b.offsetParent) b.click();
         });
-        // Bottom toggle fallback
-        var bottomBtn = document.querySelector('[data-name="pine-dialog-button"]');
-        if (bottomBtn) bottomBtn.click();
+
+        // Dispatch Escape key to clear any active popovers
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true }));
       })()`,
       returnByValue: true,
       awaitPromise: false,

@@ -32,7 +32,7 @@ python3 plugins/tradingview/scripts/tv_list_alerts.py
 ## Output Location
 
 The list is persisted directly to the web app backend database folder at:
-*   [tradingview_alerts_actual.json](file:///Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/backend/data/tradingview_alerts_actual.json)
+*   [tradingview_alerts_actual.json](investment_screener/backend/data/tradingview_alerts_actual.json)
 
 ---
 

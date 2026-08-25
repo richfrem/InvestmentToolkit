@@ -212,6 +212,19 @@ export class InvestmentRepository {
         return investmentId;
     }
 
+    /** Return the total shares held across all accounts for a symbol. */
+    getSharesHeld(symbol: string): number {
+        const row = this.db
+            .prepare(
+                `SELECT SUM(ai.quantity) as total_shares
+                 FROM account_investment ai
+                 JOIN investment i ON ai.investment_id = i.investment_id
+                 WHERE i.symbol = ?`
+            )
+            .get(symbol) as { total_shares: number | null } | undefined;
+        return row?.total_shares ?? 0;
+    }
+
     /** Mirrors `investment_repository.py::get_investment`, looked up by symbol
      * (the caller-facing key everywhere else in this codebase uses `ticker`,
      * never the internal `investment_id`). */

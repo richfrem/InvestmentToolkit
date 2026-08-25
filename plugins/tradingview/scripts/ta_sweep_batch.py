@@ -56,6 +56,7 @@ from domain_model.projection_repository import (  # noqa: E402
     get_latest_projection,
     get_projection_scenarios,
 )
+from domain_model.price_level_repository import get_price_levels  # noqa: E402
 
 
 # ── Data loaders ───────────────────────────────────────────────────────────────
@@ -164,6 +165,68 @@ def run_sweep(tickers: list[str], delay_ms: int = 1500) -> list[dict[str, Any]]:
         return json.loads(result.stdout)
     except json.JSONDecodeError as exc:
         raise RuntimeError(f"JSON parse error: {exc}\nOutput: {result.stdout[:400]}") from exc
+
+
+def load_levels(ticker: str, db_path: Path | None = None) -> dict[str, Any] | None:
+    """Load execution price levels (Buy Tiers, Trim Tiers, Target Entry, Stop Loss) from domain_model.sqlite."""
+    conn = initialize_db(str(db_path or DB_PATH))
+    try:
+        row = conn.execute(
+            "SELECT investment_id FROM investment WHERE symbol = ?;", (ticker,)
+        ).fetchone()
+        if row is None:
+            return None
+        return get_price_levels(conn, row[0])
+    finally:
+        conn.close()
+
+
+def add_price_level_alerts(result: dict[str, Any], levels: dict[str, Any] | None) -> None:
+    """Check proximity to chart lines (Target Buy, Trims, Stop Loss) and attach HITL reminders."""
+    if not levels:
+        return
+    price = result.get("close")
+    if not price:
+        return
+
+    flags = result.setdefault("flags", [])
+    hitl_reminders = result.setdefault("hitl_reminders", [])
+
+    # Check Target Entry & Buy Tiers
+    target_entry = levels.get("target_entry")
+    if target_entry and target_entry.get("price"):
+        te_price = float(target_entry["price"])
+        if price <= te_price:
+            flags.append("AT_TARGET_ENTRY")
+            hitl_reminders.append(f"🟢 AT BUY TARGET: ${price:.2f} reached target entry line (${te_price:.2f}). Consider manual ADD order in broker.")
+        elif price <= te_price * 1.03:
+            flags.append("NEAR_TARGET_ENTRY")
+            hitl_reminders.append(f"🟡 NEAR BUY TARGET: ${price:.2f} within 3% of target entry line (${te_price:.2f}). Prepare manual limit buy.")
+
+    for bt in levels.get("buy_tiers", []):
+        bp = float(bt["price"]) if bt.get("price") else None
+        if bp and price <= bp:
+            flags.append("AT_BUY_TIER")
+            hitl_reminders.append(f"🟢 AT BUY TIER {bt.get('tier_number', '')}: ${price:.2f} <= ${bp:.2f}. Manual execution candidate.")
+
+    # Check Trim / Sell Tiers
+    for st in levels.get("sell_tiers", []):
+        sp = float(st["price"]) if st.get("price") else None
+        trim_pct = st.get("trim_pct") or 25
+        if sp and price >= sp:
+            flags.append("AT_TRIM_TARGET")
+            hitl_reminders.append(f"🟠 AT TRIM LINE: ${price:.2f} reached sell target (${sp:.2f}). Recommended HITL action: trim {trim_pct}% manually in broker.")
+        elif sp and price >= sp * 0.97:
+            flags.append("NEAR_TRIM_TARGET")
+            hitl_reminders.append(f"🟡 NEAR TRIM LINE: ${price:.2f} within 3% of sell target (${sp:.2f}). Watch closely for manual exit/trim.")
+
+    # Check Stop Loss / Breaker
+    stop = levels.get("stop_loss")
+    if stop and stop.get("price"):
+        stop_price = float(stop["price"])
+        if price <= stop_price:
+            flags.append("STOP_LOSS_BREACHED")
+            hitl_reminders.append(f"🚨 STOP LOSS BREACHED: ${price:.2f} fell below stop level (${stop_price:.2f})! Review position for manual defense/exit.")
 
 
 # ── Enrichment ─────────────────────────────────────────────────────────────────
@@ -298,8 +361,9 @@ def enrich_results(
     scan_results: list[dict[str, Any]],
     target_map: dict[str, dict[str, Any]],
     dcf_loader: Any = None,
+    levels_loader: Any = None,
 ) -> list[dict[str, Any]]:
-    """Apply DCF flags, ADX validation, and action derivation to sweep rows.
+    """Apply DCF flags, visual price level reminders, ADX validation, and action derivation to sweep rows.
 
     validate_adx returns a shallow copy when it nulls an out-of-range ADX —
     all enrichment must be applied to (and returned from) that copy, otherwise
@@ -310,17 +374,21 @@ def enrich_results(
         scan_results: Raw per-ticker rows from sweep.js.
         target_map:   target-portfolio holdings keyed by ticker.
         dcf_loader:   Callable ticker → DCF dict or None (defaults to load_dcf).
+        levels_loader: Callable ticker → price levels dict or None (defaults to load_levels).
 
     Returns:
         New list of fully enriched rows.
     """
     if dcf_loader is None:
         dcf_loader = load_dcf
+    if levels_loader is None:
+        levels_loader = load_levels
     enriched: list[dict[str, Any]] = []
     for res in scan_results:
         ticker = res["ticker"]
         target = target_map.get(ticker)
         add_dcf_flags(res, dcf_loader(ticker))
+        add_price_level_alerts(res, levels_loader(ticker))
         res = validate_adx(res)
         res["action"]       = derive_action(res, target)
         res["targetAction"] = (target or {}).get("action")
