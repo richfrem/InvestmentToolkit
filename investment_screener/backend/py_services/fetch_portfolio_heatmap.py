@@ -46,6 +46,45 @@ from sector_overrides import SECTOR_OVERRIDES
 from ticker_aliases import normalize_ticker
 
 
+def extract_earnings_info(info: dict) -> dict | None:
+    """Extract and calculate upcoming earnings date and days-to-earnings from yfinance info."""
+    ts = info.get("earningsTimestamp") or info.get("earningsTimestampStart")
+    if not ts and "calendar" in info and isinstance(info["calendar"], dict):
+        cal_dates = info["calendar"].get("Earnings Date")
+        if cal_dates and len(cal_dates) > 0:
+            d = cal_dates[0]
+            if hasattr(d, "strftime"):
+                date_str = d.strftime("%Y-%m-%d")
+            else:
+                date_str = str(d)
+            try:
+                target_dt = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                now_dt = datetime.now(timezone.utc)
+                days = (target_dt.date() - now_dt.date()).days
+                return {
+                    "earningsDate": date_str,
+                    "earningsTimestamp": int(target_dt.timestamp()),
+                    "daysToEarnings": days,
+                }
+            except Exception:
+                return {"earningsDate": date_str, "earningsTimestamp": None, "daysToEarnings": None}
+
+    if ts:
+        try:
+            target_dt = datetime.fromtimestamp(ts, tz=timezone.utc)
+            date_str = target_dt.strftime("%Y-%m-%d")
+            now_dt = datetime.now(timezone.utc)
+            days = (target_dt.date() - now_dt.date()).days
+            return {
+                "earningsDate": date_str,
+                "earningsTimestamp": ts,
+                "daysToEarnings": days,
+            }
+        except Exception:
+            pass
+    return None
+
+
 class _NpEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, np.integer):
@@ -285,6 +324,8 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
                 else None
             )
 
+            earnings_info = extract_earnings_info(info) if sym != "USD_CASH" else None
+
             stock_data = {
                 "symbol": sym,
                 "name": name,
@@ -303,6 +344,8 @@ def fetch_portfolio_data(items: list, bust_cache: bool = False) -> dict:
                 "change_ytd": hist_changes.get("change_ytd"),
                 "change_1y": hist_changes.get("change_1y"),
                 "change_overall": change_overall,
+                "earnings_date": earnings_info.get("earningsDate") if earnings_info else None,
+                "days_to_earnings": earnings_info.get("daysToEarnings") if earnings_info else None,
             }
 
             result["stocks"].append(stock_data)
