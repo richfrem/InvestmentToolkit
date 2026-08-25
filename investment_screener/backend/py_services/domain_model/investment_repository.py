@@ -48,7 +48,7 @@ _UPDATABLE_FIELDS = {
     "standing_decision_source", "standing_decision_review",
     "pillar_id", "sub_strategy_id", "thesis_for_inclusion",
     "agent_rationale", "is_watchlisted", "watchlist_added_at",
-    "thesis_breaker_status", "sector", "industry",
+    "thesis_breaker_status", "sector", "industry", "last_deep_analysis_at",
 }
 
 

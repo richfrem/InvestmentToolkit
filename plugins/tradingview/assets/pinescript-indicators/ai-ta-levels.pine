@@ -35,20 +35,16 @@ e_fast = ta.ema(close, ema_fast)
 e_mid  = ta.ema(close, ema_mid)
 e_slow = ta.ema(close, ema_slow)
 
-// ── Dynamic Level Sanity Guards & Auto-Derivation ───────────────────────────
-// Guard against cross-ticker level contamination (e.g. plotting $85 levels on a $35 stock).
-// A level is valid only if it is within a plausible range (0.2x to 5.0x of active price).
+// ── Dynamic Level Calculation ───────────────────────────────────────────────
+// When inputs are 0.0 or plausible, calculate clean target levels.
+// These are rendered strictly as clean horizontal lines on the chart rather than historical wavy plots.
 is_plausible(lvl) => lvl > 0 and lvl >= (close * 0.2) and lvl <= (close * 5.0)
 
-// Dynamic baseline: Use explicit Fair Value if set, otherwise auto-anchor to current price & ATR
 valid_fair  = is_plausible(target_fair) ? target_fair : na
 base_anchor = not na(valid_fair) ? valid_fair : close
 
-// Trim targets: If explicit inputs are 0.0, dynamically render +15% and +30% profit-taking targets
 valid_trim2 = is_plausible(target_trim2) ? target_trim2 : (base_anchor * 1.30)
 valid_trim1 = is_plausible(target_trim1) ? target_trim1 : (base_anchor * 1.15)
-
-// Buy targets: If explicit inputs are 0.0, dynamically render Buy Tier 1 (-10%), Primary Buy (200 EMA or -15%), and Stop Loss (-20% or 3x ATR)
 valid_buy1  = is_plausible(target_buy1) and target_buy1 < close ? target_buy1 : (close * 0.90)
 valid_buy   = is_plausible(target_buy) and target_buy < close ? target_buy : (e_slow < close ? e_slow : close * 0.85)
 valid_stop  = is_plausible(target_stop) and target_stop < close ? target_stop : (valid_buy * 0.92)
@@ -68,32 +64,24 @@ atr_val = ta.atr(atr_len)
 // ── Previous Day High / Low ──────────────────────────────────────────────────
 [prev_day_high, prev_day_low] = request.security(syminfo.tickerid, "D", [high[1], low[1]], lookahead=barmerge.lookahead_on)
 
-// ── Overlay Plots ────────────────────────────────────────────────────────────
+// ── Historical Overlay Plots (EMA Stack & Daily High/Low Only) ───────────────
 plot(e_fast, "EMA 21",  color=color.new(color.yellow, 10), linewidth=1)
 plot(e_mid,  "EMA 50",  color=color.new(color.blue, 10),   linewidth=2)
 plot(e_slow, "EMA 200", color=color.new(color.white, 10),  linewidth=2)
 
-// Previous Day High / Low Lines
+// Previous Day High / Low Lines (Step line)
 plot(show_pd_levels ? prev_day_high : na, "Prev Day High", color=color.new(color.green, 50), linewidth=1, style=plot.style_stepline)
 plot(show_pd_levels ? prev_day_low  : na, "Prev Day Low",  color=color.new(color.red, 50),   linewidth=1, style=plot.style_stepline)
 
-// ── Target Level Plots (Horizontal Lines with Price Scale Tags) ──────────────
-plot(show_custom and not na(valid_fair)  ? valid_fair  : na, "DCF Fair Value",    color=color.new(color.purple, 20), linewidth=2, style=plot.style_linebr)
-plot(show_custom and not na(valid_trim2) ? valid_trim2 : na, "Trim Target 2",     color=color.new(color.orange, 30), linewidth=1, style=plot.style_linebr)
-plot(show_custom and not na(valid_trim1) ? valid_trim1 : na, "Trim Target 1",     color=color.new(color.yellow, 30), linewidth=1, style=plot.style_linebr)
-plot(show_custom and not na(valid_buy1)  ? valid_buy1  : na, "Buy Tier 1",        color=color.new(color.lime, 30),   linewidth=1, style=plot.style_linebr)
-plot(show_custom and not na(valid_buy)   ? valid_buy   : na, "Target Buy / 200 EMA", color=color.new(color.aqua, 20), linewidth=2, style=plot.style_linebr)
-plot(show_custom and not na(valid_stop)  ? valid_stop  : na, "Stop Loss",         color=color.new(color.red, 20),    linewidth=2, style=plot.style_linebr)
-
-// ── Custom Horizontal Target Lines & Right-Aligned Badges ───────────────────
-var line line_fair = na
+// ── Clean Straight Horizontal Target Lines & Right-Aligned Badges ────────────
+var line line_fair  = na
 var line line_trim2 = na
 var line line_trim1 = na
 var line line_buy1  = na
 var line line_buy   = na
 var line line_stop  = na
 
-var label lbl_fair = na
+var label lbl_fair  = na
 var label lbl_trim2 = na
 var label lbl_trim1 = na
 var label lbl_buy1  = na
@@ -116,28 +104,28 @@ if show_custom and barstate.islast
     label.delete(lbl_stop)
 
     if not na(valid_fair)
-        line_fair := line.new(bar_index - 100, valid_fair, bar_index + 10, valid_fair, extend=extend.both, color=color.purple, width=2, style=line.style_solid)
-        lbl_fair  := label.new(bar_index + 10, valid_fair, "💎 DCF Fair Value: $" + str.tostring(valid_fair, "#.##"), color=color.new(color.purple, 90), textcolor=color.purple, style=label.style_label_left, size=size.small)
+        line_fair := line.new(bar_index - 80, valid_fair, bar_index + 12, valid_fair, extend=extend.both, color=color.purple, width=2, style=line.style_solid)
+        lbl_fair  := label.new(bar_index + 12, valid_fair, "💎 DCF Fair Value: $" + str.tostring(valid_fair, "#.##"), color=color.new(color.purple, 20), textcolor=color.white, style=label.style_label_left, size=size.small)
 
     if not na(valid_trim2)
-        line_trim2 := line.new(bar_index - 100, valid_trim2, bar_index + 10, valid_trim2, extend=extend.both, color=color.orange, width=1, style=line.style_dashed)
-        lbl_trim2  := label.new(bar_index + 10, valid_trim2, "🟠 Trim 2: $" + str.tostring(valid_trim2, "#.##"), color=color.new(color.orange, 90), textcolor=color.orange, style=label.style_label_left, size=size.small)
+        line_trim2 := line.new(bar_index - 80, valid_trim2, bar_index + 12, valid_trim2, extend=extend.both, color=color.orange, width=1, style=line.style_dashed)
+        lbl_trim2  := label.new(bar_index + 12, valid_trim2, "🟠 Trim 2: $" + str.tostring(valid_trim2, "#.##"), color=color.new(color.orange, 20), textcolor=color.white, style=label.style_label_left, size=size.small)
 
     if not na(valid_trim1)
-        line_trim1 := line.new(bar_index - 100, valid_trim1, bar_index + 10, valid_trim1, extend=extend.both, color=color.yellow, width=1, style=line.style_dashed)
-        lbl_trim1  := label.new(bar_index + 10, valid_trim1, "🟡 Trim 1: $" + str.tostring(valid_trim1, "#.##"), color=color.new(color.yellow, 90), textcolor=color.yellow, style=label.style_label_left, size=size.small)
+        line_trim1 := line.new(bar_index - 80, valid_trim1, bar_index + 12, valid_trim1, extend=extend.both, color=color.yellow, width=1, style=line.style_dashed)
+        lbl_trim1  := label.new(bar_index + 12, valid_trim1, "🟡 Trim 1: $" + str.tostring(valid_trim1, "#.##"), color=color.new(#d4af37, 10), textcolor=color.black, style=label.style_label_left, size=size.small)
 
     if not na(valid_buy1)
-        line_buy1 := line.new(bar_index - 100, valid_buy1, bar_index + 10, valid_buy1, extend=extend.both, color=color.lime, width=1, style=line.style_solid)
-        lbl_buy1  := label.new(bar_index + 10, valid_buy1, "🟢 Buy Tier 1: $" + str.tostring(valid_buy1, "#.##"), color=color.new(color.green, 90), textcolor=color.lime, style=label.style_label_left, size=size.small)
+        line_buy1 := line.new(bar_index - 80, valid_buy1, bar_index + 12, valid_buy1, extend=extend.both, color=color.lime, width=1, style=line.style_solid)
+        lbl_buy1  := label.new(bar_index + 12, valid_buy1, "🟢 Buy Tier 1: $" + str.tostring(valid_buy1, "#.##"), color=color.new(color.green, 20), textcolor=color.white, style=label.style_label_left, size=size.small)
 
     if not na(valid_buy)
-        line_buy  := line.new(bar_index - 100, valid_buy, bar_index + 10, valid_buy, extend=extend.both, color=color.aqua, width=2, style=line.style_solid)
-        lbl_buy   := label.new(bar_index + 10, valid_buy, "💎 Primary Buy / 200 EMA: $" + str.tostring(valid_buy, "#.##"), color=color.new(color.teal, 90), textcolor=color.aqua, style=label.style_label_left, size=size.small)
+        line_buy  := line.new(bar_index - 80, valid_buy, bar_index + 12, valid_buy, extend=extend.both, color=color.aqua, width=2, style=line.style_solid)
+        lbl_buy   := label.new(bar_index + 12, valid_buy, "💎 Primary Buy: $" + str.tostring(valid_buy, "#.##"), color=color.new(color.teal, 20), textcolor=color.white, style=label.style_label_left, size=size.small)
 
     if not na(valid_stop)
-        line_stop := line.new(bar_index - 100, valid_stop, bar_index + 10, valid_stop, extend=extend.both, color=color.red, width=2, style=line.style_dashed)
-        lbl_stop  := label.new(bar_index + 10, valid_stop, "🛑 Stop Loss: $" + str.tostring(valid_stop, "#.##"), color=color.new(color.maroon, 90), textcolor=color.red, style=label.style_label_left, size=size.small)
+        line_stop := line.new(bar_index - 80, valid_stop, bar_index + 12, valid_stop, extend=extend.both, color=color.red, width=2, style=line.style_dashed)
+        lbl_stop  := label.new(bar_index + 12, valid_stop, "🛑 Stop Loss: $" + str.tostring(valid_stop, "#.##"), color=color.new(color.maroon, 20), textcolor=color.white, style=label.style_label_left, size=size.small)
 
 // ── Silent Data Window Exports (AI CDP Telemetry) ────────────────────────────
 plot(bias_pct, "Vol Bias %",     display=display.data_window, color=color.new(color.aqua, 0))

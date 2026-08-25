@@ -164,16 +164,9 @@ SCHEMA_EVOLUTIONS: dict[str, list[tuple[str, str]]] = {
     "investment": [
         ("sector", "TEXT"),
         ("industry", "TEXT"),
+        ("last_deep_analysis_at", "TEXT"),
     ],
     "trade_log_entry": [
-        # Wave 4 Task 11 finding: trading.ts's /modify, /cancel, and
-        # /log/sync-from-tv routes match live TV orders against a logged
-        # entry's tvOrderId -- dropping this field (as the original DDL
-        # did, matching JSON source fields with no column) would silently
-        # break that reconciliation for every entry logged after cutover.
-        # Added here rather than in the original CREATE TABLE so the
-        # already-migrated real file (Task 7) self-heals via ALTER TABLE
-        # instead of requiring a second migration run.
         ("tv_order_id", "TEXT"),
     ],
 }
@@ -259,6 +252,7 @@ def initialize_db(db_path: str) -> sqlite3.Connection:
         latest_projection_id        TEXT REFERENCES projection_version(projection_id),
         latest_research_event_id    TEXT,
         thesis_breaker_status       TEXT,
+        last_deep_analysis_at       TEXT,
         updated_at                  TEXT NOT NULL,
         UNIQUE(symbol)
     );

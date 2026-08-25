@@ -852,6 +852,30 @@
       "dst": "plugins/portfolio-advisor/skills/daily-loop/scripts/verify_portfolio_invariants.py",
       "strategy": "symlink",
       "description": "Portfolio invariants sentinel tool for daily-loop"
+    },
+    {
+      "src": "plugins/tradingview/references/chart-types-reference.md",
+      "dst": "plugins/tradingview/skills/tv-change-type/references/chart-types-reference.md",
+      "strategy": "symlink",
+      "description": "File-level symlink for TradingView chart types reference guide"
+    },
+    {
+      "src": "docs/architecture/stock-analysis-surface-checklist.md",
+      "dst": "plugins/portfolio-advisor/skills/stock-intake/references/stock-analysis-surface-checklist.md",
+      "strategy": "symlink",
+      "description": "Checklist mapping of all 5 UI surfaces to deterministic scripts"
+    },
+    {
+      "src": "docs/architecture/stock-analysis-surface-checklist.md",
+      "dst": "plugins/stock-valuation/skills/stock_valuation/references/stock-analysis-surface-checklist.md",
+      "strategy": "symlink",
+      "description": "Checklist mapping of all 5 UI surfaces to deterministic scripts"
+    },
+    {
+      "src": "docs/architecture/ADRs/031-five-surface-sync-engine.md",
+      "dst": "plugins/stock-valuation/references/ADR-031-five-surface-sync-engine.md",
+      "strategy": "symlink",
+      "description": "ADR-031 5-surface synchronization architecture"
     }
   ]
 }

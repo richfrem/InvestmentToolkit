@@ -53,5 +53,9 @@ On failure: the button with that aria-label wasn't visible. Check that no dialog
 ## Notes
 
 - After changing chart type, call `chart saveLayout --name agent-layout` to persist the change.
-- Heikin Ashi smooths price action and is useful for trend-following analysis.
-- Renko and Kagi filter out noise but require the chart to be in the right timeframe context.
+- **Recommended Default**: Standard **Solid Candlesticks** (`candle`) on Daily (`1D`) or `4h` timeframe provides the cleanest visual baseline for multi-EMA ribbons and horizontal DCF/tier badges.
+- **Heikin Ashi** (`heikin-ashi`): Smooths price action and is useful for trend-following sweeps to evaluate EMA slope alignment.
+- **Volume Footprint** (`volume-candle`): Best suited for dedicated intraday order flow / bid-ask microstructure analysis.
+- **Renko / Kagi**: Filter out noise and focus purely on price breakout thresholds, removing the time dimension.
+- **Full Reference**: For in-depth comparison of all chart styles, indicator readability, and CDP automation notes, see [chart-types-reference.md](references/chart-types-reference.md).
+

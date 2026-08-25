@@ -224,7 +224,7 @@ Plugins are self-contained. To link or reinstall them into your local agent envi
 **1. Install Project-Specific Plugins (Local):**
 
 ```bash
-uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add /Users/richardfremmerlid/Projects/InvestmentToolkit/plugins
+uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add plugins
 
 ```
 

@@ -130,8 +130,9 @@ router.get('/stock/:ticker/technical-analysis', async (req, res) => {
             const projRepo = new (await import('../services/ProjectionRepository')).ProjectionRepository(DOMAIN_MODEL_DB_FILE);
             try {
                 const inv = repo.getInvestment(cleanSym);
+                const sharesHeld = repo.getSharesHeld(cleanSym);
                 if (inv) {
-                    holdingInfo.isHolding = (inv.target_weight || 0) > 0;
+                    holdingInfo.isHolding = sharesHeld > 0;
                     holdingInfo.targetWeight = inv.target_weight ?? null;
                     holdingInfo.actualWeight = null;
                     holdingInfo.role = inv.lifecycle_status ?? null;

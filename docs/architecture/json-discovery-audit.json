@@ -91619,7 +91619,7 @@
       "line": 56,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "All core files (`portfolio.json`, `target-portfolio.json`, projections, etc.) are validated at both the route and database layers against schemas defined in [`zod-schemas.ts`](file:///Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/backend/src/utils/zod-schemas.ts). This ensures type safety and structure consistency across the TypeScript API and Python sub-processes."
+      "line_text": "All core files (`portfolio.json`, `target-portfolio.json`, projections, etc.) are validated at both the route and database layers against schemas defined in [`zod-schemas.ts`](file://investment_screener/backend/src/utils/zod-schemas.ts). This ensures type safety and structure consistency across the TypeScript API and Python sub-processes."
     },
     {
       "referencing_file": "investment_screener/backend/data/research/CEG_2026-05-02.md",
@@ -106011,7 +106011,7 @@
       "line": 35,
       "matched_text": ".json",
       "operation": "mention",
-      "line_text": "*   [tradingview_alerts_actual.json](file:///Users/richardfremmerlid/Projects/InvestmentToolkit/investment_screener/backend/data/tradingview_alerts_actual.json)"
+      "line_text": "*   [tradingview_alerts_actual.json](file://investment_screener/backend/data/tradingview_alerts_actual.json)"
     },
     {
       "referencing_file": "plugins/tradingview/skills/ta-daily-sweep/SKILL.md",

@@ -380,12 +380,16 @@ cat > temp/evaluations/{TICKER}_projection.json << 'EOF'
 <JSON_PAYLOAD>
 EOF
 
-# Persist via REST API (persist_projection.py does not exist — use the API)
+# Persist via REST API & Canonical Persistence Tool
 API_TOKEN=$(cat .runtime/api-token)
 curl -s -X POST http://localhost:3001/api/projections \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $API_TOKEN" \
   -d @temp/evaluations/{TICKER}_projection.json
+
+# Update Domain Model & Price Level Tiers atomically (Comprehensive 5-Surface Sync)
+python3 investment_screener/backend/py_services/stock_intake_persist.py \
+  --file temp/evaluations/{TICKER}_intake_payload.json
 ```
 - Success response: `{"success":true,"message":"Projection saved successfully"}`
 - If 409 conflict → increment `version` field and retry once
@@ -463,12 +467,13 @@ Remain in analyst mode. Handle:
 
 ---
 
-## Step 10: Target Portfolio and Thesis Sync Gate
-After completing any valuation and saving the projection, run the automated synchronization verification suite to ensure that target-portfolio.json, the investment_thesis.md, and all active projections are in perfect alignment.
-```bash
-python3 investment_screener/backend/py_services/verify_thesis_sync.py
-```
-If this check fails, resolve any missing ticker entries, mismatched weights, or missing projection JSON files before concluding the session.
+## Step 10: 5-Surface UI Synchronization & Verification Gate
+After completing any valuation and saving the projection, verify that all 5 UI surfaces defined in `docs/architecture/stock-analysis-surface-checklist.md` have been updated cleanly:
+1. **Overview & Strategy**: `domain_model.sqlite` (`investment`)
+2. **Technicals**: `intelligence.sqlite` & `domain_model.sqlite` (`price_level_tier`)
+3. **Valuation Modeler**: `/api/projections` & `data/projections/{TICKER}.json`
+4. **Research Deep-Dive**: `intelligence_event` / `data/research/{TICKER}_{DATE}.md`
+5. **TradingView Overlay**: Run `/tv-thesis-overlay {TICKER}` to refresh chart price rays.
 
 ---
 
