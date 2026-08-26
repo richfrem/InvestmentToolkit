@@ -38,8 +38,11 @@ from datetime import datetime, timezone
 from typing import Optional, Any
 
 # ── path bootstrap ──────────────────────────────────────────────────────────
+# _HERE resolves through the skills/questrade-sync-portfolio/scripts/ symlink
+# to this canonical file at plugins/questrade/scripts/ — parents[2] from there
+# is repo root (parents[1] was plugins/, which silently broke every import).
 _HERE = Path(__file__).resolve().parent
-_REPO_ROOT = _HERE.parents[1]
+_REPO_ROOT = _HERE.parents[2]
 _PY_SERVICES = _REPO_ROOT / "investment_screener/backend/py_services"
 sys.path.insert(0, str(_PY_SERVICES))
 
