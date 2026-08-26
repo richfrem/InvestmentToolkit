@@ -15,8 +15,9 @@ Directly queries the Questrade MCP `Get Positions` (and `List Accounts`) tool to
 2. If unauthenticated, prompt user to run `/questrade:questrade-setup` (`/mcp` -> `questrade` -> `Log in`).
 
 ## Discovered Schema & API Behavior
-- **Native Fields**: The `Get Positions` response exposes: `symbol`, `qty` (or `openQuantity`), and `avgPrice` (cost basis).
-- **Price Augmentation**: `Get Positions` does *not* embed real-time current market price or unrealized P&L per row. For live mark-to-market prices, agents should use our fast TradingView CDP quotes or batch call Questrade `Get Quotes` if explicitly requested.
+- **Native Fields**: The `Get Positions` response is an array of `{id, instrument, qty, side, avgPrice}`. The symbol lives in `instrument`, not `symbol`. `side` is `"buy"` or `"sell"`. `qty` supports fractional shares (e.g. `0.4`).
+- **Price Augmentation**: `Get Positions` does *not* embed real-time current market price, market value, or unrealized P&L per row — only quantity and average cost. For live mark-to-market prices, agents should use our fast TradingView CDP quotes or batch call Questrade `Get Quotes` if explicitly requested.
+- **Empty accounts**: Accounts with no holdings (e.g. a cash-only account) return `[]`, not an error.
 
 ## Workflow
 
