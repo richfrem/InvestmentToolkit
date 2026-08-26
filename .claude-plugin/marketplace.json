@@ -35,6 +35,12 @@
             "description": "TradingView Desktop integration via CDP. Skills: /tv-portfolio-sync, /tv-indicators, /tv-thesis-overlay, /tv-alert-reconcile, /tv-ta, /tv-ta-deep, /tv-ta-daily-sweep, /tv-snapshot, /tv-price-refresh, /tv-alert-sync, /tv-pine-inject, /tv-author-pine, /tv-chart-setup, /tv-change-symbol, /tv-change-type, /tv-draw, /tv-manage-watchlists, /tv-place-order, /tv-modify-order, /tv-cancel-order, /tv-get-orders, /tv-setup, /tv-onboarding. Agents: ta-guide. Requires TV Desktop with --remote-debugging-port=9222.",
             "source": "./plugins/tradingview",
             "strict": true
+        },
+        {
+            "name": "questrade",
+            "description": "Questrade Brokerage Model Context Protocol (MCP) integration. Skills: /questrade-setup (interactive OAuth setup), /questrade-sync (multi-account balance and holdings sync into SQLite), /questrade-order-draft (Human-in-the-Loop draft orders with phone push approval), /questrade-activities (dividend and cash flow ledger).",
+            "source": "./plugins/questrade",
+            "strict": true
         }
     ]
 }

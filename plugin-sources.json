@@ -30,6 +30,7 @@
       "plugins": [
         "etf-analysis",
         "portfolio-advisor",
+        "questrade",
         "stock-valuation",
         "toolkit-manager",
         "tradingview"

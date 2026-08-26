@@ -876,6 +876,24 @@
       "dst": "plugins/stock-valuation/references/ADR-031-five-surface-sync-engine.md",
       "strategy": "symlink",
       "description": "ADR-031 5-surface synchronization architecture"
+    },
+    {
+      "src": "plugins/questrade/scripts/questrade_sync.py",
+      "dst": "plugins/questrade/skills/questrade-sync/scripts/questrade_sync.py",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for questrade_sync.py inside questrade-sync skill"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-mcp-ai-integration.md",
+      "dst": "plugins/questrade/skills/questrade-setup/references/questrade-mcp-ai-integration.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for Questrade MCP reference in questrade-setup skill"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-mcp-ai-integration.md",
+      "dst": "plugins/questrade/skills/questrade-order-draft/references/questrade-mcp-ai-integration.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for Questrade MCP reference in questrade-order-draft skill"
     }
   ]
 }
