@@ -1,0 +1,1 @@
+../../../scripts/questrade_sync.py
