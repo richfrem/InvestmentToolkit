@@ -18,6 +18,8 @@ Usage Examples:
     python3 plugins/questrade/scripts/questrade_sync.py --payload payload.json --dry-run
 
 Key Functions (Index):
+    - _parse_money()                 : Parses a Questrade-formatted currency string (e.g. "$3,317.07") or raw number into a float.
+    - _parse_account_type_and_number(): Splits a Questrade account name (e.g. "TFSA - 53408189") into (type, number).
     - persist_questrade_data_to_db() : Upserts accounts, balances, and holdings into SQLite.
     - _run_portfolio_refresh()       : Triggers refresh_all.py to update thesis roles.
     - main()                         : CLI entrypoint for parsing JSON payloads.
@@ -51,6 +53,35 @@ from domain_model.exchange_rate_repository import upsert_exchange_rate  # noqa: 
 _DEFAULT_DB_PATH = str(_REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite")
 
 
+def _parse_money(value: Any) -> float:
+    """Parse a Questrade-formatted currency string (e.g. "$3,317.07") or raw number into a float.
+
+    Live get_balances/get_positions responses return currency leaves as
+    pre-formatted strings ("$131.08"), not raw numbers — see
+    references/questrade-tool-schemas.md.
+    """
+    if value is None:
+        return 0.0
+    if isinstance(value, (int, float)):
+        return float(value)
+    cleaned = str(value).replace("$", "").replace(",", "").strip()
+    if not cleaned or cleaned in {"-", "N/A"}:
+        return 0.0
+    return float(cleaned)
+
+
+def _parse_account_type_and_number(name: str) -> tuple[str, str]:
+    """Split a live list_accounts `name` (e.g. "TFSA - 53408189") into (type, number).
+
+    list_accounts has no separate type/number fields — both are embedded in
+    `name` — see references/questrade-tool-schemas.md.
+    """
+    if " - " in name:
+        acc_type, _, acc_number = name.partition(" - ")
+        return acc_type.strip(), acc_number.strip()
+    return "UNKNOWN", name.strip()
+
+
 def persist_questrade_data_to_db(
     conn: sqlite3.Connection,
     accounts: list[dict],
@@ -61,9 +92,12 @@ def persist_questrade_data_to_db(
 
     Args:
         conn: Open SQLite connection to domain_model.sqlite.
-        accounts: List of account dicts from List Accounts.
-        balances: Dict mapping accountId -> balance dict from Get Balances.
-        positions: Dict mapping accountId -> list of position dicts from Get Positions.
+        accounts: List of account dicts from list_accounts: {id, name, productType, supportTrading}.
+        balances: Dict mapping accountId (the `id` from list_accounts) -> the
+            `balances` sub-object from get_balances: {cash, totalEquity, ...},
+            each leaf a {cad, usd, combinedCad, combinedUsd} currency-string object.
+        positions: Dict mapping accountId -> list of position dicts from
+            get_positions: {id, instrument, qty, side, avgPrice}.
 
     Returns:
         Total number of account_investment and cash rows written.
@@ -76,9 +110,9 @@ def persist_questrade_data_to_db(
 
     # 1. Upsert Accounts
     for acc in accounts:
-        acc_id = str(acc.get("number") or acc.get("accountId") or acc.get("id"))
-        acc_type = str(acc.get("type", "UNKNOWN"))
-        acc_name = f"{acc_type} ({acc_id})"
+        acc_id = str(acc.get("id") or acc.get("accountId"))
+        acc_type, acc_number = _parse_account_type_and_number(str(acc.get("name", "")))
+        acc_name = acc.get("name") or f"{acc_type} ({acc_number})"
         upsert_account(
             conn=conn,
             account_id=acc_id,
@@ -89,7 +123,8 @@ def persist_questrade_data_to_db(
 
     # 2. Upsert Uninvested Cash as synthetic CASH_USD position
     for acc_id, bal in balances.items():
-        cash_usd = float(bal.get("cashUSD", 0.0) or bal.get("cash", 0.0) or 0.0)
+        cash_leaf = bal.get("cash") or {}
+        cash_usd = _parse_money(cash_leaf.get("usd"))
         if cash_usd != 0.0:
             resolve_investment(conn, "CASH_USD", asset_class="CASH", currency="USD", name="US Dollar Cash")
             upsert_account_investment(
@@ -104,9 +139,10 @@ def persist_questrade_data_to_db(
             )
             written += 1
 
-        # Record exchange rate if both USD and CAD equity are provided
-        total_usd = float(bal.get("totalEquityUSD", 0.0) or 0.0)
-        total_cad = float(bal.get("totalEquityCAD", 0.0) or 0.0)
+        # Record exchange rate if both USD and CAD combined equity are provided
+        total_equity_leaf = bal.get("totalEquity") or {}
+        total_usd = _parse_money(total_equity_leaf.get("combinedUsd"))
+        total_cad = _parse_money(total_equity_leaf.get("combinedCad"))
         if total_usd > 0 and total_cad > 0:
             inferred_rate = total_cad / total_usd
             upsert_exchange_rate(conn, inferred_rate, now)
@@ -121,14 +157,14 @@ def persist_questrade_data_to_db(
     # 3. Upsert Security Positions
     for acc_id, pos_list in positions.items():
         for pos in pos_list:
-            raw_sym = pos.get("symbol") or pos.get("instrument") or ""
+            raw_sym = pos.get("instrument") or pos.get("symbol") or ""
             if not raw_sym:
                 continue
 
             symbol = normalize_ticker(raw_sym)
             resolve_investment(conn, symbol, asset_class="EQUITY", currency="USD")
-            qty = float(pos.get("openQuantity") or pos.get("qty") or pos.get("quantity") or 0.0)
-            avg_cost = float(pos.get("avgPrice") or pos.get("averagePrice") or pos.get("costBasis") or 0.0)
+            qty = _parse_money(pos.get("qty") if pos.get("qty") is not None else pos.get("openQuantity"))
+            avg_cost = _parse_money(pos.get("avgPrice"))
             book_val = qty * avg_cost if avg_cost else None
 
             upsert_account_investment(
