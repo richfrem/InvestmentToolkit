@@ -14,6 +14,9 @@ Directly queries the Questrade MCP `Get Balances` (and `List Accounts`) tool to 
 1. Verify Questrade MCP session is active via `List Accounts`.
 2. If unauthenticated, prompt user to run `/questrade:questrade-setup` (`/mcp` -> `questrade` -> `Log in`).
 
+## Schema Reference
+See `references/questrade-tool-schemas.md` (`get_balances` section) — each balance/profit leaf is a `{cad, usd, combinedCad, combinedUsd}` object of pre-formatted currency strings (e.g. `"$131.08"`), not raw numbers.
+
 ## Workflow
 
 1. If no `account_id` is specified:

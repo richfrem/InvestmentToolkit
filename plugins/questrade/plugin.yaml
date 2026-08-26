@@ -3,16 +3,14 @@ version: 1.0.0
 description: "Questrade Brokerage MCP integration — native AI agent connection for real-time account balances, positions, cash flow ledger, and HITL order drafting with mobile push approval."
 author:
   name: "Richard Fremmerlid"
-kind: backend
+kind: standalone
 platforms:
   - macos
   - linux
   - windows
-provides_tools:
-  - questrade_sync
-  - questrade_order_helper
 skills:
   - questrade-setup
-  - questrade-sync
-  - questrade-order-draft
+  - questrade-get-balances
+  - questrade-get-positions
   - questrade-activities
+  - questrade-order-draft

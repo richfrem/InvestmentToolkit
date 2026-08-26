@@ -1,0 +1,25 @@
+---
+name: questrade-{{skill_slug}}
+description: "{{description}}"
+argument-hint: "{{argument_hint}}"
+allowed-tools: Bash, Read
+---
+
+# {{title}}
+
+## Purpose
+{{purpose}}
+
+## Prerequisites & Pre-Flight Check
+1. Verify Questrade MCP session is active via `List Accounts`.
+2. If unauthenticated, prompt user to run `/questrade:questrade-setup` (`/mcp` -> `questrade` -> `Log in`).
+
+## Schema Reference
+See `references/questrade-tool-schemas.md` ({{schema_section}} section) for exact tool param names and response shapes — do not re-derive or guess these from memory.
+
+## Workflow
+{{workflow}}
+
+## Continuous Self-Evolution Policy
+Per `.agent/rules/self-evolution-policy.md`:
+Whenever actual MCP tool schema responses reveal unexpected parameter names, response fields, or missing attributes during live execution, agents MUST immediately refine `references/questrade-tool-schemas.md` (the canonical, hub-and-spoke source) first — not this file — then this file's `## Skill-Specific Behavior` section only for details unique to this skill's workflow.
