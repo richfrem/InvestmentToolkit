@@ -71,6 +71,13 @@ claude mcp add --transport http questrade https://mcp.questrade.com/v1/brokerage
 ```
 *In Claude Code: `/mcp` -> `questrade` -> `Log in` to complete the browser OAuth handshake.*
 
+## 📱 Mandatory Prerequisite for Order Drafting: Mobile Push Approval
+While account balances, positions, and market research are completely desktop-accessible, **order drafting (`Create Order Instruction`) strictly requires mobile Push-to-Approve**:
+1. **Install App**: Install **QuestMobile** or **EdgeMobile** on your smartphone.
+2. **Enroll Device**: Sign in on the app to register your phone as a trusted device under Security / Push Approvals.
+3. **App State**: Ensure the mobile app is active/unlocked on your phone when requesting order drafts from your AI agent to receive the instant push approval prompt.
+4. **Desktop Fallback**: If no mobile device is enrolled, orders will execute in **Preview mode only** (`Preview Order Instruction`), displaying margin and commission economics without sending to the broker.
+
 ---
 
 ## ⚠️ Claude Code Permission Guidelines
