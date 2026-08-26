@@ -14,3 +14,4 @@ skills:
   - questrade-get-positions
   - questrade-activities
   - questrade-order-draft
+  - questrade-sync-portfolio
