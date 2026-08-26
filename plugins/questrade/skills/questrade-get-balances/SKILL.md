@@ -10,6 +10,10 @@ allowed-tools: Bash, Read
 ## Purpose
 Directly queries the Questrade MCP `Get Balances` (and `List Accounts`) tool to display account equity, cash balances, and currency splits without modifying or writing any database records.
 
+## Prerequisites & Pre-Flight Check
+1. Verify Questrade MCP session is active via `List Accounts`.
+2. If unauthenticated, prompt user to run `/questrade:questrade-setup` (`/mcp` -> `questrade` -> `Log in`).
+
 ## Workflow
 
 1. If no `account_id` is specified:
@@ -22,4 +26,9 @@ Directly queries the Questrade MCP `Get Balances` (and `List Accounts`) tool to 
    - Cash Balance (CAD)
    - Cash Balance (USD)
    - Market Value of Securities
-   - Buying Power
+   - Buying Power (Combined CAD)
+   - Day P&L (USD/CAD)
+
+## Continuous Self-Evolution Policy
+Per `.agent/rules/self-evolution-policy.md`:
+Whenever actual MCP tool schema responses reveal unexpected parameter names, response fields, or missing attributes during live execution, agents MUST immediately refine this `SKILL.md` to document the exact parameter shapes and optimize subsequent agent executions.
