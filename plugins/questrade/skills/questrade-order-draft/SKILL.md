@@ -14,20 +14,12 @@ Enforces **Rule #17 (No Autonomous Execution)** by formatting structured trade d
 1. Verify Questrade MCP session is active via `List Accounts`.
 2. If unauthenticated, prompt user to run `/questrade:questrade-setup` (`/mcp` -> `questrade` -> `Log in`).
 
-## Discovered Schema & API Behavior
-- **Real param names** (both `preview_order_instruction` and `create_order_instruction`): `accountId` (uuid), `instrument` (symbol string, e.g. `"BTDR"` — NOT `symbol`), `qty` (NOT `quantity`), `side`: `"buy"|"sell"` (NOT `action`), `type`: `"market"|"limit"|"stop"|"stoplimit"` (NOT `orderType`), `limitPrice`/`stopPrice` as needed, `duration`: `"day"|"gtc"` (default `"day"`). `create_order_instruction` additionally takes `operation`: `"create"|"modify"|"cancel"` (required), and `orderId` for modify/cancel.
-- **Account Selection**:
-  - If `--account` (e.g. `TFSA`, `RRSP`, or specific account number) is provided, target that account directly.
-  - If not specified, or the ticker is already held in more than one account (common: TFSA + RRSP mirror positions), **ask the user explicitly** which account before previewing — don't guess. Show existing holdings per account (via `get_positions`) as context.
-- **Preview Output (Zero Push / Desktop Safe)**:
-  - `preview_order_instruction` returns `estimatedTotal`, buying-power delta, `isFractionalSharesEligible`, and `warnings`/`errors` arrays. Present as a table: Symbol, Side, Quantity, Order Type, Price, Trade Value, Commission, New Buying Power, Errors.
-  - Works on desktop with zero mobile requirements — always call this before `create_order_instruction`.
-- **Draft & Mobile Push Device Requirement**:
-  - `create_order_instruction` requires an enrolled **trusted mobile device** on Questrade's **QuestMobile** or **EdgeMobile** app under Security / Push Approval settings.
-  - **No Browser Popups**: There is no browser/desktop approval mechanism — users on a computer must still switch to the mobile app to approve. If no trusted device is enrolled, the call errors: *"Could not send an approval request to your mobile device..."*.
-  - **Recovery path (confirmed working)**: tell the user to open the mobile app and enroll/confirm a trusted device, then once they say it's open, **retry the identical `create_order_instruction` call** — do not treat the first failure as terminal or fall back to any other confirmation path.
-  - **Success response**: `{"status":"placed","orderId":"<uuid>"}`. Report the `orderId` back to the user as live confirmation.
-- **Day order default (pitfall #22)**: orders submit as **Day** unless `duration:"gtc"` is explicitly passed. `modify` can change qty/price but not duration — GTC must be decided before `create`, or changed manually in the app afterward. Always flag Day-vs-GTC in the final confirmation to the user.
+## Schema Reference
+See `references/questrade-tool-schemas.md` for the exact `preview_order_instruction`/`create_order_instruction` param names, the mobile-push-only approval behavior and its confirmed recovery path, the Day/GTC default (pitfall #22), and the success response shape (`{"status":"placed","orderId":...}`).
+
+## Skill-Specific Behavior
+- **Account Selection**: If `--account` (e.g. `TFSA`, `RRSP`, or specific account number) is provided, target that account directly. If not specified, or the ticker is already held in more than one account (common: TFSA + RRSP mirror positions), **ask the user explicitly** which account before previewing — don't guess. Show existing holdings per account (via `get_positions`) as context.
+- **Always preview before create**: `preview_order_instruction` is side-effect-free and desktop-safe — always call it and show the user the economics table before touching `create_order_instruction`, which is a real, phone-approved trade action.
 
 ## Workflow
 1. **Resolve Account**: Identify target account (ask explicitly if ambiguous — see above).

@@ -878,12 +878,6 @@
       "description": "ADR-031 5-surface synchronization architecture"
     },
     {
-      "src": "plugins/questrade/scripts/questrade_sync.py",
-      "dst": "plugins/questrade/skills/questrade-sync/scripts/questrade_sync.py",
-      "strategy": "symlink",
-      "description": "Hub-and-spoke symlink for questrade_sync.py inside questrade-sync skill"
-    },
-    {
       "src": "plugins/questrade/references/questrade-mcp-ai-integration.md",
       "dst": "plugins/questrade/skills/questrade-setup/references/questrade-mcp-ai-integration.md",
       "strategy": "symlink",
@@ -894,6 +888,36 @@
       "dst": "plugins/questrade/skills/questrade-order-draft/references/questrade-mcp-ai-integration.md",
       "strategy": "symlink",
       "description": "Hub-and-spoke symlink for Questrade MCP reference in questrade-order-draft skill"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-tool-schemas.md",
+      "dst": "plugins/questrade/skills/questrade-get-balances/references/questrade-tool-schemas.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-get-balances skill"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-tool-schemas.md",
+      "dst": "plugins/questrade/skills/questrade-get-positions/references/questrade-tool-schemas.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-get-positions skill"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-tool-schemas.md",
+      "dst": "plugins/questrade/skills/questrade-activities/references/questrade-tool-schemas.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-activities skill"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-tool-schemas.md",
+      "dst": "plugins/questrade/skills/questrade-order-draft/references/questrade-tool-schemas.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-order-draft skill"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-tool-schemas.md",
+      "dst": "plugins/questrade/skills/questrade-setup/references/questrade-tool-schemas.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-setup skill"
     }
   ]
 }

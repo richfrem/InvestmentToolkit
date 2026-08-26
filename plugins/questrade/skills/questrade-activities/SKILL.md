@@ -14,11 +14,8 @@ Directly queries the Questrade MCP `Get Account Activities` tool to retrieve, ca
 1. Verify Questrade MCP session is active via `List Accounts`.
 2. If unauthenticated, prompt user to run `/questrade:questrade-setup` (`/mcp` -> `questrade` -> `Log in`).
 
-## Discovered Schema & API Behavior
-- **Real params**: `Get Account Activities` takes `accountId`, optional `fromDate`/`toDate` (plain `YYYY-MM-DD`, not ISO timestamps), optional `page`, and optional `transactionTypes` (array). Response is `{accountId, activities: [...], metadata: {totalCount, totalPages, count, currentPage}}`.
-- **`transactionTypes` enum**: `Trades | Interest | Other | Dividends | FX conversion | Dividend reinvestment | Corporate actions | Transfers | Withdrawals | Deposits | Fees and rebates`.
-- **Trade noise dominates unfiltered results**: an active account's 90-day window is dominated by `Trades` rows (e.g. 143 trades vs. 12 true cash-flow events in one real account) and pages 20-at-a-time. **Always pass `transactionTypes` scoped to what the user actually wants** — do not fetch unfiltered and post-filter client-side.
-- Each activity row: `{transactionId, transactionType, description, amount, currency, symbol?, quantity?, price?, commission?, tradeDate}`.
+## Schema Reference
+See `references/questrade-tool-schemas.md` (`get_account_activities` section) for exact params (`fromDate`/`toDate` are plain dates, `transactionTypes` enum) and the trade-noise behavior that drives the filtering rule below.
 
 ## Workflow
 
