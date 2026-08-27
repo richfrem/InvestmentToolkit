@@ -105,14 +105,19 @@ def persist_quotes_to_prices(
     Args:
         conn: Open SQLite connection to domain_model.sqlite.
         quotes_by_symbol: symbol -> raw get_quotes response entry.
-        investments_by_symbol: symbol -> investment row (investment_id, symbol,
-            currency), used to resolve investment_id and to re-confirm
-            currency == 'USD' as a second safety check at write time — in case
-            a caller bypasses _select_investments_for_quote_refresh's filter.
+        investments_by_symbol: symbol -> investment row (investment_id, symbol),
+            used to resolve investment_id.
 
     Returns:
         (written_count, skipped_symbols) — skipped_symbols covers both
         currency-ineligible rows and rows with no usable quote price.
+
+    Currency safety: the LIVE quote's own 'currency' field is the authoritative
+    check here, not the stored investment.currency column — that column is
+    unreliable (this domain model hardcodes currency='USD' on every investment
+    row today, including genuinely CAD-denominated tickers like PSU-U.TO; see
+    questrade-tool-schemas.md). Checking the stored value alone would let a
+    mislabeled ticker's CAD price slip through under the USD label.
     """
     now = datetime.now(timezone.utc).isoformat()
     written = 0
@@ -120,7 +125,7 @@ def persist_quotes_to_prices(
 
     for symbol, quote in quotes_by_symbol.items():
         investment = investments_by_symbol.get(symbol)
-        if investment is None or investment.get("currency") != "USD":
+        if investment is None or quote.get("currency") != "USD":
             skipped.append(symbol)
             continue
 

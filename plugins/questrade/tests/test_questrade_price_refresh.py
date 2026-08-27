@@ -18,6 +18,7 @@ Usage Examples:
 Key Functions (Index):
     - test_refresh_writes_price_for_usd_equity()
     - test_refresh_skips_non_usd_currency()
+    - test_refresh_trusts_live_quote_currency_over_stored_value()
     - test_refresh_excludes_cash_investments()
     - test_batch_symbols_splits_at_twenty()
     - test_refresh_handles_unresolvable_quote_gracefully()
@@ -103,6 +104,31 @@ def test_refresh_skips_non_usd_currency():
     print("✓ test_refresh_skips_non_usd_currency passed!")
 
 
+def test_refresh_trusts_live_quote_currency_over_stored_value():
+    """The real bug this guards against: domain_model.sqlite hardcodes
+    currency='USD' on every investment row today, including genuinely
+    CAD-denominated tickers like PSU-U.TO. If persist_quotes_to_prices only
+    checked the STORED investment.currency, a mislabeled ticker's CAD price
+    would slip through under the USD label. The live quote's own currency
+    field must be the authoritative check."""
+    conn = setup_in_memory_db()
+    # Stored value is (incorrectly) USD -- mirrors the real PSU-U.TO row today.
+    resolve_investment(conn, "PSU-U.TO", asset_class="EQUITY", currency="USD")
+
+    quote = {"symbol": "PSU-U.TO", "currency": "CAD", "lastPrice": 100.05}
+    written, skipped = persist_quotes_to_prices(
+        conn,
+        quotes_by_symbol={"PSU-U.TO": quote},
+        investments_by_symbol={"PSU-U.TO": {"investment_id": "PSU-U.TO", "symbol": "PSU-U.TO", "currency": "USD"}},
+    )
+
+    assert written == 0, "Must not trust the mislabeled stored currency"
+    assert "PSU-U.TO" in skipped
+    assert get_investment_price(conn, "PSU-U.TO") is None
+
+    print("✓ test_refresh_trusts_live_quote_currency_over_stored_value passed!")
+
+
 def test_refresh_excludes_cash_investments():
     """get_quotes would never resolve a synthetic symbol like CASH_USD anyway, but
     this skill must not even attempt to include it in a batch, for clarity/safety
@@ -183,6 +209,7 @@ def test_refresh_upserts_not_duplicates():
 if __name__ == "__main__":
     test_refresh_writes_price_for_usd_equity()
     test_refresh_skips_non_usd_currency()
+    test_refresh_trusts_live_quote_currency_over_stored_value()
     test_refresh_excludes_cash_investments()
     test_batch_symbols_splits_at_twenty()
     test_refresh_handles_unresolvable_quote_gracefully()
