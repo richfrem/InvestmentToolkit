@@ -42,3 +42,11 @@ Up to 20 of either. Equities get bid/ask/last + fundamentals; option contracts a
 ## Account disambiguation (not an API fact, but load-bearing)
 
 None of these tools accept a friendly account label (`TFSA`, `RRSP`) — only `accountId`. When a ticker is held in more than one account, or the user didn't name one, **ask explicitly** which account before calling `preview_order_instruction` — don't infer from conversation context. Cross-reference `get_positions` per account to show existing holdings as decision context. Per the project's capital sourcing rules, TFSA is the primary/larger account and RRSP mirrors it at roughly 1/3 the share count.
+
+## domain_model.sqlite account_id convention — DO NOT use the Questrade uuid
+
+Questrade's `list_accounts` `id` is a **session-scoped MCP uuid, not a database key**. `account_investment.account_id` (and `account.account_id`) must be the canonical account-type string — `"TFSA"` / `"RRSP"` / `"CASH"` — matching what `fetch_broker_data.py`'s TradingView sync already writes (`account_id = snap.get("accountType")`). Any sync script must parse the type out of `list_accounts`' `name` field (e.g. `"TFSA - 53408189"` → `"TFSA"`) and use *that* as the row key.
+
+**Why this matters**: on 2026-08-26, `questrade_sync.py` used the raw Questrade uuid as `account_id`. Since the TradingView sync had already populated `'TFSA'`/`'RRSP'`/`'CASH'`-keyed rows, every held position ended up with two rows — one under each scheme — silently doubling the entire portfolio in every downstream read (dashboard, thesis roles, target weights) until caught by `verify_portfolio_invariants.py`'s `CASH_INVARIANT` check. Any new broker-sync script (Questrade, TradingView, or a future integration) MUST resolve to this same canonical account_id — never a broker-specific identifier — or it will silently fork a duplicate row set again.
+
+A full sync is also authoritative for an account's complete holding set: `questrade_sync.py`'s `persist_questrade_data_to_db()` removes any `account_investment` row for that account not present in the current sync (see `delete_stale_account_investments()`), so a fully sold position doesn't linger as a stale row.

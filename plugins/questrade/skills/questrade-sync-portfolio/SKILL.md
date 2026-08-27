@@ -16,6 +16,9 @@ Triggers `refresh_all.py` upon completion to update target weights and thesis ro
 1. Verify Questrade MCP session is active via `List Accounts`.
 2. If unauthenticated, prompt user to run `/questrade:questrade-setup` (`/mcp` -> `questrade` -> `Log in`).
 
+## Schema Reference
+See `references/questrade-tool-schemas.md` — specifically the "domain_model.sqlite account_id convention" section. `questrade_sync.py` resolves each Questrade account to the canonical `"TFSA"`/`"RRSP"`/`"CASH"` account_id itself (never the Questrade uuid) and clears any stale position no longer present in the sync — you do not need to do either of those manually when staging the payload.
+
 ## Workflow
 
 1. **Query MCP Data**:

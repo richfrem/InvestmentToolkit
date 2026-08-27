@@ -48,7 +48,10 @@ sys.path.insert(0, str(_PY_SERVICES))
 
 from ticker_aliases import normalize_ticker  # noqa: E402
 from domain_model.account_repository import upsert_account  # noqa: E402
-from domain_model.account_investment_repository import upsert_account_investment  # noqa: E402
+from domain_model.account_investment_repository import (  # noqa: E402
+    upsert_account_investment,
+    delete_stale_account_investments,
+)
 from domain_model.investment_repository import resolve_investment  # noqa: E402
 from domain_model.broker_reported_total_repository import upsert_broker_reported_total  # noqa: E402
 from domain_model.exchange_rate_repository import upsert_exchange_rate  # noqa: E402
@@ -85,6 +88,23 @@ def _parse_account_type_and_number(name: str) -> tuple[str, str]:
     return "UNKNOWN", name.strip()
 
 
+def _resolve_canonical_account_ids(accounts: list[dict]) -> dict[str, str]:
+    """Map each Questrade account's own `id` (uuid) to the canonical account_id.
+
+    The rest of the system (TradingView sync in fetch_broker_data.py, the
+    dashboard, thesis roles) keys account_investment by plain account-type
+    strings ("TFSA"/"RRSP"/"CASH") — see fetch_broker_data.py's
+    `account_id = snap.get("accountType")`. Questrade's own uuid is never used
+    as account_id here; using it silently forked a second, duplicate set of
+    rows for every position (found 2026-08-26 — every held symbol had both a
+    'TFSA'/'RRSP' row and a uuid-keyed row for the same real position).
+    """
+    return {
+        str(acc.get("id") or acc.get("accountId")): _parse_account_type_and_number(str(acc.get("name", "")))[0].upper()
+        for acc in accounts
+    }
+
+
 def persist_questrade_data_to_db(
     conn: sqlite3.Connection,
     accounts: list[dict],
@@ -92,6 +112,10 @@ def persist_questrade_data_to_db(
     positions: Optional[dict[str, list[dict]]] = None,
 ) -> int:
     """Upsert accounts, uninvested cash, and security positions into SQLite.
+
+    A full sync is authoritative for each account's *complete* current holding
+    set: every symbol not present in this call's positions[account] is treated
+    as fully sold and its stale row removed (see delete_stale_account_investments).
 
     Args:
         conn: Open SQLite connection to domain_model.sqlite.
@@ -103,29 +127,37 @@ def persist_questrade_data_to_db(
             get_positions: {id, instrument, qty, side, avgPrice}.
 
     Returns:
-        Total number of account_investment and cash rows written.
+        Total number of account_investment and cash rows written (excludes deletions).
     """
     now = datetime.now(timezone.utc).isoformat()
     written = 0
 
     balances = balances or {}
     positions = positions or {}
+    canonical_id_by_source_id = _resolve_canonical_account_ids(accounts)
 
-    # 1. Upsert Accounts
+    # 1. Upsert Accounts, keyed by canonical account_id (not Questrade's uuid)
     for acc in accounts:
-        acc_id = str(acc.get("id") or acc.get("accountId"))
-        acc_type, acc_number = _parse_account_type_and_number(str(acc.get("name", "")))
-        acc_name = acc.get("name") or f"{acc_type} ({acc_number})"
+        source_id = str(acc.get("id") or acc.get("accountId"))
+        canonical_id = canonical_id_by_source_id[source_id]
+        _, acc_number = _parse_account_type_and_number(str(acc.get("name", "")))
+        acc_name = acc.get("name") or f"{canonical_id} ({acc_number})"
         upsert_account(
             conn=conn,
-            account_id=acc_id,
+            account_id=canonical_id,
             account_name=acc_name,
-            account_type=acc_type,
+            account_type=canonical_id,
             base_currency="CAD",
         )
 
-    # 2. Upsert Uninvested Cash as synthetic CASH_USD position
-    for acc_id, bal in balances.items():
+    # 2. Upsert Uninvested Cash as synthetic CASH_USD position; aggregate the
+    #    broker-reported total ACROSS accounts before the single singleton write
+    #    (broker_reported_total is one row, id=1 — a prior per-account call here
+    #    silently overwrote itself down to just the last account processed).
+    aggregate_total_usd = 0.0
+    aggregate_total_cad = 0.0
+    for source_id, bal in balances.items():
+        acc_id = canonical_id_by_source_id.get(source_id, source_id)
         cash_leaf = bal.get("cash") or {}
         cash_usd = _parse_money(cash_leaf.get("usd"))
         if cash_usd != 0.0:
@@ -142,29 +174,32 @@ def persist_questrade_data_to_db(
             )
             written += 1
 
-        # Record exchange rate if both USD and CAD combined equity are provided
         total_equity_leaf = bal.get("totalEquity") or {}
-        total_usd = _parse_money(total_equity_leaf.get("combinedUsd"))
-        total_cad = _parse_money(total_equity_leaf.get("combinedCad"))
-        if total_usd > 0 and total_cad > 0:
-            inferred_rate = total_cad / total_usd
-            upsert_exchange_rate(conn, inferred_rate, now)
-            upsert_broker_reported_total(
-                conn=conn,
-                total_usd=total_usd,
-                total_cad=total_cad,
-                synced_at=now,
-                source="Questrade MCP",
-            )
+        aggregate_total_usd += _parse_money(total_equity_leaf.get("combinedUsd"))
+        aggregate_total_cad += _parse_money(total_equity_leaf.get("combinedCad"))
 
-    # 3. Upsert Security Positions
-    for acc_id, pos_list in positions.items():
+    if aggregate_total_usd > 0 and aggregate_total_cad > 0:
+        inferred_rate = aggregate_total_cad / aggregate_total_usd
+        upsert_exchange_rate(conn, inferred_rate, now)
+        upsert_broker_reported_total(
+            conn=conn,
+            total_usd=aggregate_total_usd,
+            total_cad=aggregate_total_cad,
+            synced_at=now,
+            source="Questrade MCP",
+        )
+
+    # 3. Upsert Security Positions, then clear anything stale for that account
+    for source_id, pos_list in positions.items():
+        acc_id = canonical_id_by_source_id.get(source_id, source_id)
+        synced_symbols: set[str] = set()
         for pos in pos_list:
             raw_sym = pos.get("instrument") or pos.get("symbol") or ""
             if not raw_sym:
                 continue
 
             symbol = normalize_ticker(raw_sym)
+            synced_symbols.add(symbol)
             resolve_investment(conn, symbol, asset_class="EQUITY", currency="USD")
             qty = _parse_money(pos.get("qty") if pos.get("qty") is not None else pos.get("openQuantity"))
             avg_cost = _parse_money(pos.get("avgPrice"))
@@ -181,6 +216,11 @@ def persist_questrade_data_to_db(
                 last_synced_at=now,
             )
             written += 1
+
+        cash_leaf = (balances.get(source_id) or {}).get("cash") or {}
+        if _parse_money(cash_leaf.get("usd")) != 0.0:
+            synced_symbols.add("CASH_USD")
+        delete_stale_account_investments(conn, acc_id, keep_investment_ids=synced_symbols)
 
     return written
 
