@@ -31,6 +31,39 @@ def upsert_account_investment(
     return account_investment_id
 
 
+def delete_stale_account_investments(
+    conn: sqlite3.Connection,
+    account_id: str,
+    keep_investment_ids: set[str],
+) -> int:
+    """Remove account_investment rows for account_id no longer present in a full sync.
+
+    A broker sync (TradingView or Questrade) reports the complete current holding
+    set for an account each time. Any investment_id previously recorded for that
+    account but absent from keep_investment_ids has been fully sold/closed and
+    must be removed — leaving it would silently overstate holdings (stale entry).
+
+    Returns:
+        Number of stale rows deleted.
+    """
+    existing = {
+        row[0]
+        for row in conn.execute(
+            "SELECT investment_id FROM account_investment WHERE account_id = ?",
+            (account_id,),
+        ).fetchall()
+    }
+    stale = existing - keep_investment_ids
+    for investment_id in stale:
+        conn.execute(
+            "DELETE FROM account_investment WHERE account_id = ? AND investment_id = ?",
+            (account_id, investment_id),
+        )
+    if stale:
+        conn.commit()
+    return len(stale)
+
+
 def list_account_investments(
     conn: sqlite3.Connection,
     account_id: str | None = None,

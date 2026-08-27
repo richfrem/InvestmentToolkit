@@ -924,6 +924,12 @@
       "dst": "plugins/questrade/skills/questrade-sync-portfolio/scripts/questrade_sync.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-tool-schemas.md",
+      "dst": "plugins/questrade/skills/questrade-sync-portfolio/references/questrade-tool-schemas.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-sync-portfolio skill"
     }
   ]
 }
