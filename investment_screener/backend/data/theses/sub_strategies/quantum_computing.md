@@ -137,7 +137,7 @@ WQTM-only strategy confirmed. Multi-model adversarial review flagged single-name
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-08-21 08:03 by TV sync · Portfolio total: $32,723 USD*
+*Auto-updated 2026-08-26 19:49 by TV sync · Portfolio total: $32,763 USD*
 
 **Pending Initiation**
 
