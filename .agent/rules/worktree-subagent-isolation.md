@@ -152,3 +152,54 @@ requirement was skipped too, not just the general policy.
   file count.
 - Applies before `subagent-driven-development`/`executing-plans` is even invoked, not just within
   them — the worktree must exist first, before any implementer subagent is dispatched into it.
+
+---
+
+## Failure Mode 3: Controller Merges PRs But Never Closes the Loop
+
+### The Problem This Section Solves
+
+Failure Modes 1 and 2 are about worktree creation and write isolation *during* a task. This is a
+different, downstream failure: worktree creation, work, and PR-opening all happen correctly, PRs
+get merged (by the user, on GitHub) — and the controller simply never runs the mandatory post-merge
+cleanup from `CLAUDE.md` Rule #16, leaving stale worktrees and unmerged local/remote branches to
+accumulate silently.
+
+**Occurrence 1 (2026-08-26).** Across a single Questrade-sync debugging session, 3 sequential
+bugfix PRs (#154 schema parsing, #155 path bootstrap, #157 account-id deduplication) were each
+correctly built in their own worktree and opened as a PR. All 3 were merged on GitHub over several
+hours. The controller never ran the close-out sequence (sync local `main`, verify ancestor, remove
+worktree, delete local+remote branch) for any of them on its own — `git worktree list` and `git
+branch` still showed all 3 stale worktrees/branches until the user explicitly asked "why are the
+worktrees still around" and pointed at this rule file. This happened in the same session where the
+controller had already been corrected multiple times for stating things were "fixed"/"pushed"
+before verifying — the pattern is the same root cause: treating a PR being *opened* (or merged
+elsewhere, out of the controller's direct view) as equivalent to the controller's own tracked state
+being reconciled, without an explicit check.
+
+### The Law
+
+> **A merged PR is not self-closing from the controller's side.** Opening a PR is not the end of
+> the worktree lifecycle, and neither is being told "I merged it" — both are triggers for the
+> controller to *immediately* run the close-out sequence in that same turn, not something to defer
+> until the user notices stale branches days or hours later. If multiple PRs are in flight, each
+> merge is its own trigger — do not batch-defer cleanup "until things settle down."
+
+### Non-Negotiables
+
+1. **After every `gh pr create` in a session, track that PR as an open loop.** Before ending the
+   session, or immediately upon any signal the PR was merged (the user says so, or a fresh
+   `gh pr view <n> --json state,mergedAt` check), run the full CLAUDE.md Rule #16 close-out:
+   `git fetch origin`, sync local `main`, verify ancestor via `git merge-base --is-ancestor`, remove
+   the worktree, delete local **and** remote branch, confirm a clean `git worktree list`/`git
+   branch`.
+2. **When more than one PR is open in the same session, check all of them, not just the one just
+   discussed.** The 2026-08-26 occurrence involved 3 concurrently-open PRs; only checking the most
+   recent one would have left 2 stale worktrees undetected.
+3. **Prefer updating local `main`'s ref directly (`git fetch origin main:main`) over checking it
+   out**, when the current working checkout is on an unrelated branch with uncommitted changes —
+   this avoids disturbing unrelated in-progress work while still allowing the ancestor check and
+   subsequent worktree removal to proceed correctly.
+4. **"I'll clean that up" is not a substitute for doing it in the same turn.** If cleanup is
+   deferred for a stated reason, say so explicitly and put it on a todo — do not let it silently
+   fall out of the conversation.
