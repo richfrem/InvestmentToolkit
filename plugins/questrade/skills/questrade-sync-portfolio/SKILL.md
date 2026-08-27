@@ -43,6 +43,9 @@ See `references/questrade-tool-schemas.md` — specifically the "domain_model.sq
    - Run `python3 investment_screener/backend/py_services/verify_portfolio_invariants.py` to confirm invariant totals match.
    - Display a summary of updated accounts, cash balances, and holdings in chat.
 
+## See also
+This skill only syncs holdings/balances/cash — it never writes current market prices (`investment_price` is untouched). For a live market price refresh, use the separate `questrade-refresh-prices` skill.
+
 ## Continuous Self-Evolution Policy
 Per `.agent/rules/self-evolution-policy.md`:
 Whenever actual MCP tool schema responses reveal unexpected parameter names, response fields, or missing attributes during live execution, agents MUST immediately refine this `SKILL.md` to document the exact parameter shapes and optimize subsequent agent executions.

@@ -24,6 +24,22 @@ Returns matches with security UUID, exchange, market cap, industry. Use the UUID
 ### `get_quotes(symbols? | securityUuids?)`
 Up to 20 of either. Equities get bid/ask/last + fundamentals; option contracts additionally get Greeks, IV, ITM probability.
 
+**Response shape (captured 2026-08-27, live call, `symbols:["BTDR"]`):**
+```json
+{"securityUuid":"755a2840-2465-4542-0bf5-c99d111b0f44","symbol":"BTDR","currency":"USD",
+ "bidPrice":11.84,"bidSize":600,"askPrice":11.85,"askSize":600,"lastPrice":11.845,
+ "quoteTime":"2026-08-27T14:24:39Z","lastTradeTime":"2026-08-27T14:24:36Z","lastTradeSize":100,
+ "tick":"Up","volume":4264642,"openPrice":11.2,"highPrice":11.9,"lowPrice":11.07,
+ "highPrice52Weeks":27.8,"lowPrice52Weeks":6.9157,"volumeWeightedAveragePrice":11.53461,
+ "priceChangeAmount":1.175,"priceChangePercent":0.110122,
+ "afterHourPriceChangeAmount":null,"afterHourPriceChangePercent":null,
+ "isTradingHour":true,"marketSector":"nasdaq","snapDateTime":"2026-08-27T14:24:39Z",
+ "delay":false,"marketState":"Open","peRatio":0,"dividendYield":0}
+```
+- **The live tradable price is `lastPrice`**, not `.last`/`lastTradePrice`/nested — a flat float.
+- **`currency` is present per-quote** (`"USD"` here) — this closes part of the currency-detection gap noted below: a quote's own `currency` can be cross-checked against the stored `investment.currency` at write time, rather than trusting the stored value blindly. `plugins/questrade/scripts/questrade_price_refresh.py` does this.
+- `delay:false` + `marketState`/`isTradingHour` are available if a future consumer wants to flag a stale/closed-market quote rather than just accepting any `lastPrice`; not currently enforced as a hard gate.
+
 ## Order tools (HITL-gated — Rule #17)
 
 ### `preview_order_instruction(accountId, instrument, qty, side, type, limitPrice?, stopPrice?, duration?)`

@@ -930,6 +930,18 @@
       "dst": "plugins/questrade/skills/questrade-sync-portfolio/references/questrade-tool-schemas.md",
       "strategy": "symlink",
       "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-sync-portfolio skill"
+    },
+    {
+      "src": "plugins/questrade/references/questrade-tool-schemas.md",
+      "dst": "plugins/questrade/skills/questrade-refresh-prices/references/questrade-tool-schemas.md",
+      "strategy": "symlink",
+      "description": "Hub-and-spoke symlink for canonical Questrade MCP tool schemas in questrade-refresh-prices skill"
+    },
+    {
+      "src": "plugins/questrade/scripts/questrade_price_refresh.py",
+      "dst": "plugins/questrade/skills/questrade-refresh-prices/scripts/questrade_price_refresh.py",
+      "strategy": "symlink",
+      "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
     }
   ]
 }
