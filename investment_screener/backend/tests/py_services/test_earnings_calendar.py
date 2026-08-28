@@ -64,3 +64,54 @@ class TestEtfClassification:
     def test_missing_db_returns_empty(self, tmp_path: Path):
         missing_db = tmp_path / "missing.sqlite"
         assert earnings_calendar._load_tickers(missing_db) == []
+
+
+class TestCashUsdSkipList:
+    """Caught live 2026-08-28: technicals.py's _default_earnings_anchor() calling
+    get_earnings_calendar() surfaced a 404 for symbol CASH_USD — the synthetic
+    cash row used everywhere else in this codebase. SKIP_TICKERS only listed
+    'USD_CASH' (reversed spelling), a stale/wrong alias that let the real
+    CASH_USD symbol slip through and hit yfinance."""
+
+    def test_cash_usd_alias_is_skipped(self, tmp_path: Path):
+        db_path = _make_db_with_holdings(tmp_path, ["CASH_USD", "MSFT"])
+        assert earnings_calendar._load_tickers(db_path) == ["MSFT"]
+
+
+class TestTickerFilter:
+    """Caught live 2026-08-28: technicals.py needs one ticker's earnings date for
+    its anchored-VWAP auto-anchor, but get_earnings_calendar() had no filter —
+    every single-ticker technicals.py run silently fetched the ENTIRE portfolio's
+    earnings dates (including synthetic/ETF/delisted symbols), producing stray
+    yfinance 404 noise unrelated to the ticker actually being analyzed."""
+
+    def test_ticker_filter_only_fetches_requested_tickers(self, monkeypatch):
+        fetched = []
+
+        def _fake_fetch(ticker):
+            fetched.append(ticker)
+            return None, None
+
+        monkeypatch.setattr(earnings_calendar, "_load_tickers", lambda: ["AAPL", "MSFT", "GOOG"])
+        monkeypatch.setattr(earnings_calendar, "_fetch_earnings_date", _fake_fetch)
+
+        earnings_calendar.get_earnings_calendar(tickers=["AAPL"])
+
+        assert fetched == ["AAPL"], (
+            f"Expected only the filtered ticker to be fetched, got {fetched}"
+        )
+
+    def test_no_filter_still_fetches_full_portfolio(self, monkeypatch):
+        """Default (no filter) behavior — used by the daily brief — must be unchanged."""
+        fetched = []
+
+        def _fake_fetch(ticker):
+            fetched.append(ticker)
+            return None, None
+
+        monkeypatch.setattr(earnings_calendar, "_load_tickers", lambda: ["AAPL", "MSFT", "GOOG"])
+        monkeypatch.setattr(earnings_calendar, "_fetch_earnings_date", _fake_fetch)
+
+        earnings_calendar.get_earnings_calendar()
+
+        assert fetched == ["AAPL", "MSFT", "GOOG"]

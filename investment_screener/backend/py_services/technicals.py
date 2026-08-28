@@ -408,7 +408,7 @@ def _default_earnings_anchor(ticker: str) -> str | None:
     instead of substituting the stub.
     """
     try:
-        entries = get_earnings_calendar()
+        entries = get_earnings_calendar(tickers=[ticker])
         for entry in entries:
             if getattr(entry, "ticker", None) == ticker:
                 return getattr(entry, "earnings_date", None)
