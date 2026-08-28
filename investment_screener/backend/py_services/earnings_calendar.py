@@ -53,7 +53,7 @@ from domain_model.portfolio_repository import load_portfolio_state_from_db  # no
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DB_PATH = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
-SKIP_TICKERS: frozenset[str] = frozenset({"PSU-U.TO", "PSU.U.TO", "USD_CASH"})
+SKIP_TICKERS: frozenset[str] = frozenset({"PSU-U.TO", "PSU.U.TO", "CASH_USD", "USD_CASH"})
 
 # ETFs and funds — no earnings dates exist; excluding them avoids yfinance 404s
 # and prevents them being misreported as earnings-calendar "blind spots".
@@ -151,16 +151,22 @@ def _flag(days: int | None) -> str:
     return "OK"
 
 
-def get_earnings_calendar(days_threshold: int = 30) -> list[EarningsEntry]:
-    """Get upcoming earnings events for all portfolio holdings.
+def get_earnings_calendar(
+    days_threshold: int = 30, tickers: list[str] | None = None
+) -> list[EarningsEntry]:
+    """Get upcoming earnings events for portfolio holdings.
 
     Args:
         days_threshold: Include only events within this many days.
+        tickers: Optional explicit ticker subset (e.g. a single ticker for
+            technicals.py's auto-anchor lookup) — skips the full-portfolio
+            load and every other holding's yfinance fetch entirely. Defaults
+            to the full portfolio (unchanged behavior for the daily brief).
 
     Returns:
         EarningsEntry list sorted by days_away ascending, excluding OK/past.
     """
-    tickers = _load_tickers()
+    tickers = tickers if tickers is not None else _load_tickers()
     entries: list[EarningsEntry] = []
 
     for ticker in tickers:

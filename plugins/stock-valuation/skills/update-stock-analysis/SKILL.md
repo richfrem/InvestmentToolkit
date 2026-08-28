@@ -319,7 +319,7 @@ python3 investment_screener/backend/py_services/framework_score.py \
 # 2. Peer benchmarking table (only if projections/{TICKER}.json already has peers)
 python3 investment_screener/backend/py_services/peer_bench.py \
   --ticker TICKER --peers <comma_separated_peers> --sector <same_sector_as_above> \
-  --projections-dir investment_screener/backend/data/projections --pretty
+  --db-path investment_screener/backend/data/domain_model.sqlite --pretty
 # -> analyticsLog.peerBench ; {"status": "insufficient_peer_data"} is expected and fine
 
 # 3. Local TA snapshot (independent of TV CDP — works headless)
