@@ -5,7 +5,7 @@
 | **Current Theme** | ASI Buildout (Primary) + Sovereign Finance (Secondary) |
 | **Edition** | "The Compute Sovereign" |
 | **Status** | ACTIVE |
-| **Last Updated** | 2026-08-26 |
+| **Last Updated** | 2026-08-27 |
 | **Thesis Last Analyzed** | 2026-05-22 (Full strategic review post-13F chip exits) |
 | **13F Last Refactored** | 2026-05-22 (Refactored SA LP Q1 2026 13F filed 2026-05-18 into target-portfolio.json) |
 | **Portfolio Data** | Live — synced from Broker via app or `python3 investment_screener/backend/src/BrokerDataEngine.py` |
@@ -77,18 +77,18 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 ## IV. Portfolio Blueprint
 
 <!-- AUTO_UPDATE_START: portfolio_blueprint -->
-*Generated 2026-08-26 · Source: `domain_model.sqlite` (investment + account_investment, broker-synced live holdings)*
-*Portfolio value: $32,763. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
+*Generated 2026-08-27 · Source: `domain_model.sqlite` (investment + account_investment, broker-synced live holdings)*
+*Portfolio value: $32,653. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
 
 ### Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **BE** | ⚪ MAINTAIN | SELL | 5.19% | 4.61% | -18.0% | Bloom Energy fuel cells. |
-| **GOOG** | ⚪ MAINTAIN | ACCUMULATE | 5.17% | 5.19% | +52.8% | Hyperscaler with vertically integrated AI stack. |
-| **TSM** | ⚪ MAINTAIN | HOLD | 3.82% | 3.85% | +8.6% | The foundry backbone of the AI compute stack. |
-| **STM** | ⚪ MAINTAIN | ACCUMULATE | 3.64% | 3.69% | +72.1% | STM |
-| **CBRS** | ⚪ MAINTAIN | BUY | 2.57% | 2.74% | +83.1% | Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference. |
+| **GOOG** | ⚪ MAINTAIN | ACCUMULATE | 5.17% | 5.19% | +53.5% | Hyperscaler with vertically integrated AI stack. |
+| **BE** | ⚪ MAINTAIN | SELL | 5.01% | 4.61% | -14.9% | Bloom Energy fuel cells. |
+| **TSM** | ⚪ MAINTAIN | HOLD | 3.91% | 3.85% | +6.5% | The foundry backbone of the AI compute stack. |
+| **STM** | ⚪ MAINTAIN | ACCUMULATE | 3.75% | 3.69% | +67.3% | STM |
+| **CBRS** | ⚪ MAINTAIN | BUY | 2.54% | 2.74% | +86.1% | Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference. |
 | **AMD** | 👁️ WATCHLIST | MAINTAIN | — | — | — | Hedge against NVDA dominance. |
 | **ANET** | 👁️ WATCHLIST | INITIATE | — | — | — | AI networking switching fabric. |
 | **ASML** | 👁️ WATCHLIST | SELL | — | — | — | Absolute monopoly on EUV lithography. |
@@ -106,16 +106,16 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | **VRT** | 👁️ WATCHLIST | TRIM | — | — | — | Data center thermal management. |
 | **VST** | 👁️ WATCHLIST | ACCUMULATE | — | — | — | Nuclear + natgas power merchant. |
 | **WYFI** | 👁️ WATCHLIST | BUY | — | — | — | AI GPU cloud + HPC data center. |
-| **Subtotal** | | **20.40%** | **22.08%** | +1.68pp | |
+| **Subtotal** | | **20.39%** | **22.08%** | +1.69pp | |
 
 ### Sub-Strategy 2 — AI-Native Cybersecurity
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **ZS** | ⚪ MAINTAIN | ACCUMULATE | 6.43% | 6.51% | +32.6% | Zero-trust SASE leader. |
-| **PANW** | ⚪ MAINTAIN | TRIM | 2.69% | 2.68% | -52.4% | AI-native platform consolidation leader. |
+| **ZS** | ⚪ MAINTAIN | ACCUMULATE | 6.87% | 6.51% | +24.7% | Zero-trust SASE leader. |
+| **PANW** | ⚪ MAINTAIN | TRIM | 2.96% | 2.68% | -56.6% | AI-native platform consolidation leader. |
 | **CRWD** | 👁️ WATCHLIST | EXIT | — | — | — | EXIT: DCF -66% downside. |
-| **Subtotal** | | **9.12%** | **9.19%** | +0.07pp | |
+| **Subtotal** | | **9.82%** | **9.19%** | -0.63pp | |
 
 ### Sub-Strategy 3 — Sovereign Finance
 
@@ -156,9 +156,9 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **CASH_USD** | ⚪ MAINTAIN | — | 13.19% | 13.98% | — | CASH_USD |
+| **CASH_USD** | ⚪ MAINTAIN | — | 13.24% | 13.98% | — | CASH_USD |
 | **PSU-U.TO** | 👁️ WATCHLIST | — | — | — | — | USD cash reserve (Purpose US Cash Fund) — holds short-term USD treasuries on TSX. Primary purpose: USD currency exposure + interest income while awaiting deployment into thesis positions. Monthly dividend ~$0.31-0.33/share (~$3.68-3.90 USD annualized). ENTRY RULE: always buy 1-2 days AFTER the ex-dividend date (typically last Tuesday of month) to get the cycle-low reset price and capture the full next month of accrual. Buying mid-cycle or just before ex-date overpays for already-accrued dividend. Ex-dates: ~Jan 28, Feb 25, Mar 31, Apr 28, May 28, Jun 30 pattern. Next planned entry: May 29, 2026 (post May 28 ex-date). |
-| **Subtotal** | | **13.19%** | **13.98%** | +0.79pp | |
+| **Subtotal** | | **13.24%** | **13.98%** | +0.74pp | |
 
 ### Untracked / Thesis Pending
 
@@ -193,7 +193,7 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 
 | | Actual % | Target % | Delta |
 | :--- | ---: | ---: | ---: |
-| **All holdings** | **42.71%** | **45.25%** | +2.54pp |
+| **All holdings** | **43.45%** | **45.25%** | +1.80pp |
 | *Validate* | `python3 plugins/portfolio-advisor/scripts/validate_weights.py --mode both` | | |
 <!-- AUTO_UPDATE_END: portfolio_blueprint -->
 

@@ -47,21 +47,29 @@ except:
     print('server_running=false')
 "
 
-# Check portfolio.json age AND tvSnapshot integrity
+# Check domain_model.sqlite freshness -- the sole source of truth since Wave 3/7/8.
+# portfolio.json/tvSnapshot is RETIRED (CLAUDE.md Rule #30): every real sync path
+# (Questrade sync/price-refresh, TradingView --snapshot) writes ONLY to
+# domain_model.sqlite now. Checking portfolio.json's age here would report "stale"
+# forever regardless of real refresh activity -- confirmed bug, fixed 2026-08-28.
 python3 -c "
-import json, os
+import sqlite3, os
 from datetime import datetime, timezone
-p = 'investment_screener/backend/data/portfolio.json'
-if os.path.exists(p):
-    age = (datetime.now(timezone.utc) - datetime.fromtimestamp(os.path.getmtime(p), tz=timezone.utc)).total_seconds() / 3600
-    print(f'portfolio_age_hours={age:.1f}')
-    with open(p) as f:
-        data = json.load(f)
-    snap = data.get('tvSnapshot', {})
-    pos_count = len(snap.get('positions', []))
-    snap_ts = snap.get('timestamp', '')
+db = 'investment_screener/backend/data/domain_model.sqlite'
+if os.path.exists(db):
+    conn = sqlite3.connect(db)
+    row = conn.execute(\"SELECT MAX(last_synced_at) FROM account_investment\").fetchone()
+    last_synced = row[0]
+    if last_synced:
+        synced_dt = datetime.fromisoformat(last_synced.replace('Z', '+00:00'))
+        age = (datetime.now(timezone.utc) - synced_dt).total_seconds() / 3600
+        print(f'portfolio_age_hours={age:.1f}')
+    else:
+        print('portfolio_age_hours=999')
+    pos_count = conn.execute(\"SELECT COUNT(*) FROM account_investment WHERE quantity > 0\").fetchone()[0]
     print(f'tv_snapshot_positions={pos_count}')
-    print(f'tv_snapshot_timestamp={snap_ts}')
+    print(f'tv_snapshot_timestamp={last_synced or \"none\"}')
+    conn.close()
 else:
     print('portfolio_age_hours=999')
     print('tv_snapshot_positions=0')
@@ -83,8 +91,8 @@ except:
 ```
 ─── Daily Loop — [DATE] ──────────────────────────────────
   Server:       [RUNNING / OFFLINE]
-  Portfolio:    [X.Xh old — CURRENT / STALE]
-  TV Snapshot:  [N positions · last synced TIMESTAMP — VERIFIED / ⚠ UNVERIFIED]
+  Domain DB:    [X.Xh old — CURRENT / STALE]  (domain_model.sqlite, sole source of truth)
+  Positions:    [N held · last synced TIMESTAMP — VERIFIED / ⚠ UNVERIFIED]
   TradingView:  [CONNECTED / OFFLINE]
 ─────────────────────────────────────────────────────────
 ```
@@ -94,20 +102,21 @@ except:
   > "⚠ Investment Toolkit backend/frontend server is NOT running.
   > Starting the server now via `python3 run_investment_toolkit.py` in the background..."
   > Propose and launch `python3 run_investment_toolkit.py` as a background task. Wait 5 seconds for it to initialize.
+- A `401` on `/api/health` means the server IS running (auth-gated response, not a connection failure) — only a connection error/timeout means offline. Don't restart a server that's already responding.
 
 **⚠ HARD GATE — Broker Login & Share Count Integrity:**
-- Always remind the user to log in to their broker inside TradingView Desktop (e.g., broker panel) so the CDP can read the actual positions and synchronize correctly.
-- If `tv_snapshot_positions == 0` or portfolio is stale (> 8h old) AND TradingView is connected:
-  > "Portfolio data is [X]h old or unverified. Syncing from TradingView now..."
-  > Trigger a `/tv-portfolio-sync` command immediately.
+- Always remind the user to log in to their broker (TradingView Desktop broker panel, and/or Questrade MCP session) so a sync can read actual positions.
+- If `tv_snapshot_positions == 0` or the domain DB is stale (> 8h old):
+  > "Portfolio data is [X]h old or unverified. Syncing now..."
+  > Trigger `/tv-portfolio-sync` (if TradingView is connected) or `/questrade:questrade-sync-portfolio` (if Questrade MCP is available) — either writes directly to `domain_model.sqlite`.
   > If that sync still returns 0 positions:
-    > "⚠ Portfolio share counts are UNVERIFIED — the last TV sync returned 0 positions.
+    > "⚠ Portfolio share counts are UNVERIFIED — the last sync returned 0 positions.
     > Weight-based recommendations will be wrong and could cause over/under-trading.
-    > Please make sure you are logged into your broker in TradingView's broker panel, and then run `/tv-portfolio-sync`, or confirm your current share counts manually before I proceed."
+    > Please make sure you are logged into your broker, then re-run the sync, or confirm your current share counts manually before I proceed."
     Wait for explicit user confirmation before continuing. If they confirm to proceed anyway, prefix every triage card with **[UNVERIFIED WEIGHTS]** and do not propose specific share quantities to buy or sell.
 
-- If portfolio is > 8h old AND TradingView is offline:
-  > "Portfolio data is stale and TradingView isn't running. Proceeding with last known positions."
+- If the domain DB is > 8h old AND neither TradingView nor Questrade MCP is available:
+  > "Portfolio data is stale and no sync source is available. Proceeding with last known positions."
   > Note the staleness in the brief heading.
 
 ---

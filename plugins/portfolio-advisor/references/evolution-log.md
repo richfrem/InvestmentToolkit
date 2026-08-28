@@ -390,3 +390,19 @@ WYFI -10.5% (user confirmed already sold), SNDK -8.6%, COHR -8.6%
 **Notes:** CEG watching for SQUEEZE_ON resolution. CORZ approaching bull FV $30 — monitor.
 PSU-U.TO fully loaded as cash reserve. Next session: start with CLSK/CACI card.
 echo "Gap logged"
+## [2026-08-28]
+
+**Tool failures:** Tier 2 — daily-loop-agent's Step 0 readiness check measured
+portfolio staleness from `portfolio.json`'s file mtime + `tvSnapshot` field.
+That file/field has been dead since Wave 3 (every real sync path — Questrade
+sync/price-refresh, TradingView `--snapshot` — writes only to
+`domain_model.sqlite` now). Evidence: `portfolio.json` last modified Aug 23;
+`domain_model.sqlite` last modified Aug 27 (today's real syncs). The check
+reported "106.6h stale" despite multiple real refreshes the day before, because
+it was reading a retired file that nothing updates. Fixed: readiness check now
+reads `MAX(account_investment.last_synced_at)` from `domain_model.sqlite`
+directly. Verified against the real DB: correctly reports 20.6h old, 51
+positions (vs the false 106.6h/0-positions reading before the fix).
+**Files patched:** `plugins/portfolio-advisor/agents/daily-loop-agent.md`
+(Step 0 script + readiness card + hard-gate text, now source-agnostic between
+TradingView and Questrade MCP sync paths).
