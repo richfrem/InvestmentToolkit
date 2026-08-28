@@ -16,6 +16,17 @@ allowed-tools: Bash, Read, Write
 **Trigger:** `/stock-intake {TICKER}` or `/onboard-stock {TICKER}`  
 **Examples:** `/stock-intake STM` | `/stock-intake MP` | `/stock-intake LITE` | `/stock-intake ASTS`
 
+## Canonical Metric/Surface Reference
+`references/stock-analysis-surface-checklist.md` maps every fundamentals/technicals/DCF metric this
+wizard collects to its exact data source, calculation function, and persistence script (Rule of 40 →
+`fetch_financials.py::expert_metrics`, Piotroski F-Score → `fetch_financials.py::piotroski_f_score`,
+DCF Bear/Base/Bull → `dcf_scenarios.py`, live EMAs/ADX/RSI → `ta_sweep_single.py`, etc.). Steps 3–5
+below should cite this checklist rather than restate the mapping loosely — if a metric's source or
+function ever changes, fix it there first (single source), same discipline as
+`questrade-tool-schemas.md` in the questrade plugin. `stock_valuation`'s `/evaluate-stock` skill
+already references this same file as its Step 10 post-completion verification gate — this wizard is
+the intake-time counterpart to that same canonical mapping, not a separate one.
+
 ---
 
 ## 🧭 The Non-Expert "Smooth Wizard" UX Principles
@@ -87,6 +98,8 @@ Format as concise, high-conviction bullet points with direct impact on 5-year re
 
 ### 📈 Step 3 — Live Technical Action Tiers & Tranche Plan (Wizard Checkpoint B)
 
+Field/function mapping: see `references/stock-analysis-surface-checklist.md` § Tab 2 — Technicals.
+
 Query live TradingView CDP technical data (21/50/200 EMAs, ADX, ATR, RSI) and explain the levels in plain English:
 
 - 🟢 **Buy Pocket 1 ($Price)**: Current initial entry level.
@@ -104,6 +117,8 @@ Query live TradingView CDP technical data (21/50/200 EMAs, ADX, ATR, RSI) and ex
 
 ### 📊 Step 4 — 4-Part Educational Financial Walkthrough
 
+Field/function mapping: see `references/stock-analysis-surface-checklist.md` § Tab 1 — Overview (Rule of 40, Piotroski F-Score, margins, EPS, analyst targets).
+
 Pull live metrics via `investment_screener/backend/py_services/fetch_financials.py {TICKER}`:
 1. **Part 1 — Revenue Lifecycle**: Plain-English diagnosis of why sales dipped in prior years and what drives the forward rebound.
 2. **Part 2 — Factory & Operating Leverage**: How expanding gross margins generate outsized bottom-line profit surges.
@@ -113,6 +128,8 @@ Pull live metrics via `investment_screener/backend/py_services/fetch_financials.
 ---
 
 ### 💰 Step 5 — DCF Valuation, Position Sizing & Capital Sourcing (Wizard Checkpoint C)
+
+Field/function mapping: see `references/stock-analysis-surface-checklist.md` § Tab 4 — Valuation Modeler (Bear/Base/Bull weighting, WACC, `dcf_scenarios.py`).
 
 1. Run `investment_screener/backend/py_services/dcf_scenarios.py --raw temp/evaluations/{TICKER}_raw.json --scenarios temp/evaluations/{TICKER}_scenarios.json` to calculate Bear (20%), Base (50%), and Bull (30%) present values and blended Fair Value.
 2. Calculate exact executable share counts, TFSA/RRSP breakdown, and PSU-U.TO funding leg:
