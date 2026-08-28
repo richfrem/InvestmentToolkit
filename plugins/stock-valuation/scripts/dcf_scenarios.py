@@ -129,6 +129,21 @@ def validate_scenarios(results: dict[str, dict]) -> dict[str, Any]:
             errors.append(f"{name}.shareChange={s['shareChange']} out of range [-5, +5]")
         if not (0 <= s["netMargin"] <= 100):
             errors.append(f"{name}.netMargin={s['netMargin']} out of range [0, 100]")
+        # growthRate/netMargin are consumed as percentage units (8 means 8%) via
+        # an internal /100.0 division. A value strictly between 0 and 1 is the
+        # signature of a decimal-fraction mistake (0.08 instead of 8) — caught live
+        # on AMAT 2026-08-28, where it silently produced a -99.6% fair value with
+        # no validation error under the pre-existing checks.
+        if 0 < s["growthRate"] < 1:
+            errors.append(
+                f"{name}.growthRate={s['growthRate']} looks like a decimal fraction, "
+                "not a percentage — use 8 for 8%, not 0.08"
+            )
+        if 0 < s["netMargin"] < 1:
+            errors.append(
+                f"{name}.netMargin={s['netMargin']} looks like a decimal fraction, "
+                "not a percentage — use 26 for 26%, not 0.26"
+            )
 
     return {
         "weightSum": weight_sum,

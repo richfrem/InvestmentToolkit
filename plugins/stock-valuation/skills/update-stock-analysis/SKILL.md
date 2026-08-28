@@ -209,6 +209,8 @@ Use `references/analysis_prompt.md` for full methodology. Key constraints for ch
    - See `references/examples/example_GOOG_2026-05-02.json` (4yr avg 26.7% vs TTM 37.9% — TTM used as anchor)
 10. **Sector classification**: Match the company's `profile.industry` to the nearest row in `references/valuation-benchmarks.md`. When `profile.sector` is ambiguous (e.g. "Communication Services" for Alphabet), use the industry string to resolve: `Internet Content & Information` → "Technology — Internet / Platforms" benchmark row.
 
+**Unit convention — `growthRate` and `netMargin` are PERCENTAGE units, not decimals**: use `8` for 8% growth, `26` for 26% margin — never `0.08`/`0.26`. The calculator divides both by 100.0 internally. `validate_scenarios()` rejects any value strictly between 0 and 1 as a decimal-fraction mistake (added 2026-08-28 after this exact error silently produced a -99.6% fair value on AMAT with no validation error).
+
 **After deciding parameters, run the calculator:**
 ```bash
 # Write scenario params to temp file
@@ -219,6 +221,7 @@ cat > temp/evaluations/{TICKER}_scenarios.json << 'EOF'
   "bull": { "weight": 0.XX, "growthRate": X, "netMargin": X, "exitPE": X, "qualityMultiplier": X.XX, "shareChange": X.X }
 }
 EOF
+# NOTE: growthRate/netMargin above are percentage units (X = 8 means 8%, not 0.08)
 
 # Run canonical DCF calculator — validates + computes all intermediates
 python3 investment_screener/backend/py_services/dcf_scenarios.py \
