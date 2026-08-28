@@ -274,7 +274,9 @@ own recommendation was followed, not overridden.
 A TRIGGERED breaker never auto-executes a trade on its own — same HITL rule as every other
 signal in this loop.
 
-**Card format:**
+**Card format** (field/function mapping for every line below: `docs/architecture/stock-analysis-surface-checklist.md`
+— same canonical source `stock-intake` and `/evaluate-stock` already use; if a metric's source changes, fix it
+there first, single source, don't restate the mapping loosely here):
 ```
 ─── [N]/[TOTAL] · [SIGNAL]: [TICKER] ─────────────────────────
   [Company Name]  ·  Weight: [X.X]% actual → [X.X]% target  ([±X.X]% gap)
@@ -282,7 +284,8 @@ signal in this loop.
   P&L:    Book $[X] · Now $[Y] · [+/-$Z] ([+/-W]%)  [PROFIT / UNDERWATER]
   Score:  [total] = DCF([X]) + TA([X]) + Gap([X]) + Momentum([X])
   DCF:    [ACTION] · FV $[Z] ([+X.X]% upside)  ← bear $[A] / base $[B] / bull $[C]
-  TA:     RSI [XX.X] · ADX [XX.X] · Vol Bias [±XX%]
+  Quality: Rule of 40 [XX.X]% ([Pass/Watch]) · Piotroski [X]/9 ([tier])  — checklist § Tab 1 Overview
+  TA:     RSI [XX.X] · ADX [XX.X] · Vol Bias [±XX%]  [LIVE (TV CDP) / CACHED (daily-brief snapshot, [X]h old)]
   Flags:  [RSI_COOLING | VOL_SPIKE | SQUEEZE_ACTIVE | none]
   News:   [Grok: STANCE (conviction N/10) — 1-line reason] · [Gemini: STANCE (conviction N/10) — 1-line reason]
           Verdict: [CONFLUENCE | PARTIAL | CONFLICT | TA/DCF-ONLY — NEWS UNCHECKED]
@@ -306,6 +309,16 @@ signal in this loop.
   Confirm? (yes / no / custom)
 ──────────────────────────────────────────────────────────────
 ```
+
+**Card's `TA:` line — prefer live over cached, same as `stock-intake` Step 3:** before falling back to
+the cached daily-brief snapshot, try a live TradingView CDP query (`chart openDataWindow` / `chart read`
+per `stock-analysis-surface-checklist.md` § Tab 2) for the flagged ticker. Label the line `LIVE (TV CDP)`
+or `CACHED (daily-brief snapshot, [X]h old)` accordingly — never present cached data as if it were live.
+
+**Card's `Quality:` line — Rule of 40 / Piotroski:** run `fetch_financials.py {TICKER}` (same function
+the checklist's § Tab 1 Overview row cites: `fetch_financials.py::expert_metrics` for Rule of 40,
+`fetch_financials.py::piotroski_f_score` for Piotroski). Skip the line entirely (don't show a stale or
+guessed value) if the ticker has no cached financials and a live pull isn't feasible mid-triage.
 
 **How to derive TA Levels when live CDP TA is not available:**
 1. Pull `data/projections/{TICKER}.json` for bear/base/bull DCF fair values — use bear as
