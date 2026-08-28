@@ -199,6 +199,7 @@ export class ProjectionRepository {
                 analytics_log_json    TEXT,
                 raw_json              TEXT,
                 legacy_id             TEXT,
+                source                TEXT,
                 UNIQUE(investment_id, version)
             );
 
@@ -429,6 +430,7 @@ export class ProjectionRepository {
         const analyzedAt = final.aiThesis?.analyzedAt ?? null;
         const model = final.aiThesis?.model ?? null;
         const rationale = final.rationale ?? null;
+        const source = final.source ?? null;
 
         const upsert = this.db.transaction(() => {
             this.db
@@ -436,15 +438,16 @@ export class ProjectionRepository {
                     `INSERT INTO projection_version
                         (projection_id, investment_id, version, saved_at, analyzed_at, model,
                          fair_value, action, rationale, snapshot_json, analytics_log_json,
-                         raw_json, legacy_id)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                         raw_json, legacy_id, source)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                      ON CONFLICT(investment_id, version) DO UPDATE SET
                         saved_at=excluded.saved_at, analyzed_at=excluded.analyzed_at,
                         model=excluded.model, fair_value=excluded.fair_value,
                         action=excluded.action, rationale=excluded.rationale,
                         snapshot_json=excluded.snapshot_json,
                         analytics_log_json=excluded.analytics_log_json,
-                        raw_json=excluded.raw_json, legacy_id=excluded.legacy_id`
+                        raw_json=excluded.raw_json, legacy_id=excluded.legacy_id,
+                        source=excluded.source`
                 )
                 .run(
                     projectionId,
@@ -459,7 +462,8 @@ export class ProjectionRepository {
                     snapshotJson,
                     analyticsLogJson,
                     JSON.stringify(final),
-                    final.id
+                    final.id,
+                    source
                 );
 
             const scenarios = final.scenarios ?? {};

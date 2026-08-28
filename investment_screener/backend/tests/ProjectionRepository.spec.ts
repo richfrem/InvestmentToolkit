@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import Database from 'better-sqlite3';
 import { ProjectionRepository } from '../src/services/ProjectionRepository';
 import { ProjectionSchema, Projection } from '../src/utils/zod-schemas';
 
@@ -100,6 +101,26 @@ describe('ProjectionRepository', () => {
             expect(fetched.scenarios.base.growthRate).to.equal(10);
             expect((fetched as any).analyticsLog.note).to.equal('passthrough field');
             expect(fetched.id).to.equal(parsed.id);
+        });
+    });
+
+    describe('source column persistence (caught live 2026-08-28)', () => {
+        it('writes the source column, not just raw_json — get_latest_projection_by_source (Python) filters on this column directly', () => {
+            // Caught live persisting AMAT's projection: the API returned success,
+            // and findByTicker (which reads raw_json) showed source correctly, but
+            // plugins/portfolio-advisor/scripts/update_price_levels.py's
+            // load_latest_projection() -> get_latest_projection_by_source() queries
+            // the dedicated `projection_version.source` SQL column directly, not
+            // raw_json — and that column was NULL for every projection ever saved
+            // through this API because the INSERT statement never included it.
+            const parsed = ProjectionSchema.safeParse(makeProjection({ source: 'AI_AGENT' })).data as Projection;
+            repo.upsertProjection(parsed);
+
+            const db = new Database(dbPath, { readonly: true });
+            const row = db.prepare('SELECT source FROM projection_version WHERE investment_id = ?').get('TEST') as { source: string | null };
+            db.close();
+
+            expect(row.source).to.equal('AI_AGENT');
         });
     });
 
