@@ -127,8 +127,12 @@ def validate_scenarios(results: dict[str, dict]) -> dict[str, Any]:
             )
         if not (-5.0 <= s["shareChange"] <= 5.0):
             errors.append(f"{name}.shareChange={s['shareChange']} out of range [-5, +5]")
-        if not (0 <= s["netMargin"] <= 100):
-            errors.append(f"{name}.netMargin={s['netMargin']} out of range [0, 100]")
+        # SKILL.md Step 3 constraint #4 documents netMargin as "-100% to 100%" --
+        # caught live 2026-08-28 valuing SHAZ (pre-revenue AI infra), whose bear
+        # case legitimately needs a negative margin (e.g. -15%) that this check
+        # previously rejected by enforcing [0, 100] instead of the documented range.
+        if not (-100 <= s["netMargin"] <= 100):
+            errors.append(f"{name}.netMargin={s['netMargin']} out of range [-100, 100]")
         # growthRate/netMargin are consumed as percentage units (8 means 8%) via
         # an internal /100.0 division. A value strictly between 0 and 1 is the
         # signature of a decimal-fraction mistake (0.08 instead of 8) — caught live
