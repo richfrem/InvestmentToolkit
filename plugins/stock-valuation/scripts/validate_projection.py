@@ -99,6 +99,22 @@ def validate_projection(data: dict[str, Any], verbose: bool = False) -> list[str
                   "rationale", "snapshot", "scenarios", "aiThesis", "globalSettings"]:
         check(field in data, field, f"Required field '{field}' is missing", errors)
 
+    # --- Snapshot required fields ---
+    # Mirrors backend/src/utils/zod-schemas.ts's SnapshotSchema — caught live
+    # 2026-08-28 when AMAT's first-ever projection passed this validator (Step 4)
+    # but was then rejected by the real POST /api/projections endpoint (Step 6)
+    # for missing shares/revenue/lastActualPS, which projection_template.json
+    # also omitted. This validator's whole purpose is to catch schema violations
+    # before they reach the backend; these three fields had no check at all.
+    snapshot = data.get("snapshot", {}) or {}
+    for field in ["price", "currency", "shares", "revenue"]:
+        check(field in snapshot and snapshot.get(field) is not None,
+              f"snapshot.{field}", f"Required field 'snapshot.{field}' is missing", errors)
+    # lastActualPS is nullable in the backend schema (transforms None -> 0), but
+    # must still be present as a key — omitting it entirely is what backend rejects.
+    check("lastActualPS" in snapshot, "snapshot.lastActualPS",
+          "Required field 'snapshot.lastActualPS' is missing (may be null, but key must exist)", errors)
+
     # --- Scenarios ---
     scenarios = data.get("scenarios", {})
     for case in ["bear", "base", "bull"]:
