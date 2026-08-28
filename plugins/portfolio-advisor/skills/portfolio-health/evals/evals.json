@@ -57,11 +57,11 @@
             "type": "near_miss",
             "category": "trigger_conflict",
             "prompt": "Should I buy more NVDA?",
-            "expected_trigger": "stock_valuation",
+            "expected_trigger": "update_stock_analysis",
             "expected_not_trigger": [
                 "portfolio_health"
             ],
-            "pass_condition": "Agent routes to stock_valuation for single-stock buy decision, not portfolio_health"
+            "pass_condition": "Agent routes to update_stock_analysis for single-stock buy decision, not portfolio_health"
         },
         {
             "id": "EVAL-008",

@@ -1,20 +1,28 @@
 ---
-name: stock_valuation
+name: update-stock-analysis
 description: >
-  Perform autonomous stock valuation. Produces a Projection object saved to
+  Perform autonomous stock valuation for a ticker you already hold or track --
+  the "augment/update an existing stake's analysis" counterpart to stock-intake
+  (which is for net-new tickers). Produces a Projection object saved to
   backend/data/projections/{TICKER}.json AND a deep-dive research report saved
   to backend/data/research/{TICKER}_{DATE}.md. Summarizes findings
   conversationally and supports interactive Q&A. Trigger when user asks to
-  value, analyse, or price a stock, or uses /evaluate-stock or
-  /perform-stock-valuation.
+  value, analyse, re-evaluate, or price a stock, or uses /update-stock-analysis
+  (primary), /evaluate-stock (alias), or /perform-stock-valuation (alias).
+  Renamed 2026-08-28 from stock_valuation -- see
+  docs/architecture/skill-renames-2026-08-28.md for the full old->new mapping.
 has_tools: true
 allowed-tools: Bash, Read, Write
 ---
 
-# Stock Valuation Skill
+# Update Stock Analysis Skill
+
+*(Renamed 2026-08-28 from "Stock Valuation Skill" / `stock_valuation` — same skill, clearer name.
+See `docs/architecture/skill-renames-2026-08-28.md` for the full mapping. Old triggers
+`/evaluate-stock` and `/perform-stock-valuation` still work as aliases.)*
 
 ## Quick Reference
-- **Trigger**: `/perform-stock-valuation {TICKER}` or `/evaluate-stock {TICKER}`
+- **Trigger**: `/update-stock-analysis {TICKER}` (primary) · `/perform-stock-valuation {TICKER}` or `/evaluate-stock {TICKER}` (legacy aliases, still work)
 - **Output (JSON)**: `backend/data/projections/{TICKER}.json`
 - **Output (Research)**: `backend/data/research/{TICKER}_{YYYY-MM-DD}.md`
 - **Schema + Examples**: `references/examples/` ← Real validated projections (schemaVersion 1.2):
@@ -154,7 +162,7 @@ python3 investment_screener/backend/py_services/fetch_financials.py {TICKER} > t
 ```bash
 # Standardize metrics using the canonical calculation engine
 # NOTE: standardize_metrics.py requires a file path argument — do NOT pipe via stdin
-python3 plugins/stock-valuation/skills/stock_valuation/scripts/standardize_metrics.py \
+python3 plugins/stock-valuation/skills/update-stock-analysis/scripts/standardize_metrics.py \
   temp/evaluations/{TICKER}_raw.json > temp/evaluations/{TICKER}_metrics.json
 ```
 Read `temp/evaluations/{TICKER}_metrics.json` and use the `snapshot` and `ratios` blocks. 
@@ -346,7 +354,7 @@ correctly fail this gate if its action is ACCUMULATE — re-run it through
 Step 3.5 first rather than treating the failure as a bug.
 ```bash
 # Run pre-persistence validator
-cat temp/evaluations/{TICKER}_projection.json | python3 plugins/stock-valuation/skills/stock_valuation/scripts/validate_projection.py --verbose
+cat temp/evaluations/{TICKER}_projection.json | python3 plugins/stock-valuation/skills/update-stock-analysis/scripts/validate_projection.py --verbose
 # Exit 0 = valid | Exit 1 = errors to fix
 ```
 Fix all reported errors before proceeding. If math inconsistency detected → invoke **FB-05** from `references/fallback-tree.md`.

@@ -10,9 +10,9 @@
     "architecture": "supercharged",
     "skills": [
         {
-            "name": "stock_valuation",
-            "path": "skills/stock_valuation/SKILL.md",
-            "trigger": "/perform-stock-valuation"
+            "name": "update-stock-analysis",
+            "path": "skills/update-stock-analysis/SKILL.md",
+            "trigger": "/update-stock-analysis"
         },
         {
             "name": "stock_research",
@@ -31,8 +31,8 @@
         }
     ],
     "connectors": "CONNECTORS.md",
-    "evals": "skills/stock_valuation/evals/evals.json",
-    "acceptance_criteria": "skills/stock_valuation/references/acceptance-criteria.md",
+    "evals": "skills/update-stock-analysis/evals/evals.json",
+    "acceptance_criteria": "skills/update-stock-analysis/references/acceptance-criteria.md",
     "external_dependencies": [
         {
             "name": "fetch_financials.py",

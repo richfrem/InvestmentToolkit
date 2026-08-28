@@ -60,11 +60,11 @@
             "type": "near_miss",
             "category": "trigger_conflict",
             "prompt": "Bundle my thesis and DCF projections into a payload I can paste into ChatGPT for a full challenge",
-            "expected_trigger": "thesis_challenge_bundler",
+            "expected_trigger": "external_review",
             "expected_not_trigger": [
                 "x_news_sweep"
             ],
-            "pass_condition": "Agent routes to thesis_challenge_bundler (static bundling for an adversarial critique), not x_news_sweep, which is specifically the live Grok/X.com news-driven target-change workflow with its own 8 gates."
+            "pass_condition": "Agent routes to external_review (static bundling for an adversarial critique), not x_news_sweep, which is specifically the live Grok/X.com news-driven target-change workflow with its own 8 gates."
         }
     ],
     "benchmark_targets": {

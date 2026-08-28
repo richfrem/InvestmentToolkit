@@ -1,11 +1,11 @@
 ---
 name: red-team-agent
 description: >
-  Adversarial reviewer for a completed analysis artifact (a stock_valuation
+  Adversarial reviewer for a completed analysis artifact (a update_stock_analysis
   projection, or an E2 rebalance_plan.json). Produces at least 3 specific,
   falsifiable objections plus a "what would change my mind" list. Explicitly
   forbidden from proposing trades. Dispatched mandatorily by
-  stock_valuation/SKILL.md (after Step 4) and rebalance-portfolio/SKILL.md
+  update_stock_analysis/SKILL.md (after Step 4) and rebalance-portfolio/SKILL.md
   (after Step 1b) before either skill presents its final recommendation to
   the user. Output is conversational only — never persisted to disk.
 tools: ["Read"]

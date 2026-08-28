@@ -64,8 +64,9 @@ the intake-time counterpart to that same canonical mapping, not a separate one.
 
 ### 🏛️ Step 1 — Intent, Existing Standing Decision & Strategy Pillar (Wizard Checkpoint A)
 
-1. **Pre-Check Existing Holdings**: Check if `{TICKER}` already exists in `domain_model.sqlite`. If yes, display:
-   > *"We already track {TICKER} under {PILLAR} with a Standing Decision of **{STANDING_DECISION}** ({REASON}). Is this a thesis refresh or material re-valuation?"*
+1. **Pre-Check Existing Holdings**: Check if `{TICKER}` already exists in `domain_model.sqlite`. **This wizard is for net-new tickers only** (2026-08-28: narrowed scope — see `docs/architecture/skill-renames-2026-08-28.md`). If it already exists, redirect instead of proceeding here:
+   > *"We already track {TICKER} under {PILLAR} with a Standing Decision of **{STANDING_DECISION}** ({REASON}). For an existing holding, use `/update-stock-analysis {TICKER}` to refresh its analysis (full DCF re-run + research report) — this onboarding wizard is for tickers not yet tracked. Want me to run that instead?"*
+   Stop here if the user confirms — do not continue this pipeline for an existing ticker.
 2. **Confirm Investment Intent**:
    > **Wizard Question 1**:  
    > *"What is your main investment goal for looking at **{TICKER}** today?"*  

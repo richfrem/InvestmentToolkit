@@ -65,7 +65,7 @@ InvestmentToolkit/                         ← repo root
 │
 ├── plugins/                               ← modular AI agent plugins
 │   ├── stock-valuation/                  ← DCF valuation + research sweep
-│   │   └── skills/stock_valuation/scripts/
+│   │   └── skills/update-stock-analysis/scripts/
 │   │       └── validate_projection.py
 │   ├── portfolio-advisor/                ← drift monitor, triage, rebalance, Grok sweeps
 │   │   ├── agents/                       ← daily-loop-agent.md, portfolio-advisor-orchestrator.md
