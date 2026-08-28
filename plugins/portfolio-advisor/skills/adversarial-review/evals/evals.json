@@ -44,17 +44,17 @@
             "type": "near_miss",
             "category": "trigger_conflict",
             "prompt": "I want to focus the external review specifically on just my INTC and CRWV positions and get either a Markdown or ZIP output",
-            "expected_trigger": "thesis_challenge_bundler",
+            "expected_trigger": "external_review",
             "expected_not_trigger": [
                 "adversarial_review"
             ],
-            "pass_condition": "Agent routes to thesis_challenge_bundler, which supports scoped focus areas (specific tickers, output format choice), not adversarial_review, which always bundles the full fixed daily-brief-driven payload with no scoping question."
+            "pass_condition": "Agent routes to external_review, which supports scoped focus areas (specific tickers, output format choice), not adversarial_review, which always bundles the full fixed daily-brief-driven payload with no scoping question."
         }
     ],
     "benchmark_targets": {
         "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
         "schema_compliance": "100% of EVAL-003 pass (prompt.md first, correct file set)",
         "degradation_coverage": "100% of EVAL-004 pass",
-        "trigger_disambiguation": "100% of EVAL-005 pass (adversarial_review vs. thesis_challenge_bundler)"
+        "trigger_disambiguation": "100% of EVAL-005 pass (adversarial_review vs. external_review)"
     }
 }

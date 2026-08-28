@@ -124,6 +124,6 @@ directly — no manual arithmetic required.
 | File | Role |
 |------|------|
 | `investment_screener/backend/py_services/fetch_financials.py` | Upstream data source; `dcf_scenarios.py` reads its output |
-| `plugins/stock-valuation/skills/stock_valuation/SKILL.md` | Mandates use of this script in Step 3 |
-| `plugins/stock-valuation/skills/stock_valuation/scripts/validate_projection.py` | Downstream validator; consumes script output after projection assembly |
-| `plugins/stock-valuation/skills/stock_valuation/references/examples/` | All v1.2+ example projections were generated using this script |
+| `plugins/stock-valuation/skills/update-stock-analysis/SKILL.md` | Mandates use of this script in Step 3 |
+| `plugins/stock-valuation/skills/update-stock-analysis/scripts/validate_projection.py` | Downstream validator; consumes script output after projection assembly |
+| `plugins/stock-valuation/skills/update-stock-analysis/references/examples/` | All v1.2+ example projections were generated using this script |

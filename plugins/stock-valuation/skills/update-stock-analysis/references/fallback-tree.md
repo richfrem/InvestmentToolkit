@@ -1,4 +1,4 @@
-# Fallback Tree — stock_valuation Skill
+# Fallback Tree — update-stock-analysis Skill
 
 Procedural fallback sequences for brittle operations. Consult this file when a primary method fails before reporting an error.
 

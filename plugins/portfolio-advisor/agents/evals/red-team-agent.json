@@ -8,11 +8,11 @@
             "id": "EVAL-001",
             "type": "positive",
             "category": "trigger",
-            "prompt": "A fresh DCF projection for NVDA was just completed by stock_valuation and is about to be presented to the user.",
-            "setup": "stock_valuation/SKILL.md has finished Step 4 and is about to present its final recommendation",
+            "prompt": "A fresh DCF projection for NVDA was just completed by update_stock_analysis and is about to be presented to the user.",
+            "setup": "update_stock_analysis/SKILL.md has finished Step 4 and is about to present its final recommendation",
             "expected_trigger": "red-team-agent",
             "expected_not_trigger": [],
-            "pass_condition": "Agent is dispatched mandatorily before the recommendation is shown to the user, per 'Dispatched mandatorily by stock_valuation/SKILL.md (after Step 4)... before either skill presents its final recommendation'."
+            "pass_condition": "Agent is dispatched mandatorily before the recommendation is shown to the user, per 'Dispatched mandatorily by update_stock_analysis/SKILL.md (after Step 4)... before either skill presents its final recommendation'."
         },
         {
             "id": "EVAL-002",

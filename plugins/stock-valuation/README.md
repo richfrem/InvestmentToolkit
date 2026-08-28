@@ -23,7 +23,7 @@ stock-valuation/
 │   ├── stock_valuation_sequence.mmd    # Mermaid sequence diagram
 │   └── README.md
 └── skills/
-    └── stock_valuation/
+    └── update-stock-analysis/
         ├── SKILL.md                     # Main skill definition
         ├── evals/
         │   └── evals.json              # 8-case benchmark evaluation suite
@@ -52,7 +52,7 @@ stock-valuation/
 
 ## Skill
 
-The `stock_valuation` skill runs the full 9-step pipeline:
+The `update-stock-analysis` skill (renamed 2026-08-28 from `stock_valuation`) runs the full 9-step pipeline:
 1. Fetch financial data via `~~financial-data-fetcher`
 2. Build snapshot object from raw metrics
 3. Cognitive analysis → Bear/Base/Bull scenarios

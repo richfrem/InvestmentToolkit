@@ -43,11 +43,11 @@
             "type": "near_miss",
             "category": "trigger_conflict",
             "prompt": "Analyze NVDA and give me a valuation with bear, base, and bull cases",
-            "expected_trigger": "stock_valuation",
+            "expected_trigger": "update_stock_analysis",
             "expected_not_trigger": [
                 "etf_analysis"
             ],
-            "pass_condition": "Agent routes to stock_valuation (individual equity DCF valuation), not etf_analysis. NVDA is a single stock, not a fund/ETF, so it falls outside etf_analysis's CLOSED_END/THEMATIC_ETF/CASH_FUND scope."
+            "pass_condition": "Agent routes to update_stock_analysis (individual equity DCF valuation), not etf_analysis. NVDA is a single stock, not a fund/ETF, so it falls outside etf_analysis's CLOSED_END/THEMATIC_ETF/CASH_FUND scope."
         },
         {
             "id": "EVAL-006",
@@ -56,7 +56,7 @@
             "prompt": "KOID holds NVDA and CRDO as top positions — can you value NVDA specifically for me while you're at it?",
             "expected_trigger": "etf_analysis",
             "expected_not_trigger": [],
-            "pass_condition": "Agent completes the KOID (THEMATIC_ETF) holdings/overlap analysis under etf_analysis, but for the embedded ask to 'value NVDA specifically' it either declines DCF work within this skill or explicitly hands off to stock_valuation for NVDA — it must NOT run a DCF on NVDA inside the etf_analysis flow (Hard Rule 1: never use DCF for fund analysis, and NVDA-the-stock is out of scope here)."
+            "pass_condition": "Agent completes the KOID (THEMATIC_ETF) holdings/overlap analysis under etf_analysis, but for the embedded ask to 'value NVDA specifically' it either declines DCF work within this skill or explicitly hands off to update_stock_analysis for NVDA — it must NOT run a DCF on NVDA inside the etf_analysis flow (Hard Rule 1: never use DCF for fund analysis, and NVDA-the-stock is out of scope here)."
         },
         {
             "id": "EVAL-007",

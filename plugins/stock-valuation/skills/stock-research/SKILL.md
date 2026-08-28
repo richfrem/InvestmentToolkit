@@ -7,7 +7,7 @@ description: >
   changes, management updates, and analyst sentiment. Updates the existing
   research report and priorAnalysisReview context. Ends with a structured
   judgment on whether findings warrant a full DCF re-valuation via
-  /evaluate-stock. Trigger when something happened and the user wants to
+  /update-stock-analysis (or legacy alias /evaluate-stock). Trigger when something happened and the user wants to
   understand the impact before deciding whether to update the model.
   Also trigger on /research-stock.
 allowed-tools: Bash, Read, Write
@@ -18,19 +18,19 @@ allowed-tools: Bash, Read, Write
 ## Quick Reference
 - **Trigger**: `/research-stock {TICKER}` or natural language: "research {TICKER}", "what's changed with {TICKER}"
 - **Output (Research)**: Appends to `backend/data/research/{TICKER}_{YYYY-MM-DD}.md`
-- **Output (Decision)**: Structured re-valuation recommendation — triggers `/evaluate-stock` if warranted
-- **Chains into**: `stock_valuation` skill when re-valuation is confirmed
+- **Output (Decision)**: Structured re-valuation recommendation — triggers `/update-stock-analysis (or legacy alias /evaluate-stock)` if warranted
+- **Chains into**: `update-stock-analysis` skill (renamed 2026-08-28 from `stock_valuation`) when re-valuation is confirmed
 - **Fallbacks**: `references/fallback-tree.md`
 
-## When to Use This Skill vs `/evaluate-stock`
+## When to Use This Skill vs `/update-stock-analysis (or legacy alias /evaluate-stock)`
 
 | Situation | Use |
 |-----------|-----|
 | Something happened (earnings, news, product launch, competitor move) | `/research-stock` first |
-| No prior valuation exists | `/evaluate-stock` directly |
-| Prior valuation is stale (>30 days) and nothing specific happened | `/evaluate-stock` directly |
+| No prior valuation exists | `/update-stock-analysis (or legacy alias /evaluate-stock)` directly |
+| Prior valuation is stale (>30 days) and nothing specific happened | `/update-stock-analysis (or legacy alias /evaluate-stock)` directly |
 | You want to know *if* the model needs updating before re-running it | `/research-stock` |
-| Explicit request for new DCF numbers | `/evaluate-stock` directly |
+| Explicit request for new DCF numbers | `/update-stock-analysis (or legacy alias /evaluate-stock)` directly |
 
 ---
 
@@ -192,12 +192,12 @@ Compile the Class A and Class B findings. Make an explicit recommendation:
 Shall I proceed with the recommended action?
 ```
 
-**Wait for user confirmation before chaining into `/evaluate-stock`.**
+**Wait for user confirmation before chaining into `/update-stock-analysis (or legacy alias /evaluate-stock)`.**
 
 ---
 
 ## Step 6A: If Full Re-Valuation Confirmed
-Pass research context forward as enriched input to the stock_valuation skill:
+Pass research context forward as enriched input to the update-stock-analysis skill:
 
 ```bash
 # Write research context for the valuation skill to consume
@@ -222,10 +222,10 @@ cat > /tmp/{TICKER}_research_context.json << 'EOF'
 EOF
 ```
 
-Then invoke the stock_valuation skill:
+Then invoke the update-stock-analysis skill:
 > *"Based on the research findings, running a full DCF update for {TICKER}. The key input changes are: {list Class A impacts}. Prior model assumptions treated as UNVALIDATED per research findings."*
 
-The stock_valuation skill will pick up the prior projection (Step 0.5) and incorporate the research context in `priorAnalysisReview.fundamentalChanges`.
+The update-stock-analysis skill will pick up the prior projection (Step 0.5) and incorporate the research context in `priorAnalysisReview.fundamentalChanges`.
 
 ---
 

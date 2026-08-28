@@ -1,16 +1,24 @@
 ---
-name: thesis_challenge_bundler
+name: external-review
 plugin: portfolio-advisor
 description: >
   Prepares a standalone adversarial review bundle of the investment thesis, DCF
   projections, and proposed weights for paste into an external LLM (Grok, ChatGPT,
   Gemini). Generates a targeted critical-analyst prompt, compiles all live thesis
   artifacts into a single Markdown payload, and writes it to temp/. Trigger on
-  /bundle-thesis-review, /external-review, or "bundle for external review".
+  /external-review (primary), /bundle-thesis-review (alias), or "bundle for
+  external review". Renamed 2026-08-28 from thesis-challenge-bundler -- see
+  docs/architecture/skill-renames-2026-08-28.md. `/adversarial-review` is now a
+  thin preset wrapper around this skill (full-thesis-challenge scope, no
+  separate hardcoded prompt) rather than a second implementation.
 allowed-tools: Bash, Read, Write
 ---
 
-# Thesis Challenge Bundler Skill
+# External Review Skill
+
+*(Renamed 2026-08-28 from "Thesis Challenge Bundler Skill" / `thesis-challenge-bundler` — promoted to
+the primary skill name since `/external-review` is the more intuitive trigger. Same implementation.
+See `docs/architecture/skill-renames-2026-08-28.md`. `/bundle-thesis-review` still works as an alias.)*
 
 ## Purpose
 
@@ -145,7 +153,7 @@ Optionally include research reports if they exist and the focus is a specific ti
 mkdir -p temp/thesis-challenge-{YYYY-MM-DD}
 
 # Run the canonical bundler
-python3 plugins/portfolio-advisor/skills/thesis-challenge-bundler/scripts/bundle.py \
+python3 plugins/portfolio-advisor/skills/external-review/scripts/bundle.py \
   --manifest temp/thesis-challenge-{YYYY-MM-DD}/file-manifest.json \
   --bundle   temp/thesis-challenge-{YYYY-MM-DD}/payload.md
 ```

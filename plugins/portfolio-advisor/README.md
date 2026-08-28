@@ -48,7 +48,7 @@ portfolio-advisor/
 |:---|:---|:---|
 | `/daily` | `daily-loop` | The one daily command: portfolio sync, morning brief, triage cards, order execution, evolution log |
 | `/adversarial-review` | `adversarial-review` | Prepares a comprehensive adversarial review bundle of the thesis, targets, and daily recommendations |
-| `/bundle-thesis-review` | `thesis-challenge-bundler` | Packages the thesis and DCF projections for a general external review |
+| `/external-review` | `external-review` | Packages the thesis and DCF projections for a general external review (renamed 2026-08-28 from `thesis-challenge-bundler`; `/bundle-thesis-review` still works as an alias) |
 | `/review-portfolio` | `portfolio-health` | Drift monitor + pillar conviction audit + thesis formula health score (0–100) |
 | `/strategic-review` | `strategic-review` | Adversarial thesis challenger — surfaces failing pillars, proposes formula improvements |
 | `/rebalance` | `rebalance-portfolio` | Valuation-gated trade optimizer — never buys SELL-rated holdings to restore drift |

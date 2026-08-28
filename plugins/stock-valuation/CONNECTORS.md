@@ -6,9 +6,9 @@ This plugin operates in **Supercharged** mode: it works standalone (with manual 
 
 | Category | Examples | Used By | Required? |
 |----------|----------|---------|-----------|
-| `~~financial-data-fetcher` | `fetch_financials.py` (yfinance), Alpha Vantage API, Polygon.io | `stock_valuation` SKILL | Supercharged |
-| `~~projection-store` | `persist_projection.py`, SQLite, PostgreSQL | `stock_valuation` SKILL | Supercharged |
-| `~~research-report-store` | Local filesystem (`data/research/`), S3, Notion | `stock_valuation` SKILL | Supercharged |
+| `~~financial-data-fetcher` | `fetch_financials.py` (yfinance), Alpha Vantage API, Polygon.io | `update-stock-analysis` SKILL (renamed 2026-08-28 from `stock_valuation`) | Supercharged |
+| `~~projection-store` | `persist_projection.py`, SQLite, PostgreSQL | `update-stock-analysis` SKILL (renamed 2026-08-28 from `stock_valuation`) | Supercharged |
+| `~~research-report-store` | Local filesystem (`data/research/`), S3, Notion | `update-stock-analysis` SKILL (renamed 2026-08-28 from `stock_valuation`) | Supercharged |
 | `~~backend-health-check` | `curl http://localhost:3001/health`, K8s liveness probe | `evaluate-stock` command | Supercharged |
 
 ## Degradation Contract

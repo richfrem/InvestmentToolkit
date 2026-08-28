@@ -1,6 +1,6 @@
 # API Reference — stock-valuation Backend
 
-> Reference documentation for the Investment Screener backend API and scripts used by the `stock_valuation` skill. These scripts are **owned by the web app** — do not move or duplicate them.
+> Reference documentation for the Investment Screener backend API and scripts used by the `update-stock-analysis` skill (renamed 2026-08-28 from `stock_valuation`). These scripts are **owned by the web app** — do not move or duplicate them.
 
 ---
 
@@ -82,11 +82,11 @@ cat /tmp/{TICKER}_projection.json | python3 investment_screener/backend/py_servi
 
 ## validate_projection.py (Plugin-owned)
 
-**Path**: `plugins/stock-valuation/skills/stock_valuation/scripts/validate_projection.py`  
+**Path**: `plugins/stock-valuation/skills/update-stock-analysis/scripts/validate_projection.py`  
 **Purpose**: Pre-flight validation before calling persist_projection.py
 
 ```bash
-cat /tmp/{TICKER}_projection.json | python3 plugins/stock-valuation/skills/stock_valuation/scripts/validate_projection.py --verbose
+cat /tmp/{TICKER}_projection.json | python3 plugins/stock-valuation/skills/update-stock-analysis/scripts/validate_projection.py --verbose
 echo $?  # 0 = valid, 1 = errors found
 ```
 

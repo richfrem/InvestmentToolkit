@@ -305,7 +305,7 @@ When user says "research more" for a ticker:
 
 When user says "evaluate" for a ticker:
 1. Print: `"Running /evaluate-stock {TICKER} — building DCF model..."`
-2. Execute the stock_valuation skill inline
+2. Execute the update_stock_analysis skill inline
 3. Show the new fair value + action + upside
 4. Re-present the holding card with updated DCF signal
 5. Adjust `recommendedTarget` if the DCF materially changes the case

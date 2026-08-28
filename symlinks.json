@@ -339,7 +339,7 @@
     },
     {
       "src": "plugins/portfolio-advisor/assets/templates/thesis-challenge-prompt.md",
-      "dst": "plugins/portfolio-advisor/skills/thesis-challenge-bundler/assets/templates/thesis-challenge-prompt.md",
+      "dst": "plugins/portfolio-advisor/skills/external-review/assets/templates/thesis-challenge-prompt.md",
       "strategy": "symlink",
       "description": "ADR-003: adversarial prompt template canonical in plugin assets; skill symlink"
     },
@@ -555,7 +555,7 @@
     },
     {
       "src": "plugins/stock-valuation/scripts/dcf_scenarios.py",
-      "dst": "plugins/stock-valuation/skills/stock_valuation/scripts/dcf_scenarios.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/dcf_scenarios.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -567,13 +567,13 @@
     },
     {
       "src": "plugins/stock-valuation/scripts/fetch_financials.py",
-      "dst": "plugins/stock-valuation/skills/stock_valuation/scripts/fetch_financials.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/fetch_financials.py",
       "strategy": "symlink",
       "description": ""
     },
     {
       "src": "plugins/stock-valuation/scripts/validate_projection.py",
-      "dst": "plugins/stock-valuation/skills/stock_valuation/scripts/validate_projection.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/validate_projection.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -585,7 +585,7 @@
     },
     {
       "src": "plugins/stock-valuation/scripts/standardize_metrics.py",
-      "dst": "plugins/stock-valuation/skills/stock_valuation/scripts/standardize_metrics.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/standardize_metrics.py",
       "strategy": "symlink",
       "description": ""
     },
@@ -621,7 +621,7 @@
     },
     {
       "src": "plugins/stock-valuation/assets/templates/projection_template.json",
-      "dst": "plugins/stock-valuation/skills/stock_valuation/assets/templates/projection_template.json",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/assets/templates/projection_template.json",
       "strategy": "symlink",
       "description": "Official projection JSON template"
     },
@@ -699,7 +699,7 @@
     },
     {
       "src": "plugins/stock-valuation/scripts/wacc.py",
-      "dst": "plugins/stock-valuation/skills/stock_valuation/scripts/wacc.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/wacc.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
     },
@@ -711,7 +711,7 @@
     },
     {
       "src": "plugins/stock-valuation/scripts/reverse_dcf.py",
-      "dst": "plugins/stock-valuation/skills/stock_valuation/scripts/reverse_dcf.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/reverse_dcf.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
     },
@@ -723,7 +723,7 @@
     },
     {
       "src": "plugins/stock-valuation/scripts/dcf_sensitivity.py",
-      "dst": "plugins/stock-valuation/skills/stock_valuation/scripts/dcf_sensitivity.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/dcf_sensitivity.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
     },
@@ -735,7 +735,7 @@
     },
     {
       "src": "plugins/stock-valuation/scripts/comps_valuation.py",
-      "dst": "plugins/stock-valuation/skills/stock_valuation/scripts/comps_valuation.py",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/scripts/comps_valuation.py",
       "strategy": "symlink",
       "description": "ADR-003: skill scripts/ symlink -> plugin root scripts/"
     },
@@ -867,7 +867,7 @@
     },
     {
       "src": "docs/architecture/stock-analysis-surface-checklist.md",
-      "dst": "plugins/stock-valuation/skills/stock_valuation/references/stock-analysis-surface-checklist.md",
+      "dst": "plugins/stock-valuation/skills/update-stock-analysis/references/stock-analysis-surface-checklist.md",
       "strategy": "symlink",
       "description": "Checklist mapping of all 5 UI surfaces to deterministic scripts"
     },

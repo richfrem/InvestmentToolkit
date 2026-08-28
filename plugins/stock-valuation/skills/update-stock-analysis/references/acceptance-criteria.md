@@ -1,4 +1,4 @@
-# Acceptance Criteria — stock_valuation Skill
+# Acceptance Criteria — update-stock-analysis Skill
 
 ## Correct Execution Signals
 

@@ -50,9 +50,9 @@
             "trigger": "/x-news-sweep"
         },
         {
-            "name": "thesis_challenge_bundler",
-            "path": "skills/thesis-challenge-bundler/SKILL.md",
-            "trigger": "/bundle-thesis-review"
+            "name": "external-review",
+            "path": "skills/external-review/SKILL.md",
+            "trigger": "/external-review"
         },
         {
             "name": "adversarial_review",
