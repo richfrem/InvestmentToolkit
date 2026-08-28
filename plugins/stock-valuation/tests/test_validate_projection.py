@@ -186,6 +186,54 @@ def test_invalid_sector_enum_fails():
     assert any("sector" in e for e in errors)
 
 
+class TestSnapshotRequiredFields:
+    """Caught live 2026-08-28: AMAT's first-ever projection passed this validator
+    (Step 4) with only snapshot.price/currency/exchange set, then was rejected by
+    the real POST /api/projections endpoint (Step 6) for missing snapshot.shares,
+    snapshot.revenue, and snapshot.lastActualPS — fields backend/src/utils/
+    zod-schemas.ts's SnapshotSchema actually requires but this validator never
+    checked. This validator's whole purpose is to catch schema violations BEFORE
+    they reach the backend; a projection that passes here and fails there is
+    exactly the bug this class guards against."""
+
+    def _projection_with_snapshot(self, snapshot):
+        return {
+            "ticker": "TEST", "id": "abc", "source": "AI_AGENT", "schemaVersion": "1.2",
+            "version": 1, "savedAt": "2026-01-01T00:00:00Z", "rationale": "test",
+            "snapshot": snapshot,
+            "scenarios": {
+                "bear": {"weight": 0.3, "growthRate": 5, "scenarioPrice": 80},
+                "base": {"weight": 0.4, "growthRate": 15, "scenarioPrice": 100},
+                "bull": {"weight": 0.3, "growthRate": 25, "scenarioPrice": 130},
+            },
+            "aiThesis": {"action": "HOLD"},
+            "globalSettings": {},
+        }
+
+    def test_missing_shares_revenue_lastActualPS_are_flagged(self):
+        proj = self._projection_with_snapshot({"price": 100.0, "currency": "USD"})
+        errors = validate_projection(proj)
+        assert any("snapshot.shares" in e for e in errors)
+        assert any("snapshot.revenue" in e for e in errors)
+        assert any("snapshot.lastActualPS" in e for e in errors)
+
+    def test_complete_snapshot_passes(self):
+        proj = self._projection_with_snapshot({
+            "price": 100.0, "currency": "USD", "shares": 1000, "revenue": 5000, "lastActualPS": 5.0,
+        })
+        errors = validate_projection(proj)
+        assert not any("snapshot" in e for e in errors)
+
+    def test_null_lastActualPS_is_allowed_key_must_exist(self):
+        """Backend schema is .nullable().transform(v => v ?? 0) — null is a valid
+        value, only a missing key is an error (pre-revenue/mining stocks, pitfall #5)."""
+        proj = self._projection_with_snapshot({
+            "price": 100.0, "currency": "USD", "shares": 1000, "revenue": 5000, "lastActualPS": None,
+        })
+        errors = validate_projection(proj)
+        assert not any("snapshot.lastActualPS" in e for e in errors)
+
+
 def test_missing_sector_is_not_an_error():
     proj = _base_projection()  # no "sector" key at all
     errors = validate_projection(proj)

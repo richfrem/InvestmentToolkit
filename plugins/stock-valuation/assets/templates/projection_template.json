@@ -8,10 +8,13 @@
   "updatedAt": "<ISO timestamp>",
   "name": "AI Deep Dive — {TICKER} — <date>",
   "rationale": "<3-5 sentence thesis>",
-  "snapshot": { 
+  "snapshot": {
     "price": 0.0,
     "currency": "USD",
-    "exchange": "NYSE"
+    "exchange": "NYSE",
+    "shares": 0,
+    "revenue": 0,
+    "lastActualPS": null
   },
   "dataPreferences": { "growthBasis": "next", "marginBasis": "ttm" },
   "scenarios": { 
