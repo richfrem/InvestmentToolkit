@@ -396,6 +396,46 @@ class TestDeriveAndWrite:
         assert len(stored["sell_tiers"]) == 3
         assert stored["stop_loss"] is not None
 
+    def test_writes_price_levels_even_when_target_portfolio_json_is_absent(self, tmp_path):
+        """Caught live 2026-08-28 running AMAT's first-ever /update-stock-analysis:
+        target-portfolio.json is fully retired per CLAUDE.md Rule #30 (archived,
+        Wave 7/8 migration) and no longer exists ANYWHERE on disk in production.
+        The SQL write to price_level_tier was gated behind `holding_found`, which
+        is computed by reading that now-nonexistent file -- so `holding_found` was
+        always False and this write was silently dead code for every ticker since
+        the migration, not just first-time analyses. Every pre-existing test in
+        this file synthesizes a fake target-portfolio.json fixture via
+        _make_target_json(), which is exactly why this was never caught: the real
+        production absence of that file was never exercised. This test passes a
+        target_json_path that does not exist, matching production reality."""
+        db_path = _make_db(tmp_path)
+        portfolio_path = _make_portfolio_json(tmp_path)
+        nonexistent_target_path = tmp_path / "target-portfolio.json"  # never created
+
+        result = derive_and_write(
+            "GOOG",
+            source="dcf",
+            dry_run=False,
+            target_json_path=nonexistent_target_path,
+            portfolio_json_path=portfolio_path,
+            db_path=db_path,
+        )
+
+        assert result["dry_run"] is False
+
+        conn = initialize_db(str(db_path))
+        investment_id = resolve_investment(conn, "GOOG")
+        stored = get_price_levels(conn, investment_id)
+        conn.close()
+
+        assert stored is not None, (
+            "price_level_tier must be written regardless of target-portfolio.json's "
+            "existence -- that file is retired and reading it for a write-gate "
+            "re-introduces a dependency Rule #30 explicitly forbids"
+        )
+        assert len(stored["buy_tiers"]) == 2
+        assert len(stored["sell_tiers"]) == 3
+
     def test_replace_preserves_existing_target_entry_price(self, tmp_path):
         """A pre-existing targetEntryPrice (a separate TARGET_ENTRY-kind row this
         script never sets) must survive a priceLevels replace, not be silently

@@ -267,9 +267,6 @@ def derive_and_write(
     db_path: Path | None = None
 ) -> dict:
     """Derives price levels for a ticker and updates the files."""
-    tpath = target_json_path or TARGET_JSON
-    ppath = portfolio_json_path or PORTFOLIO_JSON
-
     proj = load_latest_projection(ticker, db_path)
     if not proj:
         raise ValueError(f"No projection found for {ticker}")
@@ -300,40 +297,41 @@ def derive_and_write(
     #    pre-existing targetEntryPrice (a separate, TARGET_ENTRY-kind row this script
     #    never sets) is read back first and carried through unchanged so this write
     #    doesn't silently wipe it out.
-    holding_found = False
-    if tpath.exists():
-        with open(tpath) as f:
-            target_data = json.load(f)
-        holding_found = any(
-            h.get('ticker', '').upper() == ticker.upper() for h in target_data.get('holdings', [])
-        )
-
-    if holding_found:
-        if not dry_run:
-            dbp = db_path or DB_PATH
-            conn = initialize_db(str(dbp))
-            try:
-                investment_id = resolve_investment(conn, ticker)
-                existing = get_price_levels(conn, investment_id)
-                existing_target_entry = (
-                    existing['target_entry']['price'] if existing and existing.get('target_entry') else None
-                )
-                replace_price_levels(
-                    conn,
-                    investment_id,
-                    schema_version=price_levels['schemaVersion'],
-                    last_updated=price_levels['lastUpdated'],
-                    last_updated_by=price_levels['lastUpdatedBy'],
-                    note=price_levels['note'],
-                    buy_tiers=price_levels['buyTiers'],
-                    sell_tiers=price_levels['sellTiers'],
-                    stop_loss=price_levels['stopLoss'],
-                    target_entry_price=existing_target_entry,
-                )
-            finally:
-                conn.close()
-    else:
-        print(f"Warning: Holding {ticker} not found in target portfolio holdings.")
+    #
+    #    This write is unconditional (not gated on target-portfolio.json holdings
+    #    membership). Bug caught live 2026-08-28: target-portfolio.json is fully
+    #    retired per CLAUDE.md Rule #30 (archived, Wave 7/8 migration) and no longer
+    #    exists anywhere in production, so the old `holding_found` gate (computed by
+    #    reading that file) was always False -- this SQL write was silently dead
+    #    code for every ticker since the migration, not just first-time analyses
+    #    like AMAT. Every existing test synthesized a fake target-portfolio.json
+    #    fixture, which is why this was never caught. Watchlist-only/new tickers
+    #    legitimately want price levels stored too (that's how you track a buy zone
+    #    for a stock you don't own yet) -- there was never a real reason to gate the
+    #    DB write on holdings membership in the first place.
+    if not dry_run:
+        dbp = db_path or DB_PATH
+        conn = initialize_db(str(dbp))
+        try:
+            investment_id = resolve_investment(conn, ticker)
+            existing = get_price_levels(conn, investment_id)
+            existing_target_entry = (
+                existing['target_entry']['price'] if existing and existing.get('target_entry') else None
+            )
+            replace_price_levels(
+                conn,
+                investment_id,
+                schema_version=price_levels['schemaVersion'],
+                last_updated=price_levels['lastUpdated'],
+                last_updated_by=price_levels['lastUpdatedBy'],
+                note=price_levels['note'],
+                buy_tiers=price_levels['buyTiers'],
+                sell_tiers=price_levels['sellTiers'],
+                stop_loss=price_levels['stopLoss'],
+                target_entry_price=existing_target_entry,
+            )
+        finally:
+            conn.close()
 
     # 2. Compute the priceLevelSnapshot (Wave 3 Task 5.8 rewire).
     #
@@ -353,7 +351,7 @@ def derive_and_write(
     # `res['price_level_snapshot']` would have gotten from the dead JSON path,
     # sourced correctly instead of from code that could never fire.
     price_level_snapshot = None
-    if holding_found and not dry_run:
+    if not dry_run:
         dbp = db_path or DB_PATH
         conn = initialize_db(str(dbp))
         try:
