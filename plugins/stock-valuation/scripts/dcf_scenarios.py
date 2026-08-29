@@ -76,6 +76,12 @@ def compute_scenario(
     # Core Valuation Mirror logic
     # Note: Optionality is added to the undiscounted price (future value)
     y5_price_undiscounted = (y5_eps * pe * qm) + (optionality / y5_shares if y5_shares > 0 else 0.0)
+    # Floor at $0: a negative EPS produces a mathematically negative "price," but
+    # equity holders' worst real-world outcome is a total loss (price=$0), never a
+    # negative number. Caught live 2026-08-29 valuing APLD, where an unfloored
+    # negative bear/base price silently corrupted the weighted-average fair value.
+    price_was_negative = y5_price_undiscounted < 0
+    y5_price_undiscounted = max(y5_price_undiscounted, 0.0)
     present_value = y5_price_undiscounted / divisor
 
     return {
@@ -86,6 +92,7 @@ def compute_scenario(
         "year5EPS": round(y5_eps, 2),
         "year5PriceUndiscounted": round(y5_price_undiscounted, 2),
         "presentValue": round(present_value, 2),
+        "priceFloored": price_was_negative,
     }
 
 
@@ -124,6 +131,13 @@ def validate_scenarios(results: dict[str, dict]) -> dict[str, Any]:
             warnings.append(
                 f"{name}.qualityMultiplier={s['qualityMultiplier']} > 1.1 — "
                 "ensure ≥1 structural moat is cited in scenario rationale"
+            )
+        if s.get("priceFloored"):
+            warnings.append(
+                f"{name}.year5PriceUndiscounted was floored to $0 (negative EPS × exitPE "
+                "produced a negative price) — the P/E-based terminal-value method breaks "
+                "down for a scenario still loss-making at year 5; consider a revenue-multiple "
+                "terminal value for this scenario instead of trusting the $0 floor blindly"
             )
         if not (-5.0 <= s["shareChange"] <= 5.0):
             errors.append(f"{name}.shareChange={s['shareChange']} out of range [-5, +5]")
