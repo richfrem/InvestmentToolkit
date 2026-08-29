@@ -76,6 +76,42 @@ def test_run_warns_when_any_scenario_hits_the_zero_floor():
     assert not any("floored" in w.lower() and "bull" in w.lower() for w in warnings)
 
 
+def test_pv_ordering_allows_tied_zero_floor_between_bear_and_base():
+    """Direct side effect of the floor fix: when both bear and base scenarios are
+    loss-making enough to hit the $0 floor, they tie at presentValue=0.0 -- this
+    is not a real ordering violation (both are genuinely, equally worthless in
+    this model), so the strict bear < base < bull check must not reject it."""
+    result = run(
+        ticker="APLD", base_revenue=611_311_000, base_shares=284_303_812,
+        scenario_params={
+            "bear": _loss_making_params(growth=25, margin=-25, pe=12, qm=0.8, share_change=5.0, weight=0.25),
+            "base": _loss_making_params(growth=48, margin=-5, pe=18, qm=1.0, share_change=3.0, weight=0.50),
+            "bull": _loss_making_params(growth=65, margin=10, pe=25, qm=1.15, share_change=1.5, weight=0.25),
+        },
+        price=25.34,
+    )
+    assert result["scenarios"]["bear"]["presentValue"] == 0.0
+    assert result["scenarios"]["base"]["presentValue"] == 0.0
+    assert result["validation"]["pvOrdering"] is True
+    assert not any("PV ordering violated" in e for e in result["validation"]["errors"])
+
+
+def test_pv_ordering_still_rejects_a_genuine_non_floor_inversion():
+    """A real inversion (base actually priced below bear, neither floored) must
+    still be caught -- the relaxation is scoped to the floor-tie case only."""
+    result = run(
+        ticker="TEST", base_revenue=1_000_000_000, base_shares=100_000_000,
+        scenario_params={
+            "bear": {"growthRate": 20, "netMargin": 20, "exitPE": 20, "qualityMultiplier": 1.0, "shareChange": 0, "weight": 0.3},
+            "base": {"growthRate": 15, "netMargin": 5, "exitPE": 10, "qualityMultiplier": 1.0, "shareChange": 0, "weight": 0.4},
+            "bull": {"growthRate": 25, "netMargin": 25, "exitPE": 25, "qualityMultiplier": 1.0, "shareChange": 0, "weight": 0.3},
+        },
+        price=100.0,
+    )
+    assert result["validation"]["pvOrdering"] is False
+    assert any("PV ordering violated" in e for e in result["validation"]["errors"])
+
+
 if __name__ == "__main__":
     test_negative_eps_scenario_floors_price_at_zero()
     test_positive_eps_scenario_unaffected_by_floor()

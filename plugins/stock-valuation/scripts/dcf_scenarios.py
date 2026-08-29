@@ -117,7 +117,15 @@ def validate_scenarios(results: dict[str, dict]) -> dict[str, Any]:
             f"base={base['growthRate']} bull={bull['growthRate']}"
         )
 
-    pv_ok = bear["presentValue"] < base["presentValue"] < bull["presentValue"]
+    # A tie at the $0 floor between bear and base is not a real ordering
+    # violation -- both are genuinely, equally worthless in this model when both
+    # hit the negative-EPS floor (see priceFloored). Bull must still strictly
+    # exceed base; only the bear<=base leg tolerates a floor tie.
+    bear_base_ok = (
+        bear["presentValue"] < base["presentValue"]
+        or (bear.get("priceFloored") and base.get("priceFloored") and bear["presentValue"] == base["presentValue"])
+    )
+    pv_ok = bear_base_ok and base["presentValue"] < bull["presentValue"]
     if not pv_ok:
         errors.append(
             f"PV ordering violated: bear={bear['presentValue']} "
