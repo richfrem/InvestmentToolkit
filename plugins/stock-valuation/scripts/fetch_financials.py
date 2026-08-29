@@ -137,6 +137,46 @@ def sanitize_json_data(val: Any) -> Any:
             return None
     return val
 
+def check_margin_consistency(
+    profit_margin_pct: float, historical_net_margin_ttm_pct: float, threshold_pp: float = 10.0
+) -> list[str]:
+    """Flag when metrics.profit_margin (yfinance info['profitMargins']) disagrees
+    materially with financials.historical_net_margin's TTM entry (computed locally
+    from historical_revenue/historical_net_income) -- two different Yahoo Finance
+    data endpoints that can disagree due to fiscal-period/restatement differences.
+
+    Caught live 2026-08-29 across three tickers in one session (BE, BTDR, CBRS),
+    each requiring a manual eyeball catch of a double-digit-to-100+ percentage-point
+    gap between these two fields. Neither value is "wrong" per se; this just makes
+    the disagreement an automatic, machine-readable flag instead of something an
+    agent has to notice by chance on every single ticker.
+
+    Args:
+        profit_margin_pct: metrics.profit_margin, already in percentage units.
+        historical_net_margin_ttm_pct: financials.historical_net_margin[-1],
+            already in percentage units.
+        threshold_pp: Minimum absolute percentage-point gap to flag.
+
+    Returns:
+        A single-item list with a descriptive flag if the two disagree by more
+        than `threshold_pp` percentage points, else an empty list. A value of
+        exactly 0.0 on either side is treated as "missing/unavailable" (common
+        for newly-listed or thinly-covered tickers) rather than compared, to
+        avoid a spurious flag against a real zero.
+    """
+    if profit_margin_pct == 0.0 or historical_net_margin_ttm_pct == 0.0:
+        return []
+    gap = abs(profit_margin_pct - historical_net_margin_ttm_pct)
+    if gap <= threshold_pp:
+        return []
+    return [
+        f"metrics.profit_margin ({profit_margin_pct:.2f}%) disagrees with "
+        f"financials.historical_net_margin's TTM entry ({historical_net_margin_ttm_pct:.2f}%) "
+        f"by {gap:.2f} percentage points -- two different Yahoo Finance data sources, "
+        "not reconciled; do not silently pick one when building DCF margin assumptions"
+    ]
+
+
 # Retrieve comprehensive financial data for a stock
 def fetch_financial_data(ticker_symbol: str, no_cache: bool = False) -> None:
     """Retrieves and compiles financial statements, analyst targets, and key metrics for a given ticker.
@@ -505,7 +545,11 @@ def fetch_financial_data(ticker_symbol: str, no_cache: bool = False) -> None:
                 "revenue_growth": round(final_rev_growth * 100, 2),
                 "profit_margin": round(profit_margin * 100, 2),
                 "forward_pe": forward_pe
-            }
+            },
+            "dataQualityFlags": check_margin_consistency(
+                round(profit_margin * 100, 2),
+                hist_net_margin[-1] if hist_net_margin else 0.0,
+            )
         }
 
         # 3. Save to Cache
