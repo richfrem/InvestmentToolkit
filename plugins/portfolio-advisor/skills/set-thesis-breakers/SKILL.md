@@ -1,5 +1,5 @@
 ---
-name: set_thesis_breakers
+name: set-thesis-breakers
 plugin: portfolio-advisor
 description: >
   Interactive, HITL-first session to define a holding's thesis breakers — the

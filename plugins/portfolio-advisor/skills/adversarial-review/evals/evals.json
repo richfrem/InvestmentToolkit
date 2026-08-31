@@ -1,60 +1,53 @@
-{
-    "skill": "adversarial_review",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, bundling correctness, and trigger disambiguation of the adversarial_review skill.",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "Run adversarial review on my portfolio",
-            "expected_trigger": "adversarial_review",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent invokes adversarial_review, extracts the latest daily_brief.py --json data, and generates temp/bundles/prompt.md"
-        },
-        {
-            "id": "EVAL-002",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "/adversarial-review",
-            "expected_trigger": "adversarial_review",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent recognises the slash command and begins Phase 1 (Prompt & Manifest Generation)"
-        },
-        {
-            "id": "EVAL-003",
-            "type": "positive",
-            "category": "schema_compliance",
-            "prompt": "Bundle the thesis integrity, daily actions, standing decisions, and sizing inconsistencies for external review",
-            "expected_trigger": "adversarial_review",
-            "pass_condition": "file-manifest.json lists temp/bundles/prompt.md FIRST in the files array (instructions before data), followed by investment_thesis.md, target-portfolio.json, projections/, and strategic-reviews/. The generated prompt explicitly instructs the reviewer to cover Thesis Integrity, Daily Actions (naming the actual tickers CLSK/IONQ/VRT/DRAM/CRWV/PSIX), Standing Decisions (CORZ/OKLO/PANW/BE), and Sizing Inconsistencies."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "positive",
-            "category": "standalone_degradation",
-            "prompt": "Run adversarial review",
-            "setup": "The bundler script is not installed at either the local plugin path or the .agents/ marketplace path",
-            "expected_trigger": "adversarial_review",
-            "pass_condition": "Agent falls back to the documented on-demand uvx install path (uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add ...) rather than crashing or fabricating a bundle output."
-        },
-        {
-            "id": "EVAL-005",
-            "type": "near_miss",
-            "category": "trigger_conflict",
-            "prompt": "I want to focus the external review specifically on just my INTC and CRWV positions and get either a Markdown or ZIP output",
-            "expected_trigger": "external_review",
-            "expected_not_trigger": [
-                "adversarial_review"
-            ],
-            "pass_condition": "Agent routes to external_review, which supports scoped focus areas (specific tickers, output format choice), not adversarial_review, which always bundles the full fixed daily-brief-driven payload with no scoping question."
-        }
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Run adversarial review on my portfolio",
+    "expected_trigger": "adversarial_review",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent invokes adversarial_review, extracts the latest daily_brief.py --json data, and generates temp/bundles/prompt.md",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/adversarial-review",
+    "expected_trigger": "adversarial_review",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises the slash command and begins Phase 1 (Prompt & Manifest Generation)",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "Bundle the thesis integrity, daily actions, standing decisions, and sizing inconsistencies for external review",
+    "expected_trigger": "adversarial_review",
+    "pass_condition": "file-manifest.json lists temp/bundles/prompt.md FIRST in the files array (instructions before data), followed by investment_thesis.md, target-portfolio.json, projections/, and strategic-reviews/. The generated prompt explicitly instructs the reviewer to cover Thesis Integrity, Daily Actions (naming the actual tickers CLSK/IONQ/VRT/DRAM/CRWV/PSIX), Standing Decisions (CORZ/OKLO/PANW/BE), and Sizing Inconsistencies.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "positive",
+    "category": "standalone_degradation",
+    "prompt": "Run adversarial review",
+    "setup": "The bundler script is not installed at either the local plugin path or the .agents/ marketplace path",
+    "expected_trigger": "adversarial_review",
+    "pass_condition": "Agent falls back to the documented on-demand uvx install path (uvx --from git+https://github.com/richfrem/agent-plugins-skills plugin-add ...) rather than crashing or fabricating a bundle output.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-005",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "I want to focus the external review specifically on just my INTC and CRWV positions and get either a Markdown or ZIP output",
+    "expected_trigger": "external_review",
+    "expected_not_trigger": [
+      "adversarial_review"
     ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
-        "schema_compliance": "100% of EVAL-003 pass (prompt.md first, correct file set)",
-        "degradation_coverage": "100% of EVAL-004 pass",
-        "trigger_disambiguation": "100% of EVAL-005 pass (adversarial_review vs. external_review)"
-    }
-}
+    "pass_condition": "Agent routes to external_review, which supports scoped focus areas (specific tickers, output format choice), not adversarial_review, which always bundles the full fixed daily-brief-driven payload with no scoping question.",
+    "should_trigger": true
+  }
+]

@@ -1,5 +1,5 @@
 ---
-name: portfolio_health
+name: portfolio-health
 description: "Quick portfolio health check: drift monitor, pillar conviction audit, and thesis formula score. For full adversarial thesis challenge with formula improvement proposals, use /strategic-review."
 allowed-tools: Bash, Read, Write
 ---

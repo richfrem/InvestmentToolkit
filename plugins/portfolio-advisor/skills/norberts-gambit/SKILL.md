@@ -1,5 +1,5 @@
 ---
-name: norberts_gambit
+name: norberts-gambit
 plugin: portfolio-advisor
 description: >
   Guides the user through Norbert's Gambit — the standard technique for converting

@@ -1,46 +1,39 @@
-{
-    "skill": "tv_change_symbol",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and edge-case handling of the tv_change_symbol skill (switches the active TradingView chart symbol).",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "/change-symbol NVDA",
-            "expected_trigger": "tv_change_symbol",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent runs `node tradingview-cdp/cli.js chart symbol NVDA` and reports the expected `{ success: true, symbol: \"NVDA\" }` result."
-        },
-        {
-            "id": "EVAL-002",
-            "type": "negative",
-            "category": "edge_case",
-            "prompt": "/change-symbol MA",
-            "expected_trigger": "tv_change_symbol",
-            "pass_condition": "Per the Notes section (ambiguous symbols like 'MA' can fuzzy-match to the wrong ticker), the agent proactively suggests or confirms an exchange-qualified form (e.g. `NYSE:MA`) rather than blindly trusting TV's first autocomplete result for a known-ambiguous ticker."
-        },
-        {
-            "id": "EVAL-003",
-            "type": "positive",
-            "category": "schema_compliance",
-            "prompt": "/change-symbol BTC",
-            "expected_trigger": "tv_change_symbol",
-            "pass_condition": "Agent reports back the `symbol` field TV actually confirmed (which may differ from the literal input if TV resolved it, e.g. to `BTCUSD`), not just echoing the user's typed ticker without checking the command's JSON response."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "negative",
-            "category": "troubleshooting",
-            "prompt": "/change-symbol AAPL — the command returns 'Symbol button not found'",
-            "expected_trigger": "tv_change_symbol",
-            "pass_condition": "Per the Troubleshooting table, agent explains this likely means an overlay (Pine Editor, a dialog) is open blocking the symbol button, and suggests closing it before retrying — rather than repeatedly retrying the same failing command without diagnosis."
-        }
-    ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001 pass",
-        "schema_compliance": "100% of EVAL-003 pass",
-        "edge_case_handling": "100% of EVAL-002/004 pass"
-    }
-}
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/change-symbol NVDA",
+    "expected_trigger": "tv_change_symbol",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent runs `node tradingview-cdp/cli.js chart symbol NVDA` and reports the expected `{ success: true, symbol: \"NVDA\" }` result.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "negative",
+    "category": "edge_case",
+    "prompt": "/change-symbol MA",
+    "expected_trigger": "tv_change_symbol",
+    "pass_condition": "Per the Notes section (ambiguous symbols like 'MA' can fuzzy-match to the wrong ticker), the agent proactively suggests or confirms an exchange-qualified form (e.g. `NYSE:MA`) rather than blindly trusting TV's first autocomplete result for a known-ambiguous ticker.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "/change-symbol BTC",
+    "expected_trigger": "tv_change_symbol",
+    "pass_condition": "Agent reports back the `symbol` field TV actually confirmed (which may differ from the literal input if TV resolved it, e.g. to `BTCUSD`), not just echoing the user's typed ticker without checking the command's JSON response.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "troubleshooting",
+    "prompt": "/change-symbol AAPL \u2014 the command returns 'Symbol button not found'",
+    "expected_trigger": "tv_change_symbol",
+    "pass_condition": "Per the Troubleshooting table, agent explains this likely means an overlay (Pine Editor, a dialog) is open blocking the symbol button, and suggests closing it before retrying \u2014 rather than repeatedly retrying the same failing command without diagnosis.",
+    "should_trigger": false
+  }
+]

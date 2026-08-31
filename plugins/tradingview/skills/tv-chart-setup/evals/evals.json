@@ -1,46 +1,39 @@
-{
-    "skill": "tv_chart_setup",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and edge-case handling of the tv_chart_setup skill (agent-layout switch + symbol + timeframe in one call).",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "/tv-chart-setup AAPL 1D",
-            "expected_trigger": "tv_chart_setup",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent runs the three steps in order — Step 1 `chart saveLayout --name agent-layout`, Step 2 `chart symbol AAPL`, Step 3 `chart timeframe 1D` — and reports the Step 4 confirmation message with the correct symbol/timeframe filled in."
-        },
-        {
-            "id": "EVAL-002",
-            "type": "positive",
-            "category": "edge_case",
-            "prompt": "/tv-chart-setup AAPL",
-            "expected_trigger": "tv_chart_setup",
-            "pass_condition": "Per Step 3's instruction ('If the user didn't provide a timeframe, skip this step'), agent runs Step 1 and Step 2 only, skips the timeframe change, and does not fabricate a default timeframe value in the confirmation message."
-        },
-        {
-            "id": "EVAL-003",
-            "type": "positive",
-            "category": "schema_compliance",
-            "prompt": "/tv-chart-setup NVDA 4H",
-            "expected_trigger": "tv_chart_setup",
-            "pass_condition": "Agent's final report matches the documented Step 4 format: 'Chart workspace ready: **NVDA** on **4H** in agent-layout.'"
-        },
-        {
-            "id": "EVAL-004",
-            "type": "negative",
-            "category": "failure_handling",
-            "prompt": "/tv-chart-setup MSFT 1D — Step 2 (change symbol) fails",
-            "expected_trigger": "tv_chart_setup",
-            "pass_condition": "Per Step 4 ('If any step failed, report the failure and stop — do not silently continue with wrong state'), agent stops after the symbol-change failure, reports it, and does NOT proceed to Step 3 (timeframe) or claim the workspace is ready."
-        }
-    ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001 pass",
-        "schema_compliance": "100% of EVAL-003 pass",
-        "edge_case_handling": "100% of EVAL-002/004 pass"
-    }
-}
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/tv-chart-setup AAPL 1D",
+    "expected_trigger": "tv_chart_setup",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent runs the three steps in order \u2014 Step 1 `chart saveLayout --name agent-layout`, Step 2 `chart symbol AAPL`, Step 3 `chart timeframe 1D` \u2014 and reports the Step 4 confirmation message with the correct symbol/timeframe filled in.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "edge_case",
+    "prompt": "/tv-chart-setup AAPL",
+    "expected_trigger": "tv_chart_setup",
+    "pass_condition": "Per Step 3's instruction ('If the user didn't provide a timeframe, skip this step'), agent runs Step 1 and Step 2 only, skips the timeframe change, and does not fabricate a default timeframe value in the confirmation message.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "/tv-chart-setup NVDA 4H",
+    "expected_trigger": "tv_chart_setup",
+    "pass_condition": "Agent's final report matches the documented Step 4 format: 'Chart workspace ready: **NVDA** on **4H** in agent-layout.'",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "failure_handling",
+    "prompt": "/tv-chart-setup MSFT 1D \u2014 Step 2 (change symbol) fails",
+    "expected_trigger": "tv_chart_setup",
+    "pass_condition": "Per Step 4 ('If any step failed, report the failure and stop \u2014 do not silently continue with wrong state'), agent stops after the symbol-change failure, reports it, and does NOT proceed to Step 3 (timeframe) or claim the workspace is ready.",
+    "should_trigger": false
+  }
+]

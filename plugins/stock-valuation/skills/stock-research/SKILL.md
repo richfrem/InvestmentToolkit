@@ -1,5 +1,5 @@
 ---
-name: stock_research
+name: stock-research
 plugin: stock-valuation
 description: >
   Perform a qualitative deep-dive research sweep on a stock: recent news,

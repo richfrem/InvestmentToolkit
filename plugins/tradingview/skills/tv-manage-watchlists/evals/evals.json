@@ -1,58 +1,52 @@
-{
-    "skill": "tv_manage_watchlists",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and adversarial robustness of the tv_manage_watchlists skill (synchronizes portfolio holdings and researched tickers into three TradingView watchlists).",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "Sync my watchlists with TradingView, I've added a few new tickers to watchlist.json",
-            "expected_trigger": "tv_manage_watchlists",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent runs the health check, loads portfolio.json and watchlist.json (falling back to scanning projections/ if watchlist.json is missing), and updates the three standard TradingView watchlists."
-        },
-        {
-            "id": "EVAL-002",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "What would change if I synced my TradingView watchlists right now?",
-            "expected_trigger": "tv_manage_watchlists",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent runs watchlist_manager.py sync --dry-run and reports planned additions/removals without applying them, per the documented dry-run verification step."
-        },
-        {
-            "id": "EVAL-003",
-            "type": "positive",
-            "category": "schema_compliance",
-            "prompt": "Sync the TA-BOATS-Watchlist for my US positions",
-            "expected_trigger": "tv_manage_watchlists",
-            "pass_condition": "Agent constructs BOATS entries as `BOATS:TICKER` and excludes Canadian (.TO/.V) and futures symbols from that specific watchlist, while `TA-Full Watchlist` continues to include Canadian tickers."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "negative",
-            "category": "hallucination",
-            "prompt": "Add SPECULATIVETICKER to my TradingView watchlists, I just heard about it",
-            "expected_trigger": "tv_manage_watchlists",
-            "pass_condition": "Agent does not add an arbitrary ticker directly to TradingView. It explains the sync only reflects tickers present in portfolio.json / watchlist.json / projections, and that the user should add the ticker to watchlist.json (or run a valuation on it) first, then re-sync."
-        },
-        {
-            "id": "EVAL-005",
-            "type": "near_miss",
-            "category": "trigger_conflict",
-            "prompt": "Take a screenshot of the CRWV chart for me",
-            "expected_trigger": "tv_chart_snapshot",
-            "expected_not_trigger": [
-                "tv_manage_watchlists"
-            ],
-            "pass_condition": "Agent routes to tv_chart_snapshot (single-ticker chart screenshot), not tv_manage_watchlists — this skill only manages watchlist membership, it does not view or capture individual charts."
-        }
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Sync my watchlists with TradingView, I've added a few new tickers to watchlist.json",
+    "expected_trigger": "tv_manage_watchlists",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent runs the health check, loads portfolio.json and watchlist.json (falling back to scanning projections/ if watchlist.json is missing), and updates the three standard TradingView watchlists.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "What would change if I synced my TradingView watchlists right now?",
+    "expected_trigger": "tv_manage_watchlists",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent runs watchlist_manager.py sync --dry-run and reports planned additions/removals without applying them, per the documented dry-run verification step.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "Sync the TA-BOATS-Watchlist for my US positions",
+    "expected_trigger": "tv_manage_watchlists",
+    "pass_condition": "Agent constructs BOATS entries as `BOATS:TICKER` and excludes Canadian (.TO/.V) and futures symbols from that specific watchlist, while `TA-Full Watchlist` continues to include Canadian tickers.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "Add SPECULATIVETICKER to my TradingView watchlists, I just heard about it",
+    "expected_trigger": "tv_manage_watchlists",
+    "pass_condition": "Agent does not add an arbitrary ticker directly to TradingView. It explains the sync only reflects tickers present in portfolio.json / watchlist.json / projections, and that the user should add the ticker to watchlist.json (or run a valuation on it) first, then re-sync.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "Take a screenshot of the CRWV chart for me",
+    "expected_trigger": "tv_chart_snapshot",
+    "expected_not_trigger": [
+      "tv_manage_watchlists"
     ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
-        "schema_compliance": "100% of EVAL-003 pass",
-        "adversarial_robustness": "100% of EVAL-004 pass"
-    }
-}
+    "pass_condition": "Agent routes to tv_chart_snapshot (single-ticker chart screenshot), not tv_manage_watchlists \u2014 this skill only manages watchlist membership, it does not view or capture individual charts.",
+    "should_trigger": true
+  }
+]

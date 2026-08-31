@@ -1,57 +1,50 @@
-{
-    "skill": "ta_red_team",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for output-quality, schema compliance, and dispatch-boundary robustness of the ta_red_team skill. This skill is INTERNAL-ONLY — dispatched by technical-analysis-expert, never invoked directly by the user — so it has no 'trigger' category.",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "output_quality",
-            "prompt": "Review temp/ta_thesis_draft.md — the draft recommends 'Initiate at $142' citing a support level at $138, but the RSI section shows a bearish divergence (price making a higher high while RSI makes a lower high) that Section 4 never mentions.",
-            "expected_trigger": "ta_red_team",
-            "pass_condition": "Per Review Protocol section 2 (Contradictory Evidence), the reviewer surfaces the ignored bearish RSI divergence explicitly, citing the section and values, and does not let it pass silently just because the entry price is arithmetically consistent with the cited support level."
-        },
-        {
-            "id": "EVAL-002",
-            "type": "positive",
-            "category": "output_quality",
-            "prompt": "Review temp/ta_thesis_draft.md — Section 5 sets a stop loss at $95 but the nearest cited support level in Section 3 is $110, giving a stop that sits below a level never justified in the draft.",
-            "expected_trigger": "ta_red_team",
-            "pass_condition": "Per Review Protocol section 4 (Risk / Stop Loss), the reviewer flags that the stop is not defensible against a real cited support level and checks whether the resulting risk/reward ratio still clears the ≥1.5:1 bar before approving."
-        },
-        {
-            "id": "EVAL-003",
-            "type": "negative",
-            "category": "schema_compliance",
-            "prompt": "Review temp/ta_thesis_draft.md — the analysis is well-reasoned and every dimension checks out.",
-            "expected_trigger": "ta_red_team",
-            "pass_condition": "Response ends with exactly `[APPROVED]` or `[REJECTED]` on its own line as the final line of output, per the Output Format spec — not embedded mid-paragraph, not a synonym like 'Approved' or 'LGTM'."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "negative",
-            "category": "hallucination",
-            "prompt": "Review temp/ta_thesis_draft.md and just tell me if it looks reasonable overall.",
-            "expected_trigger": "ta_red_team",
-            "pass_condition": "Reviewer does not give a vague holistic impression — Findings section cites specific section numbers and values per the Review Protocol, and the response is not helpful/agreeable by default; it actively looks for the failure mode per the 'Your Role' framing (skeptical prop trader, not a helpful assistant)."
-        },
-        {
-            "id": "EVAL-005",
-            "type": "near_miss",
-            "category": "dispatch_boundary",
-            "prompt": "Run the ta-red-team skill on NVDA for me directly, I don't want the full technical-analysis-expert pipeline.",
-            "expected_trigger": "technical_analysis_expert",
-            "expected_not_trigger": [
-                "ta_red_team"
-            ],
-            "pass_condition": "Per the skill's own Trigger note ('Dispatched internally by the technical-analysis-expert skill. Not invoked directly by the user'), a direct user request to invoke ta-red-team standalone should route through technical_analysis_expert (which internally dispatches ta-red-team once a draft thesis exists), not run ta-red-team on a ticker with no draft input file."
-        }
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "output_quality",
+    "prompt": "Review temp/ta_thesis_draft.md \u2014 the draft recommends 'Initiate at $142' citing a support level at $138, but the RSI section shows a bearish divergence (price making a higher high while RSI makes a lower high) that Section 4 never mentions.",
+    "expected_trigger": "ta_red_team",
+    "pass_condition": "Per Review Protocol section 2 (Contradictory Evidence), the reviewer surfaces the ignored bearish RSI divergence explicitly, citing the section and values, and does not let it pass silently just because the entry price is arithmetically consistent with the cited support level.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "output_quality",
+    "prompt": "Review temp/ta_thesis_draft.md \u2014 Section 5 sets a stop loss at $95 but the nearest cited support level in Section 3 is $110, giving a stop that sits below a level never justified in the draft.",
+    "expected_trigger": "ta_red_team",
+    "pass_condition": "Per Review Protocol section 4 (Risk / Stop Loss), the reviewer flags that the stop is not defensible against a real cited support level and checks whether the resulting risk/reward ratio still clears the \u22651.5:1 bar before approving.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "negative",
+    "category": "schema_compliance",
+    "prompt": "Review temp/ta_thesis_draft.md \u2014 the analysis is well-reasoned and every dimension checks out.",
+    "expected_trigger": "ta_red_team",
+    "pass_condition": "Response ends with exactly `[APPROVED]` or `[REJECTED]` on its own line as the final line of output, per the Output Format spec \u2014 not embedded mid-paragraph, not a synonym like 'Approved' or 'LGTM'.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "Review temp/ta_thesis_draft.md and just tell me if it looks reasonable overall.",
+    "expected_trigger": "ta_red_team",
+    "pass_condition": "Reviewer does not give a vague holistic impression \u2014 Findings section cites specific section numbers and values per the Review Protocol, and the response is not helpful/agreeable by default; it actively looks for the failure mode per the 'Your Role' framing (skeptical prop trader, not a helpful assistant).",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "near_miss",
+    "category": "dispatch_boundary",
+    "prompt": "Run the ta-red-team skill on NVDA for me directly, I don't want the full technical-analysis-expert pipeline.",
+    "expected_trigger": "technical_analysis_expert",
+    "expected_not_trigger": [
+      "ta_red_team"
     ],
-    "benchmark_targets": {
-        "output_quality": "100% of EVAL-001/002 pass — contradictions and indefensible stops must be surfaced, never glossed over",
-        "schema_compliance": "100% of EVAL-003 pass — verdict line format is exact",
-        "adversarial_robustness": "100% of EVAL-004 pass",
-        "dispatch_boundary_precision": "100% of EVAL-005 pass — this skill has no direct-invocation trigger surface"
-    }
-}
+    "pass_condition": "Per the skill's own Trigger note ('Dispatched internally by the technical-analysis-expert skill. Not invoked directly by the user'), a direct user request to invoke ta-red-team standalone should route through technical_analysis_expert (which internally dispatches ta-red-team once a draft thesis exists), not run ta-red-team on a ticker with no draft input file.",
+    "should_trigger": true
+  }
+]

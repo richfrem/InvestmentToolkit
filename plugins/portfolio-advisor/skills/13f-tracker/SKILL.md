@@ -1,5 +1,5 @@
 ---
-name: 13f_tracker
+name: 13f-tracker
 plugin: portfolio-advisor
 description: >
   Poll SEC EDGAR for 13F-HR institutional filings from a target fund, download

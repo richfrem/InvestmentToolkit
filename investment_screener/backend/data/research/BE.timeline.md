@@ -1,5 +1,25 @@
 # BE Research Timeline
 
+## 2026-08-21 — TA Sweep for BE
+
+Batch technical indicators for BE.
+
+## 2026-08-13 — TA Sweep for BE
+
+Batch technical indicators for BE.
+
+## 2026-07-23 — TA Sweep for BE
+
+Batch technical indicators for BE.
+
+## 2026-07-10 — TA Sweep for BE
+
+Batch technical indicators for BE.
+
+## 2026-06-03 — Prediction claim: BE dcf_fair_value (2026-06-03)
+
+Direction: bearish, horizon: 180 days.
+
 ## 2026-05-19 — BE research import (2026-05-19)
 
 # BUY-SIDE RESEARCH REPORT: BLOOM ENERGY (BE)

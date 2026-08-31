@@ -1,5 +1,5 @@
 ---
-name: ytd_return
+name: ytd-return
 plugin: portfolio-advisor
 description: >
   Calculate Simple and Time-Weighted YTD returns, adjusting for cash flows (deposits/withdrawals)

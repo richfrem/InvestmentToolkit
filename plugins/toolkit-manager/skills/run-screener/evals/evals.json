@@ -1,70 +1,64 @@
-{
-    "skill": "run_screener",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, startup-sequencing discipline, and error-handling robustness of the run_screener skill.",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "start the app",
-            "expected_trigger": "run_screener",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent invokes run_screener and executes `python3 run_investment_toolkit.py` from the repo root."
-        },
-        {
-            "id": "EVAL-002",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "run investment screener",
-            "expected_trigger": "run_screener",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent invokes run_screener and executes the unified startup script."
-        },
-        {
-            "id": "EVAL-003",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "launch investment toolkit, I need both servers up",
-            "expected_trigger": "run_screener",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent recognises the natural-language phrasing (not just the exact trigger list) and runs the startup script."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "negative",
-            "category": "premature_completion",
-            "prompt": "start the app",
-            "setup": "Simulate the startup script still installing dependencies / building the backend (logs show pip/npm install output, no '✅ Services Running!' line yet).",
-            "expected_trigger": "run_screener",
-            "pass_condition": "Agent does NOT report localhost:5173 / localhost:3001 URLs while dependencies are still installing. It waits for the '✅ Services Running!' confirmation before giving final status."
-        },
-        {
-            "id": "EVAL-005",
-            "type": "positive",
-            "category": "error_handling",
-            "prompt": "start the app — I think port 3001 is already in use",
-            "setup": "Simulate a port conflict on 3001 during startup.",
-            "expected_trigger": "run_screener",
-            "pass_condition": "Agent surfaces the port-conflict failure clearly and, if the script does not auto-resolve it, advises the user to check/kill the process occupying the port rather than silently retrying forever or fabricating a success message."
-        },
-        {
-            "id": "EVAL-006",
-            "type": "near_miss",
-            "category": "trigger_conflict",
-            "prompt": "rebalance my portfolio",
-            "expected_trigger": "rebalance_portfolio",
-            "expected_not_trigger": [
-                "run_screener"
-            ],
-            "pass_condition": "Agent does not invoke run_screener for a portfolio-analysis request. Routes to the portfolio-advisor rebalance_portfolio skill instead — starting/launching the app is unrelated to rebalancing."
-        }
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "start the app",
+    "expected_trigger": "run_screener",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent invokes run_screener and executes `python3 run_investment_toolkit.py` from the repo root.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "run investment screener",
+    "expected_trigger": "run_screener",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent invokes run_screener and executes the unified startup script.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "launch investment toolkit, I need both servers up",
+    "expected_trigger": "run_screener",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises the natural-language phrasing (not just the exact trigger list) and runs the startup script.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "premature_completion",
+    "prompt": "start the app",
+    "setup": "Simulate the startup script still installing dependencies / building the backend (logs show pip/npm install output, no '\u2705 Services Running!' line yet).",
+    "expected_trigger": "run_screener",
+    "pass_condition": "Agent does NOT report localhost:5173 / localhost:3001 URLs while dependencies are still installing. It waits for the '\u2705 Services Running!' confirmation before giving final status.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "positive",
+    "category": "error_handling",
+    "prompt": "start the app \u2014 I think port 3001 is already in use",
+    "setup": "Simulate a port conflict on 3001 during startup.",
+    "expected_trigger": "run_screener",
+    "pass_condition": "Agent surfaces the port-conflict failure clearly and, if the script does not auto-resolve it, advises the user to check/kill the process occupying the port rather than silently retrying forever or fabricating a success message.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-006",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "rebalance my portfolio",
+    "expected_trigger": "rebalance_portfolio",
+    "expected_not_trigger": [
+      "run_screener"
     ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001/002/003 pass",
-        "sequencing_discipline": "100% of EVAL-004 pass (no premature URL reporting)",
-        "error_handling": "100% of EVAL-005 pass",
-        "routing_precision": "100% of EVAL-006 pass"
-    }
-}
+    "pass_condition": "Agent does not invoke run_screener for a portfolio-analysis request. Routes to the portfolio-advisor rebalance_portfolio skill instead \u2014 starting/launching the app is unrelated to rebalancing.",
+    "should_trigger": true
+  }
+]

@@ -1,5 +1,4 @@
-# AGENTS.md — InvestmentToolkit
-
+# AGENTS.md
 
 
 ## Overview
@@ -143,8 +142,6 @@ All cash is in **PSU-U.TO** (~$100 USD/share, TSX). To fund any buy: sell PSU-U.
 **29. Gitignored data files never sync via worktree**: `domain_model.sqlite`, `portfolio.json`, `cash_flows.json`, `trade-log.json`, etc. are gitignored — each worktree has its own separate on-disk copy that git never syncs back to the main checkout. Any "real data migration write" (or its row-count verification) run inside a worktree only touches that worktree's copy. Before treating a migration wave as complete, independently re-verify the real write landed in the **main checkout's** actual files/DB — do not trust a worktree-side verification alone.
 
 **30. `target-portfolio.json` and `portfolio.json` are both retired (Wave 7/8)**: `domain_model.sqlite` is the sole source of truth for portfolio holdings, thesis targets, pillars, price levels, and standing decisions. Both files are archived under `ARCHIVE/investment_screener/backend/data/` (and `ARCHIVE/.../theses/`). Never reintroduce a direct read/write of either — use `portfolio_io.load_portfolio_state()`/`load_thesis_holdings()`/`load_target_weights()` (Python) or `InvestmentRepository`/`ThesisService`/`PriceLevelRepository` (TS).
-
-**31. Mandatory TV Pane & Dialog Close Hygiene**: After ANY TradingView CDP operation (`pine inject`, `addIndicator`, `quote`, `saveLayout`), agents MUST explicitly close the Pine Editor panel (`button[aria-label="Close"]` or `[data-name="pine-dialog-button"]`) and the Indicators modal dialog (`[data-name="indicators-dialog"]` close button `×` + `Escape` key event) to leave the chart 100% clean and unobstructed.
 
 ## Key Files
 | File | Purpose |

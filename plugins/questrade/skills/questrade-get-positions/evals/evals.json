@@ -1,10 +1,8 @@
-{
-  "skill": "questrade-get-positions",
-  "test_cases": [
-    {
-      "name": "positions_display",
-      "description": "Verifies positions retrieval and formatting",
-      "expected_output": "Open Quantity"
-    }
-  ]
-}
+[
+  {
+    "name": "positions_display",
+    "description": "Verifies positions retrieval and formatting",
+    "expected_output": "Open Quantity",
+    "should_trigger": true
+  }
+]

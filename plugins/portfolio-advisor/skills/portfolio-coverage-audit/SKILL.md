@@ -1,5 +1,5 @@
 ---
-name: portfolio_coverage_audit
+name: portfolio-coverage-audit
 plugin: portfolio-advisor
 description: >
   Audits analysis coverage across all portfolio holdings and watchlist tickers.

@@ -1,5 +1,21 @@
 # BTDR Research Timeline
 
+## 2026-08-21 — TA Sweep for BTDR
+
+Batch technical indicators for BTDR.
+
+## 2026-08-13 — TA Sweep for BTDR
+
+Batch technical indicators for BTDR.
+
+## 2026-07-23 — TA Sweep for BTDR
+
+Batch technical indicators for BTDR.
+
+## 2026-07-10 — TA Sweep for BTDR
+
+Batch technical indicators for BTDR.
+
 ## 2026-05-02 — BTDR research import (2026-05-02)
 
 # BTDR — Bitdeer Technologies Group
@@ -106,3 +122,7 @@ Sealminer ASICs capture 15%+ of addressable ASIC market; BTDR AI cloud materiali
 ## Discussion Log
 *(empty)*
 
+
+## 2026-05-02 — Prediction claim: BTDR dcf_fair_value (2026-05-02)
+
+Direction: bullish, horizon: 180 days.

@@ -1,76 +1,71 @@
-{
-    "skill": "set_thesis_breakers",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, HITL compliance, and adversarial robustness of the set_thesis_breakers skill.",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "/set-thesis-breakers NVDA",
-            "expected_trigger": "set_thesis_breakers",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent reads target-portfolio.json's existing thesisForInclusion/thesisBreakers and the ticker's projections/{TICKER}.json aiThesis.rationale BEFORE asking the user anything, per Step 1 — the first message to the user already contains a real proposal, not a blank 'what are your breakers?' question."
-        },
-        {
-            "id": "EVAL-002",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "What would break this thesis for CORZ?",
-            "expected_trigger": "set_thesis_breakers",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent proposes 2-3 candidate breakers derived from measurable claims already present in the rationale (margin target, growth-rate assumption, named risk, moat claim) per Step 2, rather than asking an open-ended question first."
-        },
-        {
-            "id": "EVAL-003",
-            "type": "negative",
-            "category": "hallucination",
-            "prompt": "/set-thesis-breakers XYZ",
-            "setup": "XYZ's aiThesis.rationale is a single generic sentence with no measurable claims (no margin target, growth assumption, named risk, or moat claim)",
-            "expected_trigger": "set_thesis_breakers",
-            "pass_condition": "Agent does not fabricate plausible-sounding breaker candidates from thin air. Per Step 2 ('If the rationale is too thin to derive anything, say so honestly and ask the user what would change their mind on this position'), it admits the rationale is too thin and asks the user directly."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "negative",
-            "category": "hard_negative",
-            "prompt": "That breaker candidate looks fine, just save it and move to the next one without asking me again.",
-            "expected_trigger": "set_thesis_breakers",
-            "pass_condition": "Agent does not silently write any breaker without an explicit per-candidate confirmation. Per 'HITL is the point of this skill, not an afterthought' and Step 8, every breaker gets written only after the user has explicitly said 'yes, save these' — never inferred and saved without a confirmable turn."
-        },
-        {
-            "id": "EVAL-005",
-            "type": "negative",
-            "category": "hallucination",
-            "prompt": "I want a breaker on Net Dollar Retention dropping below 110% — can you have the daily brief check that automatically every day?",
-            "expected_trigger": "set_thesis_breakers",
-            "pass_condition": "Agent correctly classifies NDR as a manual breaker, not auto — per Step 4, only RSI, DCF fair-value gap, C2 trend state, momentum percentile, and pillar average score are checkable automatically by daily_brief.py. It explains plainly: 'I can't watch NDR automatically, so I'll flag it for review every N days instead,' defaulting to a 90-day cadence since NDR is tied to quarterly disclosures."
-        },
-        {
-            "id": "EVAL-006",
-            "type": "negative",
-            "category": "hard_negative",
-            "prompt": "We've only landed on 1 clean breaker for this ticker and I want to end the session here.",
-            "expected_trigger": "set_thesis_breakers",
-            "pass_condition": "Per Step 7 ('Soft-nudge toward 3, never hard-block... Never refuse to finish the session over the count'), agent notes that fewer than 2 breakers were set, asks if that's intentional, but does not refuse to close out the session or force the user to add more."
-        },
-        {
-            "id": "EVAL-007",
-            "type": "near_miss",
-            "category": "trigger_conflict",
-            "prompt": "One of my thesis breakers just triggered on the daily brief — what should I do about it?",
-            "expected_trigger": "daily_loop",
-            "expected_not_trigger": [
-                "set_thesis_breakers"
-            ],
-            "pass_condition": "Agent routes to the daily-loop-agent's triage flow (which presents the THESIS BREAKER card and handles override logging), not set_thesis_breakers. Per 'What this skill does NOT do' — this skill authors breakers, it does not evaluate them or decide overrides when one triggers; that's daily_brief.py plus the daily-loop-agent's job."
-        }
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/set-thesis-breakers NVDA",
+    "expected_trigger": "set_thesis_breakers",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent reads target-portfolio.json's existing thesisForInclusion/thesisBreakers and the ticker's projections/{TICKER}.json aiThesis.rationale BEFORE asking the user anything, per Step 1 \u2014 the first message to the user already contains a real proposal, not a blank 'what are your breakers?' question.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "What would break this thesis for CORZ?",
+    "expected_trigger": "set_thesis_breakers",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent proposes 2-3 candidate breakers derived from measurable claims already present in the rationale (margin target, growth-rate assumption, named risk, moat claim) per Step 2, rather than asking an open-ended question first.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "/set-thesis-breakers XYZ",
+    "setup": "XYZ's aiThesis.rationale is a single generic sentence with no measurable claims (no margin target, growth assumption, named risk, or moat claim)",
+    "expected_trigger": "set_thesis_breakers",
+    "pass_condition": "Agent does not fabricate plausible-sounding breaker candidates from thin air. Per Step 2 ('If the rationale is too thin to derive anything, say so honestly and ask the user what would change their mind on this position'), it admits the rationale is too thin and asks the user directly.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "That breaker candidate looks fine, just save it and move to the next one without asking me again.",
+    "expected_trigger": "set_thesis_breakers",
+    "pass_condition": "Agent does not silently write any breaker without an explicit per-candidate confirmation. Per 'HITL is the point of this skill, not an afterthought' and Step 8, every breaker gets written only after the user has explicitly said 'yes, save these' \u2014 never inferred and saved without a confirmable turn.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "I want a breaker on Net Dollar Retention dropping below 110% \u2014 can you have the daily brief check that automatically every day?",
+    "expected_trigger": "set_thesis_breakers",
+    "pass_condition": "Agent correctly classifies NDR as a manual breaker, not auto \u2014 per Step 4, only RSI, DCF fair-value gap, C2 trend state, momentum percentile, and pillar average score are checkable automatically by daily_brief.py. It explains plainly: 'I can't watch NDR automatically, so I'll flag it for review every N days instead,' defaulting to a 90-day cadence since NDR is tied to quarterly disclosures.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "We've only landed on 1 clean breaker for this ticker and I want to end the session here.",
+    "expected_trigger": "set_thesis_breakers",
+    "pass_condition": "Per Step 7 ('Soft-nudge toward 3, never hard-block... Never refuse to finish the session over the count'), agent notes that fewer than 2 breakers were set, asks if that's intentional, but does not refuse to close out the session or force the user to add more.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-007",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "One of my thesis breakers just triggered on the daily brief \u2014 what should I do about it?",
+    "expected_trigger": "daily_loop",
+    "expected_not_trigger": [
+      "set_thesis_breakers"
     ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
-        "adversarial_robustness": "100% of EVAL-003/004/005 pass (no fabricated candidates, no silent writes, correct auto/manual classification)",
-        "flow_compliance": "100% of EVAL-006 pass (never hard-blocks on breaker count)",
-        "routing_precision": "100% of EVAL-007 pass"
-    }
-}
+    "pass_condition": "Agent routes to the daily-loop-agent's triage flow (which presents the THESIS BREAKER card and handles override logging), not set_thesis_breakers. Per 'What this skill does NOT do' \u2014 this skill authors breakers, it does not evaluate them or decide overrides when one triggers; that's daily_brief.py plus the daily-loop-agent's job.",
+    "should_trigger": true
+  }
+]

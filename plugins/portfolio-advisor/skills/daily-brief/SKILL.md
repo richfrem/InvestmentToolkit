@@ -1,5 +1,5 @@
 ---
-name: daily_brief
+name: daily-brief
 plugin: portfolio-advisor
 description: >
   One daily command that synthesizes macro regime, TA sweep, DCF valuations,

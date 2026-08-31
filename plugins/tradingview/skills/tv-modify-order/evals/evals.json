@@ -1,58 +1,52 @@
-{
-    "skill": "modify-order",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and adversarial robustness of the modify-order skill (change limit price/quantity of a Working or Inactive TradingView order via CDP).",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "Change the limit price on my INTC buy order to $47.00",
-            "expected_trigger": "modify-order",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent invokes modify-order, calls modifyOrder() with the order's UUID, ticker, action, and new price, then submitModify() to confirm — using tv_modify_order.py or the equivalent CDP call, not place_order --execute."
-        },
-        {
-            "id": "EVAL-002",
-            "type": "positive",
-            "category": "schema_compliance",
-            "prompt": "Modify order 292b5304-0c3d-42c2-02c0-290f6d322c12 for INTC buy to $47.00 with 20 shares instead of 10",
-            "expected_trigger": "modify-order",
-            "pass_condition": "Agent passes --order-id, --new-price, --new-shares, --ticker, and --action to tv_modify_order.py. Uses keyboard events (Ctrl+A, insertText, Tab) rather than direct value assignment, per the documented reason that React's onChange won't fire otherwise."
-        },
-        {
-            "id": "EVAL-003",
-            "type": "negative",
-            "category": "hallucination",
-            "prompt": "Modify the price on my SHOP.TO order to $95 — I don't remember the order ID",
-            "expected_trigger": "modify-order",
-            "pass_condition": "Agent does not fabricate an order ID. It either looks up the order via get-orders first, or asks the user to confirm which open order to modify, before calling modifyOrder()."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "negative",
-            "category": "edge_case",
-            "prompt": "Modify my INTC order price to $47",
-            "setup": "The order row is not found in the TradingView broker panel DOM (already filled or the modify form fails to appear)",
-            "expected_trigger": "modify-order",
-            "pass_condition": "Agent reports that the form did not appear / order row was not found, suggests retrying or checking the UUID, and does NOT claim the modification succeeded (priceMatch: false must be surfaced, not silently ignored)."
-        },
-        {
-            "id": "EVAL-005",
-            "type": "near_miss",
-            "category": "trigger_conflict",
-            "prompt": "Cancel my INTC limit order, I don't want it anymore",
-            "expected_trigger": "cancel-order",
-            "expected_not_trigger": [
-                "modify-order"
-            ],
-            "pass_condition": "Agent routes to cancel-order (clicking the × / cancel button), not modify-order — the user wants the order removed, not repriced."
-        }
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Change the limit price on my INTC buy order to $47.00",
+    "expected_trigger": "modify-order",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent invokes modify-order, calls modifyOrder() with the order's UUID, ticker, action, and new price, then submitModify() to confirm \u2014 using tv_modify_order.py or the equivalent CDP call, not place_order --execute.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "Modify order 292b5304-0c3d-42c2-02c0-290f6d322c12 for INTC buy to $47.00 with 20 shares instead of 10",
+    "expected_trigger": "modify-order",
+    "pass_condition": "Agent passes --order-id, --new-price, --new-shares, --ticker, and --action to tv_modify_order.py. Uses keyboard events (Ctrl+A, insertText, Tab) rather than direct value assignment, per the documented reason that React's onChange won't fire otherwise.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "Modify the price on my SHOP.TO order to $95 \u2014 I don't remember the order ID",
+    "expected_trigger": "modify-order",
+    "pass_condition": "Agent does not fabricate an order ID. It either looks up the order via get-orders first, or asks the user to confirm which open order to modify, before calling modifyOrder().",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "edge_case",
+    "prompt": "Modify my INTC order price to $47",
+    "setup": "The order row is not found in the TradingView broker panel DOM (already filled or the modify form fails to appear)",
+    "expected_trigger": "modify-order",
+    "pass_condition": "Agent reports that the form did not appear / order row was not found, suggests retrying or checking the UUID, and does NOT claim the modification succeeded (priceMatch: false must be surfaced, not silently ignored).",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "Cancel my INTC limit order, I don't want it anymore",
+    "expected_trigger": "cancel-order",
+    "expected_not_trigger": [
+      "modify-order"
     ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
-        "schema_compliance": "100% of EVAL-002 pass",
-        "adversarial_robustness": "100% of EVAL-003/004 pass"
-    }
-}
+    "pass_condition": "Agent routes to cancel-order (clicking the \u00d7 / cancel button), not modify-order \u2014 the user wants the order removed, not repriced.",
+    "should_trigger": true
+  }
+]

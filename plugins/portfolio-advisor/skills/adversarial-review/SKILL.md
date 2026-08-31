@@ -1,5 +1,5 @@
 ---
-name: adversarial_review
+name: adversarial-review
 plugin: portfolio-advisor
 description: >
   Prepares a comprehensive adversarial review bundle of the investment thesis,

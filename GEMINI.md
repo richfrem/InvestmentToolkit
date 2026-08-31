@@ -1,5 +1,4 @@
-# GEMINI.md — InvestmentToolkit
-
+# GEMINI.md
 
 
 ## Overview
@@ -144,8 +143,6 @@ All cash is in **PSU-U.TO** (~$100 USD/share, TSX). To fund any buy: sell PSU-U.
 
 **30. `target-portfolio.json` and `portfolio.json` are both retired (Wave 7/8)**: `domain_model.sqlite` is the sole source of truth for portfolio holdings, thesis targets, pillars, price levels, and standing decisions. Both files are archived under `ARCHIVE/investment_screener/backend/data/` (and `ARCHIVE/.../theses/`). Never reintroduce a direct read/write of either — use `portfolio_io.load_portfolio_state()`/`load_thesis_holdings()`/`load_target_weights()` (Python) or `InvestmentRepository`/`ThesisService`/`PriceLevelRepository` (TS).
 
-**31. Mandatory TV Pane & Dialog Close Hygiene**: After ANY TradingView CDP operation (`pine inject`, `addIndicator`, `quote`, `saveLayout`), agents MUST explicitly close the Pine Editor panel (`button[aria-label="Close"]` or `[data-name="pine-dialog-button"]`) and the Indicators modal dialog (`[data-name="indicators-dialog"]` close button `×` + `Escape` key event) to leave the chart 100% clean and unobstructed.
-
 ## Key Files
 | File | Purpose |
 |------|---------|
@@ -156,3 +153,15 @@ All cash is in **PSU-U.TO** (~$100 USD/share, TSX). To fund any buy: sell PSU-U.
 | `plugins/tradingview/scripts/ta_sweep_batch.py` | TA sweep orchestrator |
 | `.agents/` | All skills/agents (Claude, Gemini, Copilot) |
 | `docs/superpowers/status/wave6-program-closure-report.md` | Domain Data Model v3.2 migration program closure report (final state, KPI rollup, retained-JSON rationale) |
+
+
+## Gemini CLI Tool Mapping
+| Claude Code Tool | Gemini CLI Equivalent |
+|---|---|
+| View | view_file |
+| Edit | replace_file_content |
+| Write | write_to_file |
+| Bash | run_command |
+| Grep | grep_search |
+| Glob | find_by_name |
+| Agent | invoke_subagent |

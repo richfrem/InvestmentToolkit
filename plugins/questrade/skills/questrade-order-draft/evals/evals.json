@@ -1,10 +1,8 @@
-{
-  "skill": "questrade-order-draft",
-  "test_cases": [
-    {
-      "name": "draft_check",
-      "description": "Verifies HITL push approval workflow",
-      "expected_output": "Push Notification"
-    }
-  ]
-}
+[
+  {
+    "name": "draft_check",
+    "description": "Verifies HITL push approval workflow",
+    "expected_output": "Push Notification",
+    "should_trigger": true
+  }
+]

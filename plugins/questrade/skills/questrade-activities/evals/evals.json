@@ -1,10 +1,8 @@
-{
-  "skill": "questrade-activities",
-  "test_cases": [
-    {
-      "name": "activities_check",
-      "description": "Verifies 90-day cash flow ledger ingestion",
-      "expected_output": "cash_flow"
-    }
-  ]
-}
+[
+  {
+    "name": "activities_check",
+    "description": "Verifies 90-day cash flow ledger ingestion",
+    "expected_output": "cash_flow",
+    "should_trigger": true
+  }
+]

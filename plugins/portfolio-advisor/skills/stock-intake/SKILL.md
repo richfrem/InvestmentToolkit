@@ -1,5 +1,5 @@
 ---
-name: stock_intake
+name: stock-intake
 plugin: portfolio-advisor
 description: >
   Autonomous end-to-end stock intake & onboarding wizard designed for non-expert investors.

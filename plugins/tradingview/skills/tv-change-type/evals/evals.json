@@ -1,46 +1,39 @@
-{
-    "skill": "tv_change_type",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and edge-case handling of the tv_change_type skill (changes the active chart's candle/chart type).",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "/change-chart-type heikin-ashi",
-            "expected_trigger": "tv_change_type",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent maps the alias 'heikin-ashi' to the TV label 'Heikin Ashi' per the Supported Types table, runs `node tradingview-cdp/cli.js chart type heikin-ashi`, and reports `{ success: true, type: \"Heikin Ashi\" }`."
-        },
-        {
-            "id": "EVAL-002",
-            "type": "negative",
-            "category": "edge_case",
-            "prompt": "/change-chart-type candlesticks-with-volume-overlay-v2",
-            "expected_trigger": "tv_change_type",
-            "pass_condition": "Agent recognizes this alias is not in the Supported Types table and either maps it to the closest real alias (e.g. 'volume-candle') after confirming with the user, or reports it cannot resolve the type rather than passing an invalid string straight to the CLI and claiming success."
-        },
-        {
-            "id": "EVAL-003",
-            "type": "positive",
-            "category": "schema_compliance",
-            "prompt": "/change-chart-type renko",
-            "expected_trigger": "tv_change_type",
-            "pass_condition": "Agent reports the actual TV label returned ('Renko') and, per the Notes section, mentions that Renko/Kagi filter noise but require the chart to already be in an appropriate timeframe context."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "negative",
-            "category": "troubleshooting",
-            "prompt": "/change-chart-type line — the command fails because the aria-label button wasn't visible",
-            "expected_trigger": "tv_change_type",
-            "pass_condition": "Per the Execution section's failure note, agent explains a dialog may be blocking the chart-type toolbar button and suggests checking for/closing it before retrying, rather than silently reporting success."
-        }
-    ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001 pass",
-        "schema_compliance": "100% of EVAL-003 pass",
-        "edge_case_handling": "100% of EVAL-002/004 pass"
-    }
-}
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/change-chart-type heikin-ashi",
+    "expected_trigger": "tv_change_type",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent maps the alias 'heikin-ashi' to the TV label 'Heikin Ashi' per the Supported Types table, runs `node tradingview-cdp/cli.js chart type heikin-ashi`, and reports `{ success: true, type: \"Heikin Ashi\" }`.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "negative",
+    "category": "edge_case",
+    "prompt": "/change-chart-type candlesticks-with-volume-overlay-v2",
+    "expected_trigger": "tv_change_type",
+    "pass_condition": "Agent recognizes this alias is not in the Supported Types table and either maps it to the closest real alias (e.g. 'volume-candle') after confirming with the user, or reports it cannot resolve the type rather than passing an invalid string straight to the CLI and claiming success.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "/change-chart-type renko",
+    "expected_trigger": "tv_change_type",
+    "pass_condition": "Agent reports the actual TV label returned ('Renko') and, per the Notes section, mentions that Renko/Kagi filter noise but require the chart to already be in an appropriate timeframe context.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "troubleshooting",
+    "prompt": "/change-chart-type line \u2014 the command fails because the aria-label button wasn't visible",
+    "expected_trigger": "tv_change_type",
+    "pass_condition": "Per the Execution section's failure note, agent explains a dialog may be blocking the chart-type toolbar button and suggests checking for/closing it before retrying, rather than silently reporting success.",
+    "should_trigger": false
+  }
+]
