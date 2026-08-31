@@ -1,5 +1,5 @@
 ---
-name: 13f_analyze
+name: 13f-analyze
 plugin: portfolio-advisor
 description: >
   Surgical 13F analysis skill. Cross-references the latest SA LP 13F filing diff

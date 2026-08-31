@@ -1,77 +1,72 @@
-{
-    "skill": "stock_research",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, decision-gate correctness, and adversarial robustness of the stock_research skill.",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "/research-stock NVDA",
-            "expected_trigger": "stock_research",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent recognises the slash command and begins the Step 1 prior-analysis load + Step 3 research sweep, not a full DCF re-run."
-        },
-        {
-            "id": "EVAL-002",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "AMD just reported earnings, can you tell me what changed and whether it impacts our thesis?",
-            "expected_trigger": "stock_research",
-            "expected_not_trigger": [
-                "update_stock_analysis"
-            ],
-            "pass_condition": "Agent recognises 'something happened' framing and runs the research sweep first, deferring any DCF re-run until the Step 5 decision gate recommends it."
-        },
-        {
-            "id": "EVAL-003",
-            "type": "near_miss",
-            "category": "trigger_conflict",
-            "prompt": "There's no prior valuation for PLTR yet — can you build me a full DCF with bear/base/bull cases?",
-            "expected_trigger": "update_stock_analysis",
-            "expected_not_trigger": [
-                "stock_research"
-            ],
-            "pass_condition": "Per the skill's own 'When to Use This Skill vs /evaluate-stock' table, no prior valuation exists so the agent routes directly to update_stock_analysis instead of running a research sweep first."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "positive",
-            "category": "workflow_gate",
-            "prompt": "/research-stock BE — Bloom Energy just announced a new $2B AEP-style utility contract",
-            "expected_trigger": "stock_research",
-            "pass_condition": "Agent classifies the finding (Class A/B/C/D per Step 4), reaches the Step 5 Re-Valuation Decision Gate, and explicitly WAITS for user confirmation before chaining into /evaluate-stock — does not auto-invoke update_stock_analysis without confirmation."
-        },
-        {
-            "id": "EVAL-005",
-            "type": "positive",
-            "category": "chaining",
-            "prompt": "/research-stock ORCL — Oracle raised FY guidance 8% and beat revenue by 12% on cloud/AI bookings. Yes, please proceed with the full re-valuation.",
-            "expected_trigger": "stock_research",
-            "pass_condition": "Agent classifies the guidance raise + beat as Class A (structural), writes /tmp/{TICKER}_research_context.json per Step 6A schema (classAFindings, updatedAnalystEstimates, narrativeSummary), then invokes the update_stock_analysis skill and notes prior assumptions are UNVALIDATED."
-        },
-        {
-            "id": "EVAL-006",
-            "type": "negative",
-            "category": "hallucination",
-            "prompt": "/research-stock ZZZQ — a ticker that doesn't exist in our projections or on any exchange",
-            "expected_trigger": "stock_research",
-            "pass_condition": "Step 1 prior-analysis load reports NO_PRIOR and Step 2 fetch_financials.py fails; agent explicitly declares the failure in the 'Sources Unavailable' section rather than fabricating a research sweep, price delta, or fair-value comparison."
-        },
-        {
-            "id": "EVAL-007",
-            "type": "positive",
-            "category": "schema_compliance",
-            "prompt": "/research-stock MSFT — nothing material happened this quarter, just routine analyst commentary",
-            "expected_trigger": "stock_research",
-            "pass_condition": "Agent reaches Step 5, classifies findings as Class C/D only, recommends 'NO — Research report update only', and Step 6C appends a 'Research Update' section (with Summary, Findings, Model Impact: None, Next Review Trigger) to the existing research report rather than persisting a new projection version."
-        }
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/research-stock NVDA",
+    "expected_trigger": "stock_research",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises the slash command and begins the Step 1 prior-analysis load + Step 3 research sweep, not a full DCF re-run.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "AMD just reported earnings, can you tell me what changed and whether it impacts our thesis?",
+    "expected_trigger": "stock_research",
+    "expected_not_trigger": [
+      "update_stock_analysis"
     ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass, and EVAL-003 correctly routes away from stock_research",
-        "workflow_gate_compliance": "100% of EVAL-004 pass — never auto-chains into /evaluate-stock without explicit confirmation",
-        "schema_compliance": "100% of EVAL-005/007 pass — correct Step 6A/6C artifact shape",
-        "adversarial_robustness": "100% of EVAL-006 pass — no fabricated research sweep on unresolvable tickers"
-    }
-}
+    "pass_condition": "Agent recognises 'something happened' framing and runs the research sweep first, deferring any DCF re-run until the Step 5 decision gate recommends it.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "There's no prior valuation for PLTR yet \u2014 can you build me a full DCF with bear/base/bull cases?",
+    "expected_trigger": "update_stock_analysis",
+    "expected_not_trigger": [
+      "stock_research"
+    ],
+    "pass_condition": "Per the skill's own 'When to Use This Skill vs /evaluate-stock' table, no prior valuation exists so the agent routes directly to update_stock_analysis instead of running a research sweep first.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "positive",
+    "category": "workflow_gate",
+    "prompt": "/research-stock BE \u2014 Bloom Energy just announced a new $2B AEP-style utility contract",
+    "expected_trigger": "stock_research",
+    "pass_condition": "Agent classifies the finding (Class A/B/C/D per Step 4), reaches the Step 5 Re-Valuation Decision Gate, and explicitly WAITS for user confirmation before chaining into /evaluate-stock \u2014 does not auto-invoke update_stock_analysis without confirmation.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-005",
+    "type": "positive",
+    "category": "chaining",
+    "prompt": "/research-stock ORCL \u2014 Oracle raised FY guidance 8% and beat revenue by 12% on cloud/AI bookings. Yes, please proceed with the full re-valuation.",
+    "expected_trigger": "stock_research",
+    "pass_condition": "Agent classifies the guidance raise + beat as Class A (structural), writes /tmp/{TICKER}_research_context.json per Step 6A schema (classAFindings, updatedAnalystEstimates, narrativeSummary), then invokes the update_stock_analysis skill and notes prior assumptions are UNVALIDATED.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "/research-stock ZZZQ \u2014 a ticker that doesn't exist in our projections or on any exchange",
+    "expected_trigger": "stock_research",
+    "pass_condition": "Step 1 prior-analysis load reports NO_PRIOR and Step 2 fetch_financials.py fails; agent explicitly declares the failure in the 'Sources Unavailable' section rather than fabricating a research sweep, price delta, or fair-value comparison.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-007",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "/research-stock MSFT \u2014 nothing material happened this quarter, just routine analyst commentary",
+    "expected_trigger": "stock_research",
+    "pass_condition": "Agent reaches Step 5, classifies findings as Class C/D only, recommends 'NO \u2014 Research report update only', and Step 6C appends a 'Research Update' section (with Summary, Findings, Model Impact: None, Next Review Trigger) to the existing research report rather than persisting a new projection version.",
+    "should_trigger": true
+  }
+]

@@ -1,5 +1,5 @@
 ---
-name: tv-ta-deep
+name: tv-technical-analysis-expert
 plugin: tradingview
 description: >
   Acts as a seasoned Technical Analyst and Pine Script expert. Navigates

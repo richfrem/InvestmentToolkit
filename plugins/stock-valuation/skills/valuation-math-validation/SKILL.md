@@ -1,5 +1,5 @@
 ---
-name: valuation_math_validation
+name: valuation-math-validation
 description: >
   Detect and prevent computational bugs in the DCF / scenario valuation engine that produce nonsensical target prices. Enforce deterministic math validation on every valuation run — catching unit mismatches, percent/decimal errors, double-discounting, share count explosions, and other silent failures that cause bear/base/bull scenarios to diverge by orders of magnitude.
 has_tools: false

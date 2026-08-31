@@ -1,5 +1,5 @@
 ---
-name: run_screener
+name: run-screener
 description: >
   Launch the Investment Screener suite (backend + frontend). Trigger when user says
   "run the screener", "start the app", "launch investment toolkit", "start servers",

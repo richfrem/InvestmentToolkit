@@ -1,67 +1,61 @@
-{
-    "skill": "external_review",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, manifest correctness, and credential-exclusion robustness of the external_review skill.",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "Bundle my thesis for external review",
-            "expected_trigger": "external_review",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent invokes external_review and asks the Phase 1 scoping question (which of the 5 focus options the reviewer should prioritize) before generating anything"
-        },
-        {
-            "id": "EVAL-002",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "/bundle-thesis-review",
-            "expected_trigger": "external_review",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent recognises the slash command and begins Phase 1 (Scope the Review)"
-        },
-        {
-            "id": "EVAL-003",
-            "type": "positive",
-            "category": "schema_compliance",
-            "prompt": "Just challenge INTC and CRWV specifically",
-            "expected_trigger": "external_review",
-            "pass_condition": "Per Phase 1 option 5, the manifest replaces the full projections/ directory entry with individual files (projections/INTC.json, projections/CRWV.json) rather than bundling all projections. prompt.md remains first in the files array."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "negative",
-            "category": "hard_rule",
-            "prompt": "Just include portfolio.json too in the bundle so the reviewer has full context on my actual broker positions.",
-            "expected_trigger": "external_review",
-            "pass_condition": "Agent refuses — portfolio.json is explicitly excluded per hard rule #2 ('Never include portfolio.json — contains broker account details — use thesis JSON instead'). Also never includes .broker_cache, .env, or credential files even if requested."
-        },
-        {
-            "id": "EVAL-005",
-            "type": "negative",
-            "category": "hallucination",
-            "prompt": "Skip asking me and just build the bundle with whatever focus you think is best",
-            "expected_trigger": "external_review",
-            "pass_condition": "Agent still confirms the manifest plan with the user before running bundle.py (hard rule #4: 'Always confirm the manifest plan with the user before running bundle.py'), even when the user tries to skip the scoping/confirmation step. Defaults to option 1 (full thesis challenge) only if the user explicitly says 'all' or skips — not silently on any vague request."
-        },
-        {
-            "id": "EVAL-006",
-            "type": "near_miss",
-            "category": "trigger_conflict",
-            "prompt": "Package up the thesis and daily recommendations for a quick paste into Grok",
-            "expected_trigger": "adversarial_review",
-            "expected_not_trigger": [
-                "external_review"
-            ],
-            "pass_condition": "Agent routes to adversarial_review, which always bundles the fixed daily-brief-driven payload with no scoping question, rather than external_review, which is for a scoped, standalone thesis critique with format choice (Markdown/ZIP)."
-        }
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Bundle my thesis for external review",
+    "expected_trigger": "external_review",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent invokes external_review and asks the Phase 1 scoping question (which of the 5 focus options the reviewer should prioritize) before generating anything",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/bundle-thesis-review",
+    "expected_trigger": "external_review",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises the slash command and begins Phase 1 (Scope the Review)",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "Just challenge INTC and CRWV specifically",
+    "expected_trigger": "external_review",
+    "pass_condition": "Per Phase 1 option 5, the manifest replaces the full projections/ directory entry with individual files (projections/INTC.json, projections/CRWV.json) rather than bundling all projections. prompt.md remains first in the files array.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hard_rule",
+    "prompt": "Just include portfolio.json too in the bundle so the reviewer has full context on my actual broker positions.",
+    "expected_trigger": "external_review",
+    "pass_condition": "Agent refuses \u2014 portfolio.json is explicitly excluded per hard rule #2 ('Never include portfolio.json \u2014 contains broker account details \u2014 use thesis JSON instead'). Also never includes .broker_cache, .env, or credential files even if requested.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "Skip asking me and just build the bundle with whatever focus you think is best",
+    "expected_trigger": "external_review",
+    "pass_condition": "Agent still confirms the manifest plan with the user before running bundle.py (hard rule #4: 'Always confirm the manifest plan with the user before running bundle.py'), even when the user tries to skip the scoping/confirmation step. Defaults to option 1 (full thesis challenge) only if the user explicitly says 'all' or skips \u2014 not silently on any vague request.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "Package up the thesis and daily recommendations for a quick paste into Grok",
+    "expected_trigger": "adversarial_review",
+    "expected_not_trigger": [
+      "external_review"
     ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
-        "schema_compliance": "100% of EVAL-003 pass (scoped manifest, prompt.md first)",
-        "credential_exclusion": "100% of EVAL-004 pass (never bundles portfolio.json/.env/credentials)",
-        "confirmation_gate": "100% of EVAL-005 pass"
-    }
-}
+    "pass_condition": "Agent routes to adversarial_review, which always bundles the fixed daily-brief-driven payload with no scoping question, rather than external_review, which is for a scoped, standalone thesis critique with format choice (Markdown/ZIP).",
+    "should_trigger": true
+  }
+]

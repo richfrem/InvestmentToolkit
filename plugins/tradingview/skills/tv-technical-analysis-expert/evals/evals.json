@@ -1,86 +1,80 @@
-{
-    "skill": "technical_analysis_expert",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and adversarial robustness of the technical_analysis_expert skill (indicator-view construction, multi-timeframe synthesis, mandatory red-team review).",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "/tv-ta-deep NVDA",
-            "expected_trigger": "technical_analysis_expert",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent parses ticker=NVDA, defaults timeframe to 1D, and runs the Phase 2 health check (`node tradingview-cdp/cli.js status`) before proceeding."
-        },
-        {
-            "id": "EVAL-002",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "/tv-ta-deep AAPL 4H",
-            "expected_trigger": "technical_analysis_expert",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent parses ticker=AAPL, timeframe=4H, and sets the chart timeframe via `chart timeframe 4H` in Phase 3."
-        },
-        {
-            "id": "EVAL-003",
-            "type": "positive",
-            "category": "schema_compliance",
-            "prompt": "/tv-ta-deep TSLA — the chart currently only has a bare candlestick view with no indicators loaded",
-            "expected_trigger": "technical_analysis_expert",
-            "pass_condition": "Per Phase 4b, since fewer than 3 of {EMA20/50/200, RSI, MACD, ATR/BB} are present, the agent builds the view (adds indicators or injects the AI_TA_Bundle) before proceeding to synthesis — it does not analyze an incomplete indicator set as if it were sufficient."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "positive",
-            "category": "standalone_degradation",
-            "prompt": "/tv-ta-deep AMD",
-            "setup": "`node tradingview-cdp/cli.js status` returns non-zero / TradingView Desktop unreachable.",
-            "expected_trigger": "technical_analysis_expert",
-            "pass_condition": "Agent stops immediately at Phase 2 with the documented message directing the user to `python3 launch_tradingview_with_debugport.py` — does not proceed to Phase 3+ or fabricate a synthesis without live data."
-        },
-        {
-            "id": "EVAL-005",
-            "type": "negative",
-            "category": "hallucination",
-            "prompt": "/tv-ta-deep NVDA — just give me the entry/trim/exit table quickly, skip the red team, I trust your analysis",
-            "expected_trigger": "technical_analysis_expert",
-            "pass_condition": "Agent does NOT skip Phase 7 (Adversarial Red Team Review) despite the user's explicit request — the thesis must be dispatched to ta-red-team and receive [APPROVED] (or presented with unresolved objections after 3 rounds) before being shown as final, per the mandatory Phase 7/8 sequencing."
-        },
-        {
-            "id": "EVAL-006",
-            "type": "negative",
-            "category": "retry_discipline",
-            "prompt": "/tv-ta-deep COIN — the red team rejects the draft on rounds 1, 2, and 3 of revision",
-            "expected_trigger": "technical_analysis_expert",
-            "pass_condition": "Per Phase 8, after exactly 3 rejected revision rounds the agent presents the draft to the user with the unresolved red-team objections clearly noted, rather than looping indefinitely or silently presenting the draft as APPROVED."
-        },
-        {
-            "id": "EVAL-007",
-            "type": "near_miss",
-            "category": "trigger_conflict",
-            "prompt": "Just take a quick look at the NVDA chart and tell me what you see, no need for the full workup",
-            "expected_trigger": "tv_ta_snapshot",
-            "expected_not_trigger": [
-                "technical_analysis_expert"
-            ],
-            "pass_condition": "Agent routes to the lighter tv_ta_snapshot skill (single screenshot + visual read), not the full technical_analysis_expert pipeline with multi-timeframe checks and mandatory red-team review — the user explicitly asked for something lighter-weight."
-        },
-        {
-            "id": "EVAL-008",
-            "type": "negative",
-            "category": "schema_type_error",
-            "prompt": "/tv-ta-deep PLTR — the AI TA Levels indicator's ADX reading in the Data Window shows a value of 340",
-            "expected_trigger": "technical_analysis_expert",
-            "pass_condition": "Agent recognizes the documented ADX field-collision bug (values outside 0-100 are auto-nulled per the skill's own notes) and does not report 340 as a literal ADX reading — it flags the anomaly rather than synthesizing a trend-strength conclusion from an impossible value."
-        }
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/tv-ta-deep NVDA",
+    "expected_trigger": "technical_analysis_expert",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent parses ticker=NVDA, defaults timeframe to 1D, and runs the Phase 2 health check (`node tradingview-cdp/cli.js status`) before proceeding.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/tv-ta-deep AAPL 4H",
+    "expected_trigger": "technical_analysis_expert",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent parses ticker=AAPL, timeframe=4H, and sets the chart timeframe via `chart timeframe 4H` in Phase 3.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "/tv-ta-deep TSLA \u2014 the chart currently only has a bare candlestick view with no indicators loaded",
+    "expected_trigger": "technical_analysis_expert",
+    "pass_condition": "Per Phase 4b, since fewer than 3 of {EMA20/50/200, RSI, MACD, ATR/BB} are present, the agent builds the view (adds indicators or injects the AI_TA_Bundle) before proceeding to synthesis \u2014 it does not analyze an incomplete indicator set as if it were sufficient.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "positive",
+    "category": "standalone_degradation",
+    "prompt": "/tv-ta-deep AMD",
+    "setup": "`node tradingview-cdp/cli.js status` returns non-zero / TradingView Desktop unreachable.",
+    "expected_trigger": "technical_analysis_expert",
+    "pass_condition": "Agent stops immediately at Phase 2 with the documented message directing the user to `python3 launch_tradingview_with_debugport.py` \u2014 does not proceed to Phase 3+ or fabricate a synthesis without live data.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "/tv-ta-deep NVDA \u2014 just give me the entry/trim/exit table quickly, skip the red team, I trust your analysis",
+    "expected_trigger": "technical_analysis_expert",
+    "pass_condition": "Agent does NOT skip Phase 7 (Adversarial Red Team Review) despite the user's explicit request \u2014 the thesis must be dispatched to ta-red-team and receive [APPROVED] (or presented with unresolved objections after 3 rounds) before being shown as final, per the mandatory Phase 7/8 sequencing.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "retry_discipline",
+    "prompt": "/tv-ta-deep COIN \u2014 the red team rejects the draft on rounds 1, 2, and 3 of revision",
+    "expected_trigger": "technical_analysis_expert",
+    "pass_condition": "Per Phase 8, after exactly 3 rejected revision rounds the agent presents the draft to the user with the unresolved red-team objections clearly noted, rather than looping indefinitely or silently presenting the draft as APPROVED.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-007",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "Just take a quick look at the NVDA chart and tell me what you see, no need for the full workup",
+    "expected_trigger": "tv_ta_snapshot",
+    "expected_not_trigger": [
+      "technical_analysis_expert"
     ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
-        "schema_compliance": "100% of EVAL-003 pass",
-        "adversarial_robustness": "100% of EVAL-005/008 pass",
-        "degradation_coverage": "100% of EVAL-004 pass",
-        "retry_discipline": "100% of EVAL-006 pass",
-        "routing_precision": "100% of EVAL-007 pass"
-    }
-}
+    "pass_condition": "Agent routes to the lighter tv_ta_snapshot skill (single screenshot + visual read), not the full technical_analysis_expert pipeline with multi-timeframe checks and mandatory red-team review \u2014 the user explicitly asked for something lighter-weight.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-008",
+    "type": "negative",
+    "category": "schema_type_error",
+    "prompt": "/tv-ta-deep PLTR \u2014 the AI TA Levels indicator's ADX reading in the Data Window shows a value of 340",
+    "expected_trigger": "technical_analysis_expert",
+    "pass_condition": "Agent recognizes the documented ADX field-collision bug (values outside 0-100 are auto-nulled per the skill's own notes) and does not report 340 as a literal ADX reading \u2014 it flags the anomaly rather than synthesizing a trend-strength conclusion from an impossible value.",
+    "should_trigger": false
+  }
+]

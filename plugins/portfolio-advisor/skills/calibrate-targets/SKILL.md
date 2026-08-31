@@ -1,5 +1,5 @@
 ---
-name: calibrate_targets
+name: calibrate-targets
 plugin: portfolio-advisor
 description: >
   Interactive target-weight calibration session. Goes through each holding one at

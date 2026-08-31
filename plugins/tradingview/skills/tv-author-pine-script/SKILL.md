@@ -1,5 +1,5 @@
 ---
-name: tv-author-pine
+name: tv-author-pine-script
 plugin: tradingview
 description: >
   The master self-evolving workflow for authoring, research, and managing custom

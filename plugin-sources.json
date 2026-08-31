@@ -26,7 +26,7 @@
       ]
     },
     {
-      "source": "/Users/richardfremmerlid/Projects/InvestmentToolkit/plugins",
+      "source": "/Users/richardfremmerlid/Projects/InvestmentToolkit",
       "plugins": [
         "etf-analysis",
         "portfolio-advisor",

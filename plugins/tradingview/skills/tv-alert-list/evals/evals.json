@@ -1,59 +1,53 @@
-{
-    "skill": "tv_alert_list",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and adversarial robustness of the tv_alert_list skill (fetch, cache, and display active TradingView price alerts).",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "/tv-alert-list",
-            "expected_trigger": "tv_alert_list",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent runs tv_list_alerts.py, persists the snapshot to investment_screener/backend/data/tradingview_alerts_actual.json, and displays a markdown summary table of active alerts."
-        },
-        {
-            "id": "EVAL-002",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "Show me my active TradingView alerts",
-            "expected_trigger": "tv_alert_list",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent recognises the natural-language trigger and runs the same listing script as EVAL-001."
-        },
-        {
-            "id": "EVAL-003",
-            "type": "positive",
-            "category": "schema_compliance",
-            "prompt": "List active alerts and save the snapshot",
-            "expected_trigger": "tv_alert_list",
-            "pass_condition": "Displayed table includes Ticker, Price, Condition, and Label/Message columns matching the documented format, and the JSON snapshot is written to the exact documented path (tradingview_alerts_actual.json) for offline reuse."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "negative",
-            "category": "hallucination",
-            "prompt": "What alerts do I have set up?",
-            "setup": "TradingView Desktop is not reachable on port 9222",
-            "expected_trigger": "tv_alert_list",
-            "pass_condition": "Agent reports that the live check failed and does not fabricate an alert list. It may offer to show the last cached tradingview_alerts_actual.json snapshot but must clearly label it as cached/stale, not live."
-        },
-        {
-            "id": "EVAL-005",
-            "type": "near_miss",
-            "category": "trigger_conflict",
-            "prompt": "Set up DCF-based price alerts for all my portfolio holdings",
-            "expected_trigger": "tv_alert_sync",
-            "expected_not_trigger": [
-                "tv_alert_list"
-            ],
-            "pass_condition": "Agent routes to tv_alert_sync (which creates alerts), not tv_alert_list (which only reads and displays existing alerts)."
-        }
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/tv-alert-list",
+    "expected_trigger": "tv_alert_list",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent runs tv_list_alerts.py, persists the snapshot to investment_screener/backend/data/tradingview_alerts_actual.json, and displays a markdown summary table of active alerts.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Show me my active TradingView alerts",
+    "expected_trigger": "tv_alert_list",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises the natural-language trigger and runs the same listing script as EVAL-001.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "List active alerts and save the snapshot",
+    "expected_trigger": "tv_alert_list",
+    "pass_condition": "Displayed table includes Ticker, Price, Condition, and Label/Message columns matching the documented format, and the JSON snapshot is written to the exact documented path (tradingview_alerts_actual.json) for offline reuse.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "What alerts do I have set up?",
+    "setup": "TradingView Desktop is not reachable on port 9222",
+    "expected_trigger": "tv_alert_list",
+    "pass_condition": "Agent reports that the live check failed and does not fabricate an alert list. It may offer to show the last cached tradingview_alerts_actual.json snapshot but must clearly label it as cached/stale, not live.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "Set up DCF-based price alerts for all my portfolio holdings",
+    "expected_trigger": "tv_alert_sync",
+    "expected_not_trigger": [
+      "tv_alert_list"
     ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
-        "schema_compliance": "100% of EVAL-003 pass",
-        "adversarial_robustness": "100% of EVAL-004 pass"
-    }
-}
+    "pass_condition": "Agent routes to tv_alert_sync (which creates alerts), not tv_alert_list (which only reads and displays existing alerts).",
+    "should_trigger": true
+  }
+]

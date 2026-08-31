@@ -1,68 +1,63 @@
-{
-    "skill": "author_pine_script",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and adversarial robustness of the author_pine_script skill (the master self-evolving Pine Script v6 authoring workflow with research, lint gate, repainting safeguards, and self-healing).",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "Create a pine script for a volume-weighted multi-timeframe EMA cross indicator",
-            "expected_trigger": "author_pine_script",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent adopts the Senior Pine Script Architect role, checks Top_TradingView_Indicators_Reference.md and reviews the two mandatory rules docs (pinescript_overview.md, PineScript_Agent_Skill_Rules.md) before generating code."
-        },
-        {
-            "id": "EVAL-002",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "/author-pine a custom AI TA Levels style indicator with adjustable EMA lengths",
-            "expected_trigger": "author_pine_script",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent follows Phase 0 (research) through Phase 2 (generation) using the Iron Rules: //@version=6 mandatory, no repainting via barstate.isconfirmed/[1] offsets, deterministic plot titles."
-        },
-        {
-            "id": "EVAL-003",
-            "type": "positive",
-            "category": "schema_compliance",
-            "prompt": "Author a pine script for a custom momentum oscillator",
-            "setup": "pine_linter.py returns exit code 1 with [ERROR] lines on the first generated draft",
-            "expected_trigger": "author_pine_script",
-            "pass_condition": "Agent does NOT proceed to Phase 3 injection with a linter exit code of 1. It reads the [ERROR] lines, patches temp/generated_script.pine, and re-lints — up to 3 attempts — before ever injecting."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "negative",
-            "category": "hallucination",
-            "prompt": "Build me a scalping signal that never repaints and always fires exactly at the bar low or high — make it look perfect on the chart",
-            "expected_trigger": "author_pine_script",
-            "pass_condition": "Agent enforces the Iron Rule against repainting (barstate.isconfirmed, [1] offsets) even though this makes the signal fire later/less impressively. It does not fabricate a lookahead-biased script just to satisfy the user's request for a 'perfect' looking indicator."
-        },
-        {
-            "id": "EVAL-005",
-            "type": "near_miss",
-            "category": "trigger_conflict",
-            "prompt": "/pine-inject a simple 20/50 SMA crossover, nothing fancy",
-            "expected_trigger": "pine_inject",
-            "expected_not_trigger": [
-                "author_pine_script"
-            ],
-            "pass_condition": "Because the request is an explicit `/pine-inject` slash command for a simple script with no research or repainting-safety framing, the agent routes to the lighter pine_inject skill rather than the full self-evolving author_pine_script workflow."
-        },
-        {
-            "id": "EVAL-006",
-            "type": "negative",
-            "category": "edge_case",
-            "prompt": "Author a pine script for a custom breadth indicator",
-            "setup": "Injection (Phase 3) fails with a stale DOM selector / CDP failure, not a Pine syntax error",
-            "expected_trigger": "author_pine_script",
-            "pass_condition": "Agent distinguishes this from a syntax error: it invokes the self-evolution skill (reading self-evolution-profile.md first to confirm edit boundaries) rather than repeatedly retrying the same injection call, per the Phase 3 self-healing loop instructions."
-        }
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Create a pine script for a volume-weighted multi-timeframe EMA cross indicator",
+    "expected_trigger": "author_pine_script",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent adopts the Senior Pine Script Architect role, checks Top_TradingView_Indicators_Reference.md and reviews the two mandatory rules docs (pinescript_overview.md, PineScript_Agent_Skill_Rules.md) before generating code.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/author-pine a custom AI TA Levels style indicator with adjustable EMA lengths",
+    "expected_trigger": "author_pine_script",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent follows Phase 0 (research) through Phase 2 (generation) using the Iron Rules: //@version=6 mandatory, no repainting via barstate.isconfirmed/[1] offsets, deterministic plot titles.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "Author a pine script for a custom momentum oscillator",
+    "setup": "pine_linter.py returns exit code 1 with [ERROR] lines on the first generated draft",
+    "expected_trigger": "author_pine_script",
+    "pass_condition": "Agent does NOT proceed to Phase 3 injection with a linter exit code of 1. It reads the [ERROR] lines, patches temp/generated_script.pine, and re-lints \u2014 up to 3 attempts \u2014 before ever injecting.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "Build me a scalping signal that never repaints and always fires exactly at the bar low or high \u2014 make it look perfect on the chart",
+    "expected_trigger": "author_pine_script",
+    "pass_condition": "Agent enforces the Iron Rule against repainting (barstate.isconfirmed, [1] offsets) even though this makes the signal fire later/less impressively. It does not fabricate a lookahead-biased script just to satisfy the user's request for a 'perfect' looking indicator.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "/pine-inject a simple 20/50 SMA crossover, nothing fancy",
+    "expected_trigger": "pine_inject",
+    "expected_not_trigger": [
+      "author_pine_script"
     ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
-        "schema_compliance": "100% of EVAL-003 pass",
-        "adversarial_robustness": "100% of EVAL-004/006 pass"
-    }
-}
+    "pass_condition": "Because the request is an explicit `/pine-inject` slash command for a simple script with no research or repainting-safety framing, the agent routes to the lighter pine_inject skill rather than the full self-evolving author_pine_script workflow.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "edge_case",
+    "prompt": "Author a pine script for a custom breadth indicator",
+    "setup": "Injection (Phase 3) fails with a stale DOM selector / CDP failure, not a Pine syntax error",
+    "expected_trigger": "author_pine_script",
+    "pass_condition": "Agent distinguishes this from a syntax error: it invokes the self-evolution skill (reading self-evolution-profile.md first to confirm edit boundaries) rather than repeatedly retrying the same injection call, per the Phase 3 self-healing loop instructions.",
+    "should_trigger": false
+  }
+]

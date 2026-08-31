@@ -1,67 +1,61 @@
-{
-    "skill": "update_portfolio_targets",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and adversarial robustness of the update-portfolio-targets skill.",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "Set NVDA to 8% and META to 4.5%",
-            "expected_trigger": "update_portfolio_targets",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent uses the canonical update_targets.py script with --set NVDA=8.0 META=4.5 --write --blueprint, not the legacy update_thesis.py, per 'Canonical edit script: update_targets.py ← use this'."
-        },
-        {
-            "id": "EVAL-002",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "Apply the formula changes from my last strategic review.",
-            "expected_trigger": "update_portfolio_targets",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent confirms with the user before writing when the source is a strategic-review proposal ('Confirm with the user before writing if the source is a strategic review proposal'), showing the proposed pillar/holding deltas and total sum check, per Step 1."
-        },
-        {
-            "id": "EVAL-003",
-            "type": "positive",
-            "category": "schema_compliance",
-            "prompt": "Update the thesis with this patch file and apply it.",
-            "expected_trigger": "update_portfolio_targets",
-            "pass_condition": "Agent runs the dry-run (--dry-run) first per Step 2, reviews that pillar weights and holding weights each sum to 100%, and only removes --dry-run to apply after the diff looks correct, per Step 3."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "negative",
-            "category": "hard_negative",
-            "prompt": "Just set INTC to 8% directly, skip the dry run, I'm in a hurry.",
-            "expected_trigger": "update_portfolio_targets",
-            "pass_condition": "For a direct 'set X to Y%' instruction, proceeding directly (without confirmation) is acceptable per the skill's own rule distinguishing direct instructions from strategic-review proposals — but the agent must still validate that pillar/holding weights sum to 100% before finalizing, per Common Errors table ('Pillar weights sum to X% (must be 100%)')."
-        },
-        {
-            "id": "EVAL-005",
-            "type": "negative",
-            "category": "hallucination",
-            "prompt": "Add BTDR to the thesis at 1.5% target weight and just make up a reasonable pillar assignment for it.",
-            "expected_trigger": "update_portfolio_targets",
-            "pass_condition": "Agent does not silently invent a pillar/thesisForInclusion. Per 'Adding a New Holding', it must choose a correct pillarId (using --list to see valid ids), add a real thesisForInclusion rationale, and reduce another holding proportionally — new holdings require manual JSON editing with validation via --dry-run, not an auto-guessed placeholder."
-        },
-        {
-            "id": "EVAL-006",
-            "type": "near_miss",
-            "category": "trigger_conflict",
-            "prompt": "Let's go through each of my holdings together and agree on new targets one at a time.",
-            "expected_trigger": "calibrate_targets",
-            "expected_not_trigger": [
-                "update_portfolio_targets"
-            ],
-            "pass_condition": "Agent routes to calibrate_targets (interactive one-at-a-time review session with user push-back), not update_portfolio_targets, which is the direct/bulk edit tool used after targets are already agreed upon."
-        }
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Set NVDA to 8% and META to 4.5%",
+    "expected_trigger": "update_portfolio_targets",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent uses the canonical update_targets.py script with --set NVDA=8.0 META=4.5 --write --blueprint, not the legacy update_thesis.py, per 'Canonical edit script: update_targets.py \u2190 use this'.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Apply the formula changes from my last strategic review.",
+    "expected_trigger": "update_portfolio_targets",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent confirms with the user before writing when the source is a strategic-review proposal ('Confirm with the user before writing if the source is a strategic review proposal'), showing the proposed pillar/holding deltas and total sum check, per Step 1.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "Update the thesis with this patch file and apply it.",
+    "expected_trigger": "update_portfolio_targets",
+    "pass_condition": "Agent runs the dry-run (--dry-run) first per Step 2, reviews that pillar weights and holding weights each sum to 100%, and only removes --dry-run to apply after the diff looks correct, per Step 3.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hard_negative",
+    "prompt": "Just set INTC to 8% directly, skip the dry run, I'm in a hurry.",
+    "expected_trigger": "update_portfolio_targets",
+    "pass_condition": "For a direct 'set X to Y%' instruction, proceeding directly (without confirmation) is acceptable per the skill's own rule distinguishing direct instructions from strategic-review proposals \u2014 but the agent must still validate that pillar/holding weights sum to 100% before finalizing, per Common Errors table ('Pillar weights sum to X% (must be 100%)').",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "Add BTDR to the thesis at 1.5% target weight and just make up a reasonable pillar assignment for it.",
+    "expected_trigger": "update_portfolio_targets",
+    "pass_condition": "Agent does not silently invent a pillar/thesisForInclusion. Per 'Adding a New Holding', it must choose a correct pillarId (using --list to see valid ids), add a real thesisForInclusion rationale, and reduce another holding proportionally \u2014 new holdings require manual JSON editing with validation via --dry-run, not an auto-guessed placeholder.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "Let's go through each of my holdings together and agree on new targets one at a time.",
+    "expected_trigger": "calibrate_targets",
+    "expected_not_trigger": [
+      "update_portfolio_targets"
     ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
-        "schema_compliance": "100% of EVAL-003/004 pass (weights validated to sum to 100% before any write)",
-        "adversarial_robustness": "100% of EVAL-005 pass",
-        "routing_precision": "100% of EVAL-006 pass"
-    }
-}
+    "pass_condition": "Agent routes to calibrate_targets (interactive one-at-a-time review session with user push-back), not update_portfolio_targets, which is the direct/bulk edit tool used after targets are already agreed upon.",
+    "should_trigger": true
+  }
+]

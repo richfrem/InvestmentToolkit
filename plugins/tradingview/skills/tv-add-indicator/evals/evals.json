@@ -1,46 +1,39 @@
-{
-    "skill": "tv_add_indicator",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and edge-case handling of the tv_add_indicator skill (adds a built-in or personal Pine Script indicator to the active chart).",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "/add-indicator RSI",
-            "expected_trigger": "tv_add_indicator",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent runs `node tradingview-cdp/cli.js chart addIndicator \"RSI\"` and reports the expected `{ success: true, added: ... }` result."
-        },
-        {
-            "id": "EVAL-002",
-            "type": "negative",
-            "category": "edge_case",
-            "prompt": "/add-indicator Squeeze Momentum Osc Deluxe XYZ",
-            "expected_trigger": "tv_add_indicator",
-            "pass_condition": "Per the Notes section, when the command returns `success: false, error: \"No results found\"`, the agent reports this to the user and suggests trying a shorter search term rather than claiming the indicator was added."
-        },
-        {
-            "id": "EVAL-003",
-            "type": "positive",
-            "category": "schema_compliance",
-            "prompt": "/add-indicator \"My Custom MA\"",
-            "expected_trigger": "tv_add_indicator",
-            "pass_condition": "Agent treats this as a personal Pine Script lookup (searches 'My scripts' tab per the 'Adding a Personal Pine Script' section) using the exact quoted display name, and reports the same addIndicator JSON shape as a built-in indicator."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "positive",
-            "category": "multi_step",
-            "prompt": "Add RSI, MACD, and Bollinger Bands to the current chart",
-            "expected_trigger": "tv_add_indicator",
-            "pass_condition": "Agent runs the addIndicator command once per indicator sequentially (per 'Loading Multiple Indicators'), not a single batched call, and after all three succeed suggests `chart saveLayout --name agent-layout` per the Notes section."
-        }
-    ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001 pass",
-        "schema_compliance": "100% of EVAL-003 pass",
-        "edge_case_handling": "100% of EVAL-002 pass"
-    }
-}
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/add-indicator RSI",
+    "expected_trigger": "tv_add_indicator",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent runs `node tradingview-cdp/cli.js chart addIndicator \"RSI\"` and reports the expected `{ success: true, added: ... }` result.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "negative",
+    "category": "edge_case",
+    "prompt": "/add-indicator Squeeze Momentum Osc Deluxe XYZ",
+    "expected_trigger": "tv_add_indicator",
+    "pass_condition": "Per the Notes section, when the command returns `success: false, error: \"No results found\"`, the agent reports this to the user and suggests trying a shorter search term rather than claiming the indicator was added.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "/add-indicator \"My Custom MA\"",
+    "expected_trigger": "tv_add_indicator",
+    "pass_condition": "Agent treats this as a personal Pine Script lookup (searches 'My scripts' tab per the 'Adding a Personal Pine Script' section) using the exact quoted display name, and reports the same addIndicator JSON shape as a built-in indicator.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "positive",
+    "category": "multi_step",
+    "prompt": "Add RSI, MACD, and Bollinger Bands to the current chart",
+    "expected_trigger": "tv_add_indicator",
+    "pass_condition": "Agent runs the addIndicator command once per indicator sequentially (per 'Loading Multiple Indicators'), not a single batched call, and after all three succeed suggests `chart saveLayout --name agent-layout` per the Notes section.",
+    "should_trigger": true
+  }
+]

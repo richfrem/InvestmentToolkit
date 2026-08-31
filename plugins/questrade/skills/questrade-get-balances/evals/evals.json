@@ -1,10 +1,8 @@
-{
-  "skill": "questrade-get-balances",
-  "test_cases": [
-    {
-      "name": "balances_display",
-      "description": "Verifies account balances retrieval and markdown formatting",
-      "expected_output": "Total Equity"
-    }
-  ]
-}
+[
+  {
+    "name": "balances_display",
+    "description": "Verifies account balances retrieval and markdown formatting",
+    "expected_output": "Total Equity",
+    "should_trigger": true
+  }
+]

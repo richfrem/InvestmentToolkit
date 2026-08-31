@@ -1,5 +1,5 @@
 ---
-name: strategic_review
+name: strategic-review
 plugin: portfolio-advisor
 description: >
   Challenge and stress-test the investment thesis against current AI valuation

@@ -1,46 +1,39 @@
-{
-    "skill": "tv_setup",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and edge-case handling of the tv_setup skill (diagnoses and guides setup of the tradingview-cdp dependency and debug port).",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "TradingView CDP doesn't seem to be working, can you diagnose it?",
-            "expected_trigger": "tv_setup",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent runs the full diagnostics via `tv_health_check.py` (the find-and-sort discovery command from the Diagnostics Check section) and reports the results before attempting any fix."
-        },
-        {
-            "id": "EVAL-002",
-            "type": "positive",
-            "category": "edge_case",
-            "prompt": "Set up TradingView CDP — the tradingview-cdp/node_modules folder is missing",
-            "expected_trigger": "tv_setup",
-            "pass_condition": "Per Action Plan item 1, agent runs `cd tradingview-cdp && npm ci` to install dependencies rather than attempting to launch TradingView Desktop first when the underlying dependency isn't even installed."
-        },
-        {
-            "id": "EVAL-003",
-            "type": "positive",
-            "category": "edge_case",
-            "prompt": "Set up TradingView CDP — node_modules is fine but the health check fails because port 9222 isn't reachable",
-            "expected_trigger": "tv_setup",
-            "pass_condition": "Per Action Plan item 2, agent suggests `python3 plugins/tradingview/scripts/tv_launch.py` (or the manual `open -a TradingView --args --remote-debugging-port=9222` command) rather than re-running `npm ci`, since the dependency is already installed."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "negative",
-            "category": "hallucination",
-            "prompt": "Is my TradingView CDP setup working right now?",
-            "expected_trigger": "tv_setup",
-            "pass_condition": "Agent runs the actual diagnostics command rather than assuming or guessing the CDP connection status — this is a read/diagnose skill, it must not report 'yes it's working' without executing the health check."
-        }
-    ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001 pass",
-        "diagnostic_precision": "100% of EVAL-002/003 pass — correct remediation path chosen per failure mode",
-        "adversarial_robustness": "100% of EVAL-004 pass"
-    }
-}
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "TradingView CDP doesn't seem to be working, can you diagnose it?",
+    "expected_trigger": "tv_setup",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent runs the full diagnostics via `tv_health_check.py` (the find-and-sort discovery command from the Diagnostics Check section) and reports the results before attempting any fix.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "edge_case",
+    "prompt": "Set up TradingView CDP \u2014 the tradingview-cdp/node_modules folder is missing",
+    "expected_trigger": "tv_setup",
+    "pass_condition": "Per Action Plan item 1, agent runs `cd tradingview-cdp && npm ci` to install dependencies rather than attempting to launch TradingView Desktop first when the underlying dependency isn't even installed.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "edge_case",
+    "prompt": "Set up TradingView CDP \u2014 node_modules is fine but the health check fails because port 9222 isn't reachable",
+    "expected_trigger": "tv_setup",
+    "pass_condition": "Per Action Plan item 2, agent suggests `python3 plugins/tradingview/scripts/tv_launch.py` (or the manual `open -a TradingView --args --remote-debugging-port=9222` command) rather than re-running `npm ci`, since the dependency is already installed.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "Is my TradingView CDP setup working right now?",
+    "expected_trigger": "tv_setup",
+    "pass_condition": "Agent runs the actual diagnostics command rather than assuming or guessing the CDP connection status \u2014 this is a read/diagnose skill, it must not report 'yes it's working' without executing the health check.",
+    "should_trigger": false
+  }
+]

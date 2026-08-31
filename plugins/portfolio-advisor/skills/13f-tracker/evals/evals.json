@@ -1,67 +1,61 @@
-{
-    "skill": "13f_tracker",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and adversarial robustness of the 13f_tracker skill.",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "Check 13F filings for SA LP",
-            "expected_trigger": "13f_tracker",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent runs fetch_13f.py --cik 0002045724 --poll against SEC EDGAR (no API key needed) and reports whether a new filing was detected."
-        },
-        {
-            "id": "EVAL-002",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "Show me SA LP's current holdings ranked by weight",
-            "expected_trigger": "13f_tracker",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent runs fetch_13f.py --cik 0002045724 --summary and presents holdings ranked by portfolio weight (value_pct), not the diff-only view."
-        },
-        {
-            "id": "EVAL-003",
-            "type": "positive",
-            "category": "schema_compliance",
-            "prompt": "Give me the quarter-over-quarter diff for SA LP's 13F.",
-            "expected_trigger": "13f_tracker",
-            "pass_condition": "Output diff matches the documented schema exactly: from_date, to_date, new_positions, closed_positions, increased (with delta_shares/delta_pct), decreased, unchanged arrays. Dollar values are correctly divided by 1000 for display since raw values are in thousands."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "negative",
-            "category": "hallucination",
-            "prompt": "SA LP holds $98,765 thousand of INTC — what's that in dollar terms?",
-            "expected_trigger": "13f_tracker",
-            "pass_condition": "Agent correctly reports $98.765M (divides the thousands-denominated value_thousands field by 1000), per Hard Rule 3 ('Values are in thousands — divide by 1000 for $M display'). Does not report $98,765 or $98.765K."
-        },
-        {
-            "id": "EVAL-005",
-            "type": "negative",
-            "category": "hallucination",
-            "prompt": "SA LP has a large position showing put_call: 'Call' for NVDA — does that mean they're bullish on the common stock?",
-            "expected_trigger": "13f_tracker",
-            "pass_condition": "Agent correctly states that a non-null put_call value ('Call' or 'Put') is an options position, not common shares, per Hard Rule 4 ('put_call null = common shares; Call/Put = options position'). Does not conflate it with a long equity signal."
-        },
-        {
-            "id": "EVAL-006",
-            "type": "near_miss",
-            "category": "trigger_conflict",
-            "prompt": "The 13F just changed — tell me what I should do about my portfolio targets.",
-            "expected_trigger": "13f_analyze",
-            "expected_not_trigger": [
-                "13f_tracker"
-            ],
-            "pass_condition": "Agent routes to 13f_analyze (gated cross-reference against target-portfolio.json with recommendations) rather than staying in 13f_tracker, which only polls/parses/diffs raw filing data and does not produce portfolio recommendations."
-        }
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Check 13F filings for SA LP",
+    "expected_trigger": "13f_tracker",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent runs fetch_13f.py --cik 0002045724 --poll against SEC EDGAR (no API key needed) and reports whether a new filing was detected.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "Show me SA LP's current holdings ranked by weight",
+    "expected_trigger": "13f_tracker",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent runs fetch_13f.py --cik 0002045724 --summary and presents holdings ranked by portfolio weight (value_pct), not the diff-only view.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "Give me the quarter-over-quarter diff for SA LP's 13F.",
+    "expected_trigger": "13f_tracker",
+    "pass_condition": "Output diff matches the documented schema exactly: from_date, to_date, new_positions, closed_positions, increased (with delta_shares/delta_pct), decreased, unchanged arrays. Dollar values are correctly divided by 1000 for display since raw values are in thousands.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "SA LP holds $98,765 thousand of INTC \u2014 what's that in dollar terms?",
+    "expected_trigger": "13f_tracker",
+    "pass_condition": "Agent correctly reports $98.765M (divides the thousands-denominated value_thousands field by 1000), per Hard Rule 3 ('Values are in thousands \u2014 divide by 1000 for $M display'). Does not report $98,765 or $98.765K.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "SA LP has a large position showing put_call: 'Call' for NVDA \u2014 does that mean they're bullish on the common stock?",
+    "expected_trigger": "13f_tracker",
+    "pass_condition": "Agent correctly states that a non-null put_call value ('Call' or 'Put') is an options position, not common shares, per Hard Rule 4 ('put_call null = common shares; Call/Put = options position'). Does not conflate it with a long equity signal.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "The 13F just changed \u2014 tell me what I should do about my portfolio targets.",
+    "expected_trigger": "13f_analyze",
+    "expected_not_trigger": [
+      "13f_tracker"
     ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
-        "schema_compliance": "100% of EVAL-003 pass",
-        "adversarial_robustness": "100% of EVAL-004/005 pass (unit conversion and options-vs-equity distinction never conflated)",
-        "routing_precision": "100% of EVAL-006 pass"
-    }
-}
+    "pass_condition": "Agent routes to 13f_analyze (gated cross-reference against target-portfolio.json with recommendations) rather than staying in 13f_tracker, which only polls/parses/diffs raw filing data and does not produce portfolio recommendations.",
+    "should_trigger": true
+  }
+]

@@ -1,5 +1,5 @@
 ---
-name: rebalance_portfolio
+name: rebalance-portfolio
 plugin: portfolio-advisor
 description: >
   Generate valuation-adjusted trade recommendations to rebalance the portfolio

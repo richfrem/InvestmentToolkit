@@ -1,5 +1,5 @@
 ---
-name: x_news_sweep
+name: x-news-sweep
 plugin: portfolio-advisor
 description: >
   Generates a live Grok/X.com prompt from the current target-portfolio.json,

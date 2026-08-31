@@ -1,5 +1,5 @@
 ---
-name: forward_valuation_challenge
+name: forward-valuation-challenge
 description: >
   Challenge and stress-test AI-generated investment thesis valuations that are overly anchored on historical financials. Force the valuation engine to incorporate forward-looking demand signals, contract pipelines, and secular growth drivers — particularly for companies positioned in the AI infrastructure and data center buildout.
 has_tools: false

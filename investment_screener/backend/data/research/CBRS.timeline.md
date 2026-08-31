@@ -1,5 +1,21 @@
 # CBRS Research Timeline
 
+## 2026-08-21 — TA Sweep for CBRS
+
+Batch technical indicators for CBRS.
+
+## 2026-08-13 — TA Sweep for CBRS
+
+Batch technical indicators for CBRS.
+
+## 2026-07-23 — TA Sweep for CBRS
+
+Batch technical indicators for CBRS.
+
+## 2026-07-10 — TA Sweep for CBRS
+
+Batch technical indicators for CBRS.
+
 ## 2026-05-21 — CBRS research import (2026-05-21)
 
 # Cerebras Systems (CBRS) — Deep-Dive Research Report
@@ -133,3 +149,7 @@ Cerebras completely disrupts this by turning a whole silicon disc into a single 
 * **Calculations**: ✅ Mathematical confirmation using `dcf_scenarios.py` with Class A float anchors.
 * **Projections persistence**: ✅ Saved via POST `/api/projections`.
 
+
+## 2026-05-21 — Prediction claim: CBRS dcf_fair_value (2026-05-21)
+
+Direction: bullish, horizon: 180 days.

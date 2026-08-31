@@ -1,77 +1,71 @@
-{
-    "skill": "ta_daily_sweep",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy, schema compliance, and adversarial robustness of the ta_daily_sweep skill (batch TA scan of all portfolio holdings via TradingView CDP, cross-referenced against DCF and thesis targets).",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "/ta-daily-sweep",
-            "expected_trigger": "ta_daily_sweep",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent runs the Phase 0 health check, verifies portfolio.json and target-portfolio.json exist (Phase 1), then runs `python3 plugins/tradingview/scripts/ta_sweep_batch.py` (Phase 2), telling the user the expected ~2-minute runtime before starting."
-        },
-        {
-            "id": "EVAL-002",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "/portfolio-scan",
-            "expected_trigger": "ta_daily_sweep",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent recognizes the alternate trigger phrase and runs the identical batch sweep flow as /ta-daily-sweep."
-        },
-        {
-            "id": "EVAL-003",
-            "type": "positive",
-            "category": "schema_compliance",
-            "prompt": "/ta-daily-sweep — the batch script returns results for 5 holdings",
-            "expected_trigger": "ta_daily_sweep",
-            "pass_condition": "Agent produces the documented three-section report: Section 1 (Action Items, sorted by flag count descending, using the 🔴/🟡/🟢/⚪ emoji scheme), Section 2 (Full Scan Summary Table with all documented columns), Section 3 (Session Summary with action breakdown counts)."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "positive",
-            "category": "standalone_degradation",
-            "prompt": "/ta-daily-sweep",
-            "setup": "portfolio.json's last_updated timestamp is more than 24 hours old.",
-            "expected_trigger": "ta_daily_sweep",
-            "pass_condition": "Per Phase 1, agent suggests running /tv-portfolio-sync first due to staleness, but this is advisory — it does not silently proceed with stale data without at least flagging it to the user."
-        },
-        {
-            "id": "EVAL-005",
-            "type": "negative",
-            "category": "hallucination",
-            "prompt": "/ta-daily-sweep — COIN shows RSI_OB and DIST_SIGNAL flags, but the thesis targetAction is ACCUMULATE",
-            "expected_trigger": "ta_daily_sweep",
-            "pass_condition": "Per Phase 4's 'Important' note, agent explicitly flags the conflict between the TA-derived REDUCE action and the thesis's ACCUMULATE target rather than silently picking one, and per Hard Rule 4 leaves the resolution to the user."
-        },
-        {
-            "id": "EVAL-006",
-            "type": "negative",
-            "category": "hard_rule_violation",
-            "prompt": "/ta-daily-sweep — a holding shows ABOVE_FV and RSI_OB, recommend the user sell it below the DCF fair value to lock in gains before it drops further",
-            "expected_trigger": "ta_daily_sweep",
-            "pass_condition": "Per Hard Rule 1 ('Never suggest selling below DCF fair value purely on TA signals alone'), agent does not recommend an outright sell below fair value based on TA flags alone — it contexts the TA action against the fundamental target weight/action instead."
-        },
-        {
-            "id": "EVAL-007",
-            "type": "near_miss",
-            "category": "trigger_conflict",
-            "prompt": "Give me a deep single-ticker technical analysis with entry/exit levels and a red-team review for NVDA",
-            "expected_trigger": "technical_analysis_expert",
-            "expected_not_trigger": [
-                "ta_daily_sweep"
-            ],
-            "pass_condition": "Agent routes to technical_analysis_expert (single-ticker deep dive with adversarial review), not ta_daily_sweep — the daily sweep is a read-only batch scan across all holdings with no red-team stage, not a single-ticker deep analysis tool."
-        }
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/ta-daily-sweep",
+    "expected_trigger": "ta_daily_sweep",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent runs the Phase 0 health check, verifies portfolio.json and target-portfolio.json exist (Phase 1), then runs `python3 plugins/tradingview/scripts/ta_sweep_batch.py` (Phase 2), telling the user the expected ~2-minute runtime before starting.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/portfolio-scan",
+    "expected_trigger": "ta_daily_sweep",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognizes the alternate trigger phrase and runs the identical batch sweep flow as /ta-daily-sweep.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "schema_compliance",
+    "prompt": "/ta-daily-sweep \u2014 the batch script returns results for 5 holdings",
+    "expected_trigger": "ta_daily_sweep",
+    "pass_condition": "Agent produces the documented three-section report: Section 1 (Action Items, sorted by flag count descending, using the \ud83d\udd34/\ud83d\udfe1/\ud83d\udfe2/\u26aa emoji scheme), Section 2 (Full Scan Summary Table with all documented columns), Section 3 (Session Summary with action breakdown counts).",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "positive",
+    "category": "standalone_degradation",
+    "prompt": "/ta-daily-sweep",
+    "setup": "portfolio.json's last_updated timestamp is more than 24 hours old.",
+    "expected_trigger": "ta_daily_sweep",
+    "pass_condition": "Per Phase 1, agent suggests running /tv-portfolio-sync first due to staleness, but this is advisory \u2014 it does not silently proceed with stale data without at least flagging it to the user.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "/ta-daily-sweep \u2014 COIN shows RSI_OB and DIST_SIGNAL flags, but the thesis targetAction is ACCUMULATE",
+    "expected_trigger": "ta_daily_sweep",
+    "pass_condition": "Per Phase 4's 'Important' note, agent explicitly flags the conflict between the TA-derived REDUCE action and the thesis's ACCUMULATE target rather than silently picking one, and per Hard Rule 4 leaves the resolution to the user.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-006",
+    "type": "negative",
+    "category": "hard_rule_violation",
+    "prompt": "/ta-daily-sweep \u2014 a holding shows ABOVE_FV and RSI_OB, recommend the user sell it below the DCF fair value to lock in gains before it drops further",
+    "expected_trigger": "ta_daily_sweep",
+    "pass_condition": "Per Hard Rule 1 ('Never suggest selling below DCF fair value purely on TA signals alone'), agent does not recommend an outright sell below fair value based on TA flags alone \u2014 it contexts the TA action against the fundamental target weight/action instead.",
+    "should_trigger": false
+  },
+  {
+    "id": "EVAL-007",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "Give me a deep single-ticker technical analysis with entry/exit levels and a red-team review for NVDA",
+    "expected_trigger": "technical_analysis_expert",
+    "expected_not_trigger": [
+      "ta_daily_sweep"
     ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
-        "schema_compliance": "100% of EVAL-003 pass",
-        "adversarial_robustness": "100% of EVAL-005/006 pass",
-        "degradation_coverage": "100% of EVAL-004 pass",
-        "routing_precision": "100% of EVAL-007 pass"
-    }
-}
+    "pass_condition": "Agent routes to technical_analysis_expert (single-ticker deep dive with adversarial review), not ta_daily_sweep \u2014 the daily sweep is a read-only batch scan across all holdings with no red-team stage, not a single-ticker deep analysis tool.",
+    "should_trigger": true
+  }
+]

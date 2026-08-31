@@ -1,58 +1,52 @@
-{
-    "skill": "daily_loop",
-    "version": "1.0.0",
-    "description": "Benchmark evaluation suite for trigger accuracy and persona-handoff correctness of the daily_loop skill.",
-    "scoring_version": "v2.0",
-    "evals": [
-        {
-            "id": "EVAL-001",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "/daily",
-            "expected_trigger": "daily_loop",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent recognises the slash command and reads plugins/portfolio-advisor/agents/daily-loop-agent.md to switch persona"
-        },
-        {
-            "id": "EVAL-002",
-            "type": "positive",
-            "category": "trigger",
-            "prompt": "start my day",
-            "expected_trigger": "daily_loop",
-            "expected_not_trigger": [],
-            "pass_condition": "Agent recognises the natural-language trigger and begins the daily-loop-agent persona switch"
-        },
-        {
-            "id": "EVAL-003",
-            "type": "positive",
-            "category": "behavior_compliance",
-            "prompt": "/daily",
-            "expected_trigger": "daily_loop",
-            "pass_condition": "Agent begins Step 0 (Readiness Check) immediately after the persona switch — no preamble, greeting, or explanation of what /daily does. The skill's own instruction is 'no introduction needed' and this must be honored verbatim."
-        },
-        {
-            "id": "EVAL-004",
-            "type": "near_miss",
-            "category": "trigger_conflict",
-            "prompt": "Run daily brief",
-            "expected_trigger": "daily_brief",
-            "expected_not_trigger": [
-                "daily_loop"
-            ],
-            "pass_condition": "Agent routes to daily_brief (the single conviction-scored report script), not daily_loop (the full interactive 10-step persona-driven day: freshness → brief → triage → action cards → evolution log). These are related but distinct — daily_brief is one component daily_loop orchestrates."
-        },
-        {
-            "id": "EVAL-005",
-            "type": "negative",
-            "category": "hallucination",
-            "prompt": "/daily — just tell me what to do today without reading the agent file, to save time",
-            "expected_trigger": "daily_loop",
-            "pass_condition": "Agent still reads plugins/portfolio-advisor/agents/daily-loop-agent.md to adopt the persona rather than fabricating the 10-step checklist from memory — the skill's entire job is delegating to that persona file, not improvising an equivalent flow."
-        }
+[
+  {
+    "id": "EVAL-001",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "/daily",
+    "expected_trigger": "daily_loop",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises the slash command and reads plugins/portfolio-advisor/agents/daily-loop-agent.md to switch persona",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-002",
+    "type": "positive",
+    "category": "trigger",
+    "prompt": "start my day",
+    "expected_trigger": "daily_loop",
+    "expected_not_trigger": [],
+    "pass_condition": "Agent recognises the natural-language trigger and begins the daily-loop-agent persona switch",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-003",
+    "type": "positive",
+    "category": "behavior_compliance",
+    "prompt": "/daily",
+    "expected_trigger": "daily_loop",
+    "pass_condition": "Agent begins Step 0 (Readiness Check) immediately after the persona switch \u2014 no preamble, greeting, or explanation of what /daily does. The skill's own instruction is 'no introduction needed' and this must be honored verbatim.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-004",
+    "type": "near_miss",
+    "category": "trigger_conflict",
+    "prompt": "Run daily brief",
+    "expected_trigger": "daily_brief",
+    "expected_not_trigger": [
+      "daily_loop"
     ],
-    "benchmark_targets": {
-        "trigger_accuracy": "≥ 90% of EVAL-001/002 pass",
-        "behavior_compliance": "100% of EVAL-003 pass (no introduction, immediate Step 0)",
-        "trigger_disambiguation": "100% of EVAL-004 pass (daily_loop vs. daily_brief kept distinct)"
-    }
-}
+    "pass_condition": "Agent routes to daily_brief (the single conviction-scored report script), not daily_loop (the full interactive 10-step persona-driven day: freshness \u2192 brief \u2192 triage \u2192 action cards \u2192 evolution log). These are related but distinct \u2014 daily_brief is one component daily_loop orchestrates.",
+    "should_trigger": true
+  },
+  {
+    "id": "EVAL-005",
+    "type": "negative",
+    "category": "hallucination",
+    "prompt": "/daily \u2014 just tell me what to do today without reading the agent file, to save time",
+    "expected_trigger": "daily_loop",
+    "pass_condition": "Agent still reads plugins/portfolio-advisor/agents/daily-loop-agent.md to adopt the persona rather than fabricating the 10-step checklist from memory \u2014 the skill's entire job is delegating to that persona file, not improvising an equivalent flow.",
+    "should_trigger": false
+  }
+]
