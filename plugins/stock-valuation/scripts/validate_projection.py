@@ -142,10 +142,20 @@ def validate_projection(data: dict[str, Any], verbose: bool = False) -> list[str
         errors.append("[FAIL] growthRate: Non-numeric growth rate detected")
 
     # Price ordering
+    # A tie at the $0 negative-EPS price floor (dcf_scenarios.py, PR #171) between
+    # bear and base is not a real ordering violation -- both are genuinely, equally
+    # worthless in the P/E-based model. Caught live 2026-08-29 valuing BTDR: this
+    # sibling validator (the actual Step-4 pre-persistence gate) had its own
+    # independent strict-< check with no tolerance for that legitimate tie.
     try:
-        check(float(bear.get("scenarioPrice", 0)) < float(base.get("scenarioPrice", 0)),
-              "scenarioPrice", "bear.scenarioPrice must be < base.scenarioPrice", errors)
-        check(float(base.get("scenarioPrice", 0)) < float(bull.get("scenarioPrice", 0)),
+        bear_price = float(bear.get("scenarioPrice", 0))
+        base_price = float(base.get("scenarioPrice", 0))
+        bull_price = float(bull.get("scenarioPrice", 0))
+        bear_base_ok = bear_price < base_price or (
+            bear.get("priceFloored") and base.get("priceFloored") and bear_price == base_price
+        )
+        check(bear_base_ok, "scenarioPrice", "bear.scenarioPrice must be < base.scenarioPrice", errors)
+        check(base_price < bull_price,
               "scenarioPrice", "base.scenarioPrice must be < bull.scenarioPrice", errors)
     except (TypeError, ValueError):
         errors.append("[FAIL] scenarioPrice: Non-numeric scenario price detected")

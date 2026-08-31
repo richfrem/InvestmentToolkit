@@ -156,6 +156,46 @@ def test_validate_projection_appends_gate_failure_to_errors():
     assert any("ACCUMULATE requires" in e for e in errors)
 
 
+class TestScenarioPriceFloorTie:
+    """Caught live 2026-08-29 valuing BTDR: dcf_scenarios.py's own validate_scenarios()
+    was fixed (PR #171) to tolerate a bear==base tie at the $0 negative-EPS price
+    floor, but this SEPARATE validator (the actual Step-4 pre-persistence gate) has
+    its own independent scenarioPrice ordering check with no such tolerance -- the
+    same underlying bug recurring in a sibling script that doesn't share the fix."""
+
+    def _projection_with_prices(self, bear_price, base_price, bull_price, bear_floored=False, base_floored=False):
+        return {
+            "ticker": "TEST", "id": "abc", "source": "AI_AGENT", "schemaVersion": "1.2",
+            "version": 1, "savedAt": "2026-01-01T00:00:00Z", "rationale": "test",
+            "snapshot": {"price": 10.0},
+            "scenarios": {
+                "bear": {"weight": 0.3, "growthRate": 5, "scenarioPrice": bear_price, "priceFloored": bear_floored},
+                "base": {"weight": 0.4, "growthRate": 15, "scenarioPrice": base_price, "priceFloored": base_floored},
+                "bull": {"weight": 0.3, "growthRate": 25, "scenarioPrice": bull_price},
+            },
+            "aiThesis": {"action": "HOLD"},
+            "globalSettings": {},
+        }
+
+    def test_floored_tie_between_bear_and_base_is_allowed(self):
+        proj = self._projection_with_prices(0.0, 0.0, 25.0, bear_floored=True, base_floored=True)
+        errors = validate_projection(proj)
+        assert not any("scenarioPrice" in e for e in errors)
+
+    def test_non_floored_tie_is_still_rejected(self):
+        """A tie NOT caused by the floor (e.g. two identical non-zero prices from
+        a real input mistake) must still be caught -- the tolerance is scoped to
+        the floor case only."""
+        proj = self._projection_with_prices(50.0, 50.0, 80.0, bear_floored=False, base_floored=False)
+        errors = validate_projection(proj)
+        assert any("scenarioPrice" in e for e in errors)
+
+    def test_genuine_inversion_still_rejected(self):
+        proj = self._projection_with_prices(90.0, 50.0, 80.0)
+        errors = validate_projection(proj)
+        assert any("scenarioPrice" in e for e in errors)
+
+
 def _base_projection(**overrides):
     """Helper for sector enum tests."""
     proj = {
