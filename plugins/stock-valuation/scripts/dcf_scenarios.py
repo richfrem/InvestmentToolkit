@@ -249,9 +249,29 @@ def load_raw_json(path: str) -> tuple[str, float, float, float]:
     price = float(m["price"])
     # Prefer NI/EPS-derived diluted share count — captures full dilution from options/warrants/RSUs.
     # Fall back to mktcap/price (basic shares) if shares_diluted is missing or zero.
+    #
+    # Sanity check (caught live 2026-08-29 on CBRS): normal option/RSU dilution
+    # makes shares_diluted modestly >= shares_outstanding (typically 5-20%
+    # higher). A divergence beyond 25% in EITHER direction is not genuine
+    # forward-looking dilution -- it's a signal the diluted figure reflects a
+    # stale/mismatched weighted-average period (e.g. pre-IPO, pre-split) and
+    # should not be trusted. CBRS: diluted was 4.4x outstanding, silently
+    # producing a materially understated EPS/fair value. BE: diluted was ~19%
+    # BELOW outstanding (also abnormal -- diluted should never be lower), and
+    # was used despite the persisted projection's own shareCountMethod field
+    # claiming shares_outstanding was used.
     shares_diluted = m.get("shares_diluted")
+    shares_outstanding = m.get("shares_outstanding")
     if shares_diluted and float(shares_diluted) > 0:
-        shares = float(shares_diluted)
+        diluted = float(shares_diluted)
+        if shares_outstanding and float(shares_outstanding) > 0:
+            outstanding = float(shares_outstanding)
+            if outstanding <= diluted <= outstanding * 1.25:
+                shares = diluted
+            else:
+                shares = outstanding
+        else:
+            shares = diluted
     else:
         mcap = float(m.get("market_cap") or 0)
         shares = mcap / price if mcap and price else float(m["shares_outstanding"])
