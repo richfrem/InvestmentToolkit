@@ -183,11 +183,34 @@ export default function Dashboard() {
             )}
 
             {error && (
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-6 rounded-xl text-center max-w-md">
-                        <div className="text-2xl mb-2">⚠️</div>
-                        <div className="font-semibold mb-2">Failed to load stock data</div>
-                        <div className="text-sm">{error}</div>
+                <div className="flex-1 flex items-center justify-center p-6">
+                    <div className="bg-slate-900 border border-slate-800 text-slate-300 p-8 rounded-2xl text-center max-w-lg shadow-2xl">
+                        <div className="text-5xl mb-4">🔍</div>
+                        <div className="text-xl font-bold text-white mb-2">
+                            {/not found|delisted|insufficient/i.test(error) ? "Symbol Not Found" : "Unable to Load Stock Data"}
+                        </div>
+                        <div className="text-slate-400 text-sm mb-6 leading-relaxed">
+                            {/not found|delisted|insufficient/i.test(error)
+                                ? `We couldn't find any financial or price data for "${searchParams.get('ticker') || ''}". The symbol may be mistyped, delisted, or not covered.`
+                                : error}
+                        </div>
+                        <div className="flex flex-col gap-3">
+                            <input
+                                type="text"
+                                placeholder="Try another ticker (e.g. KRMN, NVDA)"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        const val = e.currentTarget.value.trim().toUpperCase();
+                                        if (val) handleInputSubmit(val);
+                                    }
+                                }}
+                                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-3 text-white text-center focus:border-primary focus:outline-none placeholder:text-slate-500"
+                                autoFocus
+                            />
+                            <div className="text-xs text-slate-500">
+                                Press Enter to search
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
