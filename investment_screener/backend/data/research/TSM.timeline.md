@@ -1,5 +1,40 @@
 # TSM Research Timeline
 
+## 2026-09-01 — Autonomous DCF Refresh & Leading-Edge AI Foundry Monopoly
+
+# TSM — Taiwan Semiconductor Manufacturing Company Limited
+**Date**: 2026-09-01 | **Model**: Gemini 3.7 Flash | **Action**: ACCUMULATE | **Fair Value**: $658.83 vs $415.07 (+58.7%)
+
+### Executive Summary
+Taiwan Semiconductor Manufacturing Co. (TSMC / TSM) commands an unmatched monopoly over sub-3nm semiconductor fabrication (N3/N2/A16) and CoWoS advanced packaging, producing 100% of global frontier AI accelerators for NVIDIA, AMD, and Apple. TTM revenue reached **$119.0B USD** (+36.0% YoY) with an extraordinary 49.9% net profit margin. At $415.07 (forward P/E 19.06x), our 5-year probability-weighted DCF yields **$658.83** (+58.7% upside at 7.00% discount rate). Reverse DCF confirms the market is pricing in just 13.3% CAGR due to geopolitical discount discounting, providing an outstanding margin of safety. Recommendation: **`ACCUMULATE`**.
+
+### Key Financials & Valuation
+| Metric | Value |
+|---|---|
+| Current Price (ADR) | $415.07 |
+| Fair Value (DCF) | **$658.83** (+58.7% upside) |
+| Wall Street Mean Target | **$554.45** (18 analysts, Strong Buy) |
+| WACC | 7.00% (floor applied) |
+| TTM Revenue | $119.0B USD (+36.0% YoY) |
+| Diluted Shares (ADR basis) | 5.19B |
+| Reverse DCF Implied CAGR | 13.3% (`BETWEEN_BEAR_AND_BASE`) |
+| Strategy Pillar | `compute` (`semiconductor-manufacturing`) |
+| Portfolio Position | 3.0 shares (3.85% target weight) |
+
+### Scenario Breakdown
+- **🐻 Bear (25% weight)**: $209.20 PV (12% CAGR to $209.8B Y5, 38% net margin, 18x PE). Geopolitical discount persists; hyperscaler capex digestion slows fab orders.
+- **⚖️ Base (50% weight)**: $599.73 PV (22% CAGR to $321.7B Y5, 46% net margin, 25x PE). Sub-2nm N2/A16 ramp and CoWoS packaging volume double revenue.
+- **🚀 Bull (25% weight)**: $1,226.64 PV (30% CAGR to $442.0B Y5, 50% net margin, 32x PE). Multi-year AI compute wave and overseas fab diversification justify multiple expansion.
+
+### Recommendation & Execution Tiers
+- **Lifecycle Status**: `core`
+- **Action**: **`ACCUMULATE`**
+- **Target Entry / Pullback Support**: $399.72 (Keltner Channel Lower Band)
+- **Trim Tier 1**: $550.00+
+- **Stop Loss / Breaker**: $360.00
+
+---
+
 ## 2026-05-02 — TSM research import (2026-05-02)
 
 # Taiwan Semiconductor Manufacturing (TSM) — Deep-Dive Research Report
