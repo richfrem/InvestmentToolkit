@@ -1,21 +1,21 @@
 [
   {
     "ticker": "ZS",
-    "id": "e3052a5f-e25a-40a1-a75a-063a56247a11",
+    "id": "e3052a5f-e25a-40a1-a75a-063a56247a12",
     "source": "AI_AGENT",
     "schemaVersion": "1.2",
     "version": 1,
-    "savedAt": "2026-08-31T22:34:00.000Z",
-    "updatedAt": "2026-08-31T22:34:00.000Z",
-    "name": "ZS AI Fundamental Valuation",
-    "rationale": "Zscaler (ZS) is the premier pure-play cloud security exchange platform (ZIA/ZPA/ZDX), processing >400 billion daily transactions. TTM revenue reached $2.67B (+25.4% YoY) with positive operating cash flow and rapid GAAP margin inflection. At $188.39, 5-year DCF yields a fair value of $261.23 (+38.7% upside at 10% discount rate). Reverse DCF indicates the market is pricing in an undemanding 18.61% 5-year CAGR (BETWEEN_BEAR_AND_BASE), providing an attractive margin of safety. Recommendation: ACCUMULATE (Core Holding). Target accumulation below $195.92, trim Tier 1 at $261.23.",
+    "savedAt": "2026-09-01T07:16:00.000Z",
+    "updatedAt": "2026-09-01T07:16:00.000Z",
+    "name": "ZS AI Fundamental Valuation and Zero Trust Moat",
+    "rationale": "Zscaler (ZS) is the premier pure-play cloud security exchange platform (ZIA/ZPA/ZDX), processing >400 billion daily transactions. TTM revenue reached $2.67B (+25.4% YoY) with positive operating cash flow and rapid GAAP margin inflection. At $180.75, our 5-year DCF yields a fair value of $261.23 (+44.5% upside at 10% discount rate). Reverse DCF indicates the market is pricing in an undemanding 18.61% 5-year CAGR, well below our 21.0% base case. Recommendation: ACCUMULATE (Core Holding: 12.0 shares, 6.50% target weight). Accumulate on dips below $185.00, trim Tier 1 at $261.23+.",
     "snapshot": {
-      "price": 188.385,
+      "price": 180.75,
       "currency": "USD",
       "exchange": "NASDAQ",
       "shares": 161709525,
       "revenue": 2673115000,
-      "lastActualPS": 11.4
+      "lastActualPS": 10.93
     },
     "dataPreferences": {
       "growthBasis": "ttm",
@@ -89,10 +89,10 @@
     },
     "aiThesis": {
       "model": "Gemini 3.7 Flash",
-      "rationale": "Zscaler (ZS) is the premier pure-play cloud security exchange platform (ZIA/ZPA/ZDX), processing >400 billion daily transactions. TTM revenue reached $2.67B (+25.4% YoY) with positive operating cash flow and rapid GAAP margin inflection. At $188.39, 5-year DCF yields a fair value of $261.23 (+38.7% upside at 10% discount rate). Reverse DCF indicates the market is pricing in an undemanding 18.61% 5-year CAGR (BETWEEN_BEAR_AND_BASE), providing an attractive margin of safety. Recommendation: ACCUMULATE (Core Holding). Target accumulation below $195.92, trim Tier 1 at $261.23.",
+      "rationale": "Zscaler (ZS) is the premier pure-play cloud security exchange platform (ZIA/ZPA/ZDX), processing >400 billion daily transactions. TTM revenue reached $2.67B (+25.4% YoY) with positive operating cash flow and rapid GAAP margin inflection. At $180.75, our 5-year DCF yields a fair value of $261.23 (+44.5% upside at 10% discount rate). Reverse DCF indicates the market is pricing in an undemanding 18.61% 5-year CAGR, well below our 21.0% base case. Recommendation: ACCUMULATE (Core Holding: 12.0 shares, 6.50% target weight). Accumulate on dips below $185.00, trim Tier 1 at $261.23+.",
       "fairValue": 261.23,
       "action": "ACCUMULATE",
-      "analyzedAt": "2026-08-31T22:34:00.000Z"
+      "analyzedAt": "2026-09-01T07:16:00.000Z"
     }
   }
 ]
