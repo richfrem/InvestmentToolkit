@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "SKHY",
+    "id": "e9182941-4829-4829-b819-204829104829",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-09-01T06:55:00.000Z",
+    "updatedAt": "2026-09-01T06:55:00.000Z",
+    "name": "SKHY Global High-Bandwidth Memory Leadership Valuation",
+    "rationale": "SK hynix Inc. (SKHY) commands global #1 market share in High-Bandwidth Memory (HBM3e/HBM4) with proprietary MR-MUF packaging and strategic NVIDIA allocation. TTM revenue reached ~$72.5B USD with 44.2% net profit margins. At $160.53 (forward P/E 4.76x), our 5-year DCF yields a fair value of $244.45 (+52.3% upside at 7.00% discount rate). Reverse DCF indicates the market is pricing in just 28.4% CAGR, well below consensus ($246.97 mean target). Recommendation: ACCUMULATE (Core Holding: 9.0 shares, 4.03% target weight). Accumulate on dips near $143.04, trim Tier 1 at $240.00+.",
+    "snapshot": {
+      "price": 160.53,
+      "currency": "USD",
+      "exchange": "OTC",
+      "shares": 7098548910,
+      "revenue": 72497000000,
+      "lastActualPS": 16.06
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": true,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 15.0,
+        "netMargin": 18.0,
+        "exitPE": 10.0,
+        "qualityMultiplier": 0.95,
+        "shareChange": 0.5,
+        "rationale": "Memory cycle matures into severe downcycle after HBM4 ramp; margin compresses to 18% on $145.8B Y5 revenue.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 145817.4,
+        "year5NetIncome": 26247.1,
+        "year5EPS": 3.61,
+        "scenarioPrice": 24.43,
+        "risks": [
+          "Samsung aggressive HBM4 yields compressing industry ASPs",
+          "Cyclical downcycle in standard consumer DRAM and NAND memory"
+        ]
+      },
+      "base": {
+        "weight": 0.50,
+        "growthRate": 32.0,
+        "netMargin": 35.0,
+        "exitPE": 16.0,
+        "qualityMultiplier": 1.10,
+        "shareChange": -0.5,
+        "rationale": "SK Hynix defends #1 global market share in HBM3e/HBM4 packaging with NVIDIA priority allocation; expands to $290.5B revenue at 35% margin.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 290529.1,
+        "year5NetIncome": 101685.2,
+        "year5EPS": 14.69,
+        "scenarioPrice": 184.32,
+        "risks": [
+          "Geopolitical tensions in East Asian semiconductor supply corridors",
+          "Raw silicon wafer supply chain bottlenecks"
+        ]
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 45.0,
+        "netMargin": 44.0,
+        "exitPE": 22.0,
+        "qualityMultiplier": 1.20,
+        "shareChange": -1.5,
+        "rationale": "SK Hynix commands virtual duopoly in advanced MR-MUF packaging for HBM4/HBM4e; $464.7B revenue at 44% margin justifies AI rerating.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 464686.5,
+        "year5NetIncome": 204462.1,
+        "year5EPS": 31.06,
+        "scenarioPrice": 584.72,
+        "risks": [
+          "Korean Won FX volatility impacting reported USD earnings",
+          "Next-generation packaging technology transition friction"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 7.00,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "SK hynix Inc. (SKHY) commands global #1 market share in High-Bandwidth Memory (HBM3e/HBM4) with proprietary MR-MUF packaging and strategic NVIDIA allocation. TTM revenue reached ~$72.5B USD with 44.2% net profit margins. At $160.53 (forward P/E 4.76x), our 5-year DCF yields a fair value of $244.45 (+52.3% upside at 7.00% discount rate). Reverse DCF indicates the market is pricing in just 28.4% CAGR, well below consensus ($246.97 mean target). Recommendation: ACCUMULATE (Core Holding: 9.0 shares, 4.03% target weight). Accumulate on dips near $143.04, trim Tier 1 at $240.00+.",
+      "fairValue": 244.45,
+      "action": "ACCUMULATE",
+      "analyzedAt": "2026-09-01T06:55:00.000Z"
+    }
+  }
+]
