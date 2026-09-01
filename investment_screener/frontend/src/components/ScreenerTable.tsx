@@ -48,6 +48,8 @@ interface ScreenerRow {
     lastAnalyzed: string;
     qualityMultiplier: number | null;
     rowKind: 'projection' | 'holding'; // 'holding' = no DCF projection yet
+    assetClass?: string | null;
+    pillarId?: string | null;
     subStrategyId: string | null;
     change_1d: number | null;
     change_overall: number | null;
@@ -162,7 +164,7 @@ export default function ScreenerTable() {
     const [filters, setFilters] = useState<Record<string, string>>({});
     const [sortCol, setSortCol] = useState<keyof ScreenerRow>('upside');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
-    const [statusFilter, setStatusFilter] = useState<'all' | 'actionable' | 'holdings' | 'watchlist' | 'gaps'>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'actionable' | 'holdings' | 'watchlist' | 'gaps'>('holdings');
 
     const dragRef = useRef<{ colId: string; startX: number; startWidth: number } | null>(null);
 
@@ -219,8 +221,10 @@ export default function ScreenerTable() {
             ]);
 
             if (allProjData) {
-                const aiOnly = (allProjData as Projection[]).filter(p => p.source === 'AI_AGENT');
-                const latestByTicker = aiOnly.reduce((acc, curr) => {
+                const supportedProjections = (allProjData as Projection[]).filter(
+                    p => p.source === 'AI_AGENT' || p.source === 'ETF_ANALYSIS'
+                );
+                const latestByTicker = supportedProjections.reduce((acc, curr) => {
                     if (!acc[curr.ticker] || new Date(curr.savedAt) > new Date(acc[curr.ticker].savedAt)) {
                         acc[curr.ticker] = curr;
                     }
@@ -390,6 +394,8 @@ export default function ScreenerTable() {
                 recommendedPct,
                 rationale: rev?.rationale ?? null,
                 rowKind: 'projection',
+                assetClass: allHoldingsMap[p.ticker]?.assetClass ?? (p.source === 'ETF_ANALYSIS' ? 'ETF' : 'EQUITY'),
+                pillarId: allHoldingsMap[p.ticker]?.pillarId ?? null,
                 subStrategyId: allHoldingsMap[p.ticker]?.subStrategyId ?? null,
                 change_1d: heatmapMap[p.ticker]?.change_1d ?? null,
                 change_overall: heatmapMap[p.ticker]?.change_overall ?? null,
@@ -439,6 +445,8 @@ export default function ScreenerTable() {
                     recommendedPct: h.targetPct ?? null,
                     rationale: h.rationale ?? null,
                     rowKind: 'holding',
+                    assetClass: h.assetClass ?? 'EQUITY',
+                    pillarId: h.pillarId ?? null,
                     subStrategyId: h.subStrategyId ?? null,
                     change_1d: heatmapMap[h.ticker]?.change_1d ?? null,
                     change_overall: heatmapMap[h.ticker]?.change_overall ?? null,
@@ -469,9 +477,16 @@ export default function ScreenerTable() {
             const act = (row.action ?? '').toUpperCase();
             if (['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT'].includes(act)) actionable++;
             // Core holdings are strictly stocks currently held in accounts (currentPct > 0)
-            if ((row.currentPct ?? 0) > 0) holdings++;
+            const isFunded = (row.currentPct ?? 0) > 0;
+            const isTarget = (row.recommendedPct ?? 0) > 0;
+            if (isFunded) holdings++;
             if (row.isWatched) watchlist++;
-            if (row.rowKind === 'holding' || row.currentPrice === 0 || row.fairValue == null) gaps++;
+            
+            // Only flag true portfolio holdings or active thesis targets that lack a valuation
+            const isPortfolioScope = isFunded || isTarget;
+            if (isPortfolioScope && (row.rowKind === 'holding' || row.fairValue == null)) {
+                gaps++;
+            }
         }
 
         return { all: rows.length, actionable, holdings, watchlist, gaps };
@@ -488,7 +503,10 @@ export default function ScreenerTable() {
         } else if (statusFilter === 'watchlist') {
             if (!row.isWatched) return false;
         } else if (statusFilter === 'gaps') {
-            const isGap = row.rowKind === 'holding' || row.currentPrice === 0 || row.fairValue == null;
+            const isFunded = (row.currentPct ?? 0) > 0;
+            const isTarget = (row.recommendedPct ?? 0) > 0;
+            const isPortfolioScope = isFunded || isTarget;
+            const isGap = isPortfolioScope && (row.rowKind === 'holding' || row.fairValue == null);
             if (!isGap) return false;
         }
 
@@ -771,6 +789,7 @@ export default function ScreenerTable() {
                                     
                                     let cellContent;
                                     if (col.id === 'symbol') {
+                                        const isEtf = row.assetClass === 'ETF' || ['KOID', 'HUMN', 'FOTO', 'DXYZ', 'PSU-U.TO'].includes(row.symbol);
                                         cellContent = (
                                             <div className="flex items-center gap-2">
                                                 <button
@@ -783,11 +802,19 @@ export default function ScreenerTable() {
                                                         className={row.isWatched ? "fill-yellow-400 text-yellow-400" : "text-slate-600/70"}
                                                     />
                                                 </button>
-                                                <span className="font-black text-white text-base tracking-tighter group-hover:text-indigo-300 transition-colors">{val}</span>
-                                                {row.rowKind === 'holding'
-                                                    ? <span className="text-[8px] font-black uppercase tracking-widest text-slate-600 border border-slate-700/50 rounded px-1 py-px">FUND</span>
-                                                    : <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-400" />
-                                                }
+                                                <div className="flex flex-col">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="font-black text-white text-base tracking-tighter group-hover:text-indigo-300 transition-colors">{val}</span>
+                                                        {isEtf ? (
+                                                            <span className="text-[8px] font-black uppercase tracking-widest text-cyan-400 border border-cyan-500/40 bg-cyan-950/40 rounded px-1 py-0.5">ETF</span>
+                                                        ) : (
+                                                            <ExternalLink size={10} className="opacity-0 group-hover:opacity-100 transition-opacity text-indigo-400" />
+                                                        )}
+                                                    </div>
+                                                    {row.pillarId && row.pillarId !== 'other' && (
+                                                        <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">{row.pillarId}</span>
+                                                    )}
+                                                </div>
                                             </div>
                                         );
                                     } else if (col.id === 'action') {

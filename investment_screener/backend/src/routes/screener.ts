@@ -237,6 +237,7 @@ router.get('/all-holdings', async (_req, res) => {
             return {
                 ticker,
                 name: h?.name ?? (ticker === 'USD_CASH' ? 'US Dollar Cash' : ticker),
+                assetClass: h?.assetClass ?? (ticker.includes('CASH') ? 'CASH' : 'EQUITY'),
                 pillarId: h?.pillarId ?? (isCash ? 'cash' : 'other'),
                 subStrategyId: h?.subStrategyId ?? (isCash ? 'cash' : 'other'),
                 role: h?.role ?? (live ? 'untracked' : 'watchlist'),
@@ -244,7 +245,7 @@ router.get('/all-holdings', async (_req, res) => {
                 actualPct: live?.pct ?? null,
                 currentPrice: live?.price ?? null,
                 action,
-                rationale: rev?.rationale ?? h?.thesisForInclusion ?? (isWatched ? 'Monitored via Watchlist' : null),
+                rationale: rev?.rationale ?? h?.agentRationale ?? h?.thesisForInclusion ?? (isWatched ? 'Monitored via Watchlist' : null),
                 hasValuation,
                 isWatched
             };
