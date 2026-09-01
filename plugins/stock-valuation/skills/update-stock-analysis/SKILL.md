@@ -100,8 +100,24 @@ else:
 "
 ```
 - If output starts with `CACHED` → **STOP**. Report the cached fair value and action to the user. Offer to force-refresh if they explicitly ask.
-- If `NO_CACHE` → skip Step 0.5, continue to Step 1.
-- If `STALE` → continue to Step 0.5 (prior analysis review) before Step 1.
+- If `NO_CACHE` → continue to Step 0.1.
+- If `STALE` → continue to Step 0.1 before Step 0.5.
+
+---
+
+## Step 0.1: Holdings Verification & Lifecycle Anchor (Mandatory Single Source of Truth Check)
+> **Rule #15 & #21 Invariant**: Before setting any action, lifecycle status, or target weight, query `domain_model.sqlite` via the canonical CLI `portfolio_io.py --ticker {TICKER}`. Never execute ad-hoc inline Python or raw SQL.
+
+```bash
+python3 investment_screener/backend/py_services/portfolio_io.py --ticker {TICKER}
+```
+* If holding status is `HELD` (`shares > 0`): Security is an active position. **Never classify as WATCHLIST.** Action enum MUST be chosen from `MAINTAIN | ACCUMULATE | TRIM | EXIT`.
+* If holding status is `NOT HELD` (`shares == 0`): Security is not currently held. Action enum MUST be chosen from `WATCHLIST | INITIATE`.
+
+To verify valid foreign keys for `pillar_id` and `sub_strategy_id`:
+```bash
+python3 investment_screener/backend/py_services/portfolio_io.py --pillars
+```
 
 ---
 
