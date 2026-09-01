@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "RIOT",
+    "id": "c1928491-912a-4638-b719-819284019284",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-09-01T06:41:00.000Z",
+    "updatedAt": "2026-09-01T06:41:00.000Z",
+    "name": "RIOT Bitcoin Infrastructure & Power Valuation",
+    "rationale": "Riot Platforms (RIOT) operates ~24 EH/s of Bitcoin mining capacity and 1+ GW of power infrastructure across Corsicana and Rockdale, Texas. GAAP DCF yields $11.23 (-37.7% vs $18.03 current), representing the standard GAAP operational cash floor. The market prices RIOT on a leveraged BTC NAV basis (21 analysts consensus $32.40). Reverse DCF indicates the market is pricing in a 49.8% CAGR. Recommendation: MAINTAIN (Core Holding: 36.0 shares, 2.27% target weight). Maintain current position size, accumulate only on technical pullbacks near Keltner lower support ($17.39), and prepare tactical trims on spikes above $25.00.",
+    "snapshot": {
+      "price": 18.03,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "shares": 375258935,
+      "revenue": 647435000,
+      "lastActualPS": 10.46
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": true,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.35,
+        "growthRate": 10.0,
+        "netMargin": 8.0,
+        "exitPE": 10.0,
+        "qualityMultiplier": 0.85,
+        "shareChange": 3.0,
+        "rationale": "Bitcoin hash difficulty surges while mining economics compress; heavy ongoing ATM equity dilution to fund fleet upgrades.",
+        "moatScore": 2,
+        "managementScore": 3,
+        "year5Revenue": 1042.7,
+        "year5NetIncome": 83.4,
+        "year5EPS": 0.19,
+        "scenarioPrice": 0.91,
+        "risks": [
+          "Prolonged Bitcoin price consolidation below mining breakeven levels",
+          "Persistent ATM share dilution exceeding 3% per year"
+        ]
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 25.0,
+        "netMargin": 18.0,
+        "exitPE": 16.0,
+        "qualityMultiplier": 0.95,
+        "shareChange": 2.0,
+        "rationale": "Corsicana and Rockdale facilities reach 1+ GW capacity; BTC prices support profitable mining and power grid demand response revenue.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 1975.8,
+        "year5NetIncome": 355.6,
+        "year5EPS": 0.86,
+        "scenarioPrice": 7.31,
+        "risks": [
+          "Texas ERCOT grid power demand response curtailment volatility",
+          "ASIC efficiency race requiring continuous capital reinvestment"
+        ]
+      },
+      "bull": {
+        "weight": 0.20,
+        "growthRate": 45.0,
+        "netMargin": 28.0,
+        "exitPE": 22.0,
+        "qualityMultiplier": 1.05,
+        "shareChange": 1.0,
+        "rationale": "Strategic pivot of excess power interconnects to AI HPC colocation alongside record BTC bull run cash flows.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 4149.9,
+        "year5NetIncome": 1162.0,
+        "year5EPS": 2.95,
+        "scenarioPrice": 38.10,
+        "risks": [
+          "Hyperscaler competition in high-density power interconnect acquisition",
+          "Regulatory headwinds on proof-of-work mining power consumption"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 12.30,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "Riot Platforms (RIOT) operates ~24 EH/s of Bitcoin mining capacity and 1+ GW of power infrastructure across Corsicana and Rockdale, Texas. GAAP DCF yields $11.23 (-37.7% vs $18.03 current), representing the standard GAAP operational cash floor. The market prices RIOT on a leveraged BTC NAV basis (21 analysts consensus $32.40). Reverse DCF indicates the market is pricing in a 49.8% CAGR. Recommendation: MAINTAIN (Core Holding: 36.0 shares, 2.27% target weight). Maintain current position size, accumulate only on technical pullbacks near Keltner lower support ($17.39), and prepare tactical trims on spikes above $25.00.",
+      "fairValue": 11.23,
+      "action": "MAINTAIN",
+      "analyzedAt": "2026-09-01T06:41:00.000Z"
+    }
+  }
+]

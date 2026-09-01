@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "SHAZ",
+    "id": "e8192841-3912-4829-a819-104829104829",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-09-01T06:54:00.000Z",
+    "updatedAt": "2026-09-01T06:54:00.000Z",
+    "name": "SHAZ Sovereign APAC AI Neocloud Valuation",
+    "rationale": "SharonAI Holdings Inc. (SHAZ) is scaling a 72MW NVIDIA GB300 AI factory in Australia with 19.9% strategic backing from Leopold Aschenbrenner's Situational Awareness LP. At $50.01, our 5-year DCF yields a fair value of $143.02 (+186.0% upside at 11.66% WACC). Reverse DCF indicates the market is pricing in just 32.4% CAGR, well below our 55.0% base case. Recommendation: ACCUMULATE (Core Holding: 12.0 shares, 1.63% target weight). Accumulate on pullbacks near $44.02, trim Tier 1 at $110.00+.",
+    "snapshot": {
+      "price": 50.01,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "shares": 35667164,
+      "revenue": 133000000,
+      "lastActualPS": 13.46
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": true,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.30,
+        "growthRate": 25.0,
+        "netMargin": 12.0,
+        "exitPE": 18.0,
+        "qualityMultiplier": 0.90,
+        "shareChange": 4.0,
+        "rationale": "Execution delays in Australian 72MW datacenter construction; warrant dilution and power grid interconnect queues restrict Year 5 revenue to $405M with 12% margin.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 405.9,
+        "year5NetIncome": 48.7,
+        "year5EPS": 1.12,
+        "scenarioPrice": 10.48,
+        "risks": [
+          "Delays in Australian power grid energization and high-density liquid cooling installation",
+          "Warrant exercise dilution from private placement financing rounds"
+        ]
+      },
+      "base": {
+        "weight": 0.50,
+        "growthRate": 55.0,
+        "netMargin": 22.0,
+        "exitPE": 28.0,
+        "qualityMultiplier": 1.05,
+        "shareChange": 2.5,
+        "rationale": "72MW NVIDIA GB300 AI factory energizes cleanly; 40,000 GPU cluster scales APAC sovereign and enterprise AI revenue to $1.19B at 22% net margin.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 1189.9,
+        "year5NetIncome": 261.8,
+        "year5EPS": 6.49,
+        "scenarioPrice": 109.88,
+        "risks": [
+          "Customer concentration across early enterprise AI foundation model labs",
+          "Global Neocloud competition from CoreWeave and Nebius entering APAC"
+        ]
+      },
+      "bull": {
+        "weight": 0.20,
+        "growthRate": 80.0,
+        "netMargin": 28.0,
+        "exitPE": 35.0,
+        "qualityMultiplier": 1.15,
+        "shareChange": 1.5,
+        "rationale": "SharonAI becomes the premier APAC sovereign AI Neocloud backed by Situational Awareness LP (Aschenbrenner 20%); multi-hundred MW expansion achieves $2.51B revenue.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 2513.1,
+        "year5NetIncome": 703.7,
+        "year5EPS": 18.31,
+        "scenarioPrice": 424.67,
+        "risks": [
+          "Geopolitical trade restrictions on high-end NVIDIA accelerator exports",
+          "Rapid power utility tariff adjustments in Australian regional energy markets"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 11.66,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "SharonAI Holdings Inc. (SHAZ) is scaling a 72MW NVIDIA GB300 AI factory in Australia with 19.9% strategic backing from Leopold Aschenbrenner's Situational Awareness LP. At $50.01, our 5-year DCF yields a fair value of $143.02 (+186.0% upside at 11.66% WACC). Reverse DCF indicates the market is pricing in just 32.4% CAGR, well below our 55.0% base case. Recommendation: ACCUMULATE (Core Holding: 12.0 shares, 1.63% target weight). Accumulate on pullbacks near $44.02, trim Tier 1 at $110.00+.",
+      "fairValue": 143.02,
+      "action": "ACCUMULATE",
+      "analyzedAt": "2026-09-01T06:54:00.000Z"
+    }
+  }
+]

@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "AMAT",
+    "id": "b7192841-3912-4819-b912-104829104829",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-09-01T06:46:00.000Z",
+    "updatedAt": "2026-09-01T06:46:00.000Z",
+    "name": "AMAT Semiconductor Materials Engineering Valuation",
+    "rationale": "Applied Materials, Inc. (AMAT) dominates semiconductor wafer fabrication equipment (WFE) with unmatched breadth across deposition, etch, planarization, and advanced packaging. TTM revenue reached $28.37B (+24.8% YoY) with 30.0% net margins. At $441.53, our 5-year DCF yields a fair value of $543.77 (+23.2% upside at 9.04% WACC). Reverse DCF indicates the market is pricing in a 16.0% CAGR, below our 18.0% base case. Recommendation: ACCUMULATE (Core Holding: 1.5 shares, 2.24% target weight). Accumulate on pullbacks near 200 EMA support ($419.28), trim Tier 1 at $543.77.",
+    "snapshot": {
+      "price": 441.53,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "shares": 793597443,
+      "revenue": 28368000000,
+      "lastActualPS": 12.35
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": true,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 10.0,
+        "netMargin": 25.0,
+        "exitPE": 18.0,
+        "qualityMultiplier": 0.95,
+        "shareChange": -1.0,
+        "rationale": "WFE (Wafer Fab Equipment) downcycle and China export restriction tightening restrict revenue to $45.7B Y5 with 25% net margin.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 45686.9,
+        "year5NetIncome": 11421.7,
+        "year5EPS": 15.13,
+        "scenarioPrice": 167.89,
+        "risks": [
+          "Tighter US-China export controls impacting legacy tool shipments",
+          "Cyclical memory capex pushouts delaying fab equipment deliveries"
+        ]
+      },
+      "base": {
+        "weight": 0.50,
+        "growthRate": 18.0,
+        "netMargin": 30.0,
+        "exitPE": 26.0,
+        "qualityMultiplier": 1.05,
+        "shareChange": -2.0,
+        "rationale": "Gate-All-Around (GAA), Backside Power Delivery (BSPD), and advanced packaging drive materials engineering intensity to $64.9B Y5 revenue.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 64899.1,
+        "year5NetIncome": 19469.7,
+        "year5EPS": 27.14,
+        "scenarioPrice": 480.69,
+        "risks": [
+          "Customer concentration across leading foundries (TSMC, Intel, Samsung)",
+          "Lead time stretch on specialized vacuum chamber components"
+        ]
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 26.0,
+        "netMargin": 34.0,
+        "exitPE": 32.0,
+        "qualityMultiplier": 1.15,
+        "shareChange": -2.5,
+        "rationale": "Accelerated global fab expansions (TSMC, Intel 14A, Samsung) and High-NA packaging drive $90.1B revenue at 34% margin; aggressive share buybacks.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 90091.0,
+        "year5NetIncome": 30630.9,
+        "year5EPS": 43.81,
+        "scenarioPrice": 1045.82,
+        "risks": [
+          "Macro semiconductor inventory build in consumer end-markets",
+          "Geopolitical instability in East Asian semiconductor fab clusters"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 9.04,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "Applied Materials, Inc. (AMAT) dominates semiconductor wafer fabrication equipment (WFE) with unmatched breadth across deposition, etch, planarization, and advanced packaging. TTM revenue reached $28.37B (+24.8% YoY) with 30.0% net margins. At $441.53, our 5-year DCF yields a fair value of $543.77 (+23.2% upside at 9.04% WACC). Reverse DCF indicates the market is pricing in a 16.0% CAGR, below our 18.0% base case. Recommendation: ACCUMULATE (Core Holding: 1.5 shares, 2.24% target weight). Accumulate on pullbacks near 200 EMA support ($419.28), trim Tier 1 at $543.77.",
+      "fairValue": 543.77,
+      "action": "ACCUMULATE",
+      "analyzedAt": "2026-09-01T06:46:00.000Z"
+    }
+  }
+]

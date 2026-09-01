@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "PANW",
+    "id": "e9182941-4829-4829-a918-104829104829",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-09-01T06:52:00.000Z",
+    "updatedAt": "2026-09-01T06:52:00.000Z",
+    "name": "PANW AI Cybersecurity Platformization Valuation",
+    "rationale": "Palo Alto Networks, Inc. (PANW) leads the cybersecurity industry in platform consolidation across Prisma Access, Strata Cloud Manager, and Cortex XSIAM. TTM revenue reached $9.22B (+31.1% YoY). While fundamental DCF yields $259.19 (-28.9% vs $364.56 current) due to conservative GAAP SBC dilution modeling, Wall Street consensus of $364.01 reflects long-term cash flow leverage. Recommendation: MAINTAIN (Core Holding: 2.5 shares, 2.68% target weight). Maintain current position size, accumulate on dips near $335.06, and execute partial trims above $400.00.",
+    "snapshot": {
+      "price": 364.56,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "shares": 815000000,
+      "revenue": 9221500000,
+      "lastActualPS": 32.22
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": true,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 12.0,
+        "netMargin": 16.0,
+        "exitPE": 22.0,
+        "qualityMultiplier": 0.95,
+        "shareChange": -0.5,
+        "rationale": "Platformization conversion slows; competitive pressure from CrowdStrike Falcon and Microsoft limits Year 5 revenue to $16.2B.",
+        "moatScore": 3,
+        "managementScore": 4,
+        "year5Revenue": 16251.4,
+        "year5NetIncome": 2600.2,
+        "year5EPS": 3.27,
+        "scenarioPrice": 48.75,
+        "risks": [
+          "Customer pushback against full-suite vendor lock-in",
+          "Elevated stock-based compensation continuing to compress GAAP net margins"
+        ]
+      },
+      "base": {
+        "weight": 0.50,
+        "growthRate": 22.0,
+        "netMargin": 25.0,
+        "exitPE": 34.0,
+        "qualityMultiplier": 1.10,
+        "shareChange": -1.5,
+        "rationale": "Cortex XSIAM and Prisma Cloud platformization strategy converts over 60% of customer base, expanding revenue to $24.9B at 25% net margin.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 24923.0,
+        "year5NetIncome": 6230.8,
+        "year5EPS": 8.25,
+        "scenarioPrice": 219.86,
+        "risks": [
+          "Longer sales cycles for multi-million dollar comprehensive platform deals",
+          "Competition from native cloud provider firewall services"
+        ]
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 30.0,
+        "netMargin": 32.0,
+        "exitPE": 42.0,
+        "qualityMultiplier": 1.20,
+        "shareChange": -2.5,
+        "rationale": "Palo Alto Networks dominates autonomous AI security operations (Prisma AIRS + XSIAM), capturing $34.2B revenue at 32% margin; premium SaaS valuation.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 34238.8,
+        "year5NetIncome": 10956.4,
+        "year5EPS": 15.26,
+        "scenarioPrice": 548.28,
+        "risks": [
+          "Enterprise cybersecurity budget exhaustion",
+          "Fast-evolving adversary techniques bypassing signatureless AI defenses"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 7.00,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "Palo Alto Networks, Inc. (PANW) leads the cybersecurity industry in platform consolidation across Prisma Access, Strata Cloud Manager, and Cortex XSIAM. TTM revenue reached $9.22B (+31.1% YoY). While fundamental DCF yields $259.19 (-28.9% vs $364.56 current) due to conservative GAAP SBC dilution modeling, Wall Street consensus of $364.01 reflects long-term cash flow leverage. Recommendation: MAINTAIN (Core Holding: 2.5 shares, 2.68% target weight). Maintain current position size, accumulate on dips near $335.06, and execute partial trims above $400.00.",
+      "fairValue": 259.19,
+      "action": "MAINTAIN",
+      "analyzedAt": "2026-09-01T06:52:00.000Z"
+    }
+  }
+]

@@ -24,7 +24,7 @@ _HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(_HERE))
 
 from domain_model.db_client import initialize_db
-from domain_model.investment_repository import update_investment_fields, resolve_investment
+from domain_model.investment_repository import update_investment_fields, resolve_investment, get_investment
 from domain_model.price_level_repository import replace_price_levels
 from ticker_aliases import normalize_ticker
 
@@ -44,6 +44,9 @@ def persist_intake_payload(payload: dict) -> dict:
     try:
         resolve_investment(conn, canonical)
         
+        # Fetch existing investment record to safely inherit pillar/strategy if not supplied
+        existing = get_investment(conn, canonical) or {}
+
         # A. Update investment table fields
         fields = {}
         for key in [
@@ -54,8 +57,23 @@ def persist_intake_payload(payload: dict) -> dict:
             "agent_rationale", "is_watchlisted", "sector", "industry",
             "last_deep_analysis_at"
         ]:
-            if key in payload:
+            if key in payload and payload[key] is not None:
                 fields[key] = payload[key]
+
+        # Validate pillar_id / sub_strategy_id foreign keys against schema
+        if "pillar_id" in fields or "sub_strategy_id" in fields:
+            from domain_model.pillar_repository import list_pillars, list_sub_strategies
+            valid_pillars = {p["pillar_id"] for p in list_pillars(conn)}
+            valid_sub_strats = {s["sub_strategy_id"] for s in list_sub_strategies(conn)}
+            
+            p_id = fields.get("pillar_id")
+            if p_id and p_id not in valid_pillars:
+                # Inherit existing if valid, else default to 'other'
+                fields["pillar_id"] = existing.get("pillar_id") if existing.get("pillar_id") in valid_pillars else "other"
+                
+            s_id = fields.get("sub_strategy_id")
+            if s_id and s_id not in valid_sub_strats:
+                fields["sub_strategy_id"] = existing.get("sub_strategy_id") if existing.get("sub_strategy_id") in valid_sub_strats else None
                 
         # Default last_deep_analysis_at to now if performing intake/refresh
         if "last_deep_analysis_at" not in fields:

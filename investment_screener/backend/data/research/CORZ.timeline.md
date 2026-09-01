@@ -159,10 +159,36 @@ AI hosting contracts execute on schedule. CORZ successfully converts majority of
 
 ---
 
-## Sources Checked
-- Financial data: ✅ fetch_financials.py | Historical arrays: ❌ Null (restructuring)
-- Analyst estimates: ❌ Unavailable
-- Projection: ✅ CORZ.json v4 | Research: ✅ CORZ_2026-05-02.md
-- Benchmarks: ✅ references/valuation-benchmarks.md
-- Prior: ✅ v3 Gemini 3 Pro — REPLACED
+## 2026-09-01 — Autonomous DCF Refresh & Power Moat Re-Rating
+
+# CORZ — Core Scientific, Inc.
+**Date**: 2026-09-01 | **Model**: Gemini 3.7 Flash | **Action**: ACCUMULATE | **Fair Value**: $28.73 vs $15.68 (+83.2%)
+
+### Executive Summary
+Core Scientific's multi-billion dollar contracts with CoreWeave and other hyperscalers have fundamentally derisked its transition from volatile Bitcoin mining to long-term contracted AI HPC infrastructure. With ~1.2 GW of contracted power assets locked at $0.03-0.05/kWh, CORZ possesses one of the most critical structural advantages in the AI economy. With the stock retreating to $15.68 (-45% from 3-month highs), current prices offer deep value with massive upside.
+
+### Key Financials & Valuation
+| Metric | Value |
+|---|---|
+| Current Price | $15.68 |
+| Fair Value (DCF) | **$28.73** (+83.2% upside) |
+| WACC | 8.09% |
+| TTM Revenue | $319.0M (+108.8% YoY) |
+| Diluted Shares | 321.3M |
+| Reverse DCF Implied CAGR | 36.6% (`BETWEEN_BEAR_AND_BASE`) |
+| Strategy Pillar | `datainfra` (`ai-infrastructure`) |
+| Portfolio Position | 68.0 shares (3.77% target weight) |
+
+### Scenario Breakdown
+- **🐻 Bear (30% weight)**: $2.76 PV (25% CAGR to $973M Y5, 10% net margin, 16x PE). Execution friction in power conversion and price compression.
+- **⚖️ Base (50% weight)**: $23.42 PV (48% CAGR to $2.26B Y5, 22% net margin, 24x PE). Conversion of core power capacity to long-term contracted AI hosting.
+- **🚀 Bull (20% weight)**: $80.96 PV (68% CAGR to $4.27B Y5, 30% net margin, 30x PE). Full 1.2+ GW portfolio converted to premium tier-3 AI data centers.
+
+### Recommendation & Execution Tiers
+- **Lifecycle Status**: `core`
+- **Action**: **`ACCUMULATE`**
+- **Target Entry / Pullback Support**: $15.35 (Bollinger Lower Band)
+- **Trim Tier 1**: $28.73 (DCF Fair Value)
+- **Stop Loss / Breaker**: $14.20
+
 

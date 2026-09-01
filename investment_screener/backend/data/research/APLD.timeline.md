@@ -107,3 +107,38 @@ Wins 10+ hyperscaler contracts; $4.6B Y5 revenue with 18% margin as dedicated AI
 ## Discussion Log
 *(empty — append Q&A here)*
 
+---
+
+## 2026-09-01 — Autonomous DCF Refresh & Data Center Campus Re-Rating
+
+# APLD — Applied Digital Corporation
+**Date**: 2026-09-01 | **Model**: Gemini 3.7 Flash | **Action**: ACCUMULATE | **Fair Value**: $35.76 vs $24.59 (+45.4%)
+
+### Executive Summary
+Applied Digital has made immense operational strides in energizing its high-density AI/HPC data center campuses in North Dakota and Texas. TTM revenue surged **+406.6% YoY to $611.3M** (vs $144.2M in May 2026), demonstrating rapid execution of anchor tenant contracts. With the stock pulling back to $24.59 (-45% from 3-month highs), risk-reward has flipped heavily in favor of accumulation.
+
+### Key Financials & Valuation
+| Metric | Value |
+|---|---|
+| Current Price | $24.59 |
+| Fair Value (DCF) | **$35.76** (+45.4% upside) |
+| WACC | 9.72% |
+| TTM Revenue | $611.3M (+406.6% YoY) |
+| Diluted Shares | 284.3M |
+| Reverse DCF Implied CAGR | 41.0% (`BETWEEN_BEAR_AND_BASE`) |
+| Strategy Pillar | `datainfra` (`ai-infrastructure`) |
+| Portfolio Position | 32.0 shares (2.7% target weight) |
+
+### Scenario Breakdown
+- **🐻 Bear (30% weight)**: $4.16 PV (25% CAGR to $1.87B Y5, 8% net margin, 15x PE). Capex financing dilution and utility delays.
+- **⚖️ Base (50% weight)**: $28.32 PV (45% CAGR to $3.92B Y5, 16% net margin, 22x PE). Scaling high-density AI cluster contracts with tier-1 hyperscalers.
+- **🚀 Bull (20% weight)**: $101.77 PV (65% CAGR to $7.48B Y5, 22% net margin, 28x PE). Multi-gigawatt AI supercomputing hubs command cloud-tier multiples.
+
+### Recommendation & Execution Tiers
+- **Lifecycle Status**: `core`
+- **Action**: **`ACCUMULATE`**
+- **Target Entry / Pullback Support**: $24.48 (Bollinger Lower Band)
+- **Trim Tier 1**: $35.76 (DCF Fair Value)
+- **Stop Loss / Breaker**: $22.50
+
+

@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "CORZ",
+    "id": "f82b1092-62bc-4991-b314-104822554901",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-09-01T06:39:00.000Z",
+    "updatedAt": "2026-09-01T06:39:00.000Z",
+    "name": "CORZ AI HPC Power Infrastructure Valuation",
+    "rationale": "Core Scientific, Inc. (CORZ) holds ~1.2 GW of contracted power infrastructure with sub-$0.04/kWh PPAs across prime data center locations. Multi-billion dollar CoreWeave anchor contracts confirm rapid conversion to high-margin AI HPC hosting. At $15.68, 5-year DCF yields a fair value of $28.73 (+83.2% upside at 8.09% WACC). Reverse DCF indicates the market is pricing in a 36.6% CAGR, well below our 48.0% base case. Recommendation: ACCUMULATE (Core Holding: 68.0 shares, 3.77% target weight). Accumulate on dips near $15.35, trim Tier 1 at $28.73.",
+    "snapshot": {
+      "price": 15.68,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "shares": 321340441,
+      "revenue": 319019000,
+      "lastActualPS": 15.79
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": true,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.30,
+        "growthRate": 25.0,
+        "netMargin": 10.0,
+        "exitPE": 16.0,
+        "qualityMultiplier": 0.95,
+        "shareChange": 2.5,
+        "rationale": "Execution friction in conversion of remaining power capacity; AI colocation price compression limits margin to 10% on $973M Y5 revenue.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 973.6,
+        "year5NetIncome": 97.4,
+        "year5EPS": 0.27,
+        "scenarioPrice": 2.76,
+        "risks": [
+          "Utility interconnect timeline delays pushing out energization schedules",
+          "Bitcoin price weakness compressing legacy mining cash flows during transition"
+        ]
+      },
+      "base": {
+        "weight": 0.50,
+        "growthRate": 48.0,
+        "netMargin": 22.0,
+        "exitPE": 24.0,
+        "qualityMultiplier": 1.0,
+        "shareChange": 1.5,
+        "rationale": "High-density CoreWeave & hyperscaler AI hosting contracts scale to $2.26B Y5 revenue; 22% net margin reflects locked sub-$0.04/kWh power advantage.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 2265.3,
+        "year5NetIncome": 498.4,
+        "year5EPS": 1.44,
+        "scenarioPrice": 23.42,
+        "risks": [
+          "Customer concentration across early anchor AI tenants",
+          "Capex financing needs for high-density cooling retrofits"
+        ]
+      },
+      "bull": {
+        "weight": 0.20,
+        "growthRate": 68.0,
+        "netMargin": 30.0,
+        "exitPE": 30.0,
+        "qualityMultiplier": 1.05,
+        "shareChange": 1.0,
+        "rationale": "Full 1.2+ GW portfolio successfully converted to tier-3 AI data centers; sovereign and frontier lab demand drives $4.25B revenue at 30% net margin.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 4269.4,
+        "year5NetIncome": 1280.8,
+        "year5EPS": 3.79,
+        "scenarioPrice": 80.96,
+        "risks": [
+          "Regulatory review of large-scale data center power consumption in regional grids",
+          "Emergence of next-gen sovereign nuclear co-located AI campuses"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 8.09,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "Core Scientific, Inc. (CORZ) holds ~1.2 GW of contracted power infrastructure with sub-$0.04/kWh PPAs across prime data center locations. Multi-billion dollar CoreWeave anchor contracts confirm rapid conversion to high-margin AI HPC hosting. At $15.68, 5-year DCF yields a fair value of $28.73 (+83.2% upside at 8.09% WACC). Reverse DCF indicates the market is pricing in a 36.6% CAGR, well below our 48.0% base case. Recommendation: ACCUMULATE (Core Holding: 68.0 shares, 3.77% target weight). Accumulate on dips near $15.35, trim Tier 1 at $28.73.",
+      "fairValue": 28.73,
+      "action": "ACCUMULATE",
+      "analyzedAt": "2026-09-01T06:39:00.000Z"
+    }
+  }
+]

@@ -41,6 +41,11 @@ When analyzing a stock via `update-stock-analysis`, all analytical outputs must 
 ### Invariant C: Multi-Class Diluted Share Count
 * When calculating per-share DCF values for multi-class share structures (e.g. `GOOG`/`GOOGL`), always use total diluted shares across all classes (`shares_diluted` ~12.115B) rather than a single class's count.
 
+### Invariant D: Strategy Pillar Foreign Key Validation & Auto-Inheritance
+* `domain_model.sqlite` enforces foreign key constraints on `investment.pillar_id` (`strategy_pillar`) and `investment.sub_strategy_id` (`sub_strategy`).
+* When refreshing an existing holding, the persister (`stock_intake_persist.py`) will automatically validate incoming keys against `strategy_pillar` and `sub_strategy`, falling back to the existing database record if omitted or invalid.
+* If manually setting a new pillar or sub-strategy, verify valid keys first via `portfolio_io.py --pillars`.
+
 ---
 
 ## 3. Standard Valuation Pipeline

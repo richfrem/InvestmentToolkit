@@ -66,7 +66,10 @@ export class ProjectionService {
         //    scenario year5/risks fields, etc.) are included in the object we save.
         const parseResult = ProjectionSchema.safeParse(projection);
         if (!parseResult.success) {
-            throw new Error(`Validation Failed: ${parseResult.error.message}`);
+            const formattedErrors = parseResult.error.issues
+                .map(issue => `Field '${issue.path.join('.') || 'root'}': ${issue.message}`)
+                .join('; ');
+            throw new Error(`Validation Failed: ${formattedErrors}`);
         }
         const validated = parseResult.data as Projection;
 

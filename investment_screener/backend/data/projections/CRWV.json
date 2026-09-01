@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "CRWV",
+    "id": "c9182941-4829-4829-a918-104829104829",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-09-01T06:49:00.000Z",
+    "updatedAt": "2026-09-01T06:49:00.000Z",
+    "name": "CRWV AI GPU Cloud Infrastructure Valuation",
+    "rationale": "CoreWeave, Inc. (CRWV) is the pure-play leader in dedicated high-density AI/GPU cloud infrastructure, compounding revenue to $5.13B (+112.5% YoY) with 71.7% gross margins. At $81.23, our 5-year DCF yields a fair value of $249.87 (+207.6% upside at 8.16% WACC). Reverse DCF indicates the market is pricing in just 14.0% CAGR, below our 18.0% bear case. Recommendation: ACCUMULATE (Core Holding: 15.0 shares, 4.04% target weight). Accumulate on dips near $75.44, trim Tier 1 at $150.00+.",
+    "snapshot": {
+      "price": 81.23,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "shares": 458871690,
+      "revenue": 5131000000,
+      "lastActualPS": 8.73
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": true,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.30,
+        "growthRate": 18.0,
+        "netMargin": 10.0,
+        "exitPE": 16.0,
+        "qualityMultiplier": 0.95,
+        "shareChange": 2.5,
+        "rationale": "Hyperscaler in-house GPU cloud capacity expands; high asset-backed debt service costs compress net margin to 10% on $11.7B Y5 revenue.",
+        "moatScore": 3,
+        "managementScore": 4,
+        "year5Revenue": 11738.5,
+        "year5NetIncome": 1173.8,
+        "year5EPS": 2.26,
+        "scenarioPrice": 23.22,
+        "risks": [
+          "Asset-backed debt refinancing costs under sustained higher interest rates",
+          "Hyperscaler price competition on standard AI training cluster rentals"
+        ]
+      },
+      "base": {
+        "weight": 0.50,
+        "growthRate": 36.0,
+        "netMargin": 22.0,
+        "exitPE": 26.0,
+        "qualityMultiplier": 1.05,
+        "shareChange": 1.5,
+        "rationale": "Leading AI labs (Inflection, Mistral, Meta) scale on CoreWeave Cloud; Weights & Biases platform integration secures $23.9B Y5 revenue at 22% net margin.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 23872.4,
+        "year5NetIncome": 5251.9,
+        "year5EPS": 10.62,
+        "scenarioPrice": 195.94,
+        "risks": [
+          "Customer concentration across top 5 AI research labs",
+          "Power interconnection delays at newly acquired data center sites"
+        ]
+      },
+      "bull": {
+        "weight": 0.20,
+        "growthRate": 55.0,
+        "netMargin": 28.0,
+        "exitPE": 35.0,
+        "qualityMultiplier": 1.15,
+        "shareChange": 1.0,
+        "rationale": "CoreWeave becomes the premier hyperscale AI Neocloud globally; proprietary orchestration and software tooling command 28% net margin on $45.6B revenue.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 45905.1,
+        "year5NetIncome": 12853.4,
+        "year5EPS": 26.65,
+        "scenarioPrice": 724.69,
+        "risks": [
+          "Antitrust scrutiny over NVIDIA preferential GPU allocation terms",
+          "Rapid shifts toward in-house customer ASIC deployments"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 8.16,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "CoreWeave, Inc. (CRWV) is the pure-play leader in dedicated high-density AI/GPU cloud infrastructure, compounding revenue to $5.13B (+112.5% YoY) with 71.7% gross margins. At $81.23, our 5-year DCF yields a fair value of $249.87 (+207.6% upside at 8.16% WACC). Reverse DCF indicates the market is pricing in just 14.0% CAGR, below our 18.0% bear case. Recommendation: ACCUMULATE (Core Holding: 15.0 shares, 4.04% target weight). Accumulate on dips near $75.44, trim Tier 1 at $150.00+.",
+      "fairValue": 249.87,
+      "action": "ACCUMULATE",
+      "analyzedAt": "2026-09-01T06:49:00.000Z"
+    }
+  }
+]

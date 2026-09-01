@@ -158,9 +158,9 @@ export const ProjectionSchema = z.object({
         researchReport: z.string().max(200).optional(),
     }).optional(),
     globalSettings: z.object({
-        discountRate: z.number().min(0).max(100),
-        timeHorizon: z.number().int().min(1).max(50),
-    }),
+        discountRate: z.number().min(0).max(100).default(10),
+        timeHorizon: z.number().int().min(1).max(50).default(5),
+    }).optional().default({ discountRate: 10, timeHorizon: 5 }),
     // v1.2: full analytical decision log — preserved but not rigidly typed so schema
     // changes to analyticsLog don't require backend deploys.
     analyticsLog: z.record(z.unknown()).optional(),

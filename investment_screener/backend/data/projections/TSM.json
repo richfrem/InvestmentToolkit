@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "TSM",
+    "id": "e9182941-4829-4829-b819-404829104829",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-09-01T06:57:00.000Z",
+    "updatedAt": "2026-09-01T06:57:00.000Z",
+    "name": "TSM Sub-3nm AI Semiconductor Foundry Monopoly Valuation",
+    "rationale": "Taiwan Semiconductor Manufacturing Co. (TSM) is the sole volume manufacturer of sub-3nm logic chips and CoWoS packaging required by every leading AI accelerator. TTM revenue reached $119.0B USD (+36.0% YoY) with 49.9% net profit margins. At $415.07 (forward P/E 19.06x), our 5-year DCF yields a fair value of $658.83 (+58.7% upside at 7.00% discount rate). Reverse DCF indicates the market is pricing in just 13.3% CAGR, well below consensus ($554.45 mean target). Recommendation: ACCUMULATE (Core Holding: 3.0 shares, 3.85% target weight). Accumulate on pullbacks near $399.72, trim Tier 1 at $550.00+.",
+    "snapshot": {
+      "price": 415.07,
+      "currency": "USD",
+      "exchange": "NYSE",
+      "shares": 5186474013,
+      "revenue": 119033000000,
+      "lastActualPS": 22.95
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": true,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 12.0,
+        "netMargin": 38.0,
+        "exitPE": 18.0,
+        "qualityMultiplier": 1.05,
+        "shareChange": -0.2,
+        "rationale": "Geopolitical risk discount persists; hyperscaler capex digestion slows leading-edge orders, revenue reaches $209.8B Y5 at 38% net margin.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 209776.8,
+        "year5NetIncome": 79715.2,
+        "year5EPS": 15.52,
+        "scenarioPrice": 209.20,
+        "risks": [
+          "Taiwan Strait geopolitical tensions triggering valuation discount compression",
+          "Hyperscaler AI capex pause leading to temporary fab utilization drops"
+        ]
+      },
+      "base": {
+        "weight": 0.50,
+        "growthRate": 22.0,
+        "netMargin": 46.0,
+        "exitPE": 25.0,
+        "qualityMultiplier": 1.15,
+        "shareChange": -0.5,
+        "rationale": "TSMC dominates sub-2nm (N2/A16) and CoWoS advanced packaging; pricing power drives revenue to $321.7B at 46% net margin.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 321711.5,
+        "year5NetIncome": 147987.3,
+        "year5EPS": 29.26,
+        "scenarioPrice": 599.73,
+        "risks": [
+          "High capital expenditure costs for overseas fab construction in Arizona and Japan",
+          "Yield learning curves on 2nm GAA architecture"
+        ]
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 30.0,
+        "netMargin": 50.0,
+        "exitPE": 32.0,
+        "qualityMultiplier": 1.20,
+        "shareChange": -1.0,
+        "rationale": "Unprecedented multi-year AI accelerator demand wave; global fab expansion in US/Japan diversifies geopolitical risk; $442.0B revenue at 50% margin.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 441961.2,
+        "year5NetIncome": 220980.6,
+        "year5EPS": 44.80,
+        "scenarioPrice": 1226.64,
+        "risks": [
+          "Extreme concentration of global leading-edge AI compute dependencies",
+          "Water and electricity infrastructure constraints in western Taiwan"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 7.00,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "Taiwan Semiconductor Manufacturing Co. (TSM) is the sole volume manufacturer of sub-3nm logic chips and CoWoS packaging required by every leading AI accelerator. TTM revenue reached $119.0B USD (+36.0% YoY) with 49.9% net profit margins. At $415.07 (forward P/E 19.06x), our 5-year DCF yields a fair value of $658.83 (+58.7% upside at 7.00% discount rate). Reverse DCF indicates the market is pricing in just 13.3% CAGR, well below consensus ($554.45 mean target). Recommendation: ACCUMULATE (Core Holding: 3.0 shares, 3.85% target weight). Accumulate on pullbacks near $399.72, trim Tier 1 at $550.00+.",
+      "fairValue": 658.83,
+      "action": "ACCUMULATE",
+      "analyzedAt": "2026-09-01T06:57:00.000Z"
+    }
+  }
+]
