@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "BTDR",
+    "id": "e8192841-4921-4829-b819-918294019284",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-09-01T06:47:00.000Z",
+    "updatedAt": "2026-09-01T06:47:00.000Z",
+    "name": "BTDR ASIC Chip & Global Compute Infrastructure Valuation",
+    "rationale": "Bitdeer Technologies Group (BTDR) stands apart from commodity Bitcoin miners through proprietary SEALMINER ASIC chip design capabilities and low-cost hydro/geothermal power across Bhutan and Norway. TTM revenue reached $620.3M (+47.1% YoY). At $10.45, our 5-year DCF yields a fair value of $32.77 (+213.6% upside at 10.53% WACC). Reverse DCF indicates the market is pricing in just 17.6% CAGR, well below our 38.0% base case. Recommendation: ACCUMULATE (Core Holding: 62.0 shares, 2.14% target weight). Accumulate on dips near $8.95, trim Tier 1 at $24.00+.",
+    "snapshot": {
+      "price": 10.45,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "shares": 227382323,
+      "revenue": 620253000,
+      "lastActualPS": 4.58
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": true,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.30,
+        "growthRate": 15.0,
+        "netMargin": 8.0,
+        "exitPE": 10.0,
+        "qualityMultiplier": 0.90,
+        "shareChange": 2.5,
+        "rationale": "Bitcoin bear market and ASIC commercialization delays limit Year 5 revenue to $1.25B with 8% net margin.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 1247.6,
+        "year5NetIncome": 99.8,
+        "year5EPS": 0.39,
+        "scenarioPrice": 2.12,
+        "risks": [
+          "TSMC foundry allocation constraints for proprietary SEALMINER wafer runs",
+          "Bitcoin price drawdowns compressing self-mining cash flows"
+        ]
+      },
+      "base": {
+        "weight": 0.50,
+        "growthRate": 38.0,
+        "netMargin": 16.0,
+        "exitPE": 18.0,
+        "qualityMultiplier": 1.05,
+        "shareChange": 1.5,
+        "rationale": "SEALMINER proprietary ASIC chip vertical integration scales alongside global low-cost power infrastructure (Bhutan, Norway, US) to $3.1B Y5 revenue.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 3104.3,
+        "year5NetIncome": 496.7,
+        "year5EPS": 2.03,
+        "scenarioPrice": 23.23,
+        "risks": [
+          "Execution timeline for global datacenter energization in Bhutan and Norway",
+          "Market share defense against legacy ASIC hardware incumbents"
+        ]
+      },
+      "bull": {
+        "weight": 0.20,
+        "growthRate": 58.0,
+        "netMargin": 24.0,
+        "exitPE": 24.0,
+        "qualityMultiplier": 1.15,
+        "shareChange": 1.0,
+        "rationale": "Bitdeer captures major merchant ASIC market share and converts gigawatt pipeline to high-density AI cloud infrastructure; $6.1B revenue at 24% net margin.",
+        "moatScore": 5,
+        "managementScore": 4,
+        "year5Revenue": 6107.4,
+        "year5NetIncome": 1465.8,
+        "year5EPS": 6.13,
+        "scenarioPrice": 102.61,
+        "risks": [
+          "Cross-border geopolitical friction across international sovereign compute campuses",
+          "Rapid shifts in frontier ASIC semiconductor fabrication architectures"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 10.53,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "Bitdeer Technologies Group (BTDR) stands apart from commodity Bitcoin miners through proprietary SEALMINER ASIC chip design capabilities and low-cost hydro/geothermal power across Bhutan and Norway. TTM revenue reached $620.3M (+47.1% YoY). At $10.45, our 5-year DCF yields a fair value of $32.77 (+213.6% upside at 10.53% WACC). Reverse DCF indicates the market is pricing in just 17.6% CAGR, well below our 38.0% base case. Recommendation: ACCUMULATE (Core Holding: 62.0 shares, 2.14% target weight). Accumulate on dips near $8.95, trim Tier 1 at $24.00+.",
+      "fairValue": 32.77,
+      "action": "ACCUMULATE",
+      "analyzedAt": "2026-09-01T06:47:00.000Z"
+    }
+  }
+]

@@ -1,5 +1,40 @@
 # BTDR Research Timeline
 
+## 2026-09-01 — Autonomous DCF Refresh & SEALMINER ASIC Moat
+
+# BTDR — Bitdeer Technologies Group
+**Date**: 2026-09-01 | **Model**: Gemini 3.7 Flash | **Action**: ACCUMULATE | **Fair Value**: $32.77 vs $10.45 (+213.6%)
+
+### Executive Summary
+Bitdeer stands apart from commodity Bitcoin miners through proprietary in-house semiconductor design (SEALMINER ASIC series) and a globally diversified green power portfolio (Bhutan hydro, Norway, US). TTM revenue reached **$620.3M** (+47.1% YoY) with an EBITDA margin of 54.5%. At $10.45, our 5-year DCF yields a fair value of **$32.77** (+213.6% upside at 10.53% WACC). With the market pricing in just 17.6% CAGR (Reverse DCF), BTDR is heavily mispriced as a pure commodity miner rather than a vertically integrated computing powerhouse.
+
+### Key Financials & Valuation
+| Metric | Value |
+|---|---|
+| Current Price | $10.45 |
+| Fair Value (DCF) | **$32.77** (+213.6% upside) |
+| Wall Street Mean Target | **$21.77** (13 analysts, Strong Buy) |
+| WACC | 10.53% |
+| TTM Revenue | $620.3M (+47.1% YoY) |
+| Diluted Shares | 227.4M |
+| Reverse DCF Implied CAGR | 17.6% (`BETWEEN_BEAR_AND_BASE`) |
+| Strategy Pillar | `sovfin` (`sovereign-finance`) |
+| Portfolio Position | 62.0 shares (2.14% target weight) |
+
+### Scenario Breakdown
+- **🐻 Bear (30% weight)**: $2.12 PV (15% CAGR to $1.25B Y5, 8% net margin, 10x PE). Bitcoin bear market and ASIC commercialization friction.
+- **⚖️ Base (50% weight)**: $23.23 PV (38% CAGR to $3.10B Y5, 16% net margin, 18x PE). Vertical SEALMINER deployment across low-cost international hydro/geothermal power sites.
+- **🚀 Bull (20% weight)**: $102.61 PV (58% CAGR to $6.11B Y5, 24% net margin, 24x PE). Major merchant ASIC market share capture and gigawatt AI cloud hosting expansion.
+
+### Recommendation & Execution Tiers
+- **Lifecycle Status**: `core`
+- **Action**: **`ACCUMULATE`**
+- **Target Entry / Pullback Support**: $8.95 (Keltner Channel Lower Band)
+- **Trim Tier 1**: $24.00+
+- **Stop Loss / Breaker**: $8.20
+
+---
+
 ## 2026-08-21 — TA Sweep for BTDR
 
 Batch technical indicators for BTDR.
