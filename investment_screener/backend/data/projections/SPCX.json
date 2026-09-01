@@ -1,0 +1,98 @@
+[
+  {
+    "ticker": "SPCX",
+    "id": "e9182941-4829-4829-a819-304829104829",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-09-01T06:56:00.000Z",
+    "updatedAt": "2026-09-01T06:56:00.000Z",
+    "name": "SPCX SpaceX Orbital Launch and Starlink Valuation",
+    "rationale": "Space Exploration Technologies Corp. (SpaceX / SPCX) holds a global near-monopoly in orbital launch services and is scaling Starlink into the world's largest low-earth orbit constellation. TTM revenue reached $18.67B (+91.9% YoY). At $142.78 (secondary market pricing), our 5-year DCF yields a fair value of $287.12 (+101.1% upside at 12.0% illiquidity hurdle rate). Reverse DCF indicates the market is pricing in just 16.2% CAGR, well below our 25.0% base case. Recommendation: ACCUMULATE (Core Holding: 10.0 shares, 4.06% target weight). Accumulate on pullbacks near $125.67, trim Tier 1 at $250.00+.",
+    "snapshot": {
+      "price": 142.78,
+      "currency": "USD",
+      "exchange": "PRIVATE",
+      "shares": 1160000000,
+      "revenue": 18674000000,
+      "lastActualPS": 16.10
+    },
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": false,
+      "normalizeMargins": true
+    },
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 15.0,
+        "netMargin": 8.0,
+        "exitPE": 22.0,
+        "qualityMultiplier": 1.05,
+        "shareChange": 1.0,
+        "rationale": "Starlink subscriber growth slows on Kuiper competition; Starship development delays extend FCF burn; Year 5 revenue $37.6B at 8% net margin.",
+        "moatScore": 4,
+        "managementScore": 5,
+        "year5Revenue": 37560.1,
+        "year5NetIncome": 3004.8,
+        "year5EPS": 2.46,
+        "scenarioPrice": 32.31,
+        "risks": [
+          "Amazon Project Kuiper commercial scaling eroding broadband ARPU",
+          "FAA and environmental regulatory litigation delaying Starship orbital cadence"
+        ]
+      },
+      "base": {
+        "weight": 0.45,
+        "growthRate": 25.0,
+        "netMargin": 18.0,
+        "exitPE": 35.0,
+        "qualityMultiplier": 1.20,
+        "shareChange": 0.5,
+        "rationale": "Starlink reaches 25M+ subscribers globally with Direct-to-Cell rollout; Starship achieves regular commercial cargo cadence; $57.0B revenue at 18% net margin.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 56988.5,
+        "year5NetIncome": 10257.9,
+        "year5EPS": 8.63,
+        "scenarioPrice": 205.56,
+        "risks": [
+          "Orbital debris mitigation constraints in low-earth orbit",
+          "High capital expenditure demands for next-generation V3 Starlink satellites"
+        ]
+      },
+      "bull": {
+        "weight": 0.30,
+        "growthRate": 36.0,
+        "netMargin": 25.0,
+        "exitPE": 48.0,
+        "qualityMultiplier": 1.25,
+        "shareChange": 0.5,
+        "rationale": "Starlink becomes global connectivity backbone; Starship collapses launch cost per kg by 90%; xAI Colossus supercluster drives $86.8B revenue at 25% margin.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 86882.4,
+        "year5NetIncome": 21720.6,
+        "year5EPS": 18.26,
+        "scenarioPrice": 621.79,
+        "risks": [
+          "Geopolitical spectrum licensing pushback from non-allied nations",
+          "Pre-IPO private share class liquidity restrictions"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 12.00,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "Space Exploration Technologies Corp. (SpaceX / SPCX) holds a global near-monopoly in orbital launch services and is scaling Starlink into the world's largest low-earth orbit constellation. TTM revenue reached $18.67B (+91.9% YoY). At $142.78 (secondary market pricing), our 5-year DCF yields a fair value of $287.12 (+101.1% upside at 12.0% illiquidity hurdle rate). Reverse DCF indicates the market is pricing in just 16.2% CAGR, well below our 25.0% base case. Recommendation: ACCUMULATE (Core Holding: 10.0 shares, 4.06% target weight). Accumulate on pullbacks near $125.67, trim Tier 1 at $250.00+.",
+      "fairValue": 287.12,
+      "action": "ACCUMULATE",
+      "analyzedAt": "2026-09-01T06:56:00.000Z"
+    }
+  }
+]

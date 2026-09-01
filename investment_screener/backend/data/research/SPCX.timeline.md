@@ -1,5 +1,40 @@
 # SPCX Research Timeline
 
+## 2026-09-01 — Autonomous DCF Refresh & Orbital Launch / Starlink Monopolization
+
+# SPCX — Space Exploration Technologies Corp.
+**Date**: 2026-09-01 | **Model**: Gemini 3.7 Flash | **Action**: ACCUMULATE | **Fair Value**: $287.12 vs $142.78 (+101.1%)
+
+### Executive Summary
+Space Exploration Technologies Corp. (SpaceX / SPCX) holds an insurmountable commercial moat across orbital heavy launch (Falcon 9 cadence >120 flights/yr) and global LEO satellite broadband (Starlink constellation >7,000 active nodes, scaling direct-to-cell partnerships). TTM revenue reached **$18.67B** (+91.9% YoY) with operating leverage inflecting as Starlink constellation density matures. At $142.78 in the pre-IPO secondary market, our 5-year probability-weighted DCF yields **$287.12** (+101.1% upside at a conservative 12.0% illiquidity hurdle rate). Reverse DCF confirms the market is pricing in just 16.2% CAGR (barely above our 15.0% bear case). Recommendation: **`ACCUMULATE`**.
+
+### Key Financials & Valuation
+| Metric | Value |
+|---|---|
+| Current Secondary Market Price | $142.78 |
+| Fair Value (DCF) | **$287.12** (+101.1% upside) |
+| Wall Street Coverage | Pre-IPO Private Equity / Secondary Market |
+| Hurdle Rate (Discount) | 12.00% (includes illiquidity buffer) |
+| TTM Estimated Revenue | $18.67B (+91.9% YoY) |
+| Estimated Diluted Shares | 1.16B |
+| Reverse DCF Implied CAGR | 16.2% (`BETWEEN_BEAR_AND_BASE`) |
+| Strategy Pillar | `datainfra` (`ai-infrastructure`) |
+| Portfolio Position | 10.0 shares (4.06% target weight) |
+
+### Scenario Breakdown
+- **🐻 Bear (25% weight)**: $32.31 PV (15% CAGR to $37.6B Y5, 8% net margin, 22x PE). Amazon Kuiper competition and regulatory delays on Starship orbital certification.
+- **⚖️ Base (45% weight)**: $205.56 PV (25% CAGR to $57.0B Y5, 18% net margin, 35x PE). Starlink reaches 25M+ active subscribers globally with high-margin recurring cash flows.
+- **🚀 Bull (30% weight)**: $621.79 PV (36% CAGR to $86.9B Y5, 25% net margin, 48x PE). Direct-to-Cell ubiquity, Starship commercial cargo operations, and xAI Colossus integration.
+
+### Recommendation & Execution Tiers
+- **Lifecycle Status**: `core`
+- **Action**: **`ACCUMULATE`**
+- **Target Entry / Pullback Support**: $125.67 (Keltner Channel Lower Band)
+- **Trim Tier 1**: $250.00+
+- **Breaker / Stop Loss**: $110.00
+
+---
+
 ## 2026-06-13 — SPCX research import (2026-06-13)
 
 # SPCX — SpaceX Deep Dive Research Report
