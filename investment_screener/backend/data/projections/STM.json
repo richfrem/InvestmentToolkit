@@ -1,95 +1,98 @@
-{
-  "ticker": "STM",
-  "id": "stm-val-2026-08-24",
-  "source": "AI_AGENT",
-  "schemaVersion": "1.2",
-  "version": 1,
-  "savedAt": "2026-08-24T03:00:00.000Z",
-  "updatedAt": "2026-08-24T03:00:00.000Z",
-  "name": "AI Guided Valuation — STM — 2026-08-24",
-  "rationale": "High-conviction physical AI power generation & 800V DC rack power distribution play. NVIDIA AI Factory MGX 12kW GaN LLC board production testing, Catania 200mm SiC campus (€2.0B EU Chips Act subsidies), and cyclical automotive/industrial channel inventory clearing create a multi-year gross margin expansion path from 33.9% trough to 42%+ with >$2.0B data center revenue by 2027.",
-  "snapshot": {
-    "price": 50.56,
-    "currency": "USD",
-    "exchange": "NYSE",
-    "market_cap_b": 45.12,
-    "revenue_ttm_b": 11.8,
-    "pe_ratio": 266.1,
-    "forward_pe": 19.9,
-    "sector": "Technology",
-    "industry": "Semiconductors",
-    "last_actual_ps": 3.82
-  },
-  "dataPreferences": {
-    "growthBasis": "next",
-    "marginBasis": "ttm"
-  },
-  "scenarios": {
-    "bear": {
-      "weight": 0.20,
-      "growthRate": 8.0,
-      "netMargin": 12.0,
-      "exitPE": 15.0,
-      "qualityMultiplier": 1.0,
-      "shareChange": 0.0,
-      "year5Revenue": 17338.1,
-      "year5NetIncome": 2080.6,
-      "year5EPS": 2.33,
-      "year5PriceUndiscounted": 34.97,
-      "scenarioPrice": 21.71,
-      "presentValue": 21.71,
-      "rationale": "Slower European EV recovery and commoditized SiC price pressure from Asian entrants."
+[
+  {
+    "ticker": "STM",
+    "id": "e9182941-4829-4829-b819-604829104829",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.2",
+    "version": 1,
+    "savedAt": "2026-09-01T07:01:00.000Z",
+    "updatedAt": "2026-09-01T07:01:00.000Z",
+    "name": "STM Physical AI Power Infrastructure and SiC Valuation",
+    "rationale": "STMicroelectronics N.V. (STM) is a leader in high-voltage 800V DC server rack power distribution and Catania 200mm SiC semiconductor manufacturing. TTM revenue reached $11.8B (+26.1% YoY). At $48.78 (forward P/E 19.20x), our 5-year DCF yields a fair value of $93.19 (+91.0% upside at 9.10% WACC). Reverse DCF indicates the market is pricing in just 5.3% CAGR, well below our 16.5% base case. Recommendation: ACCUMULATE (Core Holding: 24.0 shares, 3.69% target weight). Accumulate on dips near $47.22, trim Tier 1 at $80.00+.",
+    "snapshot": {
+      "price": 48.78,
+      "currency": "USD",
+      "exchange": "NYSE",
+      "shares": 892057012,
+      "revenue": 11800000000,
+      "lastActualPS": 3.69
     },
-    "base": {
-      "weight": 0.50,
-      "growthRate": 16.5,
-      "netMargin": 19.5,
-      "exitPE": 21.0,
-      "qualityMultiplier": 1.0,
-      "shareChange": 0.0,
-      "year5Revenue": 25322.8,
-      "year5NetIncome": 4937.9,
-      "year5EPS": 5.53,
-      "year5PriceUndiscounted": 116.19,
-      "scenarioPrice": 72.15,
-      "presentValue": 72.15,
-      "rationale": "AI data center power infrastructure reaches >$2.0B in 2027 with NVIDIA MGX 800V rack adoption and Catania 200mm scaling."
+    "dataPreferences": {
+      "growthBasis": "ttm",
+      "marginBasis": "ttm",
+      "useConsensusCAGR": false,
+      "useModelWACC": true,
+      "normalizeMargins": true
     },
-    "bull": {
-      "weight": 0.30,
-      "growthRate": 24.0,
-      "netMargin": 24.0,
-      "exitPE": 26.0,
-      "qualityMultiplier": 1.0,
-      "shareChange": 0.0,
-      "year5Revenue": 34593.2,
-      "year5NetIncome": 8302.4,
-      "year5EPS": 9.3,
-      "year5PriceUndiscounted": 241.87,
-      "scenarioPrice": 150.18,
-      "presentValue": 150.18,
-      "rationale": "Global hyperscaler 800V DC power standard supercycle drives 50%+ gross margin mix and dominant Western SiC market share."
+    "scenarios": {
+      "bear": {
+        "weight": 0.25,
+        "growthRate": 8.0,
+        "netMargin": 12.0,
+        "exitPE": 15.0,
+        "qualityMultiplier": 0.95,
+        "shareChange": 0.0,
+        "rationale": "Slower European EV demand and price compression in commodity Silicon Carbide (SiC) limits Year 5 revenue to $17.3B.",
+        "moatScore": 3,
+        "managementScore": 3,
+        "year5Revenue": 17338.1,
+        "year5NetIncome": 2080.6,
+        "year5EPS": 2.33,
+        "scenarioPrice": 21.50,
+        "risks": [
+          "Chinese domestic SiC wafer competition eroding automotive gross margins",
+          "Prolonged industrial microcontroller inventory destocking"
+        ]
+      },
+      "base": {
+        "weight": 0.50,
+        "growthRate": 16.5,
+        "netMargin": 19.5,
+        "exitPE": 21.0,
+        "qualityMultiplier": 1.05,
+        "shareChange": -0.5,
+        "rationale": "AI datacenter 800V DC power architectures (NVIDIA MGX 12kW GaN/SiC) and Catania 200mm fab drive $25.3B revenue at 19.5% margin.",
+        "moatScore": 4,
+        "managementScore": 4,
+        "year5Revenue": 25322.8,
+        "year5NetIncome": 4937.9,
+        "year5EPS": 5.68,
+        "scenarioPrice": 80.97,
+        "risks": [
+          "Catania fab ramp yield friction and depreciation drag",
+          "Automotive Tier-1 customer concentration"
+        ]
+      },
+      "bull": {
+        "weight": 0.25,
+        "growthRate": 24.0,
+        "netMargin": 24.0,
+        "exitPE": 26.0,
+        "qualityMultiplier": 1.15,
+        "shareChange": -1.0,
+        "rationale": "STMicro dominates physical AI power semiconductor market and humanoid actuator chips; $34.6B revenue at 24% net margin.",
+        "moatScore": 5,
+        "managementScore": 5,
+        "year5Revenue": 34593.2,
+        "year5NetIncome": 8302.4,
+        "year5EPS": 9.79,
+        "scenarioPrice": 189.31,
+        "risks": [
+          "European regulatory energy cost shocks on domestic fab operations",
+          "Next-generation GaN integration timeline slippage"
+        ]
+      }
+    },
+    "globalSettings": {
+      "discountRate": 9.10,
+      "timeHorizon": 5
+    },
+    "aiThesis": {
+      "model": "Gemini 3.7 Flash",
+      "rationale": "STMicroelectronics N.V. (STM) is a leader in high-voltage 800V DC server rack power distribution and Catania 200mm SiC semiconductor manufacturing. TTM revenue reached $11.8B (+26.1% YoY). At $48.78 (forward P/E 19.20x), our 5-year DCF yields a fair value of $93.19 (+91.0% upside at 9.10% WACC). Reverse DCF indicates the market is pricing in just 5.3% CAGR, well below our 16.5% base case. Recommendation: ACCUMULATE (Core Holding: 24.0 shares, 3.69% target weight). Accumulate on dips near $47.22, trim Tier 1 at $80.00+.",
+      "fairValue": 93.19,
+      "action": "ACCUMULATE",
+      "analyzedAt": "2026-09-01T07:01:00.000Z"
     }
-  },
-  "analyticsLog": {
-    "shareCountMethod": "shares_diluted (892.5M)",
-    "marginAnchor": "TTM (33.9% gross margin, 2.7% operating margin)",
-    "growthDerivation": "Consensus rebound: +22.2% FY26 / +17.9% FY27 / +16.5% 5Y DCF CAGR",
-    "sectorBenchmarkRow": "Semiconductors / Power & Analog Infrastructure",
-    "reverseDcf": {
-      "impliedGrowth": 12.8,
-      "impliedGrowthVsBaseCase": -3.7,
-      "verdict": "ATTRACTIVE_UNDERVALUED"
-    },
-    "valuationAction": "BUY",
-    "portfolioUrgency": "ACCUMULATE_DIP"
-  },
-  "aiThesis": {
-    "model": "Antigravity AI Guided Valuation Co-Pilot",
-    "fairValue": 85.47,
-    "action": "ACCUMULATE",
-    "targetWeight": 0.0,
-    "reviewedAt": "2026-08-24T03:00:00Z",
-    "rationale": "High-conviction physical AI power generation & 800V DC rack power distribution play. NVIDIA AI Factory MGX 12kW GaN LLC board production testing, Catania 200mm SiC campus (€2.0B EU Chips Act subsidies), and cyclical automotive/industrial channel inventory clearing create a multi-year gross margin expansion path from 33.9% trough to 42%+ with >$2.0B data center revenue by 2027."
   }
-}
+]
