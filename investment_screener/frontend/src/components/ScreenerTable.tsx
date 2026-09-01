@@ -222,7 +222,7 @@ export default function ScreenerTable() {
 
             if (allProjData) {
                 const supportedProjections = (allProjData as Projection[]).filter(
-                    p => p.source === 'AI_AGENT' || p.source === 'ETF_ANALYSIS'
+                    p => p && p.ticker && p.aiThesis
                 );
                 const latestByTicker = supportedProjections.reduce((acc, curr) => {
                     if (!acc[curr.ticker] || new Date(curr.savedAt) > new Date(acc[curr.ticker].savedAt)) {
@@ -474,16 +474,17 @@ export default function ScreenerTable() {
         let gaps = 0;
 
         for (const row of rows) {
+            const isCash = row.symbol.includes('CASH') || row.assetClass === 'CASH' || row.symbol === 'USD_CASH';
             const act = (row.action ?? '').toUpperCase();
-            if (['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT'].includes(act)) actionable++;
-            // Core holdings are strictly stocks currently held in accounts (currentPct > 0)
+            if (['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT'].includes(act) && !isCash) actionable++;
+            // Core holdings are strictly stocks/funds currently held in accounts (currentPct > 0)
             const isFunded = (row.currentPct ?? 0) > 0;
             const isTarget = (row.recommendedPct ?? 0) > 0;
             if (isFunded) holdings++;
             if (row.isWatched) watchlist++;
             
-            // Only flag true portfolio holdings or active thesis targets that lack a valuation
-            const isPortfolioScope = isFunded || isTarget;
+            // Only flag true portfolio holdings or active thesis targets that lack a valuation (exclude cash)
+            const isPortfolioScope = (isFunded || isTarget) && !isCash;
             if (isPortfolioScope && (row.rowKind === 'holding' || row.fairValue == null)) {
                 gaps++;
             }
@@ -493,8 +494,11 @@ export default function ScreenerTable() {
     }, [rows]);
 
     const filteredRows = rows.filter(row => {
+        const isCash = row.symbol.includes('CASH') || row.assetClass === 'CASH' || row.symbol === 'USD_CASH';
+
         // Status bar grouping filter
         if (statusFilter === 'actionable') {
+            if (isCash) return false;
             const act = (row.action ?? '').toUpperCase();
             if (!['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT'].includes(act)) return false;
         } else if (statusFilter === 'holdings') {
@@ -503,9 +507,10 @@ export default function ScreenerTable() {
         } else if (statusFilter === 'watchlist') {
             if (!row.isWatched) return false;
         } else if (statusFilter === 'gaps') {
+            if (isCash) return false;
             const isFunded = (row.currentPct ?? 0) > 0;
             const isTarget = (row.recommendedPct ?? 0) > 0;
-            const isPortfolioScope = isFunded || isTarget;
+            const isPortfolioScope = (isFunded || isTarget) && !isCash;
             const isGap = isPortfolioScope && (row.rowKind === 'holding' || row.fairValue == null);
             if (!isGap) return false;
         }

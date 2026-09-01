@@ -290,7 +290,7 @@ export class ProjectionRepository {
         const reconstructed: any = {
             ticker: row.investment_id,
             id: row.legacy_id ?? deterministicUuid(row.projection_id),
-            source: 'SYSTEM',
+            source: row.source ?? 'AI_AGENT',
             schemaVersion: '1.2',
             version: row.version,
             savedAt: row.saved_at,
