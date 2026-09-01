@@ -1,5 +1,40 @@
 # SHAZ Research Timeline
 
+## 2026-09-01 — Autonomous DCF Refresh & APAC Sovereign AI Factory Execution
+
+# SHAZ — SharonAI Holdings Inc.
+**Date**: 2026-09-01 | **Model**: Gemini 3.7 Flash | **Action**: ACCUMULATE | **Fair Value**: $143.02 vs $50.01 (+186.0%)
+
+### Executive Summary
+SharonAI Holdings (SHAZ) is executing on its 72MW NVIDIA AI factory deployment in Australia, establishing the premier sovereign accelerated compute footprint in the APAC region. Backed by Leopold Aschenbrenner's Situational Awareness LP (19.9% anchor equity stake) and a $1.6B private placement financing, the company is transitioning from early foundation stages to multi-hundred million dollar annual run-rate revenue. Following a -38% pullback to $50.01, our 5-year forward DCF yields a fair value of **$143.02** (+186.0% upside at 11.66% WACC). With the market pricing in just 32.4% CAGR (Reverse DCF), current levels offer exceptional asymmetric upside.
+
+### Key Financials & Valuation
+| Metric | Value |
+|---|---|
+| Current Price | $50.01 |
+| Fair Value (DCF) | **$143.02** (+186.0% upside) |
+| Wall Street Mean Target | **$113.75** (4 analysts, Strong Buy) |
+| WACC | 11.66% |
+| FY2026 Baseline Revenue Target | $133.0M (consensus ramp) |
+| Diluted Shares | 35.7M |
+| Reverse DCF Implied CAGR | 32.4% (`BETWEEN_BEAR_AND_BASE`) |
+| Strategy Pillar | `compute` (`ai-infrastructure`) |
+| Portfolio Position | 12.0 shares (1.63% target weight) |
+
+### Scenario Breakdown
+- **🐻 Bear (30% weight)**: $10.48 PV (25% CAGR to $406M Y5, 12% net margin, 18x PE). APAC power interconnect friction and warrant dilution.
+- **⚖️ Base (50% weight)**: $109.88 PV (55% CAGR to $1.19B Y5, 22% net margin, 28x PE). 72MW AI factory energizes with 40,000 GB300 GPUs billing at scale.
+- **🚀 Bull (20% weight)**: $424.67 PV (80% CAGR to $2.51B Y5, 28% net margin, 35x PE). SharonAI becomes undisputed sovereign APAC Neocloud standard.
+
+### Recommendation & Execution Tiers
+- **Lifecycle Status**: `core`
+- **Action**: **`ACCUMULATE`**
+- **Target Entry / Pullback Support**: $44.02 (Bollinger Channel Lower Band)
+- **Trim Tier 1**: $110.00+
+- **Stop Loss / Breaker**: $40.00
+
+---
+
 ## 2026-07-13 — SHAZ research import (2026-07-13)
 
 # Qualitative Research Report: SharonAI Holdings Inc. (SHAZ)
