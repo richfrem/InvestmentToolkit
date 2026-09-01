@@ -19,13 +19,20 @@ import argparse
 from pathlib import Path
 
 
-DATA_DIR = Path(__file__).resolve().parents[5] / "investment_screener" / "backend" / "data" / "etf_analysis"
-REPO_ROOT = Path(__file__).resolve().parents[5]
+def _find_repo_root(start: Path) -> Path:
+    for parent in [start] + list(start.parents):
+        if (parent / "investment_screener").exists():
+            return parent
+    return start.parents[3]
+
+
+REPO_ROOT = _find_repo_root(Path(__file__).resolve())
+DATA_DIR = REPO_ROOT / "investment_screener" / "backend" / "data" / "etf_analysis"
 DB_PATH = REPO_ROOT / "investment_screener" / "backend" / "data" / "domain_model.sqlite"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from domain_model.db_client import initialize_db  # noqa: E402
-from domain_model.investment_repository import resolve_investment  # noqa: E402
+from domain_model.investment_repository import resolve_investment, update_investment_fields  # noqa: E402
 from domain_model.projection_repository import (  # noqa: E402
     get_latest_projection_by_source,
     list_projection_versions,
@@ -184,7 +191,20 @@ def _sync_projection_db(data: dict, next_version: int, db_path: Path, dry_run: b
                 year5_revenue=scen.get("year5Revenue"), year5_net_income=scen.get("year5NetIncome"),
                 year5_eps=scen.get("year5EPS"), scenario_price=scen.get("scenarioPrice"),
             )
-        print(f"✅ Projection synced to domain_model.sqlite: {ticker} (version {db_version})")
+
+        # Synchronize investment table state
+        update_fields = {
+            "target_action": ai_thesis.get("action"),
+            "last_deep_analysis_at": ai_thesis.get("analyzedAt"),
+        }
+        if "agentRationale" in data:
+            update_fields["agent_rationale"] = data["agentRationale"]
+        elif "rationale" in data:
+            update_fields["agent_rationale"] = data["rationale"]
+
+        update_investment_fields(conn, investment_id, **update_fields)
+
+        print(f"✅ Projection and investment record synced to domain_model.sqlite: {ticker} (version {db_version})")
     finally:
         conn.close()
 

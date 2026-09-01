@@ -130,5 +130,123 @@
     ],
     "entryNote": "Accumulate on dips to $33-35 (closer to NAV). Current near-high entry is fully priced. This is the higher-conviction humanoid play vs KOID; keep it.",
     "agentRationale": "ETF_ANALYSIS: HOLD | THEMATIC_ETF | NAV premium 4.04% (LOW-MODERATE) | alignment 74% (direct humanoid: TSLA/Ubtech/Rainbow/Harmonic/Robotis) | $62M AUM (less liquid) | NVDA overlap immaterial at target size | near 52wk high \u2014 hold, accumulate on dips to $33-35 | analyzed 2026-05-13"
+  },
+  {
+    "ticker": "HUMN",
+    "id": "e57a4b26-d70d-468f-a8a7-f4debd5b8910",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.0",
+    "schemaType": "ETF_ANALYSIS",
+    "fundType": "THEMATIC_ETF",
+    "version": 2,
+    "savedAt": "2026-09-01T07:05:00.000Z",
+    "updatedAt": "2026-09-01T07:05:00.000Z",
+    "name": "AI ETF Analysis \u2014 HUMN \u2014 2026-09-01",
+    "rationale": "Roundhill Humanoid Robotics ETF holds premier direct exposure to humanoid robot OEMs and specialized mechanical motion component leaders (Ubtech, Harmonic Drive, Tesla, Leader Harmonious, Rainbow Robotics, Swancor, Robotis). Total AUM is $81.4M. Trades at a -3.5% discount to NAV ($29.55 vs $30.63 NAV) after a -24.6% correction from 52-week highs ($39.17). Thesis alignment score is an industry-leading 76%. Recommendation: ACCUMULATE on pullbacks.",
+    "snapshot": {
+      "price": 29.55,
+      "navPrice": 30.6344,
+      "premiumPct": -3.54,
+      "currency": "USD",
+      "exchange": "BTS",
+      "aum": 81418136,
+      "expenseRatio": 0.0075,
+      "fiftyTwoWeekHigh": 39.17,
+      "fiftyTwoWeekLow": 26.1
+    },
+    "holdingsAnalysis": {
+      "topHoldings": [
+        {
+          "symbol": "9880.HK",
+          "name": "Ubtech Robotics Corp",
+          "holdingPct": 4.9,
+          "alignment": "DIRECT",
+          "note": "Commercial industrial humanoid robotics OEM"
+        },
+        {
+          "symbol": "6324.T",
+          "name": "Harmonic Drive Systems",
+          "holdingPct": 4.2,
+          "alignment": "DIRECT",
+          "note": "Precision strain wave gearing for robot joints"
+        },
+        {
+          "symbol": "TSLA",
+          "name": "Tesla Inc",
+          "holdingPct": 4.15,
+          "alignment": "DIRECT",
+          "note": "Optimus humanoid robot & FSD AI compute"
+        },
+        {
+          "symbol": "688585.SS",
+          "name": "Swancor Advanced Materials",
+          "holdingPct": 3.83,
+          "alignment": "PARTIAL",
+          "note": "Lightweight carbon composites for robot limbs"
+        },
+        {
+          "symbol": "005380.KQ",
+          "name": "Hyundai Motor Co",
+          "holdingPct": 3.69,
+          "alignment": "DIRECT",
+          "note": "Owner of Boston Dynamics (Atlas humanoid)"
+        },
+        {
+          "symbol": "HEXA-B.ST",
+          "name": "Hexagon AB",
+          "holdingPct": 3.59,
+          "alignment": "PARTIAL",
+          "note": "Autonomous optical positioning sensors"
+        },
+        {
+          "symbol": "688017.SS",
+          "name": "Leader Harmonious Drive",
+          "holdingPct": 3.54,
+          "alignment": "DIRECT",
+          "note": "Harmonic speed reducers for robot joints"
+        },
+        {
+          "symbol": "277810.KQ",
+          "name": "Rainbow Robotics",
+          "holdingPct": 3.39,
+          "alignment": "DIRECT",
+          "note": "Samsung-backed bipedal & humanoid robotics"
+        },
+        {
+          "symbol": "TER",
+          "name": "Teradyne Inc",
+          "holdingPct": 3.18,
+          "alignment": "PARTIAL",
+          "note": "Universal Robots industrial cobots"
+        },
+        {
+          "symbol": "108490.KQ",
+          "name": "Robotis Co Ltd",
+          "holdingPct": 3.07,
+          "alignment": "DIRECT",
+          "note": "Smart actuator motor systems for humanoids"
+        }
+      ],
+      "concentration": {
+        "top5Pct": 20.77,
+        "top10Pct": 37.54
+      },
+      "thesisAlignmentScore": 76,
+      "expenseDragBps": 75,
+      "overlapWithDirectHoldings": []
+    },
+    "action": "ACCUMULATE",
+    "actionRationale": "HUMN provides unmatched pure-play exposure to global humanoid robotics OEMs and precision actuators (Ubtech, Harmonic Drive, Boston Dynamics / Hyundai, Rainbow Robotics, Robotis). High thesis alignment score (76%) and favorable -3.5% NAV discount entry after a -24.6% consolidation from highs. Accumulate in the $27-$30 range.",
+    "upsideCatalysts": [
+      "Pilot production deployments of factory humanoids (Tesla Optimus, Figure, Boston Dynamics)",
+      "Samsung and major industrial conglomerates increasing equity investments in humanoid OEMs (Rainbow Robotics)",
+      "Commercial volume cost curve reductions for precision harmonic drive reducers"
+    ],
+    "risks": [
+      "Longer-than-anticipated commercialization and enterprise adoption cycle for bipedal robots",
+      "High weighting in Korean and Chinese equity lines subject to Asian market sentiment"
+    ],
+    "entryNote": "Accumulate aggressively on pullbacks toward $27.00-$29.50.",
+    "agentRationale": "ETF_ANALYSIS: ACCUMULATE | THEMATIC_ETF | NAV discount -3.5% | alignment 76% (pure-play humanoid OEMs + precision actuators) | $81.4M AUM | analyzed 2026-09-01"
   }
 ]

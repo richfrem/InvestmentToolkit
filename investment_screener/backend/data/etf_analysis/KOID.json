@@ -126,5 +126,123 @@
     ],
     "entryNote": "Accumulate on dips to $35-37. Current near-high entry is full price for this position size.",
     "agentRationale": "ETF_ANALYSIS: HOLD | THEMATIC_ETF | NAV premium 1.97% (LOW) | alignment 62% (supply-chain semis + precision actuation) | $158M AUM | no overlap with direct holdings | near 52wk high \u2014 hold, accumulate on dips | analyzed 2026-05-13"
+  },
+  {
+    "ticker": "KOID",
+    "id": "e57a4b26-d70d-468f-a8a7-f4debd5b8909",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.0",
+    "schemaType": "ETF_ANALYSIS",
+    "fundType": "THEMATIC_ETF",
+    "version": 2,
+    "savedAt": "2026-09-01T07:04:00.000Z",
+    "updatedAt": "2026-09-01T07:04:00.000Z",
+    "name": "AI ETF Analysis \u2014 KOID \u2014 2026-09-01",
+    "rationale": "KraneShares Global Humanoid Robotics and Physical AI Index ETF tracks global physical AI and robotics enablers. AUM expanded significantly to $290.6M. The fund focuses on the critical component and precision sensor layer (Hexagon, Horizon Robotics, Monolithic Power, Sensata, Teledyne, Amphenol, Symbotic). Trades at a minor -3.3% discount to NAV ($35.67 vs $36.88 NAV). Thesis alignment is solid at 68%. Recommendation: ACCUMULATE on pullbacks near $32-34.",
+    "snapshot": {
+      "price": 35.67,
+      "navPrice": 36.88,
+      "premiumPct": -3.28,
+      "currency": "USD",
+      "exchange": "NASDAQ",
+      "aum": 290559872,
+      "expenseRatio": 0.0075,
+      "fiftyTwoWeekHigh": 43.32,
+      "fiftyTwoWeekLow": 27.74
+    },
+    "holdingsAnalysis": {
+      "topHoldings": [
+        {
+          "symbol": "HEXA-B.ST",
+          "name": "Hexagon AB",
+          "holdingPct": 2.59,
+          "alignment": "DIRECT",
+          "note": "Autonomous positioning and industrial sensors"
+        },
+        {
+          "symbol": "9660.HK",
+          "name": "Horizon Robotics",
+          "holdingPct": 2.45,
+          "alignment": "DIRECT",
+          "note": "Embedded robotics compute & ADAS"
+        },
+        {
+          "symbol": "MG.TO",
+          "name": "Magna International",
+          "holdingPct": 2.34,
+          "alignment": "PARTIAL",
+          "note": "Robotics manufacturing and subassemblies"
+        },
+        {
+          "symbol": "MPWR",
+          "name": "Monolithic Power Systems",
+          "holdingPct": 2.33,
+          "alignment": "DIRECT",
+          "note": "Robotics power ICs and motor controllers"
+        },
+        {
+          "symbol": "ST",
+          "name": "Sensata Technologies",
+          "holdingPct": 2.27,
+          "alignment": "PARTIAL",
+          "note": "Force and torque sensors for actuators"
+        },
+        {
+          "symbol": "TEL",
+          "name": "TE Connectivity",
+          "holdingPct": 2.26,
+          "alignment": "PARTIAL",
+          "note": "Industrial connectivity and cabling"
+        },
+        {
+          "symbol": "TER",
+          "name": "Teradyne",
+          "holdingPct": 2.25,
+          "alignment": "DIRECT",
+          "note": "Universal Robots cobots and testing"
+        },
+        {
+          "symbol": "SYM",
+          "name": "Symbotic Inc",
+          "holdingPct": 2.22,
+          "alignment": "DIRECT",
+          "note": "Autonomous warehouse robotics systems"
+        },
+        {
+          "symbol": "TDY",
+          "name": "Teledyne Technologies",
+          "holdingPct": 2.21,
+          "alignment": "DIRECT",
+          "note": "Machine vision and imaging sensors"
+        },
+        {
+          "symbol": "APH",
+          "name": "Amphenol Corp",
+          "holdingPct": 2.19,
+          "alignment": "PARTIAL",
+          "note": "High-speed robot sensor interconnects"
+        }
+      ],
+      "concentration": {
+        "top5Pct": 11.98,
+        "top10Pct": 23.11
+      },
+      "thesisAlignmentScore": 68,
+      "expenseDragBps": 75,
+      "overlapWithDirectHoldings": []
+    },
+    "action": "ACCUMULATE",
+    "actionRationale": "KOID represents the essential component and sensor supply chain for physical AI and robotics (Hexagon, Teradyne, Symbotic, MPWR). AUM has grown to $290.6M, ensuring strong liquidity. Trading at a -3.3% NAV discount after a 17.6% pullback from 52-week highs ($43.32). Accumulate into support between $32.00-$35.00.",
+    "upsideCatalysts": [
+      "Commercial scaling of factory logistics automation (Symbotic, Teradyne)",
+      "Ramp of humanoid sensory and high-density power components (MPWR, Hexagon, Teledyne)",
+      "Government industrial onshoring and robotics automation tax incentives"
+    ],
+    "risks": [
+      "Broad industrial cyclicality impacting non-AI component demand",
+      "Currency exposure across European and Asian holding lines"
+    ],
+    "entryNote": "Accumulate on pullbacks between $32.00 and $35.50.",
+    "agentRationale": "ETF_ANALYSIS: ACCUMULATE | THEMATIC_ETF | NAV discount -3.3% | alignment 68% (robotics sensor/power component supply chain) | $290.6M AUM | analyzed 2026-09-01"
   }
 ]

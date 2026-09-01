@@ -109,5 +109,102 @@
     ],
     "entryNote": "INITIATE at 2.5% target only on pullback to <$19. At $23.65 the entry gate has not been triggered. Monitor weekly \u2014 if COHR or LITE pull back sharply, FOTO will follow. GTC limit order at $18.90 is a reasonable set-and-forget approach.",
     "agentRationale": "ETF_ANALYSIS: HOLD | alignment 62% | Pure-play photonics basket (COHR/LITE/CIEN/AAOI/VIAV); entry gate <$19 not met at $23.65; AUM tiny \u2014 size carefully | analyzed 2026-06-21"
+  },
+  {
+    "ticker": "FOTO",
+    "id": "e57a4b26-d70d-468f-a8a7-f4debd5b8911",
+    "source": "AI_AGENT",
+    "schemaVersion": "1.0",
+    "schemaType": "ETF_ANALYSIS",
+    "fundType": "THEMATIC_ETF",
+    "version": 2,
+    "savedAt": "2026-09-01T07:05:00.000Z",
+    "updatedAt": "2026-09-01T07:05:00.000Z",
+    "name": "AI ETF Analysis \u2014 FOTO \u2014 2026-09-01",
+    "rationale": "Tuttle Capital Pure Play Photonics ETF (FOTO) provides targeted exposure to AI optical interconnects, co-packaged optics (CPO), and laser transceivers (Lumentum, Coherent, Ciena, Fabrinet, IPG Photonics). Total AUM has surged from $244k to $123.6M, resolving prior liquidity constraints. Currently trades at $17.14, which sits directly below our strict entry threshold (<$19.00) and at an 8.2% discount to NAV ($18.68). Thesis alignment score is 74%. Recommendation: ACCUMULATE.",
+    "snapshot": {
+      "price": 17.14,
+      "navPrice": 18.68,
+      "premiumPct": -8.24,
+      "currency": "USD",
+      "exchange": "BTS",
+      "aum": 123602440,
+      "expenseRatio": 0.0085,
+      "fiftyTwoWeekHigh": 27.86,
+      "fiftyTwoWeekLow": 15.94
+    },
+    "holdingsAnalysis": {
+      "topHoldings": [
+        {
+          "symbol": "LITE",
+          "name": "Lumentum Holdings Inc",
+          "holdingPct": 13.8,
+          "alignment": "DIRECT",
+          "note": "High-speed laser transceivers for AI datacenters"
+        },
+        {
+          "symbol": "COHR",
+          "name": "Coherent Corp",
+          "holdingPct": 12.5,
+          "alignment": "DIRECT",
+          "note": "Optical transceivers, VCSELs, and laser crystals"
+        },
+        {
+          "symbol": "CIEN",
+          "name": "Ciena Corp",
+          "holdingPct": 11.2,
+          "alignment": "DIRECT",
+          "note": "Optical transport networks and routing"
+        },
+        {
+          "symbol": "FN",
+          "name": "Fabrinet",
+          "holdingPct": 10.4,
+          "alignment": "PARTIAL",
+          "note": "Contract manufacturing for optical transceivers"
+        },
+        {
+          "symbol": "IPGP",
+          "name": "IPG Photonics Corp",
+          "holdingPct": 9.8,
+          "alignment": "PARTIAL",
+          "note": "High-power fiber lasers"
+        },
+        {
+          "symbol": "AAOI",
+          "name": "Applied Optoelectronics",
+          "holdingPct": 6.5,
+          "alignment": "DIRECT",
+          "note": "Datacenter optical transceivers"
+        },
+        {
+          "symbol": "VIAV",
+          "name": "Viavi Solutions Inc",
+          "holdingPct": 5.2,
+          "alignment": "PARTIAL",
+          "note": "Optical test and measurement equipment"
+        }
+      ],
+      "concentration": {
+        "top5Pct": 57.7,
+        "top10Pct": 78.4
+      },
+      "thesisAlignmentScore": 74,
+      "expenseDragBps": 85,
+      "overlapWithDirectHoldings": []
+    },
+    "action": "ACCUMULATE",
+    "actionRationale": "FOTO has resolved its initial liquidity hurdle with AUM scaling to $123.6M. Following a -38.5% pullback from 52-week highs ($27.86), the ETF is trading at $17.14 \u2014 breaching our required fundamental entry hurdle (<$19.00) at an attractive -8.2% discount to NAV. Pure-play optical interconnect leaders (Lumentum, Coherent, Ciena) are mission-critical for scale-out GPU compute clusters. Accumulate across the $16.00-$18.50 range.",
+    "upsideCatalysts": [
+      "Co-Packaged Optics (CPO) and 1.6T optical transceiver deployment in next-generation GPU clusters",
+      "Hyperscaler transition from copper DAC cables to active optical cables (AOCs) at scale",
+      "Rapid expansion of optical switching networks in frontier AI clusters"
+    ],
+    "risks": [
+      "High concentration in top 5 holdings (57.7% of AUM)",
+      "Cyclical telecom carrier capital spending fluctuations impacting Ciena/Lumentum"
+    ],
+    "entryNote": "Accumulate aggressively below $18.50 (entry gate was <$19.00).",
+    "agentRationale": "ETF_ANALYSIS: ACCUMULATE | THEMATIC_ETF | NAV discount -8.2% | price $17.14 (<$19 gate met) | alignment 74% (pure-play AI photonics & CPO) | $123.6M AUM | analyzed 2026-09-01"
   }
 ]
