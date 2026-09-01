@@ -1,5 +1,40 @@
 # ZS Research Timeline
 
+## 2026-09-01 — Autonomous DCF Refresh & Zero Trust SASE Market Inflection
+
+# ZS — Zscaler, Inc.
+**Date**: 2026-09-01 | **Model**: Gemini 3.7 Flash | **Action**: ACCUMULATE | **Fair Value**: $261.23 vs $180.75 (+44.5%)
+
+### Executive Summary
+Zscaler (ZS) is the premier pure-play cloud security exchange platform (ZIA/ZPA/ZDX), processing >400 billion daily transactions. TTM revenue reached **$2.67B** (+25.4% YoY) with positive operating cash flow and rapid GAAP margin inflection. At $180.75, our 5-year probability-weighted DCF yields **$261.23** (+44.5% upside at 10% discount rate). Reverse DCF indicates the market is pricing in an undemanding **18.61% CAGR**, well below our 21.0% base case. Recommendation: **`ACCUMULATE`** (Core Holding: 12.0 shares, 6.50% target weight).
+
+### Key Metrics
+| Metric | Value |
+|---|---|
+| Current Market Price | $180.75 |
+| Fair Value (DCF) | **$261.23** (+44.5% upside) |
+| Wall Street Mean Target | **$227.67** (45 analysts, Buy) |
+| WACC / Discount Rate | 10.0% |
+| TTM Revenue | $2.67B (+25.4% YoY) |
+| Diluted Shares | 161.7M |
+| Reverse DCF Implied CAGR | 18.61% (`BETWEEN_BEAR_AND_BASE`) |
+| Strategy Pillar | `security` (`cybersecurity`) |
+| Portfolio Position | 12.0 shares (6.50% target weight) |
+
+### Scenario Breakdown
+- **🐻 Bear (20% weight)**: $70.74 PV (14% CAGR to $5.1B Y5, 16% net margin, 26x PE). Platform bundling competition (PANW/Microsoft) slows pipeline conversion.
+- **⚖️ Base (50% weight)**: $207.99 PV (21% CAGR to $6.9B Y5, 23% net margin, 34x PE). Zero Trust Exchange standard expansion, 115%+ NRR, GAAP operating leverage inflects.
+- **🚀 Bull (30% weight)**: $476.95 PV (28% CAGR to $9.2B Y5, 28% net margin, 42x PE). AI security expansion (Risk360, DSPM, Copilot data protection) drives accelerated enterprise SASE spend.
+
+### Recommendation & Execution Tiers
+- **Lifecycle Status**: `core`
+- **Action**: **`ACCUMULATE`**
+- **Target Accumulation Zone**: Below $185.00
+- **Trim Tier 1**: $261.23+
+- **Stop Loss / Breaker**: $145.00
+
+---
+
 ## 2026-05-02 — ZS research import (2026-05-02)
 
 # ZS — Zscaler, Inc. Deep Dive Research Report

@@ -100,27 +100,27 @@ const COLUMNS: ColDef[] = [
     { id: 'change_ytd',     label: 'YTD %',      isChange: true, defaultOn: false, align: 'right', format: fmtPct },
     { id: 'change_1y',      label: '1Y %',       isChange: true, defaultOn: false, align: 'right', format: fmtPct },
     { id: 'change_overall', label: 'Overall %',  isChange: true, defaultOn: true,  align: 'right', format: fmtPct },
+    { id: 'subStrategyId',  label: 'Strategy',   defaultOn: true,  align: 'left',  format: v => String(v ?? '—') },
     { id: 'sector',         label: 'Sector',     defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
     { id: 'shares',         label: 'Shares',     defaultOn: false, align: 'right', format: v => safeNum(v) != null ? safeNum(v)!.toLocaleString() : '—' },
     { id: 'book_price',     label: 'Avg Cost',   defaultOn: false, align: 'right', format: fmtPrice },
     { id: 'total_book',     label: 'Book Value', defaultOn: false, align: 'right', format: fmtDollar },
     { id: 'total_market',   label: 'Mkt Value',  defaultOn: false, align: 'right', format: fmtDollar },
     { id: 'qualityMultiplier', label: 'Quality', defaultOn: false, align: 'right', format: v => safeNum(v) != null ? `${safeNum(v)!.toFixed(2)}x` : '—' },
-    { id: 'subStrategyId',  label: 'Strategy',   defaultOn: false, align: 'left',  format: v => String(v ?? '—') },
     { id: 'lastAnalyzed',   label: 'Analyzed',   defaultOn: true,  align: 'right', format: v => v ? new Date(v as string).toLocaleDateString() : '—' },
 ];
 
 const DEFAULT_WIDTHS: Record<string, number> = {
-    symbol: 80, action: 185, fairValue: 95, currentPrice: 80, gainLoss: 85,
+    symbol: 80, action: 185, subStrategyId: 135, fairValue: 95, currentPrice: 80, gainLoss: 85,
     change_1d: 65, change_overall: 80, change_1w: 65, change_1m: 65, change_ytd: 65, change_1y: 65, sector: 115, shares: 60, book_price: 72, total_book: 80, total_market: 80, 
     upside: 85, ruleOf40: 70, growth: 80, model: 130, base: 80,
-    bear: 80, bull: 80, qualityMultiplier: 80, subStrategyId: 140, lastAnalyzed: 90,
+    bear: 80, bull: 80, qualityMultiplier: 80, lastAnalyzed: 90,
     currentPct: 90, recommendedPct: 85, rationale: 260,
 };
 
 // ─── Persistence ──────────────────────────────────────────────────────────────
 
-const STORAGE_KEY = 'ai-screener-table-prefs-v3';
+const STORAGE_KEY = 'ai-screener-table-prefs-v4';
 
 interface TablePrefs {
     visible: string[];
@@ -222,7 +222,7 @@ export default function ScreenerTable() {
 
             if (allProjData) {
                 const supportedProjections = (allProjData as Projection[]).filter(
-                    p => p.source === 'AI_AGENT' || p.source === 'ETF_ANALYSIS'
+                    p => p && p.ticker && p.aiThesis
                 );
                 const latestByTicker = supportedProjections.reduce((acc, curr) => {
                     if (!acc[curr.ticker] || new Date(curr.savedAt) > new Date(acc[curr.ticker].savedAt)) {
@@ -367,10 +367,33 @@ export default function ScreenerTable() {
             const currentPct = allPortfolioWeights[p.ticker] ?? health?.actualPct ?? rev?.actualPct ?? null;
             const recommendedPct = health?.targetPct ?? null;
             const backendAction = allHoldingsMap[p.ticker]?.action ?? null;
-            // If backend action is generic 'WATCHLIST' or null, but we have a direct AI thesis action (e.g. HOLD, BUY, INITIATE, ACCUMULATE, TRIM, EXIT), use the AI thesis action.
-            const action = (backendAction && backendAction !== 'WATCHLIST') 
-                ? backendAction 
-                : (thesis?.action ?? backendAction ?? null);
+
+            // Invariant Gate: Determine logical portfolio action
+            const isHeld = (currentPct ?? 0) > 0;
+            const isTarget = (recommendedPct ?? 0) > 0;
+            const rawAction = backendAction ?? thesis?.action ?? null;
+
+            let action = rawAction;
+            if (!isHeld) {
+                // If we DO NOT own the stock:
+                // - Can only be INITIATE (if target > 0 or valuation is attractive buy) or WATCHLIST
+                // - Can NEVER be TRIM, EXIT, or ACCUMULATE (you cannot trim/exit/accumulate what you don't own)
+                if (isTarget) {
+                    action = 'INITIATE';
+                } else if (['BUY', 'INITIATE'].includes((rawAction ?? '').toUpperCase())) {
+                    action = 'INITIATE';
+                } else {
+                    action = 'WATCHLIST';
+                }
+            } else {
+                // If we DO own the stock:
+                // - If target is 0 or lifecycle is exit, action is EXIT
+                if (recommendedPct === 0) {
+                    action = 'EXIT';
+                } else if (rawAction === 'WATCHLIST' || !rawAction) {
+                    action = thesis?.action ?? 'MAINTAIN';
+                }
+            }
 
             return {
                 symbol: p.ticker,
@@ -474,16 +497,17 @@ export default function ScreenerTable() {
         let gaps = 0;
 
         for (const row of rows) {
+            const isCash = row.symbol.includes('CASH') || row.assetClass === 'CASH' || row.symbol === 'USD_CASH';
             const act = (row.action ?? '').toUpperCase();
-            if (['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT'].includes(act)) actionable++;
-            // Core holdings are strictly stocks currently held in accounts (currentPct > 0)
+            if (['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT'].includes(act) && !isCash) actionable++;
+            // Portfolio holdings include all active funded positions or active thesis targets
             const isFunded = (row.currentPct ?? 0) > 0;
             const isTarget = (row.recommendedPct ?? 0) > 0;
-            if (isFunded) holdings++;
+            if (isFunded || isTarget) holdings++;
             if (row.isWatched) watchlist++;
             
-            // Only flag true portfolio holdings or active thesis targets that lack a valuation
-            const isPortfolioScope = isFunded || isTarget;
+            // Only flag true portfolio holdings or active thesis targets that lack a valuation (exclude cash)
+            const isPortfolioScope = (isFunded || isTarget) && !isCash;
             if (isPortfolioScope && (row.rowKind === 'holding' || row.fairValue == null)) {
                 gaps++;
             }
@@ -493,19 +517,25 @@ export default function ScreenerTable() {
     }, [rows]);
 
     const filteredRows = rows.filter(row => {
+        const isCash = row.symbol.includes('CASH') || row.assetClass === 'CASH' || row.symbol === 'USD_CASH';
+
         // Status bar grouping filter
         if (statusFilter === 'actionable') {
+            if (isCash) return false;
             const act = (row.action ?? '').toUpperCase();
             if (!['INITIATE', 'ACCUMULATE', 'TRIM', 'EXIT'].includes(act)) return false;
         } else if (statusFilter === 'holdings') {
-            // Core holdings strictly require an active funded position (currentPct > 0)
-            if ((row.currentPct ?? 0) <= 0) return false;
+            // Portfolio holdings tab shows all active funded positions OR active thesis target allocations
+            const isFunded = (row.currentPct ?? 0) > 0;
+            const isTarget = (row.recommendedPct ?? 0) > 0;
+            if (!isFunded && !isTarget) return false;
         } else if (statusFilter === 'watchlist') {
             if (!row.isWatched) return false;
         } else if (statusFilter === 'gaps') {
+            if (isCash) return false;
             const isFunded = (row.currentPct ?? 0) > 0;
             const isTarget = (row.recommendedPct ?? 0) > 0;
-            const isPortfolioScope = isFunded || isTarget;
+            const isPortfolioScope = (isFunded || isTarget) && !isCash;
             const isGap = isPortfolioScope && (row.rowKind === 'holding' || row.fairValue == null);
             if (!isGap) return false;
         }
@@ -872,6 +902,13 @@ export default function ScreenerTable() {
                                                 )}
                                             </div>
                                         );
+                                    } else if (col.id === 'subStrategyId') {
+                                        const strat = val as string | null;
+                                        cellContent = strat && strat !== '—' && strat !== 'other' ? (
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-bold tracking-tight text-indigo-300 border-indigo-500/30 bg-indigo-950/40">
+                                                {strat}
+                                            </span>
+                                        ) : <span className="text-slate-600 text-xs">—</span>;
                                     } else if (col.id === 'rationale') {
                                         const text = val as string | null;
                                         cellContent = text ? (

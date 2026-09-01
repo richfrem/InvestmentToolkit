@@ -33,11 +33,18 @@ import subprocess
 import sys
 from pathlib import Path
 
-REPO_ROOT     = Path(__file__).resolve().parents[3]
+def _find_repo_root() -> Path:
+    cur = Path(__file__).resolve().parent
+    for p in [cur, *cur.parents]:
+        if (p / "investment_screener").exists():
+            return p
+    return cur.parents[2]
+
+REPO_ROOT     = _find_repo_root()
 DB_PATH       = REPO_ROOT / "investment_screener/backend/data/domain_model.sqlite"
-VALIDATE_PY   = Path(__file__).parent / "validate_weights.py"
-BLUEPRINT_PY  = Path(__file__).parent / "generate_portfolio_blueprint.py"
-REFRESH_ALL   = Path(__file__).parent / "refresh_all.py"
+VALIDATE_PY   = REPO_ROOT / "plugins/portfolio-advisor/scripts/validate_weights.py"
+BLUEPRINT_PY  = REPO_ROOT / "plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py"
+REFRESH_ALL   = REPO_ROOT / "plugins/portfolio-advisor/scripts/refresh_all.py"
 
 sys.path.insert(0, str(REPO_ROOT / "investment_screener/backend/py_services"))
 from portfolio_io import load_thesis_holdings  # noqa: E402

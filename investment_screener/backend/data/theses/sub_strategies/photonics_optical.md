@@ -1,8 +1,9 @@
-# Investment Thesis Proposal: Photonics & Optical Interconnect Infrastructure
+# Photonics & Optical Interconnect Infrastructure
 
 **Date**: 2026-06-20 (updated 2026-06-21)
 **Agent**: Stock Valuation Analyst
-**Status**: APPROVED — ETF entry via FOTO (2.5%); individual names remain watchlist
+**Status**: APPROVED
+**Target Weight**: ~2.5% (photonics pillar)
 
 ---
 
@@ -135,7 +136,7 @@ OR upon thesis confirmation events:
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-08-31 18:42 by TV sync · Portfolio total: $31,895 USD*
+*Auto-updated 2026-09-01 07:23 by TV sync · Portfolio total: $31,895 USD*
 
 **Active Positions**
 

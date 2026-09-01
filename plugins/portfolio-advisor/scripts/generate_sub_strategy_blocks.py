@@ -33,6 +33,7 @@ PILLAR_MAP: dict[str, list[str]] = {
     "sovereign_finance":   ["sovfin"],
     "quality_saas":        ["quality_saas"],
     "space_defense":       ["defense"],
+    "critical_materials_magnets": ["defense"],
     "photonics_optical":   ["photonics"],
     "quantum_computing":   ["quantum"],
     "robotics_automation": ["robotics"],

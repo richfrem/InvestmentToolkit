@@ -10,6 +10,11 @@
     "architecture": "supercharged",
     "skills": [
         {
+            "name": "screener_integrity_audit",
+            "path": "skills/screener-integrity-audit/SKILL.md",
+            "trigger": "/screener-audit"
+        },
+        {
             "name": "portfolio_health",
             "path": "skills/portfolio-health/SKILL.md",
             "trigger": "/review-portfolio"

@@ -1,8 +1,9 @@
-# Investment Thesis Proposal: Quantum Computing Infrastructure
+# Quantum Computing Infrastructure
 
 **Date**: 2026-06-20 (updated 2026-06-21)
 **Agent**: Stock Valuation Analyst
-**Status**: APPROVED — WQTM ETF only (2.0%); all single-name targets zeroed
+**Status**: APPROVED
+**Target Weight**: ~2.5% (quantum pillar)
 
 ---
 
@@ -137,7 +138,7 @@ WQTM-only strategy confirmed. Multi-model adversarial review flagged single-name
 ## Current Positions (Auto-Updated)
 
 <!-- AUTO_UPDATE_START: current_positions -->
-*Auto-updated 2026-08-31 18:42 by TV sync · Portfolio total: $31,895 USD*
+*Auto-updated 2026-09-01 07:23 by TV sync · Portfolio total: $31,895 USD*
 
 **Pending Initiation**
 

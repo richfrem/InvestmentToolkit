@@ -5,7 +5,7 @@
 | **Current Theme** | ASI Buildout (Primary) + Sovereign Finance (Secondary) |
 | **Edition** | "The Compute Sovereign" |
 | **Status** | ACTIVE |
-| **Last Updated** | 2026-08-31 |
+| **Last Updated** | 2026-09-01 |
 | **Thesis Last Analyzed** | 2026-05-22 (Full strategic review post-13F chip exits) |
 | **13F Last Refactored** | 2026-05-22 (Refactored SA LP Q1 2026 13F filed 2026-05-18 into target-portfolio.json) |
 | **Portfolio Data** | Live — synced from Broker via app or `python3 investment_screener/backend/src/BrokerDataEngine.py` |
@@ -52,17 +52,19 @@ This strategy is built on a single macro conviction: **the 2020s will be defined
 
 *Detailed narratives, risk factors, and conviction frameworks for each pillar have been extracted to individual files to avoid duplication.*
 
-- **[SA / ASI Race](../../../investment_screener/backend/data/theses/sub_strategies/asi_race.md)** (Primary: Immediate Growth)
-- **[AI-Native Cybersecurity](../../../investment_screener/backend/data/theses/sub_strategies/cybersecurity.md)**
-- **[Ontological AI & Operating Systems](../../../investment_screener/backend/data/theses/sub_strategies/ontological_os.md)**
-- **[Sovereign Finance](../../../investment_screener/backend/data/theses/sub_strategies/sovereign_finance.md)** (Secondary: Strategic Maturity)
-- **[Quality SaaS — Oversold Leaders](../../../investment_screener/backend/data/theses/sub_strategies/quality_saas.md)**
-- **[Strategic Reserve](../../../investment_screener/backend/data/theses/sub_strategies/strategic_reserve.md)**
-- **[Space Data Centers & Defense](../../../investment_screener/backend/data/theses/sub_strategies/space_defense.md)** (Proposed)
-- **[Photonics & Optical Interconnect](../../../investment_screener/backend/data/theses/sub_strategies/photonics_optical.md)** (Proposed — Watchlist Only)
-- **[Quantum Computing](../../../investment_screener/backend/data/theses/sub_strategies/quantum_computing.md)** (Partial)
-- **[Robotics & Physical AI](../../../investment_screener/backend/data/theses/sub_strategies/robotics_automation.md)** (Approved — ETF Only)
-- **[Metabolic Reprogramming & Genetic Editing](../../../investment_screener/backend/data/theses/sub_strategies/metabolic_rewriting.md)** (Proposed — pending DCF)
+- **[SA / ASI Race](../../../investment_screener/backend/data/theses/sub_strategies/asi_race.md)** (Approved — Primary: Immediate Growth)
+- **[Critical Materials & Permanent Magnets](../../../investment_screener/backend/data/theses/sub_strategies/critical_materials_magnets.md)** (Approved — Core Onshoring)
+- **[AI Power Infrastructure](../../../investment_screener/backend/data/theses/sub_strategies/power_infrastructure.md)** (Approved — Core Infrastructure)
+- **[AI-Native Cybersecurity](../../../investment_screener/backend/data/theses/sub_strategies/cybersecurity.md)** (Approved — Core Security)
+- **[Ontological AI & Operating Systems](../../../investment_screener/backend/data/theses/sub_strategies/ontological_os.md)** (Approved — Enterprise Data OS)
+- **[Robotics & Physical AI Automation](../../../investment_screener/backend/data/theses/sub_strategies/robotics_automation.md)** (Approved — ETF Only)
+- **[Photonics & Optical Interconnect](../../../investment_screener/backend/data/theses/sub_strategies/photonics_optical.md)** (Approved — ETF Only)
+- **[Quantum Computing Infrastructure](../../../investment_screener/backend/data/theses/sub_strategies/quantum_computing.md)** (Approved — ETF Only)
+- **[Space Data Centers & Defense](../../../investment_screener/backend/data/theses/sub_strategies/space_defense.md)** (Proposed — Watchlist)
+- **[Metabolic Reprogramming & Genetic Editing](../../../investment_screener/backend/data/theses/sub_strategies/metabolic_rewriting.md)** (Proposed — Watchlist)
+- **[Quality SaaS — Oversold Leaders](../../../investment_screener/backend/data/theses/sub_strategies/quality_saas.md)** (Proposed — Watchlist)
+- **[Sovereign Finance](../../../investment_screener/backend/data/theses/sub_strategies/sovereign_finance.md)** (Proposed — Watchlist)
+- **[Strategic Reserve](../../../investment_screener/backend/data/theses/sub_strategies/strategic_reserve.md)** (Active Liquidity Reserve)
 
 Every holding in the portfolio maps to exactly one of these strategies. The skill assesses each sub-strategy as a unit — conviction intact, weakening, or broken.
 
@@ -77,18 +79,18 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 ## IV. Portfolio Blueprint
 
 <!-- AUTO_UPDATE_START: portfolio_blueprint -->
-*Generated 2026-08-31 · Source: `domain_model.sqlite` (investment + account_investment, broker-synced live holdings)*
+*Generated 2026-09-01 · Source: `domain_model.sqlite` (investment + account_investment, broker-synced live holdings)*
 *Portfolio value: $31,895. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
 
 ### Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **GOOG** | ⚪ MAINTAIN | ACCUMULATE | 5.37% | 5.19% | +51.2% | Hyperscaler with vertically integrated AI stack. |
-| **BE** | ⚪ MAINTAIN | SELL | 4.94% | 4.61% | -24.6% | Bloom Energy fuel cells. |
-| **TSM** | ⚪ MAINTAIN | HOLD | 3.94% | 3.85% | +8.4% | The foundry backbone of the AI compute stack. |
-| **STM** | ⚪ MAINTAIN | ACCUMULATE | 3.72% | 3.69% | +73.1% | STM |
-| **CBRS** | ⚪ MAINTAIN | SELL | 2.52% | 2.74% | -67.7% | Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference. |
+| **NBIS** | ⚪ MAINTAIN | ACCUMULATE | 5.87% | 6.50% | +26.1% | Pure-play full-stack AI cloud infrastructure & sovereign AI compute — GPU clusters, proprietary cloud platform, and NVIDIA preferred partner scaling European AI compute capacity. |
+| **GOOG** | ⚪ MAINTAIN | MAINTAIN | 5.37% | 5.50% | +2.2% | Global leader in digital advertising, cloud AI infrastructure (Vertex AI / TPU), video (YouTube), and autonomous driving (Waymo). Foundational AI titan with unmatched cash flow. |
+| **TSM** | ⚪ MAINTAIN | ACCUMULATE | 3.94% | 3.85% | +57.4% | The foundry backbone of the AI compute stack. |
+| **STM** | ⚪ MAINTAIN | ACCUMULATE | 3.72% | 3.69% | +88.7% | STM |
+| **CBRS** | ⚪ MAINTAIN | ACCUMULATE | 2.52% | 2.74% | +32.9% | Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference. |
 | **AMD** | 👁️ WATCHLIST | MAINTAIN | — | — | — | Hedge against NVDA dominance. |
 | **ANET** | 👁️ WATCHLIST | INITIATE | — | — | — | AI networking switching fabric. |
 | **ASML** | 👁️ WATCHLIST | SELL | — | — | — | Absolute monopoly on EUV lithography. |
@@ -106,27 +108,29 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | **VRT** | 👁️ WATCHLIST | TRIM | — | — | — | Data center thermal management. |
 | **VST** | 👁️ WATCHLIST | ACCUMULATE | — | — | — | Nuclear + natgas power merchant. |
 | **WYFI** | 👁️ WATCHLIST | BUY | — | — | — | AI GPU cloud + HPC data center. |
-| **Subtotal** | | **20.49%** | **22.08%** | +1.59pp | |
+| **Subtotal** | | **21.42%** | **24.28%** | +2.86pp | |
 
 ### Sub-Strategy 2 — AI-Native Cybersecurity
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **ZS** | ⚪ MAINTAIN | ACCUMULATE | 6.94% | 6.51% | +26.4% | Zero-trust SASE leader. |
-| **PANW** | ⚪ MAINTAIN | TRIM | 2.92% | 2.68% | -54.9% | AI-native platform consolidation leader. |
+| **ZS** | ⚪ MAINTAIN | ACCUMULATE | 6.94% | 6.50% | +41.7% | Leading cloud-native Zero Trust SASE architecture (ZIA/ZPA) securing distributed enterprise cloud traffic, data protection (DSPM/AI-SPM), and AI workloads. Mission-critical enterprise cybersecurity infrastructure. |
+| **PANW** | ⚪ MAINTAIN | MAINTAIN | 2.92% | 2.68% | -30.3% | AI-native platform consolidation leader. |
 | **CRWD** | 👁️ WATCHLIST | EXIT | — | — | — | EXIT: DCF -66% downside. |
-| **Subtotal** | | **9.85%** | **9.19%** | -0.66pp | |
+| **Subtotal** | | **9.85%** | **9.18%** | -0.67pp | |
 
 ### Sub-Strategy 3 — Sovereign Finance
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
+| **RIOT** | ⚪ MAINTAIN | MAINTAIN | 2.14% | 2.27% | -40.9% | RIOT |
+| **BTDR** | ⚪ MAINTAIN | ACCUMULATE | 2.00% | 2.14% | +217.8% | Proprietary Sealminer ASIC chip design. |
 | **COIN** | 👁️ WATCHLIST | MAINTAIN | — | — | — | Regulated crypto exchange + Base L2 growth. Settlement rail for AI Agents. |
 | **CRCL** | 👁️ WATCHLIST | MAINTAIN | — | — | — | USDC issuer and stablecoin infrastructure for AI agents. |
 | **ETHA** | 👁️ WATCHLIST | HOLD | — | — | — | Ethereum as programmable settlement layer. |
 | **IBIT** | 👁️ WATCHLIST | HOLD | — | — | — | Bitcoin as sovereign reserve asset. |
 | **SOLZ** | 👁️ WATCHLIST | — | — | — | — | EXIT: Solana ETF. |
-| **Subtotal** | | **0.00%** | **0.00%** | — | |
+| **Subtotal** | | **4.15%** | **4.41%** | +0.26pp | |
 
 ### Sub-Strategy 4 — Quality SaaS Resilience
 
@@ -156,9 +160,9 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
-| **CASH_USD** | ⚪ MAINTAIN | — | 12.27% | 13.98% | — | CASH_USD |
+| **CASH_USD** | 🟡 TRIM | — | 12.27% | 9.80% | — | CASH_USD |
 | **PSU-U.TO** | 👁️ WATCHLIST | — | — | — | — | USD cash reserve (Purpose US Cash Fund) — holds short-term USD treasuries on TSX. Primary purpose: USD currency exposure + interest income while awaiting deployment into thesis positions. Monthly dividend ~$0.31-0.33/share (~$3.68-3.90 USD annualized). ENTRY RULE: always buy 1-2 days AFTER the ex-dividend date (typically last Tuesday of month) to get the cycle-low reset price and capture the full next month of accrual. Buying mid-cycle or just before ex-date overpays for already-accrued dividend. Ex-dates: ~Jan 28, Feb 25, Mar 31, Apr 28, May 28, Jun 30 pattern. Next planned entry: May 29, 2026 (post May 28 ex-date). |
-| **Subtotal** | | **12.27%** | **13.98%** | +1.71pp | |
+| **Subtotal** | | **12.27%** | **9.80%** | -2.47pp | |
 
 ### Untracked / Thesis Pending
 
@@ -193,7 +197,7 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 
 | | Actual % | Target % | Delta |
 | :--- | ---: | ---: | ---: |
-| **All holdings** | **42.61%** | **45.25%** | +2.64pp |
+| **All holdings** | **47.69%** | **47.67%** | -0.02pp |
 | *Validate* | `python3 plugins/portfolio-advisor/scripts/validate_weights.py --mode both` | | |
 <!-- AUTO_UPDATE_END: portfolio_blueprint -->
 
