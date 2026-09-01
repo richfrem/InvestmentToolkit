@@ -367,10 +367,33 @@ export default function ScreenerTable() {
             const currentPct = allPortfolioWeights[p.ticker] ?? health?.actualPct ?? rev?.actualPct ?? null;
             const recommendedPct = health?.targetPct ?? null;
             const backendAction = allHoldingsMap[p.ticker]?.action ?? null;
-            // If backend action is generic 'WATCHLIST' or null, but we have a direct AI thesis action (e.g. HOLD, BUY, INITIATE, ACCUMULATE, TRIM, EXIT), use the AI thesis action.
-            const action = (backendAction && backendAction !== 'WATCHLIST') 
-                ? backendAction 
-                : (thesis?.action ?? backendAction ?? null);
+
+            // Invariant Gate: Determine logical portfolio action
+            const isHeld = (currentPct ?? 0) > 0;
+            const isTarget = (recommendedPct ?? 0) > 0;
+            const rawAction = backendAction ?? thesis?.action ?? null;
+
+            let action = rawAction;
+            if (!isHeld) {
+                // If we DO NOT own the stock:
+                // - Can only be INITIATE (if target > 0 or valuation is attractive buy) or WATCHLIST
+                // - Can NEVER be TRIM, EXIT, or ACCUMULATE (you cannot trim/exit/accumulate what you don't own)
+                if (isTarget) {
+                    action = 'INITIATE';
+                } else if (['BUY', 'INITIATE'].includes((rawAction ?? '').toUpperCase())) {
+                    action = 'INITIATE';
+                } else {
+                    action = 'WATCHLIST';
+                }
+            } else {
+                // If we DO own the stock:
+                // - If target is 0 or lifecycle is exit, action is EXIT
+                if (recommendedPct === 0) {
+                    action = 'EXIT';
+                } else if (rawAction === 'WATCHLIST' || !rawAction) {
+                    action = thesis?.action ?? 'MAINTAIN';
+                }
+            }
 
             return {
                 symbol: p.ticker,
