@@ -5,7 +5,7 @@
 | **Current Theme** | ASI Buildout (Primary) + Sovereign Finance (Secondary) |
 | **Edition** | "The Compute Sovereign" |
 | **Status** | ACTIVE |
-| **Last Updated** | 2026-08-28 |
+| **Last Updated** | 2026-08-31 |
 | **Thesis Last Analyzed** | 2026-05-22 (Full strategic review post-13F chip exits) |
 | **13F Last Refactored** | 2026-05-22 (Refactored SA LP Q1 2026 13F filed 2026-05-18 into target-portfolio.json) |
 | **Portfolio Data** | Live — synced from Broker via app or `python3 investment_screener/backend/src/BrokerDataEngine.py` |
@@ -77,7 +77,7 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 ## IV. Portfolio Blueprint
 
 <!-- AUTO_UPDATE_START: portfolio_blueprint -->
-*Generated 2026-08-28 · Source: `domain_model.sqlite` (investment + account_investment, broker-synced live holdings)*
+*Generated 2026-08-31 · Source: `domain_model.sqlite` (investment + account_investment, broker-synced live holdings)*
 *Portfolio value: $31,895. Refresh: `python3 plugins/portfolio-advisor/scripts/generate_portfolio_blueprint.py --write`*
 
 ### Sub-Strategy 1 — SA / ASI Race (Aschenbrenner Framework)
@@ -85,10 +85,10 @@ Every holding in the portfolio maps to exactly one of these strategies. The skil
 | Ticker | Thesis Action | AI Signal | Actual % | Target % | Upside | Conviction |
 | :--- | :--- | :--- | ---: | ---: | ---: | :--- |
 | **GOOG** | ⚪ MAINTAIN | ACCUMULATE | 5.37% | 5.19% | +51.2% | Hyperscaler with vertically integrated AI stack. |
-| **BE** | ⚪ MAINTAIN | SELL | 4.94% | 4.61% | -11.7% | Bloom Energy fuel cells. |
+| **BE** | ⚪ MAINTAIN | SELL | 4.94% | 4.61% | -24.6% | Bloom Energy fuel cells. |
 | **TSM** | ⚪ MAINTAIN | HOLD | 3.94% | 3.85% | +8.4% | The foundry backbone of the AI compute stack. |
 | **STM** | ⚪ MAINTAIN | ACCUMULATE | 3.72% | 3.69% | +73.1% | STM |
-| **CBRS** | ⚪ MAINTAIN | BUY | 2.52% | 2.74% | +91.7% | Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference. |
+| **CBRS** | ⚪ MAINTAIN | SELL | 2.52% | 2.74% | -67.7% | Monolithic Wafer-Scale AI compute engine delivering 21 PB/s memory bandwidth for ultra-high-speed reasoning and real-time agentic inference. |
 | **AMD** | 👁️ WATCHLIST | MAINTAIN | — | — | — | Hedge against NVDA dominance. |
 | **ANET** | 👁️ WATCHLIST | INITIATE | — | — | — | AI networking switching fabric. |
 | **ASML** | 👁️ WATCHLIST | SELL | — | — | — | Absolute monopoly on EUV lithography. |

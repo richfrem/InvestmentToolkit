@@ -243,6 +243,25 @@ export const storage = {
                     }
                 }
 
+                // Ensure valid UUID id
+                const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+                if (!p.id || !uuidRegex.test(p.id)) {
+                    p.id = crypto.randomUUID();
+                }
+
+                // Ensure valid dataPreferences
+                if (!p.dataPreferences) {
+                    p.dataPreferences = { growthBasis: 'ttm', marginBasis: 'ttm' };
+                } else {
+                    if (!p.dataPreferences.growthBasis) p.dataPreferences.growthBasis = 'ttm';
+                    if (!p.dataPreferences.marginBasis) p.dataPreferences.marginBasis = 'ttm';
+                }
+
+                // Ensure valid schemaVersion
+                if (!p.schemaVersion || !/^1\.\d+$/.test(p.schemaVersion)) {
+                    p.schemaVersion = '1.2' as any;
+                }
+
                 // Ensure valid dates
                 try {
                     if (!p.updatedAt || isNaN(Date.parse(p.updatedAt))) {
